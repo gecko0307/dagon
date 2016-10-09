@@ -1,0 +1,26 @@
+{
+    "description": "dagon-demo",
+    "authors": [
+        "Timur Gafarov"
+    ],
+    "license": "Boost",
+    "homepage": "",
+    "name": "demo",
+    "importPaths": [
+        "."
+    ],
+    "dependencies": {
+        "dlib": "0.9.2"
+    },
+    "buildRequirements":[
+        "allowWarnings"
+    ],
+    "configurations": [
+        {
+            "name": "demo",
+            "targetType": "executable",
+            "sourcePaths": ["."],
+            "mainSourceFile": "main.d"
+        }
+    ]
+}
