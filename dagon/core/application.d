@@ -58,7 +58,9 @@ class Application: EventListener
             }
         }
         else
+        {
             DerelictSDL2.load();
+        }
 
         if (SDL_Init(SDL_INIT_EVERYTHING) == -1)
             exitWithError("Failed to init SDL: " ~ to!string(SDL_GetError()));
@@ -119,7 +121,8 @@ class Application: EventListener
         error = glGetError();
         if (error != GL_NO_ERROR)
         {
-            exitWithError("OpenGL error: " ~ to!string(error));
+            writeln("OpenGL error: ", error);
+            eventManager.running = false;
         }
     }
     
