@@ -42,6 +42,77 @@ class ShapeSphere: Owner, Drawable
     }
 }
 
+class ShapeBox: Owner, Drawable
+{
+    uint displayList;
+
+    this(float sx, float sy, float sz, Owner owner)
+    {
+        this(Vector3f(sx, sy, sz), owner);
+    }
+
+    this(Vector3f hsize, Owner owner)
+    {
+        super(owner);
+        displayList = glGenLists(1);
+        glNewList(displayList, GL_COMPILE);
+
+        Vector3f pmax = +hsize;
+        Vector3f pmin = -hsize;
+
+        glBegin(GL_QUADS);
+
+        glTexCoord2f(0, 1); glNormal3f(0,0,1); glVertex3f(pmin.x,pmin.y,pmax.z);
+        glTexCoord2f(1, 1); glNormal3f(0,0,1); glVertex3f(pmax.x,pmin.y,pmax.z);
+        glTexCoord2f(1, 0); glNormal3f(0,0,1); glVertex3f(pmax.x,pmax.y,pmax.z);
+        glTexCoord2f(0, 0); glNormal3f(0,0,1); glVertex3f(pmin.x,pmax.y,pmax.z);
+
+        glTexCoord2f(0, 1); glNormal3f(1,0,0); glVertex3f(pmax.x,pmin.y,pmax.z);
+        glTexCoord2f(1, 1); glNormal3f(1,0,0); glVertex3f(pmax.x,pmin.y,pmin.z);
+        glTexCoord2f(1, 0); glNormal3f(1,0,0); glVertex3f(pmax.x,pmax.y,pmin.z);
+        glTexCoord2f(0, 0); glNormal3f(1,0,0); glVertex3f(pmax.x,pmax.y,pmax.z);
+
+        glTexCoord2f(0, 1); glNormal3f(0,1,0); glVertex3f(pmin.x,pmax.y,pmax.z);
+        glTexCoord2f(1, 1); glNormal3f(0,1,0); glVertex3f(pmax.x,pmax.y,pmax.z);
+        glTexCoord2f(1, 0); glNormal3f(0,1,0); glVertex3f(pmax.x,pmax.y,pmin.z);
+        glTexCoord2f(0, 0); glNormal3f(0,1,0); glVertex3f(pmin.x,pmax.y,pmin.z);
+
+        glTexCoord2f(0, 1); glNormal3f(0,0,-1); glVertex3f(pmin.x,pmin.y,pmin.z);
+        glTexCoord2f(1, 1); glNormal3f(0,0,-1); glVertex3f(pmin.x,pmax.y,pmin.z);
+        glTexCoord2f(1, 0); glNormal3f(0,0,-1); glVertex3f(pmax.x,pmax.y,pmin.z);
+        glTexCoord2f(0, 0); glNormal3f(0,0,-1); glVertex3f(pmax.x,pmin.y,pmin.z);
+
+        glTexCoord2f(0, 1); glNormal3f(0,-1,0); glVertex3f(pmin.x,pmin.y,pmin.z);
+        glTexCoord2f(1, 1); glNormal3f(0,-1,0); glVertex3f(pmax.x,pmin.y,pmin.z);
+        glTexCoord2f(1, 0); glNormal3f(0,-1,0); glVertex3f(pmax.x,pmin.y,pmax.z);
+        glTexCoord2f(0, 0); glNormal3f(0,-1,0); glVertex3f(pmin.x,pmin.y,pmax.z);
+
+        glTexCoord2f(0, 1); glNormal3f(-1,0,0); glVertex3f(pmin.x,pmin.y,pmin.z);
+        glTexCoord2f(1, 1); glNormal3f(-1,0,0); glVertex3f(pmin.x,pmin.y,pmax.z);
+        glTexCoord2f(1, 0); glNormal3f(-1,0,0); glVertex3f(pmin.x,pmax.y,pmax.z);
+        glTexCoord2f(0, 0); glNormal3f(-1,0,0); glVertex3f(pmin.x,pmax.y,pmin.z);
+
+        glEnd();
+
+        glEndList();
+    }
+
+    void update(double dt)
+    {
+    }
+
+    void render()
+    {
+        glCallList(displayList);
+    }
+
+    ~this()
+    {
+        glDeleteLists(displayList, 1);
+    }
+}
+
+
 /*
 class ShapeBox: Drawable
 {

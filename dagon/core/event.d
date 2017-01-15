@@ -240,13 +240,17 @@ class EventManager
                     addEvent(e);
                     break;
 
-                case SDL_WINDOWEVENT_RESIZED:
-                    windowWidth = event.window.data1;
-                    windowHeight = event.window.data2;
-                    e = Event(EventType.Resize);
-                    e.width = windowWidth;
-                    e.height = windowHeight;
-                    addEvent(e);
+                //case SDL_WINDOWEVENT_RESIZED:
+                case SDL_WINDOWEVENT:
+                    if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+                    {
+                        windowWidth = event.window.data1;
+                        windowHeight = event.window.data2;
+                        e = Event(EventType.Resize);
+                        e.width = windowWidth;
+                        e.height = windowHeight;
+                        addEvent(e);
+                    }
                     break;
 /*
                 case SDL_ACTIVEEVENT:

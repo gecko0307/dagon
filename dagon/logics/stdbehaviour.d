@@ -14,6 +14,7 @@ class Transformation: Behaviour
     Vector3f position;
     Quaternionf rotation;
     Vector3f scaling;
+    bool autoUpdate = true;
 
     this(Entity e)
     {
@@ -36,10 +37,11 @@ class Transformation: Behaviour
 
     override void update(double dt)
     {
-        tmatrix = 
-            translationMatrix(position) *
-            rotation.toMatrix4x4 *
-            scaleMatrix(scaling);
+        if (autoUpdate)
+            tmatrix = 
+                translationMatrix(position) *
+                rotation.toMatrix4x4 *
+                scaleMatrix(scaling);
     }
 
     override void bind()

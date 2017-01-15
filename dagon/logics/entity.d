@@ -94,7 +94,8 @@ class Entity: Owner, Drawable
             }
         }
 
-        drawable.update(dt);
+        if (drawable)
+            drawable.update(dt);
     }
 
     void render()
@@ -105,7 +106,8 @@ class Entity: Owner, Drawable
                 ble.behaviour.bind();
         }
 
-        drawable.render();
+        if (drawable)
+            drawable.render();
 
         foreach(i, ble; behaviours)
         {
