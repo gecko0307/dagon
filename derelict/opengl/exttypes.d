@@ -3368,8 +3368,8 @@ version(Windows)
     struct GPU_DEVICE
     {
         DWORD cb;
-        char DeviceName[32];
-        char DeviceString[128];
+        char[32] DeviceName;
+        char[128] DeviceString;
         DWORD flags;
         RECT rcVirtualScreen;
     }

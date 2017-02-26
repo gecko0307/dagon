@@ -8,54 +8,6 @@ import derelict.opengl.gl;
 import dagon.logics.entity;
 import dagon.logics.behaviour;
 
-class Transformation: Behaviour
-{
-    Matrix4x4f tmatrix;
-    Vector3f position;
-    Quaternionf rotation;
-    Vector3f scaling;
-    bool autoUpdate = true;
-
-    this(Entity e)
-    {
-        super(e);
-        reset();
-    }
-
-    void reset()
-    {
-        tmatrix = Matrix4x4f.identity;
-        position = Vector3f(0, 0, 0);
-        rotation = Quaternionf.identity;
-        scaling = Vector3f(1, 1, 1);
-    }
-
-    void move(Vector3f t)
-    {
-        position += t;
-    }
-
-    override void update(double dt)
-    {
-        if (autoUpdate)
-            tmatrix = 
-                translationMatrix(position) *
-                rotation.toMatrix4x4 *
-                scaleMatrix(scaling);
-    }
-
-    override void bind()
-    {
-        glPushMatrix(); 
-        glMultMatrixf(tmatrix.arrayof.ptr);
-    }
-
-    override void unbind()
-    {
-        glPopMatrix();
-    }
-}
-
 class ParentRelation: Behaviour
 {
     Entity parent;
@@ -71,8 +23,8 @@ class ParentRelation: Behaviour
     {
         if (parent)
         {
-            Transformation pt = parent.behaviour!Transformation;
-            parentMatrix = pt.tmatrix;
+            //Transformation pt = parent.behaviour!Transformation;
+            parentMatrix = parent.transformation;
         }
         else
         {

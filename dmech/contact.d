@@ -53,6 +53,9 @@ struct Contact
     Vector3f body1RelPoint;
     Vector3f body2RelPoint;
 
+    Vector3f body1RelPoint2;
+    Vector3f body2RelPoint2;
+
     Vector3f normal;
     float penetration;
 

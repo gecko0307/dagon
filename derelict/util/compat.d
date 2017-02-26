@@ -115,7 +115,8 @@ else
             import std.conv;
         }
         import std.string;
-        import std.c.string;
+        //import std.c.string;
+        import core.stdc.stdlib;
     }
  
 }

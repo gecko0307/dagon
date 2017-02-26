@@ -101,7 +101,7 @@ struct IQMAnim
     uint flags;
 }
 
-version = IQMDebug;
+//version = IQMDebug;
 
 class IQMModel: AnimatedModel
 {
@@ -369,10 +369,15 @@ class IQMModel: AnimatedModel
 
             if (rofs.fileExists(texFilename))
             {
-                auto texAsset = New!TextureAsset(mngr.imageFactory);
-                mngr.loadAssetThreadSafePart(texAsset, texFilename);
-                mngr.addAsset(texAsset, texFilename);
-                facegroups[i].texture = texAsset.texture;
+                if (!mngr.assetExists(texFilename))
+                {
+                    auto texAsset = New!TextureAsset(mngr.imageFactory);
+                    mngr.loadAssetThreadSafePart(texAsset, texFilename);
+                    mngr.addAsset(texAsset, texFilename);
+                    facegroups[i].texture = texAsset.texture;
+                }
+                else
+                    facegroups[i].texture = (cast(TextureAsset)mngr.getAsset(texFilename)).texture;
             }
             }
         }
@@ -684,18 +689,18 @@ class IQMAsset: Asset
             Delete(model);
     }
 
-    bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
+    override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
     {
         model = New!IQMModel(istrm, fs, mngr);
         return true;
     }
 
-    bool loadThreadUnsafePart()
+    override bool loadThreadUnsafePart()
     {
         return true;
     }
 
-    void release()
+    override void release()
     {
         if (model)
             model.release();

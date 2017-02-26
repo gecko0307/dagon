@@ -55,15 +55,17 @@ void prepareContact(Contact* c)
     c.initialVelocityProjection = dot(relativeVelocity, c.normal);
 
     c.n1 = c.normal;
-    c.w1 = c.normal.cross(r1);
+    c.w1 = cross(c.normal, r1);
     c.n2 = -c.normal;
-    c.w2 = -c.normal.cross(r2);
+    c.w2 = -cross(c.normal, r2);
 
     c.effectiveMass = 
         body1.invMass + 
         body2.invMass +
         dot(c.w1 * body1.invInertiaTensor, c.w1) +
         dot(c.w2 * body2.invInertiaTensor, c.w2);
+
+    c.effectiveMass = 1.0f / c.effectiveMass;
 }
 
 void solveContact(Contact* c, double dt)
@@ -89,22 +91,27 @@ void solveContact(Contact* c, double dt)
 
     float bounce = (body1.bounce + body2.bounce) * 0.5f;
     float damping = 0.9f;
-    float C = max(0, -bounce * c.initialVelocityProjection - damping);
+    float C = max(0, bounce * c.initialVelocityProjection - damping);
+    //float C = bounce * max(0, c.initialVelocityProjection - 0.5f);
 
-    float bias = 0.0f;
-
+    //float bias = 0.0f;
     // Velocity-based position correction
-  /*
-    float allowedPenetration = 0.01f;
-    float biasFactor = 0.3f; // 0.1 to 0.3
-    bias = biasFactor * (1.0f / dt) * max(0.0f, c.penetration - allowedPenetration);
-  */
-    float a = velocityProjection;
-    float b = c.effectiveMass;
+    //float allowedPenetration = 0.01f;
+    //float biasFactor = 0.01f; // 0.1 to 0.3
+    //bias = biasFactor * (1.0f / dt) * max(0.0f, c.penetration - allowedPenetration);
 
-    float normalImpulse = (C - a + bias) / b;
+    float jv = velocityProjection;
+    //float b = c.effectiveMass;
+    float baumgarte = 0.1f;
+    float slop = 0.05f;
+    float bias = baumgarte * (1.0f / dt) * max(0.0f, c.penetration - slop); //stabilization term
 
-    //if (normalImpulse < 0.0f)
+    float lambda = c.effectiveMass * (C - jv + bias);
+
+    //float normalImpulse = (C - jv + s) / b;
+
+    if (lambda < 0.0f)
+        return;
     //    normalImpulse = 0.0f;
 
     // Friction
@@ -121,7 +128,7 @@ void solveContact(Contact* c, double dt)
              + dot(tn2, tn2 * body2.invMass)
              + dot(tw2, tw2 * body2.invInertiaTensor);
     float fImpulse1 = -ta / tb;
-    fImpulse1 = clamp(fImpulse1, -normalImpulse * mu, normalImpulse * mu);
+    fImpulse1 = clamp(fImpulse1, -lambda * mu, lambda * mu);
 
     tn1 = c.fdir2;
     tw1 = c.fdir2.cross(r1);
@@ -133,14 +140,14 @@ void solveContact(Contact* c, double dt)
        + dot(tn2, tn2 * body2.invMass)
        + dot(tw2, tw2 * body2.invInertiaTensor);
     float fImpulse2 = -ta / tb;
-    fImpulse2 = clamp(fImpulse2, -normalImpulse * mu, normalImpulse * mu);
+    fImpulse2 = clamp(fImpulse2, -lambda * mu, lambda * mu);
 
     c.accumulatedfImpulse1 += fImpulse1;
     c.accumulatedfImpulse2 += fImpulse2;
 
     fVec = c.fdir1 * fImpulse1 + c.fdir2 * fImpulse2;
 
-    Vector3f impulseVec = c.normal * normalImpulse;
+    Vector3f impulseVec = c.normal * lambda;
 
     body1.applyImpulse(+impulseVec, c.point);
     body2.applyImpulse(-impulseVec, c.point);
@@ -149,7 +156,7 @@ void solveContact(Contact* c, double dt)
     if (body2.useFriction) body2.applyImpulse(-fVec, c.point);
 }
 
-void solvePositionError(Contact* c, uint numContacts)
+void solvePositionError(Contact* c, double dt, uint numContacts)
 {
     RigidBody body1 = c.body1;
     RigidBody body2 = c.body2;
@@ -162,19 +169,35 @@ void solvePositionError(Contact* c, uint numContacts)
     prv -= body2.pseudoLinearVelocity + cross(body2.pseudoAngularVelocity, r2);
     float pvp = dot(prv, c.normal);
 
-    if (c.penetration <= 0.0f)
+/*
+//Vector3f p1 = c.body1.position + c.body1RelPoint2;
+//Vector3f p2 = c.body2.position + c.body2RelPoint2;
+Vector3f p1 = c.body1.position + c.body1.orientation.rotate(c.body1RelPoint2);
+Vector3f p2 = c.body2.position + c.body2.orientation.rotate(c.body2RelPoint2);
+Vector3f dist = p1 - p2;
+float newPenetration = dot(dist, c.normal);
+*/
+
+    float pen = c.penetration;
+
+    if (pen <= 0.0f)
         return;
     
-    float ERP = (1.0f / numContacts) * 0.94f;
-    float pc = c.penetration * ERP;
+    float ERP = 0.9f; //(1.0f / numContacts) * 0.94f;
+    float pc = pen * ERP * (1.0f / dt) * (1.0f / numContacts);
+
+    //float allowedPenetration = 0.01f;
+    //float biasFactor = 0.9f; // 0.1 to 0.3
+    //float bias = biasFactor * (1.0f / dt) * max(0.0f, c.penetration - allowedPenetration);
+
     //c.penetration -= pc;
-    c.penetration = 0.0f;
+    //c.penetration -= c.penetration * biasFactor;
     
-    if (pvp >= pc)
-        return;
+    //if (pvp >= pc)
+    //    return;
 
     float a = pvp;
-    float impulse = (pc - a) / c.effectiveMass;
+    float impulse = (-a + pc) / c.effectiveMass;
 
     Vector3f impulseVec = c.normal * impulse;
    

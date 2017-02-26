@@ -1,4 +1,4 @@
-module dagon.all;
+module dagon;
 
 public
 {
@@ -6,6 +6,7 @@ public
     import derelict.opengl.gl;
     import derelict.opengl.glu;
     import derelict.opengl.glext;
+    import derelict.freetype.ft;
 
     import dlib.core.memory;
     import dlib.math.vector;
@@ -33,6 +34,7 @@ public
     import dagon.resource.iqm;
 
     import dagon.logics.entity;
+    import dagon.logics.controller;
     import dagon.logics.behaviour;
     import dagon.logics.stdbehaviour;
 

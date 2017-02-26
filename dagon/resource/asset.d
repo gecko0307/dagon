@@ -4,6 +4,7 @@ import std.stdio;
 
 import dlib.core.memory;
 import dlib.core.stream;
+import dlib.core.thread;
 import dlib.container.dict;
 import dlib.filesystem.filesystem;
 import dlib.filesystem.stdfs;
@@ -18,18 +19,11 @@ struct MonitorInfo
     bool fileExists = false;
 }
 
-/*
-enum FileEvent
-{
-    Created,
-    Deleted,
-    Modified
-}
-*/
-
 abstract class Asset
 {
     MonitorInfo monitorInfo;
+    bool threadSafePartLoaded = false;
+    bool threadUnsafePartLoaded = false;
     bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr);
     bool loadThreadUnsafePart();
     void release();
@@ -40,11 +34,15 @@ class AssetManager
     Dict!(Asset, string) assetsByFilename;
     VirtualFileSystem fs;
     UnmanagedImageFactory imageFactory;
+    Thread loadingThread;
 
     bool liveUpdate = false;
     double liveUpdatePeriod = 5.0;
 
     protected double monitorTimer = 0.0;
+
+    //float loadingPercentage = 0.0f;
+    float nextLoadingPercentage = 0.0f;
 
     this()
     {
@@ -52,6 +50,8 @@ class AssetManager
         fs = New!VirtualFileSystem();
         fs.mount(".");
         imageFactory = New!UnmanagedImageFactory();
+
+        loadingThread = New!Thread(&threadFunc);
     }
 
     ~this()
@@ -63,11 +63,20 @@ class AssetManager
         Delete(assetsByFilename);
         Delete(fs);
         Delete(imageFactory);
+        Delete(loadingThread);
     }
 
     void mountDirectory(string dir)
     {
         fs.mount(dir);
+    }
+
+    bool assetExists(string name)
+    {
+        if (name in assetsByFilename)
+            return true;
+        else
+            return false;
     }
 
     Asset addAsset(Asset asset, string name)
@@ -79,6 +88,47 @@ class AssetManager
                 asset.monitorInfo.fileExists = true;
         }
         return asset;
+    }
+
+    Asset preloadAsset(Asset asset, string name)
+    {
+        if (!(name in assetsByFilename))
+        {
+            assetsByFilename[name] = asset;
+            if (fs.stat(name, asset.monitorInfo.lastStat))
+                asset.monitorInfo.fileExists = true;
+        }
+
+        asset.release();
+        asset.threadSafePartLoaded = false;
+        asset.threadUnsafePartLoaded = false;
+
+        asset.threadSafePartLoaded = loadAssetThreadSafePart(asset, name);
+        if (asset.threadSafePartLoaded)
+            asset.threadUnsafePartLoaded = asset.loadThreadUnsafePart();
+
+        return asset;
+    }
+
+    void reloadAsset(string name)
+    {
+        auto asset = assetsByFilename[name];
+
+        asset.release();
+        asset.threadSafePartLoaded = false;
+        asset.threadUnsafePartLoaded = false;
+
+        asset.threadSafePartLoaded = loadAssetThreadSafePart(asset, name);
+        if (asset.threadSafePartLoaded)
+            asset.threadUnsafePartLoaded = asset.loadThreadUnsafePart();
+    }
+
+    Asset getAsset(string name)
+    {
+        if (name in assetsByFilename)
+            return assetsByFilename[name];
+        else
+            return null;
     }
 
     void removeAsset(string name)
@@ -117,24 +167,40 @@ class AssetManager
         return res;
     }
 
-    bool loadThreadSafePart()
+    void threadFunc()
     {
-        bool res = true;
         foreach(filename, asset; assetsByFilename)
         {
-            res = loadAssetThreadSafePart(asset, filename);
-            if (!res)
-                break;
+            nextLoadingPercentage += 1.0f / cast(float)(assetsByFilename.length);
+
+            if (!asset.threadSafePartLoaded)
+            {
+                asset.threadSafePartLoaded = loadAssetThreadSafePart(asset, filename);
+                asset.threadUnsafePartLoaded = false;
+            }
         }
-        return res;
+    }
+
+    void loadThreadSafePart()
+    {
+        nextLoadingPercentage = 0.0f;
+        loadingThread.start();
+    }
+
+    bool isLoading()
+    {
+        return loadingThread.isRunning;
     }
 
     bool loadThreadUnsafePart()
     {
         bool res = true;
         foreach(filename, asset; assetsByFilename)
+        if (!asset.threadUnsafePartLoaded)
+        if (asset.threadSafePartLoaded)
         {
             res = asset.loadThreadUnsafePart();
+            asset.threadUnsafePartLoaded = res;
             if (!res)
             {
                 writefln("Error: failed to load asset \"%s\"", filename);
@@ -142,15 +208,6 @@ class AssetManager
             }
         }
         return res;
-    }
-
-    void reloadAsset(string name)
-    {
-        auto asset = assetsByFilename[name];
-        asset.release();
-        bool res = loadAssetThreadSafePart(asset, name);
-        if (res)
-            asset.loadThreadUnsafePart();
     }
 
     bool fileExists(string filename)

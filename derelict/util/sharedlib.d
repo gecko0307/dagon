@@ -81,7 +81,8 @@ version(Nix)
     }
     else version(linux)
     {
-        private import std.c.linux.linux;
+        //private import std.c.linux.linux;
+        private import core.sys.posix.dlfcn;
     }
     else
     {
