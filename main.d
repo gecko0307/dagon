@@ -1,217 +1,110 @@
 module main;
 
 import std.stdio;
-import std.conv;
-import std.string;
+import dagon;
 
-import dagon.all;
-
-import dmech.geometry;
-import dmech.rigidbody;
-import dmech.world;
-
-class MovementController: Behaviour
-{
-    this(Entity e)
-    {
-        super(e);
-    }
-
-    override void update(double dt)
-    {
-        if (eventManager.keyPressed[KEY_LEFT])
-            entity.behaviour!(Transformation).move(Vector3f(2.0 * dt, 0, 0));
-        if (eventManager.keyPressed[KEY_RIGHT])
-            entity.behaviour!(Transformation).move(Vector3f(-2.0 * dt, 0, 0));
-    }
-}
-
-class RigidBodyController: Behaviour
-{
-    RigidBody rbody;
-    uint shapeIndex = 0;
-    Transformation transformation;
-
-    this(Entity e, RigidBody b, uint shapeIndex = 0)
-    {
-        super(e);
-        rbody = b;
-        this.shapeIndex = shapeIndex;
-        
-        if (entity.behaviour!(Transformation) is null)
-        {
-            auto t = New!Transformation(entity);
-            t.position = b.position;
-            t.rotation = b.orientation;
-            transformation = t;
-        }
-        else
-        {
-            transformation = entity.behaviour!(Transformation);
-            b.position = transformation.position;
-            b.orientation = transformation.rotation;
-        }
-        
-        transformation.autoUpdate = false;
-    }
-
-    override void update(double dt)
-    {            
-        transformation.tmatrix = rbody.shapes[shapeIndex].transformation;
-    }
-}
-
-class My3DScene: Scene
+// A Scene is a main logical unit in Dagon.
+// You can think of it, for example, as a game level:
+// it has its own set of assets, entities and other data.
+// It also defines its own event handlers and has full
+// control over current OpenGL context.
+class MyScene: Scene
 {
     LightManager lightManager;
-    
-    Entity sphere;
-    Entity sphere2;
 
-    RenderingContext rc;    
+    RenderingContext rc; 
     Freeview freeview;
 
-    TextAsset text;
+    DynamicArray!Entity entities;
     TextureAsset tex;
-    IQMAsset iqm;
 
-    Entity animmodel;
-    Actor actor;
-
-    Entity boxE;
-    
-    PhysicsWorld world;
-    double physicsTimer;
-    enum fixedTimeStep = 1.0 / 60.0;
-
+    // Constructor is usually called only once
+    // at application startup
     this(SceneManager smngr)
     {
         super(smngr);
-        assetManager.mountDirectory("data");
-        assetManager.mountDirectory("data/testmodel");
-
         assetManager.liveUpdate = true;
     }
 
+    // onAssetsRequest is called just before loading assets
     override void onAssetsRequest()
     {
-        text = addTextAsset("data/test.txt");
-        tex = addTextureAsset("data/stone.png");
-        iqm = New!IQMAsset();
-        addAsset(iqm, "data/testmodel/testmodel.iqm");
+        tex = addTextureAsset("data/crate.jpg");
+        addTextureAsset("data/stone.png");
     }
-    
+
     Entity createEntity3D()
     {
         Entity e = New!Entity(eventManager, this);
-        auto t = New!Transformation(e);
         auto lr = New!LightReceiver(e, lightManager);
         return e;
     }
 
+    // onAllocate is called after assets loading.
+    // Use this method to create your Entities and other game objects.
     override void onAllocate()
     {
         lightManager = New!LightManager(this);
         lightManager.addPointLight(Vector3f(3, 3, 0), Color4f(1.0, 0.0, 0.0, 1.0));
-        lightManager.addPointLight(Vector3f(-3, 3, 0), Color4f(0.0, 1.0, 1.0, 1.0));
+        lightManager.addPointLight(Vector3f(-3, 3, 0), Color4f(1.0, 1.0, 1.0, 1.0));
     
         freeview = New!Freeview(eventManager, this);
         freeview.camera.setZoom(6.0f);
 
-        ShapeSphere shapeSphere = New!ShapeSphere(1.0f, this);
-
-        sphere2 = createEntity3D();
-        sphere2.behaviour!(Transformation).position = Vector3f(0, 0, -3);
-        sphere2.drawable = shapeSphere;
-
-        actor = New!Actor(iqm.model, this);
-        animmodel = createEntity3D();
-        Transformation animTransform = New!Transformation(animmodel);
-        animmodel.drawable = actor;
-
-        world = New!PhysicsWorld();
-        
-        RigidBody bGround = world.addStaticBody(Vector3f(0.0f, -1.0f, 0.0f));
-        gGround = New!GeomBox(Vector3f(40.0f, 1.0f, 40.0f));
-        world.addShapeComponent(bGround, gGround, Vector3f(0.0f, 0.0f, 0.0f), 1.0f);
-
         ShapeBox shapeBox = New!ShapeBox(1, 1, 1, this);
-        boxE = createEntity3D();
-        boxE.drawable = shapeBox;
-        boxE.behaviour!(Transformation).position = Vector3f(0, 5, 3);
-        
-        bBox = world.addDynamicBody(Vector3f(0, 5, 3), 0.0f);
-        gBox = New!GeomBox(Vector3f(1.0f, 1.0f, 1.0f));
-        world.addShapeComponent(bBox, gBox, Vector3f(0.0f, 0.0f, 0.0f), 1.0f);
-        RigidBodyController rbc = New!RigidBodyController(boxE, bBox);
+
+        auto box = createEntity3D();
+        box.drawable = shapeBox;
+        entities.append(box);
     }
     
-    RigidBody bGround;
-    Geometry gGround;
-    
-    Geometry gBox;
-    RigidBody bBox;
-    
+    // onRelease is called when sceneManager.loadAndSwitchToScene
+    // is called with releaseCurrentScene set to true.
+    // This is a good place to delete the objects allocated in onAllocate.
+    // Remember that you actually don't have to (and shouldn't) manually delete 
+    // scene's owned objects
     override void onRelease()
     {
-        Delete(world);
-        Delete(gGround);
-        Delete(gBox);
+        entities.free();
     }
 
+    // onStart is called after (or instead of) loading and allocating.
+    // It is always called when switching current scene
     override void onStart()
     {
+        writeln("Allocated memory after scene switch: ", allocatedMemory);
+
         rc.init(eventManager);
         rc.projectionMatrix = perspectiveMatrix(60.0f, eventManager.aspectRatio, 0.1f, 100.0f);
-
-        writeln(text.text);
-
-        tex.texture.scale = Vector2f(2.0f, 2.0f);
-        
-        actor.play();
-        
-        physicsTimer = 0.0;
     }
 
+    // onEnd is called just before releasing and switching current scene
     override void onEnd()
     {
     }
 
+    // onKeyDown is called when the user presses a key
     override void onKeyDown(int key)
     {
         if (key == KEY_ESCAPE)
             exitApplication();
-        else if (key == KEY_2)
-            sceneManager.loadAndSwitchToScene("bluescene");
-    }
-    
-    void doLogics()
-    {
     }
 
+    // onUpdate is called every frame before rendering
     override void onUpdate(double dt)
-    {
-        physicsTimer += dt;
-        if (physicsTimer >= fixedTimeStep)
-        {
-            doLogics();
-            physicsTimer -= fixedTimeStep;
-            world.update(fixedTimeStep);
-        }
-        
-    
+    {   
         freeview.update(dt);
-        sphere2.update(dt);
-        animmodel.update(dt);
-        boxE.update(dt);
+
+        foreach(e; entities)
+            e.update(dt);
 
         rc.viewMatrix = freeview.viewMatrix();
         rc.invViewMatrix = freeview.invViewMatrix();
         rc.normalMatrix = matrix4x4to3x3(rc.invViewMatrix).transposed;
     }
 
-    Vector4f lightDir = Vector4f(0, 1, 0, 0);
-
+    // onRender is called when the scene needs to be drawn
+    // to the framebuffer 
     override void onRender()
     {     
         glEnable(GL_DEPTH_TEST);
@@ -223,47 +116,11 @@ class My3DScene: Scene
         glLoadMatrixf(rc.projectionMatrix.arrayof.ptr);
         glMatrixMode(GL_MODELVIEW);
         glLoadMatrixf(rc.viewMatrix.arrayof.ptr);
+
         tex.texture.bind();
-        boxE.render();
-        tex.texture.unbind();
-        sphere2.render();
-        animmodel.render();
-    } 
-}
-
-class BlueScene: Scene
-{
-    this(SceneManager smngr)
-    {
-        super(smngr);
-    }
-
-    override void onStart()
-    {
-    }
-
-    override void onEnd()
-    {
-    }
-
-    override void onKeyDown(int key)
-    {
-        if (key == KEY_ESCAPE)
-            exitApplication();
-        else if (key == KEY_1)
-            sceneManager.loadAndSwitchToScene("myscene");
-    }
-
-    override void onUpdate(double dt)
-    {
-    }
-
-    override void onRender()
-    {     
-        glEnable(GL_DEPTH_TEST);
-        glViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
-        glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        foreach(e; entities)
+            e.render();
+        tex.texture.unbind(); 
     } 
 }
 
@@ -271,24 +128,20 @@ class MyApplication: SceneApplication
 {
     this(string[] args)
     {
-        super(800, 600, args);
+        super(800, 600, "Dagon Demo Application", args);
 
-        My3DScene myscene = New!My3DScene(sceneManager);
-        sceneManager.addScene(myscene, "myscene");
-
-        BlueScene blueScene = New!BlueScene(sceneManager);
-        sceneManager.addScene(blueScene, "bluescene");
-
-        sceneManager.loadAndSwitchToScene("myscene");
+        MyScene scene = New!MyScene(sceneManager);
+        sceneManager.addScene(scene, "MyScene");
+        sceneManager.loadAndSwitchToScene("MyScene");
     }
 }
 
 void main(string[] args)
 {
-    writeln(allocatedMemory);
+    writeln("Allocated memory at start: ", allocatedMemory);
     MyApplication app = New!MyApplication(args);
     app.run();
     Delete(app);
-    writeln(allocatedMemory);
+    writeln("Allocated memory at end: ", allocatedMemory);
 }
 

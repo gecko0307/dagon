@@ -29,6 +29,8 @@ module derelict.opengl.extloader;
 
 private
 {
+    import std.algorithm;
+
     import derelict.opengl.extfuncs;
     import derelict.opengl.gltypes;
     import derelict.opengl.glfuncs;
@@ -116,7 +118,7 @@ package
             if(GLExtensionState.Loaded == loaded[key])
                 ret ~= key;
         }
-        ret.sort;
+        sort(ret); //ret.sort;
         return ret;
     }
 
@@ -135,7 +137,7 @@ package
                     ret ~= key ~ " (Failed to Load)";
             }
         }
-        ret.sort;
+        sort(ret); //ret.sort;
         return ret;
     }
 

@@ -4,18 +4,20 @@ import std.stdio;
 import std.conv;
 import std.getopt;
 import std.string;
-import std.c.process;
+import std.file;
+import core.stdc.stdlib;
 
 import derelict.sdl2.sdl;
 import derelict.opengl.gl;
 import derelict.opengl.glu;
+import derelict.freetype.ft;
 
 import dagon.core.event;
 
 void exitWithError(string message)
 {
     writeln(message);
-    std.c.process.exit(1);
+    core.stdc.stdlib.exit(1);
 }
 
 enum DagonEvent
@@ -31,7 +33,7 @@ class Application: EventListener
     SDL_GLContext glcontext;
     string libdir;
     
-    this(uint w, uint h, string[] args)
+    this(uint w, uint h, string windowTitle, string[] args)
     {
         try
         { 
@@ -51,15 +53,75 @@ class Application: EventListener
             version(linux)
             {
                 DerelictSDL2.load(format("%s/libSDL2-2.0.so", libdir));
+                DerelictFT.load(format("%s/libfreetype.so", libdir));
             }
             version(Windows)
             {
-                DerelictSDL2.load(format("%s/SDL2.dll", libdir));
+                version(X86)
+                {
+                    DerelictSDL2.load(format("%s/SDL2.dll", libdir));
+                    DerelictFT.load(format("%s/freetype.dll", libdir));
+                }
+                version(X86_64)
+                {
+                    DerelictSDL2.load(format("%s/SDL2_64.dll", libdir));
+                    DerelictFT.load(format("%s/freetype_64.dll", libdir));
+                }
             }
         }
         else
+        {  
+            version(linux)
+            {
+                if (exists("lib/libSDL2-2.0.so"))
+                    DerelictSDL2.load("lib/libSDL2-2.0.so");
+                else
+                    DerelictSDL2.load();
+
+                if (exists("lib/libfreetype.so"))
+                    DerelictFT.load("lib/libfreetype.so");
+                else
+                    DerelictFT.load();
+            }
+            version(Windows)
+            {
+                version(X86)
+                {
+                    if (exists("lib/SDL2.dll"))
+                        DerelictSDL2.load("lib/SDL2.dll");
+                    else
+                        DerelictSDL2.load();
+
+                    if (exists("lib/freetype.dll"))
+                        DerelictFT.load("lib/freetype.dll");
+                    else
+                        DerelictFT.load();
+                }
+                version(X86_64)
+                {
+                    if (exists("lib/SDL2_64.dll"))
+                        DerelictSDL2.load("lib/SDL2_64.dll");
+                    else
+                        DerelictSDL2.load();
+
+                    if (exists("lib/freetype_64.dll"))
+                        DerelictFT.load("lib/freetype_64.dll");
+                    else
+                        DerelictFT.load();
+                }
+            }
+        }
+        
+        version(FreeBSD)
         {
-            DerelictSDL2.load();
+            DerelictSDL.load();
+            DerelictFT.load();
+        }
+
+        version(OSX)
+        {
+            DerelictSDL.load();
+            DerelictFT.load();
         }
 
         if (SDL_Init(SDL_INIT_EVERYTHING) == -1)
@@ -75,7 +137,7 @@ class Application: EventListener
         width = w;
         height = h;
         
-        window = SDL_CreateWindow("Dagon Application", 100, 100, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+        window = SDL_CreateWindow(toStringz(windowTitle), 100, 100, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
         if (window is null)
             exitWithError("Failed to create window: " ~ to!string(SDL_GetError()));
         SDL_GL_SetSwapInterval(1);
@@ -130,18 +192,23 @@ class Application: EventListener
     {
         while(eventManager.running)
         {
-            eventManager.update();
-            processEvents();
-            
+            beginRender();
             onUpdate(eventManager.deltaTime);
-            
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             onRender();
-            
-            checkGLError();
-            
-            SDL_GL_SwapWindow(window);
+            endRender();
         }
+    }
+
+    void beginRender()
+    {
+        eventManager.update();
+        processEvents();
+    }
+
+    void endRender()
+    {
+        checkGLError();            
+        SDL_GL_SwapWindow(window);
     }
     
     void exit()

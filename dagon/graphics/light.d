@@ -92,7 +92,6 @@ class LightReceiver: Behaviour
     Light[maxLightsPerReceiver] significantLights;
     uint numLights = 0;
     LightManager lightManager;
-    Transformation transformation;
 
     this(Entity e, LightManager lm)
     {
@@ -102,19 +101,6 @@ class LightReceiver: Behaviour
 
     override void update(double dt)
     {
-        if (transformation is null)
-        {
-            if (entity.behaviour!(Transformation) is null)
-            {
-                auto t = New!Transformation(entity);
-                t.position = Vector3f(0, 0, 0);
-                t.rotation = Quaternionf.identity;
-                transformation = t;
-            }
-            else
-                transformation = entity.behaviour!(Transformation);
-        }
-
         foreach(i; 0..maxLightsPerReceiver)
             significantLights[i] = null;
         numLights = 0;
@@ -122,7 +108,7 @@ class LightReceiver: Behaviour
         auto lights = lightManager.lights.data;
         
         for(size_t i = 0; i < lights.length; i++)
-            lightManager.calcLightBrightness(lights[i], transformation.position);
+            lightManager.calcLightBrightness(lights[i], entity.position);
 
         lightManager.sortLights();
 
@@ -147,7 +133,7 @@ class LightReceiver: Behaviour
                 glLightfv(GL_LIGHT0 + i, GL_POSITION, light.position.arrayof.ptr);
 				glLightfv(GL_LIGHT0 + i, GL_SPECULAR, light.color.arrayof.ptr);
                 glLightfv(GL_LIGHT0 + i, GL_DIFFUSE, light.color.arrayof.ptr);
-                glLightfv(GL_LIGHT0 + i, GL_AMBIENT, lightManager.ambientColor.arrayof.ptr);
+                glLightfv(GL_LIGHT0 + i, GL_AMBIENT, light.color.arrayof.ptr /*lightManager.ambientColor.arrayof.ptr*/);
                 glLightf( GL_LIGHT0 + i, GL_CONSTANT_ATTENUATION, light.constantAttenuation);
                 glLightf( GL_LIGHT0 + i, GL_LINEAR_ATTENUATION, light.linearAttenuation);
                 glLightf( GL_LIGHT0 + i, GL_QUADRATIC_ATTENUATION, light.quadraticAttenuation);

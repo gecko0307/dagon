@@ -6,6 +6,10 @@ import dlib.core.memory;
 
 import dlib.container.array;
 import dlib.container.dict;
+import dlib.math.matrix;
+import dlib.math.affine;
+
+import derelict.opengl.gl;
 
 import dagon.core.ownership;
 import dagon.core.event;
@@ -19,7 +23,6 @@ class Scene: EventListener
     SceneManager sceneManager;
     AssetManager assetManager;
     bool canRun = false;
-    //bool allocated = false;
 
     this(SceneManager smngr)
     {
@@ -34,23 +37,41 @@ class Scene: EventListener
         Delete(assetManager);
     }
 
-    Asset addAsset(Asset asset, string filename)
+    // Set preload to true if you want to load the asset immediately
+    // before actual loading (e.g., to render a loading screen)
+
+    Asset addAsset(Asset asset, string filename, bool preload = false)
     {
-        assetManager.addAsset(asset, filename);
+        if (preload)
+            assetManager.preloadAsset(asset, filename);
+        else
+            assetManager.addAsset(asset, filename);
         return asset;
     }
 
-    TextAsset addTextAsset(string filename)
+    TextAsset addTextAsset(string filename, bool preload = false)
     {
-        TextAsset text = New!TextAsset();
-        assetManager.addAsset(text, filename);
+        TextAsset text;
+        if (assetManager.assetExists(filename))
+            text = cast(TextAsset)assetManager.getAsset(filename);
+        else
+        {
+            text = New!TextAsset();
+            addAsset(text, filename, preload);
+        }
         return text;
     }
 
-    TextureAsset addTextureAsset(string filename)
+    TextureAsset addTextureAsset(string filename, bool preload = false)
     {
-        TextureAsset tex = New!TextureAsset(assetManager.imageFactory);
-        assetManager.addAsset(tex, filename);
+        TextureAsset tex;
+        if (assetManager.assetExists(filename))
+            tex = cast(TextureAsset)assetManager.getAsset(filename);
+        else
+        {
+            tex = New!TextureAsset(assetManager.imageFactory);
+            addAsset(tex, filename, preload);
+        }
         return tex;
     }
 
@@ -59,9 +80,32 @@ class Scene: EventListener
         // Add your assets here
     }
 
-    void onLoading()
+    void onLoading(float percentage)
     {
         // Render your loading screen here
+
+        glDisable(GL_DEPTH_TEST);
+
+        glViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glMatrixMode(GL_PROJECTION);
+        auto projectionMatrix2D = orthoMatrix(
+            0.0f, eventManager.windowWidth, 0.0f, eventManager.windowHeight, 0.0f, 100.0f);
+        glLoadMatrixf(projectionMatrix2D.arrayof.ptr);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+
+        glColor4f(1, 1, 1, 1);
+        float margin = 2.0f;
+        float w = percentage * eventManager.windowWidth;
+        glBegin(GL_QUADS);
+        glVertex2f(margin, 10);
+        glVertex2f(margin, margin);
+        glVertex2f(w - margin, margin);
+        glVertex2f(w - margin, 10);
+        glEnd();
     }
 
     void onAllocate()
@@ -103,13 +147,18 @@ class Scene: EventListener
     {
         onAssetsRequest();
 
-        // TODO: draw loading screen while loading thread-safe part
-        bool loaded = assetManager.loadThreadSafePart();
+        float p = assetManager.nextLoadingPercentage;
 
-        if (loaded)
+        assetManager.loadThreadSafePart();
+        while(assetManager.isLoading)
         {
-            loaded = assetManager.loadThreadUnsafePart();
+            sceneManager.application.beginRender();
+            onLoading(p);
+            sceneManager.application.endRender();
+            p = assetManager.nextLoadingPercentage;
         }
+
+        bool loaded = assetManager.loadThreadUnsafePart();
 
         if (loaded)
         {
@@ -162,13 +211,15 @@ class Scene: EventListener
 
 class SceneManager: Owner
 {
+    SceneApplication application;
     Dict!(Scene, string) scenesByName;
     EventManager eventManager;
     Scene currentScene;
 
-    this(EventManager emngr, Owner owner)
+    this(EventManager emngr, SceneApplication app)
     {
-        super(owner);
+        super(app);
+        application = app;
         eventManager = emngr;
         scenesByName = New!(Dict!(Scene, string));
     }
@@ -223,8 +274,6 @@ class SceneManager: Owner
         scene.load();
         currentScene = scene;
         currentScene.start();
-
-        writeln("Memory after switch: ", allocatedMemory);
     }
 
 /*
@@ -260,9 +309,9 @@ class SceneApplication: Application
 {
     SceneManager sceneManager;
 
-    this(uint w, uint h, string[] args)
+    this(uint w, uint h, string windowTitle, string[] args)
     {
-        super(w, h, args);
+        super(w, h, windowTitle, args);
 
         sceneManager = New!SceneManager(eventManager, this);
     }

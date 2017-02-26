@@ -21,18 +21,18 @@ class TextAsset: Asset
         release();
     }
 
-    bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
+    override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
     {
         text = readText(istrm);
         return true;
     }
 
-    bool loadThreadUnsafePart()
+    override bool loadThreadUnsafePart()
     {
         return true;
     }
 
-    void release()
+    override void release()
     {
         if (text.length)
             Delete(text);

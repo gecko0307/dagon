@@ -223,26 +223,50 @@ class PhysicsWorld: Freeable
             findDynamicCollisionsBroadphase();
         else
             findDynamicCollisionsBruteForce();
-
         findStaticCollisionsBruteForce();
 
         solveConstraints(dt);
-
-        //foreach(b; dynamicBodiesArray)
-        for (size_t i = 0; i < dynamicBodiesArray.length; i++)
+/*
+        foreach(ref m; manifolds)
         {
-            auto b = dynamicBodiesArray[i];
-            b.integrateVelocities(dt);
+            m.update();
         }
+*/
+/*
+        if (broadphase)
+            findDynamicCollisionsBroadphase();
+        else
+            findDynamicCollisionsBruteForce();
+        findStaticCollisionsBruteForce();
+*/
 
+/*
+        foreach(ref m; manifolds)
+        foreach(i; 0..m.numContacts)
+        {
+            auto c = &m.contacts[i];
+            prepareContact(c);
+        }
+*/
+
+/*
         foreach(iteration; 0..positionCorrectionIterations)
         foreach(ref m; manifolds)
         foreach(i; 0..m.numContacts)
         {
             auto c = &m.contacts[i];
-            solvePositionError(c, m.numContacts);
+            solvePositionError(c, dt, m.numContacts);
         }
-
+*/
+        //foreach(b; dynamicBodiesArray)
+        for (size_t i = 0; i < dynamicBodiesArray.length; i++)
+        {
+            auto b = dynamicBodiesArray[i];
+            b.integrateVelocities(dt);
+            //b.integratePseudoVelocities(dt);
+            b.updateShapeComponents();
+        }
+/*
         //foreach(b; dynamicBodiesArray)
         for (size_t i = 0; i < dynamicBodiesArray.length; i++)
         {
@@ -250,6 +274,7 @@ class PhysicsWorld: Freeable
             b.integratePseudoVelocities(dt);
             b.updateShapeComponents();
         }
+*/
     }
 
     bool raycast(
@@ -536,6 +561,12 @@ class PhysicsWorld: Freeable
         {
             c.body1RelPoint = c.point - c.body1.worldCenterOfMass;
             c.body2RelPoint = c.point - c.body2.worldCenterOfMass;
+
+            Vector3f relativePos1 = c.point - c.body1.position;
+            c.body1RelPoint2 = c.body1.orientation.conj.rotate(relativePos1);
+            Vector3f relativePos2 = c.point - c.body2.position;
+            c.body2RelPoint2 = c.body2.orientation.conj.rotate(relativePos2);
+
             c.shape1RelPoint = c.point - shape1.position;
             c.shape2RelPoint = c.point - shape2.position;
             c.shape1 = shape1;
@@ -638,3 +669,4 @@ class PhysicsWorld: Freeable
         Delete(this);
     }
 }
+

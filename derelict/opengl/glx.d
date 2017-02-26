@@ -88,7 +88,7 @@ struct GLXPbufferClobberEvent
 union GLXEvent
 {
     GLXPbufferClobberEvent glxpbufferclobber;
-    int pad[24];
+    int[24] pad;
 }
 
 // Function pointer variables

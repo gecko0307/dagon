@@ -36,7 +36,7 @@ class TextureAsset: Asset
             Delete(texture);
     }
 
-    bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
+    override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
     {
         Compound!(SuperImage, string) res;
         switch(filename.extension)
@@ -70,7 +70,7 @@ class TextureAsset: Asset
         }
     }
 
-    bool loadThreadUnsafePart()
+    override bool loadThreadUnsafePart()
     {
         if (image !is null)
         {
@@ -88,7 +88,7 @@ class TextureAsset: Asset
         }
     }
 
-    void release()
+    override void release()
     {
         if (image)
             Delete(image);
