@@ -147,7 +147,7 @@ class Application: EventListener
         DerelictGL.loadClassicVersions(GLVersion.GL13);
         DerelictGL.loadExtensions();
             
-        EventManager eventManager = new EventManager(width, height);
+        EventManager eventManager = new EventManager(window, width, height);
         super(eventManager, null);
             
         // Initialize OpenGL

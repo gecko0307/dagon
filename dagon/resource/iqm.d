@@ -358,27 +358,24 @@ class IQMModel: AnimatedModel
                 
             if (matIndex > 0)
             {
-            char* texFilenamePtr = cast(char*)&textBuffer[matIndex];
-            string texFilename = cast(string)fromStringz(texFilenamePtr);
-            version(IQMDebug)
-                writefln("material: %s", texFilename);
+                char* texFilenamePtr = cast(char*)&textBuffer[matIndex];
+                string texFilename = cast(string)fromStringz(texFilenamePtr);
+                version(IQMDebug)
+                    writefln("material: %s", texFilename);
 
-            facegroups[i].firstTriangle = meshes[i].firstTriangle;
-            facegroups[i].numTriangles = meshes[i].numTriangles;
-            facegroups[i].textureName = texFilename;
+                facegroups[i].firstTriangle = meshes[i].firstTriangle;
+                facegroups[i].numTriangles = meshes[i].numTriangles;
+                facegroups[i].textureName = texFilename;
 
-            if (rofs.fileExists(texFilename))
-            {
                 if (!mngr.assetExists(texFilename))
                 {
                     auto texAsset = New!TextureAsset(mngr.imageFactory);
-                    mngr.loadAssetThreadSafePart(texAsset, texFilename);
                     mngr.addAsset(texAsset, texFilename);
+                    texAsset.threadSafePartLoaded = mngr.loadAssetThreadSafePart(texAsset, texFilename);
                     facegroups[i].texture = texAsset.texture;
                 }
                 else
                     facegroups[i].texture = (cast(TextureAsset)mngr.getAsset(texFilename)).texture;
-            }
             }
         }
     
@@ -464,40 +461,6 @@ class IQMModel: AnimatedModel
 
         if (poses.length) Delete(poses);
     }
-
-/*
-    void calcBindPose()
-    {
-        Matrix4x4f[] frame = new Matrix4x4f[joints.length];
-        foreach(i, ref j; joints)
-        {
-            frame[i] = baseFrame[i] * invBaseFrame[i];
-        }
-
-        foreach(i, v; vertices)
-        {
-            auto bi = blendIndices[i];
-            auto bw = blendWeights[i];
-
-            float w = (cast(float)bw[0])/255.0f;
-            Matrix4x4f mat = multScalarAffine(frame[bi[0]], w);
-
-            for (uint j = 1; j < 4 && bw[j] > 0.0; j++)
-            {
-                w = (cast(float)bw[j])/255.0f;
-                auto tmp = multScalarAffine(frame[bi[j]], w);
-                mat = addMatrixAffine(mat, tmp);
-            }
-
-            assert(validMatrix(mat));
-            assert(mat.isAffine);
-
-            resVertices[i] = vertices[i] * mat;
-            resNormals[i] = normals[i] * matrix4x4to3x3(mat);
-            resNormals[i].normalize();
-        }
-    }
-*/
 
     Vector3f[] getVertices()
     {

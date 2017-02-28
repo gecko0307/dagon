@@ -41,6 +41,8 @@ public
     import dagon.graphics.rc;
     import dagon.graphics.tbcamera;
     import dagon.graphics.freeview;
+    import dagon.graphics.fpcamera;
+    import dagon.graphics.fpview;
     import dagon.graphics.shapes;
     import dagon.graphics.texture;
     import dagon.graphics.animmodel;

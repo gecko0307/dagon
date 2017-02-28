@@ -193,22 +193,22 @@ class Actor: Owner, Drawable
             nextState.t += defaultFramerate * dt * speed; //nextAnimation.framerate
             blendFactor += dt; // TODO: time multiplier
 
-        if (nextState.t >= 1.0f)
-        {
-            nextState.t = 0.0f;
-            nextState.currentFrame++;
-            nextState.nextFrame++;
+            if (nextState.t >= 1.0f)
+            {
+                nextState.t = 0.0f;
+                nextState.currentFrame++;
+                nextState.nextFrame++;
 
-            if (nextState.currentFrame == nextAnimation.numFrames - 1)
-            {
-                nextState.nextFrame = nextAnimation.firstFrame;
+                if (nextState.currentFrame == nextAnimation.numFrames - 1)
+                {
+                    nextState.nextFrame = nextAnimation.firstFrame;
+                }
+                else if (nextState.currentFrame == nextAnimation.numFrames)
+                {
+                    nextState.currentFrame = nextAnimation.firstFrame;
+                    nextState.nextFrame = nextState.currentFrame + 1;
+                }
             }
-            else if (nextState.currentFrame == nextAnimation.numFrames)
-            {
-                nextState.currentFrame = nextAnimation.firstFrame;
-                nextState.nextFrame = nextState.currentFrame + 1;
-            }
-        }
 
             if (blendFactor >= 1.0f)
             {
@@ -239,6 +239,7 @@ class Actor: Owner, Drawable
 
         foreach(ref fg; model.getFacegroups)
         {
+            glDisable(GL_TEXTURE_2D);
             if (fg.texture)
                 fg.texture.bind();
             glDrawElements(GL_TRIANGLES, cast(uint)(3 * fg.numTriangles), GL_UNSIGNED_INT, &frameData.tris[fg.firstTriangle]);
