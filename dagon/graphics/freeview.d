@@ -1,5 +1,6 @@
 module dagon.graphics.freeview;
 
+import dlib.core.memory;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.quaternion;
@@ -20,7 +21,7 @@ class Freeview: EventListener
     this(EventManager emngr, Owner owner)
     {
         super(emngr, owner);
-        camera = new TrackballCamera();
+        camera = New!TrackballCamera();
         camera.pitch(45.0f);
         camera.turn(45.0f);
         camera.setZoom(20.0f);
@@ -37,6 +38,7 @@ class Freeview: EventListener
 
     ~this()
     {
+        Delete(camera);
     }
 
     override void onMouseButtonDown(int button)
@@ -94,3 +96,4 @@ class Freeview: EventListener
         return camera.invViewMatrix();
     }
 }
+

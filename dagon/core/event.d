@@ -71,6 +71,8 @@ struct Event
 
 class EventManager
 {
+    SDL_Window* window;
+
     enum maxNumEvents = 50;
     Event[maxNumEvents] eventStack;
     Event[maxNumEvents] userEventStack;
@@ -97,8 +99,10 @@ class EventManager
     uint windowHeight;
     bool windowFocused = true;
 
-    this(uint winWidth, uint winHeight)
+    this(SDL_Window* win, uint winWidth, uint winHeight)
     {
+        window = win;
+
         windowWidth = winWidth;
         windowHeight = winHeight;
 
@@ -322,6 +326,20 @@ class EventManager
             FPSTickCounter = 0;
             averageDelta = 1.0 / cast(double)(fps);
         }
+    }
+
+    void setMouse(int x, int y)
+    {
+        SDL_WarpMouseInWindow(window, x, y);
+        mouseX = x;
+        mouseY = y;
+    }
+
+    void setMouseToCenter()
+    {
+        float x = (cast(float)windowWidth)/2;
+        float y = (cast(float)windowHeight)/2;
+        setMouse(cast(int)x, cast(int)y);
     }
 /*
     void setMouse(int x, int y)

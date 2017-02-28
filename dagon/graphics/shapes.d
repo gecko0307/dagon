@@ -7,24 +7,24 @@ import derelict.opengl.glu;
 import dagon.core.interfaces;
 import dagon.core.ownership;
 
-class ShapeSphere: Owner, Drawable
+class ShapePlane: Owner, Drawable
 {
     uint displayList;
 
-    this(float r, Owner owner)
+    this(float sx, float sz, Owner owner)
     {
         super(owner);
-
-        GLUquadricObj* quadric = gluNewQuadric();
-        gluQuadricNormals(quadric, GLU_SMOOTH);
-        gluQuadricTexture(quadric, GL_TRUE);
-
         displayList = glGenLists(1);
         glNewList(displayList, GL_COMPILE);
-        gluSphere(quadric, r, 24, 16);
-        glEndList();
 
-        gluDeleteQuadric(quadric);
+        glBegin(GL_QUADS);
+        glTexCoord2f(0, 1); glNormal3f(0, 1, 0); glVertex3f(-sx, 0,  sz);
+        glTexCoord2f(1, 1); glNormal3f(0, 1, 0); glVertex3f( sx, 0,  sz);
+        glTexCoord2f(1, 0); glNormal3f(0, 1, 0); glVertex3f( sx, 0, -sz);
+        glTexCoord2f(0, 0); glNormal3f(0, 1, 0); glVertex3f(-sx, 0, -sz);
+        glEnd();
+
+        glEndList();
     }
 
     void update(double dt)
@@ -112,63 +112,31 @@ class ShapeBox: Owner, Drawable
     }
 }
 
-
-/*
-class ShapeBox: Drawable
+class ShapeSphere: Owner, Drawable
 {
     uint displayList;
 
-    this(float sx, float sy, float sz)
+    this(float r, Owner owner)
     {
-        this(Vector3f(sx, sy, sz));
-    }
+        super(owner);
 
-    this(Vector3f hsize)
-    {
+        GLUquadricObj* quadric = gluNewQuadric();
+        gluQuadricNormals(quadric, GLU_SMOOTH);
+        gluQuadricTexture(quadric, GL_TRUE);
+
         displayList = glGenLists(1);
         glNewList(displayList, GL_COMPILE);
-
-        Vector3f pmax = +hsize;
-        Vector3f pmin = -hsize;
-
-        glBegin(GL_QUADS);
-
-        glTexCoord2f(0, 1); glNormal3f(0,0,1); glVertex3f(pmin.x,pmin.y,pmax.z);
-        glTexCoord2f(1, 1); glNormal3f(0,0,1); glVertex3f(pmax.x,pmin.y,pmax.z);
-        glTexCoord2f(1, 0); glNormal3f(0,0,1); glVertex3f(pmax.x,pmax.y,pmax.z);
-        glTexCoord2f(0, 0); glNormal3f(0,0,1); glVertex3f(pmin.x,pmax.y,pmax.z);
-
-        glTexCoord2f(0, 1); glNormal3f(1,0,0); glVertex3f(pmax.x,pmin.y,pmax.z);
-        glTexCoord2f(1, 1); glNormal3f(1,0,0); glVertex3f(pmax.x,pmin.y,pmin.z);
-        glTexCoord2f(1, 0); glNormal3f(1,0,0); glVertex3f(pmax.x,pmax.y,pmin.z);
-        glTexCoord2f(0, 0); glNormal3f(1,0,0); glVertex3f(pmax.x,pmax.y,pmax.z);
-
-        glTexCoord2f(0, 1); glNormal3f(0,1,0); glVertex3f(pmin.x,pmax.y,pmax.z);
-        glTexCoord2f(1, 1); glNormal3f(0,1,0); glVertex3f(pmax.x,pmax.y,pmax.z);
-        glTexCoord2f(1, 0); glNormal3f(0,1,0); glVertex3f(pmax.x,pmax.y,pmin.z);
-        glTexCoord2f(0, 0); glNormal3f(0,1,0); glVertex3f(pmin.x,pmax.y,pmin.z);
-
-        glTexCoord2f(0, 1); glNormal3f(0,0,-1); glVertex3f(pmin.x,pmin.y,pmin.z);
-        glTexCoord2f(1, 1); glNormal3f(0,0,-1); glVertex3f(pmin.x,pmax.y,pmin.z);
-        glTexCoord2f(1, 0); glNormal3f(0,0,-1); glVertex3f(pmax.x,pmax.y,pmin.z);
-        glTexCoord2f(0, 0); glNormal3f(0,0,-1); glVertex3f(pmax.x,pmin.y,pmin.z);
-
-        glTexCoord2f(0, 1); glNormal3f(0,-1,0); glVertex3f(pmin.x,pmin.y,pmin.z);
-        glTexCoord2f(1, 1); glNormal3f(0,-1,0); glVertex3f(pmax.x,pmin.y,pmin.z);
-        glTexCoord2f(1, 0); glNormal3f(0,-1,0); glVertex3f(pmax.x,pmin.y,pmax.z);
-        glTexCoord2f(0, 0); glNormal3f(0,-1,0); glVertex3f(pmin.x,pmin.y,pmax.z);
-
-        glTexCoord2f(0, 1); glNormal3f(-1,0,0); glVertex3f(pmin.x,pmin.y,pmin.z);
-        glTexCoord2f(1, 1); glNormal3f(-1,0,0); glVertex3f(pmin.x,pmin.y,pmax.z);
-        glTexCoord2f(1, 0); glNormal3f(-1,0,0); glVertex3f(pmin.x,pmax.y,pmax.z);
-        glTexCoord2f(0, 0); glNormal3f(-1,0,0); glVertex3f(pmin.x,pmax.y,pmin.z);
-
-        glEnd();
-
+        gluSphere(quadric, r, 24, 16);
         glEndList();
+
+        gluDeleteQuadric(quadric);
     }
 
-    override void draw(double dt)
+    void update(double dt)
+    {
+    }
+
+    void render()
     {
         glCallList(displayList);
     }
@@ -179,6 +147,7 @@ class ShapeBox: Drawable
     }
 }
 
+/*
 class ShapeCylinder: Drawable
 {
     // TODO: slices, stacks
@@ -289,3 +258,4 @@ class ShapeEllipsoid: Drawable
     }
 }
 */
+
