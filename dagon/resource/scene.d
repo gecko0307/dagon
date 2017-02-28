@@ -17,6 +17,8 @@ import dagon.core.application;
 import dagon.resource.asset;
 import dagon.resource.textasset;
 import dagon.resource.textureasset;
+import dagon.resource.fontasset;
+import dagon.graphics.rc;
 
 class Scene: EventListener
 {
@@ -73,6 +75,19 @@ class Scene: EventListener
             addAsset(tex, filename, preload);
         }
         return tex;
+    }
+
+    FontAsset addFontAsset(string filename, uint height, bool preload = false)
+    {
+        FontAsset font;
+        if (assetManager.assetExists(filename))
+            font = cast(FontAsset)assetManager.getAsset(filename);
+        else
+        {
+            font = New!FontAsset(height);
+            addAsset(font, filename, preload);
+        }
+        return font;
     }
 
     void onAssetsRequest()
