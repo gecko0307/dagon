@@ -9,7 +9,7 @@ Dagon is a 3D game development framework for D. It is a work-in-progress reincar
 * Live asset reloading - asset can be autimatically reloaded when the file is modified with external application
 * IQM format support
 * More texture formats support: PNG, JPG, TGA, BMP
-* TTF fonts are now compatible with asset manager.
+* TTF fonts are now compatible with asset manager and VFS.
 
 Dagon is still under development and doesn't have eye candy features yet. It's just a framework that you can use to build your own OpenGL-based graphics pipeline - just define your own Drawables, Behaviours and Scenes. In future, some functionality from DGL will be ported to Dagon.
 
