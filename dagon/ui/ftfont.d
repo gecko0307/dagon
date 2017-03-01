@@ -20,6 +20,7 @@ import dagon.ui.font;
 
 struct Glyph
 {
+    bool valid;
     GLuint textureId = 0;
     FT_Glyph ftGlyph = null;
     int width = 0;
@@ -95,6 +96,8 @@ final class FreeTypeFont: Font
 
     uint loadGlyph(dchar code, GLuint texId)
     {
+        FT_Glyph glyph;
+
         uint charIndex = FT_Get_Char_Index(ftFace, code);
 
         if (charIndex == 0)
@@ -102,10 +105,11 @@ final class FreeTypeFont: Font
             //TODO: if character wasn't found in font file
         }
 
-        if (FT_Load_Glyph(ftFace, charIndex, FT_LOAD_DEFAULT))
-            throw new Exception("FT_Load_Glyph failed");
+        auto res = FT_Load_Glyph(ftFace, charIndex, FT_LOAD_DEFAULT);
 
-        FT_Glyph glyph;
+        if (res)
+            throw new Exception(format("FT_Load_Glyph failed with code %s", res));
+
         if (FT_Get_Glyph(ftFace.glyph, &glyph))
             throw new Exception("FT_Get_Glyph failed");
 
@@ -140,7 +144,7 @@ final class FreeTypeFont: Font
 
         Delete(img);
 
-        Glyph g = Glyph(texId, glyph, width, height, ftFace.glyph.advance.x);
+        Glyph g = Glyph(true, texId, glyph, width, height, ftFace.glyph.advance.x);
         glyphs[code] = g;
 
         return charIndex;
@@ -161,6 +165,9 @@ final class FreeTypeFont: Font
             glyph = glyphs[code];
         else
             glyph = glyphs[loadChar(code)];
+
+        //if (!glyph.valid)
+        //    return 0.0f;
 
         FT_BitmapGlyph bitmapGlyph = cast(FT_BitmapGlyph)(glyph.ftGlyph);
         FT_Bitmap bitmap = bitmapGlyph.bitmap;
