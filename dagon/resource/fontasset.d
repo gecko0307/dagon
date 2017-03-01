@@ -11,6 +11,7 @@ import dagon.ui.ftfont;
 class FontAsset: Asset
 {
     FreeTypeFont font;
+    ubyte[] buffer;
 
     this(uint height)
     {
@@ -26,10 +27,9 @@ class FontAsset: Asset
     {
         FileStat s;
         fs.stat(filename, s);
-        ubyte[] buffer = New!(ubyte[])(cast(size_t)s.sizeInBytes);
+        buffer = New!(ubyte[])(cast(size_t)s.sizeInBytes);
         istrm.fillArray(buffer);
         font.createFromMemory(buffer);
-        Delete(buffer);
         return true;
     }
 
@@ -43,6 +43,8 @@ class FontAsset: Asset
     {
         if (font)
             Delete(font);
+        if (buffer.length)
+            Delete(buffer);
     }
 }
 
