@@ -46,44 +46,36 @@ class StdDirFileSystem: ReadOnlyFileSystem
 
 class VirtualFileSystem: ReadOnlyFileSystem
 {
-    //Dict!(StdDirFileSystem, string) mounted;
-    DynamicArray!StdDirFileSystem mounted;
+    DynamicArray!ReadOnlyFileSystem mounted;
 
     this()
     {
-        //mounted = New!(Dict!(StdDirFileSystem, string));
     }
 
     void mount(string dir)
     {
         StdDirFileSystem fs = New!StdDirFileSystem(dir);
-        //mounted[dir] = fs;
         mounted.append(fs);
     }
-/*
-    void umount(string dir)
+
+    void mount(ReadOnlyFileSystem fs)
     {
-        StdDirFileSystem fs = mounted[dir];
-        Delete(fs);
-        mounted.remove(dir);
+        mounted.append(fs);
     }
-*/
-/*
-    bool isMounted(string dir)
-    {
-        return (dir in mounted) !is null;
-    }
-*/
+
     string containingDir(string filename)
     {
         string res;
         foreach(i, fs; mounted)
         {
-            FileStat s;
-            if (fs.stat(filename, s))
+            if (cast(StdDirFileSystem)fs)
             {
-                res = fs.rootDir;
-                break;
+                FileStat s;
+                if (fs.stat(filename, s))
+                {
+                    res = (cast(StdDirFileSystem)fs).rootDir;
+                    break;
+                }
             }
         }
         return res;
@@ -91,7 +83,6 @@ class VirtualFileSystem: ReadOnlyFileSystem
 
     bool stat(string filename, out FileStat stat)
     {
-        //filename = normalizePath(filename);
         bool res = false;
         foreach(i, fs; mounted)
         {
@@ -109,15 +100,12 @@ class VirtualFileSystem: ReadOnlyFileSystem
 
     InputStream openForInput(string filename)
     {
-        //filename = normalizePath(filename);
-        //InputStream res = null;
         foreach(i, fs; mounted)
         {
             FileStat s;
             if (fs.stat(filename, s))
             {
                 return fs.openForInput(filename);
-                //return res;
             }
         }
 
