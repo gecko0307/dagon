@@ -12,6 +12,7 @@ import dlib.image.unmanaged;
 
 import dagon.core.ownership;
 import dagon.core.vfs;
+import dagon.resource.boxfs;
 
 struct MonitorInfo
 {
@@ -69,6 +70,18 @@ class AssetManager
     void mountDirectory(string dir)
     {
         fs.mount(dir);
+    }
+
+    void mountBoxFile(string filename)
+    {
+        BoxFileSystem boxfs = New!BoxFileSystem(fs.openForInput(filename), true);
+        fs.mount(boxfs);
+    }
+
+    void mountBoxFileDirectory(string filename, string dir)
+    {
+        BoxFileSystem boxfs = New!BoxFileSystem(fs.openForInput(filename), true, dir);
+        fs.mount(boxfs);
     }
 
     bool assetExists(string name)
