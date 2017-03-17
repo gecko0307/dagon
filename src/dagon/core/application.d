@@ -78,8 +78,8 @@ class Application: EventListener
                 else
                     DerelictSDL2.load();
 
-                if (exists("lib/libfreetype.so"))
-                    DerelictFT.load("lib/libfreetype.so");
+                if (exists("lib/libfreetype271.so"))
+                    DerelictFT.load("lib/libfreetype271.so");
                 else
                     DerelictFT.load();
             }
@@ -92,8 +92,8 @@ class Application: EventListener
                     else
                         DerelictSDL2.load();
 
-                    if (exists("lib/freetype.dll"))
-                        DerelictFT.load("lib/freetype.dll");
+                    if (exists("lib/freetype271.dll"))
+                        DerelictFT.load("lib/freetype271.dll");
                     else
                         DerelictFT.load();
                 }
@@ -104,8 +104,8 @@ class Application: EventListener
                     else
                         DerelictSDL2.load();
 
-                    if (exists("lib/freetype_64.dll"))
-                        DerelictFT.load("lib/freetype_64.dll");
+                    if (exists("lib/freetype271_64.dll"))
+                        DerelictFT.load("lib/freetype271_64.dll");
                     else
                         DerelictFT.load();
                 }

@@ -29,8 +29,7 @@ class MyScene: Scene
     // onAssetsRequest is called just before loading assets
     override void onAssetsRequest()
     {
-        tex = addTextureAsset("data/crate.jpg");
-        addTextureAsset("data/stone.png");
+        tex = addTextureAsset("data/textures/crate.jpg");
     }
 
     Entity createEntity3D()
