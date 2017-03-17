@@ -16,13 +16,11 @@ Dagon is still under development and doesn't have eye candy features yet. It's j
 
 Demos
 -----
-Dagon comes with a number of usage demos treated as dub subpackages. To build them, do the following:
+Dagon comes with a number of usage demos treated as dub subpackages:
 
-`dub build :simple`
-
-`dub build :animation`
-
-`dub build :physics`
+* *Simple* - a simple scene with a textured cube, light sources and trackball view. Build: `dub build :simple`
+* *Animation* - loading an animated IQM model. Build: `dub build :animation`
+* *Physics* - advanced demo: [dmech](https://github.com/gecko0307/dmech) physics engine integration, first person camera with character controller, loading TTF font and rendering 2D text. Build: `dub build :physics`
 
 License
 -------
