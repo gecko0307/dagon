@@ -11,8 +11,8 @@ class Environment: Owner
     // TODO: ambient map (cubemap and equirectangular map)
 
     Color4f fogColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
-    float fogStart = 5.0f;
-    float fogEnd = 20.0f;
+    float fogStart = 10.0f;
+    float fogEnd = 50.0f;
 
     // TODO: shadow map (CSM)
 

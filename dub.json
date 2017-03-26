@@ -33,12 +33,12 @@
             "mainSourceFile": "demos/simple/main.d"
         },
         {
-            "name": "material",
+            "name": "obj",
             "targetType": "executable",
-            "sourcePaths": ["src", "demos/material"],
+            "sourcePaths": ["src", "demos/obj"],
             "importPaths": ["src"], 
             "dependencies": {"dlib": "0.10.0"},
-            "mainSourceFile": "demos/material/main.d"
+            "mainSourceFile": "demos/obj/main.d"
         },
         {
             "name": "physics",

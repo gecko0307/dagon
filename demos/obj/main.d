@@ -13,6 +13,7 @@ class MyScene: Scene
     DynamicArray!Entity entities;
     TextureAsset tex;
 
+    OBJAsset obj;
     GenericMaterial mat;
 
     this(SceneManager smngr)
@@ -23,7 +24,10 @@ class MyScene: Scene
 
     override void onAssetsRequest()
     {
-        tex = addTextureAsset("data/textures/crate.jpg");
+        tex = addTextureAsset("data/imrod/imrod-diffuse.png");
+
+        obj = New!OBJAsset();
+        addAsset(obj, "data/imrod/imrod.obj");
     }
 
     Entity createEntity3D()
@@ -36,17 +40,15 @@ class MyScene: Scene
     override void onAllocate()
     {
         lightManager = New!LightManager(this);
-        lightManager.addPointLight(Vector3f(-3, 3, 0), Color4f(1.0, 0.0, 0.0, 1.0));
-        lightManager.addPointLight(Vector3f( 3, 3, 0), Color4f(0.0, 1.0, 1.0, 1.0));
+        lightManager.addPointLight(Vector3f(-3, 5, 0), Color4f(1.0, 0.0, 0.0, 1.0));
+        lightManager.addPointLight(Vector3f( 3, 5, 0), Color4f(0.0, 1.0, 1.0, 1.0));
     
         freeview = New!Freeview(eventManager, this);
         freeview.camera.setZoom(6.0f);
 
-        ShapeSphere shapeSphere = New!ShapeSphere(1, this);
-
-        auto sphere = createEntity3D();
-        sphere.drawable = shapeSphere;
-        entities.append(sphere);
+        auto imrod = createEntity3D();
+        imrod.drawable = obj.mesh;
+        entities.append(imrod);
 
         auto env = New!Environment(this);
 
@@ -54,7 +56,7 @@ class MyScene: Scene
         mat.diffuse = tex.texture;
         mat.roughness = 0.2f;
         mat.shadeless = false;
-        sphere.material = mat;
+        imrod.material = mat;
     }
 
     override void onRelease()
@@ -113,7 +115,7 @@ class MyApplication: SceneApplication
 {
     this(string[] args)
     {
-        super(800, 600, "Dagon Material Demo", args);
+        super(800, 600, "Dagon OBJ Demo", args);
 
         MyScene scene = New!MyScene(sceneManager);
         sceneManager.addScene(scene, "MyScene");
