@@ -8,6 +8,7 @@ Dagon is a 3D game development framework for D. It is a work-in-progress reincar
 * Scene management. Any scene has its own assets, entities and logical context
 * Live asset reloading - asset can be autimatically reloaded when the file is modified with external application
 * [IQM](https://github.com/lsalzman/iqm) format support
+* New material system with simple abstract API and different backends (fixed pipeline, PBR, non-PBR, etc.). Only fixed pipeline backend is implemented at the moment
 * More texture formats support: PNG, JPG, TGA, BMP
 * TTF fonts are now compatible with asset manager and VFS
 * [Box](https://github.com/gecko0307/box) container support.

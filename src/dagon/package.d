@@ -48,6 +48,9 @@ public
     import dagon.graphics.texture;
     import dagon.graphics.animmodel;
     import dagon.graphics.light;
+    import dagon.graphics.material;
+    import dagon.graphics.genericmaterial;
+    import dagon.graphics.environment;
 
     import dagon.ui.font;
     import dagon.ui.ftfont;

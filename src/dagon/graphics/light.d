@@ -122,7 +122,7 @@ class LightReceiver: Behaviour
 
     override void bind()
     {
-        glEnable(GL_LIGHTING);
+        //glEnable(GL_LIGHTING);
         
         foreach(i; 0..maxLightsPerReceiver)
         {
@@ -133,7 +133,7 @@ class LightReceiver: Behaviour
                 glLightfv(GL_LIGHT0 + i, GL_POSITION, light.position.arrayof.ptr);
 				glLightfv(GL_LIGHT0 + i, GL_SPECULAR, light.color.arrayof.ptr);
                 glLightfv(GL_LIGHT0 + i, GL_DIFFUSE, light.color.arrayof.ptr);
-                glLightfv(GL_LIGHT0 + i, GL_AMBIENT, light.color.arrayof.ptr /*lightManager.ambientColor.arrayof.ptr*/);
+                glLightfv(GL_LIGHT0 + i, GL_AMBIENT, light.color.arrayof.ptr);
                 glLightf( GL_LIGHT0 + i, GL_CONSTANT_ATTENUATION, light.constantAttenuation);
                 glLightf( GL_LIGHT0 + i, GL_LINEAR_ATTENUATION, light.linearAttenuation);
                 glLightf( GL_LIGHT0 + i, GL_QUADRATIC_ATTENUATION, light.quadraticAttenuation);
@@ -150,7 +150,7 @@ class LightReceiver: Behaviour
     {
         foreach(i; 0..maxLightsPerReceiver)
             glDisable(GL_LIGHT0 + i);
-        glDisable(GL_LIGHTING);
+        //glDisable(GL_LIGHTING);
     }
 }
 
