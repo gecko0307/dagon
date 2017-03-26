@@ -7,6 +7,7 @@ Dagon is a 3D game development framework for D. It is a work-in-progress reincar
 * Entity-component model that allows game objects behave differently and combine many behaviours
 * Scene management. Any scene has its own assets, entities and logical context
 * Live asset reloading - asset can be autimatically reloaded when the file is modified with external application
+* OBJ models support
 * [IQM](https://github.com/lsalzman/iqm) format support
 * New material system with simple abstract API and different backends (fixed pipeline, PBR, non-PBR, etc.). Only fixed pipeline backend is implemented at the moment
 * More texture formats support: PNG, JPG, TGA, BMP
@@ -20,6 +21,7 @@ Demos
 Dagon comes with a number of usage demos treated as dub subpackages:
 
 * *Simple* - a simple scene with a textured cube, light sources and trackball view. Build: `dub build :simple`
+* *OBJ* - loading OBJ model. Build: `dub build :obj`
 * *Animation* - loading an animated IQM model. Build: `dub build :animation`
 * *Physics* - advanced demo: [dmech](https://github.com/gecko0307/dmech) physics engine integration, first person camera with character controller, loading TTF font and rendering 2D text. Build: `dub build :physics`
 

@@ -31,6 +31,7 @@ public
     import dagon.resource.asset;
     import dagon.resource.textasset;
     import dagon.resource.textureasset;
+    import dagon.resource.obj;
     import dagon.resource.iqm;
     import dagon.resource.fontasset;
 
@@ -51,6 +52,7 @@ public
     import dagon.graphics.material;
     import dagon.graphics.genericmaterial;
     import dagon.graphics.environment;
+    import dagon.graphics.mesh;
 
     import dagon.ui.font;
     import dagon.ui.ftfont;
