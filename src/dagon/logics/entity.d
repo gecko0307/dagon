@@ -15,6 +15,7 @@ import dagon.core.ownership;
 import dagon.core.event;
 import dagon.logics.controller;
 import dagon.logics.behaviour;
+import dagon.graphics.material;
 
 class Entity: Owner, Drawable
 {
@@ -38,6 +39,8 @@ class Entity: Owner, Drawable
 
     EntityController controller;
     DefaultEntityController defaultController;
+
+    Material material;
 
     this(EventManager emngr, Owner owner)
     {
@@ -136,8 +139,12 @@ class Entity: Owner, Drawable
         glPushMatrix(); 
         glMultMatrixf(transformation.arrayof.ptr);
 
+        if (material)
+            material.bind();
         if (drawable)
             drawable.render();
+        if (material)
+            material.unbind();
 
         foreach(i, ble; behaviours)
         {
