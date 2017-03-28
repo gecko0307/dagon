@@ -7,7 +7,7 @@ import derelict.opengl.gl;
 import derelict.opengl.glext;
 import dagon.core.ownership;
 import dagon.graphics.material;
-import dagon.graphics.environment;
+import dagon.graphics.rc;
 
 enum int SF_None = 0;
 enum int SF_PCF3 = 1;
@@ -18,7 +18,7 @@ enum int SF_PCF5 = 2;
 interface GenericMaterialBackend
 {
     void attach(GenericMaterial mat);
-    void bind();
+    void bind(RenderingContext* rc);
     void unbind();
 }
 
@@ -54,7 +54,7 @@ class FixedPipelineBackend: Owner, GenericMaterialBackend
         ifogEnabled = "fogEnabled" in mat.inputs;
     }
 
-    void bind()
+    void bind(RenderingContext* rc)
     {
         if (!material)
             return;
@@ -87,8 +87,8 @@ class FixedPipelineBackend: Owner, GenericMaterialBackend
         else if (idiffuse.type == MaterialInputType.Vec4)
         {
             Vector4f ambientColor;
-            if (material.environment)
-                ambientColor = idiffuse.asVector4f * material.environment.ambientConstant;
+            if (rc.environment)
+                ambientColor = idiffuse.asVector4f * rc.environment.ambientConstant;
             else
                 ambientColor = Vector4f(0.0f, 0.0f, 0.0f, 1.0f);
             Vector4f diffuseColor = idiffuse.asVector4f;
@@ -126,14 +126,14 @@ class FixedPipelineBackend: Owner, GenericMaterialBackend
         if (ifogEnabled.type == MaterialInputType.Bool ||
             ifogEnabled.type == MaterialInputType.Integer)
         {
-            if (ifogEnabled.asBool && material.environment)
+            if (ifogEnabled.asBool && rc.environment)
             {
                 glEnable(GL_FOG);
-                glFogfv(GL_FOG_COLOR, material.environment.fogColor.arrayof.ptr);
+                glFogfv(GL_FOG_COLOR, rc.environment.fogColor.arrayof.ptr);
                 glFogi(GL_FOG_MODE, GL_LINEAR);
                 glHint(GL_FOG_HINT, GL_DONT_CARE);
-                glFogf(GL_FOG_START, material.environment.fogStart);
-                glFogf(GL_FOG_END, material.environment.fogEnd);
+                glFogf(GL_FOG_START, rc.environment.fogStart);
+                glFogf(GL_FOG_END, rc.environment.fogEnd);
             }
         }
     }
@@ -160,9 +160,9 @@ class GenericMaterial: Material
     GenericMaterialBackend backend;
     protected FixedPipelineBackend fixedBackend;
 
-    Environment environment;
+    //Environment environment;
 
-    this(Environment env, Owner o)
+    this(Owner o)
     {
         super(o);
 
@@ -189,13 +189,13 @@ class GenericMaterial: Material
         // TODO: choose backend based on global settings
         backend = fixedBackend;
 
-        environment = env;
+        //environment = env;
     }
 
-    override void bind()
+    override void bind(RenderingContext* rc)
     {
         if (backend)
-            backend.bind();
+            backend.bind(rc);
     }
 
     override void unbind()

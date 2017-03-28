@@ -7,7 +7,7 @@ class MyScene: Scene
 {
     LightManager lightManager;
 
-    RenderingContext rc; 
+    RenderingContext rc3d; 
     Freeview freeview;
 
     DynamicArray!Entity entities;
@@ -50,9 +50,7 @@ class MyScene: Scene
         imrod.drawable = obj.mesh;
         entities.append(imrod);
 
-        auto env = New!Environment(this);
-
-        mat = New!GenericMaterial(env, this);
+        mat = New!GenericMaterial(this);
         mat.diffuse = tex.texture;
         mat.roughness = 0.2f;
         mat.shadeless = false;
@@ -68,8 +66,8 @@ class MyScene: Scene
     {
         writeln("Allocated memory after scene switch: ", allocatedMemory);
 
-        rc.init(eventManager);
-        rc.projectionMatrix = perspectiveMatrix(60.0f, eventManager.aspectRatio, 0.1f, 100.0f);
+        rc3d.init(eventManager);
+        rc3d.projectionMatrix = perspectiveMatrix(60.0f, eventManager.aspectRatio, 0.1f, 100.0f);
     }
 
     override void onEnd()
@@ -85,13 +83,10 @@ class MyScene: Scene
     override void onUpdate(double dt)
     {   
         freeview.update(dt);
+        freeview.prepareRC(&rc3d);
 
         foreach(e; entities)
             e.update(dt);
-
-        rc.viewMatrix = freeview.viewMatrix();
-        rc.invViewMatrix = freeview.invViewMatrix();
-        rc.normalMatrix = matrix4x4to3x3(rc.invViewMatrix).transposed;
     }
 
     override void onRender()
@@ -101,13 +96,11 @@ class MyScene: Scene
         glViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
         glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glMatrixMode(GL_PROJECTION);
-        glLoadMatrixf(rc.projectionMatrix.arrayof.ptr);
-        glMatrixMode(GL_MODELVIEW);
-        glLoadMatrixf(rc.viewMatrix.arrayof.ptr);
+
+        rc3d.apply();
 
         foreach(e; entities)
-            e.render();
+            e.render(&rc3d);
     } 
 }
 

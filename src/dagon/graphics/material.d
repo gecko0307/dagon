@@ -7,6 +7,7 @@ import dlib.container.dict;
 import derelict.opengl.gl;
 import dagon.core.ownership;
 import dagon.graphics.texture;
+import dagon.graphics.rc;
 
 enum
 {
@@ -128,7 +129,7 @@ abstract class Material: Owner
         return (name in inputs);
     }
 
-    void bind();
+    void bind(RenderingContext* rc);
     void unbind();
 }
 

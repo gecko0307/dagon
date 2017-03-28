@@ -11,8 +11,9 @@ import dagon.core.ownership;
 import dagon.core.event;
 import dagon.core.keycodes;
 import dagon.graphics.tbcamera;
+import dagon.graphics.view;
 
-class Freeview: EventListener
+class Freeview: EventListener, View
 {
     TrackballCamera camera;
     int prevMouseX;
@@ -53,6 +54,11 @@ class Freeview: EventListener
     override void onMouseWheel(int x, int y)
     {
         camera.zoom(cast(float)y * 0.2f);
+    }
+
+    void setZoom(float z)
+    {
+        camera.setZoom(z);
     }
 
     void update(double dt)

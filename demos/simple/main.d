@@ -10,9 +10,7 @@ import dagon;
 // control over current OpenGL context.
 class MyScene: Scene
 {
-    LightManager lightManager;
-
-    RenderingContext rc; 
+    RenderingContext rc3d; 
     Freeview freeview;
 
     DynamicArray!Entity entities;
@@ -35,18 +33,13 @@ class MyScene: Scene
     Entity createEntity3D()
     {
         Entity e = New!Entity(eventManager, this);
-        auto lr = New!LightReceiver(e, lightManager);
         return e;
     }
 
     // onAllocate is called after assets loading.
     // Use this method to create your Entities and other game objects.
     override void onAllocate()
-    {
-        lightManager = New!LightManager(this);
-        lightManager.addPointLight(Vector3f(3, 3, 0), Color4f(1.0, 0.0, 0.0, 1.0));
-        lightManager.addPointLight(Vector3f(-3, 3, 0), Color4f(1.0, 1.0, 1.0, 1.0));
-    
+    {    
         freeview = New!Freeview(eventManager, this);
         freeview.camera.setZoom(6.0f);
 
@@ -73,8 +66,8 @@ class MyScene: Scene
     {
         writeln("Allocated memory after scene switch: ", allocatedMemory);
 
-        rc.init(eventManager);
-        rc.projectionMatrix = perspectiveMatrix(60.0f, eventManager.aspectRatio, 0.1f, 100.0f);
+        rc3d.init(eventManager);
+        rc3d.projectionMatrix = perspectiveMatrix(60.0f, eventManager.aspectRatio, 0.1f, 100.0f);
     }
 
     // onEnd is called just before releasing and switching current scene
@@ -93,13 +86,10 @@ class MyScene: Scene
     override void onUpdate(double dt)
     {   
         freeview.update(dt);
+        freeview.prepareRC(&rc3d);
 
         foreach(e; entities)
             e.update(dt);
-
-        rc.viewMatrix = freeview.viewMatrix();
-        rc.invViewMatrix = freeview.invViewMatrix();
-        rc.normalMatrix = matrix4x4to3x3(rc.invViewMatrix).transposed;
     }
 
     // onRender is called when the scene needs to be drawn
@@ -111,14 +101,12 @@ class MyScene: Scene
         glViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
         glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glMatrixMode(GL_PROJECTION);
-        glLoadMatrixf(rc.projectionMatrix.arrayof.ptr);
-        glMatrixMode(GL_MODELVIEW);
-        glLoadMatrixf(rc.viewMatrix.arrayof.ptr);
+
+        rc3d.apply();
 
         tex.texture.bind();
         foreach(e; entities)
-            e.render();
+            e.render(&rc3d);
         tex.texture.unbind(); 
     } 
 }

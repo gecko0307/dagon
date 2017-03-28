@@ -13,14 +13,11 @@ import character;
 class RigidBodyController: EntityController
 {
     RigidBody rbody;
-    uint shapeIndex = 0;
 
-    this(Entity e, RigidBody b, uint shapeIndex = 0)
+    this(Entity e, RigidBody b)
     {
         super(e);
         rbody = b;
-        this.shapeIndex = shapeIndex;
-
         b.position = e.position;
         b.orientation = e.rotation;
     }
@@ -29,7 +26,8 @@ class RigidBodyController: EntityController
     {
         entity.position = rbody.position;
         entity.rotation = rbody.orientation; 
-        entity.transformation = rbody.shapes[shapeIndex].transformation;
+        entity.transformation = rbody.transformation;
+        entity.invTransformation = entity.transformation.inverse;
     }
 }
 
@@ -37,7 +35,9 @@ class PhysicsScene: Scene
 {
     LightManager lightManager;
 
-    RenderingContext rc; 
+    RenderingContext rc3d; 
+    RenderingContext rc2d;
+ 
     FirstPersonView fpview;
 
     PhysicsWorld world;
@@ -156,10 +156,17 @@ class PhysicsScene: Scene
         ShapeBox shapeBox = New!ShapeBox(1, 1, 1, this);
         gBox = New!GeomBox(Vector3f(1.0f, 1.0f, 1.0f));
 
+        //auto env = New!Environment(this);
+
+        auto mat = New!GenericMaterial(this);
+        mat.diffuse = atex.texture;
+        mat.roughness = 0.2f;
+
         foreach(i; 0..20)
         {
             auto boxE = createEntity3D();
             boxE.drawable = shapeBox;
+            boxE.material = mat;
             boxE.position = Vector3f(i * 0.1f, 3.0f + 3.0f * cast(float)i, 0);
             auto bBox = world.addDynamicBody(Vector3f(0, 0, 0), 0.0f);
             RigidBodyController rbc = New!RigidBodyController(boxE, bBox);
@@ -195,8 +202,11 @@ class PhysicsScene: Scene
     {
         writeln("Allocated memory after scene switch: ", allocatedMemory);
 
-        rc.init(eventManager);
-        rc.projectionMatrix = perspectiveMatrix(60.0f, eventManager.aspectRatio, 0.1f, 100.0f);
+        rc3d.init(eventManager);
+        rc3d.projectionMatrix = perspectiveMatrix(60.0f, eventManager.aspectRatio, 0.1f, 100.0f);
+
+        rc2d.init(eventManager);
+        rc2d.projectionMatrix = orthoMatrix(0.0f, eventManager.windowWidth, 0.0f, eventManager.windowHeight, 0.0f, 100.0f);
         
         physicsTimer = 0.0;
 
@@ -238,6 +248,7 @@ class PhysicsScene: Scene
     override void onUpdate(double dt)
     {
         fpview.update(dt);
+        fpview.prepareRC(&rc3d);
 
         physicsTimer += dt;
         if (physicsTimer >= fixedTimeStep)
@@ -256,10 +267,6 @@ class PhysicsScene: Scene
 
         foreach(e; entities2D)
             e.update(dt);
-
-        rc.viewMatrix = fpview.viewMatrix();
-        rc.invViewMatrix = fpview.invViewMatrix();
-        rc.normalMatrix = matrix4x4to3x3(rc.invViewMatrix).transposed;
     }
 
     override void onRender()
@@ -269,27 +276,18 @@ class PhysicsScene: Scene
         glViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
         glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glMatrixMode(GL_PROJECTION);
-        glLoadMatrixf(rc.projectionMatrix.arrayof.ptr);
-        glMatrixMode(GL_MODELVIEW);
-        glLoadMatrixf(rc.viewMatrix.arrayof.ptr);
 
-        atex.texture.bind();
+        rc3d.apply();
+
         foreach(e; entities3D)
-            e.render();
-        atex.texture.unbind();
+            e.render(&rc3d);
 
         glDisable(GL_DEPTH_TEST); 
 
-        glMatrixMode(GL_PROJECTION);
-        auto projectionMatrix2D = orthoMatrix(
-            0.0f, eventManager.windowWidth, 0.0f, eventManager.windowHeight, 0.0f, 100.0f);
-        glLoadMatrixf(projectionMatrix2D.arrayof.ptr);
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
+        rc2d.apply();
 
         foreach(e; entities2D)
-            e.render();
+            e.render(&rc2d);
     } 
 }
 
