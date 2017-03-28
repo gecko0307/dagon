@@ -8,8 +8,9 @@ import dagon.core.ownership;
 import dagon.core.event;
 
 import dagon.graphics.fpcamera;
+import dagon.graphics.view;
 
-class FirstPersonView: EventListener
+class FirstPersonView: EventListener, View
 {
     FirstPersonCamera camera;  
 

@@ -16,8 +16,9 @@ import dagon.core.event;
 import dagon.logics.controller;
 import dagon.logics.behaviour;
 import dagon.graphics.material;
+import dagon.graphics.rc;
 
-class Entity: Owner, Drawable
+class Entity: Owner
 {
     uint id;
     uint groupID = 0;
@@ -32,15 +33,18 @@ class Entity: Owner, Drawable
     Drawable drawable;
     EventManager eventManager;
 
-    Matrix4x4f transformation;
     Vector3f position;
     Quaternionf rotation;
     Vector3f scaling;
+
+    Matrix4x4f transformation;
+    Matrix4x4f invTransformation;
 
     EntityController controller;
     DefaultEntityController defaultController;
 
     Material material;
+    RenderingContext rcLocal;
 
     this(EventManager emngr, Owner owner)
     {
@@ -48,6 +52,8 @@ class Entity: Owner, Drawable
         eventManager = emngr;
 
         transformation = Matrix4x4f.identity;
+        invTransformation = Matrix4x4f.identity;
+
         position = Vector3f(0, 0, 0);
         rotation = Quaternionf.identity;
         scaling = Vector3f(1, 1, 1);
@@ -128,7 +134,7 @@ class Entity: Owner, Drawable
             drawable.update(dt);
     }
 
-    void render()
+    void render(RenderingContext* rc)
     {
         foreach(i, ble; behaviours)
         {
@@ -139,8 +145,15 @@ class Entity: Owner, Drawable
         glPushMatrix(); 
         glMultMatrixf(transformation.arrayof.ptr);
 
+        rcLocal = *rc;
+        rcLocal.position = position;
+        rcLocal.rotation = rotation.toMatrix3x3;
+        rcLocal.scaling = scaling;
+        rcLocal.modelMatrix = transformation;
+        rcLocal.invModelMatrix = invTransformation;
+
         if (material)
-            material.bind();
+            material.bind(&rcLocal);
         if (drawable)
             drawable.render();
         if (material)

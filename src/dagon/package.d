@@ -53,6 +53,7 @@ public
     import dagon.graphics.genericmaterial;
     import dagon.graphics.environment;
     import dagon.graphics.mesh;
+    import dagon.graphics.view;
 
     import dagon.ui.font;
     import dagon.ui.ftfont;

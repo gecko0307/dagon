@@ -55,6 +55,14 @@
             "importPaths": ["src"], 
             "dependencies": {"dlib": "0.10.0"},
             "mainSourceFile": "demos/animation/main.d"
+        },
+        {
+            "name": "base",
+            "targetType": "executable",
+            "sourcePaths": ["src", "demos/base"],
+            "importPaths": ["src"], 
+            "dependencies": {"dlib": "0.10.0"},
+            "mainSourceFile": "demos/base/main.d"
         }
     ]
 }

@@ -34,6 +34,7 @@ class DefaultEntityController: EntityController
             translationMatrix(entity.position) *
             entity.rotation.toMatrix4x4 *
             scaleMatrix(entity.scaling);
+        entity.invTransformation = entity.transformation.inverse;
     }
 }
 
