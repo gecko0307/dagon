@@ -1,21 +1,30 @@
 {
-    "description": "dagon-demo",
+    "name": "dagon",
+    "description": "Game framework for D",
+    "homepage": "http://github.com/gecko0307/dagon",
+    "license": "Boost",
     "authors": [
         "Timur Gafarov"
     ],
-    "license": "Boost",
-    "homepage": "http://github.com/gecko0307/dagon",
-    "name": "demo",
+
     "importPaths": [
         "src"
     ],
+
     "dependencies": {
         "dlib": "0.10.0"
     },
+
     "buildRequirements":[
         "allowWarnings"
     ],
+
     "configurations": [
+        {
+            "name": "library",
+            "targetType": "library",
+            "sourcePaths": ["src"]
+        },
         {
             "name": "demo",
             "targetType": "executable",
@@ -23,6 +32,7 @@
             "mainSourceFile": "demos/simple/main.d"
         }
     ],
+
     "subPackages": [
         {
             "name": "simple",
