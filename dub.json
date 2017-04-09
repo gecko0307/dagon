@@ -73,6 +73,14 @@
             "importPaths": ["src"], 
             "dependencies": {"dlib": "0.10.0"},
             "mainSourceFile": "demos/base/main.d"
+        },
+        {
+            "name": "menu",
+            "targetType": "executable",
+            "sourcePaths": ["src", "demos/menu"],
+            "importPaths": ["src"], 
+            "dependencies": {"dlib": "0.10.0"},
+            "mainSourceFile": "demos/menu/main.d"
         }
     ]
 }
