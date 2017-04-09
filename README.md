@@ -29,6 +29,7 @@ Dagon comes with a number of usage demos treated as dub subpackages:
 * *OBJ* - loading OBJ model. Build: `dub build :obj`
 * *Animation* - loading an animated IQM model. Build: `dub build :animation`
 * *Physics* - advanced demo: [dmech](https://github.com/gecko0307/dmech) physics engine integration, first person camera with character controller, loading TTF font and rendering 2D text. Build: `dub build :physics`
+* *Menu* - shows how to create a simple main menu and switch scenes. Build: `dub build :menu`
 
 License
 -------
