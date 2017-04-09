@@ -286,9 +286,16 @@ class SceneManager: Owner
         }
 
         Scene scene = scenesByName[name];
+        writefln("Loading scene \"%s\"...", name);
         scene.load();
+        writeln("OK");
+
+        writefln("Starting scene \"%s\"...", name);
         currentScene = scene;
         currentScene.start();
+        writeln("OK");
+
+        writefln("Running...", name);
     }
 
 /*

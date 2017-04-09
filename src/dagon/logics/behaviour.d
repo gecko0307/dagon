@@ -5,7 +5,7 @@ import dagon.core.ownership;
 import dagon.core.event;
 import dagon.logics.entity;
 
-class Behaviour: EventListener, Owned, Drawable
+class Behaviour: EventListener, Drawable
 {
     Entity entity;
 
