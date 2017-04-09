@@ -73,15 +73,30 @@ class Application: EventListener
         {  
             version(linux)
             {
-                if (exists("lib/libSDL2-2.0.so"))
-                    DerelictSDL2.load("lib/libSDL2-2.0.so");
-                else
-                    DerelictSDL2.load();
+                version(X86)
+                {
+                    if (exists("lib/libSDL2-2.0.so"))
+                        DerelictSDL2.load("lib/libSDL2-2.0.so");
+                    else
+                        DerelictSDL2.load();
 
-                if (exists("lib/libfreetype271.so"))
-                    DerelictFT.load("lib/libfreetype271.so");
-                else
-                    DerelictFT.load();
+                    if (exists("lib/libfreetype271.so"))
+                        DerelictFT.load("lib/libfreetype271.so");
+                    else
+                        DerelictFT.load();
+                }
+                version(X86_64)
+                {
+                    if (exists("lib/libSDL2-2.0_64.so"))
+                        DerelictSDL2.load("lib/libSDL2-2.0_64.so");
+                    else
+                        DerelictSDL2.load();
+
+                    if (exists("lib/libfreetype263_64.so"))
+                        DerelictFT.load("lib/libfreetype263_64.so");
+                    else
+                        DerelictFT.load();
+                }
             }
             version(Windows)
             {
