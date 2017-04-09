@@ -24,8 +24,8 @@ Demos
 -----
 Dagon comes with a number of usage demos treated as dub subpackages:
 
-* *Simple* - a simple scene with a textured cube, light sources and trackball view. Build: `dub build :simple`
-* *Base* - a simple scene implemented on top of BaseScene3D. Build: `dub build :base`
+* *Simple* - a simple scene with a textured cube. Build: `dub build :simple`
+* *Base* - a simple scene with cube and lighting implemented on top of BaseScene3D. Build: `dub build :base`
 * *OBJ* - loading OBJ model. Build: `dub build :obj`
 * *Animation* - loading an animated IQM model. Build: `dub build :animation`
 * *Physics* - advanced demo: [dmech](https://github.com/gecko0307/dmech) physics engine integration, first person camera with character controller, loading TTF font and rendering 2D text. Build: `dub build :physics`
