@@ -84,19 +84,7 @@ class Entity: Owner
 
     bool hasBehaviour(T)()
     {
-        bool result = false;
-
-        foreach(i, ble; behaviours)
-        {
-            T b = cast(T)ble.behaviour;
-            if (b)
-            {
-                result = true;
-                break;
-            }
-        }
-
-        return result;
+        return this.behaviour!T() !is null;
     }
 
     T behaviour(T)()
@@ -142,7 +130,7 @@ class Entity: Owner
                 ble.behaviour.bind();
         }
 
-        glPushMatrix(); 
+        glPushMatrix();
         glMultMatrixf(transformation.arrayof.ptr);
 
         rcLocal = *rc;
@@ -175,3 +163,29 @@ class Entity: Owner
     }
 }
 
+unittest
+{
+    class B1 : Behaviour
+    {
+        this(Entity e) {super(e);}
+    }
+    class B2 : Behaviour
+    {
+        this(Entity e) {super(e);}
+    }
+    auto e = New!Entity(null, null);
+    New!B1(e);
+    assert(e.hasBehaviour!B1());
+    New!B2(e);
+    assert(e.hasBehaviour!B2());
+
+    auto b1 = e.behaviour!B1();
+    assert(b1);
+    auto b2 = e.behaviour!B2();
+    assert(b2);
+
+    // sets `valid` to false, but does not delete the behaviour
+    e.removeBehaviour(b1);
+    // ... so hasBehaviour reports true
+    assert(e.hasBehaviour!B1());
+}
