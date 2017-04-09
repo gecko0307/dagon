@@ -129,13 +129,13 @@ class Application: EventListener
         
         version(FreeBSD)
         {
-            DerelictSDL.load();
+            DerelictSDL2.load();
             DerelictFT.load();
         }
 
         version(OSX)
         {
-            DerelictSDL.load();
+            DerelictSDL2.load();
             DerelictFT.load();
         }
 
