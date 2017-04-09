@@ -14,6 +14,7 @@ public
     import dlib.math.affine;
     import dlib.math.quaternion;
     import dlib.math.utils;
+    import dlib.math.interpolation;
     
     import dlib.image.color;
 
@@ -58,5 +59,7 @@ public
     import dagon.ui.font;
     import dagon.ui.ftfont;
     import dagon.ui.textline;
+
+    import dagon.templates.basescene;
 }
 

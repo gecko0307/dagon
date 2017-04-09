@@ -76,15 +76,26 @@ class ObjMesh: Mesh
     int opApply(scope int delegate(Triangle t) dg)
     {
         int result = 0;
-        // TODO
-/*
-        foreach(i, ref v; data)
+
+        foreach(i, ref f; faces)
         {
-            result = dg(i, v);
+            Triangle tri;
+
+            tri.v[0] = vertices[f.v[0]];
+            tri.v[1] = vertices[f.v[1]];
+            tri.v[2] = vertices[f.v[2]];
+            tri.n[0] = normals[f.n[0]];
+            tri.n[1] = normals[f.n[1]];
+            tri.n[2] = normals[f.n[2]];
+            tri.t1[0] = texcoords1[f.t1[0]];
+            tri.t1[1] = texcoords1[f.t1[1]];
+            tri.t1[2] = texcoords1[f.t1[2]];
+
+            result = dg(tri);
             if (result)
                 break;
         }
-*/
+
         return result;
     }
 
@@ -94,8 +105,10 @@ class ObjMesh: Mesh
 
     void render()
     {
+        glEnable(GL_CULL_FACE);
         if (glIsList(displayList))
             glCallList(displayList);
+        glDisable(GL_CULL_FACE);
     }
 }
 
