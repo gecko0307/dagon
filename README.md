@@ -20,16 +20,13 @@ Dagon is a 3D game development framework for D. It is a work-in-progress reincar
 
 Dagon is still under development and doesn't have eye candy features yet. It's just a framework that you can use to build your own OpenGL-based graphics pipeline - just define your own Drawables, Behaviours and Scenes. In future, some functionality from DGL will be ported to Dagon.
 
+Libraries
+---------
+To use Dagon, a number of libraries should be installed, namely SDL2 and Freetype. If you don't have them installed system-wide (which is common on Windows), you can use the libraries provided [here](https://github.com/gecko0307/dagon/releases/tag/v0.0.2). Place them in `lib` folder in your project's working directory.
+
 Demos
 -----
-Dagon comes with a number of usage demos treated as dub subpackages:
-
-* *Simple* - a simple scene with a textured cube. Build: `dub build :simple`
-* *Base* - a simple scene with cube and lighting implemented on top of BaseScene3D. Build: `dub build :base`
-* *OBJ* - loading OBJ model. Build: `dub build :obj`
-* *Animation* - loading an animated IQM model. Build: `dub build :animation`
-* *Physics* - advanced demo: [dmech](https://github.com/gecko0307/dmech) physics engine integration, first person camera with character controller, loading TTF font and rendering 2D text. Build: `dub build :physics`
-* *Menu* - shows how to create a simple main menu and switch scenes. Build: `dub build :menu`
+A test application that demonstrates Dagon's features is hosted [here](https://github.com/gecko0307/dagon-demo).
 
 License
 -------
