@@ -35,7 +35,9 @@ class Scene: EventListener
 
     ~this()
     {
-        onRelease();
+        if (!released)
+            onRelease();
+
         Delete(assetManager);
     }
 
@@ -197,9 +199,10 @@ class Scene: EventListener
             clearOwnedObjects();
             assetManager.releaseAssets();
 
-            canRun = false;
             released = true;
         }
+
+        canRun = false;
     }
 
     void start()
