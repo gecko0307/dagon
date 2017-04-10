@@ -178,6 +178,7 @@ class Scene: EventListener
         if (loaded)
         {
             onAllocate();
+            released = false;
             canRun = true;
         }
         else
@@ -186,13 +187,19 @@ class Scene: EventListener
         }
     }
 
+    bool released = true;
+
     void release()
     {
-        onRelease();
-        clearOwnedObjects();
-        assetManager.releaseAssets();
+        if (!released)
+        {
+            onRelease();
+            clearOwnedObjects();
+            assetManager.releaseAssets();
 
-        canRun = false;
+            canRun = false;
+            released = true;
+        }
     }
 
     void start()
