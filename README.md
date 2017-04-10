@@ -22,7 +22,7 @@ Dagon is still under development and doesn't have eye candy features yet. It's j
 
 Prerequisites
 -------------
-Dagon is based on OpenGL 1.4 + a number of common extensions, and should run virtually on any hardware. Currently we are not considering implementing OpenGL 3.x/4.x renderer or adding Vulkan support.
+Dagon is based on OpenGL 1.3 + a number of common extensions, and should run virtually on any hardware. Currently we are not considering implementing OpenGL 3.x/4.x renderer or adding Vulkan support.
 
 Dagon is known to work on Windows, Linux, FreeBSD and OSX.
 
