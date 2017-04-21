@@ -28,6 +28,9 @@ class BaseScene3D: Scene
     DynamicArray!Entity entities3D;
     DynamicArray!Entity entities2D;
 
+    double timer;
+    double fixedTimeStep = 1.0 / 60.0;
+
     this(SceneManager smngr)
     {
         super(smngr);
@@ -74,21 +77,41 @@ class BaseScene3D: Scene
 
         rc2d.init(eventManager, environment);
         rc2d.projectionMatrix = orthoMatrix(0.0f, eventManager.windowWidth, 0.0f, eventManager.windowHeight, 0.0f, 100.0f);
+
+        timer = 0.0;
+    }
+
+    void onLogicsUpdate(double dt)
+    {
     }
 
     override void onUpdate(double dt)
     {
-        if (view)
-        {
-            view.update(dt);
-            view.prepareRC(&rc3d);
-        }
-
         foreach(e; entities3D)
-            e.update(dt);
+            e.processEvents();
 
         foreach(e; entities2D)
-            e.update(dt);
+            e.processEvents();
+
+        timer += dt;
+        if (timer >= fixedTimeStep)
+        {
+            timer -= fixedTimeStep;
+
+            onLogicsUpdate(fixedTimeStep);
+
+            if (view)
+            {
+                view.update(fixedTimeStep);
+                view.prepareRC(&rc3d);
+            }
+
+            foreach(e; entities3D)
+                e.update(fixedTimeStep);
+
+            foreach(e; entities2D)
+                e.update(fixedTimeStep);
+        }
     }
 
     override void onRender()

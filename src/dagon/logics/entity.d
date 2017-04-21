@@ -104,6 +104,17 @@ class Entity: Owner
         return result;
     }
 
+    void processEvents()
+    {
+        foreach(i, ble; behaviours)
+        {
+            if (ble.valid)
+            {
+                ble.behaviour.processEvents();
+            }
+        }
+    }
+
     void update(double dt)
     {
         if (controller)
@@ -113,7 +124,6 @@ class Entity: Owner
         {
             if (ble.valid)
             {
-                ble.behaviour.processEvents();
                 ble.behaviour.update(dt);
             }
         }

@@ -8,18 +8,11 @@ public
     import derelict.opengl.glext;
     import derelict.freetype.ft;
 
-    import dlib.core.memory;
-    import dlib.math.vector;
-    import dlib.math.matrix;
-    import dlib.math.affine;
-    import dlib.math.quaternion;
-    import dlib.math.utils;
-    import dlib.math.interpolation;
-    
-    import dlib.image.color;
-
-    import dlib.container.array;
-    import dlib.container.dict;
+    import dlib.core;
+    import dlib.math;
+    import dlib.geometry;
+    import dlib.image;
+    import dlib.container;
 
     import dagon.core.ownership;
     import dagon.core.interfaces;
