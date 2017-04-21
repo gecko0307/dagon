@@ -30,7 +30,7 @@ To use Dagon, a number of libraries should be installed, namely SDL2 and Freetyp
 
 Demos
 -----
-A test application that demonstrates Dagon's features is hosted [here](https://github.com/gecko0307/dagon-demo).
+A test application that demonstrates Dagon's features is hosted [here](https://github.com/gecko0307/dagon-demo). If you are starting from scratch, we recommend to use it for learning purposes.
 
 Documentation
 -------------
