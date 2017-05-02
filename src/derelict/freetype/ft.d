@@ -153,8 +153,8 @@ protected:
         bindFunc(cast(void**)&FT_Get_CMap_Format, "FT_Get_CMap_Format");
 
         // ftbdf.h
-        bindFunc(cast(void**)&FT_Get_BDF_Charset_ID, "FT_Get_BDF_Charset_ID");
-        bindFunc(cast(void**)&FT_Get_BDF_Property, "FT_Get_BDF_Property");
+        //bindFunc(cast(void**)&FT_Get_BDF_Charset_ID, "FT_Get_BDF_Charset_ID");
+        //bindFunc(cast(void**)&FT_Get_BDF_Property, "FT_Get_BDF_Property");
 
         // ftgzip.h
         bindFunc(cast(void**)&FT_Stream_OpenGzip, "FT_Stream_OpenGzip");
