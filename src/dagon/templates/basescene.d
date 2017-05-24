@@ -2,7 +2,7 @@ module dagon.templates.basescene;
 
 import dlib.core.memory;
 import dlib.math.vector;
-import dlib.math.affine;
+import dlib.math.transformation;
 import dlib.image.color;
 import dlib.container.array;
 

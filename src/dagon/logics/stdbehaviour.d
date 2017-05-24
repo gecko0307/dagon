@@ -2,7 +2,7 @@ module dagon.logics.stdbehaviour;
 
 import dlib.math.vector;
 import dlib.math.matrix;
-import dlib.math.affine;
+import dlib.math.transformation;
 import dlib.math.quaternion;
 import derelict.opengl.gl;
 import dagon.logics.entity;

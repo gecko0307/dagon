@@ -12,7 +12,7 @@
     ],
 
     "dependencies": {
-        "dlib": "0.10.0"
+        "dlib": "0.11.0"
     },
 
     "buildRequirements":[
@@ -24,63 +24,6 @@
             "name": "library",
             "targetType": "library",
             "sourcePaths": ["src"]
-        },
-        {
-            "name": "demo",
-            "targetType": "executable",
-            "sourcePaths": ["src", "demos/simple"],
-            "mainSourceFile": "demos/simple/main.d"
-        }
-    ],
-
-    "subPackages": [
-        {
-            "name": "simple",
-            "targetType": "executable",
-            "sourcePaths": ["src", "demos/simple"],
-            "importPaths": ["src"], 
-            "dependencies": {"dlib": "0.10.0"},
-            "mainSourceFile": "demos/simple/main.d"
-        },
-        {
-            "name": "obj",
-            "targetType": "executable",
-            "sourcePaths": ["src", "demos/obj"],
-            "importPaths": ["src"], 
-            "dependencies": {"dlib": "0.10.0"},
-            "mainSourceFile": "demos/obj/main.d"
-        },
-        {
-            "name": "physics",
-            "targetType": "executable",
-            "sourcePaths": ["src", "demos/physics"],
-            "importPaths": ["src"], 
-            "dependencies": {"dlib": "0.10.0"},
-            "mainSourceFile": "demos/physics/main.d"
-        },
-        {
-            "name": "animation",
-            "targetType": "executable",
-            "sourcePaths": ["src", "demos/animation"],
-            "importPaths": ["src"], 
-            "dependencies": {"dlib": "0.10.0"},
-            "mainSourceFile": "demos/animation/main.d"
-        },
-        {
-            "name": "base",
-            "targetType": "executable",
-            "sourcePaths": ["src", "demos/base"],
-            "importPaths": ["src"], 
-            "dependencies": {"dlib": "0.10.0"},
-            "mainSourceFile": "demos/base/main.d"
-        },
-        {
-            "name": "menu",
-            "targetType": "executable",
-            "sourcePaths": ["src", "demos/menu"],
-            "importPaths": ["src"], 
-            "dependencies": {"dlib": "0.10.0"},
-            "mainSourceFile": "demos/menu/main.d"
         }
     ]
 }

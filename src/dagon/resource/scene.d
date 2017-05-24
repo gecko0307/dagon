@@ -7,7 +7,7 @@ import dlib.core.memory;
 import dlib.container.array;
 import dlib.container.dict;
 import dlib.math.matrix;
-import dlib.math.affine;
+import dlib.math.transformation;
 
 import derelict.opengl.gl;
 

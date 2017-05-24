@@ -6,7 +6,7 @@ import dlib.core.memory;
 import dlib.math.utils;
 import dlib.math.vector;
 import dlib.math.matrix;
-import dlib.math.affine;
+import dlib.math.transformation;
 import dlib.math.quaternion;
 
 final class TrackballCamera
