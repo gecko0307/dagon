@@ -64,7 +64,7 @@ final class FreeTypeFont: Font
 
     void createFromMemory(ubyte[] buffer)
     {
-        if (FT_New_Memory_Face(ftLibrary, buffer.ptr, buffer.length, 0, &ftFace))
+        if (FT_New_Memory_Face(ftLibrary, buffer.ptr, cast(uint)buffer.length, 0, &ftFace))
             throw new Exception("FT_New_Face failed (there is probably a problem with your font file)");
 
         FT_Set_Char_Size(ftFace, cast(int)height << 6, cast(int)height << 6, 96, 96);
