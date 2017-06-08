@@ -11,6 +11,7 @@ import dlib.geometry.triangle;
 import dlib.filesystem.filesystem;
 import dlib.filesystem.stdfs;
 import derelict.opengl.gl;
+import dagon.core.ownership;
 import dagon.resource.asset;
 import dagon.graphics.mesh;
 
@@ -22,7 +23,7 @@ struct ObjFace
     uint[3] n;
 }
 
-class ObjMesh: Mesh
+class ObjMesh: Owner, Mesh
 {
     Vector3f[] vertices;
     Vector3f[] normals;
@@ -30,6 +31,11 @@ class ObjMesh: Mesh
     Vector2f[] texcoords2;
     ObjFace[] faces;
     uint displayList;
+
+    this(Owner o)
+    {
+        super(o);
+    }
 
     ~this()
     {
@@ -116,15 +122,15 @@ class OBJAsset: Asset
 {
     ObjMesh mesh;
 
-    this()
+    this(Owner o)
     {
-        mesh = New!ObjMesh();
+        super(o);
+        mesh = New!ObjMesh(this);
     }
 
     ~this()
     {
-        if (mesh)
-            Delete(mesh);
+        release();
     }
 
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
@@ -137,7 +143,6 @@ class OBJAsset: Asset
         string fileStr = readText(istrm);
         foreach(line; lineSplitter(fileStr))
         {
-            //writeln(line);
             if (line.startsWith("v "))
                 numVerts++;
             else if (line.startsWith("vn "))
@@ -157,95 +162,95 @@ class OBJAsset: Asset
         if (numFaces)
             mesh.faces = New!(ObjFace[])(numFaces);
 
-    float x, y, z;
-    int v1, v2, v3;
-    int t1, t2, t3;
-    int n1, n2, n3;
-    uint vi = 0;
-    uint ni = 0;
-    uint ti = 0;
-    uint fi = 0;
+        float x, y, z;
+        int v1, v2, v3;
+        int t1, t2, t3;
+        int n1, n2, n3;
+        uint vi = 0;
+        uint ni = 0;
+        uint ti = 0;
+        uint fi = 0;
 
-    foreach(line; lineSplitter(fileStr))
-    {
-        //writeln(line);
-        if (line.startsWith("v "))
+        foreach(line; lineSplitter(fileStr))
         {
-            if (formattedRead(line, "v %s %s %s", &x, &y, &z))
+            if (line.startsWith("v "))
             {
-                mesh.vertices[vi] = Vector3f(x, y, z);
-                vi++;
+                if (formattedRead(line, "v %s %s %s", &x, &y, &z))
+                {
+                    mesh.vertices[vi] = Vector3f(x, y, z);
+                    vi++;
+                }
+                //else
+                //    writeln("error");
             }
-            //else
-            //    writeln("error");
+            else if (line.startsWith("vn"))
+            {
+                if (formattedRead(line, "vn %s %s %s", &x, &y, &z))
+                {
+                    mesh.normals[ni] = Vector3f(x, y, z);
+                    ni++;
+                }
+                //else
+                //    writeln("error");
+            }
+            else if (line.startsWith("vt"))
+            {
+                if (formattedRead(line, "vt %s %s", &x, &y))
+                {
+                    mesh.texcoords1[ti] = Vector2f(x, -y);
+                    ti++;
+                }
+                //else
+                //    writeln("error");
+            }
+            else if (line.startsWith("vp"))
+            {
+            }
+            else if (line.startsWith("f"))
+            {
+                if (formattedRead(line, "f %s/%s/%s %s/%s/%s %s/%s/%s", &v1, &t1, &n1, &v2, &t2, &n2, &v3, &t3, &n3))
+                {
+                    mesh.faces[fi].v[0] = v1-1;
+                    mesh.faces[fi].v[1] = v2-1;
+                    mesh.faces[fi].v[2] = v3-1;
+                    
+                    mesh.faces[fi].t1[0] = t1-1;
+                    mesh.faces[fi].t1[1] = t2-1;
+                    mesh.faces[fi].t1[2] = t3-1;
+                    
+                    mesh.faces[fi].n[0] = n1-1;
+                    mesh.faces[fi].n[1] = n2-1;
+                    mesh.faces[fi].n[2] = n3-1;
+                    
+                    fi++;
+                }
+                else if (formattedRead(line, "f %s//%s %s//%s %s//%s", &v1, &n1, &v2, &n2, &v3, &n3))
+                {
+                    mesh.faces[fi].v[0] = v1-1;
+                    mesh.faces[fi].v[1] = v2-1;
+                    mesh.faces[fi].v[2] = v3-1;
+                    
+                    mesh.faces[fi].n[0] = n1-1;
+                    mesh.faces[fi].n[1] = n2-1;
+                    mesh.faces[fi].n[2] = n3-1;
+                    
+                    fi++;
+                }
+                else if (formattedRead(line, "f %s %s %s", &v1, &v2, &v3))
+                {
+                    mesh.faces[fi].v[0] = v1-1;
+                    mesh.faces[fi].v[1] = v2-1;
+                    mesh.faces[fi].v[2] = v3-1;
+                    
+                    fi++;
+                }
+                //else
+                //    writeln("error");
+            }
         }
-        else if (line.startsWith("vn"))
-        {
-            if (formattedRead(line, "vn %s %s %s", &x, &y, &z))
-            {
-                mesh.normals[ni] = Vector3f(x, y, z);
-                ni++;
-            }
-            //else
-            //    writeln("error");
-        }
-        else if (line.startsWith("vt"))
-        {
-            if (formattedRead(line, "vt %s %s", &x, &y))
-            {
-                mesh.texcoords1[ti] = Vector2f(x, -y);
-                ti++;
-            }
-            //else
-            //    writeln("error");
-        }
-        else if (line.startsWith("vp"))
-        {
-        }
-        else if (line.startsWith("f"))
-        {
-            if (formattedRead(line, "f %s/%s/%s %s/%s/%s %s/%s/%s", &v1, &t1, &n1, &v2, &t2, &n2, &v3, &t3, &n3))
-            {
-                mesh.faces[fi].v[0] = v1-1;
-                mesh.faces[fi].v[1] = v2-1;
-                mesh.faces[fi].v[2] = v3-1;
-                
-                mesh.faces[fi].t1[0] = t1-1;
-                mesh.faces[fi].t1[1] = t2-1;
-                mesh.faces[fi].t1[2] = t3-1;
-                
-                mesh.faces[fi].n[0] = n1-1;
-                mesh.faces[fi].n[1] = n2-1;
-                mesh.faces[fi].n[2] = n3-1;
-                
-                fi++;
-            }
-            else if (formattedRead(line, "f %s//%s %s//%s %s//%s", &v1, &n1, &v2, &n2, &v3, &n3))
-            {
-                mesh.faces[fi].v[0] = v1-1;
-                mesh.faces[fi].v[1] = v2-1;
-                mesh.faces[fi].v[2] = v3-1;
-                
-                mesh.faces[fi].n[0] = n1-1;
-                mesh.faces[fi].n[1] = n2-1;
-                mesh.faces[fi].n[2] = n3-1;
-                
-                fi++;
-            }
-            else if (formattedRead(line, "f %s %s %s", &v1, &v2, &v3))
-            {
-                mesh.faces[fi].v[0] = v1-1;
-                mesh.faces[fi].v[1] = v2-1;
-                mesh.faces[fi].v[2] = v3-1;
-                
-                fi++;
-            }
-            //else
-            //    writeln("error");
-        }
-    }
 
         Delete(fileStr);
+
         return true;
     }
 
@@ -257,8 +262,7 @@ class OBJAsset: Asset
 
     override void release()
     {
-        if (mesh)
-            Delete(mesh);
+        clearOwnedObjects();
     }
 }
 

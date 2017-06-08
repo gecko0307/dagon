@@ -15,6 +15,7 @@ import dlib.math.matrix;
 import dlib.math.quaternion;
 import dlib.math.interpolation;
 
+import dagon.core.ownership;
 import dagon.graphics.animmodel;
 import dagon.graphics.texture;
 import dagon.resource.asset;
@@ -369,7 +370,7 @@ class IQMModel: AnimatedModel
 
                 if (!mngr.assetExists(texFilename))
                 {
-                    auto texAsset = New!TextureAsset(mngr.imageFactory);
+                    auto texAsset = New!TextureAsset(mngr.imageFactory, mngr);
                     mngr.addAsset(texAsset, texFilename);
                     texAsset.threadSafePartLoaded = mngr.loadAssetThreadSafePart(texAsset, texFilename);
                     facegroups[i].texture = texAsset.texture;
@@ -641,9 +642,9 @@ class IQMAsset: Asset
 {
     IQMModel model;
 
-    this()
+    this(Owner o)
     {
-        
+        super(o);
     }
 
     ~this()

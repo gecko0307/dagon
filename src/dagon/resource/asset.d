@@ -20,8 +20,13 @@ struct MonitorInfo
     bool fileExists = false;
 }
 
-abstract class Asset
+abstract class Asset: Owner
 {
+    this(Owner o)
+    {
+        super(o);
+    }
+
     MonitorInfo monitorInfo;
     bool threadSafePartLoaded = false;
     bool threadUnsafePartLoaded = false;
@@ -30,7 +35,7 @@ abstract class Asset
     void release();
 }
 
-class AssetManager
+class AssetManager: Owner
 {
     Dict!(Asset, string) assetsByFilename;
     VirtualFileSystem fs;
@@ -42,11 +47,12 @@ class AssetManager
 
     protected double monitorTimer = 0.0;
 
-    //float loadingPercentage = 0.0f;
     float nextLoadingPercentage = 0.0f;
 
-    this()
+    this(Owner o = null)
     {
+        super(o);
+
         assetsByFilename = New!(Dict!(Asset, string));
         fs = New!VirtualFileSystem();
         fs.mount(".");
@@ -57,10 +63,6 @@ class AssetManager
 
     ~this()
     {
-        foreach(filename, asset; assetsByFilename)
-        {
-            Delete(asset);
-        }
         Delete(assetsByFilename);
         Delete(fs);
         Delete(imageFactory);
@@ -152,12 +154,12 @@ class AssetManager
 
     void releaseAssets()
     {
-        foreach(filename, asset; assetsByFilename)
-        {
-            Delete(asset);
-        }
+        clearOwnedObjects();
         Delete(assetsByFilename);
         assetsByFilename = New!(Dict!(Asset, string));
+
+        Delete(loadingThread);
+        loadingThread = New!Thread(&threadFunc);
     }
 
     bool loadAssetThreadSafePart(Asset asset, string filename)
@@ -197,6 +199,7 @@ class AssetManager
     void loadThreadSafePart()
     {
         nextLoadingPercentage = 0.0f;
+        monitorTimer = 0.0;
         loadingThread.start();
     }
 
@@ -209,7 +212,7 @@ class AssetManager
     {
         bool res = true;
         foreach(filename, asset; assetsByFilename)
-        if (!asset.threadUnsafePartLoaded)
+        //if (!asset.threadUnsafePartLoaded)
         if (asset.threadSafePartLoaded)
         {
             res = asset.loadThreadUnsafePart();
@@ -219,6 +222,11 @@ class AssetManager
                 writefln("Error: failed to load asset \"%s\"", filename);
                 break;
             }
+        }
+        else
+        {
+            res = false;
+            break;
         }
         return res;
     }
@@ -251,16 +259,12 @@ class AssetManager
             if (!asset.monitorInfo.fileExists)
             {
                 asset.monitorInfo.fileExists = true;
-                //if (callbackFunc)
-                //    callbackFunc(FileEvent.Created);
             }
             else if (currentStat.modificationTimestamp > 
                      asset.monitorInfo.lastStat.modificationTimestamp ||
                      currentStat.sizeInBytes != 
                      asset.monitorInfo.lastStat.sizeInBytes)
             {
-                //if (callbackFunc)
-                //    callbackFunc(FileEvent.Modified);
                 reloadAsset(filename);
                 asset.monitorInfo.lastStat = currentStat;
             }
@@ -270,8 +274,6 @@ class AssetManager
             if (asset.monitorInfo.fileExists)
             {
                 asset.monitorInfo.fileExists = false;
-                //if (callbackFunc)
-                //    callbackFunc(FileEvent.Deleted);
             }
         }
     }

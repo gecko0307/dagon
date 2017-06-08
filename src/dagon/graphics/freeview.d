@@ -44,7 +44,7 @@ class Freeview: EventListener, View
 
     override void onMouseButtonDown(int button)
     {
-        if (button == MB_MIDDLE)
+        if (button == MB_LEFT)
         {
             prevMouseX = eventManager.mouseX;
             prevMouseY = eventManager.mouseY;
@@ -65,20 +65,20 @@ class Freeview: EventListener, View
     {
         processEvents();
 
-        if (eventManager.mouseButtonPressed[MB_MIDDLE] && eventManager.keyPressed[KEY_LSHIFT])
+        if (eventManager.mouseButtonPressed[MB_LEFT] && eventManager.keyPressed[KEY_LSHIFT])
         {
             float shift_x = (eventManager.mouseX - prevMouseX) * 0.1f;
             float shift_y = (eventManager.mouseY - prevMouseY) * 0.1f;
             Vector3f trans = camera.getUpVector * shift_y + camera.getRightVector * shift_x;
             camera.translateTarget(trans);
         }
-        else if (eventManager.mouseButtonPressed[MB_MIDDLE] && eventManager.keyPressed[KEY_LCTRL])
+        else if (eventManager.mouseButtonPressed[MB_LEFT] && eventManager.keyPressed[KEY_LCTRL])
         {
             float shift_x = (eventManager.mouseX - prevMouseX);
             float shift_y = (eventManager.mouseY - prevMouseY);
             camera.zoom((shift_x + shift_y) * 0.1f);
         }
-        else if (eventManager.mouseButtonPressed[MB_MIDDLE])
+        else if (eventManager.mouseButtonPressed[MB_LEFT])
         {                
             float turn_m = (eventManager.mouseX - prevMouseX);
             float pitch_m = -(eventManager.mouseY - prevMouseY);

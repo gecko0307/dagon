@@ -5,6 +5,7 @@ import dlib.core.stream;
 import dlib.filesystem.filesystem;
 import dlib.filesystem.stdfs;
 
+import dagon.core.ownership;
 import dagon.resource.asset;
 import dagon.ui.ftfont;
 
@@ -13,8 +14,9 @@ class FontAsset: Asset
     FreeTypeFont font;
     ubyte[] buffer;
 
-    this(uint height)
+    this(uint height, Owner o)
     {
+        super(o);
         font = New!FreeTypeFont(height);
     }
 

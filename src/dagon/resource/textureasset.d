@@ -14,6 +14,7 @@ import dlib.image.io.jpeg;
 import dlib.image.unmanaged;
 import dlib.filesystem.filesystem;
 
+import dagon.core.ownership;
 import dagon.resource.asset;
 import dagon.graphics.texture;
 
@@ -23,8 +24,9 @@ class TextureAsset: Asset
     SuperImage image;
     Texture texture;
 
-    this(UnmanagedImageFactory imgfac)
+    this(UnmanagedImageFactory imgfac, Owner o)
     {
+        super(o);
         imageFactory = imgfac;
         texture = New!Texture();
     }

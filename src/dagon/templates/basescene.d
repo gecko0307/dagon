@@ -15,6 +15,8 @@ import dagon.graphics.rc;
 import dagon.graphics.view;
 import dagon.logics.entity;
 
+import std.stdio;
+
 class BaseScene3D: Scene
 {
     LightManager lightManager;
@@ -39,14 +41,14 @@ class BaseScene3D: Scene
 
     Entity createEntity2D()
     {
-        Entity e = New!Entity(eventManager, this);
+        Entity e = New!Entity(eventManager, assetManager);
         entities2D.append(e);
         return e;
     }
     
     Entity createEntity3D()
     {
-        Entity e = New!Entity(eventManager, this);
+        Entity e = New!Entity(eventManager, assetManager);
         auto lr = New!LightReceiver(e, lightManager);
         entities3D.append(e);
         return e;
@@ -60,8 +62,8 @@ class BaseScene3D: Scene
 
     override void onAllocate()
     {    
-        lightManager = New!LightManager(this);
-        environment = New!Environment(this);
+        lightManager = New!LightManager(assetManager);
+        environment = New!Environment(assetManager);
     }
     
     override void onRelease()

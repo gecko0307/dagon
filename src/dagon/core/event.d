@@ -85,6 +85,8 @@ class EventManager
     bool[255] mouseButtonPressed = false;
     int mouseX = 0;
     int mouseY = 0;
+    int mouseRelX = 0;
+    int mouseRelY = 0;
     bool enableKeyRepeat = false;
 
     double deltaTime = 0.0;
@@ -144,6 +146,9 @@ class EventManager
     {
         numEvents = 0;
         updateTimer();
+        
+        mouseRelX = 0;
+        mouseRelY = 0;
 
         //if (SDL_WasInit(SDL_INIT_JOYSTICK))
         //    SDL_JoystickUpdate();
@@ -199,6 +204,8 @@ class EventManager
                 case SDL_MOUSEMOTION:
                     mouseX = event.motion.x;
                     mouseY = windowHeight - event.motion.y;
+                    mouseRelX = event.motion.xrel;
+                    mouseRelY = event.motion.yrel;
                     break;
 
                 case SDL_MOUSEBUTTONDOWN:

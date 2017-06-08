@@ -5,15 +5,16 @@ import dlib.core.stream;
 import dlib.filesystem.filesystem;
 import dlib.filesystem.stdfs;
 
+import dagon.core.ownership;
 import dagon.resource.asset;
 
 class TextAsset: Asset
 {
     string text;
 
-    this()
+    this(Owner o)
     {
-        
+        super(o);
     }
 
     ~this()

@@ -25,6 +25,8 @@ class Scene: EventListener
     SceneManager sceneManager;
     AssetManager assetManager;
     bool canRun = false;
+    bool releaseAtNextStep = false;
+    bool needToLoad = true;
 
     this(SceneManager smngr)
     {
@@ -35,9 +37,7 @@ class Scene: EventListener
 
     ~this()
     {
-        if (!released)
-            onRelease();
-
+        release();
         Delete(assetManager);
     }
 
@@ -60,7 +60,7 @@ class Scene: EventListener
             text = cast(TextAsset)assetManager.getAsset(filename);
         else
         {
-            text = New!TextAsset();
+            text = New!TextAsset(assetManager);
             addAsset(text, filename, preload);
         }
         return text;
@@ -73,7 +73,7 @@ class Scene: EventListener
             tex = cast(TextureAsset)assetManager.getAsset(filename);
         else
         {
-            tex = New!TextureAsset(assetManager.imageFactory);
+            tex = New!TextureAsset(assetManager.imageFactory, assetManager);
             addAsset(tex, filename, preload);
         }
         return tex;
@@ -86,7 +86,7 @@ class Scene: EventListener
             font = cast(FontAsset)assetManager.getAsset(filename);
         else
         {
-            font = New!FontAsset(height);
+            font = New!FontAsset(height, assetManager);
             addAsset(font, filename, preload);
         }
         return font;
@@ -162,46 +162,48 @@ class Scene: EventListener
 
     void load()
     {
-        onAssetsRequest();
-
-        float p = assetManager.nextLoadingPercentage;
-
-        assetManager.loadThreadSafePart();
-        while(assetManager.isLoading)
+        if (needToLoad)
         {
-            sceneManager.application.beginRender();
-            onLoading(p);
-            sceneManager.application.endRender();
-            p = assetManager.nextLoadingPercentage;
-        }
+            onAssetsRequest();
+            float p = assetManager.nextLoadingPercentage;
 
-        bool loaded = assetManager.loadThreadUnsafePart();
+            assetManager.loadThreadSafePart();
 
-        if (loaded)
-        {
-            onAllocate();
-            released = false;
-            canRun = true;
+            while(assetManager.isLoading)
+            {
+                sceneManager.application.beginRender();
+                onLoading(p);
+                sceneManager.application.endRender();
+                p = assetManager.nextLoadingPercentage;
+            }
+
+            bool loaded = assetManager.loadThreadUnsafePart();
+            
+            if (loaded)
+            {
+                onAllocate();
+                canRun = true;
+                needToLoad = false;
+            }
+            else
+            {
+                writeln("Exiting due to error while loading assets");
+                canRun = false;
+                eventManager.running = false;
+            }
         }
         else
         {
-            eventManager.running = false;
+            canRun = true;
         }
     }
 
-    bool released = true;
-
     void release()
     {
-        if (!released)
-        {
-            onRelease();
-            clearOwnedObjects();
-            assetManager.releaseAssets();
-
-            released = true;
-        }
-
+        onRelease();
+        clearOwnedObjects();
+        assetManager.releaseAssets();
+        needToLoad = true;
         canRun = false;
     }
 
@@ -219,11 +221,20 @@ class Scene: EventListener
 
     void update(double dt)
     {
-        processEvents();
         if (canRun)
         {
+            processEvents();
             assetManager.updateMonitor(dt);
             onUpdate(dt);
+        }
+
+        if (releaseAtNextStep)
+        {
+            end();
+            release();
+
+            releaseAtNextStep = false;
+            canRun = false;
         }
     }
 
@@ -270,55 +281,23 @@ class SceneManager: Owner
         scenesByName.remove(name);
     }
 
-    void setCurrentScene(Scene scene)
+    void goToScene(string name, bool releaseCurrent = true)
     {
-        if (currentScene)
-            currentScene.end();
-
-        currentScene = scene;
-        currentScene.start();
-    }
-
-    void setCurrentScene(string name)
-    {
-        setCurrentScene(scenesByName[name]);
-    }
-
-    void loadAndSwitchToScene(string name, bool releaseCurrentScene = true)
-    {
-        if (currentScene)
+        if (currentScene && releaseCurrent)
         {
-            currentScene.end();
-            if (releaseCurrentScene)
-            {
-                currentScene.release();
-            }
+            currentScene.releaseAtNextStep = true;
         }
 
         Scene scene = scenesByName[name];
-        writefln("Loading scene \"%s\"...", name);
+        
+        writefln("Loading scene \"%s\"", name);
+        
         scene.load();
-        writeln("OK");
-
-        writefln("Starting scene \"%s\"...", name);
         currentScene = scene;
         currentScene.start();
-        writeln("OK");
-
+        
         writefln("Running...", name);
     }
-
-/*
-    void preloadScene(string name)
-    {
-        scenesByName[name].load();
-    }
-
-    void releaseScene(string name)
-    {
-        scenesByName[name].release();
-    }
-*/
 
     void update(double dt)
     {
