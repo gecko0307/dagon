@@ -12,6 +12,7 @@ import dlib.filesystem.filesystem;
 import dlib.filesystem.stdfs;
 import derelict.opengl.gl;
 import dagon.core.ownership;
+import dagon.core.interfaces;
 import dagon.resource.asset;
 import dagon.graphics.mesh;
 
@@ -96,6 +97,7 @@ class ObjMesh: Owner, Mesh
             tri.t1[0] = texcoords1[f.t1[0]];
             tri.t1[1] = texcoords1[f.t1[1]];
             tri.t1[2] = texcoords1[f.t1[2]];
+            tri.normal = (tri.n[0] + tri.n[1] + tri.n[2]) / 3.0f;
 
             result = dg(tri);
             if (result)
@@ -109,7 +111,7 @@ class ObjMesh: Owner, Mesh
     {
     }
 
-    void render()
+    void render(RenderingContext* rc)
     {
         glEnable(GL_CULL_FACE);
         if (glIsList(displayList))

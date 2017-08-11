@@ -16,6 +16,7 @@ import dagon.logics.stdbehaviour;
 
 class Light: Drawable
 {
+    bool isParallel = false;
     Vector4f position;
     Color4f color;
     //Color4f ambientColor;
@@ -55,7 +56,7 @@ class Light: Drawable
     {
     }
 
-    void render()
+    void render(RenderingContext* rc)
     {
         if (debugDraw)
         {
@@ -83,6 +84,22 @@ Light pointLight(
         color,
         constantAttenuation, linearAttenuation,
         quadraticAttenuation);
+}
+
+Light parallelLight(
+    Vector3f dir,
+    Color4f color,
+    float constantAttenuation = 0.5f,
+    float linearAttenuation = 0.01f,
+    float quadraticAttenuation = 0.0f)
+{
+    auto l = New!Light(
+        Vector4f(-dir.x, -dir.y, -dir.z, 0.0f),
+        color,
+        constantAttenuation, linearAttenuation,
+        quadraticAttenuation);
+    l.isParallel = true;
+    return l;
 }
 
 enum maxLightsPerReceiver = 5;
@@ -186,11 +203,23 @@ class LightManager: Owner
         return light;
     }
 
+    Light addParallelLight(Vector3f dir, Color4f color)
+    {
+        Light light = parallelLight(dir, color);
+        lights.append(light);
+        //lightsToDelete.append(light);
+        return light;
+    }
+
     void calcLightBrightness(Light light, Vector3f objPos)
     {
         if (!light.enabled)
         {
             light.brightness = 0.0f;
+        }
+        else if (light.isParallel)
+        {
+            light.brightness = float.max;
         }
         else
         {

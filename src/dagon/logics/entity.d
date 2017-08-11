@@ -46,6 +46,8 @@ class Entity: Owner
     Material material;
     RenderingContext rcLocal;
 
+    bool visible = true;
+
     this(EventManager emngr, Owner owner)
     {
         super(owner);
@@ -134,6 +136,9 @@ class Entity: Owner
 
     void render(RenderingContext* rc)
     {
+        if (!visible)
+            return;
+
         foreach(i, ble; behaviours)
         {
             if (ble.valid)
@@ -150,17 +155,23 @@ class Entity: Owner
         rcLocal.modelMatrix = transformation;
         rcLocal.invModelMatrix = invTransformation;
 
-        if (material)
+        if (rcLocal.overrideMaterial)
+            rcLocal.overrideMaterial.bind(&rcLocal);
+        else if (material)
             material.bind(&rcLocal);
+
         if (drawable)
-            drawable.render();
-        if (material)
+            drawable.render(rc);
+
+        if (rcLocal.overrideMaterial)
+            rcLocal.overrideMaterial.bind(&rcLocal);
+        else if (material)
             material.unbind();
 
         foreach(i, ble; behaviours)
         {
             if (ble.valid)
-                ble.behaviour.render();
+                ble.behaviour.render(rc);
         }
 
         glPopMatrix();

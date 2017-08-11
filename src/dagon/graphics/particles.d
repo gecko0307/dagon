@@ -16,6 +16,7 @@ import dagon.logics.entity;
 import dagon.logics.behaviour;
 import dagon.graphics.texture;
 import dagon.graphics.view;
+import dagon.graphics.rc;
 
 struct Particle
 {
@@ -288,7 +289,7 @@ class ParticleSystem: Behaviour
         glEnd();
     }
 
-    override void render()
+    override void render(RenderingContext* rc)
     {
         glPushMatrix();
         // Get rid of entity's rotation/scaling - we are gonna work in world space

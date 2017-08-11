@@ -221,7 +221,7 @@ class Actor: Owner, Drawable
         }
     }
 
-    void render()
+    void render(RenderingContext* rc)
     {
         if (swapZY)
         {

@@ -17,14 +17,13 @@ enum int SF_PCF5 = 2;
 
 interface GenericMaterialBackend
 {
-    void attach(GenericMaterial mat);
-    void bind(RenderingContext* rc);
-    void unbind();
+    void bind(GenericMaterial mat, RenderingContext* rc);
+    void unbind(GenericMaterial mat);
 }
 
 class FixedPipelineBackend: Owner, GenericMaterialBackend
 {
-    GenericMaterial material;
+    //GenericMaterial material;
 
     MaterialInput* idiffuse;
     MaterialInput* ispecular;
@@ -39,11 +38,14 @@ class FixedPipelineBackend: Owner, GenericMaterialBackend
     {
         super(o);
     }
-
+/*
     void attach(GenericMaterial mat)
     {
         material = mat;
-
+    }
+*/
+    void bind(GenericMaterial mat, RenderingContext* rc)
+    {
         idiffuse = "diffuse" in mat.inputs;
         ispecular = "specular" in mat.inputs;
         ishadeless = "shadeless" in mat.inputs;
@@ -52,12 +54,6 @@ class FixedPipelineBackend: Owner, GenericMaterialBackend
         ibrightness = "brightness" in mat.inputs;
         iroughness = "roughness" in mat.inputs;
         ifogEnabled = "fogEnabled" in mat.inputs;
-    }
-
-    void bind(RenderingContext* rc)
-    {
-        if (!material)
-            return;
 
         glPushAttrib(GL_ENABLE_BIT);
 
@@ -81,6 +77,11 @@ class FixedPipelineBackend: Owner, GenericMaterialBackend
             glActiveTextureARB(GL_TEXTURE0_ARB);
             idiffuse.texture.bind();
 
+            //Vector4f ambientColor = rc.environment.ambientConstant;
+            //Vector4f diffuseColor = Vector4f(1.0f, 1.0f, 1.0f, a);
+            //glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambientColor.arrayof.ptr);
+            //glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuseColor.arrayof.ptr);
+            
             Vector4f diffuseColor = Vector4f(1.0f, 1.0f, 1.0f, a);
             glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuseColor.arrayof.ptr);
         }
@@ -138,10 +139,16 @@ class FixedPipelineBackend: Owner, GenericMaterialBackend
         }
     }
 
-    void unbind()
+    void unbind(GenericMaterial mat)
     {
-        if (!material)
-            return;
+        idiffuse = "diffuse" in mat.inputs;
+        ispecular = "specular" in mat.inputs;
+        ishadeless = "shadeless" in mat.inputs;
+        iemit = "emit" in mat.inputs;
+        ialpha = "alpha" in mat.inputs;
+        ibrightness = "brightness" in mat.inputs;
+        iroughness = "roughness" in mat.inputs;
+        ifogEnabled = "fogEnabled" in mat.inputs;
 
         if (idiffuse.texture)
         {
@@ -157,10 +164,8 @@ class FixedPipelineBackend: Owner, GenericMaterialBackend
 
 class GenericMaterial: Material
 {
-    GenericMaterialBackend backend;
+    protected GenericMaterialBackend _backend;
     protected FixedPipelineBackend fixedBackend;
-
-    //Environment environment;
 
     this(Owner o)
     {
@@ -184,24 +189,29 @@ class GenericMaterial: Material
         setInput("fogEnabled", true);
 
         fixedBackend = New!FixedPipelineBackend(this);
-        fixedBackend.attach(this);
+        _backend = fixedBackend;
+    }
 
-        // TODO: choose backend based on global settings
-        backend = fixedBackend;
+    GenericMaterialBackend backend()
+    {
+        return _backend;
+    }
 
-        //environment = env;
+    void backend(GenericMaterialBackend b)
+    {
+        _backend = b;
     }
 
     override void bind(RenderingContext* rc)
     {
-        if (backend)
-            backend.bind(rc);
+        if (_backend)
+            _backend.bind(this, rc);
     }
 
     override void unbind()
     {
-        if (backend)
-            backend.unbind();
+        if (_backend)
+            _backend.unbind(this);
     }
 }
 

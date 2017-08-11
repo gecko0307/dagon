@@ -9,7 +9,9 @@ import dlib.core.memory;
 import dlib.image.image;
 import dlib.math.vector;
 
-class Texture
+import dagon.core.ownership;
+
+class Texture: Owner
 {
     GLuint tex;
     GLenum format;
@@ -20,15 +22,17 @@ class Texture
     Vector2f scale;
     float rotation;
 
-    this()
+    this(Owner o)
     {
+        super(o);
         translation = Vector2f(0.0f, 0.0f);
         scale = Vector2f(1.0f, 1.0f);
         rotation = 0.0f;
     }
 
-    this(uint w, uint h)
+    this(uint w, uint h, Owner o)
     {
+        super(o);
         translation = Vector2f(0.0f, 0.0f);
         scale = Vector2f(1.0f, 1.0f);
         rotation = 0.0f;
@@ -46,8 +50,9 @@ class Texture
     }
 
 
-    this(SuperImage img, bool genMipmaps = true)
+    this(SuperImage img, Owner o, bool genMipmaps = true)
     {
+        super(o);
         translation = Vector2f(0.0f, 0.0f);
         scale = Vector2f(1.0f, 1.0f);
         rotation = 0.0f;

@@ -75,7 +75,7 @@ class BaseScene3D: Scene
     override void onStart()
     {
         rc3d.init(eventManager, environment);
-        rc3d.projectionMatrix = perspectiveMatrix(60.0f, eventManager.aspectRatio, 0.1f, 100.0f);
+        rc3d.projectionMatrix = perspectiveMatrix(60.0f, eventManager.aspectRatio, 0.1f, 500.0f);
 
         rc2d.init(eventManager, environment);
         rc2d.projectionMatrix = orthoMatrix(0.0f, eventManager.windowWidth, 0.0f, eventManager.windowHeight, 0.0f, 100.0f);
@@ -116,25 +116,35 @@ class BaseScene3D: Scene
         }
     }
 
+    void renderEntities3D(RenderingContext* rc)
+    {
+        rc.apply();
+        foreach(e; entities3D)
+            e.render(rc);
+    }
+
+    void renderEntities2D(RenderingContext* rc)
+    {
+        rc.apply();
+        foreach(e; entities2D)
+            e.render(rc);
+    }
+
     override void onRender()
     {     
         glEnable(GL_DEPTH_TEST);
+        glEnable(GL_SCISSOR_TEST);
+        glScissor(0, 0, eventManager.windowWidth, eventManager.windowHeight);
 
         glViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
         glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        rc3d.apply();
+        renderEntities3D(&rc3d);
 
-        foreach(e; entities3D)
-            e.render(&rc3d);
+        glDisable(GL_DEPTH_TEST);
 
-        glDisable(GL_DEPTH_TEST); 
-
-        rc2d.apply();
-
-        foreach(e; entities2D)
-            e.render(&rc2d);
+        renderEntities2D(&rc2d);
     } 
 }
 

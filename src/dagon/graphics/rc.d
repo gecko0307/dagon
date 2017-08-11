@@ -5,6 +5,7 @@ import dlib.math.matrix;
 import derelict.opengl.gl;
 import dagon.core.event;
 import dagon.graphics.environment;
+import dagon.graphics.material;
 
 struct RenderingContext
 {
@@ -23,6 +24,7 @@ struct RenderingContext
 
     EventManager eventManager;
     Environment environment;
+    Material overrideMaterial;
     
     void init(EventManager emngr, Environment env = null)
     {
@@ -37,6 +39,7 @@ struct RenderingContext
         normalMatrix = Matrix3x3f.identity;
         eventManager = emngr;
         environment = env;
+        overrideMaterial = null;
     }
 
     void apply()

@@ -28,14 +28,14 @@ class TextureAsset: Asset
     {
         super(o);
         imageFactory = imgfac;
-        texture = New!Texture();
+        texture = New!Texture(this);
     }
 
     ~this()
     {
         release();
-        if (texture)
-            Delete(texture);
+        //if (texture)
+        //    Delete(texture);
     }
 
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)

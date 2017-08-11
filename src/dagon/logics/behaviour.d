@@ -19,6 +19,6 @@ class Behaviour: EventListener, Drawable
     void update(double dt) {}
     void bind() {}
     void unbind() {}
-    void render() {}
+    void render(RenderingContext* rc) {}
 }
 

@@ -170,6 +170,8 @@ class Application: EventListener
         glClearDepth(1.0);
         glDepthFunc(GL_LESS);
         glEnable(GL_DEPTH_TEST);
+
+        glEnable(GL_POLYGON_OFFSET_FILL);
         
         checkGLError();
     }

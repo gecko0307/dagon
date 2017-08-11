@@ -45,7 +45,7 @@ class TextLine: Owner, Drawable
     {
     }
 
-    override void render()
+    override void render(RenderingContext* rc)
     {
         glPushAttrib(GL_LIST_BIT | GL_CURRENT_BIT  | GL_ENABLE_BIT | GL_TRANSFORM_BIT);
         glDisable(GL_LIGHTING);

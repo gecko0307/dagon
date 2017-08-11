@@ -10,18 +10,31 @@ import dagon.core.ownership;
 class ShapePlane: Owner, Drawable
 {
     uint displayList;
+    uint numTiles = 10;
 
     this(float sx, float sz, Owner owner)
     {
         super(owner);
         displayList = glGenLists(1);
         glNewList(displayList, GL_COMPILE);
+        
+        float px = -sx * 0.5f;
+        float py = -sz * 0.5f;
+        
+        float tileWidth = sx / numTiles;
+        float tileHeight = sz / numTiles;
 
         glBegin(GL_QUADS);
-        glTexCoord2f(0, 1); glNormal3f(0, 1, 0); glVertex3f(-sx, 0,  sz);
-        glTexCoord2f(1, 1); glNormal3f(0, 1, 0); glVertex3f( sx, 0,  sz);
-        glTexCoord2f(1, 0); glNormal3f(0, 1, 0); glVertex3f( sx, 0, -sz);
-        glTexCoord2f(0, 0); glNormal3f(0, 1, 0); glVertex3f(-sx, 0, -sz);
+        foreach(y; 0..numTiles)
+        foreach(x; 0..numTiles)
+        {
+            float vx = px + x * tileWidth;
+            float vy = py + y * tileHeight;
+            glTexCoord2f(0, 1); glNormal3f(0, 1, 0); glVertex3f(vx, 0, vy + tileHeight);
+            glTexCoord2f(1, 1); glNormal3f(0, 1, 0); glVertex3f(vx + tileWidth, 0, vy + tileHeight);
+            glTexCoord2f(1, 0); glNormal3f(0, 1, 0); glVertex3f(vx + tileWidth, 0, vy);
+            glTexCoord2f(0, 0); glNormal3f(0, 1, 0); glVertex3f(vx, 0, vy);
+        }
         glEnd();
 
         glEndList();
@@ -31,7 +44,7 @@ class ShapePlane: Owner, Drawable
     {
     }
 
-    void render()
+    void render(RenderingContext* rc)
     {
         glCallList(displayList);
     }
@@ -101,7 +114,7 @@ class ShapeBox: Owner, Drawable
     {
     }
 
-    void render()
+    void render(RenderingContext* rc)
     {
         glCallList(displayList);
     }
@@ -136,7 +149,7 @@ class ShapeSphere: Owner, Drawable
     {
     }
 
-    void render()
+    void render(RenderingContext* rc)
     {
         glCallList(displayList);
     }
@@ -147,14 +160,14 @@ class ShapeSphere: Owner, Drawable
     }
 }
 
-/*
-class ShapeCylinder: Drawable
+class ShapeCylinder: Owner, Drawable
 {
     // TODO: slices, stacks
     uint displayList;
 
-    this(float h, float r)
+    this(float h, float r, Owner o)
     {
+        super(o);
         GLUquadricObj* quadric = gluNewQuadric();
         gluQuadricNormals(quadric, GLU_SMOOTH);
         gluQuadricTexture(quadric, GL_TRUE);
@@ -174,7 +187,11 @@ class ShapeCylinder: Drawable
         gluDeleteQuadric(quadric);
     }
 
-    override void draw(double dt)
+    void update(double dt)
+    {
+    }
+
+    void render(RenderingContext* rc)
     {
         glCallList(displayList);
     }
@@ -185,6 +202,7 @@ class ShapeCylinder: Drawable
     }
 }
 
+/*
 class ShapeCone: Drawable
 {
     // TODO: slices, stacks
