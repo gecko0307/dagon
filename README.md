@@ -5,21 +5,21 @@
 
 Dagon
 =====
-Dagon is a 3D/2D game development framework for D. It is a work-in-progress reincarnation of [DGL](https://github.com/gecko0307/dgl) with several architecture improvements. The most significant changes are the following:
+Dagon is a 3D/2D game development framework for D. It is a work-in-progress reincarnation of [DGL](https://github.com/gecko0307/dgl) with several architecture improvements. Surrently Dagon has the following features:
 
-* Based on SDL2
+* Rendering static and animated meshes, loading OBJ and [IQM](https://github.com/lsalzman/iqm) formats
+* Textures in PNG, JPG, TGA, BMP formats
+* Flexible material system with simple abstract API and different backends (for example, fixed pipeline or GLSL-based). You can implement custom materials, with your own shaders and parameters
+* UTF-8 text rendering using TTF fonts
+* Shadow maps
+* Particle system with force fields
 * Ownership memory model - every object belongs to some object (owner), and deleting the owner will delete all of its owned objects. This allows semi-automatic memory management - you have to manually delete only root owners
 * Entity-component model that allows game objects behave differently and combine many behaviours
 * Scene management. Any scene has its own assets, entities and logical context
 * Live asset reloading - asset can be autimatically reloaded when the file is modified with external application
-* OBJ models support
-* [IQM](https://github.com/lsalzman/iqm) format support
-* New material system with simple abstract API and different backends (fixed pipeline, PBR, non-PBR, etc.). Only fixed pipeline backend is implemented at the moment
-* More texture formats support: PNG, JPG, TGA, BMP
-* TTF fonts are now compatible with asset manager and VFS
-* [Box](https://github.com/gecko0307/box) container support.
+* [Box](https://github.com/gecko0307/box) container support for assets.
 
-Dagon is still under development and doesn't have eye candy features yet. It's just a framework that you can use to build your own OpenGL-based graphics pipeline - just define your own Drawables, Behaviours and Scenes. In future, some functionality from DGL will be ported to Dagon. Currently it is not recommended to use Dagon in production due to unstable API.
+Dagon is still under development and lacks a lot of important functionality. In future, some functionality from DGL will be ported to Dagon. Currently it is not recommended to use Dagon in production due to unstable API.
 
 Prerequisites
 -------------
