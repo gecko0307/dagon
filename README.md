@@ -21,6 +21,13 @@ Dagon is a 3D/2D game development framework for D. It is a work-in-progress rein
 
 Dagon is still under development and lacks a lot of important functionality. In future, some functionality from DGL will be ported to Dagon. Currently it is not recommended to use Dagon in production due to unstable API.
 
+WIP features:
+
+* Clustered forward shading
+* Normal mapping and parallax mapping
+* FXAA
+* SSAO
+
 Prerequisites
 -------------
 Dagon is based on OpenGL 1.3 + a number of common extensions, and should run virtually on any hardware. Currently we are not considering implementing OpenGL 3.x/4.x renderer or adding Vulkan support.
