@@ -241,9 +241,9 @@ class ClusteredLightManager: Owner
         {        
             Vector3f lightPosEye = light.position * view.viewMatrix;
             
-            lights[i] = lightPosEye;
-            lights[maxNumLights + i] = light.color;
-            lights[maxNumLights * 2 + i] = Vector2f(light.radius, 0, 0);
+            lights[cast(uint)i] = lightPosEye;
+            lights[maxNumLights + cast(uint)i] = light.color;
+            lights[maxNumLights * 2 + cast(uint)i] = Vector2f(light.radius, 0, 0);
 
             Vector2f lightPosXZ = Vector2f(light.position.x, light.position.z);
             Circle lightCircle = Circle(lightPosXZ, light.radius);
@@ -262,7 +262,7 @@ class ClusteredLightManager: Owner
                     auto c = &clusterData[y * domainSize + x];
                     if (c.numLights < maxLightsPerNode)
                     {
-                        c.lights[c.numLights] = i;
+                        c.lights[c.numLights] = cast(uint)i;
                         c.numLights = c.numLights + 1;
                     }
                 }
@@ -282,7 +282,7 @@ class ClusteredLightManager: Owner
             if (c.numLights)
             {                
                 foreach(i; 0..c.numLights)
-                    lightIndices[offset + i] = c.lights[i];
+                    lightIndices[offset + cast(uint)i] = c.lights[i];
 
                 clusters[ci] = offset | (c.numLights << 16);
                 
