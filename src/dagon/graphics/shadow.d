@@ -104,6 +104,8 @@ class ShadowArea: Behaviour
 
         glPushMatrix();
         glTranslatef(0, 0, -depth * 0.5f - start);
+        auto r = environment.sunRotation.toMatrix4x4;
+        glMultMatrixf(r.arrayof.ptr);
         box.render(rc);
 
         glColor4f(1.0f, 1.0f, 0.0f, 1.0f);
