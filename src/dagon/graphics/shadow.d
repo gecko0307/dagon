@@ -95,15 +95,16 @@ class ShadowArea: Behaviour
 
         glColor4f(1.0f, 1.0f, 0.0f, 1.0f);
 
+        glPushMatrix();
+        glMultMatrixf(invViewMatrix.arrayof.ptr);
+        
         glPointSize(5.0f);
         glBegin(GL_POINTS);
         glVertex3f(0, 0, 0);
         glEnd();
         glPointSize(1.0f);
         glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-
-        glPushMatrix();
-        glMultMatrixf(invViewMatrix.arrayof.ptr);
+        
         glTranslatef(0, 0, -depth * 0.5f - start);
         box.render(rc);
 
