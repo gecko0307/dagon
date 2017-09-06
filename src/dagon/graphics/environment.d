@@ -1,6 +1,7 @@
 module dagon.graphics.environment;
 
 import dlib.image.color;
+import dlib.math.utils;
 import dlib.math.vector;
 import dlib.math.quaternion;
 import dlib.math.interpolation;
