@@ -28,7 +28,7 @@ class Environment: Owner
     {
         super(o);
         
-        sunRotation = Quaternionf.identity;
+        sunRotation = rotationQuaternion(Axis.x, degtorad(-45.0f)); //Quaternionf.identity;
     }
     
     Vector3f sunDirection()
