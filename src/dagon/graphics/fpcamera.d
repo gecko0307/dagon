@@ -24,9 +24,11 @@ class FirstPersonCamera: Owner
     {
         super(o);
         this.position = position;
+        transformation = worldTrans();       
+        invTransformation = transformation.inverse;
     }
     
-    Matrix4x4f worldTrans(double dt)
+    Matrix4x4f worldTrans()
     {  
         Matrix4x4f m = translationMatrix(position + Vector3f(0, 1, 0));
         m *= rotationMatrix(Axis.y, degtorad(turn));
@@ -38,7 +40,7 @@ class FirstPersonCamera: Owner
 
     void update(double dt)
     {
-        transformation = worldTrans(dt);       
+        transformation = worldTrans();       
         invTransformation = transformation.inverse;
     }
 

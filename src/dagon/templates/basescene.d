@@ -21,7 +21,7 @@ class BaseScene3D: Scene
 {
     LightManager lightManager;
     Environment environment;
-    Color4f backgroundColor; // TODO: move this to Environment
+    //Color4f backgroundColor; // TODO: move this to Environment
 
     RenderingContext rc3d; 
     RenderingContext rc2d; 
@@ -36,7 +36,7 @@ class BaseScene3D: Scene
     this(SceneManager smngr)
     {
         super(smngr);
-        backgroundColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
+        //backgroundColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
     }
 
     Entity createEntity2D()
@@ -118,32 +118,34 @@ class BaseScene3D: Scene
 
     void renderEntities3D(RenderingContext* rc)
     {
-        rc.apply();
+        glEnable(GL_DEPTH_TEST);
         foreach(e; entities3D)
             e.render(rc);
     }
 
     void renderEntities2D(RenderingContext* rc)
     {
-        rc.apply();
+        glDisable(GL_DEPTH_TEST);
         foreach(e; entities2D)
             e.render(rc);
     }
-
-    override void onRender()
-    {     
-        glEnable(GL_DEPTH_TEST);
+    
+    void prepareRender()
+    {
         glEnable(GL_SCISSOR_TEST);
         glScissor(0, 0, eventManager.windowWidth, eventManager.windowHeight);
 
         glViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
-        glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
+        glClearColor(environment.backgroundColor.r, environment.backgroundColor.g, environment.backgroundColor.b, environment.backgroundColor.a);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
 
+    override void onRender()
+    {     
+        prepareRender();
+        rc3d.apply();
         renderEntities3D(&rc3d);
-
-        glDisable(GL_DEPTH_TEST);
-
+        rc2d.apply();
         renderEntities2D(&rc2d);
     } 
 }

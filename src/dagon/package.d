@@ -44,12 +44,22 @@ public
     import dagon.graphics.animmodel;
     import dagon.graphics.light;
     import dagon.graphics.material;
-    import dagon.graphics.genericmaterial;
     import dagon.graphics.environment;
     import dagon.graphics.mesh;
     import dagon.graphics.view;
     import dagon.graphics.particles;
     import dagon.graphics.shadow;
+    import dagon.graphics.clustered;
+    import dagon.graphics.framebuffer;
+    import dagon.graphics.postproc;
+    
+    import dagon.graphics.materials.generic;
+    import dagon.graphics.materials.fixed;
+    import dagon.graphics.materials.bp;
+    import dagon.graphics.materials.bpclustered;
+    
+    import dagon.graphics.filters.fxaa;
+    import dagon.graphics.filters.lens;
 
     import dagon.ui.font;
     import dagon.ui.ftfont;

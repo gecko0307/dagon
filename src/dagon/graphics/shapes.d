@@ -10,9 +10,8 @@ import dagon.core.ownership;
 class ShapePlane: Owner, Drawable
 {
     uint displayList;
-    uint numTiles = 10;
 
-    this(float sx, float sz, Owner owner)
+    this(float sx, float sz, uint numTiles, Owner owner)
     {
         super(owner);
         displayList = glGenLists(1);

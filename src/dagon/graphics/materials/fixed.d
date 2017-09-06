@@ -1,4 +1,4 @@
-module dagon.graphics.genericmaterial;
+module dagon.graphics.materials.fixed;
 
 import dlib.core.memory;
 import dlib.math.vector;
@@ -7,24 +7,11 @@ import derelict.opengl.gl;
 import derelict.opengl.glext;
 import dagon.core.ownership;
 import dagon.graphics.material;
+import dagon.graphics.materials.generic;
 import dagon.graphics.rc;
-
-enum int SF_None = 0;
-enum int SF_PCF3 = 1;
-enum int SF_PCF5 = 2;
-
-// TODO: output modes
-
-interface GenericMaterialBackend
-{
-    void bind(GenericMaterial mat, RenderingContext* rc);
-    void unbind(GenericMaterial mat);
-}
 
 class FixedPipelineBackend: Owner, GenericMaterialBackend
 {
-    //GenericMaterial material;
-
     MaterialInput* idiffuse;
     MaterialInput* ispecular;
     MaterialInput* ishadeless;
@@ -38,12 +25,7 @@ class FixedPipelineBackend: Owner, GenericMaterialBackend
     {
         super(o);
     }
-/*
-    void attach(GenericMaterial mat)
-    {
-        material = mat;
-    }
-*/
+
     void bind(GenericMaterial mat, RenderingContext* rc)
     {
         idiffuse = "diffuse" in mat.inputs;
@@ -54,6 +36,9 @@ class FixedPipelineBackend: Owner, GenericMaterialBackend
         ibrightness = "brightness" in mat.inputs;
         iroughness = "roughness" in mat.inputs;
         ifogEnabled = "fogEnabled" in mat.inputs;
+        
+        Color4f one = Color4f(1, 1, 1, 1);
+        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, one.arrayof.ptr);
 
         glPushAttrib(GL_ENABLE_BIT);
 
@@ -159,59 +144,3 @@ class FixedPipelineBackend: Owner, GenericMaterialBackend
         glPopAttrib();
     }
 }
-
-// TODO: NonPBRBackend, PBRBackend
-
-class GenericMaterial: Material
-{
-    protected GenericMaterialBackend _backend;
-    protected FixedPipelineBackend fixedBackend;
-
-    this(Owner o)
-    {
-        super(o);
-
-        setInput("diffuse", Color4f(0.8f, 0.8f, 0.8f, 1.0f));
-        setInput("specular", Color4f(1.0f, 1.0f, 1.0f, 1.0f));
-        setInput("shadeless", false);
-        setInput("emit", Color4f(0.0f, 0.0f, 0.0f, 1.0f));
-        setInput("alpha", 1.0f);
-        setInput("brightness", 1.0f);
-        setInput("roughness", 0.5f);
-        setInput("metallic", 0.0f);
-        setInput("normal", Vector3f(0.0f, 0.0f, 1.0f));
-        setInput("height", 0.0f);
-        setInput("parallaxEnabled", false);
-        setInput("parallaxScale", 0.03f);
-        setInput("parallaxBias", -0.01f);
-        setInput("shadowsEnabled", true);
-        setInput("shadowFilter", SF_None);
-        setInput("fogEnabled", true);
-
-        fixedBackend = New!FixedPipelineBackend(this);
-        _backend = fixedBackend;
-    }
-
-    GenericMaterialBackend backend()
-    {
-        return _backend;
-    }
-
-    void backend(GenericMaterialBackend b)
-    {
-        _backend = b;
-    }
-
-    override void bind(RenderingContext* rc)
-    {
-        if (_backend)
-            _backend.bind(this, rc);
-    }
-
-    override void unbind()
-    {
-        if (_backend)
-            _backend.unbind(this);
-    }
-}
-

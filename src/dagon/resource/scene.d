@@ -114,7 +114,7 @@ class Scene: EventListener
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
 
-        glColor4f(1, 1, 1, 1);
+        glColor4f(1.0, 1.0, 1.0, 1);
         float margin = 2.0f;
         float w = percentage * eventManager.windowWidth;
         glBegin(GL_QUADS);

@@ -239,6 +239,7 @@ class Actor: Owner, Drawable
 
         foreach(ref fg; model.getFacegroups)
         {
+            glActiveTextureARB(GL_TEXTURE0_ARB);
             glDisable(GL_TEXTURE_2D);
             if (fg.texture)
                 fg.texture.bind();
