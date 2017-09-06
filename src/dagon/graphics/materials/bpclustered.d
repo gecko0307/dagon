@@ -30,7 +30,7 @@ import dagon.graphics.materials.generic;
  * Requires GL_EXT_gpu_shader4.
  */
 
-class PlinnPhongClusteredBackend: Owner, GenericMaterialBackend
+class BlinnPhongClusteredBackend: Owner, GenericMaterialBackend
 {
     ClusteredLightManager lightManager;
     

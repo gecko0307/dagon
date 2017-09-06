@@ -23,7 +23,7 @@ import dagon.graphics.texture;
 import dagon.graphics.material;
 import dagon.graphics.materials.generic;
 
-class PlinnPhongBackend: Owner, GenericMaterialBackend
+class BlinnPhongBackend: Owner, GenericMaterialBackend
 {
     Color4f environmentColor;
     ShadowMap shadowMap1;
