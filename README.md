@@ -7,26 +7,31 @@ Dagon
 =====
 Dagon is a 3D/2D game development framework for D. It is a work-in-progress reincarnation of [DGL](https://github.com/gecko0307/dgl) with several architecture improvements. Surrently Dagon has the following features:
 
-* Rendering static and animated meshes, loading OBJ and [IQM](https://github.com/lsalzman/iqm) formats
+* Static and animated meshes, OBJ and [IQM](https://github.com/lsalzman/iqm) formats support
 * Textures in PNG, JPG, TGA, BMP formats
 * Flexible material system with simple abstract API and different backends (for example, fixed pipeline or GLSL-based). You can implement custom materials, with your own shaders and parameters
-* UTF-8 text rendering using TTF fonts
+* Clustered forward shading (variable number of lights per fragment using spatial hashing)
+* Normal/parallax mapping
 * Shadow maps
 * Particle system with force fields
+* Post-processing filters (FXAA, lens distortion)
+* UTF-8 text rendering using TTF fonts via Freetype
 * Ownership memory model - every object belongs to some object (owner), and deleting the owner will delete all of its owned objects. This allows semi-automatic memory management - you have to manually delete only root owners
 * Entity-component model that allows game objects behave differently and combine many behaviours
 * Scene management. Any scene has its own assets, entities and logical context
 * Live asset reloading - asset can be autimatically reloaded when the file is modified with external application
 * [Box](https://github.com/gecko0307/box) container support for assets.
 
-Dagon is still under development and lacks a lot of important functionality. In future, some functionality from DGL will be ported to Dagon. Currently it is not recommended to use Dagon in production due to unstable API.
+Dagon is still under development and lacks a lot of important functionality. Currently it is not recommended to use Dagon in production due to unstable API.
 
-WIP features:
+Upcoming plans:
 
-* Clustered forward shading
-* Normal mapping and parallax mapping
-* FXAA
+* PBR, IBL
 * SSAO
+* Dynamic skydome
+* Water with reflections and refractions
+* Camera motion blur
+* Bloom
 
 Prerequisites
 -------------
