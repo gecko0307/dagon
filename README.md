@@ -13,6 +13,7 @@ Dagon is a 3D/2D game development framework for D. It is a work-in-progress rein
 * Clustered forward shading (variable number of lights per fragment using spatial hashing)
 * Normal/parallax mapping
 * Shadow maps
+* Dynamic skydome with sun and day/night cycle
 * Particle system with force fields
 * Post-processing filters (FXAA, lens distortion)
 * UTF-8 text rendering using TTF fonts via Freetype
@@ -27,9 +28,9 @@ Dagon is still under development and lacks a lot of important functionality. Cur
 Upcoming plans:
 
 * PBR, IBL
-* SSAO
-* Dynamic skydome
 * Water with reflections and refractions
+* Terrain renderer
+* SSAO
 * Camera motion blur
 * Bloom
 
@@ -39,7 +40,7 @@ Dagon is based on OpenGL 1.3 + a number of common extensions, and should run vir
 
 Dagon is known to work on Windows, Linux, FreeBSD and OSX.
 
-To use Dagon, a number of libraries should be installed, namely SDL2 and Freetype. If you don't have them installed system-wide (which is a common case on Windows), you can use the libraries provided [here](https://github.com/gecko0307/dagon/releases/tag/v0.0.2). Currently we provide libraries only for Windows and Linux. Download an archive for your system and place the `lib` folder in your project's working directory. Dagon will automatically detect and try to load them. If there are no local libraries in `lib` directory, it will use system ones.
+To use Dagon, a number of libraries should be installed, namely SDL2 and Freetype. If you don't have them installed system-wide (which is a common case on Windows), you can use the libraries provided [here](https://github.com/gecko0307/dagon/releases/tag/v0.0.2). Currently we provide libraries only for Windows and Linux. Download an archive for your system and place the `lib` folder to your project's working directory. Dagon will automatically detect and try to load them. If there are no local libraries in `lib` directory, it will use system ones.
 
 Demos
 -----
