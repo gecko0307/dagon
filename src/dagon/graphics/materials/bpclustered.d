@@ -118,8 +118,8 @@ class BlinnPhongClusteredBackend: Owner, GenericMaterialBackend
         
         #define PI 3.14159265
         
-        const float parallaxScale = 0.03;
-        const float parallaxBias = -0.01;
+        uniform float parallaxScale;
+        uniform float parallaxBias;
         
         mat3 cotangentFrame(vec3 N, vec3 p, vec2 uv)
         {
@@ -274,7 +274,10 @@ class BlinnPhongClusteredBackend: Owner, GenericMaterialBackend
     GLint locSunColor;
     GLint locShadowSize;
     
-    GLint locRoughness; 
+    GLint locRoughness;
+
+    GLint locParallaxScale;
+    GLint locParallaxBias; 
     
     this(ClusteredLightManager clm, Owner o)
     {
@@ -342,6 +345,9 @@ class BlinnPhongClusteredBackend: Owner, GenericMaterialBackend
         locShadowSize = glGetUniformLocationARB(shaderProg, "shadowMapSize");
         
         locRoughness = glGetUniformLocationARB(shaderProg, "roughness");
+        
+        locParallaxScale = glGetUniformLocationARB(shaderProg, "parallaxScale");
+        locParallaxBias = glGetUniformLocationARB(shaderProg, "parallaxBias");
 
         defaultShadowMat = Matrix4x4f.zero; // zero shadow matrix is used when there's no shadow map
         defaultLightDir = Vector3f(0.0f, 1.0f, 0.0f);
@@ -383,13 +389,23 @@ class BlinnPhongClusteredBackend: Owner, GenericMaterialBackend
             inormal.texture = makeOnePixelTexture(mat, color);
         }
         
+        float parallaxScale = 0.0f;
+        float parallaxBias = 0.0f;
         if (iheight.texture is null)
         {
-            Color4f color = Color4f(0, 0, 0, 0);
+            Color4f color = Color4f(0.3, 0.3, 0.3, 0);
             iheight.texture = makeOnePixelTexture(mat, color);
+        }
+        else
+        {
+            parallaxScale = 0.03f;
+            parallaxBias = -0.01f;
         }
     
         glUseProgramObjectARB(shaderProg);
+        
+        glUniform1fARB(locParallaxScale, parallaxScale);
+        glUniform1fARB(locParallaxBias, parallaxBias);
         
         glUniform1fARB(locRoughness, iroughness.asFloat);
         
