@@ -23,15 +23,15 @@ class Environment: Owner
     Color4f sunHorizonColor = Color4f(0.8, 0.3, 0.0, 1.0);
     Quaternionf sunRotation;
     
-    Color4f skyZenithColor = Color4f(0.5, 0.7, 1.0, 1.0);
+    Color4f skyZenithColor = Color4f(0.223, 0.572, 0.752, 1.0);
     Color4f skyHorizonColor = Color4f(0.9, 1.0, 1.0, 1.0);
     
-    Color4f skyZenithColorAtMidday = Color4f(0.5, 0.7, 1.0, 1.0);
-    Color4f skyZenithColorAtSunset = Color4f(0.2, 0.4, 0.5, 1.0);
-    Color4f skyZenithColorAtNight = Color4f(0.0, 0.0, 0.2, 1.0);
+    Color4f skyZenithColorAtMidday = Color4f(0.223, 0.572, 0.752, 1.0);
+    Color4f skyZenithColorAtSunset = Color4f(0.149, 0.243, 0.290, 1.0);
+    Color4f skyZenithColorAtNight = Color4f(0.05, 0.0, 0.1, 1.0);
     
     Color4f skyHorizonColorAtMidday = Color4f(0.9, 1.0, 1.0, 1.0);
-    Color4f skyHorizonColorAtSunset = Color4f(0.8, 0.3, 0.1, 1.0);
+    Color4f skyHorizonColorAtSunset = Color4f(1, 0.588, 0.180, 1.0);
     Color4f skyHorizonColorAtNight = Color4f(0.0, 0.0, 0.0, 1.0);
 
     // TODO: shadow map (CSM)
