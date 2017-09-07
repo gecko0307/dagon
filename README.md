@@ -23,6 +23,8 @@ Dagon is a 3D/2D game development framework for D. It is a work-in-progress rein
 * Live asset reloading - asset can be autimatically reloaded when the file is modified with external application
 * [Box](https://github.com/gecko0307/box) container support for assets.
 
+[![Screenshot1](/screenshots/main-thumb.jpg)](/screenshots/main.jpg)
+
 Dagon is still under development and lacks a lot of important functionality. Currently it is not recommended to use Dagon in production due to unstable API.
 
 Upcoming plans:
