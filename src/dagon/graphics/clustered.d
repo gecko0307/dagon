@@ -12,7 +12,6 @@ import dlib.image.color;
 import derelict.opengl.gl;
 import derelict.opengl.glext;
 
-//import dagon.core.interfaces;
 import dagon.core.ownership;
 import dagon.graphics.view;
 import dagon.graphics.rc;
@@ -226,7 +225,7 @@ class ClusteredLightManager: Owner
         glDisable(GL_TEXTURE_1D);
     }
 
-    void update()
+    void update(double dt)
     {
         foreach(ref v; clusters)
             v = 0;

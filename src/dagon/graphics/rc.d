@@ -16,6 +16,8 @@ struct RenderingContext
     Matrix4x4f modelMatrix;
     Matrix4x4f invModelMatrix;
 
+    Vector3f cameraPosition;
+
     Matrix4x4f viewMatrix;
     Matrix4x4f invViewMatrix;
 
@@ -26,13 +28,14 @@ struct RenderingContext
     Environment environment;
     Material overrideMaterial;
     
-    void init(EventManager emngr, Environment env = null)
+    void init(EventManager emngr, Environment env)
     {
         position = Vector3f(0.0f, 0.0f, 0.0f);
         rotation = Matrix3x3f.identity;
         scaling = Vector3f(1.0f, 1.0f, 1.0f);
         modelMatrix = Matrix4x4f.identity;
         invModelMatrix = Matrix4x4f.identity;
+        cameraPosition = Vector3f(0.0f, 0.0f, 0.0f);
         viewMatrix = Matrix4x4f.identity;
         invViewMatrix = Matrix4x4f.identity;
         projectionMatrix = Matrix4x4f.identity;

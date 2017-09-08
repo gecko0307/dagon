@@ -21,7 +21,6 @@ class BaseScene3D: Scene
 {
     LightManager lightManager;
     Environment environment;
-    //Color4f backgroundColor; // TODO: move this to Environment
 
     RenderingContext rc3d; 
     RenderingContext rc2d; 
@@ -36,7 +35,6 @@ class BaseScene3D: Scene
     this(SceneManager smngr)
     {
         super(smngr);
-        //backgroundColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
     }
 
     Entity createEntity2D()
@@ -100,13 +98,14 @@ class BaseScene3D: Scene
         {
             timer -= fixedTimeStep;
 
-            onLogicsUpdate(fixedTimeStep);
-
             if (view)
             {
                 view.update(fixedTimeStep);
                 view.prepareRC(&rc3d);
             }
+
+            onLogicsUpdate(fixedTimeStep);
+            environment.update(dt);
 
             foreach(e; entities3D)
                 e.update(fixedTimeStep);
@@ -149,4 +148,3 @@ class BaseScene3D: Scene
         renderEntities2D(&rc2d);
     } 
 }
-

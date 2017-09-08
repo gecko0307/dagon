@@ -28,7 +28,7 @@ import dagon.graphics.environment;
 
 import dagon.templates.basescene;
 
-class ShadowArea: Behaviour
+class ShadowArea: Owner, Drawable
 {
     Environment environment;
     Matrix4x4f biasMatrix;
@@ -44,10 +44,11 @@ class ShadowArea: Behaviour
     float scale = 1.0f;
     ShapeBox box;
     View view;
+    Vector3f position;
 
-    this(Entity e, View view, Environment env, float w, float h, float start, float end)
+    this(View view, Environment env, float w, float h, float start, float end, Owner o)
     {
-        super(e);   
+        super(o);   
         this.width = w;
         this.height = h;
         this.start = start;
@@ -59,6 +60,8 @@ class ShadowArea: Behaviour
 
         depth = abs(start) + abs(end);
         this.box = New!ShapeBox(w * 0.5f, h * 0.5f, depth * 0.5f, this);
+        
+        this.position = Vector3f(0, 0, 0);
 
         this.biasMatrix = matrixf(
             0.5f, 0.0f, 0.0f, 0.5f,
@@ -78,9 +81,7 @@ class ShadowArea: Behaviour
 
     override void update(double dt)
     {
-        //viewMatrix = entity.invTransformation;
-        //invViewMatrix = entity.transformation;
-        auto t = translationMatrix(entity.position);
+        auto t = translationMatrix(position);
         auto r = environment.sunRotation.toMatrix4x4;
         invViewMatrix = t * r;
         viewMatrix = invViewMatrix.inverse;
@@ -122,6 +123,7 @@ class ShadowArea: Behaviour
     }
 }
 
+/*
 class ShadowMap: Owner
 {
     uint size;
@@ -131,7 +133,7 @@ class ShadowMap: Owner
     Texture depthTexture;
     GLuint framebuffer;
 
-    bool useFBO = false;
+    //bool useFBO = false;
 
     this(uint size, BaseScene3D scene, ShadowArea area, Owner o)
     {
@@ -140,6 +142,11 @@ class ShadowMap: Owner
         this.scene = scene;
         this.area = area;
         
+        init();
+    }
+    
+    void init()
+    {
         depthTexture = New!Texture(this);
         
         glGenTextures(1, &depthTexture.tex);
@@ -197,6 +204,171 @@ class ShadowMap: Owner
         //glCullFace(GL_FRONT);
         glDisable(GL_CULL_FACE);
         glPolygonOffset(3.0, 0.0); //3
+
+        scene.renderEntities3D(&rcLocal);
+        
+        glPolygonOffset(0.0, 0.0);
+        glCullFace(GL_BACK);
+        glEnable(GL_CULL_FACE);
+        glShadeModel(GL_SMOOTH);
+        glColorMask(1, 1, 1, 1);
+        
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        glDisable(GL_DEPTH_TEST);
+    }
+}
+*/
+
+class CascadedShadowMap: Owner, Drawable
+{
+    uint size;
+    BaseScene3D scene;
+    ShadowArea area1;
+    ShadowArea area2;
+    ShadowArea area3;
+    
+    Texture depthTexture;
+    GLuint framebuffer;
+    GLuint framebuffer2;
+    GLuint framebuffer3;
+
+    this(uint size, BaseScene3D scene, Owner o)
+    {
+        super(o);
+        this.size = size;
+        this.scene = scene;
+        
+        // TODO: user-defined projection sizes and depth range
+        this.area1 = New!ShadowArea(scene.view, scene.environment, 10, 10, -100, 100, this);
+        this.area2 = New!ShadowArea(scene.view, scene.environment, 30, 30, -100, 100, this);
+        this.area3 = New!ShadowArea(scene.view, scene.environment, 100, 100, -100, 100, this);
+
+        init();
+    }
+    
+    Vector3f position()
+    {
+        return area1.position;
+    }
+    
+    void position(Vector3f pos)
+    {
+        area1.position = pos;
+        area2.position = pos;
+        area3.position = pos;
+    }
+
+    void init()
+    {
+        depthTexture = New!Texture(this);
+        
+        glGenTextures(1, &depthTexture.tex);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, depthTexture.tex);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+        
+        Color4f borderColor = Color4f(1, 1, 1, 1);
+        
+        glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, borderColor.arrayof.ptr);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+	    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+        
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY);
+
+        // Use 3-layer texture array to store cascades
+        glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT, size, size, 3, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, null);
+        
+        glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+
+        glGenFramebuffers(1, &framebuffer);
+	    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        glDrawBuffer(GL_NONE);
+	    glReadBuffer(GL_NONE);
+        glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture.tex, 0, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        
+        glGenFramebuffers(1, &framebuffer2);
+	    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer2);
+        glDrawBuffer(GL_NONE);
+	    glReadBuffer(GL_NONE);
+        glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture.tex, 0, 1);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        
+        glGenFramebuffers(1, &framebuffer3);
+	    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer3);
+        glDrawBuffer(GL_NONE);
+	    glReadBuffer(GL_NONE);
+        glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture.tex, 0, 2);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+    
+    ~this()
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glDeleteFramebuffers(1, &framebuffer);
+        glDeleteFramebuffers(1, &framebuffer2);
+        glDeleteFramebuffers(1, &framebuffer3);
+    }
+    
+    void update(double dt)
+    {
+        area1.update(dt);
+        area2.update(dt);
+        area3.update(dt);
+    }
+    
+    void render(RenderingContext* rc)
+    {
+        glEnable(GL_DEPTH_TEST);
+        
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+        glViewport(0, 0, size, size);
+        glScissor(0, 0, size, size);
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        auto rcLocal = *rc;
+        rcLocal.projectionMatrix = area1.projectionMatrix;
+        rcLocal.viewMatrix = area1.viewMatrix;
+        rcLocal.invViewMatrix = area1.invViewMatrix;
+        rcLocal.normalMatrix = matrix4x4to3x3(rcLocal.invViewMatrix).transposed;
+        rcLocal.apply();
+        
+        glShadeModel(GL_FLAT);
+        glColorMask(0, 0, 0, 0);
+        glDisable(GL_CULL_FACE);
+        glPolygonOffset(3.0, 0.0);
+
+        scene.renderEntities3D(&rcLocal);
+         
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer2);
+
+        glViewport(0, 0, size, size);
+        glScissor(0, 0, size, size);
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        rcLocal.projectionMatrix = area2.projectionMatrix;
+        rcLocal.viewMatrix = area2.viewMatrix;
+        rcLocal.invViewMatrix = area2.invViewMatrix;
+        rcLocal.normalMatrix = matrix4x4to3x3(rcLocal.invViewMatrix).transposed;
+        rcLocal.apply();
+        
+        scene.renderEntities3D(&rcLocal);
+        
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer3);
+
+        glViewport(0, 0, size, size);
+        glScissor(0, 0, size, size);
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        rcLocal.projectionMatrix = area3.projectionMatrix;
+        rcLocal.viewMatrix = area3.viewMatrix;
+        rcLocal.invViewMatrix = area3.invViewMatrix;
+        rcLocal.normalMatrix = matrix4x4to3x3(rcLocal.invViewMatrix).transposed;
+        rcLocal.apply();
 
         scene.renderEntities3D(&rcLocal);
         

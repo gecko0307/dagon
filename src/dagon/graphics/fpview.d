@@ -79,4 +79,9 @@ class FirstPersonView: EventListener, View
     {
         return camera.invViewMatrix();
     }
+    
+    Vector3f cameraPosition()
+    {
+        return camera.position;
+    }
 }

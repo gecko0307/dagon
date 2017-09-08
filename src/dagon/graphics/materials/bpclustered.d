@@ -34,9 +34,7 @@ class BlinnPhongClusteredBackend: Owner, GenericMaterialBackend
 {
     ClusteredLightManager lightManager;
     
-    ShadowMap shadowMap1;
-    ShadowMap shadowMap2;
-    ShadowMap shadowMap3;
+    CascadedShadowMap shadowMap;
     Matrix4x4f defaultShadowMat;
     Vector3f defaultLightDir;
 
@@ -106,10 +104,9 @@ class BlinnPhongClusteredBackend: Owner, GenericMaterialBackend
         
         uniform vec4 environmentColor;
         
-        uniform sampler2DShadow shadowMap1;
-        uniform sampler2DShadow shadowMap2;
-        uniform sampler2DShadow shadowMap3;
+        uniform sampler2DArrayShadow shadowTextureArray;
         uniform float shadowMapSize;
+        uniform bool useShadows;
         
         uniform vec3 sunDirection;
         uniform vec3 sunColor;
@@ -135,22 +132,27 @@ class BlinnPhongClusteredBackend: Owner, GenericMaterialBackend
             return mat3(T * invmax, B * invmax, N);
         }
         
-        float shadowLookup(sampler2DShadow depths, vec4 coord, vec2 offset)
+        float shadowLookup(sampler2DArrayShadow depths, float layer, vec4 coord, vec2 offset)
         {
             float texelSize = 1.0 / shadowMapSize;
             vec2 v = offset * texelSize * coord.w;
-            float s = shadow2DProj(depths, coord + vec4(v.x, v.y, 0.0, 0.0)).w;            
+            vec4 c = (coord + vec4(v.x, v.y, 0.0, 0.0)) / coord.w;
+            c.w = c.z;
+            c.z = layer;
+            float s = shadow2DArray(depths, c).w;
+            // For sampler2DShadow:
+            //float s = shadow2DProj(depths, coord + vec4(v.x, v.y, 0.0, 0.0)).w;
             return s;
         }
         
-        float pcf(sampler2DShadow depths, vec4 coord, float radius, float yshift)
+        float pcf(sampler2DArrayShadow depths, float layer, vec4 coord, float radius, float yshift)
         {
             float s = 0.0;
             float x, y;
 	        for (y = -radius ; y < radius ; y += 1.0)
 	        for (x = -radius ; x < radius ; x += 1.0)
             {
-	            s += shadowLookup(depths, coord, vec2(x, y + yshift));
+	            s += shadowLookup(depths, layer, coord, vec2(x, y + yshift));
             }
 	        s /= radius * radius * 4.0;
             return s;
@@ -191,37 +193,40 @@ class BlinnPhongClusteredBackend: Owner, GenericMaterialBackend
             float NH = dot(normalEyeN, halfEye);
             float sunSpecBrightness = pow(max(NH, 0.0), shininess) * gloss;
             
+            // Calculate shadow from 3 cascades
             float s1, s2, s3;
+            if (useShadows)
+            {
+                s1 = pcf(shadowTextureArray, 0.0, shadowCoord1, 3.0, 0.0);
+                s2 = pcf(shadowTextureArray, 1.0, shadowCoord2, 2.0, 0.0);
+                s3 = pcf(shadowTextureArray, 2.0, shadowCoord3, 1.0, 0.0);
+                float w1 = weight(shadowCoord1);
+                float w2 = weight(shadowCoord2);
+                float w3 = weight(shadowCoord3);
+                s3 = mix(1.0, s3, w3);           
+                s2 = mix(s3, s2, w2);
+                s1 = mix(s2, s1, w1); // s1 stores resulting shadow value
+            }
+            else
+            {
+                s1 = 1.0f;
+            }
             
-            s1 = pcf(shadowMap1, shadowCoord1, 3.0, 0.0);
-            s2 = pcf(shadowMap2, shadowCoord2, 2.0, 0.0);
-            s3 = pcf(shadowMap3, shadowCoord3, 1.0, 0.0);
-            
-            float w1 = weight(shadowCoord1);
-            float w2 = weight(shadowCoord2);
-            float w3 = weight(shadowCoord3);
-
-            s3 = mix(1.0, s3, w3);           
-            s2 = mix(s3, s2, w2);
-            s1 = mix(s2, s1, w1);
-            
+            // Fetch light cluster slice
             vec2 clusterCoord = (positionWorld.xz + sceneSize * 0.5) / sceneSize;
             uint clusterIndex = texture2D(lightClusterTexture, clusterCoord).r;
             uint offset = (clusterIndex << 16) >> 16;
             uint size = (clusterIndex >> 16);
-            
-            float invLightTextureWidth = 1.0 / lightTextureWidth;
-            float invLightIndexTextureWidth = 1.0 / lightIndexTextureWidth;
 
             vec3 pointDiffSum = vec3(0.0, 0.0, 0.0);
             vec3 pointSpecSum = vec3(0.0, 0.0, 0.0);
             for (uint i = 0u; i < size; i++)
             {
-                float u = float(texture1D(lightIndexTexture, float(offset + i) * invLightIndexTextureWidth).r) * invLightTextureWidth;
-                
-                vec3 lightPos = texture2D(lightsTexture, vec2(u, 0.0 / 4.0)).xyz;
-                vec3 lightColor = texture2D(lightsTexture, vec2(u, 1.0 / 4.0)).xyz;
-                float lightRadius = texture2D(lightsTexture, vec2(u, 2.0 / 4.0)).x;
+                // Read light data
+                uint u = texelFetch1D(lightIndexTexture, int(offset + i), 0).r;
+                vec3 lightPos = texelFetch2D(lightsTexture, ivec2(u, 0), 0).xyz; 
+                vec3 lightColor = texelFetch2D(lightsTexture, ivec2(u, 1), 0).xyz; 
+                float lightRadius = texelFetch2D(lightsTexture, ivec2(u, 2), 0).x;
                 
                 vec3 positionToLightSource = vec3(lightPos - positionEye);
                 float distanceToLight = length(positionToLightSource);
@@ -264,12 +269,12 @@ class BlinnPhongClusteredBackend: Owner, GenericMaterialBackend
     GLint locNormalTexture;
     GLint locEnvironmentColor;
     
-    GLint locShadowTexture1;    
+    GLint locShadowTextureArray;    
     GLint locShadowMatrix1;
-    GLint locShadowTexture2;    
-    GLint locShadowMatrix2;
-    GLint locShadowTexture3;    
+    GLint locShadowMatrix2; 
     GLint locShadowMatrix3;
+    GLint locUseShadows;
+    
     GLint locSunDirection;
     GLint locSunColor;
     GLint locShadowSize;
@@ -332,12 +337,11 @@ class BlinnPhongClusteredBackend: Owner, GenericMaterialBackend
         locHeightTexture = glGetUniformLocationARB(shaderProg, "heightTexture");
         locEnvironmentColor = glGetUniformLocationARB(shaderProg, "environmentColor");
         
-        locShadowTexture1 = glGetUniformLocationARB(shaderProg, "shadowMap1");
+        locShadowTextureArray = glGetUniformLocationARB(shaderProg, "shadowTextureArray");
         locShadowMatrix1 = glGetUniformLocationARB(shaderProg, "shadowMatrix1");
-        locShadowTexture2 = glGetUniformLocationARB(shaderProg, "shadowMap2");
         locShadowMatrix2 = glGetUniformLocationARB(shaderProg, "shadowMatrix2");
-        locShadowTexture3 = glGetUniformLocationARB(shaderProg, "shadowMap3");
         locShadowMatrix3 = glGetUniformLocationARB(shaderProg, "shadowMatrix3");
+        locUseShadows = glGetUniformLocationARB(shaderProg, "useShadows");
         
         locSunDirection = glGetUniformLocationARB(shaderProg, "sunDirection");
         locSunColor = glGetUniformLocationARB(shaderProg, "sunColor");
@@ -368,27 +372,52 @@ class BlinnPhongClusteredBackend: Owner, GenericMaterialBackend
         auto inormal = "normal" in mat.inputs;
         auto iheight = "height" in mat.inputs;
         auto iroughness = "roughness" in mat.inputs;
-        auto ifogEnabled = "fogEnabled" in mat.inputs;
+        bool fogEnabled = boolProp(mat, "fogEnabled");
+        bool parallaxEnabled = boolProp(mat, "parallaxEnabled");
+        bool shadowsEnabled = boolProp(mat, "shadowsEnabled");
+        auto ishadowFilter = "shadowFilter" in mat.inputs;
         
-        Color4f environmentColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
-        if (rc.environment)
-            environmentColor = rc.environment.ambientConstant;
+        glUseProgramObjectARB(shaderProg);
         
+        // Matrices
+        glUniformMatrix4fv(locInvViewMatrix, 1, 0, rc.invViewMatrix.arrayof.ptr);
+        
+        // Environment parameters
         Color4f one = Color4f(1, 1, 1, 1);
         glLightModelfv(GL_LIGHT_MODEL_AMBIENT, one.arrayof.ptr);
-        
-        if (idiffuse.texture is null)
+        Color4f environmentColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
+        Vector4f sunHGVector = Vector4f(0.0f, 1.0f, 0.0, 0.0f);
+        Vector3f sunColor = Vector3f(1.0f, 1.0f, 1.0f);
+        if (rc.environment)
         {
-            Color4f color = Color4f(idiffuse.asVector4f);
-            idiffuse.texture = makeOnePixelTexture(mat, color);
+            environmentColor = rc.environment.ambientConstant;
+            sunHGVector = Vector4f(rc.environment.sunDirection);
+            sunHGVector.w = 0.0;
+            sunColor = rc.environment.sunColor;
+        }
+        glUniform4fvARB(locEnvironmentColor, 1, environmentColor.arrayof.ptr);
+        Vector3f sunDirectionEye = sunHGVector * rc.viewMatrix;
+        glUniform3fvARB(locSunDirection, 1, sunDirectionEye.arrayof.ptr);
+        glUniform3fvARB(locSunColor, 1, sunColor.arrayof.ptr);
+        if (fogEnabled)
+        {
+            if (rc.environment)
+            {
+                glEnable(GL_FOG);
+                glFogfv(GL_FOG_COLOR, rc.environment.fogColor.arrayof.ptr);
+                glFogi(GL_FOG_MODE, GL_LINEAR);
+                glHint(GL_FOG_HINT, GL_DONT_CARE);
+                glFogf(GL_FOG_START, rc.environment.fogStart);
+                glFogf(GL_FOG_END, rc.environment.fogEnd);
+            }
+        }
+        else
+        {
+            glFogf(GL_FOG_START, float.max);
+            glFogf(GL_FOG_END, float.max);
         }
         
-        if (inormal.texture is null)
-        {
-            Color4f color = Color4f(0.5f, 0.5f, 1.0f); // default normal pointing upwards
-            inormal.texture = makeOnePixelTexture(mat, color);
-        }
-        
+        // Parallax mapping parameters
         float parallaxScale = 0.0f;
         float parallaxBias = 0.0f;
         if (iheight.texture is null)
@@ -401,125 +430,87 @@ class BlinnPhongClusteredBackend: Owner, GenericMaterialBackend
             parallaxScale = 0.03f;
             parallaxBias = -0.01f;
         }
-    
-        glUseProgramObjectARB(shaderProg);
-        
         glUniform1fARB(locParallaxScale, parallaxScale);
         glUniform1fARB(locParallaxBias, parallaxBias);
         
+        // PBR parameters
         glUniform1fARB(locRoughness, iroughness.asFloat);
         
+        // Textures
+        
+        // Texture 0 - diffuse texture
+        if (idiffuse.texture is null)
+        {
+            Color4f color = Color4f(idiffuse.asVector4f);
+            idiffuse.texture = makeOnePixelTexture(mat, color);
+        }
         glActiveTextureARB(GL_TEXTURE0_ARB);
         idiffuse.texture.bind();
         glUniform1iARB(locDiffuseTexture, 0);
         
+        // Texture 1 - normal map
+        if (inormal.texture is null)
+        {
+            Color4f color = Color4f(0.5f, 0.5f, 1.0f); // default normal pointing upwards
+            inormal.texture = makeOnePixelTexture(mat, color);
+        }
         glActiveTextureARB(GL_TEXTURE1_ARB);
         inormal.texture.bind();
         glUniform1iARB(locNormalTexture, 1);
         
+        // Texture 2 - height map
+        // TODO: pass height data as an alpha channel of normap map, 
+        // thus releasing space for some additional texture
         glActiveTextureARB(GL_TEXTURE2_ARB);
         iheight.texture.bind();
         glUniform1iARB(locHeightTexture, 2);
         
-        glUniform4fvARB(locEnvironmentColor, 1, environmentColor.arrayof.ptr);
-        
-        glUniformMatrix4fv(locInvViewMatrix, 1, 0, rc.invViewMatrix.arrayof.ptr);
-        
-        if (shadowMap1)
+        // Texture 3 - shadow map cascades (3 layer texture array)
+        if (shadowMap && shadowsEnabled)
         {
             glActiveTextureARB(GL_TEXTURE3_ARB);
-            shadowMap1.depthTexture.bind();
+            glBindTexture(GL_TEXTURE_2D_ARRAY, shadowMap.depthTexture.tex);
 
-            glUniform1iARB(locShadowTexture1, 3);
-            glUniformMatrix4fv(locShadowMatrix1, 1, 0, shadowMap1.area.shadowMatrix.arrayof.ptr);
+            glUniform1iARB(locShadowTextureArray, 3);
+            glUniform1fARB(locShadowSize, cast(float)shadowMap.size);
+            glUniformMatrix4fv(locShadowMatrix1, 1, 0, shadowMap.area1.shadowMatrix.arrayof.ptr);
+            glUniformMatrix4fv(locShadowMatrix2, 1, 0, shadowMap.area2.shadowMatrix.arrayof.ptr);
+            glUniformMatrix4fv(locShadowMatrix3, 1, 0, shadowMap.area3.shadowMatrix.arrayof.ptr);
+            glUniform1iARB(locUseShadows, 1);
             
-            Vector4f sunVector = Vector4f(rc.environment.sunDirection);
-            sunVector.w = 0.0;
-            Vector3f sunDirectionEye = (sunVector * rc.viewMatrix);
-            
-            glUniform3fvARB(locSunDirection, 1, sunDirectionEye.arrayof.ptr);
-            glUniform1fARB(locShadowSize, cast(float)shadowMap1.size);
-
-            Vector3f sunColor = Vector3f(1, 1, 1);
-            if (rc.environment)
-            {
-                sunColor = rc.environment.sunColor;
-            }
-            glUniform3fvARB(locSunColor, 1, sunColor.arrayof.ptr);
+            // TODO: shadowFilter
         }
         else
-        {
+        {        
             glUniformMatrix4fv(locShadowMatrix1, 1, 0, defaultShadowMat.arrayof.ptr);
-            glUniform3fvARB(locSunDirection, 1, defaultLightDir.arrayof.ptr);
-        }
-        
-        if (shadowMap2)
-        {
-            glActiveTextureARB(GL_TEXTURE4_ARB);
-            shadowMap2.depthTexture.bind();
-
-            glUniform1iARB(locShadowTexture2, 4);
-            glUniformMatrix4fv(locShadowMatrix2, 1, 0, shadowMap2.area.shadowMatrix.arrayof.ptr);
-        }
-        else
-        {
             glUniformMatrix4fv(locShadowMatrix2, 1, 0, defaultShadowMat.arrayof.ptr);
-        }
-        
-        if (shadowMap3)
-        {
-            glActiveTextureARB(GL_TEXTURE5_ARB);
-            shadowMap3.depthTexture.bind();
-
-            glUniform1iARB(locShadowTexture3, 5);
-            glUniformMatrix4fv(locShadowMatrix3, 1, 0, shadowMap3.area.shadowMatrix.arrayof.ptr);
-        }
-        else
-        {
             glUniformMatrix4fv(locShadowMatrix3, 1, 0, defaultShadowMat.arrayof.ptr);
+            glUniform1iARB(locUseShadows, 0);
         }
         
+        // Texture 4 is reserved for PBR maps (roughness + metallic)
+        // Texture 5 is reserved for environment map
+        
+        // Texture 6 - light clusters
         glActiveTextureARB(GL_TEXTURE6_ARB);
         lightManager.bindClusterTexture();
         glUniform1iARB(locClusterTexture, 6);
+        glUniform1fARB(locSceneSize, lightManager.sceneSize);
         
+        // Texture 7 - light data
         glActiveTextureARB(GL_TEXTURE7_ARB);
         lightManager.bindLightTexture();
         glUniform1iARB(locLightsTexture, 7);
+        glUniform1fARB(locLightTextureWidth, lightManager.maxNumLights);
         
+        // Texture 8 - light indices per cluster
         glActiveTextureARB(GL_TEXTURE8_ARB);
         lightManager.bindIndexTexture();
-        glUniform1iARB(locIndexTexture, 8);
-                
-        glUniform1fARB(locLightTextureWidth, lightManager.maxNumLights);
+        glUniform1iARB(locIndexTexture, 8);   
         glUniform1fARB(locIndexTextureWidth, lightManager.maxNumIndices);
 
-        glUniform1fARB(locSceneSize, lightManager.sceneSize);
-        
+        // Done with textures
         glActiveTextureARB(GL_TEXTURE0_ARB);
-        
-        if (ifogEnabled.type == MaterialInputType.Bool ||
-            ifogEnabled.type == MaterialInputType.Integer)
-        {
-            if (rc.environment)
-            {
-                glEnable(GL_FOG);
-                glFogfv(GL_FOG_COLOR, rc.environment.fogColor.arrayof.ptr);
-                glFogi(GL_FOG_MODE, GL_LINEAR);
-                glHint(GL_FOG_HINT, GL_DONT_CARE);
-                
-                if (ifogEnabled.asBool)
-                {
-                    glFogf(GL_FOG_START, rc.environment.fogStart);
-                    glFogf(GL_FOG_END, rc.environment.fogEnd);
-                }
-                else
-                {
-                    glFogf(GL_FOG_START, float.max);
-                    glFogf(GL_FOG_END, float.max);
-                }
-            }
-        }
     }
     
     void unbind(GenericMaterial mat)
@@ -537,22 +528,10 @@ class BlinnPhongClusteredBackend: Owner, GenericMaterialBackend
         glActiveTextureARB(GL_TEXTURE2_ARB);
         iheight.texture.unbind();
         
-        if (shadowMap1)
+        if (shadowMap)
         {
             glActiveTextureARB(GL_TEXTURE3_ARB);
-            shadowMap1.depthTexture.unbind();
-        }
-        
-        if (shadowMap2)
-        {
-            glActiveTextureARB(GL_TEXTURE4_ARB);
-            shadowMap2.depthTexture.unbind();
-        }
-        
-        if (shadowMap3)
-        {
-            glActiveTextureARB(GL_TEXTURE5_ARB);
-            shadowMap3.depthTexture.unbind();
+            glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
         }
         
         glActiveTextureARB(GL_TEXTURE6_ARB);

@@ -101,5 +101,11 @@ class Freeview: EventListener, View
     {
         return camera.invViewMatrix();
     }
+    
+    
+    Vector3f cameraPosition()
+    {
+        return camera.getPosition();
+    }
 }
 

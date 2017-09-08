@@ -14,6 +14,18 @@ import dagon.graphics.rc;
 
 interface GenericMaterialBackend
 {
+    final bool boolProp(GenericMaterial mat, string prop)
+    {
+        auto p = prop in mat.inputs;
+        bool res = false;
+        if (p.type == MaterialInputType.Bool ||
+            p.type == MaterialInputType.Integer)
+        {
+            res = p.asBool;
+        }
+        return res;
+    }
+    
     void bind(GenericMaterial mat, RenderingContext* rc);
     void unbind(GenericMaterial mat);
 }
