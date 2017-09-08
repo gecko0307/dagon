@@ -34,7 +34,7 @@ class Environment: Owner
     Color4f skyHorizonColorAtSunset = Color4f(1, 0.588, 0.180, 1.0);
     Color4f skyHorizonColorAtNight = Color4f(0.0, 0.0, 0.0, 1.0);
 
-    // TODO: shadow map (CSM)
+    bool useSkyColors = false;
 
     this(Owner o)
     {
@@ -45,11 +45,14 @@ class Environment: Owner
     
     void update(double dt)
     {
-        skyZenithColor = lerpColorsBySunAngle(skyZenithColorAtMidday, skyZenithColorAtSunset, skyZenithColorAtNight);
-        skyHorizonColor = lerpColorsBySunAngle(skyHorizonColorAtMidday, skyHorizonColorAtSunset, skyHorizonColorAtNight);
-        backgroundColor = skyZenithColor;
-        fogColor = skyHorizonColor;
-        ambientConstant = Color4f(0.0f, 0.05f, 0.05f) + skyZenithColor * 0.3f;
+        if (useSkyColors)
+        {
+            skyZenithColor = lerpColorsBySunAngle(skyZenithColorAtMidday, skyZenithColorAtSunset, skyZenithColorAtNight);
+            skyHorizonColor = lerpColorsBySunAngle(skyHorizonColorAtMidday, skyHorizonColorAtSunset, skyHorizonColorAtNight);
+            backgroundColor = skyZenithColor;
+            fogColor = skyHorizonColor;
+            ambientConstant = Color4f(0.0f, 0.05f, 0.05f) + skyZenithColor * 0.3f;
+        }
     }
     
     Vector3f sunDirection()
