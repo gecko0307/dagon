@@ -143,8 +143,8 @@ class Application: EventListener
             exitWithError("Failed to init SDL: " ~ to!string(SDL_GetError()));
         
         SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-	    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 1);
-	    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+	    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+	    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -159,7 +159,7 @@ class Application: EventListener
             
         glcontext = SDL_GL_CreateContext(window);
 
-        DerelictGL.loadClassicVersions(GLVersion.GL13);
+        DerelictGL.loadClassicVersions(GLVersion.GL21);
         DerelictGL.loadExtensions();
             
         EventManager eventManager = new EventManager(window, width, height);
