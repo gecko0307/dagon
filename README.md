@@ -10,7 +10,7 @@ Dagon is a 3D/2D game development framework for D. It is a work-in-progress rein
 * Static and animated meshes, OBJ and [IQM](https://github.com/lsalzman/iqm) formats support
 * Textures in PNG, JPG, TGA, BMP formats
 * Flexible material system with simple abstract API and different backends (for example, fixed pipeline or GLSL-based). You can implement custom materials, with your own shaders and parameters
-* Clustered forward shading (variable number of lights per fragment using spatial hashing)
+* Clustered forward shading (world space XZ plane light indexing, variable number of lights per fragment)
 * Normal/parallax mapping
 * Cascaded shadow maps
 * Dynamic skydome with sun and day/night cycle
