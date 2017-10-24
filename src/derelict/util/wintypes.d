@@ -4,7 +4,7 @@ Boost Software License - Version 1.0 - August 17th, 2003
 
 Permission is hereby granted, free of charge, to any person or organization
 obtaining a copy of the software and accompanying documentation covered by
-this license (the "Software") to use, reproduce, display, distribute,
+this license ( the "Software" ) to use, reproduce, display, distribute,
 execute, and transmit the Software, and to prepare derivative works of the
 Software, and to permit third-parties to whom the Software is furnished to
 do so, all subject to the following:
@@ -27,18 +27,12 @@ DEALINGS IN THE SOFTWARE.
 */
 module derelict.util.wintypes;
 
-private
-{
-    import derelict.util.compat;
-}
-
 /*
 This module is used internally to avoid any dependence upon external Win32 modules.
 Considering that there are modules in Phobos, Tango, and the Bindings project at
 DSource, we want to avoid any conflicts with whichever implementation Derelict users choose.
 */
-version(Windows)
-{
+version( Windows ) {
     alias uint DWORD;
     alias ushort WORD;
     alias ushort USHORT;
@@ -50,7 +44,7 @@ version(Windows)
     alias int BOOL;
     alias DWORD COLORREF;
 
-    alias CCPTR LPCSTR;
+    alias const( char* ) LPCSTR;
     alias void* LPVOID;
 
     alias void* HANDLE;
@@ -66,10 +60,9 @@ version(Windows)
     alias UINT WPARAM;
     alias LONG LPARAM;
 
-    alias int function() FARPROC;
+    alias int function(  ) FARPROC;
 
-    struct LAYERPLANEDESCRIPTOR
-    {
+    struct LAYERPLANEDESCRIPTOR {
         WORD nSize;
         WORD nVersion;
         DWORD dwFlags;
@@ -96,14 +89,12 @@ version(Windows)
         COLORREF crTransparent;
     }
 
-    struct POINTFLOAT
-    {
+    struct POINTFLOAT {
         FLOAT x;
         FLOAT y;
     }
 
-    struct GLYPHMETRICSFLOAT
-    {
+    struct GLYPHMETRICSFLOAT {
         FLOAT gmfBlackBoxX;
         FLOAT gmfBlackBoxY;
         POINTFLOAT gmfptGlyphOrigin;
@@ -111,8 +102,7 @@ version(Windows)
         FLOAT gmfCellIncY;
     }
 
-    struct PIXELFORMATDESCRIPTOR
-    {
+    struct PIXELFORMATDESCRIPTOR {
         WORD  nSize;
         WORD  nVersion;
         DWORD dwFlags;
@@ -143,21 +133,18 @@ version(Windows)
 
     struct VA_LIST {}
 
-    enum : BYTE
-    {
+    enum : BYTE {
         PFD_TYPE_RGBA                   = 0,
         PFD_TYPE_COLORINDEX             = 1
     }
 
-    enum
-    {
+    enum {
         PFD_MAIN_PLANE                  = 0,
         PFD_OVERLAY_PLANE               = 1,
         PFD_UNDERLAY_PLANE              = -1
     }
 
-    enum
-    {
+    enum {
         PFD_DOUBLEBUFFER                = 0x00000001,
         PFD_STEREO                      = 0x00000002,
         PFD_DRAW_TO_WINDOW              = 0x00000004,
@@ -177,8 +164,7 @@ version(Windows)
         PFD_STEREO_DONTCARE             = 0x80000000,
     }
 
-    enum
-    {
+    enum {
         LANG_NEUTRAL                    = 0,
         SUBLANG_DEFAULT                 = 1,
         FORMAT_MESSAGE_ALLOCATE_BUFFER  = 256,
@@ -193,8 +179,7 @@ version(Windows)
         BYTE    rgbReserved;
     }
 
-    struct BITMAPINFOHEADER
-    {
+    struct BITMAPINFOHEADER {
         DWORD      biSize;
         LONG       biWidth;
         LONG       biHeight;
@@ -213,31 +198,30 @@ version(Windows)
         RGBQUAD[1]          bmiColors;
     }
 
-    struct RECT
-    {
+    struct RECT {
         LONG    left;
         LONG    top;
         LONG    right;
         LONG    bottom;
     }
 
-    extern(Windows)
-    {
-        int ChoosePixelFormat(HDC,PIXELFORMATDESCRIPTOR*);
-        int GetPixelFormat(HDC);
-        int DescribePixelFormat(HDC,int,UINT,PIXELFORMATDESCRIPTOR*);
-        BOOL SwapBuffers(HDC);
+    extern( Windows ) nothrow {
+        HDC GetDC( HWND );
+        int ChoosePixelFormat( HDC,PIXELFORMATDESCRIPTOR* );
+        void SetPixelFormat( HDC,int,PIXELFORMATDESCRIPTOR* );
+        int GetPixelFormat( HDC );
+        int DescribePixelFormat( HDC,int,UINT,PIXELFORMATDESCRIPTOR* );
+        BOOL SwapBuffers( HDC );
 
-        HMODULE LoadLibraryA(LPCSTR);
-        FARPROC GetProcAddress(HMODULE, LPCSTR);
-        void FreeLibrary(HMODULE);
-        DWORD GetLastError();
-        DWORD FormatMessageA(DWORD, in void*, DWORD, DWORD, LPCSTR, DWORD, VA_LIST*);
-        HLOCAL LocalFree(HLOCAL);
+        HMODULE LoadLibraryA( LPCSTR );
+        FARPROC GetProcAddress( HMODULE, LPCSTR );
+        void FreeLibrary( HMODULE );
+        DWORD GetLastError(  );
+        DWORD FormatMessageA( DWORD, in void*, DWORD, DWORD, LPCSTR, DWORD, VA_LIST* );
+        HLOCAL LocalFree( HLOCAL );
     }
 
-    DWORD MAKELANGID(WORD p, WORD s)
-    {
-         return (((cast(WORD)s) << 10) | cast(WORD)p);
+    DWORD MAKELANGID( WORD p, WORD s ) {
+         return ( ( ( cast( WORD )s ) << 10 ) | cast( WORD )p );
     }
 }

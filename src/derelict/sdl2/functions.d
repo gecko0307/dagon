@@ -27,515 +27,583 @@ DEALINGS IN THE SOFTWARE.
 */
 module derelict.sdl2.functions;
 
-private
-{
+private {
     import core.stdc.stdio;
     import core.stdc.stdarg;
+    import derelict.util.system;
     import derelict.sdl2.types;
 }
 
-extern(C)
-{
+extern( C ) @nogc nothrow {
     // SDL.h
-    alias nothrow int function(Uint32) da_SDL_Init;
-    alias nothrow int function(Uint32) da_SDL_InitSubSystem;
-    alias nothrow void function(Uint32) da_SDL_QuitSubSystem;
-    alias nothrow Uint32 function(Uint32) da_SDL_WasInit;
-    alias nothrow void function() da_SDL_Quit;
+    alias da_SDL_Init = int function( Uint32 );
+    alias da_SDL_InitSubSystem = int function( Uint32 );
+    alias da_SDL_QuitSubSystem = void function( Uint32 );
+    alias da_SDL_WasInit = Uint32 function( Uint32 );
+    alias da_SDL_Quit = void function();
+    alias da_SDL_free = void function( void* mem );
+
+    // SDL_assert.h
+    alias da_SDL_SetAssertionHandler = void function(SDL_AssertionHandler, void*);
+    alias da_SDL_GetDefaultAssertionHandler = SDL_AssertionHandler function();
+    alias da_SDL_GetAssertionHandler = SDL_AssertionHandler function(void**);
+    alias da_SDL_GetAssertionReport = const(SDL_assert_data)* function();
+    alias da_SDL_ResetAssertionReport = void function();
 
     // SDL_audio.h
-    alias nothrow int function() da_SDL_GetNumAudioDrivers;
-    alias nothrow const(char)* function(int) da_SDL_GetAudioDriver;
-    alias nothrow int function(const(char)*) da_SDL_AudioInit;
-    alias nothrow void function() da_SDL_AudioQuit;
-    alias nothrow const(char)* function() da_SDL_GetCurrentAudioDriver;
-    alias nothrow int function(SDL_AudioSpec*, SDL_AudioSpec*) da_SDL_OpenAudio;
-    alias nothrow int function(int) da_SDL_GetNumAudioDevices;
-    alias nothrow const(char)* function(int, int) da_SDL_GetAudioDeviceName;
-    alias nothrow SDL_AudioDeviceID function(const(char)*, int, const(SDL_AudioSpec)*,SDL_AudioSpec*,int) da_SDL_OpenAudioDevice;
-    alias nothrow SDL_AudioStatus function() da_SDL_GetAudioStatus;
-    alias nothrow SDL_AudioStatus function(SDL_AudioDeviceID) da_SDL_GetAudioDeviceStatus;
-    alias nothrow void function(int) da_SDL_PauseAudio;
-    alias nothrow void function(SDL_AudioDeviceID, int) da_SDL_PauseAudioDevice;
-    alias nothrow SDL_AudioSpec* function(SDL_RWops*, int, SDL_AudioSpec*, Uint8**, Uint32*) da_SDL_LoadWAV_RW;
-    alias nothrow void function(Uint8*) da_SDL_FreeWAV;
-    alias nothrow int function(SDL_AudioCVT*, SDL_AudioFormat, Uint8, int, SDL_AudioFormat, Uint8, int) da_SDL_BuildAudioCVT;
-    alias nothrow int function(SDL_AudioCVT*) da_SDL_ConvertAudio;
-    alias nothrow void function(Uint8*, const(Uint8)*, Uint32, int) da_SDL_MixAudio;
-    alias nothrow void function(Uint8*, const(Uint8)*, SDL_AudioFormat, Uint32, int) da_SDL_MixAudioFormat;
-    alias nothrow void function() da_SDL_LockAudio;
-    alias nothrow void function(SDL_AudioDeviceID) da_SDL_LockAudioDevice;
-    alias nothrow void function() da_SDL_UnlockAudio;
-    alias nothrow void function(SDL_AudioDeviceID) da_SDL_UnlockAudioDevice;
-    alias nothrow void function() da_SDL_CloseAudio;
-    alias nothrow void function() da_SDL_CloseAudioDevice;
-    alias nothrow int function(SDL_AudioDeviceID) da_SDL_AudioDeviceConnected;
+    alias da_SDL_GetNumAudioDrivers = int function();
+    alias da_SDL_GetAudioDriver = const( char )* function( int );
+    alias da_SDL_AudioInit = int function( const( char )* );
+    alias da_SDL_AudioQuit = void function();
+    alias da_SDL_GetCurrentAudioDriver = const( char )* function();
+    alias da_SDL_OpenAudio = int function( SDL_AudioSpec*, SDL_AudioSpec* );
+    alias da_SDL_GetNumAudioDevices = int function( int );
+    alias da_SDL_GetAudioDeviceName = const( char )* function( int, int );
+    alias da_SDL_OpenAudioDevice = SDL_AudioDeviceID function( const( char )*, int, const( SDL_AudioSpec )*,SDL_AudioSpec*,int );
+    alias da_SDL_GetAudioStatus = SDL_AudioStatus function();
+    alias da_SDL_GetAudioDeviceStatus = SDL_AudioStatus function( SDL_AudioDeviceID );
+    alias da_SDL_PauseAudio = void function( int );
+    alias da_SDL_PauseAudioDevice = void function( SDL_AudioDeviceID, int );
+    alias da_SDL_LoadWAV_RW = SDL_AudioSpec* function( SDL_RWops*, int, SDL_AudioSpec*, Uint8**, Uint32* );
+    alias da_SDL_FreeWAV = void function( Uint8* );
+    alias da_SDL_BuildAudioCVT = int function( SDL_AudioCVT*, SDL_AudioFormat, Uint8, int, SDL_AudioFormat, Uint8, int );
+    alias da_SDL_ConvertAudio = int function( SDL_AudioCVT* );
+    alias da_SDL_MixAudio = void function( Uint8*, const( Uint8 )*, Uint32, int );
+    alias da_SDL_MixAudioFormat = void function( Uint8*, const( Uint8 )*, SDL_AudioFormat, Uint32, int );
+    alias da_SDL_QueueAudio = int function( SDL_AudioDeviceID, const (void )*, Uint32 );
+    alias da_SDL_GetQueuedAudioSize = int function( SDL_AudioDeviceID );
+    alias da_SDL_ClearQueuedAudio = int function( SDL_AudioDeviceID );
+    alias da_SDL_LockAudio = void function();
+    alias da_SDL_LockAudioDevice = void function( SDL_AudioDeviceID );
+    alias da_SDL_UnlockAudio = void function();
+    alias da_SDL_UnlockAudioDevice = void function( SDL_AudioDeviceID );
+    alias da_SDL_CloseAudio = void function();
+    alias da_SDL_CloseAudioDevice = void function( SDL_AudioDeviceID );
+    alias da_SDL_AudioDeviceConnected = int function( SDL_AudioDeviceID );
 
     // SDL_clipboard.h
-    alias nothrow int function(const(char)*) da_SDL_SetClipboardText;
-    alias nothrow char* function() da_SDL_GetClipboardText;
-    alias nothrow SDL_bool function() da_SDL_HasClipboardText;
+    alias da_SDL_SetClipboardText = int function( const( char )* );
+    alias da_SDL_GetClipboardText = char* function();
+    alias da_SDL_HasClipboardText = SDL_bool function();
 
     // SDL_cpuinfo.h
-    alias nothrow int function() da_SDL_GetCPUCount;
-    alias nothrow int function() da_SDL_GetCPUCacheLineSize;
-    alias nothrow SDL_bool function() da_SDL_HasRDTSC;
-    alias nothrow SDL_bool function() da_SDL_HasAltiVec;
-    alias nothrow SDL_bool function() da_SDL_HasMMX;
-    alias nothrow SDL_bool function() da_SDL_Has3DNow;
-    alias nothrow SDL_bool function() da_SDL_HasSSE;
-    alias nothrow SDL_bool function() da_SDL_HasSSE2;
-    alias nothrow SDL_bool function() da_SDL_HasSSE3;
-    alias nothrow SDL_bool function() da_SDL_HasSSE41;
-    alias nothrow SDL_bool function() da_SDL_HasSSE42;
+    alias da_SDL_GetCPUCount = int function();
+    alias da_SDL_GetCPUCacheLineSize = int function();
+    alias da_SDL_HasRDTSC = SDL_bool function();
+    alias da_SDL_HasAltiVec = SDL_bool function();
+    alias da_SDL_HasMMX = SDL_bool function();
+    alias da_SDL_Has3DNow = SDL_bool function();
+    alias da_SDL_HasSSE = SDL_bool function();
+    alias da_SDL_HasSSE2 = SDL_bool function();
+    alias da_SDL_HasSSE3 = SDL_bool function();
+    alias da_SDL_HasSSE41 = SDL_bool function();
+    alias da_SDL_HasSSE42 = SDL_bool function();
+    alias da_SDL_HasAVX = SDL_bool function();
+    alias da_SDL_HasAVX2 = SDL_bool function();
+    alias da_SDL_GetSystemRAM = int function();
 
     // SDL_error.h
-    alias nothrow void function(const(char)*, ...) da_SDL_SetError;
-    alias nothrow const(char)* function() da_SDL_GetError;
-    alias nothrow void function() da_SDL_ClearError;
+    alias da_SDL_SetError = void function( const( char )*, ... );
+    alias da_SDL_GetError = const( char )* function();
+    alias da_SDL_ClearError = void function();
 
     // SDL_events.h
-    alias nothrow void function() da_SDL_PumpEvents;
-    alias nothrow int function(SDL_Event*, int, SDL_eventaction, Uint32, Uint32) da_SDL_PeepEvents;
-    alias nothrow SDL_bool function(Uint32) da_SDL_HasEvent;
-    alias nothrow SDL_bool function(Uint32, Uint32) da_SDL_HasEvents;
-    alias nothrow void function(Uint32) da_SDL_FlushEvent;
-    alias nothrow void function(Uint32, Uint32) da_SDL_FlushEvents;
-    alias nothrow int function(SDL_Event*) da_SDL_PollEvent;
-    alias nothrow int function(SDL_Event*) da_SDL_WaitEvent;
-    alias nothrow int function(SDL_Event*, int) da_SDL_WaitEventTimeout;
-    alias nothrow int function(SDL_Event*) da_SDL_PushEvent;
-    alias nothrow void function(SDL_EventFilter, void*) da_SDL_SetEventFilter;
-    alias nothrow void function(SDL_EventFilter*, void**) da_SDL_GetEventFilter;
-    alias nothrow void function(SDL_EventFilter, void*) da_SDL_AddEventWatch;
-    alias nothrow void function(SDL_EventFilter, void*) da_SDL_DelEventWatch;
-    alias nothrow void function(SDL_EventFilter, void*) da_SDL_FilterEvents;
-    alias nothrow Uint8 function(Uint32, int) da_SDL_EventState;
-    alias nothrow Uint32 function(int) da_SDL_RegisterEvents;
+    alias da_SDL_PumpEvents = void function();
+    alias da_SDL_PeepEvents = int function( SDL_Event*, int, SDL_eventaction, Uint32, Uint32 );
+    alias da_SDL_HasEvent = SDL_bool function( Uint32 );
+    alias da_SDL_HasEvents = SDL_bool function( Uint32, Uint32 );
+    alias da_SDL_FlushEvent = void function( Uint32 );
+    alias da_SDL_FlushEvents = void function( Uint32, Uint32 );
+    alias da_SDL_PollEvent = int function( SDL_Event* );
+    alias da_SDL_WaitEvent = int function( SDL_Event* );
+    alias da_SDL_WaitEventTimeout = int function( SDL_Event*, int );
+    alias da_SDL_PushEvent = int function( SDL_Event* );
+    alias da_SDL_SetEventFilter = void function( SDL_EventFilter, void* );
+    alias da_SDL_GetEventFilter = void function( SDL_EventFilter*, void** );
+    alias da_SDL_AddEventWatch = void function( SDL_EventFilter, void* );
+    alias da_SDL_DelEventWatch = void function( SDL_EventFilter, void* );
+    alias da_SDL_FilterEvents = void function( SDL_EventFilter, void* );
+    alias da_SDL_EventState = Uint8 function( Uint32, int );
+    alias da_SDL_RegisterEvents = Uint32 function( int );
+
+    // SDL_filesystem.h
+    alias da_SDL_GetBasePath = char* function();
+    alias da_SDL_GetPrefPath = char* function( const( char )* org, const( char )* app);
 
     // SDL_gamecontroller.h
-    alias nothrow int function(const(char)*) da_SDL_GameControllerAddMapping;
-    alias nothrow char* function(SDL_JoystickGUID) da_SDL_GameControllerMappingForGUID;
-    alias nothrow char* function(SDL_GameController*) da_SDL_GameControllerMapping;
-    alias nothrow SDL_bool function(int) da_SDL_IsGameController;
-    alias nothrow const(char)* function(int) da_SDL_GameControllerNameForIndex;
-    alias nothrow SDL_GameController* function(int) da_SDL_GameControllerOpen;
-    alias nothrow const(char)* function(SDL_GameController*) da_SDL_GameControllerName;
-    alias nothrow SDL_bool function(SDL_GameController*) da_SDL_GameControllerGetAttached;
-    alias nothrow SDL_Joystick* function(SDL_GameController*) da_SDL_GameControllerGetJoystick;
-    alias nothrow int function(int) da_SDL_GameControllerEventState;
-    alias nothrow void function() da_SDL_GameControllerUpdate;
-    alias nothrow SDL_GameControllerAxis function(const(char)*) da_SDL_GameControllerGetAxisFromString;
-    alias nothrow const(char)* function(SDL_GameControllerAxis) da_SDL_GameControllerGetStringForAxis;
-    alias nothrow SDL_GameControllerButtonBind function(SDL_GameController*, SDL_GameControllerAxis) da_SDL_GameControllerGetBindForAxis;
-    alias nothrow Sint16 function(SDL_GameController*, SDL_GameControllerAxis) da_SDL_GameControllerGetAxis;
-    alias nothrow SDL_GameControllerButton function(const(char*)) da_SDL_GameControllerGetButtonFromString;
-    alias nothrow const(char)* function(SDL_GameControllerButton) da_SDL_GameControllerGetStringForButton;
-    alias nothrow SDL_GameControllerButtonBind function(SDL_GameController*, SDL_GameControllerButton) da_SDL_GameControllerGetBindForButton;
-    alias nothrow Uint8 function(SDL_GameController*, SDL_GameControllerButton) da_SDL_GameControllerGetButton;
-    alias nothrow void function(SDL_GameController*) da_SDL_GameControllerClose;
-
+    alias da_SDL_GameControllerAddMappingsFromRW = int function( SDL_RWops*, int );
+    alias da_SDL_GameControllerAddMapping = int function( const( char )* );
+    alias da_SDL_GameControllerMappingForGUID = char* function( SDL_JoystickGUID );
+    alias da_SDL_GameControllerMapping = char* function( SDL_GameController* );
+    alias da_SDL_IsGameController = SDL_bool function( int );
+    alias da_SDL_GameControllerNameForIndex = const( char )* function( int );
+    alias da_SDL_GameControllerOpen = SDL_GameController* function( int );
+    alias da_SDL_GameControllerFromInstanceID = SDL_GameController* function( SDL_JoystickID );
+    alias da_SDL_GameControllerName = const( char )* function( SDL_GameController* );
+    alias da_SDL_GameControllerGetAttached = SDL_bool function( SDL_GameController* );
+    alias da_SDL_GameControllerGetJoystick = SDL_Joystick* function( SDL_GameController* );
+    alias da_SDL_GameControllerEventState = int function( int );
+    alias da_SDL_GameControllerUpdate = void function();
+    alias da_SDL_GameControllerGetAxisFromString = SDL_GameControllerAxis function( const( char )* );
+    alias da_SDL_GameControllerGetStringForAxis = const( char )* function( SDL_GameControllerAxis );
+    alias da_SDL_GameControllerGetBindForAxis = SDL_GameControllerButtonBind function( SDL_GameController*, SDL_GameControllerAxis );
+    alias da_SDL_GameControllerGetAxis = Sint16 function( SDL_GameController*, SDL_GameControllerAxis );
+    alias da_SDL_GameControllerGetButtonFromString = SDL_GameControllerButton function( const( char* ) );
+    alias da_SDL_GameControllerGetStringForButton = const( char )* function( SDL_GameControllerButton );
+    alias da_SDL_GameControllerGetBindForButton = SDL_GameControllerButtonBind function( SDL_GameController*, SDL_GameControllerButton );
+    alias da_SDL_GameControllerGetButton = Uint8 function( SDL_GameController*, SDL_GameControllerButton );
+    alias da_SDL_GameControllerClose = void function( SDL_GameController* );
 
     // SDL_gesture.h
-    alias nothrow int function(SDL_TouchID) da_SDL_RecordGesture;
-    alias nothrow int function(SDL_RWops*) da_SDL_SaveAllDollarTemplates;
-    alias nothrow int function(SDL_GestureID, SDL_RWops*) da_SDL_SaveDollarTemplate;
-    alias nothrow int function(SDL_TouchID, SDL_RWops*) da_SDL_LoadDollarTemplates;
+    alias da_SDL_RecordGesture = int function( SDL_TouchID );
+    alias da_SDL_SaveAllDollarTemplates = int function( SDL_RWops* );
+    alias da_SDL_SaveDollarTemplate = int function( SDL_GestureID, SDL_RWops* );
+    alias da_SDL_LoadDollarTemplates = int function( SDL_TouchID, SDL_RWops* );
 
     // SDL_haptic.h
-    alias nothrow int function() da_SDL_NumHaptics;
-    alias nothrow const(char)* function(int) da_SDL_HapticName;
-    alias nothrow SDL_Haptic* function(int) da_SDL_HapticOpen;
-    alias nothrow int function(int) da_SDL_HapticOpened;
-    alias nothrow int function(SDL_Haptic*) da_SDL_HapticIndex;
-    alias nothrow int function() da_SDL_MouseIsHaptic;
-    alias nothrow SDL_Haptic* function() da_SDL_HapticOpenFromMouse;
-    alias nothrow int function(SDL_Joystick*) da_SDL_JoystickIsHaptic;
-    alias nothrow SDL_Haptic* function(SDL_Joystick*) da_SDL_HapticOpenFromJoystick;
-    alias nothrow int function(SDL_Haptic*) da_SDL_HapticClose;
-    alias nothrow int function(SDL_Haptic*) da_SDL_HapticNumEffects;
-    alias nothrow int function(SDL_Haptic*) da_SDL_HapticNumEffectsPlaying;
-    alias nothrow uint function(SDL_Haptic*) da_SDL_HapticQuery;
-    alias nothrow int function(SDL_Haptic*) da_SDL_HapticNumAxes;
-    alias nothrow int function(SDL_Haptic*, SDL_HapticEffect*) da_SDL_HapticEffectSupported;
-    alias nothrow int function(SDL_Haptic*, SDL_HapticEffect*) da_SDL_HapticNewEffect;
-    alias nothrow int function(SDL_Haptic*, int, SDL_HapticEffect*) da_SDL_HapticUpdateEffect;
-    alias nothrow int function(SDL_Haptic*, int, SDL_HapticEffect*) da_SDL_HapticRunEffect;
-    alias nothrow int function(SDL_Haptic*, int) da_SDL_HapticStopEffect;
-    alias nothrow int function(SDL_Haptic*, int) da_SDL_HapticDestroyEffect;
-    alias nothrow int function(SDL_Haptic*, int) da_SDL_HapticGetEffectStatus;
-    alias nothrow int function(SDL_Haptic*, int) da_SDL_HapticSetGain;
-    alias nothrow int function(SDL_Haptic*, int) da_SDL_HapticSetAutocenter;
-    alias nothrow int function(SDL_Haptic*) da_SDL_HapticPause;
-    alias nothrow int function(SDL_Haptic*) da_SDL_HapticUnpause;
-    alias nothrow int function(SDL_Haptic*) da_SDL_HapticStopAll;
-    alias nothrow int function(SDL_Haptic*) da_SDL_HapticRumbleSupported;
-    alias nothrow int function(SDL_Haptic*) da_SDL_HapticRumbleInit;
-    alias nothrow int function(SDL_Haptic*, float, Uint32) da_SDL_HapticRumblePlay;
-    alias nothrow int function(SDL_Haptic*) da_SDL_HapticRumbleStop;
+    alias da_SDL_NumHaptics = int function();
+    alias da_SDL_HapticName = const( char )* function( int );
+    alias da_SDL_HapticOpen = SDL_Haptic* function( int );
+    alias da_SDL_HapticOpened = int function( int );
+    alias da_SDL_HapticIndex = int function( SDL_Haptic* );
+    alias da_SDL_MouseIsHaptic = int function();
+    alias da_SDL_HapticOpenFromMouse = SDL_Haptic* function();
+    alias da_SDL_JoystickIsHaptic = int function( SDL_Joystick* );
+    alias da_SDL_HapticOpenFromJoystick = SDL_Haptic* function( SDL_Joystick* );
+    alias da_SDL_HapticClose = int function( SDL_Haptic* );
+    alias da_SDL_HapticNumEffects = int function( SDL_Haptic* );
+    alias da_SDL_HapticNumEffectsPlaying = int function( SDL_Haptic* );
+    alias da_SDL_HapticQuery = uint function( SDL_Haptic* );
+    alias da_SDL_HapticNumAxes = int function( SDL_Haptic* );
+    alias da_SDL_HapticEffectSupported = int function( SDL_Haptic*, SDL_HapticEffect* );
+    alias da_SDL_HapticNewEffect = int function( SDL_Haptic*, SDL_HapticEffect* );
+    alias da_SDL_HapticUpdateEffect = int function( SDL_Haptic*, int, SDL_HapticEffect* );
+    alias da_SDL_HapticRunEffect = int function( SDL_Haptic*, int, SDL_HapticEffect* );
+    alias da_SDL_HapticStopEffect = int function( SDL_Haptic*, int );
+    alias da_SDL_HapticDestroyEffect = int function( SDL_Haptic*, int );
+    alias da_SDL_HapticGetEffectStatus = int function( SDL_Haptic*, int );
+    alias da_SDL_HapticSetGain = int function( SDL_Haptic*, int );
+    alias da_SDL_HapticSetAutocenter = int function( SDL_Haptic*, int );
+    alias da_SDL_HapticPause = int function( SDL_Haptic* );
+    alias da_SDL_HapticUnpause = int function( SDL_Haptic* );
+    alias da_SDL_HapticStopAll = int function( SDL_Haptic* );
+    alias da_SDL_HapticRumbleSupported = int function( SDL_Haptic* );
+    alias da_SDL_HapticRumbleInit = int function( SDL_Haptic* );
+    alias da_SDL_HapticRumblePlay = int function( SDL_Haptic*, float, Uint32 );
+    alias da_SDL_HapticRumbleStop = int function( SDL_Haptic* );
 
     // SDL_hints.h
-    alias nothrow SDL_bool function(const(char)*, const(char)*, SDL_HintPriority) da_SDL_SetHintWithPriority;
-    alias nothrow SDL_bool function(const(char)*, const(char)*) da_SDL_SetHint;
-    alias nothrow const(char)* function(const(char)*) da_SDL_GetHint;
-    alias nothrow void function() da_SDL_ClearHints;
-
-    // SDL_input.h
-    alias nothrow int function() da_SDL_RedetectInputDevices;
-    alias nothrow int function() da_SDL_GetNumInputDevices;
-    alias nothrow const(char)* function(int) da_SDL_GetInputDeviceName;
-    alias nothrow int function(int) da_SDL_IsDeviceDisconnected;
+    alias da_SDL_SetHintWithPriority = SDL_bool function( const( char )*, const( char )*, SDL_HintPriority );
+    alias da_SDL_SetHint = SDL_bool function( const( char )*, const( char )* );
+    alias da_SDL_GetHint = const( char )* function( const( char )* );
+    alias da_SDL_AddHintCallback = void function( const( char )*, SDL_HintCallback, void* );
+    alias da_SDL_DelHintCallback = void function( const( char )*, SDL_HintCallback, void* );
+    alias da_SDL_ClearHints = void function();
 
     // SDL_joystick.h
-    alias nothrow int function() da_SDL_NumJoysticks;
-    alias nothrow const(char)* function(int) da_SDL_JoystickNameForIndex;
-    alias nothrow SDL_Joystick* function(int) da_SDL_JoystickOpen;
-    alias nothrow const(char)* function(SDL_Joystick*) da_SDL_JoystickName;
-    alias nothrow JoystickGUID function(int) da_SDL_JoystickGetDeviceGUID;
-    alias nothrow JoystickGUID function(SDL_Joystick*) da_SDL_JoystickGetGUID;
-    alias nothrow char* function(JoystickGUID) da_SDL_JoystickGetGUIDString;
-    alias nothrow JoystickGUID function(const(char)*) da_SDL_JoystickGetGUIDFromString;
-    alias nothrow SDL_bool function(SDL_Joystick*) da_SDL_JoystickGetAttached;
-    alias nothrow SDL_JoystickID function(SDL_Joystick*) da_SDL_JoystickInstanceID;
-    alias nothrow int function(SDL_Joystick*) da_SDL_JoystickNumAxes;
-    alias nothrow int function(SDL_Joystick*) da_SDL_JoystickNumBalls;
-    alias nothrow int function(SDL_Joystick*) da_SDL_JoystickNumHats;
-    alias nothrow int function(SDL_Joystick*) da_SDL_JoystickNumButtons;
-    alias nothrow int function(SDL_Joystick*) da_SDL_JoystickUpdate;
-    alias nothrow int function(int) da_SDL_JoystickEventState;
-    alias nothrow Sint16 function(SDL_Joystick*, int) da_SDL_JoystickGetAxis;
-    alias nothrow Uint8 function(SDL_Joystick*, int) da_SDL_JoystickGetHat;
-    alias nothrow int function(SDL_Joystick*, int, int*, int*) da_SDL_JoystickGetBall;
-    alias nothrow Uint8 function(SDL_Joystick*, int) da_SDL_JoystickGetButton;
-    alias nothrow void function(SDL_Joystick*) da_SDL_JoystickClose;
+    alias da_SDL_NumJoysticks = int function();
+    alias da_SDL_JoystickNameForIndex = const( char )* function( int );
+    alias da_SDL_JoystickOpen = SDL_Joystick* function( int );
+    alias da_SDL_JoystickFromInstanceID = SDL_Joystick* function( SDL_JoystickID );
+    alias da_SDL_JoystickName = const( char )* function( SDL_Joystick* );
+    alias da_SDL_JoystickGetDeviceGUID = JoystickGUID function( int );
+    alias da_SDL_JoystickGetGUID = JoystickGUID function( SDL_Joystick* );
+    alias da_SDL_JoystickGetGUIDString = char* function( JoystickGUID );
+    alias da_SDL_JoystickGetGUIDFromString = JoystickGUID function( const( char )* );
+    alias da_SDL_JoystickGetAttached = SDL_bool function( SDL_Joystick* );
+    alias da_SDL_JoystickInstanceID = SDL_JoystickID function( SDL_Joystick* );
+    alias da_SDL_JoystickNumAxes = int function( SDL_Joystick* );
+    alias da_SDL_JoystickNumBalls = int function( SDL_Joystick* );
+    alias da_SDL_JoystickNumHats = int function( SDL_Joystick* );
+    alias da_SDL_JoystickNumButtons = int function( SDL_Joystick* );
+    alias da_SDL_JoystickUpdate = void function();
+    alias da_SDL_JoystickEventState = int function( int );
+    alias da_SDL_JoystickGetAxis = Sint16 function( SDL_Joystick*, int );
+    alias da_SDL_JoystickGetHat = Uint8 function( SDL_Joystick*, int );
+    alias da_SDL_JoystickGetBall = int function( SDL_Joystick*, int, int*, int* );
+    alias da_SDL_JoystickGetButton = Uint8 function( SDL_Joystick*, int );
+    alias da_SDL_JoystickClose = void function( SDL_Joystick* );
+    alias da_SDL_JoystickCurrentPowerLevel = SDL_JoystickPowerLevel function( SDL_Joystick* );
 
     // SDL_keyboard.h
-    alias nothrow SDL_Window* function() da_SDL_GetKeyboardFocus;
-    alias nothrow Uint8* function(int*) da_SDL_GetKeyboardState;
-    alias nothrow SDL_Keymod function() da_SDL_GetModState;
-    alias nothrow void function(SDL_Keymod) da_SDL_SetModState;
-    alias nothrow SDL_Keycode function(SDL_Scancode) da_SDL_GetKeyFromScancode;
-    alias nothrow SDL_Scancode function(SDL_Keycode) da_SDL_GetScancodeFromKey;
-    alias nothrow const(char)* function(SDL_Scancode) da_SDL_GetScancodeName;
-    alias nothrow SDL_Scancode function(const(char)*) da_SDL_GetScancodeFromName;
-    alias nothrow const(char)* function(SDL_Keycode) da_SDL_GetKeyName;
-    alias nothrow SDL_Keycode function(const(char)*) da_SDL_GetKeyFromName;
-    alias nothrow void function() da_SDL_StartTextInput;
-    alias nothrow SDL_bool function() da_SDL_IsTextInputActive;
-    alias nothrow void function() da_SDL_StopTextInput;
-    alias nothrow void function(SDL_Rect*) da_SDL_SetTextInputRect;
-    alias nothrow SDL_bool function() da_SDL_HasScreenKeyboardSupport;
-    alias nothrow SDL_bool function(SDL_Window*) da_SDL_IsScreenKeyboardShown;
+    alias da_SDL_GetKeyboardFocus = SDL_Window* function();
+    alias da_SDL_GetKeyboardState = Uint8* function( int* );
+    alias da_SDL_GetModState = SDL_Keymod function();
+    alias da_SDL_SetModState = void function( SDL_Keymod );
+    alias da_SDL_GetKeyFromScancode = SDL_Keycode function( SDL_Scancode );
+    alias da_SDL_GetScancodeFromKey = SDL_Scancode function( SDL_Keycode );
+    alias da_SDL_GetScancodeName = const( char )* function( SDL_Scancode );
+    alias da_SDL_GetScancodeFromName = SDL_Scancode function( const( char )* );
+    alias da_SDL_GetKeyName = const( char )* function( SDL_Keycode );
+    alias da_SDL_GetKeyFromName = SDL_Keycode function( const( char )* );
+    alias da_SDL_StartTextInput = void function();
+    alias da_SDL_IsTextInputActive = SDL_bool function();
+    alias da_SDL_StopTextInput = void function();
+    alias da_SDL_SetTextInputRect = void function( SDL_Rect* );
+    alias da_SDL_HasScreenKeyboardSupport = SDL_bool function();
+    alias da_SDL_IsScreenKeyboardShown = SDL_bool function( SDL_Window* );
 
     // SDL_loadso.h
-    alias nothrow void* function(const(char)*) da_SDL_LoadObject;
-    alias nothrow void* function(void*, const(char*)) da_SDL_LoadFunction;
-    alias nothrow void function(void*) da_SDL_UnloadObject;
+    alias da_SDL_LoadObject = void* function( const( char )* );
+    alias da_SDL_LoadFunction = void* function( void*, const( char* ) );
+    alias da_SDL_UnloadObject = void function( void* );
 
     // SDL_log.h
-    alias nothrow void function(SDL_LogPriority) da_SDL_LogSetAllPriority;
-    alias nothrow void function(int, SDL_LogPriority) da_SDL_LogSetPriority;
-    alias nothrow SDL_LogPriority function(int) da_SDL_LogGetPriority;
-    alias nothrow void function() da_SDL_LogResetPriorities;
-    alias nothrow void function(const(char)*, ...) da_SDL_Log;
-    alias nothrow void function(int, const(char)*, ...) da_SDL_LogVerbose;
-    alias nothrow void function(int, const(char)*, ...) da_SDL_LogDebug;
-    alias nothrow void function(int, const(char)*, ...) da_SDL_LogInfo;
-    alias nothrow void function(int, const(char)*, ...) da_SDL_LogWarn;
-    alias nothrow void function(int, const(char)*, ...) da_SDL_LogError;
-    alias nothrow void function(int, const(char)*, ...) da_SDL_LogCritical;
-    alias nothrow void function(int, SDL_LogPriority, const(char)*, ...) da_SDL_LogMessage;
-    alias nothrow void function(int, SDL_LogPriority, const(char)*, va_list) da_SDL_LogMessageV;
-    alias nothrow void function(SDL_LogOutputFunction, void**) da_SDL_LogGetOutputFunction;
-    alias nothrow void function(SDL_LogOutputFunction, void*) da_SDL_LogSetOutputFunction;
+    alias da_SDL_LogSetAllPriority = void function( SDL_LogPriority );
+    alias da_SDL_LogSetPriority = void function( int, SDL_LogPriority );
+    alias da_SDL_LogGetPriority = SDL_LogPriority function( int );
+    alias da_SDL_LogResetPriorities = void function();
+    alias da_SDL_Log = void function( const( char )*, ... );
+    alias da_SDL_LogVerbose = void function( int, const( char )*, ... );
+    alias da_SDL_LogDebug = void function( int, const( char )*, ... );
+    alias da_SDL_LogInfo = void function( int, const( char )*, ... );
+    alias da_SDL_LogWarn = void function( int, const( char )*, ... );
+    alias da_SDL_LogError = void function( int, const( char )*, ... );
+    alias da_SDL_LogCritical = void function( int, const( char )*, ... );
+    alias da_SDL_LogMessage = void function( int, SDL_LogPriority, const( char )*, ... );
+    alias da_SDL_LogMessageV = void function( int, SDL_LogPriority, const( char )*, va_list );
+    alias da_SDL_LogGetOutputFunction = void function( SDL_LogOutputFunction, void** );
+    alias da_SDL_LogSetOutputFunction = void function( SDL_LogOutputFunction, void* );
 
     // SDL_messagebox.h
-    alias nothrow int function(const(SDL_MessageBoxData)*, int) da_SDL_ShowMessageBox;
-    alias nothrow int function(Uint32, const(char)*, const(char)*, SDL_Window*) da_SDL_ShowSimpleMessageBox;
+    alias da_SDL_ShowMessageBox = int function( const( SDL_MessageBoxData )*, int* );
+    alias da_SDL_ShowSimpleMessageBox = int function( Uint32, const( char )*, const( char )*, SDL_Window* );
 
     // SDL_mouse.h
-    alias nothrow SDL_Window* function() da_SDL_GetMouseFocus;
-    alias nothrow Uint32 function(int*, int*) da_SDL_GetMouseState;
-    alias nothrow Uint32 function(int*, int*) da_SDL_GetRelativeMouseState;
-    alias nothrow void function(SDL_Window*, int, int) da_SDL_WarpMouseInWindow;
-    alias nothrow int function(SDL_bool) da_SDL_SetRelativeMouseMode;
-    alias nothrow SDL_bool function() da_SDL_GetRelativeMouseMode;
-    alias nothrow SDL_Cursor* function(const(Uint8)*, const(Uint8)*, int, int, int, int) da_SDL_CreateCursor;
-    alias nothrow SDL_Cursor* function(SDL_Surface*, int, int) da_SDL_CreateColorCursor;
-    alias nothrow SDL_Cursor* function(SDL_SystemCursor) da_SDL_CreateSystemCursor;
-    alias nothrow void function(SDL_Cursor*) da_SDL_SetCursor;
-    alias nothrow SDL_Cursor* function() da_SDL_GetCursor;
-    alias nothrow void function(SDL_Cursor*) da_SDL_FreeCursor;
-    alias nothrow int function(int) da_SDL_ShowCursor;
+    alias da_SDL_GetMouseFocus = SDL_Window* function();
+    alias da_SDL_GetMouseState = Uint32 function( int*, int* );
+    alias da_SDL_GetGlobalMouseState = Uint32 function( int*, int* );
+    alias da_SDL_GetRelativeMouseState = Uint32 function( int*, int* );
+    alias da_SDL_WarpMouseInWindow = void function( SDL_Window*, int, int );
+    alias da_SDL_WarpMouseGlobal = void function( int, int );
+    alias da_SDL_SetRelativeMouseMode = int function( SDL_bool );
+    alias da_SDL_CaptureMouse = int function( SDL_bool );
+    alias da_SDL_GetRelativeMouseMode = SDL_bool function();
+    alias da_SDL_CreateCursor = SDL_Cursor* function( const( Uint8 )*, const( Uint8 )*, int, int, int, int );
+    alias da_SDL_CreateColorCursor = SDL_Cursor* function( SDL_Surface*, int, int );
+    alias da_SDL_CreateSystemCursor = SDL_Cursor* function( SDL_SystemCursor );
+    alias da_SDL_SetCursor = void function( SDL_Cursor* );
+    alias da_SDL_GetCursor = SDL_Cursor* function();
+    alias da_SDL_GetDefaultCursor = SDL_Cursor* function();
+    alias da_SDL_FreeCursor = void function( SDL_Cursor* );
+    alias da_SDL_ShowCursor = int function( int );
 
     // SDL_pixels.h
-    alias nothrow const(char)* function(Uint32) da_SDL_GetPixelFormatName;
-    alias nothrow SDL_bool function(Uint32, int*, Uint32*, Uint32*, Uint32*, Uint32*) da_SDL_PixelFormatEnumToMasks;
-    alias nothrow Uint32 function(int, Uint32, Uint32, Uint32, Uint32) da_SDL_MasksToPixelFormatEnum;
-    alias nothrow SDL_PixelFormat* function(Uint32) da_SDL_AllocFormat;
-    alias nothrow void function(SDL_PixelFormat*) da_SDL_FreeFormat;
-    alias nothrow SDL_Palette* function(int) da_SDL_AllocPalette;
-    alias nothrow int function(SDL_PixelFormat*, SDL_Palette*) da_SDL_SetPixelFormatPalette;
-    alias nothrow int function(SDL_Palette*, const(SDL_Color)*, int, int) da_SDL_SetPaletteColors;
-    alias nothrow void function(SDL_Palette*) da_SDL_FreePalette;
-    alias nothrow Uint32 function(const(SDL_PixelFormat)*, Uint8, Uint8, Uint8) da_SDL_MapRGB;
-    alias nothrow Uint32 function(const(SDL_PixelFormat)*, Uint8, Uint8, Uint8, Uint8) da_SDL_MapRGBA;
-    alias nothrow void function(Uint32, const(SDL_PixelFormat)*, Uint8*, Uint8*, Uint8*) da_SDL_GetRGB;
-    alias nothrow void function(Uint32, const(SDL_PixelFormat)*, Uint8*, Uint8*, Uint8*, Uint8*) da_SDL_GetRGBA;
-    alias nothrow void function(float, Uint16*) da_SDL_CalculateGammaRamp;
+    alias da_SDL_GetPixelFormatName = const( char )* function( Uint32 );
+    alias da_SDL_PixelFormatEnumToMasks = SDL_bool function( Uint32, int*, Uint32*, Uint32*, Uint32*, Uint32* );
+    alias da_SDL_MasksToPixelFormatEnum = Uint32 function( int, Uint32, Uint32, Uint32, Uint32 );
+    alias da_SDL_AllocFormat = SDL_PixelFormat* function( Uint32 );
+    alias da_SDL_FreeFormat = void function( SDL_PixelFormat* );
+    alias da_SDL_AllocPalette = SDL_Palette* function( int );
+    alias da_SDL_SetPixelFormatPalette = int function( SDL_PixelFormat*, SDL_Palette* );
+    alias da_SDL_SetPaletteColors = int function( SDL_Palette*, const( SDL_Color )*, int, int );
+    alias da_SDL_FreePalette = void function( SDL_Palette* );
+    alias da_SDL_MapRGB = Uint32 function( const( SDL_PixelFormat )*, Uint8, Uint8, Uint8 );
+    alias da_SDL_MapRGBA = Uint32 function( const( SDL_PixelFormat )*, Uint8, Uint8, Uint8, Uint8 );
+    alias da_SDL_GetRGB = void function( Uint32, const( SDL_PixelFormat )*, Uint8*, Uint8*, Uint8* );
+    alias da_SDL_GetRGBA = void function( Uint32, const( SDL_PixelFormat )*, Uint8*, Uint8*, Uint8*, Uint8* );
+    alias da_SDL_CalculateGammaRamp = void function( float, Uint16* );
 
     // SDL_platform.h
-    alias nothrow const(char)* function() da_SDL_GetPlatform;
+    alias da_SDL_GetPlatform = const( char )* function();
 
     // SDL_power.h
-    alias nothrow SDL_PowerState function(int*, int*) da_SDL_GetPowerInfo;
+    alias da_SDL_GetPowerInfo = SDL_PowerState function( int*, int* );
 
     // SDL_Rect.h
-    alias nothrow SDL_bool function(const(SDL_Rect)*, const(SDL_Rect)*) da_SDL_HasIntersection;
-    alias nothrow SDL_bool function(const(SDL_Rect)*, const(SDL_Rect)*, SDL_Rect*) da_SDL_IntersectRect;
-    alias nothrow void function(const(SDL_Rect)*, const(SDL_Rect)*, SDL_Rect*) da_SDL_UnionRect;
-    alias nothrow void function(const(SDL_Point)*, int, const(SDL_Rect)*, SDL_Rect*) da_SDL_EnclosePoints;
-    alias nothrow SDL_bool function(const(SDL_Rect)*, int*, int*, int*, int*) da_SDL_IntersectRectAndLine;
+    alias da_SDL_HasIntersection = SDL_bool function( const( SDL_Rect )*, const( SDL_Rect )* );
+    alias da_SDL_IntersectRect = SDL_bool function( const( SDL_Rect )*, const( SDL_Rect )*, SDL_Rect* );
+    alias da_SDL_UnionRect = void function( const( SDL_Rect )*, const( SDL_Rect )*, SDL_Rect* );
+    alias da_SDL_EnclosePoints = void function( const( SDL_Point )*, int, const( SDL_Rect )*, SDL_Rect* );
+    alias da_SDL_IntersectRectAndLine = SDL_bool function( const( SDL_Rect )*, int*, int*, int*, int* );
 
     // SDL_Render.h
-    alias nothrow int function() da_SDL_GetNumRenderDrivers;
-    alias nothrow int function(int, SDL_RendererInfo*) da_SDL_GetRenderDriverInfo;
-    alias nothrow int function(int, int, Uint32, SDL_Window**, SDL_Renderer**) da_SDL_CreateWindowAndRenderer;
-    alias nothrow SDL_Renderer* function(SDL_Window*, int, Uint32) da_SDL_CreateRenderer;
-    alias nothrow SDL_Renderer* function(SDL_Surface*) da_SDL_CreateSoftwareRenderer;
-    alias nothrow SDL_Renderer* function(SDL_Window*) da_SDL_GetRenderer;
-    alias nothrow int function(SDL_Renderer*, SDL_RendererInfo*) da_SDL_GetRendererInfo;
-    alias nothrow SDL_Texture* function(SDL_Renderer*, Uint32, int, int, int) da_SDL_CreateTexture;
-    alias nothrow SDL_Texture* function(SDL_Renderer*, SDL_Surface*) da_SDL_CreateTextureFromSurface;
-    alias nothrow int function(SDL_Texture*, Uint32*, int*, int*, int*) da_SDL_QueryTexture;
-    alias nothrow int function(SDL_Texture*, Uint8, Uint8, Uint8) da_SDL_SetTextureColorMod;
-    alias nothrow int function(SDL_Texture*, Uint8*, Uint8*, Uint8*) da_SDL_GetTextureColorMod;
-    alias nothrow int function(SDL_Texture*, Uint8) da_SDL_SetTextureAlphaMod;
-    alias nothrow int function(SDL_Texture*, Uint8*) da_SDL_GetTextureAlphaMod;
-    alias nothrow int function(SDL_Texture*, SDL_BlendMode) da_SDL_SetTextureBlendMode;
-    alias nothrow int function(SDL_Texture*, SDL_BlendMode*) da_SDL_GetTextureBlendMode;
-    alias nothrow int function(SDL_Texture*, const(SDL_Rect)*, const(void)*, int) da_SDL_UpdateTexture;
-    alias nothrow int function(SDL_Texture*, const(SDL_Rect)*, void**, int*) da_SDL_LockTexture;
-    alias nothrow int function(SDL_Texture*) da_SDL_UnlockTexture;
-    alias nothrow SDL_bool function(SDL_Renderer*) da_SDL_RenderTargetSupported;
-    alias nothrow int function(SDL_Renderer*, SDL_Texture*) da_SDL_SetRenderTarget;
-    alias nothrow SDL_Texture* function(SDL_Renderer*) da_SDL_GetRenderTarget;
-    alias nothrow int function(SDL_Renderer*, int, int) da_SDL_RenderSetLogicalSize;
-    alias nothrow void function(SDL_Renderer*, int*, int*) da_SDL_RenderGetLogicalSize;
-    alias nothrow int function(SDL_Renderer*, const(SDL_Rect)*) da_SDL_RenderSetViewport;
-    alias nothrow void function(SDL_Renderer*, SDL_Rect*) da_SDL_RenderGetViewport;
-    alias nothrow int function(SDL_Renderer*, float, float) da_SDL_RenderSetScale;
-    alias nothrow int function(SDL_Renderer*, float*, float*) da_SDL_RenderGetScale;
-    alias nothrow int function(SDL_Renderer*, Uint8, Uint8, Uint8, Uint8) da_SDL_SetRenderDrawColor;
-    alias nothrow int function(SDL_Renderer*, Uint8*, Uint8*, Uint8*, Uint8*) da_SDL_GetRenderDrawColor;
-    alias nothrow int function(SDL_Renderer*, SDL_BlendMode) da_SDL_SetRenderDrawBlendMode;
-    alias nothrow int function(SDL_Renderer*, SDL_BlendMode*) da_SDL_GetRenderDrawBlendMode;
-    alias nothrow int function(SDL_Renderer*) da_SDL_RenderClear;
-    alias nothrow int function(SDL_Renderer*, int, int) da_SDL_RenderDrawPoint;
-    alias nothrow int function(SDL_Renderer*, const(SDL_Point)*, int) da_SDL_RenderDrawPoints;
-    alias nothrow int function(SDL_Renderer*, int, int, int, int) da_SDL_RenderDrawLine;
-    alias nothrow int function(SDL_Renderer*, const(SDL_Point)*, int) da_SDL_RenderDrawLines;
-    alias nothrow int function(SDL_Renderer*, const(SDL_Rect)*) da_SDL_RenderDrawRect;
-    alias nothrow int function(SDL_Renderer*, const(SDL_Rect)*, int) da_SDL_RenderDrawRects;
-    alias nothrow int function(SDL_Renderer*, const(SDL_Rect)*) da_SDL_RenderFillRect;
-    alias nothrow int function(SDL_Renderer*, const(SDL_Rect)*) da_SDL_RenderFillRects;
-    alias nothrow int function(SDL_Renderer*, SDL_Texture*, const(SDL_Rect)*, const(SDL_Rect*)) da_SDL_RenderCopy;
-    alias nothrow int function(SDL_Renderer*, SDL_Texture*, const(SDL_Rect)*, const(SDL_Rect)*, const(double), const(SDL_Point)*, const(SDL_RendererFlip)) da_SDL_RenderCopyEx;
-    alias nothrow int function(SDL_Renderer*, const(SDL_Rect)*, Uint32, void*, int) da_SDL_RenderReadPixels;
-    alias nothrow void function(SDL_Renderer*) da_SDL_RenderPresent;
-    alias nothrow void function(SDL_Texture*) da_SDL_DestroyTexture;
-    alias nothrow void function(SDL_Renderer*) da_SDL_DestroyRenderer;
-    alias nothrow int function(SDL_Texture*, float*, float*) da_SDL_GL_BindTexture;
-    alias nothrow int function(SDL_Texture*) da_SDL_GL_UnbindTexture;
+    alias da_SDL_GetNumRenderDrivers = int function();
+    alias da_SDL_GetRenderDriverInfo = int function( int, SDL_RendererInfo* );
+    alias da_SDL_CreateWindowAndRenderer = int function( int, int, Uint32, SDL_Window**, SDL_Renderer** );
+    alias da_SDL_CreateRenderer = SDL_Renderer* function( SDL_Window*, int, Uint32 );
+    alias da_SDL_CreateSoftwareRenderer = SDL_Renderer* function( SDL_Surface* );
+    alias da_SDL_GetRenderer = SDL_Renderer* function( SDL_Window* );
+    alias da_SDL_GetRendererInfo = int function( SDL_Renderer*, SDL_RendererInfo* );
+    alias da_SDL_GetRendererOutputSize = int function( SDL_Renderer*, int*, int* );
+    alias da_SDL_CreateTexture = SDL_Texture* function( SDL_Renderer*, Uint32, int, int, int );
+    alias da_SDL_CreateTextureFromSurface = SDL_Texture* function( SDL_Renderer*, SDL_Surface* );
+    alias da_SDL_QueryTexture = int function( SDL_Texture*, Uint32*, int*, int*, int* );
+    alias da_SDL_SetTextureColorMod = int function( SDL_Texture*, Uint8, Uint8, Uint8 );
+    alias da_SDL_GetTextureColorMod = int function( SDL_Texture*, Uint8*, Uint8*, Uint8* );
+    alias da_SDL_SetTextureAlphaMod = int function( SDL_Texture*, Uint8 );
+    alias da_SDL_GetTextureAlphaMod = int function( SDL_Texture*, Uint8* );
+    alias da_SDL_SetTextureBlendMode = int function( SDL_Texture*, SDL_BlendMode );
+    alias da_SDL_GetTextureBlendMode = int function( SDL_Texture*, SDL_BlendMode* );
+    alias da_SDL_UpdateTexture = int function( SDL_Texture*, const( SDL_Rect )*, const( void )*, int );
+    alias da_SDL_UpdateYUVTexture = int function( SDL_Texture*, const( SDL_Rect )*, const( Uint8 )*, int, const( Uint8 )*, int, const( Uint8 )*, int );
+    alias da_SDL_LockTexture = int function( SDL_Texture*, const( SDL_Rect )*, void**, int* );
+    alias da_SDL_UnlockTexture = int function( SDL_Texture* );
+    alias da_SDL_RenderTargetSupported = SDL_bool function( SDL_Renderer* );
+    alias da_SDL_SetRenderTarget = int function( SDL_Renderer*, SDL_Texture* );
+    alias da_SDL_GetRenderTarget = SDL_Texture* function( SDL_Renderer* );
+    alias da_SDL_RenderSetClipRect = int function( SDL_Renderer*, const( SDL_Rect )* );
+    alias da_SDL_RenderGetClipRect = void function( SDL_Renderer* renderer, SDL_Rect* );
+    alias da_SDL_RenderSetLogicalSize = int function( SDL_Renderer*, int, int );
+    alias da_SDL_RenderGetLogicalSize = void function( SDL_Renderer*, int*, int* );
+    alias da_SDL_RenderSetViewport = int function( SDL_Renderer*, const( SDL_Rect )* );
+    alias da_SDL_RenderGetViewport = void function( SDL_Renderer*, SDL_Rect* );
+    alias da_SDL_RenderIsClipEnabled = SDL_bool function( SDL_Renderer* );
+    alias da_SDL_RenderSetScale = int function( SDL_Renderer*, float, float );
+    alias da_SDL_RenderGetScale = int function( SDL_Renderer*, float*, float* );
+    alias da_SDL_SetRenderDrawColor = int function( SDL_Renderer*, Uint8, Uint8, Uint8, Uint8 );
+    alias da_SDL_GetRenderDrawColor = int function( SDL_Renderer*, Uint8*, Uint8*, Uint8*, Uint8* );
+    alias da_SDL_SetRenderDrawBlendMode = int function( SDL_Renderer*, SDL_BlendMode );
+    alias da_SDL_GetRenderDrawBlendMode = int function( SDL_Renderer*, SDL_BlendMode* );
+    alias da_SDL_RenderClear = int function( SDL_Renderer* );
+    alias da_SDL_RenderDrawPoint = int function( SDL_Renderer*, int, int );
+    alias da_SDL_RenderDrawPoints = int function( SDL_Renderer*, const( SDL_Point )*, int );
+    alias da_SDL_RenderDrawLine = int function( SDL_Renderer*, int, int, int, int );
+    alias da_SDL_RenderDrawLines = int function( SDL_Renderer*, const( SDL_Point )*, int );
+    alias da_SDL_RenderDrawRect = int function( SDL_Renderer*, const( SDL_Rect )* );
+    alias da_SDL_RenderDrawRects = int function( SDL_Renderer*, const( SDL_Rect )*, int );
+    alias da_SDL_RenderFillRect = int function( SDL_Renderer*, const( SDL_Rect )* );
+    alias da_SDL_RenderFillRects = int function( SDL_Renderer*, const( SDL_Rect )*, int );
+    alias da_SDL_RenderCopy = int function( SDL_Renderer*, SDL_Texture*, const( SDL_Rect )*, const( SDL_Rect* ) );
+    alias da_SDL_RenderCopyEx = int function( SDL_Renderer*, SDL_Texture*, const( SDL_Rect )*, const( SDL_Rect )*, const( double ), const( SDL_Point )*, const( SDL_RendererFlip ) );
+    alias da_SDL_RenderReadPixels = int function( SDL_Renderer*, const( SDL_Rect )*, Uint32, void*, int );
+    alias da_SDL_RenderPresent = void function( SDL_Renderer* );
+    alias da_SDL_DestroyTexture = void function( SDL_Texture* );
+    alias da_SDL_DestroyRenderer = void function( SDL_Renderer* );
+    alias da_SDL_GL_BindTexture = int function( SDL_Texture*, float*, float* );
+    alias da_SDL_GL_UnbindTexture = int function( SDL_Texture* );
 
     // SDL_rwops.h
-    alias nothrow SDL_RWops* function(const(char)*, const(char)*) da_SDL_RWFromFile;
-    alias nothrow SDL_RWops* function(FILE*, SDL_bool) da_SDL_RWFromFP;
-    alias nothrow SDL_RWops* function(void*, int) da_SDL_RWFromMem;
-    alias nothrow SDL_RWops* function(const(void)*, int) da_SDL_RWFromConstMem;
-    alias nothrow SDL_RWops* function() da_SDL_AllocRW;
-    alias nothrow void function(SDL_RWops*) da_SDL_FreeRW;
-    alias nothrow Uint8 function(SDL_RWops*) da_SDL_ReadU8;
-    alias nothrow Uint16 function(SDL_RWops*) da_SDL_ReadLE16;
-    alias nothrow Uint16 function(SDL_RWops*) da_SDL_ReadBE16;
-    alias nothrow Uint32 function(SDL_RWops*) da_SDL_ReadLE32;
-    alias nothrow Uint32 function(SDL_RWops*) da_SDL_ReadBE32;
-    alias nothrow Uint64 function(SDL_RWops*) da_SDL_ReadLE64;
-    alias nothrow Uint64 function(SDL_RWops*) da_SDL_ReadBE64;
-    alias nothrow size_t function(SDL_RWops*, Uint8) da_SDL_WriteU8;
-    alias nothrow size_t function(SDL_RWops*, Uint16) da_SDL_WriteLE16;
-    alias nothrow size_t function(SDL_RWops*, Uint16) da_SDL_WriteBE16;
-    alias nothrow size_t function(SDL_RWops*, Uint32) da_SDL_WriteLE32;
-    alias nothrow size_t function(SDL_RWops*, Uint32) da_SDL_WriteBE32;
-    alias nothrow size_t function(SDL_RWops*, Uint64) da_SDL_WriteLE64;
-    alias nothrow size_t function(SDL_RWops*, Uint64) da_SDL_WriteBE64;
+    alias da_SDL_RWFromFile = SDL_RWops* function( const( char )*, const( char )* );
+    alias da_SDL_RWFromFP = SDL_RWops* function( FILE*, SDL_bool );
+    alias da_SDL_RWFromMem = SDL_RWops* function( void*, int );
+    alias da_SDL_RWFromConstMem = SDL_RWops* function( const( void )*, int );
+    alias da_SDL_AllocRW = SDL_RWops* function();
+    alias da_SDL_FreeRW = void function( SDL_RWops* );
+    alias da_SDL_ReadU8 = Uint8 function( SDL_RWops* );
+    alias da_SDL_ReadLE16 = Uint16 function( SDL_RWops* );
+    alias da_SDL_ReadBE16 = Uint16 function( SDL_RWops* );
+    alias da_SDL_ReadLE32 = Uint32 function( SDL_RWops* );
+    alias da_SDL_ReadBE32 = Uint32 function( SDL_RWops* );
+    alias da_SDL_ReadLE64 = Uint64 function( SDL_RWops* );
+    alias da_SDL_ReadBE64 = Uint64 function( SDL_RWops* );
+    alias da_SDL_WriteU8 = size_t function( SDL_RWops*, Uint8 );
+    alias da_SDL_WriteLE16 = size_t function( SDL_RWops*, Uint16 );
+    alias da_SDL_WriteBE16 = size_t function( SDL_RWops*, Uint16 );
+    alias da_SDL_WriteLE32 = size_t function( SDL_RWops*, Uint32 );
+    alias da_SDL_WriteBE32 = size_t function( SDL_RWops*, Uint32 );
+    alias da_SDL_WriteLE64 = size_t function( SDL_RWops*, Uint64 );
+    alias da_SDL_WriteBE64 = size_t function( SDL_RWops*, Uint64 );
 
     // SDL_shape.h
-    alias nothrow SDL_Window* function(const(char)*, uint, uint, uint, uint, Uint32) da_SDL_CreateShapedWindow;
-    alias nothrow SDL_bool function(const(SDL_Window)*) da_SDL_IsShapedWindow;
-    alias nothrow int function(SDL_Window*, SDL_Surface*, SDL_WindowShapeMode*) da_SDL_SetWindowShape;
-    alias nothrow int function(SDL_Window*, SDL_WindowShapeMode*) da_SDL_GetShapedWindowMode;
+    alias da_SDL_CreateShapedWindow = SDL_Window* function( const( char )*, uint, uint, uint, uint, Uint32 );
+    alias da_SDL_IsShapedWindow = SDL_bool function( const( SDL_Window )* );
+    alias da_SDL_SetWindowShape = int function( SDL_Window*, SDL_Surface*, SDL_WindowShapeMode* );
+    alias da_SDL_GetShapedWindowMode = int function( SDL_Window*, SDL_WindowShapeMode* );
 
     // SDL_surface.h
-    alias nothrow SDL_Surface* function(Uint32, int, int, int, Uint32, Uint32, Uint32, Uint32) da_SDL_CreateRGBSurface;
-    alias nothrow SDL_Surface* function(void*, int, int, int, int, Uint32, Uint32, Uint32, Uint32) da_SDL_CreateRGBSurfaceFrom;
-    alias nothrow void function(SDL_Surface*) da_SDL_FreeSurface;
-    alias nothrow int function(SDL_Surface*, SDL_Palette*) da_SDL_SetSurfacePalette;
-    alias nothrow int function(SDL_Surface*) da_SDL_LockSurface;
-    alias nothrow int function(SDL_Surface*) da_SDL_UnlockSurface;
-    alias nothrow SDL_Surface* function(SDL_RWops*, int) da_SDL_LoadBMP_RW;
-    alias nothrow int function(SDL_Surface*, SDL_RWops*, int) da_SDL_SaveBMP_RW;
-    alias nothrow int function(SDL_Surface*, int) da_SDL_SetSurfaceRLE;
-    alias nothrow int function(SDL_Surface*, int, Uint32) da_SDL_SetColorKey;
-    alias nothrow int function(SDL_Surface*, Uint32*) da_SDL_GetColorKey;
-    alias nothrow int function(SDL_Surface*, Uint8, Uint8, Uint8) da_SDL_SetSurfaceColorMod;
-    alias nothrow int function(SDL_Surface*, Uint8*, Uint8*, Uint8*) da_SDL_GetSurfaceColorMod;
-    alias nothrow int function(SDL_Surface*, Uint8) da_SDL_SetSurfaceAlphaMod;
-    alias nothrow int function(SDL_Surface*, Uint8*) da_SDL_GetSurfaceAlphaMod;
-    alias nothrow int function(SDL_Surface*, SDL_BlendMode) da_SDL_SetSurfaceBlendMode;
-    alias nothrow int function(SDL_Surface*, SDL_BlendMode*) da_SDL_GetSurfaceBlendMode;
-    alias nothrow SDL_bool function(SDL_Surface*, const(SDL_Rect)*) da_SDL_SetClipRect;
-    alias nothrow void function(SDL_Surface*, SDL_Rect*) da_SDL_GetClipRect;
-    alias nothrow SDL_Surface* function(SDL_Surface*, SDL_PixelFormat*, Uint32) da_SDL_ConvertSurface;
-    alias nothrow SDL_Surface* function(SDL_Surface*, Uint32, Uint32) da_SDL_ConvertSurfaceFormat;
-    alias nothrow int function(int, int, Uint32, const(void)*, int, Uint32, void*, int) da_SDL_ConvertPixels;
-    alias nothrow int function(SDL_Surface*, const(SDL_Rect)*, Uint32) da_SDL_FillRect;
-    alias nothrow int function(SDL_Surface*, const(SDL_Rect)*, int, Uint32) da_SDL_FillRects;
-    alias nothrow SDL_UpperBlit SDL_BlitSurface;
-    alias nothrow int function(SDL_Surface*, const(SDL_Rect)*, SDL_Surface*, SDL_Rect*) da_SDL_UpperBlit;
-    alias nothrow int function(SDL_Surface*, SDL_Rect*, SDL_Surface*, SDL_Rect*) da_SDL_LowerBlit;
-    alias nothrow int function(SDL_Surface*, const(SDL_Rect)*, SDL_Surface*, const(SDL_Rect)*) da_SDL_SoftStretch;
-    alias nothrow SDL_UpperBlitScaled SDL_BlitScaled;
-    alias nothrow int function(SDL_Surface*, const(SDL_Rect)*, SDL_Surface*, SDL_Rect*) da_SDL_UpperBlitScaled;
-    alias nothrow int function(SDL_Surface*, SDL_Rect*, SDL_Surface*, SDL_Rect*) da_SDL_LowerBlitScaled;
+    alias da_SDL_CreateRGBSurface = SDL_Surface* function( Uint32, int, int, int, Uint32, Uint32, Uint32, Uint32 );
+    alias da_SDL_CreateRGBSurfaceFrom = SDL_Surface* function( void*, int, int, int, int, Uint32, Uint32, Uint32, Uint32 );
+    alias da_SDL_FreeSurface = void function( SDL_Surface* );
+    alias da_SDL_SetSurfacePalette = int function( SDL_Surface*, SDL_Palette* );
+    alias da_SDL_LockSurface = int function( SDL_Surface* );
+    alias da_SDL_UnlockSurface = int function( SDL_Surface* );
+    alias da_SDL_LoadBMP_RW = SDL_Surface* function( SDL_RWops*, int );
+    alias da_SDL_SaveBMP_RW = int function( SDL_Surface*, SDL_RWops*, int );
+    alias da_SDL_SetSurfaceRLE = int function( SDL_Surface*, int );
+    alias da_SDL_SetColorKey = int function( SDL_Surface*, int, Uint32 );
+    alias da_SDL_GetColorKey = int function( SDL_Surface*, Uint32* );
+    alias da_SDL_SetSurfaceColorMod = int function( SDL_Surface*, Uint8, Uint8, Uint8 );
+    alias da_SDL_GetSurfaceColorMod = int function( SDL_Surface*, Uint8*, Uint8*, Uint8* );
+    alias da_SDL_SetSurfaceAlphaMod = int function( SDL_Surface*, Uint8 );
+    alias da_SDL_GetSurfaceAlphaMod = int function( SDL_Surface*, Uint8* );
+    alias da_SDL_SetSurfaceBlendMode = int function( SDL_Surface*, SDL_BlendMode );
+    alias da_SDL_GetSurfaceBlendMode = int function( SDL_Surface*, SDL_BlendMode* );
+    alias da_SDL_SetClipRect = SDL_bool function( SDL_Surface*, const( SDL_Rect )* );
+    alias da_SDL_GetClipRect = void function( SDL_Surface*, SDL_Rect* );
+    alias da_SDL_ConvertSurface = SDL_Surface* function( SDL_Surface*, const( SDL_PixelFormat )*, Uint32 );
+    alias da_SDL_ConvertSurfaceFormat = SDL_Surface* function( SDL_Surface*, Uint32, Uint32 );
+    alias da_SDL_ConvertPixels = int function( int, int, Uint32, const( void )*, int, Uint32, void*, int );
+    alias da_SDL_FillRect = int function( SDL_Surface*, const( SDL_Rect )*, Uint32 );
+    alias da_SDL_FillRects = int function( SDL_Surface*, const( SDL_Rect )*, int, Uint32 );
+    alias da_SDL_UpperBlit = int function( SDL_Surface*, const( SDL_Rect )*, SDL_Surface*, SDL_Rect* );
+    alias da_SDL_LowerBlit = int function( SDL_Surface*, SDL_Rect*, SDL_Surface*, SDL_Rect* );
+    alias da_SDL_SoftStretch = int function( SDL_Surface*, const( SDL_Rect )*, SDL_Surface*, const( SDL_Rect )* );
+    alias da_SDL_UpperBlitScaled = int function( SDL_Surface*, const( SDL_Rect )*, SDL_Surface*, SDL_Rect* );
+    alias da_SDL_LowerBlitScaled = int function( SDL_Surface*, SDL_Rect*, SDL_Surface*, SDL_Rect* );
+
+    alias SDL_BlitSurface = SDL_UpperBlit;
+    alias SDL_BlitScaled = SDL_UpperBlitScaled;
+
+    // SDL_system.h
+    static if( Derelict_OS_Windows ) {
+        alias da_SDL_Direct3D9GetAdapterIndex = int function( int );
+        alias da_SDL_RenderGetD3D9Device = IDirect3DDevice9* function( SDL_Renderer* );
+        alias da_SDL_DXGIGetOutputInfo = SDL_bool function ( int, int*, int* );
+    }
+    static if( Derelict_OS_iOS ) {
+        alias da_SDL_iPhoneSetAnimationCallback = int function( SDL_Window*, int, SDL_iPhoneAnimationCallback, void* );
+        alias da_SDL_iPhoneSetEventPump = void function( SDL_bool );
+    }
+    static if( Derelict_OS_Android ) {
+        alias da_SDL_AndroidGetJNIEnv = void* function();
+        alias da_SDL_AndroidGetActivity = void* function();
+
+        alias da_SDL_AndroidGetInternalStoragePath = const( char )* function();
+        alias da_SDL_AndroidGetInternalStorageState = int function();
+        alias da_SDL_AndroidGetExternalStoragePath = const( char )* function();
+    }
+    static if( Derelict_OS_WinRT ) {
+        alias da_SDL_WinRTGetFSPathUNICODE = const( wchar_t )* function( SDL_WinRT_Path );
+        alias da_SDL_WinRTGetFSPathUTF8 = const( char )* function( SDL_WinRT_Path );
+        alias da_SDL_WinRTRunApp = int function( int function( int, char** ), void* );
+    }
+
+    // SDL_syswm.h
+    alias da_SDL_GetWindowWMInfo = SDL_bool function(SDL_Window* window, SDL_SysWMinfo * info);
 
     // SDL_timer.h
-    alias nothrow Uint32 function() da_SDL_GetTicks;
-    alias nothrow Uint64 function() da_SDL_GetPerformanceCounter;
-    alias nothrow Uint64 function() da_SDL_GetPerformanceFrequency;
-    alias nothrow void function(Uint32) da_SDL_Delay;
-    alias nothrow SDL_TimerID function(Uint32, SDL_TimerCallback, void*) da_SDL_AddTimer;
-    alias nothrow SDL_bool function(SDL_TimerID) da_SDL_RemoveTimer;
+    alias da_SDL_GetTicks = Uint32 function();
+    alias da_SDL_GetPerformanceCounter = Uint64 function();
+    alias da_SDL_GetPerformanceFrequency = Uint64 function();
+    alias da_SDL_Delay = void function( Uint32 );
+    alias da_SDL_AddTimer = SDL_TimerID function( Uint32, SDL_TimerCallback, void* );
+    alias da_SDL_RemoveTimer = SDL_bool function( SDL_TimerID );
 
     // SDL_touch.h
-    alias nothrow int function() da_SDL_GetNumTouchDevices;
-    alias nothrow SDL_TouchID function(int) da_SDL_GetTouchDevice;
-    alias nothrow int function(SDL_TouchID) da_SDL_GetNumTouchFingers;
-    alias nothrow SDL_Finger* function(SDL_TouchID, int) da_SDL_GetTouchFinger;
+    alias da_SDL_GetNumTouchDevices = int function();
+    alias da_SDL_GetTouchDevice = SDL_TouchID function( int );
+    alias da_SDL_GetNumTouchFingers = int function( SDL_TouchID );
+    alias da_SDL_GetTouchFinger = SDL_Finger* function( SDL_TouchID, int );
 
     // SDL_version.h
-    alias nothrow void function(SDL_version*) da_SDL_GetVersion;
-    alias nothrow const(char)* function() da_SDL_GetRevision;
-    alias nothrow int function() da_SDL_GetRevisionNumber;
+    alias da_SDL_GetVersion = void function( SDL_version* );
+    alias da_SDL_GetRevision = const( char )* function();
+    alias da_SDL_GetRevisionNumber = int function();
 
     // SDL_video.h
-    alias nothrow int function() da_SDL_GetNumVideoDrivers;
-    alias nothrow const(char)* function(int) da_SDL_GetVideoDriver;
-    alias nothrow int function(const(char)*) da_SDL_VideoInit;
-    alias nothrow void function() da_SDL_VideoQuit;
-    alias nothrow const(char)* function() da_SDL_GetCurrentVideoDriver;
-    alias nothrow int function() da_SDL_GetNumVideoDisplays;
-    alias nothrow int function(int) da_SDL_GetDisplayName;
-    alias nothrow int function(int, SDL_Rect*) da_SDL_GetDisplayBounds;
-    alias nothrow int function(int) da_SDL_GetNumDisplayModes;
-    alias nothrow int function(int, int, SDL_DisplayMode*) da_SDL_GetDisplayMode;
-    alias nothrow int function(int, SDL_DisplayMode*) da_SDL_GetDesktopDisplayMode;
-    alias nothrow int function(int, SDL_DisplayMode*) da_SDL_GetCurrentDisplayMode;
-    alias nothrow SDL_DisplayMode* function(int, const(SDL_DisplayMode)*, SDL_DisplayMode*) da_SDL_GetClosestDisplayMode;
-    alias nothrow int function(SDL_Window*) da_SDL_GetWindowDisplayIndex;
-    alias nothrow int function(SDL_Window*, const(SDL_DisplayMode)*) da_SDL_SetWindowDisplayMode;
-    alias nothrow int function(SDL_Window*, SDL_DisplayMode*) da_SDL_GetWindowDisplayMode;
-    alias nothrow Uint32 function(SDL_Window*) da_SDL_GetWindowPixelFormat;
-    alias nothrow SDL_Window* function(const(char)*, int, int, int, int, Uint32) da_SDL_CreateWindow;
-    alias nothrow SDL_Window* function(const(void)*) da_SDL_CreateWindowFrom;
-    alias nothrow Uint32 function(SDL_Window*) da_SDL_GetWindowID;
-    alias nothrow SDL_Window* function(Uint32) da_SDL_GetWindowFromID;
-    alias nothrow Uint32 function(SDL_Window*) da_SDL_GetWindowFlags;
-    alias nothrow void function(SDL_Window*, const(char)*) da_SDL_SetWindowTitle;
-    alias nothrow const(char)* function(SDL_Window*) da_SDL_GetWindowTitle;
-    alias nothrow void function(SDL_Window*, SDL_Surface*) da_SDL_SetWindowIcon;
-    alias nothrow void* function(SDL_Window*, const(char)*, void*) da_SDL_SetWindowData;
-    alias nothrow void* function(SDL_Window*, const(char)*) da_SDL_GetWindowData;
-    alias nothrow void function(SDL_Window*, int, int) da_SDL_SetWindowPosition;
-    alias nothrow void function(SDL_Window*, int*, int*) da_SDL_GetWindowPosition;
-    alias nothrow void function(SDL_Window*, int, int) da_SDL_SetWindowSize;
-    alias nothrow void function(SDL_Window*, int*, int*) da_SDL_GetWindowSize;
-    alias nothrow void function(SDL_Window*, int, int) da_SDL_SetWindowMinimumSize;
-    alias nothrow void function(SDL_Window*, int*, int*) da_SDL_GetWindowMinimumSize;
-    alias nothrow void function(SDL_Window*, int, int) da_SDL_SetWindowMaximumSize;
-    alias nothrow void function(SDL_Window*, int*, int*) da_SDL_GetWindowMaximumSize;
-    alias nothrow void function(SDL_Window*, SDL_bool) da_SDL_SetWindowBordered;
-    alias nothrow void function(SDL_Window*) da_SDL_ShowWindow;
-    alias nothrow void function(SDL_Window*) da_SDL_HideWindow;
-    alias nothrow void function(SDL_Window*) da_SDL_RaiseWindow;
-    alias nothrow void function(SDL_Window*) da_SDL_MaximizeWindow;
-    alias nothrow void function(SDL_Window*) da_SDL_MinimizeWindow;
-    alias nothrow void function(SDL_Window*) da_SDL_RestoreWindow;
-    alias nothrow int function(SDL_Window*, Uint32) da_SDL_SetWindowFullscreen;
-    alias nothrow SDL_Surface* function(SDL_Window*) da_SDL_GetWindowSurface;
-    alias nothrow int function(SDL_Window*) da_SDL_UpdateWindowSurface;
-    alias nothrow int function(SDL_Window*, SDL_Rect*, int) da_SDL_UpdateWindowSurfaceRects;
-    alias nothrow void function(SDL_Window*, SDL_bool) da_SDL_SetWindowGrab;
-    alias nothrow SDL_bool function(SDL_Window*) da_SDL_GetWindowGrab;
-    alias nothrow int function(SDL_Window*, float) da_SDL_SetWindowBrightness;
-    alias nothrow float function(SDL_Window*) da_SDL_GetWindowBrightness;
-    alias nothrow int function(SDL_Window*, const(Uint16)*, const(Uint16)*, const(Uint16)*, const(Uint16)*) da_SDL_SetWindowGammaRamp;
-    alias nothrow int function(SDL_Window*, Uint16*, Uint16*, Uint16*, Uint16*) da_SDL_GetWindowGammaRamp;
-    alias nothrow void function(SDL_Window*) da_SDL_DestroyWindow;
-    alias nothrow SDL_bool function() da_SDL_IsScreenSaverEnabled;
-    alias nothrow void function() da_SDL_EnableScreenSaver;
-    alias nothrow void function() da_SDL_DisableScreenSaver;
-    alias nothrow int function(const(char)*) da_SDL_GL_LoadLibrary;
-    alias nothrow void* function(const(char)*) da_SDL_GL_GetProcAddress;
-    alias nothrow void function() da_SDL_GL_UnloadLibrary;
-    alias nothrow SDL_bool function(const(char)*) da_SDL_GL_ExtensionSupported;
-    alias nothrow int function(SDL_GLattr, int) da_SDL_GL_SetAttribute;
-    alias nothrow int function(SDL_GLattr, int*) da_SDL_GL_GetAttribute;
-    alias nothrow SDL_GLContext function(SDL_Window*) da_SDL_GL_CreateContext;
-    alias nothrow int function(SDL_Window*, SDL_GLContext) da_SDL_GL_MakeCurrent;
-    alias nothrow int function(int) da_SDL_GL_SetSwapInterval;
-    alias nothrow int function() da_SDL_GL_GetSwapInterval;
-    alias nothrow void function(SDL_Window*) da_SDL_GL_SwapWindow;
-    alias nothrow void function(SDL_GLContext) da_SDL_GL_DeleteContext;
+    alias da_SDL_GetNumVideoDrivers = int function();
+    alias da_SDL_GetVideoDriver = const( char )* function( int );
+    alias da_SDL_VideoInit = int function( const( char )* );
+    alias da_SDL_VideoQuit = void function();
+    alias da_SDL_GetCurrentVideoDriver = const( char )* function();
+    alias da_SDL_GetNumVideoDisplays = int function();
+    alias da_SDL_GetDisplayName = const( char )* function( int );
+    alias da_SDL_GetDisplayBounds = int function( int, SDL_Rect* );
+    alias da_SDL_GetDisplayDPI = int function( int, float*, float*, float* );
+    alias da_SDL_GetNumDisplayModes = int function( int );
+    alias da_SDL_GetDisplayMode = int function( int, int, SDL_DisplayMode* );
+    alias da_SDL_GetDesktopDisplayMode = int function( int, SDL_DisplayMode* );
+    alias da_SDL_GetCurrentDisplayMode = int function( int, SDL_DisplayMode* );
+    alias da_SDL_GetClosestDisplayMode = SDL_DisplayMode* function( int, const( SDL_DisplayMode )*, SDL_DisplayMode* );
+    alias da_SDL_GetWindowDisplayIndex = int function( SDL_Window* );
+    alias da_SDL_SetWindowDisplayMode = int function( SDL_Window*, const( SDL_DisplayMode )* );
+    alias da_SDL_GetWindowDisplayMode = int function( SDL_Window*, SDL_DisplayMode* );
+    alias da_SDL_GetWindowPixelFormat = Uint32 function( SDL_Window* );
+    alias da_SDL_CreateWindow = SDL_Window* function( const( char )*, int, int, int, int, Uint32 );
+    alias da_SDL_CreateWindowFrom = SDL_Window* function( const( void )* );
+    alias da_SDL_GetWindowID = Uint32 function( SDL_Window* );
+    alias da_SDL_GetWindowFromID = SDL_Window* function( Uint32 );
+    alias da_SDL_GetWindowFlags = Uint32 function( SDL_Window* );
+    alias da_SDL_SetWindowTitle = void function( SDL_Window*, const( char )* );
+    alias da_SDL_GetWindowTitle = const( char )* function( SDL_Window* );
+    alias da_SDL_SetWindowIcon = void function( SDL_Window*, SDL_Surface* );
+    alias da_SDL_SetWindowData = void* function( SDL_Window*, const( char )*, void* );
+    alias da_SDL_GetWindowData = void* function( SDL_Window*, const( char )* );
+    alias da_SDL_SetWindowPosition = void function( SDL_Window*, int, int );
+    alias da_SDL_GetWindowPosition = void function( SDL_Window*, int*, int* );
+    alias da_SDL_SetWindowSize = void function( SDL_Window*, int, int );
+    alias da_SDL_GetWindowSize = void function( SDL_Window*, int*, int* );
+    alias da_SDL_SetWindowMinimumSize = void function( SDL_Window*, int, int );
+    alias da_SDL_GetWindowMinimumSize = void function( SDL_Window*, int*, int* );
+    alias da_SDL_SetWindowMaximumSize = void function( SDL_Window*, int, int );
+    alias da_SDL_GetWindowMaximumSize = void function( SDL_Window*, int*, int* );
+    alias da_SDL_SetWindowBordered = void function( SDL_Window*, SDL_bool );
+    alias da_SDL_ShowWindow = void function( SDL_Window* );
+    alias da_SDL_HideWindow = void function( SDL_Window* );
+    alias da_SDL_RaiseWindow = void function( SDL_Window* );
+    alias da_SDL_MaximizeWindow = void function( SDL_Window* );
+    alias da_SDL_MinimizeWindow = void function( SDL_Window* );
+    alias da_SDL_RestoreWindow = void function( SDL_Window* );
+    alias da_SDL_SetWindowFullscreen = int function( SDL_Window*, Uint32 );
+    alias da_SDL_GetWindowSurface = SDL_Surface* function( SDL_Window* );
+    alias da_SDL_UpdateWindowSurface = int function( SDL_Window* );
+    alias da_SDL_UpdateWindowSurfaceRects = int function( SDL_Window*, SDL_Rect*, int );
+    alias da_SDL_SetWindowGrab = void function( SDL_Window*, SDL_bool );
+    alias da_SDL_GetWindowGrab = SDL_bool function( SDL_Window* );
+    alias da_SDL_GetGrabbedWindow = SDL_Window* function();
+    alias da_SDL_SetWindowBrightness = int function( SDL_Window*, float );
+    alias da_SDL_GetWindowBrightness = float function( SDL_Window* );
+    alias da_SDL_SetWindowGammaRamp = int function( SDL_Window*, const( Uint16 )*, const( Uint16 )*, const( Uint16 )*, const( Uint16 )* );
+    alias da_SDL_GetWindowGammaRamp = int function( SDL_Window*, Uint16*, Uint16*, Uint16*, Uint16* );
+    alias da_SDL_SetWindowHitTest = int function( SDL_Window*, SDL_HitTest, void* );
+    alias da_SDL_DestroyWindow = void function( SDL_Window* );
+    alias da_SDL_IsScreenSaverEnabled = SDL_bool function();
+    alias da_SDL_EnableScreenSaver = void function();
+    alias da_SDL_DisableScreenSaver = void function();
+    alias da_SDL_GL_LoadLibrary = int function( const( char )* );
+    alias da_SDL_GL_GetProcAddress = void* function( const( char )* );
+    alias da_SDL_GL_UnloadLibrary = void function();
+    alias da_SDL_GL_ExtensionSupported = SDL_bool function( const( char )* );
+    alias da_SDL_GL_ResetAttributes = void function();
+    alias da_SDL_GL_SetAttribute = int function( SDL_GLattr, int );
+    alias da_SDL_GL_GetAttribute = int function( SDL_GLattr, int* );
+    alias da_SDL_GL_CreateContext = SDL_GLContext function( SDL_Window* );
+    alias da_SDL_GL_MakeCurrent = int function( SDL_Window*, SDL_GLContext );
+    alias da_SDL_GL_GetCurrentWindow = SDL_Window* function();
+    alias da_SDL_GL_GetCurrentContext = SDL_GLContext function();
+    alias da_SDL_GL_GetDrawableSize = void function( SDL_Window*, int*, int* );
+    alias da_SDL_GL_SetSwapInterval = int function( int );
+    alias da_SDL_GL_GetSwapInterval = int function();
+    alias da_SDL_GL_SwapWindow = void function( SDL_Window* );
+    alias da_SDL_GL_DeleteContext = void function( SDL_GLContext );
 }
 
-// SDL_audio.h
-nothrow SDL_AudioSpec* SDL_LoadWAV(const(char)* file, SDL_AudioSpec* spec, Uint8** audio_buf, Uint32* len)
-{
-    return SDL_LoadWAV_RW(SDL_RWFromFile(file, "rb"), 1, spec, audio_buf, len);
+@nogc nothrow {
+    // SDL_audio.h
+    SDL_AudioSpec* SDL_LoadWAV( const( char )* file, SDL_AudioSpec* spec, Uint8** audio_buf, Uint32* len ) {
+        return SDL_LoadWAV_RW( SDL_RWFromFile( file, "rb" ), 1, spec, audio_buf, len );
+    }
+
+    // SDL_events.h
+    Uint8 SDL_GetEventState( Uint32 type ) {
+        return SDL_EventState( type, SDL_QUERY );
+    }
+
+    // SDL_GameController.h
+    int SDL_GameControllerAddMappingsFromFile( const( char )* file ) {
+        return SDL_GameControllerAddMappingsFromRW( SDL_RWFromFile( file, "rb" ), 1 );
+    }
+
+    // SDL_quit.h
+    bool SDL_QuitRequested() {
+        SDL_PumpEvents();
+        return SDL_PeepEvents( null, 0, SDL_PEEKEVENT, SDL_QUIT, SDL_QUIT ) > 0;
+    }
+
+    // SDL_surface.h
+    SDL_Surface* SDL_LoadBMP( const( char )* file ) {
+        return SDL_LoadBMP_RW( SDL_RWFromFile( file, "rb" ), 1 );
+    }
+
+    int SDL_SaveBMP( SDL_Surface* surface, const( char )* file ) {
+        return SDL_SaveBMP_RW( surface, SDL_RWFromFile( file, "wb" ), 1 );
+    }
 }
 
-// SDL_events.h
-nothrow Uint8 SDL_GetEventState(Uint32 type)
-{
-    return SDL_EventState(type, SDL_QUERY);
-}
-
-// SDL_quit.h
-nothrow bool SDL_QuitRequested()
-{
-    SDL_PumpEvents();
-    return SDL_PeepEvents(null, 0, SDL_PEEKEVENT, SDL_QUIT, SDL_QUIT) > 0;
-}
-
-// SDL_surface.h
-nothrow SDL_Surface* SDL_LoadBMP(const(char)* file)
-{
-    return SDL_LoadBMP_RW(SDL_RWFromFile(file, "rb"), 1);
-}
-
-nothrow int SDL_SaveBMP(SDL_Surface* surface, const(char)* file)
-{
-    return SDL_SaveBMP_RW(surface, SDL_RWFromFile(file, "wb"), 1);
-}
-
-__gshared
-{
+__gshared {
     da_SDL_Init SDL_Init;
     da_SDL_InitSubSystem SDL_InitSubSystem;
     da_SDL_QuitSubSystem SDL_QuitSubSystem;
     da_SDL_WasInit SDL_WasInit;
     da_SDL_Quit SDL_Quit;
+    da_SDL_free SDL_free;
+
+    da_SDL_SetAssertionHandler SDL_SetAssertionHandler;
+    da_SDL_GetDefaultAssertionHandler SDL_GetDefaultAssertionHandler;
+    da_SDL_GetAssertionHandler SDL_GetAssertionHandler;
+    da_SDL_GetAssertionReport SDL_GetAssertionReport;
+    da_SDL_ResetAssertionReport SDL_ResetAssertionReport;
 
     da_SDL_GetNumAudioDrivers SDL_GetNumAudioDrivers;
     da_SDL_GetAudioDriver SDL_GetAudioDriver;
@@ -556,6 +624,9 @@ __gshared
     da_SDL_ConvertAudio SDL_ConvertAudio;
     da_SDL_MixAudio SDL_MixAudio;
     da_SDL_MixAudioFormat SDL_MixAudioFormat;
+    da_SDL_QueueAudio SDL_QueueAudio;
+    da_SDL_GetQueuedAudioSize SDL_GetQueuedAudioSize;
+    da_SDL_ClearQueuedAudio SDL_ClearQueuedAudio;
     da_SDL_LockAudio SDL_LockAudio;
     da_SDL_LockAudioDevice SDL_LockAudioDevice;
     da_SDL_UnlockAudio SDL_UnlockAudio;
@@ -579,6 +650,9 @@ __gshared
     da_SDL_HasSSE3 SDL_HasSSE3;
     da_SDL_HasSSE41 SDL_HasSSE41;
     da_SDL_HasSSE42 SDL_HasSSE42;
+    da_SDL_HasAVX SDL_HasAVX;
+    da_SDL_HasAVX2 SDL_HasAVX2;
+    da_SDL_GetSystemRAM SDL_GetSystemRAM;
 
     da_SDL_SetError SDL_SetError;
     da_SDL_GetError SDL_GetError;
@@ -602,12 +676,14 @@ __gshared
     da_SDL_EventState SDL_EventState;
     da_SDL_RegisterEvents SDL_RegisterEvents;
 
+    da_SDL_GameControllerAddMappingsFromRW SDL_GameControllerAddMappingsFromRW;
     da_SDL_GameControllerAddMapping SDL_GameControllerAddMapping;
     da_SDL_GameControllerMappingForGUID SDL_GameControllerMappingForGUID;
     da_SDL_GameControllerMapping SDL_GameControllerMapping;
     da_SDL_IsGameController SDL_IsGameController;
     da_SDL_GameControllerNameForIndex SDL_GameControllerNameForIndex;
     da_SDL_GameControllerOpen SDL_GameControllerOpen;
+    da_SDL_GameControllerFromInstanceID SDL_GameControllerFromInstanceID;
     da_SDL_GameControllerName SDL_GameControllerName;
     da_SDL_GameControllerGetAttached SDL_GameControllerGetAttached;
     da_SDL_GameControllerGetJoystick SDL_GameControllerGetJoystick;
@@ -662,17 +738,15 @@ __gshared
     da_SDL_SetHintWithPriority SDL_SetHintWithPriority;
     da_SDL_SetHint SDL_SetHint;
     da_SDL_GetHint SDL_GetHint;
+    da_SDL_AddHintCallback SDL_AddHintCallback;
+    da_SDL_DelHintCallback SDL_DelHintCallback;
     da_SDL_ClearHints SDL_ClearHints;
-
-//    da_SDL_RedetectInputDevices SDL_RedetectInputDevices;
-//    da_SDL_GetNumInputDevices SDL_GetNumInputDevices;
-//    da_SDL_GetInputDeviceName SDL_GetInputDeviceName;
-    da_SDL_IsDeviceDisconnected SDL_IsDeviceDisconnected;
 
     da_SDL_NumJoysticks SDL_NumJoysticks;
     da_SDL_JoystickNameForIndex SDL_JoystickNameForIndex;
     da_SDL_JoystickOpen SDL_JoystickOpen;
     da_SDL_JoystickName SDL_JoystickName;
+    da_SDL_JoystickFromInstanceID SDL_JoystickFromInstanceID;
     da_SDL_JoystickGetDeviceGUID SDL_JoystickGetDeviceGUID;
     da_SDL_JoystickGetGUID SDL_JoystickGetGUID;
     da_SDL_JoystickGetGUIDString SDL_JoystickGetGUIDString;
@@ -690,6 +764,7 @@ __gshared
     da_SDL_JoystickGetBall SDL_JoystickGetBall;
     da_SDL_JoystickGetButton SDL_JoystickGetButton;
     da_SDL_JoystickClose SDL_JoystickClose;
+    da_SDL_JoystickCurrentPowerLevel SDL_JoystickCurrentPowerLevel;
 
     da_SDL_GetKeyboardFocus SDL_GetKeyboardFocus;
     da_SDL_GetKeyboardState SDL_GetKeyboardState;
@@ -733,15 +808,19 @@ __gshared
 
     da_SDL_GetMouseFocus SDL_GetMouseFocus;
     da_SDL_GetMouseState SDL_GetMouseState;
+    da_SDL_GetGlobalMouseState SDL_GetGlobalMouseState;
     da_SDL_GetRelativeMouseState SDL_GetRelativeMouseState;
     da_SDL_WarpMouseInWindow SDL_WarpMouseInWindow;
+    da_SDL_WarpMouseGlobal SDL_WarpMouseGlobal;
     da_SDL_SetRelativeMouseMode SDL_SetRelativeMouseMode;
+    da_SDL_CaptureMouse SDL_CaptureMouse;
     da_SDL_GetRelativeMouseMode SDL_GetRelativeMouseMode;
     da_SDL_CreateCursor SDL_CreateCursor;
     da_SDL_CreateColorCursor SDL_CreateColorCursor;
     da_SDL_CreateSystemCursor SDL_CreateSystemCursor;
     da_SDL_SetCursor SDL_SetCursor;
     da_SDL_GetCursor SDL_GetCursor;
+    da_SDL_GetDefaultCursor SDL_GetDefaultCursor;
     da_SDL_FreeCursor SDL_FreeCursor;
     da_SDL_ShowCursor SDL_ShowCursor;
 
@@ -777,6 +856,7 @@ __gshared
     da_SDL_CreateSoftwareRenderer SDL_CreateSoftwareRenderer;
     da_SDL_GetRenderer SDL_GetRenderer;
     da_SDL_GetRendererInfo SDL_GetRendererInfo;
+    da_SDL_GetRendererOutputSize SDL_GetRendererOutputSize;
     da_SDL_CreateTexture SDL_CreateTexture;
     da_SDL_CreateTextureFromSurface SDL_CreateTextureFromSurface;
     da_SDL_QueryTexture SDL_QueryTexture;
@@ -787,15 +867,19 @@ __gshared
     da_SDL_SetTextureBlendMode SDL_SetTextureBlendMode;
     da_SDL_GetTextureBlendMode SDL_GetTextureBlendMode;
     da_SDL_UpdateTexture SDL_UpdateTexture;
+    da_SDL_UpdateYUVTexture SDL_UpdateYUVTexture;
     da_SDL_LockTexture SDL_LockTexture;
     da_SDL_UnlockTexture SDL_UnlockTexture;
     da_SDL_RenderTargetSupported SDL_RenderTargetSupported;
     da_SDL_SetRenderTarget SDL_SetRenderTarget;
     da_SDL_GetRenderTarget SDL_GetRenderTarget;
+    da_SDL_RenderSetClipRect SDL_RenderSetClipRect;
+    da_SDL_RenderGetClipRect SDL_RenderGetClipRect;
     da_SDL_RenderSetLogicalSize SDL_RenderSetLogicalSize;
     da_SDL_RenderGetLogicalSize SDL_RenderGetLogicalSize;
     da_SDL_RenderSetViewport SDL_RenderSetViewport;
     da_SDL_RenderGetViewport SDL_RenderGetViewport;
+    da_SDL_RenderIsClipEnabled SDL_RenderIsClipEnabled;
     da_SDL_RenderSetScale SDL_RenderSetScale;
     da_SDL_RenderGetScale SDL_RenderGetScale;
     da_SDL_SetRenderDrawColor SDL_SetRenderDrawColor;
@@ -876,11 +960,37 @@ __gshared
     da_SDL_UpperBlitScaled SDL_UpperBlitScaled;
     da_SDL_LowerBlitScaled SDL_LowerBlitScaled;
 
+    static if( Derelict_OS_Windows ) {
+        da_SDL_Direct3D9GetAdapterIndex SDL_Direct3D9GetAdapterIndex ;
+        da_SDL_RenderGetD3D9Device SDL_RenderGetD3D9Device;
+        da_SDL_DXGIGetOutputInfo SDL_DXGIGetOutputInfo;
+    }
+    static if( Derelict_OS_iOS ) {
+        da_SDL_iPhoneSetAnimationCallback SDL_iPhoneSetAnimationCallback;
+        da_SDL_iPhoneSetEventPump SDL_iPhoneSetEventPump;
+    }
+    static if( Derelict_OS_Android ) {
+        da_SDL_AndroidGetJNIEnv SDL_AndroidGetJNIEnv;
+        da_SDL_AndroidGetActivity SDL_AndroidGetActivity;
+
+        da_SDL_AndroidGetInternalStoragePath SDL_AndroidGetInternalStoragePath;
+        da_SDL_AndroidGetInternalStorageState SDL_AndroidGetInternalStorageState;
+        da_SDL_AndroidGetExternalStoragePath SDL_AndroidGetExternalStoragePath;
+    }
+    static if( Derelict_OS_WinRT ) {
+        da_SDL_WinRTGetFSPathUNICODE SDL_WinRTGetFSPathUNICODE;
+        da_SDL_WinRTGetFSPathUTF8 SDL_WinRTGetFSPathUTF8;
+        da_SDL_WinRTRunApp SDL_WinRTRunApp;
+    }
+
+    da_SDL_GetWindowWMInfo SDL_GetWindowWMInfo;
+
     da_SDL_GetTicks SDL_GetTicks;
     da_SDL_GetPerformanceCounter SDL_GetPerformanceCounter;
     da_SDL_GetPerformanceFrequency SDL_GetPerformanceFrequency;
     da_SDL_Delay SDL_Delay;
     da_SDL_AddTimer SDL_AddTimer;
+    da_SDL_RemoveTimer SDL_RemoveTimer;
 
     da_SDL_GetNumTouchDevices SDL_GetNumTouchDevices;
     da_SDL_GetTouchDevice SDL_GetTouchDevice;
@@ -899,6 +1009,7 @@ __gshared
     da_SDL_GetNumVideoDisplays SDL_GetNumVideoDisplays;
     da_SDL_GetDisplayName SDL_GetDisplayName;
     da_SDL_GetDisplayBounds SDL_GetDisplayBounds;
+    da_SDL_GetDisplayDPI SDL_GetDisplayDPI;
     da_SDL_GetNumDisplayModes SDL_GetNumDisplayModes;
     da_SDL_GetDisplayMode SDL_GetDisplayMode;
     da_SDL_GetDesktopDisplayMode SDL_GetDesktopDisplayMode;
@@ -939,10 +1050,12 @@ __gshared
     da_SDL_UpdateWindowSurfaceRects SDL_UpdateWindowSurfaceRects;
     da_SDL_SetWindowGrab SDL_SetWindowGrab;
     da_SDL_GetWindowGrab SDL_GetWindowGrab;
+    da_SDL_GetGrabbedWindow SDL_GetGrabbedWindow;
     da_SDL_SetWindowBrightness SDL_SetWindowBrightness;
     da_SDL_GetWindowBrightness SDL_GetWindowBrightness;
     da_SDL_SetWindowGammaRamp SDL_SetWindowGammaRamp;
     da_SDL_GetWindowGammaRamp SDL_GetWindowGammaRamp;
+    da_SDL_SetWindowHitTest SDL_SetWindowHitTest;
     da_SDL_DestroyWindow SDL_DestroyWindow;
     da_SDL_IsScreenSaverEnabled SDL_IsScreenSaverEnabled;
     da_SDL_EnableScreenSaver SDL_EnableScreenSaver;
@@ -951,13 +1064,20 @@ __gshared
     da_SDL_GL_GetProcAddress SDL_GL_GetProcAddress;
     da_SDL_GL_UnloadLibrary SDL_GL_UnloadLibrary;
     da_SDL_GL_ExtensionSupported SDL_GL_ExtensionSupported;
+    da_SDL_GL_ResetAttributes SDL_GL_ResetAttributes;
     da_SDL_GL_SetAttribute SDL_GL_SetAttribute;
     da_SDL_GL_GetAttribute SDL_GL_GetAttribute;
     da_SDL_GL_CreateContext SDL_GL_CreateContext;
     da_SDL_GL_MakeCurrent SDL_GL_MakeCurrent;
+    da_SDL_GL_GetCurrentWindow SDL_GL_GetCurrentWindow;
+    da_SDL_GL_GetCurrentContext SDL_GL_GetCurrentContext;
+    da_SDL_GL_GetDrawableSize SDL_GL_GetDrawableSize;
     da_SDL_GL_SetSwapInterval SDL_GL_SetSwapInterval;
     da_SDL_GL_GetSwapInterval SDL_GL_GetSwapInterval;
     da_SDL_GL_SwapWindow SDL_GL_SwapWindow;
     da_SDL_GL_DeleteContext SDL_GL_DeleteContext;
+
+    da_SDL_GetBasePath SDL_GetBasePath;
+    da_SDL_GetPrefPath SDL_GetPrefPath;
 }
 

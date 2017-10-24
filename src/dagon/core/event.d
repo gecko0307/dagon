@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2016 Timur Gafarov
+Copyright (c) 2014-2017 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -203,7 +203,7 @@ class EventManager
 
                 case SDL_MOUSEMOTION:
                     mouseX = event.motion.x;
-                    mouseY = windowHeight - event.motion.y;
+                    mouseY = event.motion.y;
                     mouseRelX = event.motion.xrel;
                     mouseRelY = event.motion.yrel;
                     break;
@@ -348,23 +348,7 @@ class EventManager
         float y = (cast(float)windowHeight)/2;
         setMouse(cast(int)x, cast(int)y);
     }
-/*
-    void setMouse(int x, int y)
-    {
-        SDL_WarpMouseInWindow(window, mx, my);
-        mouseX = x;
-        mouseY = y;
-    }
 
-    void setMouseToCenter()
-    {
-        float x = (cast(float)windowWidth)/2;
-        float y = (cast(float)windowHeight)/2;
-        SDL_WarpMouse(cast(ushort)x, cast(ushort)(y));
-        mouseX = cast(int)x;
-        mouseY = cast(int)y;
-    }
-*/
     void showCursor(bool mode)
     {
         SDL_ShowCursor(mode);

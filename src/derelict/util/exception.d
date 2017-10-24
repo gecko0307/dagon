@@ -4,7 +4,7 @@ Boost Software License - Version 1.0 - August 17th, 2003
 
 Permission is hereby granted, free of charge, to any person or organization
 obtaining a copy of the software and accompanying documentation covered by
-this license (the "Software") to use, reproduce, display, distribute,
+this license ( the "Software" ) to use, reproduce, display, distribute,
 execute, and transmit the Software, and to prepare derivative works of the
 Software, and to permit third-parties to whom the Software is furnished to
 do so, all subject to the following:
@@ -27,130 +27,108 @@ DEALINGS IN THE SOFTWARE.
 */
 module derelict.util.exception;
 
-private
-{
-    import derelict.util.compat;
-}
-
-/**
-* Base class for all exceptions thrown by Derelict packages.
-*/
-class DerelictException : Exception
-{
-public:
-    this(string msg)
-    {
-        super(msg);
+/++
+ Base class for all exceptions thrown by Derelict packages.
++/
+class DerelictException : Exception {
+    public this( string msg ) {
+        super( msg );
     }
 }
 
-/**
-* Helper struct to facilitate throwing a single SharedLibException after failing
-* to load a library using multiple names.
-*/
-struct FailedSharedLib
-{
+/++
+ Helper struct to facilitate throwing a single SharedLibException after failing
+ to load a library using multiple names.
++/
+private struct FailedSharedLib {
     string name;
     string reason;
 }
 
-/**
-* This exception is thrown when a shared library cannot be loaded
-* because it is either missing or not on the system path.
-*/
+/++
+ This exception is thrown when a shared library cannot be loaded
+ because it is either missing or not on the system path.
++/
 class SharedLibLoadException : DerelictException
 {
-public:
-    static void throwNew(in char[][] libNames, in char[][] reasons)
-    {
-        string msg = "Failed to load one or more shared libraries:";
-        foreach(i, n; libNames)
-        {
-            msg ~= "\n\t" ~ n ~ " - ";
-            if(i < reasons.length)
-                msg ~= reasons[i];
-            else
-                msg ~= "Unknown";
+    private string _sharedLibName;
+
+    public {
+        static void throwNew( string[] libNames, string[] reasons ) {
+            string msg = "Failed to load one or more shared libraries:";
+            foreach( i, n; libNames ) {
+                msg ~= "\n\t" ~ n ~ " - ";
+                if( i < reasons.length )
+                    msg ~= reasons[i];
+                else
+                    msg ~= "Unknown";
+            }
+            throw new SharedLibLoadException( msg );
         }
-        throw new SharedLibLoadException(msg);
-    }
 
-    this(string msg)
-    {
-        super(msg);
-        _sharedLibName = "";
-    }
+        this( string msg ) {
+            super( msg );
+            _sharedLibName = "";
+        }
 
-    this(string msg, string sharedLibName)
-    {
-        super(msg);
-        _sharedLibName = sharedLibName;
-    }
+        this( string msg, string sharedLibName ) {
+            super( msg );
+            _sharedLibName = sharedLibName;
+        }
 
-    string sharedLibName()
-    {
-        return _sharedLibName;
+        string sharedLibName() {
+            return _sharedLibName;
+        }
     }
-
-private:
-    string _sharedLibName;
 }
 
-/**
-* This exception is thrown when a symbol cannot be loaded from a shared library,
-* either because it does not exist in the library or because the library is corrupt.
-*/
+/++
+ This exception is thrown when a symbol cannot be loaded from a shared library,
+ either because it does not exist in the library or because the library is corrupt.
++/
 class SymbolLoadException : DerelictException
 {
-public:
-    this(string msg)
-    {
-        super(msg);
-    }
+    private string _symbolName;
 
-    this(string sharedLibName, string symbolName)
-    {
-        super("Failed to load symbol " ~ symbolName ~ " from shared library " ~ sharedLibName);
-        _symbolName = symbolName;
-    }
+    public {
+        this( string msg ) {
+            super( msg );
+        }
 
-    string symbolName()
-    {
-        return _symbolName;
-    }
+        this( string sharedLibName, string symbolName ) {
+            super( "Failed to load symbol " ~ symbolName ~ " from shared library " ~ sharedLibName );
+            _symbolName = symbolName;
+        }
 
-private:
-    string _symbolName;
+        string symbolName() {
+            return _symbolName;
+        }
+    }
 }
 
-alias SymbolLoadException SharedLibProcLoadException;
-
-//******************************************************************************
-
-/**
-* The MissingSymbolCallback allows the app to handle the case of missing symbols. By default,
-* a SharedLibSymbolLoadException is thrown. However, if a the app determines that
-* particular symbol is not needed, the callback can return true. This will cause
-* the shared library to continue loading. Returning false will cause the exception
-* to be thrown.
-*/
-alias bool function(string libName, string symbolName) MissingSymbolCallback;
-alias MissingSymbolCallback MissingProcCallback;
-
-private MissingSymbolCallback missingSymbolCallback;
-
-public void Derelict_HandleMissingSymbol(string libName, string symbolName)
-{
-    bool result = false;
-    if(missingSymbolCallback !is null)
-        result = missingSymbolCallback(libName, symbolName);
-    if(!result)
-        throw new SymbolLoadException(libName, symbolName);
+/++
+ The return type of the MissingSymbolCallbackFunc/Dg.
++/
+enum ShouldThrow {
+    No,
+    Yes
 }
-alias Derelict_HandleMissingSymbol Derelict_HandleMissingProc;
 
-void Derelict_SetMissingSymbolCallback(MissingSymbolCallback callback)
-{
-    missingSymbolCallback = callback;
-}
-alias Derelict_SetMissingSymbolCallback Derelict_SetMissingProcCallback;
+/++
+ The MissingSymbolCallback allows the user to prevent the throwing of SymbolLoadExceptions.
+
+ By default, a SymbolLoadException is thrown when a symbol cannot be found in a shared
+ library. Assigning a MissingSymbolCallback to a loader allows the application to override
+ this behavior. If the missing symbol in question can be ignored, the callback should
+ return ShouldThrow.No to prevent the exception from being thrown. Otherwise, the
+ return value should be ShouldThrow.Yes. This is useful to allow a binding implemented
+ for version N.N of a library to load older or newer versions that may be missing
+ functions the loader expects to find, provided of course that the app does not need
+ to use those functions.
++/
+alias MissingSymbolCallbackFunc = ShouldThrow function( string symbolName );
+/// Ditto
+alias MissingSymbolCallbackDg = ShouldThrow delegate( string symbolName );
+
+/// Convenient alias to use as a return value.
+alias MissingSymbolCallback = MissingSymbolCallbackDg;

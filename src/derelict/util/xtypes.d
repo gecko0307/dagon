@@ -27,43 +27,33 @@ DEALINGS IN THE SOFTWARE.
 */
 module derelict.util.xtypes;
 
-version (freebsd)
-{
-    version = GLX;
-}
+private import derelict.util.system;
 
-else version (FreeBSD)
-{
-    version = GLX;
-}
-
-else version (linux)
-{
-    version = GLX;
-}
-
-version(GLX)
-{
+static if( Derelict_OS_Posix ) {
     alias int  Bool;
+    alias int  Status;
     alias uint VisualID;
-    alias byte*   XPointer;
+    alias byte* XPointer;
 
     alias void Display;
     alias uint XID;
-    alias XID Pixmap;
-    alias XID Font;
     alias XID Window;
+    alias XID Drawable;
+    alias XID Font;
+    alias XID Pixmap;
+    alias XID Cursor;
+    alias XID Colormap;
+    alias XID GContext;
+    alias XID KeySym;
 
-    struct XExtData
-    {
+    struct XExtData {
         int number;
         XExtData* next;
-        extern(C) int function(XExtData*) free_private;
+        extern( C ) int function( XExtData* ) free_private;
         XPointer private_data;
     }
 
-    struct Visual
-    {
+    struct Visual {
         XExtData* ext_data;
         VisualID  visualid;
         int       _class;
@@ -72,8 +62,7 @@ version(GLX)
         int       map_entries;
     }
 
-    struct XVisualInfo
-    {
+    struct XVisualInfo {
         Visual   *visual;
         VisualID visualid;
         int      screen;

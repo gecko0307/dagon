@@ -36,6 +36,20 @@ public
 private
 {
     import derelict.util.loader;
+    import derelict.util.system;
+}
+
+private {
+    static if(Derelict_OS_Windows)
+        enum libNames = "freetype.dll,libfreetype.dll,libfreetype-6.dll";
+    else static if(Derelict_OS_Mac)
+        enum libNames = "libfreetype.dylib,libfreetype.6.dylib,libfreetype.6.3.16.dylib,/usr/X11/lib/libfreetype.dylib,/usr/X11/lib/libfreetype.6.dylib,/usr/X11/lib/libfreetype.6.3.16.dylib,/opt/X11/lib/libfreetype.dylib";
+    else static if(Derelict_OS_Android)
+        enum libNames = "libft2.so,libfreetype.so.6,libfreetype.so";
+    else static if(Derelict_OS_Posix)
+        enum libNames = "libfreetype.so.6,libfreetype.so";
+    else
+        static assert(0, "Need to implement FreeType libNames for this operating system.");
 }
 
 class DerelictFTLoader : SharedLibLoader
@@ -43,11 +57,7 @@ class DerelictFTLoader : SharedLibLoader
 public:
     this()
     {
-        super(
-            "freetype.dll",
-            "libfreetype.so.6,libfreetype.so",
-            "libfreetype.dylib,libfreetype.6.dylib,libfreetype.6.3.16.dylib,/usr/X11/lib/libfreetype.dylib,/usr/X11/lib/libfreetype.6.dylib,/usr/X11/lib/libfreetype.6.3.16.dylib"
-        );
+        super(libNames);
     }
 
 protected:
@@ -349,15 +359,9 @@ protected:
     }
 }
 
-DerelictFTLoader DerelictFT;
+__gshared DerelictFTLoader DerelictFT;
 
 static this()
 {
     DerelictFT = new DerelictFTLoader();
-}
-
-static ~this()
-{
-    if(SharedLibLoader.isAutoUnloadEnabled())
-        DerelictFT.unload();
 }
