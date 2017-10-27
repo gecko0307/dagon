@@ -170,10 +170,6 @@ class Application: EventListener
         width = w;
         height = h;
         
-        window = SDL_CreateWindow(toStringz(windowTitle), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
-        if (window is null)
-            exitWithError("Failed to create window: " ~ to!string(SDL_GetError()));
-            
         SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);        
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -181,6 +177,11 @@ class Application: EventListener
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+
+        window = SDL_CreateWindow(toStringz(windowTitle), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+        if (window is null)
+            exitWithError("Failed to create window: " ~ to!string(SDL_GetError()));
+            
         SDL_GL_SetSwapInterval(1);
             
         glcontext = SDL_GL_CreateContext(window);
