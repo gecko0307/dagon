@@ -166,25 +166,25 @@ class Application: EventListener
 
         if (SDL_Init(SDL_INIT_EVERYTHING) == -1)
             exitWithError("Failed to init SDL: " ~ to!string(SDL_GetError()));
+            
+        width = w;
+        height = h;
         
+        window = SDL_CreateWindow(toStringz(windowTitle), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+        if (window is null)
+            exitWithError("Failed to create window: " ~ to!string(SDL_GetError()));
+            
         SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);        
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-    
-        width = w;
-        height = h;
-        
-        window = SDL_CreateWindow(toStringz(windowTitle), 100, 100, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
-        if (window is null)
-            exitWithError("Failed to create window: " ~ to!string(SDL_GetError()));
         SDL_GL_SetSwapInterval(1);
             
         glcontext = SDL_GL_CreateContext(window);
+        SDL_GL_MakeCurrent(window, glcontext);
 
         GLVersion loadedVersion = DerelictGL.reload(GLVersion.GL33);
         writeln("OpenGL version loaded: ", loadedVersion);
@@ -192,8 +192,6 @@ class Application: EventListener
         {
             exitWithError("Sorry, Dagon requires OpenGL 3.3!");
         }
-        
-        SDL_GL_MakeCurrent(window, glcontext);
         
         if (fullscreen)
             SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
