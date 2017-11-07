@@ -67,6 +67,7 @@ class Entity: Owner
     Drawable drawable;
     EventManager eventManager;
     
+    Entity parent;
     DynamicArray!Entity children;
 
     Vector3f position;
@@ -106,6 +107,7 @@ class Entity: Owner
     {
         this(parent.eventManager, parent);
         parent.children.append(this);
+        this.parent = parent;
     }
 
     ~this()
@@ -222,17 +224,24 @@ class Entity: Owner
             rcLocal.modelMatrix = transformation;
             rcLocal.invModelMatrix = invTransformation;
         }
+        else if (parent)
+        {
+            // Use camera, self and parent transformation
+
+            rcLocal.modelMatrix = rcLocal.modelMatrix * transformation;
+            rcLocal.invModelMatrix = invTransformation *  rcLocal.invModelMatrix; // because (A * B)^-1 = B^-1 * A^-1
+        }
         else
         {
-            // Use camera and parent transformation
+            // Use only self transformation
             
-            rcLocal.modelMatrix *= transformation;
-            rcLocal.invModelMatrix = invTransformation * rcLocal.invModelMatrix; // because (A * B)^-1 = B^-1 * A^-1
+            rcLocal.modelMatrix = transformation;
+            rcLocal.invModelMatrix = invTransformation;
         }
         
         rcLocal.modelViewMatrix = rcLocal.viewMatrix * rcLocal.modelMatrix;
         rcLocal.normalMatrix = rcLocal.modelViewMatrix.inverse.transposed;
-        
+
         foreach(child; children)
         {
             child.render(&rcLocal);

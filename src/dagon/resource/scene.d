@@ -361,6 +361,7 @@ class BaseScene3D: Scene
     CascadedShadowMap shadowMap;
 
     BlinnPhongClusteredBackend defaultMaterialBackend;
+    GenericMaterial defaultMaterial3D;
 
     RenderingContext rc3d; 
     RenderingContext rc2d; 
@@ -420,6 +421,9 @@ class BaseScene3D: Scene
             e = New!Entity(eventManager, assetManager);
             entities3D.append(e);
         }
+        
+        e.material = defaultMaterial3D;
+        
         return e;
     }
     
@@ -444,6 +448,8 @@ class BaseScene3D: Scene
         
         shadowMap = New!CascadedShadowMap(1024, this, 10, 50, 400, -100, 100, assetManager);
         defaultMaterialBackend.shadowMap = shadowMap;
+        
+        defaultMaterial3D = createMaterial();
     }
     
     override void onRelease()
