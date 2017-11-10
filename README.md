@@ -26,7 +26,7 @@ Currently Dagon has the following features:
 * Built-in camera logics for quick and easy navigation (freeview and first person style view)
 * [Box](https://github.com/gecko0307/box) container support for assets.
 
-[![Screenshot1](/screenshots/area-thumb.jpg)](/screenshots/area.jpg)
+[![Screenshot1](https://raw.githubusercontent.com/gecko0307/dagon-demo/master/screenshots/main-thumb.jpg)](https://raw.githubusercontent.com/gecko0307/dagon-demo/master/screenshots/main.jpg)
 
 Dagon is still under development and lacks a lot of important functionality. Currently it is not recommended to use Dagon in production due to unstable API.
 
