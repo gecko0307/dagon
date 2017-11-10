@@ -36,6 +36,7 @@ import dlib.container.dict;
 import dlib.filesystem.filesystem;
 import dlib.filesystem.stdfs;
 import dlib.image.unmanaged;
+import dlib.image.hdri;
 
 import dagon.core.ownership;
 import dagon.core.vfs;
@@ -67,6 +68,7 @@ class AssetManager: Owner
     Dict!(Asset, string) assetsByFilename;
     VirtualFileSystem fs;
     UnmanagedImageFactory imageFactory;
+    UnmanagedHDRImageFactory hdrImageFactory;
     Thread loadingThread;
 
     bool liveUpdate = false;
@@ -84,6 +86,7 @@ class AssetManager: Owner
         fs = New!VirtualFileSystem();
         fs.mount(".");
         imageFactory = New!UnmanagedImageFactory();
+        hdrImageFactory = New!UnmanagedHDRImageFactory();
 
         loadingThread = New!Thread(&threadFunc);
     }
@@ -93,6 +96,7 @@ class AssetManager: Owner
         Delete(assetsByFilename);
         Delete(fs);
         Delete(imageFactory);
+        Delete(hdrImageFactory);
         Delete(loadingThread);
     }
 

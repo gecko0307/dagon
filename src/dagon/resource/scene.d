@@ -111,7 +111,7 @@ class Scene: EventListener
             tex = cast(TextureAsset)assetManager.getAsset(filename);
         else
         {
-            tex = New!TextureAsset(assetManager.imageFactory, assetManager);
+            tex = New!TextureAsset(assetManager.imageFactory, assetManager.hdrImageFactory, assetManager);
             addAsset(tex, filename, preload);
         }
         return tex;
@@ -434,9 +434,9 @@ class BaseScene3D: Scene
         return New!GenericMaterial(backend, assetManager);
     }
     
-    LightSource createLight(Vector3f position, Color4f color, float volumeRadius, float areaRadius = 0.0f)
+    LightSource createLight(Vector3f position, Color4f color, float energy, float volumeRadius, float areaRadius = 0.0f)
     {
-        return lightManager.addLight(position, color, volumeRadius, areaRadius);
+        return lightManager.addLight(position, color, energy, volumeRadius, areaRadius);
     }
     
     override void onAllocate()

@@ -27,13 +27,19 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.graphics.environment;
 
+import dlib.core.memory;
+import dlib.image.image;
+import dlib.image.unmanaged;
 import dlib.image.color;
+import dlib.image.render.shapes;
 import dlib.image.hsv;
 import dlib.math.utils;
 import dlib.math.vector;
 import dlib.math.quaternion;
 import dlib.math.interpolation;
+import derelict.opengl.gl;
 import dagon.core.ownership;
+import dagon.graphics.texture;
 
 Color4f saturation(Color4f c, float s)
 {
@@ -49,6 +55,8 @@ class Environment: Owner
     Color4f backgroundColor = Color4f(0.1f, 0.1f, 0.1f, 1.0f);
     Color4f ambientConstant = Color4f(0.1f, 0.1f, 0.1f, 1.0f);
     // TODO: ambient map (cubemap and equirectangular map)
+    
+    Texture skyTexture;
 
     Color4f fogColor = Color4f(0.1f, 0.1f, 0.1f, 1.0f);
     float fogStart = 100.0f;
@@ -57,6 +65,7 @@ class Environment: Owner
     Color4f sunZenithColor = Color4f(1.0, 1.0, 1.0, 1.0);
     Color4f sunHorizonColor = Color4f(0.9, 0.4, 0.0, 1.0);
     Quaternionf sunRotation;
+    float sunEnergy = 20.0f;
     
     Color4f skyZenithColor = Color4f(0.223, 0.572, 0.752, 1.0);
     Color4f skyHorizonColor = Color4f(0.9, 1.0, 1.0, 1.0);

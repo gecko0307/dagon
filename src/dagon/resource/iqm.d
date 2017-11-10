@@ -395,7 +395,7 @@ class IQMModel: AnimatedModel
 
                 if (!mngr.assetExists(texFilename))
                 {
-                    auto texAsset = New!TextureAsset(mngr.imageFactory, mngr);
+                    auto texAsset = New!TextureAsset(mngr.imageFactory, mngr.hdrImageFactory, mngr);
                     mngr.addAsset(texAsset, texFilename);
                     texAsset.threadSafePartLoaded = mngr.loadAssetThreadSafePart(texAsset, texFilename);
                     facegroups[i].texture = texAsset.texture;

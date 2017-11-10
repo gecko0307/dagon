@@ -61,7 +61,7 @@ struct Event
     int button;
     int joystickButton;
     int joystickAxis;
-    int joystickAxisValue;
+    float joystickAxisValue;
     int width;
     int height;
     int userCode;
@@ -100,6 +100,8 @@ class EventManager
     uint windowWidth;
     uint windowHeight;
     bool windowFocused = true;
+    
+    SDL_GameController* controller;
 
     this(SDL_Window* win, uint winWidth, uint winHeight)
     {
@@ -111,6 +113,22 @@ class EventManager
         //auto videoInfo = SDL_GetVideoInfo();
         //videoWidth = videoInfo.current_w;
         //videoHeight = videoInfo.current_h;
+
+        if (SDL_IsGameController(0))
+        {
+            writeln("Game controller found!");
+            controller = SDL_GameControllerOpen(0);
+            
+            SDL_Joystick* joy = SDL_GameControllerGetJoystick(controller);
+            int instanceID = SDL_JoystickInstanceID(joy);
+            
+            SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
+            
+            if (SDL_GameControllerMapping(controller) is null)
+                writeln("Warning: no mapping found for controller!");
+            
+            SDL_GameControllerEventState(SDL_ENABLE);
+        }
     }
 
     void addEvent(Event e)
@@ -141,6 +159,11 @@ class EventManager
         e.userCode = code;
         addUserEvent(e);
     }
+    
+    float joystickAxis(int axis)
+    {
+        return cast(float)(SDL_GameControllerGetAxis(controller, axis)) / 32768.0f;
+    }
 
     void update()
     {
@@ -149,9 +172,6 @@ class EventManager
         
         mouseRelX = 0;
         mouseRelY = 0;
-
-        //if (SDL_WasInit(SDL_INIT_JOYSTICK))
-        //    SDL_JoystickUpdate();
 
         for (uint i = 0; i < numUserEvents; i++)
         {
@@ -229,25 +249,42 @@ class EventManager
                     addEvent(e);
                     break;
 
-                case SDL_JOYBUTTONDOWN:
+                case SDL_CONTROLLERBUTTONDOWN:
                     // TODO: add state modification
-                    e = Event(EventType.JoystickButtonDown);
-                    e.button = event.jbutton.button+1;
+                    if (event.cbutton.state == SDL_PRESSED)
+                        e = Event(EventType.JoystickButtonDown);
+                    else if (event.cbutton.state == SDL_RELEASED)
+                        e = Event(EventType.JoystickButtonUp);
+                    e.joystickButton = event.cbutton.button;
                     addEvent(e);
                     break;
 
-                case SDL_JOYBUTTONUP:
+                case SDL_CONTROLLERBUTTONUP: 
                     // TODO: add state modification
-                    e = Event(EventType.JoystickButtonUp);
-                    e.button = event.jbutton.button+1;
+                    if (event.cbutton.state == SDL_PRESSED)
+                        e = Event(EventType.JoystickButtonDown);
+                    else if (event.cbutton.state == SDL_RELEASED)
+                        e = Event(EventType.JoystickButtonUp);
+                    e.joystickButton = event.cbutton.button;
                     addEvent(e);
                     break;
 
-                case SDL_JOYAXISMOTION:
+                case SDL_CONTROLLERAXISMOTION:
                     // TODO: add state modification
                     e = Event(EventType.JoystickAxisMotion);
-                    e.joystickAxis = event.jaxis.axis;
-                    e.joystickAxis = event.jaxis.value;
+                    e.joystickAxis = event.caxis.axis;
+                    e.joystickAxisValue = cast(float)event.caxis.value / 32768.0f;
+                    
+                    if (controller)
+                    {
+                        if (e.joystickAxis == 0)
+                            e.joystickAxisValue = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY);
+                        if (e.joystickAxis == 1)
+                            e.joystickAxisValue = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX);
+                            
+                        e.joystickAxisValue = e.joystickAxisValue / 32768.0f; 
+                    }
+                    
                     addEvent(e);
                     break;
 
@@ -414,7 +451,7 @@ abstract class EventListener: Owner
                 onJoystickButtonDown(e.joystickButton);
                 break;
             case EventType.JoystickButtonUp:
-                onJoystickButtonDown(e.joystickButton);
+                onJoystickButtonUp(e.joystickButton);
                 break;
             case EventType.JoystickAxisMotion:
                 onJoystickAxisMotion(e.joystickAxis, e.joystickAxisValue);
@@ -447,7 +484,7 @@ abstract class EventListener: Owner
     void onMouseWheel(int x, int y) {}
     void onJoystickButtonDown(int button) {}
     void onJoystickButtonUp(int button) {}
-    void onJoystickAxisMotion(int axis, int value) {}
+    void onJoystickAxisMotion(int axis, float value) {}
     void onResize(int width, int height) {}
     void onFocusLoss() {}
     void onFocusGain() {}

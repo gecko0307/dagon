@@ -78,6 +78,7 @@ public
     import dagon.graphics.materials.generic;
     import dagon.graphics.materials.bp;
     import dagon.graphics.materials.bpclustered;
+    import dagon.graphics.materials.pbrclustered;
     import dagon.graphics.materials.shadeless;
     import dagon.graphics.materials.sky;
     import dagon.graphics.materials.hud;

@@ -38,7 +38,9 @@ import dlib.image.io.bmp;
 import dlib.image.io.png;
 import dlib.image.io.tga;
 import dlib.image.io.jpeg;
+import dlib.image.io.hdr;
 import dlib.image.unmanaged;
+import dlib.image.hdri;
 import dlib.filesystem.filesystem;
 
 import dagon.core.ownership;
@@ -48,12 +50,14 @@ import dagon.graphics.texture;
 class TextureAsset: Asset
 {
     UnmanagedImageFactory imageFactory;
+    UnmanagedHDRImageFactory hdrImageFactory;
     Texture texture;
 
-    this(UnmanagedImageFactory imgfac, Owner o)
+    this(UnmanagedImageFactory imgfac, UnmanagedHDRImageFactory hdrImgFac, Owner o)
     {
         super(o);
         imageFactory = imgfac;
+        hdrImageFactory = hdrImgFac;
         texture = New!Texture(this);
     }
 
@@ -64,33 +68,49 @@ class TextureAsset: Asset
 
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
     {
-        Compound!(SuperImage, string) res;
-        switch(filename.extension)
+        string errMsg;
+    
+        if (filename.extension == ".hdr" || 
+            filename.extension == ".HDR")
         {
-            case ".bmp", ".BMP":
-                res = loadBMP(istrm, imageFactory);
-                break;
-            case ".jpg", ".JPG", ".jpeg", ".JPEG":
-                res = loadJPEG(istrm, imageFactory);
-                break;
-            case ".png", ".PNG":
-                res = loadPNG(istrm, imageFactory);
-                break;
-            case ".tga", ".TGA":
-                res = loadTGA(istrm, imageFactory);
-                break;
-            default:
-                return false;
+            Compound!(SuperHDRImage, string) res;
+            res = loadHDR(istrm, hdrImageFactory);
+            texture.image = res[0];
+            errMsg = res[1];
         }
+        else
+        {
+            Compound!(SuperImage, string) res;
+            
+            switch(filename.extension)
+            {
+                case ".bmp", ".BMP":
+                    res = loadBMP(istrm, imageFactory);
+                    break;
+                case ".jpg", ".JPG", ".jpeg", ".JPEG":
+                    res = loadJPEG(istrm, imageFactory);
+                    break;
+                case ".png", ".PNG":
+                    res = loadPNG(istrm, imageFactory);
+                    break;
+                case ".tga", ".TGA":
+                    res = loadTGA(istrm, imageFactory);
+                    break;
+                default:
+                    return false;
+            }
 
-        texture.image = res[0];
+            texture.image = res[0];
+            errMsg = res[1];
+        }
+        
         if (texture.image !is null)
         {
             return true;
         }
         else
         {
-            writeln(res[1]);
+            writeln(errMsg);
             return false;
         }
     }

@@ -54,6 +54,8 @@ class Texture: Owner
     Vector2f translation;
     Vector2f scale;
     float rotation;
+    
+    bool useMipmapFiltering = true;
 
     this(Owner o)
     {
@@ -78,14 +80,15 @@ class Texture: Owner
         width = img.width;
         height = img.height;
 
-        type = GL_UNSIGNED_BYTE;
+        //type = GL_UNSIGNED_BYTE;
 
         switch (img.pixelFormat)
         {
-            case PixelFormat.L8:     intFormat = GL_R8;     format = GL_RED; break;
-            case PixelFormat.LA8:    intFormat = GL_RG8;    format = GL_RG; break;
-            case PixelFormat.RGB8:   intFormat = GL_RGB8;   format = GL_RGB; break;
-            case PixelFormat.RGBA8:  intFormat = GL_RGBA8;  format = GL_RGBA; break;
+            case PixelFormat.L8:         intFormat = GL_R8;      format = GL_RED;  type = GL_UNSIGNED_BYTE; break;
+            case PixelFormat.LA8:        intFormat = GL_RG8;     format = GL_RG;   type = GL_UNSIGNED_BYTE; break;
+            case PixelFormat.RGB8:       intFormat = GL_RGB8;    format = GL_RGB;  type = GL_UNSIGNED_BYTE; break;
+            case PixelFormat.RGBA8:      intFormat = GL_RGBA8;   format = GL_RGBA; type = GL_UNSIGNED_BYTE; break;
+            case PixelFormat.RGBA_FLOAT: intFormat = GL_RGBA32F; format = GL_RGBA; type = GL_FLOAT; break;
             default:
                 writefln("Unsupported pixel format %s", img.pixelFormat);
                 return;
@@ -102,13 +105,13 @@ class Texture: Owner
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
-        numMipmapLevels = cast(int)log2(fmax(width, height)) + 1;
+        //numMipmapLevels = cast(int)log2(fmax(width, height)) + 1;
        
         glTexImage2D(GL_TEXTURE_2D, 0, intFormat, width, height, 0, format, type, cast(void*)img.data.ptr);
 
         glGenerateMipmap(GL_TEXTURE_2D);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, numMipmapLevels - 1);
+        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, numMipmapLevels - 1);
 
         glBindTexture(GL_TEXTURE_2D, 0);
     }
@@ -117,10 +120,16 @@ class Texture: Owner
     {
         if (glIsTexture(tex))
             glBindTexture(GL_TEXTURE_2D, tex);
+            
+        if (useMipmapFiltering)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        else
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     }
 
     void unbind()
     {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glBindTexture(GL_TEXTURE_2D, 0);
     }
     

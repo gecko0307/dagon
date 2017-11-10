@@ -97,7 +97,7 @@ class LightSource
     Vector3f color;
     float radius; // max light attenuation radius
     float areaRadius; // light's own radius
-    float energy; // 1.0 - full brightness, 0.0 - light is turned off
+    float energy;
     
     this(Vector3f pos, Vector3f col, float attRadius, float areaRadius, float energy)
     {
@@ -261,9 +261,9 @@ class ClusteredLightManager: Owner
         Delete(clusterData);
     }
     
-    LightSource addLight(Vector3f position, Color4f color, float radius, float areaRadius = 0.0f)
+    LightSource addLight(Vector3f position, Color4f color, float energy, float radius, float areaRadius = 0.0f)
     {        
-        lightSources.append(New!LightSource(position, color.rgb, radius, areaRadius, 1.0f));
+        lightSources.append(New!LightSource(position, color.rgb, radius, areaRadius, energy));
         
         if (lightSources.length >= maxNumLights)
             writeln("Warning: lights number exceeds index buffer capability (", maxNumLights, ")");
