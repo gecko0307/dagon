@@ -60,6 +60,7 @@ struct Particle
     float lifetime;
     float time;
     bool move;
+    bool active;
 }
 
 abstract class ForceField: Behaviour
@@ -185,8 +186,6 @@ class ParticleSystem: Behaviour
     Particle[] particles;
     DynamicArray!ForceField forceFields;
     
-    View view;
-    
     float airFrictionDamping = 0.98f;
     
     float minLifetime = 1.0f;
@@ -194,6 +193,7 @@ class ParticleSystem: Behaviour
     
     float minSize = 0.25f;
     float maxSize = 1.0f;
+    Vector2f scaleStep = Vector2f(0, 0);
     
     float initialPositionRandomRadius = 0.0f;
     
@@ -205,6 +205,8 @@ class ParticleSystem: Behaviour
     
     Color4f startColor = Color4f(1, 0.5f, 0, 1);
     Color4f endColor = Color4f(1, 1, 1, 0);
+    
+    bool emitting = true;
     
     bool haveParticlesToDraw = false;
     
@@ -221,11 +223,9 @@ class ParticleSystem: Behaviour
     
     Material material;
 
-    this(Entity e, uint numParticles, View v)
+    this(Entity e, uint numParticles)
     {
         super(e);
-        
-        view = v;
         
         particles = New!(Particle[])(numParticles);
         foreach(ref p; particles)
@@ -233,10 +233,10 @@ class ParticleSystem: Behaviour
             resetParticle(p);
         }
         
-        vertices[0] = Vector3f(0, 1, 0);
-        vertices[1] = Vector3f(0, 0, 0);
-        vertices[2] = Vector3f(1, 0, 0);
-        vertices[3] = Vector3f(1, 1, 0);
+        vertices[0] = Vector3f(-0.5f, 0.5f, 0);
+        vertices[1] = Vector3f(-0.5f, -0.5f, 0);
+        vertices[2] = Vector3f(0.5f, -0.5f, 0);
+        vertices[3] = Vector3f(0.5f, 0.5f, 0);
         
         texcoords[0] = Vector2f(0, 0);
         texcoords[1] = Vector2f(0, 1);
@@ -294,16 +294,31 @@ class ParticleSystem: Behaviour
         if (initialPositionRandomRadius > 0.0f)
         {
             float randomDist = uniform(0.0f, initialPositionRandomRadius);
-            p.position = entity.position + randomUnitVector3!float * randomDist;
+            p.position = entity.absolutePosition + randomUnitVector3!float * randomDist;
         }
         else
-            p.position = entity.position;
+            p.position = entity.absolutePosition;
         Vector3f r = randomUnitVector3!float;
-        float initialSpeed = uniform(minInitialSpeed, maxInitialSpeed);
+
+        float initialSpeed;
+        if (maxInitialSpeed > minInitialSpeed)
+            initialSpeed = uniform(minInitialSpeed, maxInitialSpeed);
+        else
+            initialSpeed = maxInitialSpeed;
         p.velocity = lerp(initialDirection, r, initialDirectionRandomFactor) * initialSpeed;
-        p.lifetime = uniform(minLifetime, maxLifetime);
+        
+        if (maxLifetime > minLifetime)
+            p.lifetime = uniform(minLifetime, maxLifetime);
+        else
+            p.lifetime = maxLifetime;
         p.gravityVector = Vector3f(0, -1, 0);
-        float s = uniform(minSize, maxSize);
+        
+        float s;
+        if (maxSize > maxSize)
+            s = uniform(maxSize, maxSize);
+        else
+            s = maxSize;
+            
         p.scale = Vector2f(s, s);
         p.time = 0.0f;
         p.move = true;
@@ -311,37 +326,51 @@ class ParticleSystem: Behaviour
         p.color = p.startColor;
     }
     
+    void updateParticle(ref Particle p, double dt)
+    {
+        p.time += dt;
+        if (p.move)
+        {
+            p.acceleration = Vector3f(0, 0, 0);
+               
+            foreach(ref ff; forceFields)
+            {
+                ff.affect(p);
+            }
+                
+            p.velocity += p.acceleration * dt;
+            p.velocity = p.velocity * airFrictionDamping;
+
+            p.position += p.velocity * dt;
+        }
+
+        float t = p.time / p.lifetime;
+        p.color.a = lerp(1.0f, 0.0f, t);
+            
+        p.scale = p.scale + scaleStep * dt;
+    }
+    
     override void update(double dt)
     {
-        //invViewMatRot = matrix3x3to4x4(matrix4x4to3x3(view.invViewMatrix));
-
         haveParticlesToDraw = false;
         foreach(ref p; particles)
-        if (p.time < p.lifetime)
         {
-            p.time += dt;
-            if (p.move)
+            if (p.active)
             {
-                p.acceleration = Vector3f(0, 0, 0);
-                
-                foreach(ref ff; forceFields)
+                if (p.time < p.lifetime)
                 {
-                    ff.affect(p);
+                    updateParticle(p, dt);
+                    haveParticlesToDraw = true;
                 }
-                
-                p.velocity += p.acceleration * dt;
-                p.velocity = p.velocity * airFrictionDamping;
-
-                p.position += p.velocity * dt;
+                else
+                    p.active = false;
             }
-
-            float t = p.time / p.lifetime;
-            p.color.a = lerp(1.0f, 0.0f, t);
-
-            haveParticlesToDraw = true;
+            else if (emitting)
+            {
+                resetParticle(p);
+                p.active = true;
+            }
         }
-        else
-            resetParticle(p);
     }
     
     override void render(RenderingContext* rc)

@@ -394,24 +394,25 @@ class PBRClusteredBackend: GLSLMaterialBackend
             vec4 emissionColor = texture(emissionTexture, shiftedTexCoord);
             
             float envEnergy = max(sunDiffBrightness * s1, 0.8);
-            vec3 envDiff = toLinear(environment(worldN, worldSun, gloss)) * envEnergy;
+            vec3 envDiff = toLinear(environment(worldN, worldSun, 0.01)) * envEnergy;
             vec3 envSpec = toLinear(environment(worldR, worldSun, gloss)) * envEnergy;
             
             vec3 sun = toLinear(sunColor);
-            
-            //float sunEnergy = 20.0; // TODO: pass this as parameter
+
             float specEnergy = sunSpecBrightness * sunEnergy * s1;
             float diffEnergy = sunDiffBrightness * sunEnergy * s1;
             vec3 diffLight = envDiff + pointDiffSum + sun * diffEnergy;
-            vec3 specLight = pointSpecSum + sun * specEnergy;
+            vec3 specLight = envSpec + pow(pointSpecSum + sun * specEnergy, vec3(2.2));
 
-            float fresnel = pow(1.0 - max(0.0, dot(N, E)), 5.0);
-            vec3 dielectric = diffLight * albedo + specLight * gloss;
-            vec3 metal = (envSpec + specLight) * albedo;
-            vec3 normalColor = mix(dielectric, metal, metallic);
+            vec3 diffColor = albedo - albedo * metallic;
+            vec3 specColor = mix(vec3(0.04), albedo, metallic);
+
+            vec3 diffuse = diffColor * diffLight;
+            vec3 specular = specColor * specLight;
+
+            float fresnel = pow(1.0 - max(0.0, dot(N, E)), 5.0); 
             
-            vec3 grazingColor = mix(normalColor, envSpec + specLight, gloss);
-            vec3 objColor = mix(normalColor, grazingColor, fresnel) + toLinear(emissionColor.rgb) * emissionColor.a;
+            vec3 objColor = mix(diffuse + specular * gloss, diffuse * roughness + specLight * gloss, fresnel);
             
             objColor = tonemapHable(objColor, 0.3);
                 

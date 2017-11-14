@@ -67,7 +67,7 @@ class Entity: Owner
     Drawable drawable;
     EventManager eventManager;
     
-    Entity parent;
+    Entity parent = null;
     DynamicArray!Entity children;
 
     Vector3f position;
@@ -114,6 +114,14 @@ class Entity: Owner
     {
         behaviours.free();
         children.free();
+    }
+    
+    Vector3f absolutePosition()
+    {
+        if (parent)
+            return position * parent.transformation;
+        else
+            return position;
     }
 
     Behaviour addBehaviour(Behaviour b)

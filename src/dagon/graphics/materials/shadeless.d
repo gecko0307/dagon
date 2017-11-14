@@ -72,6 +72,7 @@ class ShadelessBackend: GLSLMaterialBackend
         #version 330 core
         
         uniform sampler2D diffuseTexture;
+        uniform float alpha;
         
         in vec2 texCoord;
         
@@ -90,6 +91,7 @@ class ShadelessBackend: GLSLMaterialBackend
     GLint projectionMatrixLoc;
     
     GLint diffuseTextureLoc;
+    GLint alphaLoc;
     
     this(Owner o)
     {
@@ -99,6 +101,7 @@ class ShadelessBackend: GLSLMaterialBackend
         projectionMatrixLoc = glGetUniformLocation(shaderProgram, "projectionMatrix");
             
         diffuseTextureLoc = glGetUniformLocation(shaderProgram, "diffuseTexture");
+        alphaLoc = glGetUniformLocation(shaderProgram, "alpha");
     }
     
     override void bind(GenericMaterial mat, RenderingContext* rc)
@@ -112,14 +115,16 @@ class ShadelessBackend: GLSLMaterialBackend
         glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, rc.projectionMatrix.arrayof.ptr);
 
         // Texture 0 - diffuse texture
+        Color4f color = Color4f(idiffuse.asVector4f);
+        float alpha = color.a;
         if (idiffuse.texture is null)
         {
-            Color4f color = Color4f(idiffuse.asVector4f);
             idiffuse.texture = makeOnePixelTexture(mat, color);
         }
         glActiveTexture(GL_TEXTURE0);
         idiffuse.texture.bind();
         glUniform1i(diffuseTextureLoc, 0);
+        glUniform1f(alphaLoc, alpha);
     }
     
     override void unbind(GenericMaterial mat)
