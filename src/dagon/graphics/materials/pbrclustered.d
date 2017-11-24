@@ -267,7 +267,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
             float sun = pow(lambert, 200.0);
             vec3 horizon = mix(skyHorizonColor, sunColor, lambert);
             vec3 zen = mix(groundColor * sunColor, skyZenithColor, float(wNormal.y > 0.0));
-            vec3 skyColor = mix(zen, horizon, pow(length(wNormal.xz), 96.0 * gloss));
+            vec3 skyColor = mix(zen, horizon, pow(length(wNormal.xz), 128.0 * gloss));
             return skyColor;
         }
        
@@ -414,11 +414,12 @@ class PBRClusteredBackend: GLSLMaterialBackend
             
             vec3 objColor = mix(diffuse + specular * gloss, diffuse * roughness + specLight * gloss, fresnel);
             
-            objColor = tonemapHable(objColor, 0.3);
+            objColor = tonemapHable(objColor, 0.9);
                 
             vec3 fragColor = mix(fogColor.rgb, objColor, fogFactor);
+            float alpha = mix(diffuseColor.a, 1.0f, fresnel);
             
-            frag_color = vec4(fragColor, diffuseColor.a);
+            frag_color = vec4(fragColor, alpha);
         }
     };
     

@@ -250,11 +250,6 @@ class Entity: Owner
         rcLocal.modelViewMatrix = rcLocal.viewMatrix * rcLocal.modelMatrix;
         rcLocal.normalMatrix = rcLocal.modelViewMatrix.inverse.transposed;
 
-        foreach(child; children)
-        {
-            child.render(&rcLocal);
-        }
-
         if (rcLocal.overrideMaterial)
             rcLocal.overrideMaterial.bind(&rcLocal);
         else if (material)
@@ -272,6 +267,11 @@ class Entity: Owner
         {
             if (ble.valid)
                 ble.behaviour.render(&rcLocal);
+        }
+        
+        foreach(child; children)
+        {
+            child.render(&rcLocal);
         }
 
         foreach_reverse(i, ble; behaviours.data)

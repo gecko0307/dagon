@@ -15,6 +15,7 @@ Currently Dagon has the following features:
 * Spherical area lights
 * Normal/parallax mapping, parallax occlusion mapping
 * Cascaded shadow maps
+* Optional physically based rendering (PBR)
 * Dynamic skydome with sun and day/night cycle
 * Particle system with force fields
 * RTT, post-processing filters (FXAA, lens distortion)
@@ -33,7 +34,7 @@ Dagon is still under development and lacks a lot of important functionality. Cur
 Upcoming plans:
 
 * Particle materials, soft particles
-* PBR, IBL
+* IBL
 * Water with reflections and refractions
 * Terrain renderer
 * SSAO
