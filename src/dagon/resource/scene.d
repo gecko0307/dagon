@@ -446,7 +446,7 @@ class BaseScene3D: Scene
         lightManager = New!ClusteredLightManager(200.0f, 100, assetManager);
         defaultMaterialBackend = New!BlinnPhongClusteredBackend(lightManager, assetManager);
         
-        shadowMap = New!CascadedShadowMap(1024, this, 10, 50, 400, -100, 100, assetManager);
+        shadowMap = New!CascadedShadowMap(1024, this, 10, 30, 100, -100, 100, assetManager);
         defaultMaterialBackend.shadowMap = shadowMap;
         
         defaultMaterial3D = createMaterial();

@@ -229,10 +229,10 @@ class PBRClusteredBackend: GLSLMaterialBackend
             return s;
         }
         
-        float weight(in vec4 tc)
+        float weight(in vec4 tc, in float coef)
         {
             vec2 proj = vec2(tc.x / tc.w, tc.y / tc.w);
-            proj = (1.0 - abs(proj * 2.0 - 1.0)) * 8.0;
+            proj = (1.0 - abs(proj * 2.0 - 1.0)) * coef;
             proj = clamp(proj, 0.0, 1.0);
             return min(proj.x, proj.y);
         }
@@ -265,7 +265,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
         {
             float lambert = max(0.0, dot(-wSunDir, wNormal));
             float sun = pow(lambert, 200.0);
-            vec3 horizon = mix(skyHorizonColor, sunColor, lambert);
+            vec3 horizon = mix(skyHorizonColor, skyHorizonColor + sunColor * 0.2, lambert);
             vec3 zen = mix(groundColor * sunColor, skyZenithColor, float(wNormal.y > 0.0));
             vec3 skyColor = mix(zen, horizon, pow(length(wNormal.xz), 128.0 * gloss));
             return skyColor;
@@ -330,9 +330,9 @@ class PBRClusteredBackend: GLSLMaterialBackend
                 s1 = pcf(shadowTextureArray, 0.0, shadowCoord1, 2.0, 0.0);
                 s2 = pcf(shadowTextureArray, 1.0, shadowCoord2, 1.0, 0.0);
                 s3 = pcf(shadowTextureArray, 2.0, shadowCoord3, 1.0, 0.0);
-                float w1 = weight(shadowCoord1);
-                float w2 = weight(shadowCoord2);
-                float w3 = weight(shadowCoord3);
+                float w1 = weight(shadowCoord1, 8.0);
+                float w2 = weight(shadowCoord2, 8.0);
+                float w3 = weight(shadowCoord3, 2.0);
                 s3 = mix(1.0, s3, w3); 
                 s2 = mix(s3, s2, w2);
                 s1 = mix(s2, s1, w1); // s1 stores resulting shadow value

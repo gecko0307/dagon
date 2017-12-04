@@ -87,7 +87,7 @@ class SkyBackend: GLSLMaterialBackend
             vec3 normalWorldN = normalize(worldNormal);
             float lambert = max(0.0, dot(-sunDirection, normalWorldN));
             float sun = pow(lambert, 200.0);
-            vec3 horizon = mix(skyHorizonColor, sunColor, lambert);
+            vec3 horizon = mix(skyHorizonColor, skyHorizonColor + sunColor * 0.2, lambert);
             vec3 skyColor = mix(skyZenithColor, horizon, pow(length(normalWorldN.xz), 96.0));
             frag_color = vec4(skyColor + sunColor * sun, 1.0);
         }
