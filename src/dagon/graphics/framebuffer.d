@@ -28,7 +28,7 @@ DEALINGS IN THE SOFTWARE.
 module dagon.graphics.framebuffer;
 
 import dlib.math.vector;
-import derelict.opengl.gl;
+import derelict.opengl;
 import dagon.core.ownership;
 
 class Framebuffer: Owner

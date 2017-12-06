@@ -84,11 +84,11 @@ class FirstPersonView: EventListener, View
         {
             oldMouseX = eventManager.mouseX;
             oldMouseY = eventManager.mouseY;
-            SDL_SetRelativeMouseMode(1);
+            SDL_SetRelativeMouseMode(SDL_TRUE);
         }
         else
         {
-            SDL_SetRelativeMouseMode(0);
+            SDL_SetRelativeMouseMode(SDL_FALSE);
             eventManager.setMouse(oldMouseX, oldMouseY);
         }
         

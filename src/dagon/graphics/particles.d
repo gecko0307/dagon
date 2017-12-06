@@ -39,7 +39,7 @@ import dlib.math.utils;
 import dlib.image.color;
 import dlib.container.array;
 
-import derelict.opengl.gl;
+import derelict.opengl;
 import dagon.logics.behaviour;
 import dagon.logics.entity;
 import dagon.graphics.texture;

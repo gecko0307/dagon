@@ -38,7 +38,7 @@ import dlib.container.array;
 import dlib.image.color;
 import dlib.geometry.frustum;
 
-import derelict.opengl.gl;
+import derelict.opengl;
 
 import dagon.core.ownership;
 import dagon.graphics.view;

@@ -32,7 +32,7 @@ import std.conv;
 
 import dlib.math.vector;
 
-import derelict.opengl.gl;
+import derelict.opengl;
 
 import dagon.core.ownership;
 import dagon.graphics.rc;

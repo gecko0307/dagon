@@ -31,7 +31,7 @@ import std.math;
 import dlib.core.memory;
 import dlib.math.vector;
 import dlib.container.array;
-import derelict.opengl.gl;
+import derelict.opengl;
 import dagon.core.interfaces;
 import dagon.core.ownership;
 import dagon.graphics.mesh;

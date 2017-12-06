@@ -35,7 +35,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.quaternion;
 
-import derelict.opengl.gl;
+import derelict.opengl;
 
 import dagon.core.interfaces;
 import dagon.core.ownership;

@@ -35,7 +35,7 @@ import std.file;
 import core.stdc.stdlib;
 
 import derelict.sdl2.sdl;
-import derelict.opengl.gl;
+import derelict.opengl;
 import derelict.freetype.ft;
 
 import dagon.core.event;
@@ -72,7 +72,7 @@ class Application: EventListener
         {
         }
 
-        DerelictGL.load();
+        DerelictGL3.load();
         if (libdir.length)
         {
             version(linux)
@@ -192,9 +192,9 @@ class Application: EventListener
             
         SDL_GL_MakeCurrent(window, glcontext);
 
-        GLVersion loadedVersion = DerelictGL.reload(GLVersion.GL33);
+        GLVersion loadedVersion = DerelictGL3.reload();
         writeln("OpenGL version loaded: ", loadedVersion);
-        if (loadedVersion < GLVersion.GL33)
+        if (loadedVersion < GLVersion.gl33)
         {
             exitWithError("Sorry, Dagon requires OpenGL 3.3!");
         }
