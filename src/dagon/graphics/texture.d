@@ -30,7 +30,7 @@ module dagon.graphics.texture;
 import std.stdio;
 import std.math;
 
-import derelict.opengl.gl;
+import derelict.opengl;
 
 import dlib.core.memory;
 import dlib.image.image;

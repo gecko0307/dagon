@@ -30,7 +30,7 @@ module dagon.graphics.animmodel;
 import dlib.core.memory;
 import dlib.math.vector;
 import dlib.math.matrix;
-import derelict.opengl.gl;
+import derelict.opengl;
 import dagon.core.interfaces;
 import dagon.core.ownership;
 import dagon.graphics.texture;

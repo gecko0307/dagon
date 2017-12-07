@@ -37,7 +37,7 @@ import dlib.math.transformation;
 import dlib.math.interpolation;
 import dlib.image.color;
 
-import derelict.opengl.gl;
+import derelict.opengl;
 
 import dagon.core.ownership;
 import dagon.graphics.rc;

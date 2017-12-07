@@ -41,7 +41,7 @@ import dlib.text.utf8;
 import dlib.math.vector;
 import dlib.image.color;
 
-import derelict.opengl.gl;
+import derelict.opengl;
 import derelict.freetype.ft;
 
 import dagon.core.ownership;
@@ -315,7 +315,7 @@ final class FreeTypeFont: Font
         if (FT_Get_Glyph(ftFace.glyph, &glyph))
             throw new Exception("FT_Get_Glyph failed");
 
-        FT_Glyph_To_Bitmap(&glyph, FT_Render_Mode.FT_RENDER_MODE_NORMAL, null, 1);
+        FT_Glyph_To_Bitmap(&glyph, FT_RENDER_MODE_NORMAL, null, 1);
         FT_BitmapGlyph bitmapGlyph = cast(FT_BitmapGlyph)glyph;
 
         FT_Bitmap bitmap = bitmapGlyph.bitmap;

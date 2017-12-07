@@ -37,7 +37,7 @@ import dlib.math.utils;
 import dlib.math.vector;
 import dlib.math.quaternion;
 import dlib.math.interpolation;
-import derelict.opengl.gl;
+import derelict.opengl;
 import dagon.core.ownership;
 import dagon.graphics.texture;
 

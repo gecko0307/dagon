@@ -38,7 +38,7 @@ import dlib.geometry.triangle;
 import dlib.filesystem.filesystem;
 import dlib.filesystem.stdfs;
 import dlib.container.array;
-import derelict.opengl.gl;
+import derelict.opengl;
 import dagon.core.ownership;
 import dagon.core.interfaces;
 import dagon.resource.asset;
