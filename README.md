@@ -9,14 +9,15 @@ Dagon is a 3D game development framework for D. It is a work-in-progress reincar
 
 Currently Dagon has the following features:
 * Static and animated meshes, OBJ and [IQM](https://github.com/lsalzman/iqm) formats support
-* Textures in PNG, JPG, TGA, BMP formats
+* Textures in PNG, JPG, TGA, BMP, HDR formats
 * Flexible material system with simple user-defined abstract API and different backends. You can implement custom materials, with your own shaders and parameters
-* HDR rendering
-* Clustered forward shading (world space XZ plane light indexing, variable number of lights per fragment)
+* Physically based rendering (PBR)
+* HDR rendering with auto-exposure (eye adaptation), Reinhard and Hable/Uncharted tonemapping operators
+* HDRI environment maps support
+* Multiple light sources using clustered forward shading method (variable number of lights per fragment)
 * Spherical area lights
 * Normal/parallax mapping, parallax occlusion mapping
-* Cascaded shadow maps
-* Physically based rendering (PBR)
+* Cascaded shadow maps for directional light
 * Dynamic skydome with sun and day/night cycle
 * Particle system with force fields
 * RTT, post-processing filters (FXAA, lens distortion, motion blur)
@@ -42,7 +43,7 @@ Upcoming plans:
 
 Prerequisites
 -------------
-Dagon is known to work on Windows and Linux (and should run under OSX as well, though not well tested). To use Dagon, a number of libraries should be installed, namely SDL2 and Freetype. If you don't have them installed system-wide (which is a common case on Windows), you can use the libraries provided [here](https://github.com/gecko0307/dagon/releases/tag/v0.0.2). Currently we provide libraries only for Windows and Linux. Download an archive for your system and place the `lib` folder to your project's working directory. Dagon will automatically detect and try to load them. If there are no local libraries in `lib` directory, it will use system ones.
+Dagon is known to work on Windows and Linux (and should run under OSX as well, though not well tested). To use Dagon, a number of libraries should be installed, namely SDL2 and Freetype 2.8.1.
 
 Demos
 -----
@@ -54,4 +55,4 @@ Not available yet, sorry.
 
 License
 -------
-Copyright (c) 2016-2017 Timur Gafarov. Distributed under the Boost Software License, Version 1.0 (see accompanying file COPYING or at http://www.boost.org/LICENSE_1_0.txt).
+Copyright (c) 2016-2018 Timur Gafarov. Distributed under the Boost Software License, Version 1.0 (see accompanying file COPYING or at http://www.boost.org/LICENSE_1_0.txt).
