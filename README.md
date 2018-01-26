@@ -16,10 +16,10 @@ Currently Dagon has the following features:
 * Spherical area lights
 * Normal/parallax mapping, parallax occlusion mapping
 * Cascaded shadow maps
-* Optional physically based rendering (PBR)
+* Physically based rendering (PBR)
 * Dynamic skydome with sun and day/night cycle
 * Particle system with force fields
-* RTT, post-processing filters (FXAA, lens distortion)
+* RTT, post-processing filters (FXAA, lens distortion, motion blur)
 * UTF-8 text rendering using TTF fonts via Freetype
 * Ownership memory model - every object belongs to some object (owner), and deleting the owner will delete all of its owned objects. This allows semi-automatic memory management - you have to manually delete only root owners
 * Entity-component model that allows game objects behave differently and combine many behaviours
@@ -35,11 +35,9 @@ Dagon is still under development and lacks a lot of important functionality. Cur
 Upcoming plans:
 
 * Particle materials, soft particles
-* IBL
 * Water with reflections and refractions
 * Terrain renderer
 * SSAO
-* Camera motion blur
 * Bloom
 
 Prerequisites
