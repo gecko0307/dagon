@@ -40,6 +40,7 @@ import dagon.graphics.framebuffer;
 
 class PostFilter: Owner
 {
+    bool enabled = false;
     Framebuffer fb;
     
     GLenum shaderVert;
@@ -47,10 +48,13 @@ class PostFilter: Owner
     GLenum shaderProgram;
     
     GLint modelViewMatrixLoc;
+    GLint prevModelViewProjMatrixLoc;
     GLint projectionMatrixLoc;
     GLint fbColorLoc;
     GLint fbDepthLoc;
+    GLint fbPositionLoc;
     GLint viewportSizeLoc;
+    GLint enabledLoc;
     
     private string vsText = 
     q{
@@ -141,28 +145,44 @@ class PostFilter: Owner
         glLinkProgram(shaderProgram);
         
         modelViewMatrixLoc = glGetUniformLocation(shaderProgram, "modelViewMatrix");
+        prevModelViewProjMatrixLoc = glGetUniformLocation(shaderProgram, "prevModelViewProjMatrix");
         projectionMatrixLoc = glGetUniformLocation(shaderProgram, "projectionMatrix");
 
         viewportSizeLoc = glGetUniformLocation(shaderProgram, "viewSize");
         fbColorLoc = glGetUniformLocation(shaderProgram, "fbColor");
         fbDepthLoc = glGetUniformLocation(shaderProgram, "fbDepth");
+        fbPositionLoc = glGetUniformLocation(shaderProgram, "fbPosition");
+        enabledLoc = glGetUniformLocation(shaderProgram, "enabled");
     }
     
-    void render(RenderingContext* rc)
+    void bind(RenderingContext* rc)
     {
         glUseProgram(shaderProgram);
         
-        glUniformMatrix4fv(modelViewMatrixLoc, 1, 0, rc.modelViewMatrix.arrayof.ptr);
+        glUniformMatrix4fv(modelViewMatrixLoc, 1, 0, rc.viewMatrix.arrayof.ptr);
         glUniformMatrix4fv(projectionMatrixLoc, 1, 0, rc.projectionMatrix.arrayof.ptr);
+        
+        glUniformMatrix4fv(prevModelViewProjMatrixLoc, 1, 0, rc.prevModelViewProjMatrix.arrayof.ptr);
         
         Vector2f viewportSize = Vector2f(fb.width, fb.height);
         glUniform2fv(viewportSizeLoc, 1, viewportSize.arrayof.ptr);
 
         glUniform1i(fbColorLoc, 0);
         glUniform1i(fbDepthLoc, 1);
- 
-        fb.render();
+        glUniform1i(fbPositionLoc, 2);
         
+        glUniform1i(enabledLoc, enabled);
+    }
+    
+    void unbind(RenderingContext* rc)
+    {
         glUseProgram(0);
+    }
+    
+    void render(RenderingContext* rc)
+    {
+        bind(rc);
+        fb.render();
+        unbind(rc);
     }
 }

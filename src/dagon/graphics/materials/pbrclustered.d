@@ -59,6 +59,9 @@ class PBRClusteredBackend: GLSLMaterialBackend
         
         uniform mat4 invViewMatrix;
         
+        uniform mat4 prevModelViewProjMatrix;
+        uniform mat4 blurModelViewProjMatrix;
+        
         uniform mat4 shadowMatrix1;
         uniform mat4 shadowMatrix2;
         uniform mat4 shadowMatrix3;
@@ -66,6 +69,10 @@ class PBRClusteredBackend: GLSLMaterialBackend
         layout (location = 0) in vec3 va_Vertex;
         layout (location = 1) in vec3 va_Normal;
         layout (location = 2) in vec2 va_Texcoord;
+        
+        out vec4 position;
+        out vec4 blurPosition;
+        out vec4 prevPosition;
         
         out vec3 eyePosition;
         out vec3 eyeNormal;
@@ -87,17 +94,21 @@ class PBRClusteredBackend: GLSLMaterialBackend
             vec4 pos = modelViewMatrix * vec4(va_Vertex, 1.0);
             eyePosition = pos.xyz;
             
+            position = projectionMatrix * pos;
+            blurPosition = blurModelViewProjMatrix * vec4(va_Vertex, 1.0);
+            prevPosition = prevModelViewProjMatrix * vec4(va_Vertex, 1.0);
+            
             worldPosition = (invViewMatrix * pos).xyz;
 
             vec3 worldCamPos = (invViewMatrix[3]).xyz;
-            worldView = normalize(worldPosition - worldCamPos);
+            worldView = worldPosition - worldCamPos;
             
             vec4 posShifted = pos + vec4(eyeNormal * eyeSpaceNormalShift, 0.0);
             shadowCoord1 = shadowMatrix1 * posShifted;
             shadowCoord2 = shadowMatrix2 * posShifted;
             shadowCoord3 = shadowMatrix3 * posShifted;
             
-            gl_Position = projectionMatrix * pos;
+            gl_Position = position;
         }
     };
 
@@ -125,6 +136,9 @@ class PBRClusteredBackend: GLSLMaterialBackend
         uniform float shadowTextureSize;
         uniform bool useShadows;
         
+        uniform sampler2D environmentMap;
+        uniform bool useEnvironmentMap;
+        
         uniform vec4 environmentColor;
         uniform vec3 sunDirection;
         uniform vec3 sunColor;
@@ -141,7 +155,14 @@ class PBRClusteredBackend: GLSLMaterialBackend
         uniform usampler1D lightIndexTexture;
         uniform sampler2D lightsTexture;
         
+        uniform float blurMask;
+        
         in vec3 eyePosition;
+        
+        in vec4 position;
+        in vec4 blurPosition;
+        in vec4 prevPosition;
+        
         in vec3 eyeNormal;
         in vec2 texCoord;
         
@@ -152,7 +173,9 @@ class PBRClusteredBackend: GLSLMaterialBackend
         in vec4 shadowCoord2;
         in vec4 shadowCoord3;
         
-        out vec4 frag_color;
+        //out vec4 frag_color;
+        layout(location = 0) out vec4 frag_color;
+        layout(location = 1) out vec4 frag_velocity;
         
         mat3 cotangentFrame(in vec3 N, in vec3 p, in vec2 uv)
         {
@@ -259,37 +282,24 @@ class PBRClusteredBackend: GLSLMaterialBackend
         }
         
         // TODO: pass this as parameter
-        const vec3 groundColor = vec3(0.25, 0.25, 0.2);
+        const vec3 groundColor = vec3(0.06, 0.05, 0.05);
+        const float skyEnergyMidday = 5000.0;
+        const float skyEnergyNight = 0.25;
         
-        vec3 environment(vec3 wNormal, vec3 wSunDir, float gloss)
+        vec2 envMapEquirect(vec3 dir)
         {
-            float lambert = max(0.0, dot(-wSunDir, wNormal));
-            float sun = pow(lambert, 200.0);
-            vec3 horizon = mix(skyHorizonColor, skyHorizonColor + sunColor * 0.2, lambert);
-            vec3 zen = mix(groundColor * sunColor, skyZenithColor, float(wNormal.y > 0.0));
-            vec3 skyColor = mix(zen, horizon, pow(length(wNormal.xz), 128.0 * gloss));
-            return skyColor;
+            float phi = acos(dir.y);
+            float theta = atan(dir.x, dir.z) + PI;
+            return vec2(theta / PI2, phi / PI);
         }
-       
+
         vec3 toLinear(vec3 v)
         {
             return pow(v, vec3(2.2));
         }
         
-        vec3 hableFunc(vec3 x)
-        {
-            return ((x * (0.15 * x + 0.1 * 0.5) + 0.2 * 0.02) / (x * (0.15 * x + 0.5) + 0.2 * 0.3)) - 0.02 / 0.3;
-        }
-
-        vec3 tonemapHable(vec3 x, float exposition)
-        {
-            vec3 c = x * exposition;
-            c = hableFunc(c * 2.0) * (1.0 / hableFunc(vec3(11.2)));
-            return pow(c, vec3(1.0 / 2.2));
-        }
-        
         void main()
-        {
+        {     
             // Common vectors
             vec3 N = normalize(eyeNormal);
             vec3 E = normalize(-eyePosition);
@@ -297,6 +307,10 @@ class PBRClusteredBackend: GLSLMaterialBackend
             vec3 tE = normalize(E * TBN);
             
             vec3 cameraPosition = invViewMatrix[3].xyz;
+            
+            vec2 posScreen = (blurPosition.xy / blurPosition.w) * 0.5 + 0.5;
+            vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;
+            vec2 screenVelocity = posScreen - prevPosScreen;
 
             // Parallax mapping
             vec2 shiftedTexCoord = texCoord;
@@ -313,15 +327,8 @@ class PBRClusteredBackend: GLSLMaterialBackend
             N = normalize(TBN * tN);
 
             // Roughness to blinn-phong specular power
-            float gloss = 1.0 - roughness;
+            float gloss = max(1.0 - roughness, 0.0001);
             float shininess = gloss * 128.0;
-            
-            // Sun light
-            const float sunEnegry = 1.0;
-            float sunDiffBrightness = clamp(dot(N, sunDirection), 0.0, 1.0) * sunEnegry;
-            vec3 halfEye = normalize(sunDirection + E);
-            float NH = dot(N, halfEye);
-            float sunSpecBrightness = pow(max(NH, 0.0), shininess) * sunEnegry;
             
             // Calculate shadow from 3 cascades
             float s1, s2, s3;
@@ -332,7 +339,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
                 s3 = pcf(shadowTextureArray, 2.0, shadowCoord3, 1.0, 0.0);
                 float w1 = weight(shadowCoord1, 8.0);
                 float w2 = weight(shadowCoord2, 8.0);
-                float w3 = weight(shadowCoord3, 2.0);
+                float w3 = weight(shadowCoord3, 8.0);
                 s3 = mix(1.0, s3, w3); 
                 s2 = mix(s3, s2, w2);
                 s1 = mix(s2, s1, w1); // s1 stores resulting shadow value
@@ -346,7 +353,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
             
             vec3 worldN = N * mat3(viewMatrix);
             vec3 worldR = reflect(normalize(worldView), worldN);
-            vec3 worldSun = sunDirection * mat3(viewMatrix); // TODO: pass this as parameter
+            vec3 worldSun = sunDirection * mat3(viewMatrix);
             
             // Fetch light cluster slice
             vec2 clusterCoord = (worldPosition.xz - cameraPosition.xz) * invLightDomainSize + 0.5;
@@ -391,35 +398,70 @@ class PBRClusteredBackend: GLSLMaterialBackend
             vec4 diffuseColor = texture(diffuseTexture, shiftedTexCoord);
             vec3 albedo = toLinear(diffuseColor.rgb);
             
-            vec4 emissionColor = texture(emissionTexture, shiftedTexCoord);
-            
-            float envEnergy = max(sunDiffBrightness * s1, 0.8);
-            vec3 envDiff = toLinear(environment(worldN, worldSun, 0.01)) * envEnergy;
-            vec3 envSpec = toLinear(environment(worldR, worldSun, gloss)) * envEnergy;
-            
-            vec3 sun = toLinear(sunColor);
+            vec3 emissionColor = texture(emissionTexture, shiftedTexCoord).rgb;
 
-            float specEnergy = sunSpecBrightness * sunEnergy * s1;
-            float diffEnergy = sunDiffBrightness * sunEnergy * s1;
-            vec3 diffLight = envDiff + pointDiffSum + sun * diffEnergy;
-            vec3 specLight = envSpec + pow(pointSpecSum + sun * specEnergy, vec3(2.2));
+            vec3 envDiff;
+            vec3 envSpec;
+            
+            const float shadowBrightness = 0.01; // TODO: make uniform
+            
+            if (useEnvironmentMap)
+            {
+                ivec2 envMapSize = textureSize(environmentMap, 0);
+                float maxLod = log2(float(max(envMapSize.x, envMapSize.y)));
+                float diffLod = (maxLod - 1.0);
+                float specLod = (maxLod - 1.0) * roughness;
+                
+                envDiff = textureLod(environmentMap, envMapEquirect(worldN), diffLod).rgb;
+                envSpec = textureLod(environmentMap, envMapEquirect(worldR), specLod).rgb;
+                
+                float sunDiff = max(0.0, dot(sunDirection, N));
+                
+                envDiff *= max(s1 * sunDiff, shadowBrightness);
+                envSpec *= max(s1 * sunDiff, shadowBrightness);
+            }
+            else
+            {
+                float sunDiff = max(0.0, dot(sunDirection, N));
+                float NH = clamp(dot(N, normalize(sunDirection + E)), 0.0, 1.0);
+
+                float groundOrSky = pow(clamp(dot(worldN, vec3(0, 1, 0)), 0.0, 1.0), 0.5);
+                float sunAngle = clamp(dot(worldSun, vec3(0, 1, 0)), 0.0, 1.0);
+                
+                float skyEnergy = mix(skyEnergyNight, skyEnergyMidday, sunAngle);
+                
+                vec3 env = mix(groundColor * sunColor * sunAngle * sunEnergy, skyZenithColor * skyEnergy, groundOrSky);
+                
+                float disk = mix(float(NH > 0.9999), pow(NH, 1024.0), roughness);
+                float haze = pow(NH, mix(64.0, 8.0, roughness)) * mix(0.001, 0.0001, roughness);
+                
+                float sunSpec = min(1.0, disk + haze);
+
+                envDiff = env + sunColor * sunEnergy * sunDiff * s1;
+                envSpec = env + sunColor * sunEnergy * sunSpec * s1;
+            }
+            
+            vec3 diffLight = envDiff + pointDiffSum;
+            vec3 specLight = envSpec + pointSpecSum;
 
             vec3 diffColor = albedo - albedo * metallic;
-            vec3 specColor = mix(vec3(0.04), albedo, metallic);
-
-            vec3 diffuse = diffColor * diffLight;
-            vec3 specular = specColor * specLight;
+            vec3 specColor = mix(vec3(1.0), albedo, metallic);
 
             float fresnel = pow(1.0 - max(0.0, dot(N, E)), 5.0); 
             
-            vec3 objColor = mix(diffuse + specular * gloss, diffuse * roughness + specLight * gloss, fresnel);
+            vec3 roughDielectric = mix(diffColor * diffLight, specLight * gloss, 0.04);
+            vec3 shinyDielectric = mix(roughDielectric, specLight, gloss);
+            vec3 dielectric = mix(roughDielectric, shinyDielectric, fresnel);
+            vec3 metal = mix(specColor * specLight, specLight, fresnel);
             
-            objColor = tonemapHable(objColor, 0.9);
+            vec3 objColor = emissionColor + mix(dielectric, metal, metallic);
                 
             vec3 fragColor = mix(fogColor.rgb, objColor, fogFactor);
             float alpha = mix(diffuseColor.a, 1.0f, fresnel);
             
-            frag_color = vec4(fragColor, alpha);
+            frag_color = vec4(objColor, alpha);
+            
+            frag_velocity = vec4(screenVelocity, 0.0, blurMask);
         }
     };
     
@@ -431,6 +473,9 @@ class PBRClusteredBackend: GLSLMaterialBackend
     GLint projectionMatrixLoc;
     GLint normalMatrixLoc;
     GLint invViewMatrixLoc;
+    
+    GLint prevModelViewProjMatrixLoc;
+    GLint blurModelViewProjMatrixLoc;
     
     GLint shadowMatrix1Loc;
     GLint shadowMatrix2Loc; 
@@ -450,6 +495,9 @@ class PBRClusteredBackend: GLSLMaterialBackend
     GLint normalTextureLoc;
     GLint emissionTextureLoc;
     
+    GLint environmentMapLoc;
+    GLint useEnvironmentMapLoc;
+    
     GLint environmentColorLoc;
     GLint sunDirectionLoc;
     GLint sunColorLoc;
@@ -465,6 +513,8 @@ class PBRClusteredBackend: GLSLMaterialBackend
     GLint clusterTextureLoc;
     GLint lightsTextureLoc;
     GLint indexTextureLoc;
+    
+    GLint blurMaskLoc;
     
     ClusteredLightManager lightManager;
     CascadedShadowMap shadowMap;
@@ -482,6 +532,9 @@ class PBRClusteredBackend: GLSLMaterialBackend
         projectionMatrixLoc = glGetUniformLocation(shaderProgram, "projectionMatrix");
         normalMatrixLoc = glGetUniformLocation(shaderProgram, "normalMatrix");
         invViewMatrixLoc = glGetUniformLocation(shaderProgram, "invViewMatrix");
+        
+        prevModelViewProjMatrixLoc = glGetUniformLocation(shaderProgram, "prevModelViewProjMatrix");
+        blurModelViewProjMatrixLoc = glGetUniformLocation(shaderProgram, "blurModelViewProjMatrix");
         
         shadowMatrix1Loc = glGetUniformLocation(shaderProgram, "shadowMatrix1");
         shadowMatrix2Loc = glGetUniformLocation(shaderProgram, "shadowMatrix2");
@@ -501,6 +554,9 @@ class PBRClusteredBackend: GLSLMaterialBackend
         normalTextureLoc = glGetUniformLocation(shaderProgram, "normalTexture");
         emissionTextureLoc = glGetUniformLocation(shaderProgram, "emissionTexture");
         
+        environmentMapLoc = glGetUniformLocation(shaderProgram, "environmentMap");
+        useEnvironmentMapLoc = glGetUniformLocation(shaderProgram, "useEnvironmentMap");
+        
         environmentColorLoc = glGetUniformLocation(shaderProgram, "environmentColor");
         sunDirectionLoc = glGetUniformLocation(shaderProgram, "sunDirection");
         sunColorLoc = glGetUniformLocation(shaderProgram, "sunColor");
@@ -516,6 +572,8 @@ class PBRClusteredBackend: GLSLMaterialBackend
         invLightDomainSizeLoc = glGetUniformLocation(shaderProgram, "invLightDomainSize");
         lightsTextureLoc = glGetUniformLocation(shaderProgram, "lightsTexture");
         indexTextureLoc = glGetUniformLocation(shaderProgram, "lightIndexTexture");
+        
+        blurMaskLoc = glGetUniformLocation(shaderProgram, "blurMask");
     }
     
     override void bind(GenericMaterial mat, RenderingContext* rc)
@@ -536,6 +594,8 @@ class PBRClusteredBackend: GLSLMaterialBackend
         
         glUseProgram(shaderProgram);
         
+        glUniform1f(blurMaskLoc, rc.blurMask);
+        
         // Matrices
         glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, rc.viewMatrix.arrayof.ptr);
         glUniformMatrix4fv(modelViewMatrixLoc, 1, GL_FALSE, rc.modelViewMatrix.arrayof.ptr);
@@ -543,11 +603,14 @@ class PBRClusteredBackend: GLSLMaterialBackend
         glUniformMatrix4fv(normalMatrixLoc, 1, GL_FALSE, rc.normalMatrix.arrayof.ptr);
         glUniformMatrix4fv(invViewMatrixLoc, 1, GL_FALSE, rc.invViewMatrix.arrayof.ptr);
         
+        glUniformMatrix4fv(prevModelViewProjMatrixLoc, 1, GL_FALSE, rc.prevModelViewProjMatrix.arrayof.ptr);
+        glUniformMatrix4fv(blurModelViewProjMatrixLoc, 1, GL_FALSE, rc.blurModelViewProjMatrix.arrayof.ptr);
+        
         // Environment parameters
         Color4f environmentColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
         Vector4f sunHGVector = Vector4f(0.0f, 1.0f, 0.0, 0.0f);
         Vector3f sunColor = Vector3f(1.0f, 1.0f, 1.0f);
-        float sunEnergy = 20.0f;
+        float sunEnergy = 100.0f;
         if (rc.environment)
         {
             environmentColor = rc.environment.ambientConstant;
@@ -639,7 +702,25 @@ class PBRClusteredBackend: GLSLMaterialBackend
         iemission.texture.bind();
         glUniform1i(emissionTextureLoc, 3);
         
-        // Texture 4 is reserved for environment map
+        // Texture 4 - environment map
+        bool useEnvmap = false;
+        if (rc.environment)
+        {
+            if (rc.environment.environmentMap)
+                useEnvmap = true;
+        }
+        
+        if (useEnvmap)
+        {
+            glActiveTexture(GL_TEXTURE4);
+            rc.environment.environmentMap.bind();
+            glUniform1i(useEnvironmentMapLoc, 1);
+        }
+        else
+        {
+            glUniform1i(useEnvironmentMapLoc, 0);
+        }
+        glUniform1i(environmentMapLoc, 4);
         
         // Texture 5 - shadow map cascades (3 layer texture array)
         if (shadowMap && shadowsEnabled)
@@ -683,7 +764,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
         glActiveTexture(GL_TEXTURE0);
     }
     
-    override void unbind(GenericMaterial mat)
+    override void unbind(GenericMaterial mat, RenderingContext* rc)
     {
         auto idiffuse = "diffuse" in mat.inputs;
         auto inormal = "normal" in mat.inputs;
@@ -697,6 +778,19 @@ class PBRClusteredBackend: GLSLMaterialBackend
         
         glActiveTexture(GL_TEXTURE3);
         iemission.texture.unbind();
+        
+        bool useEnvmap = false;
+        if (rc.environment)
+        {
+            if (rc.environment.environmentMap)
+                useEnvmap = true;
+        }
+        
+        if (useEnvmap)
+        {
+            glActiveTexture(GL_TEXTURE4);
+            rc.environment.environmentMap.unbind();
+        }
 
         glActiveTexture(GL_TEXTURE5);
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);

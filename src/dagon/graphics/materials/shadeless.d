@@ -60,6 +60,8 @@ class ShadelessBackend: GLSLMaterialBackend
         
         uniform mat4 modelViewMatrix;
         uniform mat4 projectionMatrix;
+        
+        uniform mat4 invViewMatrix;
     
         void main()
         {
@@ -76,11 +78,13 @@ class ShadelessBackend: GLSLMaterialBackend
         
         in vec2 texCoord;
         
-        out vec4 frag_color;
+        layout(location = 0) out vec4 frag_color;
+        layout(location = 1) out vec4 frag_velocity;
 
         void main()
         {
             frag_color = texture(diffuseTexture, texCoord);
+            frag_velocity = vec4(0.0, 0.0, 0.0, 1.0);
         }
     };
     
@@ -127,7 +131,7 @@ class ShadelessBackend: GLSLMaterialBackend
         glUniform1f(alphaLoc, alpha);
     }
     
-    override void unbind(GenericMaterial mat)
+    override void unbind(GenericMaterial mat, RenderingContext* rc)
     {
         auto idiffuse = "diffuse" in mat.inputs;
         

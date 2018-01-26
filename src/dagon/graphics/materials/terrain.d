@@ -489,7 +489,7 @@ class TerrainBackend: GLSLMaterialBackend
         glUniform1i(indexTextureLoc, 8);
     }
     
-    override void unbind(GenericMaterial mat)
+    override void unbind(GenericMaterial mat, RenderingContext* rc)
     {
         auto igrass = "grass" in mat.inputs;
         auto imounts = "mounts" in mat.inputs;

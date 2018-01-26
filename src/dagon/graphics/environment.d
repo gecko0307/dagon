@@ -54,9 +54,8 @@ class Environment: Owner
     
     Color4f backgroundColor = Color4f(0.1f, 0.1f, 0.1f, 1.0f);
     Color4f ambientConstant = Color4f(0.1f, 0.1f, 0.1f, 1.0f);
-    // TODO: ambient map (cubemap and equirectangular map)
     
-    Texture skyTexture;
+    Texture environmentMap;    
 
     Color4f fogColor = Color4f(0.1f, 0.1f, 0.1f, 1.0f);
     float fogStart = 100.0f;
@@ -65,18 +64,18 @@ class Environment: Owner
     Color4f sunZenithColor = Color4f(1.0, 1.0, 1.0, 1.0);
     Color4f sunHorizonColor = Color4f(0.9, 0.4, 0.0, 1.0);
     Quaternionf sunRotation;
-    float sunEnergy = 10.0f;
+    float sunEnergy = 100000.0f;
     
     Color4f skyZenithColor = Color4f(0.223, 0.572, 0.752, 1.0);
     Color4f skyHorizonColor = Color4f(0.9, 1.0, 1.0, 1.0);
     
-    Color4f skyZenithColorAtMidday = Color4f(0.4, 0.6, 0.8, 1.0);
-    Color4f skyZenithColorAtSunset = Color4f(0.1, 0.13, 0.14, 1.0);
-    Color4f skyZenithColorAtNight = Color4f(0.01, 0.05, 0.1, 1.0);
+    Color4f skyZenithColorAtMidday = Color4f(0.6, 0.8, 1.0, 1.0);
+    Color4f skyZenithColorAtSunset = Color4f(0.1, 0.2, 0.4, 1.0);
+    Color4f skyZenithColorAtNight = Color4f(0.01, 0.01, 0.02, 1.0);
     
     Color4f skyHorizonColorAtMidday = Color4f(0.5, 0.6, 0.65, 1.0);
     Color4f skyHorizonColorAtSunset = Color4f(0.87, 0.44, 0.1, 1.0);
-    Color4f skyHorizonColorAtNight = Color4f(0.1, 0.1, 0.1, 1.0);
+    Color4f skyHorizonColorAtNight = Color4f(0.1, 0.1, 0.2, 1.0);
 
     bool useSkyColors = false;
     bool atmosphericFog = false;
@@ -107,7 +106,7 @@ class Environment: Owner
         else
         {
             fogColor = backgroundColor;
-        }
+        }    
     }
     
     Vector3f sunDirection()

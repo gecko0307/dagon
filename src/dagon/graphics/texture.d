@@ -56,6 +56,7 @@ class Texture: Owner
     float rotation;
     
     bool useMipmapFiltering = true;
+    bool useLinearFiltering = true;
 
     this(Owner o)
     {
@@ -74,7 +75,7 @@ class Texture: Owner
         createFromImage(img, genMipmaps);
     }
 
-    void createFromImage(SuperImage img, bool genMipmaps = false)
+    void createFromImage(SuperImage img, bool genMipmaps = true)
     {
         image = img;
         width = img.width;
@@ -107,14 +108,11 @@ class Texture: Owner
         
         //if (DerelictGL.isExtSupported("GL_EXT_texture_filter_anisotropic"))
         //    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16.0f);
-
-        //numMipmapLevels = cast(int)log2(fmax(width, height)) + 1;
        
         glTexImage2D(GL_TEXTURE_2D, 0, intFormat, width, height, 0, format, type, cast(void*)img.data.ptr);
 
+        //if (genMipmaps)
         glGenerateMipmap(GL_TEXTURE_2D);
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, numMipmapLevels - 1);
 
         glBindTexture(GL_TEXTURE_2D, 0);
     }
@@ -126,8 +124,13 @@ class Texture: Owner
             
         if (useMipmapFiltering)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        else
+        else if (useLinearFiltering)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        else
+        {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        }
     }
 
     void unbind()

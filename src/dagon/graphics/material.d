@@ -157,6 +157,6 @@ abstract class Material: Owner
     }
 
     void bind(RenderingContext* rc);
-    void unbind();
+    void unbind(RenderingContext* rc);
 }
 

@@ -86,6 +86,7 @@ public
     
     import dagon.graphics.filters.fxaa;
     import dagon.graphics.filters.lens;
+    import dagon.graphics.filters.hdr;
     
     import dagon.ui.font;
     import dagon.ui.ftfont;

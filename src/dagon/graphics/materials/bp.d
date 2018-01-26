@@ -496,7 +496,7 @@ class BlinnPhongBackend: GLSLMaterialBackend
         glActiveTexture(GL_TEXTURE0);
     }
     
-    override void unbind(GenericMaterial mat)
+    override void unbind(GenericMaterial mat, RenderingContext* rc)
     {
         auto idiffuse = "diffuse" in mat.inputs;
         auto inormal = "normal" in mat.inputs;

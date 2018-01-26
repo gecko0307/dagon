@@ -40,6 +40,11 @@ interface View
 
     final void prepareRC(RenderingContext* rc)
     {
+        //rc.prevModelViewProjMatrix = rc.projectionMatrix * rc.viewMatrix;
+        
+        rc.prevCameraPosition = rc.cameraPosition;
+        rc.prevViewMatrix = rc.viewMatrix;
+        
         rc.viewMatrix = viewMatrix();
         rc.invViewMatrix = invViewMatrix();
         rc.modelViewMatrix = rc.viewMatrix;

@@ -109,7 +109,7 @@ interface GenericMaterialBackend
     }
     
     void bind(GenericMaterial mat, RenderingContext* rc);
-    void unbind(GenericMaterial mat);
+    void unbind(GenericMaterial mat, RenderingContext* rc);
 }
 
 enum int None = 0;
@@ -203,20 +203,20 @@ class GenericMaterial: Material
             _backend.bind(this, rc);
     }
 
-    override void unbind()
+    override void unbind(RenderingContext* rc)
     {
         auto icolorWrite = "colorWrite" in inputs;
         auto idepthWrite = "depthWrite" in inputs;
         
         if (_backend)
-            _backend.unbind(this);
+            _backend.unbind(this, rc);
             
-        if (!idepthWrite.asBool)
+        if (!idepthWrite.asBool && rc.depthPass)
         {
             glDepthMask(GL_TRUE);
         }
             
-        if (!icolorWrite.asBool)
+        if (!icolorWrite.asBool && rc.colorPass)
         {
             glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
         }
@@ -284,7 +284,7 @@ abstract class GLSLMaterialBackend: Owner, GenericMaterialBackend
         glUseProgram(shaderProgram);
     }
     
-    void unbind(GenericMaterial mat)
+    void unbind(GenericMaterial mat, RenderingContext* rc)
     {
         glUseProgram(0);
     }

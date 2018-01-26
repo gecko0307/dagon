@@ -56,6 +56,8 @@ class PostFilterFXAA: PostFilter
     private string fs = q{
         #version 330 core
         
+        uniform bool enabled;
+        
         uniform sampler2D fbColor;
         uniform sampler2D fbDepth;
         uniform vec2 viewSize;
@@ -121,13 +123,21 @@ class PostFilterFXAA: PostFilter
             vec2 fragCoord = gl_FragCoord.xy;
             vec2 invScreenSize = 1.0 / viewSize;
 
-            vec2 v_rgbNW = (fragCoord + vec2(-1.0, -1.0)) * invScreenSize;
-            vec2 v_rgbNE = (fragCoord + vec2(1.0, -1.0)) * invScreenSize;
-            vec2 v_rgbSW = (fragCoord + vec2(-1.0, 1.0)) * invScreenSize;
-            vec2 v_rgbSE = (fragCoord + vec2(1.0, 1.0)) * invScreenSize;
-            vec2 v_rgbM = vec2(fragCoord * invScreenSize);
-            vec3 color = fxaa(fbColor, fragCoord, viewSize, v_rgbNW, v_rgbNE, v_rgbSW, v_rgbSE, v_rgbM).rgb; 
-                    
+            vec3 color;
+            if (enabled)
+            {
+                vec2 v_rgbNW = (fragCoord + vec2(-1.0, -1.0)) * invScreenSize;
+                vec2 v_rgbNE = (fragCoord + vec2(1.0, -1.0)) * invScreenSize;
+                vec2 v_rgbSW = (fragCoord + vec2(-1.0, 1.0)) * invScreenSize;
+                vec2 v_rgbSE = (fragCoord + vec2(1.0, 1.0)) * invScreenSize;
+                vec2 v_rgbM = vec2(fragCoord * invScreenSize);
+                color = fxaa(fbColor, fragCoord, viewSize, v_rgbNW, v_rgbNE, v_rgbSW, v_rgbSE, v_rgbM).rgb; 
+            }
+            else
+            {
+                color = texture(fbColor, texCoord).xyz;
+            }
+        
             frag_color = vec4(color, 1.0); 
         }
     };

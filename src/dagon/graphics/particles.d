@@ -397,7 +397,7 @@ class ParticleSystem: Behaviour
                 glBindVertexArray(0);
         
                 if (material)
-                    material.unbind();
+                    material.unbind(&rcLocal);
             }
         }
     }

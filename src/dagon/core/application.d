@@ -263,7 +263,7 @@ class Application: EventListener
 
     void endRender()
     {
-        checkGLError();            
+        debug checkGLError();            
         SDL_GL_SwapWindow(window);
     }
     

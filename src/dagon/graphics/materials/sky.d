@@ -73,6 +73,9 @@ class SkyBackend: GLSLMaterialBackend
     private string fsText = q{
         #version 330 core
         
+        #define PI 3.14159265
+        const float PI2 = PI * 2.0;
+        
         uniform vec3 sunDirection;
         uniform vec3 skyZenithColor;
         uniform vec3 skyHorizonColor;
@@ -80,16 +83,53 @@ class SkyBackend: GLSLMaterialBackend
         
         in vec3 worldNormal;
         
-        out vec4 frag_color;
+        layout(location = 0) out vec4 frag_color;
+        layout(location = 1) out vec4 frag_velocity;
+        
+        // TODO: make uniform
+        const vec3 groundColor = vec3(0.06, 0.05, 0.05);
+        const float sunEnergy = 100000.0;
+        const float skyEnergyMidday = 5000.0;
+        const float skyEnergyNight = 0.25;
+        
+        uniform sampler2D environmentMap;
+        uniform bool useEnvironmentMap;
+        
+        vec2 envMapEquirect(vec3 dir)
+        {
+            float phi = acos(dir.y);
+            float theta = atan(dir.x, dir.z) + PI;
+            return vec2(theta / PI2, phi / PI);
+        }
+        
+        vec3 toLinear(vec3 v)
+        {
+            return pow(v, vec3(2.2));
+        }
 
         void main()
         {
             vec3 normalWorldN = normalize(worldNormal);
-            float lambert = max(0.0, dot(-sunDirection, normalWorldN));
-            float sun = pow(lambert, 200.0);
-            vec3 horizon = mix(skyHorizonColor, skyHorizonColor + sunColor * 0.2, lambert);
-            vec3 skyColor = mix(skyZenithColor, horizon, pow(length(normalWorldN.xz), 96.0));
-            frag_color = vec4(skyColor + sunColor * sun, 1.0);
+            vec3 env;
+            
+            if (useEnvironmentMap)
+            {
+                env = texture(environmentMap, envMapEquirect(-normalWorldN)).rgb;
+            }
+            else
+            {                
+                float groundOrSky = pow(clamp(dot(-normalWorldN, vec3(0, 1, 0)), 0.0, 1.0), 0.5);
+                float sunAngle = clamp(dot(sunDirection, vec3(0, 1, 0)), 0.0, 1.0);
+                
+                float skyEnergy = mix(skyEnergyNight, skyEnergyMidday, sunAngle);
+                
+                env = mix(skyHorizonColor, skyZenithColor, groundOrSky) * skyEnergy * sunAngle;
+                float sun = clamp(dot(-normalWorldN, sunDirection), 0.0, 1.0);
+                sun = min(float(sun > 0.9999) + pow(sun, 64.0) * 0.001, 1.0);
+                env += sunColor * sun * sunEnergy;
+            }
+            frag_color = vec4(env, 1.0);
+            frag_velocity = vec4(0.0, 0.0, 0.0, 1.0);
         }
     };
     
@@ -106,6 +146,9 @@ class SkyBackend: GLSLMaterialBackend
     GLint locSkyHorizonColor;
     GLint locSunColor;
     
+    GLint environmentMapLoc;
+    GLint useEnvironmentMapLoc;
+    
     this(Owner o)
     {
         super(o);
@@ -119,6 +162,9 @@ class SkyBackend: GLSLMaterialBackend
         locSkyZenithColor = glGetUniformLocation(shaderProgram, "skyZenithColor");
         locSkyHorizonColor = glGetUniformLocation(shaderProgram, "skyHorizonColor");
         locSunColor = glGetUniformLocation(shaderProgram, "sunColor");
+        
+        environmentMapLoc = glGetUniformLocation(shaderProgram, "environmentMap");
+        useEnvironmentMapLoc = glGetUniformLocation(shaderProgram, "useEnvironmentMap");
     }
     
     override void bind(GenericMaterial mat, RenderingContext* rc)
@@ -138,10 +184,43 @@ class SkyBackend: GLSLMaterialBackend
         glUniform3fv(locSunColor, 1, sunColor.arrayof.ptr);
         glUniform3fv(locSkyZenithColor, 1, rc.environment.skyZenithColor.arrayof.ptr);
         glUniform3fv(locSkyHorizonColor, 1, rc.environment.skyHorizonColor.arrayof.ptr);
+        
+        // Texture 4 - environment map
+        bool useEnvmap = false;
+        if (rc.environment)
+        {
+            if (rc.environment.environmentMap)
+                useEnvmap = true;
+        }
+        
+        if (useEnvmap)
+        {
+            glActiveTexture(GL_TEXTURE4);
+            rc.environment.environmentMap.bind();
+            glUniform1i(useEnvironmentMapLoc, 1);
+        }
+        else
+        {
+            glUniform1i(useEnvironmentMapLoc, 0);
+        }
+        glUniform1i(environmentMapLoc, 4);
     }
     
-    override void unbind(GenericMaterial mat)
+    override void unbind(GenericMaterial mat, RenderingContext* rc)
     {
+        bool useEnvmap = false;
+        if (rc.environment)
+        {
+            if (rc.environment.environmentMap)
+                useEnvmap = true;
+        }
+        
+        if (useEnvmap)
+        {
+            glActiveTexture(GL_TEXTURE4);
+            rc.environment.environmentMap.unbind();
+        }
+        
         glUseProgram(0);
     }
 }

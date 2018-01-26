@@ -28,6 +28,8 @@ DEALINGS IN THE SOFTWARE.
 module dagon.resource.scene;
 
 import std.stdio;
+import std.math;
+import std.algorithm;
 
 import dlib.core.memory;
 
@@ -54,8 +56,11 @@ import dagon.graphics.shapes;
 import dagon.graphics.clustered;
 import dagon.graphics.shadow;
 import dagon.graphics.materials.generic;
-import dagon.graphics.materials.bpclustered;
+import dagon.graphics.materials.pbrclustered;
 import dagon.graphics.materials.hud;
+import dagon.graphics.framebuffer;
+import dagon.graphics.filters.fxaa;
+import dagon.graphics.filters.hdr;
 import dagon.logics.entity;
 
 class Scene: EventListener
@@ -360,12 +365,19 @@ class BaseScene3D: Scene
     ClusteredLightManager lightManager;
     CascadedShadowMap shadowMap;
 
-    BlinnPhongClusteredBackend defaultMaterialBackend;
+    PBRClusteredBackend defaultMaterialBackend;
     GenericMaterial defaultMaterial3D;
 
     RenderingContext rc3d; 
     RenderingContext rc2d; 
     View view;
+    
+    Framebuffer sceneFramebuffer;
+    Framebuffer aaFramebuffer;
+    //Framebuffer fbLens;
+    PostFilterFXAA fxaa;
+    //PostFilterLensDistortion lens;
+    PostFilterHDR hdr;
 
     DynamicArray!Entity entities3D;
     DynamicArray!Entity entities2D;
@@ -444,12 +456,23 @@ class BaseScene3D: Scene
         environment = New!Environment(assetManager);
         
         lightManager = New!ClusteredLightManager(200.0f, 100, assetManager);
-        defaultMaterialBackend = New!BlinnPhongClusteredBackend(lightManager, assetManager);
+        defaultMaterialBackend = New!PBRClusteredBackend(lightManager, assetManager);
         
-        shadowMap = New!CascadedShadowMap(1024, this, 10, 30, 100, -100, 100, assetManager);
+        shadowMap = New!CascadedShadowMap(1024, this, 10, 30, 200, -100, 100, assetManager);
         defaultMaterialBackend.shadowMap = shadowMap;
         
         defaultMaterial3D = createMaterial();
+        
+        sceneFramebuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, true, true, assetManager);
+        
+        hdr = New!PostFilterHDR(sceneFramebuffer, null, assetManager);
+        hdr.enabled = true;
+        
+        aaFramebuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, false, false, assetManager);
+        fxaa = New!PostFilterFXAA(aaFramebuffer, assetManager);
+        
+        //fbLens = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, false, false, assetManager);
+        //lens = New!PostFilterLensDistortion(fbLens, assetManager);
     }
     
     override void onRelease()
@@ -569,8 +592,37 @@ class BaseScene3D: Scene
     {
         renderShadows(&rc3d);
         
-        prepareViewport();
+        //prepareViewport();
+        //renderEntities3D(&rc3d);
+        //renderEntities2D(&rc2d);
+
+        sceneFramebuffer.bind();
+        prepareViewport();        
         renderEntities3D(&rc3d);
+        sceneFramebuffer.unbind();
+
+        sceneFramebuffer.genMipmaps();
+        float lum = sceneFramebuffer.averageLuminance();
+        if (!isNaN(lum))
+        {
+            float newExposure = 0.25f / clamp(lum, 0.001, 100000.0);
+            
+            float exposureDelta = newExposure - hdr.exposure;
+            hdr.exposure += exposureDelta * 4.0f * eventManager.deltaTime;
+        }
+
+        aaFramebuffer.bind();
+        prepareViewport();
+        hdr.render(&rc2d);
+        aaFramebuffer.unbind();
+        
+        //fbLens.bind();
+        //prepareViewport();
+        //fxaa.render(&rc2d);
+        //fbLens.unbind();
+        
+        prepareViewport();
+        fxaa.render(&rc2d);
         renderEntities2D(&rc2d);
-    } 
+    }
 }

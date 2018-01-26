@@ -162,7 +162,7 @@ class EventManager
     
     float joystickAxis(int axis)
     {
-        return cast(float)(SDL_GameControllerGetAxis(controller, cast(SDL_GameControllerAxis) axis)) / 32_768.0f;
+        return cast(float)(SDL_GameControllerGetAxis(controller, cast(SDL_GameControllerAxis)axis)) / 32768.0f;
     }
 
     void update()

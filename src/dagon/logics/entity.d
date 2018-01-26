@@ -45,10 +45,18 @@ import dagon.logics.behaviour;
 import dagon.graphics.material;
 import dagon.graphics.rc;
 
+Matrix4x4f rotationPart(Matrix4x4f m)
+{
+    Matrix4x4f res = m;
+    res.a14 = 0.0f;
+    res.a24 = 0.0f;
+    res.a34 = 0.0f;
+    return m;
+}
+
 enum Attach
 {
     Parent,
-    Screen,
     Camera
 }
 
@@ -76,6 +84,12 @@ class Entity: Owner
 
     Matrix4x4f transformation;
     Matrix4x4f invTransformation;
+    
+    Matrix4x4f absoluteTransformation;
+    Matrix4x4f invAbsoluteTransformation;
+    
+    Matrix4x4f prevTransformation;
+    Matrix4x4f prevAbsoluteTransformation;
 
     EntityController controller;
     DefaultEntityController defaultController;
@@ -86,6 +100,8 @@ class Entity: Owner
     bool visible = true;
     bool castShadow = true;
     Attach attach = Attach.Parent;
+    
+    bool useMotionBlur = true;
 
     this(EventManager emngr, Owner owner)
     {
@@ -101,6 +117,11 @@ class Entity: Owner
 
         defaultController = New!DefaultEntityController(this);
         controller = defaultController;
+        
+        absoluteTransformation = Matrix4x4f.identity;
+        invAbsoluteTransformation = Matrix4x4f.identity;
+        prevTransformation = Matrix4x4f.identity;
+        prevAbsoluteTransformation = Matrix4x4f.identity;
     }
         
     this(Entity parent)
@@ -179,9 +200,22 @@ class Entity: Owner
 
     void update(double dt)
     {
+        prevTransformation = transformation;
+    
         if (controller)
             controller.update(dt);
-
+        
+        if (parent)
+        {
+            absoluteTransformation = parent.absoluteTransformation * transformation;
+            prevAbsoluteTransformation = parent.prevAbsoluteTransformation * prevTransformation;
+        }
+        else
+        {
+            absoluteTransformation = transformation;
+            prevAbsoluteTransformation = prevTransformation;
+        }
+        
         foreach(i, ble; behaviours)
         {
             if (ble.valid)
@@ -212,43 +246,30 @@ class Entity: Owner
 
         rcLocal = *rc;
         
-        if (attach == Attach.Screen)
-        {
-            // Ignore camera and parent transformation
-            
-            rcLocal.viewMatrix = Matrix4x4f.identity;
-            rcLocal.invViewMatrix = Matrix4x4f.identity;
+        if (attach == Attach.Camera)
+        {         
+            rcLocal.modelMatrix = translationMatrix(rcLocal.cameraPosition) * transformation;
+            rcLocal.invModelMatrix = invTransformation * translationMatrix(-rcLocal.cameraPosition); 
 
-            rcLocal.modelMatrix = transformation;
-            rcLocal.invModelMatrix = invTransformation;
-        }
-        else if (attach == Attach.Camera)
-        {
-            // Ignore camera position and parent transformation
-            
-            rcLocal.viewMatrix = rc.viewRotationMatrix;
-            rcLocal.invViewMatrix = rc.invViewRotationMatrix;
-
-            rcLocal.modelMatrix = transformation;
-            rcLocal.invModelMatrix = invTransformation;
-        }
-        else if (parent)
-        {
-            // Use camera, self and parent transformation
-
-            rcLocal.modelMatrix = rcLocal.modelMatrix * transformation;
-            rcLocal.invModelMatrix = invTransformation *  rcLocal.invModelMatrix; // because (A * B)^-1 = B^-1 * A^-1
+            rcLocal.prevModelViewProjMatrix = rcLocal.projectionMatrix * (rcLocal.prevViewMatrix * (translationMatrix(rcLocal.prevCameraPosition) * prevTransformation));
         }
         else
         {
-            // Use only self transformation
+            rcLocal.modelMatrix = absoluteTransformation;
+            rcLocal.invModelMatrix = invAbsoluteTransformation;
             
-            rcLocal.modelMatrix = transformation;
-            rcLocal.invModelMatrix = invTransformation;
+            rcLocal.prevModelViewProjMatrix = rcLocal.projectionMatrix * (rcLocal.prevViewMatrix * prevAbsoluteTransformation);
         }
         
         rcLocal.modelViewMatrix = rcLocal.viewMatrix * rcLocal.modelMatrix;
         rcLocal.normalMatrix = rcLocal.modelViewMatrix.inverse.transposed;
+        
+        rcLocal.blurModelViewProjMatrix = rcLocal.projectionMatrix * rcLocal.modelViewMatrix;
+        
+        if (useMotionBlur)
+            rcLocal.blurMask = 1.0f;
+        else
+            rcLocal.blurMask = 0.0f;
 
         if (rcLocal.overrideMaterial)
             rcLocal.overrideMaterial.bind(&rcLocal);
@@ -259,9 +280,9 @@ class Entity: Owner
             drawable.render(&rcLocal);
 
         if (rcLocal.overrideMaterial)
-            rcLocal.overrideMaterial.bind(&rcLocal);
+            rcLocal.overrideMaterial.unbind(&rcLocal);
         else if (material)
-            material.unbind();
+            material.unbind(&rcLocal);
 
         foreach(i, ble; behaviours)
         {

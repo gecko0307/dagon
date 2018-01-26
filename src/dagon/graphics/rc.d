@@ -44,6 +44,7 @@ struct RenderingContext
     Matrix4x4f invModelMatrix;
 
     Vector3f cameraPosition;
+    Vector3f prevCameraPosition;
 
     Matrix4x4f viewMatrix;
     Matrix4x4f invViewMatrix;
@@ -54,6 +55,10 @@ struct RenderingContext
     Matrix4x4f projectionMatrix;
     Matrix4x4f normalMatrix;
     
+    Matrix4x4f prevViewMatrix;
+    Matrix4x4f prevModelViewProjMatrix;
+    Matrix4x4f blurModelViewProjMatrix;
+    
     Frustum frustum;
 
     EventManager eventManager;
@@ -61,6 +66,10 @@ struct RenderingContext
     Material overrideMaterial;
     
     float time;
+    float blurMask;
+    
+    bool depthPass;
+    bool colorPass;
     
     void init(EventManager emngr, Environment env)
     {
@@ -68,16 +77,23 @@ struct RenderingContext
         modelMatrix = Matrix4x4f.identity;
         invModelMatrix = Matrix4x4f.identity;
         cameraPosition = Vector3f(0.0f, 0.0f, 0.0f);
+        prevCameraPosition = Vector3f(0.0f, 0.0f, 0.0f);
         viewMatrix = Matrix4x4f.identity;
         invViewMatrix = Matrix4x4f.identity;
         viewRotationMatrix = Matrix4x4f.identity;
         invViewRotationMatrix = Matrix4x4f.identity;
         projectionMatrix = Matrix4x4f.identity;
         normalMatrix = Matrix4x4f.identity;
+        prevViewMatrix = Matrix4x4f.identity;
+        prevModelViewProjMatrix = Matrix4x4f.identity;
+        blurModelViewProjMatrix = Matrix4x4f.identity;
         eventManager = emngr;
         environment = env;
         overrideMaterial = null;
         time = 0.0f;
+        depthPass = true;
+        colorPass = true;
+        blurMask = 1.0f;
     }
     
     void initPerspective(EventManager emngr, Environment env, float fov, float znear, float zfar)
@@ -92,4 +108,3 @@ struct RenderingContext
         projectionMatrix = orthoMatrix(0.0f, emngr.windowWidth, emngr.windowHeight, 0.0f, znear, zfar);
     }
 }
-

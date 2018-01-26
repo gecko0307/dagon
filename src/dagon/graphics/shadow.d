@@ -164,7 +164,7 @@ class ShadowBackend: GLSLMaterialBackend
         glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, rc.projectionMatrix.arrayof.ptr);
     }
     
-    override void unbind(GenericMaterial mat)
+    override void unbind(GenericMaterial mat, RenderingContext* rc)
     {        
         glUseProgram(0);
     }

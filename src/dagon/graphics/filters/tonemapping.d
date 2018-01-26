@@ -25,13 +25,22 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.graphics.filters.lens;
+module dagon.graphics.filters.tonemapping;
 
+import derelict.opengl;
 import dagon.core.ownership;
 import dagon.graphics.postproc;
 import dagon.graphics.framebuffer;
+import dagon.graphics.texture;
+import dagon.graphics.rc;
 
-class PostFilterLensDistortion: PostFilter
+enum TonemapFunction
+{
+    Reinhard = 0,
+    Hable = 1
+}
+
+class PostFilterTonemapping: PostFilter
 {
     private string vs = q{
         #version 330 core
@@ -57,35 +66,40 @@ class PostFilterLensDistortion: PostFilter
         #version 330 core
         
         uniform sampler2D fbColor;
-        uniform sampler2D fbDepth;
-        uniform vec2 viewSize;
+        uniform int tonemapFunction;
+        uniform float exposure;
         
         in vec2 texCoord;
+        
         out vec4 frag_color;
+        
+        vec3 hableFunc(vec3 x)
+        {
+            return ((x * (0.15 * x + 0.1 * 0.5) + 0.2 * 0.02) / (x * (0.15 * x + 0.5) + 0.2 * 0.3)) - 0.02 / 0.3;
+        }
 
-        const float k = 0.1;
-        const float kcube = 0.0;
-        const float scale = 0.84;
-        const float dispersion = 0.01;
+        vec3 tonemapHable(vec3 x, float expo)
+        {
+            vec3 c = x * expo;
+            c = hableFunc(c * 2.0) * (1.0 / hableFunc(vec3(11.2)));
+            return pow(c, vec3(1.0 / 2.2));
+        }
+        
+        vec3 tonemapReinhard(vec3 x, float expo)
+        {
+            vec3 c = x * expo;
+            c = c / (c + 1.0);
+            return pow(c, vec3(1.0 / 2.2));
+        }
 
         void main()
-        {
-            vec3 eta = vec3(1.0 + dispersion * 0.9, 1.0 + dispersion * 0.6, 1.0 + dispersion * 0.3);
-            vec2 texcoord = texCoord;
-            vec2 cancoord = texCoord;
-            float r2 = (cancoord.x - 0.5) * (cancoord.x - 0.5) + (cancoord.y - 0.5) * (cancoord.y - 0.5);       
-            float f = (kcube == 0.0)? 1.0 + r2 * (k + kcube * sqrt(r2)) : 1.0 + r2 * k;
-            vec2 coef = f * scale * (texcoord.xy - 0.5);
-            vec2 rCoords = eta.r * coef + 0.5;
-            vec2 gCoords = eta.g * coef + 0.5;
-            vec2 bCoords = eta.b * coef + 0.5;
-            vec4 inputDistort = vec4(0.0); 
-            inputDistort.r = texture(fbColor, rCoords).r;
-            inputDistort.g = texture(fbColor, gCoords).g;
-            inputDistort.b = texture(fbColor, bCoords).b;
-            inputDistort.a = 1.0;
-            frag_color = inputDistort;
-            frag_color.a = 1.0;
+        {            
+            vec3 res = texture(fbColor, texCoord).rgb;
+            if (tonemapFunction == 1)
+                res = tonemapHable(res, exposure);
+            else
+                res = tonemapReinhard(res, exposure);
+            frag_color = vec4(res, 1.0);
         }
     };
 
@@ -98,9 +112,26 @@ class PostFilterLensDistortion: PostFilter
     {
         return fs;
     }
+    
+    GLint tonemapFunctionLoc;
+    GLint exposureLoc;
+    
+    TonemapFunction tonemapFunction = TonemapFunction.Reinhard;
+    float exposure = 1.0f;
 
     this(Framebuffer fb, Owner o)
     {
         super(fb, o);
+        
+        tonemapFunctionLoc = glGetUniformLocation(shaderProgram, "tonemapFunction");
+        exposureLoc = glGetUniformLocation(shaderProgram, "exposure");
+    }
+    
+    override void bind(RenderingContext* rc)
+    {
+        super.bind(rc);
+        
+        glUniform1i(tonemapFunctionLoc, tonemapFunction);
+        glUniform1f(exposureLoc, exposure);
     }
 }

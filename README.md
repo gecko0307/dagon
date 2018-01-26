@@ -11,6 +11,7 @@ Currently Dagon has the following features:
 * Static and animated meshes, OBJ and [IQM](https://github.com/lsalzman/iqm) formats support
 * Textures in PNG, JPG, TGA, BMP formats
 * Flexible material system with simple user-defined abstract API and different backends. You can implement custom materials, with your own shaders and parameters
+* HDR rendering
 * Clustered forward shading (world space XZ plane light indexing, variable number of lights per fragment)
 * Spherical area lights
 * Normal/parallax mapping, parallax occlusion mapping

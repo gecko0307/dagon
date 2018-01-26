@@ -117,7 +117,7 @@ class HUDMaterialBackend: GLSLMaterialBackend
         glUniform1i(diffuseTextureLoc, 0);
     }
     
-    override void unbind(GenericMaterial mat)
+    override void unbind(GenericMaterial mat, RenderingContext* rc)
     {
         glUseProgram(0);
     }

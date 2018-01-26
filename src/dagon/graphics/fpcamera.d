@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.graphics.fpcamera;
 
-import derelict.opengl;
+import derelict.opengl.gl;
 
 import dlib.core.memory;
 import dlib.math.vector;
