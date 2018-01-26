@@ -5,7 +5,7 @@
 
 Dagon
 =====
-Dagon is a 3D game development framework for D. It is a work-in-progress reincarnation of [DGL](https://github.com/gecko0307/dgl) with several architecture improvements. Dagon is based on OpenGL 3.3 core profile, SDL2 and Freetype 2.7.1.
+Dagon is a 3D game development framework for D. It is a work-in-progress reincarnation of [DGL](https://github.com/gecko0307/dgl) with several architecture improvements. Dagon is based on OpenGL 3.3 core profile, SDL2 and Freetype 2.8.1.
 
 Currently Dagon has the following features:
 * Static and animated meshes, OBJ and [IQM](https://github.com/lsalzman/iqm) formats support
@@ -40,10 +40,6 @@ Upcoming plans:
 * Terrain renderer
 * SSAO
 * Bloom
-
-Prerequisites
--------------
-Dagon is known to work on Windows and Linux (and should run under OSX as well, though not well tested). To use Dagon, a number of libraries should be installed, namely SDL2 and Freetype 2.8.1.
 
 Demos
 -----
