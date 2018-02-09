@@ -59,7 +59,9 @@ import dagon.graphics.materials.generic;
 import dagon.graphics.materials.pbrclustered;
 import dagon.graphics.materials.hud;
 import dagon.graphics.framebuffer;
+import dagon.graphics.postproc;
 import dagon.graphics.filters.fxaa;
+import dagon.graphics.filters.lens;
 import dagon.graphics.filters.hdr;
 import dagon.logics.entity;
 
@@ -373,11 +375,9 @@ class BaseScene3D: Scene
     View view;
     
     Framebuffer sceneFramebuffer;
-    Framebuffer aaFramebuffer;
-    //Framebuffer fbLens;
-    PostFilterFXAA fxaa;
-    //PostFilterLensDistortion lens;
     PostFilterHDR hdr;
+    
+    DynamicArray!PostFilter postFilters;
 
     DynamicArray!Entity entities3D;
     DynamicArray!Entity entities2D;
@@ -465,20 +465,36 @@ class BaseScene3D: Scene
         
         sceneFramebuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, true, true, assetManager);
         
-        hdr = New!PostFilterHDR(sceneFramebuffer, null, assetManager);
-        hdr.enabled = true;
-        
-        aaFramebuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, false, false, assetManager);
-        fxaa = New!PostFilterFXAA(aaFramebuffer, assetManager);
-        
-        //fbLens = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, false, false, assetManager);
-        //lens = New!PostFilterLensDistortion(fbLens, assetManager);
+        hdr = New!PostFilterHDR(null, null, assetManager);
+        postFilters.append(hdr);
+    }
+    
+    PostFilterFXAA addFilterFXAA()
+    {
+        PostFilterFXAA fxaa = New!PostFilterFXAA(null, null, assetManager);
+        postFilters.append(fxaa);
+        return fxaa;
+    }
+    
+    PostFilterLensDistortion addFilterLensDistortion()
+    {
+        PostFilterLensDistortion lens = New!PostFilterLensDistortion(null, null, assetManager);
+        postFilters.append(lens);
+        return lens;
+    }
+    
+    PostFilter addFilter(PostFilter f)
+    {
+        postFilters.append(f);
+        return f;
     }
     
     override void onRelease()
     {
         entities3D.free();
         entities2D.free();
+        
+        postFilters.free();
     }
     
     override void onLoading(float percentage)
@@ -591,10 +607,6 @@ class BaseScene3D: Scene
     override void onRender()
     {
         renderShadows(&rc3d);
-        
-        //prepareViewport();
-        //renderEntities3D(&rc3d);
-        //renderEntities2D(&rc2d);
 
         sceneFramebuffer.bind();
         prepareViewport();        
@@ -610,19 +622,31 @@ class BaseScene3D: Scene
             float exposureDelta = newExposure - hdr.exposure;
             hdr.exposure += exposureDelta * 4.0f * eventManager.deltaTime;
         }
+        
+        foreach(i, f; postFilters.data)
+        {
+            if (i < postFilters.length-1)
+            {
+                if (f.outputBuffer is null)
+                    f.outputBuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, false, false, assetManager);
+            }
+            
+            if (f.inputBuffer is null)
+            {
+                if (i == 0)
+                    f.inputBuffer = sceneFramebuffer;
+                else
+                    f.inputBuffer = postFilters.data[i-1].outputBuffer;
+            }
+        
+            if (f.outputBuffer)
+                f.outputBuffer.bind();
+            prepareViewport();
+            f.render(&rc2d);
+            if (f.outputBuffer)
+                f.outputBuffer.unbind();
+        }
 
-        aaFramebuffer.bind();
-        prepareViewport();
-        hdr.render(&rc2d);
-        aaFramebuffer.unbind();
-        
-        //fbLens.bind();
-        //prepareViewport();
-        //fxaa.render(&rc2d);
-        //fbLens.unbind();
-        
-        prepareViewport();
-        fxaa.render(&rc2d);
         renderEntities2D(&rc2d);
     }
 }

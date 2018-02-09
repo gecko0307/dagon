@@ -152,8 +152,8 @@ class PostFilterFXAA: PostFilter
         return fs;
     }
 
-    this(Framebuffer fb, Owner o)
+    this(Framebuffer inputBuffer, Framebuffer outputBuffer, Owner o)
     {
-        super(fb, o);
+        super(inputBuffer, outputBuffer, o);
     }
 }

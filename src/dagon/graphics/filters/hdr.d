@@ -189,11 +189,9 @@ class PostFilterHDR: PostFilter
     
     Texture colorTable;
 
-    this(Framebuffer fb, Texture colorTable, Owner o)
+    this(Framebuffer inputBuffer, Framebuffer outputBuffer, Owner o)
     {
-        super(fb, o);
-        
-        this.colorTable = colorTable;
+        super(inputBuffer, outputBuffer, o);
         
         colorTableLoc = glGetUniformLocation(shaderProgram, "colorTable");
         exposureLoc = glGetUniformLocation(shaderProgram, "exposure");

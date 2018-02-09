@@ -40,8 +40,9 @@ import dagon.graphics.framebuffer;
 
 class PostFilter: Owner
 {
-    bool enabled = false;
-    Framebuffer fb;
+    bool enabled = true;
+    Framebuffer inputBuffer;
+    Framebuffer outputBuffer;
     
     GLenum shaderVert;
     GLenum shaderFrag;
@@ -99,11 +100,12 @@ class PostFilter: Owner
     string vertexShader() {return vsText;}
     string fragmentShader() {return fsText;}
 
-    this(Framebuffer fb, Owner o)
+    this(Framebuffer inputBuffer, Framebuffer outputBuffer, Owner o)
     {
         super(o);
         
-        this.fb = fb;
+        this.inputBuffer = inputBuffer;
+        this.outputBuffer = outputBuffer;
         
         const(char*)pvs = vertexShader().ptr;
         const(char*)pfs = fragmentShader().ptr;
@@ -164,7 +166,7 @@ class PostFilter: Owner
         
         glUniformMatrix4fv(prevModelViewProjMatrixLoc, 1, 0, rc.prevModelViewProjMatrix.arrayof.ptr);
         
-        Vector2f viewportSize = Vector2f(fb.width, fb.height);
+        Vector2f viewportSize = Vector2f(inputBuffer.width, inputBuffer.height);
         glUniform2fv(viewportSizeLoc, 1, viewportSize.arrayof.ptr);
 
         glUniform1i(fbColorLoc, 0);
@@ -182,7 +184,7 @@ class PostFilter: Owner
     void render(RenderingContext* rc)
     {
         bind(rc);
-        fb.render();
+        inputBuffer.render();
         unbind(rc);
     }
 }
