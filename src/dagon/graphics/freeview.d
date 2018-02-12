@@ -92,10 +92,10 @@ class Freeview: EventListener, View
     {
         processEvents();
 
-        if (eventManager.mouseButtonPressed[MB_LEFT] && eventManager.keyPressed[KEY_LSHIFT])
+        if (eventManager.mouseButtonPressed[MB_RIGHT])
         {
             float shift_x = (eventManager.mouseX - prevMouseX) * 0.1f;
-            float shift_y = (eventManager.mouseY - prevMouseY) * 0.1f;
+            float shift_y = -(eventManager.mouseY - prevMouseY) * 0.1f;
             Vector3f trans = camera.getUpVector * shift_y + camera.getRightVector * shift_x;
             camera.translateTarget(trans);
         }
@@ -108,7 +108,7 @@ class Freeview: EventListener, View
         else if (eventManager.mouseButtonPressed[MB_LEFT])
         {                
             float turn_m = (eventManager.mouseX - prevMouseX);
-            float pitch_m = -(eventManager.mouseY - prevMouseY);
+            float pitch_m = (eventManager.mouseY - prevMouseY);
             camera.pitch(pitch_m);
             camera.turn(turn_m);
         }

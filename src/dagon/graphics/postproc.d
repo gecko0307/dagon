@@ -53,7 +53,7 @@ class PostFilter: Owner
     GLint projectionMatrixLoc;
     GLint fbColorLoc;
     GLint fbDepthLoc;
-    GLint fbPositionLoc;
+    GLint fbVelocityLoc;
     GLint viewportSizeLoc;
     GLint enabledLoc;
     
@@ -153,7 +153,7 @@ class PostFilter: Owner
         viewportSizeLoc = glGetUniformLocation(shaderProgram, "viewSize");
         fbColorLoc = glGetUniformLocation(shaderProgram, "fbColor");
         fbDepthLoc = glGetUniformLocation(shaderProgram, "fbDepth");
-        fbPositionLoc = glGetUniformLocation(shaderProgram, "fbPosition");
+        fbVelocityLoc = glGetUniformLocation(shaderProgram, "fbVelocity");
         enabledLoc = glGetUniformLocation(shaderProgram, "enabled");
     }
     
@@ -171,7 +171,7 @@ class PostFilter: Owner
 
         glUniform1i(fbColorLoc, 0);
         glUniform1i(fbDepthLoc, 1);
-        glUniform1i(fbPositionLoc, 2);
+        glUniform1i(fbVelocityLoc, 2);
         
         glUniform1i(enabledLoc, enabled);
     }

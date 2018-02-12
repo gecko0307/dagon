@@ -61,21 +61,21 @@ class Environment: Owner
     float fogStart = 100.0f;
     float fogEnd = 300.0f;
     
-    Color4f sunZenithColor = Color4f(1.0, 1.0, 1.0, 1.0);
-    Color4f sunHorizonColor = Color4f(0.9, 0.4, 0.0, 1.0);
+    Color4f sunZenithColor = Color4f(1.0, 0.9, 0.8, 1.0);
+    Color4f sunHorizonColor = Color4f(1.0, 0.2, 0.0, 1.0);
     Quaternionf sunRotation;
-    float sunEnergy = 100000.0f;
+    float sunEnergy = 1000.0f;
     
     Color4f skyZenithColor = Color4f(0.223, 0.572, 0.752, 1.0);
     Color4f skyHorizonColor = Color4f(0.9, 1.0, 1.0, 1.0);
     
-    Color4f skyZenithColorAtMidday = Color4f(0.6, 0.8, 1.0, 1.0);
+    Color4f skyZenithColorAtMidday = Color4f(0.1, 0.2, 1.0, 1.0);
     Color4f skyZenithColorAtSunset = Color4f(0.1, 0.2, 0.4, 1.0);
-    Color4f skyZenithColorAtNight = Color4f(0.01, 0.01, 0.02, 1.0);
+    Color4f skyZenithColorAtNight = Color4f(0.01, 0.01, 0.05, 1.0);
     
     Color4f skyHorizonColorAtMidday = Color4f(0.5, 0.6, 0.65, 1.0);
     Color4f skyHorizonColorAtSunset = Color4f(0.87, 0.44, 0.1, 1.0);
-    Color4f skyHorizonColorAtNight = Color4f(0.1, 0.1, 0.2, 1.0);
+    Color4f skyHorizonColorAtNight = Color4f(0.1, 0.1, 0.1, 1.0);
 
     bool useSkyColors = false;
     bool atmosphericFog = false;
@@ -95,7 +95,10 @@ class Environment: Owner
             skyHorizonColor = lerpColorsBySunAngle(skyHorizonColorAtMidday, skyHorizonColorAtSunset, skyHorizonColorAtNight);
             backgroundColor = skyZenithColor;
             
-            ambientConstant = Color4f(0.0f, 0.05f, 0.05f) + saturation(skyZenithColor, 0.5f) * 0.5f;
+            float s1 = clamp(dot(sunDirection, Vector3f(0.0, 1.0, 0.0)), 0.0, 1.0);
+            float s2 = clamp(dot(sunDirection, Vector3f(0.0, -1.0, 0.0)), 0.0, 1.0);
+            
+            ambientConstant = (skyZenithColor + skyHorizonColor + Color4f(0.06f, 0.05f, 0.05f)) * 0.3f * lerp(lerp(0.01f, 0.001f, s2), 2.0f, s1);
             
             if (atmosphericFog)
                 fogColor = lerpColorsBySunAngle(skyZenithColor, skyHorizonColor, Color4f(0, 0, 0, 0));

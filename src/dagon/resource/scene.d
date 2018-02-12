@@ -601,7 +601,6 @@ class BaseScene3D: Scene
         glViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
         if (environment)
             glClearColor(environment.backgroundColor.r, environment.backgroundColor.g, environment.backgroundColor.b, environment.backgroundColor.a);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
     override void onRender()
@@ -610,6 +609,7 @@ class BaseScene3D: Scene
 
         sceneFramebuffer.bind();
         prepareViewport();        
+        sceneFramebuffer.clearBuffers();       
         renderEntities3D(&rc3d);
         sceneFramebuffer.unbind();
 
@@ -642,6 +642,7 @@ class BaseScene3D: Scene
             if (f.outputBuffer)
                 f.outputBuffer.bind();
             prepareViewport();
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             f.render(&rc2d);
             if (f.outputBuffer)
                 f.outputBuffer.unbind();

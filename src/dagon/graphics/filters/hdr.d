@@ -67,7 +67,7 @@ class PostFilterHDR: PostFilter
         
         uniform sampler2D fbColor;
         uniform sampler2D fbDepth;
-        uniform sampler2D fbPosition;
+        uniform sampler2D fbVelocity;
         uniform sampler2D colorTable;
         uniform vec2 viewSize;
         uniform float exposure;
@@ -138,7 +138,7 @@ class PostFilterHDR: PostFilter
 
         void main()
         {
-            vec4 v = texture(fbPosition, texCoord);
+            vec4 v = texture(fbVelocity, texCoord);
             vec2 blurVec = v.xy;
 
             const int samples = 10;

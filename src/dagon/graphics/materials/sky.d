@@ -88,9 +88,12 @@ class SkyBackend: GLSLMaterialBackend
         
         // TODO: make uniform
         const vec3 groundColor = vec3(0.06, 0.05, 0.05);
-        const float sunEnergy = 100000.0;
-        const float skyEnergyMidday = 5000.0;
-        const float skyEnergyNight = 0.25;
+        const float sunEnergy = 1000.0;
+        const float skyEnergyMidday = 10.0;
+        const float skyEnergyTwilight = 0.01;
+        const float skyEnergyMidnight = 0.0001;
+        const float groundEnergyMidday = 0.1;
+        const float groundEnergyNight = 0.0;
         
         uniform sampler2D environmentMap;
         uniform bool useEnvironmentMap;
@@ -119,13 +122,17 @@ class SkyBackend: GLSLMaterialBackend
             else
             {                
                 float groundOrSky = pow(clamp(dot(-normalWorldN, vec3(0, 1, 0)), 0.0, 1.0), 0.5);
-                float sunAngle = clamp(dot(sunDirection, vec3(0, 1, 0)), 0.0, 1.0);
+                float groundOrSky2 = pow(clamp(dot(-normalWorldN, vec3(0, -1, 0)), 0.0, 1.0), 0.4);
                 
-                float skyEnergy = mix(skyEnergyNight, skyEnergyMidday, sunAngle);
+                float sunAngle1 = clamp(dot(sunDirection, vec3(0, 1, 0)), 0.0, 1.0);
+                float sunAngle2 = clamp(dot(sunDirection, vec3(0, -1, 0)), 0.0, 1.0);
                 
-                env = mix(skyHorizonColor, skyZenithColor, groundOrSky) * skyEnergy * sunAngle;
+                float skyEnergy = mix(mix(skyEnergyTwilight, skyEnergyMidnight, sunAngle2), skyEnergyMidday, sunAngle1);
+                float groundEnergy = mix(groundEnergyNight, groundEnergyMidday, sunAngle1);
+                
+                env = mix(mix(skyHorizonColor * skyEnergy, groundColor * groundEnergy, groundOrSky2), skyZenithColor * skyEnergy, groundOrSky);
                 float sun = clamp(dot(-normalWorldN, sunDirection), 0.0, 1.0);
-                sun = min(float(sun > 0.9999) + pow(sun, 64.0) * 0.001, 1.0);
+                sun = min(float(sun > 0.9999) + pow(sun, 64.0) * 0.01, 1.0);
                 env += sunColor * sun * sunEnergy;
             }
             frag_color = vec4(env, 1.0);

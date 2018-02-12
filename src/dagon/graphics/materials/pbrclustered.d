@@ -379,7 +379,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
                 vec3 positionToLightSource = lightPosEye - eyePosition;
                 float distanceToLight = length(positionToLightSource);
                 vec3 directionToLight = normalize(positionToLightSource);                
-                float attenuation = clamp(1.0 - (distanceToLight / lightRadius), 0.0, 1.0) * lightEnergy;
+                float attenuation = pow(clamp(1.0 - (distanceToLight / lightRadius), 0.0, 1.0), 2.0) * lightEnergy;
                 
                 float diff = 0.0;
                 float spec = 0.0;
@@ -403,8 +403,6 @@ class PBRClusteredBackend: GLSLMaterialBackend
             vec3 envDiff;
             vec3 envSpec;
             
-            const float shadowBrightness = 0.01; // TODO: make uniform
-            
             if (useEnvironmentMap)
             {
                 ivec2 envMapSize = textureSize(environmentMap, 0);
@@ -416,29 +414,22 @@ class PBRClusteredBackend: GLSLMaterialBackend
                 envSpec = textureLod(environmentMap, envMapEquirect(worldR), specLod).rgb;
                 
                 float sunDiff = max(0.0, dot(sunDirection, N));
-                
-                envDiff *= max(s1 * sunDiff, shadowBrightness);
-                envSpec *= max(s1 * sunDiff, shadowBrightness);
+                float NH = clamp(dot(N, normalize(sunDirection + E)), 0.0, 1.0);
+                float sunSpec = pow(max(NH, 0.0), shininess);
+
+                envDiff += sunColor * s1 * sunDiff * (sunEnergy * 0.01);
+                envSpec += sunColor * s1 * sunSpec * (sunEnergy * gloss);
             }
             else
-            {
+            {                
+                vec3 env = environmentColor.rgb;
+                
                 float sunDiff = max(0.0, dot(sunDirection, N));
                 float NH = clamp(dot(N, normalize(sunDirection + E)), 0.0, 1.0);
+                float sunSpec = pow(max(NH, 0.0), shininess);
 
-                float groundOrSky = pow(clamp(dot(worldN, vec3(0, 1, 0)), 0.0, 1.0), 0.5);
-                float sunAngle = clamp(dot(worldSun, vec3(0, 1, 0)), 0.0, 1.0);
-                
-                float skyEnergy = mix(skyEnergyNight, skyEnergyMidday, sunAngle);
-                
-                vec3 env = mix(groundColor * sunColor * sunAngle * sunEnergy, skyZenithColor * skyEnergy, groundOrSky);
-                
-                float disk = mix(float(NH > 0.9999), pow(NH, 1024.0), roughness);
-                float haze = pow(NH, mix(64.0, 8.0, roughness)) * mix(0.001, 0.0001, roughness);
-                
-                float sunSpec = min(1.0, disk + haze);
-
-                envDiff = env + sunColor * sunEnergy * sunDiff * s1;
-                envSpec = env + sunColor * sunEnergy * sunSpec * s1;
+                envDiff = env + sunColor * (sunEnergy * 0.01) * sunDiff * s1;
+                envSpec = env + sunColor * (sunEnergy * gloss) * sunSpec * s1;
             }
             
             vec3 diffLight = envDiff + pointDiffSum;

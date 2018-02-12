@@ -41,7 +41,7 @@ class Framebuffer: Owner
     GLuint fbo;
     GLuint depthTexture = 0;
     GLuint colorTexture = 0;
-    GLuint positionTexture = 0;
+    GLuint velocityTexture = 0;
     
     Vector2f[4] vertices;
     Vector2f[4] texcoords;
@@ -54,12 +54,16 @@ class Framebuffer: Owner
     
     bool isFloating = false;
     
-    this(uint w, uint h, bool floating, bool usePositionBuffer, Owner o)
+    bool useVelocityBuffer = false;
+    
+    this(uint w, uint h, bool floating, bool useVelocityBuffer, Owner o)
     {
         super(o);
     
         width = w;
         height = h;
+        
+        this.useVelocityBuffer = useVelocityBuffer;
         
         glActiveTexture(GL_TEXTURE0);
         
@@ -92,10 +96,10 @@ class Framebuffer: Owner
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glBindTexture(GL_TEXTURE_2D, 0);
         
-        if (usePositionBuffer)
+        if (useVelocityBuffer)
         {
-            glGenTextures(1, &positionTexture);
-            glBindTexture(GL_TEXTURE_2D, positionTexture);
+            glGenTextures(1, &velocityTexture);
+            glBindTexture(GL_TEXTURE_2D, velocityTexture);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, null);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -109,9 +113,9 @@ class Framebuffer: Owner
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture, 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
         
-        if (usePositionBuffer)
+        if (useVelocityBuffer)
         {
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, positionTexture, 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, velocityTexture, 0);
             
             GLenum[2] bufs = [GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1];
             glDrawBuffers(2, bufs.ptr);
@@ -186,8 +190,8 @@ class Framebuffer: Owner
             glDeleteTextures(1, &depthTexture);
         if (glIsTexture(colorTexture))
             glDeleteTextures(1, &colorTexture);
-        if (glIsTexture(positionTexture))
-            glDeleteTextures(1, &positionTexture);
+        if (glIsTexture(velocityTexture))
+            glDeleteTextures(1, &velocityTexture);
             
         glDeleteVertexArrays(1, &vao);
         glDeleteBuffers(1, &vbo);
@@ -233,7 +237,7 @@ class Framebuffer: Owner
         glBindTexture(GL_TEXTURE_2D, depthTexture);
         
         glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, positionTexture);
+        glBindTexture(GL_TEXTURE_2D, velocityTexture);
         
         glDepthMask(0);
         glBindVertexArray(vao);
@@ -251,5 +255,15 @@ class Framebuffer: Owner
         glBindTexture(GL_TEXTURE_2D, 0);
         
         glActiveTexture(GL_TEXTURE0);
+    }
+    
+    void clearBuffers()
+    {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        if (useVelocityBuffer)
+        {
+            Color4f zero = Color4f(0, 0, 0, 0);
+            glClearBufferfv(GL_COLOR, 1, zero.arrayof.ptr);
+        }
     }
 }
