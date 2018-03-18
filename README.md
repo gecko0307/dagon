@@ -31,7 +31,7 @@ Currently Dagon has the following features:
 
 [![Screenshot1](https://raw.githubusercontent.com/gecko0307/dagon-demo/master/screenshots/main-thumb.jpg)](https://raw.githubusercontent.com/gecko0307/dagon-demo/master/screenshots/main.jpg)
 
-[Video](https://www.youtube.com/watch?v=pxu9sxL9MIM)
+[https://www.youtube.com/watch?v=pxu9sxL9MIM](https://www.youtube.com/watch?v=pxu9sxL9MIM)
 
 Dagon is still under development and lacks a lot of important functionality. Currently it is not recommended to use Dagon in production due to unstable API.
 
