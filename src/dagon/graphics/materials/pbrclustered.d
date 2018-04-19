@@ -403,6 +403,8 @@ class PBRClusteredBackend: GLSLMaterialBackend
             vec3 envDiff;
             vec3 envSpec;
             
+            const float shadowBrightness = 0.01; // TODO: make uniform
+            
             if (useEnvironmentMap)
             {
                 ivec2 envMapSize = textureSize(environmentMap, 0);
@@ -417,8 +419,11 @@ class PBRClusteredBackend: GLSLMaterialBackend
                 float NH = clamp(dot(N, normalize(sunDirection + E)), 0.0, 1.0);
                 float sunSpec = pow(max(NH, 0.0), shininess);
 
-                envDiff += sunColor * s1 * sunDiff * (sunEnergy * 0.01);
-                envSpec += sunColor * s1 * sunSpec * (sunEnergy * gloss);
+                //envDiff += sunColor * s1 * sunDiff * (sunEnergy * 0.01);
+                //envSpec += sunColor * s1 * sunSpec * (sunEnergy * gloss);
+                
+                envDiff *= max(s1 * sunDiff, shadowBrightness);
+                envSpec *= max(s1 * sunDiff, shadowBrightness);
             }
             else
             {                
