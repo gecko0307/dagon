@@ -139,7 +139,7 @@ class PostFilterHDR: PostFilter
         void main()
         {
             vec4 v = texture(fbVelocity, texCoord);
-            vec2 blurVec = v.xy;
+            vec2 blurVec = v.xy * 0.5;
 
             const int samples = 10;
             const float invSamples = 1.0 / float(samples);
