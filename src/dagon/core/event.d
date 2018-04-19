@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2017 Timur Gafarov
+Copyright (c) 2014-2018 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -30,6 +30,7 @@ module dagon.core.event;
 
 import std.stdio;
 import std.ascii;
+import std.conv;
 import derelict.sdl2.sdl;
 import dlib.core.memory;
 import dagon.core.ownership;
@@ -101,7 +102,8 @@ class EventManager
     uint windowHeight;
     bool windowFocused = true;
     
-    SDL_GameController* controller;
+    SDL_GameController* controller = null;
+    SDL_Joystick* joystick = null;
 
     this(SDL_Window* win, uint winWidth, uint winHeight)
     {
@@ -113,14 +115,12 @@ class EventManager
         //auto videoInfo = SDL_GetVideoInfo();
         //videoWidth = videoInfo.current_w;
         //videoHeight = videoInfo.current_h;
+        
+        SDL_InitSubSystem(SDL_INIT_JOYSTICK);
 
         if (SDL_IsGameController(0))
         {
-            writeln("Game controller found!");
             controller = SDL_GameControllerOpen(0);
-            
-            SDL_Joystick* joy = SDL_GameControllerGetJoystick(controller);
-            int instanceID = SDL_JoystickInstanceID(joy);
             
             SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
             
@@ -128,6 +128,10 @@ class EventManager
                 writeln("Warning: no mapping found for controller!");
             
             SDL_GameControllerEventState(SDL_ENABLE);
+        }
+        else
+        {
+            joystick = SDL_JoystickOpen(0);
         }
     }
 
@@ -160,9 +164,33 @@ class EventManager
         addUserEvent(e);
     }
     
-    float joystickAxis(int axis)
+    bool gameControllerAvailable()
+    {
+        return (controller !is null);
+    }
+    
+    bool joystickAvailable()
+    {
+        return (joystick !is null || controller !is null);
+    }
+    
+    float gameControllerAxis(int axis)
     {
         return cast(float)(SDL_GameControllerGetAxis(controller, cast(SDL_GameControllerAxis)axis)) / 32768.0f;
+    }
+    
+    float joystickAxis(int axis)
+    {
+        if (joystick)
+        {
+            double a = cast(double)(SDL_JoystickGetAxis(joystick, axis));
+            return a / 32768.0f; //28000.0f;
+        }
+        else if (controller)
+        {
+            return cast(float)(SDL_GameControllerGetAxis(controller, cast(SDL_GameControllerAxis)axis)) / 32768.0f;
+        }
+        else return 0.0;
     }
 
     void update()
@@ -248,6 +276,25 @@ class EventManager
                     e.mouseWheelY = event.wheel.y;
                     addEvent(e);
                     break;
+                    
+                case SDL_JOYBUTTONDOWN:
+                    if (event.jbutton.state == SDL_PRESSED)
+                        e = Event(EventType.JoystickButtonDown);
+                    else if (event.jbutton.state == SDL_RELEASED)
+                        e = Event(EventType.JoystickButtonUp);
+                    e.joystickButton = event.jbutton.button;
+                    addEvent(e);
+                    break;
+                    
+                case SDL_JOYBUTTONUP: 
+                    // TODO: add state modification
+                    if (event.jbutton.state == SDL_PRESSED)
+                        e = Event(EventType.JoystickButtonDown);
+                    else if (event.jbutton.state == SDL_RELEASED)
+                        e = Event(EventType.JoystickButtonUp);
+                    e.joystickButton = event.jbutton.button;
+                    addEvent(e);
+                    break;
 
                 case SDL_CONTROLLERBUTTONDOWN:
                     // TODO: add state modification
@@ -288,7 +335,6 @@ class EventManager
                     addEvent(e);
                     break;
 
-                //case SDL_WINDOWEVENT_RESIZED:
                 case SDL_WINDOWEVENT:
                     if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
                     {
