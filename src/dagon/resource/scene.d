@@ -389,6 +389,10 @@ class BaseScene3D: Scene
 
     double timer = 0.0;
     double fixedTimeStep = 1.0 / 60.0;
+    
+    float minHDRBrightness = 0.001f;
+    float maxHDRBrightness = 1000.0f;
+    float exposure = 0.5f;
 
     this(SceneManager smngr)
     {
@@ -617,7 +621,7 @@ class BaseScene3D: Scene
         float lum = sceneFramebuffer.averageLuminance();
         if (!isNaN(lum))
         {
-            float newExposure = 0.25f / clamp(lum, 0.001, 100000.0);
+            float newExposure = exposure * (1.0f / clamp(lum, minHDRBrightness, maxHDRBrightness));
             
             float exposureDelta = newExposure - hdr.exposure;
             hdr.exposure += exposureDelta * 4.0f * eventManager.deltaTime;

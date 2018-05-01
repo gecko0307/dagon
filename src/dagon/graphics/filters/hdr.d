@@ -69,10 +69,12 @@ class PostFilterHDR: PostFilter
         uniform sampler2D fbDepth;
         uniform sampler2D fbVelocity;
         uniform sampler2D colorTable;
+        uniform sampler2D vignette;
         uniform vec2 viewSize;
         uniform float exposure;
         uniform int tonemapFunction;
         uniform bool useLUT;
+        uniform bool useVignette;
         
         in vec2 texCoord;
         
@@ -99,35 +101,25 @@ class PostFilterHDR: PostFilter
         
         vec3 lookupColor(sampler2D lookupTable, vec3 textureColor)
         {
-            #ifndef LUT_NO_CLAMP
-                textureColor = clamp(textureColor, 0.0, 1.0);
-            #endif
+            textureColor = clamp(textureColor, 0.0, 1.0);
 
-            mediump float blueColor = textureColor.b * 63.0;
+            float blueColor = textureColor.b * 63.0;
 
-            mediump vec2 quad1;
+            vec2 quad1;
             quad1.y = floor(floor(blueColor) / 8.0);
             quad1.x = floor(blueColor) - (quad1.y * 8.0);
 
-            mediump vec2 quad2;
+            vec2 quad2;
             quad2.y = floor(ceil(blueColor) / 8.0);
             quad2.x = ceil(blueColor) - (quad2.y * 8.0);
 
-            highp vec2 texPos1;
+            vec2 texPos1;
             texPos1.x = (quad1.x * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * textureColor.r);
             texPos1.y = (quad1.y * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * textureColor.g);
 
-            #ifdef LUT_FLIP_Y
-                texPos1.y = 1.0-texPos1.y;
-            #endif
-
-            highp vec2 texPos2;
+            vec2 texPos2;
             texPos2.x = (quad2.x * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * textureColor.r);
             texPos2.y = (quad2.y * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * textureColor.g);
-
-            #ifdef LUT_FLIP_Y
-                texPos2.y = 1.0-texPos2.y;
-            #endif
 
             vec3 newColor1 = texture(lookupTable, texPos1).rgb;
             vec3 newColor2 = texture(lookupTable, texPos2).rgb;
@@ -161,6 +153,9 @@ class PostFilterHDR: PostFilter
                 res = tonemapHable(res, exposure);
             else
                 res = tonemapReinhard(res, exposure);
+                
+            if (useVignette)
+                res = mix(res, res * texture(vignette, vec2(texCoord.x, 1.0 - texCoord.y)).rgb, 0.8);
             
             if (useLUT)
                 res = lookupColor(colorTable, res);
@@ -183,11 +178,15 @@ class PostFilterHDR: PostFilter
     GLint exposureLoc;
     GLint tonemapFunctionLoc;
     GLint useLUTLoc;
+    GLint vignetteLoc;
+    GLint useVignetteLoc;
     
     float exposure = 1.0f;
     TonemapFunction tonemapFunction = TonemapFunction.Reinhard;
     
     Texture colorTable;
+    
+    Texture vignette;
 
     this(Framebuffer inputBuffer, Framebuffer outputBuffer, Owner o)
     {
@@ -197,6 +196,8 @@ class PostFilterHDR: PostFilter
         exposureLoc = glGetUniformLocation(shaderProgram, "exposure");
         tonemapFunctionLoc = glGetUniformLocation(shaderProgram, "tonemapFunction");
         useLUTLoc = glGetUniformLocation(shaderProgram, "useLUT");
+        vignetteLoc = glGetUniformLocation(shaderProgram, "vignette");
+        useVignetteLoc = glGetUniformLocation(shaderProgram, "useVignette");
     }
     
     override void bind(RenderingContext* rc)
@@ -206,14 +207,21 @@ class PostFilterHDR: PostFilter
         glActiveTexture(GL_TEXTURE3);
         if (colorTable)
             colorTable.bind();
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glActiveTexture(GL_TEXTURE0);
+        
+        glActiveTexture(GL_TEXTURE4);
+        if (vignette)
+            vignette.bind();
         glActiveTexture(GL_TEXTURE0);
         
         glUniform1i(colorTableLoc, 3);
         glUniform1f(exposureLoc, exposure);
         glUniform1i(tonemapFunctionLoc, tonemapFunction);
         glUniform1i(useLUTLoc, (colorTable !is null));
+        glUniform1i(vignetteLoc, 4);
+        glUniform1i(useVignetteLoc, (vignette !is null));
     }
     
     override void unbind(RenderingContext* rc)
@@ -221,6 +229,11 @@ class PostFilterHDR: PostFilter
         glActiveTexture(GL_TEXTURE3);
         if (colorTable)
             colorTable.unbind();
+        glActiveTexture(GL_TEXTURE0);
+        
+        glActiveTexture(GL_TEXTURE4);
+        if (vignette)
+            vignette.unbind();
         glActiveTexture(GL_TEXTURE0);
     }
 }
