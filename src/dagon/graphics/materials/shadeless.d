@@ -75,6 +75,7 @@ class ShadelessBackend: GLSLMaterialBackend
         
         uniform sampler2D diffuseTexture;
         uniform float alpha;
+        uniform float energy;
         
         in vec2 texCoord;
         
@@ -83,7 +84,8 @@ class ShadelessBackend: GLSLMaterialBackend
 
         void main()
         {
-            frag_color = texture(diffuseTexture, texCoord);
+            vec4 col = texture(diffuseTexture, texCoord);
+            frag_color = vec4(col.rgb * energy, col.a * alpha);
             frag_velocity = vec4(0.0, 0.0, 0.0, 1.0);
         }
     };
@@ -96,6 +98,7 @@ class ShadelessBackend: GLSLMaterialBackend
     
     GLint diffuseTextureLoc;
     GLint alphaLoc;
+    GLint energyLoc;
     
     this(Owner o)
     {
@@ -106,11 +109,19 @@ class ShadelessBackend: GLSLMaterialBackend
             
         diffuseTextureLoc = glGetUniformLocation(shaderProgram, "diffuseTexture");
         alphaLoc = glGetUniformLocation(shaderProgram, "alpha");
+        energyLoc = glGetUniformLocation(shaderProgram, "energy");
     }
     
     override void bind(GenericMaterial mat, RenderingContext* rc)
     {
         auto idiffuse = "diffuse" in mat.inputs;
+        
+        auto ienergy = "energy" in mat.inputs;
+        float energy = 1.0f;
+        if (ienergy)
+        {
+            energy = ienergy.asFloat;
+        }
 
         glUseProgram(shaderProgram);
         
@@ -129,6 +140,7 @@ class ShadelessBackend: GLSLMaterialBackend
         idiffuse.texture.bind();
         glUniform1i(diffuseTextureLoc, 0);
         glUniform1f(alphaLoc, alpha);
+        glUniform1f(energyLoc, energy);
     }
     
     override void unbind(GenericMaterial mat, RenderingContext* rc)

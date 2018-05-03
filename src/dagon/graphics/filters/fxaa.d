@@ -67,7 +67,7 @@ class PostFilterFXAA: PostFilter
 
         const float FXAA_REDUCE_MIN = 1.0 / 128.0;
         const float FXAA_REDUCE_MUL = 1.0 / 8.0;
-        const float FXAA_SPAN_MAX = 8.0;
+        const float FXAA_SPAN_MAX = 4.0;
 
         vec4 fxaa(sampler2D tex, vec2 fragCoord, vec2 resolution,
                    vec2 v_rgbNW, vec2 v_rgbNE, 

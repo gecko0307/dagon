@@ -186,7 +186,7 @@ class CascadedShadowMap: Owner
     ShadowBackend sb;
     Material sm;
     
-    float projSize1 = 10.0f;
+    float projSize1 = 15.0f;
     float projSize2 = 50.0f;
     float projSize3 = 400.0f;
     

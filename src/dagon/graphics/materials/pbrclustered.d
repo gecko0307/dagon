@@ -116,7 +116,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
     q{
         #version 330 core
         
-        #define PI 3.14159265
+        #define PI 3.14159265359
         const float PI2 = PI * 2.0;
         
         uniform mat4 viewMatrix;
@@ -239,7 +239,12 @@ class PBRClusteredBackend: GLSLMaterialBackend
             return s;
         }
         
-        float pcf(in sampler2DArrayShadow depths, in float layer, in vec4 coord, in float radius, in float yshift)
+        float shadow(in sampler2DArrayShadow depths, in float layer, in vec4 coord, in float yshift)
+        {
+            return shadowLookup(depths, layer, coord, vec2(0.0, yshift));
+        }
+        
+        float shadowPCF(in sampler2DArrayShadow depths, in float layer, in vec4 coord, in float radius, in float yshift)
         {
             float s = 0.0;
             float x, y;
@@ -279,6 +284,49 @@ class PBRClusteredBackend: GLSLMaterialBackend
             spec = pow(max(NH, 0.0), shininess);
             vec3 directionToLight = normalize(positionToLightSource);
             diff = clamp(dot(N, directionToLight), 0.0, 1.0);
+        }
+        
+        vec3 fresnel(float cosTheta, vec3 f0)
+        {
+            return f0 + (1.0 - f0) * pow(1.0 - cosTheta, 5.0);
+        }
+
+        vec3 fresnelRoughness(float cosTheta, vec3 f0, float roughness)
+        {
+            return f0 + (max(vec3(1.0 - roughness), f0) - f0) * pow(1.0 - cosTheta, 5.0);
+        }
+
+        float distributionGGX(vec3 N, vec3 H, float roughness)
+        {
+            float a      = roughness*roughness;
+            float a2     = a*a;
+            float NdotH  = max(dot(N, H), 0.0);
+            float NdotH2 = NdotH*NdotH;
+            float num   = a2;
+            float denom = max(NdotH2 * (a2 - 1.0) + 1.0, 0.001);
+            denom = PI * denom * denom;
+            return num / denom;
+        }
+
+        float geometrySchlickGGX(float NdotV, float roughness)
+        {
+            float r = (roughness + 1.0);
+            float k = (r*r) / 8.0;
+
+            float num   = NdotV;
+            float denom = NdotV * (1.0 - k) + k;
+            
+            return num / denom;
+        }
+
+        float geometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+        {
+            float NdotV = max(dot(N, V), 0.0);
+            float NdotL = max(dot(N, L), 0.0);
+            float ggx2  = geometrySchlickGGX(NdotV, roughness);
+            float ggx1  = geometrySchlickGGX(NdotL, roughness);
+            
+            return ggx1 * ggx2;
         }
         
         // TODO: pass this as parameter
@@ -325,7 +373,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
             vec3 tN = normalize(texture(normalTexture, shiftedTexCoord).rgb * 2.0 - 1.0);
             tN.y = -tN.y;
             N = normalize(TBN * tN);
-
+            
             // Roughness to blinn-phong specular power
             float gloss = max(1.0 - roughness, 0.0001);
             float shininess = gloss * 128.0;
@@ -334,12 +382,12 @@ class PBRClusteredBackend: GLSLMaterialBackend
             float s1, s2, s3;
             if (useShadows)
             {
-                s1 = pcf(shadowTextureArray, 0.0, shadowCoord1, 2.0, 0.0);
-                s2 = pcf(shadowTextureArray, 1.0, shadowCoord2, 1.0, 0.0);
-                s3 = pcf(shadowTextureArray, 2.0, shadowCoord3, 1.0, 0.0);
-                float w1 = weight(shadowCoord1, 8.0);
-                float w2 = weight(shadowCoord2, 8.0);
-                float w3 = weight(shadowCoord3, 8.0);
+                s1 = shadowPCF(shadowTextureArray, 0.0, shadowCoord1, 2.0, 0.0);
+                s2 = shadowPCF(shadowTextureArray, 1.0, shadowCoord2, 1.0, 0.0);
+                s3 = shadow(shadowTextureArray, 2.0, shadowCoord3, 0.0);
+                float w1 = weight(shadowCoord1, 2.0);
+                float w2 = weight(shadowCoord2, 2.0);
+                float w3 = weight(shadowCoord3, 2.0);
                 s3 = mix(1.0, s3, w3); 
                 s2 = mix(s3, s2, w2);
                 s1 = mix(s2, s1, w1); // s1 stores resulting shadow value
@@ -355,14 +403,50 @@ class PBRClusteredBackend: GLSLMaterialBackend
             vec3 worldR = reflect(normalize(worldView), worldN);
             vec3 worldSun = sunDirection * mat3(viewMatrix);
             
+            // Diffuse texture
+            vec4 diffuseColor = texture(diffuseTexture, shiftedTexCoord);
+            vec3 albedo = toLinear(diffuseColor.rgb);
+            
+            vec3 emissionColor = texture(emissionTexture, shiftedTexCoord).rgb;
+            
+            vec3 f0 = vec3(0.04); 
+            f0 = mix(f0, albedo, metallic);
+            
+            vec3 Lo = vec3(0.0);
+            
+            // Sun light
+            float shadowBrightness = 0.1; // TODO: make uniform
+            float shadow = 1.0;
+            // if (sunEnabled)
+            {
+                vec3 L = sunDirection;
+                float NL = max(dot(N, L), 0.0); 
+                vec3 H = normalize(E + L); 
+                
+                float NDF = distributionGGX(N, H, roughness);        
+                float G = geometrySmith(N, E, L, roughness);
+                vec3 F = fresnel(max(dot(H, E), 0.0), f0);
+                
+                vec3 kS = F;
+                vec3 kD = vec3(1.0) - kS;
+                kD *= 1.0 - metallic;
+
+                vec3 numerator = NDF * G * F;
+                float denominator = 4.0 * max(dot(N, E), 0.0) * NL;
+                vec3 specular = numerator / max(denominator, 0.001);
+
+                shadow = max(NL * s1, shadowBrightness);
+                vec3 radiance = sunColor * sunEnergy * NL * s1;
+                Lo += (kD * albedo / PI + specular) * radiance;
+            }
+            
             // Fetch light cluster slice
             vec2 clusterCoord = (worldPosition.xz - cameraPosition.xz) * invLightDomainSize + 0.5;
             uint clusterIndex = texture(lightClusterTexture, clusterCoord).r;
             uint offset = (clusterIndex << 16) >> 16;
             uint size = (clusterIndex >> 16);
             
-            vec3 pointDiffSum = vec3(0.0, 0.0, 0.0);
-            vec3 pointSpecSum = vec3(0.0, 0.0, 0.0);
+            // Point/area lights
             for (uint i = 0u; i < size; i++)
             {
                 // Read light data
@@ -381,30 +465,36 @@ class PBRClusteredBackend: GLSLMaterialBackend
                 vec3 directionToLight = normalize(positionToLightSource);                
                 float attenuation = pow(clamp(1.0 - (distanceToLight / lightRadius), 0.0, 1.0), 2.0) * lightEnergy;
                 
-                float diff = 0.0;
-                float spec = 0.0;
+                vec3 Lpt = normalize(lightPosEye - eyePosition);
 
-                sphericalAreaLightContrib(eyePosition, N, E, R, lightPosEye, lightAreaRadius, shininess, diff, spec);
+                vec3 centerToRay = dot(positionToLightSource, R) * R - positionToLightSource;
+                vec3 closestPoint = positionToLightSource + centerToRay * clamp(lightAreaRadius / length(centerToRay), 0.0, 1.0);
+                vec3 L = normalize(closestPoint);  
 
-                pointDiffSum += lightColor * diff * attenuation;
-                pointSpecSum += lightColor * spec * attenuation;
+                float NL = max(dot(N, Lpt), 0.0); 
+                vec3 H = normalize(E + L);
+                
+                float NDF = distributionGGX(N, H, roughness);        
+                float G = geometrySmith(N, E, L, roughness);      
+                vec3 F = fresnel(max(dot(H, E), 0.0), f0);
+                
+                vec3 kS = F;
+                vec3 kD = vec3(1.0) - kS;
+                kD *= 1.0 - metallic;
+
+                vec3 numerator = NDF * G * F;
+                float denominator = 4.0 * max(dot(N, E), 0.0) * NL;
+                vec3 specular = numerator / max(denominator, 0.001);
+                
+                vec3 radiance = lightColor * attenuation;
+                Lo += (kD * albedo / PI + specular) * radiance * NL;
             }
             
             // Fog
             float fogDistance = gl_FragCoord.z / gl_FragCoord.w;
             float fogFactor = clamp((fogEnd - fogDistance) / (fogEnd - fogStart), 0.0, 1.0);
             
-            // Diffuse texture
-            vec4 diffuseColor = texture(diffuseTexture, shiftedTexCoord);
-            vec3 albedo = toLinear(diffuseColor.rgb);
-            
-            vec3 emissionColor = texture(emissionTexture, shiftedTexCoord).rgb;
-
-            vec3 envDiff;
-            vec3 envSpec;
-            
-            const float shadowBrightness = 0.01; // TODO: make uniform
-            
+            // Environment light
             if (useEnvironmentMap)
             {
                 ivec2 envMapSize = textureSize(environmentMap, 0);
@@ -412,51 +502,27 @@ class PBRClusteredBackend: GLSLMaterialBackend
                 float diffLod = (maxLod - 1.0);
                 float specLod = (maxLod - 1.0) * roughness;
                 
-                envDiff = textureLod(environmentMap, envMapEquirect(worldN), diffLod).rgb;
-                envSpec = textureLod(environmentMap, envMapEquirect(worldR), specLod).rgb;
+                vec3 F = fresnelRoughness(max(dot(N, E), 0.0), f0, roughness);
+                vec3 kS = F;
+                vec3 kD = 1.0 - kS;
+                kD *= 1.0 - metallic;
+  
+                vec3 irradiance = textureLod(environmentMap, envMapEquirect(worldN), diffLod).rgb;
+                vec3 diffuse = irradiance * albedo;
+                vec3 specular = F * textureLod(environmentMap, envMapEquirect(worldR), specLod).rgb;
+  
+                vec3 ambient = (kD * diffuse + specular) * shadow;
                 
-                float sunDiff = max(0.0, dot(sunDirection, N));
-                float NH = clamp(dot(N, normalize(sunDirection + E)), 0.0, 1.0);
-                float sunSpec = pow(max(NH, 0.0), shininess);
-
-                //envDiff += sunColor * s1 * sunDiff * (sunEnergy * 0.01);
-                //envSpec += sunColor * s1 * sunSpec * (sunEnergy * gloss);
-                
-                envDiff *= max(s1 * sunDiff, shadowBrightness);
-                envSpec *= max(s1 * sunDiff, shadowBrightness);
-            }
-            else
-            {                
-                vec3 env = environmentColor.rgb;
-                
-                float sunDiff = max(0.0, dot(sunDirection, N));
-                float NH = clamp(dot(N, normalize(sunDirection + E)), 0.0, 1.0);
-                float sunSpec = pow(max(NH, 0.0), shininess);
-
-                envDiff = env + sunColor * (sunEnergy * 0.01) * sunDiff * s1;
-                envSpec = env + sunColor * (sunEnergy * gloss) * sunSpec * s1;
+                Lo += ambient;
             }
             
-            vec3 diffLight = envDiff + pointDiffSum;
-            vec3 specLight = envSpec + pointSpecSum;
-
-            vec3 diffColor = albedo - albedo * metallic;
-            vec3 specColor = mix(vec3(1.0), albedo, metallic);
-
-            float fresnel = pow(1.0 - max(0.0, dot(N, E)), 5.0); 
+            vec3 objColor = Lo + emissionColor;
             
-            vec3 roughDielectric = mix(diffColor * diffLight, specLight * gloss, 0.04);
-            vec3 shinyDielectric = mix(roughDielectric, specLight, gloss);
-            vec3 dielectric = mix(roughDielectric, shinyDielectric, fresnel);
-            vec3 metal = mix(specColor * specLight, specLight, fresnel);
-            
-            vec3 objColor = emissionColor + mix(dielectric, metal, metallic);
-                
             vec3 fragColor = mix(fogColor.rgb, objColor, fogFactor);
-            float alpha = mix(diffuseColor.a, 1.0f, fresnel);
+            float fresnelAlpha = pow(1.0 - max(0.0, dot(N, E)), 5.0); 
+            float alpha = mix(diffuseColor.a, 1.0f, fresnelAlpha);
             
             frag_color = vec4(objColor, alpha);
-            
             frag_velocity = vec4(screenVelocity, 0.0, blurMask);
         }
     };
