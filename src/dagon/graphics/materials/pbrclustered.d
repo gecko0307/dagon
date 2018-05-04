@@ -331,7 +331,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
         const float skyEnergyMidnight = 0.001;
         const float groundEnergyMidday = 0.001;
         const float groundEnergyNight = 0.0;
-        
+
         vec3 sky(vec3 wN, vec3 wSun, float roughness)
         {            
             float p1 = clamp(roughness, 0.5, 1.0);
@@ -372,6 +372,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
             vec3 tE = normalize(E * TBN);
             
             vec3 cameraPosition = invViewMatrix[3].xyz;
+            float linearDepth = -eyePosition.z;
             
             vec2 posScreen = (blurPosition.xy / blurPosition.w) * 0.5 + 0.5;
             vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;
@@ -504,8 +505,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
             }
             
             // Fog
-            float fogDistance = gl_FragCoord.z / gl_FragCoord.w;
-            float fogFactor = clamp((fogEnd - fogDistance) / (fogEnd - fogStart), 0.0, 1.0);
+            float fogFactor = clamp((fogEnd - linearDepth) / (fogEnd - fogStart), 0.0, 1.0);
             
             // Environment light
             vec3 ambientDiffuse;
@@ -524,10 +524,10 @@ class PBRClusteredBackend: GLSLMaterialBackend
             {
                 ambientDiffuse = sky(worldN, worldSun, roughness);
                 ambientSpecular = sky(worldR, worldSun, roughness);
-                
-                float dayOrNight = clamp(dot(worldSun, vec3(0, -1, 0)), 0.0, 1.0);
-                shadow = mix(shadow, 1.0, dayOrNight);
             }
+            
+            float dayOrNight = float(worldSun.y < 0.0);
+            shadow = mix(shadow, 1.0, dayOrNight);
             
             {
                 vec3 F = fresnelRoughness(max(dot(N, E), 0.0), f0, roughness);
@@ -548,7 +548,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
             float fresnelAlpha = pow(1.0 - max(0.0, dot(N, E)), 5.0); 
             float alpha = mix(diffuseColor.a, 1.0f, fresnelAlpha);
             
-            frag_color = vec4(objColor, alpha);
+            frag_color = vec4(fragColor, alpha);
             frag_velocity = vec4(screenVelocity, 0.0, blurMask);
         }
     };

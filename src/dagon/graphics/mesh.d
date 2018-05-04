@@ -46,6 +46,7 @@ class Mesh: Owner, Drawable
     bool dataReady = false;
     bool canRender = false;
     
+    // TODO: make these DynamicArrays
     Vector3f[] vertices;
     Vector3f[] normals;
     Vector2f[] texcoords;

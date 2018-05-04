@@ -169,4 +169,245 @@ class ShapeQuad: Owner, Drawable
     }
 }
 
+enum PI2 = PI * 2.0f;
+enum HALF_PI = PI * 0.5f;
+
+Vector2f envMapEquirect(Vector3f dir)
+{
+    //float phi = acos(dir.y);
+    //float theta = atan2(dir.x, dir.z) + PI;
+    //return Vector2f(theta / PI2, phi / PI);
+    Vector2f uv;
+    uv.y = acos(dir.y) / PI;
+    uv.x = (PI + atan2(dir.x, dir.z)) / PI2;
+    return uv;
+}
+
+class ShapeSphere: Mesh
+{
+    DynamicArray!Vector3f daVertices;
+    DynamicArray!Vector3f daNormals;
+    DynamicArray!Vector2f daTexcoords;
+    DynamicArray!(uint[3]) daIndices;
+    
+    this(float radius, int slices, int stacks, bool invNormals, Owner o)
+    {
+        super(o);
+        
+        float X1, Y1, X2, Y2, Z1, Z2;
+        float inc1, inc2, inc3, inc4, inc5, radius1, radius2;
+        uint[3] tri;
+        uint i = 0;
+        
+        float cuts = stacks;
+        float invCuts = 1.0f / cuts;
+        float heightStep = 2.0f * invCuts;
+        
+        float invSlices = 1.0f / slices;
+        float angleStep = (2.0f * PI) * invSlices;
+
+        for(int h = 0; h < stacks; h++)
+        {
+            float h1Norm = cast(float)h * invCuts * 2.0f - 1.0f;
+            float h2Norm = cast(float)(h+1) * invCuts * 2.0f - 1.0f;
+            float y1 = sin(HALF_PI * h1Norm);
+            float y2 = sin(HALF_PI * h2Norm);
+            
+            float circleRadius1 = cos(HALF_PI * y1);
+            float circleRadius2 = cos(HALF_PI * y2);
+            
+            for(int a = 0; a < slices; a++)
+            {
+                float x1a = sin(angleStep * a) * circleRadius1;
+                float z1a = cos(angleStep * a) * circleRadius1;
+                float x2a = sin(angleStep * (a + 1)) * circleRadius1;
+                float z2a = cos(angleStep * (a + 1)) * circleRadius1;
+                
+                float x1b = sin(angleStep * a) * circleRadius2;
+                float z1b = cos(angleStep * a) * circleRadius2;
+                float x2b = sin(angleStep * (a + 1)) * circleRadius2;
+                float z2b = cos(angleStep * (a + 1)) * circleRadius2;
+                
+                Vector3f v1 = Vector3f(x1a, y1, z1a);
+                Vector3f v2 = Vector3f(x2a, y1, z2a);
+                Vector3f v3 = Vector3f(x1b, y2, z1b);
+                Vector3f v4 = Vector3f(x2b, y2, z2b);
+                                
+                Vector3f n1 = v1.normalized;
+                Vector3f n2 = v2.normalized;
+                Vector3f n3 = v3.normalized;
+                Vector3f n4 = v4.normalized;
+
+                daVertices.append(n1 * radius);
+                daVertices.append(n2 * radius);
+                daVertices.append(n3 * radius);
+                
+                daVertices.append(n3 * radius);
+                daVertices.append(n2 * radius);
+                daVertices.append(n4 * radius);
+                
+                float sign = invNormals? -1.0f : 1.0f;
+                
+                daNormals.append(n1 * sign);
+                daNormals.append(n2 * sign);
+                daNormals.append(n3 * sign);
+                
+                daNormals.append(n3 * sign);
+                daNormals.append(n2 * sign);
+                daNormals.append(n4 * sign);
+                
+                auto uv1 = Vector2f(0, 1);
+                auto uv2 = Vector2f(1, 1);
+                auto uv3 = Vector2f(0, 0);
+                auto uv4 = Vector2f(1, 0);
+                
+                daTexcoords.append(uv1); 
+                daTexcoords.append(uv2); 
+                daTexcoords.append(uv3);
+                
+                daTexcoords.append(uv3); 
+                daTexcoords.append(uv2); 
+                daTexcoords.append(uv4);
+                
+                if (invNormals)
+                {
+                    tri[0] = i+2;
+                    tri[1] = i+1;
+                    tri[2] = i;
+                    daIndices.append(tri);
+                    
+                    tri[0] = i+5;
+                    tri[1] = i+4;
+                    tri[2] = i+3;
+                    daIndices.append(tri);
+                }
+                else
+                {
+                    tri[0] = i;
+                    tri[1] = i+1;
+                    tri[2] = i+2;
+                    daIndices.append(tri);
+                    
+                    tri[0] = i+3;
+                    tri[1] = i+4;
+                    tri[2] = i+5;
+                    daIndices.append(tri);
+                }
+                
+                i += 6;
+            }
+        }
+        
+        /*
+        for(int w = 0; w < resolution; w++)
+        {
+            
+        
+            for(int h = (-resolution/2); h < (resolution/2); h++)
+            {
+                inc1 = (w/cast(float)resolution)*2*PI;
+                inc2 = ((w+1)/cast(float)resolution)*2*PI;
+                 
+                inc3 = (h/cast(float)resolution)*PI;
+                inc4 = ((h+1)/cast(float)resolution)*PI;
+
+                X1 = sin(inc1);
+                Y1 = cos(inc1);
+                X2 = sin(inc2);
+                Y2 = cos(inc2);
+
+                radius1 = radius*cos(inc3);
+                radius2 = radius*cos(inc4);
+
+                Z1 = radius*sin(inc3); 
+                Z2 = radius*sin(inc4);
+                
+                daVertices.append(Vector3f(radius1*X1,Z1,radius1*Y1));
+                daVertices.append(Vector3f(radius1*X2,Z1,radius1*Y2));
+                daVertices.append(Vector3f(radius2*X2,Z2,radius2*Y2));
+
+                daVertices.append(Vector3f(radius1*X1,Z1,radius1*Y1));
+                daVertices.append(Vector3f(radius2*X2,Z2,radius2*Y2));
+                daVertices.append(Vector3f(radius2*X1,Z2,radius2*Y1));
+                
+                auto uv1 = Vector2f(0, 0);
+                auto uv2 = Vector2f(0, 1);
+                auto uv3 = Vector2f(1, 1);
+                auto uv4 = Vector2f(1, 0);
+
+                daTexcoords.append(uv1); 
+                daTexcoords.append(uv2); 
+                daTexcoords.append(uv3);
+
+                daTexcoords.append(uv1); 
+                daTexcoords.append(uv3); 
+                daTexcoords.append(uv4);
+                
+                float sign = invNormals? -1.0f : 1.0f;
+                
+                auto n1 = Vector3f(X1,Z1,Y1).normalized;
+                auto n2 = Vector3f(X2,Z1,Y2).normalized;
+                auto n3 = Vector3f(X2,Z2,Y2).normalized;
+                auto n4 = Vector3f(X1,Z2,Y1).normalized;
+                
+                daNormals.append(n1 * sign);
+                daNormals.append(n2 * sign);
+                daNormals.append(n3 * sign);
+                
+                daNormals.append(n1 * sign);
+                daNormals.append(n3 * sign);
+                daNormals.append(n4 * sign);
+                
+                if (invNormals)
+                {
+                    tri[0] = i+2;
+                    tri[1] = i+1;
+                    tri[2] = i;
+                    daIndices.append(tri);
+                    
+                    tri[0] = i+5;
+                    tri[1] = i+4;
+                    tri[2] = i+3;
+                    daIndices.append(tri);
+                }
+                else
+                {
+                    tri[0] = i;
+                    tri[1] = i+1;
+                    tri[2] = i+2;
+                    daIndices.append(tri);
+                    
+                    tri[0] = i+3;
+                    tri[1] = i+4;
+                    tri[2] = i+5;
+                    daIndices.append(tri);
+                }
+                
+                i += 6;
+            }
+        }
+        */
+        
+        vertices = New!(Vector3f[])(daVertices.length);
+        vertices[] = daVertices.data[];
+        
+        normals = New!(Vector3f[])(daNormals.length);
+        normals[] = daNormals.data[];
+        
+        texcoords = New!(Vector2f[])(daTexcoords.length);
+        texcoords[] = daTexcoords.data[];
+        
+        indices = New!(uint[3][])(daIndices.length);
+        indices[] = daIndices.data[];
+        
+        daVertices.free();
+        daNormals.free();
+        daTexcoords.free();
+        daIndices.free();
+        
+        dataReady = true;
+        prepareVAO();
+    }
+}
+
 // TODO: other shapes from original Dagon

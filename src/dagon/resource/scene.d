@@ -57,6 +57,7 @@ import dagon.graphics.clustered;
 import dagon.graphics.shadow;
 import dagon.graphics.materials.generic;
 import dagon.graphics.materials.pbrclustered;
+import dagon.graphics.materials.sky;
 import dagon.graphics.materials.hud;
 import dagon.graphics.framebuffer;
 import dagon.graphics.postproc;
@@ -369,6 +370,8 @@ class BaseScene3D: Scene
 
     PBRClusteredBackend defaultMaterialBackend;
     GenericMaterial defaultMaterial3D;
+    
+    SkyBackend skyMaterialBackend;
 
     RenderingContext rc3d; 
     RenderingContext rc2d; 
@@ -443,6 +446,20 @@ class BaseScene3D: Scene
         return e;
     }
     
+    Entity createSky()
+    {
+        auto matSky = createMaterial(skyMaterialBackend);
+        matSky.depthWrite = false;
+    
+        auto eSky = createEntity3D();
+        eSky.attach = Attach.Camera;
+        eSky.castShadow = false;
+        eSky.material = matSky;
+        eSky.drawable = New!ShapeSphere(1.0f, 16, 8, true, assetManager); //aSphere.mesh;
+        eSky.scaling = Vector3f(100.0f, 100.0f, 100.0f);
+        return eSky;
+    }
+    
     GenericMaterial createMaterial(GenericMaterialBackend backend = null)
     {
         if (backend is null)
@@ -461,6 +478,8 @@ class BaseScene3D: Scene
         
         lightManager = New!ClusteredLightManager(200.0f, 100, assetManager);
         defaultMaterialBackend = New!PBRClusteredBackend(lightManager, assetManager);
+        
+        skyMaterialBackend = New!SkyBackend(assetManager);
         
         shadowMap = New!CascadedShadowMap(1024, this, 10, 30, 200, -100, 100, assetManager);
         defaultMaterialBackend.shadowMap = shadowMap;

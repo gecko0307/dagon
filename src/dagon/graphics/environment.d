@@ -58,8 +58,9 @@ class Environment: Owner
     Texture environmentMap;    
 
     Color4f fogColor = Color4f(0.1f, 0.1f, 0.1f, 1.0f);
-    float fogStart = 100.0f;
-    float fogEnd = 300.0f;
+    float fogStart = 0.0f;
+    float fogEnd = 10000.0f;    
+    float fogEnergy = 0.1f;
     
     Color4f sunZenithColor = Color4f(1.0, 0.9, 0.8, 1.0);
     Color4f sunHorizonColor = Color4f(1.0, 0.2, 0.0, 1.0);
@@ -101,10 +102,9 @@ class Environment: Owner
             ambientConstant = (skyZenithColor + skyHorizonColor + Color4f(0.06f, 0.05f, 0.05f)) * 0.3f * lerp(lerp(0.01f, 0.001f, s2), 2.0f, s1);
             
             if (atmosphericFog)
-                fogColor = lerpColorsBySunAngle(skyZenithColor, skyHorizonColor, Color4f(0, 0, 0, 0));
+                fogColor = lerpColorsBySunAngle(skyZenithColor, skyHorizonColor, Color4f(0, 0, 0, 0)) * fogEnergy;
             else
                 fogColor = backgroundColor;
-            
         }
         else
         {

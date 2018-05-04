@@ -157,6 +157,8 @@ class SkyBackend: GLSLMaterialBackend
     GLint environmentMapLoc;
     GLint useEnvironmentMapLoc;
     
+    bool useEnvironmentMap = true;
+    
     this(Owner o)
     {
         super(o);
@@ -198,7 +200,7 @@ class SkyBackend: GLSLMaterialBackend
         if (rc.environment)
         {
             if (rc.environment.environmentMap)
-                useEnvmap = true;
+                useEnvmap = useEnvironmentMap;
         }
         
         if (useEnvmap)
