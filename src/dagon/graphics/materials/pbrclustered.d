@@ -265,11 +265,6 @@ class PBRClusteredBackend: GLSLMaterialBackend
             return min(proj.x, proj.y);
         }
         
-        vec3 linePlaneIntersect(in vec3 lp, in vec3 lv, in vec3 pc, in vec3 pn)
-        {
-            return lp+lv*(dot(pn,pc-lp)/dot(pn,lv));
-        }
-        
         void sphericalAreaLightContrib(
             in vec3 P, in vec3 N, in vec3 E, in vec3 R,
             in vec3 lPos, in float lRadius,
@@ -328,11 +323,33 @@ class PBRClusteredBackend: GLSLMaterialBackend
             
             return ggx1 * ggx2;
         }
-        
-        // TODO: pass this as parameter
+
+        // TODO: make uniform
         const vec3 groundColor = vec3(0.06, 0.05, 0.05);
-        const float skyEnergyMidday = 5000.0;
-        const float skyEnergyNight = 0.25;
+        const float skyEnergyMidday = 1.0;
+        const float skyEnergyTwilight = 0.001;
+        const float skyEnergyMidnight = 0.001;
+        const float groundEnergyMidday = 0.001;
+        const float groundEnergyNight = 0.0;
+        
+        vec3 sky(vec3 wN, vec3 wSun, float roughness)
+        {            
+            float p1 = clamp(roughness, 0.5, 1.0);
+            float p2 = clamp(roughness, 0.4, 1.0);
+        
+            float horizonOrZenith = pow(clamp(dot(wN, vec3(0, 1, 0)), 0.0, 1.0), p1);
+            float groundOrSky = pow(clamp(dot(wN, vec3(0, -1, 0)), 0.0, 1.0), p2);
+                
+            float sunAngle1 = clamp(dot(wSun, vec3(0, 1, 0)), 0.0, 1.0);
+            float sunAngle2 = clamp(dot(wSun, vec3(0, -1, 0)), 0.0, 1.0);
+                
+            float skyEnergy = mix(mix(skyEnergyTwilight, skyEnergyMidnight, sunAngle2), skyEnergyMidday, sunAngle1);
+            float groundEnergy = mix(groundEnergyNight, groundEnergyMidday, sunAngle1);
+
+            vec3 env = mix(mix(skyHorizonColor * skyEnergy, groundColor * groundEnergy, groundOrSky), skyZenithColor * skyEnergy, horizonOrZenith);
+            
+            return env;
+        }
         
         vec2 envMapEquirect(vec3 dir)
         {
@@ -374,20 +391,16 @@ class PBRClusteredBackend: GLSLMaterialBackend
             tN.y = -tN.y;
             N = normalize(TBN * tN);
             
-            // Roughness to blinn-phong specular power
-            float gloss = max(1.0 - roughness, 0.0001);
-            float shininess = gloss * 128.0;
-            
             // Calculate shadow from 3 cascades
             float s1, s2, s3;
             if (useShadows)
             {
                 s1 = shadowPCF(shadowTextureArray, 0.0, shadowCoord1, 2.0, 0.0);
                 s2 = shadowPCF(shadowTextureArray, 1.0, shadowCoord2, 1.0, 0.0);
-                s3 = shadow(shadowTextureArray, 2.0, shadowCoord3, 0.0);
-                float w1 = weight(shadowCoord1, 2.0);
-                float w2 = weight(shadowCoord2, 2.0);
-                float w3 = weight(shadowCoord3, 2.0);
+                s3 =    shadow(shadowTextureArray, 2.0, shadowCoord3, 1.0);
+                float w1 = weight(shadowCoord1, 8.0);
+                float w2 = weight(shadowCoord2, 8.0);
+                float w3 = weight(shadowCoord3, 8.0);
                 s3 = mix(1.0, s3, w3); 
                 s2 = mix(s3, s2, w2);
                 s1 = mix(s2, s1, w1); // s1 stores resulting shadow value
@@ -495,6 +508,8 @@ class PBRClusteredBackend: GLSLMaterialBackend
             float fogFactor = clamp((fogEnd - fogDistance) / (fogEnd - fogStart), 0.0, 1.0);
             
             // Environment light
+            vec3 ambientDiffuse;
+            vec3 ambientSpecular;
             if (useEnvironmentMap)
             {
                 ivec2 envMapSize = textureSize(environmentMap, 0);
@@ -502,16 +517,27 @@ class PBRClusteredBackend: GLSLMaterialBackend
                 float diffLod = (maxLod - 1.0);
                 float specLod = (maxLod - 1.0) * roughness;
                 
+                ambientDiffuse = textureLod(environmentMap, envMapEquirect(worldN), diffLod).rgb;
+                ambientSpecular = textureLod(environmentMap, envMapEquirect(worldR), specLod).rgb;
+            }
+            else
+            {
+                ambientDiffuse = sky(worldN, worldSun, roughness);
+                ambientSpecular = sky(worldR, worldSun, roughness);
+                
+                float dayOrNight = clamp(dot(worldSun, vec3(0, -1, 0)), 0.0, 1.0);
+                shadow = mix(shadow, 1.0, dayOrNight);
+            }
+            
+            {
                 vec3 F = fresnelRoughness(max(dot(N, E), 0.0), f0, roughness);
                 vec3 kS = F;
                 vec3 kD = 1.0 - kS;
                 kD *= 1.0 - metallic;
+                
+                vec3 diffuse = ambientDiffuse * albedo;
   
-                vec3 irradiance = textureLod(environmentMap, envMapEquirect(worldN), diffLod).rgb;
-                vec3 diffuse = irradiance * albedo;
-                vec3 specular = F * textureLod(environmentMap, envMapEquirect(worldR), specLod).rgb;
-  
-                vec3 ambient = (kD * diffuse + specular) * shadow;
+                vec3 ambient = (kD * diffuse + F * ambientSpecular) * shadow;
                 
                 Lo += ambient;
             }

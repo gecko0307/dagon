@@ -88,11 +88,11 @@ class SkyBackend: GLSLMaterialBackend
         
         // TODO: make uniform
         const vec3 groundColor = vec3(0.06, 0.05, 0.05);
-        const float sunEnergy = 1000.0;
-        const float skyEnergyMidday = 10.0;
-        const float skyEnergyTwilight = 0.01;
-        const float skyEnergyMidnight = 0.0001;
-        const float groundEnergyMidday = 0.1;
+        const float sunEnergy = 10.0;
+        const float skyEnergyMidday = 1.0;
+        const float skyEnergyTwilight = 0.001;
+        const float skyEnergyMidnight = 0.001;
+        const float groundEnergyMidday = 0.001;
         const float groundEnergyNight = 0.0;
         
         uniform sampler2D environmentMap;
@@ -108,13 +108,13 @@ class SkyBackend: GLSLMaterialBackend
         vec3 toLinear(vec3 v)
         {
             return pow(v, vec3(2.2));
-        }
+        }        
 
         void main()
         {
             vec3 normalWorldN = normalize(worldNormal);
             vec3 env;
-            
+
             if (useEnvironmentMap)
             {
                 env = texture(environmentMap, envMapEquirect(-normalWorldN)).rgb;
@@ -132,9 +132,10 @@ class SkyBackend: GLSLMaterialBackend
                 
                 env = mix(mix(skyHorizonColor * skyEnergy, groundColor * groundEnergy, groundOrSky2), skyZenithColor * skyEnergy, groundOrSky);
                 float sun = clamp(dot(-normalWorldN, sunDirection), 0.0, 1.0);
-                sun = min(float(sun > 0.9999) + pow(sun, 64.0) * 0.01, 1.0);
+                sun = min(float(sun > 0.999) + pow(sun, 96.0) * 0.2, 1.0);
                 env += sunColor * sun * sunEnergy;
             }
+            
             frag_color = vec4(env, 1.0);
             frag_velocity = vec4(0.0, 0.0, 0.0, 1.0);
         }

@@ -186,12 +186,12 @@ class CascadedShadowMap: Owner
     ShadowBackend sb;
     Material sm;
     
-    float projSize1 = 15.0f;
-    float projSize2 = 50.0f;
-    float projSize3 = 400.0f;
+    float projSize1 = 5.0f;
+    float projSize2 = 15.0f;
+    float projSize3 = 100.0f;
     
-    float zStart = -100.0f;
-    float zEnd = 100.0f;
+    float zStart = -300.0f;
+    float zEnd = 300.0f;
 
     this(uint size, BaseScene3D scene, float projSizeNear, float projSizeMid, float projSizeFar, float zStart, float zEnd, Owner o)
     {
