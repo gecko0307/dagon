@@ -591,7 +591,19 @@ class BaseScene3D: Scene
             environment.update(fixedTimeStep);
             
             if (view) // TODO: allow to turn this off
-                shadowMap.position = view.cameraPosition;
+            {
+                //shadowMap.position = view.cameraPosition;
+                
+                // Better fit the frustum:
+                Vector3f cameraDirection = -view.invViewMatrix.forward;
+                cameraDirection.y = 0.0f;
+                cameraDirection = cameraDirection.normalized;
+                
+                shadowMap.area1.position = view.cameraPosition + cameraDirection * (shadowMap.projSize1  * 0.5f - 1.0f);
+                shadowMap.area2.position = view.cameraPosition + cameraDirection * shadowMap.projSize2 * 0.5f;
+                shadowMap.area3.position = view.cameraPosition + cameraDirection * shadowMap.projSize3 * 0.5f;
+            }
+            
             shadowMap.update(&rc3d, fixedTimeStep);
             
             lightManager.update(&rc3d);

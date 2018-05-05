@@ -397,8 +397,8 @@ class PBRClusteredBackend: GLSLMaterialBackend
             if (useShadows)
             {
                 s1 = shadowPCF(shadowTextureArray, 0.0, shadowCoord1, 2.0, 0.0);
-                s2 = shadowPCF(shadowTextureArray, 1.0, shadowCoord2, 1.0, 0.0);
-                s3 =    shadow(shadowTextureArray, 2.0, shadowCoord3, 1.0);
+                s2 =    shadow(shadowTextureArray, 1.0, shadowCoord2, 0.0);
+                s3 =    shadow(shadowTextureArray, 2.0, shadowCoord3, 0.0);
                 float w1 = weight(shadowCoord1, 8.0);
                 float w2 = weight(shadowCoord2, 8.0);
                 float w3 = weight(shadowCoord3, 8.0);

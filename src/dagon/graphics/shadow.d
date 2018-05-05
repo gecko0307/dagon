@@ -188,7 +188,7 @@ class CascadedShadowMap: Owner
     
     float projSize1 = 5.0f;
     float projSize2 = 15.0f;
-    float projSize3 = 100.0f;
+    float projSize3 = 400.0f;
     
     float zStart = -300.0f;
     float zEnd = 300.0f;
