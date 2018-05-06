@@ -125,8 +125,9 @@ class PBRClusteredBackend: GLSLMaterialBackend
         uniform sampler2D normalTexture;
         uniform sampler2D emissionTexture;
         
-        uniform float roughness;
-        uniform float metallic;
+        //uniform float roughness;
+        //uniform float metallic;
+        uniform sampler2D pbrTexture;
         
         uniform int parallaxMethod;
         uniform float parallaxScale;
@@ -411,6 +412,9 @@ class PBRClusteredBackend: GLSLMaterialBackend
                 s1 = 1.0f;
             }
             
+            float roughness = texture(pbrTexture, shiftedTexCoord).r;
+            float metallic = texture(pbrTexture, shiftedTexCoord).g;
+            
             vec3 R = reflect(E, N);
             
             vec3 worldN = N * mat3(viewMatrix);
@@ -572,8 +576,9 @@ class PBRClusteredBackend: GLSLMaterialBackend
     GLint shadowTextureSizeLoc;
     GLint useShadowsLoc;
     
-    GLint roughnessLoc;
-    GLint metallicLoc;
+    //GLint roughnessLoc;
+    //GLint metallicLoc;
+    GLint pbrTextureLoc;
     
     GLint parallaxMethodLoc;
     GLint parallaxScaleLoc;
@@ -631,8 +636,9 @@ class PBRClusteredBackend: GLSLMaterialBackend
         shadowTextureSizeLoc = glGetUniformLocation(shaderProgram, "shadowTextureSize");
         useShadowsLoc = glGetUniformLocation(shaderProgram, "useShadows");
         
-        roughnessLoc = glGetUniformLocation(shaderProgram, "roughness"); 
-        metallicLoc = glGetUniformLocation(shaderProgram, "metallic"); 
+        //roughnessLoc = glGetUniformLocation(shaderProgram, "roughness"); 
+        //metallicLoc = glGetUniformLocation(shaderProgram, "metallic");
+        pbrTextureLoc = glGetUniformLocation(shaderProgram, "pbrTexture");
        
         parallaxMethodLoc = glGetUniformLocation(shaderProgram, "parallaxMethod");
         parallaxScaleLoc = glGetUniformLocation(shaderProgram, "parallaxScale");
@@ -670,6 +676,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
         auto inormal = "normal" in mat.inputs;
         auto iheight = "height" in mat.inputs;
         auto iemission = "emission" in mat.inputs;
+        auto ipbr = "pbr" in mat.inputs;
         auto iroughness = "roughness" in mat.inputs;
         auto imetallic = "metallic" in mat.inputs;
         bool fogEnabled = boolProp(mat, "fogEnabled");
@@ -777,8 +784,21 @@ class PBRClusteredBackend: GLSLMaterialBackend
         glUniform1i(parallaxMethodLoc, parallaxMethod);
         
         // Texture 2 is reserved for PBR maps (roughness + metallic)
-        glUniform1f(roughnessLoc, iroughness.asFloat);
-        glUniform1f(metallicLoc, imetallic.asFloat);
+        //glUniform1f(roughnessLoc, iroughness.asFloat);
+        //glUniform1f(metallicLoc, imetallic.asFloat);
+        if (ipbr is null)
+        {
+            mat.setInput("pbr", 0.0f);
+            ipbr = "pbr" in mat.inputs;
+        }
+        
+        if (ipbr.texture is null)
+        {       
+            ipbr.texture = makeTextureFrom(mat, *iroughness, *imetallic, materialInput(0.0f), materialInput(0.0f));
+        }
+        glActiveTexture(GL_TEXTURE2);
+        glUniform1i(pbrTextureLoc, 2);
+        ipbr.texture.bind();
         
         // Texture 3 - emission map
         if (iemission.texture is null)
@@ -857,12 +877,16 @@ class PBRClusteredBackend: GLSLMaterialBackend
         auto idiffuse = "diffuse" in mat.inputs;
         auto inormal = "normal" in mat.inputs;
         auto iemission = "emission" in mat.inputs;
+        auto ipbr = "pbr" in mat.inputs;
         
         glActiveTexture(GL_TEXTURE0);
         idiffuse.texture.unbind();
         
         glActiveTexture(GL_TEXTURE1);
         inormal.texture.unbind();
+        
+        glActiveTexture(GL_TEXTURE1);
+        ipbr.texture.unbind();
         
         glActiveTexture(GL_TEXTURE3);
         iemission.texture.unbind();

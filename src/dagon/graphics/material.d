@@ -27,6 +27,8 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.graphics.material;
 
+import std.math;
+import std.algorithm;
 import dlib.core.memory;
 import dlib.math.vector;
 import dlib.image.color;
@@ -74,6 +76,52 @@ struct MaterialInput
         Vector4f asVector4f;
     }
     Texture texture;
+    
+    float getNumericValue()
+    {
+        float res;
+        if (type == MaterialInputType.Bool ||
+            type == MaterialInputType.Integer)
+        {
+            res = asInteger;
+        }
+        else if (type == MaterialInputType.Float)
+        {
+            res = asFloat;
+        }
+        return res;
+    }
+    
+    Color4f sample(float u, float v)
+    {
+        if (texture !is null)
+        {
+            int x = cast(int)floor(u * texture.width);
+            int y = cast(int)floor(v * texture.height);
+            return texture.image[x, y];
+        }
+        else if (type == MaterialInputType.Vec4)
+            return Color4f(asVector4f);
+        else if (type == MaterialInputType.Vec3)
+            return Color4f(asVector3f.x, asVector3f.y, asVector3f.z, 1.0f);
+        else if (type == MaterialInputType.Vec2)
+            return Color4f(asVector2f.x, asVector2f.y, 1.0f, 1.0f);
+        else if (type == MaterialInputType.Float)
+            return Color4f(asFloat, 1.0f, 1.0f, 1.0f);
+        else if (type == MaterialInputType.Bool ||
+                 type == MaterialInputType.Integer)
+            return Color4f(cast(float)asInteger, 1.0f, 1.0f, 1.0f);
+        else
+            return Color4f(0.0f, 0.0f, 0.0f, 0.0f);
+    }
+}
+
+MaterialInput materialInput(float v)
+{
+    MaterialInput mi;
+    mi.asFloat = v;
+    mi.type = MaterialInputType.Float;
+    return mi;
 }
 
 abstract class Material: Owner
