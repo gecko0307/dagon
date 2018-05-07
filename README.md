@@ -12,7 +12,7 @@ Currently Dagon has the following features:
 * Textures in PNG, JPG, TGA, BMP, HDR formats
 * Flexible material system with simple user-defined abstract API and different backends. You can implement custom materials, with your own shaders and parameters
 * Physically based rendering (PBR)
-* HDR rendering with auto-exposure (eye adaptation), Reinhard and Hable/Uncharted tonemapping operators
+* HDR rendering with auto-exposure (eye adaptation), Reinhard, Hable/Uncharted and ACES tonemapping operators
 * HDRI environment maps support
 * Multiple light sources using clustered forward shading method (variable number of lights per fragment)
 * Spherical area lights
