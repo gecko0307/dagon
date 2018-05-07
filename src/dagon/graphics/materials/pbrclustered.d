@@ -116,6 +116,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
     q{
         #version 330 core
         
+        #define EPSILON 0.000001
         #define PI 3.14159265359
         const float PI2 = PI * 2.0;
         
@@ -141,7 +142,9 @@ class PBRClusteredBackend: GLSLMaterialBackend
         uniform sampler2DArrayShadow shadowTextureArray;
         uniform float shadowTextureSize;
         uniform bool useShadows;
+        uniform vec4 shadowColor;
         uniform float shadowBrightness;
+        uniform bool useHeightCorrectedShadows;
         
         uniform sampler2D environmentMap;
         uniform bool useEnvironmentMap;
@@ -182,6 +185,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
 
         layout(location = 0) out vec4 frag_color;
         layout(location = 1) out vec4 frag_velocity;
+        layout(location = 2) out vec4 frag_luma;
         
         mat3 cotangentFrame(in vec3 N, in vec3 p, in vec2 uv)
         {
@@ -372,6 +376,15 @@ class PBRClusteredBackend: GLSLMaterialBackend
             return pow(v, vec3(2.2));
         }
         
+        float luminance(vec3 color)
+        {
+            return (
+                color.x * 0.27 +
+                color.y * 0.67 +
+                color.z * 0.06
+            );
+        }
+        
         void main()
         {     
             // Common vectors
@@ -404,17 +417,17 @@ class PBRClusteredBackend: GLSLMaterialBackend
             N = normalize(TBN * tN);
             
             // Calculate shadow from 3 cascades
-            vec4 shadowCoord1_parallax = shadowMatrix1 * vec4(eyePosition + vN * height * 0.3, 1.0);
-            vec4 shadowCoord2_parallax = shadowMatrix2 * vec4(eyePosition + vN * height * 0.3, 1.0);
+            vec4 sc1 = useHeightCorrectedShadows? shadowMatrix1 * vec4(eyePosition + vN * height * 0.3, 1.0) : shadowCoord1;
+            vec4 sc2 = useHeightCorrectedShadows? shadowMatrix2 * vec4(eyePosition + vN * height * 0.3, 1.0) : shadowCoord2;
             
             float s1, s2, s3;
             if (useShadows)
             {
-                s1 = shadowPCF(shadowTextureArray, 0.0, shadowCoord1_parallax, 2.0, 0.0);
-                s2 =    shadow(shadowTextureArray, 1.0, shadowCoord2_parallax, 0.0);
+                s1 = shadowPCF(shadowTextureArray, 0.0, sc1, 2.0, 0.0);
+                s2 =    shadow(shadowTextureArray, 1.0, sc2, 0.0);
                 s3 =    shadow(shadowTextureArray, 2.0, shadowCoord3, 0.0);
-                float w1 = weight(shadowCoord1_parallax, 8.0);
-                float w2 = weight(shadowCoord2, 8.0);
+                float w1 = weight(sc1, 8.0);
+                float w2 = weight(sc2, 8.0);
                 float w3 = weight(shadowCoord3, 8.0);
                 s3 = mix(1.0, s3, w3); 
                 s2 = mix(s3, s2, w2);
@@ -543,7 +556,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
             }
             
             float dayOrNight = float(worldSun.y < 0.0);
-            shadow = mix(shadow, 1.0, dayOrNight);
+            vec3 ambientTint = mix(mix(toLinear(shadowColor.rgb), vec3(1.0), shadow) * shadow, vec3(1.0), dayOrNight);
             
             {
                 vec3 F = fresnelRoughness(max(dot(N, E), 0.0), f0, roughness);
@@ -553,7 +566,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
                 
                 vec3 diffuse = ambientDiffuse * albedo;
   
-                vec3 ambient = (kD * diffuse + F * ambientSpecular) * shadow;
+                vec3 ambient = (kD * diffuse + F * ambientSpecular) * ambientTint;
                 
                 Lo += ambient;
             }
@@ -566,6 +579,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
             
             frag_color = vec4(fragColor, alpha);
             frag_velocity = vec4(screenVelocity, 0.0, blurMask);
+            frag_luma = vec4(luminance(fragColor));
         }
     };
     
@@ -587,7 +601,9 @@ class PBRClusteredBackend: GLSLMaterialBackend
     GLint shadowTextureArrayLoc;
     GLint shadowTextureSizeLoc;
     GLint useShadowsLoc;
+    GLint shadowColorLoc;
     GLint shadowBrightnessLoc;
+    GLint useHeightCorrectedShadowsLoc;
 
     GLint pbrTextureLoc;
     
@@ -646,7 +662,9 @@ class PBRClusteredBackend: GLSLMaterialBackend
         shadowTextureArrayLoc = glGetUniformLocation(shaderProgram, "shadowTextureArray");
         shadowTextureSizeLoc = glGetUniformLocation(shaderProgram, "shadowTextureSize");
         useShadowsLoc = glGetUniformLocation(shaderProgram, "useShadows");
+        shadowColorLoc = glGetUniformLocation(shaderProgram, "shadowColor");
         shadowBrightnessLoc = glGetUniformLocation(shaderProgram, "shadowBrightness");
+        useHeightCorrectedShadowsLoc = glGetUniformLocation(shaderProgram, "useHeightCorrectedShadows");
 
         pbrTextureLoc = glGetUniformLocation(shaderProgram, "pbrTexture");
        
@@ -716,7 +734,6 @@ class PBRClusteredBackend: GLSLMaterialBackend
         Vector4f sunHGVector = Vector4f(0.0f, 1.0f, 0.0, 0.0f);
         Vector3f sunColor = Vector3f(1.0f, 1.0f, 1.0f);
         float sunEnergy = 100.0f;
-        float shadowBrightness = 0.1f;
         if (rc.environment)
         {
             environmentColor = rc.environment.ambientConstant;
@@ -724,7 +741,6 @@ class PBRClusteredBackend: GLSLMaterialBackend
             sunHGVector.w = 0.0;
             sunColor = rc.environment.sunColor;
             sunEnergy = rc.environment.sunEnergy;
-            shadowBrightness = rc.environment.shadowBrightness;
         }
         glUniform4fv(environmentColorLoc, 1, environmentColor.arrayof.ptr);
         Vector3f sunDirectionEye = sunHGVector * rc.viewMatrix;
@@ -841,6 +857,9 @@ class PBRClusteredBackend: GLSLMaterialBackend
         glUniform1i(environmentMapLoc, 4);
         
         // Texture 5 - shadow map cascades (3 layer texture array)
+        float shadowBrightness = 0.1f;
+        bool useHeightCorrectedShadows = false;
+        Color4f shadowColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
         if (shadowMap && shadowsEnabled)
         {
             glActiveTexture(GL_TEXTURE5);
@@ -853,6 +872,10 @@ class PBRClusteredBackend: GLSLMaterialBackend
             glUniformMatrix4fv(shadowMatrix3Loc, 1, 0, shadowMap.area3.shadowMatrix.arrayof.ptr);
             glUniform1i(useShadowsLoc, 1);            
             // TODO: shadowFilter
+            
+            shadowBrightness = shadowMap.shadowBrightness;
+            useHeightCorrectedShadows = shadowMap.useHeightCorrectedShadows;
+            shadowColor = shadowMap.shadowColor;
         }
         else
         {        
@@ -861,7 +884,9 @@ class PBRClusteredBackend: GLSLMaterialBackend
             glUniformMatrix4fv(shadowMatrix3Loc, 1, 0, defaultShadowMat.arrayof.ptr);
             glUniform1i(useShadowsLoc, 0);
         }
+        glUniform4fv(shadowColorLoc, 1, shadowColor.arrayof.ptr);
         glUniform1f(shadowBrightnessLoc, shadowBrightness);
+        glUniform1i(useHeightCorrectedShadowsLoc, useHeightCorrectedShadows);
 
         // Texture 6 - light clusters
         glActiveTexture(GL_TEXTURE6);

@@ -60,11 +60,20 @@ class SkyBackend: GLSLMaterialBackend
         uniform mat4 projectionMatrix;
         uniform mat4 invViewMatrix;
         
+        uniform mat4 prevModelViewProjMatrix;
+        uniform mat4 blurModelViewProjMatrix;
+        
         out vec3 worldNormal;
+        
+        out vec4 blurPosition;
+        out vec4 prevPosition;
     
         void main()
         {
             worldNormal = va_Normal;
+            
+            blurPosition = blurModelViewProjMatrix * vec4(va_Vertex, 1.0);
+            prevPosition = prevModelViewProjMatrix * vec4(va_Vertex, 1.0);
             
             gl_Position = projectionMatrix * modelViewMatrix * vec4(va_Vertex, 1.0);
         }
@@ -73,6 +82,7 @@ class SkyBackend: GLSLMaterialBackend
     private string fsText = q{
         #version 330 core
         
+        #define EPSILON 0.000001
         #define PI 3.14159265
         const float PI2 = PI * 2.0;
         
@@ -83,8 +93,12 @@ class SkyBackend: GLSLMaterialBackend
         
         in vec3 worldNormal;
         
+        in vec4 blurPosition;
+        in vec4 prevPosition;
+        
         layout(location = 0) out vec4 frag_color;
         layout(location = 1) out vec4 frag_velocity;
+        layout(location = 2) out vec4 frag_luma;
         
         // TODO: make uniform
         const vec3 groundColor = vec3(0.06, 0.05, 0.05);
@@ -108,12 +122,25 @@ class SkyBackend: GLSLMaterialBackend
         vec3 toLinear(vec3 v)
         {
             return pow(v, vec3(2.2));
-        }        
+        }
+        
+        float luminance(vec3 color)
+        {
+            return (
+                color.x * 0.27 +
+                color.y * 0.67 +
+                color.z * 0.06
+            );
+        }
 
         void main()
         {
             vec3 normalWorldN = normalize(worldNormal);
             vec3 env;
+            
+            vec2 posScreen = (blurPosition.xy / blurPosition.w) * 0.5 + 0.5;
+            vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;
+            vec2 screenVelocity = posScreen - prevPosScreen;
 
             if (useEnvironmentMap)
             {
@@ -137,7 +164,8 @@ class SkyBackend: GLSLMaterialBackend
             }
             
             frag_color = vec4(env, 1.0);
-            frag_velocity = vec4(0.0, 0.0, 0.0, 1.0);
+            frag_velocity = vec4(screenVelocity, 0.0, 1.0);
+            frag_luma = vec4(luminance(env));
         }
     };
     
@@ -147,6 +175,9 @@ class SkyBackend: GLSLMaterialBackend
     GLint modelViewMatrixLoc;
     GLint projectionMatrixLoc;
     GLint normalMatrixLoc;
+    
+    GLint prevModelViewProjMatrixLoc;
+    GLint blurModelViewProjMatrixLoc;
     
     GLint locInvViewMatrix;
     GLint locSunDirection;
@@ -166,6 +197,9 @@ class SkyBackend: GLSLMaterialBackend
         modelViewMatrixLoc = glGetUniformLocation(shaderProgram, "modelViewMatrix");
         projectionMatrixLoc = glGetUniformLocation(shaderProgram, "projectionMatrix");
         normalMatrixLoc = glGetUniformLocation(shaderProgram, "normalMatrix");
+        
+        prevModelViewProjMatrixLoc = glGetUniformLocation(shaderProgram, "prevModelViewProjMatrix");
+        blurModelViewProjMatrixLoc = glGetUniformLocation(shaderProgram, "blurModelViewProjMatrix");
             
         locInvViewMatrix = glGetUniformLocation(shaderProgram, "invViewMatrix");
         locSunDirection = glGetUniformLocation(shaderProgram, "sunDirection");
@@ -186,6 +220,9 @@ class SkyBackend: GLSLMaterialBackend
         glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, rc.projectionMatrix.arrayof.ptr);
         glUniformMatrix4fv(normalMatrixLoc, 1, GL_FALSE, rc.normalMatrix.arrayof.ptr);
         glUniformMatrix4fv(locInvViewMatrix, 1, GL_FALSE, rc.invViewMatrix.arrayof.ptr);
+        
+        glUniformMatrix4fv(prevModelViewProjMatrixLoc, 1, GL_FALSE, rc.prevModelViewProjMatrix.arrayof.ptr);
+        glUniformMatrix4fv(blurModelViewProjMatrixLoc, 1, GL_FALSE, rc.blurModelViewProjMatrix.arrayof.ptr);
         
         // Environment
         Vector3f sunVector = Vector4f(rc.environment.sunDirection);

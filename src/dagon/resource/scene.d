@@ -392,10 +392,6 @@ class BaseScene3D: Scene
 
     double timer = 0.0;
     double fixedTimeStep = 1.0 / 60.0;
-    
-    float minHDRBrightness = 0.1f;
-    float maxHDRBrightness = 1000.0f;
-    float exposure = 0.5f;
 
     this(SceneManager smngr)
     {
@@ -683,14 +679,14 @@ class BaseScene3D: Scene
         renderEntities3D(&rc3d);
         sceneFramebuffer.unbind();
 
-        sceneFramebuffer.genMipmaps();
+        sceneFramebuffer.genLuminanceMipmaps();
         float lum = sceneFramebuffer.averageLuminance();
         if (!isNaN(lum))
         {
-            float newExposure = exposure * (1.0f / clamp(lum, minHDRBrightness, maxHDRBrightness));
+            float newExposure = hdr.keyValue * (1.0f / clamp(lum, hdr.minLuminance, hdr.maxLuminance));
             
             float exposureDelta = newExposure - hdr.exposure;
-            hdr.exposure += exposureDelta * 4.0f * eventManager.deltaTime;
+            hdr.exposure += exposureDelta * hdr.adaptationSpeed * eventManager.deltaTime;
         }
         
         foreach(i, f; postFilters.data)

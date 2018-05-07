@@ -80,8 +80,6 @@ class Environment: Owner
 
     bool useSkyColors = false;
     bool atmosphericFog = false;
-    
-    float shadowBrightness = 0.1f;
 
     this(Owner o)
     {

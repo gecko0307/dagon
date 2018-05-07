@@ -37,7 +37,8 @@ import dagon.graphics.rc;
 enum TonemapFunction
 {
     Reinhard = 0,
-    Hable = 1
+    Hable = 1,
+    Filmic = 2
 }
 
 class PostFilterHDR: PostFilter
@@ -102,6 +103,18 @@ class PostFilterHDR: PostFilter
             return pow(c, vec3(1.0 / 2.2));
         }
         
+        vec3 tonemapFilmicACES(vec3 x, float expo)
+        {
+            float a = 2.51;
+            float b = 0.03;
+            float c = 2.43;
+            float d = 0.59;
+            float e = 0.14;
+            vec3 res = x * expo;
+            res = clamp((res*(a*res+b))/(res*(c*res+d)+e), 0.0, 1.0);
+            return pow(res, vec3(1.0 / 2.2));
+        }
+        
         vec3 lookupColor(sampler2D lookupTable, vec3 textureColor)
         {
             textureColor = clamp(textureColor, 0.0, 1.0);
@@ -152,7 +165,9 @@ class PostFilterHDR: PostFilter
             
             vec3 res = sum * invSamples;
             
-            if (tonemapFunction == 1)
+            if (tonemapFunction == 2)
+                res = tonemapFilmicACES(res, exposure);
+            else if (tonemapFunction == 1)
                 res = tonemapHable(res, exposure);
             else
                 res = tonemapReinhard(res, exposure);
@@ -184,7 +199,12 @@ class PostFilterHDR: PostFilter
     GLint vignetteLoc;
     GLint useVignetteLoc;
     
-    float exposure = 1.0f;
+    float minLuminance = 0.01f;
+    float maxLuminance = 100000.0f;
+    float keyValue = 0.5f;
+    float adaptationSpeed = 4.0f;
+    
+    float exposure = 0.0f;
     TonemapFunction tonemapFunction = TonemapFunction.Reinhard;
     
     Texture colorTable;
