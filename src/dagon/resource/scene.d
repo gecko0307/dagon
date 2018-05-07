@@ -393,7 +393,7 @@ class BaseScene3D: Scene
     double timer = 0.0;
     double fixedTimeStep = 1.0 / 60.0;
     
-    float minHDRBrightness = 0.001f;
+    float minHDRBrightness = 0.1f;
     float maxHDRBrightness = 1000.0f;
     float exposure = 0.5f;
 
@@ -415,6 +415,35 @@ class BaseScene3D: Scene
         mLoadingProgressBar.diffuse = Color4f(1, 1, 1, 1);
         eLoadingProgressBar.material = mLoadingProgressBar;
     }
+    
+    void sortEntities(ref DynamicArray!Entity entities)
+    {
+        size_t j = 0;
+        Entity tmp;
+
+        auto edata = entities.data;
+
+        foreach(i, v; edata)
+        {
+            j = i;
+            size_t k = i;
+
+            while (k < edata.length)
+            {
+                float b1 = edata[j].layer;
+                float b2 = edata[k].layer;
+                
+                if (b2 < b1)
+                    j = k;
+                
+                k++;
+            }
+
+            tmp = edata[i];
+            edata[i] = edata[j];
+            edata[j] = tmp;
+        }
+    }
 
     Entity createEntity2D(Entity parent = null)
     {
@@ -425,6 +454,8 @@ class BaseScene3D: Scene
         {
             e = New!Entity(eventManager, assetManager);
             entities2D.append(e);
+            
+            sortEntities(entities2D);
         }
         
         return e;
@@ -439,6 +470,8 @@ class BaseScene3D: Scene
         {
             e = New!Entity(eventManager, assetManager);
             entities3D.append(e);
+            
+            sortEntities(entities3D);
         }
         
         e.material = defaultMaterial3D;
@@ -452,11 +485,13 @@ class BaseScene3D: Scene
         matSky.depthWrite = false;
     
         auto eSky = createEntity3D();
+        eSky.layer = 0;
         eSky.attach = Attach.Camera;
         eSky.castShadow = false;
         eSky.material = matSky;
         eSky.drawable = New!ShapeSphere(1.0f, 16, 8, true, assetManager); //aSphere.mesh;
         eSky.scaling = Vector3f(100.0f, 100.0f, 100.0f);
+        sortEntities(entities3D);
         return eSky;
     }
     

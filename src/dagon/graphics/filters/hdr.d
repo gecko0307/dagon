@@ -76,6 +76,9 @@ class PostFilterHDR: PostFilter
         uniform bool useLUT;
         uniform bool useVignette;
         
+        // TODO: make uniform
+        const float motionBlurAmount = 1.0;
+        
         in vec2 texCoord;
         
         out vec4 frag_color;
@@ -131,7 +134,7 @@ class PostFilterHDR: PostFilter
         void main()
         {
             vec4 v = texture(fbVelocity, texCoord);
-            vec2 blurVec = v.xy * 0.5;
+            vec2 blurVec = v.xy * motionBlurAmount;
 
             const int samples = 10;
             const float invSamples = 1.0 / float(samples);

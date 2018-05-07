@@ -121,21 +121,27 @@ class PBRClusteredBackend: GLSLMaterialBackend
         
         uniform mat4 viewMatrix;
         uniform mat4 invViewMatrix;
+        
+        uniform mat4 shadowMatrix1;
+        uniform mat4 shadowMatrix2;
+        
         uniform sampler2D diffuseTexture;
         uniform sampler2D normalTexture;
         uniform sampler2D emissionTexture;
-        
-        //uniform float roughness;
-        //uniform float metallic;
+
         uniform sampler2D pbrTexture;
         
         uniform int parallaxMethod;
         uniform float parallaxScale;
         uniform float parallaxBias;
         
+        // TODO: make uniform
+        const float emissionEnergy = 1.0;
+        
         uniform sampler2DArrayShadow shadowTextureArray;
         uniform float shadowTextureSize;
         uniform bool useShadows;
+        uniform float shadowBrightness;
         
         uniform sampler2D environmentMap;
         uniform bool useEnvironmentMap;
@@ -173,8 +179,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
         in vec4 shadowCoord1;
         in vec4 shadowCoord2;
         in vec4 shadowCoord3;
-        
-        //out vec4 frag_color;
+
         layout(location = 0) out vec4 frag_color;
         layout(location = 1) out vec4 frag_velocity;
         
@@ -192,16 +197,17 @@ class PBRClusteredBackend: GLSLMaterialBackend
             return mat3(T * invmax, B * invmax, N);
         }
         
-        vec2 parallaxMapping(in vec3 V, in vec2 T, in float scale)
+        vec2 parallaxMapping(in vec3 V, in vec2 T, in float scale, out float h)
         {
             float height = texture(normalTexture, T).a;
+            h = height;
             height = height * parallaxScale + parallaxBias;
             return T + (height * V.xy);
         }
         
         // Based on code written by Igor Dykhta (Sun and Black Cat)
         // http://sunandblackcat.com/tipFullView.php?topicid=28
-        vec2 parallaxOcclusionMapping(in vec3 V, in vec2 T, in float scale)
+        vec2 parallaxOcclusionMapping(in vec3 V, in vec2 T, in float scale, out float h)
         {
             const float minLayers = 10;
             const float maxLayers = 15;
@@ -213,6 +219,8 @@ class PBRClusteredBackend: GLSLMaterialBackend
 
             vec2 currentTextureCoords = T;
             float heightFromTexture = texture(normalTexture, currentTextureCoords).a;
+            
+            h = heightFromTexture;
 
             while(heightFromTexture > curLayerHeight)
             {
@@ -367,7 +375,8 @@ class PBRClusteredBackend: GLSLMaterialBackend
         void main()
         {     
             // Common vectors
-            vec3 N = normalize(eyeNormal);
+            vec3 vN = normalize(eyeNormal);
+            vec3 N = vN;
             vec3 E = normalize(-eyePosition);
             mat3 TBN = cotangentFrame(N, eyePosition, texCoord);
             vec3 tE = normalize(E * TBN);
@@ -380,13 +389,14 @@ class PBRClusteredBackend: GLSLMaterialBackend
             vec2 screenVelocity = posScreen - prevPosScreen;
 
             // Parallax mapping
+            float height = 0.0;
             vec2 shiftedTexCoord = texCoord;
             if (parallaxMethod == 0)
                 shiftedTexCoord = texCoord;
             else if (parallaxMethod == 1)
-                shiftedTexCoord = parallaxMapping(tE, texCoord, parallaxScale);
+                shiftedTexCoord = parallaxMapping(tE, texCoord, parallaxScale, height);
             else if (parallaxMethod == 2)
-                shiftedTexCoord = parallaxOcclusionMapping(tE, texCoord, parallaxScale);
+                shiftedTexCoord = parallaxOcclusionMapping(tE, texCoord, parallaxScale, height);
             
             // Normal mapping
             vec3 tN = normalize(texture(normalTexture, shiftedTexCoord).rgb * 2.0 - 1.0);
@@ -394,13 +404,16 @@ class PBRClusteredBackend: GLSLMaterialBackend
             N = normalize(TBN * tN);
             
             // Calculate shadow from 3 cascades
+            vec4 shadowCoord1_parallax = shadowMatrix1 * vec4(eyePosition + vN * height * 0.3, 1.0);
+            vec4 shadowCoord2_parallax = shadowMatrix2 * vec4(eyePosition + vN * height * 0.3, 1.0);
+            
             float s1, s2, s3;
             if (useShadows)
             {
-                s1 = shadowPCF(shadowTextureArray, 0.0, shadowCoord1, 2.0, 0.0);
-                s2 =    shadow(shadowTextureArray, 1.0, shadowCoord2, 0.0);
+                s1 = shadowPCF(shadowTextureArray, 0.0, shadowCoord1_parallax, 2.0, 0.0);
+                s2 =    shadow(shadowTextureArray, 1.0, shadowCoord2_parallax, 0.0);
                 s3 =    shadow(shadowTextureArray, 2.0, shadowCoord3, 0.0);
-                float w1 = weight(shadowCoord1, 8.0);
+                float w1 = weight(shadowCoord1_parallax, 8.0);
                 float w2 = weight(shadowCoord2, 8.0);
                 float w3 = weight(shadowCoord3, 8.0);
                 s3 = mix(1.0, s3, w3); 
@@ -425,7 +438,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
             vec4 diffuseColor = texture(diffuseTexture, shiftedTexCoord);
             vec3 albedo = toLinear(diffuseColor.rgb);
             
-            vec3 emissionColor = texture(emissionTexture, shiftedTexCoord).rgb;
+            vec3 emissionColor = toLinear(texture(emissionTexture, shiftedTexCoord).rgb);
             
             vec3 f0 = vec3(0.04); 
             f0 = mix(f0, albedo, metallic);
@@ -433,7 +446,6 @@ class PBRClusteredBackend: GLSLMaterialBackend
             vec3 Lo = vec3(0.0);
             
             // Sun light
-            float shadowBrightness = 0.1; // TODO: make uniform
             float shadow = 1.0;
             // if (sunEnabled)
             {
@@ -546,7 +558,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
                 Lo += ambient;
             }
             
-            vec3 objColor = Lo + emissionColor;
+            vec3 objColor = Lo + emissionColor * emissionEnergy;
             
             vec3 fragColor = mix(fogColor.rgb, objColor, fogFactor);
             float fresnelAlpha = pow(1.0 - max(0.0, dot(N, E)), 5.0); 
@@ -575,9 +587,8 @@ class PBRClusteredBackend: GLSLMaterialBackend
     GLint shadowTextureArrayLoc;
     GLint shadowTextureSizeLoc;
     GLint useShadowsLoc;
-    
-    //GLint roughnessLoc;
-    //GLint metallicLoc;
+    GLint shadowBrightnessLoc;
+
     GLint pbrTextureLoc;
     
     GLint parallaxMethodLoc;
@@ -635,9 +646,8 @@ class PBRClusteredBackend: GLSLMaterialBackend
         shadowTextureArrayLoc = glGetUniformLocation(shaderProgram, "shadowTextureArray");
         shadowTextureSizeLoc = glGetUniformLocation(shaderProgram, "shadowTextureSize");
         useShadowsLoc = glGetUniformLocation(shaderProgram, "useShadows");
-        
-        //roughnessLoc = glGetUniformLocation(shaderProgram, "roughness"); 
-        //metallicLoc = glGetUniformLocation(shaderProgram, "metallic");
+        shadowBrightnessLoc = glGetUniformLocation(shaderProgram, "shadowBrightness");
+
         pbrTextureLoc = glGetUniformLocation(shaderProgram, "pbrTexture");
        
         parallaxMethodLoc = glGetUniformLocation(shaderProgram, "parallaxMethod");
@@ -706,6 +716,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
         Vector4f sunHGVector = Vector4f(0.0f, 1.0f, 0.0, 0.0f);
         Vector3f sunColor = Vector3f(1.0f, 1.0f, 1.0f);
         float sunEnergy = 100.0f;
+        float shadowBrightness = 0.1f;
         if (rc.environment)
         {
             environmentColor = rc.environment.ambientConstant;
@@ -713,6 +724,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
             sunHGVector.w = 0.0;
             sunColor = rc.environment.sunColor;
             sunEnergy = rc.environment.sunEnergy;
+            shadowBrightness = rc.environment.shadowBrightness;
         }
         glUniform4fv(environmentColorLoc, 1, environmentColor.arrayof.ptr);
         Vector3f sunDirectionEye = sunHGVector * rc.viewMatrix;
@@ -783,9 +795,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
         glUniform1f(parallaxBiasLoc, parallaxBias);
         glUniform1i(parallaxMethodLoc, parallaxMethod);
         
-        // Texture 2 is reserved for PBR maps (roughness + metallic)
-        //glUniform1f(roughnessLoc, iroughness.asFloat);
-        //glUniform1f(metallicLoc, imetallic.asFloat);
+        // Texture 2 is - PBR maps (roughness + metallic)
         if (ipbr is null)
         {
             mat.setInput("pbr", 0.0f);
@@ -841,8 +851,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
             glUniformMatrix4fv(shadowMatrix1Loc, 1, 0, shadowMap.area1.shadowMatrix.arrayof.ptr);
             glUniformMatrix4fv(shadowMatrix2Loc, 1, 0, shadowMap.area2.shadowMatrix.arrayof.ptr);
             glUniformMatrix4fv(shadowMatrix3Loc, 1, 0, shadowMap.area3.shadowMatrix.arrayof.ptr);
-            glUniform1i(useShadowsLoc, 1);
-            
+            glUniform1i(useShadowsLoc, 1);            
             // TODO: shadowFilter
         }
         else
@@ -852,6 +861,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
             glUniformMatrix4fv(shadowMatrix3Loc, 1, 0, defaultShadowMat.arrayof.ptr);
             glUniform1i(useShadowsLoc, 0);
         }
+        glUniform1f(shadowBrightnessLoc, shadowBrightness);
 
         // Texture 6 - light clusters
         glActiveTexture(GL_TEXTURE6);

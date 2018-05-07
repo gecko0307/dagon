@@ -67,12 +67,21 @@ class FirstPersonView: EventListener, View
         
             camera.pitch += pitch_m;
             camera.turn += turn_m;
+            
+            camera.weaponPitch += pitch_m * camera.weaponPitchCoef;
+            
             float pitchLimitMax = 60.0f;
             float pitchLimitMin = -60.0f;
             if (camera.pitch > pitchLimitMax)
+            {
                 camera.pitch = pitchLimitMax;
+                camera.weaponPitch = pitchLimitMax * camera.weaponPitchCoef;
+            }
             else if (camera.pitch < pitchLimitMin)
+            {
                 camera.pitch = pitchLimitMin;
+                camera.weaponPitch = pitchLimitMin * camera.weaponPitchCoef;
+            }
         }
         
         camera.update(dt);

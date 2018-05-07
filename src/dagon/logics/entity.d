@@ -102,6 +102,10 @@ class Entity: Owner
     Attach attach = Attach.Parent;
     
     bool useMotionBlur = true;
+    
+    bool clearZbuffer = false;
+    
+    int layer = 1;
 
     this(EventManager emngr, Owner owner)
     {
@@ -251,14 +255,20 @@ class Entity: Owner
             rcLocal.modelMatrix = translationMatrix(rcLocal.cameraPosition) * transformation;
             rcLocal.invModelMatrix = invTransformation * translationMatrix(-rcLocal.cameraPosition); 
 
-            rcLocal.prevModelViewProjMatrix = rcLocal.projectionMatrix * (rcLocal.prevViewMatrix * (translationMatrix(rcLocal.prevCameraPosition) * prevTransformation));
+            if (useMotionBlur)
+                rcLocal.prevModelViewProjMatrix = rcLocal.projectionMatrix * (rcLocal.prevViewMatrix * (translationMatrix(rcLocal.prevCameraPosition) * prevTransformation));
+            else
+                rcLocal.prevModelViewProjMatrix = rcLocal.projectionMatrix * (rcLocal.viewMatrix * (translationMatrix(rcLocal.cameraPosition) * transformation));
         }
         else
         {
             rcLocal.modelMatrix = absoluteTransformation;
             rcLocal.invModelMatrix = invAbsoluteTransformation;
             
-            rcLocal.prevModelViewProjMatrix = rcLocal.projectionMatrix * (rcLocal.prevViewMatrix * prevAbsoluteTransformation);
+            if (useMotionBlur)
+                rcLocal.prevModelViewProjMatrix = rcLocal.projectionMatrix * (rcLocal.prevViewMatrix * prevAbsoluteTransformation);
+            else
+                rcLocal.prevModelViewProjMatrix = rcLocal.projectionMatrix * (rcLocal.viewMatrix * absoluteTransformation);
         }
         
         rcLocal.modelViewMatrix = rcLocal.viewMatrix * rcLocal.modelMatrix;
@@ -275,6 +285,9 @@ class Entity: Owner
             rcLocal.overrideMaterial.bind(&rcLocal);
         else if (material)
             material.bind(&rcLocal);
+
+        if (clearZbuffer)
+            glClear(GL_DEPTH_BUFFER_BIT);
 
         if (drawable)
             drawable.render(&rcLocal);
