@@ -71,11 +71,13 @@ class PostFilterHDR: PostFilter
         uniform sampler2D fbVelocity;
         uniform sampler2D colorTable;
         uniform sampler2D vignette;
+        uniform sampler2D blurred;
         uniform vec2 viewSize;
         uniform float exposure;
         uniform int tonemapFunction;
         uniform bool useLUT;
         uniform bool useVignette;
+        uniform bool useGlow;
         
         // TODO: make uniform
         const float motionBlurAmount = 1.0;
@@ -165,6 +167,13 @@ class PostFilterHDR: PostFilter
             
             vec3 res = sum * invSamples;
             
+            if (useGlow)
+            {
+                vec3 glow = texture(blurred, texCoord).rgb;
+                float lum = glow.r * 0.2126 + glow.g * 0.7152 + glow.b * 0.0722;
+                res += (glow * glow) * clamp(lum, 0.0, 1.0) * 0.5;
+            }
+            
             if (tonemapFunction == 2)
                 res = tonemapFilmicACES(res, exposure);
             else if (tonemapFunction == 1)
@@ -198,6 +207,8 @@ class PostFilterHDR: PostFilter
     GLint useLUTLoc;
     GLint vignetteLoc;
     GLint useVignetteLoc;
+    GLint blurredLoc;
+    GLint useGlowLoc;
     
     float minLuminance = 0.01f;
     float maxLuminance = 100000.0f;
@@ -207,8 +218,10 @@ class PostFilterHDR: PostFilter
     float exposure = 0.0f;
     TonemapFunction tonemapFunction = TonemapFunction.Reinhard;
     
-    Texture colorTable;
+    bool glowEnabled = false;
     
+    GLuint blurredScene;
+    Texture colorTable;
     Texture vignette;
 
     this(Framebuffer inputBuffer, Framebuffer outputBuffer, Owner o)
@@ -221,6 +234,8 @@ class PostFilterHDR: PostFilter
         useLUTLoc = glGetUniformLocation(shaderProgram, "useLUT");
         vignetteLoc = glGetUniformLocation(shaderProgram, "vignette");
         useVignetteLoc = glGetUniformLocation(shaderProgram, "useVignette");
+        blurredLoc = glGetUniformLocation(shaderProgram, "blurred");
+        useGlowLoc = glGetUniformLocation(shaderProgram, "useGlow");
     }
     
     override void bind(RenderingContext* rc)
@@ -237,6 +252,9 @@ class PostFilterHDR: PostFilter
         glActiveTexture(GL_TEXTURE4);
         if (vignette)
             vignette.bind();
+            
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, blurredScene);
         glActiveTexture(GL_TEXTURE0);
         
         glUniform1i(colorTableLoc, 3);
@@ -245,6 +263,8 @@ class PostFilterHDR: PostFilter
         glUniform1i(useLUTLoc, (colorTable !is null));
         glUniform1i(vignetteLoc, 4);
         glUniform1i(useVignetteLoc, (vignette !is null));
+        glUniform1i(blurredLoc, 5);
+        glUniform1i(useGlowLoc, glowEnabled);
     }
     
     override void unbind(RenderingContext* rc)
@@ -257,6 +277,10 @@ class PostFilterHDR: PostFilter
         glActiveTexture(GL_TEXTURE4);
         if (vignette)
             vignette.unbind();
+        glActiveTexture(GL_TEXTURE0);
+        
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, 0);
         glActiveTexture(GL_TEXTURE0);
     }
 }

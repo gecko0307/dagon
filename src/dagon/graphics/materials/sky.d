@@ -102,8 +102,8 @@ class SkyBackend: GLSLMaterialBackend
         
         // TODO: make uniform
         const vec3 groundColor = vec3(0.06, 0.05, 0.05);
-        const float sunEnergy = 10.0;
-        const float skyEnergyMidday = 1.0;
+        const float sunEnergy = 50.0;
+        const float skyEnergyMidday = 5.0;
         const float skyEnergyTwilight = 0.001;
         const float skyEnergyMidnight = 0.001;
         const float groundEnergyMidday = 0.001;

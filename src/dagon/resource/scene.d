@@ -64,6 +64,7 @@ import dagon.graphics.postproc;
 import dagon.graphics.filters.fxaa;
 import dagon.graphics.filters.lens;
 import dagon.graphics.filters.hdr;
+import dagon.graphics.filters.blur;
 import dagon.logics.entity;
 
 class Scene: EventListener
@@ -379,6 +380,24 @@ class BaseScene3D: Scene
     
     Framebuffer sceneFramebuffer;
     PostFilterHDR hdr;
+
+    struct GlowFilters
+    {
+        BaseScene3D scene;
+        PostFilterBlur hblur;
+        PostFilterBlur vblur;
+    
+        void enabled(bool mode) @property
+        {
+            hblur.enabled = mode;
+            vblur.enabled = mode;
+            scene.hdr.glowEnabled = mode;
+        }
+    }
+    
+    GlowFilters glow;
+    Framebuffer hblurredFramebuffer;
+    Framebuffer vblurredFramebuffer;
     
     DynamicArray!PostFilter postFilters;
 
@@ -519,7 +538,18 @@ class BaseScene3D: Scene
         
         sceneFramebuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, true, true, assetManager);
         
-        hdr = New!PostFilterHDR(null, null, assetManager);
+        glow.scene = this;
+        
+        hblurredFramebuffer = New!Framebuffer(eventManager.windowWidth / 4, eventManager.windowHeight / 4, true, false, assetManager);
+        glow.hblur = New!PostFilterBlur(true, sceneFramebuffer, hblurredFramebuffer, assetManager);
+        postFilters.append(glow.hblur);
+        
+        vblurredFramebuffer = New!Framebuffer(eventManager.windowWidth / 4, eventManager.windowHeight / 4, true, false, assetManager);
+        glow.vblur = New!PostFilterBlur(false, hblurredFramebuffer, vblurredFramebuffer, assetManager);
+        postFilters.append(glow.vblur);
+        
+        hdr = New!PostFilterHDR(sceneFramebuffer, null, assetManager);
+        hdr.blurredScene = vblurredFramebuffer.colorTexture;
         postFilters.append(hdr);
     }
     
@@ -660,11 +690,19 @@ class BaseScene3D: Scene
             e.render(rc);
     }
     
-    void prepareViewport()
+    void prepareViewport(Framebuffer b = null)
     {
         glEnable(GL_SCISSOR_TEST);
-        glScissor(0, 0, eventManager.windowWidth, eventManager.windowHeight);
-        glViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
+        if (b)
+        {
+            glScissor(0, 0, b.width, b.height);
+            glViewport(0, 0, b.width, b.height);
+        }
+        else
+        {
+            glScissor(0, 0, eventManager.windowWidth, eventManager.windowHeight);
+            glViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
+        }
         if (environment)
             glClearColor(environment.backgroundColor.r, environment.backgroundColor.g, environment.backgroundColor.b, environment.backgroundColor.a);
     }
@@ -690,6 +728,7 @@ class BaseScene3D: Scene
         }
         
         foreach(i, f; postFilters.data)
+        if (f.enabled)
         {
             if (i < postFilters.length-1)
             {
@@ -704,12 +743,19 @@ class BaseScene3D: Scene
                 else
                     f.inputBuffer = postFilters.data[i-1].outputBuffer;
             }
+            
+            RenderingContext rcTmp;
         
             if (f.outputBuffer)
+            {
                 f.outputBuffer.bind();
-            prepareViewport();
+                rcTmp.initOrtho(eventManager, environment, f.outputBuffer.width, f.outputBuffer.height, 0.0f, 100.0f);
+            }
+            else
+                rcTmp = rc2d;
+            prepareViewport(f.outputBuffer);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            f.render(&rc2d);
+            f.render(&rcTmp);
             if (f.outputBuffer)
                 f.outputBuffer.unbind();
         }

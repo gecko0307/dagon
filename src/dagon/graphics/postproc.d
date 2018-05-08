@@ -166,8 +166,22 @@ class PostFilter: Owner
         
         glUniformMatrix4fv(prevModelViewProjMatrixLoc, 1, 0, rc.prevModelViewProjMatrix.arrayof.ptr);
         
-        Vector2f viewportSize = Vector2f(inputBuffer.width, inputBuffer.height);
+        Vector2f viewportSize;
+        
+        if (outputBuffer)
+            viewportSize = Vector2f(outputBuffer.width, outputBuffer.height);
+        else
+            viewportSize = Vector2f(rc.eventManager.windowWidth, rc.eventManager.windowHeight);
         glUniform2fv(viewportSizeLoc, 1, viewportSize.arrayof.ptr);
+        
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, inputBuffer.colorTexture);
+        
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, inputBuffer.depthTexture);
+        
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, inputBuffer.velocityTexture);
 
         glUniform1i(fbColorLoc, 0);
         glUniform1i(fbDepthLoc, 1);
@@ -178,6 +192,17 @@ class PostFilter: Owner
     
     void unbind(RenderingContext* rc)
     {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE0);
+        
         glUseProgram(0);
     }
     

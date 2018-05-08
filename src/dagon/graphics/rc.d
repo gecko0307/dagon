@@ -107,4 +107,10 @@ struct RenderingContext
         init(emngr, env);
         projectionMatrix = orthoMatrix(0.0f, emngr.windowWidth, emngr.windowHeight, 0.0f, znear, zfar);
     }
+    
+    void initOrtho(EventManager emngr, Environment env, float w, float h, float znear, float zfar)
+    {
+        init(emngr, env);
+        projectionMatrix = orthoMatrix(0.0f, w, h, 0.0f, znear, zfar);
+    }
 }

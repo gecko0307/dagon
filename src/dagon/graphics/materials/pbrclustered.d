@@ -339,7 +339,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
 
         // TODO: make uniform
         const vec3 groundColor = vec3(0.06, 0.05, 0.05);
-        const float skyEnergyMidday = 1.0;
+        const float skyEnergyMidday = 5.0;
         const float skyEnergyTwilight = 0.001;
         const float skyEnergyMidnight = 0.001;
         const float groundEnergyMidday = 0.001;
@@ -530,6 +530,7 @@ class PBRClusteredBackend: GLSLMaterialBackend
                 vec3 specular = numerator / max(denominator, 0.001);
                 
                 vec3 radiance = lightColor * attenuation;
+                
                 Lo += (kD * albedo / PI + specular) * radiance * NL;
             }
             
