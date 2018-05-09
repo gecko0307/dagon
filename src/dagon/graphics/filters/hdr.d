@@ -94,8 +94,9 @@ class PostFilterHDR: PostFilter
 
         vec3 tonemapHable(vec3 x, float expo)
         {
+            const vec3 whitePoint = vec3(11.2);
             vec3 c = x * expo;
-            c = hableFunc(c * 2.0) * (1.0 / hableFunc(vec3(11.2)));
+            c = hableFunc(c * 2.0) * (1.0 / hableFunc(whitePoint));
             return pow(c, vec3(1.0 / 2.2));
         }
         
@@ -113,7 +114,7 @@ class PostFilterHDR: PostFilter
             float c = 2.43;
             float d = 0.59;
             float e = 0.14;
-            vec3 res = x * expo;
+            vec3 res = x * expo * 0.6;
             res = clamp((res*(a*res+b))/(res*(c*res+d)+e), 0.0, 1.0);
             return pow(res, vec3(1.0 / 2.2));
         }
@@ -148,25 +149,28 @@ class PostFilterHDR: PostFilter
         }
 
         void main()
-        {
-            vec4 v = texture(fbVelocity, texCoord);
-            vec2 blurVec = v.xy * motionBlurAmount;
-
-            const int samples = 10;
-            const float invSamples = 1.0 / float(samples);
-            const float invSamplesMinusOne = 1.0 / float(samples - 1);
+        {            
+            // TODO: make uniform
+            const float timeStep = 1.0 / 60.0; 
+            const int samples = 20;
+            const float shutterFps = 30.0;
             
-            vec2 startPos = texCoord - blurVec * 0.5;
-            vec2 step = blurVec * invSamplesMinusOne; 
-            vec3 sum = vec3(0.0);
-    
-            for (float i = 0; i < samples; i++)
+            vec2 blurVec = texture(fbVelocity, texCoord).xy;
+            blurVec = blurVec / (timeStep * shutterFps);
+            float invSamplesMinusOne = 1.0 / float(samples - 1);
+
+            vec3 res = texture(fbColor, texCoord).rgb;
+            float usedSamples = 1.0;
+            
+            for (float i = 1.0; i < samples; i++)
             {
-                vec2 pos = startPos + step * i;
-                sum += texture(fbColor, pos).rgb;
+                vec2 offset = blurVec * (i * invSamplesMinusOne - 0.5);
+                float mask = texture(fbVelocity, texCoord + offset).w;
+                res += texture(fbColor, texCoord + offset).rgb * mask;
+                usedSamples += mask;
             }
             
-            vec3 res = sum * invSamples;
+            res = res / usedSamples;
             
             if (useGlow)
             {
