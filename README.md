@@ -29,13 +29,16 @@ Currently Dagon has the following features:
 * Built-in camera logics for quick and easy navigation (freeview and first person style view)
 * [Box](https://github.com/gecko0307/box) container support for assets.
 
+Screenshots:
+
 [![Screenshot1](https://raw.githubusercontent.com/gecko0307/dagon-demo/master/screenshots/car-thumb.jpg)](https://raw.githubusercontent.com/gecko0307/dagon-demo/master/screenshots/car.jpg)
 [![Screenshot2](https://raw.githubusercontent.com/gecko0307/dagon-demo/master/screenshots/characters-thumb.jpg)](https://raw.githubusercontent.com/gecko0307/dagon-demo/master/screenshots/characters.jpg)
 [![Screenshot3](https://raw.githubusercontent.com/gecko0307/dagon-demo/master/screenshots/lights-thumb.jpg)](https://raw.githubusercontent.com/gecko0307/dagon-demo/master/screenshots/lights.jpg)
 
-Video:
+Videos:
 
 [https://www.youtube.com/watch?v=pxu9sxL9MIM](https://www.youtube.com/watch?v=pxu9sxL9MIM)
+[https://www.youtube.com/watch?v=3_BqgOLCvyE](https://www.youtube.com/watch?v=3_BqgOLCvyE)
 
 Dagon is still under development and lacks a lot of important functionality. Currently it is not recommended to use Dagon in production due to unstable API.
 
@@ -45,7 +48,6 @@ Upcoming plans:
 * Water with reflections and refractions
 * Terrain renderer
 * SSAO
-* Bloom
 
 Demos
 -----
