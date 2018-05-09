@@ -78,6 +78,7 @@ class PostFilterHDR: PostFilter
         uniform bool useLUT;
         uniform bool useVignette;
         uniform bool useGlow;
+        uniform float glowBrightness;
         
         // TODO: make uniform
         const float motionBlurAmount = 1.0;
@@ -171,7 +172,7 @@ class PostFilterHDR: PostFilter
             {
                 vec3 glow = texture(blurred, texCoord).rgb;
                 float lum = glow.r * 0.2126 + glow.g * 0.7152 + glow.b * 0.0722;
-                res += (glow * glow) * clamp(lum, 0.0, 1.0) * 0.5;
+                res += glow * clamp(lum, 0.0, 1.0) * glowBrightness;
             }
             
             if (tonemapFunction == 2)
@@ -209,6 +210,7 @@ class PostFilterHDR: PostFilter
     GLint useVignetteLoc;
     GLint blurredLoc;
     GLint useGlowLoc;
+    GLint glowBrightnessLoc;
     
     float minLuminance = 0.01f;
     float maxLuminance = 100000.0f;
@@ -219,6 +221,7 @@ class PostFilterHDR: PostFilter
     TonemapFunction tonemapFunction = TonemapFunction.Reinhard;
     
     bool glowEnabled = false;
+    float glowBrightness = 1.0;
     
     GLuint blurredScene;
     Texture colorTable;
@@ -236,6 +239,7 @@ class PostFilterHDR: PostFilter
         useVignetteLoc = glGetUniformLocation(shaderProgram, "useVignette");
         blurredLoc = glGetUniformLocation(shaderProgram, "blurred");
         useGlowLoc = glGetUniformLocation(shaderProgram, "useGlow");
+        glowBrightnessLoc = glGetUniformLocation(shaderProgram, "glowBrightness");
     }
     
     override void bind(RenderingContext* rc)
@@ -265,6 +269,7 @@ class PostFilterHDR: PostFilter
         glUniform1i(useVignetteLoc, (vignette !is null));
         glUniform1i(blurredLoc, 5);
         glUniform1i(useGlowLoc, glowEnabled);
+        glUniform1f(glowBrightnessLoc, glowBrightness);
     }
     
     override void unbind(RenderingContext* rc)

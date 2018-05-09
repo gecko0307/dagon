@@ -68,7 +68,18 @@ class PostFilterBlur: PostFilter
         in vec2 texCoord;
         out vec4 frag_color;
         
-        const float blurRadius = 10.0;
+        vec4 blur9(sampler2D image, vec2 uv, vec2 resolution, vec2 direction)
+        {
+            vec4 color = vec4(0.0);
+            vec2 off1 = vec2(1.3846153846) * direction;
+            vec2 off2 = vec2(3.2307692308) * direction;
+            color += texture2D(image, uv) * 0.2270270270;
+            color += texture2D(image, uv + (off1 / resolution)) * 0.3162162162;
+            color += texture2D(image, uv - (off1 / resolution)) * 0.3162162162;
+            color += texture2D(image, uv + (off2 / resolution)) * 0.0702702703;
+            color += texture2D(image, uv - (off2 / resolution)) * 0.0702702703;
+            return color;
+        }
         
         const float weight[5] = float[](0.227027, 0.1945946, 0.1216216, 0.054054, 0.016216);
 
@@ -80,13 +91,7 @@ class PostFilterBlur: PostFilter
             vec3 color;
             if (enabled)
             {
-                color = texture(fbColor, texCoord).rgb * weight[0];
-                
-                for (int i = 1; i < 5; ++i)
-                {
-                    color += texture(fbColor, texCoord + direction * (float(i) * invScreenSize)).rgb * weight[i];
-                    color += texture(fbColor, texCoord - direction * (float(i) * invScreenSize)).rgb * weight[i];
-                }
+                color = blur9(fbColor, texCoord, viewSize, direction).rgb;            
             }
             else
             {                
@@ -112,6 +117,7 @@ class PostFilterBlur: PostFilter
     GLint directionLoc;
     
     Vector2f direction;
+    float radius = 1.0f; 
 
     this(bool horizontal, Framebuffer inputBuffer, Framebuffer outputBuffer, Owner o)
     {
@@ -129,6 +135,7 @@ class PostFilterBlur: PostFilter
     {
         super.bind(rc);
         
-        glUniform2fv(directionLoc, 1, direction.arrayof.ptr);
+        Vector2f dirScaled = direction * radius;
+        glUniform2fv(directionLoc, 1, dirScaled.arrayof.ptr);
     }
 }
