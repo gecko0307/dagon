@@ -34,11 +34,11 @@ import dagon.graphics.framebuffer;
 import dagon.graphics.texture;
 import dagon.graphics.rc;
 
-enum TonemapFunction
+enum Tonemapper
 {
     Reinhard = 0,
     Hable = 1,
-    Filmic = 2
+    ACES = 2
 }
 
 class PostFilterHDR: PostFilter
@@ -73,15 +73,20 @@ class PostFilterHDR: PostFilter
         uniform sampler2D vignette;
         uniform sampler2D blurred;
         uniform vec2 viewSize;
-        uniform float exposure;
-        uniform int tonemapFunction;
-        uniform bool useLUT;
-        uniform bool useVignette;
+        uniform float timeStep; // = 1.0 / 60.0; 
+
+        uniform bool useMotionBlur;
+        uniform int motionBlurSamples;
+        uniform float shutterFps;
+        
         uniform bool useGlow;
         uniform float glowBrightness;
         
-        // TODO: make uniform
-        const float motionBlurAmount = 1.0;
+        uniform float exposure;
+        uniform int tonemapFunction;
+        
+        uniform bool useLUT;
+        uniform bool useVignette;
         
         in vec2 texCoord;
         
@@ -107,7 +112,7 @@ class PostFilterHDR: PostFilter
             return pow(c, vec3(1.0 / 2.2));
         }
         
-        vec3 tonemapFilmicACES(vec3 x, float expo)
+        vec3 tonemapACES(vec3 x, float expo)
         {
             float a = 2.51;
             float b = 0.03;
@@ -149,28 +154,26 @@ class PostFilterHDR: PostFilter
         }
 
         void main()
-        {            
-            // TODO: make uniform
-            const float timeStep = 1.0 / 60.0; 
-            const int samples = 20;
-            const float shutterFps = 30.0;
-            
-            vec2 blurVec = texture(fbVelocity, texCoord).xy;
-            blurVec = blurVec / (timeStep * shutterFps);
-            float invSamplesMinusOne = 1.0 / float(samples - 1);
-
+        {
             vec3 res = texture(fbColor, texCoord).rgb;
-            float usedSamples = 1.0;
             
-            for (float i = 1.0; i < samples; i++)
+            if (useMotionBlur)
             {
-                vec2 offset = blurVec * (i * invSamplesMinusOne - 0.5);
-                float mask = texture(fbVelocity, texCoord + offset).w;
-                res += texture(fbColor, texCoord + offset).rgb * mask;
-                usedSamples += mask;
+                vec2 blurVec = texture(fbVelocity, texCoord).xy;
+                blurVec = blurVec / (timeStep * shutterFps);
+                float invSamplesMinusOne = 1.0 / float(motionBlurSamples - 1);
+                float usedSamples = 1.0;
+                
+                for (float i = 1.0; i < motionBlurSamples; i++)
+                {
+                    vec2 offset = blurVec * (i * invSamplesMinusOne - 0.5);
+                    float mask = texture(fbVelocity, texCoord + offset).w;
+                    res += texture(fbColor, texCoord + offset).rgb * mask;
+                    usedSamples += mask;
+                }
+                
+                res = res / usedSamples;
             }
-            
-            res = res / usedSamples;
             
             if (useGlow)
             {
@@ -180,7 +183,7 @@ class PostFilterHDR: PostFilter
             }
             
             if (tonemapFunction == 2)
-                res = tonemapFilmicACES(res, exposure);
+                res = tonemapACES(res, exposure);
             else if (tonemapFunction == 1)
                 res = tonemapHable(res, exposure);
             else
@@ -215,6 +218,10 @@ class PostFilterHDR: PostFilter
     GLint blurredLoc;
     GLint useGlowLoc;
     GLint glowBrightnessLoc;
+    GLint useMotionBlurLoc;
+    GLint motionBlurSamplesLoc;
+    GLint shutterFpsLoc;
+    GLint timeStepLoc;
     
     float minLuminance = 0.01f;
     float maxLuminance = 100000.0f;
@@ -222,7 +229,11 @@ class PostFilterHDR: PostFilter
     float adaptationSpeed = 4.0f;
     
     float exposure = 0.0f;
-    TonemapFunction tonemapFunction = TonemapFunction.Reinhard;
+    Tonemapper tonemapFunction = Tonemapper.Reinhard;
+    
+    bool mblurEnabled = false;
+    int motionBlurSamples = 20;
+    float shutterFps = 24.0;
     
     bool glowEnabled = false;
     float glowBrightness = 1.0;
@@ -244,6 +255,10 @@ class PostFilterHDR: PostFilter
         blurredLoc = glGetUniformLocation(shaderProgram, "blurred");
         useGlowLoc = glGetUniformLocation(shaderProgram, "useGlow");
         glowBrightnessLoc = glGetUniformLocation(shaderProgram, "glowBrightness");
+        useMotionBlurLoc = glGetUniformLocation(shaderProgram, "useMotionBlur");
+        motionBlurSamplesLoc = glGetUniformLocation(shaderProgram, "motionBlurSamples");
+        shutterFpsLoc = glGetUniformLocation(shaderProgram, "shutterFps");
+        timeStepLoc = glGetUniformLocation(shaderProgram, "timeStep");
     }
     
     override void bind(RenderingContext* rc)
@@ -274,6 +289,10 @@ class PostFilterHDR: PostFilter
         glUniform1i(blurredLoc, 5);
         glUniform1i(useGlowLoc, glowEnabled);
         glUniform1f(glowBrightnessLoc, glowBrightness);
+        glUniform1i(useMotionBlurLoc, mblurEnabled);
+        glUniform1i(motionBlurSamplesLoc, motionBlurSamples);
+        glUniform1f(shutterFpsLoc, shutterFps);
+        glUniform1f(timeStepLoc, rc.eventManager.deltaTime);
     }
     
     override void unbind(RenderingContext* rc)

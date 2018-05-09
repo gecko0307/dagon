@@ -55,6 +55,7 @@ import dagon.graphics.view;
 import dagon.graphics.shapes;
 import dagon.graphics.clustered;
 import dagon.graphics.shadow;
+import dagon.graphics.texture;
 import dagon.graphics.materials.generic;
 import dagon.graphics.materials.pbrclustered;
 import dagon.graphics.materials.sky;
@@ -379,31 +380,106 @@ class BaseScene3D: Scene
     View view;
     
     Framebuffer sceneFramebuffer;
-    PostFilterHDR hdr;
-
-    struct GlowFilters
+    PostFilterHDR hdrFilter;
+    
+    Framebuffer hblurredFramebuffer;
+    Framebuffer vblurredFramebuffer;
+    PostFilterBlur hblur;
+    PostFilterBlur vblur;
+    
+    struct HDRSettings
     {
         BaseScene3D scene;
-        PostFilterBlur hblur;
-        PostFilterBlur vblur;
+        
+        void tonemapper(Tonemapper f) @property
+        {
+            scene.hdrFilter.tonemapFunction = f;
+        }
+        
+        void minLuminance(float l) @property
+        {
+            scene.hdrFilter.minLuminance = l;
+        }
+        
+        void maxLuminance(float l) @property
+        {
+            scene.hdrFilter.maxLuminance = l;
+        }
+        
+        void keyValue(float k) @property
+        {
+            scene.hdrFilter.keyValue = k;
+        }
+        
+        void adaptationSpeed(float s) @property
+        {
+            scene.hdrFilter.adaptationSpeed = s;
+        }
+    }
+
+    struct GlowSettings
+    {
+        BaseScene3D scene;
         uint radius;
     
         void enabled(bool mode) @property
         {
-            hblur.enabled = mode;
-            vblur.enabled = mode;
-            scene.hdr.glowEnabled = mode;
+            scene.hblur.enabled = mode;
+            scene.vblur.enabled = mode;
+            scene.hdrFilter.glowEnabled = mode;
         }
         
         void brightness(float b) @property
         {
-            scene.hdr.glowBrightness = b;
+            scene.hdrFilter.glowBrightness = b;
         }
     }
     
-    GlowFilters glow;
-    Framebuffer hblurredFramebuffer;
-    Framebuffer vblurredFramebuffer;
+    struct MotionBlurSettings
+    {
+        BaseScene3D scene;
+        
+        void enabled(bool mode) @property
+        {
+            scene.hdrFilter.mblurEnabled = mode;
+        }
+        
+        void samples(uint s) @property
+        {
+            scene.hdrFilter.motionBlurSamples = s;
+        }
+        
+        void shutterSpeed(float s) @property
+        {
+            scene.hdrFilter.shutterFps = 1.0 / s;
+        }
+    }
+    
+    struct LUTSettings
+    {
+        BaseScene3D scene;
+        
+        void texture(Texture tex) @property
+        {
+            scene.hdrFilter.colorTable = tex;
+        }
+    }
+    
+    struct VignetteSettings
+    {
+        BaseScene3D scene;
+        
+        void texture(Texture tex) @property
+        {
+            scene.hdrFilter.vignette = tex;
+        }
+    }
+    
+    HDRSettings hdr;
+    MotionBlurSettings motionBlur;
+    GlowSettings glow;
+    LUTSettings lut;
+    VignetteSettings vignette;
     
     DynamicArray!PostFilter postFilters;
 
@@ -544,18 +620,22 @@ class BaseScene3D: Scene
         
         sceneFramebuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, true, true, assetManager);
         
+        hdr.scene = this;
+        motionBlur.scene = this;
         glow.scene = this;
         glow.radius = 3;
+        lut.scene = this;
+        vignette.scene = this;
         
         hblurredFramebuffer = New!Framebuffer(eventManager.windowWidth / 2, eventManager.windowHeight / 2, true, false, assetManager);
-        glow.hblur = New!PostFilterBlur(true, sceneFramebuffer, hblurredFramebuffer, assetManager);
+        hblur = New!PostFilterBlur(true, sceneFramebuffer, hblurredFramebuffer, assetManager);
         
         vblurredFramebuffer = New!Framebuffer(eventManager.windowWidth / 2, eventManager.windowHeight / 2, true, false, assetManager);
-        glow.vblur = New!PostFilterBlur(false, hblurredFramebuffer, vblurredFramebuffer, assetManager);
+        vblur = New!PostFilterBlur(false, hblurredFramebuffer, vblurredFramebuffer, assetManager);
         
-        hdr = New!PostFilterHDR(sceneFramebuffer, null, assetManager);
-        hdr.blurredScene = vblurredFramebuffer.colorTexture;
-        postFilters.append(hdr);
+        hdrFilter = New!PostFilterHDR(sceneFramebuffer, null, assetManager);
+        hdrFilter.blurredScene = vblurredFramebuffer.colorTexture;
+        postFilters.append(hdrFilter);
     }
     
     PostFilterFXAA addFilterFXAA()
@@ -718,26 +798,26 @@ class BaseScene3D: Scene
         
         foreach(i; 1..iterations+1)
         {
-            glow.hblur.outputBuffer.bind();
-            rcTmp.initOrtho(eventManager, environment, glow.hblur.outputBuffer.width, glow.hblur.outputBuffer.height, 0.0f, 100.0f);
-            prepareViewport(glow.hblur.outputBuffer);
+            hblur.outputBuffer.bind();
+            rcTmp.initOrtho(eventManager, environment, hblur.outputBuffer.width, hblur.outputBuffer.height, 0.0f, 100.0f);
+            prepareViewport(hblur.outputBuffer);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glow.hblur.radius = i;
-            glow.hblur.render(&rcTmp);
-            glow.hblur.outputBuffer.unbind();
+            hblur.radius = i;
+            hblur.render(&rcTmp);
+            hblur.outputBuffer.unbind();
             
-            glow.vblur.outputBuffer.bind();
-            rcTmp.initOrtho(eventManager, environment, glow.vblur.outputBuffer.width, glow.vblur.outputBuffer.height, 0.0f, 100.0f);
-            prepareViewport(glow.vblur.outputBuffer);
+            vblur.outputBuffer.bind();
+            rcTmp.initOrtho(eventManager, environment, vblur.outputBuffer.width, vblur.outputBuffer.height, 0.0f, 100.0f);
+            prepareViewport(vblur.outputBuffer);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glow.vblur.radius = i;
-            glow.vblur.render(&rcTmp);
-            glow.vblur.outputBuffer.unbind();
+            vblur.radius = i;
+            vblur.render(&rcTmp);
+            vblur.outputBuffer.unbind();
             
-            glow.hblur.inputBuffer = glow.vblur.outputBuffer;
+            hblur.inputBuffer = vblur.outputBuffer;
         }
         
-        glow.hblur.inputBuffer = sceneFramebuffer;
+        hblur.inputBuffer = sceneFramebuffer;
     }
 
     override void onRender()
@@ -754,10 +834,10 @@ class BaseScene3D: Scene
         float lum = sceneFramebuffer.averageLuminance();
         if (!isNaN(lum))
         {
-            float newExposure = hdr.keyValue * (1.0f / clamp(lum, hdr.minLuminance, hdr.maxLuminance));
+            float newExposure = hdrFilter.keyValue * (1.0f / clamp(lum, hdrFilter.minLuminance, hdrFilter.maxLuminance));
             
-            float exposureDelta = newExposure - hdr.exposure;
-            hdr.exposure += exposureDelta * hdr.adaptationSpeed * eventManager.deltaTime;
+            float exposureDelta = newExposure - hdrFilter.exposure;
+            hdrFilter.exposure += exposureDelta * hdrFilter.adaptationSpeed * eventManager.deltaTime;
         }
         
         renderBlur(glow.radius);
