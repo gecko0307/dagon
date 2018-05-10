@@ -57,7 +57,7 @@ import dagon.graphics.clustered;
 import dagon.graphics.shadow;
 import dagon.graphics.texture;
 import dagon.graphics.materials.generic;
-import dagon.graphics.materials.pbrclustered;
+import dagon.graphics.materials.standard;
 import dagon.graphics.materials.sky;
 import dagon.graphics.materials.hud;
 import dagon.graphics.framebuffer;
@@ -370,7 +370,7 @@ class BaseScene3D: Scene
     ClusteredLightManager lightManager;
     CascadedShadowMap shadowMap;
 
-    PBRClusteredBackend defaultMaterialBackend;
+    StandardBackend defaultMaterialBackend;
     GenericMaterial defaultMaterial3D;
     
     SkyBackend skyMaterialBackend;
@@ -609,7 +609,7 @@ class BaseScene3D: Scene
         environment = New!Environment(assetManager);
         
         lightManager = New!ClusteredLightManager(200.0f, 100, assetManager);
-        defaultMaterialBackend = New!PBRClusteredBackend(lightManager, assetManager);
+        defaultMaterialBackend = New!StandardBackend(lightManager, assetManager);
         
         skyMaterialBackend = New!SkyBackend(assetManager);
         

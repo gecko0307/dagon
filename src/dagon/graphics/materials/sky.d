@@ -100,14 +100,12 @@ class SkyBackend: GLSLMaterialBackend
         layout(location = 1) out vec4 frag_velocity;
         layout(location = 2) out vec4 frag_luma;
         
-        // TODO: make uniform
-        const vec3 groundColor = vec3(0.06, 0.05, 0.05);
-        const float sunEnergy = 50.0;
-        const float skyEnergyMidday = 5.0;
-        const float skyEnergyTwilight = 0.001;
-        const float skyEnergyMidnight = 0.001;
-        const float groundEnergyMidday = 0.001;
-        const float groundEnergyNight = 0.0;
+        uniform vec3 groundColor;
+        uniform float skyEnergy;
+        uniform float groundEnergy;
+        uniform float sunEnergy;
+
+        //const float sunEnergy = 50.0;
         
         uniform sampler2D environmentMap;
         uniform bool useEnvironmentMap;
@@ -148,16 +146,10 @@ class SkyBackend: GLSLMaterialBackend
             }
             else
             {                
-                float groundOrSky = pow(clamp(dot(-normalWorldN, vec3(0, 1, 0)), 0.0, 1.0), 0.5);
-                float groundOrSky2 = pow(clamp(dot(-normalWorldN, vec3(0, -1, 0)), 0.0, 1.0), 0.4);
+                float horizonOrZenith = pow(clamp(dot(-normalWorldN, vec3(0, 1, 0)), 0.0, 1.0), 0.5);
+                float groundOrSky = pow(clamp(dot(-normalWorldN, vec3(0, -1, 0)), 0.0, 1.0), 0.4);
                 
-                float sunAngle1 = clamp(dot(sunDirection, vec3(0, 1, 0)), 0.0, 1.0);
-                float sunAngle2 = clamp(dot(sunDirection, vec3(0, -1, 0)), 0.0, 1.0);
-                
-                float skyEnergy = mix(mix(skyEnergyTwilight, skyEnergyMidnight, sunAngle2), skyEnergyMidday, sunAngle1);
-                float groundEnergy = mix(groundEnergyNight, groundEnergyMidday, sunAngle1);
-                
-                env = mix(mix(skyHorizonColor * skyEnergy, groundColor * groundEnergy, groundOrSky2), skyZenithColor * skyEnergy, groundOrSky);
+                env = mix(mix(skyHorizonColor * skyEnergy, groundColor * groundEnergy, groundOrSky), skyZenithColor * skyEnergy, horizonOrZenith);
                 float sun = clamp(dot(-normalWorldN, sunDirection), 0.0, 1.0);
                 sun = min(float(sun > 0.999) + pow(sun, 96.0) * 0.2, 1.0);
                 env += sunColor * sun * sunEnergy;
@@ -183,7 +175,11 @@ class SkyBackend: GLSLMaterialBackend
     GLint locSunDirection;
     GLint locSkyZenithColor;
     GLint locSkyHorizonColor;
+    GLint locSkyEnergy;
     GLint locSunColor;
+    GLint locSunEnergy;
+    GLint locGroundColor;
+    GLint locGroundEnergy;
     
     GLint environmentMapLoc;
     GLint useEnvironmentMapLoc;
@@ -205,7 +201,11 @@ class SkyBackend: GLSLMaterialBackend
         locSunDirection = glGetUniformLocation(shaderProgram, "sunDirection");
         locSkyZenithColor = glGetUniformLocation(shaderProgram, "skyZenithColor");
         locSkyHorizonColor = glGetUniformLocation(shaderProgram, "skyHorizonColor");
+        locSkyEnergy = glGetUniformLocation(shaderProgram, "skyEnergy");
         locSunColor = glGetUniformLocation(shaderProgram, "sunColor");
+        locSunEnergy = glGetUniformLocation(shaderProgram, "sunEnergy");
+        locGroundColor = glGetUniformLocation(shaderProgram, "groundColor");
+        locGroundEnergy = glGetUniformLocation(shaderProgram, "groundEnergy");
         
         environmentMapLoc = glGetUniformLocation(shaderProgram, "environmentMap");
         useEnvironmentMapLoc = glGetUniformLocation(shaderProgram, "useEnvironmentMap");
@@ -229,8 +229,12 @@ class SkyBackend: GLSLMaterialBackend
         glUniform3fv(locSunDirection, 1, sunVector.arrayof.ptr);
         Vector3f sunColor = rc.environment.sunColor;
         glUniform3fv(locSunColor, 1, sunColor.arrayof.ptr);
+        glUniform1f(locSunEnergy, rc.environment.sunEnergy);
         glUniform3fv(locSkyZenithColor, 1, rc.environment.skyZenithColor.arrayof.ptr);
         glUniform3fv(locSkyHorizonColor, 1, rc.environment.skyHorizonColor.arrayof.ptr);
+        glUniform1f(locSkyEnergy, rc.environment.skyEnergy);
+        glUniform3fv(locGroundColor, 1, rc.environment.groundColor.arrayof.ptr);
+        glUniform1f(locGroundEnergy, rc.environment.groundEnergy);
         
         // Texture 4 - environment map
         bool useEnvmap = false;

@@ -73,7 +73,7 @@ class PostFilterHDR: PostFilter
         uniform sampler2D vignette;
         uniform sampler2D blurred;
         uniform vec2 viewSize;
-        uniform float timeStep; // = 1.0 / 60.0; 
+        uniform float timeStep;
 
         uniform bool useMotionBlur;
         uniform int motionBlurSamples;
@@ -179,7 +179,10 @@ class PostFilterHDR: PostFilter
             {
                 vec3 glow = texture(blurred, texCoord).rgb;
                 float lum = glow.r * 0.2126 + glow.g * 0.7152 + glow.b * 0.0722;
-                res += glow * clamp(lum, 0.0, 1.0) * glowBrightness;
+                const float minLuminance = 0.01;
+                const float maxLuminance = 1.0;
+                lum = (clamp(lum, minLuminance, maxLuminance) - minLuminance) / (maxLuminance - minLuminance);
+                res += glow * lum * glowBrightness;
             }
             
             if (tonemapFunction == 2)
@@ -223,7 +226,7 @@ class PostFilterHDR: PostFilter
     GLint shutterFpsLoc;
     GLint timeStepLoc;
     
-    float minLuminance = 0.01f;
+    float minLuminance = 0.001f;
     float maxLuminance = 100000.0f;
     float keyValue = 0.5f;
     float adaptationSpeed = 4.0f;
