@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Timur Gafarov
+Copyright (c) 2017-2018 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -66,6 +66,7 @@ import dagon.graphics.filters.fxaa;
 import dagon.graphics.filters.lens;
 import dagon.graphics.filters.hdr;
 import dagon.graphics.filters.blur;
+import dagon.graphics.filters.finalizer;
 import dagon.logics.entity;
 
 class Scene: EventListener
@@ -387,6 +388,11 @@ class BaseScene3D: Scene
     PostFilterBlur hblur;
     PostFilterBlur vblur;
     
+    PostFilterFXAA fxaaFilter;
+    PostFilterLensDistortion lensFilter;
+    
+    PostFilterFinalizer finalizerFilter;
+    
     struct HDRSettings
     {
         BaseScene3D scene;
@@ -396,24 +402,53 @@ class BaseScene3D: Scene
             scene.hdrFilter.tonemapFunction = f;
         }
         
+        Tonemapper tonemapper() @property
+        {
+            return scene.hdrFilter.tonemapFunction;
+        }
+        
+        
         void minLuminance(float l) @property
         {
             scene.hdrFilter.minLuminance = l;
         }
+        
+        float minLuminance() @property
+        {
+            return scene.hdrFilter.minLuminance;
+        }
+        
         
         void maxLuminance(float l) @property
         {
             scene.hdrFilter.maxLuminance = l;
         }
         
+        float maxLuminance() @property
+        {
+            return scene.hdrFilter.maxLuminance;
+        }
+        
+        
         void keyValue(float k) @property
         {
             scene.hdrFilter.keyValue = k;
         }
         
+        float keyValue() @property
+        {
+            return scene.hdrFilter.keyValue;
+        }
+        
+        
         void adaptationSpeed(float s) @property
         {
             scene.hdrFilter.adaptationSpeed = s;
+        }
+        
+        float adaptationSpeed() @property
+        {
+            return scene.hdrFilter.adaptationSpeed;
         }
     }
 
@@ -429,9 +464,20 @@ class BaseScene3D: Scene
             scene.hdrFilter.glowEnabled = mode;
         }
         
+        bool enabled() @property
+        {
+            return scene.hdrFilter.glowEnabled;
+        }
+        
+        
         void brightness(float b) @property
         {
             scene.hdrFilter.glowBrightness = b;
+        }
+        
+        float brightness() @property
+        {
+            return scene.hdrFilter.glowBrightness;
         }
     }
     
@@ -444,14 +490,32 @@ class BaseScene3D: Scene
             scene.hdrFilter.mblurEnabled = mode;
         }
         
+        bool enabled() @property
+        {
+            return scene.hdrFilter.mblurEnabled;
+        }
+        
+        
         void samples(uint s) @property
         {
             scene.hdrFilter.motionBlurSamples = s;
         }
         
+        uint samples() @property
+        {
+            return scene.hdrFilter.motionBlurSamples;
+        }
+        
+        
         void shutterSpeed(float s) @property
         {
+            scene.hdrFilter.shutterSpeed = s;
             scene.hdrFilter.shutterFps = 1.0 / s;
+        }
+        
+        float shutterSpeed() @property
+        {
+            return scene.hdrFilter.shutterSpeed;
         }
     }
     
@@ -463,6 +527,11 @@ class BaseScene3D: Scene
         {
             scene.hdrFilter.colorTable = tex;
         }
+        
+        Texture texture() @property
+        {
+            return scene.hdrFilter.colorTable;
+        }
     }
     
     struct VignetteSettings
@@ -473,6 +542,62 @@ class BaseScene3D: Scene
         {
             scene.hdrFilter.vignette = tex;
         }
+        
+        Texture texture() @property
+        {
+            return scene.hdrFilter.vignette;
+        }
+    }
+    
+    struct AASettings
+    {
+        BaseScene3D scene;
+        
+        void enabled(bool mode) @property
+        {
+            scene.fxaaFilter.enabled = mode;
+        }
+        
+        bool enabled() @property
+        {
+            return scene.fxaaFilter.enabled;
+        }
+    }
+    
+    struct LensSettings
+    {
+        BaseScene3D scene;
+        
+        void enabled(bool mode) @property
+        {
+            scene.lensFilter.enabled = mode;
+        }
+        
+        bool enabled() @property
+        {
+            return scene.lensFilter.enabled;
+        }
+        
+        void scale(float s) @property
+        {
+            scene.lensFilter.scale = s;
+        }
+        
+        float scale() @property
+        {
+            return scene.lensFilter.scale;
+        }
+        
+        
+        void dispersion(float d) @property
+        {
+            scene.lensFilter.dispersion = d;
+        }
+        
+        float dispersion() @property
+        {
+            return scene.lensFilter.dispersion;
+        }
     }
     
     HDRSettings hdr;
@@ -480,6 +605,8 @@ class BaseScene3D: Scene
     GlowSettings glow;
     LUTSettings lut;
     VignetteSettings vignette;
+    AASettings antiAliasing;
+    LensSettings lensDistortion;
     
     DynamicArray!PostFilter postFilters;
 
@@ -626,6 +753,8 @@ class BaseScene3D: Scene
         glow.radius = 3;
         lut.scene = this;
         vignette.scene = this;
+        antiAliasing.scene = this;
+        lensDistortion.scene = this;
         
         hblurredFramebuffer = New!Framebuffer(eventManager.windowWidth / 2, eventManager.windowHeight / 2, true, false, assetManager);
         hblur = New!PostFilterBlur(true, sceneFramebuffer, hblurredFramebuffer, assetManager);
@@ -636,20 +765,16 @@ class BaseScene3D: Scene
         hdrFilter = New!PostFilterHDR(sceneFramebuffer, null, assetManager);
         hdrFilter.blurredScene = vblurredFramebuffer.colorTexture;
         postFilters.append(hdrFilter);
-    }
-    
-    PostFilterFXAA addFilterFXAA()
-    {
-        PostFilterFXAA fxaa = New!PostFilterFXAA(null, null, assetManager);
-        postFilters.append(fxaa);
-        return fxaa;
-    }
-    
-    PostFilterLensDistortion addFilterLensDistortion()
-    {
-        PostFilterLensDistortion lens = New!PostFilterLensDistortion(null, null, assetManager);
-        postFilters.append(lens);
-        return lens;
+        
+        fxaaFilter = New!PostFilterFXAA(null, null, assetManager);
+        postFilters.append(fxaaFilter);
+        fxaaFilter.enabled = false;
+        
+        lensFilter = New!PostFilterLensDistortion(null, null, assetManager);
+        postFilters.append(lensFilter);
+        lensFilter.enabled = false;
+        
+        finalizerFilter = New!PostFilterFinalizer(null, null, assetManager);
     }
     
     PostFilter addFilter(PostFilter f)
@@ -738,9 +863,6 @@ class BaseScene3D: Scene
             
             if (view) // TODO: allow to turn this off
             {
-                //shadowMap.position = view.cameraPosition;
-                
-                // Better fit the frustum:
                 Vector3f cameraDirection = -view.invViewMatrix.forward;
                 cameraDirection.y = 0.0f;
                 cameraDirection = cameraDirection.normalized;
@@ -801,7 +923,6 @@ class BaseScene3D: Scene
             hblur.outputBuffer.bind();
             rcTmp.initOrtho(eventManager, environment, hblur.outputBuffer.width, hblur.outputBuffer.height, 0.0f, 100.0f);
             prepareViewport(hblur.outputBuffer);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             hblur.radius = i;
             hblur.render(&rcTmp);
             hblur.outputBuffer.unbind();
@@ -809,7 +930,6 @@ class BaseScene3D: Scene
             vblur.outputBuffer.bind();
             rcTmp.initOrtho(eventManager, environment, vblur.outputBuffer.width, vblur.outputBuffer.height, 0.0f, 100.0f);
             prepareViewport(vblur.outputBuffer);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             vblur.radius = i;
             vblur.render(&rcTmp);
             vblur.outputBuffer.unbind();
@@ -840,40 +960,33 @@ class BaseScene3D: Scene
             hdrFilter.exposure += exposureDelta * hdrFilter.adaptationSpeed * eventManager.deltaTime;
         }
         
-        renderBlur(glow.radius);
+        if (hdrFilter.glowEnabled)
+            renderBlur(glow.radius);
         
         RenderingContext rcTmp;
+        Framebuffer nextInput = sceneFramebuffer;
         
         foreach(i, f; postFilters.data)
         if (f.enabled)
         {
-            if (i < postFilters.length-1)
-            {
-                if (f.outputBuffer is null)
-                    f.outputBuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, false, false, assetManager);
-            }
-            
+            if (f.outputBuffer is null)
+                f.outputBuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, false, false, assetManager);
+                
             if (f.inputBuffer is null)
-            {
-                if (i == 0)
-                    f.inputBuffer = sceneFramebuffer;
-                else
-                    f.inputBuffer = postFilters.data[i-1].outputBuffer;
-            }
-        
-            if (f.outputBuffer)
-            {
-                f.outputBuffer.bind();
-                rcTmp.initOrtho(eventManager, environment, f.outputBuffer.width, f.outputBuffer.height, 0.0f, 100.0f);
-            }
-            else
-                rcTmp = rc2d;
+                f.inputBuffer = nextInput;
+                
+            nextInput = f.outputBuffer;
+            
+            f.outputBuffer.bind();
+            rcTmp.initOrtho(eventManager, environment, f.outputBuffer.width, f.outputBuffer.height, 0.0f, 100.0f);
             prepareViewport(f.outputBuffer);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             f.render(&rcTmp);
-            if (f.outputBuffer)
-                f.outputBuffer.unbind();
+            f.outputBuffer.unbind();
         }
+        
+        prepareViewport();
+        finalizerFilter.inputBuffer = nextInput;
+        finalizerFilter.render(&rc2d);
 
         renderEntities2D(&rc2d);
     }

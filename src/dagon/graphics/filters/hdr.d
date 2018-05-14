@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Timur Gafarov
+Copyright (c) 2017-2018 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -33,6 +33,17 @@ import dagon.graphics.postproc;
 import dagon.graphics.framebuffer;
 import dagon.graphics.texture;
 import dagon.graphics.rc;
+
+/*
+ * tonemapHable is based on a function by John Hable:
+ * http://filmicworlds.com/blog/filmic-tonemapping-operators
+ *
+ * tonemapACES is based on a function by Krzysztof Narkowicz:
+ * https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve
+ *
+ * LUT function (lookupColor) is based on a code by Matt DesLauriers:
+ * https://github.com/mattdesl/glsl-lut
+ */
 
 enum Tonemapper
 {
@@ -237,6 +248,7 @@ class PostFilterHDR: PostFilter
     bool mblurEnabled = false;
     int motionBlurSamples = 20;
     float shutterFps = 24.0;
+    float shutterSpeed = 1.0 / 24.0;
     
     bool glowEnabled = false;
     float glowBrightness = 1.0;

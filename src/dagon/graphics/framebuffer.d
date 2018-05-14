@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Timur Gafarov
+Copyright (c) 2017-2018 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -244,9 +244,11 @@ class Framebuffer: Owner
     void render()
     {        
         glDepthMask(0);
+        glDisable(GL_DEPTH_TEST);
         glBindVertexArray(vao);
         glDrawElements(GL_TRIANGLES, cast(uint)indices.length * 3, GL_UNSIGNED_INT, cast(void*)0);
         glBindVertexArray(0);
+        glEnable(GL_DEPTH_TEST);
         glDepthMask(1);
     }
     

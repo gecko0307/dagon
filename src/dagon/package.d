@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Timur Gafarov
+Copyright (c) 2017-2018 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -86,6 +86,7 @@ public
     import dagon.graphics.filters.lens;
     import dagon.graphics.filters.hdr;
     import dagon.graphics.filters.blur;
+    import dagon.graphics.filters.finalizer;
     
     import dagon.ui.font;
     import dagon.ui.ftfont;

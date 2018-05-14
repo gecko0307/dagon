@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Timur Gafarov
+Copyright (c) 2017-2018 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -27,9 +27,16 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.graphics.filters.lens;
 
+import derelict.opengl;
 import dagon.core.ownership;
 import dagon.graphics.postproc;
 import dagon.graphics.framebuffer;
+import dagon.graphics.rc;
+
+/*
+ * Implementation is based on a code by Jaume Sanchez:
+ * https://github.com/spite/Wagner
+ */
 
 class PostFilterLensDistortion: PostFilter
 {
@@ -63,28 +70,59 @@ class PostFilterLensDistortion: PostFilter
         in vec2 texCoord;
         out vec4 frag_color;
 
-        const float k = 0.1;
-        const float kcube = 0.0;
-        const float scale = 0.84;
-        const float dispersion = 0.01;
+        vec2 barrelDistortion(vec2 coord, float amt)
+        {
+            vec2 cc = coord - 0.5;
+            float dist = dot(cc, cc);
+            return coord + cc * dist * amt;
+        }
+
+        float sat(float t)
+        {
+            return clamp(t, 0.0, 1.0);
+        }
+
+        float linterp(float t)
+        {
+            return sat(1.0 - abs(2.0 * t - 1.0));
+        }
+
+        float remap(float t, float a, float b)
+        {
+            return sat((t - a) / (b - a));
+        }
+
+        vec4 spectrumOffset(float t)
+        {
+            vec4 ret;
+            float lo = step(t, 0.5);
+            float hi = 1.0 - lo;
+            float w = linterp(remap(t, 1.0/6.0, 5.0/6.0));
+            ret = vec4(lo, 1.0, hi, 1.0) * vec4(1.0 - w, w, 1.0 - w, 1.0);
+            return pow(ret, vec4(1.0 / 2.2));
+        }
+
+        uniform float scale;
+        uniform float dispersion;
+
+        const int num_iter = 12;
+        const float reci_num_iter_f = 1.0 / float(num_iter);
 
         void main()
-        {
-            vec3 eta = vec3(1.0 + dispersion * 0.9, 1.0 + dispersion * 0.6, 1.0 + dispersion * 0.3);
-            vec2 texcoord = texCoord;
-            vec2 cancoord = texCoord;
-            float r2 = (cancoord.x - 0.5) * (cancoord.x - 0.5) + (cancoord.y - 0.5) * (cancoord.y - 0.5);       
-            float f = (kcube == 0.0)? 1.0 + r2 * (k + kcube * sqrt(r2)) : 1.0 + r2 * k;
-            vec2 coef = f * scale * (texcoord.xy - 0.5);
-            vec2 rCoords = eta.r * coef + 0.5;
-            vec2 gCoords = eta.g * coef + 0.5;
-            vec2 bCoords = eta.b * coef + 0.5;
-            vec4 inputDistort = vec4(0.0); 
-            inputDistort.r = texture(fbColor, rCoords).r;
-            inputDistort.g = texture(fbColor, gCoords).g;
-            inputDistort.b = texture(fbColor, bCoords).b;
-            inputDistort.a = 1.0;
-            frag_color = inputDistort;
+        {	
+            vec2 uv = texCoord * scale + (1.0 - scale) * 0.5;
+
+            vec4 sumcol = vec4(0.0);
+            vec4 sumw = vec4(0.0);	
+            for (int i = 0; i < num_iter; ++i)
+            {
+                float t = float(i) * reci_num_iter_f;
+                vec4 w = spectrumOffset(t);
+                sumw += w;
+                sumcol += w * texture(fbColor, barrelDistortion(uv, 0.6 * dispersion * t));
+            }
+                
+            frag_color = sumcol / sumw;
             frag_color.a = 1.0;
         }
     };
@@ -99,8 +137,25 @@ class PostFilterLensDistortion: PostFilter
         return fs;
     }
 
+    GLint scaleLoc;
+    GLint dispersionLoc;
+
+    float scale = 0.84;
+    float dispersion = 0.5;
+
     this(Framebuffer inputBuffer, Framebuffer outputBuffer, Owner o)
     {
         super(inputBuffer, outputBuffer, o);
+
+        scaleLoc = glGetUniformLocation(shaderProgram, "scale");
+        dispersionLoc = glGetUniformLocation(shaderProgram, "dispersion");
+    }
+    
+    override void bind(RenderingContext* rc)
+    {
+        super.bind(rc);
+
+        glUniform1f(scaleLoc, scale);
+        glUniform1f(dispersionLoc, dispersion);
     }
 }

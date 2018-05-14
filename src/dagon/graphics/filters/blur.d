@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Timur Gafarov
+Copyright (c) 2017-2018 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -33,6 +33,11 @@ import dagon.core.ownership;
 import dagon.graphics.postproc;
 import dagon.graphics.framebuffer;
 import dagon.graphics.rc;
+
+/*
+ * Gaussian blur implementation is based on code by Matt DesLauriers:
+ * https://github.com/Jam3/glsl-fast-gaussian-blur
+ */
 
 class PostFilterBlur: PostFilter
 {

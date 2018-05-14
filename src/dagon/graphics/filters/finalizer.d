@@ -25,10 +25,63 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.core.ownership;
+module dagon.graphics.filters.finalizer;
 
-import dlib.core.memory;
-import dlib.container.array;
+import dagon.core.ownership;
+import dagon.graphics.postproc;
+import dagon.graphics.framebuffer;
 
-public import dlib.core.ownership;
+class PostFilterFinalizer: PostFilter
+{
+    private string vs = q{
+        #version 330 core
+        
+        uniform mat4 modelViewMatrix;
+        uniform mat4 projectionMatrix;
 
+        uniform vec2 viewSize;
+        
+        layout (location = 0) in vec2 va_Vertex;
+        layout (location = 1) in vec2 va_Texcoord;
+
+        out vec2 texCoord;
+        
+        void main()
+        {
+            texCoord = va_Texcoord;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(va_Vertex * viewSize, 0.0, 1.0);
+        }
+    };
+
+    private string fs = q{
+        #version 330 core
+        
+        uniform sampler2D fbColor;
+        uniform sampler2D fbDepth;
+        uniform vec2 viewSize;
+        
+        in vec2 texCoord;
+        out vec4 frag_color;
+
+        void main()
+        {
+            vec3 color = texture(fbColor, texCoord).xyz;  
+            frag_color = vec4(color, 1.0); 
+        }
+    };
+
+    override string vertexShader()
+    {
+        return vs;
+    }
+
+    override string fragmentShader()
+    {
+        return fs;
+    }
+
+    this(Framebuffer inputBuffer, Framebuffer outputBuffer, Owner o)
+    {
+        super(inputBuffer, outputBuffer, o);
+    }
+}
