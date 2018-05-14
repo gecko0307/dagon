@@ -96,7 +96,7 @@ class ShadelessBackend: GLSLMaterialBackend
         {
             vec4 col = texture(diffuseTexture, texCoord);
             frag_color = vec4(col.rgb * energy, col.a * alpha);
-            frag_luma = vec4(energy);
+            frag_luma = vec4(0.0, 0.0, 0.0, 1.0);
             frag_velocity = vec4(0.0, 0.0, 0.0, 1.0);
         }
     };
