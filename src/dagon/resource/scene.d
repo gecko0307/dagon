@@ -64,6 +64,7 @@ import dagon.graphics.framebuffer;
 import dagon.graphics.postproc;
 import dagon.graphics.filters.fxaa;
 import dagon.graphics.filters.lens;
+import dagon.graphics.filters.hdrprepass;
 import dagon.graphics.filters.hdr;
 import dagon.graphics.filters.blur;
 import dagon.graphics.filters.finalizer;
@@ -383,6 +384,9 @@ class BaseScene3D: Scene
     Framebuffer sceneFramebuffer;
     PostFilterHDR hdrFilter;
     
+    Framebuffer hdrPrepassFramebuffer;
+    PostFilterHDRPrepass hdrPrepassFilter;
+    
     Framebuffer hblurredFramebuffer;
     Framebuffer vblurredFramebuffer;
     PostFilterBlur hblur;
@@ -461,23 +465,23 @@ class BaseScene3D: Scene
         {
             scene.hblur.enabled = mode;
             scene.vblur.enabled = mode;
-            scene.hdrFilter.glowEnabled = mode;
+            scene.hdrPrepassFilter.glowEnabled = mode;
         }
         
         bool enabled() @property
         {
-            return scene.hdrFilter.glowEnabled;
+            return scene.hdrPrepassFilter.glowEnabled;
         }
         
         
         void brightness(float b) @property
         {
-            scene.hdrFilter.glowBrightness = b;
+            scene.hdrPrepassFilter.glowBrightness = b;
         }
         
         float brightness() @property
         {
-            return scene.hdrFilter.glowBrightness;
+            return scene.hdrPrepassFilter.glowBrightness;
         }
     }
     
@@ -762,8 +766,13 @@ class BaseScene3D: Scene
         vblurredFramebuffer = New!Framebuffer(eventManager.windowWidth / 2, eventManager.windowHeight / 2, true, false, assetManager);
         vblur = New!PostFilterBlur(false, hblurredFramebuffer, vblurredFramebuffer, assetManager);
         
-        hdrFilter = New!PostFilterHDR(sceneFramebuffer, null, assetManager);
-        hdrFilter.blurredScene = vblurredFramebuffer.colorTexture;
+        hdrPrepassFramebuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, true, false, assetManager);
+        hdrPrepassFilter = New!PostFilterHDRPrepass(sceneFramebuffer, hdrPrepassFramebuffer, assetManager);
+        hdrPrepassFilter.blurredTexture = vblurredFramebuffer.colorTexture;
+        postFilters.append(hdrPrepassFilter);
+        
+        hdrFilter = New!PostFilterHDR(hdrPrepassFramebuffer, null, assetManager);
+        hdrFilter.velocityTexture = sceneFramebuffer.velocityTexture;
         postFilters.append(hdrFilter);
         
         fxaaFilter = New!PostFilterFXAA(null, null, assetManager);
@@ -960,11 +969,13 @@ class BaseScene3D: Scene
             hdrFilter.exposure += exposureDelta * hdrFilter.adaptationSpeed * eventManager.deltaTime;
         }
         
-        if (hdrFilter.glowEnabled)
+        if (hdrPrepassFilter.glowEnabled)
             renderBlur(glow.radius);
         
         RenderingContext rcTmp;
         Framebuffer nextInput = sceneFramebuffer;
+        
+        hdrPrepassFilter.perspectiveMatrix = rc3d.projectionMatrix;
         
         foreach(i, f; postFilters.data)
         if (f.enabled)

@@ -64,7 +64,6 @@ class PostFilterFXAA: PostFilter
         uniform bool enabled;
         
         uniform sampler2D fbColor;
-        uniform sampler2D fbDepth;
         uniform vec2 viewSize;
         
         in vec2 texCoord;

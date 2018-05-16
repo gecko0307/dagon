@@ -56,6 +56,7 @@ class ShadelessBackend: GLSLMaterialBackend
         layout (location = 0) in vec3 va_Vertex;
         layout (location = 2) in vec2 va_Texcoord;
         
+        out vec3 eyePosition;
         out vec2 texCoord;
         
         uniform mat4 modelViewMatrix;
@@ -65,8 +66,11 @@ class ShadelessBackend: GLSLMaterialBackend
     
         void main()
         {
+            vec4 pos = modelViewMatrix * vec4(va_Vertex, 1.0);
+            eyePosition = pos.xyz;
+        
             texCoord = va_Texcoord;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(va_Vertex, 1.0);
+            gl_Position = projectionMatrix * pos;
         }
     };
     
@@ -77,11 +81,13 @@ class ShadelessBackend: GLSLMaterialBackend
         uniform float alpha;
         uniform float energy;
         
+        in vec3 eyePosition;
         in vec2 texCoord;
         
         layout(location = 0) out vec4 frag_color;
         layout(location = 1) out vec4 frag_velocity;
         layout(location = 2) out vec4 frag_luma;
+        layout(location = 3) out vec4 frag_position;
         
         float luminance(vec3 color)
         {
@@ -98,6 +104,7 @@ class ShadelessBackend: GLSLMaterialBackend
             frag_color = vec4(col.rgb * energy, col.a * alpha);
             frag_luma = vec4(energy, 0.0, 0.0, 1.0);
             frag_velocity = vec4(0.0, 0.0, 0.0, 1.0);
+            frag_position = vec4(eyePosition, 0.0);
         }
     };
     

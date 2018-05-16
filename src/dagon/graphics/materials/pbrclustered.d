@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2018 Timur Gafarov
+Copyright (c) 2017 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.graphics.materials.standard;
+module dagon.graphics.materials.pbrclustered;
 
 import std.stdio;
 import std.math;
@@ -47,7 +47,7 @@ import dagon.graphics.texture;
 import dagon.graphics.material;
 import dagon.graphics.materials.generic;
 
-class StandardBackend: GLSLMaterialBackend
+class PBRClusteredBackend: GLSLMaterialBackend
 {
     private string vsText = 
     q{
@@ -135,8 +135,9 @@ class StandardBackend: GLSLMaterialBackend
         uniform int parallaxMethod;
         uniform float parallaxScale;
         uniform float parallaxBias;
-
-        uniform float emissionEnergy;
+        
+        // TODO: make uniform
+        const float emissionEnergy = 1.0;
         
         uniform sampler2DArrayShadow shadowTextureArray;
         uniform float shadowTextureSize;
@@ -185,8 +186,6 @@ class StandardBackend: GLSLMaterialBackend
         layout(location = 0) out vec4 frag_color;
         layout(location = 1) out vec4 frag_velocity;
         layout(location = 2) out vec4 frag_luma;
-        layout(location = 3) out vec4 frag_position; // TODO: gbuffer prepass to do SSAO and SSLR
-        layout(location = 4) out vec4 frag_normal;   // TODO: gbuffer prepass to do SSAO and SSLR
         
         mat3 cotangentFrame(in vec3 N, in vec3 p, in vec2 uv)
         {
@@ -307,11 +306,11 @@ class StandardBackend: GLSLMaterialBackend
 
         float distributionGGX(vec3 N, vec3 H, float roughness)
         {
-            float a = roughness * roughness;
-            float a2 = a * a;
-            float NdotH = max(dot(N, H), 0.0);
-            float NdotH2 = NdotH * NdotH;
-            float num = a2;
+            float a      = roughness*roughness;
+            float a2     = a*a;
+            float NdotH  = max(dot(N, H), 0.0);
+            float NdotH2 = NdotH*NdotH;
+            float num   = a2;
             float denom = max(NdotH2 * (a2 - 1.0) + 1.0, 0.001);
             denom = PI * denom * denom;
             return num / denom;
@@ -321,8 +320,10 @@ class StandardBackend: GLSLMaterialBackend
         {
             float r = (roughness + 1.0);
             float k = (r*r) / 8.0;
-            float num = NdotV;
+
+            float num   = NdotV;
             float denom = NdotV * (1.0 - k) + k;
+            
             return num / denom;
         }
 
@@ -332,12 +333,17 @@ class StandardBackend: GLSLMaterialBackend
             float NdotL = max(dot(N, L), 0.0);
             float ggx2  = geometrySchlickGGX(NdotV, roughness);
             float ggx1  = geometrySchlickGGX(NdotL, roughness);
+            
             return ggx1 * ggx2;
         }
 
-        uniform vec3 groundColor;
-        uniform float skyEnergy;
-        uniform float groundEnergy;
+        // TODO: make uniform
+        const vec3 groundColor = vec3(0.06, 0.05, 0.05);
+        const float skyEnergyMidday = 5.0;
+        const float skyEnergyTwilight = 0.001;
+        const float skyEnergyMidnight = 0.001;
+        const float groundEnergyMidday = 0.001;
+        const float groundEnergyNight = 0.0;
 
         vec3 sky(vec3 wN, vec3 wSun, float roughness)
         {            
@@ -346,6 +352,12 @@ class StandardBackend: GLSLMaterialBackend
         
             float horizonOrZenith = pow(clamp(dot(wN, vec3(0, 1, 0)), 0.0, 1.0), p1);
             float groundOrSky = pow(clamp(dot(wN, vec3(0, -1, 0)), 0.0, 1.0), p2);
+                
+            float sunAngle1 = clamp(dot(wSun, vec3(0, 1, 0)), 0.0, 1.0);
+            float sunAngle2 = clamp(dot(wSun, vec3(0, -1, 0)), 0.0, 1.0);
+                
+            float skyEnergy = mix(mix(skyEnergyTwilight, skyEnergyMidnight, sunAngle2), skyEnergyMidday, sunAngle1);
+            float groundEnergy = mix(groundEnergyNight, groundEnergyMidday, sunAngle1);
 
             vec3 env = mix(mix(skyHorizonColor * skyEnergy, groundColor * groundEnergy, groundOrSky), skyZenithColor * skyEnergy, horizonOrZenith);
             
@@ -412,8 +424,8 @@ class StandardBackend: GLSLMaterialBackend
             if (useShadows)
             {
                 s1 = shadowPCF(shadowTextureArray, 0.0, sc1, 2.0, 0.0);
-                s2 = shadow(shadowTextureArray, 1.0, sc2, 0.0);
-                s3 = shadow(shadowTextureArray, 2.0, shadowCoord3, 0.0);
+                s2 =    shadow(shadowTextureArray, 1.0, sc2, 0.0);
+                s3 =    shadow(shadowTextureArray, 2.0, shadowCoord3, 0.0);
                 float w1 = weight(sc1, 8.0);
                 float w2 = weight(sc2, 8.0);
                 float w3 = weight(shadowCoord3, 8.0);
@@ -569,8 +581,6 @@ class StandardBackend: GLSLMaterialBackend
             frag_color = vec4(fragColor, alpha);
             frag_velocity = vec4(screenVelocity, 0.0, blurMask);
             frag_luma = vec4(luminance(fragColor));
-            frag_position = vec4(eyePosition.x, eyePosition.y, eyePosition.z, 0.0);
-            frag_normal = vec4(N, 0.0);
         }
     };
     
@@ -605,7 +615,6 @@ class StandardBackend: GLSLMaterialBackend
     GLint diffuseTextureLoc;
     GLint normalTextureLoc;
     GLint emissionTextureLoc;
-    GLint emissionEnergyLoc;
     
     GLint environmentMapLoc;
     GLint useEnvironmentMapLoc;
@@ -620,9 +629,6 @@ class StandardBackend: GLSLMaterialBackend
     
     GLint skyZenithColorLoc;
     GLint skyHorizonColorLoc;
-    GLint skyEnergyLoc;
-    GLint groundColorLoc;
-    GLint groundEnergyLoc;
     
     GLint invLightDomainSizeLoc;
     GLint clusterTextureLoc;
@@ -670,7 +676,6 @@ class StandardBackend: GLSLMaterialBackend
         diffuseTextureLoc = glGetUniformLocation(shaderProgram, "diffuseTexture");
         normalTextureLoc = glGetUniformLocation(shaderProgram, "normalTexture");
         emissionTextureLoc = glGetUniformLocation(shaderProgram, "emissionTexture");
-        emissionEnergyLoc = glGetUniformLocation(shaderProgram, "emissionEnergy");
         
         environmentMapLoc = glGetUniformLocation(shaderProgram, "environmentMap");
         useEnvironmentMapLoc = glGetUniformLocation(shaderProgram, "useEnvironmentMap");
@@ -682,12 +687,9 @@ class StandardBackend: GLSLMaterialBackend
         fogStartLoc = glGetUniformLocation(shaderProgram, "fogStart");
         fogEndLoc = glGetUniformLocation(shaderProgram, "fogEnd");
         fogColorLoc = glGetUniformLocation(shaderProgram, "fogColor");
-        groundColorLoc = glGetUniformLocation(shaderProgram, "groundColor");
-        groundEnergyLoc = glGetUniformLocation(shaderProgram, "groundEnergy");
         
         skyZenithColorLoc = glGetUniformLocation(shaderProgram, "skyZenithColor");
         skyHorizonColorLoc = glGetUniformLocation(shaderProgram, "skyHorizonColor");
-        skyEnergyLoc = glGetUniformLocation(shaderProgram, "skyEnergy");
         
         clusterTextureLoc = glGetUniformLocation(shaderProgram, "lightClusterTexture");
         invLightDomainSizeLoc = glGetUniformLocation(shaderProgram, "invLightDomainSize");
@@ -703,7 +705,6 @@ class StandardBackend: GLSLMaterialBackend
         auto inormal = "normal" in mat.inputs;
         auto iheight = "height" in mat.inputs;
         auto iemission = "emission" in mat.inputs;
-        auto iemissionEnergy = "emissionEnergy" in mat.inputs;
         auto ipbr = "pbr" in mat.inputs;
         auto iroughness = "roughness" in mat.inputs;
         auto imetallic = "metallic" in mat.inputs;
@@ -765,22 +766,13 @@ class StandardBackend: GLSLMaterialBackend
         
         Color4f skyZenithColor = environmentColor;
         Color4f skyHorizonColor = environmentColor;
-        float skyEnergy = 1.0f;
-        Color4f groundColor = environmentColor;
-        float groundEnergy = 1.0f;
         if (rc.environment)
         {
             skyZenithColor = rc.environment.skyZenithColor;
             skyHorizonColor = rc.environment.skyHorizonColor;
-            groundColor = rc.environment.groundColor;
-            skyEnergy = rc.environment.skyEnergy;
-            groundEnergy = rc.environment.groundEnergy;
         }
         glUniform3fv(skyZenithColorLoc, 1, skyZenithColor.arrayof.ptr);
         glUniform3fv(skyHorizonColorLoc, 1, skyHorizonColor.arrayof.ptr);
-        glUniform1f(skyEnergyLoc, skyEnergy);
-        glUniform3fv(groundColorLoc, 1, groundColor.arrayof.ptr);
-        glUniform1f(groundEnergyLoc, groundEnergy);
                 
         // Texture 0 - diffuse texture
         if (idiffuse.texture is null)
@@ -844,7 +836,6 @@ class StandardBackend: GLSLMaterialBackend
         glActiveTexture(GL_TEXTURE3);
         iemission.texture.bind();
         glUniform1i(emissionTextureLoc, 3);
-        glUniform1f(emissionEnergyLoc, iemissionEnergy.asFloat); 
         
         // Texture 4 - environment map
         bool useEnvmap = false;

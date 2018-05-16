@@ -25,20 +25,22 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.graphics.filters.lens;
+module dagon.graphics.filters.hdrprepass;
 
 import derelict.opengl;
+import dlib.math.matrix;
 import dagon.core.ownership;
 import dagon.graphics.postproc;
 import dagon.graphics.framebuffer;
 import dagon.graphics.rc;
 
 /*
- * Implementation is based on a code by Jaume Sanchez:
- * https://github.com/spite/Wagner
+ * HDR prepass filter applies HDR effects that should be done before motion blur:
+ * - Glow
+ * - DoF (TODO)
  */
 
-class PostFilterLensDistortion: PostFilter
+class PostFilterHDRPrepass: PostFilter
 {
     private string vs = q{
         #version 330 core
@@ -63,67 +65,39 @@ class PostFilterLensDistortion: PostFilter
     private string fs = q{
         #version 330 core
         
+        #define PI 3.14159265359
+        
         uniform sampler2D fbColor;
+        uniform sampler2D fbBlurred;
         uniform vec2 viewSize;
         
+        uniform mat4 perspectiveMatrix;
+        
+        uniform bool useGlow;
+        uniform float glowBrightness;
+        
         in vec2 texCoord;
+        
         out vec4 frag_color;
 
-        vec2 barrelDistortion(vec2 coord, float amt)
-        {
-            vec2 cc = coord - 0.5;
-            float dist = dot(cc, cc);
-            return coord + cc * dist * amt;
-        }
-
-        float sat(float t)
-        {
-            return clamp(t, 0.0, 1.0);
-        }
-
-        float linterp(float t)
-        {
-            return sat(1.0 - abs(2.0 * t - 1.0));
-        }
-
-        float remap(float t, float a, float b)
-        {
-            return sat((t - a) / (b - a));
-        }
-
-        vec4 spectrumOffset(float t)
-        {
-            vec4 ret;
-            float lo = step(t, 0.5);
-            float hi = 1.0 - lo;
-            float w = linterp(remap(t, 1.0/6.0, 5.0/6.0));
-            ret = vec4(lo, 1.0, hi, 1.0) * vec4(1.0 - w, w, 1.0 - w, 1.0);
-            return pow(ret, vec4(1.0 / 2.2));
-        }
-
-        uniform float scale;
-        uniform float dispersion;
-
-        const int num_iter = 12;
-        const float reci_num_iter_f = 1.0 / float(num_iter);
-
         void main()
-        {	
-            vec2 uv = texCoord * scale + (1.0 - scale) * 0.5;
+        {
+            vec3 res = texture(fbColor, texCoord).rgb;
 
-            vec4 sumcol = vec4(0.0);
-            vec4 sumw = vec4(0.0);	
-            for (int i = 0; i < num_iter; ++i)
+            if (useGlow)
             {
-                float t = float(i) * reci_num_iter_f;
-                vec4 w = spectrumOffset(t);
-                sumw += w;
-                sumcol += w * texture(fbColor, barrelDistortion(uv, 0.6 * dispersion * t));
+                vec3 glow = texture(fbBlurred, texCoord).rgb;
+                float lum = glow.r * 0.2126 + glow.g * 0.7152 + glow.b * 0.0722;
+                //TODO: make uniform
+                const float minGlowLuminance = 0.01;
+                const float maxGlowLuminance = 1.0;
+                lum = (clamp(lum, minGlowLuminance, maxGlowLuminance) - minGlowLuminance) / (maxGlowLuminance - minGlowLuminance);
+                res += glow * lum * glowBrightness;
             }
-                
-            frag_color = sumcol / sumw;
-            frag_color.a = 1.0;
+
+            frag_color = vec4(res, 1.0); 
         }
+
     };
 
     override string vertexShader()
@@ -135,26 +109,50 @@ class PostFilterLensDistortion: PostFilter
     {
         return fs;
     }
-
-    GLint scaleLoc;
-    GLint dispersionLoc;
-
-    float scale = 0.84;
-    float dispersion = 0.5;
+    
+    GLint perspectiveMatrixLoc;
+    Matrix4x4f perspectiveMatrix;
+       
+    GLint fbBlurredLoc;
+    GLint useGlowLoc;
+    GLint glowBrightnessLoc;
+    bool glowEnabled = false;
+    float glowBrightness = 1.0;
+    GLuint blurredTexture;
 
     this(Framebuffer inputBuffer, Framebuffer outputBuffer, Owner o)
     {
         super(inputBuffer, outputBuffer, o);
-
-        scaleLoc = glGetUniformLocation(shaderProgram, "scale");
-        dispersionLoc = glGetUniformLocation(shaderProgram, "dispersion");
+        
+        perspectiveMatrixLoc = glGetUniformLocation(shaderProgram, "perspectiveMatrix");
+        fbBlurredLoc = glGetUniformLocation(shaderProgram, "fbBlurred");
+        useGlowLoc = glGetUniformLocation(shaderProgram, "useGlow");
+        glowBrightnessLoc = glGetUniformLocation(shaderProgram, "glowBrightness");
+        
+        perspectiveMatrix = Matrix4x4f.identity;
     }
     
     override void bind(RenderingContext* rc)
     {
         super.bind(rc);
-
-        glUniform1f(scaleLoc, scale);
-        glUniform1f(dispersionLoc, dispersion);
+        
+        glUniformMatrix4fv(perspectiveMatrixLoc, 1, GL_FALSE, perspectiveMatrix.arrayof.ptr);
+        
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, blurredTexture);
+        glActiveTexture(GL_TEXTURE0);
+        
+        glUniform1i(fbBlurredLoc, 5);
+        glUniform1i(useGlowLoc, glowEnabled);
+        glUniform1f(glowBrightnessLoc, glowBrightness);
+    }
+    
+    override void unbind(RenderingContext* rc)
+    {        
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glActiveTexture(GL_TEXTURE0);
+        
+        super.unbind(rc);
     }
 }
