@@ -52,6 +52,7 @@ public
     import dagon.resource.obj;
     import dagon.resource.iqm;
     import dagon.resource.fontasset;
+    import dagon.resource.packageasset;
 
     import dagon.logics.entity;
     import dagon.logics.controller;
