@@ -447,7 +447,7 @@ class StandardBackend: GLSLMaterialBackend
             vec3 Lo = vec3(0.0);
             
             // Sun light
-            float shadow = 1.0;
+            float sunDiffuselight = 1.0;
             // if (sunEnabled)
             {
                 vec3 L = sunDirection;
@@ -465,9 +465,11 @@ class StandardBackend: GLSLMaterialBackend
                 vec3 numerator = NDF * G * F;
                 float denominator = 4.0 * max(dot(N, E), 0.0) * NL;
                 vec3 specular = numerator / max(denominator, 0.001);
+                
+                sunDiffuselight = NL;
 
-                shadow = max(NL * s1, shadowBrightness);
-                vec3 radiance = sunColor * sunEnergy * NL * s1;
+                //shadow = mix(s1 * NL, 1.0, shadowBrightness);
+                vec3 radiance = sunColor * sunEnergy * s1 * NL;
                 Lo += (kD * albedo / PI + specular) * radiance;
             }
             
@@ -545,7 +547,10 @@ class StandardBackend: GLSLMaterialBackend
             }
             
             float dayOrNight = float(worldSun.y < 0.0);
-            vec3 ambientTint = mix(mix(toLinear(shadowColor.rgb), vec3(1.0), shadow) * shadow, vec3(1.0), dayOrNight);
+            
+            float ambientBrightness = mix(s1 * sunDiffuselight, 1.0, shadowBrightness);
+            ambientDiffuse = ambientDiffuse * toLinear(shadowColor.rgb) * ambientBrightness;
+            ambientSpecular = ambientSpecular * toLinear(shadowColor.rgb) * ambientBrightness;
             
             {
                 vec3 F = fresnelRoughness(max(dot(N, E), 0.0), f0, roughness);
@@ -555,7 +560,7 @@ class StandardBackend: GLSLMaterialBackend
                 
                 vec3 diffuse = ambientDiffuse * albedo;
   
-                vec3 ambient = (kD * diffuse + F * ambientSpecular) * ambientTint;
+                vec3 ambient = kD * diffuse + F * ambientSpecular;
                 
                 Lo += ambient;
             }
