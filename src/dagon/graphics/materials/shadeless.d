@@ -133,13 +133,9 @@ class ShadelessBackend: GLSLMaterialBackend
     override void bind(GenericMaterial mat, RenderingContext* rc)
     {
         auto idiffuse = "diffuse" in mat.inputs;
-        
         auto ienergy = "energy" in mat.inputs;
-        float energy = 1.0f;
-        if (ienergy)
-        {
-            energy = ienergy.asFloat;
-        }
+        
+        float energy = ienergy.asFloat;
 
         glUseProgram(shaderProgram);
         

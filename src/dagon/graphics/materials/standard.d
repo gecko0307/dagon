@@ -703,7 +703,7 @@ class StandardBackend: GLSLMaterialBackend
         auto inormal = "normal" in mat.inputs;
         auto iheight = "height" in mat.inputs;
         auto iemission = "emission" in mat.inputs;
-        auto iemissionEnergy = "emissionEnergy" in mat.inputs;
+        auto iEnergy = "energy" in mat.inputs;
         auto ipbr = "pbr" in mat.inputs;
         auto iroughness = "roughness" in mat.inputs;
         auto imetallic = "metallic" in mat.inputs;
@@ -844,7 +844,7 @@ class StandardBackend: GLSLMaterialBackend
         glActiveTexture(GL_TEXTURE3);
         iemission.texture.bind();
         glUniform1i(emissionTextureLoc, 3);
-        glUniform1f(emissionEnergyLoc, iemissionEnergy.asFloat); 
+        glUniform1f(emissionEnergyLoc, iEnergy.asFloat); 
         
         // Texture 4 - environment map
         bool useEnvmap = false;

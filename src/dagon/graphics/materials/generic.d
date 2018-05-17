@@ -190,7 +190,7 @@ class GenericMaterial: Material
         setInput("specular", Color4f(1.0f, 1.0f, 1.0f, 1.0f));
         setInput("shadeless", false);
         setInput("emission", Color4f(0.0f, 0.0f, 0.0f, 1.0f));
-        setInput("emissionEnergy", 1.0f);
+        setInput("energy", 1.0f);
         setInput("transparency", 1.0f);
         setInput("roughness", 0.5f);
         setInput("metallic", 0.0f);
