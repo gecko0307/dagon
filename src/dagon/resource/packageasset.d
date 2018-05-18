@@ -30,6 +30,7 @@ module dagon.resource.packageasset;
 import std.stdio;
 import std.string;
 import std.format;
+import std.path;
 
 import dlib.core.memory;
 import dlib.core.stream;
@@ -37,23 +38,40 @@ import dlib.filesystem.filesystem;
 import dlib.filesystem.stdfs;
 import dlib.container.array;
 import dlib.container.dict;
+import dlib.math.vector;
+import dlib.math.quaternion;
 import dagon.core.ownership;
 import dagon.core.interfaces;
 import dagon.resource.asset;
 import dagon.resource.boxfs;
 import dagon.resource.obj;
+import dagon.resource.entityasset;
+import dagon.resource.scene;
 import dagon.graphics.mesh;
 import dagon.graphics.texture;
 import dagon.graphics.material;
 import dagon.logics.entity;
 
+/*
+ * A simple asset package format based on Box container (https://github.com/gecko0307/box).
+ * It is an archive that stores entities, meshes, materials and textures.
+ * They can be accessed individually or loaded altogether.
+ *
+ * The module is in WIP status. What already works:
+ * - Entities with transformation and mesh linking
+ * - Meshes (currently only OBJ format is supported)
+ * - Entity index file
+ */
+
 class PackageAsset: Asset
 {
     Dict!(OBJAsset, string) meshes;
-    Dict!(Entity, string) entities;
+    Dict!(EntityAsset, string) entities;
     Dict!(Texture, string) textures;
     Dict!(Material, string) materials;
     
+    string filename;
+    string index;
     BoxFileSystem boxfs;
     AssetManager assetManager;
 
@@ -61,7 +79,7 @@ class PackageAsset: Asset
     {
         super(o);
         meshes = New!(Dict!(OBJAsset, string))();
-        entities = New!(Dict!(Entity, string))();
+        entities = New!(Dict!(EntityAsset, string))();
         textures = New!(Dict!(Texture, string))();
         materials = New!(Dict!(Material, string))();
     }
@@ -73,7 +91,16 @@ class PackageAsset: Asset
 
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
     {
+        this.filename = filename;
         boxfs = New!BoxFileSystem(fs, filename);
+        
+        if (fileExists("INDEX"))
+        {
+            auto fstrm = boxfs.openForInput("INDEX");
+            index = readText(fstrm);
+            Delete(fstrm);
+        }
+        
         assetManager = mngr;
         return true;
     }
@@ -138,10 +165,33 @@ class PackageAsset: Asset
         }
     }
     
-    Entity entity(string filename)
+    Entity entity(string filename, BaseScene3D scene)
     {
-        // TODO
-        return null;
+        if (!(filename in entities))
+        {
+            EntityAsset entityAsset = New!EntityAsset(assetManager);
+            if (loadAsset(entityAsset, filename))
+            {
+                entities[filename] = entityAsset;
+                entityAsset.entity = scene.createEntity3D();
+                entityAsset.entity.position = entityAsset.props.position.toVector3f;
+                entityAsset.entity.rotation = Quaternionf(entityAsset.props.rotation.toVector4f);
+                entityAsset.entity.scaling = entityAsset.props.scale.toVector3f;
+                entityAsset.entity.updateTransformation();
+                entityAsset.entity.solid = true; // TODO: read from entityAsset.props
+                if ("mesh" in entityAsset.props)
+                    entityAsset.entity.drawable = mesh(entityAsset.props.mesh.toString);
+                return entityAsset.entity;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        else
+        {
+            return entities[filename].entity;
+        }
     }
     
     Texture texture(string filename)
@@ -154,6 +204,15 @@ class PackageAsset: Asset
     {
         // TODO
         return null;
+    }
+    
+    void addEntitiesToScene(BaseScene3D scene)
+    {
+        if (index.length)
+        foreach(path; lineSplitter(index))
+        {
+            Entity e = entity(path, scene);
+        }
     }
     
     bool fileExists(string filename)
@@ -169,6 +228,9 @@ class PackageAsset: Asset
         Delete(meshes);
         Delete(entities);
         Delete(textures);
+        
+        if (index.length)
+            Delete(index);
     }
 }
 

@@ -106,6 +106,8 @@ class Entity: Owner
     bool clearZbuffer = false;
     
     int layer = 1;
+    
+    bool solid = false;
 
     this(EventManager emngr, Owner owner)
     {
@@ -201,13 +203,13 @@ class Entity: Owner
             child.processEvents();
         }
     }
-
-    void update(double dt)
+    
+    void updateTransformation()
     {
         prevTransformation = transformation;
     
         if (controller)
-            controller.update(dt);
+            controller.update(0.0);
         
         if (parent)
         {
@@ -219,6 +221,11 @@ class Entity: Owner
             absoluteTransformation = transformation;
             prevAbsoluteTransformation = prevTransformation;
         }
+    }
+
+    void update(double dt)
+    {
+        updateTransformation();
         
         foreach(i, ble; behaviours)
         {
