@@ -40,13 +40,18 @@ import dlib.container.array;
 import dlib.container.dict;
 import dlib.math.vector;
 import dlib.math.quaternion;
+import dlib.image.color;
+
 import dagon.core.ownership;
 import dagon.core.interfaces;
 import dagon.resource.asset;
 import dagon.resource.boxfs;
 import dagon.resource.obj;
+import dagon.resource.textureasset;
 import dagon.resource.entityasset;
+import dagon.resource.materialasset;
 import dagon.resource.scene;
+import dagon.resource.props;
 import dagon.graphics.mesh;
 import dagon.graphics.texture;
 import dagon.graphics.material;
@@ -67,8 +72,8 @@ class PackageAsset: Asset
 {
     Dict!(OBJAsset, string) meshes;
     Dict!(EntityAsset, string) entities;
-    Dict!(Texture, string) textures;
-    Dict!(Material, string) materials;
+    Dict!(TextureAsset, string) textures;
+    Dict!(MaterialAsset, string) materials;
     
     string filename;
     string index;
@@ -80,8 +85,8 @@ class PackageAsset: Asset
         super(o);
         meshes = New!(Dict!(OBJAsset, string))();
         entities = New!(Dict!(EntityAsset, string))();
-        textures = New!(Dict!(Texture, string))();
-        materials = New!(Dict!(Material, string))();
+        textures = New!(Dict!(TextureAsset, string))();
+        materials = New!(Dict!(MaterialAsset, string))();
     }
 
     ~this()
@@ -181,6 +186,8 @@ class PackageAsset: Asset
                 entityAsset.entity.solid = true; // TODO: read from entityAsset.props
                 if ("mesh" in entityAsset.props)
                     entityAsset.entity.drawable = mesh(entityAsset.props.mesh.toString);
+                if ("material" in entityAsset.props)
+                    entityAsset.entity.material = material(entityAsset.props.material.toString, scene);
                 return entityAsset.entity;
             }
             else
@@ -196,14 +203,57 @@ class PackageAsset: Asset
     
     Texture texture(string filename)
     {
-        // TODO
-        return null;
+        if (!(filename in textures))
+        {
+            TextureAsset texAsset = New!TextureAsset(assetManager.imageFactory, assetManager.hdrImageFactory, assetManager);
+            if (loadAsset(texAsset, filename))
+            {
+                textures[filename] = texAsset;
+                return texAsset.texture;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        else
+        {
+            return textures[filename].texture;
+        }
     }
     
-    Material material(string filename)
+    Material material(string filename, BaseScene3D scene)
     {
-        // TODO
-        return null;
+        if (!(filename in materials))
+        {
+            MaterialAsset matAsset = New!MaterialAsset(assetManager);
+            if (loadAsset(matAsset, filename))
+            {
+                materials[filename] = matAsset;
+                matAsset.material = scene.createMaterial();
+                if (matAsset.props.diffuse.type == DPropType.String)
+                {
+                    matAsset.material.diffuse = texture(matAsset.props.diffuse.toString);
+                }
+                else
+                {
+                    Vector3f diffCol = matAsset.props.diffuse.toVector3f;
+                    matAsset.material.diffuse = Color4f(diffCol.r, diffCol.g, diffCol.b, 1.0f);
+                }
+                matAsset.material.roughness = matAsset.props.roughness.toFloat;
+                matAsset.material.metallic = matAsset.props.metallic.toFloat;
+                // TODO: textures
+                return matAsset.material;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        else
+        {
+            return materials[filename].material;
+        }
     }
     
     void addEntitiesToScene(BaseScene3D scene)

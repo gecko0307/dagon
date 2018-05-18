@@ -64,14 +64,13 @@ def saveMesh(scene, ob, absPath, localPath):
 
 def saveEntity(scene, ob, absPath, localPath):
     entityAbsPath = absPath + "/" + ob.name + ".entity"
-    
-    #rotX = mathutils.Matrix.Rotation(pi/2, 4, 'X')
-    global_matrix = bpy_extras.io_utils.axis_conversion(to_forward="-Z", to_up="Y").to_4x4()
-    absTrans = global_matrix * ob.matrix_world * global_matrix.transposed() #rotX * ob.matrix_world
 
-    objPosition = absTrans.to_translation() #ob.location.copy()
-    objRotation = absTrans.to_quaternion() #ob.rotation_quaternion.copy()
-    objScale = absTrans.to_scale() #ob.scale.copy()
+    global_matrix = bpy_extras.io_utils.axis_conversion(to_forward="-Z", to_up="Y").to_4x4()
+    absTrans = global_matrix * ob.matrix_world * global_matrix.transposed()
+
+    objPosition = absTrans.to_translation()
+    objRotation = absTrans.to_quaternion()
+    objScale = absTrans.to_scale()
 
     f = open(entityAbsPath, 'wb')
     name = 'name: \"%s\";\n' % (ob.name)
@@ -88,10 +87,15 @@ def saveEntity(scene, ob, absPath, localPath):
     if len(ob.data.materials) > 0:
         mat = ob.data.materials[0]
         materialName = mat.name
-        materialLocalPath = localPath + mat.name + ".material"
+        materialLocalPath = localPath + mat.name + ".mat"
         materialStr = 'material: \"%s\";\n' % (materialLocalPath)
         f.write(bytearray(materialStr.encode('ascii')))
     f.close()
+
+def copyFile(fileSrc, destDir):
+    destFile = destDir + "/" + os.path.basename(fileSrc)
+    if not os.path.exists(destFile):
+        shutil.copy2(fileSrc, destDir + "/")
 
 def saveMaterial(scene, mat, absPath, localPath):
     matAbsPath = absPath + "/" + mat.name + ".mat"
@@ -100,7 +104,18 @@ def saveMaterial(scene, mat, absPath, localPath):
     f.write(bytearray(name.encode('ascii')))
     
     props = mat.dagonProps
-    diffuse = 'diffuse: [%s, %s, %s];\n' % (props.dagonDiffuse.r, props.dagonDiffuse.g, props.dagonDiffuse.b)
+    if len(props.dagonDiffuseTexture):
+        imageName = props.dagonDiffuseTexture
+        imgAbsPath = bpy.path.abspath(props.dagonDiffuseTexture)
+        if props.dagonDiffuseTexture in bpy.data.images:
+            imgAbsPath = bpy.path.abspath(bpy.data.images[props.dagonDiffuseTexture].filepath)
+        
+        imageName = os.path.basename(imgAbsPath)
+        imgPath = localPath + imageName
+        diffuse = 'diffuse: \"%s\";\n' % (imgPath)
+        copyFile(imgAbsPath, absPath)
+    else:
+        diffuse = 'diffuse: [%s, %s, %s];\n' % (props.dagonDiffuse.r, props.dagonDiffuse.g, props.dagonDiffuse.b)
     f.write(bytearray(diffuse.encode('ascii')))
     roughness = 'roughness: %s;\n' % (props.dagonRoughness)
     f.write(bytearray(roughness.encode('ascii')))
@@ -160,6 +175,13 @@ def doExport(context, filepath = ""):
         localFilenames.append(matLocalPath)
         matAbsPath = dirAbs + "/" + mat.name + ".mat"
         absFilenames.append(matAbsPath)
+
+    for filename in os.listdir(dirAbs + "/"):
+        if filename.endswith(".png") or filename.endswith(".jpg") or filename.endswith(".bmp") or filename.endswith(".tga") or filename.endswith(".hdr"):
+             texLocalPath = dirLocal + os.path.basename(filename)
+             localFilenames.append(texLocalPath)
+             texAbsPath = dirAbs + "/" + os.path.basename(filename)
+             absFilenames.append(texAbsPath)
         
     saveIndexFile(entities, dirAbs, dirLocal)
     indexLocalPath = "INDEX"
@@ -235,10 +257,25 @@ class ExportDagonAsset(bpy.types.Operator, ExportHelper):
 def menu_func_export_dagon_asset(self, context):
     self.layout.operator(ExportDagonAsset.bl_idname, text = "Dagon Asset (.asset)")
 
+ParallaxModeEnum = [
+    ('ParallaxNone', "None", "", 0),
+    ('ParallaxSimple', "Simple", "", 1),
+    ('ParallaxOcclusionMapping', "Occlusion Mapping", "", 2),
+]
+
 class DagonMaterialProps(bpy.types.PropertyGroup):
-    dagonDiffuse = bpy.props.FloatVectorProperty(name="Diffuse Color", default=(0.8, 0.8, 0.8), min=0.0, max=1.0, subtype='COLOR')
+    dagonDiffuse = bpy.props.FloatVectorProperty(name="Diffuse", default=(0.8, 0.8, 0.8), min=0.0, max=1.0, subtype='COLOR')
     dagonRoughness = bpy.props.FloatProperty(name="Roughness", default=0.5, min=0.0, max=1.0, subtype='FACTOR')
     dagonMetallic = bpy.props.FloatProperty(name="Metallic", default=0.0, min=0.0, max=1.0, subtype='FACTOR')
+    dagonEmission = bpy.props.FloatVectorProperty(name="Emission", default=(0.0, 0.0, 0.0), min=0.0, max=1.0, subtype='COLOR')
+    dagonEnergy = bpy.props.FloatProperty(name="Energy", default=0.0, min=0.0)
+    dagonDiffuseTexture = bpy.props.StringProperty(name="Diffuse Texture", subtype='FILE_PATH')
+    dagonRoughnessTexture = bpy.props.StringProperty(name="Roughness Texture", subtype='FILE_PATH')
+    dagonMetallicTexture = bpy.props.StringProperty(name="Metallic Texture", subtype='FILE_PATH')
+    dagonNormalTexture = bpy.props.StringProperty(name="Normal Texture", subtype='FILE_PATH')
+    dagonHeightTexture = bpy.props.StringProperty(name="Height Texture", subtype='FILE_PATH')
+    dagonEmissionTexture = bpy.props.StringProperty(name="Emission Texture", subtype='FILE_PATH')
+    dagonParallaxMode = bpy.props.EnumProperty(name="Parallax Mode", items=ParallaxModeEnum)
 
 class DagonMaterialPropsPanel(bpy.types.Panel):
     bl_label = "Dagon Properties"
@@ -253,8 +290,35 @@ class DagonMaterialPropsPanel(bpy.types.Panel):
         col = self.layout.column(align=True)
         props = mat.dagonProps
         col.prop(props, 'dagonDiffuse')
+
+        col = self.layout.column(align=True)
         col.prop(props, 'dagonRoughness')
         col.prop(props, 'dagonMetallic')
+
+        col = self.layout.column(align=True)
+        col.prop(props, 'dagonEmission')
+        col.prop(props, 'dagonEnergy')
+
+        col = self.layout.column(align=True)
+        col.prop_search(props, "dagonDiffuseTexture", bpy.data, "images")
+
+        col = self.layout.column(align=True)
+        col.prop_search(props, "dagonRoughnessTexture", bpy.data, "images")
+
+        col = self.layout.column(align=True)
+        col.prop_search(props, "dagonMetallicTexture", bpy.data, "images")
+
+        col = self.layout.column(align=True)
+        col.prop_search(props, "dagonNormalTexture", bpy.data, "images")
+
+        col = self.layout.column(align=True)
+        col.prop_search(props, "dagonHeightTexture", bpy.data, "images")
+
+        col = self.layout.column(align=True)
+        col.prop_search(props, "dagonEmissionTexture", bpy.data, "images")
+
+        col = self.layout.column(align=True)
+        col.prop(props, 'dagonParallaxMode')
 
 def register():
     bpy.utils.register_module(__name__)
