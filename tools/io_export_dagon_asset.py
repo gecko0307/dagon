@@ -31,20 +31,27 @@ def packVector2f(v):
     return struct.pack('<ff', v[0], v[1])
 
 def saveMesh(scene, ob, absPath, localPath):
-    parentTrans = ob.matrix_world * ob.matrix_local.inverted()
-    locTrans = ob.matrix_local.copy()
-    absTrans = parentTrans.inverted()
+    mw = ob.matrix_world.copy()
+    #if ob.parent:
+    #    parentTrans = ob.parent.matrix_world #* ob.matrix_local.inverted()
+    #locTrans = ob.matrix_local.copy()
+    #absTrans = parentTrans.inverted()
 
-    ob.location = absTrans.to_translation()
-    ob.rotation_euler = absTrans.to_euler()
-    ob.rotation_quaternion = absTrans.to_quaternion()
-    ob.scale = absTrans.to_scale()
+    #ob.location = absTrans.to_translation()
+    #ob.rotation_euler = absTrans.to_euler()
+    #ob.rotation_quaternion = absTrans.to_quaternion()
+    #ob.scale = absTrans.to_scale()
+    
+    ob.matrix_world.identity()
 
     scene.update()
 
     meshAbsPath = absPath + "/" + ob.name + ".obj"
+    
+    bpy.ops.object.select_all(action='DESELECT')
 
     bpy.ops.object.select_pattern(pattern = ob.name)
+    
     bpy.ops.export_scene.obj(
       filepath = meshAbsPath, 
       use_selection = True, 
@@ -54,19 +61,23 @@ def saveMesh(scene, ob, absPath, localPath):
       use_mesh_modifiers = True)
       
     bpy.ops.object.select_all(action='DESELECT')
+    
+    for sob in bpy.context.selected_objects:
+        sob.select = False
 
-    ob.location = locTrans.to_translation()
-    ob.rotation_euler = locTrans.to_euler()
-    ob.rotation_quaternion = locTrans.to_quaternion()
-    ob.scale = locTrans.to_scale()
+    #ob.location = locTrans.to_translation()
+    #ob.rotation_euler = locTrans.to_euler()
+    #ob.rotation_quaternion = locTrans.to_quaternion()
+    #ob.scale = locTrans.to_scale()
+    ob.matrix_world = mw.copy();
 
     scene.update()
 
-def saveEntity(scene, ob, absPath, localPath):
+def saveMeshEntity(scene, ob, absPath, localPath):
     entityAbsPath = absPath + "/" + ob.name + ".entity"
 
     global_matrix = bpy_extras.io_utils.axis_conversion(to_forward="-Z", to_up="Y").to_4x4()
-    absTrans = global_matrix * ob.matrix_world * global_matrix.transposed()
+    absTrans = global_matrix * ob.matrix_local * global_matrix.transposed()
 
     objPosition = absTrans.to_translation()
     objRotation = absTrans.to_quaternion()
@@ -75,6 +86,12 @@ def saveEntity(scene, ob, absPath, localPath):
     f = open(entityAbsPath, 'wb')
     name = 'name: \"%s\";\n' % (ob.name)
     f.write(bytearray(name.encode('ascii')))
+    
+    if ob.parent:
+        parentFilename = localPath + ob.parent.name + ".entity"
+        parentStr = 'parent: \"%s\";\n' % (parentFilename)
+        f.write(bytearray(parentStr.encode('ascii')))
+    
     pos = 'position: [%s, %s, %s];\n' % (objPosition.x, objPosition.y, objPosition.z)
     f.write(bytearray(pos.encode('ascii')))
     rot = 'rotation: [%s, %s, %s, %s];\n' % (objRotation.x, objRotation.y, objRotation.z, objRotation.w)
@@ -91,7 +108,35 @@ def saveEntity(scene, ob, absPath, localPath):
         materialStr = 'material: \"%s\";\n' % (materialLocalPath)
         f.write(bytearray(materialStr.encode('ascii')))
     f.close()
+    
+def saveEmptyEntity(scene, ob, absPath, localPath):
+    entityAbsPath = absPath + "/" + ob.name + ".entity"
 
+    global_matrix = bpy_extras.io_utils.axis_conversion(to_forward="-Z", to_up="Y").to_4x4()
+    absTrans = global_matrix * ob.matrix_world * global_matrix.transposed()
+
+    objPosition = absTrans.to_translation()
+    objRotation = absTrans.to_quaternion()
+    objScale = absTrans.to_scale()
+
+    f = open(entityAbsPath, 'wb')
+    name = 'name: \"%s\";\n' % (ob.name)
+    f.write(bytearray(name.encode('ascii')))
+    
+    if ob.parent:
+        parentFilename = localPath + ob.parent.name + ".entity"
+        parentStr = 'parent: \"%s\";\n' % (parentFilename)
+        f.write(bytearray(parentStr.encode('ascii')))
+    
+    pos = 'position: [%s, %s, %s];\n' % (objPosition.x, objPosition.y, objPosition.z)
+    f.write(bytearray(pos.encode('ascii')))
+    rot = 'rotation: [%s, %s, %s, %s];\n' % (objRotation.x, objRotation.y, objRotation.z, objRotation.w)
+    f.write(bytearray(rot.encode('ascii')))
+    scale = 'scale: [%s, %s, %s];\n' % (objScale.x, objScale.y, objScale.z)
+    f.write(bytearray(scale.encode('ascii')))
+
+    f.close()
+    
 def copyFile(fileSrc, destDir):
     destFile = destDir + "/" + os.path.basename(fileSrc)
     if not os.path.exists(destFile):
@@ -160,14 +205,23 @@ def doExport(context, filepath = ""):
             meshAbsPath = dirAbs + "/" + ob.name + ".obj"
             absFilenames.append(meshAbsPath)
 
-            saveEntity(scene, ob, dirAbs, dirLocal)
+            saveMeshEntity(scene, ob, dirAbs, dirLocal)
             entityFileLocalPath = dirLocal + ob.name + ".entity"
             localFilenames.append(entityFileLocalPath)
             entityFileAbsPath = dirAbs + "/" + ob.name + ".entity"
             absFilenames.append(entityFileAbsPath)
             
             entities.append(entityFileLocalPath)
-        #TODO: other object types (empties, lamps)
+            
+        elif ob.type == 'EMPTY':
+            saveEmptyEntity(scene, ob, dirAbs, dirLocal)
+            entityFileLocalPath = dirLocal + ob.name + ".entity"
+            localFilenames.append(entityFileLocalPath)
+            entityFileAbsPath = dirAbs + "/" + ob.name + ".entity"
+            absFilenames.append(entityFileAbsPath)
+            
+            entities.append(entityFileLocalPath)
+        #TODO: lamps
 
     for mat in bpy.data.materials:
         saveMaterial(scene, mat, dirAbs, dirLocal)

@@ -178,9 +178,14 @@ class PackageAsset: Asset
             if (loadAsset(entityAsset, filename))
             {
                 entities[filename] = entityAsset;
-                entityAsset.entity = scene.createEntity3D();
+                
+                Entity parent = null;
+                if ("parent" in entityAsset.props)
+                    parent = entity(entityAsset.props.parent.toString, scene);
+                
+                entityAsset.entity = scene.createEntity3D(parent);
                 entityAsset.entity.position = entityAsset.props.position.toVector3f;
-                entityAsset.entity.rotation = Quaternionf(entityAsset.props.rotation.toVector4f);
+                entityAsset.entity.rotation = Quaternionf(entityAsset.props.rotation.toVector4f).normalized;
                 entityAsset.entity.scaling = entityAsset.props.scale.toVector3f;
                 entityAsset.entity.updateTransformation();
                 entityAsset.entity.solid = true; // TODO: read from entityAsset.props
