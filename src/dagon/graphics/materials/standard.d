@@ -548,7 +548,7 @@ class StandardBackend: GLSLMaterialBackend
             
             float dayOrNight = float(worldSun.y < 0.0);
             
-            float ambientBrightness = mix(s1 * sunDiffuselight, 1.0, shadowBrightness);
+            float ambientBrightness = mix(s1 * sunDiffuselight, 1.0, mix(shadowBrightness, 1.0, dayOrNight));
             ambientDiffuse = ambientDiffuse * toLinear(shadowColor.rgb) * ambientBrightness;
             ambientSpecular = ambientSpecular * toLinear(shadowColor.rgb) * ambientBrightness;
             

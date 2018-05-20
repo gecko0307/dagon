@@ -52,8 +52,6 @@ class PostFilter: Owner
     GLint prevModelViewProjMatrixLoc;
     GLint projectionMatrixLoc;
     GLint fbColorLoc;
-    //GLint fbDepthLoc;
-    //GLint fbVelocityLoc;
     GLint viewportSizeLoc;
     GLint enabledLoc;
     
@@ -83,7 +81,6 @@ class PostFilter: Owner
         #version 330 core
         
         uniform sampler2D fbColor;
-        //uniform sampler2D fbDepth;
         uniform vec2 viewSize;
 
         in vec2 texCoord;
@@ -152,8 +149,6 @@ class PostFilter: Owner
 
         viewportSizeLoc = glGetUniformLocation(shaderProgram, "viewSize");
         fbColorLoc = glGetUniformLocation(shaderProgram, "fbColor");
-        //fbDepthLoc = glGetUniformLocation(shaderProgram, "fbDepth");
-        //fbVelocityLoc = glGetUniformLocation(shaderProgram, "fbVelocity");
         enabledLoc = glGetUniformLocation(shaderProgram, "enabled");
     }
     
@@ -176,18 +171,9 @@ class PostFilter: Owner
         
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, inputBuffer.colorTexture);
-        
-        //glActiveTexture(GL_TEXTURE1);
-        //glBindTexture(GL_TEXTURE_2D, inputBuffer.depthTexture);
-        
-        /*
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, inputBuffer.velocityTexture);
-        */
+
         glUniform1i(fbColorLoc, 0);
-        //glUniform1i(fbDepthLoc, 1);
-        //glUniform1i(fbVelocityLoc, 2);
-        
+       
         glUniform1i(enabledLoc, enabled);
     }
     
@@ -195,12 +181,6 @@ class PostFilter: Owner
     {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, 0);
-
-        //glActiveTexture(GL_TEXTURE1);
-        //glBindTexture(GL_TEXTURE_2D, 0);
-        
-        //glActiveTexture(GL_TEXTURE2);
-        //glBindTexture(GL_TEXTURE_2D, 0);
         
         glActiveTexture(GL_TEXTURE0);
         

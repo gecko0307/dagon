@@ -38,7 +38,7 @@ import dagon.graphics.framebuffer;
  
 class PostFilterFXAA: PostFilter
 {
-    private string vs = q{
+    private static string vs = q{
         #version 330 core
         
         uniform mat4 modelViewMatrix;
@@ -58,7 +58,7 @@ class PostFilterFXAA: PostFilter
         }
     };
 
-    private string fs = q{
+    private static string fs = q{
         #version 330 core
         
         uniform bool enabled;

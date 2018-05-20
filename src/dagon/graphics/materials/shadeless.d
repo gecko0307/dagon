@@ -97,11 +97,16 @@ class ShadelessBackend: GLSLMaterialBackend
                 color.z * 0.06
             );
         }
+        
+        vec3 toLinear(vec3 v)
+        {
+            return pow(v, vec3(2.2));
+        }
 
         void main()
         {
             vec4 col = texture(diffuseTexture, texCoord);
-            frag_color = vec4(col.rgb * energy, col.a * alpha);
+            frag_color = vec4(toLinear(col.rgb) * energy, 1.0);
             frag_luma = vec4(energy, 0.0, 0.0, 1.0);
             frag_velocity = vec4(0.0, 0.0, 0.0, 1.0);
             frag_position = vec4(eyePosition, 0.0);
@@ -145,7 +150,7 @@ class ShadelessBackend: GLSLMaterialBackend
 
         // Texture 0 - diffuse texture
         Color4f color = Color4f(idiffuse.asVector4f);
-        float alpha = color.a;
+        float alpha = 1.0f; //color.a;
         if (idiffuse.texture is null)
         {
             idiffuse.texture = makeOnePixelTexture(mat, color);
