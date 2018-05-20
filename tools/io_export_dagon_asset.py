@@ -31,22 +31,11 @@ def packVector2f(v):
     return struct.pack('<ff', v[0], v[1])
 
 def saveMesh(scene, ob, absPath, localPath):
-    mw = ob.matrix_world.copy()
-    #if ob.parent:
-    #    parentTrans = ob.parent.matrix_world #* ob.matrix_local.inverted()
-    #locTrans = ob.matrix_local.copy()
-    #absTrans = parentTrans.inverted()
-
-    #ob.location = absTrans.to_translation()
-    #ob.rotation_euler = absTrans.to_euler()
-    #ob.rotation_quaternion = absTrans.to_quaternion()
-    #ob.scale = absTrans.to_scale()
-    
+    mw = ob.matrix_world.copy()    
     ob.matrix_world.identity()
-
     scene.update()
 
-    meshAbsPath = absPath + "/" + ob.name + ".obj"
+    meshAbsPath = absPath + "/" + ob.data.name + ".obj"
     
     bpy.ops.object.select_all(action='DESELECT')
 
@@ -65,12 +54,7 @@ def saveMesh(scene, ob, absPath, localPath):
     for sob in bpy.context.selected_objects:
         sob.select = False
 
-    #ob.location = locTrans.to_translation()
-    #ob.rotation_euler = locTrans.to_euler()
-    #ob.rotation_quaternion = locTrans.to_quaternion()
-    #ob.scale = locTrans.to_scale()
     ob.matrix_world = mw.copy();
-
     scene.update()
 
 def saveMeshEntity(scene, ob, absPath, localPath):
@@ -98,7 +82,7 @@ def saveMeshEntity(scene, ob, absPath, localPath):
     f.write(bytearray(rot.encode('ascii')))
     scale = 'scale: [%s, %s, %s];\n' % (objScale.x, objScale.y, objScale.z)
     f.write(bytearray(scale.encode('ascii')))
-    meshLocalPath = localPath + ob.name + ".obj"
+    meshLocalPath = localPath + ob.data.name + ".obj"
     mesh = 'mesh: \"%s\";\n' % (meshLocalPath)
     f.write(bytearray(mesh.encode('ascii')))
     if len(ob.data.materials) > 0:
@@ -107,6 +91,14 @@ def saveMeshEntity(scene, ob, absPath, localPath):
         materialLocalPath = localPath + mat.name + ".mat"
         materialStr = 'material: \"%s\";\n' % (materialLocalPath)
         f.write(bytearray(materialStr.encode('ascii')))
+
+    # TODO:
+    # visible
+    # castShadow
+    # useMotionBlur
+    # layer
+    # solid
+
     f.close()
     
 def saveEmptyEntity(scene, ob, absPath, localPath):
@@ -135,6 +127,13 @@ def saveEmptyEntity(scene, ob, absPath, localPath):
     scale = 'scale: [%s, %s, %s];\n' % (objScale.x, objScale.y, objScale.z)
     f.write(bytearray(scale.encode('ascii')))
 
+    # TODO:
+    # visible
+    # castShadow
+    # useMotionBlur
+    # layer
+    # solid
+
     f.close()
     
 def copyFile(fileSrc, destDir):
@@ -149,12 +148,14 @@ def saveMaterial(scene, mat, absPath, localPath):
     f.write(bytearray(name.encode('ascii')))
     
     props = mat.dagonProps
+
+    # diffuse
+    diffuse = ''
     if len(props.dagonDiffuseTexture):
         imageName = props.dagonDiffuseTexture
         imgAbsPath = bpy.path.abspath(props.dagonDiffuseTexture)
         if props.dagonDiffuseTexture in bpy.data.images:
             imgAbsPath = bpy.path.abspath(bpy.data.images[props.dagonDiffuseTexture].filepath)
-        
         imageName = os.path.basename(imgAbsPath)
         imgPath = localPath + imageName
         diffuse = 'diffuse: \"%s\";\n' % (imgPath)
@@ -162,10 +163,54 @@ def saveMaterial(scene, mat, absPath, localPath):
     else:
         diffuse = 'diffuse: [%s, %s, %s];\n' % (props.dagonDiffuse.r, props.dagonDiffuse.g, props.dagonDiffuse.b)
     f.write(bytearray(diffuse.encode('ascii')))
-    roughness = 'roughness: %s;\n' % (props.dagonRoughness)
+
+    # roughness
+    roughness = ''
+    if len(props.dagonRoughnessTexture):
+        imageName = props.dagonRoughnessTexture
+        imgAbsPath = bpy.path.abspath(props.dagonRoughnessTexture)
+        if props.dagonRoughnessTexture in bpy.data.images:
+            imgAbsPath = bpy.path.abspath(bpy.data.images[props.dagonRoughnessTexture].filepath)
+        imageName = os.path.basename(imgAbsPath)
+        imgPath = localPath + imageName
+        roughness = 'roughness: \"%s\";\n' % (imgPath)
+        copyFile(imgAbsPath, absPath)
+    else:
+        roughness = 'roughness: %s;\n' % (props.dagonRoughness)
     f.write(bytearray(roughness.encode('ascii')))
-    metallic = 'metallic: %s;\n' % (props.dagonMetallic)
+
+    # metallic
+    metallic = ''
+    if len(props.dagonMetallicTexture):
+        imageName = props.dagonMetallicTexture
+        imgAbsPath = bpy.path.abspath(props.dagonMetallicTexture)
+        if props.dagonMetallicTexture in bpy.data.images:
+            imgAbsPath = bpy.path.abspath(bpy.data.images[props.dagonMetallicTexture].filepath)
+        imageName = os.path.basename(imgAbsPath)
+        imgPath = localPath + imageName
+        metallic = 'metallic: \"%s\";\n' % (imgPath)
+        copyFile(imgAbsPath, absPath)
+    else:
+        metallic = 'metallic: %s;\n' % (props.dagonMetallic)
     f.write(bytearray(metallic.encode('ascii')))
+
+    # TODO:
+    # emission
+    # energy
+    # normal
+    # height
+    # parallaxMode
+    # parallaxScale
+    # parallaxBias
+    # shadeless
+    # culling
+    # colorWrite
+    # depthWrite
+    # useShadows
+    # useFog
+    # shadowFilter
+    # blendingMode
+    # transparency
     
     f.close()
     
@@ -178,7 +223,6 @@ def saveIndexFile(entities, absPath, dirLocal):
     f.close()
 
 def doExport(context, filepath = ""):
-
     scene = context.scene
 
     dirName = Path(filepath).stem
@@ -189,9 +233,10 @@ def doExport(context, filepath = ""):
         shutil.rmtree(dirAbs)
     os.makedirs(dirAbs)
 
-    dirLocal = dirName + "/"
+    dirLocal = '' #dirName + "/"
 
     entities = []
+    meshes = []
 
     localFilenames = []
     absFilenames = []
@@ -199,11 +244,14 @@ def doExport(context, filepath = ""):
     # Save *.obj and *.entity files
     for ob in scene.objects:
         if ob.type == 'MESH':
-            saveMesh(scene, ob, dirAbs, dirLocal)
-            meshLocalPath = dirLocal + ob.name + ".obj"
-            localFilenames.append(meshLocalPath)
-            meshAbsPath = dirAbs + "/" + ob.name + ".obj"
-            absFilenames.append(meshAbsPath)
+            meshName = ob.data.name
+            if not meshName in meshes:
+                saveMesh(scene, ob, dirAbs, dirLocal)
+                meshLocalPath = dirLocal + meshName + ".obj"
+                localFilenames.append(meshLocalPath)
+                meshAbsPath = dirAbs + "/" + meshName + ".obj"
+                absFilenames.append(meshAbsPath)
+                meshes.append(meshName)
 
             saveMeshEntity(scene, ob, dirAbs, dirLocal)
             entityFileLocalPath = dirLocal + ob.name + ".entity"
@@ -314,7 +362,18 @@ def menu_func_export_dagon_asset(self, context):
 ParallaxModeEnum = [
     ('ParallaxNone', "None", "", 0),
     ('ParallaxSimple', "Simple", "", 1),
-    ('ParallaxOcclusionMapping', "Occlusion Mapping", "", 2),
+    ('ParallaxOcclusionMapping', "Occlusion Mapping", "", 2)
+]
+
+ShadowFilterEnum = [
+    ('ShadowFilterNone', "None", "", 0),
+    ('ShadowFilterPCF', "PCF", "", 1)
+]
+
+BlendingModeEnum = [
+    ('BlendingModeOpaque', "Opaque", "", 0),
+    ('BlendingModeTransparent', "Transparent", "", 1),
+    ('BlendingModeAdditive', "Additive", "", 2)
 ]
 
 class DagonMaterialProps(bpy.types.PropertyGroup):
@@ -330,6 +389,17 @@ class DagonMaterialProps(bpy.types.PropertyGroup):
     dagonHeightTexture = bpy.props.StringProperty(name="Height Texture", subtype='FILE_PATH')
     dagonEmissionTexture = bpy.props.StringProperty(name="Emission Texture", subtype='FILE_PATH')
     dagonParallaxMode = bpy.props.EnumProperty(name="Parallax Mode", items=ParallaxModeEnum)
+    dagonParallaxScale = bpy.props.FloatProperty(name="Parallax Scale", default=0.03, min=0.0)
+    dagonParallaxBias = bpy.props.FloatProperty(name="Parallax Bias", default=-0.01)
+    dagonShadeless = bpy.props.BoolProperty(name="Shadeless", default=False)
+    dagonCulling = bpy.props.BoolProperty(name="Culling", default=True)
+    dagonColorWrite = bpy.props.BoolProperty(name="Color Write", default=True)
+    dagonDepthWrite = bpy.props.BoolProperty(name="Depth Write", default=True)
+    dagonReceiveShadows = bpy.props.BoolProperty(name="Receive Shadows", default=True)
+    dagonFog = bpy.props.BoolProperty(name="Fog", default=True)
+    dagonShadowFilter = bpy.props.EnumProperty(name="Shadow Filter", items=ShadowFilterEnum)
+    dagonBlendingMode = bpy.props.EnumProperty(name="Blending Mode", items=BlendingModeEnum)
+    dagonTransparency = bpy.props.FloatProperty(name="Transparency", default=1.0, min=0.0, max=1.0, subtype='FACTOR')
 
 class DagonMaterialPropsPanel(bpy.types.Panel):
     bl_label = "Dagon Properties"
@@ -373,6 +443,40 @@ class DagonMaterialPropsPanel(bpy.types.Panel):
 
         col = self.layout.column(align=True)
         col.prop(props, 'dagonParallaxMode')
+
+        col = self.layout.column(align=True)
+        col.prop(props, 'dagonParallaxScale')
+        col.prop(props, 'dagonParallaxBias')
+
+        row = self.layout.row()
+        split = row.split(percentage=0.5)
+        col = split.column()
+        col.prop(props, 'dagonShadeless')
+        col = split.column()
+        col.prop(props, 'dagonCulling')
+
+        row = self.layout.row()
+        split = row.split(percentage=0.5)
+        col = split.column()
+        col.prop(props, 'dagonColorWrite')
+        col = split.column()
+        col.prop(props, 'dagonDepthWrite')
+
+        row = self.layout.row()
+        split = row.split(percentage=0.5)
+        col = split.column()
+        col.prop(props, 'dagonReceiveShadows')
+        col = split.column()
+        col.prop(props, 'dagonFog')
+
+        col = self.layout.column(align=True)
+        col.prop(props, 'dagonShadowFilter')
+
+        col = self.layout.column(align=True)
+        col.prop(props, 'dagonBlendingMode')
+
+        col = self.layout.column(align=True)
+        col.prop(props, 'dagonTransparency')
 
 def register():
     bpy.utils.register_module(__name__)
