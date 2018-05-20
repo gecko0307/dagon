@@ -337,7 +337,7 @@ class Entity: Owner
 
 unittest
 {
-    Entity parent = null;
+    EventManager emngr = null;
     class B1 : Behaviour
     {
         this(Entity e) {super(e);}
@@ -346,7 +346,7 @@ unittest
     {
         this(Entity e) {super(e);}
     }
-    auto e = New!Entity(parent, null);
+    auto e = New!Entity(emngr, null);
     New!B1(e);
     assert(e.hasBehaviour!B1());
     New!B2(e);
