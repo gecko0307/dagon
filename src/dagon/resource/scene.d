@@ -707,6 +707,13 @@ class BaseScene3D: Scene
         return e;
     }
     
+    Entity addEntity3D(Entity e)
+    {
+        entities3D.append(e); 
+        sortEntities(entities3D);
+        return e;
+    }
+    
     Entity createSky()
     {
         auto matSky = createMaterial(skyMaterialBackend);

@@ -55,6 +55,7 @@ import dagon.resource.props;
 import dagon.graphics.mesh;
 import dagon.graphics.texture;
 import dagon.graphics.material;
+import dagon.graphics.materials.generic;
 import dagon.logics.entity;
 
 /*
@@ -67,6 +68,14 @@ import dagon.logics.entity;
  * - Meshes (currently only OBJ format is supported)
  * - Entity index file
  */
+ 
+class PackageAssetOwner: Owner
+{
+    this(Owner o)
+    {
+        super(o);
+    }
+}
 
 class PackageAsset: Asset
 {
@@ -79,14 +88,14 @@ class PackageAsset: Asset
     string index;
     BoxFileSystem boxfs;
     AssetManager assetManager;
+    BaseScene3D scene;
+    Entity rootEntity;
+    PackageAssetOwner assetOwner;
 
-    this(Owner o)
+    this(BaseScene3D scene, Owner o)
     {
         super(o);
-        meshes = New!(Dict!(OBJAsset, string))();
-        entities = New!(Dict!(EntityAsset, string))();
-        textures = New!(Dict!(TextureAsset, string))();
-        materials = New!(Dict!(MaterialAsset, string))();
+        this.scene = scene;
     }
 
     ~this()
@@ -97,6 +106,10 @@ class PackageAsset: Asset
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
     {
         this.filename = filename;
+        meshes = New!(Dict!(OBJAsset, string))();
+        entities = New!(Dict!(EntityAsset, string))();
+        textures = New!(Dict!(TextureAsset, string))();
+        materials = New!(Dict!(MaterialAsset, string))();
         boxfs = New!BoxFileSystem(fs, filename);
         
         if (fileExists("INDEX"))
@@ -107,6 +120,10 @@ class PackageAsset: Asset
         }
         
         assetManager = mngr;
+        
+        assetOwner = New!PackageAssetOwner(null);
+        rootEntity = New!Entity(scene.eventManager, assetOwner);
+        
         return true;
     }
 
@@ -153,7 +170,7 @@ class PackageAsset: Asset
     {
         if (!(filename in meshes))
         {
-            OBJAsset objAsset = New!OBJAsset(assetManager);
+            OBJAsset objAsset = New!OBJAsset(assetOwner);
             if (loadAsset(objAsset, filename))
             {
                 meshes[filename] = objAsset;
@@ -170,20 +187,20 @@ class PackageAsset: Asset
         }
     }
     
-    Entity entity(string filename, BaseScene3D scene)
+    Entity entity(string filename)
     {
         if (!(filename in entities))
         {
-            EntityAsset entityAsset = New!EntityAsset(assetManager);
+            EntityAsset entityAsset = New!EntityAsset(assetOwner);
             if (loadAsset(entityAsset, filename))
             {
                 entities[filename] = entityAsset;
                 
-                Entity parent = null;
+                Entity parent = rootEntity;
                 if ("parent" in entityAsset.props)
-                    parent = entity(entityAsset.props.parent.toString, scene);
+                    parent = entity(entityAsset.props.parent.toString);
                 
-                entityAsset.entity = scene.createEntity3D(parent);
+                entityAsset.entity = New!Entity(parent);
                 entityAsset.entity.position = entityAsset.props.position.toVector3f;
                 entityAsset.entity.rotation = Quaternionf(entityAsset.props.rotation.toVector4f).normalized;
                 entityAsset.entity.scaling = entityAsset.props.scale.toVector3f;
@@ -192,7 +209,7 @@ class PackageAsset: Asset
                 if ("mesh" in entityAsset.props)
                     entityAsset.entity.drawable = mesh(entityAsset.props.mesh.toString);
                 if ("material" in entityAsset.props)
-                    entityAsset.entity.material = material(entityAsset.props.material.toString, scene);
+                    entityAsset.entity.material = material(entityAsset.props.material.toString);
                 return entityAsset.entity;
             }
             else
@@ -210,7 +227,7 @@ class PackageAsset: Asset
     {
         if (!(filename in textures))
         {
-            TextureAsset texAsset = New!TextureAsset(assetManager.imageFactory, assetManager.hdrImageFactory, assetManager);
+            TextureAsset texAsset = New!TextureAsset(assetManager.imageFactory, assetManager.hdrImageFactory, assetOwner);
             if (loadAsset(texAsset, filename))
             {
                 textures[filename] = texAsset;
@@ -227,15 +244,15 @@ class PackageAsset: Asset
         }
     }
     
-    Material material(string filename, BaseScene3D scene)
+    Material material(string filename)
     {
         if (!(filename in materials))
         {
-            MaterialAsset matAsset = New!MaterialAsset(assetManager);
+            MaterialAsset matAsset = New!MaterialAsset(assetOwner);
             if (loadAsset(matAsset, filename))
             {
                 materials[filename] = matAsset;
-                matAsset.material = scene.createMaterial();
+                matAsset.material = createMaterial();
                 if (matAsset.props.diffuse.type == DPropType.String)
                 {
                     matAsset.material.diffuse = texture(matAsset.props.diffuse.toString);
@@ -261,13 +278,21 @@ class PackageAsset: Asset
         }
     }
     
-    void addEntitiesToScene(BaseScene3D scene)
+    Entity entity()
     {
         if (index.length)
         foreach(path; lineSplitter(index))
         {
-            Entity e = entity(path, scene);
+            Entity e = entity(path);
         }
+        
+        return rootEntity;
+    }
+    
+    GenericMaterial createMaterial()
+    {
+        GenericMaterial m = New!GenericMaterial(scene.defaultMaterialBackend, assetOwner);
+        return m;
     }
     
     bool fileExists(string filename)
@@ -279,10 +304,15 @@ class PackageAsset: Asset
     override void release()
     {
         clearOwnedObjects();
+        
         Delete(boxfs);
+        
         Delete(meshes);
         Delete(entities);
         Delete(textures);
+        Delete(materials);
+        
+        Delete(assetOwner);
         
         if (index.length)
             Delete(index);
