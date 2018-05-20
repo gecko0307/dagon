@@ -10,6 +10,7 @@ Dagon is a 3D game development framework for D. It is a work-in-progress reincar
 Currently Dagon has the following features:
 * Static and animated meshes, OBJ and [IQM](https://github.com/lsalzman/iqm) formats support
 * Textures in PNG, JPG, TGA, BMP, HDR formats
+* Own asset format with Blender exporter
 * Flexible material system with simple user-defined abstract API and different backends. You can implement custom materials, with your own shaders and parameters
 * Physically based rendering (PBR)
 * HDR rendering with auto-exposure (eye adaptation), Reinhard, Hable/Uncharted and ACES tonemapping operators
