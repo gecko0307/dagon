@@ -136,11 +136,23 @@ class Entity: Owner
         parent.children.append(this);
         this.parent = parent;
     }
-
-    ~this()
+    
+    this(Entity parent, Owner owner)
+    {
+        this(parent.eventManager, owner);
+        parent.children.append(this);
+        this.parent = parent;
+    }
+    
+    void release()
     {
         behaviours.free();
         children.free();
+    }
+
+    ~this()
+    {
+        release();
     }
     
     Vector3f absolutePosition()

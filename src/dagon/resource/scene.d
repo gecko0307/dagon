@@ -82,7 +82,7 @@ class Scene: EventListener
     {
         super(smngr.eventManager, null);
         sceneManager = smngr;
-        assetManager = New!AssetManager();
+        assetManager = New!AssetManager(eventManager);
     }
 
     ~this()

@@ -34,6 +34,7 @@ import std.conv;
 import derelict.sdl2.sdl;
 import dlib.core.memory;
 import dagon.core.ownership;
+import dagon.resource.asset;
 
 enum EventType
 {
@@ -51,6 +52,7 @@ enum EventType
     FocusLoss,
     FocusGain,
     Quit,
+    AssetReload,
     UserEvent
 }
 
@@ -68,6 +70,7 @@ struct Event
     int userCode;
     int mouseWheelX;
     int mouseWheelY;
+    Asset asset;
 }
 
 class EventManager
@@ -144,6 +147,13 @@ class EventManager
         }
         else
             writeln("Warning: event stack overflow");
+    }
+    
+    void generateAssetReloadEvent(Asset asset)
+    {
+        Event e = Event(EventType.AssetReload);
+        e.asset = asset;
+        addUserEvent(e);
     }
 
     void addUserEvent(Event e)
@@ -514,6 +524,9 @@ abstract class EventListener: Owner
             case EventType.Quit:
                 onQuit();
                 break;
+            case EventType.AssetReload:
+                onAssetReload(e.asset);
+                break;
             case EventType.UserEvent:
                 onUserEvent(e.userCode);
                 break;
@@ -535,5 +548,6 @@ abstract class EventListener: Owner
     void onFocusLoss() {}
     void onFocusGain() {}
     void onQuit() {}
+    void onAssetReload(Asset asset) {}
     void onUserEvent(int code) {}
 }

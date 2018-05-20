@@ -96,6 +96,8 @@ class PackageAsset: Asset
     {
         super(o);
         this.scene = scene;
+        
+        rootEntity = New!Entity(scene.eventManager, this);
     }
 
     ~this()
@@ -122,13 +124,12 @@ class PackageAsset: Asset
         assetManager = mngr;
         
         assetOwner = New!PackageAssetOwner(null);
-        rootEntity = New!Entity(scene.eventManager, assetOwner);
         
         return true;
     }
 
     override bool loadThreadUnsafePart()
-    {
+    {        
         return true;
     }
     
@@ -200,7 +201,7 @@ class PackageAsset: Asset
                 if ("parent" in entityAsset.props)
                     parent = entity(entityAsset.props.parent.toString);
                 
-                entityAsset.entity = New!Entity(parent);
+                entityAsset.entity = New!Entity(parent, assetOwner);
                 entityAsset.entity.position = entityAsset.props.position.toVector3f;
                 entityAsset.entity.rotation = Quaternionf(entityAsset.props.rotation.toVector4f).normalized;
                 entityAsset.entity.scaling = entityAsset.props.scale.toVector3f;
@@ -285,7 +286,7 @@ class PackageAsset: Asset
         {
             Entity e = entity(path);
         }
-        
+    
         return rootEntity;
     }
     
@@ -303,8 +304,6 @@ class PackageAsset: Asset
 
     override void release()
     {
-        clearOwnedObjects();
-        
         Delete(boxfs);
         
         Delete(meshes);
@@ -313,7 +312,9 @@ class PackageAsset: Asset
         Delete(materials);
         
         Delete(assetOwner);
-        
+
+        rootEntity.release();
+
         if (index.length)
             Delete(index);
     }

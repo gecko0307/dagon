@@ -38,6 +38,7 @@ import dlib.filesystem.stdfs;
 import dlib.image.unmanaged;
 import dlib.image.hdri;
 
+import dagon.core.event;
 import dagon.core.ownership;
 import dagon.core.vfs;
 import dagon.resource.boxfs;
@@ -77,8 +78,10 @@ class AssetManager: Owner
     protected double monitorTimer = 0.0;
 
     float nextLoadingPercentage = 0.0f;
+    
+    EventManager eventManager;
 
-    this(Owner o = null)
+    this(EventManager emngr, Owner o = null)
     {
         super(o);
 
@@ -89,6 +92,8 @@ class AssetManager: Owner
         hdrImageFactory = New!UnmanagedHDRImageFactory();
 
         loadingThread = New!Thread(&threadFunc);
+        
+        eventManager = emngr;
     }
 
     ~this()
@@ -298,6 +303,7 @@ class AssetManager: Owner
             {
                 reloadAsset(filename);
                 asset.monitorInfo.lastStat = currentStat;
+                eventManager.generateAssetReloadEvent(asset);
             }
         }
         else
