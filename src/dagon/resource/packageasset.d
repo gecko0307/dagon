@@ -198,19 +198,43 @@ class PackageAsset: Asset
                 entities[filename] = entityAsset;
                 
                 Entity parent = rootEntity;
+                
                 if ("parent" in entityAsset.props)
+                {
                     parent = entity(entityAsset.props.parent.toString);
+                }
                 
                 entityAsset.entity = New!Entity(parent, assetOwner);
-                entityAsset.entity.position = entityAsset.props.position.toVector3f;
-                entityAsset.entity.rotation = Quaternionf(entityAsset.props.rotation.toVector4f).normalized;
-                entityAsset.entity.scaling = entityAsset.props.scale.toVector3f;
+                
+                if ("position" in entityAsset.props)
+                {
+                    entityAsset.entity.position = entityAsset.props.position.toVector3f;
+                }
+    
+                if ("rotation" in entityAsset.props)
+                {
+                    entityAsset.entity.rotation = Quaternionf(entityAsset.props.rotation.toVector4f).normalized;
+                }
+    
+                if ("scaling" in entityAsset.props)
+                {
+                    entityAsset.entity.scaling = entityAsset.props.scale.toVector3f;
+                }
+   
                 entityAsset.entity.updateTransformation();
+                
                 entityAsset.entity.solid = true; // TODO: read from entityAsset.props
+                
                 if ("mesh" in entityAsset.props)
+                {
                     entityAsset.entity.drawable = mesh(entityAsset.props.mesh.toString);
+                }
+    
                 if ("material" in entityAsset.props)
+                {
                     entityAsset.entity.material = material(entityAsset.props.material.toString);
+                }
+    
                 return entityAsset.entity;
             }
             else
@@ -254,18 +278,91 @@ class PackageAsset: Asset
             {
                 materials[filename] = matAsset;
                 matAsset.material = createMaterial();
-                if (matAsset.props.diffuse.type == DPropType.String)
+                
+                // diffuse
+                if ("diffuse" in matAsset.props)
                 {
-                    matAsset.material.diffuse = texture(matAsset.props.diffuse.toString);
+                    if (matAsset.props.diffuse.type == DPropType.String)
+                    {
+                        matAsset.material.diffuse = texture(matAsset.props.diffuse.toString);
+                    }
+                    else
+                    {
+                        Vector3f diffCol = matAsset.props.diffuse.toVector3f;
+                        matAsset.material.diffuse = Color4f(diffCol.r, diffCol.g, diffCol.b, 1.0f);
+                    }
                 }
-                else
+                
+                // emission
+                if ("emission" in matAsset.props)
                 {
-                    Vector3f diffCol = matAsset.props.diffuse.toVector3f;
-                    matAsset.material.diffuse = Color4f(diffCol.r, diffCol.g, diffCol.b, 1.0f);
+                    if (matAsset.props.emission.type == DPropType.String)
+                    {
+                        matAsset.material.emission = texture(matAsset.props.emission.toString);
+                    }
+                    else
+                    {
+                        Vector3f emissionCol = matAsset.props.emission.toVector3f;
+                        matAsset.material.emission = Color4f(emissionCol.r, emissionCol.g, emissionCol.b, 1.0f);
+                    }
                 }
-                matAsset.material.roughness = matAsset.props.roughness.toFloat;
-                matAsset.material.metallic = matAsset.props.metallic.toFloat;
-                // TODO: textures
+                
+                // energy
+                if ("energy" in matAsset.props)
+                {
+                    matAsset.material.energy = matAsset.props.energy.toFloat;
+                }
+                
+                // normal
+                if ("normal" in matAsset.props)
+                {
+                    if (matAsset.props.normal.type == DPropType.String)
+                    {
+                        matAsset.material.normal = texture(matAsset.props.normal.toString);
+                    }
+                }
+ 
+                // height
+                if ("height" in matAsset.props)
+                {
+                    if (matAsset.props.height.type == DPropType.String)
+                    {
+                        matAsset.material.height = texture(matAsset.props.height.toString);
+                    }
+                }
+                
+                // roughness
+                if ("roughness" in matAsset.props)
+                {
+                    if (matAsset.props.roughness.type == DPropType.String)
+                    {
+                        matAsset.material.roughness = texture(matAsset.props.roughness.toString);
+                    }
+                    else
+                    {
+                        matAsset.material.roughness = matAsset.props.roughness.toFloat;
+                    }
+                }
+                
+                // metallic
+                if ("metallic" in matAsset.props)
+                {
+                    if (matAsset.props.metallic.type == DPropType.String)
+                    {
+                        matAsset.material.metallic = texture(matAsset.props.metallic.toString);
+                    }
+                    else
+                    {
+                        matAsset.material.metallic = matAsset.props.metallic.toFloat;
+                    }
+                }
+                
+                // parallax
+                if ("parallax" in matAsset.props)
+                {
+                    matAsset.material.parallax = matAsset.props.parallax.toInt;
+                }
+                
                 return matAsset.material;
             }
             else

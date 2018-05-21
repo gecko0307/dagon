@@ -194,12 +194,61 @@ def saveMaterial(scene, mat, absPath, localPath):
         metallic = 'metallic: %s;\n' % (props.dagonMetallic)
     f.write(bytearray(metallic.encode('ascii')))
 
-    # TODO:
     # emission
+    emission = ''
+    if len(props.dagonEmissionTexture):
+        imageName = props.dagonEmissionTexture
+        imgAbsPath = bpy.path.abspath(props.dagonEmissionTexture)
+        if props.dagonEmissionTexture in bpy.data.images:
+            imgAbsPath = bpy.path.abspath(bpy.data.images[props.dagonEmissionTexture].filepath)
+        imageName = os.path.basename(imgAbsPath)
+        imgPath = localPath + imageName
+        emission = 'emission: \"%s\";\n' % (imgPath)
+        copyFile(imgAbsPath, absPath)
+    else:
+        emission = 'emission: [%s, %s, %s];\n' % (props.dagonEmission.r, props.dagonEmission.g, props.dagonEmission.b)
+    f.write(bytearray(emission.encode('ascii')))
+    
     # energy
+    energy = 'energy: %s;\n' % (props.dagonEnergy)
+    f.write(bytearray(energy.encode('ascii')))
+    
     # normal
+    if len(props.dagonNormalTexture):
+        imageName = props.dagonNormalTexture
+        imgAbsPath = bpy.path.abspath(props.dagonNormalTexture)
+        if props.dagonNormalTexture in bpy.data.images:
+            imgAbsPath = bpy.path.abspath(bpy.data.images[props.dagonNormalTexture].filepath)
+        imageName = os.path.basename(imgAbsPath)
+        imgPath = localPath + imageName
+        normal = 'normal: \"%s\";\n' % (imgPath)
+        copyFile(imgAbsPath, absPath)
+        f.write(bytearray(normal.encode('ascii')))
+        
     # height
+    if len(props.dagonHeightTexture):
+        imageName = props.dagonHeightTexture
+        imgAbsPath = bpy.path.abspath(props.dagonHeightTexture)
+        if props.dagonHeightTexture in bpy.data.images:
+            imgAbsPath = bpy.path.abspath(bpy.data.images[props.dagonHeightTexture].filepath)
+        imageName = os.path.basename(imgAbsPath)
+        imgPath = localPath + imageName
+        height = 'height: \"%s\";\n' % (imgPath)
+        copyFile(imgAbsPath, absPath)
+        f.write(bytearray(height.encode('ascii')))
+        
     # parallaxMode
+    parallaxMode = 0
+    if props.dagonParallaxMode == 'ParallaxNone':
+        parallaxMode = 0
+    elif props.dagonParallaxMode == 'ParallaxSimple':
+        parallaxMode = 1
+    elif props.dagonParallaxMode == 'ParallaxOcclusionMapping':
+        parallaxMode = 2
+    parallax = 'parallax: %s;\n' % (parallaxMode)
+    f.write(bytearray(parallax.encode('ascii')))
+    
+    # TODO:
     # parallaxScale
     # parallaxBias
     # shadeless
@@ -358,6 +407,8 @@ class ExportDagonAsset(bpy.types.Operator, ExportHelper):
 
 def menu_func_export_dagon_asset(self, context):
     self.layout.operator(ExportDagonAsset.bl_idname, text = "Dagon Asset (.asset)")
+
+# TODO: object properties
 
 ParallaxModeEnum = [
     ('ParallaxNone', "None", "", 0),
