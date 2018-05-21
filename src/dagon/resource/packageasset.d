@@ -216,7 +216,7 @@ class PackageAsset: Asset
                     entityAsset.entity.rotation = Quaternionf(entityAsset.props.rotation.toVector4f).normalized;
                 }
     
-                if ("scaling" in entityAsset.props)
+                if ("scale" in entityAsset.props)
                 {
                     entityAsset.entity.scaling = entityAsset.props.scale.toVector3f;
                 }
