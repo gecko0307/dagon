@@ -60,7 +60,7 @@ enum Attach
     Camera
 }
 
-class Entity: Owner
+class Entity: Owner, Drawable
 {
     uint id;
     uint groupID = 0;
@@ -309,8 +309,36 @@ class Entity: Owner
             glClear(GL_DEPTH_BUFFER_BIT);
 
         if (drawable)
-            drawable.render(&rcLocal);
-
+        {
+            Entity drawableEntity = cast(Entity)drawable;
+            
+            if (drawableEntity)
+            {
+                auto absTrans = drawableEntity.absoluteTransformation;
+                auto invAbsTrans = drawableEntity.invAbsoluteTransformation;
+                auto prevAbsTrans = drawableEntity.prevAbsoluteTransformation;
+                
+                drawableEntity.absoluteTransformation = absoluteTransformation;
+                drawableEntity.invAbsoluteTransformation = invAbsoluteTransformation;
+                drawableEntity.prevAbsoluteTransformation = prevAbsoluteTransformation;
+                
+                foreach(child; drawableEntity.children)
+                {
+                    child.updateTransformation();
+                }
+                
+                drawableEntity.render(&rcLocal);
+                
+                drawableEntity.absoluteTransformation = absTrans;
+                drawableEntity.invAbsoluteTransformation = invAbsTrans;
+                drawableEntity.prevAbsoluteTransformation = prevAbsTrans;
+            }
+            else
+            {
+                drawable.render(&rcLocal);
+            }
+        }
+        
         if (rcLocal.overrideMaterial)
             rcLocal.overrideMaterial.unbind(&rcLocal);
         else if (material)

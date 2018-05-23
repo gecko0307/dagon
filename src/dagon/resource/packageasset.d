@@ -193,6 +193,7 @@ class PackageAsset: Asset
         if (!(filename in entities))
         {
             EntityAsset entityAsset = New!EntityAsset(assetOwner);
+
             if (loadAsset(entityAsset, filename))
             {
                 entities[filename] = entityAsset;
@@ -205,6 +206,7 @@ class PackageAsset: Asset
                 }
                 
                 entityAsset.entity = New!Entity(parent, assetOwner);
+                entityAsset.entity.material = scene.defaultMaterial3D;
                 
                 if ("position" in entityAsset.props)
                 {
@@ -223,7 +225,12 @@ class PackageAsset: Asset
    
                 entityAsset.entity.updateTransformation();
                 
-                entityAsset.entity.solid = true; // TODO: read from entityAsset.props
+                // TODO: read these from entityAsset.props
+                entityAsset.entity.visible = true;
+                entityAsset.entity.castShadow = true;
+                entityAsset.entity.useMotionBlur = true;
+                entityAsset.entity.layer = 1;
+                entityAsset.entity.solid = true;
                 
                 if ("mesh" in entityAsset.props)
                 {
