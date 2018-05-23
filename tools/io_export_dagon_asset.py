@@ -2,7 +2,7 @@ bl_info = {
     "name": "Dagon Asset Export",
     "author": "Timur Gafarov",
     "version": (1, 0),
-    "blender": (2, 6, 4),
+    "blender": (2, 7, 0),
     "location": "File > Export > Dagon Asset (.asset)",
     "description": "Export Dagon engine asset file",
     "warning": "",
@@ -238,28 +238,66 @@ def saveMaterial(scene, mat, absPath, localPath):
         f.write(bytearray(height.encode('ascii')))
         
     # parallaxMode
-    parallaxMode = 0
-    if props.dagonParallaxMode == 'ParallaxNone':
-        parallaxMode = 0
-    elif props.dagonParallaxMode == 'ParallaxSimple':
-        parallaxMode = 1
-    elif props.dagonParallaxMode == 'ParallaxOcclusionMapping':
-        parallaxMode = 2
+    parallaxMode = {
+        'ParallaxNone': 0,
+        'ParallaxSimple': 1,
+        'ParallaxOcclusionMapping': 2,
+    }[props.dagonParallaxMode];
     parallax = 'parallax: %s;\n' % (parallaxMode)
     f.write(bytearray(parallax.encode('ascii')))
     
-    # TODO:
     # parallaxScale
+    parallaxScale = 'parallaxScale: %s;\n' % (props.dagonParallaxScale)
+    f.write(bytearray(parallaxScale.encode('ascii')))
+    
     # parallaxBias
+    parallaxBias = 'parallaxBias: %s;\n' % (props.dagonParallaxBias)
+    f.write(bytearray(parallaxBias.encode('ascii')))
+    
     # shadeless
+    shadeless = 'shadeless: %s;\n' % (int(props.dagonShadeless))
+    f.write(bytearray(shadeless.encode('ascii')))
+    
     # culling
+    culling = 'culling: %s;\n' % (int(props.dagonCulling))
+    f.write(bytearray(culling.encode('ascii')))
+    
     # colorWrite
+    colorWrite = 'colorWrite: %s;\n' % (int(props.dagonColorWrite))
+    f.write(bytearray(colorWrite.encode('ascii')))
+    
     # depthWrite
+    depthWrite = 'depthWrite: %s;\n' % (int(props.dagonDepthWrite))
+    f.write(bytearray(depthWrite.encode('ascii')))
+    
     # useShadows
+    useShadows = 'useShadows: %s;\n' % (int(props.dagonReceiveShadows))
+    f.write(bytearray(useShadows.encode('ascii')))
+    
     # useFog
+    useFog = 'useFog: %s;\n' % (int(props.dagonFog))
+    f.write(bytearray(useFog.encode('ascii')))
+
     # shadowFilter
+    shadowFilter = {
+        'ShadowFilterNone': 0,
+        'ShadowFilterPCF': 1
+    }[props.dagonShadowFilter];
+    shadowFilterStr = 'shadowFilter: %s;\n' % (shadowFilter)
+    f.write(bytearray(shadowFilterStr.encode('ascii')))
+    
     # blendingMode
+    blendingMode = {
+        'BlendingModeOpaque': 0,
+        'BlendingModeTransparent': 1,
+        'BlendingModeAdditive': 2
+    }[props.dagonBlendingMode];
+    blendingModeStr = 'blendingMode: %s;\n' % (blendingMode)
+    f.write(bytearray(blendingModeStr.encode('ascii')))
+    
     # transparency
+    transparency = 'transparency: %s;\n' % (props.dagonTransparency)
+    f.write(bytearray(transparency.encode('ascii')))
     
     f.close()
     
