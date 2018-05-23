@@ -166,6 +166,13 @@ class StandardBackend: GLSLMaterialBackend
         
         uniform float blurMask;
         
+        uniform bool shaded;
+        uniform float transparency;
+        uniform bool usePCF;
+        //const bool shaded = true;
+        //const float transparency = 1.0;
+        //const bool usePCF = true;
+        
         in vec3 eyePosition;
         
         in vec4 position;
@@ -403,15 +410,16 @@ class StandardBackend: GLSLMaterialBackend
             vec3 tN = normalize(texture(normalTexture, shiftedTexCoord).rgb * 2.0 - 1.0);
             tN.y = -tN.y;
             N = normalize(TBN * tN);
-            
-            // Calculate shadow from 3 cascades
-            vec4 sc1 = useHeightCorrectedShadows? shadowMatrix1 * vec4(eyePosition + vN * height * 0.3, 1.0) : shadowCoord1;
-            vec4 sc2 = useHeightCorrectedShadows? shadowMatrix2 * vec4(eyePosition + vN * height * 0.3, 1.0) : shadowCoord2;
-            
+             
+            // Calculate shadow from 3 cascades           
             float s1, s2, s3;
-            if (useShadows)
+            if (shaded && useShadows)
             {
-                s1 = shadowPCF(shadowTextureArray, 0.0, sc1, 2.0, 0.0);
+                vec4 sc1 = useHeightCorrectedShadows? shadowMatrix1 * vec4(eyePosition + vN * height * 0.3, 1.0) : shadowCoord1;
+                vec4 sc2 = useHeightCorrectedShadows? shadowMatrix2 * vec4(eyePosition + vN * height * 0.3, 1.0) : shadowCoord2;
+            
+                s1 = usePCF? shadowPCF(shadowTextureArray, 0.0, sc1, 2.0, 0.0) : 
+                             shadow(shadowTextureArray, 0.0, sc1, 0.0);
                 s2 = shadow(shadowTextureArray, 1.0, sc2, 0.0);
                 s3 = shadow(shadowTextureArray, 2.0, shadowCoord3, 0.0);
                 float w1 = weight(sc1, 8.0);
@@ -449,6 +457,7 @@ class StandardBackend: GLSLMaterialBackend
             // Sun light
             float sunDiffuselight = 1.0;
             // if (sunEnabled)
+            if (shaded)
             {
                 vec3 L = sunDirection;
                 float NL = max(dot(N, L), 0.0); 
@@ -474,102 +483,107 @@ class StandardBackend: GLSLMaterialBackend
             }
             
             // Fetch light cluster slice
-            vec2 clusterCoord = (worldPosition.xz - cameraPosition.xz) * invLightDomainSize + 0.5;
-            uint clusterIndex = texture(lightClusterTexture, clusterCoord).r;
-            uint offset = (clusterIndex << 16) >> 16;
-            uint size = (clusterIndex >> 16);
-            
-            // Point/area lights
-            for (uint i = 0u; i < size; i++)
+            if (shaded)
             {
-                // Read light data
-                uint u = texelFetch(lightIndexTexture, int(offset + i), 0).r;
-                vec3 lightPos = texelFetch(lightsTexture, ivec2(u, 0), 0).xyz; 
-                vec3 lightColor = toLinear(texelFetch(lightsTexture, ivec2(u, 1), 0).xyz); 
-                vec3 lightProps = texelFetch(lightsTexture, ivec2(u, 2), 0).xyz;
-                float lightRadius = lightProps.x;
-                float lightAreaRadius = lightProps.y;
-                float lightEnergy = lightProps.z;
+                vec2 clusterCoord = (worldPosition.xz - cameraPosition.xz) * invLightDomainSize + 0.5;
+                uint clusterIndex = texture(lightClusterTexture, clusterCoord).r;
+                uint offset = (clusterIndex << 16) >> 16;
+                uint size = (clusterIndex >> 16);
                 
-                vec3 lightPosEye = (viewMatrix * vec4(lightPos, 1.0)).xyz;
-                
-                vec3 positionToLightSource = lightPosEye - eyePosition;
-                float distanceToLight = length(positionToLightSource);
-                vec3 directionToLight = normalize(positionToLightSource);                
-                float attenuation = pow(clamp(1.0 - (distanceToLight / lightRadius), 0.0, 1.0), 2.0) * lightEnergy;
-                
-                vec3 Lpt = normalize(lightPosEye - eyePosition);
+                // Point/area lights
+                for (uint i = 0u; i < size; i++)
+                {
+                    // Read light data
+                    uint u = texelFetch(lightIndexTexture, int(offset + i), 0).r;
+                    vec3 lightPos = texelFetch(lightsTexture, ivec2(u, 0), 0).xyz; 
+                    vec3 lightColor = toLinear(texelFetch(lightsTexture, ivec2(u, 1), 0).xyz); 
+                    vec3 lightProps = texelFetch(lightsTexture, ivec2(u, 2), 0).xyz;
+                    float lightRadius = lightProps.x;
+                    float lightAreaRadius = lightProps.y;
+                    float lightEnergy = lightProps.z;
+                    
+                    vec3 lightPosEye = (viewMatrix * vec4(lightPos, 1.0)).xyz;
+                    
+                    vec3 positionToLightSource = lightPosEye - eyePosition;
+                    float distanceToLight = length(positionToLightSource);
+                    vec3 directionToLight = normalize(positionToLightSource);                
+                    float attenuation = pow(clamp(1.0 - (distanceToLight / lightRadius), 0.0, 1.0), 2.0) * lightEnergy;
+                    
+                    vec3 Lpt = normalize(lightPosEye - eyePosition);
 
-                vec3 centerToRay = dot(positionToLightSource, R) * R - positionToLightSource;
-                vec3 closestPoint = positionToLightSource + centerToRay * clamp(lightAreaRadius / length(centerToRay), 0.0, 1.0);
-                vec3 L = normalize(closestPoint);  
+                    vec3 centerToRay = dot(positionToLightSource, R) * R - positionToLightSource;
+                    vec3 closestPoint = positionToLightSource + centerToRay * clamp(lightAreaRadius / length(centerToRay), 0.0, 1.0);
+                    vec3 L = normalize(closestPoint);  
 
-                float NL = max(dot(N, Lpt), 0.0); 
-                vec3 H = normalize(E + L);
-                
-                float NDF = distributionGGX(N, H, roughness);        
-                float G = geometrySmith(N, E, L, roughness);      
-                vec3 F = fresnel(max(dot(H, E), 0.0), f0);
-                
-                vec3 kS = F;
-                vec3 kD = vec3(1.0) - kS;
-                kD *= 1.0 - metallic;
+                    float NL = max(dot(N, Lpt), 0.0); 
+                    vec3 H = normalize(E + L);
+                    
+                    float NDF = distributionGGX(N, H, roughness);        
+                    float G = geometrySmith(N, E, L, roughness);      
+                    vec3 F = fresnel(max(dot(H, E), 0.0), f0);
+                    
+                    vec3 kS = F;
+                    vec3 kD = vec3(1.0) - kS;
+                    kD *= 1.0 - metallic;
 
-                vec3 numerator = NDF * G * F;
-                float denominator = 4.0 * max(dot(N, E), 0.0) * NL;
-                vec3 specular = numerator / max(denominator, 0.001);
-                
-                vec3 radiance = lightColor * attenuation;
-                
-                Lo += (kD * albedo / PI + specular) * radiance * NL;
+                    vec3 numerator = NDF * G * F;
+                    float denominator = 4.0 * max(dot(N, E), 0.0) * NL;
+                    vec3 specular = numerator / max(denominator, 0.001);
+                    
+                    vec3 radiance = lightColor * attenuation;
+                    
+                    Lo += (kD * albedo / PI + specular) * radiance * NL;
+                }
             }
             
             // Fog
             float fogFactor = clamp((fogEnd - linearDepth) / (fogEnd - fogStart), 0.0, 1.0);
             
             // Environment light
-            vec3 ambientDiffuse;
-            vec3 ambientSpecular;
-            if (useEnvironmentMap)
+            if (shaded)
             {
-                ivec2 envMapSize = textureSize(environmentMap, 0);
-                float maxLod = log2(float(max(envMapSize.x, envMapSize.y)));
-                float diffLod = (maxLod - 1.0);
-                float specLod = (maxLod - 1.0) * roughness;
+                vec3 ambientDiffuse;
+                vec3 ambientSpecular;
+                if (useEnvironmentMap)
+                {
+                    ivec2 envMapSize = textureSize(environmentMap, 0);
+                    float maxLod = log2(float(max(envMapSize.x, envMapSize.y)));
+                    float diffLod = (maxLod - 1.0);
+                    float specLod = (maxLod - 1.0) * roughness;
+                    
+                    ambientDiffuse = textureLod(environmentMap, envMapEquirect(worldN), diffLod).rgb;
+                    ambientSpecular = textureLod(environmentMap, envMapEquirect(worldR), specLod).rgb;
+                }
+                else
+                {
+                    ambientDiffuse = sky(worldN, worldSun, roughness);
+                    ambientSpecular = sky(worldR, worldSun, roughness);
+                }
                 
-                ambientDiffuse = textureLod(environmentMap, envMapEquirect(worldN), diffLod).rgb;
-                ambientSpecular = textureLod(environmentMap, envMapEquirect(worldR), specLod).rgb;
-            }
-            else
-            {
-                ambientDiffuse = sky(worldN, worldSun, roughness);
-                ambientSpecular = sky(worldR, worldSun, roughness);
-            }
-            
-            float dayOrNight = float(worldSun.y < 0.0);
-            
-            float ambientBrightness = mix(s1 * sunDiffuselight, 1.0, mix(shadowBrightness, 1.0, dayOrNight));
-            ambientDiffuse = ambientDiffuse * toLinear(shadowColor.rgb) * ambientBrightness;
-            ambientSpecular = ambientSpecular * toLinear(shadowColor.rgb) * ambientBrightness;
-            
-            {
-                vec3 F = fresnelRoughness(max(dot(N, E), 0.0), f0, roughness);
-                vec3 kS = F;
-                vec3 kD = 1.0 - kS;
-                kD *= 1.0 - metallic;
+                float dayOrNight = float(worldSun.y < 0.0);
                 
-                vec3 diffuse = ambientDiffuse * albedo;
-  
-                vec3 ambient = kD * diffuse + F * ambientSpecular;
+                float ambientBrightness = mix(s1 * sunDiffuselight, 1.0, mix(shadowBrightness, 1.0, dayOrNight));
+                ambientDiffuse = ambientDiffuse * toLinear(shadowColor.rgb) * ambientBrightness;
+                ambientSpecular = ambientSpecular * toLinear(shadowColor.rgb) * ambientBrightness;
                 
-                Lo += ambient;
+                {
+                    vec3 F = fresnelRoughness(max(dot(N, E), 0.0), f0, roughness);
+                    vec3 kS = F;
+                    vec3 kD = 1.0 - kS;
+                    kD *= 1.0 - metallic;
+                    vec3 diffuse = ambientDiffuse * albedo;
+                    vec3 ambient = kD * diffuse + F * ambientSpecular;
+                    Lo += ambient;
+                }
             }
             
-            vec3 objColor = Lo + emissionColor * emissionEnergy;
+            vec3 emit = emissionColor + albedo * (1.0 - float(shaded));
+            
+            vec3 objColor = Lo + emit * emissionEnergy;
             
             vec3 fragColor = mix(fogColor.rgb, objColor, fogFactor);
-            float fresnelAlpha = pow(1.0 - max(0.0, dot(N, E)), 5.0); 
-            const float transparency = 1.0; // TODO: make uniform
+            float fresnelAlpha = shaded? pow(1.0 - max(0.0, dot(N, E)), 5.0) : 0.0; 
+            
             float alpha = mix(diffuseColor.a, 1.0f, fresnelAlpha) * transparency;
             
             frag_color = vec4(fragColor, alpha);
@@ -637,6 +651,10 @@ class StandardBackend: GLSLMaterialBackend
     
     GLint blurMaskLoc;
     
+    GLint shadedLoc;
+    GLint transparencyLoc;
+    GLint usePCFLoc;
+    
     ClusteredLightManager lightManager;
     CascadedShadowMap shadowMap;
     Matrix4x4f defaultShadowMat;
@@ -701,6 +719,10 @@ class StandardBackend: GLSLMaterialBackend
         indexTextureLoc = glGetUniformLocation(shaderProgram, "lightIndexTexture");
         
         blurMaskLoc = glGetUniformLocation(shaderProgram, "blurMask");
+        
+        shadedLoc = glGetUniformLocation(shaderProgram, "shaded");
+        transparencyLoc = glGetUniformLocation(shaderProgram, "transparency");
+        usePCFLoc = glGetUniformLocation(shaderProgram, "usePCF");
     }
     
     override void bind(GenericMaterial mat, RenderingContext* rc)
@@ -720,6 +742,10 @@ class StandardBackend: GLSLMaterialBackend
             parallaxMethod = ParallaxOcclusionMapping;
         if (parallaxMethod < 0)
             parallaxMethod = 0;
+                
+        auto ishadeless = "shadeless" in mat.inputs;
+        auto itransparency = "transparency" in mat.inputs;
+        auto ishadowFilter = "shadowFilter" in mat.inputs;
         
         glUseProgram(shaderProgram);
         
@@ -919,6 +945,21 @@ class StandardBackend: GLSLMaterialBackend
         glActiveTexture(GL_TEXTURE8);
         lightManager.bindIndexTexture();
         glUniform1i(indexTextureLoc, 8);
+        
+        bool shaded = true;
+        if (ishadeless)
+            shaded = !(ishadeless.asBool);
+        glUniform1i(shadedLoc, shaded);
+
+        float transparency = 1.0f;
+        if (itransparency)
+            transparency = itransparency.asFloat;
+        glUniform1f(transparencyLoc, transparency);
+        
+        bool usePCF = false;
+        if (ishadowFilter)
+            usePCF = (ishadowFilter.asInteger == ShadowFilterPCF);
+        glUniform1i(usePCFLoc, usePCF);
         
         glActiveTexture(GL_TEXTURE0);
     }
