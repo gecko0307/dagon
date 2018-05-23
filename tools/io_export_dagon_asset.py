@@ -367,8 +367,8 @@ def doExport(context, filepath = ""):
             absFilenames.append(entityFileAbsPath)
             
             entities.append(entityFileLocalPath)
-            
-        elif ob.type == 'EMPTY':
+        #TODO: lamps    
+        else:
             saveEmptyEntity(scene, ob, dirAbs, dirLocal)
             entityFileLocalPath = dirLocal + ob.name + ".entity"
             localFilenames.append(entityFileLocalPath)
@@ -376,7 +376,6 @@ def doExport(context, filepath = ""):
             absFilenames.append(entityFileAbsPath)
             
             entities.append(entityFileLocalPath)
-        #TODO: lamps
 
     for mat in bpy.data.materials:
         saveMaterial(scene, mat, dirAbs, dirLocal)
