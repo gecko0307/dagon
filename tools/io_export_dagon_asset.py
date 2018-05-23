@@ -71,6 +71,8 @@ def saveMeshEntity(scene, ob, absPath, localPath):
     name = 'name: \"%s\";\n' % (ob.name)
     f.write(bytearray(name.encode('ascii')))
     
+    props = ob.dagonProps
+    
     if ob.parent:
         parentFilename = localPath + ob.parent.name + ".entity"
         parentStr = 'parent: \"%s\";\n' % (parentFilename)
@@ -91,13 +93,21 @@ def saveMeshEntity(scene, ob, absPath, localPath):
         materialLocalPath = localPath + mat.name + ".mat"
         materialStr = 'material: \"%s\";\n' % (materialLocalPath)
         f.write(bytearray(materialStr.encode('ascii')))
-
-    # TODO:
-    # visible
-    # castShadow
-    # useMotionBlur
-    # layer
-    # solid
+        
+    visible = 'visible: %s;\n' % (int(props.dagonVisible))
+    f.write(bytearray(visible.encode('ascii')))
+    
+    castShadow = 'castShadow: %s;\n' % (int(props.dagonCastShadow))
+    f.write(bytearray(castShadow.encode('ascii')))
+    
+    useMotionBlur = 'useMotionBlur: %s;\n' % (int(props.dagonUseMotionBlur))
+    f.write(bytearray(useMotionBlur.encode('ascii')))
+    
+    solid = 'solid: %s;\n' % (int(props.dagonSolid))
+    f.write(bytearray(solid.encode('ascii')))
+    
+    layer = 'layer: %s;\n' % (props.dagonLayer)
+    f.write(bytearray(layer.encode('ascii')))
 
     f.close()
     
@@ -115,6 +125,8 @@ def saveEmptyEntity(scene, ob, absPath, localPath):
     name = 'name: \"%s\";\n' % (ob.name)
     f.write(bytearray(name.encode('ascii')))
     
+    props = ob.dagonProps
+    
     if ob.parent:
         parentFilename = localPath + ob.parent.name + ".entity"
         parentStr = 'parent: \"%s\";\n' % (parentFilename)
@@ -127,12 +139,20 @@ def saveEmptyEntity(scene, ob, absPath, localPath):
     scale = 'scale: [%s, %s, %s];\n' % (objScale.x, objScale.y, objScale.z)
     f.write(bytearray(scale.encode('ascii')))
 
-    # TODO:
-    # visible
-    # castShadow
-    # useMotionBlur
-    # layer
-    # solid
+    visible = 'visible: %s;\n' % (int(props.dagonVisible))
+    f.write(bytearray(visible.encode('ascii')))
+    
+    castShadow = 'castShadow: %s;\n' % (int(props.dagonCastShadow))
+    f.write(bytearray(castShadow.encode('ascii')))
+    
+    useMotionBlur = 'useMotionBlur: %s;\n' % (int(props.dagonUseMotionBlur))
+    f.write(bytearray(useMotionBlur.encode('ascii')))
+    
+    solid = 'solid: %s;\n' % (int(props.dagonSolid))
+    f.write(bytearray(solid.encode('ascii')))
+    
+    layer = 'layer: %s;\n' % (props.dagonLayer)
+    f.write(bytearray(layer.encode('ascii')))
 
     f.close()
     
@@ -446,7 +466,41 @@ class ExportDagonAsset(bpy.types.Operator, ExportHelper):
 def menu_func_export_dagon_asset(self, context):
     self.layout.operator(ExportDagonAsset.bl_idname, text = "Dagon Asset (.asset)")
 
-# TODO: object properties
+class DagonObjectProps(bpy.types.PropertyGroup):
+    dagonVisible = bpy.props.BoolProperty(name="Visible", default=True)
+    dagonSolid = bpy.props.BoolProperty(name="Solid", default=False)
+    dagonCastShadow = bpy.props.BoolProperty(name="Cast Shadow", default=True)
+    dagonUseMotionBlur = bpy.props.BoolProperty(name="Motion Blur", default=True)
+    dagonLayer = bpy.props.IntProperty(name="Layer", default=1)
+    
+class DagonObjectPropsPanel(bpy.types.Panel):
+    bl_label = "Dagon Properties"
+    bl_idname = "dagon_object_props"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = "object"
+
+    def draw(self, context):
+        obj = context.object
+
+        props = obj.dagonProps
+        
+        row = self.layout.row()
+        split = row.split(percentage=0.5)
+        col = split.column()
+        col.prop(props, 'dagonVisible')
+        col = split.column()
+        col.prop(props, 'dagonSolid')
+
+        row = self.layout.row()
+        split = row.split(percentage=0.5)
+        col = split.column()
+        col.prop(props, 'dagonCastShadow')
+        col = split.column()
+        col.prop(props, 'dagonUseMotionBlur')
+
+        col = self.layout.column(align=True)
+        col.prop(props, 'dagonLayer')
 
 ParallaxModeEnum = [
     ('ParallaxNone', "None", "", 0),
@@ -571,8 +625,10 @@ def register():
     bpy.utils.register_module(__name__)
     bpy.types.INFO_MT_file_export.append(menu_func_export_dagon_asset)
     bpy.types.Material.dagonProps = bpy.props.PointerProperty(type=DagonMaterialProps)
+    bpy.types.Object.dagonProps = bpy.props.PointerProperty(type=DagonObjectProps)
 
 def unregister():
+    del bpy.types.Object.dagonProps
     del bpy.types.Material.dagonProps
     bpy.types.INFO_MT_file_export.remove(menu_func_export_dagon_asset)
     bpy.utils.unregister_module(__name__)

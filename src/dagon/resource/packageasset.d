@@ -206,6 +206,11 @@ class PackageAsset: Asset
                 }
                 
                 entityAsset.entity = New!Entity(parent, assetOwner);
+                entityAsset.entity.visible = true;
+                entityAsset.entity.castShadow = true;
+                entityAsset.entity.useMotionBlur = true;
+                entityAsset.entity.layer = 1;
+                entityAsset.entity.solid = true;
                 entityAsset.entity.material = scene.defaultMaterial3D;
                 
                 if ("position" in entityAsset.props)
@@ -225,12 +230,30 @@ class PackageAsset: Asset
    
                 entityAsset.entity.updateTransformation();
                 
-                // TODO: read these from entityAsset.props
-                entityAsset.entity.visible = true;
-                entityAsset.entity.castShadow = true;
-                entityAsset.entity.useMotionBlur = true;
-                entityAsset.entity.layer = 1;
-                entityAsset.entity.solid = true;
+                if ("visible" in entityAsset.props)
+                {
+                    entityAsset.entity.visible = entityAsset.props.visible.toBool;
+                }
+                
+                if ("castShadow" in entityAsset.props)
+                {
+                    entityAsset.entity.castShadow = entityAsset.props.castShadow.toBool;
+                }
+                
+                if ("useMotionBlur" in entityAsset.props)
+                {
+                    entityAsset.entity.useMotionBlur = entityAsset.props.useMotionBlur.toBool;
+                }
+                
+                if ("solid" in entityAsset.props)
+                {
+                    entityAsset.entity.solid = entityAsset.props.solid.toBool;
+                }
+                
+                if ("layer" in entityAsset.props)
+                {
+                    entityAsset.entity.layer = entityAsset.props.layer.toInt;
+                }
                 
                 if ("mesh" in entityAsset.props)
                 {
