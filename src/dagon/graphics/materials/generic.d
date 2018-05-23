@@ -229,13 +229,17 @@ class GenericMaterial: Material
         
         if (iblending.asInteger == Transparent)
         {
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glEnablei(GL_BLEND, 0);
+            glEnablei(GL_BLEND, 2);
+            glBlendFunci(0, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glBlendFunci(2, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         }
         else if (iblending.asInteger == Additive)
         {
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_ONE, GL_ONE);
+            glEnablei(GL_BLEND, 0);
+            glEnablei(GL_BLEND, 2);
+            glBlendFunci(0, GL_ONE, GL_ONE);
+            glBlendFunci(2, GL_ONE, GL_ONE);
         }
         
         if (iculling.asBool)
@@ -276,7 +280,9 @@ class GenericMaterial: Material
         }
         
         glDisable(GL_CULL_FACE);
-        glDisable(GL_BLEND);
+        
+        glDisablei(GL_BLEND, 0);
+        glDisablei(GL_BLEND, 2);
     }
 }
 

@@ -363,6 +363,72 @@ class PackageAsset: Asset
                     matAsset.material.parallax = matAsset.props.parallax.toInt;
                 }
                 
+                // parallaxScale
+                if ("parallaxScale" in matAsset.props)
+                {
+                    matAsset.material.parallaxScale = matAsset.props.parallaxScale.toFloat;
+                }
+                
+                // parallaxBias
+                if ("parallaxBias" in matAsset.props)
+                {
+                    matAsset.material.parallaxBias = matAsset.props.parallaxBias.toFloat;
+                }
+                
+                // shadeless
+                if ("shadeless" in matAsset.props)
+                {
+                    matAsset.material.shadeless = matAsset.props.shadeless.toBool;
+                }
+                
+                // culling
+                if ("culling" in matAsset.props)
+                {
+                    matAsset.material.culling = matAsset.props.culling.toBool;
+                }
+                
+                // colorWrite
+                if ("colorWrite" in matAsset.props)
+                {
+                    matAsset.material.colorWrite = matAsset.props.colorWrite.toBool;
+                }
+                
+                // depthWrite
+                if ("depthWrite" in matAsset.props)
+                {
+                    matAsset.material.depthWrite = matAsset.props.depthWrite.toBool;
+                }
+                
+                // useShadows
+                if ("useShadows" in matAsset.props)
+                {
+                    matAsset.material.shadowsEnabled = matAsset.props.useShadows.toBool;
+                }
+                
+                // useFog
+                if ("useFog" in matAsset.props)
+                {
+                    matAsset.material.fogEnabled = matAsset.props.useFog.toBool;
+                }
+                
+                // shadowFilter
+                if ("shadowFilter" in matAsset.props)
+                {
+                    matAsset.material.shadowFilter = matAsset.props.shadowFilter.toInt;
+                }
+                
+                // blendingMode
+                if ("blendingMode" in matAsset.props)
+                {
+                    matAsset.material.blending = matAsset.props.blendingMode.toInt;
+                }
+                
+                // transparency
+                if ("transparency" in matAsset.props)
+                {
+                    matAsset.material.transparency = matAsset.props.transparency.toFloat;
+                }
+                
                 return matAsset.material;
             }
             else

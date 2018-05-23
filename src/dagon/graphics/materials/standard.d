@@ -569,7 +569,8 @@ class StandardBackend: GLSLMaterialBackend
             
             vec3 fragColor = mix(fogColor.rgb, objColor, fogFactor);
             float fresnelAlpha = pow(1.0 - max(0.0, dot(N, E)), 5.0); 
-            float alpha = mix(diffuseColor.a, 1.0f, fresnelAlpha);
+            const float transparency = 1.0; // TODO: make uniform
+            float alpha = mix(diffuseColor.a, 1.0f, fresnelAlpha) * transparency;
             
             frag_color = vec4(fragColor, alpha);
             frag_velocity = vec4(screenVelocity, 0.0, blurMask);

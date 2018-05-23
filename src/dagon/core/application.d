@@ -173,8 +173,8 @@ class Application: EventListener
         SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);        
        
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -194,9 +194,9 @@ class Application: EventListener
 
         GLVersion loadedVersion = DerelictGL3.reload();
         writeln("OpenGL version loaded: ", loadedVersion);
-        if (loadedVersion < GLVersion.gl33)
+        if (loadedVersion < GLVersion.gl40)
         {
-            exitWithError("Sorry, Dagon requires OpenGL 3.3!");
+            exitWithError("Sorry, Dagon requires OpenGL 4.0!");
         }
         
         if (fullscreen)
