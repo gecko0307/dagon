@@ -206,6 +206,7 @@ class GenericMaterial: Material
         setInput("culling", true);
         setInput("colorWrite", true);
         setInput("depthWrite", true);
+        setInput("particleColor", Color4f(1.0f, 1.0f, 1.0f, 1.0f));
 
         _backend = backend;
     }
@@ -238,8 +239,8 @@ class GenericMaterial: Material
         {
             glEnablei(GL_BLEND, 0);
             glEnablei(GL_BLEND, 2);
-            glBlendFunci(0, GL_ONE, GL_ONE);
-            glBlendFunci(2, GL_ONE, GL_ONE);
+            glBlendFunci(0, GL_SRC_ALPHA, GL_ONE);
+            glBlendFunci(2, GL_SRC_ALPHA, GL_ONE);
         }
         
         if (iculling.asBool)

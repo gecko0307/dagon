@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2018 Timur Gafarov
+Copyright (c) 2018 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.graphics.materials.shadeless;
+module dagon.graphics.materials.particle;
 
 import std.stdio;
 import std.math;
@@ -45,10 +45,10 @@ import dagon.graphics.material;
 import dagon.graphics.materials.generic;
 
 /*
- * Backend for shadeless material (e.g., only textured or filled with solid color)
+ * Backend for particle systems
  */
 
-class ShadelessBackend: GLSLMaterialBackend
+class ParticleBackend: GLSLMaterialBackend
 {    
     private string vsText = q{
         #version 330 core
@@ -78,6 +78,7 @@ class ShadelessBackend: GLSLMaterialBackend
         #version 330 core
         
         uniform sampler2D diffuseTexture;
+        uniform vec4 particleColor;
         uniform float alpha;
         uniform float energy;
         
@@ -105,9 +106,12 @@ class ShadelessBackend: GLSLMaterialBackend
 
         void main()
         {
-            vec4 col = texture(diffuseTexture, texCoord);
-            frag_color = vec4(toLinear(col.rgb) * energy, col.a * alpha);
-            frag_luma = vec4(energy, 0.0, 0.0, 1.0);
+            vec4 textureColor = texture(diffuseTexture, texCoord);
+            vec3 outColor = toLinear(textureColor.rgb) * toLinear(particleColor.rgb) * energy;
+            float outAlpha = textureColor.a * particleColor.a * alpha;
+            
+            frag_color = vec4(outColor, outAlpha);
+            frag_luma = vec4(energy * outAlpha, 0.0, 0.0, 1.0);
             frag_velocity = vec4(0.0, 0.0, 0.0, 1.0);
             frag_position = vec4(eyePosition, 0.0);
         }
@@ -122,6 +126,7 @@ class ShadelessBackend: GLSLMaterialBackend
     GLint diffuseTextureLoc;
     GLint alphaLoc;
     GLint energyLoc;
+    GLint particleColorLoc;
     
     this(Owner o)
     {
@@ -133,6 +138,7 @@ class ShadelessBackend: GLSLMaterialBackend
         diffuseTextureLoc = glGetUniformLocation(shaderProgram, "diffuseTexture");
         alphaLoc = glGetUniformLocation(shaderProgram, "alpha");
         energyLoc = glGetUniformLocation(shaderProgram, "energy");
+        particleColorLoc = glGetUniformLocation(shaderProgram, "particleColor");
     }
     
     override void bind(GenericMaterial mat, RenderingContext* rc)
@@ -140,6 +146,7 @@ class ShadelessBackend: GLSLMaterialBackend
         auto idiffuse = "diffuse" in mat.inputs;
         auto ienergy = "energy" in mat.inputs;
         auto itransparency = "transparency" in mat.inputs;
+        auto iparticleColor = "particleColor" in mat.inputs;
         
         float energy = ienergy.asFloat;
 
@@ -150,21 +157,31 @@ class ShadelessBackend: GLSLMaterialBackend
         glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, rc.projectionMatrix.arrayof.ptr);
 
         // Texture 0 - diffuse texture
+        Color4f particleColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
         Color4f color = Color4f(idiffuse.asVector4f);
         float alpha = 1.0f;
+        
         if (idiffuse.texture is null)
         {
             idiffuse.texture = makeOnePixelTexture(mat, color);
         }
+        
         if (itransparency)
         {
             alpha = itransparency.asFloat;
         }
+        
+        if (iparticleColor)
+        {
+            particleColor = Color4f(iparticleColor.asVector4f);
+        }
+        
         glActiveTexture(GL_TEXTURE0);
         idiffuse.texture.bind();
         glUniform1i(diffuseTextureLoc, 0);
         glUniform1f(alphaLoc, alpha);
         glUniform1f(energyLoc, energy);
+        glUniform4fv(particleColorLoc, 1, particleColor.arrayof.ptr);
     }
     
     override void unbind(GenericMaterial mat, RenderingContext* rc)

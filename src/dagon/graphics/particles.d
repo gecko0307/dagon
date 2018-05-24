@@ -204,8 +204,8 @@ class ParticleSystem: Behaviour
     Vector3f initialDirection = Vector3f(0, 1, 0);
     float initialDirectionRandomFactor = 1.0f;
     
-    Color4f startColor = Color4f(1, 0.5f, 0, 1);
-    Color4f endColor = Color4f(1, 1, 1, 0);
+    Color4f startColor = Color4f(1, 1, 0, 1);
+    Color4f endColor = Color4f(1, 0, 0, 0);
     
     bool emitting = true;
     
@@ -330,6 +330,11 @@ class ParticleSystem: Behaviour
     void updateParticle(ref Particle p, double dt)
     {
         p.time += dt;
+        
+        float t = p.time / p.lifetime;
+        p.color = lerp(startColor, endColor, t);
+        p.scale = p.scale + scaleStep * dt;
+        
         if (p.move)
         {
             p.acceleration = Vector3f(0, 0, 0);
@@ -344,11 +349,8 @@ class ParticleSystem: Behaviour
 
             p.position += p.velocity * dt;
         }
-
-        float t = p.time / p.lifetime;
-        p.color.a = lerp(1.0f, 0.0f, t);
-            
-        p.scale = p.scale + scaleStep * dt;
+        
+        p.color.a = lerp(startColor.a, endColor.a, t);
     }
     
     override void update(double dt)
@@ -392,7 +394,7 @@ class ParticleSystem: Behaviour
 
                 if (material)
                 {
-                    material.transparency = p.color.a;
+                    material.particleColor = p.color;
                     material.bind(&rcLocal);
                 }
                 
