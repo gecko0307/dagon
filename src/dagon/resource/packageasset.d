@@ -61,12 +61,6 @@ import dagon.logics.entity;
 /*
  * A simple asset package format based on Box container (https://github.com/gecko0307/box).
  * It is an archive that stores entities, meshes, materials and textures.
- * They can be accessed individually or loaded altogether.
- *
- * The module is in WIP status. What already works:
- * - Entities with transformation and mesh linking
- * - Meshes (currently only OBJ format is supported)
- * - Entity index file
  */
  
 class PackageAssetOwner: Owner
@@ -88,11 +82,11 @@ class PackageAsset: Asset
     string index;
     BoxFileSystem boxfs;
     AssetManager assetManager;
-    BaseScene3D scene;
+    Scene scene;
     Entity rootEntity;
     PackageAssetOwner assetOwner;
 
-    this(BaseScene3D scene, Owner o)
+    this(Scene scene, Owner o)
     {
         super(o);
         this.scene = scene;

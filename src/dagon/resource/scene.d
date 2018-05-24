@@ -49,6 +49,9 @@ import dagon.resource.asset;
 import dagon.resource.textasset;
 import dagon.resource.textureasset;
 import dagon.resource.fontasset;
+import dagon.resource.obj;
+import dagon.resource.iqm;
+import dagon.resource.packageasset;
 import dagon.graphics.environment;
 import dagon.graphics.rc;
 import dagon.graphics.view;
@@ -70,7 +73,7 @@ import dagon.graphics.filters.blur;
 import dagon.graphics.filters.finalizer;
 import dagon.logics.entity;
 
-class Scene: EventListener
+class BaseScene: EventListener
 {
     SceneManager sceneManager;
     AssetManager assetManager;
@@ -101,45 +104,6 @@ class Scene: EventListener
         else
             assetManager.addAsset(asset, filename);
         return asset;
-    }
-
-    TextAsset addTextAsset(string filename, bool preload = false)
-    {
-        TextAsset text;
-        if (assetManager.assetExists(filename))
-            text = cast(TextAsset)assetManager.getAsset(filename);
-        else
-        {
-            text = New!TextAsset(assetManager);
-            addAsset(text, filename, preload);
-        }
-        return text;
-    }
-
-    TextureAsset addTextureAsset(string filename, bool preload = false)
-    {
-        TextureAsset tex;
-        if (assetManager.assetExists(filename))
-            tex = cast(TextureAsset)assetManager.getAsset(filename);
-        else
-        {
-            tex = New!TextureAsset(assetManager.imageFactory, assetManager.hdrImageFactory, assetManager);
-            addAsset(tex, filename, preload);
-        }
-        return tex;
-    }
-
-    FontAsset addFontAsset(string filename, uint height, bool preload = false)
-    {
-        FontAsset font;
-        if (assetManager.assetExists(filename))
-            font = cast(FontAsset)assetManager.getAsset(filename);
-        else
-        {
-            font = New!FontAsset(height, assetManager);
-            addAsset(font, filename, preload);
-        }
-        return font;
     }
 
     void onAssetsRequest()
@@ -275,16 +239,16 @@ class Scene: EventListener
 class SceneManager: Owner
 {
     SceneApplication application;
-    Dict!(Scene, string) scenesByName;
+    Dict!(BaseScene, string) scenesByName;
     EventManager eventManager;
-    Scene currentScene;
+    BaseScene currentScene;
 
     this(EventManager emngr, SceneApplication app)
     {
         super(app);
         application = app;
         eventManager = emngr;
-        scenesByName = New!(Dict!(Scene, string));
+        scenesByName = New!(Dict!(BaseScene, string));
     }
 
     ~this()
@@ -296,7 +260,7 @@ class SceneManager: Owner
         Delete(scenesByName);
     }
 
-    Scene addScene(Scene scene, string name)
+    BaseScene addScene(BaseScene scene, string name)
     {
         scenesByName[name] = scene;
         return scene;
@@ -315,7 +279,7 @@ class SceneManager: Owner
             currentScene.releaseAtNextStep = true;
         }
 
-        Scene scene = scenesByName[name];
+        BaseScene scene = scenesByName[name];
         
         writefln("Loading scene \"%s\"", name);
         
@@ -365,7 +329,7 @@ class SceneApplication: Application
     }
 }
 
-class BaseScene3D: Scene
+class Scene: BaseScene
 {
     Environment environment;
     
@@ -673,6 +637,84 @@ class BaseScene3D: Scene
 
             sortEntities(v.children);
         }
+    }
+    
+    TextAsset addTextAsset(string filename, bool preload = false)
+    {
+        TextAsset text;
+        if (assetManager.assetExists(filename))
+            text = cast(TextAsset)assetManager.getAsset(filename);
+        else
+        {
+            text = New!TextAsset(assetManager);
+            addAsset(text, filename, preload);
+        }
+        return text;
+    }
+
+    TextureAsset addTextureAsset(string filename, bool preload = false)
+    {
+        TextureAsset tex;
+        if (assetManager.assetExists(filename))
+            tex = cast(TextureAsset)assetManager.getAsset(filename);
+        else
+        {
+            tex = New!TextureAsset(assetManager.imageFactory, assetManager.hdrImageFactory, assetManager);
+            addAsset(tex, filename, preload);
+        }
+        return tex;
+    }
+
+    FontAsset addFontAsset(string filename, uint height, bool preload = false)
+    {
+        FontAsset font;
+        if (assetManager.assetExists(filename))
+            font = cast(FontAsset)assetManager.getAsset(filename);
+        else
+        {
+            font = New!FontAsset(height, assetManager);
+            addAsset(font, filename, preload);
+        }
+        return font;
+    }
+    
+    OBJAsset addOBJAsset(string filename, bool preload = false)
+    {
+        OBJAsset obj;
+        if (assetManager.assetExists(filename))
+            obj = cast(OBJAsset)assetManager.getAsset(filename);
+        else
+        {
+            obj = New!OBJAsset(assetManager);
+            addAsset(obj, filename, preload);
+        }
+        return obj;
+    }
+    
+    IQMAsset addIQMAsset(string filename, bool preload = false)
+    {
+        IQMAsset iqm;
+        if (assetManager.assetExists(filename))
+            iqm = cast(IQMAsset)assetManager.getAsset(filename);
+        else
+        {
+            iqm = New!IQMAsset(assetManager);
+            addAsset(iqm, filename, preload);
+        }
+        return iqm;
+    }
+    
+    PackageAsset addPackageAsset(string filename, bool preload = false)
+    {
+        PackageAsset pa;
+        if (assetManager.assetExists(filename))
+            pa = cast(PackageAsset)assetManager.getAsset(filename);
+        else
+        {
+            pa = New!PackageAsset(this, assetManager);
+            addAsset(pa, filename, preload);
+        }
+        return pa;
     }
 
     Entity createEntity2D(Entity parent = null)
@@ -1011,3 +1053,5 @@ class BaseScene3D: Scene
         renderEntities2D(&rc2d);
     }
 }
+
+alias Scene BaseScene3D;
