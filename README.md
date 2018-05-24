@@ -48,7 +48,7 @@ Dagon is still under development and lacks a lot of important functionality. Cur
 
 Upcoming plans:
 
-* Particle materials, soft particles
+* Soft particles
 * Water with reflections and refractions
 * Terrain renderer
 * SSAO
