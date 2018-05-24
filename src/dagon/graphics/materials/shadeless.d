@@ -106,7 +106,7 @@ class ShadelessBackend: GLSLMaterialBackend
         void main()
         {
             vec4 col = texture(diffuseTexture, texCoord);
-            frag_color = vec4(toLinear(col.rgb) * energy, 1.0);
+            frag_color = vec4(toLinear(col.rgb) * energy, col.a * alpha);
             frag_luma = vec4(energy, 0.0, 0.0, 1.0);
             frag_velocity = vec4(0.0, 0.0, 0.0, 1.0);
             frag_position = vec4(eyePosition, 0.0);
@@ -139,6 +139,7 @@ class ShadelessBackend: GLSLMaterialBackend
     {
         auto idiffuse = "diffuse" in mat.inputs;
         auto ienergy = "energy" in mat.inputs;
+        auto itransparency = "transparency" in mat.inputs;
         
         float energy = ienergy.asFloat;
 
@@ -154,6 +155,10 @@ class ShadelessBackend: GLSLMaterialBackend
         if (idiffuse.texture is null)
         {
             idiffuse.texture = makeOnePixelTexture(mat, color);
+        }
+        if (itransparency)
+        {
+            alpha = itransparency.asFloat;
         }
         glActiveTexture(GL_TEXTURE0);
         idiffuse.texture.bind();

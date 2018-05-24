@@ -670,6 +670,8 @@ class BaseScene3D: Scene
             tmp = edata[i];
             edata[i] = edata[j];
             edata[j] = tmp;
+
+            sortEntities(v.children);
         }
     }
 

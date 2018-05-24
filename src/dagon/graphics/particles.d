@@ -46,6 +46,7 @@ import dagon.graphics.texture;
 import dagon.graphics.view;
 import dagon.graphics.rc;
 import dagon.graphics.material;
+import dagon.graphics.materials.generic;
 import dagon.graphics.mesh;
 
 struct Particle
@@ -221,7 +222,7 @@ class ParticleSystem: Behaviour
     
     Matrix4x4f invViewMatRot;
     
-    Material material;
+    GenericMaterial material;
 
     this(Entity e, uint numParticles)
     {
@@ -390,8 +391,11 @@ class ParticleSystem: Behaviour
                 rcLocal.modelViewMatrix = modelViewMatrix;
 
                 if (material)
+                {
+                    material.transparency = p.color.a;
                     material.bind(&rcLocal);
-        
+                }
+                
                 glBindVertexArray(vao);
                 glDrawElements(GL_TRIANGLES, cast(uint)indices.length * 3, GL_UNSIGNED_INT, cast(void*)0);
                 glBindVertexArray(0);

@@ -264,6 +264,9 @@ class PackageAsset: Asset
                 {
                     entityAsset.entity.material = material(entityAsset.props.material.toString);
                 }
+                
+                if (entityAsset.entity.parent)
+                    scene.sortEntities(entityAsset.entity.parent.children);
     
                 return entityAsset.entity;
             }
