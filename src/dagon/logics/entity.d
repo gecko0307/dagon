@@ -42,7 +42,7 @@ import dagon.core.ownership;
 import dagon.core.event;
 import dagon.logics.controller;
 import dagon.logics.behaviour;
-import dagon.graphics.material;
+import dagon.graphics.materials.generic;
 import dagon.graphics.rc;
 
 Matrix4x4f rotationPart(Matrix4x4f m)
@@ -94,7 +94,7 @@ class Entity: Owner, Drawable
     EntityController controller;
     DefaultEntityController defaultController;
 
-    Material material;
+    GenericMaterial material;
     RenderingContext rcLocal;
 
     bool visible = true;
@@ -268,6 +268,8 @@ class Entity: Owner, Drawable
         }
 
         rcLocal = *rc;
+        
+        rcLocal.layer = layer;
         
         if (attach == Attach.Camera)
         {         

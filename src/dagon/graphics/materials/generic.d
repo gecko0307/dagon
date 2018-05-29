@@ -220,6 +220,13 @@ class GenericMaterial: Material
     {
         _backend = b;
     }
+    
+    bool isTransparent()
+    {
+        auto iblending = "blending" in inputs;
+        int b = iblending.asInteger;
+        return (b == Transparent || b == Additive);
+    }
 
     override void bind(RenderingContext* rc)
     {
@@ -231,16 +238,16 @@ class GenericMaterial: Material
         if (iblending.asInteger == Transparent)
         {
             glEnablei(GL_BLEND, 0);
-            glEnablei(GL_BLEND, 2);
+            glEnablei(GL_BLEND, 1);
             glBlendFunci(0, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            glBlendFunci(2, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glBlendFunci(1, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         }
         else if (iblending.asInteger == Additive)
         {
             glEnablei(GL_BLEND, 0);
-            glEnablei(GL_BLEND, 2);
+            glEnablei(GL_BLEND, 1);
             glBlendFunci(0, GL_SRC_ALPHA, GL_ONE);
-            glBlendFunci(2, GL_SRC_ALPHA, GL_ONE);
+            glBlendFunci(1, GL_SRC_ALPHA, GL_ONE);
         }
         
         if (iculling.asBool)
@@ -258,7 +265,9 @@ class GenericMaterial: Material
             glDepthMask(GL_FALSE);
         }
     
-        if (_backend)
+        if (rc.overrideMaterialBackend)
+            rc.overrideMaterialBackend.bind(this, rc);
+        else if (_backend)
             _backend.bind(this, rc);
     }
 
@@ -267,7 +276,9 @@ class GenericMaterial: Material
         auto icolorWrite = "colorWrite" in inputs;
         auto idepthWrite = "depthWrite" in inputs;
         
-        if (_backend)
+        if (rc.overrideMaterialBackend)
+            rc.overrideMaterialBackend.unbind(this, rc);
+        else if (_backend)
             _backend.unbind(this, rc);
             
         if (!idepthWrite.asBool && rc.depthPass)
@@ -283,7 +294,7 @@ class GenericMaterial: Material
         glDisable(GL_CULL_FACE);
         
         glDisablei(GL_BLEND, 0);
-        glDisablei(GL_BLEND, 2);
+        glDisablei(GL_BLEND, 1);
     }
 }
 

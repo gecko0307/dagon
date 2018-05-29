@@ -296,7 +296,7 @@ class PackageAsset: Asset
         }
     }
     
-    Material material(string filename)
+    GenericMaterial material(string filename)
     {
         if (!(filename in materials))
         {

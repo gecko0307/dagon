@@ -47,6 +47,7 @@ import dagon.graphics.view;
 import dagon.graphics.rc;
 import dagon.graphics.material;
 import dagon.graphics.materials.generic;
+import dagon.graphics.materials.particle;
 import dagon.graphics.mesh;
 
 struct Particle
@@ -377,7 +378,16 @@ class ParticleSystem: Behaviour
     }
     
     override void render(RenderingContext* rc)
-    {        
+    {
+        if (material)
+        {
+            ParticleBackend backend = cast(ParticleBackend)material.backend;
+            if (backend)
+            {
+                //backend.copyPositionBuffer();
+            }
+        }
+    
         if (haveParticlesToDraw)
         {            
             foreach(ref p; particles)

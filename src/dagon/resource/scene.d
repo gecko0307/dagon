@@ -64,6 +64,8 @@ import dagon.graphics.materials.standard;
 import dagon.graphics.materials.sky;
 import dagon.graphics.materials.hud;
 import dagon.graphics.framebuffer;
+import dagon.graphics.gbuffer;
+import dagon.graphics.deferred;
 import dagon.graphics.postproc;
 import dagon.graphics.filters.fxaa;
 import dagon.graphics.filters.lens;
@@ -344,6 +346,10 @@ class Scene: BaseScene
     RenderingContext rc3d; 
     RenderingContext rc2d; 
     View view;
+    
+    GBuffer gbuffer;
+    DeferredEnvironmentPass deferredEnvPass;
+    DeferredLightPass deferredLightPass;
     
     Framebuffer sceneFramebuffer;
     PostFilterHDR hdrFilter;
@@ -800,6 +806,10 @@ class Scene: BaseScene
         
         defaultMaterial3D = createMaterial();
         
+        gbuffer = New!GBuffer(eventManager.windowWidth, eventManager.windowHeight, this, assetManager);
+        deferredEnvPass = New!DeferredEnvironmentPass(gbuffer, shadowMap, assetManager);
+        deferredLightPass = New!DeferredLightPass(gbuffer, lightManager, assetManager);
+        
         sceneFramebuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, true, true, assetManager);
         
         hdr.scene = this;
@@ -823,7 +833,7 @@ class Scene: BaseScene
         postFilters.append(hdrPrepassFilter);
         
         hdrFilter = New!PostFilterHDR(hdrPrepassFramebuffer, null, assetManager);
-        hdrFilter.velocityTexture = sceneFramebuffer.velocityTexture;
+        hdrFilter.velocityTexture = gbuffer.velocityTexture; //sceneFramebuffer.velocityTexture;
         postFilters.append(hdrFilter);
         
         fxaaFilter = New!PostFilterFXAA(null, null, assetManager);
@@ -934,13 +944,55 @@ class Scene: BaseScene
             
             shadowMap.update(&rc3d, fixedTimeStep);
             
-            lightManager.update(&rc3d);
+            //lightManager.update(&rc3d);
         }
     }
     
     void renderShadows(RenderingContext* rc)
     {
         shadowMap.render(rc);
+    }
+    
+    void renderBackgroundEntities3D(RenderingContext* rc)
+    {
+        glEnable(GL_DEPTH_TEST);
+        foreach(e; entities3D)
+            if (e.layer <= 0)
+                e.render(rc);
+    }
+    
+    // TODO: check transparency of children (use context variable)
+    void renderOpaqueEntities3D(RenderingContext* rc)
+    {
+        glEnable(GL_DEPTH_TEST);
+        foreach(e; entities3D)
+        //if (e.layer > 0)
+        {
+            if (e.material)
+            {
+                if (!e.material.isTransparent)
+                    e.render(rc);
+            }
+            else
+                e.render(rc);
+        }
+    }
+    
+    // TODO: check transparency of children (use context variable)
+    void renderTransparentEntities3D(RenderingContext* rc)
+    {
+        glEnable(GL_DEPTH_TEST);
+        foreach(e; entities3D)
+        //if (e.layer > 0)
+        {
+            if (e.material)
+            {
+                if (e.material.isTransparent)
+                    e.render(rc);
+            }
+            else
+                e.render(rc);
+        }
     }
 
     void renderEntities3D(RenderingContext* rc)
@@ -971,7 +1023,7 @@ class Scene: BaseScene
             glViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
         }
         if (environment)
-            glClearColor(environment.backgroundColor.r, environment.backgroundColor.g, environment.backgroundColor.b, environment.backgroundColor.a);
+            glClearColor(environment.backgroundColor.r, environment.backgroundColor.g, environment.backgroundColor.b, 0.0f);
     }
     
     void renderBlur(uint iterations)
@@ -1003,13 +1055,26 @@ class Scene: BaseScene
     override void onRender()
     {
         renderShadows(&rc3d);
-
+        gbuffer.render(&rc3d);
+        
         sceneFramebuffer.bind();
-        prepareViewport();        
-        sceneFramebuffer.clearBuffers();       
-        renderEntities3D(&rc3d);
+        
+        RenderingContext rcDeferred;
+        rcDeferred.initOrtho(eventManager, environment, eventManager.windowWidth, eventManager.windowHeight, 0.0f, 100.0f);
+        prepareViewport();
+        sceneFramebuffer.clearBuffers(); 
+        
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, gbuffer.fbo);
+        glBlitFramebuffer(0, 0, gbuffer.width, gbuffer.height, 0, 0, gbuffer.width, gbuffer.height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+        
+        renderBackgroundEntities3D(&rc3d);
+        deferredEnvPass.render(&rcDeferred, &rc3d);
+        deferredLightPass.render(&rcDeferred, &rc3d);
+        renderTransparentEntities3D(&rc3d);
+        
         sceneFramebuffer.unbind();
-
+    
         sceneFramebuffer.genLuminanceMipmaps();
         float lum = sceneFramebuffer.averageLuminance();
         if (!isNaN(lum))
@@ -1019,10 +1084,12 @@ class Scene: BaseScene
             float exposureDelta = newExposure - hdrFilter.exposure;
             hdrFilter.exposure += exposureDelta * hdrFilter.adaptationSpeed * eventManager.deltaTime;
         }
-        
+
+        //hdrFilter.exposure = 0.5;
+    
         if (hdrPrepassFilter.glowEnabled)
             renderBlur(glow.radius);
-        
+    
         RenderingContext rcTmp;
         Framebuffer nextInput = sceneFramebuffer;
         

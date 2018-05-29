@@ -43,6 +43,7 @@ import dagon.core.ownership;
 import dagon.graphics.rc;
 import dagon.graphics.material;
 import dagon.graphics.materials.generic;
+import dagon.graphics.gbuffer;
 
 /*
  * Backend for particle systems
@@ -78,17 +79,17 @@ class ParticleBackend: GLSLMaterialBackend
         #version 330 core
         
         uniform sampler2D diffuseTexture;
+        uniform sampler2D positionTexture;
         uniform vec4 particleColor;
         uniform float alpha;
         uniform float energy;
+        uniform vec2 viewSize;
         
         in vec3 eyePosition;
         in vec2 texCoord;
         
         layout(location = 0) out vec4 frag_color;
-        layout(location = 1) out vec4 frag_velocity;
-        layout(location = 2) out vec4 frag_luma;
-        layout(location = 3) out vec4 frag_position;
+        layout(location = 1) out vec4 frag_luminance;
         
         float luminance(vec3 color)
         {
@@ -106,29 +107,38 @@ class ParticleBackend: GLSLMaterialBackend
 
         void main()
         {
+            vec4 pos = texture(positionTexture, gl_FragCoord.xy / viewSize);
+            vec3 referenceEyePos = pos.xyz;
+            
+            const float softDistance = 3.0;
+            float soft = (pos.w > 0.0)? clamp((eyePosition.z - referenceEyePos.z) / softDistance, 0.0, 1.0) : 1.0;
+        
             vec4 textureColor = texture(diffuseTexture, texCoord);
             vec3 outColor = toLinear(textureColor.rgb) * toLinear(particleColor.rgb) * energy;
-            float outAlpha = textureColor.a * particleColor.a * alpha;
+            float outAlpha = textureColor.a * particleColor.a * alpha * soft;
             
             frag_color = vec4(outColor, outAlpha);
-            frag_luma = vec4(energy * outAlpha, 0.0, 0.0, 1.0);
-            frag_velocity = vec4(0.0, 0.0, 0.0, 1.0);
-            frag_position = vec4(eyePosition, 0.0);
+            frag_luminance = vec4(energy * outAlpha, 0.0, 0.0, 1.0);
         }
     };
     
     override string vertexShaderSrc() {return vsText;}
     override string fragmentShaderSrc() {return fsText;}
+    
+    GBuffer gbuffer;
+    GLuint positionTexture = 0;
 
     GLint modelViewMatrixLoc;
     GLint projectionMatrixLoc;
     
     GLint diffuseTextureLoc;
+    GLint positionTextureLoc;
     GLint alphaLoc;
     GLint energyLoc;
     GLint particleColorLoc;
+    GLint viewSizeLoc;
     
-    this(Owner o)
+    this(GBuffer gbuffer, Owner o)
     {
         super(o);
         
@@ -136,9 +146,14 @@ class ParticleBackend: GLSLMaterialBackend
         projectionMatrixLoc = glGetUniformLocation(shaderProgram, "projectionMatrix");
             
         diffuseTextureLoc = glGetUniformLocation(shaderProgram, "diffuseTexture");
+        positionTextureLoc = glGetUniformLocation(shaderProgram, "positionTexture");
         alphaLoc = glGetUniformLocation(shaderProgram, "alpha");
         energyLoc = glGetUniformLocation(shaderProgram, "energy");
         particleColorLoc = glGetUniformLocation(shaderProgram, "particleColor");
+        viewSizeLoc = glGetUniformLocation(shaderProgram, "viewSize");
+        
+        this.gbuffer = gbuffer;
+        positionTexture = gbuffer.positionTexture;
     }
     
     override void bind(GenericMaterial mat, RenderingContext* rc)
@@ -178,10 +193,20 @@ class ParticleBackend: GLSLMaterialBackend
         
         glActiveTexture(GL_TEXTURE0);
         idiffuse.texture.bind();
+        
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, positionTexture);
+        
+        glActiveTexture(GL_TEXTURE0);
+        
         glUniform1i(diffuseTextureLoc, 0);
+        glUniform1i(positionTextureLoc, 1);
         glUniform1f(alphaLoc, alpha);
         glUniform1f(energyLoc, energy);
         glUniform4fv(particleColorLoc, 1, particleColor.arrayof.ptr);
+        
+        Vector2f viewSize = Vector2f(gbuffer.width, gbuffer.height);
+        glUniform2fv(viewSizeLoc, 1, viewSize.arrayof.ptr);
     }
     
     override void unbind(GenericMaterial mat, RenderingContext* rc)
@@ -190,6 +215,11 @@ class ParticleBackend: GLSLMaterialBackend
         
         glActiveTexture(GL_TEXTURE0);
         idiffuse.texture.unbind();
+        
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE0);
     
         glUseProgram(0);
     }

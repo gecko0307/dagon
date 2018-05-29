@@ -41,10 +41,7 @@ class Framebuffer: Owner
     GLuint fbo;
     GLuint depthTexture = 0;
     GLuint colorTexture = 0;
-    GLuint velocityTexture = 0;
     GLuint lumaTexture = 0;
-    GLuint positionTexture = 0;
-    GLuint normalTexture = 0;
     
     Vector2f[4] vertices;
     Vector2f[4] texcoords;
@@ -101,36 +98,9 @@ class Framebuffer: Owner
         
         if (isHDRSceneBuffer)
         {
-            glGenTextures(1, &velocityTexture);
-            glBindTexture(GL_TEXTURE_2D, velocityTexture);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, null);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glBindTexture(GL_TEXTURE_2D, 0);
-
             glGenTextures(1, &lumaTexture);
             glBindTexture(GL_TEXTURE_2D, lumaTexture);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, width, height, 0, GL_RED, GL_FLOAT, null);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glBindTexture(GL_TEXTURE_2D, 0);
-            
-            glGenTextures(1, &positionTexture);
-            glBindTexture(GL_TEXTURE_2D, positionTexture);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, null);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glBindTexture(GL_TEXTURE_2D, 0);
-            
-            glGenTextures(1, &normalTexture);
-            glBindTexture(GL_TEXTURE_2D, normalTexture);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, null);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -145,13 +115,10 @@ class Framebuffer: Owner
         
         if (isHDRSceneBuffer)
         {
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, velocityTexture, 0);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, lumaTexture, 0);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, positionTexture, 0);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, normalTexture, 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, lumaTexture, 0);
             
-            GLenum[5] bufs = [GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4];
-            glDrawBuffers(5, bufs.ptr);
+            GLenum[2] bufs = [GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1];
+            glDrawBuffers(2, bufs.ptr);
         }
         else
         {
@@ -219,18 +186,13 @@ class Framebuffer: Owner
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glDeleteFramebuffers(1, &fbo);
+        
         if (glIsTexture(depthTexture))
             glDeleteTextures(1, &depthTexture);
         if (glIsTexture(colorTexture))
             glDeleteTextures(1, &colorTexture);
-        if (glIsTexture(velocityTexture))
-            glDeleteTextures(1, &velocityTexture);
         if (glIsTexture(lumaTexture))
             glDeleteTextures(1, &lumaTexture);
-        if (glIsTexture(positionTexture))
-            glDeleteTextures(1, &positionTexture);
-        if (glIsTexture(normalTexture))
-            glDeleteTextures(1, &normalTexture);
             
         glDeleteVertexArrays(1, &vao);
         glDeleteBuffers(1, &vbo);
@@ -285,9 +247,6 @@ class Framebuffer: Owner
         {
             Color4f zero = Color4f(0, 0, 0, 0);
             glClearBufferfv(GL_COLOR, 1, zero.arrayof.ptr);
-            glClearBufferfv(GL_COLOR, 2, zero.arrayof.ptr);
-            glClearBufferfv(GL_COLOR, 3, zero.arrayof.ptr);
-            glClearBufferfv(GL_COLOR, 4, zero.arrayof.ptr);
         }
     }
 }

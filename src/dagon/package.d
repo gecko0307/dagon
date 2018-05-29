@@ -78,6 +78,8 @@ public
     import dagon.graphics.framebuffer;
     import dagon.graphics.postproc;
     import dagon.graphics.particles;
+    import dagon.graphics.gbuffer;
+    import dagon.graphics.deferred;
     
     import dagon.graphics.materials.generic;
     import dagon.graphics.materials.standard;

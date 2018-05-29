@@ -35,6 +35,7 @@ import derelict.opengl;
 import dagon.core.event;
 import dagon.graphics.environment;
 import dagon.graphics.material;
+import dagon.graphics.materials.generic;
 
 struct RenderingContext
 {    
@@ -64,12 +65,15 @@ struct RenderingContext
     EventManager eventManager;
     Environment environment;
     Material overrideMaterial;
+    GenericMaterialBackend overrideMaterialBackend;
     
     float time;
     float blurMask;
     
     bool depthPass;
     bool colorPass;
+    
+    int layer;
     
     void init(EventManager emngr, Environment env)
     {
@@ -90,10 +94,12 @@ struct RenderingContext
         eventManager = emngr;
         environment = env;
         overrideMaterial = null;
+        overrideMaterialBackend = null;
         time = 0.0f;
         depthPass = true;
         colorPass = true;
         blurMask = 1.0f;
+        layer = 1;
     }
     
     void initPerspective(EventManager emngr, Environment env, float fov, float znear, float zfar)

@@ -173,7 +173,7 @@ class ShadowBackend: GLSLMaterialBackend
 class CascadedShadowMap: Owner
 {
     uint size;
-    BaseScene3D scene;
+    Scene scene;
     ShadowArea area1;
     ShadowArea area2;
     ShadowArea area3;
@@ -197,7 +197,7 @@ class CascadedShadowMap: Owner
     float shadowBrightness = 0.1f;
     bool useHeightCorrectedShadows = false;
 
-    this(uint size, BaseScene3D scene, float projSizeNear, float projSizeMid, float projSizeFar, float zStart, float zEnd, Owner o)
+    this(uint size, Scene scene, float projSizeNear, float projSizeMid, float projSizeFar, float zStart, float zEnd, Owner o)
     {
         super(o);
         this.size = size;

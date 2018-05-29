@@ -77,18 +77,17 @@ class Environment: Owner
     float skyEnergyAtSunset = 0.5;
     float skyEnergyAtMidnight = 0.001;
     
-    Color4f groundColor = Color4f(0.06, 0.05, 0.05, 1.0);
+    Color4f groundColor = Color4f(0.5, 0.4, 0.4, 1.0);
     
-    float groundEnergyAtMidday = 0.001;
-    float groundEnergyAtSunset = 0.0005;
+    float groundEnergyAtMidday = 1.0;
+    float groundEnergyAtSunset = 0.1;
     float groundEnergyAtMidnight = 0.0;
     
     Color4f fogColor = Color4f(0.1f, 0.1f, 0.1f, 1.0f);
     float fogStart = 0.0f;
     float fogEnd = 10000.0f;    
     //float fogEnergy = 0.1f;
-    
-    
+
     Color4f skyZenithColor = Color4f(0.223, 0.572, 0.752, 1.0);
     Color4f skyHorizonColor = Color4f(0.9, 1.0, 1.0, 1.0);
     float skyEnergy = 1.0f;

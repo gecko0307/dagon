@@ -103,9 +103,7 @@ class SkyBackend: GLSLMaterialBackend
         in vec4 prevPosition;
         
         layout(location = 0) out vec4 frag_color;
-        layout(location = 1) out vec4 frag_velocity;
-        layout(location = 2) out vec4 frag_luma;
-        layout(location = 3) out vec4 frag_position;
+        layout(location = 1) out vec4 frag_luma;
         
         uniform vec3 groundColor;
         uniform float skyEnergy;
@@ -161,9 +159,7 @@ class SkyBackend: GLSLMaterialBackend
             }
             
             frag_color = vec4(env, 1.0);
-            frag_velocity = vec4(screenVelocity, 0.0, 1.0);
             frag_luma = vec4(luminance(env));
-            frag_position = vec4(eyePosition, 0.0);
         }
     };
     
