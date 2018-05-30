@@ -260,7 +260,17 @@ class Entity: Owner, Drawable
     {
         if (!visible)
             return;
+        
+        bool ignore = false;
+        if (material)
+        {
+            if (material.isTransparent)
+                ignore = rc.ignoreTransparentEntities;
+            else
+                ignore = rc.ignoreOpaqueEntities;
+        }
 
+        if (!ignore)
         foreach(i, ble; behaviours)
         {
             if (ble.valid)
@@ -269,49 +279,55 @@ class Entity: Owner, Drawable
 
         rcLocal = *rc;
         
-        rcLocal.layer = layer;
-        
-        if (attach == Attach.Camera)
-        {         
-            rcLocal.modelMatrix = translationMatrix(rcLocal.cameraPosition) * transformation;
-            rcLocal.invModelMatrix = invTransformation * translationMatrix(-rcLocal.cameraPosition); 
-
-            if (useMotionBlur)
-                rcLocal.prevModelViewProjMatrix = rcLocal.projectionMatrix * (rcLocal.prevViewMatrix * (translationMatrix(rcLocal.prevCameraPosition) * prevTransformation));
-            else
-                rcLocal.prevModelViewProjMatrix = rcLocal.projectionMatrix * (rcLocal.viewMatrix * (translationMatrix(rcLocal.cameraPosition) * transformation));
-        }
-        else
+        if (!ignore)
         {
-            rcLocal.modelMatrix = absoluteTransformation;
-            rcLocal.invModelMatrix = invAbsoluteTransformation;
+            rcLocal.layer = layer;
+            
+            if (attach == Attach.Camera)
+            {         
+                rcLocal.modelMatrix = translationMatrix(rcLocal.cameraPosition) * transformation;
+                rcLocal.invModelMatrix = invTransformation * translationMatrix(-rcLocal.cameraPosition); 
+
+                if (useMotionBlur)
+                    rcLocal.prevModelViewProjMatrix = rcLocal.projectionMatrix * (rcLocal.prevViewMatrix * (translationMatrix(rcLocal.prevCameraPosition) * prevTransformation));
+                else
+                    rcLocal.prevModelViewProjMatrix = rcLocal.projectionMatrix * (rcLocal.viewMatrix * (translationMatrix(rcLocal.cameraPosition) * transformation));
+            }
+            else
+            {
+                rcLocal.modelMatrix = absoluteTransformation;
+                rcLocal.invModelMatrix = invAbsoluteTransformation;
+                
+                if (useMotionBlur)
+                    rcLocal.prevModelViewProjMatrix = rcLocal.projectionMatrix * (rcLocal.prevViewMatrix * prevAbsoluteTransformation);
+                else
+                    rcLocal.prevModelViewProjMatrix = rcLocal.projectionMatrix * (rcLocal.viewMatrix * absoluteTransformation);
+            }
+            
+            rcLocal.modelViewMatrix = rcLocal.viewMatrix * rcLocal.modelMatrix;
+            rcLocal.normalMatrix = rcLocal.modelViewMatrix.inverse.transposed;
+            
+            rcLocal.blurModelViewProjMatrix = rcLocal.projectionMatrix * rcLocal.modelViewMatrix;
             
             if (useMotionBlur)
-                rcLocal.prevModelViewProjMatrix = rcLocal.projectionMatrix * (rcLocal.prevViewMatrix * prevAbsoluteTransformation);
+                rcLocal.blurMask = 1.0f;
             else
-                rcLocal.prevModelViewProjMatrix = rcLocal.projectionMatrix * (rcLocal.viewMatrix * absoluteTransformation);
+                rcLocal.blurMask = 0.0f;
         }
-        
-        rcLocal.modelViewMatrix = rcLocal.viewMatrix * rcLocal.modelMatrix;
-        rcLocal.normalMatrix = rcLocal.modelViewMatrix.inverse.transposed;
-        
-        rcLocal.blurModelViewProjMatrix = rcLocal.projectionMatrix * rcLocal.modelViewMatrix;
-        
-        if (useMotionBlur)
-            rcLocal.blurMask = 1.0f;
-        else
-            rcLocal.blurMask = 0.0f;
 
-        if (rcLocal.overrideMaterial)
-            rcLocal.overrideMaterial.bind(&rcLocal);
-        else if (material)
-            material.bind(&rcLocal);
+        if (!ignore)
+        {
+            if (rcLocal.overrideMaterial)
+                rcLocal.overrideMaterial.bind(&rcLocal);
+            else if (material)
+                material.bind(&rcLocal);
 
-        if (clearZbuffer)
-            glClear(GL_DEPTH_BUFFER_BIT);
+            if (clearZbuffer)
+                glClear(GL_DEPTH_BUFFER_BIT);
+        }
 
         if (drawable)
-        {
+        {        
             Entity drawableEntity = cast(Entity)drawable;
             
             if (drawableEntity)
@@ -335,17 +351,21 @@ class Entity: Owner, Drawable
                 drawableEntity.invAbsoluteTransformation = invAbsTrans;
                 drawableEntity.prevAbsoluteTransformation = prevAbsTrans;
             }
-            else
+            else if (!ignore)
             {
                 drawable.render(&rcLocal);
             }
         }
         
-        if (rcLocal.overrideMaterial)
-            rcLocal.overrideMaterial.unbind(&rcLocal);
-        else if (material)
-            material.unbind(&rcLocal);
-
+        if (!ignore)
+        {
+            if (rcLocal.overrideMaterial)
+                rcLocal.overrideMaterial.unbind(&rcLocal);
+            else if (material)
+                material.unbind(&rcLocal);
+        }
+        
+        if (!ignore)
         foreach(i, ble; behaviours)
         {
             if (ble.valid)
@@ -357,6 +377,7 @@ class Entity: Owner, Drawable
             child.render(&rcLocal);
         }
 
+        if (!ignore)
         foreach_reverse(i, ble; behaviours.data)
         {
             if (ble.valid)

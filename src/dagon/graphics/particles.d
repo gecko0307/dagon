@@ -205,8 +205,8 @@ class ParticleSystem: Behaviour
     Vector3f initialDirection = Vector3f(0, 1, 0);
     float initialDirectionRandomFactor = 1.0f;
     
-    Color4f startColor = Color4f(1, 1, 0, 1);
-    Color4f endColor = Color4f(1, 0, 0, 0);
+    Color4f startColor = Color4f(1, 1, 1, 1);
+    Color4f endColor = Color4f(1, 1, 1, 0);
     
     bool emitting = true;
     
@@ -375,6 +375,9 @@ class ParticleSystem: Behaviour
                 p.active = true;
             }
         }
+        
+        if (material)
+            entity.material = material;
     }
     
     override void render(RenderingContext* rc)

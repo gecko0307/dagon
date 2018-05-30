@@ -42,7 +42,7 @@ import dagon.core.ownership;
 import dagon.graphics.rc;
 import dagon.graphics.gbuffer;
 import dagon.graphics.shadow;
-import dagon.graphics.clustered;
+import dagon.graphics.light;
 import dagon.graphics.shapes;
 
 class DeferredEnvironmentPass: Owner
@@ -117,6 +117,11 @@ class DeferredEnvironmentPass: Owner
         uniform vec3 groundColor;
         uniform float skyEnergy;
         uniform float groundEnergy;
+        uniform vec3 fogColor;
+        uniform float fogStart;
+        uniform float fogEnd;
+        
+        uniform bool enableSSAO;
 
         in vec2 texCoord;
         
@@ -317,25 +322,30 @@ class DeferredEnvironmentPass: Owner
             }
             
             // SSAO
-            vec3 rvec = noise(texCoord);
-	        vec3 tangent = normalize(rvec - N * dot(rvec, N));
-	        vec3 bitangent = cross(tangent, N);
-            mat3 kernelBasis = mat3(tangent, bitangent, N);
-            float occlusion = 0.0;
-            for (int s = 0; s < SSAO_SAMPLE_COUNT; s++)
+            float occlusion = 1.0;
+            if (enableSSAO)
             {
-                vec3 delta = kernelBasis * uKernelOffsets[s];
-                delta *= float(dot(N, delta) >= 0.0) * 2.0 - 1.0;
-                vec3 samplePos = eyePos + delta * ssaoRadius;
+                occlusion = 0.0;
+                vec3 rvec = noise(texCoord);
+                vec3 tangent = normalize(rvec - N * dot(rvec, N));
+                vec3 bitangent = cross(tangent, N);
+                mat3 kernelBasis = mat3(tangent, bitangent, N);
+                for (int s = 0; s < SSAO_SAMPLE_COUNT; s++)
+                {
+                    vec3 delta = kernelBasis * uKernelOffsets[s];
+                    delta *= float(dot(N, delta) >= 0.0) * 2.0 - 1.0;
+                    vec3 samplePos = eyePos + delta * ssaoRadius;
 
-                vec4 projSamplePos = camProjectionMatrix * vec4(samplePos, 1.0);
-                vec2 sampleUV = (projSamplePos.xy / projSamplePos.w) * 0.5 + 0.5;
-                float sampleTargetZ = texture(positionBuffer, sampleUV).z;
-                float d = sampleTargetZ - samplePos.z;
-                occlusion += clamp(d, 0.0, 0.25) / 0.25;
+                    vec4 projSamplePos = camProjectionMatrix * vec4(samplePos, 1.0);
+                    vec2 sampleUV = (projSamplePos.xy / projSamplePos.w) * 0.5 + 0.5;
+                    float sampleTargetZ = texture(positionBuffer, sampleUV).z;
+                    float d = sampleTargetZ - samplePos.z;
+                    occlusion += clamp(d, 0.0, 0.25) / 0.25;
+                }
+                float falloff = 1.0 - clamp(abs(eyePos.z) / ssaoFalloff, 0.0, 1.0);
+                occlusion = 1.0 - (occlusion / float(SSAO_SAMPLE_COUNT)) * falloff;
+                occlusion *= occlusion;
             }
-            float falloff = 1.0 - clamp(abs(eyePos.z) / ssaoFalloff, 0.0, 1.0);
-            occlusion = 1.0 - (occlusion / float(SSAO_SAMPLE_COUNT)) * falloff;
             
             vec3 radiance = vec3(0.0, 0.0, 0.0);
             
@@ -369,7 +379,7 @@ class DeferredEnvironmentPass: Owner
             if (useEnvironmentMap)
             {
                 ivec2 envMapSize = textureSize(environmentMap, 0);
-                float maxLod = log2(float(max(envMapSize.x, envMapSize.y))) - 1.0;
+                float maxLod = log2(float(max(envMapSize.x, envMapSize.y))) - 2.0;
                 float diffLod = maxLod;
                 float specLod = maxLod * roughness;
                     
@@ -382,21 +392,24 @@ class DeferredEnvironmentPass: Owner
                 ambientSpecular = sky(worldR, worldSun, roughness);
             }
             
-            {
-                vec3 F = fresnelRoughness(max(dot(N, E), 0.0), f0, roughness);
-                vec3 kS = F;
-                vec3 kD = 1.0 - kS;
-                kD *= 1.0 - metallic;
-                vec3 diffuse = ambientDiffuse * albedo;
-                vec3 ambient = kD * diffuse + F * ambientSpecular;
-                radiance += ambient;
-            }
+            vec3 F = fresnelRoughness(max(dot(N, E), 0.0), f0, roughness);
+            vec3 kS = F;
+            vec3 kD = 1.0 - kS;
+            kD *= 1.0 - metallic;
+            vec3 diffuse = ambientDiffuse * albedo;
+            vec3 ambient = kD * diffuse + F * ambientSpecular;
+            radiance += ambient;
             
             // Emission
             radiance += texture(emissionBuffer, texCoord).rgb;
             
             // Occlusion
             radiance *= occlusion;
+            
+            // Fog
+            float linearDepth = abs(eyePos.z);
+            float fogFactor = clamp((fogEnd - linearDepth) / (fogEnd - fogStart), 0.0, 1.0);
+            radiance = mix(fogColor, radiance, fogFactor);
 
             frag_color = vec4(radiance, 1.0);
             frag_luminance = vec4(luminance(radiance), 0.0, 0.0, 1.0);
@@ -423,6 +436,9 @@ class DeferredEnvironmentPass: Owner
     GLint skyEnergyLoc;
     GLint groundColorLoc;
     GLint groundEnergyLoc;
+    GLint fogStartLoc;
+    GLint fogEndLoc;
+    GLint fogColorLoc;
     
     GLint shadowMatrix1Loc;
     GLint shadowMatrix2Loc; 
@@ -437,8 +453,11 @@ class DeferredEnvironmentPass: Owner
     GLint camViewMatrixLoc;
     GLint camInvViewMatrixLoc;
     
+    GLint enableSSAOLoc;
+    
     GBuffer gbuffer;
     CascadedShadowMap shadowMap;
+    bool enableSSAO = false;
     
     Matrix4x4f defaultShadowMatrix;
 
@@ -552,6 +571,9 @@ class DeferredEnvironmentPass: Owner
         skyEnergyLoc = glGetUniformLocation(envPassShaderProgram, "skyEnergy");
         groundColorLoc = glGetUniformLocation(envPassShaderProgram, "groundColor");
         groundEnergyLoc = glGetUniformLocation(envPassShaderProgram, "groundEnergy");
+        fogStartLoc = glGetUniformLocation(envPassShaderProgram, "fogStart");
+        fogEndLoc = glGetUniformLocation(envPassShaderProgram, "fogEnd");
+        fogColorLoc = glGetUniformLocation(envPassShaderProgram, "fogColor");
         
         shadowMatrix1Loc = glGetUniformLocation(envPassShaderProgram, "shadowMatrix1");
         shadowMatrix2Loc = glGetUniformLocation(envPassShaderProgram, "shadowMatrix2");
@@ -561,6 +583,8 @@ class DeferredEnvironmentPass: Owner
         
         environmentMapLoc = glGetUniformLocation(envPassShaderProgram, "environmentMap");
         useEnvironmentMapLoc = glGetUniformLocation(envPassShaderProgram, "useEnvironmentMap");
+        
+        enableSSAOLoc = glGetUniformLocation(envPassShaderProgram, "enableSSAOLoc");
         
         camProjectionMatrixLoc = glGetUniformLocation(envPassShaderProgram, "camProjectionMatrix");
         camViewMatrixLoc = glGetUniformLocation(envPassShaderProgram, "camViewMatrix");
@@ -620,6 +644,22 @@ class DeferredEnvironmentPass: Owner
         glUniform1f(skyEnergyLoc, skyEnergy);
         glUniform3fv(groundColorLoc, 1, groundColor.arrayof.ptr);
         glUniform1f(groundEnergyLoc, groundEnergy);
+        
+        Color4f fogColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
+        float fogStart = float.max;
+        float fogEnd = float.max;
+        //if (fogEnabled) // TODO: control fog
+        {
+            if (rc3d.environment)
+            {                
+                fogColor = rc3d.environment.fogColor;
+                fogStart = rc3d.environment.fogStart;
+                fogEnd = rc3d.environment.fogEnd;
+            }
+        }
+        glUniform3fv(fogColorLoc, 1, fogColor.arrayof.ptr);
+        glUniform1f(fogStartLoc, fogStart);
+        glUniform1f(fogEndLoc, fogEnd);
         
         glUniformMatrix4fv(camProjectionMatrixLoc, 1, 0, rc3d.projectionMatrix.arrayof.ptr);
         glUniformMatrix4fv(camViewMatrixLoc, 1, 0, rc3d.viewMatrix.arrayof.ptr);
@@ -686,6 +726,8 @@ class DeferredEnvironmentPass: Owner
             glUniformMatrix4fv(shadowMatrix2Loc, 1, 0, defaultShadowMatrix.arrayof.ptr);
             glUniformMatrix4fv(shadowMatrix3Loc, 1, 0, defaultShadowMatrix.arrayof.ptr);
         }
+
+        glUniform1i(enableSSAOLoc, enableSSAO);
         
         glActiveTexture(GL_TEXTURE0);
 
@@ -904,10 +946,10 @@ class DeferredLightPass: Owner
     GLint lightEnergyLoc;
     
     GBuffer gbuffer;
-    ClusteredLightManager lightManager;
+    LightManager lightManager;
     ShapeSphere lightVolume;
 
-    this(GBuffer gbuffer, ClusteredLightManager lightManager, Owner o)
+    this(GBuffer gbuffer, LightManager lightManager, Owner o)
     {
         super(o);
         

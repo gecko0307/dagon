@@ -42,7 +42,7 @@ import derelict.opengl;
 import dagon.core.ownership;
 import dagon.graphics.rc;
 import dagon.graphics.shadow;
-import dagon.graphics.clustered;
+import dagon.graphics.light;
 import dagon.graphics.texture;
 import dagon.graphics.material;
 import dagon.graphics.materials.generic;
@@ -159,20 +159,19 @@ class StandardBackend: GLSLMaterialBackend
         uniform vec3 skyZenithColor;
         uniform vec3 skyHorizonColor;
         
+        /*
         uniform float invLightDomainSize;
         uniform usampler2D lightClusterTexture;
         uniform usampler1D lightIndexTexture;
         uniform sampler2D lightsTexture;
+        */
         
         uniform float blurMask;
         
         uniform bool shaded;
         uniform float transparency;
         uniform bool usePCF;
-        //const bool shaded = true;
-        //const float transparency = 1.0;
-        //const bool usePCF = true;
-        
+
         in vec3 eyePosition;
         
         in vec4 position;
@@ -190,10 +189,7 @@ class StandardBackend: GLSLMaterialBackend
         in vec4 shadowCoord3;
 
         layout(location = 0) out vec4 frag_color;
-        layout(location = 1) out vec4 frag_velocity;
-        layout(location = 2) out vec4 frag_luma;
-        layout(location = 3) out vec4 frag_position; // TODO: gbuffer prepass to do SSAO and SSLR
-        layout(location = 4) out vec4 frag_normal;   // TODO: gbuffer prepass to do SSAO and SSLR
+        layout(location = 1) out vec4 frag_luma;
         
         mat3 cotangentFrame(in vec3 N, in vec3 p, in vec2 uv)
         {
@@ -284,22 +280,6 @@ class StandardBackend: GLSLMaterialBackend
             proj = (1.0 - abs(proj * 2.0 - 1.0)) * coef;
             proj = clamp(proj, 0.0, 1.0);
             return min(proj.x, proj.y);
-        }
-        
-        void sphericalAreaLightContrib(
-            in vec3 P, in vec3 N, in vec3 E, in vec3 R,
-            in vec3 lPos, in float lRadius,
-            in float shininess,
-            out float diff, out float spec)
-        {
-            vec3 positionToLightSource = lPos - P;
-	        vec3 centerToRay = dot(positionToLightSource, R) * R - positionToLightSource;
-	        vec3 closestPoint = positionToLightSource + centerToRay * clamp(lRadius / length(centerToRay), 0.0, 1.0);	
-	        vec3 L = normalize(closestPoint);
-            float NH = dot(N, normalize(L + E));
-            spec = pow(max(NH, 0.0), shininess);
-            vec3 directionToLight = normalize(positionToLightSource);
-            diff = clamp(dot(N, directionToLight), 0.0, 1.0);
         }
         
         vec3 fresnel(float cosTheta, vec3 f0)
@@ -482,60 +462,6 @@ class StandardBackend: GLSLMaterialBackend
                 Lo += (kD * albedo / PI + specular) * radiance;
             }
             
-            // Fetch light cluster slice
-            if (shaded)
-            {
-                vec2 clusterCoord = (worldPosition.xz - cameraPosition.xz) * invLightDomainSize + 0.5;
-                uint clusterIndex = texture(lightClusterTexture, clusterCoord).r;
-                uint offset = (clusterIndex << 16) >> 16;
-                uint size = (clusterIndex >> 16);
-                
-                // Point/area lights
-                for (uint i = 0u; i < size; i++)
-                {
-                    // Read light data
-                    uint u = texelFetch(lightIndexTexture, int(offset + i), 0).r;
-                    vec3 lightPos = texelFetch(lightsTexture, ivec2(u, 0), 0).xyz; 
-                    vec3 lightColor = toLinear(texelFetch(lightsTexture, ivec2(u, 1), 0).xyz); 
-                    vec3 lightProps = texelFetch(lightsTexture, ivec2(u, 2), 0).xyz;
-                    float lightRadius = lightProps.x;
-                    float lightAreaRadius = lightProps.y;
-                    float lightEnergy = lightProps.z;
-                    
-                    vec3 lightPosEye = (viewMatrix * vec4(lightPos, 1.0)).xyz;
-                    
-                    vec3 positionToLightSource = lightPosEye - eyePosition;
-                    float distanceToLight = length(positionToLightSource);
-                    vec3 directionToLight = normalize(positionToLightSource);                
-                    float attenuation = pow(clamp(1.0 - (distanceToLight / lightRadius), 0.0, 1.0), 2.0) * lightEnergy;
-                    
-                    vec3 Lpt = normalize(lightPosEye - eyePosition);
-
-                    vec3 centerToRay = dot(positionToLightSource, R) * R - positionToLightSource;
-                    vec3 closestPoint = positionToLightSource + centerToRay * clamp(lightAreaRadius / length(centerToRay), 0.0, 1.0);
-                    vec3 L = normalize(closestPoint);  
-
-                    float NL = max(dot(N, Lpt), 0.0); 
-                    vec3 H = normalize(E + L);
-                    
-                    float NDF = distributionGGX(N, H, roughness);        
-                    float G = geometrySmith(N, E, L, roughness);      
-                    vec3 F = fresnel(max(dot(H, E), 0.0), f0);
-                    
-                    vec3 kS = F;
-                    vec3 kD = vec3(1.0) - kS;
-                    kD *= 1.0 - metallic;
-
-                    vec3 numerator = NDF * G * F;
-                    float denominator = 4.0 * max(dot(N, E), 0.0) * NL;
-                    vec3 specular = numerator / max(denominator, 0.001);
-                    
-                    vec3 radiance = lightColor * attenuation;
-                    
-                    Lo += (kD * albedo / PI + specular) * radiance * NL;
-                }
-            }
-            
             // Fog
             float fogFactor = clamp((fogEnd - linearDepth) / (fogEnd - fogStart), 0.0, 1.0);
             
@@ -587,10 +513,7 @@ class StandardBackend: GLSLMaterialBackend
             float alpha = mix(diffuseColor.a * transparency, 1.0f, fresnelAlpha);
             
             frag_color = vec4(fragColor, alpha);
-            frag_velocity = vec4(screenVelocity, 0.0, blurMask);
             frag_luma = vec4(luminance(fragColor));
-            frag_position = vec4(eyePosition.x, eyePosition.y, eyePosition.z, 0.0);
-            frag_normal = vec4(N, 0.0);
         }
     };
     
@@ -644,10 +567,12 @@ class StandardBackend: GLSLMaterialBackend
     GLint groundColorLoc;
     GLint groundEnergyLoc;
     
+    /*
     GLint invLightDomainSizeLoc;
     GLint clusterTextureLoc;
     GLint lightsTextureLoc;
     GLint indexTextureLoc;
+    */
     
     GLint blurMaskLoc;
     
@@ -655,12 +580,12 @@ class StandardBackend: GLSLMaterialBackend
     GLint transparencyLoc;
     GLint usePCFLoc;
     
-    ClusteredLightManager lightManager;
+    LightManager lightManager;
     CascadedShadowMap shadowMap;
     Matrix4x4f defaultShadowMat;
     Vector3f defaultLightDir;
     
-    this(ClusteredLightManager clm, Owner o)
+    this(LightManager clm, Owner o)
     {
         super(o);
         
@@ -713,10 +638,12 @@ class StandardBackend: GLSLMaterialBackend
         skyHorizonColorLoc = glGetUniformLocation(shaderProgram, "skyHorizonColor");
         skyEnergyLoc = glGetUniformLocation(shaderProgram, "skyEnergy");
         
+        /*
         clusterTextureLoc = glGetUniformLocation(shaderProgram, "lightClusterTexture");
         invLightDomainSizeLoc = glGetUniformLocation(shaderProgram, "invLightDomainSize");
         lightsTextureLoc = glGetUniformLocation(shaderProgram, "lightsTexture");
         indexTextureLoc = glGetUniformLocation(shaderProgram, "lightIndexTexture");
+        */
         
         blurMaskLoc = glGetUniformLocation(shaderProgram, "blurMask");
         
@@ -930,6 +857,7 @@ class StandardBackend: GLSLMaterialBackend
         glUniform1f(shadowBrightnessLoc, shadowBrightness);
         glUniform1i(useHeightCorrectedShadowsLoc, useHeightCorrectedShadows);
 
+/*
         // Texture 6 - light clusters
         glActiveTexture(GL_TEXTURE6);
         lightManager.bindClusterTexture();
@@ -945,7 +873,7 @@ class StandardBackend: GLSLMaterialBackend
         glActiveTexture(GL_TEXTURE8);
         lightManager.bindIndexTexture();
         glUniform1i(indexTextureLoc, 8);
-        
+*/
         bool shaded = true;
         if (ishadeless)
             shaded = !(ishadeless.asBool);
@@ -999,6 +927,7 @@ class StandardBackend: GLSLMaterialBackend
         glActiveTexture(GL_TEXTURE5);
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
         
+        /*
         glActiveTexture(GL_TEXTURE6);
         lightManager.unbindClusterTexture();
         
@@ -1007,6 +936,7 @@ class StandardBackend: GLSLMaterialBackend
         
         glActiveTexture(GL_TEXTURE8);
         lightManager.unbindIndexTexture();
+        */
         
         glActiveTexture(GL_TEXTURE0);
         

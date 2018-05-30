@@ -42,7 +42,7 @@ import derelict.opengl;
 import dagon.core.ownership;
 import dagon.graphics.rc;
 import dagon.graphics.shadow;
-import dagon.graphics.clustered;
+import dagon.graphics.light;
 import dagon.graphics.material;
 import dagon.graphics.materials.generic;
 
@@ -321,12 +321,12 @@ class TerrainBackend: GLSLMaterialBackend
     GLint lightsTextureLoc;
     GLint indexTextureLoc;
     
-    ClusteredLightManager lightManager;
+    LightManager lightManager;
     CascadedShadowMap shadowMap;
     Matrix4x4f defaultShadowMat;
     Vector3f defaultLightDir;
     
-    this(ClusteredLightManager clm, Owner o)
+    this(LightManager clm, Owner o)
     {
         super(o);
         

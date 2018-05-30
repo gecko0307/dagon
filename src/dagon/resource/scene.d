@@ -56,7 +56,7 @@ import dagon.graphics.environment;
 import dagon.graphics.rc;
 import dagon.graphics.view;
 import dagon.graphics.shapes;
-import dagon.graphics.clustered;
+import dagon.graphics.light;
 import dagon.graphics.shadow;
 import dagon.graphics.texture;
 import dagon.graphics.materials.generic;
@@ -335,7 +335,7 @@ class Scene: BaseScene
 {
     Environment environment;
     
-    ClusteredLightManager lightManager;
+    LightManager lightManager;
     CascadedShadowMap shadowMap;
 
     StandardBackend defaultMaterialBackend;
@@ -367,6 +367,23 @@ class Scene: BaseScene
     
     PostFilterFinalizer finalizerFilter;
     
+    struct SSAOSettings
+    {
+        BaseScene3D scene;
+        
+        void enabled(bool mode) @property
+        {
+            scene.deferredEnvPass.enableSSAO = mode;
+        }
+        
+        bool enabled() @property
+        {
+            return scene.deferredEnvPass.enableSSAO;
+        }
+        
+        //TODO: other SSAO parameters
+    }
+    
     struct HDRSettings
     {
         BaseScene3D scene;
@@ -379,6 +396,28 @@ class Scene: BaseScene
         Tonemapper tonemapper() @property
         {
             return scene.hdrFilter.tonemapFunction;
+        }
+        
+        
+        void exposure(float ex) @property
+        {
+            scene.hdrFilter.exposure = ex;
+        }
+        
+        float exposure() @property
+        {
+            return scene.hdrFilter.exposure;
+        }
+        
+        
+        void autoExposure(bool mode) @property
+        {
+            scene.hdrFilter.autoExposure = mode;
+        }
+        
+        bool autoExposure() @property
+        {
+            return scene.hdrFilter.autoExposure;
         }
         
         
@@ -574,6 +613,7 @@ class Scene: BaseScene
         }
     }
     
+    SSAOSettings ssao;
     HDRSettings hdr;
     MotionBlurSettings motionBlur;
     GlowSettings glow;
@@ -796,7 +836,7 @@ class Scene: BaseScene
     {    
         environment = New!Environment(assetManager);
         
-        lightManager = New!ClusteredLightManager(200.0f, 100, assetManager);
+        lightManager = New!LightManager(200.0f, 100, assetManager);
         defaultMaterialBackend = New!StandardBackend(lightManager, assetManager);
         
         skyMaterialBackend = New!SkyBackend(assetManager);
@@ -812,6 +852,7 @@ class Scene: BaseScene
         
         sceneFramebuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, true, true, assetManager);
         
+        ssao.scene = this;
         hdr.scene = this;
         motionBlur.scene = this;
         glow.scene = this;
@@ -965,16 +1006,11 @@ class Scene: BaseScene
     void renderOpaqueEntities3D(RenderingContext* rc)
     {
         glEnable(GL_DEPTH_TEST);
+        RenderingContext rcLocal = *rc;
+        rcLocal.ignoreTransparentEntities = true;
         foreach(e; entities3D)
-        //if (e.layer > 0)
         {
-            if (e.material)
-            {
-                if (!e.material.isTransparent)
-                    e.render(rc);
-            }
-            else
-                e.render(rc);
+            e.render(&rcLocal);
         }
     }
     
@@ -982,16 +1018,11 @@ class Scene: BaseScene
     void renderTransparentEntities3D(RenderingContext* rc)
     {
         glEnable(GL_DEPTH_TEST);
+        RenderingContext rcLocal = *rc;
+        rcLocal.ignoreOpaqueEntities = true;
         foreach(e; entities3D)
-        //if (e.layer > 0)
         {
-            if (e.material)
-            {
-                if (e.material.isTransparent)
-                    e.render(rc);
-            }
-            else
-                e.render(rc);
+            e.render(&rcLocal);
         }
     }
 
@@ -1075,17 +1106,18 @@ class Scene: BaseScene
         
         sceneFramebuffer.unbind();
     
-        sceneFramebuffer.genLuminanceMipmaps();
-        float lum = sceneFramebuffer.averageLuminance();
-        if (!isNaN(lum))
+        if (hdrFilter.autoExposure)
         {
-            float newExposure = hdrFilter.keyValue * (1.0f / clamp(lum, hdrFilter.minLuminance, hdrFilter.maxLuminance));
-            
-            float exposureDelta = newExposure - hdrFilter.exposure;
-            hdrFilter.exposure += exposureDelta * hdrFilter.adaptationSpeed * eventManager.deltaTime;
+            sceneFramebuffer.genLuminanceMipmaps();
+            float lum = sceneFramebuffer.averageLuminance();
+            if (!isNaN(lum))
+            {
+                float newExposure = hdrFilter.keyValue * (1.0f / clamp(lum, hdrFilter.minLuminance, hdrFilter.maxLuminance));
+                
+                float exposureDelta = newExposure - hdrFilter.exposure;
+                hdrFilter.exposure += exposureDelta * hdrFilter.adaptationSpeed * eventManager.deltaTime;
+            }
         }
-
-        //hdrFilter.exposure = 0.5;
     
         if (hdrPrepassFilter.glowEnabled)
             renderBlur(glow.radius);

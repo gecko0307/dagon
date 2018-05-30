@@ -74,7 +74,7 @@ public
     import dagon.graphics.animmodel;
     import dagon.graphics.view;
     import dagon.graphics.shadow;
-    import dagon.graphics.clustered;
+    import dagon.graphics.light;
     import dagon.graphics.framebuffer;
     import dagon.graphics.postproc;
     import dagon.graphics.particles;

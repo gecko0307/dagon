@@ -81,16 +81,12 @@ class PostFilterHDR: PostFilter
         uniform sampler2D fbVelocity;
         uniform sampler2D colorTable;
         uniform sampler2D vignette;
-        //uniform sampler2D blurred;
         uniform vec2 viewSize;
         uniform float timeStep;
 
         uniform bool useMotionBlur;
         uniform int motionBlurSamples;
         uniform float shutterFps;
-        
-        //uniform bool useGlow;
-        //uniform float glowBrightness;
         
         uniform float exposure;
         uniform int tonemapFunction;
@@ -185,18 +181,6 @@ class PostFilterHDR: PostFilter
                 res = res / usedSamples;
             }
             
-            /*
-            if (useGlow)
-            {
-                vec3 glow = texture(blurred, texCoord).rgb;
-                float lum = glow.r * 0.2126 + glow.g * 0.7152 + glow.b * 0.0722;
-                const float minLuminance = 0.01;
-                const float maxLuminance = 1.0;
-                lum = (clamp(lum, minLuminance, maxLuminance) - minLuminance) / (maxLuminance - minLuminance);
-                res += glow * lum * glowBrightness;
-            }
-            */
-            
             if (tonemapFunction == 2)
                 res = tonemapACES(res, exposure);
             else if (tonemapFunction == 1)
@@ -230,33 +214,28 @@ class PostFilterHDR: PostFilter
     GLint useLUTLoc;
     GLint vignetteLoc;
     GLint useVignetteLoc;
-    //GLint blurredLoc;
-    //GLint useGlowLoc;
-    //GLint glowBrightnessLoc;
     GLint fbVelocityLoc;
     GLint useMotionBlurLoc;
     GLint motionBlurSamplesLoc;
     GLint shutterFpsLoc;
     GLint timeStepLoc;
     
+    bool autoExposure = false;
+    
     float minLuminance = 0.001f;
     float maxLuminance = 100000.0f;
     float keyValue = 0.5f;
     float adaptationSpeed = 4.0f;
     
-    float exposure = 0.0f;
-    Tonemapper tonemapFunction = Tonemapper.Reinhard;
+    float exposure = 0.5f;
+    Tonemapper tonemapFunction = Tonemapper.ACES;
     
     GLuint velocityTexture;
     bool mblurEnabled = false;
     int motionBlurSamples = 20;
     float shutterFps = 24.0;
     float shutterSpeed = 1.0 / 24.0;
-    
-    //bool glowEnabled = false;
-    //float glowBrightness = 1.0;
-    
-    //GLuint blurredScene;
+
     Texture colorTable;
     Texture vignette;
 
@@ -270,9 +249,6 @@ class PostFilterHDR: PostFilter
         useLUTLoc = glGetUniformLocation(shaderProgram, "useLUT");
         vignetteLoc = glGetUniformLocation(shaderProgram, "vignette");
         useVignetteLoc = glGetUniformLocation(shaderProgram, "useVignette");
-        //blurredLoc = glGetUniformLocation(shaderProgram, "blurred");
-        //useGlowLoc = glGetUniformLocation(shaderProgram, "useGlow");
-        //glowBrightnessLoc = glGetUniformLocation(shaderProgram, "glowBrightness");
         fbVelocityLoc = glGetUniformLocation(shaderProgram, "fbVelocity");
         useMotionBlurLoc = glGetUniformLocation(shaderProgram, "useMotionBlur");
         motionBlurSamplesLoc = glGetUniformLocation(shaderProgram, "motionBlurSamples");
@@ -297,9 +273,7 @@ class PostFilterHDR: PostFilter
         glActiveTexture(GL_TEXTURE4);
         if (vignette)
             vignette.bind();
-            
-        //glActiveTexture(GL_TEXTURE5);
-        //glBindTexture(GL_TEXTURE_2D, blurredScene);
+
         glActiveTexture(GL_TEXTURE0);
         
         glUniform1i(fbVelocityLoc, 2);
@@ -309,9 +283,6 @@ class PostFilterHDR: PostFilter
         glUniform1i(useLUTLoc, (colorTable !is null));
         glUniform1i(vignetteLoc, 4);
         glUniform1i(useVignetteLoc, (vignette !is null));
-        //glUniform1i(blurredLoc, 5);
-        //glUniform1i(useGlowLoc, glowEnabled);
-        //glUniform1f(glowBrightnessLoc, glowBrightness);
         glUniform1i(useMotionBlurLoc, mblurEnabled);
         glUniform1i(motionBlurSamplesLoc, motionBlurSamples);
         glUniform1f(shutterFpsLoc, shutterFps);
@@ -326,17 +297,10 @@ class PostFilterHDR: PostFilter
         glActiveTexture(GL_TEXTURE3);
         if (colorTable)
             colorTable.unbind();
-        //glActiveTexture(GL_TEXTURE0);
         
         glActiveTexture(GL_TEXTURE4);
         if (vignette)
             vignette.unbind();
         glActiveTexture(GL_TEXTURE0);
-        
-        /*
-        glActiveTexture(GL_TEXTURE5);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        glActiveTexture(GL_TEXTURE0);
-        */
     }
 }
