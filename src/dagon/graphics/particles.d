@@ -404,6 +404,7 @@ class ParticleSystem: Behaviour
                 
                 RenderingContext rcLocal = *rc;
                 rcLocal.modelViewMatrix = modelViewMatrix;
+                rcLocal.normalMatrix = rcLocal.modelViewMatrix.inverse.transposed;
 
                 if (material)
                 {

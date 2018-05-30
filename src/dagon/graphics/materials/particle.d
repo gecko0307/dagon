@@ -34,6 +34,7 @@ import std.conv;
 import dlib.core.memory;
 import dlib.math.vector;
 import dlib.math.matrix;
+import dlib.math.transformation;
 import dlib.image.color;
 import dlib.image.unmanaged;
 
@@ -62,6 +63,7 @@ class ParticleBackend: GLSLMaterialBackend
         
         uniform mat4 modelViewMatrix;
         uniform mat4 projectionMatrix;
+        uniform mat4 normalMatrix;
         
         uniform mat4 invViewMatrix;
     
@@ -77,13 +79,15 @@ class ParticleBackend: GLSLMaterialBackend
     
     private string fsText = q{
         #version 330 core
-        
+
         uniform sampler2D diffuseTexture;
         uniform sampler2D positionTexture;
         uniform vec4 particleColor;
         uniform float alpha;
         uniform float energy;
         uniform vec2 viewSize;
+        uniform vec3 sunDirection;
+        uniform vec3 particlePosition;
         
         in vec3 eyePosition;
         in vec2 texCoord;
@@ -104,27 +108,60 @@ class ParticleBackend: GLSLMaterialBackend
         {
             return pow(v, vec3(2.2));
         }
+
+        uniform bool alphaCutout;
+        uniform float alphaCutoutThreshold;
         
-        // TODO: make uniform
-        uniform bool alphaCutout; // = true;
-        uniform float alphaCutoutThreshold; // = 0.1;
+        mat3 cotangentFrame(in vec3 N, in vec3 p, in vec2 uv)
+        {
+            vec3 dp1 = dFdx(p);
+            vec3 dp2 = dFdy(p);
+            vec2 duv1 = dFdx(uv);
+            vec2 duv2 = dFdy(uv);
+            vec3 dp2perp = cross(dp2, N);
+            vec3 dp1perp = cross(N, dp1);
+            vec3 T = dp2perp * duv1.x + dp1perp * duv2.x;
+            vec3 B = dp2perp * duv1.y + dp1perp * duv2.y;
+            float invmax = inversesqrt(max(dot(T, T), dot(B, B)));
+            return mat3(T * invmax, B * invmax, N);
+        }
 
         void main()
         {
             vec4 pos = texture(positionTexture, gl_FragCoord.xy / viewSize);
             vec3 referenceEyePos = pos.xyz;
             
+            vec3 N = normalize(-particlePosition);
+            mat3 TBN = cotangentFrame(N, eyePosition, texCoord);
+            
+            // Generate tangent-space normal
+            vec2 p = vec2(texCoord.x * 2.0 - 1.0, texCoord.y * 2.0 - 1.0);
+            if (dot(p, p) >= 1.0)
+                p = normalize(p) * 0.999; // small bias to fight aliasing
+            float vz = sqrt(1.0 - p.x * p.x - p.y * p.y);
+            vec3 tN = vec3(p.x, p.y, vz);
+            
+            // Convert normal to eye space
+            N = normalize(TBN * tN);
+            
+            // TODO: make uniform
+            const float sunEnergy = 10.0f;
+            const float ambient = 0.5;
+            const float wrapFactor = -0.5f;
+            
+			float diffuse = max(dot(N, sunDirection) + wrapFactor, 0.0) / (1.0 + wrapFactor);
+            
             const float softDistance = 3.0;
             float soft = (pos.w > 0.0)? clamp((eyePosition.z - referenceEyePos.z) / softDistance, 0.0, 1.0) : 1.0;
         
             vec4 textureColor = texture(diffuseTexture, texCoord);
-            vec3 outColor = toLinear(textureColor.rgb) * toLinear(particleColor.rgb) * energy;
+            vec3 outColor = toLinear(textureColor.rgb) * toLinear(particleColor.rgb);
             float outAlpha = textureColor.a * particleColor.a * alpha * soft;
             
             if (alphaCutout && outAlpha <= alphaCutoutThreshold)
                 discard;
             
-            frag_color = vec4(outColor, outAlpha);
+            frag_color = vec4(outColor * max(ambient, diffuse * sunEnergy), outAlpha);
             frag_luminance = vec4(energy * outAlpha, 0.0, 0.0, 1.0);
         }
     };
@@ -137,6 +174,7 @@ class ParticleBackend: GLSLMaterialBackend
 
     GLint modelViewMatrixLoc;
     GLint projectionMatrixLoc;
+    GLint normalMatrixLoc;
     
     GLint diffuseTextureLoc;
     GLint positionTextureLoc;
@@ -144,6 +182,10 @@ class ParticleBackend: GLSLMaterialBackend
     GLint energyLoc;
     GLint particleColorLoc;
     GLint viewSizeLoc;
+    
+    GLint sunDirectionLoc;
+    
+    GLint particlePositionLoc;
     
     GLint alphaCutoutLoc;
     GLint alphaCutoutThresholdLoc;
@@ -154,6 +196,7 @@ class ParticleBackend: GLSLMaterialBackend
         
         modelViewMatrixLoc = glGetUniformLocation(shaderProgram, "modelViewMatrix");
         projectionMatrixLoc = glGetUniformLocation(shaderProgram, "projectionMatrix");
+        normalMatrixLoc = glGetUniformLocation(shaderProgram, "normalMatrix");
             
         diffuseTextureLoc = glGetUniformLocation(shaderProgram, "diffuseTexture");
         positionTextureLoc = glGetUniformLocation(shaderProgram, "positionTexture");
@@ -161,6 +204,10 @@ class ParticleBackend: GLSLMaterialBackend
         energyLoc = glGetUniformLocation(shaderProgram, "energy");
         particleColorLoc = glGetUniformLocation(shaderProgram, "particleColor");
         viewSizeLoc = glGetUniformLocation(shaderProgram, "viewSize");
+        
+        sunDirectionLoc = glGetUniformLocation(shaderProgram, "sunDirection");
+        
+        particlePositionLoc = glGetUniformLocation(shaderProgram, "particlePosition");
         
         alphaCutoutLoc = glGetUniformLocation(shaderProgram, "alphaCutout");
         alphaCutoutThresholdLoc = glGetUniformLocation(shaderProgram, "alphaCutoutThreshold");
@@ -183,6 +230,19 @@ class ParticleBackend: GLSLMaterialBackend
         // Matrices
         glUniformMatrix4fv(modelViewMatrixLoc, 1, GL_FALSE, rc.modelViewMatrix.arrayof.ptr);
         glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, rc.projectionMatrix.arrayof.ptr);
+        glUniformMatrix4fv(normalMatrixLoc, 1, GL_FALSE, rc.normalMatrix.arrayof.ptr);
+        
+        Vector4f sunVector = Vector4f(0.0f, 1.0f, 0.0, 0.0f);
+        if (rc.environment)
+        {
+            sunVector = Vector4f(rc.environment.sunDirection);
+            sunVector.w = 0.0;
+        }
+        Vector3f sunDirectionEye = sunVector * rc.viewMatrix;
+        glUniform3fv(sunDirectionLoc, 1, sunDirectionEye.arrayof.ptr);
+        
+        Vector3f particlePosition = rc.modelViewMatrix.translation;
+        glUniform3fv(particlePositionLoc, 1, particlePosition.arrayof.ptr);
 
         // Texture 0 - diffuse texture
         Color4f particleColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
