@@ -584,7 +584,7 @@ class DeferredEnvironmentPass: Owner
         environmentMapLoc = glGetUniformLocation(envPassShaderProgram, "environmentMap");
         useEnvironmentMapLoc = glGetUniformLocation(envPassShaderProgram, "useEnvironmentMap");
         
-        enableSSAOLoc = glGetUniformLocation(envPassShaderProgram, "enableSSAOLoc");
+        enableSSAOLoc = glGetUniformLocation(envPassShaderProgram, "enableSSAO");
         
         camProjectionMatrixLoc = glGetUniformLocation(envPassShaderProgram, "camProjectionMatrix");
         camViewMatrixLoc = glGetUniformLocation(envPassShaderProgram, "camViewMatrix");
