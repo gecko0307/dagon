@@ -261,11 +261,15 @@ class Entity: Owner, Drawable
         if (!visible)
             return;
         
+        bool transparent = false;
         bool ignore = false;
         if (material)
         {
             if (material.isTransparent)
+            {
                 ignore = rc.ignoreTransparentEntities;
+                transparent = true;
+            }
             else
                 ignore = rc.ignoreOpaqueEntities;
         }
@@ -314,10 +318,14 @@ class Entity: Owner, Drawable
             else
                 rcLocal.blurMask = 0.0f;
         }
+        
+        bool shouldUseOverrideMat = true;
+        if (transparent)
+            shouldUseOverrideMat = !rcLocal.shadowMode;
 
         if (!ignore)
         {
-            if (rcLocal.overrideMaterial)
+            if (rcLocal.overrideMaterial && shouldUseOverrideMat)
                 rcLocal.overrideMaterial.bind(&rcLocal);
             else if (material)
                 material.bind(&rcLocal);
@@ -359,7 +367,7 @@ class Entity: Owner, Drawable
         
         if (!ignore)
         {
-            if (rcLocal.overrideMaterial)
+            if (rcLocal.overrideMaterial && shouldUseOverrideMat)
                 rcLocal.overrideMaterial.unbind(&rcLocal);
             else if (material)
                 material.unbind(&rcLocal);

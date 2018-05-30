@@ -305,8 +305,11 @@ class CascadedShadowMap: Owner
         rcLocal.viewMatrix = area1.viewMatrix;
         rcLocal.invViewMatrix = area1.invViewMatrix;
         rcLocal.normalMatrix = rcLocal.invViewMatrix.transposed;
+        rcLocal.viewRotationMatrix = matrix3x3to4x4(matrix4x4to3x3(rcLocal.viewMatrix));
+        rcLocal.invViewRotationMatrix = matrix3x3to4x4(matrix4x4to3x3(rcLocal.invViewMatrix));
         
         rcLocal.overrideMaterial = sm;
+        rcLocal.shadowMode = true;
 
         glPolygonOffset(3.0, 0.0);
         glDisable(GL_CULL_FACE);
@@ -326,6 +329,8 @@ class CascadedShadowMap: Owner
         rcLocal.viewMatrix = area2.viewMatrix;
         rcLocal.invViewMatrix = area2.invViewMatrix;
         rcLocal.normalMatrix = rcLocal.invViewMatrix.transposed;
+        rcLocal.viewRotationMatrix = matrix3x3to4x4(matrix4x4to3x3(rcLocal.viewMatrix));
+        rcLocal.invViewRotationMatrix = matrix3x3to4x4(matrix4x4to3x3(rcLocal.invViewMatrix));
 
         foreach(e; scene.entities3D)
             if (e.castShadow)
@@ -341,6 +346,8 @@ class CascadedShadowMap: Owner
         rcLocal.viewMatrix = area3.viewMatrix;
         rcLocal.invViewMatrix = area3.invViewMatrix;
         rcLocal.normalMatrix = rcLocal.invViewMatrix.transposed;
+        rcLocal.viewRotationMatrix = matrix3x3to4x4(matrix4x4to3x3(rcLocal.viewMatrix));
+        rcLocal.invViewRotationMatrix = matrix3x3to4x4(matrix4x4to3x3(rcLocal.invViewMatrix));
 
         foreach(e; scene.entities3D)
             if (e.castShadow)

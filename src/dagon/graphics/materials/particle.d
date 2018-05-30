@@ -104,6 +104,10 @@ class ParticleBackend: GLSLMaterialBackend
         {
             return pow(v, vec3(2.2));
         }
+        
+        // TODO: make uniform
+        uniform bool alphaCutout; // = true;
+        uniform float alphaCutoutThreshold; // = 0.1;
 
         void main()
         {
@@ -116,6 +120,9 @@ class ParticleBackend: GLSLMaterialBackend
             vec4 textureColor = texture(diffuseTexture, texCoord);
             vec3 outColor = toLinear(textureColor.rgb) * toLinear(particleColor.rgb) * energy;
             float outAlpha = textureColor.a * particleColor.a * alpha * soft;
+            
+            if (alphaCutout && outAlpha <= alphaCutoutThreshold)
+                discard;
             
             frag_color = vec4(outColor, outAlpha);
             frag_luminance = vec4(energy * outAlpha, 0.0, 0.0, 1.0);
@@ -138,6 +145,9 @@ class ParticleBackend: GLSLMaterialBackend
     GLint particleColorLoc;
     GLint viewSizeLoc;
     
+    GLint alphaCutoutLoc;
+    GLint alphaCutoutThresholdLoc;
+    
     this(GBuffer gbuffer, Owner o)
     {
         super(o);
@@ -151,6 +161,9 @@ class ParticleBackend: GLSLMaterialBackend
         energyLoc = glGetUniformLocation(shaderProgram, "energy");
         particleColorLoc = glGetUniformLocation(shaderProgram, "particleColor");
         viewSizeLoc = glGetUniformLocation(shaderProgram, "viewSize");
+        
+        alphaCutoutLoc = glGetUniformLocation(shaderProgram, "alphaCutout");
+        alphaCutoutThresholdLoc = glGetUniformLocation(shaderProgram, "alphaCutoutThreshold");
         
         this.gbuffer = gbuffer;
         positionTexture = gbuffer.positionTexture;
@@ -204,6 +217,9 @@ class ParticleBackend: GLSLMaterialBackend
         glUniform1f(alphaLoc, alpha);
         glUniform1f(energyLoc, energy);
         glUniform4fv(particleColorLoc, 1, particleColor.arrayof.ptr);
+        
+        glUniform1i(alphaCutoutLoc, rc.shadowMode);
+        glUniform1f(alphaCutoutThresholdLoc, 0.25f); // TODO: store in material properties
         
         Vector2f viewSize = Vector2f(gbuffer.width, gbuffer.height);
         glUniform2fv(viewSizeLoc, 1, viewSize.arrayof.ptr);

@@ -78,6 +78,8 @@ struct RenderingContext
     bool ignoreTransparentEntities;
     bool ignoreOpaqueEntities;
     
+    bool shadowMode;
+    
     void init(EventManager emngr, Environment env)
     {
         modelViewMatrix = Matrix4x4f.identity;
@@ -105,6 +107,7 @@ struct RenderingContext
         layer = 1;
         ignoreTransparentEntities = false;
         ignoreOpaqueEntities = false;
+        shadowMode = false;
     }
     
     void initPerspective(EventManager emngr, Environment env, float fov, float znear, float zfar)
