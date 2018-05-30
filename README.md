@@ -5,7 +5,7 @@
 
 Dagon
 =====
-Dagon is a 3D game development framework for D language. It is a work-in-progress reincarnation of [DGL](https://github.com/gecko0307/dgl) with several architecture improvements. Dagon is based on OpenGL 4.0 core profile, SDL2 and Freetype 2.8.1.
+Dagon is a 3D game development framework for D language. It is a reincarnation of [DGL](https://github.com/gecko0307/dgl) with several architecture improvements. Dagon is based on OpenGL 4.0 core profile, SDL2 and Freetype 2.8.1.
 
 The goal of this project is creating a modern, easy to use, extendable game engine for D due to the lack of such.
 
@@ -14,16 +14,16 @@ Currently Dagon has the following features:
 * Textures in PNG, JPG, TGA, BMP, HDR formats
 * Own asset format with Blender exporter
 * Flexible material system with simple user-defined abstract API and different backends. You can implement custom materials, with your own shaders and parameters
+* Deferred shading
 * Physically based rendering (PBR)
 * HDR rendering with auto-exposure (eye adaptation), Reinhard, Hable/Uncharted and ACES tonemapping operators
 * HDRI environment maps support
-* Multiple light sources using clustered forward shading method (variable number of lights per fragment)
 * Spherical area lights
 * Normal/parallax mapping, parallax occlusion mapping
 * Cascaded shadow maps for directional light
 * Dynamic skydome with sun and day/night cycle
 * Particle system with force fields
-* Post-processing (FXAA, lens distortion, motion blur, glow, LUT color grading)
+* Post-processing (FXAA, SSAO, lens distortion, motion blur, glow, LUT color grading)
 * UTF-8 text rendering using TTF fonts via Freetype
 * Ownership memory model - every object belongs to some object (owner), and deleting the owner will delete all of its owned objects. This allows semi-automatic memory management - you have to manually delete only root owners
 * Entity-component model that allows game objects behave differently and combine many behaviours
@@ -48,11 +48,8 @@ Dagon is still under development and lacks a lot of important functionality. Cur
 
 Upcoming plans:
 
-* Soft particles
-* Water with reflections and refractions
+* Screen-space reflections
 * Terrain renderer
-* SSAO
-* Deferred renderer (?)
 
 If you like Dagon, please support its development via [PayPal](https://www.paypal.me/tgafarov). Thanks in advance!
 
