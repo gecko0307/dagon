@@ -7,7 +7,7 @@ Dagon
 =====
 Dagon is a 3D game development framework for D language. It is a reincarnation of [DGL](https://github.com/gecko0307/dgl) with several architecture improvements. Dagon is based on OpenGL 4.0 core profile, SDL2 and Freetype 2.8.1.
 
-The goal of this project is creating a modern, easy to use, extendable game engine for D due to the lack of such.
+The goal of this project is creating a modern, easy to use, extendable game engine for D due to the lack of such. If you like Dagon, please support its development on [Patreon](https://www.patreon.com/gecko0307). You can also make one-time donation via [PayPal](https://www.paypal.me/tgafarov). I appreciate any support. Thanks in advance!
 
 Currently Dagon has the following features:
 * Static and animated meshes, OBJ and [IQM](https://github.com/lsalzman/iqm) formats support
@@ -50,8 +50,6 @@ Upcoming plans:
 
 * Screen-space reflections
 * Terrain renderer
-
-If you like Dagon, please support its development via [PayPal](https://www.paypal.me/tgafarov). Thanks in advance!
 
 Demos
 -----
