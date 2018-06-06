@@ -158,12 +158,6 @@ class Application: EventListener
             DerelictFT.load();
         }
 
-        version(OSX)
-        {
-            DerelictSDL2.load();
-            DerelictFT.load();
-        }
-
         if (SDL_Init(SDL_INIT_EVERYTHING) == -1)
             exitWithError("Failed to init SDL: " ~ to!string(SDL_GetError()));
             
