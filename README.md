@@ -32,6 +32,8 @@ Currently Dagon has the following features:
 * Built-in camera logics for quick and easy navigation (freeview and first person style view)
 * [Box](https://github.com/gecko0307/box) container support for assets.
 
+Dagon works on Windows and Linux, both 32 and 64-bit. It doesn't support macOS and likely won't because [Apple doesn't support OpenGL anymore](https://developer.apple.com/macos/whats-new/#deprecationofopenglandopencl).
+
 Screenshots:
 
 [![Screenshot1](https://raw.githubusercontent.com/gecko0307/dagon-demo/master/screenshots/car-thumb.jpg)](https://raw.githubusercontent.com/gecko0307/dagon-demo/master/screenshots/car.jpg)
