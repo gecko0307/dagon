@@ -205,6 +205,7 @@ class Application: EventListener
         glDepthFunc(GL_LESS);
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_POLYGON_OFFSET_FILL);
+        glCullFace(GL_BACK);
         
         checkGLError();
     }
@@ -257,7 +258,7 @@ class Application: EventListener
 
     void endRender()
     {
-        debug checkGLError();            
+        debug checkGLError();
         SDL_GL_SwapWindow(window);
     }
     

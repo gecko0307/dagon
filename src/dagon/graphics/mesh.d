@@ -143,9 +143,6 @@ class Mesh: Owner, Drawable
         glEnableVertexAttribArray(VertexAttrib.Texcoords);
         glBindBuffer(GL_ARRAY_BUFFER, tbo);
         glVertexAttribPointer(VertexAttrib.Texcoords, 2, GL_FLOAT, GL_FALSE, 0, null);
-        
-        //glBindBuffer(GL_ARRAY_BUFFER, 0);
-        //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
         glBindVertexArray(0);
         

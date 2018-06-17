@@ -380,7 +380,7 @@ class DeferredEnvironmentPass: Owner
             {
                 ivec2 envMapSize = textureSize(environmentMap, 0);
                 float maxLod = log2(float(max(envMapSize.x, envMapSize.y))) - 2.0;
-                float diffLod = maxLod;
+                float diffLod = maxLod - 1.0;
                 float specLod = maxLod * roughness;
                     
                 ambientDiffuse = textureLod(environmentMap, envMapEquirect(worldN), diffLod).rgb;
