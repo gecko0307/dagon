@@ -207,6 +207,7 @@ class GenericMaterial: Material
         setInput("colorWrite", true);
         setInput("depthWrite", true);
         setInput("particleColor", Color4f(1.0f, 1.0f, 1.0f, 1.0f));
+        setInput("particleSphericalNormal", false);
 
         _backend = backend;
     }

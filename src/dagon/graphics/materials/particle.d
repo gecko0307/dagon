@@ -61,6 +61,9 @@ class ParticleBackend: GLSLMaterialBackend
         out vec3 eyePosition;
         out vec2 texCoord;
         
+        out vec3 worldPosition;
+        out vec3 worldView;
+        
         uniform mat4 modelViewMatrix;
         uniform mat4 projectionMatrix;
         uniform mat4 normalMatrix;
@@ -71,6 +74,11 @@ class ParticleBackend: GLSLMaterialBackend
         {
             vec4 pos = modelViewMatrix * vec4(va_Vertex, 1.0);
             eyePosition = pos.xyz;
+            
+            worldPosition = (invViewMatrix * pos).xyz;
+            
+            vec3 worldCamPos = (invViewMatrix[3]).xyz;
+            worldView = worldPosition - worldCamPos;
         
             texCoord = va_Texcoord;
             gl_Position = projectionMatrix * pos;
@@ -79,18 +87,40 @@ class ParticleBackend: GLSLMaterialBackend
     
     private string fsText = q{
         #version 330 core
+        
+        #define PI 3.14159265359
+        const float PI2 = PI * 2.0;
 
         uniform sampler2D diffuseTexture;
+        uniform sampler2D normalTexture;
         uniform sampler2D positionTexture;
+        
+        uniform mat4 viewMatrix;
+        
         uniform vec4 particleColor;
         uniform float alpha;
         uniform float energy;
         uniform vec2 viewSize;
-        uniform vec3 sunDirection;
         uniform vec3 particlePosition;
+        uniform bool sphericalNormal;
+        uniform bool shaded;
+
+        uniform vec3 sunDirection;        
+        uniform vec3 sunColor;
+        uniform float sunEnergy;
+        uniform vec3 skyZenithColor;
+        uniform vec3 skyHorizonColor;
+        uniform vec3 groundColor;
+        uniform float skyEnergy;
+        uniform float groundEnergy;
+        
+        uniform sampler2D environmentMap;
+        uniform bool useEnvironmentMap;
         
         in vec3 eyePosition;
         in vec2 texCoord;
+        in vec3 worldPosition;
+        in vec3 worldView;
         
         layout(location = 0) out vec4 frag_color;
         layout(location = 1) out vec4 frag_luminance;
@@ -125,31 +155,81 @@ class ParticleBackend: GLSLMaterialBackend
             float invmax = inversesqrt(max(dot(T, T), dot(B, B)));
             return mat3(T * invmax, B * invmax, N);
         }
+        
+        vec2 envMapEquirect(vec3 dir)
+        {
+            float phi = acos(dir.y);
+            float theta = atan(dir.x, dir.z) + PI;
+            return vec2(theta / PI2, phi / PI);
+        }
+        
+        float sigmoid(float x, float k)
+        {
+            float s = (x + x * k - k * 0.5 - 0.5) / (abs(x * k * 4.0 - k * 2.0) - k + 1.0) + 0.5;
+            return clamp(s, 0.0, 1.0);
+        }
+
+        vec3 sky(vec3 wN, vec3 wSun, float roughness)
+        {
+            float downOrUp = dot(wN, vec3(0, 1, 0)) * 0.5 + 0.5;
+            float groundOrSky = sigmoid(downOrUp, 1.0 - roughness);
+            float horizonOrZenith = clamp(dot(wN, vec3(0, 1, 0)), 0.0, 1.0);
+            vec3 env1 = mix(groundColor * groundEnergy, skyHorizonColor * skyEnergy, groundOrSky);
+            vec3 env2 = mix(env1, skyZenithColor * skyEnergy, horizonOrZenith);
+            return env2;
+        }
 
         void main()
         {
             vec4 pos = texture(positionTexture, gl_FragCoord.xy / viewSize);
             vec3 referenceEyePos = pos.xyz;
+            vec3 E = normalize(-eyePosition);
             
             vec3 N = normalize(-particlePosition);
             mat3 TBN = cotangentFrame(N, eyePosition, texCoord);
-            
-            // Generate tangent-space normal
-            vec2 p = vec2(texCoord.x * 2.0 - 1.0, texCoord.y * 2.0 - 1.0);
-            if (dot(p, p) >= 1.0)
-                p = normalize(p) * 0.999; // small bias to fight aliasing
-            float vz = sqrt(1.0 - p.x * p.x - p.y * p.y);
-            vec3 tN = vec3(p.x, p.y, vz);
+            vec3 tN;
+
+            if (sphericalNormal)
+            {
+                // Generate spherical tangent-space normal
+                vec2 p = vec2(texCoord.x * 2.0 - 1.0, texCoord.y * 2.0 - 1.0);
+                if (dot(p, p) >= 1.0)
+                    p = normalize(p) * 0.999; // small bias to fight aliasing
+                float vz = sqrt(1.0 - p.x * p.x - p.y * p.y);
+                tN = vec3(p.x, p.y, vz);
+            }
+            else
+            {
+                // Use normal map
+                tN = normalize(texture(normalTexture, texCoord).rgb * 2.0 - 1.0);
+                tN.y = -tN.y;
+            }
             
             // Convert normal to eye space
             N = normalize(TBN * tN);
             
-            // TODO: make uniform
-            const float sunEnergy = 10.0f;
-            const float ambient = 0.5;
-            const float wrapFactor = -0.5f;
+            vec3 worldN = N * mat3(viewMatrix);
+            vec3 worldSun = sunDirection * mat3(viewMatrix);
             
-			float diffuse = max(dot(N, sunDirection) + wrapFactor, 0.0) / (1.0 + wrapFactor);
+            // TODO: make uniform
+            const float wrapFactor = 0.5f;
+            
+            vec3 ambient;
+            if (useEnvironmentMap)
+            {
+                ivec2 envMapSize = textureSize(environmentMap, 0);
+                float maxLod = log2(float(max(envMapSize.x, envMapSize.y))) - 2.0;
+                float diffLod = (maxLod - 1.0);
+                ambient = textureLod(environmentMap, envMapEquirect(worldN), diffLod).rgb;
+            }
+            else
+            {
+                ambient = sky(worldN, worldSun, 1.0);
+            }
+            
+			vec3 diffuse = shaded? 
+                ambient + sunColor * max(dot(N, sunDirection) + wrapFactor, 0.0) / (1.0 + wrapFactor) * sunEnergy : 
+                vec3(1.0);
             
             const float softDistance = 3.0;
             float soft = (pos.w > 0.0)? clamp((eyePosition.z - referenceEyePos.z) / softDistance, 0.0, 1.0) : 1.0;
@@ -161,8 +241,8 @@ class ParticleBackend: GLSLMaterialBackend
             if (alphaCutout && outAlpha <= alphaCutoutThreshold)
                 discard;
             
-            frag_color = vec4(outColor * max(ambient, diffuse * sunEnergy), outAlpha);
-            frag_luminance = vec4(energy * outAlpha, 0.0, 0.0, 1.0);
+            frag_color = vec4(outColor * energy * diffuse, outAlpha);
+            frag_luminance = vec4(luminance(frag_color.rgb) * outAlpha, 0.0, 0.0, 1.0);
         }
     };
     
@@ -172,11 +252,15 @@ class ParticleBackend: GLSLMaterialBackend
     GBuffer gbuffer;
     GLuint positionTexture = 0;
 
+    GLint viewMatrixLoc;
+    GLint invViewMatrixLoc;
     GLint modelViewMatrixLoc;
     GLint projectionMatrixLoc;
     GLint normalMatrixLoc;
+    GLint sphericalNormalLoc;
     
     GLint diffuseTextureLoc;
+    GLint normalTextureLoc;
     GLint positionTextureLoc;
     GLint alphaLoc;
     GLint energyLoc;
@@ -184,21 +268,37 @@ class ParticleBackend: GLSLMaterialBackend
     GLint viewSizeLoc;
     
     GLint sunDirectionLoc;
+    GLint sunColorLoc;
+    GLint sunEnergyLoc;
+    GLint skyZenithColorLoc;
+    GLint skyHorizonColorLoc;
+    GLint skyEnergyLoc;
+    GLint groundColorLoc;
+    GLint groundEnergyLoc;
     
     GLint particlePositionLoc;
     
     GLint alphaCutoutLoc;
     GLint alphaCutoutThresholdLoc;
     
+    GLint shadedLoc;
+    
+    GLint environmentMapLoc;
+    GLint useEnvironmentMapLoc;
+    
     this(GBuffer gbuffer, Owner o)
     {
         super(o);
         
+        viewMatrixLoc = glGetUniformLocation(shaderProgram, "viewMatrix");
+        invViewMatrixLoc = glGetUniformLocation(shaderProgram, "invViewMatrix");
         modelViewMatrixLoc = glGetUniformLocation(shaderProgram, "modelViewMatrix");
         projectionMatrixLoc = glGetUniformLocation(shaderProgram, "projectionMatrix");
         normalMatrixLoc = glGetUniformLocation(shaderProgram, "normalMatrix");
+        sphericalNormalLoc = glGetUniformLocation(shaderProgram, "sphericalNormal");
             
         diffuseTextureLoc = glGetUniformLocation(shaderProgram, "diffuseTexture");
+        normalTextureLoc = glGetUniformLocation(shaderProgram, "normalTexture");
         positionTextureLoc = glGetUniformLocation(shaderProgram, "positionTexture");
         alphaLoc = glGetUniformLocation(shaderProgram, "alpha");
         energyLoc = glGetUniformLocation(shaderProgram, "energy");
@@ -206,11 +306,24 @@ class ParticleBackend: GLSLMaterialBackend
         viewSizeLoc = glGetUniformLocation(shaderProgram, "viewSize");
         
         sunDirectionLoc = glGetUniformLocation(shaderProgram, "sunDirection");
+        sunColorLoc = glGetUniformLocation(shaderProgram, "sunColor");
+        sunEnergyLoc = glGetUniformLocation(shaderProgram, "sunEnergy");
+     
+        skyZenithColorLoc = glGetUniformLocation(shaderProgram, "skyZenithColor");
+        skyHorizonColorLoc = glGetUniformLocation(shaderProgram, "skyHorizonColor");
+        skyEnergyLoc = glGetUniformLocation(shaderProgram, "skyEnergy");
+        groundColorLoc = glGetUniformLocation(shaderProgram, "groundColor");
+        groundEnergyLoc = glGetUniformLocation(shaderProgram, "groundEnergy");
         
         particlePositionLoc = glGetUniformLocation(shaderProgram, "particlePosition");
         
         alphaCutoutLoc = glGetUniformLocation(shaderProgram, "alphaCutout");
         alphaCutoutThresholdLoc = glGetUniformLocation(shaderProgram, "alphaCutoutThreshold");
+        
+        shadedLoc = glGetUniformLocation(shaderProgram, "shaded");
+        
+        environmentMapLoc = glGetUniformLocation(shaderProgram, "environmentMap");
+        useEnvironmentMapLoc = glGetUniformLocation(shaderProgram, "useEnvironmentMap");
         
         this.gbuffer = gbuffer;
         positionTexture = gbuffer.positionTexture;
@@ -219,27 +332,56 @@ class ParticleBackend: GLSLMaterialBackend
     override void bind(GenericMaterial mat, RenderingContext* rc)
     {
         auto idiffuse = "diffuse" in mat.inputs;
+        auto inormal = "normal" in mat.inputs;
         auto ienergy = "energy" in mat.inputs;
         auto itransparency = "transparency" in mat.inputs;
         auto iparticleColor = "particleColor" in mat.inputs;
+        auto iparticleSphericalNormal = "particleSphericalNormal" in mat.inputs;
+        auto ishadeless = "shadeless" in mat.inputs;
         
         float energy = ienergy.asFloat;
 
         glUseProgram(shaderProgram);
         
         // Matrices
+        glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, rc.viewMatrix.arrayof.ptr);
+        glUniformMatrix4fv(invViewMatrixLoc, 1, GL_FALSE, rc.invViewMatrix.arrayof.ptr);
         glUniformMatrix4fv(modelViewMatrixLoc, 1, GL_FALSE, rc.modelViewMatrix.arrayof.ptr);
         glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, rc.projectionMatrix.arrayof.ptr);
         glUniformMatrix4fv(normalMatrixLoc, 1, GL_FALSE, rc.normalMatrix.arrayof.ptr);
         
         Vector4f sunVector = Vector4f(0.0f, 1.0f, 0.0, 0.0f);
+        Vector3f sunColor = Vector3f(1.0f, 1.0f, 1.0f);
+        float sunEnergy = 100.0f;
+        Color4f skyZenithColor = Color4f(0, 0, 0, 0);
+        Color4f skyHorizonColor = Color4f(0, 0, 0, 0);
+        float skyEnergy = 1.0f;
+        Color4f groundColor = Color4f(0, 0, 0, 0);
+        float groundEnergy = 1.0f;
         if (rc.environment)
         {
             sunVector = Vector4f(rc.environment.sunDirection);
             sunVector.w = 0.0;
+            
+            sunColor = rc.environment.sunColor;
+            sunEnergy = rc.environment.sunEnergy;
+            
+            skyZenithColor = rc.environment.skyZenithColor;
+            skyHorizonColor = rc.environment.skyHorizonColor;
+            groundColor = rc.environment.groundColor;
+            skyEnergy = rc.environment.skyEnergy;
+            groundEnergy = rc.environment.groundEnergy;
         }
         Vector3f sunDirectionEye = sunVector * rc.viewMatrix;
         glUniform3fv(sunDirectionLoc, 1, sunDirectionEye.arrayof.ptr);
+
+        glUniform3fv(sunColorLoc, 1, sunColor.arrayof.ptr);
+        glUniform1f(sunEnergyLoc, sunEnergy);
+        glUniform3fv(skyZenithColorLoc, 1, skyZenithColor.arrayof.ptr);
+        glUniform3fv(skyHorizonColorLoc, 1, skyHorizonColor.arrayof.ptr);
+        glUniform1f(skyEnergyLoc, skyEnergy);
+        glUniform3fv(groundColorLoc, 1, groundColor.arrayof.ptr);
+        glUniform1f(groundEnergyLoc, groundEnergy);
         
         Vector3f particlePosition = rc.modelViewMatrix.translation;
         glUniform3fv(particlePositionLoc, 1, particlePosition.arrayof.ptr);
@@ -264,12 +406,57 @@ class ParticleBackend: GLSLMaterialBackend
             particleColor = Color4f(iparticleColor.asVector4f);
         }
         
+        // Texture 0 - diffuse texture
         glActiveTexture(GL_TEXTURE0);
         idiffuse.texture.bind();
         
+        // Texture 1 - position texture
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, positionTexture);
         
+        // Texture 2 - normal map
+        bool normalTexturePrepared = inormal.texture !is null;
+        if (normalTexturePrepared) 
+            normalTexturePrepared = inormal.texture.image.channels == 4;
+        if (!normalTexturePrepared)
+        {
+            if (inormal.texture is null)
+            {
+                Color4f nc = Color4f(0.5f, 0.5f, 1.0f, 0.0f); // default normal pointing upwards
+                inormal.texture = makeOnePixelTexture(mat, nc);
+            }
+        }
+        glActiveTexture(GL_TEXTURE2);
+        inormal.texture.bind();
+        glUniform1i(normalTextureLoc, 2);
+        
+        bool sphericalNormal = false;
+        if (iparticleSphericalNormal)
+        {
+            sphericalNormal = iparticleSphericalNormal.asBool;
+        }
+        glUniform1i(sphericalNormalLoc, sphericalNormal);
+        
+        // Texture 3 - environment map
+        bool useEnvmap = false;
+        if (rc.environment)
+        {
+            if (rc.environment.environmentMap)
+                useEnvmap = true;
+        }
+        
+        if (useEnvmap)
+        {
+            glActiveTexture(GL_TEXTURE3);
+            rc.environment.environmentMap.bind();
+            glUniform1i(useEnvironmentMapLoc, 1);
+        }
+        else
+        {
+            glUniform1i(useEnvironmentMapLoc, 0);
+        }
+        glUniform1i(environmentMapLoc, 3);
+ 
         glActiveTexture(GL_TEXTURE0);
         
         glUniform1i(diffuseTextureLoc, 0);
@@ -283,17 +470,26 @@ class ParticleBackend: GLSLMaterialBackend
         
         Vector2f viewSize = Vector2f(gbuffer.width, gbuffer.height);
         glUniform2fv(viewSizeLoc, 1, viewSize.arrayof.ptr);
+        
+        bool shaded = true;
+        if (ishadeless)
+            shaded = !(ishadeless.asBool);
+        glUniform1i(shadedLoc, shaded);
     }
     
     override void unbind(GenericMaterial mat, RenderingContext* rc)
     {
         auto idiffuse = "diffuse" in mat.inputs;
+        auto inormal = "normal" in mat.inputs;
         
         glActiveTexture(GL_TEXTURE0);
         idiffuse.texture.unbind();
         
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE2);
+        inormal.texture.unbind();
         
         glActiveTexture(GL_TEXTURE0);
     
