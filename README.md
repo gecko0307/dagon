@@ -5,7 +5,7 @@
 
 Dagon
 =====
-Dagon is a 3D game development framework for D language. It is a reincarnation of [DGL](https://github.com/gecko0307/dgl) with several architecture improvements. Dagon is based on OpenGL 4.0 core profile, SDL2 and Freetype 2.8.1.
+Dagon is a 3D game development framework for D language. It is a reincarnation of [DGL](https://github.com/gecko0307/dgl) with several architecture improvements. Dagon is based on OpenGL 4.0 core profile, SDL2 and Freetype 2.8.1. It works under Windows and Linux.
 
 The goal of this project is creating a modern, easy to use, extendable game engine for D due to the lack of such. If you like Dagon, please support its development on [Patreon](https://www.patreon.com/gecko0307). You can also make one-time donation via [PayPal](https://www.paypal.me/tgafarov). I appreciate any support. Thanks in advance!
 
@@ -17,12 +17,12 @@ Currently Dagon has the following features:
 * Deferred shading
 * Physically based rendering (PBR)
 * HDR rendering with auto-exposure (eye adaptation), Reinhard, Hable/Uncharted and ACES tonemapping operators
-* HDRI environment maps support
+* Equirectangular HDRI environment maps support
 * Spherical area lights
 * Normal/parallax mapping, parallax occlusion mapping
 * Cascaded shadow maps for directional light
 * Dynamic skydome with sun and day/night cycle
-* Particle system with force fields
+* Particle system with force fields. Blended particles, soft particles, shaded particles with normal map support, particle shadows
 * Post-processing (FXAA, SSAO, lens distortion, motion blur, glow, LUT color grading)
 * UTF-8 text rendering using TTF fonts via Freetype
 * Ownership memory model - every object belongs to some object (owner), and deleting the owner will delete all of its owned objects. This allows semi-automatic memory management - you have to manually delete only root owners
