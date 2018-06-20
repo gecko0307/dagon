@@ -1,6 +1,0 @@
-
-\.dub/
-
-*.a
-
-dub\.selections\.json
