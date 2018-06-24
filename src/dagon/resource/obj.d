@@ -96,10 +96,16 @@ class OBJAsset: Asset
         if (!numVerts)
             writeln("Warning: OBJ file \"", filename, "\" has no vertices");
         if (!numNormals)
+        {
             writeln("Warning: OBJ file \"", filename, "\" has no normals");
+            numNormals = numVerts;
+        }
         if (!numTexcoords)
+        {
             writeln("Warning: OBJ file \"", filename, "\" has no texcoords");
-
+            numTexcoords = numVerts;
+        }
+        
         if (numVerts)
             tmpVertices = New!(Vector3f[])(numVerts);
         if (numNormals)
@@ -108,6 +114,10 @@ class OBJAsset: Asset
             tmpTexcoords = New!(Vector2f[])(numTexcoords);
         if (numFaces)
             tmpFaces = New!(ObjFace[])(numFaces);
+            
+        tmpVertices[] = Vector3f(0, 0, 0);
+        tmpNormals[] = Vector3f(0, 0, 0);
+        tmpTexcoords[] = Vector2f(0, 0);
 
         float x, y, z;
         int v1, v2, v3, v4;
@@ -203,6 +213,18 @@ class OBJAsset: Asset
                     
                     warnAboutQuads = true;
                 } 
+                else if (sscanf(tmpStr.ptr, "f %u/%u %u/%u %u/%u", &v1, &t1, &v2, &t2, &v3, &t3) == 6)
+                {
+                    tmpFaces[fi].v[0] = v1-1;
+                    tmpFaces[fi].v[1] = v2-1;
+                    tmpFaces[fi].v[2] = v3-1;
+                    
+                    tmpFaces[fi].t[0] = t1-1;
+                    tmpFaces[fi].t[1] = t2-1;
+                    tmpFaces[fi].t[2] = t3-1;
+                    
+                    fi++;
+                }
                 else if (sscanf(tmpStr.ptr, "f %u//%u %u//%u %u//%u", &v1, &n1, &v2, &n2, &v3, &n3) == 6)
                 {
                     tmpFaces[fi].v[0] = v1-1;
