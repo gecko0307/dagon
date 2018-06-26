@@ -93,12 +93,15 @@ class OBJAsset: Asset
         Vector2f[] tmpTexcoords;
         ObjFace[] tmpFaces;
         
+        bool needGenNormals = false;
+        
         if (!numVerts)
             writeln("Warning: OBJ file \"", filename, "\" has no vertices");
         if (!numNormals)
         {
-            writeln("Warning: OBJ file \"", filename, "\" has no normals");
+            writeln("Warning: OBJ file \"", filename, "\" has no normals (they will be generated)");
             numNormals = numVerts;
+            needGenNormals = true;
         }
         if (!numTexcoords)
         {
@@ -320,8 +323,9 @@ class OBJAsset: Asset
             
             index += 3;
         }
-        
-        // TODO: generate normals if they are not present
+
+        if (needGenNormals)
+            mesh.generateNormals();
         
         if (tmpVertices.length)
             Delete(tmpVertices);

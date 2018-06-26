@@ -107,6 +107,32 @@ class Mesh: Owner, Drawable
         return result;
     }
     
+    void generateNormals()
+    {
+        if (normals.length == 0)
+            return;
+    
+        normals[] = Vector3f(0.0f, 0.0f, 0.0f);
+    
+        foreach(i, ref f; indices)
+        {
+            Vector3f v0 = vertices[f[0]];
+            Vector3f v1 = vertices[f[1]];
+            Vector3f v2 = vertices[f[2]];
+            
+            Vector3f p = cross(v1 - v0, v2 - v0);
+            
+            normals[f[0]] += p;
+            normals[f[1]] += p;
+            normals[f[2]] += p;
+        }
+        
+        foreach(i, n; normals)
+        {
+            normals[i] = n.normalized;
+        }
+    }
+    
     void prepareVAO()
     {
         if (!dataReady)
