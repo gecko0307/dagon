@@ -52,7 +52,7 @@ import dagon.graphics.gbuffer;
 
 class ParticleBackend: GLSLMaterialBackend
 {    
-    private string vsText = q{
+    private string vsText = "
         #version 330 core
         
         layout (location = 0) in vec3 va_Vertex;
@@ -83,9 +83,9 @@ class ParticleBackend: GLSLMaterialBackend
             texCoord = va_Texcoord;
             gl_Position = projectionMatrix * pos;
         }
-    };
+    ";
     
-    private string fsText = q{
+    private string fsText = "
         #version 330 core
         
         #define PI 3.14159265359
@@ -244,7 +244,7 @@ class ParticleBackend: GLSLMaterialBackend
             frag_color = vec4(outColor * energy * diffuse, outAlpha);
             frag_luminance = vec4(luminance(frag_color.rgb) * outAlpha, 0.0, 0.0, 1.0);
         }
-    };
+    ";
     
     override string vertexShaderSrc() {return vsText;}
     override string fragmentShaderSrc() {return fsText;}

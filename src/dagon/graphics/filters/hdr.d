@@ -54,7 +54,7 @@ enum Tonemapper
 
 class PostFilterHDR: PostFilter
 {
-    private string vs = q{
+    private string vs = "
         #version 330 core
         
         uniform mat4 modelViewMatrix;
@@ -72,9 +72,9 @@ class PostFilterHDR: PostFilter
             texCoord = va_Texcoord;
             gl_Position = projectionMatrix * modelViewMatrix * vec4(va_Vertex * viewSize, 0.0, 1.0);
         }
-    };
+    ";
 
-    private string fs = q{
+    private string fs = "
         #version 330 core
         
         uniform sampler2D fbColor;
@@ -196,7 +196,7 @@ class PostFilterHDR: PostFilter
 
             frag_color = vec4(res, 1.0);
         }
-    };
+    ";
 
     override string vertexShader()
     {

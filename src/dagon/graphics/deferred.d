@@ -61,7 +61,7 @@ class DeferredEnvironmentPass: Owner
     GLenum envPassShaderProgram;
     
     private string envPassVsText = 
-    q{
+    "
         #version 330 core
         
         uniform mat4 modelViewMatrix;
@@ -79,10 +79,10 @@ class DeferredEnvironmentPass: Owner
             texCoord = va_Texcoord;
             gl_Position = projectionMatrix * modelViewMatrix * vec4(va_Vertex * viewSize, 0.0, 1.0);
         }
-    };
+    ";
     
     private string envPassFsText =
-    q{
+    "
         #version 330 core
         
         #define PI 3.14159265359
@@ -414,7 +414,7 @@ class DeferredEnvironmentPass: Owner
             frag_color = vec4(radiance, 1.0);
             frag_luminance = vec4(luminance(radiance), 0.0, 0.0, 1.0);
         }
-    };
+    ";
     
     GLint modelViewMatrixLoc;
     GLint projectionMatrixLoc;
@@ -782,7 +782,7 @@ class DeferredLightPass: Owner
     GLenum lightPassShaderProgram;
     
     private string lightPassVsText = 
-    q{
+    "
         #version 330 core
         
         uniform mat4 modelViewMatrix;
@@ -796,10 +796,10 @@ class DeferredLightPass: Owner
         {
             gl_Position = projectionMatrix * modelViewMatrix * vec4(va_Vertex, 1.0);
         }
-    };
+    ";
     
     private string lightPassFsText =
-    q{
+    "
         #version 330 core
         
         #define PI 3.14159265359
@@ -927,7 +927,7 @@ class DeferredLightPass: Owner
             frag_color = vec4(radiance, 1.0);
             frag_luminance = vec4(luminance(radiance), 0.0, 0.0, 1.0);
         }
-    };
+    ";
     
     GLint modelViewMatrixLoc;
     GLint projectionMatrixLoc;

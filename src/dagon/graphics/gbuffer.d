@@ -43,7 +43,7 @@ import dagon.resource.scene;
 class GeometryPassBackend: GLSLMaterialBackend
 {
     string vsText = 
-    q{
+    "
         #version 330 core
 
         uniform mat4 modelViewMatrix;
@@ -78,10 +78,10 @@ class GeometryPassBackend: GLSLMaterialBackend
             
             gl_Position = position;
         }
-    };
+    ";
     
     string fsText =
-    q{
+    "
         #version 330 core
         
         uniform int layer;
@@ -170,7 +170,7 @@ class GeometryPassBackend: GLSLMaterialBackend
             frag_velocity = vec4(screenVelocity, 0.0, blurMask);
             frag_emission = vec4(emission, 1.0);
         }
-    };
+    ";
     
     override string vertexShaderSrc() {return vsText;}
     override string fragmentShaderSrc() {return fsText;}

@@ -49,7 +49,7 @@ import dagon.graphics.materials.generic;
 
 class SkyBackend: GLSLMaterialBackend
 {    
-    private string vsText = q{
+    private string vsText = "
         #version 330 core
         
         layout (location = 0) in vec3 va_Vertex;
@@ -82,9 +82,9 @@ class SkyBackend: GLSLMaterialBackend
             
             gl_Position = projectionMatrix * modelViewMatrix * vec4(va_Vertex, 1.0);
         }
-    };
+    ";
     
-    private string fsText = q{
+    private string fsText = "
         #version 330 core
         
         #define EPSILON 0.000001
@@ -161,7 +161,7 @@ class SkyBackend: GLSLMaterialBackend
             frag_color = vec4(env, 1.0);
             frag_luma = vec4(luminance(env));
         }
-    };
+    ";
     
     override string vertexShaderSrc() {return vsText;}
     override string fragmentShaderSrc() {return fsText;}
