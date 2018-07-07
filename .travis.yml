@@ -6,9 +6,8 @@ os:
 language: d
 
 d:
- - dmd-2.077.0
- - dmd-2.076.0
- - ldc-1.5.0
+ - dmd-2.081.1
+ - ldc-1.10.0
 
 env: 
   matrix:
