@@ -33,6 +33,7 @@ import std.algorithm;
 import dlib.core.memory;
 import dlib.math.vector;
 import dlib.math.matrix;
+import dlib.math.quaternion;
 import dlib.math.transformation;
 import dlib.math.interpolation;
 import dlib.math.utils;
@@ -55,10 +56,11 @@ struct Particle
     Color4f startColor;
     Color4f color;
     Vector3f position;
+    Vector3f positionPrev;
     Vector3f acceleration;
     Vector3f velocity;
     Vector3f gravityVector;
-    Vector2f scale;
+    Vector3f scale;
     float lifetime;
     float time;
     bool move;
@@ -195,7 +197,7 @@ class ParticleSystem: Behaviour
     
     float minSize = 0.25f;
     float maxSize = 1.0f;
-    Vector2f scaleStep = Vector2f(0, 0);
+    Vector3f scaleStep = Vector2f(0, 0, 0);
     
     float initialPositionRandomRadius = 0.0f;
     
@@ -224,6 +226,8 @@ class ParticleSystem: Behaviour
     Matrix4x4f invViewMatRot;
     
     GenericMaterial material;
+    
+    Entity particleEntity;
 
     this(Entity e, uint numParticles)
     {
@@ -300,6 +304,9 @@ class ParticleSystem: Behaviour
         }
         else
             p.position = entity.absolutePosition;
+            
+        p.positionPrev = p.position;
+            
         Vector3f r = randomUnitVector3!float;
 
         float initialSpeed;
@@ -321,7 +328,7 @@ class ParticleSystem: Behaviour
         else
             s = maxSize;
             
-        p.scale = Vector2f(s, s);
+        p.scale = Vector3f(s, s, s);
         p.time = 0.0f;
         p.move = true;
         p.startColor = startColor;
@@ -348,6 +355,7 @@ class ParticleSystem: Behaviour
             p.velocity += p.acceleration * dt;
             p.velocity = p.velocity * airFrictionDamping;
 
+            p.positionPrev = p.position;
             p.position += p.velocity * dt;
         }
         
@@ -381,44 +389,73 @@ class ParticleSystem: Behaviour
     }
     
     override void render(RenderingContext* rc)
-    {
-        if (material)
-        {
-            ParticleBackend backend = cast(ParticleBackend)material.backend;
-            if (backend)
-            {
-                //backend.copyPositionBuffer();
-            }
-        }
-    
+    {    
         if (haveParticlesToDraw)
         {            
             foreach(ref p; particles)
             if (p.time < p.lifetime)
             {
-                Matrix4x4f modelViewMatrix = 
-                    rc.viewMatrix * 
-                    translationMatrix(p.position) * 
-                    rc.invViewRotationMatrix * 
-                    scaleMatrix(Vector3f(p.scale.x, p.scale.y, 1.0f));
-                
-                RenderingContext rcLocal = *rc;
-                rcLocal.modelViewMatrix = modelViewMatrix;
-                rcLocal.normalMatrix = rcLocal.modelViewMatrix.inverse.transposed;
-
-                if (material)
-                {
-                    material.particleColor = p.color;
-                    material.bind(&rcLocal);
-                }
-                
-                glBindVertexArray(vao);
-                glDrawElements(GL_TRIANGLES, cast(uint)indices.length * 3, GL_UNSIGNED_INT, cast(void*)0);
-                glBindVertexArray(0);
-        
-                if (material)
-                    material.unbind(&rcLocal);
+                if (particleEntity)
+                    renderEntityParticle(p, rc);
+                else
+                    renderBillboardParticle(p, rc);
             }
         }
+    }
+    
+    void renderEntityParticle(ref Particle p, RenderingContext* rc)
+    {
+        auto rcLocal = *rc;
+    
+        Matrix4x4f trans =
+            translationMatrix(p.position);
+            
+        Matrix4x4f prevTrans =
+            translationMatrix(p.positionPrev);
+
+        auto absTrans = particleEntity.absoluteTransformation;
+        auto invAbsTrans = particleEntity.invAbsoluteTransformation;
+        auto prevAbsTrans = particleEntity.prevAbsoluteTransformation;
+                
+        particleEntity.absoluteTransformation = trans;
+        particleEntity.invAbsoluteTransformation = trans.inverse;
+        particleEntity.prevAbsoluteTransformation = prevTrans;
+                
+        foreach(child; particleEntity.children)
+        {
+            child.updateTransformation();
+        }
+                
+        particleEntity.render(&rcLocal);
+                
+        particleEntity.absoluteTransformation = absTrans;
+        particleEntity.invAbsoluteTransformation = invAbsTrans;
+        particleEntity.prevAbsoluteTransformation = prevAbsTrans;
+    }
+    
+    void renderBillboardParticle(ref Particle p, RenderingContext* rc)
+    {
+        Matrix4x4f modelViewMatrix = 
+            rc.viewMatrix * 
+            translationMatrix(p.position) * 
+            rc.invViewRotationMatrix * 
+            scaleMatrix(Vector3f(p.scale.x, p.scale.y, 1.0f));
+                
+        RenderingContext rcLocal = *rc;
+        rcLocal.modelViewMatrix = modelViewMatrix;
+        rcLocal.normalMatrix = rcLocal.modelViewMatrix.inverse.transposed;
+
+        if (material)
+        {
+            material.particleColor = p.color;
+            material.bind(&rcLocal);
+        }
+                
+        glBindVertexArray(vao);
+        glDrawElements(GL_TRIANGLES, cast(uint)indices.length * 3, GL_UNSIGNED_INT, cast(void*)0);
+        glBindVertexArray(0);
+        
+        if (material)
+            material.unbind(&rcLocal);
     }
 }

@@ -279,6 +279,8 @@ class DeferredEnvironmentPass: Owner
         
         void main()
         {
+            vec2 invViewSize = 1.0 / viewSize;
+            
             vec4 col = texture(colorBuffer, texCoord);
             
             if (col.a < 1.0)
@@ -338,12 +340,17 @@ class DeferredEnvironmentPass: Owner
 
                     vec4 projSamplePos = camProjectionMatrix * vec4(samplePos, 1.0);
                     vec2 sampleUV = (projSamplePos.xy / projSamplePos.w) * 0.5 + 0.5;
-                    float sampleTargetZ = texture(positionBuffer, sampleUV).z;
-                    float d = sampleTargetZ - samplePos.z;
-                    occlusion += clamp(d, 0.0, 0.25) / 0.25;
+                    
+                    vec3 dstPosition = texture(positionBuffer, sampleUV).xyz;
+                    vec3 positionVec = dstPosition - samplePos;
+
+                    float bias = 0.375;
+                    float intensity = max(dot(normalize(positionVec), N) - bias, 0.0);
+                    float dist = length(positionVec) / ssaoRadius;
+                    float attenuation = 1.0 / (1.0 + dist);
+                    occlusion += intensity * attenuation;
                 }
-                float falloff = 1.0 - clamp(abs(eyePos.z) / ssaoFalloff, 0.0, 1.0);
-                occlusion = 1.0 - (occlusion / float(SSAO_SAMPLE_COUNT)) * falloff;
+                occlusion = clamp(1.0 - occlusion, 0.0, 1.0);
                 occlusion *= occlusion;
             }
             

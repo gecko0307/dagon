@@ -1010,7 +1010,8 @@ class Scene: BaseScene
         rcLocal.ignoreTransparentEntities = true;
         foreach(e; entities3D)
         {
-            e.render(&rcLocal);
+            if (e.layer > 0)
+                e.render(&rcLocal);
         }
     }
     
@@ -1022,7 +1023,8 @@ class Scene: BaseScene
         rcLocal.ignoreOpaqueEntities = true;
         foreach(e; entities3D)
         {
-            e.render(&rcLocal);
+            if (e.layer > 0)
+                e.render(&rcLocal);
         }
     }
 
