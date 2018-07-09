@@ -344,14 +344,13 @@ class DeferredEnvironmentPass: Owner
                     vec3 dstPosition = texture(positionBuffer, sampleUV).xyz;
                     vec3 positionVec = dstPosition - samplePos;
 
-                    float bias = 0.375;
+                    float bias = 0.5; //0.375;
                     float intensity = max(dot(normalize(positionVec), N) - bias, 0.0);
                     float dist = length(positionVec) / ssaoRadius;
                     float attenuation = 1.0 / (1.0 + dist);
                     occlusion += intensity * attenuation;
                 }
                 occlusion = clamp(1.0 - occlusion, 0.0, 1.0);
-                occlusion *= occlusion;
             }
             
             vec3 radiance = vec3(0.0, 0.0, 0.0);
