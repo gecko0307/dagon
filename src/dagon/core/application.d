@@ -34,6 +34,7 @@ import std.string;
 import std.file;
 import core.stdc.stdlib;
 
+import derelict.util.exception;
 import derelict.sdl2.sdl;
 import derelict.opengl;
 import derelict.freetype.ft;
@@ -49,6 +50,11 @@ void exitWithError(string message)
 enum DagonEvent
 {
     Exit = -1
+}
+
+ShouldThrow ftOnMissingSymbol(string symbolName)
+{
+    return ShouldThrow.No;
 }
 
 class Application: EventListener
@@ -71,6 +77,8 @@ class Application: EventListener
         catch(Exception)
         {
         }
+        
+        DerelictFT.missingSymbolCallback = &ftOnMissingSymbol;
 
         DerelictGL3.load();
         if (libdir.length)
