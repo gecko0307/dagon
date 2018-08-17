@@ -37,6 +37,8 @@ public
     import dlib.geometry;
     import dlib.image;
     import dlib.container;
+      
+    import dmech;
 
     import dagon.core.ownership;
     import dagon.core.interfaces;
@@ -58,9 +60,10 @@ public
     import dagon.resource.props;
     
     import dagon.logics.entity;
-    import dagon.logics.controller;
     import dagon.logics.behaviour;
-
+    import dagon.logics.controller;
+    import dagon.logics.rigidbodycontroller;
+    
     import dagon.graphics.rc;
     import dagon.graphics.tbcamera;
     import dagon.graphics.freeview;
@@ -98,6 +101,4 @@ public
     import dagon.ui.font;
     import dagon.ui.ftfont;
     import dagon.ui.textline;
-    
-    import dmech;
 }
