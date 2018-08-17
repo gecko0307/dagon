@@ -97,8 +97,8 @@ class CharacterController: EntityController
             rbody.gravity = Vector3f(0, 0, 0);
         }
     }
-
-    override void update(double dt)
+    
+    void logicalUpdate()
     {
         Vector3f targetVelocity = direction * speed;
 
@@ -143,7 +143,10 @@ class CharacterController: EntityController
             velocityChange.y = clamp(velocityChange.y, -maxVelocityChange, maxVelocityChange);
             
         rbody.linearVelocity += velocityChange;
-        
+    }
+
+    override void update(double dt)
+    {        
         entity.position = rbody.position;
         entity.rotation = rbody.orientation; 
         entity.transformation = rbody.transformation * scaleMatrix(entity.scaling);
