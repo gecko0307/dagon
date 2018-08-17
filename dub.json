@@ -12,7 +12,7 @@
     ],
 
     "dependencies": {
-        "dlib": "0.13.0",
+        "dlib": "0.14.0",
         "derelict-sdl2": "~>3.1.0-alpha.2",
         "derelict-gl3": "~>2.0.0-beta.5",
         "derelict-ft": "~>2.0.0-beta.2"
