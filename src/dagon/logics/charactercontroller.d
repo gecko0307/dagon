@@ -44,7 +44,7 @@ import dmech;
  * velocity changes for a RigidBody. CharacterController is intended for generic action game
  * character movement.
  */
-class CharacterController: Owner
+class CharacterController: EntityController
 {
     PhysicsWorld world;
     RigidBody rbody;
