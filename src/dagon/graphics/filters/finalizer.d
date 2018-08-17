@@ -33,7 +33,7 @@ import dagon.graphics.framebuffer;
 
 class PostFilterFinalizer: PostFilter
 {
-    private string vs = q{
+    private string vs = "
         #version 330 core
         
         uniform mat4 modelViewMatrix;
@@ -51,9 +51,9 @@ class PostFilterFinalizer: PostFilter
             texCoord = va_Texcoord;
             gl_Position = projectionMatrix * modelViewMatrix * vec4(va_Vertex * viewSize, 0.0, 1.0);
         }
-    };
+    ";
 
-    private string fs = q{
+    private string fs = "
         #version 330 core
         
         uniform sampler2D fbColor;
@@ -67,7 +67,7 @@ class PostFilterFinalizer: PostFilter
             vec3 color = texture(fbColor, texCoord).xyz;  
             frag_color = vec4(color, 1.0); 
         }
-    };
+    ";
 
     override string vertexShader()
     {

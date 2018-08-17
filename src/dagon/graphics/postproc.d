@@ -55,8 +55,7 @@ class PostFilter: Owner
     GLint viewportSizeLoc;
     GLint enabledLoc;
     
-    private string vsText = 
-    q{
+    private string vsText = "
         #version 330 core
         
         uniform mat4 modelViewMatrix;
@@ -74,10 +73,9 @@ class PostFilter: Owner
             texCoord = va_Texcoord;
             gl_Position = projectionMatrix * modelViewMatrix * vec4(va_Vertex * viewSize, 0.0, 1.0);
         }
-    };
+    ";
     
-    private string fsText =
-    q{
+    private string fsText = "
         #version 330 core
         
         uniform sampler2D fbColor;
@@ -92,7 +90,7 @@ class PostFilter: Owner
             frag_color = t;
             frag_color.a = 1.0;
         }
-    };
+    ";
     
     string vertexShader() {return vsText;}
     string fragmentShader() {return fsText;}

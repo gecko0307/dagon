@@ -50,7 +50,7 @@ import dagon.graphics.materials.generic;
 
 class ParticleBackend: GLSLMaterialBackend
 {    
-    private string vsText = q{
+    private string vsText = "
         #version 330 core
         
         layout (location = 0) in vec3 va_Vertex;
@@ -72,9 +72,9 @@ class ParticleBackend: GLSLMaterialBackend
             texCoord = va_Texcoord;
             gl_Position = projectionMatrix * pos;
         }
-    };
+    ";
     
-    private string fsText = q{
+    private string fsText = "
         #version 330 core
         
         uniform sampler2D diffuseTexture;
@@ -115,7 +115,7 @@ class ParticleBackend: GLSLMaterialBackend
             frag_velocity = vec4(0.0, 0.0, 0.0, 1.0);
             frag_position = vec4(eyePosition, 0.0);
         }
-    };
+    ";
     
     override string vertexShaderSrc() {return vsText;}
     override string fragmentShaderSrc() {return fsText;}

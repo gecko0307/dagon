@@ -40,7 +40,7 @@ import dagon.graphics.rc;
 
 class PostFilterLensDistortion: PostFilter
 {
-    private string vs = q{
+    private string vs = "
         #version 330 core
         
         uniform mat4 modelViewMatrix;
@@ -58,9 +58,9 @@ class PostFilterLensDistortion: PostFilter
             texCoord = va_Texcoord;
             gl_Position = projectionMatrix * modelViewMatrix * vec4(va_Vertex * viewSize, 0.0, 1.0);
         }
-    };
+    ";
 
-    private string fs = q{
+    private string fs = "
         #version 330 core
         
         uniform sampler2D fbColor;
@@ -124,7 +124,7 @@ class PostFilterLensDistortion: PostFilter
             frag_color = sumcol / sumw;
             frag_color.a = 1.0;
         }
-    };
+    ";
 
     override string vertexShader()
     {

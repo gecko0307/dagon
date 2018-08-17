@@ -97,8 +97,7 @@ final class FreeTypeFont: Font
     GLint glyphTextureLoc;
     GLint glyphColorLoc;
     
-    string vsText = 
-    q{
+    string vsText = "
         #version 330 core
         
         uniform mat4 modelViewMatrix;
@@ -118,10 +117,9 @@ final class FreeTypeFont: Font
             texCoord = va_Texcoord * glyphTexcoordScale;
             gl_Position = projectionMatrix * modelViewMatrix * vec4(glyphPosition + va_Vertex * glyphScale, 0.0, 1.0);
         }
-    };
+    ";
     
-    string fsText =
-    q{
+    string fsText = "
         #version 330 core
         
         uniform sampler2D glyphTexture;
@@ -135,7 +133,7 @@ final class FreeTypeFont: Font
             vec4 t = texture(glyphTexture, texCoord);
             frag_color = vec4(t.rrr, t.g) * glyphColor;
         }
-    };
+    ";
 
     this(uint height, Owner o)
     {

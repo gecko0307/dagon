@@ -38,7 +38,7 @@ import dagon.graphics.framebuffer;
  
 class PostFilterFXAA: PostFilter
 {
-    private static string vs = q{
+    private static string vs = "
         #version 330 core
         
         uniform mat4 modelViewMatrix;
@@ -56,9 +56,9 @@ class PostFilterFXAA: PostFilter
             texCoord = va_Texcoord;
             gl_Position = projectionMatrix * modelViewMatrix * vec4(va_Vertex * viewSize, 0.0, 1.0);
         }
-    };
+    ";
 
-    private static string fs = q{
+    private static string fs = "
         #version 330 core
         
         uniform bool enabled;
@@ -144,7 +144,7 @@ class PostFilterFXAA: PostFilter
         
             frag_color = vec4(color, 1.0); 
         }
-    };
+    ";
 
     override string vertexShader()
     {

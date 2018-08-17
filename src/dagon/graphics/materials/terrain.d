@@ -53,7 +53,7 @@ import dagon.graphics.materials.generic;
 
 class TerrainBackend: GLSLMaterialBackend
 {    
-    private string vsText = q{
+    private string vsText = "
         #version 330 core
         
         layout (location = 0) in vec3 va_Vertex;
@@ -100,9 +100,9 @@ class TerrainBackend: GLSLMaterialBackend
             
             gl_Position = projectionMatrix * pos;
         }
-    };
+    ";
     
-    private string fsText = q{
+    private string fsText = "
         #version 330 core
         
         in vec2 texCoord;
@@ -287,7 +287,7 @@ class TerrainBackend: GLSLMaterialBackend
             
             frag_color = vec4(fragColor, 1.0);
         }
-    };
+    ";
     
     override string vertexShaderSrc() {return vsText;}
     override string fragmentShaderSrc() {return fsText;}

@@ -49,8 +49,7 @@ import dagon.graphics.materials.generic;
 
 class StandardBackend: GLSLMaterialBackend
 {
-    private string vsText = 
-    q{
+    private string vsText = "
         #version 330 core
         
         uniform mat4 modelViewMatrix;
@@ -110,10 +109,9 @@ class StandardBackend: GLSLMaterialBackend
             
             gl_Position = position;
         }
-    };
+    ";
 
-    private string fsText =
-    q{
+    private string fsText = "
         #version 330 core
         
         #define EPSILON 0.000001
@@ -592,7 +590,7 @@ class StandardBackend: GLSLMaterialBackend
             frag_position = vec4(eyePosition.x, eyePosition.y, eyePosition.z, 0.0);
             frag_normal = vec4(N, 0.0);
         }
-    };
+    ";
     
     override string vertexShaderSrc() {return vsText;}
     override string fragmentShaderSrc() {return fsText;}

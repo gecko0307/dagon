@@ -113,8 +113,7 @@ class ShadowArea: Owner
 class ShadowBackend: GLSLMaterialBackend
 {
     
-    string vsText = 
-    q{
+    string vsText = "
         #version 330 core
 
         uniform mat4 modelViewMatrix;
@@ -126,10 +125,9 @@ class ShadowBackend: GLSLMaterialBackend
         {
             gl_Position = projectionMatrix * modelViewMatrix * vec4(va_Vertex, 1.0);
         }
-    };
+    ";
     
-    string fsText =
-    q{
+    string fsText = "
         #version 330 core
 
         out vec4 frag_color;
@@ -138,7 +136,7 @@ class ShadowBackend: GLSLMaterialBackend
         {
             frag_color = vec4(1.0, 1.0, 1.0, 1.0);
         }
-    };
+    ";
     
     override string vertexShaderSrc() {return vsText;}
     override string fragmentShaderSrc() {return fsText;}
