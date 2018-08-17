@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.logics.controller;
+module dagon.logics.charactercontroller;
 
 import dlib.math.vector;
 import dlib.math.matrix;
