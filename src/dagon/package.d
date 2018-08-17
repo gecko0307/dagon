@@ -63,6 +63,7 @@ public
     import dagon.logics.behaviour;
     import dagon.logics.controller;
     import dagon.logics.rigidbodycontroller;
+    import dagon.logics.charactercontroller;
     
     import dagon.graphics.rc;
     import dagon.graphics.tbcamera;
