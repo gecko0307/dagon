@@ -25,6 +25,9 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/++
+    Base class to inherit Dagon applications from.
++/
 module dagon.core.application;
 
 import std.stdio;
@@ -57,6 +60,11 @@ ShouldThrow ftOnMissingSymbol(string symbolName)
     return ShouldThrow.No;
 }
 
+/++
+    Base class to inherit Dagon applications from.
+    `Application` wraps SDL2 window, loads dynamic link libraries using Derelict, 
+    is responsible for initializing OpenGL context and doing main game loop.
++/
 class Application: EventListener
 {
     uint width;
@@ -65,7 +73,15 @@ class Application: EventListener
     SDL_GLContext glcontext;
     string libdir;
     
-    this(uint w, uint h, bool fullscreen, string windowTitle, string[] args)
+    /++
+        Constructor. 
+        * `winWidth` - window width
+        * `winHeight` - window height
+        * `fullscreen` - if true, the application will run in fullscreen mode
+        * `windowTitle` - window title
+        * `args` - command line arguments
+    +/
+    this(uint winWidth, uint winHeight, bool fullscreen, string windowTitle, string[] args)
     {
         try
         { 
@@ -169,8 +185,8 @@ class Application: EventListener
         if (SDL_Init(SDL_INIT_EVERYTHING) == -1)
             exitWithError("Failed to init SDL: " ~ to!string(SDL_GetError()));
             
-        width = w;
-        height = h;
+        width = winWidth;
+        height = winHeight;
 
         SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);        
        
@@ -182,7 +198,8 @@ class Application: EventListener
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-        window = SDL_CreateWindow(toStringz(windowTitle), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+        window = SDL_CreateWindow(toStringz(windowTitle), 
+            SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
         if (window is null)
             exitWithError("Failed to create window: " ~ to!string(SDL_GetError()));
             
@@ -215,7 +232,7 @@ class Application: EventListener
         glEnable(GL_POLYGON_OFFSET_FILL);
         glCullFace(GL_BACK);
         
-        checkGLError();
+        //checkGLError();
     }
 
     override void onUserEvent(int code)
