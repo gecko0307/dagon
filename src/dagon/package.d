@@ -99,5 +99,5 @@ public
     import dagon.ui.ftfont;
     import dagon.ui.textline;
     
-    import dagon.dmech;
+    import dmech;
 }
