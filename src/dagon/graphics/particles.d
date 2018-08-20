@@ -197,7 +197,7 @@ class ParticleSystem: Behaviour
     
     float minSize = 0.25f;
     float maxSize = 1.0f;
-    Vector3f scaleStep = Vector2f(0, 0, 0);
+    Vector3f scaleStep = Vector3f(0, 0, 0);
     
     float initialPositionRandomRadius = 0.0f;
     
