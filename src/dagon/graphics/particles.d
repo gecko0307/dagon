@@ -185,12 +185,10 @@ class ColorChanger: ForceField
     }
 }
 
-class ParticleSystem: Behaviour
+
+class Emitter: Behaviour
 {
     Particle[] particles;
-    DynamicArray!ForceField forceFields;
-    
-    float airFrictionDamping = 0.98f;
     
     float minLifetime = 1.0f;
     float maxLifetime = 3.0f;
@@ -209,10 +207,78 @@ class ParticleSystem: Behaviour
     
     Color4f startColor = Color4f(1, 1, 1, 1);
     Color4f endColor = Color4f(1, 1, 1, 0);
+     
+    float airFrictionDamping = 0.98f;
     
     bool emitting = true;
     
-    bool haveParticlesToDraw = false;
+    GenericMaterial material;
+    
+    Entity particleEntity;
+    
+    this(Entity e, ParticleSystem psys, uint numParticles)
+    {
+        super(e);
+        
+        psys.addEmitter(this);
+        
+        particles = New!(Particle[])(numParticles);
+        foreach(ref p; particles)
+        {
+            resetParticle(p);
+        }
+    }
+    
+    ~this()
+    {
+        Delete(particles);
+    }
+    
+    void resetParticle(ref Particle p)
+    {
+        if (initialPositionRandomRadius > 0.0f)
+        {
+            float randomDist = uniform(0.0f, initialPositionRandomRadius);
+            p.position = entity.absolutePosition + randomUnitVector3!float * randomDist;
+        }
+        else
+            p.position = entity.absolutePosition;
+            
+        p.positionPrev = p.position;
+            
+        Vector3f r = randomUnitVector3!float;
+
+        float initialSpeed;
+        if (maxInitialSpeed > minInitialSpeed)
+            initialSpeed = uniform(minInitialSpeed, maxInitialSpeed);
+        else
+            initialSpeed = maxInitialSpeed;
+        p.velocity = lerp(initialDirection, r, initialDirectionRandomFactor) * initialSpeed;
+        
+        if (maxLifetime > minLifetime)
+            p.lifetime = uniform(minLifetime, maxLifetime);
+        else
+            p.lifetime = maxLifetime;
+        p.gravityVector = Vector3f(0, -1, 0);
+        
+        float s;
+        if (maxSize > maxSize)
+            s = uniform(maxSize, maxSize);
+        else
+            s = maxSize;
+            
+        p.scale = Vector3f(s, s, s);
+        p.time = 0.0f;
+        p.move = true;
+        p.startColor = startColor;
+        p.color = p.startColor;
+    }
+}
+
+class ParticleSystem: Behaviour
+{
+    DynamicArray!Emitter emitters;
+    DynamicArray!ForceField forceFields;
     
     Vector3f[4] vertices;
     Vector2f[4] texcoords;
@@ -224,20 +290,12 @@ class ParticleSystem: Behaviour
     GLuint eao = 0;
     
     Matrix4x4f invViewMatRot;
-    
-    GenericMaterial material;
-    
-    Entity particleEntity;
+     
+    bool haveParticlesToDraw = false;
 
-    this(Entity e, uint numParticles)
-    {
-        super(e);
-        
-        particles = New!(Particle[])(numParticles);
-        foreach(ref p; particles)
-        {
-            resetParticle(p);
-        }
+    this(Entity e)
+    {       
+        super(e); 
         
         vertices[0] = Vector3f(-0.5f, 0.5f, 0);
         vertices[1] = Vector3f(-0.5f, -0.5f, 0);
@@ -286,7 +344,7 @@ class ParticleSystem: Behaviour
 
     ~this()
     {
-        Delete(particles);
+        emitters.free();
         forceFields.free();
     }
     
@@ -294,54 +352,19 @@ class ParticleSystem: Behaviour
     {
         forceFields.append(ff);
     }
-
-    void resetParticle(ref Particle p)
+    
+    void addEmitter(Emitter em)
     {
-        if (initialPositionRandomRadius > 0.0f)
-        {
-            float randomDist = uniform(0.0f, initialPositionRandomRadius);
-            p.position = entity.absolutePosition + randomUnitVector3!float * randomDist;
-        }
-        else
-            p.position = entity.absolutePosition;
-            
-        p.positionPrev = p.position;
-            
-        Vector3f r = randomUnitVector3!float;
-
-        float initialSpeed;
-        if (maxInitialSpeed > minInitialSpeed)
-            initialSpeed = uniform(minInitialSpeed, maxInitialSpeed);
-        else
-            initialSpeed = maxInitialSpeed;
-        p.velocity = lerp(initialDirection, r, initialDirectionRandomFactor) * initialSpeed;
-        
-        if (maxLifetime > minLifetime)
-            p.lifetime = uniform(minLifetime, maxLifetime);
-        else
-            p.lifetime = maxLifetime;
-        p.gravityVector = Vector3f(0, -1, 0);
-        
-        float s;
-        if (maxSize > maxSize)
-            s = uniform(maxSize, maxSize);
-        else
-            s = maxSize;
-            
-        p.scale = Vector3f(s, s, s);
-        p.time = 0.0f;
-        p.move = true;
-        p.startColor = startColor;
-        p.color = p.startColor;
+        emitters.append(em);
     }
     
-    void updateParticle(ref Particle p, double dt)
+    void updateParticle(Emitter e, ref Particle p, double dt)
     {
         p.time += dt;
         
         float t = p.time / p.lifetime;
-        p.color = lerp(startColor, endColor, t);
-        p.scale = p.scale + scaleStep * dt;
+        p.color = lerp(e.startColor, e.endColor, t);
+        p.scale = p.scale + e.scaleStep * dt;
         
         if (p.move)
         {
@@ -353,57 +376,62 @@ class ParticleSystem: Behaviour
             }
                 
             p.velocity += p.acceleration * dt;
-            p.velocity = p.velocity * airFrictionDamping;
+            p.velocity = p.velocity * e.airFrictionDamping;
 
             p.positionPrev = p.position;
             p.position += p.velocity * dt;
         }
         
-        p.color.a = lerp(startColor.a, endColor.a, t);
+        p.color.a = lerp(e.startColor.a, e.endColor.a, t);
     }
     
     override void update(double dt)
     {
         haveParticlesToDraw = false;
-        foreach(ref p; particles)
+        
+        foreach(e; emitters)
+        foreach(ref p; e.particles)
         {
             if (p.active)
             {
                 if (p.time < p.lifetime)
                 {
-                    updateParticle(p, dt);
+                    updateParticle(e, p, dt);
                     haveParticlesToDraw = true;
                 }
                 else
                     p.active = false;
             }
-            else if (emitting)
+            else if (e.emitting)
             {
-                resetParticle(p);
+                e.resetParticle(p);
                 p.active = true;
             }
         }
-        
-        if (material)
-            entity.material = material;
     }
     
     override void render(RenderingContext* rc)
     {    
         if (haveParticlesToDraw)
-        {            
-            foreach(ref p; particles)
-            if (p.time < p.lifetime)
-            {
-                if (particleEntity)
-                    renderEntityParticle(p, rc);
-                else
-                    renderBillboardParticle(p, rc);
+        {
+            foreach(e; emitters)
+            {        
+                if (e.material)
+                    entity.material = e.material;
+                    
+                foreach(ref p; e.particles)
+                if (p.time < p.lifetime)
+                {
+                    if (e.particleEntity)
+                        renderEntityParticle(e, p, rc);
+                    else
+                        renderBillboardParticle(e, p, rc);
+                }
             }
         }
     }
     
-    void renderEntityParticle(ref Particle p, RenderingContext* rc)
+    void renderEntityParticle(Emitter e, ref Particle p, RenderingContext* rc)
     {
         auto rcLocal = *rc;
     
@@ -413,27 +441,27 @@ class ParticleSystem: Behaviour
         Matrix4x4f prevTrans =
             translationMatrix(p.positionPrev);
 
-        auto absTrans = particleEntity.absoluteTransformation;
-        auto invAbsTrans = particleEntity.invAbsoluteTransformation;
-        auto prevAbsTrans = particleEntity.prevAbsoluteTransformation;
+        auto absTrans = e.particleEntity.absoluteTransformation;
+        auto invAbsTrans = e.particleEntity.invAbsoluteTransformation;
+        auto prevAbsTrans = e.particleEntity.prevAbsoluteTransformation;
                 
-        particleEntity.absoluteTransformation = trans;
-        particleEntity.invAbsoluteTransformation = trans.inverse;
-        particleEntity.prevAbsoluteTransformation = prevTrans;
+        e.particleEntity.absoluteTransformation = trans;
+        e.particleEntity.invAbsoluteTransformation = trans.inverse;
+        e.particleEntity.prevAbsoluteTransformation = prevTrans;
                 
-        foreach(child; particleEntity.children)
+        foreach(child; e.particleEntity.children)
         {
             child.updateTransformation();
         }
+            
+        e.particleEntity.render(&rcLocal);
                 
-        particleEntity.render(&rcLocal);
-                
-        particleEntity.absoluteTransformation = absTrans;
-        particleEntity.invAbsoluteTransformation = invAbsTrans;
-        particleEntity.prevAbsoluteTransformation = prevAbsTrans;
+        e.particleEntity.absoluteTransformation = absTrans;
+        e.particleEntity.invAbsoluteTransformation = invAbsTrans;
+        e.particleEntity.prevAbsoluteTransformation = prevAbsTrans;
     }
     
-    void renderBillboardParticle(ref Particle p, RenderingContext* rc)
+    void renderBillboardParticle(Emitter e, ref Particle p, RenderingContext* rc)
     {
         Matrix4x4f modelViewMatrix = 
             rc.viewMatrix * 
@@ -445,17 +473,17 @@ class ParticleSystem: Behaviour
         rcLocal.modelViewMatrix = modelViewMatrix;
         rcLocal.normalMatrix = rcLocal.modelViewMatrix.inverse.transposed;
 
-        if (material)
+        if (e.material)
         {
-            material.particleColor = p.color;
-            material.bind(&rcLocal);
+            e.material.particleColor = p.color;
+            e.material.bind(&rcLocal);
         }
                 
         glBindVertexArray(vao);
         glDrawElements(GL_TRIANGLES, cast(uint)indices.length * 3, GL_UNSIGNED_INT, cast(void*)0);
         glBindVertexArray(0);
         
-        if (material)
-            material.unbind(&rcLocal);
+        if (e.material)
+            e.material.unbind(&rcLocal);
     }
 }
