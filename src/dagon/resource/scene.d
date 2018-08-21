@@ -849,7 +849,6 @@ class Scene: BaseScene
         lightManager = New!LightManager(200.0f, 100, assetManager);
         
         defaultMaterialBackend = New!StandardBackend(lightManager, assetManager);
-        particleMaterialBackend = New!ParticleBackend(gbuffer, assetManager);
         skyMaterialBackend = New!SkyBackend(assetManager);
         
         shadowMap = New!CascadedShadowMap(1024, this, 10, 30, 200, -100, 100, assetManager);
@@ -897,6 +896,8 @@ class Scene: BaseScene
         lensFilter.enabled = false;
         
         finalizerFilter = New!PostFilterFinalizer(null, null, assetManager);
+        
+        particleMaterialBackend = New!ParticleBackend(gbuffer, assetManager);
     }
     
     PostFilter addFilter(PostFilter f)
