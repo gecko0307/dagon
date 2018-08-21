@@ -341,6 +341,8 @@ class Scene: BaseScene
     StandardBackend defaultMaterialBackend;
     GenericMaterial defaultMaterial3D;
     
+    ParticleBackend particleMaterialBackend;
+    
     SkyBackend skyMaterialBackend;
 
     RenderingContext rc3d; 
@@ -827,6 +829,13 @@ class Scene: BaseScene
         return New!GenericMaterial(backend, assetManager);
     }
     
+    GenericMaterial createParticleMaterial(GenericMaterialBackend backend = null)
+    {
+        if (backend is null)
+            backend = particleMaterialBackend;
+        return New!GenericMaterial(backend, assetManager);
+    }
+    
     LightSource createLight(Vector3f position, Color4f color, float energy, float volumeRadius, float areaRadius = 0.0f)
     {
         return lightManager.addLight(position, color, energy, volumeRadius, areaRadius);
@@ -837,8 +846,9 @@ class Scene: BaseScene
         environment = New!Environment(assetManager);
         
         lightManager = New!LightManager(200.0f, 100, assetManager);
-        defaultMaterialBackend = New!StandardBackend(lightManager, assetManager);
         
+        defaultMaterialBackend = New!StandardBackend(lightManager, assetManager);
+        particleMaterialBackend = New!ParticleBackend(gbuffer, assetManager);
         skyMaterialBackend = New!SkyBackend(assetManager);
         
         shadowMap = New!CascadedShadowMap(1024, this, 10, 30, 200, -100, 100, assetManager);
