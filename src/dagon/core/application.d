@@ -57,6 +57,13 @@ enum DagonEvent
 
 ShouldThrow ftOnMissingSymbol(string symbolName)
 {
+    writefln("Warning: failed to load Freetype function \"%s\"", symbolName);
+    return ShouldThrow.No;
+}
+
+ShouldThrow sdlOnMissingSymbol(string symbolName)
+{
+    writefln("Warning: failed to load SDL2 function \"%s\"", symbolName);
     return ShouldThrow.No;
 }
 
@@ -94,6 +101,7 @@ class Application: EventListener
         {
         }
         
+        DerelictSDL2.missingSymbolCallback = &sdlOnMissingSymbol;
         DerelictFT.missingSymbolCallback = &ftOnMissingSymbol;
 
         DerelictGL3.load();
