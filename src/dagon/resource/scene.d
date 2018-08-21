@@ -67,6 +67,7 @@ import dagon.graphics.framebuffer;
 import dagon.graphics.gbuffer;
 import dagon.graphics.deferred;
 import dagon.graphics.postproc;
+import dagon.graphics.particles;
 import dagon.graphics.filters.fxaa;
 import dagon.graphics.filters.lens;
 import dagon.graphics.filters.hdrprepass;
