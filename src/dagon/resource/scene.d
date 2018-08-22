@@ -59,6 +59,7 @@ import dagon.graphics.shapes;
 import dagon.graphics.light;
 import dagon.graphics.shadow;
 import dagon.graphics.texture;
+import dagon.graphics.particles;
 import dagon.graphics.materials.generic;
 import dagon.graphics.materials.standard;
 import dagon.graphics.materials.sky;
@@ -338,6 +339,7 @@ class Scene: BaseScene
     
     LightManager lightManager;
     CascadedShadowMap shadowMap;
+    ParticleSystem particleSystem;
 
     StandardBackend defaultMaterialBackend;
     GenericMaterial defaultMaterial3D;
@@ -854,6 +856,8 @@ class Scene: BaseScene
         shadowMap = New!CascadedShadowMap(1024, this, 10, 30, 200, -100, 100, assetManager);
         defaultMaterialBackend.shadowMap = shadowMap;
         
+        particleSystem = New!ParticleSystem(assetManager);
+        
         defaultMaterial3D = createMaterial();
         
         gbuffer = New!GBuffer(eventManager.windowWidth, eventManager.windowHeight, this, assetManager);
@@ -979,6 +983,8 @@ class Scene: BaseScene
 
             foreach(e; entities2D)
                 e.update(fixedTimeStep);
+                
+            particleSystem.update(fixedTimeStep);
                 
             onLogicsUpdate(fixedTimeStep);
             
@@ -1117,6 +1123,7 @@ class Scene: BaseScene
         deferredEnvPass.render(&rcDeferred, &rc3d);
         deferredLightPass.render(&rcDeferred, &rc3d);
         renderTransparentEntities3D(&rc3d);
+        particleSystem.render(&rc3d);
         
         sceneFramebuffer.unbind();
     
