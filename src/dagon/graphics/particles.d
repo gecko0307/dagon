@@ -31,6 +31,7 @@ import std.random;
 import std.algorithm;
 
 import dlib.core.memory;
+import dlib.core.ownership;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.quaternion;
@@ -275,7 +276,7 @@ class Emitter: Behaviour
     }
 }
 
-class ParticleSystem: Behaviour
+class ParticleSystem: Owner
 {
     DynamicArray!Emitter emitters;
     DynamicArray!ForceField forceFields;
@@ -293,9 +294,9 @@ class ParticleSystem: Behaviour
      
     bool haveParticlesToDraw = false;
 
-    this(Entity e)
+    this(Owner o)
     {       
-        super(e); 
+        super(o); 
         
         vertices[0] = Vector3f(-0.5f, 0.5f, 0);
         vertices[1] = Vector3f(-0.5f, -0.5f, 0);
@@ -385,7 +386,7 @@ class ParticleSystem: Behaviour
         p.color.a = lerp(e.startColor.a, e.endColor.a, t);
     }
     
-    override void update(double dt)
+    void update(double dt)
     {
         haveParticlesToDraw = false;
         
@@ -410,14 +411,14 @@ class ParticleSystem: Behaviour
         }
     }
     
-    override void render(RenderingContext* rc)
+    void render(RenderingContext* rc)
     {    
         if (haveParticlesToDraw)
         {
             foreach(e; emitters)
-            {        
+            {
                 if (e.material)
-                    entity.material = e.material;
+                    e.entity.material = e.material;
                     
                 foreach(ref p; e.particles)
                 if (p.time < p.lifetime)

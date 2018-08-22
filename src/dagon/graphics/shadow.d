@@ -318,6 +318,7 @@ class CascadedShadowMap: Owner
         foreach(e; scene.entities3D)
             if (e.castShadow)
                 e.render(&rcLocal);
+        scene.particleSystem.render(&rcLocal);
          
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer2);
 
@@ -335,6 +336,7 @@ class CascadedShadowMap: Owner
         foreach(e; scene.entities3D)
             if (e.castShadow)
                 e.render(&rcLocal);
+        scene.particleSystem.render(&rcLocal);
         
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer3);
 
@@ -352,6 +354,7 @@ class CascadedShadowMap: Owner
         foreach(e; scene.entities3D)
             if (e.castShadow)
                 e.render(&rcLocal);
+        scene.particleSystem.render(&rcLocal);
         
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
         glEnable(GL_CULL_FACE);
