@@ -113,6 +113,23 @@ class SkyBackend: GLSLMaterialBackend
         uniform sampler2D environmentMap;
         uniform bool useEnvironmentMap;
         
+        uniform bool showSun;
+        uniform bool showSunHalo;
+        uniform float sunSize;
+        uniform float sunScattering;
+        
+        float distributionGGX(vec3 N, vec3 H, float roughness)
+        {
+            float a = roughness * roughness;
+            float a2 = a * a;
+            float NdotH = max(dot(N, H), 0.0);
+            float NdotH2 = NdotH * NdotH;
+            float num = a2;
+            float denom = max(NdotH2 * (a2 - 1.0) + 1.0, 0.001);
+            denom = PI * denom * denom;
+            return num / denom;
+        }
+        
         vec2 envMapEquirect(vec3 dir)
         {
             float phi = acos(dir.y);
@@ -154,7 +171,9 @@ class SkyBackend: GLSLMaterialBackend
                 
                 env = mix(mix(skyHorizonColor * skyEnergy, groundColor * groundEnergy, groundOrSky), skyZenithColor * skyEnergy, horizonOrZenith);
                 float sun = clamp(dot(-normalWorldN, sunDirection), 0.0, 1.0);
-                sun = min(float(sun > 0.999) + pow(sun, 96.0) * 0.2, 1.0);
+                vec3 H = normalize(-normalWorldN + sunDirection);
+                float halo = distributionGGX(-normalWorldN, H, sunScattering);
+                sun = min(float(sun > (1.0 - sunSize * 0.001)) + halo, 1.0);
                 env += sunColor * sun * sunEnergy;
             }
             
@@ -188,6 +207,11 @@ class SkyBackend: GLSLMaterialBackend
     
     bool useEnvironmentMap = true;
     
+    GLint showSunLoc;
+    GLint showSunHaloLoc;
+    GLint sunSizeLoc;
+    GLint sunScatteringLoc;
+    
     this(Owner o)
     {
         super(o);
@@ -211,6 +235,11 @@ class SkyBackend: GLSLMaterialBackend
         
         environmentMapLoc = glGetUniformLocation(shaderProgram, "environmentMap");
         useEnvironmentMapLoc = glGetUniformLocation(shaderProgram, "useEnvironmentMap");
+        
+        showSunLoc = glGetUniformLocation(shaderProgram, "showSun");
+        showSunHaloLoc = glGetUniformLocation(shaderProgram, "showSunHalo");
+        sunSizeLoc = glGetUniformLocation(shaderProgram, "sunSize");
+        sunScatteringLoc = glGetUniformLocation(shaderProgram, "sunScattering");
     }
     
     override void bind(GenericMaterial mat, RenderingContext* rc)
@@ -240,11 +269,8 @@ class SkyBackend: GLSLMaterialBackend
         
         // Texture 4 - environment map
         bool useEnvmap = false;
-        if (rc.environment)
-        {
-            if (rc.environment.environmentMap)
-                useEnvmap = useEnvironmentMap;
-        }
+        if (rc.environment.environmentMap)
+            useEnvmap = useEnvironmentMap;
         
         if (useEnvmap)
         {
@@ -257,6 +283,11 @@ class SkyBackend: GLSLMaterialBackend
             glUniform1i(useEnvironmentMapLoc, 0);
         }
         glUniform1i(environmentMapLoc, 4);
+        
+        glUniform1i(showSunLoc, rc.environment.showSun);
+        glUniform1i(showSunHaloLoc, rc.environment.showSunHalo);
+        glUniform1f(sunSizeLoc, rc.environment.sunSize);
+        glUniform1f(sunScatteringLoc, rc.environment.sunScattering);
     }
     
     override void unbind(GenericMaterial mat, RenderingContext* rc)
