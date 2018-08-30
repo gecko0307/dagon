@@ -72,6 +72,7 @@ public
     import dagon.graphics.fpview;
     import dagon.graphics.shapes;
     import dagon.graphics.texture;
+	import dagon.graphics.shader;
     import dagon.graphics.material;
     import dagon.graphics.environment;
     import dagon.graphics.mesh;
