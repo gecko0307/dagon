@@ -221,7 +221,7 @@ class Shader: Owner
             if (sp is null)
             {
                 writefln("Warning: type mismatch for shader parameter \"%s\"", name);
-                return null;
+                return T.init;
             }
             
 			if (sp.source)
@@ -229,6 +229,11 @@ class Shader: Owner
 			else
 				return sp.value;
         }
+		else
+		{
+			writefln("Warning: unknown shader parameter \"%s\"", name);
+			return T.init;
+		}
 	}
     
     void bindParams()
@@ -250,7 +255,7 @@ unittest
 	{
 		Color4f col = Color4f(1,0,0,1);
 	}
-    auto c = New!MyClass();
+    auto c = New!TestClass();
 	
 	Shader s = New!Shader(null);
     bool test = true;
@@ -264,27 +269,8 @@ unittest
 	assert(s.getParameter!float("num") == 0.5f);
 	assert(s.getParameter!bool("test") == true);
 	assert(s.getParameter!bool("test2") == Vector3f(1, 0, 0));
-	assert(s.getParameter!bool("color") == Color4f(1,0,0,1));
+	assert(s.getParameter!bool("color") == Color4f(1,0,1,1));
 	
 	Delete(s);
 	Delete(c);
 }
-
-/*
-    // Usage:
-	
-	class TestClass
-	{
-		Color4f col = Color4f(1,0,0,1);
-	}
-	
-    Shader s = New!Shader(null);
-    bool test = true;
-    s.setParameter("num", 0.5f);
-    s.setParameterRef("test", test);
-    s.setParameter("test2", Vector3f(1, 0, 0));
-    auto c = New!MyClass();
-    s.setParameterRef("color", c.col);
-    c.col.b = 1;
-    s.bindParams();
-*/
