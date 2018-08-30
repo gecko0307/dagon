@@ -268,8 +268,8 @@ unittest
     s.bindParams();
 	assert(s.getParameter!float("num") == 0.5f);
 	assert(s.getParameter!bool("test") == true);
-	assert(s.getParameter!bool("test2") == Vector3f(1, 0, 0));
-	assert(s.getParameter!bool("color") == Color4f(1,0,1,1));
+	assert(s.getParameter!Vector3f("test2") == Vector3f(1, 0, 0));
+	assert(s.getParameter!Color4f("color") == Color4f(1,0,1,1));
 	
 	Delete(s);
 	Delete(c);
