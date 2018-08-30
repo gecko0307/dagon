@@ -103,11 +103,13 @@ if (is(T == bool) ||
 {
     T* source;
     T value;
+    T delegate() callback;
     
     this(Shader shader, string name, T* source)
     {
         super(shader, name);
         this.source = source;
+        this.callback = null;
         initUniform();
     }
     
@@ -116,12 +118,24 @@ if (is(T == bool) ||
         super(shader, name);
         this.source = null;
         this.value = value;
+        this.callback = null;
+        initUniform();
+    }
+    
+    this(Shader shader, string name, T delegate() callback)
+    {
+        super(shader, name);
+        this.source = null;
+        this.value = value;
+        this.callback = callback;
         initUniform();
     }
     
     override void bind()
     {
-        if (source)
+        if (callback)
+            value = callback();
+        else if (source)
             value = *source;
         
         writefln("%s: %s", name, value);
@@ -208,6 +222,28 @@ class Shader: Owner
         else
         {
             auto sp = New!(ShaderParameter!T)(this, name, &val);
+            parameters.set(name, sp);
+            return sp;
+        }
+    }
+    
+    ShaderParameter!T setParameterCallback(T)(string name, T delegate() val)
+    {
+        if (name in parameters.indices)
+        {
+            auto sp = cast(ShaderParameter!T)parameters.get(name);
+            if (sp is null)
+            {
+                writefln("Warning: type mismatch for shader parameter \"%s\"", name);
+                return null;
+            }
+            
+            sp.callback = val;
+            return sp;
+        }
+        else
+        {
+            auto sp = New!(ShaderParameter!T)(this, name, val);
             parameters.set(name, sp);
             return sp;
         }
