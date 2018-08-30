@@ -142,33 +142,33 @@ if (is(T == bool) ||
 
         static if (is(T == bool) || is(T == int)) 
         {
-			//TODO
+            //TODO
         }
         else static if (is(T == float))
         {
-			//TODO
+            //TODO
         }
         else static if (is(T == Vector2f))
         {
-			//TODO
+            //TODO
         }
         else static if (is(T == Vector3f))
         {
-			//TODO
+            //TODO
         } 
         else static if (is(T == Vector4f))
         {
-			//TODO
+            //TODO
         }
         else static if (is(T == Color4f))
         {
-			//TODO
+            //TODO
         } 
     }
     
     override void unbind()
     {
-		//TODO
+        //TODO
     }
 }
 
@@ -248,10 +248,10 @@ class Shader: Owner
             return sp;
         }
     }
-	
-	T getParameter(T)(string name)
-	{
-		if (name in parameters.indices)
+    
+    T getParameter(T)(string name)
+    {
+        if (name in parameters.indices)
         {
             auto sp = cast(ShaderParameter!T)parameters.get(name);
             if (sp is null)
@@ -260,17 +260,17 @@ class Shader: Owner
                 return T.init;
             }
             
-			if (sp.source)
-				return *sp.source;
-			else
-				return sp.value;
+            if (sp.source)
+                return *sp.source;
+            else
+                return sp.value;
         }
-		else
-		{
-			writefln("Warning: unknown shader parameter \"%s\"", name);
-			return T.init;
-		}
-	}
+        else
+        {
+            writefln("Warning: unknown shader parameter \"%s\"", name);
+            return T.init;
+        }
+    }
     
     void bindParams()
     {
@@ -287,26 +287,26 @@ class Shader: Owner
 
 unittest
 {
-	class TestClass
-	{
-		Color4f col = Color4f(1,0,0,1);
-	}
+    class TestClass
+    {
+        Color4f col = Color4f(1,0,0,1);
+    }
     auto c = New!TestClass();
-	
-	Shader s = New!Shader(null);
+        
+    Shader s = New!Shader(null);
     bool test = true;
     s.setParameter("num", 0.5f);
     s.setParameterRef("test", test);
     s.setParameter("test2", Vector3f(1, 0, 0));
     s.setParameterRef("color", c.col);
     c.col.b = 1;
-	
+
     s.bindParams();
-	assert(s.getParameter!float("num") == 0.5f);
-	assert(s.getParameter!bool("test") == true);
-	assert(s.getParameter!Vector3f("test2") == Vector3f(1, 0, 0));
-	assert(s.getParameter!Color4f("color") == Color4f(1,0,1,1));
-	
-	Delete(s);
-	Delete(c);
+    assert(s.getParameter!float("num") == 0.5f);
+    assert(s.getParameter!bool("test") == true);
+    assert(s.getParameter!Vector3f("test2") == Vector3f(1, 0, 0));
+    assert(s.getParameter!Color4f("color") == Color4f(1,0,1,1));
+
+    Delete(s);
+    Delete(c);
 }
