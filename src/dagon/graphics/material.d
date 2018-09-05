@@ -139,6 +139,11 @@ abstract class Material: Owner
     {
         Delete(inputs);
     }
+    
+    final auto opDispatch(string name)() @property
+    {
+        return (name in inputs);
+    }
 
     final void opDispatch(string name, T)(T value) @property
     {
