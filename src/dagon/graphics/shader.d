@@ -28,12 +28,14 @@ DEALINGS IN THE SOFTWARE.
 module dagon.graphics.shader;
 
 import std.stdio;
+import std.string;
 import dlib.core.ownership;
 import dlib.core.memory;
 import dlib.container.array;
 import dlib.container.dict;
 import dlib.math.vector;
 import dlib.image.color;
+import derelict.opengl;
 
 // TODO: move to separate module
 class MappedList(T): Owner
@@ -65,16 +67,78 @@ class MappedList(T): Owner
     }
 }
 
-/*
- * A shader class that wraps OpenGL shader creation and uniform initialization.
- * Currently in WIP status.
+/**
+   A shader program class that can be shared between multiple Shaders.
  */
+class ShaderProgram: Owner
+{
+    GLuint program;
+    GLuint vertexShader;
+    GLuint fragmentShader;
+    
+    this(string vertexShaderSrc, string fragmentShaderSrc, Owner o)
+    {
+        super(o);
+        
+        const(char*)pvs = vertexShaderSrc.ptr;
+        const(char*)pfs = fragmentShaderSrc.ptr;
+        
+        char[1000] infobuffer = 0;
+        int infobufferlen = 0;
+        
+        vertexShader = glCreateShader(GL_VERTEX_SHADER);
+        glShaderSource(vertexShader, 1, &pvs, null);
+        glCompileShader(vertexShader);
+        GLint success = 0;
+        glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+            GLint logSize = 0;
+            glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &logSize);
+            glGetShaderInfoLog(vertexShader, 999, &logSize, infobuffer.ptr);
+            writeln("Error in vertex shader:");
+            writeln(infobuffer[0..logSize]);
+        }
+        
+        fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(fragmentShader, 1, &pfs, null);
+        glCompileShader(fragmentShader);
+        success = 0;
+        glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+            GLint logSize = 0;
+            glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &logSize);
+            glGetShaderInfoLog(fragmentShader, 999, &logSize, infobuffer.ptr);
+            writeln("Error in fragment shader:");
+            writeln(infobuffer[0..logSize]);
+        }
 
+        program = glCreateProgram();
+        glAttachShader(program, vertexShader);
+        glAttachShader(program, fragmentShader);
+        glLinkProgram(program);
+    }
+    
+    void bind()
+    {
+        glUseProgram(program);
+    }
+    
+    void unbind()
+    {
+        glUseProgram(0);
+    }
+}
+
+/**
+   A shader class that wraps OpenGL shader creation and uniform initialization.
+ */
 abstract class BaseShaderParameter: Owner
 {    
     Shader shader;
     string name;
-    //TODO: uniform
+    GLint location;
     
     this(Shader shader, string name)
     {
@@ -85,7 +149,7 @@ abstract class BaseShaderParameter: Owner
     
     final void initUniform()
     {
-        //TODO
+        location = glGetUniformLocation(shader.program.program, toStringz(name));
     }
     
     void bind();    
@@ -99,7 +163,8 @@ if (is(T == bool) ||
     is(T == Vector2f) ||
     is(T == Vector3f) ||
     is(T == Vector4f) ||
-    is(T == Color4f))
+    is(T == Color4f) ||
+    is(T == Matrix4x4f))
 {
     T* source;
     T value;
@@ -142,27 +207,31 @@ if (is(T == bool) ||
 
         static if (is(T == bool) || is(T == int)) 
         {
-            //TODO
+            glUniform1i(location, value);
         }
         else static if (is(T == float))
         {
-            //TODO
+            glUniform1f(location, value);
         }
         else static if (is(T == Vector2f))
         {
-            //TODO
+            glUniform2fv(location, 1, value.arrayof.ptr);
         }
         else static if (is(T == Vector3f))
         {
-            //TODO
+            glUniform3fv(location, 1, value.arrayof.ptr);
         } 
         else static if (is(T == Vector4f))
         {
-            //TODO
+            glUniform4fv(location, 1, value.arrayof.ptr);
         }
         else static if (is(T == Color4f))
         {
-            //TODO
+            glUniform4fv(location, 1, value.arrayof.ptr);
+        }
+        else static if (is(T == Matrix4x4f))
+        {
+            glUniformMatrix4fv(location, 1, GL_FALSE, value.arrayof.ptr);
         } 
     }
     
@@ -174,12 +243,14 @@ if (is(T == bool) ||
 
 class Shader: Owner
 {
+    ShaderProgram program;
     MappedList!BaseShaderParameter parameters;
     
-    this(Owner o)
+    this(ShaderProgram program, Owner o)
     {
         super(o);
-        parameters = New!(MappedList!BaseShaderParameter)(this);
+        this.program = program;
+        this.parameters = New!(MappedList!BaseShaderParameter)(this);
     }
     
     ShaderParameter!T setParameter(T)(string name, T val)
@@ -272,12 +343,22 @@ class Shader: Owner
         }
     }
     
-    void bindParams()
+    void bind()
     {
+        program.bind();
         foreach(v; parameters.data)
         {
             v.bind();
         }
+    }
+    
+    void unbind()
+    {
+        foreach(v; parameters.data)
+        {
+            v.unbind();
+        }
+        program.unbind();
     }
     
     ~this()
@@ -310,3 +391,4 @@ unittest
     Delete(s);
     Delete(c);
 }
+
