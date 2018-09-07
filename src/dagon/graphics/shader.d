@@ -443,10 +443,10 @@ class Shader: Owner
         }
 
         if (vertexSubroutineIndices.length)
-            glUniformSubroutinesuiv(GL_VERTEX_SHADER, vertexSubroutineIndices.length, vertexSubroutineIndices.ptr);
+            glUniformSubroutinesuiv(GL_VERTEX_SHADER, cast(uint)vertexSubroutineIndices.length, vertexSubroutineIndices.ptr);
             
         if (fragmentSubroutineIndices.length)
-            glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, fragmentSubroutineIndices.length, fragmentSubroutineIndices.ptr);
+            glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, cast(uint)fragmentSubroutineIndices.length, fragmentSubroutineIndices.ptr);
     }
     
     void unbind(RenderingContext* rc)
