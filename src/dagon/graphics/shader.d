@@ -149,13 +149,63 @@ abstract class BaseShaderParameter: Owner
         this.name = name;
     }
     
-    final void initUniform()
+    void initUniform();
+    void bind();
+    void unbind();
+}
+
+enum ShaderType
+{
+    Vertex,
+    Fragment
+}
+
+class ShaderSubroutine: BaseShaderParameter
+{
+    ShaderType shaderType;
+    GLint location;
+    GLuint index;
+    string subroutineName;
+    
+    this(Shader shader, ShaderType shaderType, string name, string subroutineName)
     {
-        location = glGetUniformLocation(shader.program.program, toStringz(name));
+        super(shader, name);
+        this.shaderType = shaderType;
+        this.subroutineName = subroutineName;
+        initUniform();
     }
     
-    void bind();    
-    void unbind();
+    override void initUniform()
+    {        
+        if (shaderType == ShaderType.Vertex)
+        {
+            location = glGetSubroutineUniformLocation(shader.program.program, GL_VERTEX_SHADER, toStringz(name));
+            index = glGetSubroutineIndex(shader.program.program, GL_VERTEX_SHADER, toStringz(subroutineName));
+        }
+        else if (shaderType == ShaderType.Fragment)
+        {
+            location = glGetSubroutineUniformLocation(shader.program.program, GL_FRAGMENT_SHADER, toStringz(name));
+            index = glGetSubroutineIndex(shader.program.program, GL_FRAGMENT_SHADER, toStringz(subroutineName));
+        }
+    }
+
+    override void bind()
+    {
+        if (shaderType == ShaderType.Vertex)
+        {
+            if (location != -1)
+                shader.vertexSubroutineIndices[location] = index;
+        }
+        else if (shaderType == ShaderType.Fragment)
+        {
+            if (location != -1)
+                shader.fragmentSubroutineIndices[location] = index;
+        }
+    }
+    
+    override void unbind()
+    {
+    }
 }
 
 class ShaderParameter(T): BaseShaderParameter
@@ -197,6 +247,11 @@ if (is(T == bool) ||
         this.callback = callback;
         initUniform();
     }
+
+    override void initUniform()
+    {
+        location = glGetUniformLocation(shader.program.program, toStringz(name));
+    }
     
     override void bind()
     {
@@ -204,8 +259,6 @@ if (is(T == bool) ||
             value = callback();
         else if (source)
             value = *source;
-        
-        //writefln("%s: %s", name, value);
 
         static if (is(T == bool) || is(T == int)) 
         {
@@ -247,12 +300,37 @@ class Shader: Owner
 {
     ShaderProgram program;
     MappedList!BaseShaderParameter parameters;
+    GLuint[] vertexSubroutineIndices;
+    GLuint[] fragmentSubroutineIndices;
     
     this(ShaderProgram program, Owner o)
     {
         super(o);
         this.program = program;
         this.parameters = New!(MappedList!BaseShaderParameter)(this);
+    }
+    
+    ShaderSubroutine setParameterSubrountine(string name, ShaderType shaderType, string subroutineName)
+    {
+        if (name in parameters.indices)
+        {
+            auto sp = cast(ShaderSubroutine)parameters.get(name);
+            if (sp is null)
+            {
+                writefln("Warning: type mismatch for shader parameter \"%s\"", name);
+                return null;
+            }
+            sp.shaderType = shaderType;
+            sp.subroutineName = subroutineName;
+            sp.initUniform();
+            return sp;
+        }
+        else
+        {
+            auto sp = New!ShaderSubroutine(this, shaderType, name, subroutineName);
+            parameters.set(name, sp);
+            return sp;
+        }
     }
     
     ShaderParameter!T setParameter(T)(string name, T val)
@@ -348,10 +426,26 @@ class Shader: Owner
     void bind(RenderingContext* rc)
     {
         program.bind();
+        
+        GLsizei n;
+        glGetProgramStageiv(program.program, GL_VERTEX_SHADER, GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS, &n);
+        if (n > 0 && n != vertexSubroutineIndices.length)
+            vertexSubroutineIndices = New!(GLuint[])(n);
+            
+        glGetProgramStageiv(program.program, GL_FRAGMENT_SHADER, GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS, &n);
+        if (n > 0 && n != fragmentSubroutineIndices.length)
+            fragmentSubroutineIndices = New!(GLuint[])(n);
+        
         foreach(v; parameters.data)
         {
             v.bind();
         }
+
+        if (vertexSubroutineIndices.length)
+            glUniformSubroutinesuiv(GL_VERTEX_SHADER, vertexSubroutineIndices.length, vertexSubroutineIndices.ptr);
+            
+        if (fragmentSubroutineIndices.length)
+            glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, fragmentSubroutineIndices.length, fragmentSubroutineIndices.ptr);
     }
     
     void unbind(RenderingContext* rc)
@@ -365,5 +459,9 @@ class Shader: Owner
     
     ~this()
     {
+        if (vertexSubroutineIndices.length)
+            Delete(vertexSubroutineIndices);
+        if (fragmentSubroutineIndices.length)
+            Delete(fragmentSubroutineIndices);
     }
 }
