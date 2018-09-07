@@ -35,6 +35,7 @@ import dlib.image.render.shapes;
 import dlib.image.hsv;
 import dlib.math.utils;
 import dlib.math.vector;
+import dlib.math.matrix;
 import dlib.math.quaternion;
 import dlib.math.interpolation;
 import derelict.opengl;
@@ -135,6 +136,13 @@ class Environment: Owner
     Vector3f sunDirection()
     {
         return sunRotation.rotate(Vector3f(0, 0, 1));
+    }
+
+    Vector3f sunDirectionEye(Matrix4x4f viewMatrix)
+    {
+        Vector4f sunHGVector = Vector4f(sunRotation.rotate(Vector3f(0, 0, 1)));
+        sunHGVector.w = 0.0;
+        return (sunHGVector * viewMatrix).xyz;
     }
 
     Color4f sunColor()

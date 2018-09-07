@@ -905,7 +905,7 @@ class StandardBackend: GLSLMaterialBackend
         glActiveTexture(GL_TEXTURE1);
         inormal.texture.unbind();
         
-        glActiveTexture(GL_TEXTURE1);
+        glActiveTexture(GL_TEXTURE2);
         ipbr.texture.unbind();
         
         glActiveTexture(GL_TEXTURE3);
