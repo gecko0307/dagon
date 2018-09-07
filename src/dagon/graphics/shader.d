@@ -38,6 +38,7 @@ import dlib.math.matrix;
 import dlib.image.color;
 import derelict.opengl;
 import dagon.graphics.rc;
+import dagon.graphics.texture;
 
 // TODO: move to separate module
 class MappedList(T): Owner
@@ -310,7 +311,7 @@ class Shader: Owner
         this.parameters = New!(MappedList!BaseShaderParameter)(this);
     }
     
-    ShaderSubroutine setParameterSubrountine(string name, ShaderType shaderType, string subroutineName)
+    ShaderSubroutine setParameterSubroutine(string name, ShaderType shaderType, string subroutineName)
     {
         if (name in parameters.indices)
         {
