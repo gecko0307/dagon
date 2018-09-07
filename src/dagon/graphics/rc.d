@@ -64,6 +64,10 @@ struct RenderingContext
 
     EventManager eventManager;
     Environment environment;
+    
+    Material material; 
+    
+    // TODO: use Shader
     Material overrideMaterial;
     GenericMaterialBackend overrideMaterialBackend;
     

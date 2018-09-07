@@ -34,8 +34,10 @@ import dlib.core.memory;
 import dlib.container.array;
 import dlib.container.dict;
 import dlib.math.vector;
+import dlib.math.matrix;
 import dlib.image.color;
 import derelict.opengl;
+import dagon.graphics.rc;
 
 // TODO: move to separate module
 class MappedList(T): Owner
@@ -203,7 +205,7 @@ if (is(T == bool) ||
         else if (source)
             value = *source;
         
-        writefln("%s: %s", name, value);
+        //writefln("%s: %s", name, value);
 
         static if (is(T == bool) || is(T == int)) 
         {
@@ -232,7 +234,7 @@ if (is(T == bool) ||
         else static if (is(T == Matrix4x4f))
         {
             glUniformMatrix4fv(location, 1, GL_FALSE, value.arrayof.ptr);
-        } 
+        }
     }
     
     override void unbind()
@@ -343,7 +345,7 @@ class Shader: Owner
         }
     }
     
-    void bind()
+    void bind(RenderingContext* rc)
     {
         program.bind();
         foreach(v; parameters.data)
@@ -352,7 +354,7 @@ class Shader: Owner
         }
     }
     
-    void unbind()
+    void unbind(RenderingContext* rc)
     {
         foreach(v; parameters.data)
         {
@@ -365,30 +367,3 @@ class Shader: Owner
     {
     }
 }
-
-unittest
-{
-    class TestClass
-    {
-        Color4f col = Color4f(1,0,0,1);
-    }
-    auto c = New!TestClass();
-        
-    Shader s = New!Shader(null);
-    bool test = true;
-    s.setParameter("num", 0.5f);
-    s.setParameterRef("test", test);
-    s.setParameter("test2", Vector3f(1, 0, 0));
-    s.setParameterRef("color", c.col);
-    c.col.b = 1;
-
-    s.bindParams();
-    assert(s.getParameter!float("num") == 0.5f);
-    assert(s.getParameter!bool("test") == true);
-    assert(s.getParameter!Vector3f("test2") == Vector3f(1, 0, 0));
-    assert(s.getParameter!Color4f("color") == Color4f(1,0,1,1));
-
-    Delete(s);
-    Delete(c);
-}
-

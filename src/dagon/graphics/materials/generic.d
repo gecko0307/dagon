@@ -41,6 +41,7 @@ import dagon.core.ownership;
 import dagon.graphics.material;
 import dagon.graphics.texture;
 import dagon.graphics.rc;
+import dagon.graphics.shader;
 
 interface GenericMaterialBackend
 {
@@ -360,5 +361,85 @@ abstract class GLSLMaterialBackend: Owner, GenericMaterialBackend
     void unbind(GenericMaterial mat, RenderingContext* rc)
     {
         glUseProgram(0);
+    }
+}
+
+class ShaderMaterial: GenericMaterial
+{
+    Shader shader;
+    
+    this(Shader shader, Owner o)
+    {
+        super(null, o);
+        this.shader = shader;
+    }
+    
+    override void bind(RenderingContext* rc)
+    {
+        auto iblending = "blending" in inputs;
+        auto iculling = "culling" in inputs;
+        auto icolorWrite = "colorWrite" in inputs;
+        auto idepthWrite = "depthWrite" in inputs;
+        
+        if (iblending.asInteger == Transparent)
+        {
+            glEnablei(GL_BLEND, 0);
+            glEnablei(GL_BLEND, 1);
+            glBlendFunci(0, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glBlendFunci(1, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        }
+        else if (iblending.asInteger == Additive)
+        {
+            glEnablei(GL_BLEND, 0);
+            glEnablei(GL_BLEND, 1);
+            glBlendFunci(0, GL_SRC_ALPHA, GL_ONE);
+            glBlendFunci(1, GL_SRC_ALPHA, GL_ONE);
+        }
+        
+        if (iculling.asBool)
+        {
+            glEnable(GL_CULL_FACE);
+        }
+        
+        if (!icolorWrite.asBool)
+        {
+            glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+        }
+        
+        if (!idepthWrite.asBool && !rc.shadowMode)
+        {
+            glDepthMask(GL_FALSE);
+        }
+        
+        RenderingContext rcLocal = *rc;
+        rcLocal.material = this;
+    
+        shader.bind(&rcLocal);
+    }
+    
+    override void unbind(RenderingContext* rc)
+    {
+        auto icolorWrite = "colorWrite" in inputs;
+        auto idepthWrite = "depthWrite" in inputs;
+        
+        RenderingContext rcLocal = *rc;
+        rcLocal.material = this;
+        
+        shader.unbind(&rcLocal);
+            
+        if (!idepthWrite.asBool && rc.depthPass)
+        {
+            glDepthMask(GL_TRUE);
+        }
+            
+        if (!icolorWrite.asBool && rc.colorPass)
+        {
+            glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        }
+        
+        glDisable(GL_CULL_FACE);
+        
+        glDisablei(GL_BLEND, 0);
+        glDisablei(GL_BLEND, 1);
     }
 }
