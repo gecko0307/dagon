@@ -66,6 +66,9 @@ class StandardForwardShader: Shader
     {
         auto idiffuse = "diffuse" in rc.material.inputs;
         auto inormal = "normal" in rc.material.inputs;
+        auto iroughness = "roughness" in rc.material.inputs;
+        auto imetallic = "metallic" in rc.material.inputs;
+        auto ipbr = "pbr" in rc.material.inputs;
         
         bool shadeless = rc.material.boolProp("shadeless");
         bool useShadows = (shadowMap !is null) && rc.material.boolProp("shadowsEnabled");
@@ -81,6 +84,17 @@ class StandardForwardShader: Shader
             glActiveTexture(GL_TEXTURE1);
             inormal.texture.bind();
         }
+
+        if (ipbr is null)
+        {
+            rc.material.setInput("pbr", 0.0f);
+            ipbr = "pbr" in rc.material.inputs;
+        }
+        
+        if (ipbr.texture is null)   
+            ipbr.texture = rc.material.makeTextureFromInputs(*iroughness, *imetallic, materialInput(0.0f), materialInput(0.0f));
+        glActiveTexture(GL_TEXTURE2);
+        ipbr.texture.bind();
         
         if (rc.environment.environmentMap)
         {
@@ -127,6 +141,10 @@ class StandardForwardShader: Shader
             setParameter("normalVector", rc.material.normal.asVector3f);
             setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
         }
+        
+        // pbr
+        // TODO: pass solid values as uniforms, make subroutine for each mode
+        setParameter("pbrTexture", 2);
         
         // environment
         if (rc.environment.environmentMap)

@@ -36,7 +36,7 @@ subroutine(srtColor) vec4 diffuseColorValue(in vec2 uv)
 uniform sampler2D diffuseTexture;
 subroutine(srtColor) vec4 diffuseColorTexture(in vec2 uv)
 {
-    return texture2D(diffuseTexture, uv);
+    return texture(diffuseTexture, uv);
 }
 
 subroutine uniform srtColor diffuse;
@@ -318,6 +318,8 @@ float luminance(in vec3 col)
     );
 }
 
+uniform sampler2D pbrTexture;
+
 layout(location = 0) out vec4 frag_color;
 layout(location = 1) out vec4 frag_luminance;
 
@@ -331,11 +333,10 @@ void main()
     vec3 tE = normalize(E * tangentToEye);
 
     vec4 diff = diffuse(texCoord);
+    
     vec3 albedo = toLinear(diff.rgb);
-
-    // TODO: make subroutines
-    const float roughness = 0.3;
-    const float metallic = 0.0;
+    float roughness = texture(pbrTexture, texCoord).r;
+    float metallic = texture(pbrTexture, texCoord).g;
 
     vec3 Lo = brdf(albedo, roughness, metallic, N);
 

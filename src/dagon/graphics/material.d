@@ -32,6 +32,8 @@ import std.algorithm;
 import dlib.core.memory;
 import dlib.math.vector;
 import dlib.image.color;
+import dlib.image.image;
+import dlib.image.unmanaged;
 import dlib.container.dict;
 import derelict.opengl;
 import dagon.core.ownership;
@@ -235,6 +237,57 @@ abstract class Material: Owner
             res = cast(int)p.asFloat;
         }
         return res;
+    }
+    
+    final Texture makeTextureFromInputs(MaterialInput r, MaterialInput g, MaterialInput b, MaterialInput a)
+    {
+        uint width = 8;
+        uint height = 8;
+        
+        if (r.texture !is null)
+        {
+            width = max(width, r.texture.width);
+            height = max(height, r.texture.height);
+        }
+        
+        if (g.texture !is null)
+        {
+            width = max(width, g.texture.width);
+            height = max(height, g.texture.height);
+        }
+        
+        if (b.texture !is null)
+        {
+            width = max(width, b.texture.width);
+            height = max(height, b.texture.height);
+        }
+        
+        if (a.texture !is null)
+        {
+            width = max(width, a.texture.width);
+            height = max(height, a.texture.height);
+        }
+        
+        SuperImage img = New!UnmanagedImageRGBA8(width, height);
+        
+        foreach(y; 0..img.height)
+        foreach(x; 0..img.width)
+        {
+            Color4f col = Color4f(0, 0, 0, 0);
+            
+            float u = cast(float)x / cast(float)img.width;
+            float v = cast(float)y / cast(float)img.height;
+            
+            col.r = r.sample(u, v).r;
+            col.g = g.sample(u, v).r;
+            col.b = b.sample(u, v).r;
+            col.a = a.sample(u, v).r;
+            
+            img[x, y] = col;
+        }
+        
+        auto tex = New!Texture(img, this);
+        return tex;
     }
 
     void bind(RenderingContext* rc);
