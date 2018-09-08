@@ -93,6 +93,8 @@ public
     import dagon.graphics.materials.hud;
     import dagon.graphics.materials.terrain;
     import dagon.graphics.materials.particle;
+
+    import dagon.graphics.shaders.standardforward;
     
     import dagon.graphics.filters.fxaa;
     import dagon.graphics.filters.lens;

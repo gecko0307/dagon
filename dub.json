@@ -7,9 +7,9 @@
         "Timur Gafarov"
     ],
 
-    "importPaths": [
-        "src"
-    ],
+    "importPaths": ["src"],
+    "sourcePaths": ["src"],
+    "stringImportPaths": ["shaders"],
 
     "dependencies": {
         "dlib": "~master",
@@ -25,9 +25,7 @@
     "configurations": [
         {
             "name": "library",
-            "targetType": "library",
-            "sourcePaths": ["src"]
+            "targetType": "library"
         }
     ]
 }
-

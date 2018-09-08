@@ -208,6 +208,34 @@ abstract class Material: Owner
         inputs[name] = input;
         return (name in inputs);
     }
+    
+    final bool boolProp(string prop)
+    {
+        auto p = prop in inputs;
+        bool res = false;
+        if (p.type == MaterialInputType.Bool ||
+            p.type == MaterialInputType.Integer)
+        {
+            res = p.asBool;
+        }
+        return res;
+    }
+    
+    final int intProp(string prop)
+    {
+        auto p = prop in inputs;
+        int res = 0;
+        if (p.type == MaterialInputType.Bool ||
+            p.type == MaterialInputType.Integer)
+        {
+            res = p.asInteger;
+        }
+        else if (p.type == MaterialInputType.Float)
+        {
+            res = cast(int)p.asFloat;
+        }
+        return res;
+    }
 
     void bind(RenderingContext* rc);
     void unbind(RenderingContext* rc);
