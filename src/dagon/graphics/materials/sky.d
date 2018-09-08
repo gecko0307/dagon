@@ -169,12 +169,15 @@ class SkyBackend: GLSLMaterialBackend
                 float horizonOrZenith = pow(clamp(dot(-normalWorldN, vec3(0, 1, 0)), 0.0, 1.0), 0.5);
                 float groundOrSky = pow(clamp(dot(-normalWorldN, vec3(0, -1, 0)), 0.0, 1.0), 0.4);
                 
-                env = mix(mix(skyHorizonColor * skyEnergy, groundColor * groundEnergy, groundOrSky), skyZenithColor * skyEnergy, horizonOrZenith);
+                env = mix(
+                    mix(toLinear(skyHorizonColor) * skyEnergy, 
+                        toLinear(groundColor) * groundEnergy, groundOrSky), 
+                        toLinear(skyZenithColor) * skyEnergy, horizonOrZenith);
                 float sun = clamp(dot(-normalWorldN, sunDirection), 0.0, 1.0);
                 vec3 H = normalize(-normalWorldN + sunDirection);
                 float halo = distributionGGX(-normalWorldN, H, sunScattering);
                 sun = min(float(sun > (1.0 - sunSize * 0.001)) + halo, 1.0);
-                env += sunColor * sun * sunEnergy;
+                env += toLinear(sunColor) * sun * sunEnergy;
             }
             
             frag_color = vec4(env, 1.0);
