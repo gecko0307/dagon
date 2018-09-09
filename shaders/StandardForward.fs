@@ -116,9 +116,10 @@ vec2 envMapEquirect(in vec3 dir)
 uniform sampler2D envTexture;
 subroutine(srtEnv) vec3 environmentTexture(in vec3 wN, in vec3 wSun, in float roughness)
 {
-    ivec2 envMapSize = textureSize(envTexture, 0);
-    float maxLod = log2(float(max(envMapSize.x, envMapSize.y)));
-    float lod = (maxLod - 1.0) * roughness;
+    //ivec2 envMapSize = textureSize(envTexture, 0);
+    //float maxLod = log2(float(max(envMapSize.x, envMapSize.y)));
+    //float lod = maxLod * roughness;
+    float lod = roughness * 16.0;
     return textureLod(envTexture, envMapEquirect(wN), lod).rgb;
 }
 
@@ -266,10 +267,11 @@ subroutine(srtBRDF) vec3 brdfPBR(in vec3 albedo, in float roughness, in float me
             
     // Environment light
     {
-        vec3 envDiffuse = environment(worldN, worldSun, 0.8);
+        vec3 envDiffuse = environment(worldN, worldSun, 0.9);
         vec3 envSpecular = environment(worldR, worldSun, roughness);
         
-        vec3 F = fresnelRoughness(max(dot(N, E), 0.0), f0, roughness);
+        float NE = max(dot(N, E), 0.0);
+        vec3 F = fresnelRoughness(NE, f0, roughness);
         vec3 kS = F;
         vec3 kD = 1.0 - kS;
         kD *= 1.0 - metallic;
