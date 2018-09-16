@@ -337,10 +337,9 @@ void main()
     vec4 diff = diffuse(texCoord);
     
     vec3 albedo = toLinear(diff.rgb);
-    float roughness = texture(pbrTexture, texCoord).r;
-    float metallic = texture(pbrTexture, texCoord).g;
+    vec4 rms = texture(pbrTexture, texCoord);
 
-    vec3 Lo = brdf(albedo, roughness, metallic, N);
+    vec3 Lo = brdf(albedo, rms.r, rms.g, N);
 
     frag_color = vec4(Lo, diff.a);
     frag_luminance = vec4(luminance(Lo) * diff.a, 0.0, 0.0, 1.0);

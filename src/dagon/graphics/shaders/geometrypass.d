@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.graphics.shaders.standardforward;
+module dagon.graphics.shaders.geometrypass;
 
 import std.stdio;
 import std.math;
@@ -46,45 +46,112 @@ import dagon.graphics.texture;
 import dagon.graphics.material;
 import dagon.graphics.shader;
 
-class StandardForwardShader: Shader
-{    
-    string vs = import("StandardForward.vs");
-    string fs = import("StandardForward.fs");
-    
-    CascadedShadowMap shadowMap;
-    Matrix4x4f defaultShadowMatrix;
+class GeometryPassShader: Shader
+{
+    string vs = import("GeometryPass.vs");
+    string fs = import("GeometryPass.fs");
     
     this(Owner o)
     {
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, o);
-        
-        defaultShadowMatrix = Matrix4x4f.identity;
     }
     
     override void bind(RenderingContext* rc)
     {
         auto idiffuse = "diffuse" in rc.material.inputs;
         auto inormal = "normal" in rc.material.inputs;
+        auto iheight = "height" in rc.material.inputs;
+        auto ipbr = "pbr" in rc.material.inputs;
         auto iroughness = "roughness" in rc.material.inputs;
         auto imetallic = "metallic" in rc.material.inputs;
-        auto ipbr = "pbr" in rc.material.inputs;
+        auto iemission = "emission" in rc.material.inputs;
+        auto iEnergy = "energy" in rc.material.inputs;
         
-        bool shadeless = rc.material.boolProp("shadeless");
-        bool useShadows = (shadowMap !is null) && rc.material.boolProp("shadowsEnabled");
+        setParameter("layer", rc.layer);
+        setParameter("blurMask", rc.blurMask);
         
+        setParameter("modelViewMatrix", rc.modelViewMatrix);
+        setParameter("projectionMatrix", rc.projectionMatrix);
+        setParameter("normalMatrix", rc.normalMatrix);
+        
+        setParameter("prevModelViewProjMatrix", rc.prevModelViewProjMatrix);
+        setParameter("blurModelViewProjMatrix", rc.blurModelViewProjMatrix);
+
+        // diffuse  
         if (idiffuse.texture)
         {
+            setParameter("diffuseTexture", 0);
+            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
+            
             glActiveTexture(GL_TEXTURE0);
             idiffuse.texture.bind();
+        }
+        else
+        {
+            setParameter("diffuseVector", rc.material.diffuse.asVector4f);
+            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
+        }
+        
+        // normal/height
+        bool haveHeightMap = inormal.texture !is null;
+        if (haveHeightMap) 
+            haveHeightMap = inormal.texture.image.channels == 4;
+        
+        if (!haveHeightMap)
+        {
+            if (inormal.texture is null)
+            {
+                if (iheight.texture !is null) // we have height map, but no normal map
+                {
+                    Color4f color = Color4f(0.5f, 0.5f, 1.0f, 0.0f); // default normal pointing upwards                    
+                    inormal.texture = rc.material.makeTexture(color, iheight.texture);
+                    haveHeightMap = true;
+                }
+            }
+            else
+            {
+                if (iheight.texture !is null) // we have both normal and height maps
+                {
+                    inormal.texture = rc.material.makeTexture(inormal.texture, iheight.texture);
+                    haveHeightMap = true;
+                }
+            }
         }
         
         if (inormal.texture)
         {
+            setParameter("normalTexture", 1);
+            setParameterSubroutine("normal", ShaderType.Fragment, "normalMap");
+            
             glActiveTexture(GL_TEXTURE1);
             inormal.texture.bind();
         }
-
+        else
+        {
+            setParameter("normalVector", rc.material.normal.asVector3f);
+            setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
+        }
+        
+        // TODO: make material properties
+        float parallaxScale = 0.03f;
+        float parallaxBias = -0.01f;
+        setParameter("parallaxScale", parallaxScale);
+        setParameter("parallaxBias", parallaxBias);
+        
+        if (haveHeightMap)
+        {
+            setParameterSubroutine("height", ShaderType.Fragment, "heightMap");
+        }
+        else
+        {
+            float h = -parallaxBias / parallaxScale;            
+            setParameter("heightScalar", h);
+            setParameterSubroutine("height", ShaderType.Fragment, "heightValue");
+        }
+        
+        // pbr
+        // TODO: pass solid values as uniforms, make subroutine for each mode
         if (ipbr is null)
         {
             rc.material.setInput("pbr", 0.0f);
@@ -96,98 +163,9 @@ class StandardForwardShader: Shader
         glActiveTexture(GL_TEXTURE2);
         ipbr.texture.bind();
         
-        if (rc.environment.environmentMap)
-        {
-            glActiveTexture(GL_TEXTURE4);
-            rc.environment.environmentMap.bind();
-        }
-        
-        if (useShadows)
-        {
-            glActiveTexture(GL_TEXTURE5);
-            glBindTexture(GL_TEXTURE_2D_ARRAY, shadowMap.depthTexture);
-        }
-        
-        setParameter("modelViewMatrix", rc.modelViewMatrix);
-        setParameter("projectionMatrix", rc.projectionMatrix);
-        setParameter("normalMatrix", rc.normalMatrix);
-        setParameter("viewMatrix", rc.viewMatrix);
-        setParameter("invViewMatrix", rc.invViewMatrix);
-
-        setParameter("sunDirection", rc.environment.sunDirectionEye(rc.viewMatrix));
-        setParameter("sunColor", rc.environment.sunColor);
-        setParameter("sunEnergy", rc.environment.sunEnergy);
-        
-        // diffuse  
-        if (idiffuse.texture)
-        {
-            setParameter("diffuseTexture", 0);
-            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
-        }
-        else
-        {
-            setParameter("diffuseVector", rc.material.diffuse.asVector4f);
-            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
-        }
-        
-        // normal  
-        if (inormal.texture)
-        {
-            setParameter("normalTexture", 1);
-            setParameterSubroutine("normal", ShaderType.Fragment, "normalMap");
-        }
-        else
-        {
-            setParameter("normalVector", rc.material.normal.asVector3f);
-            setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
-        }
-        
-        // pbr
-        // TODO: pass solid values as uniforms, make subroutine for each mode
         setParameter("pbrTexture", 2);
         
-        // environment
-        if (rc.environment.environmentMap)
-        {
-            setParameter("envTexture", 4);
-            setParameterSubroutine("environment", ShaderType.Fragment, "environmentTexture");
-        }
-        else
-        {
-            setParameter("skyZenithColor", rc.environment.skyZenithColor);
-            setParameter("skyHorizonColor", rc.environment.skyHorizonColor);
-            setParameter("groundColor", rc.environment.groundColor);
-            setParameter("skyEnergy", rc.environment.skyEnergy);
-            setParameter("groundEnergy", rc.environment.groundEnergy);
-            setParameterSubroutine("environment", ShaderType.Fragment, "environmentSky");
-        }
-        
-        // shadowMap
-        if (useShadows)
-        {
-            setParameter("shadowMatrix1", shadowMap.area1.shadowMatrix);
-            setParameter("shadowMatrix2", shadowMap.area2.shadowMatrix);
-            setParameter("shadowMatrix3", shadowMap.area3.shadowMatrix);
-            
-            setParameter("shadowTextureSize", cast(float)shadowMap.size);
-            setParameter("shadowTextureArray", 5);
-            
-            setParameterSubroutine("shadow", ShaderType.Fragment, "shadowCSM");
-        }
-        else
-        {
-            setParameter("shadowMatrix1", defaultShadowMatrix);
-            setParameter("shadowMatrix2", defaultShadowMatrix);
-            setParameter("shadowMatrix3", defaultShadowMatrix);
-            
-            setParameterSubroutine("shadow", ShaderType.Fragment, "shadowNone");
-        }
-        
-        // BRDF
-        if (shadeless)
-            setParameterSubroutine("brdf", ShaderType.Fragment, "brdfEmission");
-        else
-            setParameterSubroutine("brdf", ShaderType.Fragment, "brdfPBR");
+        //TODO: emission
         
         super.bind(rc);
     }

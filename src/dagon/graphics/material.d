@@ -239,7 +239,62 @@ abstract class Material: Owner
         return res;
     }
     
-    final Texture makeTextureFromInputs(MaterialInput r, MaterialInput g, MaterialInput b, MaterialInput a)
+    final Texture makeTexture(Color4f rgb, Texture alpha)
+    {
+        SuperImage rgbaImg = New!UnmanagedImageRGBA8(alpha.width, alpha.height);
+        
+        foreach(y; 0..alpha.height)
+        foreach(x; 0..alpha.width)
+        {
+            Color4f col = rgb;
+            col.a = alpha.image[x, y].r;
+            rgbaImg[x, y] = col;
+        }
+            
+        auto tex = New!Texture(rgbaImg, this);
+        return tex;
+    }
+    
+    final Texture makeTexture(Texture rgb, float alpha)
+    {
+        SuperImage rgbaImg = New!UnmanagedImageRGBA8(rgb.width, rgb.height);
+        
+        foreach(y; 0..rgb.height)
+        foreach(x; 0..rgb.width)
+        {
+            Color4f col = rgb.image[x, y];
+            col.a = alpha;
+            rgbaImg[x, y] = col;
+        }
+            
+        auto tex = New!Texture(rgbaImg, this);
+        return tex;
+    }
+    
+    final Texture makeTexture(Texture rgb, Texture alpha)
+    {
+        uint width = max(rgb.width, alpha.width);
+        uint height = max(rgb.height, alpha.height);
+            
+        SuperImage rgbaImg = New!UnmanagedImageRGBA8(width, height);
+        
+        foreach(y; 0..rgbaImg.height)
+        foreach(x; 0..rgbaImg.width)
+        {            
+            float u = cast(float)x / cast(float)width;
+            float v = cast(float)y / cast(float)height;
+            
+            Color4f col = rgb.sample(u, v);
+            col.a = alpha.sample(u, v).r;
+            
+            rgbaImg[x, y] = col;
+        }
+            
+        auto tex = New!Texture(rgbaImg, this);
+        return tex;
+    }
+    
+    final Texture makeTexture(MaterialInput r, MaterialInput g, MaterialInput b, MaterialInput a)
     {
         uint width = 8;
         uint height = 8;

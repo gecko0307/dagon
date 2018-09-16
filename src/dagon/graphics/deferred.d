@@ -129,6 +129,11 @@ class DeferredEnvironmentPass: Owner
         layout(location = 1) out vec4 frag_luminance;
         
         const float eyeSpaceNormalShift = 0.05;
+
+        vec3 toLinear(vec3 v)
+        {
+            return pow(v, vec3(2.2));
+        }
         
         float shadowLookup(in sampler2DArrayShadow depths, in float layer, in vec4 coord, in vec2 offset)
         {
@@ -177,15 +182,31 @@ class DeferredEnvironmentPass: Owner
             float s = (x + x * k - k * 0.5 - 0.5) / (abs(x * k * 4.0 - k * 2.0) - k + 1.0) + 0.5;
             return clamp(s, 0.0, 1.0);
         }
-
+/*
         vec3 sky(vec3 wN, vec3 wSun, float roughness)
         {
             float downOrUp = dot(wN, vec3(0, 1, 0)) * 0.5 + 0.5;
             float groundOrSky = sigmoid(downOrUp, 1.0 - roughness);
             float horizonOrZenith = clamp(dot(wN, vec3(0, 1, 0)), 0.0, 1.0);
-            vec3 env1 = mix(groundColor * groundEnergy, skyHorizonColor * skyEnergy, groundOrSky);
-            vec3 env2 = mix(env1, skyZenithColor * skyEnergy, horizonOrZenith);
+            vec3 env1 = mix(toLinear(groundColor) * groundEnergy, toLinear(skyHorizonColor) * skyEnergy, groundOrSky);
+            vec3 env2 = mix(env1, toLinear(skyZenithColor) * skyEnergy, horizonOrZenith);
             return env2;
+        }
+*/
+        vec3 sky(vec3 wN, vec3 wSun, float roughness)
+        {
+            float p1 = clamp(roughness, 0.5, 1.0);
+            float p2 = clamp(roughness, 0.4, 1.0);
+
+            float horizonOrZenith = pow(clamp(dot(wN, vec3(0, 1, 0)), 0.0, 1.0), p1);
+            float groundOrSky = pow(clamp(dot(wN, vec3(0, -1, 0)), 0.0, 1.0), p2);
+
+            vec3 env = mix(
+                mix(toLinear(skyHorizonColor.rgb) * skyEnergy, 
+                    toLinear(groundColor.rgb) * groundEnergy, groundOrSky), 
+                    toLinear(skyZenithColor.rgb) * skyEnergy, horizonOrZenith);
+                    
+            return env;
         }
         
         vec3 fresnel(float cosTheta, vec3 f0)
@@ -262,11 +283,6 @@ class DeferredEnvironmentPass: Owner
         // TODO: make uniform
         const float ssaoRadius = 0.5;
         const float ssaoFalloff = 100.0;
-        
-        vec3 toLinear(vec3 v)
-        {
-            return pow(v, vec3(2.2));
-        }
         
         float luminance(vec3 color)
         {
@@ -376,7 +392,7 @@ class DeferredEnvironmentPass: Owner
                 float denominator = 4.0 * max(dot(N, E), 0.0) * NL;
                 vec3 specular = numerator / max(denominator, 0.001);
 
-                radiance += (kD * albedo / PI + specular) * sunColor * sunEnergy * s1 * NL;
+                radiance += (kD * albedo / PI + specular) * toLinear(sunColor.rgb) * sunEnergy * s1 * NL;
             }
             
             // Ambient light

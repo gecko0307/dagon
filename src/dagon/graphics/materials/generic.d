@@ -413,8 +413,11 @@ class ShaderMaterial: GenericMaterial
         
         RenderingContext rcLocal = *rc;
         rcLocal.material = this;
-    
-        shader.bind(&rcLocal);
+        
+        if (rc.overrideShader)
+            rc.overrideShader.bind(&rcLocal);
+        else
+            shader.bind(&rcLocal);
     }
     
     override void unbind(RenderingContext* rc)
@@ -425,7 +428,10 @@ class ShaderMaterial: GenericMaterial
         RenderingContext rcLocal = *rc;
         rcLocal.material = this;
         
-        shader.unbind(&rcLocal);
+        if (rc.overrideShader)
+            rc.overrideShader.unbind(&rcLocal);
+        else
+            shader.unbind(&rcLocal);
             
         if (!idepthWrite.asBool && rc.depthPass)
         {

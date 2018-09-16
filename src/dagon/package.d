@@ -95,6 +95,7 @@ public
     import dagon.graphics.materials.particle;
 
     import dagon.graphics.shaders.standardforward;
+    import dagon.graphics.shaders.geometrypass;
     
     import dagon.graphics.filters.fxaa;
     import dagon.graphics.filters.lens;
