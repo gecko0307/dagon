@@ -864,7 +864,7 @@ class Scene: BaseScene
         deferredEnvPass = New!DeferredEnvironmentPass(gbuffer, shadowMap, assetManager);
         deferredLightPass = New!DeferredLightPass(gbuffer, lightManager, assetManager);
         
-        sceneFramebuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, true, true, assetManager);
+        sceneFramebuffer = New!Framebuffer(gbuffer, eventManager.windowWidth, eventManager.windowHeight, true, true, assetManager);
         
         ssao.scene = this;
         hdr.scene = this;
@@ -876,13 +876,13 @@ class Scene: BaseScene
         antiAliasing.scene = this;
         lensDistortion.scene = this;
         
-        hblurredFramebuffer = New!Framebuffer(eventManager.windowWidth / 2, eventManager.windowHeight / 2, true, false, assetManager);
+        hblurredFramebuffer = New!Framebuffer(gbuffer, eventManager.windowWidth / 2, eventManager.windowHeight / 2, true, false, assetManager);
         hblur = New!PostFilterBlur(true, sceneFramebuffer, hblurredFramebuffer, assetManager);
         
-        vblurredFramebuffer = New!Framebuffer(eventManager.windowWidth / 2, eventManager.windowHeight / 2, true, false, assetManager);
+        vblurredFramebuffer = New!Framebuffer(gbuffer, eventManager.windowWidth / 2, eventManager.windowHeight / 2, true, false, assetManager);
         vblur = New!PostFilterBlur(false, hblurredFramebuffer, vblurredFramebuffer, assetManager);
         
-        hdrPrepassFramebuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, true, false, assetManager);
+        hdrPrepassFramebuffer = New!Framebuffer(gbuffer, eventManager.windowWidth, eventManager.windowHeight, true, false, assetManager);
         hdrPrepassFilter = New!PostFilterHDRPrepass(sceneFramebuffer, hdrPrepassFramebuffer, assetManager);
         hdrPrepassFilter.blurredTexture = vblurredFramebuffer.colorTexture;
         postFilters.append(hdrPrepassFilter);
@@ -1152,7 +1152,7 @@ class Scene: BaseScene
         if (f.enabled)
         {
             if (f.outputBuffer is null)
-                f.outputBuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, false, false, assetManager);
+                f.outputBuffer = New!Framebuffer(gbuffer, eventManager.windowWidth, eventManager.windowHeight, false, false, assetManager);
                 
             if (f.inputBuffer is null)
                 f.inputBuffer = nextInput;
