@@ -51,7 +51,7 @@ Dagon is still under development and lacks a lot of important functionality. Cur
 
 Usage
 -----
-To use latest stable Dagon, add the following dependency to your `dub.sdl`:
+To use latest stable Dagon, add the following dependency to your `dub.json`:
 ```
 "dagon": "0.8.3"
 ```
