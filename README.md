@@ -5,9 +5,9 @@
 
 Dagon
 =====
-Dagon is a 3D game development framework for D language. It is a reincarnation of [DGL](https://github.com/gecko0307/dgl) with several architecture improvements. Dagon is based on OpenGL 4.0 core profile, SDL2 and Freetype 2.8.1.
+The goal of this project is creating a modern, easy to use, extendable 3D game engine for D language due to the lack of such. Dagon is based on OpenGL 4.0 core profile, SDL2 and Freetype 2.8.1. It works on Windows and Linux, both 32 and 64-bit. It doesn't support macOS because [Apple doesn't support OpenGL anymore](https://developer.apple.com/macos/whats-new/#deprecationofopenglandopencl).
 
-The goal of this project is creating a modern, easy to use, extendable game engine for D due to the lack of such. If you like Dagon, please support its development on [Patreon](https://www.patreon.com/gecko0307) or [Liberapay](https://liberapay.com/gecko0307). You can also make one-time donation via [PayPal](https://www.paypal.me/tgafarov). I appreciate any support. Thanks in advance!
+If you like Dagon, please support its development on [Patreon](https://www.patreon.com/gecko0307) or [Liberapay](https://liberapay.com/gecko0307). You can also make one-time donation via [PayPal](https://www.paypal.me/tgafarov). I appreciate any support. Thanks in advance!
 
 Currently Dagon has the following features:
 * Static and animated meshes, OBJ and [IQM](https://github.com/lsalzman/iqm) formats support
@@ -32,7 +32,10 @@ Currently Dagon has the following features:
 * Built-in camera logics for quick and easy navigation (freeview and first person style view)
 * [Box](https://github.com/gecko0307/box) container support for assets.
 
-Dagon works on Windows and Linux, both 32 and 64-bit. It doesn't support macOS and likely won't because [Apple doesn't support OpenGL anymore](https://developer.apple.com/macos/whats-new/#deprecationofopenglandopencl).
+Planned in future:
+
+* Screen-space reflections
+* Terrain renderer
 
 Screenshots:
 
@@ -46,10 +49,15 @@ Video:
 
 Dagon is still under development and lacks a lot of important functionality. Currently it is not recommended to use Dagon in production due to unstable API.
 
-Upcoming plans:
+Usage
+-----
+To use latest stable Dagon, add the following dependency to your `dub.json`:
+```
+"dagon": "0.8.3"
+```
+If you want to test new features, use `"dagon": "~master"`. The master should be stable enough to compile a working application, but be ready for breaking changes at any time.
 
-* Screen-space reflections
-* Terrain renderer
+If you want to contribute, please send pull requests to `smartshader` branch, which is current development branch. Bug fixes to Dagon 0.8.x series should be sent to `dev_0.8` branch.
 
 Demos
 -----
