@@ -55,9 +55,9 @@ To use latest stable Dagon, add the following dependency to your `dub.json`:
 ```
 "dagon": "0.8.3"
 ```
-If you want to test new features like deferred renderer, use `"dagon": "~master"`. The master should be stable enough to compile a working project, but be ready for breaking changes at any time.
+If you want to test new features, use `"dagon": "~master"`. The master should be stable enough to compile a working application, but be ready for breaking changes at any time.
 
-If you want to contribute new features, please send pull requests to `smartshader` branch, which is current development branch. Bug fixes to Dagon 0.8.x series should be sent to `dev_0.8` branch.
+If you want to contribute, please send pull requests to `smartshader` branch, which is current development branch. Bug fixes to Dagon 0.8.x series should be sent to `dev_0.8` branch.
 
 Demos
 -----
