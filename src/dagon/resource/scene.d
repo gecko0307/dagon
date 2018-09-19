@@ -39,6 +39,9 @@ import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.image.color;
+import dlib.image.image;
+import dlib.image.unmanaged;
+import dlib.image.io.png;
 
 import derelict.opengl;
 
@@ -314,12 +317,26 @@ class SceneManager: Owner
 class SceneApplication: Application
 {
     SceneManager sceneManager;
+    UnmanagedImageFactory imageFactory;
+    SuperImage screenshotBuffer1;
+    SuperImage screenshotBuffer2;
 
     this(uint w, uint h, bool fullscreen, string windowTitle, string[] args)
     {
         super(w, h, fullscreen, windowTitle, args);
 
         sceneManager = New!SceneManager(eventManager, this);
+        
+        imageFactory = New!UnmanagedImageFactory();
+        screenshotBuffer1 = imageFactory.createImage(eventManager.windowWidth, eventManager.windowHeight, 3, 8);
+        screenshotBuffer2 = imageFactory.createImage(eventManager.windowWidth, eventManager.windowHeight, 3, 8);
+    }
+    
+    ~this()
+    {
+        Delete(imageFactory);
+        Delete(screenshotBuffer1);
+        Delete(screenshotBuffer2);
     }
     
     override void onUpdate(double dt)
@@ -330,6 +347,21 @@ class SceneApplication: Application
     override void onRender()
     {
         sceneManager.render();
+    }
+    
+    void saveScreenshot(string filename)
+    {
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glReadPixels(0, 0, eventManager.windowWidth, eventManager.windowHeight, GL_RGB, GL_UNSIGNED_BYTE, screenshotBuffer1.data.ptr);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+
+        foreach(y; 0..screenshotBuffer1.height)
+        foreach(x; 0..screenshotBuffer1.width)
+        {
+            screenshotBuffer2[x, y] = screenshotBuffer1[x, screenshotBuffer1.height - y];
+        }
+        
+        screenshotBuffer2.savePNG(filename);
     }
 }
 
