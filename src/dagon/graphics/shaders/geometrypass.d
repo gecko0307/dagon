@@ -66,7 +66,7 @@ class GeometryPassShader: Shader
         auto iroughness = "roughness" in rc.material.inputs;
         auto imetallic = "metallic" in rc.material.inputs;
         auto iemission = "emission" in rc.material.inputs;
-        auto iEnergy = "energy" in rc.material.inputs;
+        auto ienergy = "energy" in rc.material.inputs;
         
         setParameter("layer", rc.layer);
         setParameter("blurMask", rc.blurMask);
@@ -118,7 +118,7 @@ class GeometryPassShader: Shader
                 }
             }
         }
-        
+
         if (inormal.texture)
         {
             setParameter("normalTexture", 1);
@@ -162,10 +162,26 @@ class GeometryPassShader: Shader
             ipbr.texture = rc.material.makeTexture(*iroughness, *imetallic, materialInput(0.0f), materialInput(0.0f));
         glActiveTexture(GL_TEXTURE2);
         ipbr.texture.bind();
-        
         setParameter("pbrTexture", 2);
         
-        //TODO: emission
+        // emission
+        if (iemission.texture) 
+        {
+            glActiveTexture(GL_TEXTURE3);
+            iemission.texture.bind();
+            
+            setParameter("emissionTexture", 3);
+            setParameterSubroutine("emission", ShaderType.Fragment, "emissionMap");
+        }
+        else
+        {
+            setParameter("emissionVector", rc.material.emission.asVector4f);
+            setParameterSubroutine("emission", ShaderType.Fragment, "emissionValue");
+        }
+        
+        setParameter("emissionEnergy", ienergy.asFloat);
+        
+        glActiveTexture(GL_TEXTURE0);
         
         super.bind(rc);
     }

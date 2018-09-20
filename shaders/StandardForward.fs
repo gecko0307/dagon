@@ -310,10 +310,32 @@ subroutine(srtBRDF) vec3 brdfPBR(in vec3 albedo, in float roughness, in float me
 
 subroutine(srtBRDF) vec3 brdfEmission(in vec3 albedo, in float roughness, in float metallic, in vec3 N)
 {
-    return albedo; // TODO: emission energy
+    return albedo;
 }
 
 subroutine uniform srtBRDF brdf;
+
+
+/*
+ * Emission
+ */
+subroutine vec4 srtEmission(in vec2 uv);
+
+uniform vec4 emissionVector;
+subroutine(srtEmission) vec4 emissionValue(in vec2 uv)
+{            
+    return emissionVector;
+}
+
+uniform sampler2D emissionTexture;
+subroutine(srtEmission) vec4 emissionMap(in vec2 uv)
+{            
+    return texture(emissionTexture, uv);
+}
+
+subroutine uniform srtEmission emission;
+
+uniform float emissionEnergy;
 
 
 float luminance(in vec3 col)
@@ -348,8 +370,9 @@ void main()
     
     vec3 albedo = toLinear(diff.rgb);
     vec4 rms = texture(pbrTexture, texCoord);
+    vec3 emiss = emission(texCoord).rgb * emissionEnergy;
 
-    vec3 Lo = brdf(albedo, rms.r, rms.g, N);
+    vec3 Lo = brdf(albedo, rms.r, rms.g, N) + emiss;
 
     frag_color = vec4(Lo, diff.a);
     frag_luminance = vec4(luminance(Lo) * diff.a, 0.0, 0.0, 1.0);

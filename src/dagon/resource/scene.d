@@ -1163,6 +1163,7 @@ class Scene: BaseScene
         {
             sceneFramebuffer.genLuminanceMipmaps();
             float lum = sceneFramebuffer.averageLuminance();
+            
             if (!isNaN(lum))
             {
                 float newExposure = hdrFilter.keyValue * (1.0f / clamp(lum, hdrFilter.minLuminance, hdrFilter.maxLuminance));

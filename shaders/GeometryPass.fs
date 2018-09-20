@@ -112,12 +112,25 @@ vec2 parallaxMapping(in vec3 E, in vec2 uv, in float height)
 uniform sampler2D pbrTexture;
 
 /*
- * TODO: Emission
+ * Emission
  */
-/*
+subroutine vec4 srtEmission(in vec2 uv);
+
+uniform vec4 emissionVector;
+subroutine(srtEmission) vec4 emissionValue(in vec2 uv)
+{            
+    return emissionVector;
+}
+
 uniform sampler2D emissionTexture;
+subroutine(srtEmission) vec4 emissionMap(in vec2 uv)
+{            
+    return texture(emissionTexture, uv);
+}
+
+subroutine uniform srtEmission emission;
+
 uniform float emissionEnergy;
-*/
 
 layout(location = 0) out vec4 frag_color;
 layout(location = 1) out vec4 frag_rms;
@@ -146,7 +159,7 @@ void main()
     vec4 diffuseColor = diffuse(shiftedTexCoord);
     
     vec4 rms = texture(pbrTexture, shiftedTexCoord);
-    vec3 emission = vec3(0.0, 0.0, 0.0); //texture(emissionTexture, shiftedTexCoord).rgb * emissionEnergy;
+    vec3 emiss = emission(shiftedTexCoord).rgb * emissionEnergy;
     
     float geomMask = float(layer > 0);
     
@@ -155,5 +168,5 @@ void main()
     frag_position = vec4(eyePosition, geomMask);
     frag_normal = vec4(N, 1.0);
     frag_velocity = vec4(screenVelocity, 0.0, blurMask);
-    frag_emission = vec4(emission, 1.0);
+    frag_emission = vec4(emiss, 1.0);
 }

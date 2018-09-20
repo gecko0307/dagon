@@ -69,6 +69,8 @@ class StandardForwardShader: Shader
         auto iroughness = "roughness" in rc.material.inputs;
         auto imetallic = "metallic" in rc.material.inputs;
         auto ipbr = "pbr" in rc.material.inputs;
+        auto iemission = "emission" in rc.material.inputs;
+        auto ienergy = "energy" in rc.material.inputs;
         
         bool shadeless = rc.material.boolProp("shadeless");
         bool useShadows = (shadowMap !is null) && rc.material.boolProp("shadowsEnabled");
@@ -95,6 +97,22 @@ class StandardForwardShader: Shader
             ipbr.texture = rc.material.makeTexture(*iroughness, *imetallic, materialInput(0.0f), materialInput(0.0f));
         glActiveTexture(GL_TEXTURE2);
         ipbr.texture.bind();
+        
+        // emission
+        if (iemission.texture) 
+        {
+            glActiveTexture(GL_TEXTURE3);
+            iemission.texture.bind();
+            
+            setParameter("emissionTexture", 3);
+            setParameterSubroutine("emission", ShaderType.Fragment, "emissionMap");
+        }
+        else
+        {
+            setParameter("emissionVector", rc.material.emission.asVector4f);
+            setParameterSubroutine("emission", ShaderType.Fragment, "emissionValue");
+        }
+        setParameter("emissionEnergy", ienergy.asFloat);
         
         if (rc.environment.environmentMap)
         {
@@ -133,6 +151,8 @@ class StandardForwardShader: Shader
             setParameter("diffuseVector", rc.material.diffuse.asVector4f);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
         }
+        
+        // TODO: height map
         
         // normal  
         if (inormal.texture)
@@ -192,6 +212,8 @@ class StandardForwardShader: Shader
             setParameterSubroutine("brdf", ShaderType.Fragment, "brdfEmission");
         else
             setParameterSubroutine("brdf", ShaderType.Fragment, "brdfPBR");
+        
+        glActiveTexture(GL_TEXTURE0);
         
         super.bind(rc);
     }
