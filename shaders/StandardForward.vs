@@ -14,6 +14,9 @@ out vec4 shadowCoord1;
 out vec4 shadowCoord2;
 out vec4 shadowCoord3;
 
+out vec4 blurPosition;
+out vec4 prevPosition;
+
 const float eyeSpaceNormalShift = 0.05;
 
 uniform mat4 modelViewMatrix;
@@ -24,6 +27,9 @@ uniform mat4 invViewMatrix;
 uniform mat4 shadowMatrix1;
 uniform mat4 shadowMatrix2;
 uniform mat4 shadowMatrix3;
+
+uniform mat4 prevModelViewProjMatrix;
+uniform mat4 blurModelViewProjMatrix;
 
 void main()
 {
@@ -41,6 +47,9 @@ void main()
     shadowCoord1 = shadowMatrix1 * posShifted;
     shadowCoord2 = shadowMatrix2 * posShifted;
     shadowCoord3 = shadowMatrix3 * posShifted;
+    
+    blurPosition = blurModelViewProjMatrix * vec4(va_Vertex, 1.0);
+    prevPosition = prevModelViewProjMatrix * vec4(va_Vertex, 1.0);
 
     gl_Position = projectionMatrix * pos;
 }

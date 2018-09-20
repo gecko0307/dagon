@@ -14,6 +14,11 @@ in vec4 shadowCoord1;
 in vec4 shadowCoord2;
 in vec4 shadowCoord3;
 
+in vec4 blurPosition;
+in vec4 prevPosition;
+
+uniform float blurMask;
+
 uniform mat4 viewMatrix;
 
 vec3 toLinear(vec3 v)
@@ -116,10 +121,10 @@ vec2 envMapEquirect(in vec3 dir)
 uniform sampler2D envTexture;
 subroutine(srtEnv) vec3 environmentTexture(in vec3 wN, in vec3 wSun, in float roughness)
 {
-    //ivec2 envMapSize = textureSize(envTexture, 0);
-    //float maxLod = log2(float(max(envMapSize.x, envMapSize.y)));
-    //float lod = maxLod * roughness;
-    float lod = roughness * 16.0;
+    ivec2 envMapSize = textureSize(envTexture, 0);
+    float maxLod = log2(float(max(envMapSize.x, envMapSize.y)));
+    float lod = maxLod * roughness;
+    //float lod = roughness * 16.0;
     return textureLod(envTexture, envMapEquirect(wN), lod).rgb;
 }
 
@@ -324,6 +329,7 @@ uniform sampler2D pbrTexture;
 
 layout(location = 0) out vec4 frag_color;
 layout(location = 1) out vec4 frag_luminance;
+layout(location = 2) out vec4 frag_velocity;
 
 void main()
 {
@@ -333,6 +339,10 @@ void main()
     mat3 tangentToEye = cotangentFrame(N, eyePosition, texCoord);
     N = normal(texCoord, -1.0, tangentToEye);
     vec3 tE = normalize(E * tangentToEye);
+    
+    vec2 posScreen = (blurPosition.xy / blurPosition.w) * 0.5 + 0.5;
+    vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;
+    vec2 screenVelocity = posScreen - prevPosScreen;
 
     vec4 diff = diffuse(texCoord);
     
@@ -343,4 +353,5 @@ void main()
 
     frag_color = vec4(Lo, diff.a);
     frag_luminance = vec4(luminance(Lo) * diff.a, 0.0, 0.0, 1.0);
+    frag_velocity = vec4(screenVelocity, 0.0, blurMask);
 }

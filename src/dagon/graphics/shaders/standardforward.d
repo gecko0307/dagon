@@ -113,6 +113,10 @@ class StandardForwardShader: Shader
         setParameter("normalMatrix", rc.normalMatrix);
         setParameter("viewMatrix", rc.viewMatrix);
         setParameter("invViewMatrix", rc.invViewMatrix);
+        
+        setParameter("prevModelViewProjMatrix", rc.prevModelViewProjMatrix);
+        setParameter("blurModelViewProjMatrix", rc.blurModelViewProjMatrix);
+        setParameter("blurMask", rc.blurMask);
 
         setParameter("sunDirection", rc.environment.sunDirectionEye(rc.viewMatrix));
         setParameter("sunColor", rc.environment.sunColor);
