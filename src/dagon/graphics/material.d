@@ -97,11 +97,7 @@ struct MaterialInput
     Color4f sample(float u, float v)
     {
         if (texture !is null)
-        {
-            int x = cast(int)floor(u * texture.width);
-            int y = cast(int)floor(v * texture.height);
-            return texture.image[x, y];
-        }
+            return texture.sample(u, v);
         else if (type == MaterialInputType.Vec4)
             return Color4f(asVector4f);
         else if (type == MaterialInputType.Vec3)

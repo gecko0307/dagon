@@ -145,7 +145,9 @@ class Texture: Owner
     
     Color4f sample(float u, float v)
     {
-        return image.bilinearPixel(u, v);
+        int x = cast(int)floor(u * width);
+        int y = cast(int)floor(v * height);
+        return image[x, y];
     }
 
     void release()

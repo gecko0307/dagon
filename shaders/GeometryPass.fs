@@ -138,7 +138,7 @@ void main()
     vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;
     vec2 screenVelocity = posScreen - prevPosScreen;
 
-    // TODO: parallax occlusion mapping support
+    // TODO: parallax occlusion mapping
     vec2 shiftedTexCoord = parallaxMapping(tE, texCoord, height(texCoord));
     
     N = normal(shiftedTexCoord, -1.0, tangentToEye);
