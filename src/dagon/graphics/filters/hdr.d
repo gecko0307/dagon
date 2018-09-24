@@ -166,19 +166,23 @@ class PostFilterHDR: PostFilter
             
             if (useMotionBlur)
             {
-                vec2 blurVec = texture(fbVelocity, texCoord).xy;
+                vec2 blurVec = texture(fbVelocity, texCoord).xy;                
                 float depthRef = texture(fbPosition, texCoord).z;
                 blurVec = blurVec / (timeStep * shutterFps);
-                float invSamplesMinusOne = 1.0 / float(motionBlurSamples - 1);
+                
+                float speed = length(blurVec * viewSize);
+                int nSamples = clamp(int(speed), 1, motionBlurSamples);
+                
+                float invSamplesMinusOne = 1.0 / float(nSamples - 1);
                 float usedSamples = 1.0;
                 const float depthThreshold = 20.0;
                 
-                for (float i = 1.0; i < motionBlurSamples; i++)
+                for (int i = 1; i < nSamples; i++)
                 {
-                    vec2 offset = blurVec * (i * invSamplesMinusOne - 0.5);
+                    vec2 offset = blurVec * (float(i) * invSamplesMinusOne - 0.5);
                     float mask = texture(fbVelocity, texCoord + offset).w;
                     float depth = texture(fbPosition, texCoord + offset).z;
-                    float depthWeight = 1.0 - clamp(abs(depth - depthRef), 0.0, depthThreshold) / depthThreshold;
+                    float depthWeight = 1.0; //1.0 - clamp(abs(depth - depthRef), 0.0, depthThreshold) / depthThreshold;
                     res += texture(fbColor, texCoord + offset).rgb * mask * depthWeight;
                     usedSamples += mask * depthWeight;
                 }
