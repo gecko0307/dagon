@@ -12,36 +12,28 @@ uniform vec2 viewSize;
 
 uniform sampler2DArrayShadow shadowTextureArray;
 uniform float shadowTextureSize;
-//uniform bool useShadows;
 uniform mat4 shadowMatrix1;
 uniform mat4 shadowMatrix2;
 uniform mat4 shadowMatrix3;
 
 uniform sampler2D environmentMap;
-uniform bool useEnvironmentMap;
+//uniform bool useEnvironmentMap;
 
 uniform mat4 camViewMatrix;
 uniform mat4 camInvViewMatrix;
 uniform mat4 camProjectionMatrix;
 
 uniform vec3 sunDirection;
-uniform vec3 sunColor;
+uniform vec4 sunColor;
 uniform float sunEnergy;
-uniform vec3 skyZenithColor;
-uniform vec3 skyHorizonColor;
-uniform vec3 groundColor;
-uniform float skyEnergy;
-uniform float groundEnergy;
-uniform vec3 fogColor;
+
+uniform vec4 fogColor;
 uniform float fogStart;
 uniform float fogEnd;
 
 uniform bool enableSSAO;
 
 in vec2 texCoord;
-
-layout(location = 0) out vec4 frag_color;
-layout(location = 1) out vec4 frag_luminance;
 
 const float eyeSpaceNormalShift = 0.05;
 
@@ -92,13 +84,26 @@ float rescale(float x, float mi, float ma)
     return (max(x, mi) - mi) / (ma - mi);
 }
 
+/*
 float sigmoid(float x, float k)
 {
     float s = (x + x * k - k * 0.5 - 0.5) / (abs(x * k * 4.0 - k * 2.0) - k + 1.0) + 0.5;
     return clamp(s, 0.0, 1.0);
 }
+*/
 
-vec3 sky(vec3 wN, vec3 wSun, float roughness)
+/*
+ * Environment subroutines.
+ * Used to switch sky/envmap.
+ */
+subroutine vec3 srtEnv(in vec3 wN, in vec3 wSun, in float roughness);
+
+uniform vec4 skyZenithColor;
+uniform vec4 skyHorizonColor;
+uniform vec4 groundColor;
+uniform float skyEnergy;
+uniform float groundEnergy;
+subroutine(srtEnv) vec3 environmentSky(in vec3 wN, in vec3 wSun, in float roughness)
 {
     float p1 = clamp(roughness, 0.5, 1.0);
     float p2 = clamp(roughness, 0.4, 1.0);
@@ -110,9 +115,28 @@ vec3 sky(vec3 wN, vec3 wSun, float roughness)
         mix(toLinear(skyHorizonColor.rgb) * skyEnergy, 
             toLinear(groundColor.rgb) * groundEnergy, groundOrSky), 
             toLinear(skyZenithColor.rgb) * skyEnergy, horizonOrZenith);
-    
+            
     return env;
 }
+
+vec2 envMapEquirect(in vec3 dir)
+{
+    float phi = acos(dir.y);
+    float theta = atan(dir.x, dir.z) + PI;
+    return vec2(theta / PI2, phi / PI);
+}
+
+uniform sampler2D envTexture;
+subroutine(srtEnv) vec3 environmentTexture(in vec3 wN, in vec3 wSun, in float roughness)
+{
+    ivec2 envMapSize = textureSize(envTexture, 0);
+    float maxLod = log2(float(max(envMapSize.x, envMapSize.y)));
+    float lod = maxLod * roughness;
+    //float lod = roughness * 16.0;
+    return textureLod(envTexture, envMapEquirect(wN), lod).rgb;
+}
+
+subroutine uniform srtEnv environment;
 
 vec3 fresnel(float cosTheta, vec3 f0)
 {
@@ -154,13 +178,6 @@ float geometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
     return ggx1 * ggx2;
 }
 
-vec2 envMapEquirect(vec3 dir)
-{
-    float phi = acos(dir.y);
-    float theta = atan(dir.x, dir.z) + PI;
-    return vec2(theta / PI2, phi / PI);
-}
-
 vec3 noise(vec2 coord)
 {
     float noiseX, noiseY, noiseZ;
@@ -197,6 +214,9 @@ float luminance(vec3 color)
         color.z * 0.06
     );
 }
+
+layout(location = 0) out vec4 frag_color;
+layout(location = 1) out vec4 frag_luminance;
 
 void main()
 {
@@ -297,35 +317,20 @@ void main()
         float denominator = 4.0 * max(dot(N, E), 0.0) * NL;
         vec3 specular = numerator / max(denominator, 0.001);
 
-        radiance += (kD * albedo / PI + specular) * toLinear(sunColor.rgb) * sunEnergy * s1 * NL;
+        radiance += (kD * albedo / PI + specular) * toLinear(sunColor.rgb) * NL * sunEnergy * s1;
     }
     
     // Ambient light
-    vec3 ambientDiffuse;
-    vec3 ambientSpecular;
-    if (useEnvironmentMap)
     {
-        ivec2 envMapSize = textureSize(environmentMap, 0);
-        float maxLod = log2(float(max(envMapSize.x, envMapSize.y))) - 2.0;
-        float diffLod = maxLod - 1.0;
-        float specLod = maxLod * roughness;
+        vec3 ambientDiffuse = environment(worldN, worldSun, 0.9);
+        vec3 ambientSpecular = environment(worldR, worldSun, roughness);
     
-        ambientDiffuse = textureLod(environmentMap, envMapEquirect(worldN), diffLod).rgb;
-        ambientSpecular = textureLod(environmentMap, envMapEquirect(worldR), specLod).rgb;
+        vec3 F = fresnelRoughness(max(dot(N, E), 0.0), f0, roughness);
+        vec3 kS = F;
+        vec3 kD = 1.0 - kS;
+        kD *= 1.0 - metallic;
+        radiance += kD * ambientDiffuse * albedo + F * ambientSpecular;
     }
-    else
-    {
-        ambientDiffuse = sky(worldN, worldSun, 1.0);
-        ambientSpecular = sky(worldR, worldSun, roughness);
-    }
-    
-    vec3 F = fresnelRoughness(max(dot(N, E), 0.0), f0, roughness);
-    vec3 kS = F;
-    vec3 kD = 1.0 - kS;
-    kD *= 1.0 - metallic;
-    vec3 diffuse = ambientDiffuse * albedo;
-    vec3 ambient = kD * diffuse + F * ambientSpecular;
-    radiance += ambient;
     
     // Emission
     radiance += texture(emissionBuffer, texCoord).rgb;
@@ -336,7 +341,7 @@ void main()
     // Fog
     float linearDepth = abs(eyePos.z);
     float fogFactor = clamp((fogEnd - linearDepth) / (fogEnd - fogStart), 0.0, 1.0);
-    radiance = mix(fogColor, radiance, fogFactor);
+    radiance = mix(toLinear(fogColor.rgb), radiance, fogFactor);
 
     frag_color = vec4(radiance, 1.0);
     frag_luminance = vec4(luminance(radiance), 0.0, 0.0, 1.0);

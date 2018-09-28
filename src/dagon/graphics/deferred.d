@@ -45,6 +45,147 @@ import dagon.graphics.shadow;
 import dagon.graphics.light;
 import dagon.graphics.shapes;
 
+import dagon.graphics.shader;
+
+class EnvironmentPassShader: Shader
+{
+    string vs = import("EnvironmentPass.vs");
+    string fs = import("EnvironmentPass.fs");
+    
+    GBuffer gbuffer;
+    CascadedShadowMap shadowMap;
+    
+    Matrix4x4f defaultShadowMatrix;
+    
+    bool enableSSAO = false;
+    
+    this(GBuffer gbuffer, CascadedShadowMap shadowMap, Owner o)
+    {
+        auto myProgram = New!ShaderProgram(vs, fs, this);
+        super(myProgram, o);
+        this.gbuffer = gbuffer;
+        this.shadowMap = shadowMap;
+        this.defaultShadowMatrix = Matrix4x4f.identity;
+    }
+    
+    void bind(RenderingContext* rc2d, RenderingContext* rc3d)
+    {        
+        setParameter("modelViewMatrix", rc2d.modelViewMatrix);
+        setParameter("projectionMatrix", rc2d.projectionMatrix);
+        
+        setParameter("camProjectionMatrix", rc3d.projectionMatrix);
+        setParameter("camViewMatrix", rc3d.viewMatrix);
+        setParameter("camInvViewMatrix", rc3d.invViewMatrix);
+        
+        setParameter("viewSize", Vector2f(rc3d.eventManager.windowWidth, rc3d.eventManager.windowHeight));
+        
+        setParameter("sunDirection", rc3d.environment.sunDirectionEye(rc3d.viewMatrix));
+        setParameter("sunColor", rc3d.environment.sunColor);
+        setParameter("sunEnergy", rc3d.environment.sunEnergy);
+        
+        // Texture 0 - color buffer
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, gbuffer.colorTexture);
+        setParameter("colorBuffer", 0);
+        
+        // Texture 1 - roughness-metallic-specularity buffer
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, gbuffer.rmsTexture);
+        setParameter("rmsBuffer", 1);
+        
+        // Texture 2 - position buffer
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, gbuffer.positionTexture);
+        setParameter("positionBuffer", 2);
+        
+        // Texture 3 - normal buffer
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, gbuffer.normalTexture);
+        setParameter("normalBuffer", 3);
+        
+        // Texture 4 - environment
+        if (rc3d.environment.environmentMap)
+        {
+            glActiveTexture(GL_TEXTURE4);
+            rc3d.environment.environmentMap.bind();
+            setParameter("envTexture", 4);
+            setParameterSubroutine("environment", ShaderType.Fragment, "environmentTexture");
+        }
+        else
+        {
+            setParameter("skyZenithColor", rc3d.environment.skyZenithColor);
+            setParameter("skyHorizonColor", rc3d.environment.skyHorizonColor);
+            setParameter("groundColor", rc3d.environment.groundColor);
+            setParameter("skyEnergy", rc3d.environment.skyEnergy);
+            setParameter("groundEnergy", rc3d.environment.groundEnergy);
+            setParameterSubroutine("environment", ShaderType.Fragment, "environmentSky");
+        }
+        
+        // Texture 5 - emission buffer
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, gbuffer.emissionTexture);
+        setParameter("emissionBuffer", 5);
+        
+        // Texture 6 - shadow map cascades (3 layer texture array)
+        if (shadowMap)
+        {
+            glActiveTexture(GL_TEXTURE6);
+            glBindTexture(GL_TEXTURE_2D_ARRAY, shadowMap.depthTexture);
+            setParameter("shadowTextureArray", 6);
+            setParameter("shadowTextureSize", cast(float)shadowMap.size);
+            setParameter("shadowMatrix1", shadowMap.area1.shadowMatrix);
+            setParameter("shadowMatrix2", shadowMap.area2.shadowMatrix);
+            setParameter("shadowMatrix3", shadowMap.area3.shadowMatrix);
+        }
+        else
+        {
+            setParameter("shadowMatrix1", defaultShadowMatrix);
+            setParameter("shadowMatrix2", defaultShadowMatrix);
+            setParameter("shadowMatrix3", defaultShadowMatrix);
+        }
+
+        // SSAO
+        setParameter("enableSSAO", enableSSAO);
+        
+        // Fog
+        setParameter("fogColor", rc3d.environment.fogColor);
+        setParameter("fogStart", rc3d.environment.fogStart);
+        setParameter("fogEnd", rc3d.environment.fogEnd);
+        
+        glActiveTexture(GL_TEXTURE0);
+        
+        super.bind(rc2d);
+    }
+    
+    void unbind(RenderingContext* rc2d, RenderingContext* rc3d)
+    {
+        super.unbind(rc2d);
+        
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE4);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE6);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+        
+        glActiveTexture(GL_TEXTURE0);
+    }
+}
+
 class DeferredEnvironmentPass: Owner
 {
     Vector2f[4] vertices;
@@ -56,57 +197,10 @@ class DeferredEnvironmentPass: Owner
     GLuint tbo = 0;
     GLuint eao = 0;
     
-    GLenum envPassShaderVert;
-    GLenum envPassShaderFrag;
-    GLenum envPassShaderProgram;
-    
-    private string envPassVsText = import("EnvironmentPass.vs");
-    private string envPassFsText = import("EnvironmentPass.fs");
-    
-    GLint modelViewMatrixLoc;
-    GLint projectionMatrixLoc;
-    
-    GLint colorBufferLoc;
-    GLint rmsBufferLoc;
-    GLint positionBufferLoc;
-    GLint normalBufferLoc;
-    GLint emissionBufferLoc;
-    
-    GLint viewportSizeLoc;
-    
-    GLint sunDirectionLoc;
-    GLint sunColorLoc;
-    GLint sunEnergyLoc;
-    
-    GLint skyZenithColorLoc;
-    GLint skyHorizonColorLoc;
-    GLint skyEnergyLoc;
-    GLint groundColorLoc;
-    GLint groundEnergyLoc;
-    GLint fogStartLoc;
-    GLint fogEndLoc;
-    GLint fogColorLoc;
-    
-    GLint shadowMatrix1Loc;
-    GLint shadowMatrix2Loc; 
-    GLint shadowMatrix3Loc;
-    GLint shadowTextureArrayLoc;
-    GLint shadowTextureSizeLoc;
-    
-    GLint environmentMapLoc;
-    GLint useEnvironmentMapLoc;
-    
-    GLint camProjectionMatrixLoc;
-    GLint camViewMatrixLoc;
-    GLint camInvViewMatrixLoc;
-    
-    GLint enableSSAOLoc;
+    EnvironmentPassShader shader;
     
     GBuffer gbuffer;
     CascadedShadowMap shadowMap;
-    bool enableSSAO = false;
-    
-    Matrix4x4f defaultShadowMatrix;
 
     this(GBuffer gbuffer, CascadedShadowMap shadowMap, Owner o)
     {
@@ -114,6 +208,7 @@ class DeferredEnvironmentPass: Owner
         
         this.gbuffer = gbuffer;
         this.shadowMap = shadowMap;
+        this.shader = New!EnvironmentPassShader(gbuffer, shadowMap, this);
         
         vertices[0] = Vector2f(0, 0);
         vertices[1] = Vector2f(0, 1);
@@ -158,84 +253,6 @@ class DeferredEnvironmentPass: Owner
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, null);
 
         glBindVertexArray(0);
-        
-        const(char*)pvs = envPassVsText.ptr;
-        const(char*)pfs = envPassFsText.ptr;
-        
-        char[1000] infobuffer = 0;
-        int infobufferlen = 0;
-
-        envPassShaderVert = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(envPassShaderVert, 1, &pvs, null);
-        glCompileShader(envPassShaderVert);
-        GLint success = 0;
-        glGetShaderiv(envPassShaderVert, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
-            GLint logSize = 0;
-            glGetShaderiv(envPassShaderVert, GL_INFO_LOG_LENGTH, &logSize);
-            glGetShaderInfoLog(envPassShaderVert, 999, &logSize, infobuffer.ptr);
-            writeln("Error in vertex shader:");
-            writeln(infobuffer[0..logSize]);
-        }
-
-        envPassShaderFrag = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(envPassShaderFrag, 1, &pfs, null);
-        glCompileShader(envPassShaderFrag);
-        success = 0;
-        glGetShaderiv(envPassShaderFrag, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
-            GLint logSize = 0;
-            glGetShaderiv(envPassShaderFrag, GL_INFO_LOG_LENGTH, &logSize);
-            glGetShaderInfoLog(envPassShaderFrag, 999, &logSize, infobuffer.ptr);
-            writeln("Error in fragment shader:");
-            writeln(infobuffer[0..logSize]);
-        }
-
-        envPassShaderProgram = glCreateProgram();
-        glAttachShader(envPassShaderProgram, envPassShaderVert);
-        glAttachShader(envPassShaderProgram, envPassShaderFrag);
-        glLinkProgram(envPassShaderProgram);
-        
-        modelViewMatrixLoc = glGetUniformLocation(envPassShaderProgram, "modelViewMatrix");
-        projectionMatrixLoc = glGetUniformLocation(envPassShaderProgram, "projectionMatrix");
-
-        viewportSizeLoc = glGetUniformLocation(envPassShaderProgram, "viewSize");
-        
-        colorBufferLoc = glGetUniformLocation(envPassShaderProgram, "colorBuffer");
-        rmsBufferLoc = glGetUniformLocation(envPassShaderProgram, "rmsBuffer");
-        positionBufferLoc = glGetUniformLocation(envPassShaderProgram, "positionBuffer");
-        normalBufferLoc = glGetUniformLocation(envPassShaderProgram, "normalBuffer");
-        emissionBufferLoc = glGetUniformLocation(envPassShaderProgram, "emissionBuffer");
-        
-        sunDirectionLoc = glGetUniformLocation(envPassShaderProgram, "sunDirection");
-        sunColorLoc = glGetUniformLocation(envPassShaderProgram, "sunColor");
-        sunEnergyLoc = glGetUniformLocation(envPassShaderProgram, "sunEnergy");
-     
-        skyZenithColorLoc = glGetUniformLocation(envPassShaderProgram, "skyZenithColor");
-        skyHorizonColorLoc = glGetUniformLocation(envPassShaderProgram, "skyHorizonColor");
-        skyEnergyLoc = glGetUniformLocation(envPassShaderProgram, "skyEnergy");
-        groundColorLoc = glGetUniformLocation(envPassShaderProgram, "groundColor");
-        groundEnergyLoc = glGetUniformLocation(envPassShaderProgram, "groundEnergy");
-        fogStartLoc = glGetUniformLocation(envPassShaderProgram, "fogStart");
-        fogEndLoc = glGetUniformLocation(envPassShaderProgram, "fogEnd");
-        fogColorLoc = glGetUniformLocation(envPassShaderProgram, "fogColor");
-        
-        shadowMatrix1Loc = glGetUniformLocation(envPassShaderProgram, "shadowMatrix1");
-        shadowMatrix2Loc = glGetUniformLocation(envPassShaderProgram, "shadowMatrix2");
-        shadowMatrix3Loc = glGetUniformLocation(envPassShaderProgram, "shadowMatrix3");
-        shadowTextureArrayLoc = glGetUniformLocation(envPassShaderProgram, "shadowTextureArray");
-        shadowTextureSizeLoc = glGetUniformLocation(envPassShaderProgram, "shadowTextureSize");
-        
-        environmentMapLoc = glGetUniformLocation(envPassShaderProgram, "environmentMap");
-        useEnvironmentMapLoc = glGetUniformLocation(envPassShaderProgram, "useEnvironmentMap");
-        
-        enableSSAOLoc = glGetUniformLocation(envPassShaderProgram, "enableSSAO");
-        
-        camProjectionMatrixLoc = glGetUniformLocation(envPassShaderProgram, "camProjectionMatrix");
-        camViewMatrixLoc = glGetUniformLocation(envPassShaderProgram, "camViewMatrix");
-        camInvViewMatrixLoc = glGetUniformLocation(envPassShaderProgram, "camInvViewMatrix");
     }
     
     ~this()
@@ -247,137 +264,9 @@ class DeferredEnvironmentPass: Owner
     }
     
     void render(RenderingContext* rc2d, RenderingContext* rc3d)
-    {    
-        glUseProgram(envPassShaderProgram);
+    {
+        shader.bind(rc2d, rc3d);
         
-        glUniformMatrix4fv(modelViewMatrixLoc, 1, 0, rc2d.viewMatrix.arrayof.ptr);
-        glUniformMatrix4fv(projectionMatrixLoc, 1, 0, rc2d.projectionMatrix.arrayof.ptr);
-        
-        Vector2f viewportSize;
-        
-        viewportSize = Vector2f(rc3d.eventManager.windowWidth, rc3d.eventManager.windowHeight);
-        glUniform2fv(viewportSizeLoc, 1, viewportSize.arrayof.ptr);
-
-        Vector4f sunVector = Vector4f(0.0f, 1.0f, 0.0, 0.0f);
-        Vector3f sunColor = Vector3f(1.0f, 1.0f, 1.0f);
-        float sunEnergy = 100.0f;
-        Color4f skyZenithColor = Color4f(0, 0, 0, 0);
-        Color4f skyHorizonColor = Color4f(0, 0, 0, 0);
-        float skyEnergy = 1.0f;
-        Color4f groundColor = Color4f(0, 0, 0, 0);
-        float groundEnergy = 1.0f;
-        if (rc3d.environment)
-        {
-            sunVector = Vector4f(rc3d.environment.sunDirection);
-            sunVector.w = 0.0;
-            
-            sunColor = rc3d.environment.sunColor;
-            sunEnergy = rc3d.environment.sunEnergy;
-            
-            skyZenithColor = rc3d.environment.skyZenithColor;
-            skyHorizonColor = rc3d.environment.skyHorizonColor;
-            groundColor = rc3d.environment.groundColor;
-            skyEnergy = rc3d.environment.skyEnergy;
-            groundEnergy = rc3d.environment.groundEnergy;
-        }
-        
-        Vector3f sunDirectionEye = sunVector * rc3d.viewMatrix;
-        glUniform3fv(sunDirectionLoc, 1, sunDirectionEye.arrayof.ptr);
-        glUniform3fv(sunColorLoc, 1, sunColor.arrayof.ptr);
-        glUniform1f(sunEnergyLoc, sunEnergy);
-
-        glUniform3fv(skyZenithColorLoc, 1, skyZenithColor.arrayof.ptr);
-        glUniform3fv(skyHorizonColorLoc, 1, skyHorizonColor.arrayof.ptr);
-        glUniform1f(skyEnergyLoc, skyEnergy);
-        glUniform3fv(groundColorLoc, 1, groundColor.arrayof.ptr);
-        glUniform1f(groundEnergyLoc, groundEnergy);
-        
-        Color4f fogColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
-        float fogStart = float.max;
-        float fogEnd = float.max;
-        //if (fogEnabled) // TODO: control fog
-        {
-            if (rc3d.environment)
-            {                
-                fogColor = rc3d.environment.fogColor;
-                fogStart = rc3d.environment.fogStart;
-                fogEnd = rc3d.environment.fogEnd;
-            }
-        }
-        glUniform3fv(fogColorLoc, 1, fogColor.arrayof.ptr);
-        glUniform1f(fogStartLoc, fogStart);
-        glUniform1f(fogEndLoc, fogEnd);
-        
-        glUniformMatrix4fv(camProjectionMatrixLoc, 1, 0, rc3d.projectionMatrix.arrayof.ptr);
-        glUniformMatrix4fv(camViewMatrixLoc, 1, 0, rc3d.viewMatrix.arrayof.ptr);
-        glUniformMatrix4fv(camInvViewMatrixLoc, 1, 0, rc3d.invViewMatrix.arrayof.ptr);
-        
-        // Texture 0 - color buffer
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, gbuffer.colorTexture);
-        glUniform1i(colorBufferLoc, 0);
-        
-        // Texture 1 - roughness-metallic-specularity buffer
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, gbuffer.rmsTexture);
-        glUniform1i(rmsBufferLoc, 1);
-        
-        // Texture 2 - position buffer
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, gbuffer.positionTexture);
-        glUniform1i(positionBufferLoc, 2);
-        
-        // Texture 3 - normal buffer
-        glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, gbuffer.normalTexture);
-        glUniform1i(normalBufferLoc, 3);
-        
-        // Texture 4 - environment map
-        bool useEnvmap = false;
-        if (rc3d.environment)
-        {
-            if (rc3d.environment.environmentMap)
-                useEnvmap = true;
-        }
-        if (useEnvmap)
-        {
-            glActiveTexture(GL_TEXTURE4);
-            rc3d.environment.environmentMap.bind();
-            glUniform1i(useEnvironmentMapLoc, 1);
-        }
-        else
-        {
-            glUniform1i(useEnvironmentMapLoc, 0);
-        }
-        glUniform1i(environmentMapLoc, 4);
-        
-        // Texture 5 - emission buffer
-        glActiveTexture(GL_TEXTURE5);
-        glBindTexture(GL_TEXTURE_2D, gbuffer.emissionTexture);
-        glUniform1i(emissionBufferLoc, 5);
-        
-        // Texture 8 - shadow map cascades (3 layer texture array)
-        if (shadowMap)
-        {
-            glActiveTexture(GL_TEXTURE7);
-            glBindTexture(GL_TEXTURE_2D_ARRAY, shadowMap.depthTexture);
-            glUniform1i(shadowTextureArrayLoc, 7);
-            glUniform1f(shadowTextureSizeLoc, cast(float)shadowMap.size);
-            glUniformMatrix4fv(shadowMatrix1Loc, 1, 0, shadowMap.area1.shadowMatrix.arrayof.ptr);
-            glUniformMatrix4fv(shadowMatrix2Loc, 1, 0, shadowMap.area2.shadowMatrix.arrayof.ptr);
-            glUniformMatrix4fv(shadowMatrix3Loc, 1, 0, shadowMap.area3.shadowMatrix.arrayof.ptr);
-        }
-        else
-        {        
-            glUniformMatrix4fv(shadowMatrix1Loc, 1, 0, defaultShadowMatrix.arrayof.ptr);
-            glUniformMatrix4fv(shadowMatrix2Loc, 1, 0, defaultShadowMatrix.arrayof.ptr);
-            glUniformMatrix4fv(shadowMatrix3Loc, 1, 0, defaultShadowMatrix.arrayof.ptr);
-        }
-
-        glUniform1i(enableSSAOLoc, enableSSAO);
-        
-        glActiveTexture(GL_TEXTURE0);
-
         glDisable(GL_DEPTH_TEST);
         glDepthMask(GL_FALSE);
         glBindVertexArray(vao);
@@ -385,31 +274,8 @@ class DeferredEnvironmentPass: Owner
         glBindVertexArray(0);
         glDepthMask(GL_TRUE);
         glEnable(GL_DEPTH_TEST);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, 0);
         
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        
-        glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        
-        glActiveTexture(GL_TEXTURE4);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        
-        glActiveTexture(GL_TEXTURE5);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        
-        glActiveTexture(GL_TEXTURE8);
-        glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
-        
-        glActiveTexture(GL_TEXTURE0);
-        
-        glUseProgram(0);
+        shader.unbind(rc2d, rc3d);
     }
 }
 

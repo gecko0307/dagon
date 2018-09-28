@@ -410,12 +410,12 @@ class Scene: BaseScene
         
         void enabled(bool mode) @property
         {
-            scene.deferredEnvPass.enableSSAO = mode;
+            scene.deferredEnvPass.shader.enableSSAO = mode;
         }
         
         bool enabled() @property
         {
-            return scene.deferredEnvPass.enableSSAO;
+            return scene.deferredEnvPass.shader.enableSSAO;
         }
         
         //TODO: other SSAO parameters
