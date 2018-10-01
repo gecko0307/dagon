@@ -71,6 +71,7 @@ public
     import dagon.graphics.fpcamera;
     import dagon.graphics.fpview;
     import dagon.graphics.shapes;
+    import dagon.graphics.screensurface;
     import dagon.graphics.texture;
 	import dagon.graphics.shader;
     import dagon.graphics.material;
