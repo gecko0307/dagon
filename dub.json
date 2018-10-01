@@ -1,8 +1,8 @@
 {
     "name": "dagon",
-    "description": "Game framework for D",
-    "homepage": "http://github.com/gecko0307/dagon",
-    "license": "Boost",
+    "description": "3D game engine for D",
+    "homepage": "https://gecko0307.github.io/dagon",
+    "license": "BSL-1.0",
     "authors": [
         "Timur Gafarov"
     ],
