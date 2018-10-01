@@ -50,7 +50,7 @@ import dagon.graphics.materials.generic;
  * Backend for terrain material. 
  * Currently supports automatic blending of two textures (grass and mountains) based on slopeness.
  */
-
+version(None)
 class TerrainBackend: GLSLMaterialBackend
 {    
     private string vsText = "

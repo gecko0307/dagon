@@ -880,7 +880,7 @@ class Scene: BaseScene
     {    
         environment = New!Environment(assetManager);
         
-        lightManager = New!LightManager(200.0f, 100, assetManager);
+        lightManager = New!LightManager(assetManager); //New!LightManager(200.0f, 100, assetManager);
         
         defaultMaterialBackend = New!StandardBackend(lightManager, assetManager);
         skyMaterialBackend = New!SkyBackend(assetManager);
