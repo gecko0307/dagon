@@ -71,6 +71,7 @@ class StandardShader: Shader
         auto ipbr = "pbr" in rc.material.inputs;
         auto iemission = "emission" in rc.material.inputs;
         auto ienergy = "energy" in rc.material.inputs;
+        auto itransparency = "transparency" in rc.material.inputs;
         
         bool shadeless = rc.material.boolProp("shadeless");
         bool useShadows = (shadowMap !is null) && rc.material.boolProp("shadowsEnabled");
@@ -139,6 +140,11 @@ class StandardShader: Shader
         setParameter("sunDirection", rc.environment.sunDirectionEye(rc.viewMatrix));
         setParameter("sunColor", rc.environment.sunColor);
         setParameter("sunEnergy", rc.environment.sunEnergy);
+        
+        float transparency = 1.0f;
+        if (itransparency)
+            transparency = itransparency.asFloat;
+        setParameter("transparency", transparency);
         
         // diffuse  
         if (idiffuse.texture)

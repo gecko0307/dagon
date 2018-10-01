@@ -21,6 +21,8 @@ uniform float blurMask;
 
 uniform mat4 viewMatrix;
 
+uniform float transparency;
+
 vec3 toLinear(vec3 v)
 {
     return pow(v, vec3(2.2));
@@ -374,7 +376,7 @@ void main()
 
     vec3 Lo = brdf(albedo, rms.r, rms.g, N) + emiss;
 
-    frag_color = vec4(Lo, diff.a);
-    frag_luminance = vec4(luminance(Lo) * diff.a, 0.0, 0.0, 1.0);
+    frag_color = vec4(Lo, diff.a * transparency);
+    frag_luminance = vec4(luminance(Lo) * diff.a * transparency, 0.0, 0.0, 1.0);
     frag_velocity = vec4(screenVelocity, 0.0, blurMask);
 }
