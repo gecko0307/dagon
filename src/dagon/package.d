@@ -95,7 +95,7 @@ public
     import dagon.graphics.materials.terrain;
     import dagon.graphics.materials.particle;
 
-    import dagon.graphics.shaders.standardforward;
+    import dagon.graphics.shaders.standard;
     import dagon.graphics.shaders.geometrypass;
     import dagon.graphics.shaders.environmentpass;
     import dagon.graphics.shaders.lightpass;

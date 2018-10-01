@@ -71,7 +71,7 @@ import dagon.graphics.materials.particle;
 import dagon.graphics.framebuffer;
 import dagon.graphics.gbuffer;
 import dagon.graphics.deferred;
-import dagon.graphics.shaders.standardforward;
+import dagon.graphics.shaders.standard;
 import dagon.graphics.postproc;
 import dagon.graphics.filters.fxaa;
 import dagon.graphics.filters.lens;
@@ -375,7 +375,7 @@ class Scene: BaseScene
     CascadedShadowMap shadowMap;
     ParticleSystem particleSystem;
 	
-	StandardForwardShader standardShader;
+	StandardShader standardShader;
 
     StandardBackend defaultMaterialBackend;
     GenericMaterial defaultMaterial3D;
@@ -897,7 +897,7 @@ class Scene: BaseScene
         defaultMaterialBackend = New!StandardBackend(lightManager, assetManager);
         skyMaterialBackend = New!SkyBackend(assetManager);
 		
-		standardShader = New!StandardForwardShader(assetManager);
+		standardShader = New!StandardShader(assetManager);
         standardShader.shadowMap = shadowMap;
         
         shadowMap = New!CascadedShadowMap(1024, this, 10, 30, 200, -100, 100, assetManager);

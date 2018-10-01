@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.graphics.shaders.standardforward;
+module dagon.graphics.shaders.standard;
 
 import std.stdio;
 import std.math;
@@ -46,10 +46,10 @@ import dagon.graphics.texture;
 import dagon.graphics.material;
 import dagon.graphics.shader;
 
-class StandardForwardShader: Shader
+class StandardShader: Shader
 {    
-    string vs = import("StandardForward.vs");
-    string fs = import("StandardForward.fs");
+    string vs = import("Standard.vs");
+    string fs = import("Standard.fs");
     
     CascadedShadowMap shadowMap;
     Matrix4x4f defaultShadowMatrix;
