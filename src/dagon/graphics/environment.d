@@ -76,7 +76,7 @@ class Environment: Owner
     
     float skyEnergyAtMidday = 5.0;
     float skyEnergyAtSunset = 0.5;
-    float skyEnergyAtMidnight = 0.001;
+    float skyEnergyAtMidnight = 0.0;
     
     Color4f groundColor = Color4f(0.5, 0.4, 0.4, 1.0);
     
@@ -113,9 +113,11 @@ class Environment: Owner
             skyZenithColor = lerpColorsBySunAngle(skyZenithColorAtMidday, skyZenithColorAtSunset, skyZenithColorAtMidnight);
             skyHorizonColor = lerpColorsBySunAngle(skyHorizonColorAtMidday, skyHorizonColorAtSunset, skyHorizonColorAtMidnight);
             backgroundColor = skyZenithColor;
+			
+			Vector3f sunDir = sunDirection();
             
-            float s1 = clamp(dot(sunDirection, Vector3f(0.0, 1.0, 0.0)), 0.0, 1.0);
-            float s2 = clamp(dot(sunDirection, Vector3f(0.0, -1.0, 0.0)), 0.0, 1.0);
+            float s1 = clamp(dot(sunDir, Vector3f(0.0, 1.0, 0.0)), 0.0, 1.0);
+            float s2 = clamp(dot(sunDir, Vector3f(0.0, -1.0, 0.0)), 0.0, 1.0);
             
             ambientConstant = (skyZenithColor + skyHorizonColor + Color4f(0.06f, 0.05f, 0.05f)) * 0.3f * lerp(lerp(0.01f, 0.001f, s2), 2.0f, s1);
              
@@ -132,6 +134,13 @@ class Environment: Owner
             fogColor = backgroundColor;
         }    
     }
+	
+	void setDayTime(uint h, uint m, float s)
+	{
+		float t = (h * 3600.0f + m * 60.0f + s) / (3600.0f * 24.0f);
+		while (t > 1.0f) t -= 1.0f;
+		sunRotation = rotationQuaternion(Axis.x, degtorad(-(t * 360.0f - 90.0f)));
+	}
     
     Vector3f sunDirection()
     {
