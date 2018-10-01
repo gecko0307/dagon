@@ -47,159 +47,51 @@ import dagon.graphics.light;
 import dagon.graphics.screensurface;
 import dagon.graphics.shapes;
 import dagon.graphics.shaders.environmentpass;
+import dagon.graphics.shaders.lightpass;
 
 class DeferredEnvironmentPass: Owner
 {
-	ScreenSurface surface;
     EnvironmentPassShader shader;
     GBuffer gbuffer;
     CascadedShadowMap shadowMap;
-
+    ScreenSurface surface;
+	
     this(GBuffer gbuffer, CascadedShadowMap shadowMap, Owner o)
     {
         super(o);
-        
+        this.shader = New!EnvironmentPassShader(gbuffer, shadowMap, this);
         this.gbuffer = gbuffer;
         this.shadowMap = shadowMap;
-		this.surface = New!ScreenSurface(this);
-        this.shader = New!EnvironmentPassShader(gbuffer, shadowMap, this);
+        this.surface = New!ScreenSurface(this);
     }
     
     void render(RenderingContext* rc2d, RenderingContext* rc3d)
     {
         shader.bind(rc2d, rc3d);
-		surface.render(rc2d);
+        surface.render(rc2d);
         shader.unbind(rc2d, rc3d);
     }
 }
 
 class DeferredLightPass: Owner
 {
-    GLenum lightPassShaderVert;
-    GLenum lightPassShaderFrag;
-    GLenum lightPassShaderProgram;
-    
-    private string lightPassVsText = import("LightPass.vs");    
-    private string lightPassFsText = import("LightPass.fs");
-    
-    GLint modelViewMatrixLoc;
-    GLint projectionMatrixLoc;
-    
-    GLint colorBufferLoc;
-    GLint rmsBufferLoc;
-    GLint positionBufferLoc;
-    GLint normalBufferLoc;
-    
-    GLint viewportSizeLoc;
-    
-    GLint lightPositionLoc;
-    GLint lightRadiusLoc;
-    GLint lightAreaRadiusLoc;
-    GLint lightColorLoc;
-    GLint lightEnergyLoc;
-    
+    LightPassShader shader;
     GBuffer gbuffer;
     LightManager lightManager;
     ShapeSphere lightVolume;
-
-    this(GBuffer gbuffer, LightManager lightManager, Owner o)
+	
+	this(GBuffer gbuffer, LightManager lightManager, Owner o)
     {
-        super(o);
-        
+		super(o);
+        this.shader = New!LightPassShader(gbuffer, this);
         this.gbuffer = gbuffer;
         this.lightManager = lightManager;
         this.lightVolume = New!ShapeSphere(1.0f, 8, 4, false, this);
-		
-        const(char*)pvs = lightPassVsText.ptr;
-        const(char*)pfs = lightPassFsText.ptr;
-        
-        char[1000] infobuffer = 0;
-        int infobufferlen = 0;
-
-        lightPassShaderVert = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(lightPassShaderVert, 1, &pvs, null);
-        glCompileShader(lightPassShaderVert);
-        GLint success = 0;
-        glGetShaderiv(lightPassShaderVert, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
-            GLint logSize = 0;
-            glGetShaderiv(lightPassShaderVert, GL_INFO_LOG_LENGTH, &logSize);
-            glGetShaderInfoLog(lightPassShaderVert, 999, &logSize, infobuffer.ptr);
-            writeln("Error in vertex shader:");
-            writeln(infobuffer[0..logSize]);
-        }
-
-        lightPassShaderFrag = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(lightPassShaderFrag, 1, &pfs, null);
-        glCompileShader(lightPassShaderFrag);
-        success = 0;
-        glGetShaderiv(lightPassShaderFrag, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
-            GLint logSize = 0;
-            glGetShaderiv(lightPassShaderFrag, GL_INFO_LOG_LENGTH, &logSize);
-            glGetShaderInfoLog(lightPassShaderFrag, 999, &logSize, infobuffer.ptr);
-            writeln("Error in fragment shader:");
-            writeln(infobuffer[0..logSize]);
-        }
-
-        lightPassShaderProgram = glCreateProgram();
-        glAttachShader(lightPassShaderProgram, lightPassShaderVert);
-        glAttachShader(lightPassShaderProgram, lightPassShaderFrag);
-        glLinkProgram(lightPassShaderProgram);
-        
-        modelViewMatrixLoc = glGetUniformLocation(lightPassShaderProgram, "modelViewMatrix");
-        projectionMatrixLoc = glGetUniformLocation(lightPassShaderProgram, "projectionMatrix");
-
-        viewportSizeLoc = glGetUniformLocation(lightPassShaderProgram, "viewSize");
-        
-        colorBufferLoc = glGetUniformLocation(lightPassShaderProgram, "colorBuffer");
-        rmsBufferLoc = glGetUniformLocation(lightPassShaderProgram, "rmsBuffer");
-        positionBufferLoc = glGetUniformLocation(lightPassShaderProgram, "positionBuffer");
-        normalBufferLoc = glGetUniformLocation(lightPassShaderProgram, "normalBuffer");
-        
-        lightPositionLoc = glGetUniformLocation(lightPassShaderProgram, "lightPosition");
-        lightRadiusLoc = glGetUniformLocation(lightPassShaderProgram, "lightRadius");
-        lightEnergyLoc = glGetUniformLocation(lightPassShaderProgram, "lightEnergy");
-        lightAreaRadiusLoc = glGetUniformLocation(lightPassShaderProgram, "lightAreaRadius");
-        lightColorLoc = glGetUniformLocation(lightPassShaderProgram, "lightColor");
-    }
-    
-    void render(RenderingContext* rc2d, RenderingContext* rc3d)
-    {    
-        glUseProgram(lightPassShaderProgram);
-
-        glUniformMatrix4fv(projectionMatrixLoc, 1, 0, rc3d.projectionMatrix.arrayof.ptr);
-        
-        Vector2f viewportSize;
-        
-        viewportSize = Vector2f(rc3d.eventManager.windowWidth, rc3d.eventManager.windowHeight);
-        glUniform2fv(viewportSizeLoc, 1, viewportSize.arrayof.ptr);
-
-        // Texture 0 - color buffer
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, gbuffer.colorTexture);
-        glUniform1i(colorBufferLoc, 0);
-        
-        // Texture 1 - roughness-metallic-specularity buffer
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, gbuffer.rmsTexture);
-        glUniform1i(rmsBufferLoc, 1);
-        
-        // Texture 2 - position buffer
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, gbuffer.positionTexture);
-        glUniform1i(positionBufferLoc, 2);
-        
-        // Texture 3 - normal buffer
-        glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, gbuffer.normalTexture);
-        glUniform1i(normalBufferLoc, 3);
-        
-        glActiveTexture(GL_TEXTURE0);
-
-        glDisable(GL_DEPTH_TEST);
+	}
+	
+	void render(RenderingContext* rc2d, RenderingContext* rc3d)
+    {
+		glDisable(GL_DEPTH_TEST);
         glDepthMask(GL_FALSE);
         
         glEnable(GL_CULL_FACE);
@@ -209,25 +101,16 @@ class DeferredLightPass: Owner
         glEnablei(GL_BLEND, 1);
         glBlendFunci(0, GL_ONE, GL_ONE);
         glBlendFunci(1, GL_ONE, GL_ONE);
-        
-        foreach(light; lightManager.lightSources.data)
+
+		// TODO: don't rebind the shader each time,
+		// use special method to update light data
+		foreach(light; lightManager.lightSources.data)
         {
-            Matrix4x4f modelViewMatrix = 
-                rc3d.viewMatrix *
-                translationMatrix(light.position) * 
-                scaleMatrix(Vector3f(light.radius, light.radius, light.radius));
-            glUniformMatrix4fv(modelViewMatrixLoc, 1, 0, modelViewMatrix.arrayof.ptr);
-            
-            Vector3f lightPositionEye = light.position * rc3d.viewMatrix;
-            
-            glUniform3fv(lightPositionLoc, 1, lightPositionEye.arrayof.ptr);
-            glUniform1f(lightRadiusLoc, light.radius);
-            glUniform1f(lightAreaRadiusLoc, light.areaRadius);
-            glUniform3fv(lightColorLoc, 1, light.color.arrayof.ptr);
-            glUniform1f(lightEnergyLoc, light.energy);
-            
-            lightVolume.render(rc3d);
-        }
+			shader.light = light;
+			shader.bind(rc2d, rc3d);
+			lightVolume.render(rc3d);
+			shader.unbind(rc2d, rc3d);
+		}
         
         glDisablei(GL_BLEND, 0);
         glDisablei(GL_BLEND, 1);
@@ -237,21 +120,5 @@ class DeferredLightPass: Owner
         
         glDepthMask(GL_TRUE);
         glEnable(GL_DEPTH_TEST);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        
-        glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        
-        glActiveTexture(GL_TEXTURE0);
-        
-        glUseProgram(0);
-    }
+	}
 }

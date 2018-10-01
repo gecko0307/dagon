@@ -65,7 +65,7 @@ class EnvironmentPassShader: Shader
     }
     
     void bind(RenderingContext* rc2d, RenderingContext* rc3d)
-    {        
+    {
         setParameter("modelViewMatrix", rc2d.modelViewMatrix);
         setParameter("projectionMatrix", rc2d.projectionMatrix);
         
