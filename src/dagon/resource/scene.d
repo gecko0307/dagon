@@ -71,6 +71,7 @@ import dagon.graphics.materials.particle;
 import dagon.graphics.framebuffer;
 import dagon.graphics.gbuffer;
 import dagon.graphics.deferred;
+import dagon.graphics.shaders.standardforward;
 import dagon.graphics.postproc;
 import dagon.graphics.filters.fxaa;
 import dagon.graphics.filters.lens;
@@ -365,6 +366,7 @@ class SceneApplication: Application
     }
 }
 
+// TODO: Renderer class
 class Scene: BaseScene
 {
     Environment environment;
@@ -372,6 +374,8 @@ class Scene: BaseScene
     LightManager lightManager;
     CascadedShadowMap shadowMap;
     ParticleSystem particleSystem;
+	
+	StandardForwardShader standardShader;
 
     StandardBackend defaultMaterialBackend;
     GenericMaterial defaultMaterial3D;
@@ -404,6 +408,7 @@ class Scene: BaseScene
     
     PostFilterFinalizer finalizerFilter;
     
+	//TODO: move post-processing to a separate class
     struct SSAOSettings
     {
         BaseScene3D scene;
@@ -686,7 +691,7 @@ class Scene: BaseScene
         eLoadingProgressBar = New!Entity(eventManager, assetManager);
         eLoadingProgressBar.drawable = loadingProgressBar;
         hudMaterialBackend = New!HUDMaterialBackend(assetManager);
-        mLoadingProgressBar = createMaterial(hudMaterialBackend);
+        mLoadingProgressBar = createGenericMaterial(hudMaterialBackend);
         mLoadingProgressBar.diffuse = Color4f(1, 1, 1, 1);
         eLoadingProgressBar.material = mLoadingProgressBar;
     }
@@ -843,7 +848,7 @@ class Scene: BaseScene
     
     Entity createSky()
     {
-        auto matSky = createMaterial(skyMaterialBackend);
+        auto matSky = createGenericMaterial(skyMaterialBackend);
         matSky.depthWrite = false;
     
         auto eSky = createEntity3D();
@@ -857,13 +862,20 @@ class Scene: BaseScene
         return eSky;
     }
     
-    GenericMaterial createMaterial(GenericMaterialBackend backend = null)
+	// TODO: replace with ShaderMaterial
+    GenericMaterial createGenericMaterial(GenericMaterialBackend backend = null)
     {
         if (backend is null)
             backend = defaultMaterialBackend;
         return New!GenericMaterial(backend, assetManager);
     }
+	
+    ShaderMaterial createMaterial()
+    {
+        return New!ShaderMaterial(standardShader, assetManager);
+    }
     
+	// TODO: replace with ShaderMaterial
     GenericMaterial createParticleMaterial(GenericMaterialBackend backend = null)
     {
         if (backend is null)
@@ -881,9 +893,12 @@ class Scene: BaseScene
         environment = New!Environment(assetManager);
         
         lightManager = New!LightManager(assetManager); //New!LightManager(200.0f, 100, assetManager);
-        
+		
         defaultMaterialBackend = New!StandardBackend(lightManager, assetManager);
         skyMaterialBackend = New!SkyBackend(assetManager);
+		
+		standardShader = New!StandardForwardShader(assetManager);
+        standardShader.shadowMap = shadowMap;
         
         shadowMap = New!CascadedShadowMap(1024, this, 10, 30, 200, -100, 100, assetManager);
         defaultMaterialBackend.shadowMap = shadowMap;
@@ -920,7 +935,7 @@ class Scene: BaseScene
         postFilters.append(hdrPrepassFilter);
         
         hdrFilter = New!PostFilterHDR(hdrPrepassFramebuffer, null, assetManager);
-        hdrFilter.velocityTexture = gbuffer.velocityTexture; //sceneFramebuffer.velocityTexture;
+        hdrFilter.velocityTexture = gbuffer.velocityTexture;
         postFilters.append(hdrFilter);
         
         fxaaFilter = New!PostFilterFXAA(null, null, assetManager);
@@ -1034,8 +1049,6 @@ class Scene: BaseScene
             }
             
             shadowMap.update(&rc3d, fixedTimeStep);
-            
-            //lightManager.update(&rc3d);
         }
     }
     
