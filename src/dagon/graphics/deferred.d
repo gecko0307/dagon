@@ -39,6 +39,7 @@ import dlib.image.color;
 import derelict.opengl;
 
 import dagon.core.ownership;
+import dagon.core.interfaces;
 import dagon.graphics.rc;
 import dagon.graphics.gbuffer;
 import dagon.graphics.shadow;
@@ -46,7 +47,7 @@ import dagon.graphics.light;
 import dagon.graphics.shapes;
 import dagon.graphics.shaders.environmentpass;
 
-class DeferredEnvironmentPass: Owner
+class ScreenSurface: Owner, Drawable
 {
     Vector2f[4] vertices;
     Vector2f[4] texcoords;
@@ -56,21 +57,12 @@ class DeferredEnvironmentPass: Owner
     GLuint vbo = 0;
     GLuint tbo = 0;
     GLuint eao = 0;
-    
-    EnvironmentPassShader shader;
-    
-    GBuffer gbuffer;
-    CascadedShadowMap shadowMap;
-
-    this(GBuffer gbuffer, CascadedShadowMap shadowMap, Owner o)
+	
+	this(Owner o)
     {
-        super(o);
-        
-        this.gbuffer = gbuffer;
-        this.shadowMap = shadowMap;
-        this.shader = New!EnvironmentPassShader(gbuffer, shadowMap, this);
-        
-        vertices[0] = Vector2f(0, 0);
+		super(o);
+		
+		vertices[0] = Vector2f(0, 0);
         vertices[1] = Vector2f(0, 1);
         vertices[2] = Vector2f(1, 0);
         vertices[3] = Vector2f(1, 1);
@@ -113,8 +105,8 @@ class DeferredEnvironmentPass: Owner
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, null);
 
         glBindVertexArray(0);
-    }
-    
+	}
+	
     ~this()
     {
         glDeleteVertexArrays(1, &vao);
@@ -122,11 +114,13 @@ class DeferredEnvironmentPass: Owner
         glDeleteBuffers(1, &tbo);
         glDeleteBuffers(1, &eao);
     }
-    
-    void render(RenderingContext* rc2d, RenderingContext* rc3d)
-    {
-        shader.bind(rc2d, rc3d);
-        
+	
+	void update(double dt)
+	{
+	}
+	
+    void render(RenderingContext* rc)
+	{
         glDisable(GL_DEPTH_TEST);
         glDepthMask(GL_FALSE);
         glBindVertexArray(vao);
@@ -134,7 +128,30 @@ class DeferredEnvironmentPass: Owner
         glBindVertexArray(0);
         glDepthMask(GL_TRUE);
         glEnable(GL_DEPTH_TEST);
+	}
+}
+
+class DeferredEnvironmentPass: Owner
+{
+	ScreenSurface surface;
+    EnvironmentPassShader shader;
+    GBuffer gbuffer;
+    CascadedShadowMap shadowMap;
+
+    this(GBuffer gbuffer, CascadedShadowMap shadowMap, Owner o)
+    {
+        super(o);
         
+        this.gbuffer = gbuffer;
+        this.shadowMap = shadowMap;
+		this.surface = New!ScreenSurface(this);
+        this.shader = New!EnvironmentPassShader(gbuffer, shadowMap, this);
+    }
+    
+    void render(RenderingContext* rc2d, RenderingContext* rc3d)
+    {
+        shader.bind(rc2d, rc3d);
+		surface.render(rc2d);
         shader.unbind(rc2d, rc3d);
     }
 }
