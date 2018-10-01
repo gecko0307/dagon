@@ -86,7 +86,7 @@ class Environment: Owner
     
     Color4f fogColor = Color4f(0.1f, 0.1f, 0.1f, 1.0f);
     float fogStart = 0.0f;
-    float fogEnd = 10000.0f;    
+    float fogEnd = 10000.0f;
     //float fogEnergy = 0.1f;
 
     Color4f skyZenithColor = Color4f(0.223, 0.572, 0.752, 1.0);
@@ -108,31 +108,24 @@ class Environment: Owner
     
     void update(double dt)
     {
-        if (useSkyColors)
-        {
-            skyZenithColor = lerpColorsBySunAngle(skyZenithColorAtMidday, skyZenithColorAtSunset, skyZenithColorAtMidnight);
-            skyHorizonColor = lerpColorsBySunAngle(skyHorizonColorAtMidday, skyHorizonColorAtSunset, skyHorizonColorAtMidnight);
-            backgroundColor = skyZenithColor;
+        skyZenithColor = lerpColorsBySunAngle(skyZenithColorAtMidday, skyZenithColorAtSunset, skyZenithColorAtMidnight);
+        skyHorizonColor = lerpColorsBySunAngle(skyHorizonColorAtMidday, skyHorizonColorAtSunset, skyHorizonColorAtMidnight);
+        backgroundColor = skyZenithColor;
 			
-			Vector3f sunDir = sunDirection();
+		Vector3f sunDir = sunDirection();
             
-            float s1 = clamp(dot(sunDir, Vector3f(0.0, 1.0, 0.0)), 0.0, 1.0);
-            float s2 = clamp(dot(sunDir, Vector3f(0.0, -1.0, 0.0)), 0.0, 1.0);
+        float s1 = clamp(dot(sunDir, Vector3f(0.0, 1.0, 0.0)), 0.0, 1.0);
+        float s2 = clamp(dot(sunDir, Vector3f(0.0, -1.0, 0.0)), 0.0, 1.0);
+           
+        ambientConstant = (skyZenithColor + skyHorizonColor + Color4f(0.06f, 0.05f, 0.05f)) * 0.3f * lerp(lerp(0.01f, 0.001f, s2), 2.0f, s1);
+        
+        skyEnergy = lerp(lerp(skyEnergyAtSunset, skyEnergyAtMidnight, s2), skyEnergyAtMidday, s1);
+        groundEnergy = lerp(lerp(groundEnergyAtSunset, groundEnergyAtMidnight, s2), groundEnergyAtMidday, s1);
             
-            ambientConstant = (skyZenithColor + skyHorizonColor + Color4f(0.06f, 0.05f, 0.05f)) * 0.3f * lerp(lerp(0.01f, 0.001f, s2), 2.0f, s1);
-             
-            skyEnergy = lerp(lerp(skyEnergyAtSunset, skyEnergyAtMidnight, s2), skyEnergyAtMidday, s1);
-            groundEnergy = lerp(lerp(groundEnergyAtSunset, groundEnergyAtMidnight, s2), groundEnergyAtMidday, s1);
-            
-            if (atmosphericFog)
-                fogColor = skyHorizonColor * skyEnergy; //lerpColorsBySunAngle(skyZenithColor, skyHorizonColor, Color4f(0, 0, 0, 0)) * fogEnergy;
-            else
-                fogColor = backgroundColor;
-        }
+        if (atmosphericFog)
+            fogColor = skyHorizonColor * skyEnergy; //lerpColorsBySunAngle(skyZenithColor, skyHorizonColor, Color4f(0, 0, 0, 0)) * fogEnergy;
         else
-        {
-            fogColor = backgroundColor;
-        }    
+            fogColor = backgroundColor;  
     }
 	
 	void setDayTime(uint h, uint m, float s)
