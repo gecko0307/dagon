@@ -55,7 +55,7 @@ class DeferredEnvironmentPass: Owner
     GBuffer gbuffer;
     CascadedShadowMap shadowMap;
     ScreenSurface surface;
-	
+    
     this(GBuffer gbuffer, CascadedShadowMap shadowMap, Owner o)
     {
         super(o);
@@ -79,19 +79,19 @@ class DeferredLightPass: Owner
     GBuffer gbuffer;
     LightManager lightManager;
     ShapeSphere lightVolume;
-	
-	this(GBuffer gbuffer, LightManager lightManager, Owner o)
+    
+    this(GBuffer gbuffer, LightManager lightManager, Owner o)
     {
-		super(o);
+        super(o);
         this.shader = New!LightPassShader(gbuffer, this);
         this.gbuffer = gbuffer;
         this.lightManager = lightManager;
         this.lightVolume = New!ShapeSphere(1.0f, 8, 4, false, this);
-	}
-	
-	void render(RenderingContext* rc2d, RenderingContext* rc3d)
+    }
+
+    void render(RenderingContext* rc2d, RenderingContext* rc3d)
     {
-		glDisable(GL_DEPTH_TEST);
+        glDisable(GL_DEPTH_TEST);
         glDepthMask(GL_FALSE);
         
         glEnable(GL_CULL_FACE);
@@ -102,15 +102,15 @@ class DeferredLightPass: Owner
         glBlendFunci(0, GL_ONE, GL_ONE);
         glBlendFunci(1, GL_ONE, GL_ONE);
 
-		// TODO: don't rebind the shader each time,
-		// use special method to update light data
-		foreach(light; lightManager.lightSources.data)
+        // TODO: don't rebind the shader each time,
+        // use special method to update light data
+        foreach(light; lightManager.lightSources.data)
         {
-			shader.light = light;
-			shader.bind(rc2d, rc3d);
-			lightVolume.render(rc3d);
-			shader.unbind(rc2d, rc3d);
-		}
+            shader.light = light;
+            shader.bind(rc2d, rc3d);
+            lightVolume.render(rc3d);
+            shader.unbind(rc2d, rc3d);
+        }
         
         glDisablei(GL_BLEND, 0);
         glDisablei(GL_BLEND, 1);
@@ -120,5 +120,5 @@ class DeferredLightPass: Owner
         
         glDepthMask(GL_TRUE);
         glEnable(GL_DEPTH_TEST);
-	}
+    }
 }
