@@ -46,8 +46,7 @@ import dagon.graphics.materials.generic;
 
 class HUDMaterialBackend: GLSLMaterialBackend
 {    
-    private string vsText = 
-    q{
+    private string vsText = "
         #version 330 core
         
         uniform mat4 modelViewMatrix;
@@ -63,9 +62,9 @@ class HUDMaterialBackend: GLSLMaterialBackend
             texCoord = va_Texcoord;
             gl_Position = projectionMatrix * modelViewMatrix * vec4(va_Vertex, 0.0, 1.0);
         }
-    };
+    ";
     
-    private string fsText = q{
+    private string fsText = "
         #version 330 core
         
         uniform sampler2D diffuseTexture;
@@ -78,7 +77,7 @@ class HUDMaterialBackend: GLSLMaterialBackend
         {
             frag_color = texture(diffuseTexture, texCoord);
         }
-    };
+    ";
     
     override string vertexShaderSrc() {return vsText;}
     override string fragmentShaderSrc() {return fsText;}
