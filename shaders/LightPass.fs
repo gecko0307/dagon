@@ -120,7 +120,7 @@ void main()
     float denominator = 4.0 * max(dot(N, E), 0.0) * NL;
     vec3 specular = numerator / max(denominator, 0.001);
     
-    vec3 radiance = (kD * albedo / PI + specular) * lightColor * attenuation * NL;
+    vec3 radiance = (kD * albedo / PI + specular) * toLinear(lightColor) * attenuation * NL;
 
     frag_color = vec4(radiance, 1.0);
     frag_luminance = vec4(luminance(radiance), 0.0, 0.0, 1.0);

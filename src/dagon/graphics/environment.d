@@ -59,15 +59,15 @@ class Environment: Owner
     Quaternionf sunRotation;
     float sunEnergy = 100.0f;
        
-    Color4f skyZenithColorAtMidday = Color4f(0.1, 0.2, 1.0, 1.0);
+    Color4f skyZenithColorAtMidday = Color4f(0.223, 0.572, 0.752, 1.0); //Color4f(0.1, 0.2, 1.0, 1.0);
     Color4f skyZenithColorAtSunset = Color4f(0.1, 0.2, 0.4, 1.0);
     Color4f skyZenithColorAtMidnight = Color4f(0.01, 0.01, 0.05, 1.0);
     
-    Color4f skyHorizonColorAtMidday = Color4f(0.5, 0.6, 0.65, 1.0);
+    Color4f skyHorizonColorAtMidday = Color4f(0.9, 1.0, 1.0, 1.0); //Color4f(0.5, 0.6, 0.65, 1.0);
     Color4f skyHorizonColorAtSunset = Color4f(0.87, 0.44, 0.1, 1.0);
     Color4f skyHorizonColorAtMidnight = Color4f(0.1, 0.1, 0.1, 1.0);
     
-    float skyEnergyAtMidday = 5.0;
+    float skyEnergyAtMidday = 1.0;
     float skyEnergyAtSunset = 0.5;
     float skyEnergyAtMidnight = 0.001;
     
