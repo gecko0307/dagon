@@ -42,13 +42,6 @@ import derelict.opengl;
 import dagon.core.ownership;
 import dagon.graphics.texture;
 
-Color4f saturation(Color4f c, float s)
-{
-    ColorHSVAf hsv = ColorHSVAf(c);
-    hsv.scaleSaturation(s);
-    return hsv.rgba;
-}
-
 class Environment: Owner
 {
     // TODO: change/interpolate parameters based on object position?
@@ -111,8 +104,8 @@ class Environment: Owner
         skyZenithColor = lerpColorsBySunAngle(skyZenithColorAtMidday, skyZenithColorAtSunset, skyZenithColorAtMidnight);
         skyHorizonColor = lerpColorsBySunAngle(skyHorizonColorAtMidday, skyHorizonColorAtSunset, skyHorizonColorAtMidnight);
         backgroundColor = skyZenithColor;
-			
-		Vector3f sunDir = sunDirection();
+
+        Vector3f sunDir = sunDirection();
             
         float s1 = clamp(dot(sunDir, Vector3f(0.0, 1.0, 0.0)), 0.0, 1.0);
         float s2 = clamp(dot(sunDir, Vector3f(0.0, -1.0, 0.0)), 0.0, 1.0);
@@ -127,13 +120,13 @@ class Environment: Owner
         else
             fogColor = backgroundColor;  
     }
-	
-	void setDayTime(uint h, uint m, float s)
-	{
-		float t = (h * 3600.0f + m * 60.0f + s) / (3600.0f * 24.0f);
-		while (t > 1.0f) t -= 1.0f;
-		sunRotation = rotationQuaternion(Axis.x, degtorad(-(t * 360.0f - 90.0f)));
-	}
+    
+    void setDayTime(uint h, uint m, float s)
+    {
+        float t = (h * 3600.0f + m * 60.0f + s) / (3600.0f * 24.0f);
+        while (t > 1.0f) t -= 1.0f;
+        sunRotation = rotationQuaternion(Axis.x, degtorad(-(t * 360.0f - 90.0f)));
+    }
     
     Vector3f sunDirection()
     {
