@@ -232,7 +232,7 @@ class PostFilterHDR: PostFilter
     
     bool autoExposure = false;
     
-    float minLuminance = 0.001f;
+    float minLuminance = 0.1f;
     float maxLuminance = 100000.0f;
     float keyValue = 0.5f;
     float adaptationSpeed = 4.0f;
