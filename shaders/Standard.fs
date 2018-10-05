@@ -372,12 +372,12 @@ subroutine uniform srtEmission emission;
 uniform float emissionEnergy;
 
 
-float luminance(in vec3 col)
+float luminance(vec3 color)
 {
     return (
-        col.x * 0.27 +
-        col.y * 0.67 +
-        col.z * 0.06
+        color.x * 0.2126 + //0.27 +
+        color.y * 0.7152 + //0.67 +
+        color.z * 0.0722 //0.06
     );
 }
 
