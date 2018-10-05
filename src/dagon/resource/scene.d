@@ -70,6 +70,7 @@ import dagon.graphics.materials.particle;
 import dagon.graphics.framebuffer;
 import dagon.graphics.gbuffer;
 import dagon.graphics.deferred;
+import dagon.graphics.shader;
 import dagon.graphics.shaders.standard;
 import dagon.graphics.shaders.sky;
 import dagon.graphics.postproc;
@@ -380,10 +381,7 @@ class Scene: BaseScene
 
     StandardBackend defaultMaterialBackend;
     GenericMaterial defaultMaterial3D;
-
     ParticleBackend particleMaterialBackend;
-
-    //SkyBackend skyMaterialBackend;
 
     RenderingContext rc3d;
     RenderingContext rc2d;
@@ -849,7 +847,7 @@ class Scene: BaseScene
 
     Entity createSky()
     {
-        auto matSky = New!ShaderMaterial(skyShader, assetManager); //createGenericMaterial(skyMaterialBackend);
+        auto matSky = New!ShaderMaterial(skyShader, assetManager);
         matSky.depthWrite = false;
 
         auto eSky = createEntity3D();
@@ -864,21 +862,26 @@ class Scene: BaseScene
         return eSky;
     }
 
+    ShaderMaterial createMaterial(Shader shader)
+    {
+        return New!ShaderMaterial(shader, assetManager);
+    }
+
+    ShaderMaterial createMaterial()
+    {
+        return createMaterial(standardShader);
+    }
+
 	// TODO: replace with ShaderMaterial
-    GenericMaterial createGenericMaterial(GenericMaterialBackend backend = null)
+    deprecated GenericMaterial createGenericMaterial(GenericMaterialBackend backend = null)
     {
         if (backend is null)
             backend = defaultMaterialBackend;
         return New!GenericMaterial(backend, assetManager);
     }
 
-    ShaderMaterial createMaterial()
-    {
-        return New!ShaderMaterial(standardShader, assetManager);
-    }
-
 	// TODO: replace with ShaderMaterial
-    GenericMaterial createParticleMaterial(GenericMaterialBackend backend = null)
+    deprecated GenericMaterial createParticleMaterial(GenericMaterialBackend backend = null)
     {
         if (backend is null)
             backend = particleMaterialBackend;
