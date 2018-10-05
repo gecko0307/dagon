@@ -864,7 +864,10 @@ class Scene: BaseScene
 
     ShaderMaterial createMaterial(Shader shader)
     {
-        return New!ShaderMaterial(shader, assetManager);
+        auto m = New!ShaderMaterial(shader, assetManager);
+        if (shader !is standardShader)
+            m.customShader = true;
+        return m;
     }
 
     ShaderMaterial createMaterial()
