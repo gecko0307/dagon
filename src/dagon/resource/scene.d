@@ -65,13 +65,13 @@ import dagon.graphics.texture;
 import dagon.graphics.particles;
 import dagon.graphics.materials.generic;
 import dagon.graphics.materials.standard;
-import dagon.graphics.materials.sky;
 import dagon.graphics.materials.hud;
 import dagon.graphics.materials.particle;
 import dagon.graphics.framebuffer;
 import dagon.graphics.gbuffer;
 import dagon.graphics.deferred;
 import dagon.graphics.shaders.standard;
+import dagon.graphics.shaders.sky;
 import dagon.graphics.postproc;
 import dagon.graphics.filters.fxaa;
 import dagon.graphics.filters.lens;
@@ -177,7 +177,7 @@ class BaseScene: EventListener
             }
 
             bool loaded = assetManager.loadThreadUnsafePart();
-            
+
             if (loaded)
             {
                 onAllocate();
@@ -288,13 +288,13 @@ class SceneManager: Owner
         }
 
         BaseScene scene = scenesByName[name];
-        
+
         writefln("Loading scene \"%s\"", name);
-        
+
         scene.load();
         currentScene = scene;
         currentScene.start();
-        
+
         writefln("Running...", name);
     }
 
@@ -312,7 +312,7 @@ class SceneManager: Owner
         {
             currentScene.render();
         }
-    } 
+    }
 }
 
 class SceneApplication: Application
@@ -327,29 +327,29 @@ class SceneApplication: Application
         super(w, h, fullscreen, windowTitle, args);
 
         sceneManager = New!SceneManager(eventManager, this);
-        
+
         imageFactory = New!UnmanagedImageFactory();
         screenshotBuffer1 = imageFactory.createImage(eventManager.windowWidth, eventManager.windowHeight, 3, 8);
         screenshotBuffer2 = imageFactory.createImage(eventManager.windowWidth, eventManager.windowHeight, 3, 8);
     }
-    
+
     ~this()
     {
         Delete(imageFactory);
         Delete(screenshotBuffer1);
         Delete(screenshotBuffer2);
     }
-    
+
     override void onUpdate(double dt)
     {
         sceneManager.update(dt);
     }
-    
+
     override void onRender()
     {
         sceneManager.render();
     }
-    
+
     void saveScreenshot(string filename)
     {
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -361,7 +361,7 @@ class SceneApplication: Application
         {
             screenshotBuffer2[x, y] = screenshotBuffer1[x, screenshotBuffer1.height - y];
         }
-        
+
         screenshotBuffer2.savePNG(filename);
     }
 }
@@ -370,137 +370,138 @@ class SceneApplication: Application
 class Scene: BaseScene
 {
     Environment environment;
-    
+
     LightManager lightManager;
     CascadedShadowMap shadowMap;
     ParticleSystem particleSystem;
-	
+
 	StandardShader standardShader;
+    SkyShader skyShader;
 
     StandardBackend defaultMaterialBackend;
     GenericMaterial defaultMaterial3D;
-    
-    ParticleBackend particleMaterialBackend;
-    
-    SkyBackend skyMaterialBackend;
 
-    RenderingContext rc3d; 
-    RenderingContext rc2d; 
+    ParticleBackend particleMaterialBackend;
+
+    //SkyBackend skyMaterialBackend;
+
+    RenderingContext rc3d;
+    RenderingContext rc2d;
     View view;
-    
+
     GBuffer gbuffer;
     DeferredEnvironmentPass deferredEnvPass;
     DeferredLightPass deferredLightPass;
-    
+
     Framebuffer sceneFramebuffer;
     PostFilterHDR hdrFilter;
-    
+
     Framebuffer hdrPrepassFramebuffer;
     PostFilterHDRPrepass hdrPrepassFilter;
-    
+
     Framebuffer hblurredFramebuffer;
     Framebuffer vblurredFramebuffer;
     PostFilterBlur hblur;
     PostFilterBlur vblur;
-    
+
     PostFilterFXAA fxaaFilter;
     PostFilterLensDistortion lensFilter;
-    
+
     PostFilterFinalizer finalizerFilter;
-    
+
 	//TODO: move post-processing to a separate class
     struct SSAOSettings
     {
         BaseScene3D scene;
-        
+
         void enabled(bool mode) @property
         {
             scene.deferredEnvPass.shader.enableSSAO = mode;
         }
-        
+
         bool enabled() @property
         {
             return scene.deferredEnvPass.shader.enableSSAO;
         }
-        
+
         //TODO: other SSAO parameters
     }
-    
+
     struct HDRSettings
     {
         BaseScene3D scene;
-        
+
         void tonemapper(Tonemapper f) @property
         {
             scene.hdrFilter.tonemapFunction = f;
         }
-        
+
         Tonemapper tonemapper() @property
         {
             return scene.hdrFilter.tonemapFunction;
         }
-        
-        
+
+
         void exposure(float ex) @property
         {
             scene.hdrFilter.exposure = ex;
         }
-        
+
         float exposure() @property
         {
             return scene.hdrFilter.exposure;
         }
-        
-        
+
+
         void autoExposure(bool mode) @property
         {
             scene.hdrFilter.autoExposure = mode;
         }
-        
+
         bool autoExposure() @property
         {
             return scene.hdrFilter.autoExposure;
         }
-        
-        
+
+
         void minLuminance(float l) @property
         {
             scene.hdrFilter.minLuminance = l;
         }
-        
+
         float minLuminance() @property
         {
             return scene.hdrFilter.minLuminance;
         }
-        
-        
+
+
         void maxLuminance(float l) @property
         {
             scene.hdrFilter.maxLuminance = l;
         }
-        
+
         float maxLuminance() @property
         {
             return scene.hdrFilter.maxLuminance;
         }
-        
-        
+
+
         void keyValue(float k) @property
         {
             scene.hdrFilter.keyValue = k;
         }
-        
+
         float keyValue() @property
         {
             return scene.hdrFilter.keyValue;
         }
-        
-        
+
+
         void adaptationSpeed(float s) @property
         {
             scene.hdrFilter.adaptationSpeed = s;
         }
-        
+
         float adaptationSpeed() @property
         {
             return scene.hdrFilter.adaptationSpeed;
@@ -511,150 +512,150 @@ class Scene: BaseScene
     {
         BaseScene3D scene;
         uint radius;
-    
+
         void enabled(bool mode) @property
         {
             scene.hblur.enabled = mode;
             scene.vblur.enabled = mode;
             scene.hdrPrepassFilter.glowEnabled = mode;
         }
-        
+
         bool enabled() @property
         {
             return scene.hdrPrepassFilter.glowEnabled;
         }
-        
-        
+
+
         void brightness(float b) @property
         {
             scene.hdrPrepassFilter.glowBrightness = b;
         }
-        
+
         float brightness() @property
         {
             return scene.hdrPrepassFilter.glowBrightness;
         }
     }
-    
+
     struct MotionBlurSettings
     {
         BaseScene3D scene;
-        
+
         void enabled(bool mode) @property
         {
             scene.hdrFilter.mblurEnabled = mode;
         }
-        
+
         bool enabled() @property
         {
             return scene.hdrFilter.mblurEnabled;
         }
-        
-        
+
+
         void samples(uint s) @property
         {
             scene.hdrFilter.motionBlurSamples = s;
         }
-        
+
         uint samples() @property
         {
             return scene.hdrFilter.motionBlurSamples;
         }
-        
-        
+
+
         void shutterSpeed(float s) @property
         {
             scene.hdrFilter.shutterSpeed = s;
             scene.hdrFilter.shutterFps = 1.0 / s;
         }
-        
+
         float shutterSpeed() @property
         {
             return scene.hdrFilter.shutterSpeed;
         }
     }
-    
+
     struct LUTSettings
     {
         BaseScene3D scene;
-        
+
         void texture(Texture tex) @property
         {
             scene.hdrFilter.colorTable = tex;
         }
-        
+
         Texture texture() @property
         {
             return scene.hdrFilter.colorTable;
         }
     }
-    
+
     struct VignetteSettings
     {
         BaseScene3D scene;
-        
+
         void texture(Texture tex) @property
         {
             scene.hdrFilter.vignette = tex;
         }
-        
+
         Texture texture() @property
         {
             return scene.hdrFilter.vignette;
         }
     }
-    
+
     struct AASettings
     {
         BaseScene3D scene;
-        
+
         void enabled(bool mode) @property
         {
             scene.fxaaFilter.enabled = mode;
         }
-        
+
         bool enabled() @property
         {
             return scene.fxaaFilter.enabled;
         }
     }
-    
+
     struct LensSettings
     {
         BaseScene3D scene;
-        
+
         void enabled(bool mode) @property
         {
             scene.lensFilter.enabled = mode;
         }
-        
+
         bool enabled() @property
         {
             return scene.lensFilter.enabled;
         }
-        
+
         void scale(float s) @property
         {
             scene.lensFilter.scale = s;
         }
-        
+
         float scale() @property
         {
             return scene.lensFilter.scale;
         }
-        
-        
+
+
         void dispersion(float d) @property
         {
             scene.lensFilter.dispersion = d;
         }
-        
+
         float dispersion() @property
         {
             return scene.lensFilter.dispersion;
         }
     }
-    
+
     SSAOSettings ssao;
     HDRSettings hdr;
     MotionBlurSettings motionBlur;
@@ -663,12 +664,12 @@ class Scene: BaseScene
     VignetteSettings vignette;
     AASettings antiAliasing;
     LensSettings lensDistortion;
-    
+
     DynamicArray!PostFilter postFilters;
 
     DynamicArray!Entity entities3D;
     DynamicArray!Entity entities2D;
-    
+
     ShapeQuad loadingProgressBar;
     Entity eLoadingProgressBar;
     HUDMaterialBackend hudMaterialBackend;
@@ -680,7 +681,7 @@ class Scene: BaseScene
     this(SceneManager smngr)
     {
         super(smngr);
-        
+
         rc3d.init(eventManager, environment);
         rc3d.projectionMatrix = perspectiveMatrix(60.0f, eventManager.aspectRatio, 0.1f, 1000.0f);
 
@@ -695,7 +696,7 @@ class Scene: BaseScene
         mLoadingProgressBar.diffuse = Color4f(1, 1, 1, 1);
         eLoadingProgressBar.material = mLoadingProgressBar;
     }
-    
+
     void sortEntities(ref DynamicArray!Entity entities)
     {
         size_t j = 0;
@@ -712,10 +713,10 @@ class Scene: BaseScene
             {
                 float b1 = edata[j].layer;
                 float b2 = edata[k].layer;
-                
+
                 if (b2 < b1)
                     j = k;
-                
+
                 k++;
             }
 
@@ -726,7 +727,7 @@ class Scene: BaseScene
             sortEntities(v.children);
         }
     }
-    
+
     TextAsset addTextAsset(string filename, bool preload = false)
     {
         TextAsset text;
@@ -765,7 +766,7 @@ class Scene: BaseScene
         }
         return font;
     }
-    
+
     OBJAsset addOBJAsset(string filename, bool preload = false)
     {
         OBJAsset obj;
@@ -778,7 +779,7 @@ class Scene: BaseScene
         }
         return obj;
     }
-    
+
     IQMAsset addIQMAsset(string filename, bool preload = false)
     {
         IQMAsset iqm;
@@ -791,7 +792,7 @@ class Scene: BaseScene
         }
         return iqm;
     }
-    
+
     PackageAsset addPackageAsset(string filename, bool preload = false)
     {
         PackageAsset pa;
@@ -814,13 +815,13 @@ class Scene: BaseScene
         {
             e = New!Entity(eventManager, assetManager);
             entities2D.append(e);
-            
+
             sortEntities(entities2D);
         }
-        
+
         return e;
     }
-    
+
     Entity createEntity3D(Entity parent = null)
     {
         Entity e;
@@ -830,38 +831,39 @@ class Scene: BaseScene
         {
             e = New!Entity(eventManager, assetManager);
             entities3D.append(e);
-            
+
             sortEntities(entities3D);
         }
-        
+
         e.material = defaultMaterial3D;
-        
+
         return e;
     }
-    
+
     Entity addEntity3D(Entity e)
     {
-        entities3D.append(e); 
+        entities3D.append(e);
         sortEntities(entities3D);
         return e;
     }
-    
+
     Entity createSky()
     {
-        auto matSky = createGenericMaterial(skyMaterialBackend);
+        auto matSky = New!ShaderMaterial(skyShader, assetManager); //createGenericMaterial(skyMaterialBackend);
         matSky.depthWrite = false;
-    
+
         auto eSky = createEntity3D();
         eSky.layer = 0;
         eSky.attach = Attach.Camera;
         eSky.castShadow = false;
         eSky.material = matSky;
-        eSky.drawable = New!ShapeSphere(1.0f, 16, 8, true, assetManager); //aSphere.mesh;
+        // TODO: use box instead of sphere
+        eSky.drawable = New!ShapeSphere(1.0f, 16, 8, true, assetManager);
         eSky.scaling = Vector3f(100.0f, 100.0f, 100.0f);
         sortEntities(entities3D);
         return eSky;
     }
-    
+
 	// TODO: replace with ShaderMaterial
     GenericMaterial createGenericMaterial(GenericMaterialBackend backend = null)
     {
@@ -869,12 +871,12 @@ class Scene: BaseScene
             backend = defaultMaterialBackend;
         return New!GenericMaterial(backend, assetManager);
     }
-	
+
     ShaderMaterial createMaterial()
     {
         return New!ShaderMaterial(standardShader, assetManager);
     }
-    
+
 	// TODO: replace with ShaderMaterial
     GenericMaterial createParticleMaterial(GenericMaterialBackend backend = null)
     {
@@ -882,37 +884,39 @@ class Scene: BaseScene
             backend = particleMaterialBackend;
         return New!GenericMaterial(backend, assetManager);
     }
-    
+
     LightSource createLight(Vector3f position, Color4f color, float energy, float volumeRadius, float areaRadius = 0.0f)
     {
         return lightManager.addLight(position, color, energy, volumeRadius, areaRadius);
     }
-    
+
     override void onAllocate()
-    {    
+    {
         environment = New!Environment(assetManager);
-        
+
         lightManager = New!LightManager(assetManager); //New!LightManager(200.0f, 100, assetManager);
-		
+
         defaultMaterialBackend = New!StandardBackend(lightManager, assetManager);
-        skyMaterialBackend = New!SkyBackend(assetManager);
-		
+        //skyMaterialBackend = New!SkyBackend(assetManager);
+
 		standardShader = New!StandardShader(assetManager);
         standardShader.shadowMap = shadowMap;
-        
+
+        skyShader = New!SkyShader(assetManager);
+
         shadowMap = New!CascadedShadowMap(1024, this, 10, 30, 200, -100, 100, assetManager);
         defaultMaterialBackend.shadowMap = shadowMap;
-        
+
         particleSystem = New!ParticleSystem(assetManager);
-        
+
         defaultMaterial3D = createMaterial();
-        
+
         gbuffer = New!GBuffer(eventManager.windowWidth, eventManager.windowHeight, this, assetManager);
         deferredEnvPass = New!DeferredEnvironmentPass(gbuffer, shadowMap, assetManager);
         deferredLightPass = New!DeferredLightPass(gbuffer, lightManager, assetManager);
-        
+
         sceneFramebuffer = New!Framebuffer(gbuffer, eventManager.windowWidth, eventManager.windowHeight, true, true, assetManager);
-        
+
         ssao.scene = this;
         hdr.scene = this;
         motionBlur.scene = this;
@@ -922,49 +926,49 @@ class Scene: BaseScene
         vignette.scene = this;
         antiAliasing.scene = this;
         lensDistortion.scene = this;
-        
+
         hblurredFramebuffer = New!Framebuffer(gbuffer, eventManager.windowWidth / 2, eventManager.windowHeight / 2, true, false, assetManager);
         hblur = New!PostFilterBlur(true, sceneFramebuffer, hblurredFramebuffer, assetManager);
-        
+
         vblurredFramebuffer = New!Framebuffer(gbuffer, eventManager.windowWidth / 2, eventManager.windowHeight / 2, true, false, assetManager);
         vblur = New!PostFilterBlur(false, hblurredFramebuffer, vblurredFramebuffer, assetManager);
-        
+
         hdrPrepassFramebuffer = New!Framebuffer(gbuffer, eventManager.windowWidth, eventManager.windowHeight, true, false, assetManager);
         hdrPrepassFilter = New!PostFilterHDRPrepass(sceneFramebuffer, hdrPrepassFramebuffer, assetManager);
         hdrPrepassFilter.blurredTexture = vblurredFramebuffer.colorTexture;
         postFilters.append(hdrPrepassFilter);
-        
+
         hdrFilter = New!PostFilterHDR(hdrPrepassFramebuffer, null, assetManager);
         hdrFilter.velocityTexture = gbuffer.velocityTexture;
         postFilters.append(hdrFilter);
-        
+
         fxaaFilter = New!PostFilterFXAA(null, null, assetManager);
         postFilters.append(fxaaFilter);
         fxaaFilter.enabled = false;
-        
+
         lensFilter = New!PostFilterLensDistortion(null, null, assetManager);
         postFilters.append(lensFilter);
         lensFilter.enabled = false;
-        
+
         finalizerFilter = New!PostFilterFinalizer(null, null, assetManager);
-        
+
         particleMaterialBackend = New!ParticleBackend(gbuffer, assetManager);
     }
-    
+
     PostFilter addFilter(PostFilter f)
     {
         postFilters.append(f);
         return f;
     }
-    
+
     override void onRelease()
     {
         entities3D.free();
         entities2D.free();
-        
+
         postFilters.free();
     }
-    
+
     override void onLoading(float percentage)
     {
         glEnable(GL_SCISSOR_TEST);
@@ -972,19 +976,19 @@ class Scene: BaseScene
         glViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
+
         float maxWidth = eventManager.windowWidth * 0.33f;
         float x = (eventManager.windowWidth - maxWidth) * 0.5f;
         float y = eventManager.windowHeight * 0.5f - 10;
         float w = percentage * maxWidth;
-        
+
         glDisable(GL_DEPTH_TEST);
         mLoadingProgressBar.diffuse = Color4f(0.1, 0.1, 0.1, 1);
         eLoadingProgressBar.position = Vector3f(x, y, 0);
         eLoadingProgressBar.scaling = Vector3f(maxWidth, 10, 1);
         eLoadingProgressBar.update(1.0/60.0);
         eLoadingProgressBar.render(&rc2d);
-        
+
         mLoadingProgressBar.diffuse = Color4f(1, 1, 1, 1);
         eLoadingProgressBar.scaling = Vector3f(w, 10, 1);
         eLoadingProgressBar.update(1.0/60.0);
@@ -1021,7 +1025,7 @@ class Scene: BaseScene
                 view.update(fixedTimeStep);
                 view.prepareRC(&rc3d);
             }
-            
+
             rc3d.time += fixedTimeStep;
             rc2d.time += fixedTimeStep;
 
@@ -1030,33 +1034,33 @@ class Scene: BaseScene
 
             foreach(e; entities2D)
                 e.update(fixedTimeStep);
-                
+
             particleSystem.update(fixedTimeStep);
-                
+
             onLogicsUpdate(fixedTimeStep);
-            
+
             environment.update(fixedTimeStep);
-            
+
             if (view) // TODO: allow to turn this off
             {
                 Vector3f cameraDirection = -view.invViewMatrix.forward;
                 cameraDirection.y = 0.0f;
                 cameraDirection = cameraDirection.normalized;
-                
+
                 shadowMap.area1.position = view.cameraPosition + cameraDirection * (shadowMap.projSize1  * 0.5f - 1.0f);
                 shadowMap.area2.position = view.cameraPosition + cameraDirection * shadowMap.projSize2 * 0.5f;
                 shadowMap.area3.position = view.cameraPosition + cameraDirection * shadowMap.projSize3 * 0.5f;
             }
-            
+
             shadowMap.update(&rc3d, fixedTimeStep);
         }
     }
-    
+
     void renderShadows(RenderingContext* rc)
     {
         shadowMap.render(rc);
     }
-    
+
     void renderBackgroundEntities3D(RenderingContext* rc)
     {
         glEnable(GL_DEPTH_TEST);
@@ -1064,7 +1068,7 @@ class Scene: BaseScene
             if (e.layer <= 0)
                 e.render(rc);
     }
-    
+
     // TODO: check transparency of children (use context variable)
     void renderOpaqueEntities3D(RenderingContext* rc)
     {
@@ -1077,7 +1081,7 @@ class Scene: BaseScene
                 e.render(&rcLocal);
         }
     }
-    
+
     // TODO: check transparency of children (use context variable)
     void renderTransparentEntities3D(RenderingContext* rc)
     {
@@ -1104,7 +1108,7 @@ class Scene: BaseScene
         foreach(e; entities2D)
             e.render(rc);
     }
-    
+
     void prepareViewport(Framebuffer b = null)
     {
         glEnable(GL_SCISSOR_TEST);
@@ -1121,11 +1125,11 @@ class Scene: BaseScene
         if (environment)
             glClearColor(environment.backgroundColor.r, environment.backgroundColor.g, environment.backgroundColor.b, 0.0f);
     }
-    
+
     void renderBlur(uint iterations)
     {
         RenderingContext rcTmp;
-        
+
         foreach(i; 1..iterations+1)
         {
             hblur.outputBuffer.bind();
@@ -1134,17 +1138,17 @@ class Scene: BaseScene
             hblur.radius = i;
             hblur.render(&rcTmp);
             hblur.outputBuffer.unbind();
-            
+
             vblur.outputBuffer.bind();
             rcTmp.initOrtho(eventManager, environment, vblur.outputBuffer.width, vblur.outputBuffer.height, 0.0f, 100.0f);
             prepareViewport(vblur.outputBuffer);
             vblur.radius = i;
             vblur.render(&rcTmp);
             vblur.outputBuffer.unbind();
-            
+
             hblur.inputBuffer = vblur.outputBuffer;
         }
-        
+
         hblur.inputBuffer = sceneFramebuffer;
     }
 
@@ -1152,66 +1156,66 @@ class Scene: BaseScene
     {
         renderShadows(&rc3d);
         gbuffer.render(&rc3d);
-        
+
         sceneFramebuffer.bind();
-        
+
         RenderingContext rcDeferred;
         rcDeferred.initOrtho(eventManager, environment, eventManager.windowWidth, eventManager.windowHeight, 0.0f, 100.0f);
         prepareViewport();
-        sceneFramebuffer.clearBuffers(); 
-        
+        sceneFramebuffer.clearBuffers();
+
         glBindFramebuffer(GL_READ_FRAMEBUFFER, gbuffer.fbo);
         glBlitFramebuffer(0, 0, gbuffer.width, gbuffer.height, 0, 0, gbuffer.width, gbuffer.height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-        
+
         renderBackgroundEntities3D(&rc3d);
         deferredEnvPass.render(&rcDeferred, &rc3d);
         deferredLightPass.render(&rcDeferred, &rc3d);
         renderTransparentEntities3D(&rc3d);
         particleSystem.render(&rc3d);
-        
+
         sceneFramebuffer.unbind();
-    
+
         if (hdrFilter.autoExposure)
         {
             sceneFramebuffer.genLuminanceMipmaps();
             float lum = sceneFramebuffer.averageLuminance();
-            
+
             if (!isNaN(lum))
             {
                 float newExposure = hdrFilter.keyValue * (1.0f / clamp(lum, hdrFilter.minLuminance, hdrFilter.maxLuminance));
-                
+
                 float exposureDelta = newExposure - hdrFilter.exposure;
                 hdrFilter.exposure += exposureDelta * hdrFilter.adaptationSpeed * eventManager.deltaTime;
             }
         }
-    
+
         if (hdrPrepassFilter.glowEnabled)
             renderBlur(glow.radius);
-    
+
         RenderingContext rcTmp;
         Framebuffer nextInput = sceneFramebuffer;
-        
+
         hdrPrepassFilter.perspectiveMatrix = rc3d.projectionMatrix;
-        
+
         foreach(i, f; postFilters.data)
         if (f.enabled)
         {
             if (f.outputBuffer is null)
                 f.outputBuffer = New!Framebuffer(gbuffer, eventManager.windowWidth, eventManager.windowHeight, false, false, assetManager);
-                
+
             if (f.inputBuffer is null)
                 f.inputBuffer = nextInput;
-                
+
             nextInput = f.outputBuffer;
-            
+
             f.outputBuffer.bind();
             rcTmp.initOrtho(eventManager, environment, f.outputBuffer.width, f.outputBuffer.height, 0.0f, 100.0f);
             prepareViewport(f.outputBuffer);
             f.render(&rcTmp);
             f.outputBuffer.unbind();
         }
-        
+
         prepareViewport();
         finalizerFilter.inputBuffer = nextInput;
         finalizerFilter.render(&rc2d);

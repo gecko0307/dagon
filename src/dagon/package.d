@@ -37,7 +37,7 @@ public
     import dlib.geometry;
     import dlib.image;
     import dlib.container;
-      
+
     import dmech;
 
     import dagon.core.ownership;
@@ -58,13 +58,13 @@ public
     import dagon.resource.materialasset;
     import dagon.resource.packageasset;
     import dagon.resource.props;
-    
+
     import dagon.logics.entity;
     import dagon.logics.behaviour;
     import dagon.logics.controller;
     import dagon.logics.rigidbodycontroller;
     import dagon.logics.charactercontroller;
-    
+
     import dagon.graphics.rc;
     import dagon.graphics.tbcamera;
     import dagon.graphics.freeview;
@@ -86,26 +86,26 @@ public
     import dagon.graphics.particles;
     import dagon.graphics.gbuffer;
     import dagon.graphics.deferred;
-    
+
     import dagon.graphics.materials.generic;
     import dagon.graphics.materials.standard;
     import dagon.graphics.materials.shadeless;
-    import dagon.graphics.materials.sky;
     import dagon.graphics.materials.hud;
     import dagon.graphics.materials.terrain;
     import dagon.graphics.materials.particle;
 
     import dagon.graphics.shaders.standard;
+    import dagon.graphics.shaders.sky;
     import dagon.graphics.shaders.geometrypass;
     import dagon.graphics.shaders.environmentpass;
     import dagon.graphics.shaders.lightpass;
-    
+
     import dagon.graphics.filters.fxaa;
     import dagon.graphics.filters.lens;
     import dagon.graphics.filters.hdr;
     import dagon.graphics.filters.blur;
     import dagon.graphics.filters.finalizer;
-    
+
     import dagon.ui.font;
     import dagon.ui.ftfont;
     import dagon.ui.textline;
