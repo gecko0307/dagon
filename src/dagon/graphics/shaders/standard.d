@@ -47,45 +47,40 @@ import dagon.graphics.material;
 import dagon.graphics.shader;
 
 class StandardShader: Shader
-{    
+{
     string vs = import("Standard.vs");
     string fs = import("Standard.fs");
-    
+
     CascadedShadowMap shadowMap;
     Matrix4x4f defaultShadowMatrix;
-    
+
     this(Owner o)
     {
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, o);
-        
+
         defaultShadowMatrix = Matrix4x4f.identity;
     }
-    
+
     override void bind(RenderingContext* rc)
     {
         auto idiffuse = "diffuse" in rc.material.inputs;
         auto inormal = "normal" in rc.material.inputs;
+        auto iheight = "height" in rc.material.inputs;
         auto iroughness = "roughness" in rc.material.inputs;
         auto imetallic = "metallic" in rc.material.inputs;
         auto ipbr = "pbr" in rc.material.inputs;
         auto iemission = "emission" in rc.material.inputs;
         auto ienergy = "energy" in rc.material.inputs;
         auto itransparency = "transparency" in rc.material.inputs;
-        
+
         bool shadeless = rc.material.boolProp("shadeless");
         bool useShadows = (shadowMap !is null) && rc.material.boolProp("shadowsEnabled");
-        
+
         if (idiffuse.texture)
         {
             glActiveTexture(GL_TEXTURE0);
             idiffuse.texture.bind();
-        }
-        
-        if (inormal.texture)
-        {
-            glActiveTexture(GL_TEXTURE1);
-            inormal.texture.bind();
         }
 
         if (ipbr is null)
@@ -93,18 +88,18 @@ class StandardShader: Shader
             rc.material.setInput("pbr", 0.0f);
             ipbr = "pbr" in rc.material.inputs;
         }
-        
-        if (ipbr.texture is null)   
+
+        if (ipbr.texture is null)
             ipbr.texture = rc.material.makeTexture(*iroughness, *imetallic, materialInput(0.0f), materialInput(0.0f));
         glActiveTexture(GL_TEXTURE2);
         ipbr.texture.bind();
-        
+
         // emission
-        if (iemission.texture) 
+        if (iemission.texture)
         {
             glActiveTexture(GL_TEXTURE3);
             iemission.texture.bind();
-            
+
             setParameter("emissionTexture", 3);
             setParameterSubroutine("emission", ShaderType.Fragment, "emissionMap");
         }
@@ -114,25 +109,25 @@ class StandardShader: Shader
             setParameterSubroutine("emission", ShaderType.Fragment, "emissionValue");
         }
         setParameter("emissionEnergy", ienergy.asFloat);
-        
+
         if (rc.environment.environmentMap)
         {
             glActiveTexture(GL_TEXTURE4);
             rc.environment.environmentMap.bind();
         }
-        
+
         if (useShadows)
         {
             glActiveTexture(GL_TEXTURE5);
             glBindTexture(GL_TEXTURE_2D_ARRAY, shadowMap.depthTexture);
         }
-        
+
         setParameter("modelViewMatrix", rc.modelViewMatrix);
         setParameter("projectionMatrix", rc.projectionMatrix);
         setParameter("normalMatrix", rc.normalMatrix);
         setParameter("viewMatrix", rc.viewMatrix);
         setParameter("invViewMatrix", rc.invViewMatrix);
-        
+
         setParameter("prevModelViewProjMatrix", rc.prevModelViewProjMatrix);
         setParameter("blurModelViewProjMatrix", rc.blurModelViewProjMatrix);
         setParameter("blurMask", rc.blurMask);
@@ -140,13 +135,13 @@ class StandardShader: Shader
         setParameter("sunDirection", rc.environment.sunDirectionEye(rc.viewMatrix));
         setParameter("sunColor", rc.environment.sunColor);
         setParameter("sunEnergy", rc.environment.sunEnergy);
-        
+
         float transparency = 1.0f;
         if (itransparency)
             transparency = itransparency.asFloat;
         setParameter("transparency", transparency);
-        
-        // diffuse  
+
+        // diffuse
         if (idiffuse.texture)
         {
             setParameter("diffuseTexture", 0);
@@ -157,25 +152,68 @@ class StandardShader: Shader
             setParameter("diffuseVector", rc.material.diffuse.asVector4f);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
         }
-        
-        // TODO: height map
-        
-        // normal  
+
+        // normal/height
+        bool haveHeightMap = inormal.texture !is null;
+        if (haveHeightMap)
+            haveHeightMap = inormal.texture.image.channels == 4;
+
+        if (!haveHeightMap)
+        {
+            if (inormal.texture is null)
+            {
+                if (iheight.texture !is null) // we have height map, but no normal map
+                {
+                    Color4f color = Color4f(0.5f, 0.5f, 1.0f, 0.0f); // default normal pointing upwards
+                    inormal.texture = rc.material.makeTexture(color, iheight.texture);
+                    haveHeightMap = true;
+                }
+            }
+            else
+            {
+                if (iheight.texture !is null) // we have both normal and height maps
+                {
+                    inormal.texture = rc.material.makeTexture(inormal.texture, iheight.texture);
+                    haveHeightMap = true;
+                }
+            }
+        }
+
         if (inormal.texture)
         {
             setParameter("normalTexture", 1);
             setParameterSubroutine("normal", ShaderType.Fragment, "normalMap");
+
+            glActiveTexture(GL_TEXTURE1);
+            inormal.texture.bind();
         }
         else
         {
             setParameter("normalVector", rc.material.normal.asVector3f);
             setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
         }
-        
+
+        // TODO: make material properties
+        float parallaxScale = 0.03f;
+        float parallaxBias = -0.01f;
+        setParameter("parallaxScale", parallaxScale);
+        setParameter("parallaxBias", parallaxBias);
+
+        if (haveHeightMap)
+        {
+            setParameterSubroutine("height", ShaderType.Fragment, "heightMap");
+        }
+        else
+        {
+            float h = -parallaxBias / parallaxScale;
+            setParameter("heightScalar", h);
+            setParameterSubroutine("height", ShaderType.Fragment, "heightValue");
+        }
+
         // pbr
         // TODO: pass solid values as uniforms, make subroutine for each mode
         setParameter("pbrTexture", 2);
-        
+
         // environment
         if (rc.environment.environmentMap)
         {
@@ -191,17 +229,17 @@ class StandardShader: Shader
             setParameter("groundEnergy", rc.environment.groundEnergy);
             setParameterSubroutine("environment", ShaderType.Fragment, "environmentSky");
         }
-        
+
         // shadowMap
         if (useShadows)
         {
             setParameter("shadowMatrix1", shadowMap.area1.shadowMatrix);
             setParameter("shadowMatrix2", shadowMap.area2.shadowMatrix);
             setParameter("shadowMatrix3", shadowMap.area3.shadowMatrix);
-            
+
             setParameter("shadowTextureSize", cast(float)shadowMap.size);
             setParameter("shadowTextureArray", 5);
-            
+
             setParameterSubroutine("shadow", ShaderType.Fragment, "shadowCSM");
         }
         else
@@ -209,52 +247,52 @@ class StandardShader: Shader
             setParameter("shadowMatrix1", defaultShadowMatrix);
             setParameter("shadowMatrix2", defaultShadowMatrix);
             setParameter("shadowMatrix3", defaultShadowMatrix);
-            
+
             setParameterSubroutine("shadow", ShaderType.Fragment, "shadowNone");
         }
-        
+
         // BRDF
         if (shadeless)
             setParameterSubroutine("brdf", ShaderType.Fragment, "brdfEmission");
         else
             setParameterSubroutine("brdf", ShaderType.Fragment, "brdfPBR");
-        
+
         glActiveTexture(GL_TEXTURE0);
-        
+
         super.bind(rc);
     }
-    
+
     override void unbind(RenderingContext* rc)
     {
         super.unbind(rc);
-        
+
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE5);
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
-        
+
         glActiveTexture(GL_TEXTURE6);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE7);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE8);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE0);
     }
 }

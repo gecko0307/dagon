@@ -86,6 +86,38 @@ subroutine(srtNormal) vec3 normalMap(in vec2 uv, in float ysign, in mat3 tangent
 
 subroutine uniform srtNormal normal;
 
+
+/*
+ * Height mapping subroutines.
+ */
+subroutine float srtHeight(in vec2 uv);
+
+uniform float heightScalar;
+subroutine(srtHeight) float heightValue(in vec2 uv)
+{            
+    return heightScalar;
+}
+
+subroutine(srtHeight) float heightMap(in vec2 uv)
+{            
+    return texture(normalTexture, uv).a;
+}
+
+subroutine uniform srtHeight height;
+
+
+/*
+ * Parallax mapping
+ */
+uniform float parallaxScale;
+uniform float parallaxBias;
+vec2 parallaxMapping(in vec3 E, in vec2 uv, in float height)
+{
+    float h = height * parallaxScale + parallaxBias;
+    return uv + (h * E.xy);
+}
+
+
 /*
  * Environment subroutines.
  * Used to switch sky/envmap.
@@ -361,18 +393,21 @@ void main()
     vec3 E = normalize(-eyePosition);
 
     mat3 tangentToEye = cotangentFrame(N, eyePosition, texCoord);
-    N = normal(texCoord, -1.0, tangentToEye);
     vec3 tE = normalize(E * tangentToEye);
     
     vec2 posScreen = (blurPosition.xy / blurPosition.w) * 0.5 + 0.5;
     vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;
     vec2 screenVelocity = posScreen - prevPosScreen;
 
-    vec4 diff = diffuse(texCoord);
+    vec2 shiftedTexCoord = parallaxMapping(tE, texCoord, height(texCoord));
+	
+	N = normal(shiftedTexCoord, -1.0, tangentToEye);
+
+    vec4 diff = diffuse(shiftedTexCoord);
     
     vec3 albedo = toLinear(diff.rgb);
-    vec4 rms = texture(pbrTexture, texCoord);
-    vec3 emiss = emission(texCoord).rgb * emissionEnergy;
+    vec4 rms = texture(pbrTexture, shiftedTexCoord);
+    vec3 emiss = emission(shiftedTexCoord).rgb * emissionEnergy;
 
     vec3 Lo = brdf(albedo, rms.r, rms.g, N) + emiss;
 
