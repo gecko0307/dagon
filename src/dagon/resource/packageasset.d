@@ -482,7 +482,7 @@ class PackageAsset: Asset
     
     GenericMaterial createMaterial()
     {
-        GenericMaterial m = New!GenericMaterial(scene.defaultMaterialBackend, assetOwner);
+        auto m = New!ShaderMaterial(scene.standardShader, assetOwner);
         return m;
     }
     

@@ -74,7 +74,7 @@ class Entity: Owner, Drawable
     DynamicArray!BehaviourListEntry behaviours;
     Drawable drawable;
     EventManager eventManager;
-    
+
     Entity parent = null;
     DynamicArray!Entity children;
 
@@ -84,10 +84,10 @@ class Entity: Owner, Drawable
 
     Matrix4x4f transformation;
     Matrix4x4f invTransformation;
-    
+
     Matrix4x4f absoluteTransformation;
     Matrix4x4f invAbsoluteTransformation;
-    
+
     Matrix4x4f prevTransformation;
     Matrix4x4f prevAbsoluteTransformation;
 
@@ -100,13 +100,13 @@ class Entity: Owner, Drawable
     bool visible = true;
     bool castShadow = true;
     Attach attach = Attach.Parent;
-    
+
     bool useMotionBlur = true;
-    
+
     bool clearZbuffer = false;
-    
+
     int layer = 1;
-    
+
     bool solid = false;
 
     this(EventManager emngr, Owner owner)
@@ -123,27 +123,27 @@ class Entity: Owner, Drawable
 
         defaultController = New!DefaultEntityController(this);
         controller = defaultController;
-        
+
         absoluteTransformation = Matrix4x4f.identity;
         invAbsoluteTransformation = Matrix4x4f.identity;
         prevTransformation = Matrix4x4f.identity;
         prevAbsoluteTransformation = Matrix4x4f.identity;
     }
-        
+
     this(Entity parent)
     {
         this(parent.eventManager, parent);
         parent.children.append(this);
         this.parent = parent;
     }
-    
+
     this(Entity parent, Owner owner)
     {
         this(parent.eventManager, owner);
         parent.children.append(this);
         this.parent = parent;
     }
-    
+
     void release()
     {
         behaviours.free();
@@ -154,7 +154,7 @@ class Entity: Owner, Drawable
     {
         release();
     }
-    
+
     Vector3f absolutePosition()
     {
         if (parent)
@@ -209,20 +209,20 @@ class Entity: Owner, Drawable
                 ble.behaviour.processEvents();
             }
         }
-        
+
         foreach(child; children)
         {
             child.processEvents();
         }
     }
-    
+
     void updateTransformation()
     {
         prevTransformation = transformation;
-    
+
         if (controller)
             controller.update(0.0);
-        
+
         if (parent)
         {
             absoluteTransformation = parent.absoluteTransformation * transformation;
@@ -238,7 +238,7 @@ class Entity: Owner, Drawable
     void update(double dt)
     {
         updateTransformation();
-        
+
         foreach(i, ble; behaviours)
         {
             if (ble.valid)
@@ -246,7 +246,7 @@ class Entity: Owner, Drawable
                 ble.behaviour.update(dt);
             }
         }
-        
+
         foreach(child; children)
         {
             child.update(dt);
@@ -260,12 +260,12 @@ class Entity: Owner, Drawable
     {
         if (!visible)
             return;
-        
+
         bool transparent = false;
         bool ignore = false;
         if (material)
         {
-            if (material.isTransparent)
+            if (material.isTransparent || material.usesCustomShader)
             {
                 ignore = rc.ignoreTransparentEntities;
                 transparent = true;
@@ -282,15 +282,15 @@ class Entity: Owner, Drawable
         }
 
         rcLocal = *rc;
-        
+
         if (!ignore)
         {
             rcLocal.layer = layer;
-            
+
             if (attach == Attach.Camera)
-            {         
+            {
                 rcLocal.modelMatrix = translationMatrix(rcLocal.cameraPosition) * transformation;
-                rcLocal.invModelMatrix = invTransformation * translationMatrix(-rcLocal.cameraPosition); 
+                rcLocal.invModelMatrix = invTransformation * translationMatrix(-rcLocal.cameraPosition);
 
                 if (useMotionBlur)
                     rcLocal.prevModelViewProjMatrix = rcLocal.projectionMatrix * (rcLocal.prevViewMatrix * (translationMatrix(rcLocal.prevCameraPosition) * prevTransformation));
@@ -301,24 +301,24 @@ class Entity: Owner, Drawable
             {
                 rcLocal.modelMatrix = absoluteTransformation;
                 rcLocal.invModelMatrix = invAbsoluteTransformation;
-                
+
                 if (useMotionBlur)
                     rcLocal.prevModelViewProjMatrix = rcLocal.projectionMatrix * (rcLocal.prevViewMatrix * prevAbsoluteTransformation);
                 else
                     rcLocal.prevModelViewProjMatrix = rcLocal.projectionMatrix * (rcLocal.viewMatrix * absoluteTransformation);
             }
-            
+
             rcLocal.modelViewMatrix = rcLocal.viewMatrix * rcLocal.modelMatrix;
             rcLocal.normalMatrix = rcLocal.modelViewMatrix.inverse.transposed;
-            
+
             rcLocal.blurModelViewProjMatrix = rcLocal.projectionMatrix * rcLocal.modelViewMatrix;
-            
+
             if (useMotionBlur)
                 rcLocal.blurMask = 1.0f;
             else
                 rcLocal.blurMask = 0.0f;
         }
-        
+
         bool shouldUseOverrideMat = true;
         if (transparent)
             shouldUseOverrideMat = !rcLocal.shadowMode;
@@ -335,26 +335,26 @@ class Entity: Owner, Drawable
         }
 
         if (drawable)
-        {        
+        {
             Entity drawableEntity = cast(Entity)drawable;
-            
+
             if (drawableEntity)
             {
                 auto absTrans = drawableEntity.absoluteTransformation;
                 auto invAbsTrans = drawableEntity.invAbsoluteTransformation;
                 auto prevAbsTrans = drawableEntity.prevAbsoluteTransformation;
-                
+
                 drawableEntity.absoluteTransformation = absoluteTransformation;
                 drawableEntity.invAbsoluteTransformation = invAbsoluteTransformation;
                 drawableEntity.prevAbsoluteTransformation = prevAbsoluteTransformation;
-                
+
                 foreach(child; drawableEntity.children)
                 {
                     child.updateTransformation();
                 }
-                
+
                 drawableEntity.render(&rcLocal);
-                
+
                 drawableEntity.absoluteTransformation = absTrans;
                 drawableEntity.invAbsoluteTransformation = invAbsTrans;
                 drawableEntity.prevAbsoluteTransformation = prevAbsTrans;
@@ -364,7 +364,7 @@ class Entity: Owner, Drawable
                 drawable.render(&rcLocal);
             }
         }
-        
+
         if (!ignore)
         {
             if (rcLocal.overrideMaterial && shouldUseOverrideMat)
@@ -372,14 +372,14 @@ class Entity: Owner, Drawable
             else if (material)
                 material.unbind(&rcLocal);
         }
-        
+
         if (!ignore)
         foreach(i, ble; behaviours)
         {
             if (ble.valid)
                 ble.behaviour.render(&rcLocal);
         }
-        
+
         foreach(child; children)
         {
             child.render(&rcLocal);

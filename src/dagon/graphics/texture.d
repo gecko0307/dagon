@@ -33,6 +33,7 @@ import std.math;
 import derelict.opengl;
 
 import dlib.core.memory;
+import dlib.image.color;
 import dlib.image.image;
 import dlib.math.vector;
 
@@ -80,8 +81,6 @@ class Texture: Owner
         image = img;
         width = img.width;
         height = img.height;
-
-        //type = GL_UNSIGNED_BYTE;
 
         switch (img.pixelFormat)
         {
@@ -142,6 +141,13 @@ class Texture: Owner
     bool valid()
     {
         return cast(bool)glIsTexture(tex);
+    }
+    
+    Color4f sample(float u, float v)
+    {
+        int x = cast(int)floor(u * width);
+        int y = cast(int)floor(v * height);
+        return image[x, y];
     }
 
     void release()

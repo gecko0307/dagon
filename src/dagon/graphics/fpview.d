@@ -48,6 +48,8 @@ class FirstPersonView: EventListener, View
     int oldMouseY = 0;
     bool _active = false;
 
+    float mouseSensibility = 0.2f;
+
     this(EventManager emngr, Entity camEntity, Owner owner)
     {
         super(emngr, owner);
@@ -59,17 +61,17 @@ class FirstPersonView: EventListener, View
     void update(double dt)
     {
         processEvents();
-                
+
         if (_active)
-        {            
-            float turn_m =  (eventManager.mouseRelX) * 0.2f;
-            float pitch_m = (eventManager.mouseRelY) * 0.2f;
-        
+        {
+            float turn_m =  (eventManager.mouseRelX) * mouseSensibility;
+            float pitch_m = (eventManager.mouseRelY) * mouseSensibility;
+
             camera.pitch += pitch_m;
             camera.turn += turn_m;
-            
+
             camera.weaponPitch += pitch_m * camera.weaponPitchCoef;
-            
+
             float pitchLimitMax = 60.0f;
             float pitchLimitMin = -60.0f;
             if (camera.pitch > pitchLimitMax)
@@ -83,10 +85,10 @@ class FirstPersonView: EventListener, View
                 camera.weaponPitch = pitchLimitMin * camera.weaponPitchCoef;
             }
         }
-        
+
         camera.update(dt);
     }
-    
+
     void active(bool v)
     {
         if (v)
@@ -100,10 +102,10 @@ class FirstPersonView: EventListener, View
             SDL_SetRelativeMouseMode(SDL_FALSE);
             eventManager.setMouse(oldMouseX, oldMouseY);
         }
-        
+
         _active = v;
     }
-    
+
     bool active()
     {
         return _active;
@@ -113,12 +115,12 @@ class FirstPersonView: EventListener, View
     {
         return camera.viewMatrix();
     }
-    
+
     Matrix4x4f invViewMatrix()
     {
         return camera.invViewMatrix();
     }
-    
+
     Vector3f cameraPosition()
     {
         return camera.position;

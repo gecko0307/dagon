@@ -13,11 +13,11 @@ Currently Dagon has the following features:
 * Static and animated meshes, OBJ and [IQM](https://github.com/lsalzman/iqm) formats support
 * Textures in PNG, JPG, TGA, BMP, HDR formats
 * Own asset format with Blender exporter
-* Flexible material system with simple user-defined abstract API and different backends. You can implement custom materials, with your own shaders and parameters
-* Deferred shading
+* Flexible material system with simple user-defined data model (interface) and shaders (backend). You can implement custom materials, with your own shaders and parameters
+* Deferred pipeline for opaque objects, forward pipeline for transparent objects
 * Physically based rendering (PBR)
 * HDR rendering with auto-exposure (eye adaptation), Reinhard, Hable/Uncharted and ACES tonemapping operators
-* Equirectangular HDRI environment maps support
+* Equirectangular HDRI environment maps
 * Spherical area lights
 * Normal/parallax mapping, parallax occlusion mapping
 * Cascaded shadow maps for directional light
@@ -30,12 +30,13 @@ Currently Dagon has the following features:
 * Scene management. Any scene has its own assets, entities and logical context
 * Live asset reloading - asset can be automatically reloaded when the file is modified with external application
 * Built-in camera logics for quick and easy navigation (freeview and first person style view)
-* [Box](https://github.com/gecko0307/box) container support for assets.
+* [Box](https://github.com/gecko0307/box) container support for assets
+* Built-in physics engine.
 
 Planned in future:
-
 * Screen-space reflections
-* Terrain renderer
+* Terrain
+* Water
 
 Screenshots:
 
@@ -73,4 +74,4 @@ Copyright (c) 2016-2018 Timur Gafarov. Distributed under the Boost Software Lice
 
 Sponsors
 --------
-Kumar Sookram, Aleksandr Kovalev
+Kumar Sookram, Aleksandr Kovalev.

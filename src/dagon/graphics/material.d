@@ -32,6 +32,8 @@ import std.algorithm;
 import dlib.core.memory;
 import dlib.math.vector;
 import dlib.image.color;
+import dlib.image.image;
+import dlib.image.unmanaged;
 import dlib.container.dict;
 import derelict.opengl;
 import dagon.core.ownership;
@@ -95,11 +97,7 @@ struct MaterialInput
     Color4f sample(float u, float v)
     {
         if (texture !is null)
-        {
-            int x = cast(int)floor(u * texture.width);
-            int y = cast(int)floor(v * texture.height);
-            return texture.image[x, y];
-        }
+            return texture.sample(u, v);
         else if (type == MaterialInputType.Vec4)
             return Color4f(asVector4f);
         else if (type == MaterialInputType.Vec3)
@@ -138,6 +136,11 @@ abstract class Material: Owner
     ~this()
     {
         Delete(inputs);
+    }
+    
+    final auto opDispatch(string name)() @property
+    {
+        return (name in inputs);
     }
 
     final void opDispatch(string name, T)(T value) @property
@@ -202,6 +205,140 @@ abstract class Material: Owner
 
         inputs[name] = input;
         return (name in inputs);
+    }
+    
+    final bool boolProp(string prop)
+    {
+        auto p = prop in inputs;
+        bool res = false;
+        if (p.type == MaterialInputType.Bool ||
+            p.type == MaterialInputType.Integer)
+        {
+            res = p.asBool;
+        }
+        return res;
+    }
+    
+    final int intProp(string prop)
+    {
+        auto p = prop in inputs;
+        int res = 0;
+        if (p.type == MaterialInputType.Bool ||
+            p.type == MaterialInputType.Integer)
+        {
+            res = p.asInteger;
+        }
+        else if (p.type == MaterialInputType.Float)
+        {
+            res = cast(int)p.asFloat;
+        }
+        return res;
+    }
+    
+    final Texture makeTexture(Color4f rgb, Texture alpha)
+    {
+        SuperImage rgbaImg = New!UnmanagedImageRGBA8(alpha.width, alpha.height);
+        
+        foreach(y; 0..alpha.height)
+        foreach(x; 0..alpha.width)
+        {
+            Color4f col = rgb;
+            col.a = alpha.image[x, y].r;
+            rgbaImg[x, y] = col;
+        }
+            
+        auto tex = New!Texture(rgbaImg, this);
+        return tex;
+    }
+    
+    final Texture makeTexture(Texture rgb, float alpha)
+    {
+        SuperImage rgbaImg = New!UnmanagedImageRGBA8(rgb.width, rgb.height);
+        
+        foreach(y; 0..rgb.height)
+        foreach(x; 0..rgb.width)
+        {
+            Color4f col = rgb.image[x, y];
+            col.a = alpha;
+            rgbaImg[x, y] = col;
+        }
+            
+        auto tex = New!Texture(rgbaImg, this);
+        return tex;
+    }
+    
+    final Texture makeTexture(Texture rgb, Texture alpha)
+    {
+        uint width = max(rgb.width, alpha.width);
+        uint height = max(rgb.height, alpha.height);
+            
+        SuperImage rgbaImg = New!UnmanagedImageRGBA8(width, height);
+        
+        foreach(y; 0..rgbaImg.height)
+        foreach(x; 0..rgbaImg.width)
+        {            
+            float u = cast(float)x / cast(float)width;
+            float v = cast(float)y / cast(float)height;
+            
+            Color4f col = rgb.sample(u, v);
+            col.a = alpha.sample(u, v).r;
+            
+            rgbaImg[x, y] = col;
+        }
+            
+        auto tex = New!Texture(rgbaImg, this);
+        return tex;
+    }
+    
+    final Texture makeTexture(MaterialInput r, MaterialInput g, MaterialInput b, MaterialInput a)
+    {
+        uint width = 8;
+        uint height = 8;
+        
+        if (r.texture !is null)
+        {
+            width = max(width, r.texture.width);
+            height = max(height, r.texture.height);
+        }
+        
+        if (g.texture !is null)
+        {
+            width = max(width, g.texture.width);
+            height = max(height, g.texture.height);
+        }
+        
+        if (b.texture !is null)
+        {
+            width = max(width, b.texture.width);
+            height = max(height, b.texture.height);
+        }
+        
+        if (a.texture !is null)
+        {
+            width = max(width, a.texture.width);
+            height = max(height, a.texture.height);
+        }
+        
+        SuperImage img = New!UnmanagedImageRGBA8(width, height);
+        
+        foreach(y; 0..img.height)
+        foreach(x; 0..img.width)
+        {
+            Color4f col = Color4f(0, 0, 0, 0);
+            
+            float u = cast(float)x / cast(float)img.width;
+            float v = cast(float)y / cast(float)img.height;
+            
+            col.r = r.sample(u, v).r;
+            col.g = g.sample(u, v).r;
+            col.b = b.sample(u, v).r;
+            col.a = a.sample(u, v).r;
+            
+            img[x, y] = col;
+        }
+        
+        auto tex = New!Texture(img, this);
+        return tex;
     }
 
     void bind(RenderingContext* rc);

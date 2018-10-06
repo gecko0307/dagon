@@ -128,9 +128,9 @@ class ParticleBackend: GLSLMaterialBackend
         float luminance(vec3 color)
         {
             return (
-                color.x * 0.27 +
-                color.y * 0.67 +
-                color.z * 0.06
+                color.x * 0.2126 + //0.27 +
+                color.y * 0.7152 + //0.67 +
+                color.z * 0.0722 //0.06
             );
         }
         
@@ -227,7 +227,7 @@ class ParticleBackend: GLSLMaterialBackend
                 ambient = sky(worldN, worldSun, 1.0);
             }
             
-			vec3 diffuse = shaded? 
+            vec3 diffuse = shaded? 
                 ambient + sunColor * max(dot(N, sunDirection) + wrapFactor, 0.0) / (1.0 + wrapFactor) * sunEnergy : 
                 vec3(1.0);
             

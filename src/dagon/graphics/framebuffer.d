@@ -33,15 +33,24 @@ import dlib.math.vector;
 import dlib.image.color;
 import derelict.opengl;
 import dagon.core.ownership;
+import dagon.graphics.gbuffer;
 
+/*
+ * TODO: the whole thing should be rewritten in more reasonable way.
+ * E.g., a chain of specialized buffers extending abstract interface.
+ */
 class Framebuffer: Owner
 {
     uint width;
     uint height;
+    
+    GBuffer gbuffer;
+    
     GLuint fbo;
     GLuint depthTexture = 0;
     GLuint colorTexture = 0;
     GLuint lumaTexture = 0;
+    GLuint velocityTexture = 0;
     
     Vector2f[4] vertices;
     Vector2f[4] texcoords;
@@ -56,7 +65,7 @@ class Framebuffer: Owner
     
     bool isHDRSceneBuffer = false;
     
-    this(uint w, uint h, bool floating, bool isHDRSceneBuffer, Owner o)
+    this(GBuffer gbuffer, uint w, uint h, bool floating, bool isHDRSceneBuffer, Owner o)
     {
         super(o);
     
@@ -64,6 +73,8 @@ class Framebuffer: Owner
         height = h;
         
         this.isHDRSceneBuffer = isHDRSceneBuffer;
+        
+        this.gbuffer = gbuffer;
         
         glActiveTexture(GL_TEXTURE0);
         
@@ -115,10 +126,14 @@ class Framebuffer: Owner
         
         if (isHDRSceneBuffer)
         {
+            velocityTexture = gbuffer.velocityTexture;
+        
+            // TODO: use the same layout as geometry pass?
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, lumaTexture, 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, velocityTexture, 0);
             
-            GLenum[2] bufs = [GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1];
-            glDrawBuffers(2, bufs.ptr);
+            GLenum[3] bufs = [GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2];
+            glDrawBuffers(3, bufs.ptr);
         }
         else
         {
@@ -242,11 +257,15 @@ class Framebuffer: Owner
     
     void clearBuffers()
     {
+    /*
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    */
+        Color4f zero = Color4f(0, 0, 0, 0);
+        glClearBufferfv(GL_COLOR, 0, zero.arrayof.ptr);
         if (isHDRSceneBuffer)
         {
-            Color4f zero = Color4f(0, 0, 0, 0);
             glClearBufferfv(GL_COLOR, 1, zero.arrayof.ptr);
         }
+    
     }
 }

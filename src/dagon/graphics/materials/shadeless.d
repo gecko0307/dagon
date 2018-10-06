@@ -92,9 +92,9 @@ class ShadelessBackend: GLSLMaterialBackend
         float luminance(vec3 color)
         {
             return (
-                color.x * 0.27 +
-                color.y * 0.67 +
-                color.z * 0.06
+                color.x * 0.2126 + //0.27 +
+                color.y * 0.7152 + //0.67 +
+                color.z * 0.0722 //0.06
             );
         }
         

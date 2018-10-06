@@ -78,6 +78,7 @@ class PostFilterHDR: PostFilter
         #version 330 core
         
         uniform sampler2D fbColor;
+        uniform sampler2D fbPosition;
         uniform sampler2D fbVelocity;
         uniform sampler2D colorTable;
         uniform sampler2D vignette;
@@ -165,17 +166,25 @@ class PostFilterHDR: PostFilter
             
             if (useMotionBlur)
             {
-                vec2 blurVec = texture(fbVelocity, texCoord).xy;
+                vec2 blurVec = texture(fbVelocity, texCoord).xy;                
+                float depthRef = texture(fbPosition, texCoord).z;
                 blurVec = blurVec / (timeStep * shutterFps);
-                float invSamplesMinusOne = 1.0 / float(motionBlurSamples - 1);
-                float usedSamples = 1.0;
                 
-                for (float i = 1.0; i < motionBlurSamples; i++)
+                float speed = length(blurVec * viewSize);
+                int nSamples = clamp(int(speed), 1, motionBlurSamples);
+                
+                float invSamplesMinusOne = 1.0 / float(nSamples - 1);
+                float usedSamples = 1.0;
+                const float depthThreshold = 20.0;
+                
+                for (int i = 1; i < nSamples; i++)
                 {
-                    vec2 offset = blurVec * (i * invSamplesMinusOne - 0.5);
+                    vec2 offset = blurVec * (float(i) * invSamplesMinusOne - 0.5);
                     float mask = texture(fbVelocity, texCoord + offset).w;
-                    res += texture(fbColor, texCoord + offset).rgb * mask;
-                    usedSamples += mask;
+                    float depth = texture(fbPosition, texCoord + offset).z;
+                    float depthWeight = 1.0; //1.0 - clamp(abs(depth - depthRef), 0.0, depthThreshold) / depthThreshold;
+                    res += texture(fbColor, texCoord + offset).rgb * mask * depthWeight;
+                    usedSamples += mask * depthWeight;
                 }
                 
                 res = res / usedSamples;
@@ -208,6 +217,7 @@ class PostFilterHDR: PostFilter
         return fs;
     }
     
+    GLint fbPositionLoc;
     GLint colorTableLoc;
     GLint exposureLoc;
     GLint tonemapFunctionLoc;
@@ -222,7 +232,7 @@ class PostFilterHDR: PostFilter
     
     bool autoExposure = false;
     
-    float minLuminance = 0.001f;
+    float minLuminance = 0.1f;
     float maxLuminance = 100000.0f;
     float keyValue = 0.5f;
     float adaptationSpeed = 4.0f;
@@ -243,6 +253,7 @@ class PostFilterHDR: PostFilter
     {
         super(inputBuffer, outputBuffer, o);
         
+        fbPositionLoc = glGetUniformLocation(shaderProgram, "fbPosition");
         colorTableLoc = glGetUniformLocation(shaderProgram, "colorTable");
         exposureLoc = glGetUniformLocation(shaderProgram, "exposure");
         tonemapFunctionLoc = glGetUniformLocation(shaderProgram, "tonemapFunction");
@@ -273,9 +284,13 @@ class PostFilterHDR: PostFilter
         glActiveTexture(GL_TEXTURE4);
         if (vignette)
             vignette.bind();
+            
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, inputBuffer.gbuffer.positionTexture);
 
         glActiveTexture(GL_TEXTURE0);
         
+        glUniform1i(fbPositionLoc, 5);
         glUniform1i(fbVelocityLoc, 2);
         glUniform1i(colorTableLoc, 3);
         glUniform1f(exposureLoc, exposure);
@@ -301,6 +316,10 @@ class PostFilterHDR: PostFilter
         glActiveTexture(GL_TEXTURE4);
         if (vignette)
             vignette.unbind();
+            
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, 0);
+            
         glActiveTexture(GL_TEXTURE0);
     }
 }
