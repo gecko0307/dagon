@@ -40,9 +40,9 @@ Planned in future:
 
 Screenshots:
 
-[![Screenshot1](https://raw.githubusercontent.com/gecko0307/dagon-demo/master/screenshots/car-thumb.jpg)](https://raw.githubusercontent.com/gecko0307/dagon-demo/master/screenshots/car.jpg)
-[![Screenshot2](https://raw.githubusercontent.com/gecko0307/dagon-demo/master/screenshots/characters-thumb.jpg)](https://raw.githubusercontent.com/gecko0307/dagon-demo/master/screenshots/characters.jpg)
-[![Screenshot3](https://raw.githubusercontent.com/gecko0307/dagon-demo/master/screenshots/lights-thumb.jpg)](https://raw.githubusercontent.com/gecko0307/dagon-demo/master/screenshots/lights.jpg)
+[![Screenshot1](https://1.bp.blogspot.com/-grsFLVdZMFs/W6KqhXuBqOI/AAAAAAAADqA/pU6vuB8PKZUws3eP0Ac0GJ4p6fbIWi0kACPcBGAYYCw/s1600/screenshot001.jpg)](https://1.bp.blogspot.com/-grsFLVdZMFs/W6KqhXuBqOI/AAAAAAAADqA/pU6vuB8PKZUws3eP0Ac0GJ4p6fbIWi0kACPcBGAYYCw/s1600/screenshot001.jpg)
+[![Screenshot2](https://2.bp.blogspot.com/-r92DjuBgFGk/Ww2Q9xDVbxI/AAAAAAAADaQ/HxZTNLloXq8DVthWn9iDBEjnhs5skJv7wCPcBGAYYCw/s1600/Untitled%2B9.jpg)](https://2.bp.blogspot.com/-r92DjuBgFGk/Ww2Q9xDVbxI/AAAAAAAADaQ/HxZTNLloXq8DVthWn9iDBEjnhs5skJv7wCPcBGAYYCw/s1600/Untitled%2B9.jpg)
+[![Screenshot3](https://3.bp.blogspot.com/-5dp4hgznRQY/Wv_2W7xzpMI/AAAAAAAADYk/BoJ9fm899Ts44vo9Gja26tl9q9ckoFNiACLcBGAs/s1600/exporter.jpg)](https://3.bp.blogspot.com/-5dp4hgznRQY/Wv_2W7xzpMI/AAAAAAAADYk/BoJ9fm899Ts44vo9Gja26tl9q9ckoFNiACLcBGAs/s1600/exporter.jpg)
 
 Video:
 
