@@ -34,7 +34,6 @@ Currently Dagon has the following features:
 * Built-in physics engine.
 
 Planned in future:
-
 * Screen-space reflections
 * Terrain
 * Water
