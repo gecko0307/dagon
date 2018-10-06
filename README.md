@@ -14,7 +14,7 @@ Currently Dagon has the following features:
 * Textures in PNG, JPG, TGA, BMP, HDR formats
 * Own asset format with Blender exporter
 * Flexible material system with simple user-defined data model (interface) and shaders (backend). You can implement custom materials, with your own shaders and parameters
-* Deferred pipeline for opaque objects, forward pipeline for transparent objects
+* Deferred pipeline for opaque materials, forward pipeline for transparent materials and materials with custom shaders
 * Physically based rendering (PBR)
 * HDR rendering with auto-exposure (eye adaptation), Reinhard, Hable/Uncharted and ACES tonemapping operators
 * Equirectangular HDRI environment maps
@@ -57,8 +57,6 @@ To use latest stable Dagon, add the following dependency to your `dub.json`:
 "dagon": "0.8.3"
 ```
 If you want to test new features, use `"dagon": "~master"`. The master should be stable enough to compile a working application, but be ready for breaking changes at any time.
-
-If you want to contribute, please send pull requests to `smartshader` branch, which is current development branch. Bug fixes to Dagon 0.8.x series should be sent to `dev_0.8` branch.
 
 Demos
 -----
