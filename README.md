@@ -72,4 +72,4 @@ Copyright (c) 2016-2018 Timur Gafarov. Distributed under the Boost Software Lice
 
 Sponsors
 --------
-Kumar Sookram, Aleksandr Kovalev.
+Rafal Ziemniewski, Kumar Sookram, Aleksandr Kovalev.
