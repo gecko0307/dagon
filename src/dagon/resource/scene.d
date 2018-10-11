@@ -845,10 +845,18 @@ class Scene: BaseScene
         return e;
     }
 
-    Entity createSky()
+    Entity createSky(GenericMaterial mat = null)
     {
-        auto matSky = New!ShaderMaterial(skyShader, assetManager);
-        matSky.depthWrite = false;
+        GenericMaterial matSky;
+        if (mat is null)
+        {
+            matSky = New!ShaderMaterial(skyShader, assetManager);
+            matSky.depthWrite = false;
+        }
+        else
+        {
+            matSky = mat;
+        }
 
         auto eSky = createEntity3D();
         eSky.layer = 0;

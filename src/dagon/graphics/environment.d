@@ -55,7 +55,7 @@ class Environment: Owner
     Texture environmentMap;    
     
     Color4f sunZenithColor = Color4f(1.0, 0.9, 0.8, 1.0);
-    Color4f sunHorizonColor = Color4f(1.0, 0.2, 0.0, 1.0);
+    Color4f sunHorizonColor = Color4f(1.0, 0.3, 0.0, 1.0);
     Quaternionf sunRotation;
     float sunEnergy = 100.0f;
        

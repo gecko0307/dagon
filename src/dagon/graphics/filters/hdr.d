@@ -106,9 +106,10 @@ class PostFilterHDR: PostFilter
 
         vec3 tonemapHable(vec3 x, float expo)
         {
-            const vec3 whitePoint = vec3(11.2);
+            //const vec3 whitePoint = vec3(11.2);
+            const float whiteScale = 1.0748724675633854; //1.0 / hableFunc(whitePoint)
             vec3 c = x * expo;
-            c = hableFunc(c * 2.0) * (1.0 / hableFunc(whitePoint));
+            c = hableFunc(c * 2.0) * whiteScale;
             return pow(c, vec3(1.0 / 2.2));
         }
         
