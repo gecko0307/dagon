@@ -293,6 +293,8 @@ class ParticleSystem: Owner
     Matrix4x4f invViewMatRot;
      
     bool haveParticlesToDraw = false;
+    
+    bool useMotionBlur = true;
 
     this(Owner o)
     {       
@@ -464,6 +466,9 @@ class ParticleSystem: Owner
     
     void renderBillboardParticle(Emitter e, ref Particle p, RenderingContext* rc)
     {
+        Matrix4x4f trans = translationMatrix(p.position);        
+        Matrix4x4f prevTrans = translationMatrix(p.positionPrev);
+    
         Matrix4x4f modelViewMatrix = 
             rc.viewMatrix * 
             translationMatrix(p.position) * 
@@ -473,6 +478,13 @@ class ParticleSystem: Owner
         RenderingContext rcLocal = *rc;
         rcLocal.modelViewMatrix = modelViewMatrix;
         rcLocal.normalMatrix = rcLocal.modelViewMatrix.inverse.transposed;
+        
+        if (useMotionBlur)
+            rcLocal.prevModelViewProjMatrix = rcLocal.projectionMatrix * (rcLocal.prevViewMatrix * prevTrans);
+        else
+            rcLocal.prevModelViewProjMatrix = rcLocal.projectionMatrix * (rcLocal.viewMatrix * trans);
+        
+        rcLocal.blurModelViewProjMatrix = rcLocal.projectionMatrix * (rcLocal.viewMatrix * trans);
 
         if (e.material)
         {

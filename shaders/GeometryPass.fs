@@ -161,11 +161,13 @@ void main()
     vec4 rms = texture(pbrTexture, shiftedTexCoord);
     vec3 emiss = emission(shiftedTexCoord).rgb * emissionEnergy;
     
-    float geomMask = float(layer > 0);
+    // This is written to frag_color.w and frag_position.w 
+    // and determines that the fragment belongs to foreground object
+    float geometryMask = float(layer > 0);
     
-    frag_color = vec4(diffuseColor.rgb, geomMask);
+    frag_color = vec4(diffuseColor.rgb, geometryMask);
     frag_rms = vec4(rms.r, rms.g, 1.0, 1.0);
-    frag_position = vec4(eyePosition, geomMask);
+    frag_position = vec4(eyePosition, geometryMask);
     frag_normal = vec4(N, 1.0);
     frag_velocity = vec4(screenVelocity, 0.0, blurMask);
     frag_emission = vec4(emiss, 1.0);

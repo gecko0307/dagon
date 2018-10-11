@@ -94,12 +94,13 @@ public
     import dagon.graphics.materials.terrain;
     import dagon.graphics.materials.particle;
 
-    import dagon.graphics.shaders.standard;
-    import dagon.graphics.shaders.sky;
     import dagon.graphics.shaders.geometrypass;
     import dagon.graphics.shaders.environmentpass;
     import dagon.graphics.shaders.lightpass;
-
+    import dagon.graphics.shaders.standard;
+    import dagon.graphics.shaders.sky;
+    import dagon.graphics.shaders.particle;
+    
     import dagon.graphics.filters.fxaa;
     import dagon.graphics.filters.lens;
     import dagon.graphics.filters.hdr;
