@@ -103,7 +103,7 @@ class Environment: Owner
     {
         skyZenithColor = lerpColorsBySunAngle(skyZenithColorAtMidday, skyZenithColorAtSunset, skyZenithColorAtMidnight);
         skyHorizonColor = lerpColorsBySunAngle(skyHorizonColorAtMidday, skyHorizonColorAtSunset, skyHorizonColorAtMidnight);
-        backgroundColor = skyZenithColor;
+        //backgroundColor = skyZenithColor;
 
         Vector3f sunDir = sunDirection();
 
