@@ -45,38 +45,38 @@ import dagon.graphics.texture;
 class Environment: Owner
 {
     // TODO: change/interpolate parameters based on object position?
-    
+
     bool useSkyColors = false;
     bool atmosphericFog = false;
-    
+
     Color4f backgroundColor = Color4f(0.1f, 0.1f, 0.1f, 1.0f);
     Color4f ambientConstant = Color4f(0.1f, 0.1f, 0.1f, 1.0f);
-    
-    Texture environmentMap;    
-    
+
+    Texture environmentMap;
+
     Color4f sunZenithColor = Color4f(1.0, 0.9, 0.8, 1.0);
     Color4f sunHorizonColor = Color4f(1.0, 0.3, 0.0, 1.0);
     Quaternionf sunRotation;
     float sunEnergy = 100.0f;
-       
+
     Color4f skyZenithColorAtMidday = Color4f(0.223, 0.572, 0.752, 1.0); //Color4f(0.1, 0.2, 1.0, 1.0);
     Color4f skyZenithColorAtSunset = Color4f(0.1, 0.2, 0.4, 1.0);
     Color4f skyZenithColorAtMidnight = Color4f(0.01, 0.01, 0.05, 1.0);
-    
+
     Color4f skyHorizonColorAtMidday = Color4f(0.9, 1.0, 1.0, 1.0); //Color4f(0.5, 0.6, 0.65, 1.0);
     Color4f skyHorizonColorAtSunset = Color4f(0.87, 0.44, 0.1, 1.0);
     Color4f skyHorizonColorAtMidnight = Color4f(0.1, 0.1, 0.1, 1.0);
-    
+
     float skyEnergyAtMidday = 5.0;
     float skyEnergyAtSunset = 1.0;
     float skyEnergyAtMidnight = 0.001;
-    
+
     Color4f groundColor = Color4f(0.5, 0.4, 0.4, 1.0);
-    
+
     float groundEnergyAtMidday = 1.0;
     float groundEnergyAtSunset = 0.01;
     float groundEnergyAtMidnight = 0.0;
-    
+
     Color4f fogColor = Color4f(0.1f, 0.1f, 0.1f, 1.0f);
     float fogStart = 0.0f;
     float fogEnd = 10000.0f;
@@ -86,7 +86,7 @@ class Environment: Owner
     Color4f skyHorizonColor = Color4f(0.9, 1.0, 1.0, 1.0);
     float skyEnergy = 1.0f;
     float groundEnergy = 1.0f;
-    
+
     bool showSun = true;
     bool showSunHalo = true;
     float sunSize = 1.0f;
@@ -95,10 +95,11 @@ class Environment: Owner
     this(Owner o)
     {
         super(o);
-        
-        sunRotation = rotationQuaternion(Axis.x, degtorad(-45.0f));
+
+        //sunRotation = rotationQuaternion(Axis.x, degtorad(-45.0f));
+        setDayTime(11, 0, 0);
     }
-    
+
     void update(double dt)
     {
         skyZenithColor = lerpColorsBySunAngle(skyZenithColorAtMidday, skyZenithColorAtSunset, skyZenithColorAtMidnight);
@@ -106,28 +107,28 @@ class Environment: Owner
         backgroundColor = skyZenithColor;
 
         Vector3f sunDir = sunDirection();
-            
+
         float s1 = clamp(dot(sunDir, Vector3f(0.0, 1.0, 0.0)), 0.0, 1.0);
         float s2 = clamp(dot(sunDir, Vector3f(0.0, -1.0, 0.0)), 0.0, 1.0);
-           
+
         ambientConstant = (skyZenithColor + skyHorizonColor + Color4f(0.06f, 0.05f, 0.05f)) * 0.3f * lerp(lerp(0.01f, 0.001f, s2), 2.0f, s1);
-        
+
         skyEnergy = lerp(lerp(skyEnergyAtSunset, skyEnergyAtMidnight, s2), skyEnergyAtMidday, s1);
         groundEnergy = lerp(lerp(groundEnergyAtSunset, groundEnergyAtMidnight, s2), groundEnergyAtMidday, s1);
-            
+
         if (atmosphericFog)
             fogColor = skyHorizonColor * skyEnergy; //lerpColorsBySunAngle(skyZenithColor, skyHorizonColor, Color4f(0, 0, 0, 0)) * fogEnergy;
         else
-            fogColor = backgroundColor;  
+            fogColor = backgroundColor;
     }
-    
+
     void setDayTime(uint h, uint m, float s)
     {
         float t = (h * 3600.0f + m * 60.0f + s) / (3600.0f * 24.0f);
         while (t > 1.0f) t -= 1.0f;
         sunRotation = rotationQuaternion(Axis.x, degtorad(-(t * 360.0f - 90.0f)));
     }
-    
+
     Vector3f sunDirection()
     {
         return sunRotation.rotate(Vector3f(0, 0, 1));
@@ -144,7 +145,7 @@ class Environment: Owner
     {
         return lerpColorsBySunAngle(sunZenithColor, sunHorizonColor, Color4f(0.0f, 0.0f, 0.0f, 1.0f));
     }
-    
+
     Color4f lerpColorsBySunAngle(Color4f atZenith, Color4f atHorizon, Color4f atNightSide)
     {
         float s = dot(sunDirection, Vector3f(0.0, 1.0, 0.0));
