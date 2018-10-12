@@ -96,8 +96,7 @@ class Environment: Owner
     {
         super(o);
 
-        //sunRotation = rotationQuaternion(Axis.x, degtorad(-45.0f));
-        setDayTime(11, 0, 0);
+        setDayTime(9, 0, 0);
     }
 
     void update(double dt)
