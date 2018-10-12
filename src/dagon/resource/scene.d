@@ -1176,7 +1176,7 @@ class Scene: BaseScene
         RenderingContext rcDeferred;
         rcDeferred.initOrtho(eventManager, environment, eventManager.windowWidth, eventManager.windowHeight, 0.0f, 100.0f);
         prepareViewport();
-        sceneFramebuffer.clearBuffers();
+        sceneFramebuffer.clearBuffers(environment.backgroundColor);
 
         glBindFramebuffer(GL_READ_FRAMEBUFFER, gbuffer.fbo);
         glBlitFramebuffer(0, 0, gbuffer.width, gbuffer.height, 0, 0, gbuffer.width, gbuffer.height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
