@@ -49,8 +49,8 @@ class Environment: Owner
     bool useSkyColors = false;
     bool atmosphericFog = false;
 
-    Color4f backgroundColor = Color4f(0.1f, 0.1f, 0.1f, 1.0f);
-    Color4f ambientConstant = Color4f(0.1f, 0.1f, 0.1f, 1.0f);
+    Color4f backgroundColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
+    Color4f ambientConstant = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
 
     Texture environmentMap;
 
