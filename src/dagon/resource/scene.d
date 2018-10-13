@@ -73,6 +73,7 @@ import dagon.graphics.deferred;
 import dagon.graphics.shader;
 import dagon.graphics.shaders.standard;
 import dagon.graphics.shaders.sky;
+import dagon.graphics.shaders.particle;
 import dagon.graphics.postproc;
 import dagon.graphics.filters.fxaa;
 import dagon.graphics.filters.lens;
@@ -105,7 +106,6 @@ class BaseScene: EventListener
 
     // Set preload to true if you want to load the asset immediately
     // before actual loading (e.g., to render a loading screen)
-
     Asset addAsset(Asset asset, string filename, bool preload = false)
     {
         if (preload)
@@ -378,10 +378,10 @@ class Scene: BaseScene
 
 	StandardShader standardShader;
     SkyShader skyShader;
+    ParticleShader particleShader;
+    GenericMaterial defaultMaterial3D;
 
     StandardBackend defaultMaterialBackend;
-    GenericMaterial defaultMaterial3D;
-    ParticleBackend particleMaterialBackend;
 
     RenderingContext rc3d;
     RenderingContext rc2d;
@@ -891,12 +891,11 @@ class Scene: BaseScene
         return New!GenericMaterial(backend, assetManager);
     }
 
-	// TODO: replace with ShaderMaterial
-    deprecated GenericMaterial createParticleMaterial(GenericMaterialBackend backend = null)
+    GenericMaterial createParticleMaterial(Shader shader = null)
     {
-        if (backend is null)
-            backend = particleMaterialBackend;
-        return New!GenericMaterial(backend, assetManager);
+        if (shader is null)
+            shader = particleShader;
+        return New!ShaderMaterial(shader, assetManager);
     }
 
     LightSource createLight(Vector3f position, Color4f color, float energy, float volumeRadius, float areaRadius = 0.0f)
@@ -907,25 +906,23 @@ class Scene: BaseScene
     override void onAllocate()
     {
         environment = New!Environment(assetManager);
-
-        lightManager = New!LightManager(assetManager); //New!LightManager(200.0f, 100, assetManager);
+        lightManager = New!LightManager(assetManager);
+        gbuffer = New!GBuffer(eventManager.windowWidth, eventManager.windowHeight, this, assetManager);
+        shadowMap = New!CascadedShadowMap(1024, this, 10, 30, 200, -100, 100, assetManager);
 
         defaultMaterialBackend = New!StandardBackend(lightManager, assetManager);
-        //skyMaterialBackend = New!SkyBackend(assetManager);
 
 		standardShader = New!StandardShader(assetManager);
         standardShader.shadowMap = shadowMap;
-
         skyShader = New!SkyShader(assetManager);
+        particleShader = New!ParticleShader(gbuffer, assetManager);
 
-        shadowMap = New!CascadedShadowMap(1024, this, 10, 30, 200, -100, 100, assetManager);
         defaultMaterialBackend.shadowMap = shadowMap;
 
         particleSystem = New!ParticleSystem(assetManager);
 
         defaultMaterial3D = createMaterial();
 
-        gbuffer = New!GBuffer(eventManager.windowWidth, eventManager.windowHeight, this, assetManager);
         deferredEnvPass = New!DeferredEnvironmentPass(gbuffer, shadowMap, assetManager);
         deferredLightPass = New!DeferredLightPass(gbuffer, lightManager, assetManager);
 
@@ -965,8 +962,6 @@ class Scene: BaseScene
         lensFilter.enabled = false;
 
         finalizerFilter = New!PostFilterFinalizer(null, null, assetManager);
-
-        particleMaterialBackend = New!ParticleBackend(gbuffer, assetManager);
     }
 
     PostFilter addFilter(PostFilter f)
