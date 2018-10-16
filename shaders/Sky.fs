@@ -62,13 +62,13 @@ subroutine(srtEnv) vec3 environmentSky(in vec3 wN, in vec3 wSun)
     float halo = distributionGGX(wN, H, sunScattering);
     sun = min(float(sun > (1.0 - sunSize * 0.001)) + halo, 1.0);
     env += toLinear(sunColor.rgb) * sun * sunEnergy;
-	return env;
+    return env;
 }
 
 uniform sampler2D envTexture;
 subroutine(srtEnv) vec3 environmentTexture(in vec3 wN, in vec3 wSun)
-{	
-	return texture(envTexture, envMapEquirect(wN)).rgb;
+{
+    return texture(envTexture, envMapEquirect(wN)).rgb;
 }
 
 subroutine uniform srtEnv environment;
@@ -76,9 +76,9 @@ subroutine uniform srtEnv environment;
 float luminance(vec3 color)
 {
     return (
-        color.x * 0.2126 + //0.27 +
-        color.y * 0.7152 + //0.67 +
-        color.z * 0.0722 //0.06
+        color.x * 0.2126 +
+        color.y * 0.7152 +
+        color.z * 0.0722
     );
 }
 

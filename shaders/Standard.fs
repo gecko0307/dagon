@@ -70,7 +70,7 @@ mat3 cotangentFrame(in vec3 N, in vec3 p, in vec2 uv)
 
 uniform vec3 normalVector;
 subroutine(srtNormal) vec3 normalValue(in vec2 uv, in float ysign, in mat3 tangentToEye)
-{            
+{
     vec3 tN = normalVector;
     tN.y *= ysign;
     return normalize(tangentToEye * tN);
@@ -94,12 +94,12 @@ subroutine float srtHeight(in vec2 uv);
 
 uniform float heightScalar;
 subroutine(srtHeight) float heightValue(in vec2 uv)
-{            
+{
     return heightScalar;
 }
 
 subroutine(srtHeight) float heightMap(in vec2 uv)
-{            
+{
     return texture(normalTexture, uv).a;
 }
 
@@ -163,8 +163,8 @@ subroutine(srtEnv) vec3 environmentTexture(in vec3 wN, in vec3 wSun, in float ro
 }
 
 subroutine uniform srtEnv environment;
-        
-        
+
+
 /*
  * Shadow subroutines.
  */
@@ -193,12 +193,12 @@ float shadowPCF(in float layer, in vec4 coord, in float radius, in float yshift)
 {
     float s = 0.0;
     float x, y;
-	for (y = -radius ; y < radius ; y += 1.0)
-	for (x = -radius ; x < radius ; x += 1.0)
+    for (y = -radius ; y < radius ; y += 1.0)
+    for (x = -radius ; x < radius ; x += 1.0)
     {
-	    s += shadowLookup(layer, coord, vec2(x, y + yshift));
+        s += shadowLookup(layer, coord, vec2(x, y + yshift));
     }
-	s /= radius * radius * 4.0;
+    s /= radius * radius * 4.0;
     return s;
 }
 
@@ -303,18 +303,18 @@ subroutine(srtBRDF) vec3 brdfPBR(in vec3 albedo, in float roughness, in float me
 
     vec3 f0 = vec3(0.04); 
     f0 = mix(f0, albedo, metallic);
-            
+
     // Environment light
     {
         vec3 envDiffuse = environment(worldN, worldSun, 0.9);
         vec3 envSpecular = environment(worldR, worldSun, roughness);
-        
+
         float NE = max(dot(N, E), 0.0);
         vec3 F = fresnelRoughness(NE, f0, roughness);
         vec3 kS = F;
         vec3 kD = 1.0 - kS;
         kD *= 1.0 - metallic;
-    
+
         Lo += kD * envDiffuse * albedo + F * envSpecular;
     }
 
@@ -334,7 +334,7 @@ subroutine(srtBRDF) vec3 brdfPBR(in vec3 albedo, in float roughness, in float me
         vec3 numerator = NDF * G * F;
         float denominator = 4.0 * max(dot(N, E), 0.0) * NL;
         vec3 specular = numerator / max(denominator, 0.001);
-        
+
         vec3 radiance = toLinear(sunColor.rgb) * sunEnergy * shadow() * NL;
         Lo += (kD * albedo / PI + specular) * radiance; 
     }
@@ -357,13 +357,13 @@ subroutine vec4 srtEmission(in vec2 uv);
 
 uniform vec4 emissionVector;
 subroutine(srtEmission) vec4 emissionValue(in vec2 uv)
-{            
+{
     return emissionVector;
 }
 
 uniform sampler2D emissionTexture;
 subroutine(srtEmission) vec4 emissionMap(in vec2 uv)
-{            
+{
     return texture(emissionTexture, uv);
 }
 
@@ -375,9 +375,9 @@ uniform float emissionEnergy;
 float luminance(vec3 color)
 {
     return (
-        color.x * 0.2126 + //0.27 +
-        color.y * 0.7152 + //0.67 +
-        color.z * 0.0722 //0.06
+        color.x * 0.2126 +
+        color.y * 0.7152 +
+        color.z * 0.0722
     );
 }
 
@@ -394,17 +394,17 @@ void main()
 
     mat3 tangentToEye = cotangentFrame(N, eyePosition, texCoord);
     vec3 tE = normalize(E * tangentToEye);
-    
+
     vec2 posScreen = (blurPosition.xy / blurPosition.w) * 0.5 + 0.5;
     vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;
     vec2 screenVelocity = posScreen - prevPosScreen;
 
     vec2 shiftedTexCoord = parallaxMapping(tE, texCoord, height(texCoord));
-	
-	N = normal(shiftedTexCoord, -1.0, tangentToEye);
+
+    N = normal(shiftedTexCoord, -1.0, tangentToEye);
 
     vec4 diff = diffuse(shiftedTexCoord);
-    
+
     vec3 albedo = toLinear(diff.rgb);
     vec4 rms = texture(pbrTexture, shiftedTexCoord);
     vec3 emiss = emission(shiftedTexCoord).rgb * emissionEnergy;

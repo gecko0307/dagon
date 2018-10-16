@@ -16,9 +16,6 @@ uniform mat4 shadowMatrix1;
 uniform mat4 shadowMatrix2;
 uniform mat4 shadowMatrix3;
 
-uniform sampler2D environmentMap;
-//uniform bool useEnvironmentMap;
-
 uniform mat4 camViewMatrix;
 uniform mat4 camInvViewMatrix;
 uniform mat4 camProjectionMatrix;
@@ -62,12 +59,12 @@ float shadowPCF(in sampler2DArrayShadow depths, in float layer, in vec4 coord, i
 {
     float s = 0.0;
     float x, y;
-	for (y = -radius ; y < radius ; y += 1.0)
-	for (x = -radius ; x < radius ; x += 1.0)
+    for (y = -radius ; y < radius ; y += 1.0)
+    for (x = -radius ; x < radius ; x += 1.0)
     {
-	    s += shadowLookup(depths, layer, coord, vec2(x, y + yshift));
+        s += shadowLookup(depths, layer, coord, vec2(x, y + yshift));
     }
-	s /= radius * radius * 4.0;
+    s /= radius * radius * 4.0;
     return s;
 }
 
@@ -115,7 +112,7 @@ subroutine(srtEnv) vec3 environmentSky(in vec3 wN, in vec3 wSun, in float roughn
         mix(toLinear(skyHorizonColor.rgb) * skyEnergy, 
             toLinear(groundColor.rgb) * groundEnergy, groundOrSky), 
             toLinear(skyZenithColor.rgb) * skyEnergy, horizonOrZenith);
-            
+
     return env;
 }
 
@@ -209,9 +206,9 @@ const float ssaoFalloff = 100.0;
 float luminance(vec3 color)
 {
     return (
-        color.x * 0.2126 + //0.27 +
-        color.y * 0.7152 + //0.67 +
-        color.z * 0.0722 //0.06
+        color.x * 0.2126 +
+        color.y * 0.7152 +
+        color.z * 0.0722
     );
 }
 
@@ -221,18 +218,18 @@ layout(location = 1) out vec4 frag_luminance;
 void main()
 {
     vec2 invViewSize = 1.0 / viewSize;
-    
+
     vec4 col = texture(colorBuffer, texCoord);
-    
+
     if (col.a < 1.0)
         discard;
-    
+
     vec3 albedo = toLinear(col.rgb);
-    
+
     vec4 rms = texture(rmsBuffer, texCoord);
     float roughness = rms.r;
     float metallic = rms.g;
-    
+
     vec3 eyePos = texture(positionBuffer, texCoord).xyz;
     vec3 N = normalize(texture(normalBuffer, texCoord).xyz);
     vec3 E = normalize(-eyePos);
@@ -249,7 +246,7 @@ void main()
     vec4 shadowCoord1 = shadowMatrix1 * posShifted;
     vec4 shadowCoord2 = shadowMatrix2 * posShifted;
     vec4 shadowCoord3 = shadowMatrix3 * posShifted;
-    
+
     // Calculate shadow from 3 cascades   
     float s1, s2, s3;
     {    
@@ -263,7 +260,7 @@ void main()
         s2 = mix(s3, s2, w2);
         s1 = mix(s2, s1, w1); // s1 stores resulting shadow value
     }
-    
+
     // SSAO
     float occlusion = 1.0;
     if (enableSSAO)
@@ -281,7 +278,7 @@ void main()
 
             vec4 projSamplePos = camProjectionMatrix * vec4(samplePos, 1.0);
             vec2 sampleUV = (projSamplePos.xy / projSamplePos.w) * 0.5 + 0.5;
-    
+
             vec3 dstPosition = texture(positionBuffer, sampleUV).xyz;
             vec3 positionVec = dstPosition - samplePos;
 
@@ -293,12 +290,12 @@ void main()
         }
         occlusion = clamp(1.0 - occlusion, 0.0, 1.0);
     }
-    
+
     vec3 radiance = vec3(0.0, 0.0, 0.0);
-    
+
     vec3 f0 = vec3(0.04); 
     f0 = mix(f0, albedo, metallic);
-    
+
     // Sun light
     {
         vec3 L = sunDirection;
@@ -319,25 +316,25 @@ void main()
 
         radiance += (kD * albedo / PI + specular) * toLinear(sunColor.rgb) * NL * sunEnergy * s1;
     }
-    
+
     // Ambient light
     {
         vec3 ambientDiffuse = environment(worldN, worldSun, 0.9);
         vec3 ambientSpecular = environment(worldR, worldSun, roughness);
-    
+
         vec3 F = fresnelRoughness(max(dot(N, E), 0.0), f0, roughness);
         vec3 kS = F;
         vec3 kD = 1.0 - kS;
         kD *= 1.0 - metallic;
         radiance += kD * ambientDiffuse * albedo + F * ambientSpecular;
     }
-    
+
     // Emission
     radiance += texture(emissionBuffer, texCoord).rgb;
-    
+
     // Occlusion
     radiance *= occlusion;
-    
+
     // Fog
     float linearDepth = abs(eyePos.z);
     float fogFactor = clamp((fogEnd - linearDepth) / (fogEnd - fogStart), 0.0, 1.0);

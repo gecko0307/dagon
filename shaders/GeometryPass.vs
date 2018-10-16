@@ -3,21 +3,21 @@
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 normalMatrix;
-        
+
 uniform mat4 prevModelViewProjMatrix;
 uniform mat4 blurModelViewProjMatrix;
-        
+
 layout (location = 0) in vec3 va_Vertex;
 layout (location = 1) in vec3 va_Normal;
 layout (location = 2) in vec2 va_Texcoord;
-        
+
 out vec2 texCoord;
 out vec3 eyePosition;
 out vec3 eyeNormal;
-        
+
 out vec4 blurPosition;
 out vec4 prevPosition;
-        
+
 void main()
 {
     texCoord = va_Texcoord;

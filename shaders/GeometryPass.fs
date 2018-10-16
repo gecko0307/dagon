@@ -58,7 +58,7 @@ mat3 cotangentFrame(in vec3 N, in vec3 p, in vec2 uv)
 
 uniform vec3 normalVector;
 subroutine(srtNormal) vec3 normalValue(in vec2 uv, in float ysign, in mat3 tangentToEye)
-{            
+{
     vec3 tN = normalVector;
     tN.y *= ysign;
     return normalize(tangentToEye * tN);
@@ -66,7 +66,7 @@ subroutine(srtNormal) vec3 normalValue(in vec2 uv, in float ysign, in mat3 tange
 
 uniform sampler2D normalTexture;
 subroutine(srtNormal) vec3 normalMap(in vec2 uv, in float ysign, in mat3 tangentToEye)
-{            
+{
     vec3 tN = normalize(texture(normalTexture, uv).rgb * 2.0 - 1.0);
     tN.y *= ysign;
     return normalize(tangentToEye * tN);
@@ -82,12 +82,12 @@ subroutine float srtHeight(in vec2 uv);
 
 uniform float heightScalar;
 subroutine(srtHeight) float heightValue(in vec2 uv)
-{            
+{
     return heightScalar;
 }
 
 subroutine(srtHeight) float heightMap(in vec2 uv)
-{            
+{
     return texture(normalTexture, uv).a;
 }
 
@@ -118,13 +118,13 @@ subroutine vec4 srtEmission(in vec2 uv);
 
 uniform vec4 emissionVector;
 subroutine(srtEmission) vec4 emissionValue(in vec2 uv)
-{            
+{
     return emissionVector;
 }
 
 uniform sampler2D emissionTexture;
 subroutine(srtEmission) vec4 emissionMap(in vec2 uv)
-{            
+{
     return texture(emissionTexture, uv);
 }
 
@@ -153,18 +153,18 @@ void main()
 
     // TODO: parallax occlusion mapping
     vec2 shiftedTexCoord = parallaxMapping(tE, texCoord, height(texCoord));
-    
+
     N = normal(shiftedTexCoord, -1.0, tangentToEye);
-    
+
     vec4 diffuseColor = diffuse(shiftedTexCoord);
-    
+
     vec4 rms = texture(pbrTexture, shiftedTexCoord);
     vec3 emiss = emission(shiftedTexCoord).rgb * emissionEnergy;
     
     // This is written to frag_color.w and frag_position.w 
     // and determines that the fragment belongs to foreground object
     float geometryMask = float(layer > 0);
-    
+
     frag_color = vec4(diffuseColor.rgb, geometryMask);
     frag_rms = vec4(rms.r, rms.g, 1.0, 1.0);
     frag_position = vec4(eyePosition, geometryMask);

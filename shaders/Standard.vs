@@ -47,7 +47,7 @@ void main()
     shadowCoord1 = shadowMatrix1 * posShifted;
     shadowCoord2 = shadowMatrix2 * posShifted;
     shadowCoord3 = shadowMatrix3 * posShifted;
-    
+
     blurPosition = blurModelViewProjMatrix * vec4(va_Vertex, 1.0);
     prevPosition = prevModelViewProjMatrix * vec4(va_Vertex, 1.0);
 

@@ -58,7 +58,7 @@ mat3 cotangentFrame(in vec3 N, in vec3 p, in vec2 uv)
 
 uniform vec3 normalVector;
 subroutine(srtNormal) vec3 normalValue(in vec2 uv, in float ysign, in mat3 tangentToEye)
-{            
+{
     vec3 tN = normalVector;
     tN.y *= ysign;
     return normalize(tangentToEye * tN);
@@ -66,7 +66,7 @@ subroutine(srtNormal) vec3 normalValue(in vec2 uv, in float ysign, in mat3 tange
 
 uniform sampler2D normalTexture;
 subroutine(srtNormal) vec3 normalMap(in vec2 uv, in float ysign, in mat3 tangentToEye)
-{            
+{
     vec3 tN = normalize(texture(normalTexture, uv).rgb * 2.0 - 1.0);
     tN.y *= ysign;
     return normalize(tangentToEye * tN);
@@ -169,7 +169,7 @@ void main()
     vec4 pos = texture(positionTexture, gl_FragCoord.xy / viewSize);
     vec3 referenceEyePos = pos.xyz;
     vec3 E = normalize(-eyePosition);
-            
+
     vec3 N = normalize(-particlePosition);
     mat3 tangentToEye = cotangentFrame(N, eyePosition, texCoord);
     N = normal(texCoord, -1.0, tangentToEye);
@@ -180,29 +180,29 @@ void main()
     vec2 posScreen = (blurPosition.xy / blurPosition.w) * 0.5 + 0.5;
     vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;
     vec2 screenVelocity = posScreen - prevPosScreen;
-            
+
     // TODO: make uniform
     const float wrapFactor = 0.5f;
-            
+
     vec3 ambient = environment(worldN, worldSun, 0.9);
-            
+
     vec3 radiance = shaded? 
         ambient + toLinear(sunColor.rgb) * max(dot(N, sunDirection) + wrapFactor, 0.0) / (1.0 + wrapFactor) * sunEnergy :
         vec3(1.0);
-    
+
     // TODO: make uniform
     const float softDistance = 3.0;
     float soft = alphaCutout?
         1.0 :
         ((pos.w > 0.0)? clamp((eyePosition.z - referenceEyePos.z) / softDistance, 0.0, 1.0) : 1.0);
-        
+
     vec4 diff = diffuse(texCoord);
     vec3 outColor = toLinear(diff.rgb) * toLinear(particleColor.rgb);
     float outAlpha = diff.a * particleColor.a * alpha * soft;
-            
+
     if (alphaCutout && outAlpha <= alphaCutoutThreshold)
         discard;
-            
+
     frag_color = vec4(outColor * (radiance + energy), outAlpha);
     frag_luminance = vec4(luminance(frag_color.rgb) * outAlpha, 0.0, 0.0, 1.0);
     frag_velocity = vec4(screenVelocity, 0.0, outAlpha);

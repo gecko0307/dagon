@@ -66,39 +66,39 @@ vec3 toLinear(vec3 v)
 float luminance(vec3 color)
 {
     return (
-        color.x * 0.2126 + //0.27 +
-        color.y * 0.7152 + //0.67 +
-        color.z * 0.0722 //0.06
+        color.x * 0.2126 +
+        color.y * 0.7152 +
+        color.z * 0.0722
     );
 }
 
 void main()
 {
     vec2 texCoord = gl_FragCoord.xy / viewSize;
-    
+
     vec4 col = texture(colorBuffer, texCoord);
     
     if (col.a < 1.0)
         discard;
-    
+
     vec3 albedo = toLinear(col.rgb);
-    
+
     vec4 rms = texture(rmsBuffer, texCoord);
     float roughness = rms.r;
     float metallic = rms.g;
-    
+
     vec3 eyePos = texture(positionBuffer, texCoord).xyz;
     vec3 N = normalize(texture(normalBuffer, texCoord).xyz);
     vec3 E = normalize(-eyePos);
     vec3 R = reflect(E, N);
-    
+
     vec3 f0 = vec3(0.04); 
     f0 = mix(f0, albedo, metallic);
-    
+
     vec3 positionToLightSource = lightPosition - eyePos;
     float distanceToLight = length(positionToLightSource);   
     float attenuation = pow(clamp(1.0 - (distanceToLight / lightRadius), 0.0, 1.0), 2.0) * lightEnergy;
-    
+
     vec3 Lpt = normalize(positionToLightSource);
 
     vec3 centerToRay = dot(positionToLightSource, R) * R - positionToLightSource;
@@ -107,11 +107,11 @@ void main()
 
     float NL = max(dot(N, Lpt), 0.0); 
     vec3 H = normalize(E + L);
-    
+
     float NDF = distributionGGX(N, H, roughness);
     float G = geometrySmith(N, E, L, roughness);      
     vec3 F = fresnel(max(dot(H, E), 0.0), f0);
-    
+
     vec3 kS = F;
     vec3 kD = vec3(1.0) - kS;
     kD *= 1.0 - metallic;
@@ -119,7 +119,7 @@ void main()
     vec3 numerator = NDF * G * F;
     float denominator = 4.0 * max(dot(N, E), 0.0) * NL;
     vec3 specular = numerator / max(denominator, 0.001);
-    
+
     vec3 radiance = (kD * albedo / PI + specular) * toLinear(lightColor) * attenuation * NL;
 
     frag_color = vec4(radiance, 1.0);

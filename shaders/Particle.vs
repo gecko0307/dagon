@@ -20,17 +20,17 @@ uniform mat4 invViewMatrix;
 
 uniform mat4 prevModelViewProjMatrix;
 uniform mat4 blurModelViewProjMatrix;
-    
+
 void main()
 {
     vec4 pos = modelViewMatrix * vec4(va_Vertex, 1.0);
     eyePosition = pos.xyz;
-    
+
     worldPosition = (invViewMatrix * pos).xyz;
-    
+
     vec3 worldCamPos = (invViewMatrix[3]).xyz;
     worldView = worldPosition - worldCamPos;
-    
+
     blurPosition = blurModelViewProjMatrix * vec4(va_Vertex, 1.0);
     prevPosition = prevModelViewProjMatrix * vec4(va_Vertex, 1.0);
 
