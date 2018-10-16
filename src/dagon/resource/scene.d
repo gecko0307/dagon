@@ -907,8 +907,8 @@ class Scene: BaseScene
     {
         environment = New!Environment(assetManager);
         lightManager = New!LightManager(assetManager);
-        gbuffer = New!GBuffer(eventManager.windowWidth, eventManager.windowHeight, this, assetManager);
-        shadowMap = New!CascadedShadowMap(1024, this, 10, 30, 200, -100, 100, assetManager);
+        gbuffer = New!GBuffer(eventManager.windowWidth, eventManager.windowHeight, assetManager);
+        shadowMap = New!CascadedShadowMap(1024, 10, 30, 200, -100, 100, assetManager);
 
         defaultMaterialBackend = New!StandardBackend(lightManager, assetManager);
 
@@ -924,7 +924,7 @@ class Scene: BaseScene
         defaultMaterial3D = createMaterial();
 
         deferredEnvPass = New!DeferredEnvironmentPass(gbuffer, shadowMap, assetManager);
-        deferredLightPass = New!DeferredLightPass(gbuffer, lightManager, assetManager);
+        deferredLightPass = New!DeferredLightPass(gbuffer, assetManager);
 
         sceneFramebuffer = New!Framebuffer(gbuffer, eventManager.windowWidth, eventManager.windowHeight, true, true, assetManager);
 
@@ -1067,7 +1067,7 @@ class Scene: BaseScene
 
     void renderShadows(RenderingContext* rc)
     {
-        shadowMap.render(rc);
+        shadowMap.render(this, rc);
     }
 
     void renderBackgroundEntities3D(RenderingContext* rc)
@@ -1164,7 +1164,7 @@ class Scene: BaseScene
     override void onRender()
     {
         renderShadows(&rc3d);
-        gbuffer.render(&rc3d);
+        gbuffer.render(this, &rc3d);
 
         sceneFramebuffer.bind();
 
@@ -1179,7 +1179,7 @@ class Scene: BaseScene
 
         renderBackgroundEntities3D(&rc3d);
         deferredEnvPass.render(&rcDeferred, &rc3d);
-        deferredLightPass.render(&rcDeferred, &rc3d);
+        deferredLightPass.render(this, &rcDeferred, &rc3d);
         renderTransparentEntities3D(&rc3d);
         particleSystem.render(&rc3d);
 

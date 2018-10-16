@@ -48,6 +48,7 @@ import dagon.graphics.screensurface;
 import dagon.graphics.shapes;
 import dagon.graphics.shaders.environmentpass;
 import dagon.graphics.shaders.lightpass;
+import dagon.resource.scene;
 
 class DeferredEnvironmentPass: Owner
 {
@@ -55,7 +56,7 @@ class DeferredEnvironmentPass: Owner
     GBuffer gbuffer;
     CascadedShadowMap shadowMap;
     ScreenSurface surface;
-    
+
     this(GBuffer gbuffer, CascadedShadowMap shadowMap, Owner o)
     {
         super(o);
@@ -64,7 +65,7 @@ class DeferredEnvironmentPass: Owner
         this.shadowMap = shadowMap;
         this.surface = New!ScreenSurface(this);
     }
-    
+
     void render(RenderingContext* rc2d, RenderingContext* rc3d)
     {
         shader.bind(rc2d, rc3d);
@@ -77,26 +78,24 @@ class DeferredLightPass: Owner
 {
     LightPassShader shader;
     GBuffer gbuffer;
-    LightManager lightManager;
     ShapeSphere lightVolume;
-    
-    this(GBuffer gbuffer, LightManager lightManager, Owner o)
+
+    this(GBuffer gbuffer, Owner o)
     {
         super(o);
         this.shader = New!LightPassShader(gbuffer, this);
         this.gbuffer = gbuffer;
-        this.lightManager = lightManager;
         this.lightVolume = New!ShapeSphere(1.0f, 8, 4, false, this);
     }
 
-    void render(RenderingContext* rc2d, RenderingContext* rc3d)
+    void render(Scene scene, RenderingContext* rc2d, RenderingContext* rc3d)
     {
         glDisable(GL_DEPTH_TEST);
         glDepthMask(GL_FALSE);
-        
+
         glEnable(GL_CULL_FACE);
         glCullFace(GL_FRONT);
-        
+
         glEnablei(GL_BLEND, 0);
         glEnablei(GL_BLEND, 1);
         glEnablei(GL_BLEND, 4);
@@ -105,20 +104,20 @@ class DeferredLightPass: Owner
 
         // TODO: don't rebind the shader each time,
         // use special method to update light data
-        foreach(light; lightManager.lightSources.data)
+        foreach(light; scene.lightManager.lightSources.data)
         {
             shader.light = light;
             shader.bind(rc2d, rc3d);
             lightVolume.render(rc3d);
             shader.unbind(rc2d, rc3d);
         }
-        
+
         glDisablei(GL_BLEND, 0);
         glDisablei(GL_BLEND, 1);
-        
+
         glCullFace(GL_BACK);
         glDisable(GL_CULL_FACE);
-        
+
         glDepthMask(GL_TRUE);
         glEnable(GL_DEPTH_TEST);
     }

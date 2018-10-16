@@ -86,6 +86,7 @@ public
     import dagon.graphics.particles;
     import dagon.graphics.gbuffer;
     import dagon.graphics.deferred;
+    import dagon.graphics.renderer;
 
     import dagon.graphics.materials.generic;
     import dagon.graphics.materials.standard;
@@ -100,7 +101,7 @@ public
     import dagon.graphics.shaders.standard;
     import dagon.graphics.shaders.sky;
     import dagon.graphics.shaders.particle;
-    
+
     import dagon.graphics.filters.fxaa;
     import dagon.graphics.filters.lens;
     import dagon.graphics.filters.hdr;

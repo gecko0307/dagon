@@ -43,10 +43,9 @@ class GBuffer: Owner
 {
     uint width;
     uint height;
-    
-    Scene scene;
+
     GeometryPassShader geometryPassShader;
-    
+
     GLuint fbo;
     GLuint depthTexture = 0;
     GLuint colorTexture = 0;
@@ -55,20 +54,18 @@ class GBuffer: Owner
     GLuint normalTexture = 0;
     GLuint velocityTexture = 0;
     GLuint emissionTexture = 0;
-    
-    this(uint w, uint h, Scene scene, Owner o)
+
+    this(uint w, uint h, Owner o)
     {
         super(o);
-    
+
         width = w;
         height = h;
-        
-        this.scene = scene;
 
         geometryPassShader = New!GeometryPassShader(this);
-        
+
         glActiveTexture(GL_TEXTURE0);
-        
+
         glGenTextures(1, &depthTexture);
         glBindTexture(GL_TEXTURE_2D, depthTexture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -77,7 +74,7 @@ class GBuffer: Owner
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, null);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glGenTextures(1, &colorTexture);
         glBindTexture(GL_TEXTURE_2D, colorTexture);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, null);
@@ -86,7 +83,7 @@ class GBuffer: Owner
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glGenTextures(1, &rmsTexture);
         glBindTexture(GL_TEXTURE_2D, rmsTexture);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, null);
@@ -104,7 +101,7 @@ class GBuffer: Owner
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glBindTexture(GL_TEXTURE_2D, 0);
-            
+
         glGenTextures(1, &normalTexture);
         glBindTexture(GL_TEXTURE_2D, normalTexture);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, null);
@@ -122,7 +119,7 @@ class GBuffer: Owner
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glGenTextures(1, &emissionTexture);
         glBindTexture(GL_TEXTURE_2D, emissionTexture);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, null);
@@ -131,7 +128,7 @@ class GBuffer: Owner
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glGenFramebuffers(1, &fbo);
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture, 0);
@@ -144,19 +141,19 @@ class GBuffer: Owner
 
         GLenum[6] bufs = [GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5];
         glDrawBuffers(6, bufs.ptr);
-        
+
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (status != GL_FRAMEBUFFER_COMPLETE)
             writeln(status);
-        
+
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-    
+
     ~this()
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glDeleteFramebuffers(1, &fbo);
-        
+
         if (glIsTexture(depthTexture))
             glDeleteTextures(1, &depthTexture);
         if (glIsTexture(colorTexture))
@@ -172,36 +169,36 @@ class GBuffer: Owner
         if (glIsTexture(emissionTexture))
             glDeleteTextures(1, &emissionTexture);
     }
-    
+
     void bind()
     {
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     }
-    
+
     void unbind()
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-    
-    void render(RenderingContext* rc)
+
+    void render(Scene scene, RenderingContext* rc)
     {
         bind();
-        
+
         glViewport(0, 0, width, height);
         glScissor(0, 0, width, height);
         clear();
-        
+
         glEnable(GL_DEPTH_TEST);
-        
+
         auto rcLocal = *rc;
 
         rcLocal.overrideShader = geometryPassShader;
 
         scene.renderOpaqueEntities3D(&rcLocal);
-        
+
         unbind();
     }
-    
+
     void clear()
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
