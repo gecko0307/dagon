@@ -27,6 +27,8 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.graphics.renderer;
 
+import derelict.opengl;
+
 import dlib.core.memory;
 import dagon.core.ownership;
 import dagon.core.event;
@@ -39,17 +41,17 @@ import dagon.resource.scene;
 
 abstract class Renderer: Owner
 {
+    Scene scene;
     EventManager eventManager;
-    RenderingContext rc3d;
-    RenderingContext rc2d;
 
-    this(EventManager eventManager, Owner o)
+    this(Scene scene, Owner o)
     {
         super(o);
-        this.eventManager = eventManager;
+        this.scene = scene;
+        this.eventManager = scene.eventManager;
     }
 
-    void render(Scene scene);
+    void render(RenderingContext *rc);
 }
 
 class DeferredRenderer: Renderer
@@ -62,9 +64,9 @@ class DeferredRenderer: Renderer
 
     CascadedShadowMap shadowMap;
 
-    this(EventManager eventManager, Owner o)
+    this(Scene scene, Owner o)
     {
-        super(eventManager, o);
+        super(scene, o);
         gbuffer = New!GBuffer(eventManager.windowWidth, eventManager.windowHeight, this);
         sceneFramebuffer = New!Framebuffer(gbuffer, eventManager.windowWidth, eventManager.windowHeight, true, true, this);
         shadowMap = New!CascadedShadowMap(1024, 10, 30, 200, -100, 100, this);
@@ -73,8 +75,47 @@ class DeferredRenderer: Renderer
         deferredLightPass = New!DeferredLightPass(gbuffer, this);
     }
 
-    override void render(Scene scene)
+    override void render(RenderingContext *rc)
     {
-        //TODO
+        shadowMap.render(scene, rc);
+        gbuffer.render(scene, rc);
+        
+        sceneFramebuffer.bind();
+        
+        RenderingContext rcDeferred;
+        rcDeferred.initOrtho(eventManager, scene.environment, eventManager.windowWidth, eventManager.windowHeight, 0.0f, 100.0f);
+        prepareViewport();
+        sceneFramebuffer.clearBuffers(scene.environment.backgroundColor);
+        
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, gbuffer.fbo);
+        glBlitFramebuffer(0, 0, gbuffer.width, gbuffer.height, 0, 0, gbuffer.width, gbuffer.height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+        
+        scene.renderBackgroundEntities3D(rc);
+        deferredEnvPass.render(&rcDeferred, rc);
+        deferredLightPass.render(scene, &rcDeferred, rc);
+        scene.renderTransparentEntities3D(rc);
+        scene.particleSystem.render(rc);
+        
+        sceneFramebuffer.unbind();
+    }
+    
+    void prepareViewport(Framebuffer b = null)
+    {
+        glEnable(GL_SCISSOR_TEST);
+        if (b)
+        {
+            glScissor(0, 0, b.width, b.height);
+            glViewport(0, 0, b.width, b.height);
+        }
+        else
+        {
+            glScissor(0, 0, eventManager.windowWidth, eventManager.windowHeight);
+            glViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
+        }
+        glClearColor(
+            scene.environment.backgroundColor.r, 
+            scene.environment.backgroundColor.g, 
+            scene.environment.backgroundColor.b, 0.0f);
     }
 }

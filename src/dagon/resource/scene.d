@@ -68,12 +68,13 @@ import dagon.graphics.materials.standard;
 import dagon.graphics.materials.hud;
 import dagon.graphics.materials.particle;
 import dagon.graphics.framebuffer;
-import dagon.graphics.gbuffer;
-import dagon.graphics.deferred;
+//import dagon.graphics.gbuffer;
+//import dagon.graphics.deferred;
 import dagon.graphics.shader;
 import dagon.graphics.shaders.standard;
 import dagon.graphics.shaders.sky;
 import dagon.graphics.shaders.particle;
+import dagon.graphics.renderer;
 import dagon.graphics.postproc;
 import dagon.graphics.filters.fxaa;
 import dagon.graphics.filters.lens;
@@ -370,10 +371,12 @@ class SceneApplication: Application
 // TODO: Renderer class
 class Scene: BaseScene
 {
+    DeferredRenderer renderer;
+    
     Environment environment;
 
     LightManager lightManager;
-    CascadedShadowMap shadowMap;
+    //CascadedShadowMap shadowMap;
     ParticleSystem particleSystem;
 
 	StandardShader standardShader;
@@ -387,11 +390,11 @@ class Scene: BaseScene
     RenderingContext rc2d;
     View view;
 
-    GBuffer gbuffer;
-    DeferredEnvironmentPass deferredEnvPass;
-    DeferredLightPass deferredLightPass;
+    //GBuffer gbuffer;
+    //DeferredEnvironmentPass deferredEnvPass;
+    //DeferredLightPass deferredLightPass;
 
-    Framebuffer sceneFramebuffer;
+    //Framebuffer sceneFramebuffer;
     PostFilterHDR hdrFilter;
 
     Framebuffer hdrPrepassFramebuffer;
@@ -414,12 +417,12 @@ class Scene: BaseScene
 
         void enabled(bool mode) @property
         {
-            scene.deferredEnvPass.shader.enableSSAO = mode;
+            scene.renderer.deferredEnvPass.shader.enableSSAO = mode;
         }
 
         bool enabled() @property
         {
-            return scene.deferredEnvPass.shader.enableSSAO;
+            return scene.renderer.deferredEnvPass.shader.enableSSAO;
         }
 
         //TODO: other SSAO parameters
@@ -907,26 +910,29 @@ class Scene: BaseScene
     {
         environment = New!Environment(assetManager);
         lightManager = New!LightManager(assetManager);
-        gbuffer = New!GBuffer(eventManager.windowWidth, eventManager.windowHeight, assetManager);
-        shadowMap = New!CascadedShadowMap(1024, 10, 30, 200, -100, 100, assetManager);
+        
+        renderer = New!DeferredRenderer(this, assetManager);
+        
+        //gbuffer = New!GBuffer(eventManager.windowWidth, eventManager.windowHeight, assetManager);
+        //shadowMap = New!CascadedShadowMap(1024, 10, 30, 200, -100, 100, assetManager);
 
         defaultMaterialBackend = New!StandardBackend(lightManager, assetManager);
 
 		standardShader = New!StandardShader(assetManager);
-        standardShader.shadowMap = shadowMap;
+        standardShader.shadowMap = renderer.shadowMap;
         skyShader = New!SkyShader(assetManager);
-        particleShader = New!ParticleShader(gbuffer, assetManager);
+        particleShader = New!ParticleShader(renderer.gbuffer, assetManager);
 
-        defaultMaterialBackend.shadowMap = shadowMap;
+        defaultMaterialBackend.shadowMap = renderer.shadowMap;
 
         particleSystem = New!ParticleSystem(assetManager);
 
         defaultMaterial3D = createMaterial();
 
-        deferredEnvPass = New!DeferredEnvironmentPass(gbuffer, shadowMap, assetManager);
-        deferredLightPass = New!DeferredLightPass(gbuffer, assetManager);
+        //deferredEnvPass = New!DeferredEnvironmentPass(gbuffer, shadowMap, assetManager);
+        //deferredLightPass = New!DeferredLightPass(gbuffer, assetManager);
 
-        sceneFramebuffer = New!Framebuffer(gbuffer, eventManager.windowWidth, eventManager.windowHeight, true, true, assetManager);
+        //sceneFramebuffer = New!Framebuffer(gbuffer, eventManager.windowWidth, eventManager.windowHeight, true, true, assetManager);
 
         ssao.scene = this;
         hdr.scene = this;
@@ -938,19 +944,19 @@ class Scene: BaseScene
         antiAliasing.scene = this;
         lensDistortion.scene = this;
 
-        hblurredFramebuffer = New!Framebuffer(gbuffer, eventManager.windowWidth / 2, eventManager.windowHeight / 2, true, false, assetManager);
-        hblur = New!PostFilterBlur(true, sceneFramebuffer, hblurredFramebuffer, assetManager);
+        hblurredFramebuffer = New!Framebuffer(renderer.gbuffer, eventManager.windowWidth / 2, eventManager.windowHeight / 2, true, false, assetManager);
+        hblur = New!PostFilterBlur(true, renderer.sceneFramebuffer, hblurredFramebuffer, assetManager);
 
-        vblurredFramebuffer = New!Framebuffer(gbuffer, eventManager.windowWidth / 2, eventManager.windowHeight / 2, true, false, assetManager);
+        vblurredFramebuffer = New!Framebuffer(renderer.gbuffer, eventManager.windowWidth / 2, eventManager.windowHeight / 2, true, false, assetManager);
         vblur = New!PostFilterBlur(false, hblurredFramebuffer, vblurredFramebuffer, assetManager);
 
-        hdrPrepassFramebuffer = New!Framebuffer(gbuffer, eventManager.windowWidth, eventManager.windowHeight, true, false, assetManager);
-        hdrPrepassFilter = New!PostFilterHDRPrepass(sceneFramebuffer, hdrPrepassFramebuffer, assetManager);
+        hdrPrepassFramebuffer = New!Framebuffer(renderer.gbuffer, eventManager.windowWidth, eventManager.windowHeight, true, false, assetManager);
+        hdrPrepassFilter = New!PostFilterHDRPrepass(renderer.sceneFramebuffer, hdrPrepassFramebuffer, assetManager);
         hdrPrepassFilter.blurredTexture = vblurredFramebuffer.colorTexture;
         postFilters.append(hdrPrepassFilter);
 
         hdrFilter = New!PostFilterHDR(hdrPrepassFramebuffer, null, assetManager);
-        hdrFilter.velocityTexture = gbuffer.velocityTexture;
+        hdrFilter.velocityTexture = renderer.gbuffer.velocityTexture;
         postFilters.append(hdrFilter);
 
         fxaaFilter = New!PostFilterFXAA(null, null, assetManager);
@@ -1056,20 +1062,20 @@ class Scene: BaseScene
                 cameraDirection.y = 0.0f;
                 cameraDirection = cameraDirection.normalized;
 
-                shadowMap.area1.position = view.cameraPosition + cameraDirection * (shadowMap.projSize1  * 0.5f - 1.0f);
-                shadowMap.area2.position = view.cameraPosition + cameraDirection * shadowMap.projSize2 * 0.5f;
-                shadowMap.area3.position = view.cameraPosition + cameraDirection * shadowMap.projSize3 * 0.5f;
+                renderer.shadowMap.area1.position = view.cameraPosition + cameraDirection * (renderer.shadowMap.projSize1  * 0.5f - 1.0f);
+                renderer.shadowMap.area2.position = view.cameraPosition + cameraDirection * renderer.shadowMap.projSize2 * 0.5f;
+                renderer.shadowMap.area3.position = view.cameraPosition + cameraDirection * renderer.shadowMap.projSize3 * 0.5f;
             }
 
-            shadowMap.update(&rc3d, fixedTimeStep);
+            renderer.shadowMap.update(&rc3d, fixedTimeStep);
         }
     }
-
+/*
     void renderShadows(RenderingContext* rc)
     {
         shadowMap.render(this, rc);
     }
-
+*/
     void renderBackgroundEntities3D(RenderingContext* rc)
     {
         glEnable(GL_DEPTH_TEST);
@@ -1117,7 +1123,7 @@ class Scene: BaseScene
         foreach(e; entities2D)
             e.render(rc);
     }
-
+/*
     void prepareViewport(Framebuffer b = null)
     {
         glEnable(GL_SCISSOR_TEST);
@@ -1134,7 +1140,7 @@ class Scene: BaseScene
         if (environment)
             glClearColor(environment.backgroundColor.r, environment.backgroundColor.g, environment.backgroundColor.b, 0.0f);
     }
-
+*/
     void renderBlur(uint iterations)
     {
         RenderingContext rcTmp;
@@ -1143,14 +1149,14 @@ class Scene: BaseScene
         {
             hblur.outputBuffer.bind();
             rcTmp.initOrtho(eventManager, environment, hblur.outputBuffer.width, hblur.outputBuffer.height, 0.0f, 100.0f);
-            prepareViewport(hblur.outputBuffer);
+            renderer.prepareViewport(hblur.outputBuffer);
             hblur.radius = i;
             hblur.render(&rcTmp);
             hblur.outputBuffer.unbind();
 
             vblur.outputBuffer.bind();
             rcTmp.initOrtho(eventManager, environment, vblur.outputBuffer.width, vblur.outputBuffer.height, 0.0f, 100.0f);
-            prepareViewport(vblur.outputBuffer);
+            renderer.prepareViewport(vblur.outputBuffer);
             vblur.radius = i;
             vblur.render(&rcTmp);
             vblur.outputBuffer.unbind();
@@ -1158,11 +1164,12 @@ class Scene: BaseScene
             hblur.inputBuffer = vblur.outputBuffer;
         }
 
-        hblur.inputBuffer = sceneFramebuffer;
+        hblur.inputBuffer = renderer.sceneFramebuffer;
     }
 
     override void onRender()
     {
+    /*
         renderShadows(&rc3d);
         gbuffer.render(this, &rc3d);
 
@@ -1184,11 +1191,13 @@ class Scene: BaseScene
         particleSystem.render(&rc3d);
 
         sceneFramebuffer.unbind();
-
+    */
+        renderer.render(&rc3d);
+    
         if (hdrFilter.autoExposure)
         {
-            sceneFramebuffer.genLuminanceMipmaps();
-            float lum = sceneFramebuffer.averageLuminance();
+            renderer.sceneFramebuffer.genLuminanceMipmaps();
+            float lum = renderer.sceneFramebuffer.averageLuminance();
 
             if (!isNaN(lum))
             {
@@ -1203,7 +1212,7 @@ class Scene: BaseScene
             renderBlur(glow.radius);
 
         RenderingContext rcTmp;
-        Framebuffer nextInput = sceneFramebuffer;
+        Framebuffer nextInput = renderer.sceneFramebuffer;
 
         hdrPrepassFilter.perspectiveMatrix = rc3d.projectionMatrix;
 
@@ -1211,7 +1220,7 @@ class Scene: BaseScene
         if (f.enabled)
         {
             if (f.outputBuffer is null)
-                f.outputBuffer = New!Framebuffer(gbuffer, eventManager.windowWidth, eventManager.windowHeight, false, false, assetManager);
+                f.outputBuffer = New!Framebuffer(renderer.gbuffer, eventManager.windowWidth, eventManager.windowHeight, false, false, assetManager);
 
             if (f.inputBuffer is null)
                 f.inputBuffer = nextInput;
@@ -1220,12 +1229,12 @@ class Scene: BaseScene
 
             f.outputBuffer.bind();
             rcTmp.initOrtho(eventManager, environment, f.outputBuffer.width, f.outputBuffer.height, 0.0f, 100.0f);
-            prepareViewport(f.outputBuffer);
+            renderer.prepareViewport(f.outputBuffer);
             f.render(&rcTmp);
             f.outputBuffer.unbind();
         }
 
-        prepareViewport();
+        renderer.prepareViewport();
         finalizerFilter.inputBuffer = nextInput;
         finalizerFilter.render(&rc2d);
 
