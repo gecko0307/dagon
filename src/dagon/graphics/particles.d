@@ -418,6 +418,7 @@ class ParticleSystem: Owner
         if (haveParticlesToDraw)
         {
             foreach(e; emitters)
+            if (e.entity.visible)
             {
                 if (e.material)
                     e.entity.material = e.material;
