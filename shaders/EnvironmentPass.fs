@@ -177,6 +177,8 @@ float geometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 
 // SSAO implementation based on code by Reinder Nijhoff
 // https://www.shadertoy.com/view/Ms33WB
+
+// TODO: make uniforms
 #define SSAO_SAMPLES 16
 #define SSAO_SCALE 2.5
 #define SSAO_BIAS 0.05
