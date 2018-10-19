@@ -183,7 +183,7 @@ float geometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 #define SSAO_SCALE 2.5
 #define SSAO_BIAS 0.05
 #define SSAO_SAMPLE_RAD 0.2
-#define SSAO_MAX_DISTANCE 0.07
+#define SSAO_MAX_DISTANCE 0.2
 #define SSAO_POWER 4.0
 #define SSAO_MOD3 vec3(0.1031, 0.11369, 0.13787)
 
