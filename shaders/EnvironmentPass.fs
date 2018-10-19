@@ -212,15 +212,15 @@ float luminance(vec3 color)
     );
 }
 
-
+// SSAO implementation based on code by Reinder Nijhoff
+// https://www.shadertoy.com/view/Ms33WB
 #define SAMPLES 16
-#define INTENSITY 1.0
 #define SCALE 2.5
 #define BIAS 0.05
-#define SAMPLE_RAD 0.1
-//0.02
+#define SAMPLE_RAD 0.3
 #define MAX_DISTANCE 0.07
 #define MOD3 vec3(0.1031, 0.11369, 0.13787)
+#define POWER 5.0
 
 float hash12(vec2 p)
 {
@@ -232,25 +232,25 @@ float hash12(vec2 p)
 vec2 hash22(vec2 p)
 {
 	vec3 p3 = fract(vec3(p.xyx) * MOD3);
-    p3 += dot(p3, p3.yzx+19.19);
-    return fract(vec2((p3.x + p3.y)*p3.z, (p3.x+p3.z)*p3.y));
+    p3 += dot(p3, p3.yzx + 19.19);
+    return fract(vec2((p3.x + p3.y) * p3.z, (p3.x + p3.z) * p3.y));
 }
 
-vec2 getRandom(vec2 uv) {
+vec2 getRandom(vec2 uv)
+{
     return normalize(hash22(uv*126.1231) * 2.0 - 1.0);
 }
 
-float doAmbientOcclusion(in vec2 tcoord,in vec2 uv, in vec3 p, in vec3 cnorm)
+float doAmbientOcclusion(in vec2 tcoord, in vec2 uv, in vec3 p, in vec3 cnorm)
 {
 	vec3 pos = texture(positionBuffer, tcoord + uv).xyz;
     vec3 diff = pos - p;
     float l = length(diff);
-    vec3 v = diff/l;
-    float d = l*SCALE;
-    float ao = max(0.0,dot(cnorm,v)-BIAS)*(1.0/(1.0+d));
+    vec3 v = diff / l;
+    float d = l * SCALE;
+    float ao = max(0.0, dot(cnorm, v) - BIAS) * (1.0 / (1.0 + d));
     //ao *= smoothstep(MAX_DISTANCE, MAX_DISTANCE * 0.5, l);
     return ao;
-
 }
 
 float spiralAO(vec2 uv, vec3 p, vec3 n, float rad)
@@ -330,38 +330,9 @@ void main()
     if (enableSSAO)
     {
         occlusion = 0.0;
-		/*
-        vec3 rvec = noise(texCoord);
-        vec3 tangent = normalize(rvec - N * dot(rvec, N));
-        vec3 bitangent = cross(tangent, N);
-        mat3 kernelBasis = mat3(tangent, bitangent, N);
-        for (int s = 0; s < SSAO_SAMPLE_COUNT; s++)
-        {
-            vec3 delta = kernelBasis * uKernelOffsets[s];
-            delta *= float(dot(N, delta) >= 0.0) * 2.0 - 1.0;
-            vec3 samplePos = eyePos + delta * ssaoRadius;
-
-            vec4 projSamplePos = camProjectionMatrix * vec4(samplePos, 1.0);
-            vec2 sampleUV = (projSamplePos.xy / projSamplePos.w) * 0.5 + 0.5;
-
-            vec3 dstPosition = texture(positionBuffer, sampleUV).xyz;
-            vec3 positionVec = dstPosition - samplePos;
-
-            float bias = 0.5; //0.375;
-            float intensity = max(dot(normalize(positionVec), N) - bias, 0.0);
-            float dist = length(positionVec) / ssaoRadius;
-            float attenuation = 1.0 / (1.0 + dist);
-            occlusion += intensity * attenuation;
-        }
-		*/
-		
-        vec3 p = eyePos; //texture(positionBuffer, sampleUV).xyz; //getPosition(uv);
-        vec3 n = N; //getNormal(uv);
-        float ao = 0.0;
-        float rad = SAMPLE_RAD/p.z;
-        ao = spiralAO(texCoord, p, n, rad);
-        ao = 1.0 - ao * INTENSITY;
-        occlusion = ao * ao; //clamp(1.0 - occlusion, 0.0, 1.0);
+        occlusion = spiralAO(texCoord, eyePos, N, SAMPLE_RAD / eyePos.z);
+        occlusion = clamp(1.0 - occlusion, 0.0, 1.0);
+        occlusion = pow(occlusion, POWER);
     }
 
     vec3 radiance = vec3(0.0, 0.0, 0.0);
