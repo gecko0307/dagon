@@ -175,63 +175,26 @@ float geometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
     return ggx1 * ggx2;
 }
 
-vec3 noise(vec2 coord)
-{
-    float noiseX, noiseY, noiseZ;
-    const float noiseamount = 0.0002;
-    noiseX = clamp(fract(sin(dot(coord, vec2(12.9898, 78.233))) * 43758.5453), 0.0, 1.0) * 2.0 - 1.0;
-    noiseY = clamp(fract(sin(dot(coord, vec2(12.9898, 78.233)*2.0)) * 43758.5453), 0.0, 1.0) * 2.0 - 1.0;
-    noiseZ = clamp(fract(sin(dot(coord, vec2(12.9898, 78.233)*3.0)) * 43758.5453), 0.0, 1.0) * 2.0 - 1.0;
-    return vec3(noiseX, noiseY, noiseZ) * noiseamount;
-}
-
-const vec3 uKernelOffsets[10] = vec3[](
-    vec3(-0.010735935, 0.01647018, 0.0062425877),
-    vec3(-0.06533369, 0.3647007, -0.13746321),
-    vec3(-0.6539235, -0.016726388, -0.53000957),
-    vec3(0.40958285, 0.0052428036, -0.5591124),
-    vec3(-0.1465366, 0.09899267, 0.15571679),
-    vec3(-0.44122112, -0.5458797, 0.04912532),
-    vec3(0.03755566, -0.10961345, -0.33040273),
-    vec3(0.019100213, 0.29652783, 0.066237666),
-    vec3(0.8765323, 0.011236004, 0.28265962),
-    vec3(0.29264435, -0.40794238, 0.15964167));
-    
-const int SSAO_SAMPLE_COUNT = 8;
-
-// TODO: make uniform
-const float ssaoRadius = 0.5;
-const float ssaoFalloff = 100.0;
-
-float luminance(vec3 color)
-{
-    return (
-        color.x * 0.2126 +
-        color.y * 0.7152 +
-        color.z * 0.0722
-    );
-}
-
 // SSAO implementation based on code by Reinder Nijhoff
 // https://www.shadertoy.com/view/Ms33WB
-#define SAMPLES 16
-#define SCALE 2.5
-#define BIAS 0.05
-#define SAMPLE_RAD 0.3
-#define MAX_DISTANCE 0.07
-#define MOD3 vec3(0.1031, 0.11369, 0.13787)
-#define POWER 5.0
+#define SSAO_SAMPLES 16
+#define SSAO_SCALE 2.5
+#define SSAO_BIAS 0.05
+#define SSAO_SAMPLE_RAD 0.2
+#define SSAO_MAX_DISTANCE 0.07
+#define SSAO_POWER 4.0
+#define SSAO_MOD3 vec3(0.1031, 0.11369, 0.13787)
 
 float hash12(vec2 p)
 {
-	vec3 p3  = fract(vec3(p.xyx) * MOD3);
+	vec3 p3  = fract(vec3(p.xyx) * SSAO_MOD3);
     p3 += dot(p3, p3.yzx + 19.19);
     return fract((p3.x + p3.y) * p3.z);
 }
 
 vec2 hash22(vec2 p)
 {
-	vec3 p3 = fract(vec3(p.xyx) * MOD3);
+	vec3 p3 = fract(vec3(p.xyx) * SSAO_MOD3);
     p3 += dot(p3, p3.yzx + 19.19);
     return fract(vec2((p3.x + p3.y) * p3.z, (p3.x + p3.z) * p3.y));
 }
@@ -241,40 +204,50 @@ vec2 getRandom(vec2 uv)
     return normalize(hash22(uv*126.1231) * 2.0 - 1.0);
 }
 
-float doAmbientOcclusion(in vec2 tcoord, in vec2 uv, in vec3 p, in vec3 cnorm)
+float ssao(in vec2 tcoord, in vec2 uv, in vec3 p, in vec3 cnorm)
 {
 	vec3 pos = texture(positionBuffer, tcoord + uv).xyz;
     vec3 diff = pos - p;
     float l = length(diff);
     vec3 v = diff / l;
-    float d = l * SCALE;
-    float ao = max(0.0, dot(cnorm, v) - BIAS) * (1.0 / (1.0 + d));
-    //ao *= smoothstep(MAX_DISTANCE, MAX_DISTANCE * 0.5, l);
+    float d = l * SSAO_SCALE;
+    float ao = max(0.0, dot(cnorm, v) - SSAO_BIAS) * (1.0 / (1.0 + d));
+    //ao *= smoothstep(SSAO_MAX_DISTANCE, SSAO_MAX_DISTANCE * 0.5, l);
     return ao;
 }
 
-float spiralAO(vec2 uv, vec3 p, vec3 n, float rad)
+float spiralSSAO(vec2 uv, vec3 p, vec3 n, float rad)
 {
     float goldenAngle = 2.4;
     float ao = 0.0;
-    float inv = 1.0 / float(SAMPLES);
+    float inv = 1.0 / float(SSAO_SAMPLES);
     float radius = 0.0;
 
-    float rotatePhase = hash12( uv*100.0 ) * 6.28;
+    float rotatePhase = hash12(uv * 100.0) * 6.28;
     float rStep = inv * rad;
     vec2 spiralUV;
 
-    for (int i = 0; i < SAMPLES; i++) {
+    for (int i = 0; i < SSAO_SAMPLES; i++)
+	{
         spiralUV.x = sin(rotatePhase);
         spiralUV.y = cos(rotatePhase);
         radius += rStep;
-        ao += doAmbientOcclusion(uv, spiralUV * radius, p, n);
+        ao += ssao(uv, spiralUV * radius, p, n);
         rotatePhase += goldenAngle;
     }
     ao *= inv;
     return ao;
 }
 
+
+float luminance(vec3 color)
+{
+    return (
+        color.x * 0.2126 +
+        color.y * 0.7152 +
+        color.z * 0.0722
+    );
+}
 
 layout(location = 0) out vec4 frag_color;
 layout(location = 1) out vec4 frag_luminance;
@@ -329,10 +302,8 @@ void main()
     float occlusion = 1.0;
     if (enableSSAO)
     {
-        occlusion = 0.0;
-        occlusion = spiralAO(texCoord, eyePos, N, SAMPLE_RAD / eyePos.z);
-        occlusion = clamp(1.0 - occlusion, 0.0, 1.0);
-        occlusion = pow(occlusion, POWER);
+        occlusion = spiralSSAO(texCoord, eyePos, N, SSAO_SAMPLE_RAD / eyePos.z);
+        occlusion = pow(clamp(1.0 - occlusion, 0.0, 1.0), SSAO_POWER);
     }
 
     vec3 radiance = vec3(0.0, 0.0, 0.0);
