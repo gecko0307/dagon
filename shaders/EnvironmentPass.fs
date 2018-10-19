@@ -343,14 +343,11 @@ void main()
         vec3 kS = F;
         vec3 kD = 1.0 - kS;
         kD *= 1.0 - metallic;
-        radiance += kD * ambientDiffuse * albedo + F * ambientSpecular;
+        radiance += kD * ambientDiffuse * albedo * occlusion + F * ambientSpecular;
     }
 
     // Emission
     radiance += texture(emissionBuffer, texCoord).rgb;
-
-    // Occlusion
-    radiance *= occlusion;
 
     // Fog
     float linearDepth = abs(eyePos.z);
