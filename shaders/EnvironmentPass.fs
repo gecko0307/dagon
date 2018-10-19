@@ -189,14 +189,14 @@ float geometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 
 float hash12(vec2 p)
 {
-	vec3 p3  = fract(vec3(p.xyx) * SSAO_MOD3);
+    vec3 p3  = fract(vec3(p.xyx) * SSAO_MOD3);
     p3 += dot(p3, p3.yzx + 19.19);
     return fract((p3.x + p3.y) * p3.z);
 }
 
 vec2 hash22(vec2 p)
 {
-	vec3 p3 = fract(vec3(p.xyx) * SSAO_MOD3);
+    vec3 p3 = fract(vec3(p.xyx) * SSAO_MOD3);
     p3 += dot(p3, p3.yzx + 19.19);
     return fract(vec2((p3.x + p3.y) * p3.z, (p3.x + p3.z) * p3.y));
 }
@@ -208,7 +208,7 @@ vec2 getRandom(vec2 uv)
 
 float ssao(in vec2 tcoord, in vec2 uv, in vec3 p, in vec3 cnorm)
 {
-	vec3 pos = texture(positionBuffer, tcoord + uv).xyz;
+    vec3 pos = texture(positionBuffer, tcoord + uv).xyz;
     vec3 diff = pos - p;
     float l = length(diff);
     vec3 v = diff / l;
@@ -230,7 +230,7 @@ float spiralSSAO(vec2 uv, vec3 p, vec3 n, float rad)
     vec2 spiralUV;
 
     for (int i = 0; i < SSAO_SAMPLES; i++)
-	{
+    {
         spiralUV.x = sin(rotatePhase);
         spiralUV.y = cos(rotatePhase);
         radius += rStep;
