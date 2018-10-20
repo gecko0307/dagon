@@ -203,7 +203,7 @@ void main()
     if (alphaCutout && outAlpha <= alphaCutoutThreshold)
         discard;
 
-    frag_color = vec4(outColor * (radiance + energy), outAlpha);
+    frag_color = vec4(outColor * radiance, outAlpha);
     frag_luminance = vec4(luminance(frag_color.rgb) * outAlpha, 0.0, 0.0, 1.0);
     frag_velocity = vec4(screenVelocity, 0.0, outAlpha);
 }
