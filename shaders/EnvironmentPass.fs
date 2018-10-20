@@ -178,14 +178,14 @@ float geometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 // SSAO implementation based on code by Reinder Nijhoff
 // https://www.shadertoy.com/view/Ms33WB
 
-// TODO: make uniforms
-#define SSAO_SAMPLES 16
-#define SSAO_SCALE 2.5
+uniform int ssaoSamples;
+uniform float ssaoRadius;
+uniform float ssaoPower;
+
+#define SSAO_SCALE 1.0
 #define SSAO_BIAS 0.05
-#define SSAO_SAMPLE_RAD 0.2
-#define SSAO_MAX_DISTANCE 0.2
-#define SSAO_POWER 4.0
 #define SSAO_MOD3 vec3(0.1031, 0.11369, 0.13787)
+//#define SSAO_MAX_DISTANCE 0.2
 
 float hash12(vec2 p)
 {
@@ -222,14 +222,14 @@ float spiralSSAO(vec2 uv, vec3 p, vec3 n, float rad)
 {
     float goldenAngle = 2.4;
     float ao = 0.0;
-    float inv = 1.0 / float(SSAO_SAMPLES);
+    float inv = 1.0 / float(ssaoSamples);
     float radius = 0.0;
 
     float rotatePhase = hash12(uv * 100.0) * 6.28;
     float rStep = inv * rad;
     vec2 spiralUV;
 
-    for (int i = 0; i < SSAO_SAMPLES; i++)
+    for (int i = 0; i < ssaoSamples; i++)
     {
         spiralUV.x = sin(rotatePhase);
         spiralUV.y = cos(rotatePhase);
@@ -304,8 +304,8 @@ void main()
     float occlusion = 1.0;
     if (enableSSAO)
     {
-        occlusion = spiralSSAO(texCoord, eyePos, N, SSAO_SAMPLE_RAD / eyePos.z);
-        occlusion = pow(clamp(1.0 - occlusion, 0.0, 1.0), SSAO_POWER);
+        occlusion = spiralSSAO(texCoord, eyePos, N, ssaoRadius / eyePos.z);
+        occlusion = pow(clamp(1.0 - occlusion, 0.0, 1.0), ssaoPower);
     }
 
     vec3 radiance = vec3(0.0, 0.0, 0.0);

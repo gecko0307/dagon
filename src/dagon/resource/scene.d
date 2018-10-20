@@ -424,6 +424,36 @@ class Scene: BaseScene
         {
             return scene.renderer.deferredEnvPass.shader.enableSSAO;
         }
+        
+        void samples(int s) @property
+        {
+            scene.renderer.deferredEnvPass.shader.ssaoSamples = s;
+        }
+
+        int samples() @property
+        {
+            return scene.renderer.deferredEnvPass.shader.ssaoSamples;
+        }
+        
+        void radius(float r) @property
+        {
+            scene.renderer.deferredEnvPass.shader.ssaoRadius = r;
+        }
+
+        float radius() @property
+        {
+            return scene.renderer.deferredEnvPass.shader.ssaoRadius;
+        }
+        
+        void power(float p) @property
+        {
+            scene.renderer.deferredEnvPass.shader.ssaoPower = p;
+        }
+
+        float power() @property
+        {
+            return scene.renderer.deferredEnvPass.shader.ssaoPower;
+        }
 
         //TODO: other SSAO parameters
     }

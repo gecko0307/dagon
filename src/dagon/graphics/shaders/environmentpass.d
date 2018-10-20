@@ -54,6 +54,9 @@ class EnvironmentPassShader: Shader
     Matrix4x4f defaultShadowMatrix;
     
     bool enableSSAO = false;
+    int ssaoSamples = 16;
+    float ssaoRadius = 0.2f;
+    float ssaoPower = 4.0f;
     
     this(GBuffer gbuffer, CascadedShadowMap shadowMap, Owner o)
     {
@@ -142,6 +145,9 @@ class EnvironmentPassShader: Shader
 
         // SSAO
         setParameter("enableSSAO", enableSSAO);
+        setParameter("ssaoSamples", ssaoSamples);
+        setParameter("ssaoRadius", ssaoRadius);
+        setParameter("ssaoPower", ssaoPower);
         
         // Fog
         setParameter("fogColor", rc3d.environment.fogColor);
