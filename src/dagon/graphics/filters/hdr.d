@@ -244,8 +244,8 @@ class PostFilterHDR: PostFilter
     GLuint velocityTexture;
     bool mblurEnabled = false;
     int motionBlurSamples = 20;
-    float shutterFps = 24.0;
-    float shutterSpeed = 1.0 / 24.0;
+    float shutterFps = 60.0;
+    float shutterSpeed = 1.0 / 60.0;
 
     Texture colorTable;
     Texture vignette;
