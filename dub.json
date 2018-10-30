@@ -9,7 +9,7 @@
 
     "importPaths": ["src"],
     "sourcePaths": ["src"],
-    "stringImportPaths": ["shaders"],
+    "stringImportPaths": ["shaders", "data"],
 
     "dependencies": {
         "dlib": "~master",

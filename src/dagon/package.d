@@ -101,6 +101,7 @@ public
     import dagon.graphics.shaders.standard;
     import dagon.graphics.shaders.sky;
     import dagon.graphics.shaders.particle;
+    import dagon.graphics.shaders.water;
 
     import dagon.graphics.filters.fxaa;
     import dagon.graphics.filters.lens;
