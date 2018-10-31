@@ -132,24 +132,34 @@ class Application: EventListener
             {
                 version(X86)
                 {
-                    if (exists("lib/x86/libSDL2-2.0.so"))
+                    if (exists("libSDL2-2.0.so"))
+                        DerelictSDL2.load("libSDL2-2.0.so");
+                    else if (exists("libSDL2-2.0.so"))
+                        DerelictSDL2.load("libSDL2.so");
+                    else if (exists("lib/x86/libSDL2-2.0.so"))
                         DerelictSDL2.load("lib/x86/libSDL2-2.0.so");
                     else
                         DerelictSDL2.load();
 
-                    if (exists("lib/x86/libfreetype.so"))
+                    if (exists("libfreetype.so"))
+                        DerelictFT.load("libfreetype.so");
+                    else if (exists("lib/x86/libfreetype.so"))
                         DerelictFT.load("lib/x86/libfreetype.so");
                     else
                         DerelictFT.load();
                 }
                 version(X86_64)
                 {
-                    if (exists("lib/x64/libSDL2-2.0.so"))
+                    if (exists("libSDL2-2.0.so"))
+                        DerelictSDL2.load("libSDL2-2.0.so");
+                    else if (exists("lib/x64/libSDL2-2.0.so"))
                         DerelictSDL2.load("lib/x64/libSDL2-2.0.so");
                     else
                         DerelictSDL2.load();
 
-                    if (exists("lib/x64/libfreetype.so"))
+                    if (exists("libfreetype.so"))
+                        DerelictFT.load("libfreetype.so");
+                    else if (exists("lib/x64/libfreetype.so"))
                         DerelictFT.load("lib/x64/libfreetype.so");
                     else
                         DerelictFT.load();
@@ -159,24 +169,36 @@ class Application: EventListener
             {
                 version(X86)
                 {
-                    if (exists("lib/x86/SDL2.dll"))
+                    if (exists("SDL2.dll"))
+                        DerelictSDL2.load("SDL2.dll");
+                    else if (exists("lib/x86/SDL2.dll"))
                         DerelictSDL2.load("lib/x86/SDL2.dll");
                     else
                         DerelictSDL2.load();
 
-                    if (exists("lib/x86/freetype281.dll"))
+                    if (exists("freetype281.dll"))
+                        DerelictFT.load("freetype281.dll");
+                    else if (exists("freetype.dll"))
+                        DerelictFT.load("freetype.dll");
+                    else if (exists("lib/x86/freetype281.dll"))
                         DerelictFT.load("lib/x86/freetype281.dll");
                     else
                         DerelictFT.load();
                 }
                 version(X86_64)
                 {
-                    if (exists("lib/x64/SDL2.dll"))
+                    if (exists("SDL2.dll"))
+                        DerelictSDL2.load("SDL2.dll");
+                    else if (exists("lib/x64/SDL2.dll"))
                         DerelictSDL2.load("lib/x64/SDL2.dll");
                     else
                         DerelictSDL2.load();
 
-                    if (exists("lib/x64/freetype281.dll"))
+                    if (exists("freetype281.dll"))
+                        DerelictFT.load("freetype281.dll");
+                    else if (exists("freetype.dll"))
+                        DerelictFT.load("freetype.dll");
+                    else if (exists("lib/x64/freetype281.dll"))
                         DerelictFT.load("lib/x64/freetype281.dll");
                     else
                         DerelictFT.load();

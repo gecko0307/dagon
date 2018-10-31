@@ -27,5 +27,10 @@
             "name": "library",
             "targetType": "library"
         }
-    ]
+    ],
+	
+	"copyFiles": ["gamecontrollerdb.txt"],
+	
+	"copyFiles-windows-x86" : ["lib/x86/*.dll"],
+	"copyFiles-windows-x86_64" : ["lib/x64/*.dll"]
 }

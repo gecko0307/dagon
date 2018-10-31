@@ -72,6 +72,7 @@ class WaterShader: Shader
         
         this.gbuffer = gbuffer;
 
+        // TODO: don't embed the texture, use copyFiles to copy it with Dub after build
         auto istrm = New!ArrayStream(cast(ubyte[])rippleTextureData, rippleTextureData.length);
         auto res = loadPNG(istrm, assetManager.imageFactory);
         rippleTexture = New!Texture(this);
