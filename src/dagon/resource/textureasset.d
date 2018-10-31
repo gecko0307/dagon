@@ -69,8 +69,8 @@ class TextureAsset: Asset
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
     {
         string errMsg;
-    
-        if (filename.extension == ".hdr" || 
+
+        if (filename.extension == ".hdr" ||
             filename.extension == ".HDR")
         {
             Compound!(SuperHDRImage, string) res;
@@ -81,7 +81,7 @@ class TextureAsset: Asset
         else
         {
             Compound!(SuperImage, string) res;
-            
+
             switch(filename.extension)
             {
                 case ".bmp", ".BMP":
@@ -103,7 +103,7 @@ class TextureAsset: Asset
             texture.image = res[0];
             errMsg = res[1];
         }
-        
+
         if (texture.image !is null)
         {
             return true;
@@ -140,3 +140,17 @@ class TextureAsset: Asset
     }
 }
 
+TextureAsset textureAsset(AssetManager assetManager, string filename)
+{
+    TextureAsset asset;
+    if (assetManager.assetExists(filename))
+    {
+        asset = cast(TextureAsset)assetManager.getAsset(filename);
+    }
+    else
+    {
+        asset = New!TextureAsset(assetManager.imageFactory, assetManager.hdrImageFactory, assetManager);
+        assetManager.preloadAsset(asset, filename);
+    }
+    return asset;
+}

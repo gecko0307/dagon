@@ -47,11 +47,7 @@ import dagon.graphics.shader;
 import dagon.graphics.gbuffer;
 import dagon.graphics.texture;
 import dagon.resource.asset;
-
-// TODO: don't embed the texture by default, use copyFiles to copy it with Dub after build
-// and load in usual way with AssetManager, so it can be reused by multiple instances of WaterShader.
-// Embedding should be turned on with a version key.
-__gshared string rippleTextureData = import("ripples.png");
+import dagon.resource.textureasset;
 
 // TODO: move to dlib.math.utils
 real frac(real v)
@@ -64,23 +60,20 @@ class WaterShader: Shader
 {
     string vs = import("Water.vs");
     string fs = import("Water.fs");
-    
+    string rippleTextureFilename = "data/__internal/ripples.png";
+
     GBuffer gbuffer;
     Texture rippleTexture;
-    
+
     this(GBuffer gbuffer, AssetManager assetManager, Owner o)
     {
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, o);
-        
+
         this.gbuffer = gbuffer;
 
-        auto istrm = New!ArrayStream(cast(ubyte[])rippleTextureData, rippleTextureData.length);
-        auto res = loadPNG(istrm, assetManager.imageFactory);
-        rippleTexture = New!Texture(this);
-        rippleTexture.image = res[0];
-        rippleTexture.createFromImage(this.rippleTexture.image);
-        Delete(istrm);
+        TextureAsset rippleTextureAsset = textureAsset(assetManager, rippleTextureFilename);
+        rippleTexture = rippleTextureAsset.texture;
     }
 
     override void bind(RenderingContext* rc)
@@ -93,17 +86,17 @@ class WaterShader: Shader
         setParameter("invViewMatrix", rc.invViewMatrix);
         setParameter("prevModelViewProjMatrix", rc.prevModelViewProjMatrix);
         setParameter("blurModelViewProjMatrix", rc.blurModelViewProjMatrix);
-        
+
         setParameter("viewSize", Vector2f(gbuffer.width, gbuffer.height));
-        
+
         // Texture 1 - position texture (for soft particles)
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, gbuffer.positionTexture);
         setParameter("positionTexture", 1);
-        
+
         // Environment
         setParameter("sunDirection", rc.environment.sunDirectionEye(rc.viewMatrix));
-        
+
         if (rc.environment.environmentMap)
         {
             glActiveTexture(GL_TEXTURE3);
@@ -120,18 +113,18 @@ class WaterShader: Shader
             setParameter("groundEnergy", rc.environment.groundEnergy);
             setParameterSubroutine("environment", ShaderType.Fragment, "environmentSky");
         }
-        
+
         // Ripple parameters
         glActiveTexture(GL_TEXTURE2);
         rippleTexture.bind();
         setParameter("rippleTexture", 2);
-        
+
         float rippleTimesX = frac((rc.time) * 1.6);
         float rippleTimesY = frac((rc.time * 0.85 + 0.2) * 1.6);
         float rippleTimesZ = frac((rc.time * 0.93 + 0.45) * 1.6);
         float rippleTimesW = frac((rc.time * 1.13 + 0.7) * 1.6);
         setParameter("rippleTimes", Vector4f(rippleTimesX, rippleTimesY, rippleTimesZ, rippleTimesW));
-        
+
         glActiveTexture(GL_TEXTURE0);
 
         super.bind(rc);
@@ -143,10 +136,10 @@ class WaterShader: Shader
 
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, 0);
 
