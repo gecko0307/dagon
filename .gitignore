@@ -1,6 +1,13 @@
-
-\.dub/
-
 *.a
+*.lib
 
-dub\.selections\.json
+# Backup files
+*~
+
+# Dub files
+.dub
+dub.selections.json
+
+# Dub test files
+__test__library__
+tests
