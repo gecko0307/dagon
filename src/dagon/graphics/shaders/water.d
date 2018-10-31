@@ -89,7 +89,7 @@ class WaterShader: Shader
 
         setParameter("viewSize", Vector2f(gbuffer.width, gbuffer.height));
 
-        // Texture 1 - position texture (for soft particles)
+        // Texture 1 - position texture (for smooth coast transparency)
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, gbuffer.positionTexture);
         setParameter("positionTexture", 1);
