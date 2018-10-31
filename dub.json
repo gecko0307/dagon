@@ -9,7 +9,7 @@
 
     "importPaths": ["src"],
     "sourcePaths": ["src"],
-    "stringImportPaths": ["shaders", "data"],
+    "stringImportPaths": ["shaders", "data/__internal"],
 
     "dependencies": {
         "dlib": "~master",
@@ -29,7 +29,7 @@
         }
     ],
 	
-	"copyFiles": ["gamecontrollerdb.txt"],
+	"copyFiles": ["data", "gamecontrollerdb.txt"],
 	
 	"copyFiles-windows-x86" : ["lib/x86/*.dll"],
 	"copyFiles-windows-x86_64" : ["lib/x64/*.dll"]

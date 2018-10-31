@@ -48,6 +48,9 @@ import dagon.graphics.gbuffer;
 import dagon.graphics.texture;
 import dagon.resource.asset;
 
+// TODO: don't embed the texture by default, use copyFiles to copy it with Dub after build
+// and load in usual way with AssetManager, so it can be reused by multiple instances of WaterShader.
+// Embedding should be turned on with a version key.
 __gshared string rippleTextureData = import("ripples.png");
 
 // TODO: move to dlib.math.utils
@@ -72,7 +75,6 @@ class WaterShader: Shader
         
         this.gbuffer = gbuffer;
 
-        // TODO: don't embed the texture, use copyFiles to copy it with Dub after build
         auto istrm = New!ArrayStream(cast(ubyte[])rippleTextureData, rippleTextureData.length);
         auto res = loadPNG(istrm, assetManager.imageFactory);
         rippleTexture = New!Texture(this);
