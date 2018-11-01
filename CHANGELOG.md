@@ -123,6 +123,6 @@ Dagon 0.0.3 - 10 Apr, 2017
 * Added unittests for Entity
 * A lot of small changes and bugfixes.
 
-28 Mar, 2017
-------------
+9 Oct, 2016
+-----------
 Project started.
