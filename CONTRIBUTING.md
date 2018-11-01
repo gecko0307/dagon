@@ -13,6 +13,7 @@ Open a new GitHub pull request with your patch. Provide a description of the pro
 New code should at least:
 * work under Windows and POSIX systems and provide platform-agnostic API
 * support x86 and x86_64 targets
+* use OpenGL 4.0 and GLSL 4.00 (core profile)
 * use [dlib](https://github.com/gecko0307/dlib) for game math, image decoding, file I/O and other tasks dlib was created for
 * follow our [code style](#code-style-and-standards)
 * use transparent dynamic memory allocations. Ideally the code should not allocate at all or rely on user for that. Garbage collector usage is not allowed. If dynamic allocations can't be avoided, they should be done with `dlib.core.memory`. All classes should use `dlib.core.ownership`
