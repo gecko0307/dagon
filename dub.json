@@ -14,8 +14,7 @@
     "dependencies": {
         "dlib": "~master",
         "bindbc-sdl": "0.4.0",
-        "bindbc-opengl": "0.3.1",
-        "derelict-ft": "~>2.0.0-beta.2"
+        "bindbc-opengl": "0.3.1"
     },
 	
 	"versions": ["SDL_205", "GL_40"],

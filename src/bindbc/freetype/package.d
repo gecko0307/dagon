@@ -1,7 +1,6 @@
 /*
-Copyright (c) 2017-2018 Timur Gafarov
-
 Boost Software License - Version 1.0 - August 17th, 2003
+
 Permission is hereby granted, free of charge, to any person or organization
 obtaining a copy of the software and accompanying documentation covered by
 this license (the "Software") to use, reproduce, display, distribute,
@@ -25,69 +24,13 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.ui.textline;
+module bindbc.freetype;
 
-import dlib.core.memory;
-import dlib.math.vector;
-import dlib.image.color;
+public import bindbc.freetype.types;
 
-import dagon.core.libs;
-import dagon.core.interfaces;
-import dagon.core.ownership;
-import dagon.ui.font;
+version(BindBC_Static) version = BindFreetype_Static;
+//version(BindFreetype_Static) public import bindbc.freetype.bindstatic;
+//else public import bindbc.freetype.binddynamic;
 
-enum Alignment
-{
-    Left,
-    Right,
-    Center
-}
-
-class TextLine: Owner, Drawable
-{
-    Font font;
-    float scaling;
-    Alignment alignment;
-    Color4f color;
-    string text;
-    float width;
-    float height;
-
-    this(Font font, string text, Owner o)
-    {
-        super(o);
-        this.font = font;
-        this.text = text;
-        this.scaling = 1.0f;
-        this.width = font.width(text);
-        this.height = font.height;
-        this.alignment = Alignment.Left;
-        this.color = Color4f(0, 0, 0);
-    }
-
-    override void update(double dt)
-    {
-    }
-
-    override void render(RenderingContext* rc)
-    {
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        font.render(rc, color, text);
-        glDisable(GL_BLEND);
-    }
-
-    void setFont(Font font)
-    {
-        this.font = font;
-        this.width = font.width(text);
-        this.height = font.height;
-    }
-
-    void setText(string t)
-    {
-        this.text = t;
-        this.width = font.width(t);
-    }
-}
+public import bindbc.freetype.binddynamic;
 

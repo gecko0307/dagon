@@ -38,8 +38,10 @@ import std.file;
 import core.stdc.stdlib;
 
 import dagon.core.libs;
+/*
 import derelict.util.exception;
 import derelict.freetype.ft;
+*/
 
 import dagon.core.event;
 
@@ -54,6 +56,7 @@ enum DagonEvent
     Exit = -1
 }
 
+/*
 ShouldThrow ftOnMissingSymbol(string symbolName)
 {
     writefln("Warning: failed to load Freetype function \"%s\"", symbolName);
@@ -65,6 +68,7 @@ ShouldThrow sdlOnMissingSymbol(string symbolName)
     writefln("Warning: failed to load SDL2 function \"%s\"", symbolName);
     return ShouldThrow.No;
 }
+*/
 
 /++
     Base class to inherit Dagon applications from.
@@ -89,8 +93,14 @@ class Application: EventListener
     +/
     this(uint winWidth, uint winHeight, bool fullscreen, string windowTitle, string[] args)
     {
-        DerelictFT.missingSymbolCallback = &ftOnMissingSymbol;
-        DerelictFT.load();
+        //DerelictFT.missingSymbolCallback = &ftOnMissingSymbol;
+        //DerelictFT.load();
+
+        FreetypeSupport ftsup = loadFreetype();
+        if (ftsup != freetypeSupport)
+        {
+            exitWithError("Error loading Freetype");
+        }
 
         SDLSupport sdlsup = loadSDL();
         if (sdlsup != sdlSupport)
