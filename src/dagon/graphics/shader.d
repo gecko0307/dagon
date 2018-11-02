@@ -29,6 +29,7 @@ module dagon.graphics.shader;
 
 import std.stdio;
 import std.string;
+
 import dlib.core.ownership;
 import dlib.core.memory;
 import dlib.container.array;
@@ -36,7 +37,8 @@ import dlib.container.dict;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.image.color;
-import derelict.opengl;
+
+import dagon.core.libs;
 import dagon.graphics.rc;
 import dagon.graphics.texture;
 

@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.core.keycodes;
 
-import derelict.sdl2.sdl;
+import dagon.core.libs;
 
 enum
 {
@@ -300,10 +300,10 @@ enum: ubyte
     MB_RIGHT = 3,
     MB_X1 = 4,
     MB_X2 = 5,
-    MB_LMASK = SDL_BUTTON(MB_LEFT),
-    MB_MMASK = SDL_BUTTON(MB_MIDDLE),
-    MB_RMASK = SDL_BUTTON(MB_RIGHT),
-    MB_X1MASK = SDL_BUTTON(MB_X1),
-    MB_X2MASK = SDL_BUTTON(MB_X2),
+    MB_LMASK = SDL_BUTTON!MB_LEFT,
+    MB_MMASK = SDL_BUTTON!MB_MIDDLE,
+    MB_RMASK = SDL_BUTTON!MB_RIGHT,
+    MB_X1MASK = SDL_BUTTON!MB_X1,
+    MB_X2MASK = SDL_BUTTON!MB_X2,
 }
 

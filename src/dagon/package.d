@@ -29,8 +29,7 @@ module dagon;
 
 public
 {
-    import derelict.sdl2.sdl;
-    import derelict.opengl;
+    import dagon.core.libs;
 
     import dlib.core;
     import dlib.math;

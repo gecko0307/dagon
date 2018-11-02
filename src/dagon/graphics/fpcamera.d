@@ -27,14 +27,13 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.graphics.fpcamera;
 
-import derelict.opengl.gl;
-
 import dlib.core.memory;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.utils;
 
+import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.logics.entity;
 import dagon.logics.controller;

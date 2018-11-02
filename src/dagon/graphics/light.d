@@ -37,8 +37,7 @@ import dlib.math.vector;
 import dlib.container.array;
 import dlib.image.color;
 
-import derelict.opengl;
-
+import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.graphics.view;
 import dagon.graphics.rc;

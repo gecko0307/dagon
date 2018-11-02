@@ -31,7 +31,8 @@ import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.geometry.frustum;
-import derelict.opengl;
+
+import dagon.core.libs;
 import dagon.core.event;
 import dagon.graphics.environment;
 import dagon.graphics.material;

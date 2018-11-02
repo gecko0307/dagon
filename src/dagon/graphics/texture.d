@@ -30,13 +30,12 @@ module dagon.graphics.texture;
 import std.stdio;
 import std.math;
 
-import derelict.opengl;
-
 import dlib.core.memory;
 import dlib.image.color;
 import dlib.image.image;
 import dlib.math.vector;
 
+import dagon.core.libs;
 import dagon.core.ownership;
 
 class Texture: Owner

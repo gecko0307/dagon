@@ -31,8 +31,8 @@ module dagon.core.event;
 import std.stdio;
 import std.ascii;
 import std.conv;
-import derelict.sdl2.sdl;
 import dlib.core.memory;
+import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.resource.asset;
 
@@ -229,9 +229,11 @@ class EventManager
                 case SDL_KEYDOWN:
                     if (event.key.repeat && !enableKeyRepeat)
                         break;
-                    if ((event.key.keysym.unicode & 0xFF80) == 0)
+                    //auto unicode = event.key.keysym.keycode;
+                    
+                    if ((event.key.keysym.sym & 0xFF80) == 0)
                     {
-                        auto asciiChar = event.key.keysym.unicode & 0x7F;
+                        auto asciiChar = event.key.keysym.sym & 0x7F;
                         if (isPrintable(asciiChar))
                         {
                             e = Event(EventType.TextInput);
@@ -242,7 +244,7 @@ class EventManager
                     else
                     {
                         e = Event(EventType.TextInput);
-                        e.unicode = event.key.keysym.unicode;
+                        e.unicode = event.key.keysym.sym; //event.key.keysym.unicode;
                         addEvent(e);
                     }
 

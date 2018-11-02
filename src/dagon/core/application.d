@@ -37,9 +37,8 @@ import std.string;
 import std.file;
 import core.stdc.stdlib;
 
+import dagon.core.libs;
 import derelict.util.exception;
-import derelict.sdl2.sdl;
-import derelict.opengl;
 import derelict.freetype.ft;
 
 import dagon.core.event;
@@ -90,6 +89,7 @@ class Application: EventListener
     +/
     this(uint winWidth, uint winHeight, bool fullscreen, string windowTitle, string[] args)
     {
+        /*
         try
         { 
             getopt(
@@ -211,6 +211,16 @@ class Application: EventListener
             DerelictSDL2.load();
             DerelictFT.load();
         }
+        */
+        
+        DerelictFT.missingSymbolCallback = &ftOnMissingSymbol;
+        DerelictFT.load();
+        
+        SDLSupport sdlsup = loadSDL();
+        if (sdlsup != sdlSupport)
+        {
+            exitWithError("Error loading SDL");
+        }
 
         if (SDL_Init(SDL_INIT_EVERYTHING) == -1)
             exitWithError("Failed to init SDL: " ~ to!string(SDL_GetError()));
@@ -240,14 +250,28 @@ class Application: EventListener
             exitWithError("Failed to create GL context: " ~ to!string(SDL_GetError()));
             
         SDL_GL_MakeCurrent(window, glcontext);
+        
+        GLSupport glsup = loadOpenGL();
+        if (isOpenGLLoaded())
+        {
+            if (glsup < GLSupport.gl40) 
+            {
+                exitWithError("Sorry, Dagon requires OpenGL 4.0!");
+            }
+        }
+        else
+        {
+            exitWithError("Error loading OpenGL");
+        }
 
+/*
         GLVersion loadedVersion = DerelictGL3.reload();
         writeln("OpenGL version loaded: ", loadedVersion);
         if (loadedVersion < GLVersion.gl40)
         {
             exitWithError("Sorry, Dagon requires OpenGL 4.0!");
         }
-        
+*/
         if (fullscreen)
             SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
             

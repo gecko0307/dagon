@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.ui.textline;
 
-import derelict.opengl;
+import dagon.core.libs;
 import derelict.freetype.ft;
 
 import dlib.core.memory;

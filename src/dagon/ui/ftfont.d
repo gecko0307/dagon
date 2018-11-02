@@ -41,7 +41,7 @@ import dlib.text.utf8;
 import dlib.math.vector;
 import dlib.image.color;
 
-import derelict.opengl;
+import dagon.core.libs;
 import derelict.freetype.ft;
 
 import dagon.core.ownership;

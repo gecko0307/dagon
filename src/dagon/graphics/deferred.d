@@ -36,8 +36,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.image.color;
 
-import derelict.opengl;
-
+import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.core.interfaces;
 import dagon.graphics.rc;

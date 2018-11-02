@@ -36,7 +36,8 @@ import dlib.image.color;
 import dlib.image.image;
 import dlib.image.unmanaged;
 import dlib.image.render.shapes;
-import derelict.opengl;
+
+import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.graphics.material;
 import dagon.graphics.texture;

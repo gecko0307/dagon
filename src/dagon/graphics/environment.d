@@ -38,7 +38,8 @@ import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.quaternion;
 import dlib.math.interpolation;
-import derelict.opengl;
+
+import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.graphics.texture;
 
