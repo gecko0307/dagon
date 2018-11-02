@@ -567,7 +567,7 @@ FreetypeSupport loadFreetype()
 }
 
 FreetypeSupport loadFreetype(const(char)* libName)
-{
+{    
     lib = load(libName);
     if(lib == invalidHandle)
     {
@@ -576,7 +576,7 @@ FreetypeSupport loadFreetype(const(char)* libName)
 
     auto errCount = errorCount();
     loadedVersion = FreetypeSupport.badLibrary;
-    
+
     lib.bindSymbol(cast(void**)&FT_Init_FreeType, "FT_Init_FreeType");
     lib.bindSymbol(cast(void**)&FT_Done_FreeType, "FT_Done_FreeType");
     lib.bindSymbol(cast(void**)&FT_New_Face, "FT_New_Face");
@@ -794,7 +794,7 @@ FreetypeSupport loadFreetype(const(char)* libName)
     lib.bindSymbol(cast(void**)&FT_Sfnt_Table_Info, "FT_Sfnt_Table_Info");
     lib.bindSymbol(cast(void**)&FT_Get_CMap_Language_ID, "FT_Get_CMap_Language_ID");
     lib.bindSymbol(cast(void**)&FT_Get_CMap_Format, "FT_Get_CMap_Format");
-
+    
     loadedVersion = FreetypeSupport.freetype28;
 
     if (errorCount() != errCount)

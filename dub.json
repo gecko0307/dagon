@@ -12,9 +12,7 @@
     "stringImportPaths": ["shaders", "data/__internal"],
 
     "dependencies": {
-        "dlib": "~master",
-        "bindbc-sdl": "0.4.0",
-        "bindbc-opengl": "0.3.1"
+        "dlib": "~master"
     },
 	
 	"versions": ["SDL_205", "GL_40"],
