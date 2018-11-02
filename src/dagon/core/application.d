@@ -38,11 +38,6 @@ import std.file;
 import core.stdc.stdlib;
 
 import dagon.core.libs;
-/*
-import derelict.util.exception;
-import derelict.freetype.ft;
-*/
-
 import dagon.core.event;
 
 void exitWithError(string message)
@@ -55,20 +50,6 @@ enum DagonEvent
 {
     Exit = -1
 }
-
-/*
-ShouldThrow ftOnMissingSymbol(string symbolName)
-{
-    writefln("Warning: failed to load Freetype function \"%s\"", symbolName);
-    return ShouldThrow.No;
-}
-
-ShouldThrow sdlOnMissingSymbol(string symbolName)
-{
-    writefln("Warning: failed to load SDL2 function \"%s\"", symbolName);
-    return ShouldThrow.No;
-}
-*/
 
 /++
     Base class to inherit Dagon applications from.
@@ -93,23 +74,26 @@ class Application: EventListener
     +/
     this(uint winWidth, uint winHeight, bool fullscreen, string windowTitle, string[] args)
     {
-        //DerelictFT.missingSymbolCallback = &ftOnMissingSymbol;
-        //DerelictFT.load();
-
         FreetypeSupport ftsup = loadFreetype();
         if (ftsup != freetypeSupport)
         {
-            exitWithError("Error loading Freetype");
+            if (ftsup == FreetypeSupport.badLibrary)
+                writeln("Warning: failed to load some Freetype functions. It seems that you have an old version of Freetype. Dagon will try to use it, but it is recommended to install Freetype 2.8.1 or higher");
+            else
+                exitWithError("Error: Freetype library is not found. Please, install Freetype 2.8.1");
         }
 
         SDLSupport sdlsup = loadSDL();
         if (sdlsup != sdlSupport)
         {
-            exitWithError("Error loading SDL");
+            if (sdlsup == SDLSupport.badLibrary)
+                writeln("Warning: failed to load some SDL functions. It seems that you have an old version of SDL. Dagon will try to use it, but it is recommended to install SDL 2.0.5 or higher");
+            else
+                exitWithError("Error: SDL library is not found. Please, install SDL 2.0.5");
         }
 
         if (SDL_Init(SDL_INIT_EVERYTHING) == -1)
-            exitWithError("Failed to init SDL: " ~ to!string(SDL_GetError()));
+            exitWithError("Error: failed to init SDL: " ~ to!string(SDL_GetError()));
 
         width = winWidth;
         height = winHeight;
@@ -127,13 +111,13 @@ class Application: EventListener
         window = SDL_CreateWindow(toStringz(windowTitle),
             SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
         if (window is null)
-            exitWithError("Failed to create window: " ~ to!string(SDL_GetError()));
+            exitWithError("Error: failed to create window: " ~ to!string(SDL_GetError()));
 
         SDL_GL_SetSwapInterval(1);
 
         glcontext = SDL_GL_CreateContext(window);
         if (glcontext is null)
-            exitWithError("Failed to create GL context: " ~ to!string(SDL_GetError()));
+            exitWithError("Error: failed to create OpenGL context: " ~ to!string(SDL_GetError()));
 
         SDL_GL_MakeCurrent(window, glcontext);
 
@@ -142,12 +126,12 @@ class Application: EventListener
         {
             if (glsup < GLSupport.gl40)
             {
-                exitWithError("Sorry, Dagon requires OpenGL 4.0!");
+                exitWithError("Error: Dagon requires OpenGL 4.0, but it seems that your graphics card does not support it");
             }
         }
         else
         {
-            exitWithError("Error loading OpenGL");
+            exitWithError("Error: failed to load OpenGL functions. Please, update graphics card driver and make sure it supports OpenGL 4.0");
         }
 
         if (fullscreen)
