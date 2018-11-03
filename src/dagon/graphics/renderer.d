@@ -27,9 +27,9 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.graphics.renderer;
 
-import derelict.opengl;
-
 import dlib.core.memory;
+
+import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.core.event;
 import dagon.graphics.gbuffer;

@@ -29,13 +29,15 @@ module dagon.graphics.material;
 
 import std.math;
 import std.algorithm;
+
 import dlib.core.memory;
 import dlib.math.vector;
 import dlib.image.color;
 import dlib.image.image;
 import dlib.image.unmanaged;
 import dlib.container.dict;
-import derelict.opengl;
+
+import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.graphics.texture;
 import dagon.graphics.rc;

@@ -27,8 +27,8 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.graphics.filters.lens;
 
-import derelict.opengl;
 import dagon.core.ownership;
+import dagon.core.libs;
 import dagon.graphics.postproc;
 import dagon.graphics.framebuffer;
 import dagon.graphics.rc;

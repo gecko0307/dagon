@@ -31,11 +31,9 @@ import dlib.core.memory;
 import dlib.math.vector;
 import dlib.math.matrix;
 
-import derelict.sdl2.sdl;
-
+import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.core.event;
-
 import dagon.graphics.fpcamera;
 import dagon.graphics.view;
 import dagon.logics.entity;

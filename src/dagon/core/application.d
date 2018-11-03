@@ -37,11 +37,7 @@ import std.string;
 import std.file;
 import core.stdc.stdlib;
 
-import derelict.util.exception;
-import derelict.sdl2.sdl;
-import derelict.opengl;
-import derelict.freetype.ft;
-
+import dagon.core.libs;
 import dagon.core.event;
 
 void exitWithError(string message)
@@ -55,21 +51,9 @@ enum DagonEvent
     Exit = -1
 }
 
-ShouldThrow ftOnMissingSymbol(string symbolName)
-{
-    writefln("Warning: failed to load Freetype function \"%s\"", symbolName);
-    return ShouldThrow.No;
-}
-
-ShouldThrow sdlOnMissingSymbol(string symbolName)
-{
-    writefln("Warning: failed to load SDL2 function \"%s\"", symbolName);
-    return ShouldThrow.No;
-}
-
 /++
     Base class to inherit Dagon applications from.
-    `Application` wraps SDL2 window, loads dynamic link libraries using Derelict, 
+    `Application` wraps SDL2 window, loads dynamic link libraries using Derelict,
     is responsible for initializing OpenGL context and doing main game loop.
 +/
 class Application: EventListener
@@ -79,9 +63,9 @@ class Application: EventListener
     SDL_Window* window = null;
     SDL_GLContext glcontext;
     string libdir;
-    
+
     /++
-        Constructor. 
+        Constructor.
         * `winWidth` - window width
         * `winHeight` - window height
         * `fullscreen` - if true, the application will run in fullscreen mode
@@ -90,136 +74,32 @@ class Application: EventListener
     +/
     this(uint winWidth, uint winHeight, bool fullscreen, string windowTitle, string[] args)
     {
-        try
-        { 
-            getopt(
-                args,
-                "libdir", &libdir,
-            );
-        }
-        catch(Exception)
+        FreetypeSupport ftsup = loadFreetype();
+        if (ftsup != freetypeSupport)
         {
+            if (ftsup == FreetypeSupport.badLibrary)
+                writeln("Warning: failed to load some Freetype functions. It seems that you have an old version of Freetype. Dagon will try to use it, but it is recommended to install Freetype 2.8.1 or higher");
+            else
+                exitWithError("Error: Freetype library is not found. Please, install Freetype 2.8.1");
         }
-        
-        DerelictSDL2.missingSymbolCallback = &sdlOnMissingSymbol;
-        DerelictFT.missingSymbolCallback = &ftOnMissingSymbol;
 
-        DerelictGL3.load();
-        if (libdir.length)
+        SDLSupport sdlsup = loadSDL();
+        if (sdlsup != sdlSupport)
         {
-            version(linux)
-            {
-                DerelictSDL2.load(format("%s/libSDL2-2.0.so", libdir));
-                DerelictFT.load(format("%s/libfreetype.so", libdir));
-            }
-            version(Windows)
-            {
-                version(X86)
-                {
-                    DerelictSDL2.load(format("%s/SDL2.dll", libdir));
-                    DerelictFT.load(format("%s/freetype281.dll", libdir));
-                }
-                version(X86_64)
-                {
-                    DerelictSDL2.load(format("%s/SDL2.dll", libdir));
-                    DerelictFT.load(format("%s/freetype281.dll", libdir));
-                }
-            }
-        }
-        else
-        {  
-            version(linux)
-            {
-                version(X86)
-                {
-                    if (exists("libSDL2-2.0.so"))
-                        DerelictSDL2.load("libSDL2-2.0.so");
-                    else if (exists("libSDL2-2.0.so"))
-                        DerelictSDL2.load("libSDL2.so");
-                    else if (exists("lib/x86/libSDL2-2.0.so"))
-                        DerelictSDL2.load("lib/x86/libSDL2-2.0.so");
-                    else
-                        DerelictSDL2.load();
-
-                    if (exists("libfreetype.so"))
-                        DerelictFT.load("libfreetype.so");
-                    else if (exists("lib/x86/libfreetype.so"))
-                        DerelictFT.load("lib/x86/libfreetype.so");
-                    else
-                        DerelictFT.load();
-                }
-                version(X86_64)
-                {
-                    if (exists("libSDL2-2.0.so"))
-                        DerelictSDL2.load("libSDL2-2.0.so");
-                    else if (exists("lib/x64/libSDL2-2.0.so"))
-                        DerelictSDL2.load("lib/x64/libSDL2-2.0.so");
-                    else
-                        DerelictSDL2.load();
-
-                    if (exists("libfreetype.so"))
-                        DerelictFT.load("libfreetype.so");
-                    else if (exists("lib/x64/libfreetype.so"))
-                        DerelictFT.load("lib/x64/libfreetype.so");
-                    else
-                        DerelictFT.load();
-                }
-            }
-            version(Windows)
-            {
-                version(X86)
-                {
-                    if (exists("SDL2.dll"))
-                        DerelictSDL2.load("SDL2.dll");
-                    else if (exists("lib/x86/SDL2.dll"))
-                        DerelictSDL2.load("lib/x86/SDL2.dll");
-                    else
-                        DerelictSDL2.load();
-
-                    if (exists("freetype281.dll"))
-                        DerelictFT.load("freetype281.dll");
-                    else if (exists("freetype.dll"))
-                        DerelictFT.load("freetype.dll");
-                    else if (exists("lib/x86/freetype281.dll"))
-                        DerelictFT.load("lib/x86/freetype281.dll");
-                    else
-                        DerelictFT.load();
-                }
-                version(X86_64)
-                {
-                    if (exists("SDL2.dll"))
-                        DerelictSDL2.load("SDL2.dll");
-                    else if (exists("lib/x64/SDL2.dll"))
-                        DerelictSDL2.load("lib/x64/SDL2.dll");
-                    else
-                        DerelictSDL2.load();
-
-                    if (exists("freetype281.dll"))
-                        DerelictFT.load("freetype281.dll");
-                    else if (exists("freetype.dll"))
-                        DerelictFT.load("freetype.dll");
-                    else if (exists("lib/x64/freetype281.dll"))
-                        DerelictFT.load("lib/x64/freetype281.dll");
-                    else
-                        DerelictFT.load();
-                }
-            }
-        }
-        
-        version(FreeBSD)
-        {
-            DerelictSDL2.load();
-            DerelictFT.load();
+            if (sdlsup == SDLSupport.badLibrary)
+                writeln("Warning: failed to load some SDL functions. It seems that you have an old version of SDL. Dagon will try to use it, but it is recommended to install SDL 2.0.5 or higher");
+            else
+                exitWithError("Error: SDL library is not found. Please, install SDL 2.0.5");
         }
 
         if (SDL_Init(SDL_INIT_EVERYTHING) == -1)
-            exitWithError("Failed to init SDL: " ~ to!string(SDL_GetError()));
-            
+            exitWithError("Error: failed to init SDL: " ~ to!string(SDL_GetError()));
+
         width = winWidth;
         height = winHeight;
 
-        SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);        
-       
+        SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
@@ -228,32 +108,38 @@ class Application: EventListener
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-        window = SDL_CreateWindow(toStringz(windowTitle), 
+        window = SDL_CreateWindow(toStringz(windowTitle),
             SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
         if (window is null)
-            exitWithError("Failed to create window: " ~ to!string(SDL_GetError()));
-            
+            exitWithError("Error: failed to create window: " ~ to!string(SDL_GetError()));
+
         SDL_GL_SetSwapInterval(1);
-            
+
         glcontext = SDL_GL_CreateContext(window);
         if (glcontext is null)
-            exitWithError("Failed to create GL context: " ~ to!string(SDL_GetError()));
-            
+            exitWithError("Error: failed to create OpenGL context: " ~ to!string(SDL_GetError()));
+
         SDL_GL_MakeCurrent(window, glcontext);
 
-        GLVersion loadedVersion = DerelictGL3.reload();
-        writeln("OpenGL version loaded: ", loadedVersion);
-        if (loadedVersion < GLVersion.gl40)
+        GLSupport glsup = loadOpenGL();
+        if (isOpenGLLoaded())
         {
-            exitWithError("Sorry, Dagon requires OpenGL 4.0!");
+            if (glsup < GLSupport.gl40)
+            {
+                exitWithError("Error: Dagon requires OpenGL 4.0, but it seems that your graphics card does not support it");
+            }
         }
-        
+        else
+        {
+            exitWithError("Error: failed to load OpenGL functions. Please, update graphics card driver and make sure it supports OpenGL 4.0");
+        }
+
         if (fullscreen)
             SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
-            
+
         EventManager eventManager = new EventManager(window, width, height);
         super(eventManager, null);
-            
+
         // Initialize OpenGL
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClearDepth(1.0);
@@ -261,7 +147,7 @@ class Application: EventListener
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_POLYGON_OFFSET_FILL);
         glCullFace(GL_BACK);
-        
+
         //checkGLError();
     }
 
@@ -272,17 +158,17 @@ class Application: EventListener
             exit();
         }
     }
-    
+
     void onUpdate(double dt)
     {
         // Override me
     }
-    
+
     void onRender()
     {
         // Override me
     }
-    
+
     void checkGLError()
     {
         GLenum error = GL_NO_ERROR;
@@ -293,7 +179,7 @@ class Application: EventListener
             eventManager.running = false;
         }
     }
-    
+
     void run()
     {
         while(eventManager.running)
@@ -316,12 +202,12 @@ class Application: EventListener
         debug checkGLError();
         SDL_GL_SwapWindow(window);
     }
-    
+
     void exit()
     {
         eventManager.running = false;
     }
-    
+
     ~this()
     {
         SDL_GL_DeleteContext(glcontext);

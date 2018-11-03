@@ -41,9 +41,7 @@ import dlib.text.utf8;
 import dlib.math.vector;
 import dlib.image.color;
 
-import derelict.opengl;
-import derelict.freetype.ft;
-
+import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.ui.font;
 import dagon.graphics.rc;
@@ -71,65 +69,65 @@ final class FreeTypeFont: Font
     FT_Face ftFace;
     FT_Library ftLibrary;
     Dict!(Glyph, dchar) glyphs;
-    
+
     Vector2f[4] vertices;
     Vector2f[4] texcoords;
     uint[3][2] indices;
-    
+
     GLuint vao = 0;
     GLuint vbo = 0;
     GLuint tbo = 0;
     GLuint eao = 0;
-    
+
     bool canRender = false;
-    
+
     GLuint shaderProgram;
     GLuint vertexShader;
     GLuint fragmentShader;
-    
+
     GLint modelViewMatrixLoc;
     GLint projectionMatrixLoc;
-    
+
     GLint glyphPositionLoc;
     GLint glyphScaleLoc;
     GLint glyphTexcoordScaleLoc;
-    
+
     GLint glyphTextureLoc;
     GLint glyphColorLoc;
-    
-    string vsText = 
+
+    string vsText =
     "
         #version 330 core
-        
+
         uniform mat4 modelViewMatrix;
         uniform mat4 projectionMatrix;
-        
+
         uniform vec2 glyphPosition;
         uniform vec2 glyphScale;
         uniform vec2 glyphTexcoordScale;
-        
+
         layout (location = 0) in vec2 va_Vertex;
         layout (location = 1) in vec2 va_Texcoord;
 
         out vec2 texCoord;
-        
+
         void main()
         {
             texCoord = va_Texcoord * glyphTexcoordScale;
             gl_Position = projectionMatrix * modelViewMatrix * vec4(glyphPosition + va_Vertex * glyphScale, 0.0, 1.0);
         }
     ";
-    
+
     string fsText =
     "
         #version 330 core
-        
+
         uniform sampler2D glyphTexture;
         uniform vec4 glyphColor;
 
         in vec2 texCoord;
         out vec4 frag_color;
-        
+
         void main()
         {
             vec4 t = texture(glyphTexture, texCoord);
@@ -144,21 +142,21 @@ final class FreeTypeFont: Font
 
         if (FT_Init_FreeType(&ftLibrary))
             throw new Exception("FT_Init_FreeType failed");
-            
+
         vertices[0] = Vector2f(0, 1);
         vertices[1] = Vector2f(0, 0);
         vertices[2] = Vector2f(1, 0);
         vertices[3] = Vector2f(1, 1);
-        
+
         texcoords[0] = Vector2f(0, 1);
         texcoords[1] = Vector2f(0, 0);
         texcoords[2] = Vector2f(1, 0);
         texcoords[3] = Vector2f(1, 1);
-        
+
         indices[0][0] = 0;
         indices[0][1] = 1;
         indices[0][2] = 2;
-        
+
         indices[1][0] = 0;
         indices[1][1] = 2;
         indices[1][2] = 3;
@@ -184,15 +182,15 @@ final class FreeTypeFont: Font
         FT_Set_Char_Size(ftFace, cast(int)height << 6, cast(int)height << 6, 96, 96);
         glyphs = New!(Dict!(Glyph, dchar));
     }
-    
+
     void prepareVAO()
     {
         if (canRender)
             return;
-    
+
         glGenBuffers(1, &vbo);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, vertices.length * float.sizeof * 2, vertices.ptr, GL_STATIC_DRAW); 
+        glBufferData(GL_ARRAY_BUFFER, vertices.length * float.sizeof * 2, vertices.ptr, GL_STATIC_DRAW);
 
         glGenBuffers(1, &tbo);
         glBindBuffer(GL_ARRAY_BUFFER, tbo);
@@ -205,23 +203,23 @@ final class FreeTypeFont: Font
         glGenVertexArrays(1, &vao);
         glBindVertexArray(vao);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eao);
-    
+
         glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, null);
-    
+
         glEnableVertexAttribArray(1);
         glBindBuffer(GL_ARRAY_BUFFER, tbo);
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, null);
-        
+
         //glBindBuffer(GL_ARRAY_BUFFER, 0);
         //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
         glBindVertexArray(0);
-        
+
         const(char*)pvs = vsText.ptr;
         const(char*)pfs = fsText.ptr;
-        
+
         char[1000] infobuffer = 0;
         int infobufferlen = 0;
 
@@ -257,16 +255,16 @@ final class FreeTypeFont: Font
         glAttachShader(shaderProgram, vertexShader);
         glAttachShader(shaderProgram, fragmentShader);
         glLinkProgram(shaderProgram);
-        
+
         modelViewMatrixLoc = glGetUniformLocation(shaderProgram, "modelViewMatrix");
         projectionMatrixLoc = glGetUniformLocation(shaderProgram, "projectionMatrix");
-        
+
         glyphPositionLoc = glGetUniformLocation(shaderProgram, "glyphPosition");
         glyphScaleLoc = glGetUniformLocation(shaderProgram, "glyphScale");
         glyphTexcoordScaleLoc = glGetUniformLocation(shaderProgram, "glyphTexcoordScale");
         glyphTextureLoc = glGetUniformLocation(shaderProgram, "glyphTexture");
         glyphColorLoc = glGetUniformLocation(shaderProgram, "glyphColor");
-        
+
         canRender = true;
     }
 
@@ -290,7 +288,7 @@ final class FreeTypeFont: Font
             glDeleteBuffers(1, &tbo);
             glDeleteBuffers(1, &eao);
         }
-    
+
         foreach(i, glyph; glyphs)
             glDeleteTextures(1, &glyph.textureId);
         Delete(glyphs);
@@ -384,11 +382,11 @@ final class FreeTypeFont: Font
 
         float x = 0.5f / texWidth + chWidth / texWidth;
         float y = 0.5f / texHeight + chHeight / texHeight;
-        
+
         Vector2f glyphPosition = Vector2f(shift + bitmapGlyph.left, -bitmapGlyph.top); //-(bitmapGlyph.top - bitmap.rows))
         Vector2f glyphScale = Vector2f(bitmap.width, bitmap.rows);
         Vector2f glyphTexcoordScale = Vector2f(x, y);
-        
+
         glUniform2fv(glyphPositionLoc, 1, glyphPosition.arrayof.ptr);
         glUniform2fv(glyphScaleLoc, 1, glyphScale.arrayof.ptr);
         glUniform2fv(glyphTexcoordScaleLoc, 1, glyphTexcoordScale.arrayof.ptr);
@@ -396,7 +394,7 @@ final class FreeTypeFont: Font
         glBindVertexArray(vao);
         glDrawElements(GL_TRIANGLES, cast(uint)indices.length * 3, GL_UNSIGNED_INT, cast(void*)0);
         glBindVertexArray(0);
-        
+
         shift = glyph.advanceX >> 6;
 
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -418,12 +416,12 @@ final class FreeTypeFont: Font
     {
         if (!canRender)
             return;
-    
+
         glUseProgram(shaderProgram);
-        
+
         glUniformMatrix4fv(modelViewMatrixLoc, 1, GL_FALSE, rc.modelViewMatrix.arrayof.ptr);
         glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, rc.projectionMatrix.arrayof.ptr);
-        
+
         glUniform4fv(glyphColorLoc, 1, color.arrayof.ptr);
 
         float shift = 0.0f;
@@ -442,7 +440,7 @@ final class FreeTypeFont: Font
             else
                 shift += renderGlyph(code, shift);
         } while(ch != UTF8_END && ch != UTF8_ERROR);
-        
+
         glUseProgram(0);
     }
 

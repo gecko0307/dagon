@@ -30,7 +30,8 @@ module dagon.graphics.mesh;
 import dlib.core.memory;
 import dlib.geometry.triangle;
 import dlib.math.vector;
-import derelict.opengl;
+
+import dagon.core.libs;
 import dagon.core.interfaces;
 import dagon.core.ownership;
 

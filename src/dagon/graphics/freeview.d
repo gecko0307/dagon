@@ -32,8 +32,7 @@ import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.quaternion;
 
-import derelict.sdl2.sdl;
-
+import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.core.event;
 import dagon.core.keycodes;

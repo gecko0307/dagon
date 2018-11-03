@@ -37,8 +37,7 @@ import dlib.math.matrix;
 import dlib.image.color;
 import dlib.image.unmanaged;
 
-import derelict.opengl;
-
+import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.graphics.rc;
 import dagon.graphics.shadow;

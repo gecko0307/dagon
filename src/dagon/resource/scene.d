@@ -43,8 +43,7 @@ import dlib.image.image;
 import dlib.image.unmanaged;
 import dlib.image.io.png;
 
-import derelict.opengl;
-
+import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.core.event;
 import dagon.core.application;

@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.graphics.filters.hdr;
 
-import derelict.opengl;
+import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.graphics.postproc;
 import dagon.graphics.framebuffer;

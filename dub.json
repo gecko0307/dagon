@@ -12,11 +12,10 @@
     "stringImportPaths": ["shaders", "data/__internal"],
 
     "dependencies": {
-        "dlib": "~master",
-        "derelict-sdl2": "~>3.1.0-alpha.2",
-        "derelict-gl3": "~>2.0.0-beta.5",
-        "derelict-ft": "~>2.0.0-beta.2"
+        "dlib": "~master"
     },
+	
+	"versions": ["SDL_205", "GL_40"],
 	
     "buildRequirements":[
         "allowWarnings"

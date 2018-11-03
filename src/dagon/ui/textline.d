@@ -27,13 +27,11 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.ui.textline;
 
-import derelict.opengl;
-import derelict.freetype.ft;
-
 import dlib.core.memory;
 import dlib.math.vector;
 import dlib.image.color;
 
+import dagon.core.libs;
 import dagon.core.interfaces;
 import dagon.core.ownership;
 import dagon.ui.font;
