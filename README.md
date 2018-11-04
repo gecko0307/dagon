@@ -21,7 +21,7 @@ Currently Dagon has the following features:
 * Spherical area lights
 * Normal/parallax mapping, parallax occlusion mapping
 * Cascaded shadow maps for directional light
-* Dynamic skydome with sun and day/night cycle
+* Dynamic skydome with sun and day/night cycle, simple and Rayleigh sky models
 * Particle system with force fields. Blended particles, soft particles, shaded particles with normal map support, particle shadows
 * Procedural water shader
 * Post-processing (FXAA, SSAO, lens distortion, motion blur, glow, LUT color grading)
