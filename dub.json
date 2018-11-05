@@ -14,9 +14,9 @@
     "dependencies": {
         "dlib": "~master"
     },
-	
-	"versions": ["SDL_205", "GL_40"],
-	
+
+    "versions": ["SDL_205", "GL_40"],
+
     "buildRequirements":[
         "allowWarnings"
     ],
@@ -27,9 +27,8 @@
             "targetType": "library"
         }
     ],
-	
-	"copyFiles": ["data", "gamecontrollerdb.txt"],
-	
-	"copyFiles-windows-x86" : ["lib/x86/*.dll"],
-	"copyFiles-windows-x86_64" : ["lib/x64/*.dll"]
+
+    "copyFiles": ["data", "gamecontrollerdb.txt"],
+    "copyFiles-windows-x86" : ["lib/x86/*.dll"],
+    "copyFiles-windows-x86_64" : ["lib/x64/*.dll"]
 }
