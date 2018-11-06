@@ -162,6 +162,8 @@ class PostFilter: Owner
         
         Vector2f viewportSize;
         
+        auto colorTexture = inputBuffer.currentColorTexture;
+        
         if (outputBuffer)
             viewportSize = Vector2f(outputBuffer.width, outputBuffer.height);
         else
@@ -169,7 +171,7 @@ class PostFilter: Owner
         glUniform2fv(viewportSizeLoc, 1, viewportSize.arrayof.ptr);
         
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, inputBuffer.colorTexture);
+        glBindTexture(GL_TEXTURE_2D, colorTexture);
 
         glUniform1i(fbColorLoc, 0);
        

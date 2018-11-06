@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.graphics.framebuffer;
 
+import std.stdio;
 import std.math;
 
 import dlib.math.vector;
@@ -49,7 +50,9 @@ class Framebuffer: Owner
 
     GLuint fbo;
     GLuint depthTexture = 0;
-    GLuint colorTexture = 0;
+    GLuint colorTexture1 = 0;
+    GLuint colorTexture2 = 0;
+    GLuint currColorTexture = 0;
     GLuint lumaTexture = 0;
     GLuint velocityTexture = 0;
 
@@ -90,8 +93,8 @@ class Framebuffer: Owner
 
         isFloating = floating;
 
-        glGenTextures(1, &colorTexture);
-        glBindTexture(GL_TEXTURE_2D, colorTexture);
+        glGenTextures(1, &colorTexture1);
+        glBindTexture(GL_TEXTURE_2D, colorTexture1);
         if (!floating)
         {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, null);
@@ -107,7 +110,27 @@ class Framebuffer: Owner
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glBindTexture(GL_TEXTURE_2D, 0);
-
+        
+        glGenTextures(1, &colorTexture2);
+        glBindTexture(GL_TEXTURE_2D, colorTexture2);
+        if (!floating)
+        {
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, null);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        }
+        else
+        {
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, null);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        }
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        currColorTexture = colorTexture1;
+        
         if (isHDRSceneBuffer)
         {
             glGenTextures(1, &lumaTexture);
@@ -122,7 +145,7 @@ class Framebuffer: Owner
 
         glGenFramebuffers(1, &fbo);
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, currColorTexture, 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
 
         if (isHDRSceneBuffer)
@@ -140,8 +163,6 @@ class Framebuffer: Owner
         {
             glDrawBuffer(GL_COLOR_ATTACHMENT0);
         }
-
-        import std.stdio;
 
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (status != GL_FRAMEBUFFER_COMPLETE)
@@ -205,8 +226,10 @@ class Framebuffer: Owner
 
         if (glIsTexture(depthTexture))
             glDeleteTextures(1, &depthTexture);
-        if (glIsTexture(colorTexture))
-            glDeleteTextures(1, &colorTexture);
+        if (glIsTexture(colorTexture1))
+            glDeleteTextures(1, &colorTexture1);
+        if (glIsTexture(colorTexture2))
+            glDeleteTextures(1, &colorTexture2);
         if (glIsTexture(lumaTexture))
             glDeleteTextures(1, &lumaTexture);
 
@@ -267,5 +290,29 @@ class Framebuffer: Owner
         {
             glClearBufferfv(GL_COLOR, 1, zero.arrayof.ptr);
         }
+    }
+    
+    void swapColorTextureAttachments()
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+        if (currColorTexture == colorTexture1)
+            currColorTexture = colorTexture2;
+        else
+            currColorTexture = colorTexture1;
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, currColorTexture, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+    
+    GLuint currentColorTexture() @property
+    {
+        return currColorTexture;
+    }
+    
+    GLuint previousColorTexture() @property
+    {
+        if (currColorTexture == colorTexture1)
+            return colorTexture2;
+        else
+            return colorTexture1;
     }
 }

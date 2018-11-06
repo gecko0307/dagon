@@ -41,6 +41,7 @@ import dagon.core.ownership;
 import dagon.core.interfaces;
 import dagon.graphics.rc;
 import dagon.graphics.gbuffer;
+import dagon.graphics.framebuffer;
 import dagon.graphics.shadow;
 import dagon.graphics.light;
 import dagon.graphics.screensurface;
@@ -56,10 +57,10 @@ class DeferredEnvironmentPass: Owner
     CascadedShadowMap shadowMap;
     ScreenSurface surface;
 
-    this(GBuffer gbuffer, CascadedShadowMap shadowMap, Owner o)
+    this(GBuffer gbuffer, Framebuffer sceneFramebuffer, CascadedShadowMap shadowMap, Owner o)
     {
         super(o);
-        this.shader = New!EnvironmentPassShader(gbuffer, shadowMap, this);
+        this.shader = New!EnvironmentPassShader(gbuffer, sceneFramebuffer, shadowMap, this);
         this.gbuffer = gbuffer;
         this.shadowMap = shadowMap;
         this.surface = New!ScreenSurface(this);

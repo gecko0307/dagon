@@ -375,7 +375,6 @@ class Scene: BaseScene
     Environment environment;
 
     LightManager lightManager;
-    //CascadedShadowMap shadowMap;
     ParticleSystem particleSystem;
 
 	StandardShader standardShader;
@@ -389,11 +388,6 @@ class Scene: BaseScene
     RenderingContext rc2d;
     View view;
 
-    //GBuffer gbuffer;
-    //DeferredEnvironmentPass deferredEnvPass;
-    //DeferredLightPass deferredLightPass;
-
-    //Framebuffer sceneFramebuffer;
     PostFilterHDR hdrFilter;
 
     Framebuffer hdrPrepassFramebuffer;
@@ -941,9 +935,6 @@ class Scene: BaseScene
         lightManager = New!LightManager(assetManager);
         
         renderer = New!DeferredRenderer(this, assetManager);
-        
-        //gbuffer = New!GBuffer(eventManager.windowWidth, eventManager.windowHeight, assetManager);
-        //shadowMap = New!CascadedShadowMap(1024, 10, 30, 200, -100, 100, assetManager);
 
         defaultMaterialBackend = New!StandardBackend(lightManager, assetManager);
 
@@ -957,11 +948,6 @@ class Scene: BaseScene
         particleSystem = New!ParticleSystem(assetManager);
 
         defaultMaterial3D = createMaterial();
-
-        //deferredEnvPass = New!DeferredEnvironmentPass(gbuffer, shadowMap, assetManager);
-        //deferredLightPass = New!DeferredLightPass(gbuffer, assetManager);
-
-        //sceneFramebuffer = New!Framebuffer(gbuffer, eventManager.windowWidth, eventManager.windowHeight, true, true, assetManager);
 
         ssao.scene = this;
         hdr.scene = this;
@@ -981,7 +967,7 @@ class Scene: BaseScene
 
         hdrPrepassFramebuffer = New!Framebuffer(renderer.gbuffer, eventManager.windowWidth, eventManager.windowHeight, true, false, assetManager);
         hdrPrepassFilter = New!PostFilterHDRPrepass(renderer.sceneFramebuffer, hdrPrepassFramebuffer, assetManager);
-        hdrPrepassFilter.blurredTexture = vblurredFramebuffer.colorTexture;
+        hdrPrepassFilter.blurredTexture = vblurredFramebuffer.currentColorTexture;
         postFilters.append(hdrPrepassFilter);
 
         hdrFilter = New!PostFilterHDR(hdrPrepassFramebuffer, null, assetManager);
@@ -1099,12 +1085,7 @@ class Scene: BaseScene
             renderer.shadowMap.update(&rc3d, fixedTimeStep);
         }
     }
-/*
-    void renderShadows(RenderingContext* rc)
-    {
-        shadowMap.render(this, rc);
-    }
-*/
+
     void renderBackgroundEntities3D(RenderingContext* rc)
     {
         glEnable(GL_DEPTH_TEST);
@@ -1152,24 +1133,7 @@ class Scene: BaseScene
         foreach(e; entities2D)
             e.render(rc);
     }
-/*
-    void prepareViewport(Framebuffer b = null)
-    {
-        glEnable(GL_SCISSOR_TEST);
-        if (b)
-        {
-            glScissor(0, 0, b.width, b.height);
-            glViewport(0, 0, b.width, b.height);
-        }
-        else
-        {
-            glScissor(0, 0, eventManager.windowWidth, eventManager.windowHeight);
-            glViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
-        }
-        if (environment)
-            glClearColor(environment.backgroundColor.r, environment.backgroundColor.g, environment.backgroundColor.b, 0.0f);
-    }
-*/
+
     void renderBlur(uint iterations)
     {
         RenderingContext rcTmp;
@@ -1198,29 +1162,6 @@ class Scene: BaseScene
 
     override void onRender()
     {
-    /*
-        renderShadows(&rc3d);
-        gbuffer.render(this, &rc3d);
-
-        sceneFramebuffer.bind();
-
-        RenderingContext rcDeferred;
-        rcDeferred.initOrtho(eventManager, environment, eventManager.windowWidth, eventManager.windowHeight, 0.0f, 100.0f);
-        prepareViewport();
-        sceneFramebuffer.clearBuffers(environment.backgroundColor);
-
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, gbuffer.fbo);
-        glBlitFramebuffer(0, 0, gbuffer.width, gbuffer.height, 0, 0, gbuffer.width, gbuffer.height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-
-        renderBackgroundEntities3D(&rc3d);
-        deferredEnvPass.render(&rcDeferred, &rc3d);
-        deferredLightPass.render(this, &rcDeferred, &rc3d);
-        renderTransparentEntities3D(&rc3d);
-        particleSystem.render(&rc3d);
-
-        sceneFramebuffer.unbind();
-    */
         renderer.render(&rc3d);
     
         if (hdrFilter.autoExposure)

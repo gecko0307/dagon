@@ -71,7 +71,7 @@ class DeferredRenderer: Renderer
         sceneFramebuffer = New!Framebuffer(gbuffer, eventManager.windowWidth, eventManager.windowHeight, true, true, this);
         shadowMap = New!CascadedShadowMap(1024, 10, 30, 200, -100, 100, this);
 
-        deferredEnvPass = New!DeferredEnvironmentPass(gbuffer, shadowMap, this);
+        deferredEnvPass = New!DeferredEnvironmentPass(gbuffer, sceneFramebuffer, shadowMap, this);
         deferredLightPass = New!DeferredLightPass(gbuffer, this);
     }
 
@@ -98,6 +98,8 @@ class DeferredRenderer: Renderer
         scene.particleSystem.render(rc);
         
         sceneFramebuffer.unbind();
+        
+        sceneFramebuffer.swapColorTextureAttachments();
     }
     
     void prepareViewport(Framebuffer b = null)
