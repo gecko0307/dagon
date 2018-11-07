@@ -51,6 +51,15 @@ enum DagonEvent
     Exit = -1
 }
 
+enum string[GLenum] GLErrorStrings = [
+    GL_NO_ERROR: "GL_NO_ERROR",
+    GL_INVALID_ENUM: "GL_INVALID_ENUM",
+    GL_INVALID_VALUE: "GL_INVALID_VALUE",
+    GL_INVALID_OPERATION: "GL_INVALID_OPERATION",
+    GL_INVALID_FRAMEBUFFER_OPERATION: "GL_INVALID_FRAMEBUFFER_OPERATION",
+    GL_OUT_OF_MEMORY: "GL_OUT_OF_MEMORY"
+];
+
 /++
     Base class to inherit Dagon applications from.
     `Application` wraps SDL2 window, loads dynamic link libraries using Derelict,
@@ -175,7 +184,7 @@ class Application: EventListener
         error = glGetError();
         if (error != GL_NO_ERROR)
         {
-            writeln("OpenGL error: ", error);
+            writefln("OpenGL error %s: %s", error, GLErrorStrings[error]);
             eventManager.running = false;
         }
     }

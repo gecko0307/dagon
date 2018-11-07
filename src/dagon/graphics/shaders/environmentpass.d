@@ -147,7 +147,7 @@ class EnvironmentPassShader: Shader
         
         // Texture 7 - HDR color buffer from previous frame to do SSLR
         glActiveTexture(GL_TEXTURE7);
-        glBindTexture(GL_TEXTURE_2D_ARRAY, sceneFramebuffer.previousColorTexture);
+        glBindTexture(GL_TEXTURE_2D, sceneFramebuffer.previousColorTexture);
         setParameter("hdrBuffer", 7);
 
         // SSAO
