@@ -30,6 +30,7 @@ module dagon.graphics.probe;
 import std.stdio;
 import dlib.core.memory;
 import dlib.image.color;
+import dlib.math.vector;
 import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.graphics.framebuffer;
@@ -123,11 +124,13 @@ class EnvironmentProbe: Owner
     GLuint fbo;
     
     uint resolution;
+    Vector3f position;
     
-    this(uint res, Owner o)
+    this(uint res, Vector3f position, Owner o)
     {
         super(o);
         resolution = res;
+        this.position = position;
         
         glActiveTexture(GL_TEXTURE0);
         
