@@ -37,15 +37,29 @@ import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.graphics.gbuffer;
 
+abstract class RenderTarget: Owner
+{
+    uint width;
+    uint height;
+    
+    this(uint w, uint h, Owner o)
+    {
+        super(o);
+        width = w;
+        height = h;
+    }
+    
+    void bind();
+    void unbind();
+    void clear(Color4f clearColor);
+}
+
 /*
  * TODO: the whole thing should be rewritten in more reasonable way.
  * E.g., a chain of specialized buffers extending abstract interface.
  */
-class Framebuffer: Owner
+class Framebuffer: RenderTarget
 {
-    uint width;
-    uint height;
-
     GBuffer gbuffer;
 
     GLuint fbo;
@@ -71,10 +85,7 @@ class Framebuffer: Owner
 
     this(GBuffer gbuffer, uint w, uint h, bool floating, bool isHDRSceneBuffer, Owner o)
     {
-        super(o);
-
-        width = w;
-        height = h;
+        super(w, h, o);
 
         this.isHDRSceneBuffer = isHDRSceneBuffer;
 
@@ -258,12 +269,12 @@ class Framebuffer: Owner
         return luma;
     }
 
-    void bind()
+    override void bind()
     {
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     }
 
-    void unbind()
+    override void unbind()
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
@@ -279,7 +290,7 @@ class Framebuffer: Owner
         glDepthMask(1);
     }
 
-    void clearBuffers(Color4f clearColor)
+    override void clear(Color4f clearColor)
     {
     /*
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

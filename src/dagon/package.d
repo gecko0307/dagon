@@ -80,6 +80,7 @@ public
     import dagon.graphics.view;
     import dagon.graphics.shadow;
     import dagon.graphics.light;
+    import dagon.graphics.probe;
     import dagon.graphics.framebuffer;
     import dagon.graphics.postproc;
     import dagon.graphics.particles;

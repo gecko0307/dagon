@@ -37,25 +37,14 @@ import dagon.graphics.framebuffer;
 import dagon.graphics.deferred;
 import dagon.graphics.shadow;
 import dagon.graphics.rc;
+import dagon.graphics.probe;
 import dagon.resource.scene;
 
-abstract class Renderer: Owner
+class Renderer: Owner
 {
     Scene scene;
     EventManager eventManager;
-
-    this(Scene scene, Owner o)
-    {
-        super(o);
-        this.scene = scene;
-        this.eventManager = scene.eventManager;
-    }
-
-    void render(RenderingContext *rc);
-}
-
-class DeferredRenderer: Renderer
-{
+    
     GBuffer gbuffer;
     Framebuffer sceneFramebuffer;
 
@@ -66,7 +55,11 @@ class DeferredRenderer: Renderer
 
     this(Scene scene, Owner o)
     {
-        super(scene, o);
+        super(o);
+        
+        this.scene = scene;
+        this.eventManager = scene.eventManager;
+        
         gbuffer = New!GBuffer(eventManager.windowWidth, eventManager.windowHeight, this);
         sceneFramebuffer = New!Framebuffer(gbuffer, eventManager.windowWidth, eventManager.windowHeight, true, true, this);
         shadowMap = New!CascadedShadowMap(1024, 10, 30, 200, -100, 100, this);
@@ -75,8 +68,9 @@ class DeferredRenderer: Renderer
         deferredLightPass = New!DeferredLightPass(gbuffer, this);
     }
 
-    override void render(RenderingContext *rc)
+    void render(RenderingContext *rc)
     {
+    /*
         shadowMap.render(scene, rc);
         gbuffer.render(scene, rc);
         
@@ -84,7 +78,7 @@ class DeferredRenderer: Renderer
         
         RenderingContext rcDeferred;
         rcDeferred.initOrtho(eventManager, scene.environment, eventManager.windowWidth, eventManager.windowHeight, 0.0f, 100.0f);
-        prepareViewport();
+        prepareViewport(sceneFramebuffer);
         sceneFramebuffer.clearBuffers(scene.environment.backgroundColor);
         
         glBindFramebuffer(GL_READ_FRAMEBUFFER, gbuffer.fbo);
@@ -98,17 +92,48 @@ class DeferredRenderer: Renderer
         scene.particleSystem.render(rc);
         
         sceneFramebuffer.unbind();
-        
+    */
+        renderPreStep(rc);
+        renderToTarget(sceneFramebuffer, gbuffer, rc);
+    
         sceneFramebuffer.swapColorTextureAttachments();
     }
     
-    void prepareViewport(Framebuffer b = null)
+    void renderPreStep(RenderingContext *rc)
+    {
+        shadowMap.render(scene, rc);
+        gbuffer.render(scene, rc);
+    }
+    
+    void renderToTarget(RenderTarget rt, GBuffer gbuf, RenderingContext *rc)
+    {
+        rt.bind();
+        
+        RenderingContext rcDeferred;
+        rcDeferred.initOrtho(eventManager, scene.environment, eventManager.windowWidth, eventManager.windowHeight, 0.0f, 100.0f);
+        prepareViewport(rt);
+        rt.clear(scene.environment.backgroundColor);
+        
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, gbuf.fbo);
+        glBlitFramebuffer(0, 0, gbuf.width, gbuf.height, 0, 0, gbuf.width, gbuf.height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+        
+        scene.renderBackgroundEntities3D(rc);
+        deferredEnvPass.render(&rcDeferred, rc);
+        deferredLightPass.render(scene, &rcDeferred, rc);
+        scene.renderTransparentEntities3D(rc);
+        scene.particleSystem.render(rc);
+        
+        rt.unbind();
+    }
+    
+    void prepareViewport(RenderTarget rt = null)
     {
         glEnable(GL_SCISSOR_TEST);
-        if (b)
+        if (rt)
         {
-            glScissor(0, 0, b.width, b.height);
-            glViewport(0, 0, b.width, b.height);
+            glScissor(0, 0, rt.width, rt.height);
+            glViewport(0, 0, rt.width, rt.height);
         }
         else
         {

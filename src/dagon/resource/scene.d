@@ -370,7 +370,7 @@ class SceneApplication: Application
 // TODO: Renderer class
 class Scene: BaseScene
 {
-    DeferredRenderer renderer;
+    Renderer renderer;
     
     Environment environment;
 
@@ -934,7 +934,7 @@ class Scene: BaseScene
         environment = New!Environment(assetManager);
         lightManager = New!LightManager(assetManager);
         
-        renderer = New!DeferredRenderer(this, assetManager);
+        renderer = New!Renderer(this, assetManager);
 
         defaultMaterialBackend = New!StandardBackend(lightManager, assetManager);
 
