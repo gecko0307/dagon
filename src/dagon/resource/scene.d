@@ -30,6 +30,7 @@ module dagon.resource.scene;
 import std.stdio;
 import std.math;
 import std.algorithm;
+import std.traits;
 
 import dlib.core.memory;
 
@@ -1163,9 +1164,16 @@ class Scene: BaseScene
     
     void renderProbe(EnvironmentProbe probe)
     {
-        //renderPreStep(rc);
-        //renderToTarget(sceneFramebuffer, gbuffer, rc);
-        //sceneFramebuffer.swapColorTextureAttachments();
+        onUpdate(0.0);
+        foreach(face; EnumMembers!CubeFace)
+        {
+            RenderingContext rcProbe;
+            rcProbe.initPerspective(eventManager, environment, 90.0f, 0.1f, 1000.0f);
+            eprt.prepareRC(probe, face, &rcProbe);
+            eprt.setProbe(probe, face);
+            renderer.renderPreStep(eprt.gbuffer, &rcProbe);
+            renderer.renderToTarget(eprt, eprt.gbuffer, &rcProbe);
+        }
     }
 
     override void onRender()

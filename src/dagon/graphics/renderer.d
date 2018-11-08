@@ -86,7 +86,7 @@ class Renderer: Owner
         rt.bind();
         
         RenderingContext rcDeferred;
-        rcDeferred.initOrtho(eventManager, scene.environment, eventManager.windowWidth, eventManager.windowHeight, 0.0f, 100.0f);
+        rcDeferred.initOrtho(eventManager, scene.environment, gbuf.width, gbuf.height, 0.0f, 100.0f);
         prepareViewport(rt);
         rt.clear(scene.environment.backgroundColor);
         

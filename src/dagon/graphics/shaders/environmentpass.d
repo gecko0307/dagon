@@ -78,7 +78,7 @@ class EnvironmentPassShader: Shader
         setParameter("camViewMatrix", rc3d.viewMatrix);
         setParameter("camInvViewMatrix", rc3d.invViewMatrix);
         
-        setParameter("viewSize", Vector2f(rc3d.eventManager.windowWidth, rc3d.eventManager.windowHeight));
+        setParameter("viewSize", Vector2f(gbuffer.width, gbuffer.height));
         
         setParameter("sunDirection", rc3d.environment.sunDirectionEye(rc3d.viewMatrix));
         setParameter("sunColor", rc3d.environment.sunColor);

@@ -61,7 +61,7 @@ class LightPassShader: Shader
     void bind(RenderingContext* rc2d, RenderingContext* rc3d)
     {
         setParameter("projectionMatrix", rc3d.projectionMatrix);
-        setParameter("viewSize", Vector2f(rc3d.eventManager.windowWidth, rc3d.eventManager.windowHeight));
+        setParameter("viewSize", Vector2f(gbuffer.width, gbuffer.height));
         
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);

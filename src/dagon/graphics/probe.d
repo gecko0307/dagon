@@ -31,10 +31,14 @@ import std.stdio;
 import dlib.core.memory;
 import dlib.image.color;
 import dlib.math.vector;
+import dlib.math.matrix;
+import dlib.math.transformation;
+import dlib.math.utils;
 import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.graphics.framebuffer;
 import dagon.graphics.gbuffer;
+import dagon.graphics.rc;
 
 enum CubeFace
 {
@@ -44,6 +48,27 @@ enum CubeFace
     PositiveY = GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
     PositiveZ = GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
     NegativeZ = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
+}
+
+Matrix4x4f cubeFaceMatrix(CubeFace cf) 
+{ 
+    switch(cf) 
+    { 
+        case CubeFace.PositiveX: 
+            return rotationMatrix(1, degtorad(-90.0f)); 
+        case CubeFace.NegativeX: 
+            return rotationMatrix(1, degtorad(90.0f)); 
+        case CubeFace.PositiveY: 
+            return rotationMatrix(0, degtorad(90.0f)); 
+        case CubeFace.NegativeY: 
+            return rotationMatrix(0, degtorad(-90.0f)); 
+        case CubeFace.PositiveZ: 
+            return rotationMatrix(1, degtorad(0.0f)); 
+        case CubeFace.NegativeZ: 
+            return rotationMatrix(1, degtorad(180.0f)); 
+        default: 
+            return Matrix4x4f.identity; 
+    } 
 }
 
 class EnvironmentProbeRenderTarget: RenderTarget
@@ -75,10 +100,6 @@ class EnvironmentProbeRenderTarget: RenderTarget
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
         GLenum[1] bufs = [GL_COLOR_ATTACHMENT0];
         glDrawBuffers(1, bufs.ptr);
-        
-        //GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-        //if (status != GL_FRAMEBUFFER_COMPLETE)
-        //    writeln(status);
             
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
@@ -110,17 +131,40 @@ class EnvironmentProbeRenderTarget: RenderTarget
     
     void setProbe(EnvironmentProbe probe, CubeFace face)
     {
-        // TODO: probe position and face direction
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, face, probe.texture, 0);
+        
+        /*
+        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        if (status != GL_FRAMEBUFFER_COMPLETE)
+            writeln(status);
+        */
+    
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    void prepareRC(EnvironmentProbe probe, CubeFace face, RenderingContext* rc)
+    {        
+        rc.prevCameraPosition = probe.position;
+        rc.prevViewMatrix = rc.viewMatrix;
+        
+        rc.invViewMatrix = translationMatrix(probe.position) * cubeFaceMatrix(face);
+        rc.viewMatrix = rc.invViewMatrix.inverse;
+        
+        rc.modelViewMatrix = rc.viewMatrix;
+        rc.normalMatrix = rc.invViewMatrix.transposed;
+        rc.cameraPosition = probe.position;
+        Matrix4x4f mvp = rc.projectionMatrix * rc.viewMatrix;
+        rc.frustum.fromMVP(mvp);
+        
+        rc.viewRotationMatrix = matrix3x3to4x4(matrix4x4to3x3(rc.viewMatrix));
+        rc.invViewRotationMatrix = matrix3x3to4x4(matrix4x4to3x3(rc.invViewMatrix));
     }
 }
 
 class EnvironmentProbe: Owner
 {
     GLuint texture = 0;
-    GLuint depthTexture = 0;
     GLuint fbo;
     
     uint resolution;
