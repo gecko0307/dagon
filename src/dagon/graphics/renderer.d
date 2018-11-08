@@ -70,39 +70,15 @@ class Renderer: Owner
 
     void render(RenderingContext *rc)
     {
-    /*
-        shadowMap.render(scene, rc);
-        gbuffer.render(scene, rc);
-        
-        sceneFramebuffer.bind();
-        
-        RenderingContext rcDeferred;
-        rcDeferred.initOrtho(eventManager, scene.environment, eventManager.windowWidth, eventManager.windowHeight, 0.0f, 100.0f);
-        prepareViewport(sceneFramebuffer);
-        sceneFramebuffer.clearBuffers(scene.environment.backgroundColor);
-        
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, gbuffer.fbo);
-        glBlitFramebuffer(0, 0, gbuffer.width, gbuffer.height, 0, 0, gbuffer.width, gbuffer.height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-        
-        scene.renderBackgroundEntities3D(rc);
-        deferredEnvPass.render(&rcDeferred, rc);
-        deferredLightPass.render(scene, &rcDeferred, rc);
-        scene.renderTransparentEntities3D(rc);
-        scene.particleSystem.render(rc);
-        
-        sceneFramebuffer.unbind();
-    */
-        renderPreStep(rc);
+        renderPreStep(gbuffer, rc);
         renderToTarget(sceneFramebuffer, gbuffer, rc);
-    
         sceneFramebuffer.swapColorTextureAttachments();
     }
     
-    void renderPreStep(RenderingContext *rc)
+    void renderPreStep(GBuffer gbuf, RenderingContext *rc)
     {
         shadowMap.render(scene, rc);
-        gbuffer.render(scene, rc);
+        gbuf.render(scene, rc);
     }
     
     void renderToTarget(RenderTarget rt, GBuffer gbuf, RenderingContext *rc)

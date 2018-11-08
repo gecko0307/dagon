@@ -59,6 +59,7 @@ import dagon.graphics.rc;
 import dagon.graphics.view;
 import dagon.graphics.shapes;
 import dagon.graphics.light;
+import dagon.graphics.probe;
 import dagon.graphics.shadow;
 import dagon.graphics.texture;
 import dagon.graphics.particles;
@@ -67,8 +68,6 @@ import dagon.graphics.materials.standard;
 import dagon.graphics.materials.hud;
 import dagon.graphics.materials.particle;
 import dagon.graphics.framebuffer;
-//import dagon.graphics.gbuffer;
-//import dagon.graphics.deferred;
 import dagon.graphics.shader;
 import dagon.graphics.shaders.standard;
 import dagon.graphics.shaders.sky;
@@ -371,6 +370,7 @@ class SceneApplication: Application
 class Scene: BaseScene
 {
     Renderer renderer;
+    EnvironmentProbeRenderTarget eprt;
     
     Environment environment;
 
@@ -935,6 +935,7 @@ class Scene: BaseScene
         lightManager = New!LightManager(assetManager);
         
         renderer = New!Renderer(this, assetManager);
+        eprt = New!EnvironmentProbeRenderTarget(128, assetManager);
 
         defaultMaterialBackend = New!StandardBackend(lightManager, assetManager);
 
@@ -1159,11 +1160,18 @@ class Scene: BaseScene
 
         hblur.inputBuffer = renderer.sceneFramebuffer;
     }
+    
+    void renderProbe(EnvironmentProbe probe)
+    {
+        //renderPreStep(rc);
+        //renderToTarget(sceneFramebuffer, gbuffer, rc);
+        //sceneFramebuffer.swapColorTextureAttachments();
+    }
 
     override void onRender()
     {
         renderer.render(&rc3d);
-    
+
         if (hdrFilter.autoExposure)
         {
             renderer.sceneFramebuffer.genLuminanceMipmaps();
