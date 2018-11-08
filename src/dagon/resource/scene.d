@@ -1162,7 +1162,7 @@ class Scene: BaseScene
         hblur.inputBuffer = renderer.sceneFramebuffer;
     }
     
-    void renderProbe(EnvironmentProbe probe)
+    void bakeProbe(EnvironmentProbe probe)
     {
         onUpdate(0.0);
         foreach(face; EnumMembers!CubeFace)

@@ -50,25 +50,27 @@ enum CubeFace
     NegativeZ = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
 }
 
-Matrix4x4f cubeFaceMatrix(CubeFace cf) 
-{ 
+Matrix4x4f cubeFaceMatrix(Vector3f pos, CubeFace cf) 
+{
+    Matrix4x4f m;
     switch(cf) 
     { 
         case CubeFace.PositiveX: 
-            return rotationMatrix(1, degtorad(-90.0f)); 
+            m = lookAtMatrix(pos + Vector3f(1, 0, 0), pos, Vector3f(0, -1, 0)); break;
         case CubeFace.NegativeX: 
-            return rotationMatrix(1, degtorad(90.0f)); 
+            m = lookAtMatrix(pos + Vector3f(-1, 0, 0), pos, Vector3f(0, -1, 0)); break;
         case CubeFace.PositiveY: 
-            return rotationMatrix(0, degtorad(90.0f)); 
+            m = lookAtMatrix(pos + Vector3f(0, 1, 0), pos, Vector3f(0, 0, 1)); break;
         case CubeFace.NegativeY: 
-            return rotationMatrix(0, degtorad(-90.0f)); 
+            m = lookAtMatrix(pos + Vector3f(0, -1, 0), pos, Vector3f(0, 0, -1)); break;
         case CubeFace.PositiveZ: 
-            return rotationMatrix(1, degtorad(0.0f)); 
+            m = lookAtMatrix(pos + Vector3f(0, 0, 1), pos, Vector3f(0, -1, 0)); break;
         case CubeFace.NegativeZ: 
-            return rotationMatrix(1, degtorad(180.0f)); 
+            m = lookAtMatrix(pos + Vector3f(0, 0, -1), pos, Vector3f(0, -1, 0)); break;
         default: 
-            return Matrix4x4f.identity; 
-    } 
+            m = Matrix4x4f.identity; break; 
+    }
+    return m;
 }
 
 class EnvironmentProbeRenderTarget: RenderTarget
@@ -96,7 +98,6 @@ class EnvironmentProbeRenderTarget: RenderTarget
         
         glGenFramebuffers(1, &fbo);
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-        //glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, texture, 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
         GLenum[1] bufs = [GL_COLOR_ATTACHMENT0];
         glDrawBuffers(1, bufs.ptr);
@@ -148,8 +149,8 @@ class EnvironmentProbeRenderTarget: RenderTarget
         rc.prevCameraPosition = probe.position;
         rc.prevViewMatrix = rc.viewMatrix;
         
-        rc.invViewMatrix = translationMatrix(probe.position) * cubeFaceMatrix(face);
-        rc.viewMatrix = rc.invViewMatrix.inverse;
+        rc.viewMatrix = cubeFaceMatrix(Vector3f(0, 5, 0), face); //probe.position
+        rc.invViewMatrix = rc.invViewMatrix.inverse;
         
         rc.modelViewMatrix = rc.viewMatrix;
         rc.normalMatrix = rc.invViewMatrix.transposed;
@@ -180,12 +181,20 @@ class EnvironmentProbe: Owner
         
         glGenTextures(1, &texture);
         glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+        
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        
         glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA16F, resolution, resolution, 0, GL_RGBA, GL_FLOAT, null);
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA16F, resolution, resolution, 0, GL_RGBA, GL_FLOAT, null);
         glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA16F, resolution, resolution, 0, GL_RGBA, GL_FLOAT, null);
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGBA16F, resolution, resolution, 0, GL_RGBA, GL_FLOAT, null);
         glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGBA16F, resolution, resolution, 0, GL_RGBA, GL_FLOAT, null);
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGBA16F, resolution, resolution, 0, GL_RGBA, GL_FLOAT, null);
+        
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     }
     
