@@ -1193,6 +1193,8 @@ class Scene: BaseScene
             renderer.renderPreStep(eprt.gbuffer, &rcProbe);
             renderer.renderToTarget(eprt, eprt.gbuffer, &rcProbe);
         }
+        
+        probe.generateMipmaps();
     }
 
     override void onRender()

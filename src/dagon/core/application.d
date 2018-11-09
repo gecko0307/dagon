@@ -156,6 +156,7 @@ class Application: EventListener
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_POLYGON_OFFSET_FILL);
         glCullFace(GL_BACK);
+        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
         //checkGLError();
     }
