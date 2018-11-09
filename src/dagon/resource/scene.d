@@ -372,7 +372,7 @@ class Scene: BaseScene
 {
     Renderer renderer;
     EnvironmentProbeRenderTarget eprt;
-    
+
     Environment environment;
 
     LightManager lightManager;
@@ -418,7 +418,7 @@ class Scene: BaseScene
         {
             return scene.renderer.deferredEnvPass.shader.enableSSAO;
         }
-        
+
         void samples(int s) @property
         {
             scene.renderer.deferredEnvPass.shader.ssaoSamples = s;
@@ -428,7 +428,7 @@ class Scene: BaseScene
         {
             return scene.renderer.deferredEnvPass.shader.ssaoSamples;
         }
-        
+
         void radius(float r) @property
         {
             scene.renderer.deferredEnvPass.shader.ssaoRadius = r;
@@ -438,7 +438,7 @@ class Scene: BaseScene
         {
             return scene.renderer.deferredEnvPass.shader.ssaoRadius;
         }
-        
+
         void power(float p) @property
         {
             scene.renderer.deferredEnvPass.shader.ssaoPower = p;
@@ -934,7 +934,7 @@ class Scene: BaseScene
     {
         environment = New!Environment(assetManager);
         lightManager = New!LightManager(assetManager);
-        
+
         renderer = New!Renderer(this, assetManager);
         eprt = New!EnvironmentProbeRenderTarget(128, assetManager);
 
@@ -1161,14 +1161,16 @@ class Scene: BaseScene
 
         hblur.inputBuffer = renderer.sceneFramebuffer;
     }
-    
+
     void bakeProbe(EnvironmentProbe probe)
     {
         onUpdate(0.0);
         foreach(face; EnumMembers!CubeFace)
         {
             RenderingContext rcProbe;
-            rcProbe.initPerspective(eventManager, environment, 90.0f, 0.1f, 1000.0f);
+            //rcProbe.initPerspective(eventManager, environment, 90.0f, 0.1f, 1000.0f);
+            rcProbe.init(eventManager, environment);
+            rcProbe.projectionMatrix = perspectiveMatrix(90.0f, 1.0f, 0.1f, 1000.0f);
             eprt.prepareRC(probe, face, &rcProbe);
             eprt.setProbe(probe, face);
             renderer.renderPreStep(eprt.gbuffer, &rcProbe);

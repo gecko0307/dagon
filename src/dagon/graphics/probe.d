@@ -50,25 +50,67 @@ enum CubeFace
     NegativeZ = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
 }
 
-Matrix4x4f cubeFaceMatrix(Vector3f pos, CubeFace cf) 
+enum CubeFaceMatrixPositiveX = matrixf(
+    0, 0,-1, 0,
+    0, 1, 0, 0,
+    1, 0, 0, 0,
+    0, 0, 0, 1
+);
+
+enum CubeFaceMatrixNegativeX = matrixf(
+    0, 0, 1, 0,
+    0, 1, 0, 0,
+   -1, 0, 0, 0,
+    0, 0, 0, 1
+);
+
+enum CubeFaceMatrixPositiveY = matrixf(
+   -1, 0, 0, 0,
+    0, 0,-1, 0,
+    0,-1, 0, 0,
+    0, 0, 0, 1
+);
+
+enum CubeFaceMatrixNegativeY = matrixf(
+   -1, 0, 0, 0,
+    0, 0, 1, 0,
+    0, 1, 0, 0,
+    0, 0, 0, 1
+);
+
+enum CubeFaceMatrixPositiveZ = matrixf(
+   -1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0,-1, 0,
+    0, 0, 0, 1
+);
+
+enum CubeFaceMatrixNegativeZ = matrixf(
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 1, 0,
+    0, 0, 0, 1
+);
+
+Matrix4x4f cubeFaceRotationMatrix(CubeFace cf)
 {
     Matrix4x4f m;
-    switch(cf) 
-    { 
-        case CubeFace.PositiveX: 
-            m = lookAtMatrix(pos + Vector3f(1, 0, 0), pos, Vector3f(0, -1, 0)); break;
-        case CubeFace.NegativeX: 
-            m = lookAtMatrix(pos + Vector3f(-1, 0, 0), pos, Vector3f(0, -1, 0)); break;
-        case CubeFace.PositiveY: 
-            m = lookAtMatrix(pos + Vector3f(0, 1, 0), pos, Vector3f(0, 0, 1)); break;
-        case CubeFace.NegativeY: 
-            m = lookAtMatrix(pos + Vector3f(0, -1, 0), pos, Vector3f(0, 0, -1)); break;
-        case CubeFace.PositiveZ: 
-            m = lookAtMatrix(pos + Vector3f(0, 0, 1), pos, Vector3f(0, -1, 0)); break;
-        case CubeFace.NegativeZ: 
-            m = lookAtMatrix(pos + Vector3f(0, 0, -1), pos, Vector3f(0, -1, 0)); break;
-        default: 
-            m = Matrix4x4f.identity; break; 
+    switch(cf)
+    {
+        case CubeFace.PositiveX:
+            m = CubeFaceMatrixPositiveX; break;
+        case CubeFace.NegativeX:
+            m = CubeFaceMatrixNegativeX; break;
+        case CubeFace.PositiveY:
+            m = CubeFaceMatrixPositiveY; break;
+        case CubeFace.NegativeY:
+            m = CubeFaceMatrixNegativeY; break;
+        case CubeFace.PositiveZ:
+            m = CubeFaceMatrixPositiveZ; break;
+        case CubeFace.NegativeZ:
+            m = CubeFaceMatrixNegativeZ; break;
+        default:
+            m = Matrix4x4f.identity; break;
     }
     return m;
 }
@@ -78,15 +120,15 @@ class EnvironmentProbeRenderTarget: RenderTarget
     GBuffer gbuffer;
     GLuint fbo;
     GLuint depthTexture = 0;
-    
+
     this(uint res, Owner o)
     {
         super(res, res, o);
-        
+
         gbuffer = New!GBuffer(res, res, this);
-        
+
         glActiveTexture(GL_TEXTURE0);
-        
+
         glGenTextures(1, &depthTexture);
         glBindTexture(GL_TEXTURE_2D, depthTexture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -95,69 +137,69 @@ class EnvironmentProbeRenderTarget: RenderTarget
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, res, res, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, null);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glGenFramebuffers(1, &fbo);
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
         GLenum[1] bufs = [GL_COLOR_ATTACHMENT0];
         glDrawBuffers(1, bufs.ptr);
-            
+
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-    
+
     ~this()
     {
         if (glIsTexture(depthTexture))
             glDeleteTextures(1, &depthTexture);
-            
+
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glDeleteFramebuffers(1, &fbo);
     }
-    
+
     override void bind()
     {
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     }
-    
+
     override void unbind()
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-    
+
     override void clear(Color4f clearColor)
     {
         glClearColor(clearColor.r, clearColor.g, clearColor.b, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
-    
+
     void setProbe(EnvironmentProbe probe, CubeFace face)
     {
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, face, probe.texture, 0);
-        
+
         /*
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (status != GL_FRAMEBUFFER_COMPLETE)
             writeln(status);
         */
-    
+
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     void prepareRC(EnvironmentProbe probe, CubeFace face, RenderingContext* rc)
-    {        
+    {
         rc.prevCameraPosition = probe.position;
         rc.prevViewMatrix = rc.viewMatrix;
-        
-        rc.viewMatrix = cubeFaceMatrix(Vector3f(0, 5, 0), face); //probe.position
+
+        rc.viewMatrix = cubeFaceRotationMatrix(face) * translationMatrix(-probe.position); //probe.position
         rc.invViewMatrix = rc.invViewMatrix.inverse;
-        
+
         rc.modelViewMatrix = rc.viewMatrix;
         rc.normalMatrix = rc.invViewMatrix.transposed;
         rc.cameraPosition = probe.position;
         Matrix4x4f mvp = rc.projectionMatrix * rc.viewMatrix;
         rc.frustum.fromMVP(mvp);
-        
+
         rc.viewRotationMatrix = matrix3x3to4x4(matrix4x4to3x3(rc.viewMatrix));
         rc.invViewRotationMatrix = matrix3x3to4x4(matrix4x4to3x3(rc.invViewMatrix));
     }
@@ -167,37 +209,37 @@ class EnvironmentProbe: Owner
 {
     GLuint texture = 0;
     GLuint fbo;
-    
+
     uint resolution;
     Vector3f position;
-    
+
     this(uint res, Vector3f position, Owner o)
     {
         super(o);
         resolution = res;
         this.position = position;
-        
+
         glActiveTexture(GL_TEXTURE0);
-        
+
         glGenTextures(1, &texture);
         glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
-        
+
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-        
+
         glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA16F, resolution, resolution, 0, GL_RGBA, GL_FLOAT, null);
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA16F, resolution, resolution, 0, GL_RGBA, GL_FLOAT, null);
         glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA16F, resolution, resolution, 0, GL_RGBA, GL_FLOAT, null);
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGBA16F, resolution, resolution, 0, GL_RGBA, GL_FLOAT, null);
         glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGBA16F, resolution, resolution, 0, GL_RGBA, GL_FLOAT, null);
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGBA16F, resolution, resolution, 0, GL_RGBA, GL_FLOAT, null);
-        
+
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     }
-    
+
     ~this()
     {
         if (glIsTexture(texture))

@@ -40,7 +40,7 @@ import dagon.graphics.materials.generic;
 import dagon.graphics.shader;
 
 struct RenderingContext
-{    
+{
     Matrix4x4f modelViewMatrix;
 
     Matrix4x4f modelMatrix;
@@ -51,42 +51,42 @@ struct RenderingContext
 
     Matrix4x4f viewMatrix;
     Matrix4x4f invViewMatrix;
-    
+
     Matrix4x4f viewRotationMatrix;
     Matrix4x4f invViewRotationMatrix;
 
     Matrix4x4f projectionMatrix;
     Matrix4x4f normalMatrix;
-    
+
     Matrix4x4f prevViewMatrix;
     Matrix4x4f prevModelViewProjMatrix;
     Matrix4x4f blurModelViewProjMatrix;
-    
+
     Frustum frustum;
 
     EventManager eventManager;
     Environment environment;
-    
-    Material material; 
-    
+
+    Material material;
+
     // TODO: use Shader
     Shader overrideShader;
     Material overrideMaterial;
     GenericMaterialBackend overrideMaterialBackend;
-    
+
     float time;
     float blurMask;
-    
+
     bool depthPass;
     bool colorPass;
-    
+
     int layer;
-    
+
     bool ignoreTransparentEntities;
     bool ignoreOpaqueEntities;
-    
+
     bool shadowMode;
-    
+
     void init(EventManager emngr, Environment env)
     {
         modelViewMatrix = Matrix4x4f.identity;
@@ -116,19 +116,25 @@ struct RenderingContext
         ignoreOpaqueEntities = false;
         shadowMode = false;
     }
-    
+
     void initPerspective(EventManager emngr, Environment env, float fov, float znear, float zfar)
     {
         init(emngr, env);
         projectionMatrix = perspectiveMatrix(fov, emngr.aspectRatio, znear, zfar);
     }
-    
+
+    void initPerspective(EventManager emngr, Environment env, float fov, float aspect, float znear, float zfar)
+    {
+        init(emngr, env);
+        projectionMatrix = perspectiveMatrix(fov, aspect, znear, zfar);
+    }
+
     void initOrtho(EventManager emngr, Environment env, float znear, float zfar)
     {
         init(emngr, env);
         projectionMatrix = orthoMatrix(0.0f, emngr.windowWidth, emngr.windowHeight, 0.0f, znear, zfar);
     }
-    
+
     void initOrtho(EventManager emngr, Environment env, float w, float h, float znear, float zfar)
     {
         init(emngr, env);
