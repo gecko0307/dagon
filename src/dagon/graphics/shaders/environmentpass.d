@@ -49,7 +49,6 @@ class EnvironmentPassShader: Shader
     string fs = import("EnvironmentPass.fs");
     
     GBuffer gbuffer;
-    //Framebuffer sceneFramebuffer;
     CascadedShadowMap shadowMap;
     
     Matrix4x4f defaultShadowMatrix;
@@ -59,12 +58,11 @@ class EnvironmentPassShader: Shader
     float ssaoRadius = 0.2f;
     float ssaoPower = 4.0f;
     
-    this(GBuffer gbuffer, /* Framebuffer sceneFramebuffer,*/ CascadedShadowMap shadowMap, Owner o)
+    this(GBuffer gbuffer, CascadedShadowMap shadowMap, Owner o)
     {
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, o);
         this.gbuffer = gbuffer;
-        //this.sceneFramebuffer = sceneFramebuffer;
         this.shadowMap = shadowMap;
         this.defaultShadowMatrix = Matrix4x4f.identity;
     }
@@ -144,11 +142,6 @@ class EnvironmentPassShader: Shader
             setParameter("shadowMatrix2", defaultShadowMatrix);
             setParameter("shadowMatrix3", defaultShadowMatrix);
         }
-        
-        // Texture 7 - HDR color buffer from previous frame to do SSLR
-        //glActiveTexture(GL_TEXTURE7);
-        //glBindTexture(GL_TEXTURE_2D, sceneFramebuffer.previousColorTexture);
-        //setParameter("hdrBuffer", 7);
 
         // SSAO
         setParameter("enableSSAO", enableSSAO);

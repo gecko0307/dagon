@@ -8,7 +8,6 @@ uniform sampler2D rmsBuffer;
 uniform sampler2D positionBuffer;
 uniform sampler2D normalBuffer;
 uniform sampler2D emissionBuffer;
-//uniform sampler2D hdrBuffer;
 uniform vec2 viewSize;
 
 uniform sampler2DArrayShadow shadowTextureArray;
@@ -308,14 +307,6 @@ void main()
         occlusion = spiralSSAO(texCoord, eyePos, N, ssaoRadius / eyePos.z);
         occlusion = pow(clamp(1.0 - occlusion, 0.0, 1.0), ssaoPower);
     }
-    
-    // SSLR
-    vec3 localSpecular = vec3(0.0, 0.0, 0.0);
-    float localSpecularAvailability = 0.0;
-    {
-        //TODO: use hdrBuffer to calculate reflection
-        //TODO: reprojection of the current eye space position
-    }
 
     vec3 radiance = vec3(0.0, 0.0, 0.0);
 
@@ -346,7 +337,7 @@ void main()
     // Ambient light
     {
         vec3 ambientDiffuse = environment(worldN, worldSun, 0.9);
-        vec3 ambientSpecular = mix(environment(worldR, worldSun, roughness), localSpecular, localSpecularAvailability);
+        vec3 ambientSpecular = environment(worldR, worldSun, roughness);
 
         vec3 F = fresnelRoughness(max(dot(N, E), 0.0), f0, roughness);
         vec3 kS = F;

@@ -56,17 +56,23 @@ Matrix4x4f cubeFaceRotationMatrix(CubeFace cf, Vector3f pos)
     switch(cf)
     {
         case CubeFace.PositiveX:
-            m = translationMatrix(pos) * rotationMatrix(1, degtorad(90.0f)) * rotationMatrix(2, degtorad(180.0f)); break; //CubeFaceMatrixPositiveX; break;
+            m = translationMatrix(pos) * rotationMatrix(1, degtorad(90.0f)) * rotationMatrix(2, degtorad(180.0f)); 
+            break;
         case CubeFace.NegativeX:
-            m = translationMatrix(pos) * rotationMatrix(1, degtorad(-90.0f)) * rotationMatrix(2, degtorad(180.0f)); break;
+            m = translationMatrix(pos) * rotationMatrix(1, degtorad(-90.0f)) * rotationMatrix(2, degtorad(180.0f)); 
+            break;
         case CubeFace.PositiveY:
-            m = translationMatrix(pos) * rotationMatrix(1, degtorad(0.0f)) * rotationMatrix(0, degtorad(-90.0f)); break;
+            m = translationMatrix(pos) * rotationMatrix(1, degtorad(0.0f)) * rotationMatrix(0, degtorad(-90.0f)); 
+            break;
         case CubeFace.NegativeY:
-            m = translationMatrix(pos) * rotationMatrix(1, degtorad(0.0f)) * rotationMatrix(0, degtorad(90.0f)); break;
+            m = translationMatrix(pos) * rotationMatrix(1, degtorad(0.0f)) * rotationMatrix(0, degtorad(90.0f)); 
+            break;
         case CubeFace.PositiveZ:
-            m = translationMatrix(pos) * rotationMatrix(1, degtorad(180.0f)) * rotationMatrix(2, degtorad(180.0f)); break;
+            m = translationMatrix(pos) * rotationMatrix(1, degtorad(180.0f)) * rotationMatrix(2, degtorad(180.0f)); 
+            break;
         case CubeFace.NegativeZ:
-            m = translationMatrix(pos) * rotationMatrix(1, degtorad(0.0f)) * rotationMatrix(2, degtorad(180.0f)); break;
+            m = translationMatrix(pos) * rotationMatrix(1, degtorad(0.0f)) * rotationMatrix(2, degtorad(180.0f)); 
+            break;
         default:
             m = Matrix4x4f.identity; break;
     }
@@ -134,20 +140,12 @@ class EnvironmentProbeRenderTarget: RenderTarget
     {
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, face, probe.texture, 0);
-
-        /*
-        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-        if (status != GL_FRAMEBUFFER_COMPLETE)
-            writeln(status);
-        */
-
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     void prepareRC(EnvironmentProbe probe, CubeFace face, RenderingContext* rc)
     {
-        //rc.invViewMatrix = cubeFaceRotationMatrix(face, probe.position);
-        rc.invViewMatrix = cubeFaceRotationMatrix(face, probe.position); //rc.invViewMatrix.inverse;
+        rc.invViewMatrix = cubeFaceRotationMatrix(face, probe.position);
         rc.viewMatrix = rc.invViewMatrix.inverse;
 
         rc.modelViewMatrix = rc.viewMatrix;
@@ -183,7 +181,6 @@ class EnvironmentProbe: Owner
         glGenTextures(1, &texture);
         glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
 
-        //glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

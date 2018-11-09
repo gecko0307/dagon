@@ -1172,10 +1172,10 @@ class Scene: BaseScene
         fixedStepUpdate();
         
         RenderingContext rcProbe;
-        //TODO: specialized view object
         rcProbe.init(eventManager, environment);
         rcProbe.projectionMatrix = perspectiveMatrix(90.0f, 1.0f, 0.001f, 1000.0f);
         
+        // FIXME: environment is not taken into account for the first face
         {
             auto face = CubeFace.PositiveZ;
             eprt.prepareRC(probe, face, &rcProbe);
