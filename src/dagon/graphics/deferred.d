@@ -57,10 +57,10 @@ class DeferredEnvironmentPass: Owner
     CascadedShadowMap shadowMap;
     ScreenSurface surface;
 
-    this(GBuffer gbuffer, Framebuffer sceneFramebuffer, CascadedShadowMap shadowMap, Owner o)
+    this(GBuffer gbuffer, /*Framebuffer sceneFramebuffer,*/ CascadedShadowMap shadowMap, Owner o)
     {
         super(o);
-        this.shader = New!EnvironmentPassShader(gbuffer, sceneFramebuffer, shadowMap, this);
+        this.shader = New!EnvironmentPassShader(gbuffer, /*sceneFramebuffer,*/ shadowMap, this);
         this.gbuffer = gbuffer;
         this.shadowMap = shadowMap;
         this.surface = New!ScreenSurface(this);
@@ -68,6 +68,7 @@ class DeferredEnvironmentPass: Owner
 
     void render(RenderingContext* rc2d, RenderingContext* rc3d)
     {
+        shader.gbuffer = gbuffer;
         shader.bind(rc2d, rc3d);
         surface.render(rc2d);
         shader.unbind(rc2d, rc3d);
@@ -90,6 +91,8 @@ class DeferredLightPass: Owner
 
     void render(Scene scene, RenderingContext* rc2d, RenderingContext* rc3d)
     {
+        shader.gbuffer = gbuffer;
+        
         glDisable(GL_DEPTH_TEST);
         glDepthMask(GL_FALSE);
 

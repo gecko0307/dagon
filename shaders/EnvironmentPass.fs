@@ -8,7 +8,7 @@ uniform sampler2D rmsBuffer;
 uniform sampler2D positionBuffer;
 uniform sampler2D normalBuffer;
 uniform sampler2D emissionBuffer;
-uniform sampler2D hdrBuffer;
+//uniform sampler2D hdrBuffer;
 uniform vec2 viewSize;
 
 uniform sampler2DArrayShadow shadowTextureArray;

@@ -50,24 +50,17 @@ enum CubeFace
     NegativeZ = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
 }
 
-enum CubeFaceMatrixPositiveX = matrixf(
-    0, 0,-1, 0,
-    0, 1, 0, 0,
+enum CubeFaceMatrixNegativeX = matrixf(
+    0, 0, 1, 0,
+    0,-1, 0, 0,
     1, 0, 0, 0,
     0, 0, 0, 1
 );
 
-enum CubeFaceMatrixNegativeX = matrixf(
-    0, 0, 1, 0,
-    0, 1, 0, 0,
-   -1, 0, 0, 0,
-    0, 0, 0, 1
-);
-
-enum CubeFaceMatrixPositiveY = matrixf(
-   -1, 0, 0, 0,
+enum CubeFaceMatrixPositiveX = matrixf(
     0, 0,-1, 0,
     0,-1, 0, 0,
+   -1, 0, 0, 0,
     0, 0, 0, 1
 );
 
@@ -78,37 +71,44 @@ enum CubeFaceMatrixNegativeY = matrixf(
     0, 0, 0, 1
 );
 
-enum CubeFaceMatrixPositiveZ = matrixf(
-   -1, 0, 0, 0,
-    0, 1, 0, 0,
-    0, 0,-1, 0,
+enum CubeFaceMatrixPositiveY = matrixf(
+    1, 0, 0, 0,
+    0, 0, 1, 0,
+    0,-1, 0, 0,
     0, 0, 0, 1
 );
 
 enum CubeFaceMatrixNegativeZ = matrixf(
-    1, 0, 0, 0,
-    0, 1, 0, 0,
+   -1, 0, 0, 0,
+    0,-1, 0, 0,
     0, 0, 1, 0,
     0, 0, 0, 1
 );
 
-Matrix4x4f cubeFaceRotationMatrix(CubeFace cf)
+enum CubeFaceMatrixPositiveZ = matrixf(
+    1, 0, 0, 0,
+    0,-1, 0, 0,
+    0, 0,-1, 0,
+    0, 0, 0, 1
+);
+
+Matrix4x4f cubeFaceRotationMatrix(CubeFace cf, Vector3f pos)
 {
     Matrix4x4f m;
     switch(cf)
     {
         case CubeFace.PositiveX:
-            m = CubeFaceMatrixPositiveX; break;
+            m = translationMatrix(pos) * rotationMatrix(1, degtorad(90.0f)) * rotationMatrix(2, degtorad(180.0f)); break; //CubeFaceMatrixPositiveX; break;
         case CubeFace.NegativeX:
-            m = CubeFaceMatrixNegativeX; break;
+            m = translationMatrix(pos) * rotationMatrix(1, degtorad(-90.0f)) * rotationMatrix(2, degtorad(180.0f)); break;
         case CubeFace.PositiveY:
-            m = CubeFaceMatrixPositiveY; break;
+            m = translationMatrix(pos) * rotationMatrix(1, degtorad(0.0f)) * rotationMatrix(0, degtorad(-90.0f)); break;
         case CubeFace.NegativeY:
-            m = CubeFaceMatrixNegativeY; break;
+            m = translationMatrix(pos) * rotationMatrix(1, degtorad(0.0f)) * rotationMatrix(0, degtorad(90.0f)); break;
         case CubeFace.PositiveZ:
-            m = CubeFaceMatrixPositiveZ; break;
+            m = translationMatrix(pos) * rotationMatrix(1, degtorad(180.0f)) * rotationMatrix(2, degtorad(180.0f)); break;
         case CubeFace.NegativeZ:
-            m = CubeFaceMatrixNegativeZ; break;
+            m = translationMatrix(pos) * rotationMatrix(1, degtorad(0.0f)) * rotationMatrix(2, degtorad(180.0f)); break;
         default:
             m = Matrix4x4f.identity; break;
     }
@@ -188,17 +188,18 @@ class EnvironmentProbeRenderTarget: RenderTarget
 
     void prepareRC(EnvironmentProbe probe, CubeFace face, RenderingContext* rc)
     {
-        rc.prevCameraPosition = probe.position;
-        rc.prevViewMatrix = rc.viewMatrix;
-
-        rc.viewMatrix = cubeFaceRotationMatrix(face) * translationMatrix(-probe.position); //probe.position
-        rc.invViewMatrix = rc.invViewMatrix.inverse;
+        //rc.invViewMatrix = cubeFaceRotationMatrix(face, probe.position);
+        rc.invViewMatrix = cubeFaceRotationMatrix(face, probe.position); //rc.invViewMatrix.inverse;
+        rc.viewMatrix = rc.invViewMatrix.inverse;
 
         rc.modelViewMatrix = rc.viewMatrix;
         rc.normalMatrix = rc.invViewMatrix.transposed;
         rc.cameraPosition = probe.position;
         Matrix4x4f mvp = rc.projectionMatrix * rc.viewMatrix;
         rc.frustum.fromMVP(mvp);
+        
+        rc.prevCameraPosition = probe.position;
+        rc.prevViewMatrix = rc.viewMatrix;
 
         rc.viewRotationMatrix = matrix3x3to4x4(matrix4x4to3x3(rc.viewMatrix));
         rc.invViewRotationMatrix = matrix3x3to4x4(matrix4x4to3x3(rc.invViewMatrix));

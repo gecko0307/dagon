@@ -64,12 +64,12 @@ class Renderer: Owner
         sceneFramebuffer = New!Framebuffer(gbuffer, eventManager.windowWidth, eventManager.windowHeight, true, true, this);
         shadowMap = New!CascadedShadowMap(1024, 10, 30, 200, -100, 100, this);
 
-        deferredEnvPass = New!DeferredEnvironmentPass(gbuffer, sceneFramebuffer, shadowMap, this);
+        deferredEnvPass = New!DeferredEnvironmentPass(gbuffer, /*sceneFramebuffer,*/ shadowMap, this);
         deferredLightPass = New!DeferredLightPass(gbuffer, this);
     }
 
     void render(RenderingContext *rc)
-    {
+    {        
         renderPreStep(gbuffer, rc);
         renderToTarget(sceneFramebuffer, gbuffer, rc);
         sceneFramebuffer.swapColorTextureAttachments();
@@ -82,7 +82,7 @@ class Renderer: Owner
     }
     
     void renderToTarget(RenderTarget rt, GBuffer gbuf, RenderingContext *rc)
-    {
+    {        
         rt.bind();
         
         RenderingContext rcDeferred;
@@ -93,6 +93,9 @@ class Renderer: Owner
         glBindFramebuffer(GL_READ_FRAMEBUFFER, gbuf.fbo);
         glBlitFramebuffer(0, 0, gbuf.width, gbuf.height, 0, 0, gbuf.width, gbuf.height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+        
+        deferredEnvPass.gbuffer = gbuf;
+        deferredLightPass.gbuffer = gbuf;
         
         scene.renderBackgroundEntities3D(rc);
         deferredEnvPass.render(&rcDeferred, rc);

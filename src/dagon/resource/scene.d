@@ -936,7 +936,7 @@ class Scene: BaseScene
         lightManager = New!LightManager(assetManager);
 
         renderer = New!Renderer(this, assetManager);
-        eprt = New!EnvironmentProbeRenderTarget(128, assetManager);
+        eprt = New!EnvironmentProbeRenderTarget(512, assetManager);
 
         defaultMaterialBackend = New!StandardBackend(lightManager, assetManager);
 
@@ -985,6 +985,11 @@ class Scene: BaseScene
         lensFilter.enabled = false;
 
         finalizerFilter = New!PostFilterFinalizer(null, null, assetManager);
+        
+        rc3d.initPerspective(eventManager, environment, 60.0f, 0.1f, 1000.0f);
+        rc2d.initOrtho(eventManager, environment, 0.0f, 100.0f);
+
+        timer = 0.0;
     }
 
     PostFilter addFilter(PostFilter f)
@@ -1029,14 +1034,47 @@ class Scene: BaseScene
 
     override void onStart()
     {
-        rc3d.initPerspective(eventManager, environment, 60.0f, 0.1f, 1000.0f);
-        rc2d.initOrtho(eventManager, environment, 0.0f, 100.0f);
-
-        timer = 0.0;
     }
 
     void onLogicsUpdate(double dt)
     {
+    }
+    
+    void fixedStepUpdate()
+    {
+        if (view)
+        {
+            view.update(fixedTimeStep);
+            view.prepareRC(&rc3d);
+        }
+
+        rc3d.time += fixedTimeStep;
+        rc2d.time += fixedTimeStep;
+
+        foreach(e; entities3D)
+            e.update(fixedTimeStep);
+
+        foreach(e; entities2D)
+            e.update(fixedTimeStep);
+
+        particleSystem.update(fixedTimeStep);
+
+        onLogicsUpdate(fixedTimeStep);
+
+        environment.update(fixedTimeStep);
+
+        if (view) // TODO: allow to turn this off
+        {
+            Vector3f cameraDirection = -view.invViewMatrix.forward;
+            cameraDirection.y = 0.0f;
+            cameraDirection = cameraDirection.normalized;
+
+            renderer.shadowMap.area1.position = view.cameraPosition + cameraDirection * (renderer.shadowMap.projSize1  * 0.5f - 1.0f);
+            renderer.shadowMap.area2.position = view.cameraPosition + cameraDirection * renderer.shadowMap.projSize2 * 0.5f;
+            renderer.shadowMap.area3.position = view.cameraPosition + cameraDirection * renderer.shadowMap.projSize3 * 0.5f;
+        }
+
+        renderer.shadowMap.update(&rc3d, fixedTimeStep);
     }
 
     override void onUpdate(double dt)
@@ -1051,40 +1089,7 @@ class Scene: BaseScene
         if (timer >= fixedTimeStep)
         {
             timer -= fixedTimeStep;
-
-            if (view)
-            {
-                view.update(fixedTimeStep);
-                view.prepareRC(&rc3d);
-            }
-
-            rc3d.time += fixedTimeStep;
-            rc2d.time += fixedTimeStep;
-
-            foreach(e; entities3D)
-                e.update(fixedTimeStep);
-
-            foreach(e; entities2D)
-                e.update(fixedTimeStep);
-
-            particleSystem.update(fixedTimeStep);
-
-            onLogicsUpdate(fixedTimeStep);
-
-            environment.update(fixedTimeStep);
-
-            if (view) // TODO: allow to turn this off
-            {
-                Vector3f cameraDirection = -view.invViewMatrix.forward;
-                cameraDirection.y = 0.0f;
-                cameraDirection = cameraDirection.normalized;
-
-                renderer.shadowMap.area1.position = view.cameraPosition + cameraDirection * (renderer.shadowMap.projSize1  * 0.5f - 1.0f);
-                renderer.shadowMap.area2.position = view.cameraPosition + cameraDirection * renderer.shadowMap.projSize2 * 0.5f;
-                renderer.shadowMap.area3.position = view.cameraPosition + cameraDirection * renderer.shadowMap.projSize3 * 0.5f;
-            }
-
-            renderer.shadowMap.update(&rc3d, fixedTimeStep);
+            fixedStepUpdate();
         }
     }
 
@@ -1164,13 +1169,12 @@ class Scene: BaseScene
 
     void bakeProbe(EnvironmentProbe probe)
     {
-        onUpdate(0.0);
         foreach(face; EnumMembers!CubeFace)
         {
             RenderingContext rcProbe;
-            //rcProbe.initPerspective(eventManager, environment, 90.0f, 0.1f, 1000.0f);
+            //TODO: specialized view object
             rcProbe.init(eventManager, environment);
-            rcProbe.projectionMatrix = perspectiveMatrix(90.0f, 1.0f, 0.1f, 1000.0f);
+            rcProbe.projectionMatrix = perspectiveMatrix(90.0f, 1.0f, 0.001f, 1000.0f);
             eprt.prepareRC(probe, face, &rcProbe);
             eprt.setProbe(probe, face);
             renderer.renderPreStep(eprt.gbuffer, &rcProbe);
