@@ -50,48 +50,6 @@ enum CubeFace
     NegativeZ = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
 }
 
-enum CubeFaceMatrixNegativeX = matrixf(
-    0, 0, 1, 0,
-    0,-1, 0, 0,
-    1, 0, 0, 0,
-    0, 0, 0, 1
-);
-
-enum CubeFaceMatrixPositiveX = matrixf(
-    0, 0,-1, 0,
-    0,-1, 0, 0,
-   -1, 0, 0, 0,
-    0, 0, 0, 1
-);
-
-enum CubeFaceMatrixNegativeY = matrixf(
-   -1, 0, 0, 0,
-    0, 0, 1, 0,
-    0, 1, 0, 0,
-    0, 0, 0, 1
-);
-
-enum CubeFaceMatrixPositiveY = matrixf(
-    1, 0, 0, 0,
-    0, 0, 1, 0,
-    0,-1, 0, 0,
-    0, 0, 0, 1
-);
-
-enum CubeFaceMatrixNegativeZ = matrixf(
-   -1, 0, 0, 0,
-    0,-1, 0, 0,
-    0, 0, 1, 0,
-    0, 0, 0, 1
-);
-
-enum CubeFaceMatrixPositiveZ = matrixf(
-    1, 0, 0, 0,
-    0,-1, 0, 0,
-    0, 0,-1, 0,
-    0, 0, 0, 1
-);
-
 Matrix4x4f cubeFaceRotationMatrix(CubeFace cf, Vector3f pos)
 {
     Matrix4x4f m;

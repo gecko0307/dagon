@@ -1169,14 +1169,27 @@ class Scene: BaseScene
 
     void bakeProbe(EnvironmentProbe probe)
     {
-        foreach(face; EnumMembers!CubeFace)
+        fixedStepUpdate();
+        
+        RenderingContext rcProbe;
+        //TODO: specialized view object
+        rcProbe.init(eventManager, environment);
+        rcProbe.projectionMatrix = perspectiveMatrix(90.0f, 1.0f, 0.001f, 1000.0f);
+        
         {
-            RenderingContext rcProbe;
-            //TODO: specialized view object
-            rcProbe.init(eventManager, environment);
-            rcProbe.projectionMatrix = perspectiveMatrix(90.0f, 1.0f, 0.001f, 1000.0f);
+            auto face = CubeFace.PositiveZ;
             eprt.prepareRC(probe, face, &rcProbe);
             eprt.setProbe(probe, face);
+            renderer.shadowMap.update(&rcProbe, fixedTimeStep);
+            renderer.renderPreStep(eprt.gbuffer, &rcProbe);
+            renderer.renderToTarget(eprt, eprt.gbuffer, &rcProbe);
+        }
+        
+        foreach(face; EnumMembers!CubeFace)
+        {
+            eprt.prepareRC(probe, face, &rcProbe);
+            eprt.setProbe(probe, face);
+            renderer.shadowMap.update(&rcProbe, fixedTimeStep);
             renderer.renderPreStep(eprt.gbuffer, &rcProbe);
             renderer.renderToTarget(eprt, eprt.gbuffer, &rcProbe);
         }
