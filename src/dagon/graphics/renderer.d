@@ -64,7 +64,7 @@ class Renderer: Owner
         sceneFramebuffer = New!Framebuffer(gbuffer, eventManager.windowWidth, eventManager.windowHeight, true, true, this);
         shadowMap = New!CascadedShadowMap(1024, 10, 30, 200, -100, 100, this);
 
-        deferredEnvPass = New!DeferredEnvironmentPass(gbuffer, /*sceneFramebuffer,*/ shadowMap, this);
+        deferredEnvPass = New!DeferredEnvironmentPass(gbuffer, shadowMap, this);
         deferredLightPass = New!DeferredLightPass(gbuffer, this);
     }
 

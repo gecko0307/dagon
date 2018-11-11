@@ -292,14 +292,13 @@ class Framebuffer: RenderTarget
 
     override void clear(Color4f clearColor)
     {
-    /*
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    */
+        glClear(GL_DEPTH_BUFFER_BIT);
         Color4f zero = Color4f(0, 0, 0, 0);
         glClearBufferfv(GL_COLOR, 0, clearColor.arrayof.ptr);
         if (isHDRSceneBuffer)
         {
             glClearBufferfv(GL_COLOR, 1, zero.arrayof.ptr);
+            glClearBufferfv(GL_COLOR, 2, zero.arrayof.ptr);
         }
     }
     

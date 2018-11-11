@@ -133,7 +133,9 @@ class EnvironmentProbeRenderTarget: RenderTarget
     override void clear(Color4f clearColor)
     {
         glClearColor(clearColor.r, clearColor.g, clearColor.b, 0.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        Color4f zero = Color4f(0, 0, 0, 0);
+        glClearBufferfv(GL_COLOR, 0, zero.arrayof.ptr);
     }
 
     void setProbe(EnvironmentProbe probe, CubeFace face)

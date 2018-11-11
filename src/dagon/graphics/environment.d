@@ -124,6 +124,10 @@ class Environment: Owner
 
     void setDayTime(uint h, uint m, float s)
     {
+        if (h >= 24) h = h % 24;
+        if (m >= 60) m = m % 60;
+        if (s >= 60) s = s % 60;
+        
         float t = (h * 3600.0f + m * 60.0f + s) / (3600.0f * 24.0f);
         while (t > 1.0f) t -= 1.0f;
         sunRotation = rotationQuaternion(Axis.x, degtorad(-(t * 360.0f - 90.0f)));
