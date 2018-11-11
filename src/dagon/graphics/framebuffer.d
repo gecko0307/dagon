@@ -298,7 +298,7 @@ class Framebuffer: RenderTarget
         if (isHDRSceneBuffer)
         {
             glClearBufferfv(GL_COLOR, 1, zero.arrayof.ptr);
-            glClearBufferfv(GL_COLOR, 2, zero.arrayof.ptr);
+            //glClearBufferfv(GL_COLOR, 2, zero.arrayof.ptr);
         }
     }
     
