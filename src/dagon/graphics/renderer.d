@@ -44,7 +44,7 @@ class Renderer: Owner
 {
     Scene scene;
     EventManager eventManager;
-    
+
     GBuffer gbuffer;
     Framebuffer sceneFramebuffer;
 
@@ -56,10 +56,10 @@ class Renderer: Owner
     this(Scene scene, Owner o)
     {
         super(o);
-        
+
         this.scene = scene;
         this.eventManager = scene.eventManager;
-        
+
         gbuffer = New!GBuffer(eventManager.windowWidth, eventManager.windowHeight, this);
         sceneFramebuffer = New!Framebuffer(gbuffer, eventManager.windowWidth, eventManager.windowHeight, true, true, this);
         shadowMap = New!CascadedShadowMap(1024, 10, 30, 200, -100, 100, this);
@@ -69,43 +69,43 @@ class Renderer: Owner
     }
 
     void render(RenderingContext *rc)
-    {        
+    {
         renderPreStep(gbuffer, rc);
         renderToTarget(sceneFramebuffer, gbuffer, rc);
         sceneFramebuffer.swapColorTextureAttachments();
     }
-    
+
     void renderPreStep(GBuffer gbuf, RenderingContext *rc)
     {
         shadowMap.render(scene, rc);
         gbuf.render(scene, rc);
     }
-    
+
     void renderToTarget(RenderTarget rt, GBuffer gbuf, RenderingContext *rc)
-    {        
+    {
         rt.bind();
-        
+
         RenderingContext rcDeferred;
         rcDeferred.initOrtho(eventManager, scene.environment, gbuf.width, gbuf.height, 0.0f, 100.0f);
         prepareViewport(rt);
         rt.clear(scene.environment.backgroundColor);
-        
+
         glBindFramebuffer(GL_READ_FRAMEBUFFER, gbuf.fbo);
         glBlitFramebuffer(0, 0, gbuf.width, gbuf.height, 0, 0, gbuf.width, gbuf.height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-        
+
         deferredEnvPass.gbuffer = gbuf;
         deferredLightPass.gbuffer = gbuf;
-        
+
         scene.renderBackgroundEntities3D(rc);
         deferredEnvPass.render(&rcDeferred, rc);
         deferredLightPass.render(scene, &rcDeferred, rc);
         scene.renderTransparentEntities3D(rc);
         scene.particleSystem.render(rc);
-        
+
         rt.unbind();
     }
-    
+
     void prepareViewport(RenderTarget rt = null)
     {
         glEnable(GL_SCISSOR_TEST);
@@ -120,8 +120,8 @@ class Renderer: Owner
             glViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
         }
         glClearColor(
-            scene.environment.backgroundColor.r, 
-            scene.environment.backgroundColor.g, 
+            scene.environment.backgroundColor.r,
+            scene.environment.backgroundColor.g,
             scene.environment.backgroundColor.b, 0.0f);
     }
 }

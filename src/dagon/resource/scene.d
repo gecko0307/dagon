@@ -985,7 +985,7 @@ class Scene: BaseScene
         lensFilter.enabled = false;
 
         finalizerFilter = New!PostFilterFinalizer(null, null, assetManager);
-        
+
         rc3d.initPerspective(eventManager, environment, 60.0f, 0.1f, 1000.0f);
         rc2d.initOrtho(eventManager, environment, 0.0f, 100.0f);
 
@@ -1039,7 +1039,7 @@ class Scene: BaseScene
     void onLogicsUpdate(double dt)
     {
     }
-    
+
     void fixedStepUpdate()
     {
         if (view)
@@ -1170,21 +1170,20 @@ class Scene: BaseScene
     void bakeProbe(EnvironmentProbe probe)
     {
         fixedStepUpdate();
-        
-        RenderingContext rcProbe;
-        rcProbe.init(eventManager, environment);
-        rcProbe.projectionMatrix = perspectiveMatrix(90.0f, 1.0f, 0.001f, 1000.0f);
-        
+
         // FIXME: environment is not taken into account for the first face
         foreach(face; EnumMembers!CubeFace)
         {
+            RenderingContext rcProbe;
+            rcProbe.init(eventManager, environment);
+            rcProbe.projectionMatrix = perspectiveMatrix(90.0f, 1.0f, 0.001f, 1000.0f);
             eprt.prepareRC(probe, face, &rcProbe);
             eprt.setProbe(probe, face);
             renderer.shadowMap.update(&rcProbe, fixedTimeStep);
             renderer.renderPreStep(eprt.gbuffer, &rcProbe);
             renderer.renderToTarget(eprt, eprt.gbuffer, &rcProbe);
         }
-        
+
         probe.generateMipmaps();
     }
 

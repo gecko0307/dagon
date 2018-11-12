@@ -49,13 +49,13 @@ class GeometryPassShader: Shader
 {
     string vs = import("GeometryPass.vs");
     string fs = import("GeometryPass.fs");
-    
+
     this(Owner o)
     {
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, o);
     }
-    
+
     override void bind(RenderingContext* rc)
     {
         auto idiffuse = "diffuse" in rc.material.inputs;
@@ -66,18 +66,18 @@ class GeometryPassShader: Shader
         auto imetallic = "metallic" in rc.material.inputs;
         auto iemission = "emission" in rc.material.inputs;
         auto ienergy = "energy" in rc.material.inputs;
-        
+
         setParameter("layer", rc.layer);
         setParameter("blurMask", rc.blurMask);
-        
+
         setParameter("modelViewMatrix", rc.modelViewMatrix);
         setParameter("projectionMatrix", rc.projectionMatrix);
         setParameter("normalMatrix", rc.normalMatrix);
-        
+
         setParameter("prevModelViewProjMatrix", rc.prevModelViewProjMatrix);
         setParameter("blurModelViewProjMatrix", rc.blurModelViewProjMatrix);
 
-        // diffuse  
+        // diffuse
         if (idiffuse.texture)
         {
             glActiveTexture(GL_TEXTURE0);
@@ -91,19 +91,19 @@ class GeometryPassShader: Shader
             setParameter("diffuseVector", rc.material.diffuse.asVector4f);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
         }
-        
+
         // normal/height
         bool haveHeightMap = inormal.texture !is null;
-        if (haveHeightMap) 
+        if (haveHeightMap)
             haveHeightMap = inormal.texture.image.channels == 4;
-        
+
         if (!haveHeightMap)
         {
             if (inormal.texture is null)
             {
                 if (iheight.texture !is null) // we have height map, but no normal map
                 {
-                    Color4f color = Color4f(0.5f, 0.5f, 1.0f, 0.0f); // default normal pointing upwards                    
+                    Color4f color = Color4f(0.5f, 0.5f, 1.0f, 0.0f); // default normal pointing upwards
                     inormal.texture = rc.material.makeTexture(color, iheight.texture);
                     haveHeightMap = true;
                 }
@@ -122,7 +122,7 @@ class GeometryPassShader: Shader
         {
             setParameter("normalTexture", 1);
             setParameterSubroutine("normal", ShaderType.Fragment, "normalMap");
-            
+
             glActiveTexture(GL_TEXTURE1);
             inormal.texture.bind();
         }
@@ -131,24 +131,24 @@ class GeometryPassShader: Shader
             setParameter("normalVector", rc.material.normal.asVector3f);
             setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
         }
-        
+
         // TODO: make material properties
         float parallaxScale = 0.03f;
         float parallaxBias = -0.01f;
         setParameter("parallaxScale", parallaxScale);
         setParameter("parallaxBias", parallaxBias);
-        
+
         if (haveHeightMap)
         {
             setParameterSubroutine("height", ShaderType.Fragment, "heightMap");
         }
         else
         {
-            float h = -parallaxBias / parallaxScale;            
+            float h = -parallaxBias / parallaxScale;
             setParameter("heightScalar", h);
             setParameterSubroutine("height", ShaderType.Fragment, "heightValue");
         }
-        
+
         // pbr
         // TODO: pass solid values as uniforms, make subroutine for each mode
         if (ipbr is null)
@@ -156,19 +156,19 @@ class GeometryPassShader: Shader
             rc.material.setInput("pbr", 0.0f);
             ipbr = "pbr" in rc.material.inputs;
         }
-        
-        if (ipbr.texture is null)   
+
+        if (ipbr.texture is null)
             ipbr.texture = rc.material.makeTexture(*iroughness, *imetallic, materialInput(0.0f), materialInput(0.0f));
         glActiveTexture(GL_TEXTURE2);
         ipbr.texture.bind();
         setParameter("pbrTexture", 2);
-        
+
         // emission
-        if (iemission.texture) 
+        if (iemission.texture)
         {
             glActiveTexture(GL_TEXTURE3);
             iemission.texture.bind();
-            
+
             setParameter("emissionTexture", 3);
             setParameterSubroutine("emission", ShaderType.Fragment, "emissionMap");
         }
@@ -177,45 +177,45 @@ class GeometryPassShader: Shader
             setParameter("emissionVector", rc.material.emission.asVector4f);
             setParameterSubroutine("emission", ShaderType.Fragment, "emissionValue");
         }
-        
+
         setParameter("emissionEnergy", ienergy.asFloat);
-        
+
         glActiveTexture(GL_TEXTURE0);
-        
+
         super.bind(rc);
     }
-    
+
     override void unbind(RenderingContext* rc)
     {
         super.unbind(rc);
-        
+
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE5);
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
-        
+
         glActiveTexture(GL_TEXTURE6);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE7);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE8);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE0);
     }
 }
