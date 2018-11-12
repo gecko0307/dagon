@@ -201,6 +201,7 @@ class EnvironmentProbe: Owner
     
     void generateMipmaps()
     {
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
         glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);

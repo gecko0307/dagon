@@ -96,7 +96,7 @@ void main()
     f0 = mix(f0, albedo, metallic);
 
     vec3 positionToLightSource = lightPosition - eyePos;
-    float distanceToLight = length(positionToLightSource);   
+    float distanceToLight = length(positionToLightSource);
     float attenuation = pow(clamp(1.0 - (distanceToLight / lightRadius), 0.0, 1.0), 2.0) * lightEnergy;
 
     vec3 Lpt = normalize(positionToLightSource);

@@ -78,11 +78,11 @@ class GBuffer: Owner
 
         glGenTextures(1, &colorTexture);
         glBindTexture(GL_TEXTURE_2D, colorTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, null);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, null);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glGenTextures(1, &rmsTexture);
@@ -204,10 +204,9 @@ class GBuffer: Owner
     {
         glClear(GL_DEPTH_BUFFER_BIT);
         Color4f zero = Color4f(0, 0, 0, 0);
-        Color4f maxv = Color4f(0, 0, 0, 0);
         glClearBufferfv(GL_COLOR, 0, zero.arrayof.ptr);
         glClearBufferfv(GL_COLOR, 1, zero.arrayof.ptr);
-        glClearBufferfv(GL_COLOR, 2, maxv.arrayof.ptr);
+        glClearBufferfv(GL_COLOR, 2, zero.arrayof.ptr);
         glClearBufferfv(GL_COLOR, 3, zero.arrayof.ptr);
         glClearBufferfv(GL_COLOR, 4, zero.arrayof.ptr);
         glClearBufferfv(GL_COLOR, 5, zero.arrayof.ptr);

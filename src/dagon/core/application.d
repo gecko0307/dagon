@@ -157,6 +157,9 @@ class Application: EventListener
         glEnable(GL_POLYGON_OFFSET_FILL);
         glCullFace(GL_BACK);
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+        
+        glClear(GL_COLOR_BUFFER_BIT);
+        SDL_GL_SwapWindow(window);
 
         //checkGLError();
     }

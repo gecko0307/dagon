@@ -1166,17 +1166,22 @@ class Scene: BaseScene
 
         hblur.inputBuffer = renderer.sceneFramebuffer;
     }
+    
+    DynamicArray!EnvironmentProbe probes;
 
     void bakeProbe(EnvironmentProbe probe)
     {
         fixedStepUpdate();
-
-        // FIXME: environment is not taken into account for the first face
+        
+        RenderingContext rcProbe;
+        rcProbe.init(eventManager, environment);
+        rcProbe.projectionMatrix = perspectiveMatrix(90.0f, 1.0f, 0.001f, 1000.0f);
+        rcProbe.probePass = false;
+        
+        eprt.gbuffer.render(this, &rcProbe);
+        
         foreach(face; EnumMembers!CubeFace)
         {
-            RenderingContext rcProbe;
-            rcProbe.init(eventManager, environment);
-            rcProbe.projectionMatrix = perspectiveMatrix(90.0f, 1.0f, 0.001f, 1000.0f);
             eprt.prepareRC(probe, face, &rcProbe);
             eprt.setProbe(probe, face);
             renderer.shadowMap.update(&rcProbe, fixedTimeStep);

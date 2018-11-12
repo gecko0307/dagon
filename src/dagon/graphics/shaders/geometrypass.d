@@ -81,8 +81,8 @@ class GeometryPassShader: Shader
         if (idiffuse.texture)
         {
             glActiveTexture(GL_TEXTURE0);
-            //idiffuse.texture.bind();
-            glBindTexture(GL_TEXTURE_2D, idiffuse.texture.tex);
+            idiffuse.texture.bind();
+            //glBindTexture(GL_TEXTURE_2D, idiffuse.texture.tex);
             setParameter("diffuseTexture", cast(int)0);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
         }
