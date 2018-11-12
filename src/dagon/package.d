@@ -80,7 +80,6 @@ public
     import dagon.graphics.view;
     import dagon.graphics.shadow;
     import dagon.graphics.light;
-    import dagon.graphics.probe;
     import dagon.graphics.framebuffer;
     import dagon.graphics.postproc;
     import dagon.graphics.particles;
@@ -97,7 +96,6 @@ public
 
     import dagon.graphics.shaders.geometrypass;
     import dagon.graphics.shaders.environmentpass;
-    import dagon.graphics.shaders.probepass;
     import dagon.graphics.shaders.lightpass;
     import dagon.graphics.shaders.standard;
     import dagon.graphics.shaders.sky;

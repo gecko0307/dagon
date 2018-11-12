@@ -60,7 +60,6 @@ import dagon.graphics.rc;
 import dagon.graphics.view;
 import dagon.graphics.shapes;
 import dagon.graphics.light;
-import dagon.graphics.probe;
 import dagon.graphics.shadow;
 import dagon.graphics.texture;
 import dagon.graphics.particles;
@@ -371,7 +370,6 @@ class SceneApplication: Application
 class Scene: BaseScene
 {
     Renderer renderer;
-    EnvironmentProbeRenderTarget eprt;
 
     Environment environment;
 
@@ -936,7 +934,6 @@ class Scene: BaseScene
         lightManager = New!LightManager(assetManager);
 
         renderer = New!Renderer(this, assetManager);
-        eprt = New!EnvironmentProbeRenderTarget(512, assetManager);
 
         defaultMaterialBackend = New!StandardBackend(lightManager, assetManager);
 
@@ -1165,31 +1162,6 @@ class Scene: BaseScene
         }
 
         hblur.inputBuffer = renderer.sceneFramebuffer;
-    }
-    
-    DynamicArray!EnvironmentProbe probes;
-
-    void bakeProbe(EnvironmentProbe probe)
-    {
-        fixedStepUpdate();
-        
-        RenderingContext rcProbe;
-        rcProbe.init(eventManager, environment);
-        rcProbe.projectionMatrix = perspectiveMatrix(90.0f, 1.0f, 0.001f, 1000.0f);
-        rcProbe.probePass = false;
-        
-        eprt.gbuffer.render(this, &rcProbe);
-        
-        foreach(face; EnumMembers!CubeFace)
-        {
-            eprt.prepareRC(probe, face, &rcProbe);
-            eprt.setProbe(probe, face);
-            renderer.shadowMap.update(&rcProbe, fixedTimeStep);
-            renderer.renderPreStep(eprt.gbuffer, &rcProbe);
-            renderer.renderToTarget(eprt, eprt.gbuffer, &rcProbe);
-        }
-
-        probe.generateMipmaps();
     }
 
     override void onRender()

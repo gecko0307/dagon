@@ -44,11 +44,9 @@ import dagon.graphics.gbuffer;
 import dagon.graphics.framebuffer;
 import dagon.graphics.shadow;
 import dagon.graphics.light;
-import dagon.graphics.probe;
 import dagon.graphics.screensurface;
 import dagon.graphics.shapes;
 import dagon.graphics.shaders.environmentpass;
-import dagon.graphics.shaders.probepass;
 import dagon.graphics.shaders.lightpass;
 import dagon.resource.scene;
 
@@ -82,57 +80,6 @@ class DeferredEnvironmentPass: Owner
         
         glDisablei(GL_BLEND, 0);
         glDisablei(GL_BLEND, 1);
-    }
-}
-
-class DeferredProbePass: Owner
-{
-    ProbePassShader shader;
-    GBuffer gbuffer;
-    ShapeSphere probeVolume;
-
-    this(GBuffer gbuffer, Owner o)
-    {
-        super(o);
-        this.shader = New!ProbePassShader(gbuffer, this);
-        this.gbuffer = gbuffer;
-        this.probeVolume = New!ShapeSphere(1.0f, 8, 4, false, this);
-    }
-
-    void render(Scene scene, RenderingContext* rc2d, RenderingContext* rc3d)
-    {
-        shader.gbuffer = gbuffer;
-        
-        glDisable(GL_DEPTH_TEST);
-        glDepthMask(GL_FALSE);
-
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_FRONT);
-
-        glEnablei(GL_BLEND, 0);
-        glEnablei(GL_BLEND, 1);
-        glEnablei(GL_BLEND, 4);
-        glBlendFunci(0, GL_ONE, GL_ONE);
-        glBlendFunci(1, GL_ONE, GL_ONE);
-
-        // TODO: don't rebind the shader each time,
-        // use special method to update probe data
-        foreach(probe; scene.probes.data)
-        {
-            shader.probe = probe;
-            shader.bind(rc2d, rc3d);
-            probeVolume.render(rc3d);
-            shader.unbind(rc2d, rc3d);
-        }
-
-        glDisablei(GL_BLEND, 0);
-        glDisablei(GL_BLEND, 1);
-
-        glCullFace(GL_BACK);
-        glDisable(GL_CULL_FACE);
-
-        glDepthMask(GL_TRUE);
-        glEnable(GL_DEPTH_TEST);
     }
 }
 

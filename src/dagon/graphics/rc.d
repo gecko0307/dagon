@@ -79,7 +79,6 @@ struct RenderingContext
 
     bool depthPass;
     bool colorPass;
-    bool probePass;
 
     int layer;
 
@@ -109,7 +108,6 @@ struct RenderingContext
         overrideMaterial = null;
         overrideMaterialBackend = null;
         time = 0.0f;
-        probePass = true;
         depthPass = true;
         colorPass = true;
         blurMask = 1.0f;

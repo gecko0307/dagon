@@ -37,7 +37,6 @@ import dagon.graphics.framebuffer;
 import dagon.graphics.deferred;
 import dagon.graphics.shadow;
 import dagon.graphics.rc;
-import dagon.graphics.probe;
 import dagon.resource.scene;
 
 class Renderer: Owner
@@ -49,7 +48,6 @@ class Renderer: Owner
     Framebuffer sceneFramebuffer;
 
     DeferredEnvironmentPass deferredEnvPass;
-    DeferredProbePass deferredProbePass;
     DeferredLightPass deferredLightPass;
 
     CascadedShadowMap shadowMap;
@@ -66,7 +64,6 @@ class Renderer: Owner
         shadowMap = New!CascadedShadowMap(1024, 10, 30, 200, -100, 100, this);
 
         deferredEnvPass = New!DeferredEnvironmentPass(gbuffer, shadowMap, this);
-        deferredProbePass = New!DeferredProbePass(gbuffer, this);
         deferredLightPass = New!DeferredLightPass(gbuffer, this);
     }
 
@@ -97,13 +94,10 @@ class Renderer: Owner
         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
         deferredEnvPass.gbuffer = gbuf;
-        deferredProbePass.gbuffer = gbuf;
         deferredLightPass.gbuffer = gbuf;
 
         scene.renderBackgroundEntities3D(rc);
         deferredEnvPass.render(&rcDeferred, rc);
-        if (rc.probePass)
-            deferredProbePass.render(scene, &rcDeferred, rc);
         deferredLightPass.render(scene, &rcDeferred, rc);
         scene.renderTransparentEntities3D(rc);
         scene.particleSystem.render(rc);
