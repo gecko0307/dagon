@@ -64,9 +64,9 @@ import dagon.graphics.shadow;
 import dagon.graphics.texture;
 import dagon.graphics.particles;
 import dagon.graphics.materials.generic;
-import dagon.graphics.materials.standard;
+//import dagon.graphics.materials.standard;
 import dagon.graphics.materials.hud;
-import dagon.graphics.materials.particle;
+//import dagon.graphics.materials.particle;
 import dagon.graphics.framebuffer;
 import dagon.graphics.shader;
 import dagon.graphics.shaders.standard;
@@ -380,8 +380,6 @@ class Scene: BaseScene
     SkyShader skyShader;
     ParticleShader particleShader;
     GenericMaterial defaultMaterial3D;
-
-    StandardBackend defaultMaterialBackend;
 
     RenderingContext rc3d;
     RenderingContext rc2d;
@@ -715,7 +713,7 @@ class Scene: BaseScene
         eLoadingProgressBar = New!Entity(eventManager, assetManager);
         eLoadingProgressBar.drawable = loadingProgressBar;
         hudMaterialBackend = New!HUDMaterialBackend(assetManager);
-        mLoadingProgressBar = createGenericMaterial(hudMaterialBackend);
+        mLoadingProgressBar = New!GenericMaterial(hudMaterialBackend, assetManager); //createGenericMaterial(hudMaterialBackend);
         mLoadingProgressBar.diffuse = Color4f(1, 1, 1, 1);
         eLoadingProgressBar.material = mLoadingProgressBar;
     }
@@ -908,14 +906,6 @@ class Scene: BaseScene
         return createMaterial(standardShader);
     }
 
-	// TODO: replace with ShaderMaterial
-    deprecated GenericMaterial createGenericMaterial(GenericMaterialBackend backend = null)
-    {
-        if (backend is null)
-            backend = defaultMaterialBackend;
-        return New!GenericMaterial(backend, assetManager);
-    }
-
     GenericMaterial createParticleMaterial(Shader shader = null)
     {
         if (shader is null)
@@ -935,14 +925,10 @@ class Scene: BaseScene
 
         renderer = New!Renderer(this, assetManager);
 
-        defaultMaterialBackend = New!StandardBackend(lightManager, assetManager);
-
 		standardShader = New!StandardShader(assetManager);
         standardShader.shadowMap = renderer.shadowMap;
         skyShader = New!SkyShader(assetManager);
         particleShader = New!ParticleShader(renderer.gbuffer, assetManager);
-
-        defaultMaterialBackend.shadowMap = renderer.shadowMap;
 
         particleSystem = New!ParticleSystem(assetManager);
 
@@ -1098,7 +1084,6 @@ class Scene: BaseScene
                 e.render(rc);
     }
 
-    // TODO: check transparency of children (use context variable)
     void renderOpaqueEntities3D(RenderingContext* rc)
     {
         glEnable(GL_DEPTH_TEST);
@@ -1111,7 +1096,6 @@ class Scene: BaseScene
         }
     }
 
-    // TODO: check transparency of children (use context variable)
     void renderTransparentEntities3D(RenderingContext* rc)
     {
         glEnable(GL_DEPTH_TEST);

@@ -49,7 +49,6 @@ import dagon.graphics.view;
 import dagon.graphics.rc;
 import dagon.graphics.material;
 import dagon.graphics.materials.generic;
-import dagon.graphics.materials.particle;
 import dagon.graphics.mesh;
 
 struct Particle
@@ -190,51 +189,51 @@ class ColorChanger: ForceField
 class Emitter: Behaviour
 {
     Particle[] particles;
-    
+
     float minLifetime = 1.0f;
     float maxLifetime = 3.0f;
-    
+
     float minSize = 0.25f;
     float maxSize = 1.0f;
     Vector3f scaleStep = Vector3f(0, 0, 0);
-    
+
     float initialPositionRandomRadius = 0.0f;
-    
+
     float minInitialSpeed = 1.0f;
     float maxInitialSpeed = 5.0f;
-    
+
     Vector3f initialDirection = Vector3f(0, 1, 0);
     float initialDirectionRandomFactor = 1.0f;
-    
+
     Color4f startColor = Color4f(1, 1, 1, 1);
     Color4f endColor = Color4f(1, 1, 1, 0);
-     
+
     float airFrictionDamping = 0.98f;
-    
+
     bool emitting = true;
-    
+
     GenericMaterial material;
-    
+
     Entity particleEntity;
-    
+
     this(Entity e, ParticleSystem psys, uint numParticles)
     {
         super(e);
-        
+
         psys.addEmitter(this);
-        
+
         particles = New!(Particle[])(numParticles);
         foreach(ref p; particles)
         {
             resetParticle(p);
         }
     }
-    
+
     ~this()
     {
         Delete(particles);
     }
-    
+
     void resetParticle(ref Particle p)
     {
         if (initialPositionRandomRadius > 0.0f)
@@ -244,9 +243,9 @@ class Emitter: Behaviour
         }
         else
             p.position = entity.absolutePosition;
-            
+
         p.positionPrev = p.position;
-            
+
         Vector3f r = randomUnitVector3!float;
 
         float initialSpeed;
@@ -255,19 +254,19 @@ class Emitter: Behaviour
         else
             initialSpeed = maxInitialSpeed;
         p.velocity = lerp(initialDirection, r, initialDirectionRandomFactor) * initialSpeed;
-        
+
         if (maxLifetime > minLifetime)
             p.lifetime = uniform(minLifetime, maxLifetime);
         else
             p.lifetime = maxLifetime;
         p.gravityVector = Vector3f(0, -1, 0);
-        
+
         float s;
         if (maxSize > maxSize)
             s = uniform(maxSize, maxSize);
         else
             s = maxSize;
-            
+
         p.scale = Vector3f(s, s, s);
         p.time = 0.0f;
         p.move = true;
@@ -280,47 +279,47 @@ class ParticleSystem: Owner
 {
     DynamicArray!Emitter emitters;
     DynamicArray!ForceField forceFields;
-    
+
     Vector3f[4] vertices;
     Vector2f[4] texcoords;
     uint[3][2] indices;
-    
+
     GLuint vao = 0;
     GLuint vbo = 0;
     GLuint tbo = 0;
     GLuint eao = 0;
-    
+
     Matrix4x4f invViewMatRot;
-     
+
     bool haveParticlesToDraw = false;
-    
+
     bool useMotionBlur = true;
 
     this(Owner o)
-    {       
-        super(o); 
-        
+    {
+        super(o);
+
         vertices[0] = Vector3f(-0.5f, 0.5f, 0);
         vertices[1] = Vector3f(-0.5f, -0.5f, 0);
         vertices[2] = Vector3f(0.5f, -0.5f, 0);
         vertices[3] = Vector3f(0.5f, 0.5f, 0);
-        
+
         texcoords[0] = Vector2f(0, 0);
         texcoords[1] = Vector2f(0, 1);
         texcoords[2] = Vector2f(1, 1);
         texcoords[3] = Vector2f(1, 0);
-        
+
         indices[0][0] = 0;
         indices[0][1] = 1;
         indices[0][2] = 2;
-        
+
         indices[1][0] = 0;
         indices[1][1] = 2;
         indices[1][2] = 3;
-        
+
         glGenBuffers(1, &vbo);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, vertices.length * float.sizeof * 3, vertices.ptr, GL_STATIC_DRAW); 
+        glBufferData(GL_ARRAY_BUFFER, vertices.length * float.sizeof * 3, vertices.ptr, GL_STATIC_DRAW);
 
         glGenBuffers(1, &tbo);
         glBindBuffer(GL_ARRAY_BUFFER, tbo);
@@ -333,11 +332,11 @@ class ParticleSystem: Owner
         glGenVertexArrays(1, &vao);
         glBindVertexArray(vao);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eao);
-    
+
         glEnableVertexAttribArray(VertexAttrib.Vertices);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glVertexAttribPointer(VertexAttrib.Vertices, 3, GL_FLOAT, GL_FALSE, 0, null);
-    
+
         glEnableVertexAttribArray(VertexAttrib.Texcoords);
         glBindBuffer(GL_ARRAY_BUFFER, tbo);
         glVertexAttribPointer(VertexAttrib.Texcoords, 2, GL_FLOAT, GL_FALSE, 0, null);
@@ -350,48 +349,48 @@ class ParticleSystem: Owner
         emitters.free();
         forceFields.free();
     }
-    
+
     void addForceField(ForceField ff)
     {
         forceFields.append(ff);
     }
-    
+
     void addEmitter(Emitter em)
     {
         emitters.append(em);
     }
-    
+
     void updateParticle(Emitter e, ref Particle p, double dt)
     {
         p.time += dt;
-        
+
         float t = p.time / p.lifetime;
         p.color = lerp(e.startColor, e.endColor, t);
         p.scale = p.scale + e.scaleStep * dt;
-        
+
         if (p.move)
         {
             p.acceleration = Vector3f(0, 0, 0);
-               
+
             foreach(ref ff; forceFields)
             {
                 ff.affect(p);
             }
-                
+
             p.velocity += p.acceleration * dt;
             p.velocity = p.velocity * e.airFrictionDamping;
 
             p.positionPrev = p.position;
             p.position += p.velocity * dt;
         }
-        
+
         p.color.a = lerp(e.startColor.a, e.endColor.a, t);
     }
-    
+
     void update(double dt)
     {
         haveParticlesToDraw = false;
-        
+
         foreach(e; emitters)
         foreach(ref p; e.particles)
         {
@@ -412,9 +411,9 @@ class ParticleSystem: Owner
             }
         }
     }
-    
+
     void render(RenderingContext* rc)
-    {    
+    {
         if (haveParticlesToDraw)
         {
             foreach(e; emitters)
@@ -422,7 +421,7 @@ class ParticleSystem: Owner
             {
                 if (e.material)
                     e.entity.material = e.material;
-                    
+
                 foreach(ref p; e.particles)
                 if (p.time < p.lifetime)
                 {
@@ -434,57 +433,57 @@ class ParticleSystem: Owner
             }
         }
     }
-    
+
     void renderEntityParticle(Emitter e, ref Particle p, RenderingContext* rc)
     {
         auto rcLocal = *rc;
-    
+
         Matrix4x4f trans =
             translationMatrix(p.position);
-            
+
         Matrix4x4f prevTrans =
             translationMatrix(p.positionPrev);
 
         auto absTrans = e.particleEntity.absoluteTransformation;
         auto invAbsTrans = e.particleEntity.invAbsoluteTransformation;
         auto prevAbsTrans = e.particleEntity.prevAbsoluteTransformation;
-                
+
         e.particleEntity.absoluteTransformation = trans;
         e.particleEntity.invAbsoluteTransformation = trans.inverse;
         e.particleEntity.prevAbsoluteTransformation = prevTrans;
-                
+
         foreach(child; e.particleEntity.children)
         {
             child.updateTransformation();
         }
-            
+
         e.particleEntity.render(&rcLocal);
-                
+
         e.particleEntity.absoluteTransformation = absTrans;
         e.particleEntity.invAbsoluteTransformation = invAbsTrans;
         e.particleEntity.prevAbsoluteTransformation = prevAbsTrans;
     }
-    
+
     void renderBillboardParticle(Emitter e, ref Particle p, RenderingContext* rc)
     {
-        Matrix4x4f trans = translationMatrix(p.position);        
+        Matrix4x4f trans = translationMatrix(p.position);
         Matrix4x4f prevTrans = translationMatrix(p.positionPrev);
-    
-        Matrix4x4f modelViewMatrix = 
-            rc.viewMatrix * 
-            translationMatrix(p.position) * 
-            rc.invViewRotationMatrix * 
+
+        Matrix4x4f modelViewMatrix =
+            rc.viewMatrix *
+            translationMatrix(p.position) *
+            rc.invViewRotationMatrix *
             scaleMatrix(Vector3f(p.scale.x, p.scale.y, 1.0f));
-                
+
         RenderingContext rcLocal = *rc;
         rcLocal.modelViewMatrix = modelViewMatrix;
         rcLocal.normalMatrix = rcLocal.modelViewMatrix.inverse.transposed;
-        
+
         if (useMotionBlur)
             rcLocal.prevModelViewProjMatrix = rcLocal.projectionMatrix * (rcLocal.prevViewMatrix * prevTrans);
         else
             rcLocal.prevModelViewProjMatrix = rcLocal.projectionMatrix * (rcLocal.viewMatrix * trans);
-        
+
         rcLocal.blurModelViewProjMatrix = rcLocal.projectionMatrix * (rcLocal.viewMatrix * trans);
 
         if (e.material)
@@ -492,11 +491,11 @@ class ParticleSystem: Owner
             e.material.particleColor = p.color;
             e.material.bind(&rcLocal);
         }
-                
+
         glBindVertexArray(vao);
         glDrawElements(GL_TRIANGLES, cast(uint)indices.length * 3, GL_UNSIGNED_INT, cast(void*)0);
         glBindVertexArray(0);
-        
+
         if (e.material)
             e.material.unbind(&rcLocal);
     }

@@ -44,6 +44,8 @@ import dagon.graphics.texture;
 import dagon.graphics.rc;
 import dagon.graphics.shader;
 
+// TODO: get rid of these, combine everything in one class Material that uses Shader
+
 interface GenericMaterialBackend
 {
     final bool boolProp(GenericMaterial mat, string prop)
@@ -310,70 +312,6 @@ class GenericMaterial: Material
     }
 }
 
-abstract class GLSLMaterialBackend: Owner, GenericMaterialBackend
-{
-    string vertexShaderSrc();
-    string fragmentShaderSrc();
-
-    GLuint shaderProgram;
-    GLuint vertexShader;
-    GLuint fragmentShader;
-
-    this(Owner o)
-    {
-        super(o);
-
-        const(char*)pvs = vertexShaderSrc().ptr;
-        const(char*)pfs = fragmentShaderSrc().ptr;
-
-        char[1000] infobuffer = 0;
-        int infobufferlen = 0;
-
-        vertexShader = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertexShader, 1, &pvs, null);
-        glCompileShader(vertexShader);
-        GLint success = 0;
-        glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
-            GLint logSize = 0;
-            glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &logSize);
-            glGetShaderInfoLog(vertexShader, 999, &logSize, infobuffer.ptr);
-            writeln("Error in vertex shader:");
-            writeln(infobuffer[0..logSize]);
-        }
-
-        fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragmentShader, 1, &pfs, null);
-        glCompileShader(fragmentShader);
-        success = 0;
-        glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
-            GLint logSize = 0;
-            glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &logSize);
-            glGetShaderInfoLog(fragmentShader, 999, &logSize, infobuffer.ptr);
-            writeln("Error in fragment shader:");
-            writeln(infobuffer[0..logSize]);
-        }
-
-        shaderProgram = glCreateProgram();
-        glAttachShader(shaderProgram, vertexShader);
-        glAttachShader(shaderProgram, fragmentShader);
-        glLinkProgram(shaderProgram);
-    }
-
-    void bind(GenericMaterial mat, RenderingContext* rc)
-    {
-        glUseProgram(shaderProgram);
-    }
-
-    void unbind(GenericMaterial mat, RenderingContext* rc)
-    {
-        glUseProgram(0);
-    }
-}
-
 class ShaderMaterial: GenericMaterial
 {
     Shader shader;
@@ -468,5 +406,69 @@ class ShaderMaterial: GenericMaterial
         glDisablei(GL_BLEND, 0);
         glDisablei(GL_BLEND, 1);
         glDisablei(GL_BLEND, 2);
+    }
+}
+
+abstract class GLSLMaterialBackend: Owner, GenericMaterialBackend
+{
+    string vertexShaderSrc();
+    string fragmentShaderSrc();
+
+    GLuint shaderProgram;
+    GLuint vertexShader;
+    GLuint fragmentShader;
+
+    this(Owner o)
+    {
+        super(o);
+
+        const(char*)pvs = vertexShaderSrc().ptr;
+        const(char*)pfs = fragmentShaderSrc().ptr;
+
+        char[1000] infobuffer = 0;
+        int infobufferlen = 0;
+
+        vertexShader = glCreateShader(GL_VERTEX_SHADER);
+        glShaderSource(vertexShader, 1, &pvs, null);
+        glCompileShader(vertexShader);
+        GLint success = 0;
+        glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+            GLint logSize = 0;
+            glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &logSize);
+            glGetShaderInfoLog(vertexShader, 999, &logSize, infobuffer.ptr);
+            writeln("Error in vertex shader:");
+            writeln(infobuffer[0..logSize]);
+        }
+
+        fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(fragmentShader, 1, &pfs, null);
+        glCompileShader(fragmentShader);
+        success = 0;
+        glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+            GLint logSize = 0;
+            glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &logSize);
+            glGetShaderInfoLog(fragmentShader, 999, &logSize, infobuffer.ptr);
+            writeln("Error in fragment shader:");
+            writeln(infobuffer[0..logSize]);
+        }
+
+        shaderProgram = glCreateProgram();
+        glAttachShader(shaderProgram, vertexShader);
+        glAttachShader(shaderProgram, fragmentShader);
+        glLinkProgram(shaderProgram);
+    }
+
+    void bind(GenericMaterial mat, RenderingContext* rc)
+    {
+        glUseProgram(shaderProgram);
+    }
+
+    void unbind(GenericMaterial mat, RenderingContext* rc)
+    {
+        glUseProgram(0);
     }
 }

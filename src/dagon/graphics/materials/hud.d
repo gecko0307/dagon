@@ -43,6 +43,8 @@ import dagon.graphics.rc;
 import dagon.graphics.material;
 import dagon.graphics.materials.generic;
 
+// TODO: port to Shader
+
 class HUDMaterialBackend: GLSLMaterialBackend
 {
     private string vsText = import("HUD.vs");
