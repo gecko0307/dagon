@@ -42,62 +42,8 @@ import dagon.graphics.rc;
 
 class PostFilterHDRPrepass: PostFilter
 {
-    private string vs = "
-        #version 330 core
-        
-        uniform mat4 modelViewMatrix;
-        uniform mat4 projectionMatrix;
-
-        uniform vec2 viewSize;
-        
-        layout (location = 0) in vec2 va_Vertex;
-        layout (location = 1) in vec2 va_Texcoord;
-
-        out vec2 texCoord;
-        
-        void main()
-        {
-            texCoord = va_Texcoord;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(va_Vertex * viewSize, 0.0, 1.0);
-        }
-    ";
-
-    private string fs = "
-        #version 330 core
-        
-        #define PI 3.14159265359
-        
-        uniform sampler2D fbColor;
-        uniform sampler2D fbBlurred;
-        uniform vec2 viewSize;
-        
-        uniform mat4 perspectiveMatrix;
-        
-        uniform bool useGlow;
-        uniform float glowBrightness;
-        
-        in vec2 texCoord;
-        
-        out vec4 frag_color;
-
-        void main()
-        {
-            vec3 res = texture(fbColor, texCoord).rgb;
-
-            if (useGlow)
-            {
-                vec3 glow = texture(fbBlurred, texCoord).rgb;
-                float lum = glow.r * 0.2126 + glow.g * 0.7152 + glow.b * 0.0722;
-                //TODO: make uniform
-                const float minGlowLuminance = 0.01;
-                const float maxGlowLuminance = 1.0;
-                lum = (clamp(lum, minGlowLuminance, maxGlowLuminance) - minGlowLuminance) / (maxGlowLuminance - minGlowLuminance);
-                res += glow * lum * glowBrightness;
-            }
-
-            frag_color = vec4(res, 1.0); 
-        }
-    ";
+    private string vs = import("HDRPrepass.vs");
+    private string fs = import("HDRPrepass.fs");
 
     override string vertexShader()
     {
@@ -108,10 +54,10 @@ class PostFilterHDRPrepass: PostFilter
     {
         return fs;
     }
-    
+
     GLint perspectiveMatrixLoc;
     Matrix4x4f perspectiveMatrix;
-       
+
     GLint fbBlurredLoc;
     GLint useGlowLoc;
     GLint glowBrightnessLoc;
@@ -122,36 +68,36 @@ class PostFilterHDRPrepass: PostFilter
     this(Framebuffer inputBuffer, Framebuffer outputBuffer, Owner o)
     {
         super(inputBuffer, outputBuffer, o);
-        
+
         perspectiveMatrixLoc = glGetUniformLocation(shaderProgram, "perspectiveMatrix");
         fbBlurredLoc = glGetUniformLocation(shaderProgram, "fbBlurred");
         useGlowLoc = glGetUniformLocation(shaderProgram, "useGlow");
         glowBrightnessLoc = glGetUniformLocation(shaderProgram, "glowBrightness");
-        
+
         perspectiveMatrix = Matrix4x4f.identity;
     }
-    
+
     override void bind(RenderingContext* rc)
     {
         super.bind(rc);
-        
+
         glUniformMatrix4fv(perspectiveMatrixLoc, 1, GL_FALSE, perspectiveMatrix.arrayof.ptr);
-        
+
         glActiveTexture(GL_TEXTURE5);
         glBindTexture(GL_TEXTURE_2D, blurredTexture);
         glActiveTexture(GL_TEXTURE0);
-        
+
         glUniform1i(fbBlurredLoc, 5);
         glUniform1i(useGlowLoc, glowEnabled);
         glUniform1f(glowBrightnessLoc, glowBrightness);
     }
-    
+
     override void unbind(RenderingContext* rc)
-    {        
+    {
         glActiveTexture(GL_TEXTURE5);
         glBindTexture(GL_TEXTURE_2D, 0);
         glActiveTexture(GL_TEXTURE0);
-        
+
         super.unbind(rc);
     }
 }

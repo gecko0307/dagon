@@ -34,17 +34,6 @@ import dagon.graphics.framebuffer;
 import dagon.graphics.texture;
 import dagon.graphics.rc;
 
-/*
- * tonemapHable is based on a function by John Hable:
- * http://filmicworlds.com/blog/filmic-tonemapping-operators
- *
- * tonemapACES is based on a function by Krzysztof Narkowicz:
- * https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve
- *
- * LUT function (lookupColor) is based on a code by Matt DesLauriers:
- * https://github.com/mattdesl/glsl-lut
- */
-
 enum Tonemapper
 {
     Reinhard = 0,
@@ -54,159 +43,8 @@ enum Tonemapper
 
 class PostFilterHDR: PostFilter
 {
-    private string vs = "
-        #version 330 core
-        
-        uniform mat4 modelViewMatrix;
-        uniform mat4 projectionMatrix;
-
-        uniform vec2 viewSize;
-        
-        layout (location = 0) in vec2 va_Vertex;
-        layout (location = 1) in vec2 va_Texcoord;
-
-        out vec2 texCoord;
-        
-        void main()
-        {
-            texCoord = va_Texcoord;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(va_Vertex * viewSize, 0.0, 1.0);
-        }
-    ";
-
-    private string fs = "
-        #version 330 core
-        
-        uniform sampler2D fbColor;
-        uniform sampler2D fbPosition;
-        uniform sampler2D fbVelocity;
-        uniform sampler2D colorTable;
-        uniform sampler2D vignette;
-        uniform vec2 viewSize;
-        uniform float timeStep;
-
-        uniform bool useMotionBlur;
-        uniform int motionBlurSamples;
-        uniform float shutterFps;
-        
-        uniform float exposure;
-        uniform int tonemapFunction;
-        
-        uniform bool useLUT;
-        uniform bool useVignette;
-        
-        in vec2 texCoord;
-        
-        out vec4 frag_color;
-        
-        vec3 hableFunc(vec3 x)
-        {
-            return ((x * (0.15 * x + 0.1 * 0.5) + 0.2 * 0.02) / (x * (0.15 * x + 0.5) + 0.2 * 0.3)) - 0.02 / 0.3;
-        }
-
-        vec3 tonemapHable(vec3 x, float expo)
-        {
-            //const vec3 whitePoint = vec3(11.2);
-            const float whiteScale = 1.0748724675633854; //1.0 / hableFunc(whitePoint)
-            vec3 c = x * expo;
-            c = hableFunc(c * 2.0) * whiteScale;
-            return pow(c, vec3(1.0 / 2.2));
-        }
-        
-        vec3 tonemapReinhard(vec3 x, float expo)
-        {
-            vec3 c = x * expo;
-            c = c / (c + 1.0);
-            return pow(c, vec3(1.0 / 2.2));
-        }
-        
-        vec3 tonemapACES(vec3 x, float expo)
-        {
-            float a = 2.51;
-            float b = 0.03;
-            float c = 2.43;
-            float d = 0.59;
-            float e = 0.14;
-            vec3 res = x * expo * 0.6;
-            res = clamp((res*(a*res+b))/(res*(c*res+d)+e), 0.0, 1.0);
-            return pow(res, vec3(1.0 / 2.2));
-        }
-        
-        vec3 lookupColor(sampler2D lookupTable, vec3 textureColor)
-        {
-            textureColor = clamp(textureColor, 0.0, 1.0);
-
-            float blueColor = textureColor.b * 63.0;
-
-            vec2 quad1;
-            quad1.y = floor(floor(blueColor) / 8.0);
-            quad1.x = floor(blueColor) - (quad1.y * 8.0);
-
-            vec2 quad2;
-            quad2.y = floor(ceil(blueColor) / 8.0);
-            quad2.x = ceil(blueColor) - (quad2.y * 8.0);
-
-            vec2 texPos1;
-            texPos1.x = (quad1.x * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * textureColor.r);
-            texPos1.y = (quad1.y * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * textureColor.g);
-
-            vec2 texPos2;
-            texPos2.x = (quad2.x * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * textureColor.r);
-            texPos2.y = (quad2.y * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * textureColor.g);
-
-            vec3 newColor1 = texture(lookupTable, texPos1).rgb;
-            vec3 newColor2 = texture(lookupTable, texPos2).rgb;
-
-            vec3 newColor = mix(newColor1, newColor2, fract(blueColor));
-            return newColor;
-        }
-
-        void main()
-        {
-            vec3 res = texture(fbColor, texCoord).rgb;
-            
-            if (useMotionBlur)
-            {
-                vec2 blurVec = texture(fbVelocity, texCoord).xy;                
-                float depthRef = texture(fbPosition, texCoord).z;
-                blurVec = blurVec / (timeStep * shutterFps);
-                
-                float speed = length(blurVec * viewSize);
-                int nSamples = clamp(int(speed), 1, motionBlurSamples);
-                
-                float invSamplesMinusOne = 1.0 / float(nSamples - 1);
-                float usedSamples = 1.0;
-                const float depthThreshold = 20.0;
-                
-                for (int i = 1; i < nSamples; i++)
-                {
-                    vec2 offset = blurVec * (float(i) * invSamplesMinusOne - 0.5);
-                    float mask = texture(fbVelocity, texCoord + offset).w;
-                    float depth = texture(fbPosition, texCoord + offset).z;
-                    float depthWeight = 1.0; //1.0 - clamp(abs(depth - depthRef), 0.0, depthThreshold) / depthThreshold;
-                    res += texture(fbColor, texCoord + offset).rgb * mask * depthWeight;
-                    usedSamples += mask * depthWeight;
-                }
-                
-                res = res / usedSamples;
-            }
-            
-            if (tonemapFunction == 2)
-                res = tonemapACES(res, exposure);
-            else if (tonemapFunction == 1)
-                res = tonemapHable(res, exposure);
-            else
-                res = tonemapReinhard(res, exposure);
-                
-            if (useVignette)
-                res = mix(res, res * texture(vignette, vec2(texCoord.x, 1.0 - texCoord.y)).rgb, 0.8);
-            
-            if (useLUT)
-                res = lookupColor(colorTable, res);
-
-            frag_color = vec4(res, 1.0);
-        }
-    ";
+    private string vs = import("HDR.vs");
+    private string fs = import("HDR.fs");
 
     override string vertexShader()
     {
@@ -217,7 +55,7 @@ class PostFilterHDR: PostFilter
     {
         return fs;
     }
-    
+
     GLint fbPositionLoc;
     GLint colorTableLoc;
     GLint exposureLoc;
@@ -230,17 +68,17 @@ class PostFilterHDR: PostFilter
     GLint motionBlurSamplesLoc;
     GLint shutterFpsLoc;
     GLint timeStepLoc;
-    
+
     bool autoExposure = false;
-    
+
     float minLuminance = 0.1f;
     float maxLuminance = 100000.0f;
     float keyValue = 0.5f;
     float adaptationSpeed = 4.0f;
-    
+
     float exposure = 0.5f;
     Tonemapper tonemapFunction = Tonemapper.ACES;
-    
+
     GLuint velocityTexture;
     bool mblurEnabled = false;
     int motionBlurSamples = 20;
@@ -253,7 +91,7 @@ class PostFilterHDR: PostFilter
     this(Framebuffer inputBuffer, Framebuffer outputBuffer, Owner o)
     {
         super(inputBuffer, outputBuffer, o);
-        
+
         fbPositionLoc = glGetUniformLocation(shaderProgram, "fbPosition");
         colorTableLoc = glGetUniformLocation(shaderProgram, "colorTable");
         exposureLoc = glGetUniformLocation(shaderProgram, "exposure");
@@ -267,30 +105,30 @@ class PostFilterHDR: PostFilter
         shutterFpsLoc = glGetUniformLocation(shaderProgram, "shutterFps");
         timeStepLoc = glGetUniformLocation(shaderProgram, "timeStep");
     }
-    
+
     override void bind(RenderingContext* rc)
     {
         super.bind(rc);
-        
+
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, velocityTexture);
-        
+
         glActiveTexture(GL_TEXTURE3);
         if (colorTable)
             colorTable.bind();
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glActiveTexture(GL_TEXTURE0);
-        
+
         glActiveTexture(GL_TEXTURE4);
         if (vignette)
             vignette.bind();
-            
+
         glActiveTexture(GL_TEXTURE5);
         glBindTexture(GL_TEXTURE_2D, inputBuffer.gbuffer.positionTexture);
 
         glActiveTexture(GL_TEXTURE0);
-        
+
         glUniform1i(fbPositionLoc, 5);
         glUniform1i(fbVelocityLoc, 2);
         glUniform1i(colorTableLoc, 3);
@@ -304,23 +142,23 @@ class PostFilterHDR: PostFilter
         glUniform1f(shutterFpsLoc, shutterFps);
         glUniform1f(timeStepLoc, rc.eventManager.deltaTime);
     }
-    
+
     override void unbind(RenderingContext* rc)
     {
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, 0);
-    
+
         glActiveTexture(GL_TEXTURE3);
         if (colorTable)
             colorTable.unbind();
-        
+
         glActiveTexture(GL_TEXTURE4);
         if (vignette)
             vignette.unbind();
-            
+
         glActiveTexture(GL_TEXTURE5);
         glBindTexture(GL_TEXTURE_2D, 0);
-            
+
         glActiveTexture(GL_TEXTURE0);
     }
 }

@@ -33,41 +33,8 @@ import dagon.graphics.framebuffer;
 
 class PostFilterFinalizer: PostFilter
 {
-    private string vs = "
-        #version 330 core
-        
-        uniform mat4 modelViewMatrix;
-        uniform mat4 projectionMatrix;
-
-        uniform vec2 viewSize;
-        
-        layout (location = 0) in vec2 va_Vertex;
-        layout (location = 1) in vec2 va_Texcoord;
-
-        out vec2 texCoord;
-        
-        void main()
-        {
-            texCoord = va_Texcoord;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(va_Vertex * viewSize, 0.0, 1.0);
-        }
-    ";
-
-    private string fs = "
-        #version 330 core
-        
-        uniform sampler2D fbColor;
-        uniform vec2 viewSize;
-        
-        in vec2 texCoord;
-        out vec4 frag_color;
-
-        void main()
-        {
-            vec3 color = texture(fbColor, texCoord).xyz;  
-            frag_color = vec4(color, 1.0); 
-        }
-    ";
+    private string vs = import("Finalizer.vs");
+    private string fs = import("Finalizer.fs");
 
     override string vertexShader()
     {

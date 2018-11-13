@@ -34,80 +34,10 @@ import dagon.graphics.postproc;
 import dagon.graphics.framebuffer;
 import dagon.graphics.rc;
 
-/*
- * Gaussian blur implementation is based on code by Matt DesLauriers:
- * https://github.com/Jam3/glsl-fast-gaussian-blur
- */
-
 class PostFilterBlur: PostFilter
 {
-    private string vs = "
-        #version 330 core
-        
-        uniform mat4 modelViewMatrix;
-        uniform mat4 projectionMatrix;
-
-        uniform vec2 viewSize;
-        
-        layout (location = 0) in vec2 va_Vertex;
-        layout (location = 1) in vec2 va_Texcoord;
-
-        out vec2 texCoord;
-        
-        void main()
-        {
-            texCoord = va_Texcoord;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(va_Vertex * viewSize, 0.0, 1.0);
-        }
-    ";
-
-    private string fs = "
-        #version 330 core
-        
-        uniform bool enabled;
-        
-        uniform sampler2D fbColor;
-        uniform vec2 viewSize;
-        uniform vec2 direction;
-        
-        in vec2 texCoord;
-        out vec4 frag_color;
-        
-        vec4 blur9(sampler2D image, vec2 uv, vec2 resolution, vec2 direction)
-        {
-            vec4 color = vec4(0.0);
-            vec2 off1 = vec2(1.3846153846) * direction;
-            vec2 off2 = vec2(3.2307692308) * direction;
-            color += texture(image, uv) * 0.2270270270;
-            color += texture(image, uv + (off1 / resolution)) * 0.3162162162;
-            color += texture(image, uv - (off1 / resolution)) * 0.3162162162;
-            color += texture(image, uv + (off2 / resolution)) * 0.0702702703;
-            color += texture(image, uv - (off2 / resolution)) * 0.0702702703;
-            return color;
-        }
-        
-        const float weight[5] = float[](0.227027, 0.1945946, 0.1216216, 0.054054, 0.016216);
-
-        void main()
-        {
-            vec2 fragCoord = gl_FragCoord.xy;
-            vec2 invScreenSize = 1.0 / viewSize;
-
-            vec3 color;
-            if (enabled)
-            {
-                color = blur9(fbColor, texCoord, viewSize, direction).rgb;            
-            }
-            else
-            {                
-                color = vec3(0.0, 0.0, 0.0);
-            }
-            
-            color = clamp(color, vec3(0.0), vec3(1.0));
-        
-            frag_color = vec4(color, 1.0); 
-        }
-    ";
+    private string vs = import("Blur.vs");
+    private string fs = import("Blur.fs");
 
     override string vertexShader()
     {
@@ -118,28 +48,28 @@ class PostFilterBlur: PostFilter
     {
         return fs;
     }
-    
+
     GLint directionLoc;
-    
+
     Vector2f direction;
-    float radius = 1.0f; 
+    float radius = 1.0f;
 
     this(bool horizontal, Framebuffer inputBuffer, Framebuffer outputBuffer, Owner o)
     {
         super(inputBuffer, outputBuffer, o);
-        
+
         directionLoc = glGetUniformLocation(shaderProgram, "direction");
-        
+
         if (horizontal)
             direction = Vector2f(1.0f, 0.0f);
         else
             direction = Vector2f(0.0f, 1.0f);
     }
-    
+
     override void bind(RenderingContext* rc)
     {
         super.bind(rc);
-        
+
         Vector2f dirScaled = direction * radius;
         glUniform2fv(directionLoc, 1, dirScaled.arrayof.ptr);
     }
