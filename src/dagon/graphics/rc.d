@@ -69,10 +69,8 @@ struct RenderingContext
 
     Material material;
 
-    // TODO: use Shader
     Shader overrideShader;
     Material overrideMaterial;
-    GenericMaterialBackend overrideMaterialBackend;
 
     float time;
     float blurMask;
@@ -105,7 +103,6 @@ struct RenderingContext
         eventManager = emngr;
         environment = env;
         overrideMaterial = null;
-        overrideMaterialBackend = null;
         time = 0.0f;
         depthPass = true;
         colorPass = true;

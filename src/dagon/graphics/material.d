@@ -41,6 +41,7 @@ import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.graphics.texture;
 import dagon.graphics.rc;
+import dagon.graphics.shader;
 
 enum
 {
@@ -124,22 +125,63 @@ MaterialInput materialInput(float v)
     return mi;
 }
 
-// TODO: combine Material, GenericMaterial and ShaderMaterial into one
+enum int None = 0;
 
-abstract class Material: Owner
+enum int ShadowFilterNone = 0;
+enum int ShadowFilterPCF = 1;
+
+enum int ParallaxNone = 0;
+enum int ParallaxSimple = 1;
+enum int ParallaxOcclusionMapping = 2;
+
+enum int Opaque = 0;
+enum int Transparent = 1;
+enum int Additive = 2;
+
+class Material: Owner
 {
     Dict!(MaterialInput, string) inputs;
+    Shader shader;
+    bool customShader = false;
 
-    this(Owner o)
+    this(Shader shader, Owner o)
     {
         super(o);
 
         inputs = New!(Dict!(MaterialInput, string));
+        setStandardInputs();
+        this.shader = shader;
     }
 
     ~this()
     {
         Delete(inputs);
+    }
+
+    void setStandardInputs()
+    {
+        setInput("diffuse", Color4f(0.8f, 0.8f, 0.8f, 1.0f));
+        setInput("specular", Color4f(1.0f, 1.0f, 1.0f, 1.0f));
+        setInput("shadeless", false);
+        setInput("emission", Color4f(0.0f, 0.0f, 0.0f, 1.0f));
+        setInput("energy", 1.0f);
+        setInput("transparency", 1.0f);
+        setInput("roughness", 0.5f);
+        setInput("metallic", 0.0f);
+        setInput("normal", Vector3f(0.0f, 0.0f, 1.0f));
+        setInput("height", 0.0f);
+        setInput("parallax", ParallaxNone);
+        setInput("parallaxScale", 0.03f);
+        setInput("parallaxBias", -0.01f);
+        setInput("shadowsEnabled", true);
+        setInput("shadowFilter", ShadowFilterPCF);
+        setInput("fogEnabled", true);
+        setInput("blending", Opaque);
+        setInput("culling", true);
+        setInput("colorWrite", true);
+        setInput("depthWrite", true);
+        setInput("particleColor", Color4f(1.0f, 1.0f, 1.0f, 1.0f));
+        setInput("particleSphericalNormal", false);
     }
 
     final auto opDispatch(string name)() @property
@@ -345,7 +387,159 @@ abstract class Material: Owner
         return tex;
     }
 
-    void bind(RenderingContext* rc);
-    void unbind(RenderingContext* rc);
+    bool isTransparent()
+    {
+        auto iblending = "blending" in inputs;
+        int b = iblending.asInteger;
+        return (b == Transparent || b == Additive);
+    }
+
+    bool usesCustomShader()
+    {
+        return customShader;
+    }
+
+    void bind(RenderingContext* rc)
+    {
+        /*
+        auto iblending = "blending" in inputs;
+        auto iculling = "culling" in inputs;
+        auto icolorWrite = "colorWrite" in inputs;
+        auto idepthWrite = "depthWrite" in inputs;
+
+        if (iblending.asInteger == Transparent)
+        {
+            glEnablei(GL_BLEND, 0);
+            glEnablei(GL_BLEND, 1);
+            glEnablei(GL_BLEND, 2);
+            glBlendFunci(0, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glBlendFunci(1, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glBlendFunci(2, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        }
+        else if (iblending.asInteger == Additive)
+        {
+            glEnablei(GL_BLEND, 0);
+            glEnablei(GL_BLEND, 1);
+            glBlendFunci(0, GL_SRC_ALPHA, GL_ONE);
+            glBlendFunci(1, GL_SRC_ALPHA, GL_ONE);
+            glBlendFunci(2, GL_SRC_ALPHA, GL_ONE);
+        }
+
+        if (iculling.asBool)
+        {
+            glEnable(GL_CULL_FACE);
+        }
+
+        if (!icolorWrite.asBool)
+        {
+            glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+        }
+
+        if (!idepthWrite.asBool && !rc.shadowPass)
+        {
+            glDepthMask(GL_FALSE);
+        }
+        */
+
+        auto iblending = "blending" in inputs;
+        auto iculling = "culling" in inputs;
+        auto icolorWrite = "colorWrite" in inputs;
+        auto idepthWrite = "depthWrite" in inputs;
+
+        if (iblending.asInteger == Transparent)
+        {
+            glEnablei(GL_BLEND, 0);
+            glEnablei(GL_BLEND, 1);
+            glEnablei(GL_BLEND, 2);
+            glBlendFunci(0, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glBlendFunci(1, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glBlendFunci(2, GL_SRC_ALPHA, GL_ONE);
+        }
+        else if (iblending.asInteger == Additive)
+        {
+            glEnablei(GL_BLEND, 0);
+            glEnablei(GL_BLEND, 1);
+            glEnablei(GL_BLEND, 2);
+            glBlendFunci(0, GL_SRC_ALPHA, GL_ONE);
+            glBlendFunci(1, GL_SRC_ALPHA, GL_ONE);
+            glBlendFunci(2, GL_SRC_ALPHA, GL_ONE);
+        }
+
+        if (iculling.asBool)
+        {
+            glEnable(GL_CULL_FACE);
+        }
+
+        if (!icolorWrite.asBool)
+        {
+            glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+        }
+
+        if (!idepthWrite.asBool && !rc.shadowPass)
+        {
+            glDepthMask(GL_FALSE);
+        }
+
+        RenderingContext rcLocal = *rc;
+        rcLocal.material = this;
+
+        if (rc.overrideShader)
+            rc.overrideShader.bind(&rcLocal);
+        else if (shader)
+            shader.bind(&rcLocal);
+    }
+
+    void unbind(RenderingContext* rc)
+    {
+/*
+        auto icolorWrite = "colorWrite" in inputs;
+        auto idepthWrite = "depthWrite" in inputs;
+
+        if (!idepthWrite.asBool && rc.depthPass)
+        {
+            glDepthMask(GL_TRUE);
+        }
+
+        if (!icolorWrite.asBool && rc.colorPass)
+        {
+            glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        }
+
+        glDisable(GL_CULL_FACE);
+
+        glDisablei(GL_BLEND, 0);
+        glDisablei(GL_BLEND, 1);
+        glDisablei(GL_BLEND, 2);
+*/
+
+        auto icolorWrite = "colorWrite" in inputs;
+        auto idepthWrite = "depthWrite" in inputs;
+
+        RenderingContext rcLocal = *rc;
+        rcLocal.material = this;
+
+        if (rc.overrideShader)
+            rc.overrideShader.unbind(&rcLocal);
+        else if (shader)
+            shader.unbind(&rcLocal);
+
+        if (!idepthWrite.asBool && rc.depthPass)
+        {
+            glDepthMask(GL_TRUE);
+        }
+
+        if (!icolorWrite.asBool && rc.colorPass)
+        {
+            glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        }
+
+        glDisable(GL_CULL_FACE);
+
+        glDisablei(GL_BLEND, 0);
+        glDisablei(GL_BLEND, 1);
+        glDisablei(GL_BLEND, 2);
+    }
 }
 
+deprecated alias GenericMaterial = Material;
+deprecated alias ShaderMaterial = Material;

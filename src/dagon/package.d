@@ -87,7 +87,7 @@ public
     import dagon.graphics.deferred;
     import dagon.graphics.renderer;
 
-    import dagon.graphics.materials.generic;
+    //import dagon.graphics.materials.generic;
 
     import dagon.graphics.shaders.shadowpass;
     import dagon.graphics.shaders.geometrypass;
