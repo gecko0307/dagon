@@ -57,6 +57,19 @@ enum
     CMagenta = Color4f(1.0f, 0.0f, 1.0f, 1.0f)
 }
 
+enum int None = 0;
+
+enum int ShadowFilterNone = 0;
+enum int ShadowFilterPCF = 1;
+
+enum int ParallaxNone = 0;
+enum int ParallaxSimple = 1;
+enum int ParallaxOcclusionMapping = 2;
+
+enum int Opaque = 0;
+enum int Transparent = 1;
+enum int Additive = 2;
+
 enum MaterialInputType
 {
     Undefined,
@@ -124,19 +137,6 @@ MaterialInput materialInput(float v)
     mi.type = MaterialInputType.Float;
     return mi;
 }
-
-enum int None = 0;
-
-enum int ShadowFilterNone = 0;
-enum int ShadowFilterPCF = 1;
-
-enum int ParallaxNone = 0;
-enum int ParallaxSimple = 1;
-enum int ParallaxOcclusionMapping = 2;
-
-enum int Opaque = 0;
-enum int Transparent = 1;
-enum int Additive = 2;
 
 class Material: Owner
 {
@@ -480,3 +480,5 @@ class Material: Owner
     }
 }
 
+deprecated("use `Material` instead") alias GenericMaterial = Material;
+deprecated("use `Material` instead") alias ShaderMaterial = Material;
