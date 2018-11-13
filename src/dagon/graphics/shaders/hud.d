@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2018 Timur Gafarov
+Copyright (c) 2018 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,70 +25,66 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.graphics.materials.hud;
+module dagon.graphics.shaders.hud;
 
 import std.stdio;
 import std.math;
 import std.conv;
 
 import dlib.core.memory;
+import dlib.core.stream;
 import dlib.math.vector;
 import dlib.math.matrix;
+import dlib.math.transformation;
 import dlib.image.color;
-import dlib.image.unmanaged;
 
 import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.graphics.rc;
-import dagon.graphics.material;
-import dagon.graphics.materials.generic;
+import dagon.graphics.shader;
+import dagon.graphics.texture;
 
-// TODO: port to Shader
-
-class HUDMaterialBackend: GLSLMaterialBackend
+class HUDShader: Shader
 {
-    private string vsText = import("HUD.vs");
-    private string fsText = import("HUD.fs");
-
-    override string vertexShaderSrc() {return vsText;}
-    override string fragmentShaderSrc() {return fsText;}
-
-    GLint modelViewMatrixLoc;
-    GLint projectionMatrixLoc;
-    GLint diffuseTextureLoc;
+    string vs = import("HUD.vs");
+    string fs = import("HUD.fs");
 
     this(Owner o)
     {
-        super(o);
-
-        modelViewMatrixLoc = glGetUniformLocation(shaderProgram, "modelViewMatrix");
-        projectionMatrixLoc = glGetUniformLocation(shaderProgram, "projectionMatrix");
-        diffuseTextureLoc = glGetUniformLocation(shaderProgram, "diffuseTexture");
+        auto myProgram = New!ShaderProgram(vs, fs, this);
+        super(myProgram, o);
     }
 
-    override void bind(GenericMaterial mat, RenderingContext* rc)
+    override void bind(RenderingContext* rc)
     {
-        auto idiffuse = "diffuse" in mat.inputs;
-
-        glUseProgram(shaderProgram);
+        auto idiffuse = "diffuse" in rc.material.inputs;
 
         // Matrices
-        glUniformMatrix4fv(modelViewMatrixLoc, 1, GL_FALSE, rc.modelViewMatrix.arrayof.ptr);
-        glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, rc.projectionMatrix.arrayof.ptr);
+        setParameter("modelViewMatrix", rc.modelViewMatrix);
+        setParameter("projectionMatrix", rc.projectionMatrix);
 
-        // Texture 0 - diffuse texture
-        if (idiffuse.texture is null)
+        // diffuse
+        if (idiffuse.texture)
         {
-            Color4f color = Color4f(idiffuse.asVector4f);
-            idiffuse.texture = makeOnePixelTexture(mat, color);
+            glActiveTexture(GL_TEXTURE0);
+            idiffuse.texture.bind();
+            setParameter("diffuseTexture", 0);
+            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
         }
-        glActiveTexture(GL_TEXTURE0);
-        idiffuse.texture.bind();
-        glUniform1i(diffuseTextureLoc, 0);
+        else
+        {
+            setParameter("diffuseVector", rc.material.diffuse.asVector4f);
+            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
+        }
+
+        super.bind(rc);
     }
 
-    override void unbind(GenericMaterial mat, RenderingContext* rc)
+    override void unbind(RenderingContext* rc)
     {
-        glUseProgram(0);
+        super.unbind(rc);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
 }

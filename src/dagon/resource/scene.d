@@ -48,6 +48,7 @@ import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.core.event;
 import dagon.core.application;
+
 import dagon.resource.asset;
 import dagon.resource.textasset;
 import dagon.resource.textureasset;
@@ -55,6 +56,7 @@ import dagon.resource.fontasset;
 import dagon.resource.obj;
 import dagon.resource.iqm;
 import dagon.resource.packageasset;
+
 import dagon.graphics.environment;
 import dagon.graphics.rc;
 import dagon.graphics.view;
@@ -63,23 +65,25 @@ import dagon.graphics.light;
 import dagon.graphics.shadow;
 import dagon.graphics.texture;
 import dagon.graphics.particles;
-import dagon.graphics.materials.generic;
-//import dagon.graphics.materials.standard;
-import dagon.graphics.materials.hud;
-//import dagon.graphics.materials.particle;
 import dagon.graphics.framebuffer;
+import dagon.graphics.renderer;
+import dagon.graphics.postproc;
+
+import dagon.graphics.materials.generic;
+
 import dagon.graphics.shader;
 import dagon.graphics.shaders.standard;
 import dagon.graphics.shaders.sky;
 import dagon.graphics.shaders.particle;
-import dagon.graphics.renderer;
-import dagon.graphics.postproc;
+import dagon.graphics.shaders.hud;
+
 import dagon.graphics.filters.fxaa;
 import dagon.graphics.filters.lens;
 import dagon.graphics.filters.hdrprepass;
 import dagon.graphics.filters.hdr;
 import dagon.graphics.filters.blur;
 import dagon.graphics.filters.finalizer;
+
 import dagon.logics.entity;
 
 class BaseScene: EventListener
@@ -693,7 +697,7 @@ class Scene: BaseScene
 
     ShapeQuad loadingProgressBar;
     Entity eLoadingProgressBar;
-    HUDMaterialBackend hudMaterialBackend;
+    HUDShader hudShader;
     GenericMaterial mLoadingProgressBar;
 
     double timer = 0.0;
@@ -712,8 +716,8 @@ class Scene: BaseScene
         loadingProgressBar = New!ShapeQuad(assetManager);
         eLoadingProgressBar = New!Entity(eventManager, assetManager);
         eLoadingProgressBar.drawable = loadingProgressBar;
-        hudMaterialBackend = New!HUDMaterialBackend(assetManager);
-        mLoadingProgressBar = New!GenericMaterial(hudMaterialBackend, assetManager); //createGenericMaterial(hudMaterialBackend);
+        hudShader = New!HUDShader(assetManager);
+        mLoadingProgressBar = createMaterial(hudShader);
         mLoadingProgressBar.diffuse = Color4f(1, 1, 1, 1);
         eLoadingProgressBar.material = mLoadingProgressBar;
     }
