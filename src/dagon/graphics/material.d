@@ -480,5 +480,3 @@ class Material: Owner
     }
 }
 
-deprecated alias GenericMaterial = Material;
-deprecated alias ShaderMaterial = Material;

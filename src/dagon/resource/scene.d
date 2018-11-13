@@ -69,7 +69,7 @@ import dagon.graphics.framebuffer;
 import dagon.graphics.renderer;
 import dagon.graphics.postproc;
 
-import dagon.graphics.materials.generic;
+import dagon.graphics.material;
 
 import dagon.graphics.shader;
 import dagon.graphics.shaders.standard;
@@ -383,7 +383,7 @@ class Scene: BaseScene
 	StandardShader standardShader;
     SkyShader skyShader;
     ParticleShader particleShader;
-    GenericMaterial defaultMaterial3D;
+    Material defaultMaterial3D;
 
     RenderingContext rc3d;
     RenderingContext rc2d;
@@ -698,7 +698,7 @@ class Scene: BaseScene
     ShapeQuad loadingProgressBar;
     Entity eLoadingProgressBar;
     HUDShader hudShader;
-    GenericMaterial mLoadingProgressBar;
+    Material mLoadingProgressBar;
 
     double timer = 0.0;
     double fixedTimeStep = 1.0 / 60.0;
@@ -872,12 +872,12 @@ class Scene: BaseScene
         return e;
     }
 
-    Entity createSky(GenericMaterial mat = null)
+    Entity createSky(Material mat = null)
     {
-        GenericMaterial matSky;
+        Material matSky;
         if (mat is null)
         {
-            matSky = New!ShaderMaterial(skyShader, assetManager);
+            matSky = New!Material(skyShader, assetManager);
             matSky.depthWrite = false;
         }
         else
@@ -897,24 +897,24 @@ class Scene: BaseScene
         return eSky;
     }
 
-    ShaderMaterial createMaterial(Shader shader)
+    Material createMaterial(Shader shader)
     {
-        auto m = New!ShaderMaterial(shader, assetManager);
+        auto m = New!Material(shader, assetManager);
         if (shader !is standardShader)
             m.customShader = true;
         return m;
     }
 
-    ShaderMaterial createMaterial()
+    Material createMaterial()
     {
         return createMaterial(standardShader);
     }
 
-    GenericMaterial createParticleMaterial(Shader shader = null)
+    Material createParticleMaterial(Shader shader = null)
     {
         if (shader is null)
             shader = particleShader;
-        return New!ShaderMaterial(shader, assetManager);
+        return New!Material(shader, assetManager);
     }
 
     LightSource createLight(Vector3f position, Color4f color, float energy, float volumeRadius, float areaRadius = 0.0f)

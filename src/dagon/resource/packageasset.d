@@ -55,14 +55,13 @@ import dagon.resource.props;
 import dagon.graphics.mesh;
 import dagon.graphics.texture;
 import dagon.graphics.material;
-import dagon.graphics.materials.generic;
 import dagon.logics.entity;
 
 /*
  * A simple asset package format based on Box container (https://github.com/gecko0307/box).
  * It is an archive that stores entities, meshes, materials and textures.
  */
- 
+
 class PackageAssetOwner: Owner
 {
     this(Owner o)
@@ -77,7 +76,7 @@ class PackageAsset: Asset
     Dict!(EntityAsset, string) entities;
     Dict!(TextureAsset, string) textures;
     Dict!(MaterialAsset, string) materials;
-    
+
     string filename;
     string index;
     BoxFileSystem boxfs;
@@ -90,7 +89,7 @@ class PackageAsset: Asset
     {
         super(o);
         this.scene = scene;
-        
+
         rootEntity = New!Entity(scene.eventManager, this);
     }
 
@@ -107,26 +106,26 @@ class PackageAsset: Asset
         textures = New!(Dict!(TextureAsset, string))();
         materials = New!(Dict!(MaterialAsset, string))();
         boxfs = New!BoxFileSystem(fs, filename);
-        
+
         if (fileExists("INDEX"))
         {
             auto fstrm = boxfs.openForInput("INDEX");
             index = readText(fstrm);
             Delete(fstrm);
         }
-        
+
         assetManager = mngr;
-        
+
         assetOwner = New!PackageAssetOwner(null);
-        
+
         return true;
     }
 
     override bool loadThreadUnsafePart()
-    {        
+    {
         return true;
     }
-    
+
     bool loadAsset(Asset asset, string filename)
     {
         if (!fileExists(filename))
@@ -134,12 +133,12 @@ class PackageAsset: Asset
             writefln("Error: cannot find file \"%s\" in package", filename);
             return false;
         }
-        
+
         auto fstrm = boxfs.openForInput(filename);
         bool res = asset.loadThreadSafePart(filename, fstrm, boxfs, assetManager);
         asset.threadSafePartLoaded = res;
         Delete(fstrm);
-        
+
         if (!res)
         {
             writefln("Error: failed to load asset \"%s\" from package", filename);
@@ -160,7 +159,7 @@ class PackageAsset: Asset
             }
         }
     }
-    
+
     Mesh mesh(string filename)
     {
         if (!(filename in meshes))
@@ -181,7 +180,7 @@ class PackageAsset: Asset
             return meshes[filename].mesh;
         }
     }
-    
+
     Entity entity(string filename)
     {
         if (!(filename in entities))
@@ -191,14 +190,14 @@ class PackageAsset: Asset
             if (loadAsset(entityAsset, filename))
             {
                 entities[filename] = entityAsset;
-                
+
                 Entity parent = rootEntity;
-                
+
                 if ("parent" in entityAsset.props)
                 {
                     parent = entity(entityAsset.props.parent.toString);
                 }
-                
+
                 entityAsset.entity = New!Entity(parent, assetOwner);
                 entityAsset.entity.visible = true;
                 entityAsset.entity.castShadow = true;
@@ -206,62 +205,62 @@ class PackageAsset: Asset
                 entityAsset.entity.layer = 1;
                 entityAsset.entity.solid = true;
                 entityAsset.entity.material = scene.defaultMaterial3D;
-                
+
                 if ("position" in entityAsset.props)
                 {
                     entityAsset.entity.position = entityAsset.props.position.toVector3f;
                 }
-    
+
                 if ("rotation" in entityAsset.props)
                 {
                     entityAsset.entity.rotation = Quaternionf(entityAsset.props.rotation.toVector4f).normalized;
                 }
-    
+
                 if ("scale" in entityAsset.props)
                 {
                     entityAsset.entity.scaling = entityAsset.props.scale.toVector3f;
                 }
-   
+
                 entityAsset.entity.updateTransformation();
-                
+
                 if ("visible" in entityAsset.props)
                 {
                     entityAsset.entity.visible = entityAsset.props.visible.toBool;
                 }
-                
+
                 if ("castShadow" in entityAsset.props)
                 {
                     entityAsset.entity.castShadow = entityAsset.props.castShadow.toBool;
                 }
-                
+
                 if ("useMotionBlur" in entityAsset.props)
                 {
                     entityAsset.entity.useMotionBlur = entityAsset.props.useMotionBlur.toBool;
                 }
-                
+
                 if ("solid" in entityAsset.props)
                 {
                     entityAsset.entity.solid = entityAsset.props.solid.toBool;
                 }
-                
+
                 if ("layer" in entityAsset.props)
                 {
                     entityAsset.entity.layer = entityAsset.props.layer.toInt;
                 }
-                
+
                 if ("mesh" in entityAsset.props)
                 {
                     entityAsset.entity.drawable = mesh(entityAsset.props.mesh.toString);
                 }
-    
+
                 if ("material" in entityAsset.props)
                 {
                     entityAsset.entity.material = material(entityAsset.props.material.toString);
                 }
-                
+
                 if (entityAsset.entity.parent)
                     scene.sortEntities(entityAsset.entity.parent.children);
-    
+
                 return entityAsset.entity;
             }
             else
@@ -274,7 +273,7 @@ class PackageAsset: Asset
             return entities[filename].entity;
         }
     }
-    
+
     Texture texture(string filename)
     {
         if (!(filename in textures))
@@ -295,8 +294,8 @@ class PackageAsset: Asset
             return textures[filename].texture;
         }
     }
-    
-    GenericMaterial material(string filename)
+
+    Material material(string filename)
     {
         if (!(filename in materials))
         {
@@ -305,7 +304,7 @@ class PackageAsset: Asset
             {
                 materials[filename] = matAsset;
                 matAsset.material = createMaterial();
-                
+
                 // diffuse
                 if ("diffuse" in matAsset.props)
                 {
@@ -319,7 +318,7 @@ class PackageAsset: Asset
                         matAsset.material.diffuse = Color4f(diffCol.r, diffCol.g, diffCol.b, 1.0f);
                     }
                 }
-                
+
                 // emission
                 if ("emission" in matAsset.props)
                 {
@@ -333,13 +332,13 @@ class PackageAsset: Asset
                         matAsset.material.emission = Color4f(emissionCol.r, emissionCol.g, emissionCol.b, 1.0f);
                     }
                 }
-                
+
                 // energy
                 if ("energy" in matAsset.props)
                 {
                     matAsset.material.energy = matAsset.props.energy.toFloat;
                 }
-                
+
                 // normal
                 if ("normal" in matAsset.props)
                 {
@@ -348,7 +347,7 @@ class PackageAsset: Asset
                         matAsset.material.normal = texture(matAsset.props.normal.toString);
                     }
                 }
- 
+
                 // height
                 if ("height" in matAsset.props)
                 {
@@ -357,7 +356,7 @@ class PackageAsset: Asset
                         matAsset.material.height = texture(matAsset.props.height.toString);
                     }
                 }
-                
+
                 // roughness
                 if ("roughness" in matAsset.props)
                 {
@@ -370,7 +369,7 @@ class PackageAsset: Asset
                         matAsset.material.roughness = matAsset.props.roughness.toFloat;
                     }
                 }
-                
+
                 // metallic
                 if ("metallic" in matAsset.props)
                 {
@@ -383,79 +382,79 @@ class PackageAsset: Asset
                         matAsset.material.metallic = matAsset.props.metallic.toFloat;
                     }
                 }
-                
+
                 // parallax
                 if ("parallax" in matAsset.props)
                 {
                     matAsset.material.parallax = matAsset.props.parallax.toInt;
                 }
-                
+
                 // parallaxScale
                 if ("parallaxScale" in matAsset.props)
                 {
                     matAsset.material.parallaxScale = matAsset.props.parallaxScale.toFloat;
                 }
-                
+
                 // parallaxBias
                 if ("parallaxBias" in matAsset.props)
                 {
                     matAsset.material.parallaxBias = matAsset.props.parallaxBias.toFloat;
                 }
-                
+
                 // shadeless
                 if ("shadeless" in matAsset.props)
                 {
                     matAsset.material.shadeless = matAsset.props.shadeless.toBool;
                 }
-                
+
                 // culling
                 if ("culling" in matAsset.props)
                 {
                     matAsset.material.culling = matAsset.props.culling.toBool;
                 }
-                
+
                 // colorWrite
                 if ("colorWrite" in matAsset.props)
                 {
                     matAsset.material.colorWrite = matAsset.props.colorWrite.toBool;
                 }
-                
+
                 // depthWrite
                 if ("depthWrite" in matAsset.props)
                 {
                     matAsset.material.depthWrite = matAsset.props.depthWrite.toBool;
                 }
-                
+
                 // useShadows
                 if ("useShadows" in matAsset.props)
                 {
                     matAsset.material.shadowsEnabled = matAsset.props.useShadows.toBool;
                 }
-                
+
                 // useFog
                 if ("useFog" in matAsset.props)
                 {
                     matAsset.material.fogEnabled = matAsset.props.useFog.toBool;
                 }
-                
+
                 // shadowFilter
                 if ("shadowFilter" in matAsset.props)
                 {
                     matAsset.material.shadowFilter = matAsset.props.shadowFilter.toInt;
                 }
-                
+
                 // blendingMode
                 if ("blendingMode" in matAsset.props)
                 {
                     matAsset.material.blending = matAsset.props.blendingMode.toInt;
                 }
-                
+
                 // transparency
                 if ("transparency" in matAsset.props)
                 {
                     matAsset.material.transparency = matAsset.props.transparency.toFloat;
                 }
-                
+
                 return matAsset.material;
             }
             else
@@ -468,7 +467,7 @@ class PackageAsset: Asset
             return materials[filename].material;
         }
     }
-    
+
     Entity entity()
     {
         if (index.length)
@@ -476,16 +475,16 @@ class PackageAsset: Asset
         {
             Entity e = entity(path);
         }
-    
+
         return rootEntity;
     }
-    
-    GenericMaterial createMaterial()
+
+    Material createMaterial()
     {
-        auto m = New!ShaderMaterial(scene.standardShader, assetOwner);
+        auto m = New!Material(scene.standardShader, assetOwner);
         return m;
     }
-    
+
     bool fileExists(string filename)
     {
         FileStat stat;
@@ -495,12 +494,12 @@ class PackageAsset: Asset
     override void release()
     {
         Delete(boxfs);
-        
+
         Delete(meshes);
         Delete(entities);
         Delete(textures);
         Delete(materials);
-        
+
         Delete(assetOwner);
 
         rootEntity.release();

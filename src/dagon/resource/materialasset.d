@@ -38,13 +38,13 @@ import dlib.text.utils;
 import dagon.core.ownership;
 import dagon.resource.asset;
 import dagon.resource.props;
-import dagon.graphics.materials.generic;
+import dagon.graphics.material;
 
 class MaterialAsset: Asset
 {
     string text;
     Properties props;
-    GenericMaterial material;
+    Material material;
 
     this(Owner o)
     {

@@ -48,7 +48,6 @@ import dagon.graphics.texture;
 import dagon.graphics.view;
 import dagon.graphics.rc;
 import dagon.graphics.material;
-import dagon.graphics.materials.generic;
 import dagon.graphics.mesh;
 
 struct Particle
@@ -212,7 +211,7 @@ class Emitter: Behaviour
 
     bool emitting = true;
 
-    GenericMaterial material;
+    Material material;
 
     Entity particleEntity;
 

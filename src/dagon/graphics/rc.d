@@ -36,7 +36,6 @@ import dagon.core.libs;
 import dagon.core.event;
 import dagon.graphics.environment;
 import dagon.graphics.material;
-import dagon.graphics.materials.generic;
 import dagon.graphics.shader;
 
 struct RenderingContext

@@ -24,7 +24,9 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-deprecated
 module dagon.graphics.materials.generic;
 
 public import dagon.graphics.material;
+
+deprecated("use dagon.graphics.material.Material instead") alias GenericMaterial = Material;
+deprecated("use dagon.graphics.material.Material instead") alias ShaderMaterial = Material;

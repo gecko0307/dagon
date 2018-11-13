@@ -41,7 +41,7 @@ import dagon.core.ownership;
 import dagon.core.event;
 import dagon.logics.controller;
 import dagon.logics.behaviour;
-import dagon.graphics.materials.generic;
+import dagon.graphics.material;
 import dagon.graphics.rc;
 
 Matrix4x4f rotationPart(Matrix4x4f m)
@@ -93,7 +93,7 @@ class Entity: Owner, Drawable
     EntityController controller;
     DefaultEntityController defaultController;
 
-    GenericMaterial material;
+    Material material;
     RenderingContext rcLocal;
 
     bool visible = true;
