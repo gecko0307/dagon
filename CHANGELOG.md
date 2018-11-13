@@ -1,3 +1,43 @@
+Dagon 0.9.0 - 13 Nov, 2018
+--------------------------
+**Important:** Dagon now officially doesn't support macOS. This is because [Apple has deprecated OpenGL](https://developer.apple.com/macos/whats-new/#deprecationofopenglandopencl) in favour of Metal, which means that there will be no OpenGL above 4.1, and notorious driver issues will not be fixed. This makes targeting macOS in a non-commercial cross-platform game engine development virtually impossible. Dagon will stick with OpenGL 4.x and platforms that support it (Windows and Linux), and there are no plans to port the engine to other graphics APIs.
+
+**Important:** This is a huge release (the biggest since 0.5.0) featuring titanic internal refactoring and API improvement, so it can break compatibility with existing projects. Resulting image can change, and some parameters may require additional tweaking. Some functionality have been removed due to switching to deferred rendering.
+
+Changes:
+- **Rendering**
+  - Dagon now uses deferred shading which results in significantly better performance on complex scenes with large number of lights. Light count is now truly unlimited (fillrate-bound). This is mainly an internal optimization that doesn't affect user API. The only significant change is handling transparent entities (entities that use non-opaque materials) - they are rendered in a separate forward pass using only sun light, and currently there's no built-in way to shade them with point/area lights
+  - Shader system has been redesigned from scratch. Now there is a `Shader` class that handles GLSL shader objects. Parameter handling was greatly simplified - all uniforms are created automatically and lazily from D/dlib types (`int`, `float`, `Vector3f` and others). Parameters can be even tied to class fields and methods via implicit references. User-defined shaders are supported - derive from `Shader` class and provide your shader object when calling `Scene.createMaterial`. Objects using such shaders fallback to forward pipeline, because in deferred path you can't have individual shaders per object
+  - All built-in shaders use GLSL 4.0 (400 core), linear colors and ITU-R Rec.709 luminance. Internal shader optimizations include GLSL 4.0 subroutines instead of branching for maximum performance in ubershaders. As a consequence, no more implicit solid color textures - animated color values are possible
+  - `dagon.graphics.clustered` module is now `dagon.graphics.light`. `ClusteredLightManager` renamed to `LightManager`. Its clustered shading functionality has been removed
+- **Materials**
+  - `Material`, `GenericMaterial` and all other material classes have been combined into one class - `Material`, which uses `Shader` objects. Material backends are completely gone
+  - Particle system improvements, including soft particles (e.g. alpha blending based on distance to underlying objects) and shaded particles (using custom or procedural normal map). Particles can now cast shadows. It is now possible to create many emitters in one particle system. An emitter can render any `Entity` as a particle. Default particle system and particle shader are now part of a `Scene` class (`Scene.particleSystem`, `Scene.particleShader`). To create particle materials, use `Scene.createParticleMaterial()` method. It is possible to use custom shader for particle material, just pass your shader instance to `Scene.createParticleMaterial`
+  - Simple water shader with procedural raindrop ripples (`dagon.graphics.shaders.water`)
+- **Environment**
+  - Experimental environment probes support
+  - Optional Rayleigh sky model (`dagon.graphics.shaders.rayleigh`)
+  - Default sky parameters were changed to more eye-pleasing ones
+  - Custom material support for `Scene.createSky`
+  - `environment.setDayTime(hours, minutes, seconds)` for quick sun/sky setup
+  - `environment.backgroundColor` is now used to clear the framebuffer
+- **Post-processing**
+  - Screen space ambient occlusion (SSAO)
+  - ACES tonemapper is now used by default
+  - Motion blur now works for background objects and particles
+  - Auto exposure now can be turned off (`Scene.hdr.autoExposure`)
+- **Assets & logics**
+  - OBJ files without normals now don't cause application crash. Mesh normals are generated if they are missing
+  - IQM loader doesn't load textures automatically anymore - all textures/materials should be explicitly set up by programmer. It is possible to apply materials to individual IQM meshes
+  - `FirstPersonView.mouseSensibility`
+  - `SceneApplication.saveScreenshot`
+- **Physics**
+  - [dmech](https://github.com/gecko0307/dmech) physics engine has been (experimentally) integrated into Dagon. Built-in rigid body and character controllers are provided
+- **Misc**
+  - Dagon now uses [BindBC] instead of Derelict to dynamically link OpenGL, SDL and Freetype
+  - Dagon now uses dlib 0.15.0
+  - Automatic deployment using Dub. Now all files necessary to run the engine (Windows DLLs, configuration files, internal resources) are copied to project directory after each build
+
 Dagon 0.8.3 - 21 Aug, 2018
 --------------------------
 * Ignore unsupported SDL2 functions.

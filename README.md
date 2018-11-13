@@ -21,7 +21,7 @@ Currently Dagon has the following features:
 * Spherical area lights
 * Normal/parallax mapping, parallax occlusion mapping
 * Cascaded shadow maps for directional light
-* Dynamic skydome with sun and day/night cycle, simple and Rayleigh sky models
+* Dynamic skydome with sun and day/night cycle. Simple and Rayleigh sky models
 * Particle system with force fields. Blended particles, soft particles, shaded particles with normal map support, particle shadows
 * Procedural water shader
 * Post-processing (FXAA, SSAO, lens distortion, motion blur, glow, LUT color grading)
@@ -55,7 +55,7 @@ Usage
 -----
 To use latest stable Dagon, add the following dependency to your `dub.json`:
 ```
-"dagon": "0.8.3"
+"dagon": "0.9.0"
 ```
 If you want to test new features, use `"dagon": "~master"`. The master should be stable enough to compile a working application, but be ready for breaking changes at any time.
 

@@ -12,7 +12,7 @@
     "stringImportPaths": ["shaders", "data/__internal"],
 
     "dependencies": {
-        "dlib": "~master"
+        "dlib": "0.15.0"
     },
 
     "versions": ["SDL_205", "GL_40"],
