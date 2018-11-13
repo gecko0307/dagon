@@ -66,6 +66,13 @@ class GeometryPassShader: Shader
         auto imetallic = "metallic" in rc.material.inputs;
         auto iemission = "emission" in rc.material.inputs;
         auto ienergy = "energy" in rc.material.inputs;
+        auto iparallax = "parallax" in rc.material.inputs;
+
+        int parallaxMethod = iparallax.asInteger;
+        if (parallaxMethod > ParallaxOcclusionMapping)
+            parallaxMethod = ParallaxOcclusionMapping;
+        if (parallaxMethod < 0)
+            parallaxMethod = 0;
 
         setParameter("layer", rc.layer);
         setParameter("blurMask", rc.blurMask);
@@ -77,12 +84,11 @@ class GeometryPassShader: Shader
         setParameter("prevModelViewProjMatrix", rc.prevModelViewProjMatrix);
         setParameter("blurModelViewProjMatrix", rc.blurModelViewProjMatrix);
 
-        // diffuse
+        // Diffuse
         if (idiffuse.texture)
         {
             glActiveTexture(GL_TEXTURE0);
             idiffuse.texture.bind();
-            //glBindTexture(GL_TEXTURE_2D, idiffuse.texture.tex);
             setParameter("diffuseTexture", cast(int)0);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
         }
@@ -92,7 +98,7 @@ class GeometryPassShader: Shader
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
         }
 
-        // normal/height
+        // Normal/height
         bool haveHeightMap = inormal.texture !is null;
         if (haveHeightMap)
             haveHeightMap = inormal.texture.image.channels == 4;
@@ -132,7 +138,9 @@ class GeometryPassShader: Shader
             setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
         }
 
-        // TODO: make material properties
+        // Height and parallax
+
+        // TODO: make these material properties
         float parallaxScale = 0.03f;
         float parallaxBias = -0.01f;
         setParameter("parallaxScale", parallaxScale);
@@ -147,9 +155,17 @@ class GeometryPassShader: Shader
             float h = -parallaxBias / parallaxScale;
             setParameter("heightScalar", h);
             setParameterSubroutine("height", ShaderType.Fragment, "heightValue");
+            parallaxMethod = ParallaxNone;
         }
 
-        // pbr
+        if (parallaxMethod == ParallaxSimple)
+            setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxSimple");
+        else if (parallaxMethod == ParallaxOcclusionMapping)
+            setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxOcclusionMapping");
+        else
+            setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxNone");
+
+        // PBR
         // TODO: pass solid values as uniforms, make subroutine for each mode
         if (ipbr is null)
         {
@@ -163,7 +179,7 @@ class GeometryPassShader: Shader
         ipbr.texture.bind();
         setParameter("pbrTexture", 2);
 
-        // emission
+        // Emission
         if (iemission.texture)
         {
             glActiveTexture(GL_TEXTURE3);

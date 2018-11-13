@@ -97,13 +97,50 @@ subroutine uniform srtHeight height;
 /*
  * Parallax mapping
  */
+subroutine vec2 srtParallax(in vec3 E, in vec2 uv, in float h);
+
 uniform float parallaxScale;
 uniform float parallaxBias;
-vec2 parallaxMapping(in vec3 E, in vec2 uv, in float height)
+
+subroutine(srtParallax) vec2 parallaxNone(in vec3 E, in vec2 uv, in float h)
 {
-    float h = height * parallaxScale + parallaxBias;
-    return uv + (h * E.xy);
+    return uv;
 }
+
+subroutine(srtParallax) vec2 parallaxSimple(in vec3 E, in vec2 uv, in float h)
+{
+    float currentHeight = h * parallaxScale + parallaxBias;
+    return uv + (currentHeight * E.xy);
+}
+
+// Based on code written by Igor Dykhta (Sun and Black Cat)
+// http://sunandblackcat.com/tipFullView.php?topicid=28
+subroutine(srtParallax) vec2 parallaxOcclusionMapping(in vec3 E, in vec2 uv, in float h)
+{
+    const float minLayers = 10.0;
+    const float maxLayers = 15.0;
+    float numLayers = mix(maxLayers, minLayers, abs(dot(vec3(0.0, 0.0, 1.0), E)));
+    float layerHeight = 1.0 / numLayers;
+    float curLayerHeight = 0.0;
+    vec2 dtex = parallaxScale * E.xy / E.z / numLayers;
+    vec2 currentTextureCoords = uv;
+
+    float currentHeight = h;
+    while(currentHeight > curLayerHeight)
+    {
+        curLayerHeight += layerHeight;
+        currentTextureCoords += dtex;
+        currentHeight = height(currentTextureCoords);
+    }
+
+    vec2 prevTCoords = currentTextureCoords - dtex;
+    float nextH = currentHeight - curLayerHeight;
+    float prevH = height(prevTCoords) - curLayerHeight + layerHeight;
+    float weight = nextH / (nextH - prevH);
+    return prevTCoords * weight + currentTextureCoords * (1.0 - weight);
+}
+
+subroutine uniform srtParallax parallax;
 
 
 /*
@@ -146,13 +183,12 @@ void main()
 
     mat3 tangentToEye = cotangentFrame(N, eyePosition, texCoord);
     vec3 tE = normalize(E * tangentToEye);
-    
+
     vec2 posScreen = (blurPosition.xy / blurPosition.w) * 0.5 + 0.5;
     vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;
     vec2 screenVelocity = posScreen - prevPosScreen;
 
-    // TODO: parallax occlusion mapping
-    vec2 shiftedTexCoord = parallaxMapping(tE, texCoord, height(texCoord));
+    vec2 shiftedTexCoord = parallax(tE, texCoord, height(texCoord));
 
     N = normal(shiftedTexCoord, -1.0, tangentToEye);
 
@@ -160,8 +196,8 @@ void main()
 
     vec4 rms = texture(pbrTexture, shiftedTexCoord);
     vec3 emiss = emission(shiftedTexCoord).rgb * emissionEnergy;
-    
-    // This is written to frag_color.w and frag_position.w 
+
+    // This is written to frag_color.w and frag_position.w
     // and determines that the fragment belongs to foreground object
     float geometryMask = float(layer > 0);
 
