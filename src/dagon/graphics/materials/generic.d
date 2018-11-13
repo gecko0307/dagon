@@ -27,20 +27,4 @@ DEALINGS IN THE SOFTWARE.
 deprecated
 module dagon.graphics.materials.generic;
 
-import std.stdio;
-import std.algorithm;
-
-import dlib.core.memory;
-import dlib.math.vector;
-import dlib.image.color;
-import dlib.image.image;
-import dlib.image.unmanaged;
-import dlib.image.render.shapes;
-
-import dagon.core.libs;
-import dagon.core.ownership;
-import dagon.graphics.texture;
-import dagon.graphics.rc;
-import dagon.graphics.shader;
-
 public import dagon.graphics.material;

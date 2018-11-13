@@ -401,46 +401,6 @@ class Material: Owner
 
     void bind(RenderingContext* rc)
     {
-        /*
-        auto iblending = "blending" in inputs;
-        auto iculling = "culling" in inputs;
-        auto icolorWrite = "colorWrite" in inputs;
-        auto idepthWrite = "depthWrite" in inputs;
-
-        if (iblending.asInteger == Transparent)
-        {
-            glEnablei(GL_BLEND, 0);
-            glEnablei(GL_BLEND, 1);
-            glEnablei(GL_BLEND, 2);
-            glBlendFunci(0, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            glBlendFunci(1, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            glBlendFunci(2, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        }
-        else if (iblending.asInteger == Additive)
-        {
-            glEnablei(GL_BLEND, 0);
-            glEnablei(GL_BLEND, 1);
-            glBlendFunci(0, GL_SRC_ALPHA, GL_ONE);
-            glBlendFunci(1, GL_SRC_ALPHA, GL_ONE);
-            glBlendFunci(2, GL_SRC_ALPHA, GL_ONE);
-        }
-
-        if (iculling.asBool)
-        {
-            glEnable(GL_CULL_FACE);
-        }
-
-        if (!icolorWrite.asBool)
-        {
-            glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-        }
-
-        if (!idepthWrite.asBool && !rc.shadowPass)
-        {
-            glDepthMask(GL_FALSE);
-        }
-        */
-
         auto iblending = "blending" in inputs;
         auto iculling = "culling" in inputs;
         auto icolorWrite = "colorWrite" in inputs;
@@ -491,27 +451,6 @@ class Material: Owner
 
     void unbind(RenderingContext* rc)
     {
-/*
-        auto icolorWrite = "colorWrite" in inputs;
-        auto idepthWrite = "depthWrite" in inputs;
-
-        if (!idepthWrite.asBool && rc.depthPass)
-        {
-            glDepthMask(GL_TRUE);
-        }
-
-        if (!icolorWrite.asBool && rc.colorPass)
-        {
-            glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-        }
-
-        glDisable(GL_CULL_FACE);
-
-        glDisablei(GL_BLEND, 0);
-        glDisablei(GL_BLEND, 1);
-        glDisablei(GL_BLEND, 2);
-*/
-
         auto icolorWrite = "colorWrite" in inputs;
         auto idepthWrite = "depthWrite" in inputs;
 
