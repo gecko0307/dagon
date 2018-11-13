@@ -76,6 +76,14 @@ class StandardShader: Shader
         bool shadeless = rc.material.boolProp("shadeless");
         bool useShadows = (shadowMap !is null) && rc.material.boolProp("shadowsEnabled");
 
+        auto iparallax = "parallax" in rc.material.inputs;
+
+        int parallaxMethod = iparallax.asInteger;
+        if (parallaxMethod > ParallaxOcclusionMapping)
+            parallaxMethod = ParallaxOcclusionMapping;
+        if (parallaxMethod < 0)
+            parallaxMethod = 0;
+
         if (idiffuse.texture)
         {
             glActiveTexture(GL_TEXTURE0);
@@ -93,7 +101,7 @@ class StandardShader: Shader
         glActiveTexture(GL_TEXTURE2);
         ipbr.texture.bind();
 
-        // emission
+        // Emission
         if (iemission.texture)
         {
             glActiveTexture(GL_TEXTURE3);
@@ -140,7 +148,7 @@ class StandardShader: Shader
             transparency = itransparency.asFloat;
         setParameter("transparency", transparency);
 
-        // diffuse
+        // Diffuse
         if (idiffuse.texture)
         {
             setParameter("diffuseTexture", 0);
@@ -152,7 +160,7 @@ class StandardShader: Shader
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
         }
 
-        // normal/height
+        // Normal/height
         bool haveHeightMap = inormal.texture !is null;
         if (haveHeightMap)
             haveHeightMap = inormal.texture.image.channels == 4;
@@ -192,7 +200,7 @@ class StandardShader: Shader
             setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
         }
 
-        // TODO: make material properties
+        // TODO: make these material properties
         float parallaxScale = 0.03f;
         float parallaxBias = -0.01f;
         setParameter("parallaxScale", parallaxScale);
@@ -204,16 +212,24 @@ class StandardShader: Shader
         }
         else
         {
-            float h = -parallaxBias / parallaxScale;
+            float h = 0.0f; //-parallaxBias / parallaxScale;
             setParameter("heightScalar", h);
             setParameterSubroutine("height", ShaderType.Fragment, "heightValue");
+            parallaxMethod = ParallaxNone;
         }
 
-        // pbr
+        if (parallaxMethod == ParallaxSimple)
+            setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxSimple");
+        else if (parallaxMethod == ParallaxOcclusionMapping)
+            setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxOcclusionMapping");
+        else
+            setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxNone");
+
+        // PBR
         // TODO: pass solid values as uniforms, make subroutine for each mode
         setParameter("pbrTexture", 2);
 
-        // environment
+        // Environment
         if (rc.environment.environmentMap)
         {
             setParameter("envTexture", 4);
@@ -229,7 +245,7 @@ class StandardShader: Shader
             setParameterSubroutine("environment", ShaderType.Fragment, "environmentSky");
         }
 
-        // shadowMap
+        // Shadow map
         if (useShadows)
         {
             setParameter("shadowMatrix1", shadowMap.area1.shadowMatrix);

@@ -152,7 +152,7 @@ class GeometryPassShader: Shader
         }
         else
         {
-            float h = -parallaxBias / parallaxScale;
+            float h = 0.0f; //-parallaxBias / parallaxScale;
             setParameter("heightScalar", h);
             setParameterSubroutine("height", ShaderType.Fragment, "heightValue");
             parallaxMethod = ParallaxNone;

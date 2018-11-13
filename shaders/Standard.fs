@@ -78,7 +78,7 @@ subroutine(srtNormal) vec3 normalValue(in vec2 uv, in float ysign, in mat3 tange
 
 uniform sampler2D normalTexture;
 subroutine(srtNormal) vec3 normalMap(in vec2 uv, in float ysign, in mat3 tangentToEye)
-{            
+{
     vec3 tN = normalize(texture(normalTexture, uv).rgb * 2.0 - 1.0);
     tN.y *= ysign;
     return normalize(tangentToEye * tN);
@@ -109,13 +109,50 @@ subroutine uniform srtHeight height;
 /*
  * Parallax mapping
  */
+subroutine vec2 srtParallax(in vec3 E, in vec2 uv, in float h);
+
 uniform float parallaxScale;
 uniform float parallaxBias;
-vec2 parallaxMapping(in vec3 E, in vec2 uv, in float height)
+
+subroutine(srtParallax) vec2 parallaxNone(in vec3 E, in vec2 uv, in float h)
 {
-    float h = height * parallaxScale + parallaxBias;
-    return uv + (h * E.xy);
+    return uv;
 }
+
+subroutine(srtParallax) vec2 parallaxSimple(in vec3 E, in vec2 uv, in float h)
+{
+    float currentHeight = h * parallaxScale + parallaxBias;
+    return uv + (currentHeight * E.xy);
+}
+
+// Based on code written by Igor Dykhta (Sun and Black Cat)
+// http://sunandblackcat.com/tipFullView.php?topicid=28
+subroutine(srtParallax) vec2 parallaxOcclusionMapping(in vec3 E, in vec2 uv, in float h)
+{
+    const float minLayers = 10.0;
+    const float maxLayers = 15.0;
+    float numLayers = mix(maxLayers, minLayers, abs(dot(vec3(0.0, 0.0, 1.0), E)));
+    float layerHeight = 1.0 / numLayers;
+    float curLayerHeight = 0.0;
+    vec2 dtex = parallaxScale * E.xy / E.z / numLayers;
+    vec2 currentTextureCoords = uv;
+
+    float currentHeight = h;
+    while(currentHeight > curLayerHeight)
+    {
+        curLayerHeight += layerHeight;
+        currentTextureCoords += dtex;
+        currentHeight = height(currentTextureCoords);
+    }
+
+    vec2 prevTCoords = currentTextureCoords - dtex;
+    float nextH = currentHeight - curLayerHeight;
+    float prevH = height(prevTCoords) - curLayerHeight + layerHeight;
+    float weight = nextH / (nextH - prevH);
+    return prevTCoords * weight + currentTextureCoords * (1.0 - weight);
+}
+
+subroutine uniform srtParallax parallax;
 
 
 /*
@@ -138,10 +175,10 @@ subroutine(srtEnv) vec3 environmentSky(in vec3 wN, in vec3 wSun, in float roughn
     float groundOrSky = pow(clamp(dot(wN, vec3(0, -1, 0)), 0.0, 1.0), p2);
 
     vec3 env = mix(
-        mix(toLinear(skyHorizonColor.rgb) * skyEnergy, 
-            toLinear(groundColor.rgb) * groundEnergy, groundOrSky), 
+        mix(toLinear(skyHorizonColor.rgb) * skyEnergy,
+            toLinear(groundColor.rgb) * groundEnergy, groundOrSky),
             toLinear(skyZenithColor.rgb) * skyEnergy, horizonOrZenith);
-            
+
     return env;
 }
 
@@ -218,7 +255,7 @@ subroutine(srtShadow) float shadowCSM()
     vec4 scoord2 = shadowCoord2;
     vec4 scoord3 = shadowCoord3;
 
-    s1 = shadowPCF(0.0, scoord1, 2.0, 0.0); 
+    s1 = shadowPCF(0.0, scoord1, 2.0, 0.0);
     s2 = shadowUnfiltered(1.0, scoord2, 0.0);
     s3 = shadowUnfiltered(2.0, scoord3, 0.0);
 
@@ -226,7 +263,7 @@ subroutine(srtShadow) float shadowCSM()
     float w2 = cascadeWeight(scoord2, 8.0);
     float w3 = cascadeWeight(scoord3, 8.0);
 
-    s3 = mix(1.0, s3, w3); 
+    s3 = mix(1.0, s3, w3);
     s2 = mix(s3, s2, w2);
     s1 = mix(s2, s1, w1);
 
@@ -301,7 +338,7 @@ subroutine(srtBRDF) vec3 brdfPBR(in vec3 albedo, in float roughness, in float me
     vec3 worldR = reflect(normalize(worldView), worldN);
     vec3 worldSun = sunDirection * mat3(viewMatrix); // TODO: move to vertex shader
 
-    vec3 f0 = vec3(0.04); 
+    vec3 f0 = vec3(0.04);
     f0 = mix(f0, albedo, metallic);
 
     // Environment light
@@ -324,7 +361,7 @@ subroutine(srtBRDF) vec3 brdfPBR(in vec3 albedo, in float roughness, in float me
         float NL = max(dot(N, L), 0.0);
         vec3 H = normalize(E + L);
 
-        float NDF = distributionGGX(N, H, roughness);        
+        float NDF = distributionGGX(N, H, roughness);
         float G = geometrySmith(N, E, L, roughness);
         vec3 F = fresnel(max(dot(H, E), 0.0), f0);
 
@@ -336,7 +373,7 @@ subroutine(srtBRDF) vec3 brdfPBR(in vec3 albedo, in float roughness, in float me
         vec3 specular = numerator / max(denominator, 0.001);
 
         vec3 radiance = toLinear(sunColor.rgb) * sunEnergy * shadow() * NL;
-        Lo += (kD * albedo / PI + specular) * radiance; 
+        Lo += (kD * albedo / PI + specular) * radiance;
     }
 
     return Lo;
@@ -399,7 +436,7 @@ void main()
     vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;
     vec2 screenVelocity = posScreen - prevPosScreen;
 
-    vec2 shiftedTexCoord = parallaxMapping(tE, texCoord, height(texCoord));
+    vec2 shiftedTexCoord = parallax(tE, texCoord, height(texCoord));
 
     N = normal(shiftedTexCoord, -1.0, tangentToEye);
 
