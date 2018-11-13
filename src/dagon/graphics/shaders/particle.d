@@ -47,14 +47,14 @@ class ParticleShader: Shader
 {
     string vs = import("Particle.vs");
     string fs = import("Particle.fs");
-    
+
     GBuffer gbuffer;
 
     this(GBuffer gbuffer, Owner o)
     {
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, o);
-        
+
         this.gbuffer = gbuffer;
     }
 
@@ -67,7 +67,7 @@ class ParticleShader: Shader
         auto iparticleColor = "particleColor" in rc.material.inputs;
         auto iparticleSphericalNormal = "particleSphericalNormal" in rc.material.inputs;
         auto ishadeless = "shadeless" in rc.material.inputs;
-        
+
         // Matrices
         setParameter("modelViewMatrix", rc.modelViewMatrix);
         setParameter("projectionMatrix", rc.projectionMatrix);
@@ -77,32 +77,32 @@ class ParticleShader: Shader
 
         setParameter("prevModelViewProjMatrix", rc.prevModelViewProjMatrix);
         setParameter("blurModelViewProjMatrix", rc.blurModelViewProjMatrix);
-        
+
         setParameter("viewSize", Vector2f(gbuffer.width, gbuffer.height));
-        
-        Color4f particleColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);        
+
+        Color4f particleColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
         if (iparticleColor)
             particleColor = Color4f(iparticleColor.asVector4f);
-        
+
         float alpha = 1.0f;
         if (itransparency)
             alpha = itransparency.asFloat;
-            
+
         float energy = ienergy.asFloat;
-        
+
         setParameter("particleColor", particleColor);
         setParameter("alpha", alpha);
         setParameter("energy", energy);
-        setParameter("alphaCutout", rc.shadowMode);
+        setParameter("alphaCutout", rc.shadowPass);
         setParameter("alphaCutoutThreshold", 0.25f); // TODO: store in material properties
         setParameter("particlePosition", rc.modelViewMatrix.translation);
-        
+
         bool shaded = true;
         if (ishadeless)
             shaded = !(ishadeless.asBool);
         setParameter("shaded", shaded);
-        
-        // Texture 0 - diffuse texture        
+
+        // Texture 0 - diffuse texture
         if (idiffuse.texture is null)
         {
             setParameter("diffuseVector", idiffuse.asVector4f);
@@ -115,12 +115,12 @@ class ParticleShader: Shader
             setParameter("diffuseTexture", 0);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
         }
-        
+
         // Texture 1 - position texture (for soft particles)
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, gbuffer.positionTexture);
         setParameter("positionTexture", 1);
-        
+
         // Texture 2 - normal map
         if (inormal.texture is null)
         {
@@ -138,7 +138,7 @@ class ParticleShader: Shader
             }
         }
         else
-        {        
+        {
             glActiveTexture(GL_TEXTURE2);
             inormal.texture.bind();
             setParameter("normalTexture", 2);
@@ -166,9 +166,7 @@ class ParticleShader: Shader
             setParameter("groundEnergy", rc.environment.groundEnergy);
             setParameterSubroutine("environment", ShaderType.Fragment, "environmentSky");
         }
-        
-        // TODO: shadows?
-        
+
         glActiveTexture(GL_TEXTURE0);
 
         super.bind(rc);
@@ -177,7 +175,7 @@ class ParticleShader: Shader
     override void unbind(RenderingContext* rc)
     {
         super.unbind(rc);
-        
+
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, 0);
 

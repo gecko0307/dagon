@@ -320,7 +320,7 @@ class Entity: Owner, Drawable
 
         bool shouldUseOverrideMat = true;
         if (transparent)
-            shouldUseOverrideMat = !rcLocal.shadowMode;
+            shouldUseOverrideMat = !rcLocal.shadowPass;
 
         if (!ignore)
         {

@@ -89,6 +89,7 @@ public
 
     import dagon.graphics.materials.generic;
 
+    import dagon.graphics.shaders.shadowpass;
     import dagon.graphics.shaders.geometrypass;
     import dagon.graphics.shaders.environmentpass;
     import dagon.graphics.shaders.lightpass;

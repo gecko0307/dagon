@@ -51,7 +51,7 @@ import dagon.graphics.view;
 import dagon.graphics.rc;
 import dagon.graphics.environment;
 import dagon.graphics.material;
-import dagon.graphics.materials.generic;
+import dagon.graphics.shaders.shadowpass;
 import dagon.resource.scene;
 
 class ShadowArea: Owner
@@ -103,43 +103,7 @@ class ShadowArea: Owner
         auto r = rc.environment.sunRotation.toMatrix4x4;
         invViewMatrix = t * r;
         viewMatrix = invViewMatrix.inverse;
-        shadowMatrix = scaleMatrix(Vector3f(scale, scale, 1.0f)) * biasMatrix * projectionMatrix * viewMatrix * rc.invViewMatrix; // view.invViewMatrix;
-    }
-}
-
-class ShadowBackend: GLSLMaterialBackend
-{
-
-    string vsText = import("ShadowPass.vs");
-    string fsText = import("ShadowPass.fs");
-
-    override string vertexShaderSrc() {return vsText;}
-    override string fragmentShaderSrc() {return fsText;}
-
-    GLint modelViewMatrixLoc;
-    GLint projectionMatrixLoc;
-
-    this(Owner o)
-    {
-        super(o);
-
-        modelViewMatrixLoc = glGetUniformLocation(shaderProgram, "modelViewMatrix");
-        projectionMatrixLoc = glGetUniformLocation(shaderProgram, "projectionMatrix");
-    }
-
-    override void bind(GenericMaterial mat, RenderingContext* rc)
-    {
-        glDisable(GL_CULL_FACE);
-
-        glUseProgram(shaderProgram);
-
-        glUniformMatrix4fv(modelViewMatrixLoc, 1, GL_FALSE, rc.modelViewMatrix.arrayof.ptr);
-        glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, rc.projectionMatrix.arrayof.ptr);
-    }
-
-    override void unbind(GenericMaterial mat, RenderingContext* rc)
-    {
-        glUseProgram(0);
+        shadowMatrix = scaleMatrix(Vector3f(scale, scale, 1.0f)) * biasMatrix * projectionMatrix * viewMatrix * rc.invViewMatrix;
     }
 }
 
@@ -155,8 +119,7 @@ class CascadedShadowMap: Owner
     GLuint framebuffer2;
     GLuint framebuffer3;
 
-    ShadowBackend sb;
-    Material sm;
+    ShadowPassShader ss;
 
     float projSize1 = 5.0f;
     float projSize2 = 15.0f;
@@ -185,8 +148,7 @@ class CascadedShadowMap: Owner
         this.area2 = New!ShadowArea(projSize2, projSize2, zStart, zEnd, this);
         this.area3 = New!ShadowArea(projSize3, projSize3, zStart, zEnd, this);
 
-        this.sb = New!ShadowBackend(this);
-        this.sm = New!GenericMaterial(sb, this);
+        this.ss = New!ShadowPassShader(this);
 
         glGenTextures(1, &depthTexture);
         glActiveTexture(GL_TEXTURE0);
@@ -279,8 +241,8 @@ class CascadedShadowMap: Owner
         rcLocal.viewRotationMatrix = matrix3x3to4x4(matrix4x4to3x3(rcLocal.viewMatrix));
         rcLocal.invViewRotationMatrix = matrix3x3to4x4(matrix4x4to3x3(rcLocal.invViewMatrix));
 
-        rcLocal.overrideMaterial = sm;
-        rcLocal.shadowMode = true;
+        rcLocal.overrideShader = ss;
+        rcLocal.shadowPass = true;
 
         glPolygonOffset(3.0, 0.0);
         glDisable(GL_CULL_FACE);

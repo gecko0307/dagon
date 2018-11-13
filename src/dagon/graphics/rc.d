@@ -79,13 +79,12 @@ struct RenderingContext
 
     bool depthPass;
     bool colorPass;
+    bool shadowPass;
 
     int layer;
 
     bool ignoreTransparentEntities;
     bool ignoreOpaqueEntities;
-
-    bool shadowMode;
 
     void init(EventManager emngr, Environment env)
     {
@@ -114,7 +113,7 @@ struct RenderingContext
         layer = 1;
         ignoreTransparentEntities = false;
         ignoreOpaqueEntities = false;
-        shadowMode = false;
+        shadowPass = false;
     }
 
     void initPerspective(EventManager emngr, Environment env, float fov, float znear, float zfar)

@@ -273,7 +273,7 @@ class GenericMaterial: Material
             glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
         }
 
-        if (!idepthWrite.asBool && !rc.shadowMode)
+        if (!idepthWrite.asBool && !rc.shadowPass)
         {
             glDepthMask(GL_FALSE);
         }
@@ -364,7 +364,7 @@ class ShaderMaterial: GenericMaterial
             glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
         }
 
-        if (!idepthWrite.asBool && !rc.shadowMode)
+        if (!idepthWrite.asBool && !rc.shadowPass)
         {
             glDepthMask(GL_FALSE);
         }
