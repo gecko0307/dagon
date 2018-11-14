@@ -57,10 +57,10 @@ class DeferredEnvironmentPass: Owner
     CascadedShadowMap shadowMap;
     ScreenSurface surface;
 
-    this(GBuffer gbuffer, /*Framebuffer sceneFramebuffer,*/ CascadedShadowMap shadowMap, Owner o)
+    this(GBuffer gbuffer, CascadedShadowMap shadowMap, Owner o)
     {
         super(o);
-        this.shader = New!EnvironmentPassShader(gbuffer, /*sceneFramebuffer,*/ shadowMap, this);
+        this.shader = New!EnvironmentPassShader(gbuffer, shadowMap, this);
         this.gbuffer = gbuffer;
         this.shadowMap = shadowMap;
         this.surface = New!ScreenSurface(this);
@@ -72,12 +72,12 @@ class DeferredEnvironmentPass: Owner
         glEnablei(GL_BLEND, 1);
         glBlendFunci(0, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glBlendFunci(1, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            
+
         shader.gbuffer = gbuffer;
         shader.bind(rc2d, rc3d);
         surface.render(rc2d);
         shader.unbind(rc2d, rc3d);
-        
+
         glDisablei(GL_BLEND, 0);
         glDisablei(GL_BLEND, 1);
     }
@@ -100,7 +100,7 @@ class DeferredLightPass: Owner
     void render(Scene scene, RenderingContext* rc2d, RenderingContext* rc3d)
     {
         shader.gbuffer = gbuffer;
-        
+
         glDisable(GL_DEPTH_TEST);
         glDepthMask(GL_FALSE);
 
@@ -113,15 +113,17 @@ class DeferredLightPass: Owner
         glBlendFunci(0, GL_ONE, GL_ONE);
         glBlendFunci(1, GL_ONE, GL_ONE);
 
-        // TODO: don't rebind the shader each time,
-        // use special method to update light data
+        auto rc3dLocal = *rc3d;
+        rc3dLocal.rebindShaderProgram = false;
+        shader.bindProgram();
         foreach(light; scene.lightManager.lightSources.data)
         {
             shader.light = light;
-            shader.bind(rc2d, rc3d);
-            lightVolume.render(rc3d);
-            shader.unbind(rc2d, rc3d);
+            shader.bind(rc2d, &rc3dLocal);
+            lightVolume.render(&rc3dLocal);
+            shader.unbind(rc2d, &rc3dLocal);
         }
+        shader.unbindProgram();
 
         glDisablei(GL_BLEND, 0);
         glDisablei(GL_BLEND, 1);

@@ -38,6 +38,8 @@ import dagon.graphics.environment;
 import dagon.graphics.material;
 import dagon.graphics.shader;
 
+// TODO: don't pass RenderingContext via program stack, use special state object
+
 struct RenderingContext
 {
     Matrix4x4f modelViewMatrix;
@@ -83,6 +85,8 @@ struct RenderingContext
     bool ignoreTransparentEntities;
     bool ignoreOpaqueEntities;
 
+    bool rebindShaderProgram;
+
     void init(EventManager emngr, Environment env)
     {
         modelViewMatrix = Matrix4x4f.identity;
@@ -105,11 +109,12 @@ struct RenderingContext
         time = 0.0f;
         depthPass = true;
         colorPass = true;
+        shadowPass = false;
         blurMask = 1.0f;
         layer = 1;
         ignoreTransparentEntities = false;
         ignoreOpaqueEntities = false;
-        shadowPass = false;
+        rebindShaderProgram = true;
     }
 
     void initPerspective(EventManager emngr, Environment env, float fov, float znear, float zfar)

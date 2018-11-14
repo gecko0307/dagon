@@ -194,8 +194,10 @@ class GBuffer: Owner
         auto rcLocal = *rc;
 
         rcLocal.overrideShader = geometryPassShader;
-
+        rcLocal.rebindShaderProgram = false;
+        geometryPassShader.bindProgram();
         scene.renderOpaqueEntities3D(&rcLocal);
+        geometryPassShader.unbindProgram();
 
         unbind();
     }

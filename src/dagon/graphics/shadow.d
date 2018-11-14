@@ -233,6 +233,8 @@ class CascadedShadowMap: Owner
 
         glEnable(GL_DEPTH_TEST);
 
+        ss.bindProgram();
+
         auto rcLocal = *rc;
         rcLocal.projectionMatrix = area1.projectionMatrix;
         rcLocal.viewMatrix = area1.viewMatrix;
@@ -243,6 +245,7 @@ class CascadedShadowMap: Owner
 
         rcLocal.overrideShader = ss;
         rcLocal.shadowPass = true;
+        rcLocal.rebindShaderProgram = false;
 
         glPolygonOffset(3.0, 0.0);
         glDisable(GL_CULL_FACE);
@@ -288,6 +291,8 @@ class CascadedShadowMap: Owner
             if (e.castShadow)
                 e.render(&rcLocal);
         scene.particleSystem.render(&rcLocal);
+
+        ss.unbindProgram();
 
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
         glEnable(GL_CULL_FACE);

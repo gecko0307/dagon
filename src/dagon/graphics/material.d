@@ -444,9 +444,13 @@ class Material: Owner
         rcLocal.material = this;
 
         if (rc.overrideShader)
+        {
             rc.overrideShader.bind(&rcLocal);
+        }
         else if (shader)
+        {
             shader.bind(&rcLocal);
+        }
     }
 
     void unbind(RenderingContext* rc)
@@ -458,9 +462,13 @@ class Material: Owner
         rcLocal.material = this;
 
         if (rc.overrideShader)
+        {
             rc.overrideShader.unbind(&rcLocal);
+        }
         else if (shader)
+        {
             shader.unbind(&rcLocal);
+        }
 
         if (!idepthWrite.asBool && rc.depthPass)
         {
