@@ -309,5 +309,5 @@ bool MPRCollisionTest(
     }
 
     // Should never get here
-    return false;
+    assert(0, "Should never get here");
 }
