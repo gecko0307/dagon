@@ -233,8 +233,6 @@ class CascadedShadowMap: Owner
 
         glEnable(GL_DEPTH_TEST);
 
-        ss.bindProgram();
-
         auto rcLocal = *rc;
         rcLocal.projectionMatrix = area1.projectionMatrix;
         rcLocal.viewMatrix = area1.viewMatrix;
@@ -242,18 +240,22 @@ class CascadedShadowMap: Owner
         rcLocal.normalMatrix = rcLocal.invViewMatrix.transposed;
         rcLocal.viewRotationMatrix = matrix3x3to4x4(matrix4x4to3x3(rcLocal.viewMatrix));
         rcLocal.invViewRotationMatrix = matrix3x3to4x4(matrix4x4to3x3(rcLocal.invViewMatrix));
-
-        rcLocal.overrideShader = ss;
         rcLocal.shadowPass = true;
-        rcLocal.rebindShaderProgram = false;
 
         glPolygonOffset(3.0, 0.0);
         glDisable(GL_CULL_FACE);
         glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
+        ss.bindProgram();
+        rcLocal.overrideShader = ss;
+        rcLocal.rebindShaderProgram = false;
         foreach(e; scene.entities3D)
             if (e.castShadow)
                 e.render(&rcLocal);
+        ss.unbindProgram();
+                
+        rcLocal.overrideShader = null;
+        rcLocal.rebindShaderProgram = true;
         scene.particleSystem.render(&rcLocal);
 
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer2);
@@ -269,9 +271,16 @@ class CascadedShadowMap: Owner
         rcLocal.viewRotationMatrix = matrix3x3to4x4(matrix4x4to3x3(rcLocal.viewMatrix));
         rcLocal.invViewRotationMatrix = matrix3x3to4x4(matrix4x4to3x3(rcLocal.invViewMatrix));
 
+        ss.bindProgram();
+        rcLocal.overrideShader = ss;
+        rcLocal.rebindShaderProgram = false;
         foreach(e; scene.entities3D)
             if (e.castShadow)
                 e.render(&rcLocal);
+        ss.unbindProgram();
+                
+        rcLocal.overrideShader = null;
+        rcLocal.rebindShaderProgram = true;
         scene.particleSystem.render(&rcLocal);
 
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer3);
@@ -287,12 +296,17 @@ class CascadedShadowMap: Owner
         rcLocal.viewRotationMatrix = matrix3x3to4x4(matrix4x4to3x3(rcLocal.viewMatrix));
         rcLocal.invViewRotationMatrix = matrix3x3to4x4(matrix4x4to3x3(rcLocal.invViewMatrix));
 
+        ss.bindProgram();
+        rcLocal.overrideShader = ss;
+        rcLocal.rebindShaderProgram = false;
         foreach(e; scene.entities3D)
             if (e.castShadow)
                 e.render(&rcLocal);
-        scene.particleSystem.render(&rcLocal);
-
         ss.unbindProgram();
+                
+        rcLocal.overrideShader = null;
+        rcLocal.rebindShaderProgram = true;
+        scene.particleSystem.render(&rcLocal);
 
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
         glEnable(GL_CULL_FACE);
