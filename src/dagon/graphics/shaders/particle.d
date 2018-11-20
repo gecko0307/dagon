@@ -133,7 +133,8 @@ class ParticleShader: Shader
             }
             else
             {
-                setParameter("normalVector", inormal.asVector4f);
+                Vector3f nVec = inormal.asVector3f;
+                setParameter("normalVector", nVec);
                 setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
             }
         }
