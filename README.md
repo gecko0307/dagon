@@ -23,6 +23,7 @@ Currently Dagon has the following features:
 * Cascaded shadow maps for directional light
 * Dynamic skydome with sun and day/night cycle. Simple and Rayleigh sky models
 * Particle system with force fields. Blended particles, soft particles, shaded particles with normal map support, particle shadows
+* Terrain rendering. Procedural terrain using Perlin noise
 * Procedural water shader
 * Post-processing (FXAA, SSAO, lens distortion, motion blur, glow, LUT color grading)
 * UTF-8 text rendering using TTF fonts via Freetype
@@ -36,7 +37,6 @@ Currently Dagon has the following features:
 
 Planned in future:
 * Screen-space reflections
-* Terrain
 
 Screenshots:
 
@@ -69,7 +69,7 @@ See [Tutorials](https://github.com/gecko0307/dagon/wiki/Tutorials).
 
 License
 -------
-Copyright (c) 2016-2018 Timur Gafarov. Distributed under the Boost Software License, Version 1.0 (see accompanying file COPYING or at http://www.boost.org/LICENSE_1_0.txt).
+Copyright (c) 2016-2018 Timur Gafarov, Rafał Ziemniewski, Björn Roberg. Distributed under the Boost Software License, Version 1.0 (see accompanying file COPYING or at http://www.boost.org/LICENSE_1_0.txt).
 
 Sponsors
 --------
