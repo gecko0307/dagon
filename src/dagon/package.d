@@ -86,9 +86,9 @@ public
     import dagon.graphics.gbuffer;
     import dagon.graphics.deferred;
     import dagon.graphics.renderer;
-    import dagon.graphics.perlin;
+    import dagon.graphics.opensimplex;
     import dagon.graphics.terrain;
-    
+
     import dagon.graphics.shaders.shadowpass;
     import dagon.graphics.shaders.geometrypass;
     import dagon.graphics.shaders.environmentpass;

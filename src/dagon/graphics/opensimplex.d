@@ -25,13 +25,13 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.graphics.perlin;
+module dagon.graphics.opensimplex;
 
 import std.traits;
 import dlib.core.memory;
 import dagon.core.ownership;
 
-class PerlinNoise(T): Owner if (isFloatingPoint!T)
+class OpenSimplexNoise(T): Owner if (isFloatingPoint!T)
 {
 	enum T STRETCH_CONSTANT_2D = -0.211324865405187;    //(1/Math.sqrt(2+1)-1)/2;
 	enum T SQUISH_CONSTANT_2D = 0.366025403784439;      //(Math.sqrt(2+1)-1)/2;
@@ -92,10 +92,10 @@ class PerlinNoise(T): Owner if (isFloatingPoint!T)
 			permGradIndex3D[i] = cast(short)((perm[i] % (gradients3D.length / 3)) * 3);
 			source[r] = source[i];
 		}
-        
+
         Delete(source);
 	}
-    
+
     public ~this()
     {
         Delete(perm);

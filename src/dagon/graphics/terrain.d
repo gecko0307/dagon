@@ -33,24 +33,25 @@ import dlib.math.vector;
 import dagon.core.ownership;
 import dagon.core.interfaces;
 import dagon.graphics.mesh;
-import dagon.graphics.perlin;
+import dagon.graphics.opensimplex;
 
 class Terrain: Owner, Drawable
 {
     uint width;
     uint height;
     Mesh mesh;
-    PerlinNoise!float pn;
+    OpenSimplexNoise!float noise;
 
+    // TODO: height data object
     this(uint width, uint height, Owner owner)
     {
         super(owner);
-        
+
         this.width = width;
         this.height = height;
-        
-        pn = New!(PerlinNoise!float)(this);
-        
+
+        noise = New!(OpenSimplexNoise!float)(this);
+
         mesh = New!Mesh(owner);
 
         mesh.vertices = New!(Vector3f[])(width * height);
@@ -65,7 +66,7 @@ class Terrain: Owner, Drawable
         {
             mesh.vertices[i] = Vector3f(x * scale, 0, z * scale);
             mesh.texcoords[i] = Vector2f(
-                cast(float)x / cast(float)width, 
+                cast(float)x / cast(float)width,
                 cast(float)z / cast(float)height);
             i += 1;
         }
@@ -89,23 +90,20 @@ class Terrain: Owner, Drawable
         mesh.dataReady = true;
         mesh.prepareVAO();
     }
-    
+
     void update(double dt)
     {
-    
+
     }
-    
+
     void render(RenderingContext* rc)
     {
         mesh.render(rc);
     }
-    
-    // TODO: 
-    // void fromHeightmap(Texture texture)
 
-    void fromPerlinNoise()
+    void fromSimplexNoise()
     {
-        float[2][3] perlinScaleLayers = [
+        float[2][3] scaleLayers = [
             [0.01, 11.01],
             [0.08, 15.1],
             [0.194, 10.109],
@@ -116,12 +114,13 @@ class Terrain: Owner, Drawable
         {
             uint i = x + z * width;
             mesh.vertices[i].y = 0;
-            
-            foreach(psl; perlinScaleLayers)
+
+            foreach(psl; scaleLayers)
             {
-                mesh.vertices[i].y += pn.eval(cast(float)x * psl[0], cast(float)z * psl[0]) * psl[1];
+                mesh.vertices[i].y += noise.eval(cast(float)x * psl[0], cast(float)z * psl[0]) * psl[1];
             }
         }
+
         refreshChanges();
     }
 
