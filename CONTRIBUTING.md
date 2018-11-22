@@ -19,6 +19,8 @@ New code should at least:
 * use transparent dynamic memory allocations. Ideally the code should not allocate at all or rely on user for that. Garbage collector usage is not allowed. If dynamic allocations can't be avoided, they should be done with `dlib.core.memory`. All classes should use `dlib.core.ownership`
 * not violate copyright/licensing. When adapting third-party code, make sure that it is compatible with [Boost Software License 1.0](https://www.boost.org/LICENSE_1_0.txt).
 
+Adding new external dependencies should be avoided as much as possible. Only GC-free third-party D libraries are allowed. C libraries should be linked via BindBC binding.
+
 ####  Code style and standards 
 
 Dagon follows [D style](https://dlang.org/dstyle.html). Essential rules are the following:
