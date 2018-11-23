@@ -10,6 +10,8 @@ Note that macOS compatibility issues are not considered bugs. Dagon uses OpenGL 
 
 Open a new GitHub pull request with your patch. Provide a description of the problem and solution. Follow our [code style](#code-style-and-standards).
 
+#### Implementing new features
+
 New code should at least:
 * work under Windows and POSIX systems and provide platform-agnostic API
 * support x86 and x86_64 targets
