@@ -18,7 +18,7 @@ Currently Dagon has the following features:
 * Physically based rendering (PBR)
 * HDR rendering with auto-exposure (eye adaptation), Reinhard, Hable/Uncharted and ACES tonemapping operators
 * Equirectangular HDRI environment maps
-* Spherical area lights
+* Spherical and tube area lights
 * Normal/parallax mapping, parallax occlusion mapping
 * Cascaded shadow maps for directional light
 * Dynamic skydome with sun and day/night cycle. Simple and Rayleigh sky models
