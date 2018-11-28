@@ -100,7 +100,21 @@ class LightPassShader: Shader
             setParameter("lightAreaRadius", light.areaRadius);
             setParameter("lightColor", light.color);
             setParameter("lightEnergy", light.energy);
-            setParameterSubroutine("lightRadiance", ShaderType.Fragment, "lightRadianceAreaSphere");
+
+            if (light.type == LightType.AreaSphere)
+            {
+                setParameterSubroutine("lightRadiance", ShaderType.Fragment, "lightRadianceAreaSphere");
+            }
+            else if (light.type == LightType.AreaTube)
+            {
+                Vector3f lightPosition2Eye = (light.position + light.direction * light.tubeLength) * rc3d.viewMatrix;
+                setParameter("lightPosition2", lightPosition2Eye);
+                setParameterSubroutine("lightRadiance", ShaderType.Fragment, "lightRadianceAreaTube");
+            }
+            else // unsupported light type
+            {
+                setParameterSubroutine("lightRadiance", ShaderType.Fragment, "lightRadianceFallback");
+            }
         }
         else
         {

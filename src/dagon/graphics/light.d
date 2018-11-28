@@ -44,26 +44,38 @@ import dagon.graphics.rc;
 import dagon.logics.entity;
 import dagon.logics.behaviour;
 
+enum LightType
+{
+    AreaSphere = 1,
+    AreaTube = 2
+}
+
 class LightSource
 {
     Vector3f position;
+    Vector3f direction;
     Vector3f color;
     float radius; // max light attenuation radius
     float areaRadius; // light's own radius
+    float tubeLength;
     float energy;
-    
+    LightType type;
+
     this(Vector3f pos, Vector3f col, float attRadius, float areaRadius, float energy)
     {
         this.position = pos;
+        this.direction = Vector3f(0.0f, 0.0f, 1.0f);
+        this.tubeLength = 1.0f;
         this.color = col;
         this.radius = attRadius;
         this.areaRadius = areaRadius;
         this.energy = energy;
+        this.type = LightType.AreaSphere;
     }
 }
 
 class LightManager: Owner
-{    
+{
     DynamicArray!LightSource lightSources;
 
 	this(Owner o)
@@ -75,13 +87,13 @@ class LightManager: Owner
     {
         foreach(light; lightSources)
             Delete(light);
-        
+
         lightSources.free();
     }
-    
+
     LightSource addLight(Vector3f position, Color4f color, float energy, float radius, float areaRadius = 0.0f)
-    {        
-        lightSources.append(New!LightSource(position, color.rgb, radius, areaRadius, energy));        
+    {
+        lightSources.append(New!LightSource(position, color.rgb, radius, areaRadius, energy));
         return lightSources.data[$-1];
     }
 }
@@ -94,7 +106,7 @@ class LightBehaviour: Behaviour
     this(Entity e, LightSource light)
     {
         super(e);
-        
+
         this.light = light;
     }
 
