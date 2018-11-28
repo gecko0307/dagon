@@ -15,8 +15,10 @@ uniform float lightAreaRadius;
 uniform vec3 lightColor;
 uniform float lightEnergy;
 
-layout(location = 0) out vec4 frag_color;
-layout(location = 1) out vec4 frag_luminance;
+vec3 toLinear(vec3 v)
+{
+    return pow(v, vec3(2.2));
+}
 
 vec3 fresnel(float cosTheta, vec3 f0)
 {
@@ -58,44 +60,24 @@ float geometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
     return ggx1 * ggx2;
 }
 
-vec3 toLinear(vec3 v)
+/*
+ * Light radiance subroutines
+ */
+subroutine vec3 srtLightRadiance(in vec3 pos, in vec3 N, in vec3 E, in vec3 albedo, in float roughness, in float metallic);
+
+subroutine(srtLightRadiance) vec3 lightRadianceFallback(in vec3 pos, in vec3 N, in vec3 E, in vec3 albedo, in float roughness, in float metallic)
 {
-    return pow(v, vec3(2.2));
+    return vec3(0.0);
 }
 
-float luminance(vec3 color)
+subroutine(srtLightRadiance) vec3 lightRadianceAreaSphere(in vec3 pos, in vec3 N, in vec3 E, in vec3 albedo, in float roughness, in float metallic)
 {
-    return (
-        color.x * 0.2126 +
-        color.y * 0.7152 +
-        color.z * 0.0722
-    );
-}
-
-void main()
-{
-    vec2 texCoord = gl_FragCoord.xy / viewSize;
-
-    vec4 col = texture(colorBuffer, texCoord);
-    
-    if (col.a < 1.0)
-        discard;
-
-    vec3 albedo = toLinear(col.rgb);
-
-    vec4 rms = texture(rmsBuffer, texCoord);
-    float roughness = rms.r;
-    float metallic = rms.g;
-
-    vec3 eyePos = texture(positionBuffer, texCoord).xyz;
-    vec3 N = normalize(texture(normalBuffer, texCoord).xyz);
-    vec3 E = normalize(-eyePos);
     vec3 R = reflect(E, N);
 
     vec3 f0 = vec3(0.04); 
     f0 = mix(f0, albedo, metallic);
 
-    vec3 positionToLightSource = lightPosition - eyePos;
+    vec3 positionToLightSource = lightPosition - pos;
     float distanceToLight = length(positionToLightSource);
     float attenuation = pow(clamp(1.0 - (distanceToLight / lightRadius), 0.0, 1.0), 2.0) * lightEnergy;
 
@@ -121,6 +103,45 @@ void main()
     vec3 specular = numerator / max(denominator, 0.001);
 
     vec3 radiance = (kD * albedo / PI + specular) * toLinear(lightColor) * attenuation * NL;
+
+    return radiance;
+}
+
+subroutine uniform srtLightRadiance lightRadiance;
+
+
+float luminance(vec3 color)
+{
+    return (
+        color.x * 0.2126 +
+        color.y * 0.7152 +
+        color.z * 0.0722
+    );
+}
+
+layout(location = 0) out vec4 frag_color;
+layout(location = 1) out vec4 frag_luminance;
+
+void main()
+{
+    vec2 texCoord = gl_FragCoord.xy / viewSize;
+
+    vec4 col = texture(colorBuffer, texCoord);
+    
+    if (col.a < 1.0)
+        discard;
+
+    vec3 albedo = toLinear(col.rgb);
+
+    vec4 rms = texture(rmsBuffer, texCoord);
+    float roughness = rms.r;
+    float metallic = rms.g;
+
+    vec3 eyePos = texture(positionBuffer, texCoord).xyz;
+    vec3 N = normalize(texture(normalBuffer, texCoord).xyz);
+    vec3 E = normalize(-eyePos);
+
+    vec3 radiance = lightRadiance(eyePos, N, E, albedo, roughness, metallic);
 
     frag_color = vec4(radiance, 1.0);
     frag_luminance = vec4(luminance(radiance), 0.0, 0.0, 1.0);

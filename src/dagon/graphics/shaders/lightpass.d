@@ -45,82 +45,87 @@ import dagon.graphics.light;
 
 class LightPassShader: Shader
 {
-    string vs = import("LightPass.vs");    
+    string vs = import("LightPass.vs");
     string fs = import("LightPass.fs");
-    
+
     GBuffer gbuffer;
     LightSource light;
-    
+
     this(GBuffer gbuffer, Owner o)
-    {    
+    {
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, o);
         this.gbuffer = gbuffer;
     }
-    
+
     void bind(RenderingContext* rc2d, RenderingContext* rc3d)
     {
         setParameter("projectionMatrix", rc3d.projectionMatrix);
         setParameter("viewSize", Vector2f(gbuffer.width, gbuffer.height));
-        
+
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, gbuffer.colorTexture);
         setParameter("colorBuffer", 0);
-        
+
         // Texture 1 - roughness-metallic-specularity buffer
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, gbuffer.rmsTexture);
         setParameter("rmsBuffer", 1);
-        
+
         // Texture 2 - position buffer
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, gbuffer.positionTexture);
         setParameter("positionBuffer", 2);
-        
+
         // Texture 3 - normal buffer
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, gbuffer.normalTexture);
         setParameter("normalBuffer", 3);
-        
+
         glActiveTexture(GL_TEXTURE0);
-        
+
         if (light)
         {
-            Matrix4x4f modelViewMatrix = 
+            Matrix4x4f modelViewMatrix =
                 rc3d.viewMatrix *
-                translationMatrix(light.position) * 
+                translationMatrix(light.position) *
                 scaleMatrix(Vector3f(light.radius, light.radius, light.radius));
-            
+
             Vector3f lightPositionEye = light.position * rc3d.viewMatrix;
-            
+
             setParameter("modelViewMatrix", modelViewMatrix);
             setParameter("lightPosition", lightPositionEye);
             setParameter("lightRadius", light.radius);
             setParameter("lightAreaRadius", light.areaRadius);
             setParameter("lightColor", light.color);
             setParameter("lightEnergy", light.energy);
+            setParameterSubroutine("lightRadiance", ShaderType.Fragment, "lightRadianceAreaSphere");
         }
-    
+        else
+        {
+            setParameterSubroutine("lightRadiance", ShaderType.Fragment, "lightRadianceFallback");
+        }
+
         super.bind(rc3d);
     }
-    
+
     void unbind(RenderingContext* rc2d, RenderingContext* rc3d)
     {
         super.unbind(rc3d);
-        
+
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE0);
     }
 }
