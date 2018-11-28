@@ -917,9 +917,25 @@ class Scene: BaseScene
         return New!Material(shader, assetManager);
     }
 
-    LightSource createLight(Vector3f position, Color4f color, float energy, float volumeRadius, float areaRadius = 0.0f)
+    deprecated("use Scene.createLightSphere instead") LightSource createLight(Vector3f position, Color4f color, float energy, float volumeRadius, float areaRadius = 0.0f)
     {
-        return lightManager.addLight(position, color, energy, volumeRadius, areaRadius);
+        return createLightSphere(position, color, energy, volumeRadius, areaRadius);
+    }
+
+    LightSource createLightSphere(Vector3f position, Color4f color, float energy, float volumeRadius, float areaRadius)
+    {
+        auto light = lightManager.addLight(position, color, energy, volumeRadius, areaRadius);
+        light.type = LightType.AreaSphere;
+        return light;
+    }
+
+    LightSource createLightTube(Vector3f position, Color4f color, float energy, float volumeRadius, float tubeRadius, Vector3f direction, float tubeLength)
+    {
+        auto light = lightManager.addLight(position, color, energy, volumeRadius, tubeRadius);
+        light.type = LightType.AreaTube;
+        light.direction = direction;
+        light.tubeLength = tubeLength;
+        return light;
     }
 
     override void onAllocate()
