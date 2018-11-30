@@ -702,6 +702,8 @@ class Scene: BaseScene
 
     double timer = 0.0;
     double fixedTimeStep = 1.0 / 60.0;
+    bool adaptToFramerate = true;
+    uint maxUpdatesPerFrame = 2;
 
     this(SceneManager smngr)
     {
@@ -1079,6 +1081,8 @@ class Scene: BaseScene
 
         renderer.shadowMap.update(&rc3d, fixedTimeStep);
     }
+    
+    double frameTime = 0.0;
 
     override void onUpdate(double dt)
     {
@@ -1088,11 +1092,24 @@ class Scene: BaseScene
         foreach(e; entities2D)
             e.processEvents();
 
-        timer += dt;
-        if (timer >= fixedTimeStep)
+        int updateCount = 0;
+        frameTime = dt;
+        
+        if (!adaptToFramerate || frameTime <= fixedTimeStep * 2)
         {
-            timer -= fixedTimeStep;
+            timer += frameTime;
+            if (timer >= fixedTimeStep)
+            {
+                fixedStepUpdate();
+                timer -= fixedTimeStep;
+            }
+        }
+        else while (frameTime > fixedTimeStep && updateCount < maxUpdatesPerFrame)
+        {
+            timer = 0.0;
             fixedStepUpdate();
+            frameTime -= fixedTimeStep;
+            updateCount++;
         }
     }
 
