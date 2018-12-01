@@ -38,6 +38,8 @@ Currently Dagon has the following features:
 Planned in future:
 * Screen-space reflections
 
+Follow Dagon development on [Trello](https://trello.com/b/4sDgRjZI/dagon).
+
 Screenshots:
 
 [![Screenshot1](https://1.bp.blogspot.com/-grsFLVdZMFs/W6KqhXuBqOI/AAAAAAAADqA/pU6vuB8PKZUws3eP0Ac0GJ4p6fbIWi0kACPcBGAYYCw/s1600/screenshot001.jpg)](https://1.bp.blogspot.com/-grsFLVdZMFs/W6KqhXuBqOI/AAAAAAAADqA/pU6vuB8PKZUws3eP0Ac0GJ4p6fbIWi0kACPcBGAYYCw/s1600/screenshot001.jpg)
