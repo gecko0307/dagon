@@ -7,9 +7,12 @@ Dagon
 =====
 The goal of this project is creating a modern, easy to use, extendable 3D game engine for D language due to the lack of such. Dagon is based on OpenGL 4.0 core profile, [SDL2](https://www.libsdl.org) and [Freetype](https://www.freetype.org) 2.8.1. It works on Windows and Linux, both 32 and 64-bit. It doesn't support macOS because [Apple doesn't support OpenGL anymore](https://developer.apple.com/macos/whats-new/#deprecationofopenglandopencl).
 
+Dagon is still under development and lacks a lot of important functionality. Currently it is not recommended to use Dagon in production due to unstable API. Follow Dagon development on [Trello](https://trello.com/b/4sDgRjZI/dagon). 
+
 If you like Dagon, please support its development on [Patreon](https://www.patreon.com/gecko0307) or [Liberapay](https://liberapay.com/gecko0307). You can also make one-time donation via [PayPal](https://www.paypal.me/tgafarov). I appreciate any support. Thanks in advance!
 
-Currently Dagon has the following features:
+Features
+--------
 * Static and animated meshes, OBJ and [IQM](https://github.com/lsalzman/iqm) formats support
 * Textures in PNG, JPG, TGA, BMP, HDR formats
 * Own asset format with Blender exporter
@@ -38,18 +41,16 @@ Currently Dagon has the following features:
 Planned in future:
 * Screen-space reflections
 
-Screenshots:
-
+Screenshots
+-----------
 [![Screenshot1](https://1.bp.blogspot.com/-grsFLVdZMFs/W6KqhXuBqOI/AAAAAAAADqA/pU6vuB8PKZUws3eP0Ac0GJ4p6fbIWi0kACPcBGAYYCw/s1600/screenshot001.jpg)](https://1.bp.blogspot.com/-grsFLVdZMFs/W6KqhXuBqOI/AAAAAAAADqA/pU6vuB8PKZUws3eP0Ac0GJ4p6fbIWi0kACPcBGAYYCw/s1600/screenshot001.jpg)
 [![Screenshot2](https://2.bp.blogspot.com/-r92DjuBgFGk/Ww2Q9xDVbxI/AAAAAAAADaQ/HxZTNLloXq8DVthWn9iDBEjnhs5skJv7wCPcBGAYYCw/s1600/Untitled%2B9.jpg)](https://2.bp.blogspot.com/-r92DjuBgFGk/Ww2Q9xDVbxI/AAAAAAAADaQ/HxZTNLloXq8DVthWn9iDBEjnhs5skJv7wCPcBGAYYCw/s1600/Untitled%2B9.jpg)
 [![Screenshot3](https://3.bp.blogspot.com/-5dp4hgznRQY/Wv_2W7xzpMI/AAAAAAAADYk/BoJ9fm899Ts44vo9Gja26tl9q9ckoFNiACLcBGAs/s1600/exporter.jpg)](https://3.bp.blogspot.com/-5dp4hgznRQY/Wv_2W7xzpMI/AAAAAAAADYk/BoJ9fm899Ts44vo9Gja26tl9q9ckoFNiACLcBGAs/s1600/exporter.jpg)
 [![Screenshot4](https://1.bp.blogspot.com/-o8H1blpZeFQ/W78a-nttgrI/AAAAAAAADrc/LPZZ4j_A5jIye0hib3bR7W17sAvY1ucYQCLcBGAs/s1600/dagon-demo-dwarf.jpg)](https://1.bp.blogspot.com/-o8H1blpZeFQ/W78a-nttgrI/AAAAAAAADrc/LPZZ4j_A5jIye0hib3bR7W17sAvY1ucYQCLcBGAs/s1600/dagon-demo-dwarf.jpg)
 
-Video:
-
+Video
+-----
 [https://www.youtube.com/watch?v=UhQfMkObTEs](https://www.youtube.com/watch?v=UhQfMkObTEs)
-
-Dagon is still under development and lacks a lot of important functionality. Currently it is not recommended to use Dagon in production due to unstable API.
 
 Usage
 -----
