@@ -417,17 +417,24 @@ class ParticleSystem: Owner
         {
             foreach(e; emitters)
             if (e.entity.visible)
-            {
-                if (e.material)
-                    e.entity.material = e.material;
-
-                foreach(ref p; e.particles)
-                if (p.time < p.lifetime)
+            {   
+                bool shouldRender = true;
+                if (rc.shadowPass)
+                    shouldRender = e.entity.castShadow;
+                
+                if (shouldRender)
                 {
-                    if (e.particleEntity)
-                        renderEntityParticle(e, p, rc);
-                    else
-                        renderBillboardParticle(e, p, rc);
+                    if (e.material)
+                        e.entity.material = e.material;
+
+                    foreach(ref p; e.particles)
+                    if (p.time < p.lifetime)
+                    {
+                        if (e.particleEntity)
+                            renderEntityParticle(e, p, rc);
+                        else
+                            renderBillboardParticle(e, p, rc);
+                    }
                 }
             }
         }
