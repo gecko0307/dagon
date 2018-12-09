@@ -4,7 +4,9 @@
     "homepage": "https://gecko0307.github.io/dagon",
     "license": "BSL-1.0",
     "authors": [
-        "Timur Gafarov"
+        "Timur Gafarov",
+        "Rafał Ziemniewski",
+        "Björn Roberg"
     ],
 
     "importPaths": ["src"],
