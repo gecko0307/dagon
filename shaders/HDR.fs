@@ -122,6 +122,7 @@ void main()
             usedSamples += mask * depthWeight;
         }
 
+        res = max(res, vec3(0.0));
         res = res / usedSamples;
     }
     

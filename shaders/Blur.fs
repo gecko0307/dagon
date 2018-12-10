@@ -36,7 +36,8 @@ void main()
     vec3 color;
     if (enabled)
     {
-        color = blur(fbColor, texCoord, viewSize, direction).rgb;    
+        color = blur(fbColor, texCoord, viewSize, direction).rgb;
+        color = max(color, vec3(0.0));
     }
     else
     {

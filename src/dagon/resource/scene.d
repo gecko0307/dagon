@@ -1008,7 +1008,7 @@ class Scene: BaseScene
         hdr.scene = this;
         motionBlur.scene = this;
         glow.scene = this;
-        glow.radius = 3;
+        glow.radius = 7;
         lut.scene = this;
         vignette.scene = this;
         antiAliasing.scene = this;
