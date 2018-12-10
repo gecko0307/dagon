@@ -42,8 +42,6 @@ void main()
     {
         color = vec3(0.0, 0.0, 0.0);
     }
-    
-    color = clamp(color, vec3(0.0), vec3(1.0));
 
     frag_color = vec4(color, 1.0); 
 }
