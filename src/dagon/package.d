@@ -57,6 +57,7 @@ public
     import dagon.resource.materialasset;
     import dagon.resource.packageasset;
     import dagon.resource.props;
+    import dagon.resource.config;
 
     import dagon.logics.entity;
     import dagon.logics.behaviour;

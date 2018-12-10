@@ -31,6 +31,7 @@ import std.stdio;
 import std.math;
 import std.algorithm;
 import std.traits;
+import std.conv;
 
 import dlib.core.memory;
 
@@ -56,6 +57,8 @@ import dagon.resource.fontasset;
 import dagon.resource.obj;
 import dagon.resource.iqm;
 import dagon.resource.packageasset;
+import dagon.resource.props;
+import dagon.resource.config;
 
 import dagon.graphics.environment;
 import dagon.graphics.rc;
@@ -325,10 +328,37 @@ class SceneApplication: Application
     UnmanagedImageFactory imageFactory;
     SuperImage screenshotBuffer1;
     SuperImage screenshotBuffer2;
+    Configuration config;
 
     this(uint w, uint h, bool fullscreen, string windowTitle, string[] args)
     {
         super(w, h, fullscreen, windowTitle, args);
+
+        config = New!Configuration(this);
+        config.fromFile("settings.conf");
+        config.props.set(DPropType.Number, "windowWidth", w.to!string);
+        config.props.set(DPropType.Number, "windowHeight", h.to!string);
+        config.props.set(DPropType.Number, "fullscreen", (cast(uint)fullscreen).to!string);
+
+        sceneManager = New!SceneManager(eventManager, this);
+
+        imageFactory = New!UnmanagedImageFactory();
+        screenshotBuffer1 = imageFactory.createImage(eventManager.windowWidth, eventManager.windowHeight, 3, 8);
+        screenshotBuffer2 = imageFactory.createImage(eventManager.windowWidth, eventManager.windowHeight, 3, 8);
+    }
+
+    this(string windowTitle, string[] args)
+    {
+        config = New!Configuration(this);
+        if (!config.fromFile("settings.conf"))
+            writeln("Warning: no \"settings.conf\" found, using default configuration");
+
+        super(
+            config.props.windowWidth.toUInt,
+            config.props.windowHeight.toUInt,
+            config.props.fullscreen.toBool,
+            windowTitle,
+            args);
 
         sceneManager = New!SceneManager(eventManager, this);
 
@@ -1096,7 +1126,7 @@ class Scene: BaseScene
         {
             if (updateCount < maxUpdatesPerFrame)
                 fixedStepUpdate();
-            
+
             timer -= fixedTimeStep;
             updateCount++;
         }
