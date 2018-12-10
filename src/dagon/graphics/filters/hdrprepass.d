@@ -61,8 +61,13 @@ class PostFilterHDRPrepass: PostFilter
     GLint fbBlurredLoc;
     GLint useGlowLoc;
     GLint glowBrightnessLoc;
+    GLint glowMinLuminanceThresholdLoc;
+    GLint glowMaxLuminanceThresholdLoc;
+
     bool glowEnabled = false;
     float glowBrightness = 1.0;
+    float glowMinLuminanceThreshold = 0.01;
+    float glowMaxLuminanceThreshold = 1.0;
     GLuint blurredTexture;
 
     this(Framebuffer inputBuffer, Framebuffer outputBuffer, Owner o)
@@ -73,6 +78,8 @@ class PostFilterHDRPrepass: PostFilter
         fbBlurredLoc = glGetUniformLocation(shaderProgram, "fbBlurred");
         useGlowLoc = glGetUniformLocation(shaderProgram, "useGlow");
         glowBrightnessLoc = glGetUniformLocation(shaderProgram, "glowBrightness");
+        glowMinLuminanceThresholdLoc = glGetUniformLocation(shaderProgram, "glowMinLuminanceThreshold");
+        glowMaxLuminanceThresholdLoc = glGetUniformLocation(shaderProgram, "glowMaxLuminanceThreshold");
 
         perspectiveMatrix = Matrix4x4f.identity;
     }
@@ -90,6 +97,8 @@ class PostFilterHDRPrepass: PostFilter
         glUniform1i(fbBlurredLoc, 5);
         glUniform1i(useGlowLoc, glowEnabled);
         glUniform1f(glowBrightnessLoc, glowBrightness);
+        glUniform1f(glowMinLuminanceThresholdLoc, glowMinLuminanceThreshold);
+        glUniform1f(glowMaxLuminanceThresholdLoc, glowMaxLuminanceThreshold);
     }
 
     override void unbind(RenderingContext* rc)

@@ -580,7 +580,6 @@ class Scene: BaseScene
             return scene.hdrPrepassFilter.glowEnabled;
         }
 
-
         void brightness(float b) @property
         {
             scene.hdrPrepassFilter.glowBrightness = b;
@@ -589,6 +588,26 @@ class Scene: BaseScene
         float brightness() @property
         {
             return scene.hdrPrepassFilter.glowBrightness;
+        }
+
+        void minLuminanceThreshold(float t) @property
+        {
+            scene.hdrPrepassFilter.glowMinLuminanceThreshold = t;
+        }
+
+        float minLuminanceThreshold() @property
+        {
+            return scene.hdrPrepassFilter.glowMinLuminanceThreshold;
+        }
+
+        void maxLuminanceThreshold(float t) @property
+        {
+            scene.hdrPrepassFilter.glowMaxLuminanceThreshold = t;
+        }
+
+        float maxLuminanceThreshold() @property
+        {
+            return scene.hdrPrepassFilter.glowMaxLuminanceThreshold;
         }
     }
 
