@@ -58,8 +58,7 @@ class Configuration: Owner
         auto homeDir = environment.get(homeDirVar, "");
         if (homeDir.length)
         {
-            string appdataDir = format("%s/Dagon", homeDir);
-            //writeln(appdataDir);
+            string appdataDir = format("%s/.dagon", homeDir);
             fs.mount(appdataDir);
         }
 
