@@ -67,7 +67,7 @@ class PostFilterHDRPrepass: PostFilter
     bool glowEnabled = false;
     float glowBrightness = 0.5;
     float glowMinLuminanceThreshold = 0.0;
-    float glowMaxLuminanceThreshold = 20.0;
+    float glowMaxLuminanceThreshold = 1.0;
     GLuint blurredTexture;
 
     this(Framebuffer inputBuffer, Framebuffer outputBuffer, Owner o)

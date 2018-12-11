@@ -26,7 +26,7 @@ void main()
         vec3 glow = texture(fbBlurred, texCoord).rgb;
         float lum = glow.r * 0.2126 + glow.g * 0.7152 + glow.b * 0.0722;
         lum = (clamp(lum, glowMinLuminanceThreshold, glowMaxLuminanceThreshold) - glowMinLuminanceThreshold) / (glowMaxLuminanceThreshold - glowMinLuminanceThreshold);
-        res += glow * lum * glowBrightness;
+        res = mix(res, res + glow * glowBrightness, lum);
     }
 
     frag_color = vec4(res, 1.0); 
