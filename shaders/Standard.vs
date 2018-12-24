@@ -31,12 +31,14 @@ uniform mat4 shadowMatrix3;
 uniform mat4 prevModelViewProjMatrix;
 uniform mat4 blurModelViewProjMatrix;
 
+uniform vec2 textureScale;
+
 void main()
 {
     vec4 pos = modelViewMatrix * vec4(va_Vertex, 1.0);
 
     eyePosition = pos.xyz;
-    texCoord = va_Texcoord;
+    texCoord = va_Texcoord * textureScale;;
     eyeNormal = (normalMatrix * vec4(va_Normal, 0.0)).xyz;
 
     worldPosition = (invViewMatrix * pos).xyz;

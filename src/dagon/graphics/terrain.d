@@ -33,24 +33,22 @@ import dlib.math.vector;
 import dagon.core.ownership;
 import dagon.core.interfaces;
 import dagon.graphics.mesh;
-import dagon.graphics.opensimplex;
+import dagon.graphics.heightmap;
 
 class Terrain: Owner, Drawable
 {
     uint width;
     uint height;
     Mesh mesh;
-    OpenSimplexNoise!float noise;
+    Heightmap heightmap;
 
-    // TODO: height data object
-    this(uint width, uint height, Owner owner)
+    this(uint width, uint height, Heightmap heightmap, Owner owner)
     {
         super(owner);
 
         this.width = width;
         this.height = height;
-
-        noise = New!(OpenSimplexNoise!float)(this);
+        this.heightmap = heightmap;
 
         mesh = New!Mesh(owner);
 
@@ -59,7 +57,7 @@ class Terrain: Owner, Drawable
         mesh.texcoords = New!(Vector2f[])(width * height);
         mesh.indices = New!(uint[3][])(width * height * 2);
 
-        float scale = 7;
+        float scale = 1;
         int i = 0;
         foreach(x; 0..width)
         foreach(z; 0..height)
@@ -84,9 +82,18 @@ class Terrain: Owner, Drawable
             mesh.indices[i+1] = [LU, RB, LB];
             i += 2;
         }
+        
+        foreach(x; 0..width)
+        foreach(z; 0..height)
+        {
+            uint vi = x + z * width;
+            mesh.vertices[vi].y = 
+                heightmap.getHeight(
+                    cast(float)x / cast(float)width, 
+                    cast(float)z / cast(float)height);
+        }
 
         mesh.generateNormals();
-
         mesh.dataReady = true;
         mesh.prepareVAO();
     }
@@ -99,29 +106,6 @@ class Terrain: Owner, Drawable
     void render(RenderingContext* rc)
     {
         mesh.render(rc);
-    }
-
-    void fromSimplexNoise()
-    {
-        float[2][3] scaleLayers = [
-            [0.01, 11.01],
-            [0.08, 15.1],
-            [0.194, 10.109],
-        ];
-
-        foreach(x; 0..width)
-        foreach(z; 0..height)
-        {
-            uint i = x + z * width;
-            mesh.vertices[i].y = 0;
-
-            foreach(psl; scaleLayers)
-            {
-                mesh.vertices[i].y += noise.eval(cast(float)x * psl[0], cast(float)z * psl[0]) * psl[1];
-            }
-        }
-
-        refreshChanges();
     }
 
     void refreshChanges()

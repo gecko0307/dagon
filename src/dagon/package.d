@@ -89,6 +89,7 @@ public
     import dagon.graphics.renderer;
     import dagon.graphics.opensimplex;
     import dagon.graphics.terrain;
+    import dagon.graphics.heightmap;
 
     import dagon.graphics.shaders.shadowpass;
     import dagon.graphics.shaders.geometrypass;

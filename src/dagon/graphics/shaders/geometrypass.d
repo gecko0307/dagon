@@ -67,6 +67,7 @@ class GeometryPassShader: Shader
         auto iemission = "emission" in rc.material.inputs;
         auto ienergy = "energy" in rc.material.inputs;
         auto iparallax = "parallax" in rc.material.inputs;
+        auto itextureScale = "textureScale" in rc.material.inputs;
 
         int parallaxMethod = iparallax.asInteger;
         if (parallaxMethod > ParallaxOcclusionMapping)
@@ -83,6 +84,8 @@ class GeometryPassShader: Shader
 
         setParameter("prevModelViewProjMatrix", rc.prevModelViewProjMatrix);
         setParameter("blurModelViewProjMatrix", rc.blurModelViewProjMatrix);
+        
+        setParameter("textureScale", itextureScale.asVector2f);
 
         // Diffuse
         if (idiffuse.texture)

@@ -72,6 +72,7 @@ class StandardShader: Shader
         auto iemission = "emission" in rc.material.inputs;
         auto ienergy = "energy" in rc.material.inputs;
         auto itransparency = "transparency" in rc.material.inputs;
+        auto itextureScale = "textureScale" in rc.material.inputs;
 
         bool shadeless = rc.material.boolProp("shadeless");
         bool useShadows = (shadowMap !is null) && rc.material.boolProp("shadowsEnabled");
@@ -138,6 +139,8 @@ class StandardShader: Shader
         setParameter("prevModelViewProjMatrix", rc.prevModelViewProjMatrix);
         setParameter("blurModelViewProjMatrix", rc.blurModelViewProjMatrix);
         setParameter("blurMask", rc.blurMask);
+        
+        setParameter("textureScale", itextureScale.asVector2f);
 
         setParameter("sunDirection", rc.environment.sunDirectionEye(rc.viewMatrix));
         setParameter("sunColor", rc.environment.sunColor);
