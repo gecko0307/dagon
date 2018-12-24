@@ -69,8 +69,8 @@ class Environment: Owner
     Color4f skyHorizonColorAtMidnight = Color4f(0.1, 0.1, 0.1, 1.0);
 
     float skyEnergyAtMidday = 5.0;
-    float skyEnergyAtSunset = 1.0;
-    float skyEnergyAtMidnight = 0.001;
+    float skyEnergyAtSunset = 2.0;
+    float skyEnergyAtMidnight = 0.01;
 
     Color4f groundColor = Color4f(0.5, 0.4, 0.4, 1.0);
 
