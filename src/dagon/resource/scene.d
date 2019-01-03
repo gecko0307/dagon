@@ -109,6 +109,11 @@ class BaseScene: EventListener
         release();
         Delete(assetManager);
     }
+    
+    Configuration config() @property
+    {
+        return sceneManager.application.config;
+    }
 
     // Set preload to true if you want to load the asset immediately
     // before actual loading (e.g., to render a loading screen)
