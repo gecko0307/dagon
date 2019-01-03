@@ -42,8 +42,6 @@ import dagon.logics.controller;
 class FirstPersonView: EventListener, View
 {
     FirstPersonCamera camera;
-    int prevMouseX;
-    int prevMouseY;
     int oldMouseX = 0;
     int oldMouseY = 0;
     bool _active = false;
@@ -64,8 +62,8 @@ class FirstPersonView: EventListener, View
 
         if (_active)
         {
-            float turn_m =  (eventManager.mouseX - prevMouseX) * mouseSensibility;
-            float pitch_m = (eventManager.mouseY - prevMouseY) * mouseSensibility;
+            float turn_m =  (eventManager.mouseX - oldMouseX) * mouseSensibility;
+            float pitch_m = (eventManager.mouseY - oldMouseY) * mouseSensibility;
 
             camera.pitch += pitch_m;
             camera.turn += turn_m;
@@ -85,8 +83,10 @@ class FirstPersonView: EventListener, View
                 camera.weaponPitch = pitchLimitMin * camera.weaponPitchCoef;
             }
             
-            prevMouseX = eventManager.mouseX;
-            prevMouseY = eventManager.mouseY;
+            //prevMouseX = eventManager.mouseX;
+            //prevMouseY = eventManager.mouseY;
+            
+            eventManager.setMouse(oldMouseX, oldMouseY);
         }
 
         camera.update(dt);
@@ -96,8 +96,8 @@ class FirstPersonView: EventListener, View
     {
         if (v)
         {
-            oldMouseX = prevMouseX = eventManager.mouseX;
-            oldMouseY = prevMouseY = eventManager.mouseY;
+            oldMouseX = eventManager.mouseX;
+            oldMouseY = eventManager.mouseY;
             //SDL_SetRelativeMouseMode(SDL_TRUE);
         }
         else
