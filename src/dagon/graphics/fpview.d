@@ -83,9 +83,6 @@ class FirstPersonView: EventListener, View
                 camera.weaponPitch = pitchLimitMin * camera.weaponPitchCoef;
             }
             
-            //prevMouseX = eventManager.mouseX;
-            //prevMouseY = eventManager.mouseY;
-            
             eventManager.setMouse(oldMouseX, oldMouseY);
         }
 
@@ -96,13 +93,13 @@ class FirstPersonView: EventListener, View
     {
         if (v)
         {
-            oldMouseX = eventManager.mouseX;
-            oldMouseY = eventManager.mouseY;
-            //SDL_SetRelativeMouseMode(SDL_TRUE);
+            oldMouseX = eventManager.windowWidth / 2;
+            oldMouseY = eventManager.windowHeight / 2;
+            eventManager.showCursor(false);
         }
         else
         {
-            //SDL_SetRelativeMouseMode(SDL_FALSE);
+            eventManager.showCursor(true);
             eventManager.setMouse(oldMouseX, oldMouseY);
         }
 
