@@ -44,6 +44,7 @@ class Freeview: EventListener, View
     TrackballCamera camera;
     int prevMouseX;
     int prevMouseY;
+    float mouseSensibility = 0.1f;
 
     this(EventManager emngr, Owner owner)
     {
@@ -93,8 +94,8 @@ class Freeview: EventListener, View
 
         if (eventManager.mouseButtonPressed[MB_RIGHT])
         {
-            float shift_x = (eventManager.mouseX - prevMouseX) * 0.1f;
-            float shift_y = -(eventManager.mouseY - prevMouseY) * 0.1f;
+            float shift_x = (eventManager.mouseX - prevMouseX) * mouseSensibility;
+            float shift_y = -(eventManager.mouseY - prevMouseY) * mouseSensibility;
             Vector3f trans = camera.getUpVector * shift_y + camera.getRightVector * shift_x;
             camera.translateTarget(trans);
         }

@@ -46,7 +46,7 @@ class FirstPersonView: EventListener, View
     int oldMouseY = 0;
     bool _active = false;
 
-    float mouseSensibility = 0.2f;
+    float mouseSensibility = 0.1f;
 
     this(EventManager emngr, Entity camEntity, Owner owner)
     {
