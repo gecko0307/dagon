@@ -95,6 +95,7 @@ class FirstPersonView: EventListener, View
         {
             oldMouseX = eventManager.windowWidth / 2;
             oldMouseY = eventManager.windowHeight / 2;
+            eventManager.setMouse(oldMouseX, oldMouseY);
             eventManager.showCursor(false);
         }
         else
