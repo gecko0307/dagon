@@ -26,11 +26,12 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dmech.pcm;
+module dagon.physics.pcm;
 
 import dlib.math.vector;
-import dmech.contact;
-import dmech.rigidbody;
+
+import dagon.physics.contact;
+import dagon.physics.rigidbody;
 
 /*
  * Persistent contact manifold.

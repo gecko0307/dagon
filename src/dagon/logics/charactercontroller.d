@@ -37,7 +37,11 @@ import dlib.math.utils;
 
 import dagon.logics.entity;
 import dagon.logics.controller;
-import dmech;
+import dagon.physics.world;
+import dagon.physics.rigidbody;
+import dagon.physics.geometry;
+import dagon.physics.shape;
+import dagon.physics.raycast;
 
 /*
  * CharacterController implements kinematic body on top of dmech dynamics: it allows direct

@@ -26,7 +26,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dmech.hashtable;
+module dagon.physics.hashtable;
 
 import dlib.core.ownership;
 import dlib.core.memory;

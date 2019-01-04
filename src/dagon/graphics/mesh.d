@@ -81,25 +81,30 @@ class Mesh: Owner, Drawable
         }
     }
     
+    Triangle getTriangle(size_t faceIndex)
+    {
+        uint[3] f = indices[faceIndex];
+        Triangle tri;
+        tri.v[0] = vertices[f[0]];
+        tri.v[1] = vertices[f[1]];
+        tri.v[2] = vertices[f[2]];
+        tri.n[0] = normals[f[0]];
+        tri.n[1] = normals[f[1]];
+        tri.n[2] = normals[f[2]];
+        tri.t1[0] = texcoords[f[0]];
+        tri.t1[1] = texcoords[f[1]];
+        tri.t1[2] = texcoords[f[2]];
+        tri.normal = (tri.n[0] + tri.n[1] + tri.n[2]) / 3.0f;
+        return tri;
+    }
+    
     int opApply(scope int delegate(Triangle t) dg)
     {
         int result = 0;
 
         foreach(i, ref f; indices)
         {
-            Triangle tri;
-
-            tri.v[0] = vertices[f[0]];
-            tri.v[1] = vertices[f[1]];
-            tri.v[2] = vertices[f[2]];
-            tri.n[0] = normals[f[0]];
-            tri.n[1] = normals[f[1]];
-            tri.n[2] = normals[f[2]];
-            tri.t1[0] = texcoords[f[0]];
-            tri.t1[1] = texcoords[f[1]];
-            tri.t1[2] = texcoords[f[2]];
-            tri.normal = (tri.n[0] + tri.n[1] + tri.n[2]) / 3.0f;
-
+            Triangle tri = getTriangle(i);
             result = dg(tri);
             if (result)
                 break;

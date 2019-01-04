@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2018 Timur Gafarov
+Copyright (c) 2015-2018 Timur Gafarov 
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -26,41 +26,20 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dmech.pairhashtable;
+module dagon.physics;
 
-import dlib.core.ownership;
-import dlib.core.memory;
-import dmech.hashtable;
-
-/*
- * Hash table that uses a pair of keys for indexing.
- * Pair order matters: (a,b) != (b,a)
- */
-
-class PairHashTable(T): HashTable!(T, uint)
+public
 {
-    this(Owner o, size_t size)
-    {
-        super(o, size);
-    }
-
-    T* get(uint k1, uint k2)
-    {
-        return super.get(szudzikPair(k1, k2));
-    }
-
-    void set(uint k1, uint k2, T value)
-    {
-        super.set(szudzikPair(k1, k2), value);
-    }
-
-    void remove(uint k1, uint k2)
-    {
-        super.remove(szudzikPair(k1, k2));
-    }
+    import dagon.physics.bvh;
+    import dagon.physics.collision;
+    import dagon.physics.constraint;
+    import dagon.physics.contact;
+    import dagon.physics.geometry;
+    import dagon.physics.mpr;
+    import dagon.physics.pcm;
+    import dagon.physics.raycast;
+    import dagon.physics.rigidbody;
+    import dagon.physics.shape;
+    import dagon.physics.world;
 }
 
-uint szudzikPair(uint a, uint b)
-{
-    return a >= b ? a * a + a + b : a + b * b;
-}

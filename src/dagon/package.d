@@ -37,8 +37,6 @@ public
     import dlib.image;
     import dlib.container;
 
-    import dmech;
-
     import dagon.core.ownership;
     import dagon.core.interfaces;
     import dagon.core.application;
@@ -110,4 +108,6 @@ public
     import dagon.ui.font;
     import dagon.ui.ftfont;
     import dagon.ui.textline;
+    
+    import dagon.physics;
 }

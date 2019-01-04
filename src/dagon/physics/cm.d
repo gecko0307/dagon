@@ -26,7 +26,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dmech.cm;
+module dagon.physics.cm;
 
 import std.math;
 
@@ -37,12 +37,12 @@ import dlib.math.utils;
 import dlib.geometry.plane;
 import dlib.geometry.triangle;
 
-import dmech.contact;
-import dmech.rigidbody;
-import dmech.geometry;
-import dmech.shape;
-import dmech.mpr;
-import dmech.clipping;
+import dagon.physics.contact;
+import dagon.physics.rigidbody;
+import dagon.physics.geometry;
+import dagon.physics.shape;
+import dagon.physics.mpr;
+import dagon.physics.clipping;
 
 // TODO: move projectPointOnPlane and planeBasis to dlib.geometry.plane
 /*

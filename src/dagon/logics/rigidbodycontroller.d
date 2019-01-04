@@ -31,7 +31,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dagon.logics.entity;
 import dagon.logics.controller;
-import dmech.rigidbody;
+import dagon.physics.rigidbody;
 
 class RigidBodyController: EntityController
 {

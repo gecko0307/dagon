@@ -26,7 +26,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dmech.geometry;
+module dagon.physics.geometry;
 
 import std.math;
 
@@ -38,7 +38,7 @@ import dlib.math.transformation;
 import dlib.math.utils;
 import dlib.geometry.aabb;
 
-import dmech.world;
+import dagon.physics.world;
 
 enum GeomType
 {

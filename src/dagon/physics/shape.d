@@ -26,7 +26,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dmech.shape;
+module dagon.physics.shape;
 
 import dlib.core.ownership;
 import dlib.core.memory;
@@ -36,8 +36,8 @@ import dlib.math.transformation;
 import dlib.geometry.aabb;
 import dlib.geometry.sphere;
 
-import dmech.world;
-import dmech.geometry;
+import dagon.physics.world;
+import dagon.physics.geometry;
 
 /*
  * ShapeComponent is a proxy object between RigidBody and Geometry.

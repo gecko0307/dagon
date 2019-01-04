@@ -26,16 +26,16 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dmech.raycast;
+module dagon.physics.raycast;
 
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.utils;
 
-import dmech.rigidbody;
-import dmech.geometry;
-import dmech.shape;
-import dmech.jss;
+import dagon.physics.rigidbody;
+import dagon.physics.geometry;
+import dagon.physics.shape;
+import dagon.physics.jss;
 
 struct CastResult
 {

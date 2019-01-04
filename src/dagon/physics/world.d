@@ -26,7 +26,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dmech.world;
+module dagon.physics.world;
 
 import std.math;
 import std.range;
@@ -42,18 +42,20 @@ import dlib.geometry.sphere;
 import dlib.geometry.ray;
 import dlib.geometry.plane;
 
-import dmech.rigidbody;
-import dmech.geometry;
-import dmech.shape;
-import dmech.contact;
-import dmech.solver;
-import dmech.pairhashtable;
-import dmech.collision;
-import dmech.pcm;
-import dmech.constraint;
-import dmech.bvh;
-import dmech.mpr;
-import dmech.raycast;
+import dagon.physics.rigidbody;
+import dagon.physics.geometry;
+import dagon.physics.shape;
+import dagon.physics.contact;
+import dagon.physics.solver;
+import dagon.physics.pairhashtable;
+import dagon.physics.collision;
+import dagon.physics.pcm;
+import dagon.physics.constraint;
+import dagon.physics.bvh;
+import dagon.physics.mpr;
+import dagon.physics.raycast;
+
+import dagon.graphics.terrain;
 
 /*
  * World object stores bodies and constraints
@@ -88,6 +90,8 @@ class PhysicsWorld: Owner
     RigidBody proxyTri;
     ShapeComponent proxyTriShape;
     GeomTriangle proxyTriGeom;
+    
+    Terrain terrain = null;
 
     this(Owner owner, size_t maxCollisions = 1000)
     {
@@ -400,11 +404,18 @@ class PhysicsWorld: Owner
         // and the BVH world (static triangle mesh)
         if (bvhRoot !is null)
         {
-            checkCollisionBVH();
+            checkCollisionTraverse(bvhRoot);
         }
+        
+        /*
+        if (terrain !is null)
+        {
+            checkCollisionTraverse(terrain);
+        }
+        */
     }
 
-    void checkCollisionBVH()
+    void checkCollisionTraverse(T)(T obj)
     {
         foreach(rb; dynamicBodies.data)
         if (rb.active)
@@ -423,7 +434,7 @@ class PhysicsWorld: Owner
 
             Sphere sphere = shape.boundingSphere;
 
-            foreach(tri; bvhRoot.traverseBySphere(&sphere))
+            foreach(tri; obj.traverseBySphere(&sphere))
             {
                 // Update temporary triangle to check collision
                 proxyTriShape.transformation = translationMatrix(tri.barycenter);

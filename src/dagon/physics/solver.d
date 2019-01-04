@@ -26,7 +26,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dmech.solver;
+module dagon.physics.solver;
 
 import std.math;
 import std.algorithm;
@@ -34,8 +34,8 @@ import std.algorithm;
 import dlib.math.vector;
 import dlib.math.utils;
 
-import dmech.rigidbody;
-import dmech.contact;
+import dagon.physics.rigidbody;
+import dagon.physics.contact;
 
 void prepareContact(Contact* c)
 {

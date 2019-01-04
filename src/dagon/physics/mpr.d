@@ -26,15 +26,15 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dmech.mpr;
+module dagon.physics.mpr;
 
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.utils;
 
-import dmech.shape;
-import dmech.contact;
+import dagon.physics.shape;
+import dagon.physics.contact;
 
 /*
  * Implementation of the Minkowski Portal Refinement algorithm

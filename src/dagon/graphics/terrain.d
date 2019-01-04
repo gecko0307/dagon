@@ -29,6 +29,8 @@ module dagon.graphics.terrain;
 
 import dlib.core.memory;
 import dlib.math.vector;
+import dlib.geometry.sphere;
+import dlib.geometry.triangle;
 
 import dagon.core.ownership;
 import dagon.core.interfaces;
@@ -113,4 +115,49 @@ class Terrain: Owner, Drawable
         mesh.generateNormals();
         mesh.prepareVAO();
     }
+    
+    /*
+    TerrainSphereTraverseAggregate traverseBySphere(Sphere* sphere)
+    {
+        return TerrainSphereTraverseAggregate(this, sphere);
+    }
+    */
 }
+
+/*
+struct TerrainSphereTraverseAggregate
+{
+    Terrain terrain;
+    Sphere* sphere;
+    
+    int opApply(int delegate(ref Triangle) dg)
+    {
+        int result = 0;
+        
+        uint x = 0;
+        uint y = 0;
+        
+        Vector3f c = sphere.center;
+        // TODO: transform c with position and scale?
+        if (c.x > terrain.width - 1) x = terrain.width - 1;
+        else if (c.x < 0) x = 0;
+        else x = cast(uint)c.x;
+        
+        if (c.z > terrain.height - 1) y = terrain.height - 1;
+        else if (c.z < 0) y = 0;
+        else y = cast(uint)c.z;
+        
+        import std.stdio;
+        writeln(x, ", ", y);
+        
+        Triangle tri = terrain.mesh.getTriangle(y * terrain.width + x);
+        tri.barycenter = (tri.v[0] + tri.v[1] + tri.v[2]) / 3;
+        
+        writeln(tri.barycenter);
+        
+        result = dg(tri);
+  
+        return result;
+    }
+}
+*/

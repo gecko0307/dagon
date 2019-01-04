@@ -26,63 +26,26 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dmech.contact;
+module dagon.physics.collision;
 
-import dlib.math.vector;
+import dagon.physics.shape;
+import dagon.physics.contact;
+import dagon.physics.mpr;
 
-import dmech.rigidbody;
-import dmech.shape;
-
-struct Contact
+/*
+ * TODO: sphere/sphere collision is a simple case,
+ * use a special routine for it, instead of MPR.
+ */
+bool checkCollision(ShapeComponent shape1, ShapeComponent shape2, ref Contact c)
 {
-    RigidBody body1;
-    RigidBody body2;
-    
-    ShapeComponent shape1;
-    ShapeComponent shape2;
-    
-    Vector3f shape1pos;
-    Vector3f shape2pos;
-    
-    bool fact;
+    c.shape1 = shape1;
+    c.shape2 = shape2;
 
-    Vector3f point;
-    Vector3f shape1RelPoint;
-    Vector3f shape2RelPoint;
-    
-    Vector3f body1RelPoint;
-    Vector3f body2RelPoint;
+    bool collided = MPRCollisionTest(shape1, shape2, c);
 
-    Vector3f normal;
-    float penetration;
+    if (collided)
+        c.fact = true;
 
-    Vector3f fdir1;
-    Vector3f fdir2;
-
-    Vector3f n1;
-    Vector3f w1;
-    Vector3f n2;
-    Vector3f w2;
-
-    float initialVelocityProjection;
-    float effectiveMass;
-
-    float accumulatedImpulse = 0.0f;
-    float accumulatedfImpulse1 = 0.0f;
-    float accumulatedfImpulse2 = 0.0f;
-
-    void calcFDir()
-    {
-        // Calculate tangent space for contact normal
-        if (dot(normal, Vector3f(1,0,0)) < 0.5f)
-            fdir1 = cross(normal, Vector3f(1,0,0)); 
-        else
-            fdir1 = cross(normal, Vector3f(0,0,1));
-         
-        //fdir1 = cross(randomUnitVector3!float, normal);
-        fdir2 = cross(fdir1, normal);
-        fdir1.normalize();
-        fdir2.normalize();
-    }
+    return collided;
 }
 

@@ -26,7 +26,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dmech.constraint;
+module dagon.physics.constraint;
 
 import std.math;
 import std.algorithm;
@@ -38,8 +38,8 @@ import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.quaternion;
 
-import dmech.world;
-import dmech.rigidbody;
+import dagon.physics.world;
+import dagon.physics.rigidbody;
 
 abstract class Constraint: Owner
 {

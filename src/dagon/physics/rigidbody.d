@@ -26,7 +26,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dmech.rigidbody;
+module dagon.physics.rigidbody;
 
 import std.math;
 
@@ -39,9 +39,9 @@ import dlib.math.quaternion;
 import dlib.math.transformation;
 import dlib.math.utils;
 
-import dmech.world;
-import dmech.shape;
-import dmech.contact;
+import dagon.physics.world;
+import dagon.physics.shape;
+import dagon.physics.contact;
 
 interface CollisionDispatcher
 {
