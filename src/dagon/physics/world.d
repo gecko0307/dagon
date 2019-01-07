@@ -84,6 +84,8 @@ class PhysicsWorld: Owner
     uint positionCorrectionIterations = 20;
     uint constraintIterations = 40;
 
+    // TODO: use Entities instead of explicit BVH,
+    // generate BVH for meshes on demand.
     BVHNode!Triangle bvhRoot = null;
 
     // Proxy triangle to deal with BVH data
@@ -91,7 +93,7 @@ class PhysicsWorld: Owner
     ShapeComponent proxyTriShape;
     GeomTriangle proxyTriGeom;
     
-    Terrain terrain = null;
+    //Terrain terrain = null;
 
     this(Owner owner, size_t maxCollisions = 1000)
     {

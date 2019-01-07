@@ -42,62 +42,73 @@ class Terrain: Owner, Drawable
     uint width;
     uint height;
     Mesh mesh;
+    Mesh collisionMesh;
+    enum collisionMeshResolution = 96;
     Heightmap heightmap;
 
-    this(uint width, uint height, Heightmap heightmap, Owner owner)
+    this(uint resolution, Heightmap heightmap, Owner owner)
     {
         super(owner);
 
-        this.width = width;
-        this.height = height;
+        this.width = resolution;
+        this.height = resolution;
         this.heightmap = heightmap;
 
-        mesh = New!Mesh(owner);
+        mesh = generateMesh(width, height, 1, owner);
+        mesh.dataReady = true;
+        mesh.prepareVAO();
+        
+        float scale = cast(float)resolution / collisionMeshResolution;
+        collisionMesh = generateMesh(collisionMeshResolution, collisionMeshResolution, scale, owner);
+    }
+    
+    Mesh generateMesh(uint w, uint h, float scale, Owner o)
+    {
+        Mesh mesh = New!Mesh(o);
 
-        mesh.vertices = New!(Vector3f[])(width * height);
-        mesh.normals = New!(Vector3f[])(width * height);
-        mesh.texcoords = New!(Vector2f[])(width * height);
-        mesh.indices = New!(uint[3][])(width * height * 2);
+        mesh.vertices = New!(Vector3f[])(w * h);
+        mesh.normals = New!(Vector3f[])(w * h);
+        mesh.texcoords = New!(Vector2f[])(w * h);
+        mesh.indices = New!(uint[3][])(w * h * 2);
 
-        float scale = 1;
         int i = 0;
-        foreach(x; 0..width)
-        foreach(z; 0..height)
+        foreach(x; 0..w)
+        foreach(z; 0..h)
         {
             mesh.vertices[i] = Vector3f(x * scale, 0, z * scale);
             mesh.texcoords[i] = Vector2f(
-                cast(float)x / cast(float)width,
-                cast(float)z / cast(float)height);
+                cast(float)x / cast(float)w,
+                cast(float)z / cast(float)h);
             i += 1;
         }
 
         i = 0;
-        foreach(x; 0..width-1)
-        foreach(z; 0..height-1)
+        foreach(x; 0..w-1)
+        foreach(z; 0..h-1)
         {
-            uint LU = x + z * width;
-            uint RU = x+1 + z * width;
-            uint LB = x + (z+1) * width;
-            uint RB = x+1 + (z+1) * width;
+            uint LU = x + z * w;
+            uint RU = x+1 + z * w;
+            uint LB = x + (z+1) * w;
+            uint RB = x+1 + (z+1) * w;
 
             mesh.indices[i] = [LU, RU, RB];
             mesh.indices[i+1] = [LU, RB, LB];
             i += 2;
         }
         
-        foreach(x; 0..width)
-        foreach(z; 0..height)
+        foreach(x; 0..w)
+        foreach(z; 0..h)
         {
-            uint vi = x + z * width;
+            uint vi = x + z * w;
             mesh.vertices[vi].y = 
                 heightmap.getHeight(
-                    cast(float)x / cast(float)width, 
-                    cast(float)z / cast(float)height);
+                    cast(float)x / cast(float)w, 
+                    cast(float)z / cast(float)h);
         }
 
         mesh.generateNormals();
-        mesh.dataReady = true;
-        mesh.prepareVAO();
+        
+        return mesh;
     }
 
     void update(double dt)
@@ -116,15 +127,12 @@ class Terrain: Owner, Drawable
         mesh.prepareVAO();
     }
     
-    /*
     TerrainSphereTraverseAggregate traverseBySphere(Sphere* sphere)
     {
         return TerrainSphereTraverseAggregate(this, sphere);
     }
-    */
 }
 
-/*
 struct TerrainSphereTraverseAggregate
 {
     Terrain terrain;
@@ -147,17 +155,17 @@ struct TerrainSphereTraverseAggregate
         else if (c.z < 0) y = 0;
         else y = cast(uint)c.z;
         
-        import std.stdio;
-        writeln(x, ", ", y);
+        //import std.stdio;
+        //writeln(x, ", ", y);
         
         Triangle tri = terrain.mesh.getTriangle(y * terrain.width + x);
         tri.barycenter = (tri.v[0] + tri.v[1] + tri.v[2]) / 3;
         
-        writeln(tri.barycenter);
+        //writeln(tri.barycenter);
         
         result = dg(tri);
   
         return result;
     }
 }
-*/
+
