@@ -379,10 +379,12 @@ class Entity: Owner, Drawable
                 ble.behaviour.render(&rcLocal);
         }
 
+        /*
         foreach(child; children)
         {
             child.render(&rcLocal);
         }
+        */
 
         if (!ignore)
         foreach_reverse(i, ble; behaviours.data)

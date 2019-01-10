@@ -70,7 +70,6 @@ import dagon.graphics.texture;
 import dagon.graphics.particles;
 import dagon.graphics.framebuffer;
 import dagon.graphics.renderer;
-import dagon.graphics.postproc;
 
 import dagon.graphics.material;
 
@@ -79,13 +78,6 @@ import dagon.graphics.shaders.standard;
 import dagon.graphics.shaders.sky;
 import dagon.graphics.shaders.particle;
 import dagon.graphics.shaders.hud;
-
-import dagon.graphics.filters.fxaa;
-import dagon.graphics.filters.lens;
-import dagon.graphics.filters.hdrprepass;
-import dagon.graphics.filters.hdr;
-import dagon.graphics.filters.blur;
-import dagon.graphics.filters.finalizer;
 
 import dagon.logics.entity;
 
@@ -518,337 +510,13 @@ class Scene: BaseScene
     ParticleShader particleShader;
     Material defaultMaterial3D;
 
-    RenderingContext rc3d;
-    RenderingContext rc2d;
     View view;
-
-    PostFilterHDR hdrFilter;
-
-    Framebuffer hdrPrepassFramebuffer;
-    PostFilterHDRPrepass hdrPrepassFilter;
-
-    Framebuffer hblurredFramebuffer;
-    Framebuffer vblurredFramebuffer;
-    PostFilterBlur hblur;
-    PostFilterBlur vblur;
-
-    PostFilterFXAA fxaaFilter;
-    PostFilterLensDistortion lensFilter;
-
-    PostFilterFinalizer finalizerFilter;
-
-	//TODO: move post-processing to a separate class
-    struct SSAOSettings
-    {
-        BaseScene3D scene;
-
-        void enabled(bool mode) @property
-        {
-            scene.renderer.deferredEnvPass.shader.enableSSAO = mode;
-        }
-
-        bool enabled() @property
-        {
-            return scene.renderer.deferredEnvPass.shader.enableSSAO;
-        }
-
-        void samples(int s) @property
-        {
-            scene.renderer.deferredEnvPass.shader.ssaoSamples = s;
-        }
-
-        int samples() @property
-        {
-            return scene.renderer.deferredEnvPass.shader.ssaoSamples;
-        }
-
-        void radius(float r) @property
-        {
-            scene.renderer.deferredEnvPass.shader.ssaoRadius = r;
-        }
-
-        float radius() @property
-        {
-            return scene.renderer.deferredEnvPass.shader.ssaoRadius;
-        }
-
-        void power(float p) @property
-        {
-            scene.renderer.deferredEnvPass.shader.ssaoPower = p;
-        }
-
-        float power() @property
-        {
-            return scene.renderer.deferredEnvPass.shader.ssaoPower;
-        }
-
-        //TODO: other SSAO parameters
-    }
-
-    struct HDRSettings
-    {
-        BaseScene3D scene;
-
-        void tonemapper(Tonemapper f) @property
-        {
-            scene.hdrFilter.tonemapFunction = f;
-        }
-
-        Tonemapper tonemapper() @property
-        {
-            return scene.hdrFilter.tonemapFunction;
-        }
-
-
-        void exposure(float ex) @property
-        {
-            scene.hdrFilter.exposure = ex;
-        }
-
-        float exposure() @property
-        {
-            return scene.hdrFilter.exposure;
-        }
-
-
-        void autoExposure(bool mode) @property
-        {
-            scene.hdrFilter.autoExposure = mode;
-        }
-
-        bool autoExposure() @property
-        {
-            return scene.hdrFilter.autoExposure;
-        }
-
-
-        void minLuminance(float l) @property
-        {
-            scene.hdrFilter.minLuminance = l;
-        }
-
-        float minLuminance() @property
-        {
-            return scene.hdrFilter.minLuminance;
-        }
-
-
-        void maxLuminance(float l) @property
-        {
-            scene.hdrFilter.maxLuminance = l;
-        }
-
-        float maxLuminance() @property
-        {
-            return scene.hdrFilter.maxLuminance;
-        }
-
-
-        void keyValue(float k) @property
-        {
-            scene.hdrFilter.keyValue = k;
-        }
-
-        float keyValue() @property
-        {
-            return scene.hdrFilter.keyValue;
-        }
-
-
-        void adaptationSpeed(float s) @property
-        {
-            scene.hdrFilter.adaptationSpeed = s;
-        }
-
-        float adaptationSpeed() @property
-        {
-            return scene.hdrFilter.adaptationSpeed;
-        }
-    }
-
-    struct GlowSettings
-    {
-        BaseScene3D scene;
-        uint radius;
-
-        void enabled(bool mode) @property
-        {
-            scene.hblur.enabled = mode;
-            scene.vblur.enabled = mode;
-            scene.hdrPrepassFilter.glowEnabled = mode;
-        }
-
-        bool enabled() @property
-        {
-            return scene.hdrPrepassFilter.glowEnabled;
-        }
-
-        void brightness(float b) @property
-        {
-            scene.hdrPrepassFilter.glowBrightness = b;
-        }
-
-        float brightness() @property
-        {
-            return scene.hdrPrepassFilter.glowBrightness;
-        }
-
-        void minLuminanceThreshold(float t) @property
-        {
-            scene.hdrPrepassFilter.glowMinLuminanceThreshold = t;
-        }
-
-        float minLuminanceThreshold() @property
-        {
-            return scene.hdrPrepassFilter.glowMinLuminanceThreshold;
-        }
-
-        void maxLuminanceThreshold(float t) @property
-        {
-            scene.hdrPrepassFilter.glowMaxLuminanceThreshold = t;
-        }
-
-        float maxLuminanceThreshold() @property
-        {
-            return scene.hdrPrepassFilter.glowMaxLuminanceThreshold;
-        }
-    }
-
-    struct MotionBlurSettings
-    {
-        BaseScene3D scene;
-
-        void enabled(bool mode) @property
-        {
-            scene.hdrFilter.mblurEnabled = mode;
-        }
-
-        bool enabled() @property
-        {
-            return scene.hdrFilter.mblurEnabled;
-        }
-
-
-        void samples(uint s) @property
-        {
-            scene.hdrFilter.motionBlurSamples = s;
-        }
-
-        uint samples() @property
-        {
-            return scene.hdrFilter.motionBlurSamples;
-        }
-
-
-        void shutterSpeed(float s) @property
-        {
-            scene.hdrFilter.shutterSpeed = s;
-            scene.hdrFilter.shutterFps = 1.0 / s;
-        }
-
-        float shutterSpeed() @property
-        {
-            return scene.hdrFilter.shutterSpeed;
-        }
-    }
-
-    struct LUTSettings
-    {
-        BaseScene3D scene;
-
-        void texture(Texture tex) @property
-        {
-            scene.hdrFilter.colorTable = tex;
-        }
-
-        Texture texture() @property
-        {
-            return scene.hdrFilter.colorTable;
-        }
-    }
-
-    struct VignetteSettings
-    {
-        BaseScene3D scene;
-
-        void texture(Texture tex) @property
-        {
-            scene.hdrFilter.vignette = tex;
-        }
-
-        Texture texture() @property
-        {
-            return scene.hdrFilter.vignette;
-        }
-    }
-
-    struct AASettings
-    {
-        BaseScene3D scene;
-
-        void enabled(bool mode) @property
-        {
-            scene.fxaaFilter.enabled = mode;
-        }
-
-        bool enabled() @property
-        {
-            return scene.fxaaFilter.enabled;
-        }
-    }
-
-    struct LensSettings
-    {
-        BaseScene3D scene;
-
-        void enabled(bool mode) @property
-        {
-            scene.lensFilter.enabled = mode;
-        }
-
-        bool enabled() @property
-        {
-            return scene.lensFilter.enabled;
-        }
-
-        void scale(float s) @property
-        {
-            scene.lensFilter.scale = s;
-        }
-
-        float scale() @property
-        {
-            return scene.lensFilter.scale;
-        }
-
-
-        void dispersion(float d) @property
-        {
-            scene.lensFilter.dispersion = d;
-        }
-
-        float dispersion() @property
-        {
-            return scene.lensFilter.dispersion;
-        }
-    }
-
-    SSAOSettings ssao;
-    HDRSettings hdr;
-    MotionBlurSettings motionBlur;
-    GlowSettings glow;
-    LUTSettings lut;
-    VignetteSettings vignette;
-    AASettings antiAliasing;
-    LensSettings lensDistortion;
-
-    DynamicArray!PostFilter postFilters;
 
     DynamicArray!Entity entities3D;
     DynamicArray!Entity entities2D;
 
-    Entities3D flatEntities3D;
-    Entities2D flatEntities2D;
+    Entities3D entities3Dflat;
+    Entities2D entities2Dflat;
 
     ShapeQuad loadingProgressBar;
     Entity eLoadingProgressBar;
@@ -863,12 +531,6 @@ class Scene: BaseScene
     {
         super(smngr);
 
-        rc3d.init(eventManager, environment);
-        rc3d.projectionMatrix = perspectiveMatrix(60.0f, eventManager.aspectRatio, 0.1f, 1000.0f);
-
-        rc2d.init(eventManager, environment);
-        rc2d.projectionMatrix = orthoMatrix(0.0f, eventManager.windowWidth, 0.0f, eventManager.windowHeight, 0.0f, 100.0f);
-
         loadingProgressBar = New!ShapeQuad(assetManager);
         eLoadingProgressBar = New!Entity(eventManager, assetManager);
         eLoadingProgressBar.drawable = loadingProgressBar;
@@ -876,9 +538,28 @@ class Scene: BaseScene
         mLoadingProgressBar = createMaterial(hudShader);
         mLoadingProgressBar.diffuse = Color4f(1, 1, 1, 1);
         eLoadingProgressBar.material = mLoadingProgressBar;
+    }
 
-        flatEntities3D = New!Entities3D(this, assetManager);
-        flatEntities2D = New!Entities2D(this, assetManager);
+    override void onAllocate()
+    {
+        environment = New!Environment(assetManager);
+        lightManager = New!LightManager(assetManager);
+
+        entities3Dflat = New!Entities3D(this, assetManager);
+        entities2Dflat = New!Entities2D(this, assetManager);
+
+        renderer = New!Renderer(this, assetManager);
+
+		standardShader = New!StandardShader(assetManager);
+        standardShader.shadowMap = renderer.shadowMap;
+        skyShader = New!SkyShader(assetManager);
+        particleShader = New!ParticleShader(renderer.gbuffer, assetManager);
+
+        particleSystem = New!ParticleSystem(assetManager);
+
+        defaultMaterial3D = createMaterial();
+
+        timer = 0.0;
     }
 
     void sortEntities(ref DynamicArray!Entity entities)
@@ -1097,79 +778,19 @@ class Scene: BaseScene
         return light;
     }
 
-    override void onAllocate()
-    {
-        environment = New!Environment(assetManager);
-        lightManager = New!LightManager(assetManager);
-
-        renderer = New!Renderer(this, assetManager);
-
-		standardShader = New!StandardShader(assetManager);
-        standardShader.shadowMap = renderer.shadowMap;
-        skyShader = New!SkyShader(assetManager);
-        particleShader = New!ParticleShader(renderer.gbuffer, assetManager);
-
-        particleSystem = New!ParticleSystem(assetManager);
-
-        defaultMaterial3D = createMaterial();
-
-        ssao.scene = this;
-        hdr.scene = this;
-        motionBlur.scene = this;
-        glow.scene = this;
-        glow.radius = 7;
-        lut.scene = this;
-        vignette.scene = this;
-        antiAliasing.scene = this;
-        lensDistortion.scene = this;
-
-        hblurredFramebuffer = New!Framebuffer(renderer.gbuffer, eventManager.windowWidth / 2, eventManager.windowHeight / 2, true, false, assetManager);
-        hblur = New!PostFilterBlur(true, renderer.sceneFramebuffer, hblurredFramebuffer, assetManager);
-
-        vblurredFramebuffer = New!Framebuffer(renderer.gbuffer, eventManager.windowWidth / 2, eventManager.windowHeight / 2, true, false, assetManager);
-        vblur = New!PostFilterBlur(false, hblurredFramebuffer, vblurredFramebuffer, assetManager);
-
-        hdrPrepassFramebuffer = New!Framebuffer(renderer.gbuffer, eventManager.windowWidth, eventManager.windowHeight, true, false, assetManager);
-        hdrPrepassFilter = New!PostFilterHDRPrepass(renderer.sceneFramebuffer, hdrPrepassFramebuffer, assetManager);
-        hdrPrepassFilter.blurredTexture = vblurredFramebuffer.currentColorTexture;
-        postFilters.append(hdrPrepassFilter);
-
-        hdrFilter = New!PostFilterHDR(hdrPrepassFramebuffer, null, assetManager);
-        hdrFilter.velocityTexture = renderer.gbuffer.velocityTexture;
-        postFilters.append(hdrFilter);
-
-        fxaaFilter = New!PostFilterFXAA(null, null, assetManager);
-        postFilters.append(fxaaFilter);
-        fxaaFilter.enabled = false;
-
-        lensFilter = New!PostFilterLensDistortion(null, null, assetManager);
-        postFilters.append(lensFilter);
-        lensFilter.enabled = false;
-
-        finalizerFilter = New!PostFilterFinalizer(null, null, assetManager);
-
-        rc3d.initPerspective(eventManager, environment, 60.0f, 0.1f, 1000.0f);
-        rc2d.initOrtho(eventManager, environment, 0.0f, 100.0f);
-
-        timer = 0.0;
-    }
-
-    PostFilter addFilter(PostFilter f)
-    {
-        postFilters.append(f);
-        return f;
-    }
-
     override void onRelease()
     {
         entities3D.free();
         entities2D.free();
-
-        postFilters.free();
     }
 
+    // TODO: move to separate class
     override void onLoading(float percentage)
     {
+        RenderingContext rc2d;
+        rc2d.init(eventManager, environment);
+        rc2d.projectionMatrix = orthoMatrix(0.0f, eventManager.windowWidth, 0.0f, eventManager.windowHeight, 0.0f, 100.0f);
+
         glEnable(GL_SCISSOR_TEST);
         glScissor(0, 0, eventManager.windowWidth, eventManager.windowHeight);
         glViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
@@ -1207,11 +828,11 @@ class Scene: BaseScene
         if (view)
         {
             view.update(fixedTimeStep);
-            view.prepareRC(&rc3d);
+            view.prepareRC(&renderer.rc3d);
         }
 
-        rc3d.time += fixedTimeStep;
-        rc2d.time += fixedTimeStep;
+        renderer.rc3d.time += fixedTimeStep;
+        renderer.rc2d.time += fixedTimeStep;
 
         foreach(e; entities3D)
             e.update(fixedTimeStep);
@@ -1236,7 +857,7 @@ class Scene: BaseScene
             renderer.shadowMap.area3.position = view.cameraPosition + cameraDirection * renderer.shadowMap.projSize3 * 0.5f;
         }
 
-        renderer.shadowMap.update(&rc3d, fixedTimeStep);
+        renderer.shadowMap.update(&renderer.rc3d, fixedTimeStep);
     }
 
     override void onUpdate(double dt)
@@ -1260,127 +881,9 @@ class Scene: BaseScene
         }
     }
 
-    void renderBackgroundEntities3D(RenderingContext* rc)
-    {
-        glEnable(GL_DEPTH_TEST);
-        foreach(e; entities3D)
-            if (e.layer <= 0)
-                e.render(rc);
-    }
-
-    void renderOpaqueEntities3D(RenderingContext* rc)
-    {
-        glEnable(GL_DEPTH_TEST);
-        RenderingContext rcLocal = *rc;
-        rcLocal.ignoreTransparentEntities = true;
-        foreach(e; entities3D)
-        {
-            if (e.layer > 0)
-                e.render(&rcLocal);
-        }
-    }
-
-    void renderTransparentEntities3D(RenderingContext* rc)
-    {
-        glEnable(GL_DEPTH_TEST);
-        RenderingContext rcLocal = *rc;
-        rcLocal.ignoreOpaqueEntities = true;
-        foreach(e; entities3D)
-        {
-            if (e.layer > 0)
-                e.render(&rcLocal);
-        }
-    }
-
-    void renderEntities3D(RenderingContext* rc)
-    {
-        glEnable(GL_DEPTH_TEST);
-        foreach(e; entities3D)
-            e.render(rc);
-    }
-
-    void renderEntities2D(RenderingContext* rc)
-    {
-        glDisable(GL_DEPTH_TEST);
-        foreach(e; entities2D)
-            e.render(rc);
-    }
-
-    void renderBlur(uint iterations)
-    {
-        RenderingContext rcTmp;
-
-        foreach(i; 1..iterations+1)
-        {
-            hblur.outputBuffer.bind();
-            rcTmp.initOrtho(eventManager, environment, hblur.outputBuffer.width, hblur.outputBuffer.height, 0.0f, 100.0f);
-            renderer.prepareViewport(hblur.outputBuffer);
-            hblur.radius = i;
-            hblur.render(&rcTmp);
-            hblur.outputBuffer.unbind();
-
-            vblur.outputBuffer.bind();
-            rcTmp.initOrtho(eventManager, environment, vblur.outputBuffer.width, vblur.outputBuffer.height, 0.0f, 100.0f);
-            renderer.prepareViewport(vblur.outputBuffer);
-            vblur.radius = i;
-            vblur.render(&rcTmp);
-            vblur.outputBuffer.unbind();
-
-            hblur.inputBuffer = vblur.outputBuffer;
-        }
-
-        hblur.inputBuffer = renderer.sceneFramebuffer;
-    }
-
     override void onRender()
     {
-        renderer.render(&rc3d);
-
-        if (hdrFilter.autoExposure)
-        {
-            renderer.sceneFramebuffer.genLuminanceMipmaps();
-            float lum = renderer.sceneFramebuffer.averageLuminance();
-
-            if (!isNaN(lum))
-            {
-                float newExposure = hdrFilter.keyValue * (1.0f / clamp(lum, hdrFilter.minLuminance, hdrFilter.maxLuminance));
-
-                float exposureDelta = newExposure - hdrFilter.exposure;
-                hdrFilter.exposure += exposureDelta * hdrFilter.adaptationSpeed * eventManager.deltaTime;
-            }
-        }
-
-        if (hdrPrepassFilter.glowEnabled)
-            renderBlur(glow.radius);
-
-        RenderingContext rcTmp;
-        Framebuffer nextInput = renderer.sceneFramebuffer;
-
-        hdrPrepassFilter.perspectiveMatrix = rc3d.projectionMatrix;
-
-        foreach(i, f; postFilters.data)
-        if (f.enabled)
-        {
-            if (f.outputBuffer is null)
-                f.outputBuffer = New!Framebuffer(renderer.gbuffer, eventManager.windowWidth, eventManager.windowHeight, false, false, assetManager);
-
-            if (f.inputBuffer is null)
-                f.inputBuffer = nextInput;
-
-            nextInput = f.outputBuffer;
-
-            f.outputBuffer.bind();
-            rcTmp.initOrtho(eventManager, environment, f.outputBuffer.width, f.outputBuffer.height, 0.0f, 100.0f);
-            renderer.prepareViewport(f.outputBuffer);
-            f.render(&rcTmp);
-            f.outputBuffer.unbind();
-        }
-
-        renderer.prepareViewport();
-        finalizerFilter.inputBuffer = nextInput;
-        finalizerFilter.render(&rc2d);
-
-        renderEntities2D(&rc2d);
+        renderer.render();
     }
 }
 
