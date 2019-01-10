@@ -109,7 +109,7 @@ class BaseScene: EventListener
         release();
         Delete(assetManager);
     }
-    
+
     Configuration config() @property
     {
         return sceneManager.application.config;
@@ -405,7 +405,105 @@ class SceneApplication: Application
     }
 }
 
-// TODO: Renderer class
+interface EntityGroup
+{
+    int opApply(scope int delegate(Entity) dg);
+}
+
+class Entities3D: Owner, EntityGroup
+{
+    Scene scene;
+
+    this(Scene scene, Owner o)
+    {
+        super(o);
+        this.scene = scene;
+    }
+
+    int opApply(scope int delegate(Entity) dg)
+    {
+        int res = 0;
+        for(size_t i = 0; i < scene.entities3D.data.length; i++)
+        {
+            auto e = scene.entities3D.data[i];
+
+            res = foreachChild(e, dg);
+            if (res)
+                break;
+
+            res = dg(e);
+            if (res)
+                break;
+        }
+        return res;
+    }
+
+    private int foreachChild(Entity e, scope int delegate(Entity) dg)
+    {
+        int res = 0;
+        for(size_t i = 0; i < e.children.data.length; i++)
+        {
+            auto c = e.children.data[i];
+
+            res = foreachChild(c, dg);
+            if (res)
+                break;
+
+            res = dg(c);
+            if (res)
+                break;
+        }
+        return res;
+    }
+}
+
+class Entities2D: Owner, EntityGroup
+{
+    Scene scene;
+
+    this(Scene scene, Owner o)
+    {
+        super(o);
+        this.scene = scene;
+    }
+
+    int opApply(scope int delegate(Entity) dg)
+    {
+        int res = 0;
+        for(size_t i = 0; i < scene.entities2D.data.length; i++)
+        {
+            auto e = scene.entities2D.data[i];
+
+            res = foreachChild(e, dg);
+            if (res)
+                break;
+
+            res = dg(e);
+            if (res)
+                break;
+        }
+        return res;
+    }
+
+    private int foreachChild(Entity e, scope int delegate(Entity) dg)
+    {
+        int res = 0;
+        for(size_t i = 0; i < e.children.data.length; i++)
+        {
+            auto c = e.children.data[i];
+
+            res = foreachChild(c, dg);
+            if (res)
+                break;
+
+            res = dg(c);
+            if (res)
+                break;
+        }
+        return res;
+    }
+}
+
 class Scene: BaseScene
 {
     Renderer renderer;
@@ -749,6 +847,9 @@ class Scene: BaseScene
     DynamicArray!Entity entities3D;
     DynamicArray!Entity entities2D;
 
+    Entities3D flatEntities3D;
+    Entities2D flatEntities2D;
+
     ShapeQuad loadingProgressBar;
     Entity eLoadingProgressBar;
     HUDShader hudShader;
@@ -775,6 +876,9 @@ class Scene: BaseScene
         mLoadingProgressBar = createMaterial(hudShader);
         mLoadingProgressBar.diffuse = Color4f(1, 1, 1, 1);
         eLoadingProgressBar.material = mLoadingProgressBar;
+
+        flatEntities3D = New!Entities3D(this, assetManager);
+        flatEntities2D = New!Entities2D(this, assetManager);
     }
 
     void sortEntities(ref DynamicArray!Entity entities)
