@@ -410,8 +410,8 @@ class Scene: BaseScene
     Material defaultMaterial3D;
     View view;
 
-    DynamicArray!Entity entities3D;
-    DynamicArray!Entity entities2D;
+    DynamicArray!Entity _entities3D;
+    DynamicArray!Entity _entities2D;
     Entities3D entities3Dflat;
     Entities2D entities2Dflat;
 
@@ -576,9 +576,9 @@ class Scene: BaseScene
         else
         {
             e = New!Entity(eventManager, assetManager);
-            entities2D.append(e);
+            _entities2D.append(e);
 
-            sortEntities(entities2D);
+            sortEntities(_entities2D);
         }
 
         return e;
@@ -592,9 +592,9 @@ class Scene: BaseScene
         else
         {
             e = New!Entity(eventManager, assetManager);
-            entities3D.append(e);
+            _entities3D.append(e);
 
-            sortEntities(entities3D);
+            sortEntities(_entities3D);
         }
 
         e.material = defaultMaterial3D;
@@ -604,8 +604,8 @@ class Scene: BaseScene
 
     Entity addEntity3D(Entity e)
     {
-        entities3D.append(e);
-        sortEntities(entities3D);
+        _entities3D.append(e);
+        sortEntities(_entities3D);
         return e;
     }
 
@@ -630,7 +630,6 @@ class Scene: BaseScene
         // TODO: use box instead of sphere
         eSky.drawable = New!ShapeSphere(1.0f, 16, 8, true, assetManager);
         eSky.scaling = Vector3f(100.0f, 100.0f, 100.0f);
-        sortEntities(entities3D);
         return eSky;
     }
 
@@ -677,8 +676,8 @@ class Scene: BaseScene
 
     override void onRelease()
     {
-        entities3D.free();
-        entities2D.free();
+        _entities3D.free();
+        _entities2D.free();
     }
 
     // TODO: move to separate class
@@ -731,10 +730,10 @@ class Scene: BaseScene
         renderer.rc3d.time += fixedTimeStep;
         renderer.rc2d.time += fixedTimeStep;
 
-        foreach(e; entities3D)
+        foreach(e; _entities3D)
             e.update(fixedTimeStep);
 
-        foreach(e; entities2D)
+        foreach(e; _entities2D)
             e.update(fixedTimeStep);
 
         particleSystem.update(fixedTimeStep);
@@ -759,10 +758,10 @@ class Scene: BaseScene
 
     override void onUpdate(double dt)
     {
-        foreach(e; entities3D)
+        foreach(e; _entities3D)
             e.processEvents();
 
-        foreach(e; entities2D)
+        foreach(e; _entities2D)
             e.processEvents();
 
         int updateCount = 0;
@@ -805,36 +804,32 @@ class Entities3D: Owner, EntityGroup
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
-        for(size_t i = 0; i < scene.entities3D.data.length; i++)
+        for(size_t i = 0; i < scene._entities3D.data.length; i++)
         {
-            auto e = scene.entities3D.data[i];
+            auto e = scene._entities3D.data[i];
 
-            res = foreachChild(e, dg);
-            if (res)
-                break;
-
-            res = dg(e);
+            res = traverseEntitiesTree(e, dg);
             if (res)
                 break;
         }
         return res;
     }
 
-    private int foreachChild(Entity e, scope int delegate(Entity) dg)
+    protected int traverseEntitiesTree(Entity e, scope int delegate(Entity) dg)
     {
         int res = 0;
         for(size_t i = 0; i < e.children.data.length; i++)
         {
             auto c = e.children.data[i];
 
-            res = foreachChild(c, dg);
-            if (res)
-                break;
-
-            res = dg(c);
+            res = traverseEntitiesTree(c, dg);
             if (res)
                 break;
         }
+
+        if (res == 0)
+            res = dg(e);
+
         return res;
     }
 }
@@ -852,36 +847,32 @@ class Entities2D: Owner, EntityGroup
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
-        for(size_t i = 0; i < scene.entities2D.data.length; i++)
+        for(size_t i = 0; i < scene._entities2D.data.length; i++)
         {
-            auto e = scene.entities2D.data[i];
+            auto e = scene._entities2D.data[i];
 
-            res = foreachChild(e, dg);
-            if (res)
-                break;
-
-            res = dg(e);
+            res = traverseEntitiesTree(e, dg);
             if (res)
                 break;
         }
         return res;
     }
 
-    private int foreachChild(Entity e, scope int delegate(Entity) dg)
+    protected int traverseEntitiesTree(Entity e, scope int delegate(Entity) dg)
     {
         int res = 0;
         for(size_t i = 0; i < e.children.data.length; i++)
         {
             auto c = e.children.data[i];
 
-            res = foreachChild(c, dg);
-            if (res)
-                break;
-
-            res = dg(c);
+            res = traverseEntitiesTree(c, dg);
             if (res)
                 break;
         }
+
+        if (res == 0)
+            res = dg(e);
+
         return res;
     }
 }

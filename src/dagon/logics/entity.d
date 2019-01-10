@@ -257,6 +257,11 @@ class Entity: Owner, Drawable
 
     void render(RenderingContext* rc)
     {
+        render(rc, false);
+    }
+
+    void render(RenderingContext* rc, bool renderChildren)
+    {
         if (!visible)
             return;
 
@@ -352,7 +357,7 @@ class Entity: Owner, Drawable
                     child.updateTransformation();
                 }
 
-                drawableEntity.render(&rcLocal);
+                drawableEntity.render(&rcLocal, true);
 
                 drawableEntity.absoluteTransformation = absTrans;
                 drawableEntity.invAbsoluteTransformation = invAbsTrans;
@@ -379,12 +384,11 @@ class Entity: Owner, Drawable
                 ble.behaviour.render(&rcLocal);
         }
 
-        /*
+        if (renderChildren)
         foreach(child; children)
         {
             child.render(&rcLocal);
         }
-        */
 
         if (!ignore)
         foreach_reverse(i, ble; behaviours.data)

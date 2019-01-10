@@ -249,11 +249,11 @@ class CascadedShadowMap: Owner
         ss.bindProgram();
         rcLocal.overrideShader = ss;
         rcLocal.rebindShaderProgram = false;
-        foreach(e; scene.entities3D)
+        foreach(e; scene.entities3Dflat)
             if (e.castShadow)
                 e.render(&rcLocal);
         ss.unbindProgram();
-                
+
         rcLocal.overrideShader = null;
         rcLocal.rebindShaderProgram = true;
         scene.particleSystem.render(&rcLocal);
@@ -274,11 +274,11 @@ class CascadedShadowMap: Owner
         ss.bindProgram();
         rcLocal.overrideShader = ss;
         rcLocal.rebindShaderProgram = false;
-        foreach(e; scene.entities3D)
+        foreach(e; scene.entities3Dflat)
             if (e.castShadow)
                 e.render(&rcLocal);
         ss.unbindProgram();
-                
+
         rcLocal.overrideShader = null;
         rcLocal.rebindShaderProgram = true;
         scene.particleSystem.render(&rcLocal);
@@ -299,11 +299,11 @@ class CascadedShadowMap: Owner
         ss.bindProgram();
         rcLocal.overrideShader = ss;
         rcLocal.rebindShaderProgram = false;
-        foreach(e; scene.entities3D)
+        foreach(e; scene.entities3Dflat)
             if (e.castShadow)
                 e.render(&rcLocal);
         ss.unbindProgram();
-                
+
         rcLocal.overrideShader = null;
         rcLocal.rebindShaderProgram = true;
         scene.particleSystem.render(&rcLocal);

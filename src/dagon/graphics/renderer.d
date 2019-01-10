@@ -254,6 +254,19 @@ class Renderer: Owner
     }
 
     // TODO: add EntityGroup for this
+    void renderOpaqueEntities3D(Scene scene, RenderingContext* rc)
+    {
+        glEnable(GL_DEPTH_TEST);
+        RenderingContext rcLocal = *rc;
+        rcLocal.ignoreTransparentEntities = true;
+        foreach(e; scene.entities3Dflat)
+        {
+            if (e.layer > 0)
+                e.render(&rcLocal);
+        }
+    }
+
+    // TODO: add EntityGroup for this
     void renderTransparentEntities3D(Scene scene, RenderingContext* rc)
     {
         glEnable(GL_DEPTH_TEST);

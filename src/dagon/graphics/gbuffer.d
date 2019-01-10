@@ -181,18 +181,6 @@ class GBuffer: Owner
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    void renderOpaqueEntities3D(Scene scene, RenderingContext* rc)
-    {
-        glEnable(GL_DEPTH_TEST);
-        RenderingContext rcLocal = *rc;
-        rcLocal.ignoreTransparentEntities = true;
-        foreach(e; scene.entities3Dflat)
-        {
-            if (e.layer > 0)
-                e.render(&rcLocal);
-        }
-    }
-
     void render(Scene scene, RenderingContext* rc)
     {
         bind();
@@ -208,7 +196,8 @@ class GBuffer: Owner
         rcLocal.overrideShader = geometryPassShader;
         rcLocal.rebindShaderProgram = false;
         geometryPassShader.bindProgram();
-        renderOpaqueEntities3D(scene, &rcLocal);
+        scene.renderer.renderOpaqueEntities3D(scene, &rcLocal);
+        //renderOpaqueEntities3D(scene, &rcLocal);
         geometryPassShader.unbindProgram();
 
         unbind();
