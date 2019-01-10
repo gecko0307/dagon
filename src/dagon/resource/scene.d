@@ -397,111 +397,10 @@ class SceneApplication: Application
     }
 }
 
-interface EntityGroup
-{
-    int opApply(scope int delegate(Entity) dg);
-}
-
-class Entities3D: Owner, EntityGroup
-{
-    Scene scene;
-
-    this(Scene scene, Owner o)
-    {
-        super(o);
-        this.scene = scene;
-    }
-
-    int opApply(scope int delegate(Entity) dg)
-    {
-        int res = 0;
-        for(size_t i = 0; i < scene.entities3D.data.length; i++)
-        {
-            auto e = scene.entities3D.data[i];
-
-            res = foreachChild(e, dg);
-            if (res)
-                break;
-
-            res = dg(e);
-            if (res)
-                break;
-        }
-        return res;
-    }
-
-    private int foreachChild(Entity e, scope int delegate(Entity) dg)
-    {
-        int res = 0;
-        for(size_t i = 0; i < e.children.data.length; i++)
-        {
-            auto c = e.children.data[i];
-
-            res = foreachChild(c, dg);
-            if (res)
-                break;
-
-            res = dg(c);
-            if (res)
-                break;
-        }
-        return res;
-    }
-}
-
-class Entities2D: Owner, EntityGroup
-{
-    Scene scene;
-
-    this(Scene scene, Owner o)
-    {
-        super(o);
-        this.scene = scene;
-    }
-
-    int opApply(scope int delegate(Entity) dg)
-    {
-        int res = 0;
-        for(size_t i = 0; i < scene.entities2D.data.length; i++)
-        {
-            auto e = scene.entities2D.data[i];
-
-            res = foreachChild(e, dg);
-            if (res)
-                break;
-
-            res = dg(e);
-            if (res)
-                break;
-        }
-        return res;
-    }
-
-    private int foreachChild(Entity e, scope int delegate(Entity) dg)
-    {
-        int res = 0;
-        for(size_t i = 0; i < e.children.data.length; i++)
-        {
-            auto c = e.children.data[i];
-
-            res = foreachChild(c, dg);
-            if (res)
-                break;
-
-            res = dg(c);
-            if (res)
-                break;
-        }
-        return res;
-    }
-}
-
 class Scene: BaseScene
 {
     Renderer renderer;
-
     Environment environment;
-
     LightManager lightManager;
     ParticleSystem particleSystem;
 
@@ -509,12 +408,10 @@ class Scene: BaseScene
     SkyShader skyShader;
     ParticleShader particleShader;
     Material defaultMaterial3D;
-
     View view;
 
     DynamicArray!Entity entities3D;
     DynamicArray!Entity entities2D;
-
     Entities3D entities3Dflat;
     Entities2D entities2Dflat;
 
@@ -888,3 +785,103 @@ class Scene: BaseScene
 }
 
 alias Scene BaseScene3D;
+
+
+interface EntityGroup
+{
+    int opApply(scope int delegate(Entity) dg);
+}
+
+class Entities3D: Owner, EntityGroup
+{
+    Scene scene;
+
+    this(Scene scene, Owner o)
+    {
+        super(o);
+        this.scene = scene;
+    }
+
+    int opApply(scope int delegate(Entity) dg)
+    {
+        int res = 0;
+        for(size_t i = 0; i < scene.entities3D.data.length; i++)
+        {
+            auto e = scene.entities3D.data[i];
+
+            res = foreachChild(e, dg);
+            if (res)
+                break;
+
+            res = dg(e);
+            if (res)
+                break;
+        }
+        return res;
+    }
+
+    private int foreachChild(Entity e, scope int delegate(Entity) dg)
+    {
+        int res = 0;
+        for(size_t i = 0; i < e.children.data.length; i++)
+        {
+            auto c = e.children.data[i];
+
+            res = foreachChild(c, dg);
+            if (res)
+                break;
+
+            res = dg(c);
+            if (res)
+                break;
+        }
+        return res;
+    }
+}
+
+class Entities2D: Owner, EntityGroup
+{
+    Scene scene;
+
+    this(Scene scene, Owner o)
+    {
+        super(o);
+        this.scene = scene;
+    }
+
+    int opApply(scope int delegate(Entity) dg)
+    {
+        int res = 0;
+        for(size_t i = 0; i < scene.entities2D.data.length; i++)
+        {
+            auto e = scene.entities2D.data[i];
+
+            res = foreachChild(e, dg);
+            if (res)
+                break;
+
+            res = dg(e);
+            if (res)
+                break;
+        }
+        return res;
+    }
+
+    private int foreachChild(Entity e, scope int delegate(Entity) dg)
+    {
+        int res = 0;
+        for(size_t i = 0; i < e.children.data.length; i++)
+        {
+            auto c = e.children.data[i];
+
+            res = foreachChild(c, dg);
+            if (res)
+                break;
+
+            res = dg(c);
+            if (res)
+                break;
+        }
+        return res;
+    }
+}
