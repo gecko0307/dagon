@@ -244,6 +244,7 @@ class Renderer: Owner
         rt.unbind();
     }
 
+    // TODO: add EntityGroup for this
     void renderBackgroundEntities3D(Scene scene, RenderingContext* rc)
     {
         glEnable(GL_DEPTH_TEST);
@@ -252,6 +253,7 @@ class Renderer: Owner
                 e.render(rc);
     }
 
+    // TODO: add EntityGroup for this
     void renderTransparentEntities3D(Scene scene, RenderingContext* rc)
     {
         glEnable(GL_DEPTH_TEST);
@@ -332,269 +334,92 @@ struct SSAOSettings
     void samples(int s) @property { renderer.deferredEnvPass.shader.ssaoSamples = s; }
     int samples() @property { return renderer.deferredEnvPass.shader.ssaoSamples; }
     void radius(float r) @property { renderer.deferredEnvPass.shader.ssaoRadius = r; }
+    float radius() @property { return renderer.deferredEnvPass.shader.ssaoRadius; }
+    void power(float p) @property { renderer.deferredEnvPass.shader.ssaoPower = p; }
+    float power() @property { return renderer.deferredEnvPass.shader.ssaoPower; }
+}
 
-        float radius() @property
-        {
-            return renderer.deferredEnvPass.shader.ssaoRadius;
-        }
+struct HDRSettings
+{
+    Renderer renderer;
+    void tonemapper(Tonemapper f) @property { renderer.hdrFilter.tonemapFunction = f; }
+    Tonemapper tonemapper() @property { return renderer.hdrFilter.tonemapFunction; }
+    void exposure(float ex) @property { renderer.hdrFilter.exposure = ex; }
+    float exposure() @property { return renderer.hdrFilter.exposure; }
+    void autoExposure(bool mode) @property { renderer.hdrFilter.autoExposure = mode; }
+    bool autoExposure() @property { return renderer.hdrFilter.autoExposure; }
+    void minLuminance(float l) @property { renderer.hdrFilter.minLuminance = l; }
+    float minLuminance() @property { return renderer.hdrFilter.minLuminance; }
+    void maxLuminance(float l) @property { renderer.hdrFilter.maxLuminance = l; }
+    float maxLuminance() @property { return renderer.hdrFilter.maxLuminance; }
+    void keyValue(float k) @property { renderer.hdrFilter.keyValue = k; }
+    float keyValue() @property { return renderer.hdrFilter.keyValue; }
+    void adaptationSpeed(float s) @property { renderer.hdrFilter.adaptationSpeed = s; }
+    float adaptationSpeed() @property { return renderer.hdrFilter.adaptationSpeed; }
+}
 
-        void power(float p) @property
-        {
-            renderer.deferredEnvPass.shader.ssaoPower = p;
-        }
-
-        float power() @property
-        {
-            return renderer.deferredEnvPass.shader.ssaoPower;
-        }
-
-        //TODO: other SSAO parameters
-    }
-
-    struct HDRSettings
+struct GlowSettings
+{
+    Renderer renderer;
+    uint radius;
+    void enabled(bool mode) @property
     {
-        Renderer renderer;
-
-        void tonemapper(Tonemapper f) @property
-        {
-            renderer.hdrFilter.tonemapFunction = f;
-        }
-
-        Tonemapper tonemapper() @property
-        {
-            return renderer.hdrFilter.tonemapFunction;
-        }
-
-
-        void exposure(float ex) @property
-        {
-            renderer.hdrFilter.exposure = ex;
-        }
-
-        float exposure() @property
-        {
-            return renderer.hdrFilter.exposure;
-        }
-
-
-        void autoExposure(bool mode) @property
-        {
-            renderer.hdrFilter.autoExposure = mode;
-        }
-
-        bool autoExposure() @property
-        {
-            return renderer.hdrFilter.autoExposure;
-        }
-
-
-        void minLuminance(float l) @property
-        {
-            renderer.hdrFilter.minLuminance = l;
-        }
-
-        float minLuminance() @property
-        {
-            return renderer.hdrFilter.minLuminance;
-        }
-
-
-        void maxLuminance(float l) @property
-        {
-            renderer.hdrFilter.maxLuminance = l;
-        }
-
-        float maxLuminance() @property
-        {
-            return renderer.hdrFilter.maxLuminance;
-        }
-
-
-        void keyValue(float k) @property
-        {
-            renderer.hdrFilter.keyValue = k;
-        }
-
-        float keyValue() @property
-        {
-            return renderer.hdrFilter.keyValue;
-        }
-
-
-        void adaptationSpeed(float s) @property
-        {
-            renderer.hdrFilter.adaptationSpeed = s;
-        }
-
-        float adaptationSpeed() @property
-        {
-            return renderer.hdrFilter.adaptationSpeed;
-        }
+        renderer.hblur.enabled = mode;
+        renderer.vblur.enabled = mode;
+        renderer.hdrPrepassFilter.glowEnabled = mode;
     }
+    bool enabled() @property { return renderer.hdrPrepassFilter.glowEnabled; }
+    void brightness(float b) @property { renderer.hdrPrepassFilter.glowBrightness = b; }
+    float brightness() @property { return renderer.hdrPrepassFilter.glowBrightness; }
+    void minLuminanceThreshold(float t) @property { renderer.hdrPrepassFilter.glowMinLuminanceThreshold = t; }
+    float minLuminanceThreshold() @property { return renderer.hdrPrepassFilter.glowMinLuminanceThreshold; }
+    void maxLuminanceThreshold(float t) @property { renderer.hdrPrepassFilter.glowMaxLuminanceThreshold = t; }
+    float maxLuminanceThreshold() @property { return renderer.hdrPrepassFilter.glowMaxLuminanceThreshold; }
+}
 
-    struct GlowSettings
+struct MotionBlurSettings
+{
+    Renderer renderer;
+    void enabled(bool mode) @property { renderer.hdrFilter.mblurEnabled = mode; }
+    bool enabled() @property { return renderer.hdrFilter.mblurEnabled; }
+    void samples(uint s) @property { renderer.hdrFilter.motionBlurSamples = s; }
+    uint samples() @property { return renderer.hdrFilter.motionBlurSamples; }
+    void shutterSpeed(float s) @property
     {
-        Renderer renderer;
-        uint radius;
-
-        void enabled(bool mode) @property
-        {
-            renderer.hblur.enabled = mode;
-            renderer.vblur.enabled = mode;
-            renderer.hdrPrepassFilter.glowEnabled = mode;
-        }
-
-        bool enabled() @property
-        {
-            return renderer.hdrPrepassFilter.glowEnabled;
-        }
-
-        void brightness(float b) @property
-        {
-            renderer.hdrPrepassFilter.glowBrightness = b;
-        }
-
-        float brightness() @property
-        {
-            return renderer.hdrPrepassFilter.glowBrightness;
-        }
-
-        void minLuminanceThreshold(float t) @property
-        {
-            renderer.hdrPrepassFilter.glowMinLuminanceThreshold = t;
-        }
-
-        float minLuminanceThreshold() @property
-        {
-            return renderer.hdrPrepassFilter.glowMinLuminanceThreshold;
-        }
-
-        void maxLuminanceThreshold(float t) @property
-        {
-            renderer.hdrPrepassFilter.glowMaxLuminanceThreshold = t;
-        }
-
-        float maxLuminanceThreshold() @property
-        {
-            return renderer.hdrPrepassFilter.glowMaxLuminanceThreshold;
-        }
+        renderer.hdrFilter.shutterSpeed = s;
+        renderer.hdrFilter.shutterFps = 1.0 / s;
     }
+    float shutterSpeed() @property { return renderer.hdrFilter.shutterSpeed; }
+}
 
-    struct MotionBlurSettings
-    {
-        Renderer renderer;
+struct LUTSettings
+{
+    Renderer renderer;
+    void texture(Texture tex) @property { renderer.hdrFilter.colorTable = tex; }
+    Texture texture() @property { return renderer.hdrFilter.colorTable; }
+}
 
-        void enabled(bool mode) @property
-        {
-            renderer.hdrFilter.mblurEnabled = mode;
-        }
+struct VignetteSettings
+{
+    Renderer renderer;
+    void texture(Texture tex) @property { renderer.hdrFilter.vignette = tex; }
+    Texture texture() @property { return renderer.hdrFilter.vignette; }
+}
 
-        bool enabled() @property
-        {
-            return renderer.hdrFilter.mblurEnabled;
-        }
+struct AASettings
+{
+    Renderer renderer;
+    void enabled(bool mode) @property { renderer.fxaaFilter.enabled = mode; }
+    bool enabled() @property { return renderer.fxaaFilter.enabled; }
+}
 
-
-        void samples(uint s) @property
-        {
-            renderer.hdrFilter.motionBlurSamples = s;
-        }
-
-        uint samples() @property
-        {
-            return renderer.hdrFilter.motionBlurSamples;
-        }
-
-
-        void shutterSpeed(float s) @property
-        {
-            renderer.hdrFilter.shutterSpeed = s;
-            renderer.hdrFilter.shutterFps = 1.0 / s;
-        }
-
-        float shutterSpeed() @property
-        {
-            return renderer.hdrFilter.shutterSpeed;
-        }
-    }
-
-    struct LUTSettings
-    {
-        Renderer renderer;
-
-        void texture(Texture tex) @property
-        {
-            renderer.hdrFilter.colorTable = tex;
-        }
-
-        Texture texture() @property
-        {
-            return renderer.hdrFilter.colorTable;
-        }
-    }
-
-    struct VignetteSettings
-    {
-        Renderer renderer;
-
-        void texture(Texture tex) @property
-        {
-            renderer.hdrFilter.vignette = tex;
-        }
-
-        Texture texture() @property
-        {
-            return renderer.hdrFilter.vignette;
-        }
-    }
-
-    struct AASettings
-    {
-        Renderer renderer;
-
-        void enabled(bool mode) @property
-        {
-            renderer.fxaaFilter.enabled = mode;
-        }
-
-        bool enabled() @property
-        {
-            return renderer.fxaaFilter.enabled;
-        }
-    }
-
-    struct LensSettings
-    {
-        Renderer renderer;
-
-        void enabled(bool mode) @property
-        {
-            renderer.lensFilter.enabled = mode;
-        }
-
-        bool enabled() @property
-        {
-            return renderer.lensFilter.enabled;
-        }
-
-        void scale(float s) @property
-        {
-            renderer.lensFilter.scale = s;
-        }
-
-        float scale() @property
-        {
-            return renderer.lensFilter.scale;
-        }
-
-
-        void dispersion(float d) @property
-        {
-            renderer.lensFilter.dispersion = d;
-        }
-
-        float dispersion() @property
-        {
-            return renderer.lensFilter.dispersion;
-        }
-    }
+struct LensSettings
+{
+    Renderer renderer;
+    void enabled(bool mode) @property { renderer.lensFilter.enabled = mode; }
+    bool enabled() @property { return renderer.lensFilter.enabled; }
+    void scale(float s) @property { renderer.lensFilter.scale = s; }
+    float scale() @property { return renderer.lensFilter.scale; }
+    void dispersion(float d) @property { renderer.lensFilter.dispersion = d; }
+    float dispersion() @property { return renderer.lensFilter.dispersion; }
+}
