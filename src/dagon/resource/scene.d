@@ -32,6 +32,7 @@ import std.math;
 import std.algorithm;
 import std.traits;
 import std.conv;
+import std.path;
 
 import dlib.core.memory;
 
@@ -488,6 +489,29 @@ class Scene: BaseScene
 
             sortEntities(v.children);
         }
+    }
+
+    auto asset(string filename, Args...)(Args args)
+    {
+        enum string e = filename.extension;
+        static if (e == ".txt" || e == ".TXT")
+            return addTextAsset(filename);
+        else static if (e == ".png" || e == ".PNG" ||
+                        e == ".jpg" || e == ".JPG" ||
+                        e == ".hdr" || e == ".HDR" ||
+                        e == ".bmp" || e == ".BMP" ||
+                        e == ".tga" || e == ".TGA")
+            return addTextureAsset(filename);
+        else static if (e == ".ttf" || e == ".TTF")
+            return addFontAsset(filename, args[0]);
+        else static if (e == ".obj" || e == ".OBJ")
+            return addOBJAsset(filename);
+        else static if (e == ".iqm" || e == ".IQM")
+            return addIQMAsset(filename);
+        else static if (e == ".asset" || e == ".ASSET")
+            return addPackageAsset(filename);
+        else
+            static assert(0, "Failed to detect asset type at compile time, call addAsset explicitly");
     }
 
     TextAsset addTextAsset(string filename, bool preload = false)
