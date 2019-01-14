@@ -45,6 +45,7 @@ import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.ui.font;
 import dagon.graphics.rc;
+import dagon.graphics.shaderloader;
 
 struct Glyph
 {
@@ -82,8 +83,6 @@ final class FreeTypeFont: Font
     bool canRender = false;
 
     GLuint shaderProgram;
-    GLuint vertexShader;
-    GLuint fragmentShader;
 
     GLint modelViewMatrixLoc;
     GLint projectionMatrixLoc;
@@ -180,53 +179,22 @@ final class FreeTypeFont: Font
 
         glBindVertexArray(0);
 
-        const(char*)pvs = vs.ptr;
-        const(char*)pfs = fs.ptr;
+        GLuint vert = compileShader(vs, ShaderStage.vertex);
+        GLuint frag = compileShader(fs, ShaderStage.fragment);
+        if (vert != 0 && frag != 0)
+            shaderProgram = linkShaders(vert, frag);
 
-        char[1000] infobuffer = 0;
-        int infobufferlen = 0;
-
-        vertexShader = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertexShader, 1, &pvs, null);
-        glCompileShader(vertexShader);
-        GLint success = 0;
-        glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-        if (!success)
+        if (shaderProgram != 0)
         {
-            GLint logSize = 0;
-            glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &logSize);
-            glGetShaderInfoLog(vertexShader, 999, &logSize, infobuffer.ptr);
-            writeln("Error in vertex shader:");
-            writeln(infobuffer[0..logSize]);
+            modelViewMatrixLoc = glGetUniformLocation(shaderProgram, "modelViewMatrix");
+            projectionMatrixLoc = glGetUniformLocation(shaderProgram, "projectionMatrix");
+
+            glyphPositionLoc = glGetUniformLocation(shaderProgram, "glyphPosition");
+            glyphScaleLoc = glGetUniformLocation(shaderProgram, "glyphScale");
+            glyphTexcoordScaleLoc = glGetUniformLocation(shaderProgram, "glyphTexcoordScale");
+            glyphTextureLoc = glGetUniformLocation(shaderProgram, "glyphTexture");
+            glyphColorLoc = glGetUniformLocation(shaderProgram, "glyphColor");
         }
-
-        fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragmentShader, 1, &pfs, null);
-        glCompileShader(fragmentShader);
-        success = 0;
-        glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
-            GLint logSize = 0;
-            glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &logSize);
-            glGetShaderInfoLog(fragmentShader, 999, &logSize, infobuffer.ptr);
-            writeln("Error in fragment shader:");
-            writeln(infobuffer[0..logSize]);
-        }
-
-        shaderProgram = glCreateProgram();
-        glAttachShader(shaderProgram, vertexShader);
-        glAttachShader(shaderProgram, fragmentShader);
-        glLinkProgram(shaderProgram);
-
-        modelViewMatrixLoc = glGetUniformLocation(shaderProgram, "modelViewMatrix");
-        projectionMatrixLoc = glGetUniformLocation(shaderProgram, "projectionMatrix");
-
-        glyphPositionLoc = glGetUniformLocation(shaderProgram, "glyphPosition");
-        glyphScaleLoc = glGetUniformLocation(shaderProgram, "glyphScale");
-        glyphTexcoordScaleLoc = glGetUniformLocation(shaderProgram, "glyphTexcoordScale");
-        glyphTextureLoc = glGetUniformLocation(shaderProgram, "glyphTexture");
-        glyphColorLoc = glGetUniformLocation(shaderProgram, "glyphColor");
 
         canRender = true;
     }
