@@ -40,6 +40,7 @@ import dlib.image.color;
 
 import dagon.core.libs;
 import dagon.graphics.rc;
+import dagon.graphics.shaderloader;
 import dagon.graphics.texture;
 
 // TODO: move to separate module
@@ -77,52 +78,16 @@ class MappedList(T): Owner
  */
 class ShaderProgram: Owner
 {
-    GLuint program;
-    GLuint vertexShader;
-    GLuint fragmentShader;
+    immutable GLuint program;
 
     this(string vertexShaderSrc, string fragmentShaderSrc, Owner o)
     {
         super(o);
 
-        const(char*)pvs = vertexShaderSrc.ptr;
-        const(char*)pfs = fragmentShaderSrc.ptr;
-
-        char[1000] infobuffer = 0;
-        int infobufferlen = 0;
-
-        vertexShader = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertexShader, 1, &pvs, null);
-        glCompileShader(vertexShader);
-        GLint success = 0;
-        glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
-            GLint logSize = 0;
-            glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &logSize);
-            glGetShaderInfoLog(vertexShader, 999, &logSize, infobuffer.ptr);
-            writeln("Error in vertex shader:");
-            writeln(infobuffer[0..logSize]);
-        }
-
-        fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragmentShader, 1, &pfs, null);
-        glCompileShader(fragmentShader);
-        success = 0;
-        glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
-            GLint logSize = 0;
-            glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &logSize);
-            glGetShaderInfoLog(fragmentShader, 999, &logSize, infobuffer.ptr);
-            writeln("Error in fragment shader:");
-            writeln(infobuffer[0..logSize]);
-        }
-
-        program = glCreateProgram();
-        glAttachShader(program, vertexShader);
-        glAttachShader(program, fragmentShader);
-        glLinkProgram(program);
+        GLuint vert = compileShader(vertexShaderSrc, ShaderStage.vertex);
+        GLuint frag = compileShader(fragmentShaderSrc, ShaderStage.fragment);
+        if (vert != 0 && frag != 0)
+            program = linkShaders(vert, frag);
     }
 
     void bind()
