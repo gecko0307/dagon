@@ -6,7 +6,8 @@
     "authors": [
         "Timur Gafarov",
         "Rafał Ziemniewski",
-        "Björn Roberg"
+        "Björn Roberg",
+		"dayllenger"
     ],
 
     "importPaths": ["src"],
