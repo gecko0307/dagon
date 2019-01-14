@@ -28,7 +28,7 @@ DEALINGS IN THE SOFTWARE.
 module dagon.graphics.shaderloader;
 
 import std.stdio;
-import std.string : stripRight, toStringz;
+import std.string : stripRight;
 import dlib.math.utils : min2;
 import dagon.core.libs;
 
@@ -65,8 +65,9 @@ GLuint compileShader(string source, const ShaderStage stage)
     GLuint shaderID = glCreateShader(shaderStageToGLenum(stage));
 
     // compile the shader
-    const char* sourcePointer = toStringz(source);
-    glShaderSource(shaderID, 1, &sourcePointer, null);
+    const char* csource = source.ptr;
+    GLint length = cast(GLint)source.length;
+    glShaderSource(shaderID, 1, &csource, &length);
     glCompileShader(shaderID);
 
     // check the shader
