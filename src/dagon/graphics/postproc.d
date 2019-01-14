@@ -53,44 +53,8 @@ class PostFilter: Owner
     GLint viewportSizeLoc;
     GLint enabledLoc;
 
-    private string vsText =
-    q{
-        #version 330 core
-
-        uniform mat4 modelViewMatrix;
-        uniform mat4 projectionMatrix;
-
-        uniform vec2 viewSize;
-
-        layout (location = 0) in vec2 va_Vertex;
-        layout (location = 1) in vec2 va_Texcoord;
-
-        out vec2 texCoord;
-
-        void main()
-        {
-            texCoord = va_Texcoord;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(va_Vertex * viewSize, 0.0, 1.0);
-        }
-    };
-
-    private string fsText =
-    q{
-        #version 330 core
-
-        uniform sampler2D fbColor;
-        uniform vec2 viewSize;
-
-        in vec2 texCoord;
-        out vec4 frag_color;
-
-        void main()
-        {
-            vec4 t = texture(fbColor, texCoord);
-            frag_color = t;
-            frag_color.a = 1.0;
-        }
-    };
+    private string vsText = import("DefaultFilter.vs");
+    private string fsText = import("DefaultFilter.vs");
 
     string vertexShader() {return vsText;}
     string fragmentShader() {return fsText;}
