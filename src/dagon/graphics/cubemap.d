@@ -154,17 +154,17 @@ Matrix4x4f cubeFaceMatrix(CubeFace cf)
     switch(cf)
     {
         case CubeFace.PositiveX:
-            return rotationMatrix(1, degtorad(90.0f)) * rotationMatrix(2, degtorad(180.0f));
+            return rotationMatrix(1, degtorad(-90.0f));
         case CubeFace.NegativeX:
-            return rotationMatrix(1, degtorad(-90.0f)) * rotationMatrix(2, degtorad(180.0f));
+            return rotationMatrix(1, degtorad(90.0f));
         case CubeFace.PositiveY:
-            return rotationMatrix(1, degtorad(0.0f)) * rotationMatrix(0, degtorad(-90.0f));
+            return rotationMatrix(0, degtorad(90.0f));
         case CubeFace.NegativeY:
-            return rotationMatrix(1, degtorad(0.0f)) * rotationMatrix(0, degtorad(90.0f));
+            return rotationMatrix(0, degtorad(-90.0f));
         case CubeFace.PositiveZ:
-            return rotationMatrix(1, degtorad(180.0f)) * rotationMatrix(2, degtorad(180.0f));
+            return rotationMatrix(1, degtorad(0.0f));
         case CubeFace.NegativeZ:
-            return rotationMatrix(1, degtorad(0.0f)) * rotationMatrix(2, degtorad(180.0f));
+            return rotationMatrix(1, degtorad(180.0f));
         default:
             return Matrix4x4f.identity;
     }

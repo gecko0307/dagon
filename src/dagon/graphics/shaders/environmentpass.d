@@ -42,22 +42,23 @@ import dagon.graphics.gbuffer;
 import dagon.graphics.shadow;
 import dagon.graphics.shader;
 import dagon.graphics.framebuffer;
+import dagon.graphics.cubemap;
 
 class EnvironmentPassShader: Shader
 {
     string vs = import("EnvironmentPass.vs");
     string fs = import("EnvironmentPass.fs");
-    
+
     GBuffer gbuffer;
     CascadedShadowMap shadowMap;
-    
+
     Matrix4x4f defaultShadowMatrix;
-    
+
     bool enableSSAO = false;
     int ssaoSamples = 16;
     float ssaoRadius = 0.2f;
     float ssaoPower = 4.0f;
-    
+
     this(GBuffer gbuffer, CascadedShadowMap shadowMap, Owner o)
     {
         auto myProgram = New!ShaderProgram(vs, fs, this);
@@ -66,49 +67,58 @@ class EnvironmentPassShader: Shader
         this.shadowMap = shadowMap;
         this.defaultShadowMatrix = Matrix4x4f.identity;
     }
-    
+
     void bind(RenderingContext* rc2d, RenderingContext* rc3d)
     {
         setParameter("modelViewMatrix", rc2d.modelViewMatrix);
         setParameter("projectionMatrix", rc2d.projectionMatrix);
-        
+
         setParameter("camProjectionMatrix", rc3d.projectionMatrix);
         setParameter("camViewMatrix", rc3d.viewMatrix);
         setParameter("camInvViewMatrix", rc3d.invViewMatrix);
-        
+
         setParameter("viewSize", Vector2f(gbuffer.width, gbuffer.height));
-        
+
         setParameter("sunDirection", rc3d.environment.sunDirectionEye(rc3d.viewMatrix));
         setParameter("sunColor", rc3d.environment.sunColor);
         setParameter("sunEnergy", rc3d.environment.sunEnergy);
-        
+
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, gbuffer.colorTexture);
         setParameter("colorBuffer", 0);
-        
+
         // Texture 1 - roughness-metallic-specularity buffer
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, gbuffer.rmsTexture);
         setParameter("rmsBuffer", 1);
-        
+
         // Texture 2 - position buffer
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, gbuffer.positionTexture);
         setParameter("positionBuffer", 2);
-        
+
         // Texture 3 - normal buffer
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, gbuffer.normalTexture);
         setParameter("normalBuffer", 3);
-        
+
         // Texture 4 - environment
         if (rc3d.environment.environmentMap)
         {
             glActiveTexture(GL_TEXTURE4);
             rc3d.environment.environmentMap.bind();
-            setParameter("envTexture", 4);
-            setParameterSubroutine("environment", ShaderType.Fragment, "environmentTexture");
+
+            if (cast(Cubemap)rc3d.environment.environmentMap)
+            {
+                setParameter("envTextureCube", 4);
+                setParameterSubroutine("environment", ShaderType.Fragment, "environmentCubemap");
+            }
+            else
+            {
+                setParameter("envTexture", 4);
+                setParameterSubroutine("environment", ShaderType.Fragment, "environmentTexture");
+            }
         }
         else
         {
@@ -119,12 +129,12 @@ class EnvironmentPassShader: Shader
             setParameter("groundEnergy", rc3d.environment.groundEnergy);
             setParameterSubroutine("environment", ShaderType.Fragment, "environmentSky");
         }
-        
+
         // Texture 5 - emission buffer
         glActiveTexture(GL_TEXTURE5);
         glBindTexture(GL_TEXTURE_2D, gbuffer.emissionTexture);
         setParameter("emissionBuffer", 5);
-        
+
         // Texture 6 - shadow map cascades (3 layer texture array)
         if (shadowMap)
         {
@@ -148,45 +158,46 @@ class EnvironmentPassShader: Shader
         setParameter("ssaoSamples", ssaoSamples);
         setParameter("ssaoRadius", ssaoRadius);
         setParameter("ssaoPower", ssaoPower);
-        
+
         // Fog
         setParameter("fogColor", rc3d.environment.fogColor);
         setParameter("fogStart", rc3d.environment.fogStart);
         setParameter("fogEnd", rc3d.environment.fogEnd);
-        
+
         glActiveTexture(GL_TEXTURE0);
-        
+
         super.bind(rc2d);
     }
-    
+
     void unbind(RenderingContext* rc2d, RenderingContext* rc3d)
     {
         super.unbind(rc2d);
-        
+
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
         glActiveTexture(GL_TEXTURE5);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE6);
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
-        
+
         glActiveTexture(GL_TEXTURE7);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE0);
     }
 }

@@ -45,6 +45,7 @@ import dagon.graphics.rc;
 import dagon.graphics.shader;
 import dagon.graphics.gbuffer;
 import dagon.graphics.texture;
+import dagon.graphics.cubemap;
 import dagon.resource.asset;
 import dagon.resource.textureasset;
 
@@ -100,8 +101,17 @@ class WaterShader: Shader
         {
             glActiveTexture(GL_TEXTURE3);
             rc.environment.environmentMap.bind();
-            setParameter("envTexture", 3);
-            setParameterSubroutine("environment", ShaderType.Fragment, "environmentTexture");
+
+            if (cast(Cubemap)rc.environment.environmentMap)
+            {
+                setParameter("envTextureCube", 3);
+                setParameterSubroutine("environment", ShaderType.Fragment, "environmentCubemap");
+            }
+            else
+            {
+                setParameter("envTexture", 3);
+                setParameterSubroutine("environment", ShaderType.Fragment, "environmentTexture");
+            }
         }
         else
         {
@@ -141,6 +151,7 @@ class WaterShader: Shader
 
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, 0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
         glActiveTexture(GL_TEXTURE0);
     }

@@ -40,6 +40,7 @@ import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.graphics.rc;
 import dagon.graphics.shader;
+import dagon.graphics.cubemap;
 
 class SkyShader: Shader
 {
@@ -74,8 +75,16 @@ class SkyShader: Shader
             glActiveTexture(GL_TEXTURE0);
             rc.environment.environmentMap.bind();
 
-            setParameter("envTexture", 0);
-            setParameterSubroutine("environment", ShaderType.Fragment, "environmentTexture");
+            if (cast(Cubemap)rc.environment.environmentMap)
+            {
+                setParameter("envTextureCube", 0);
+                setParameterSubroutine("environment", ShaderType.Fragment, "environmentCubemap");
+            }
+            else
+            {
+                setParameter("envTexture", 0);
+                setParameterSubroutine("environment", ShaderType.Fragment, "environmentTexture");
+            }
         }
         else
         {
@@ -98,5 +107,11 @@ class SkyShader: Shader
     override void unbind(RenderingContext* rc)
     {
         super.unbind(rc);
+
+        if (rc.environment.environmentMap)
+        {
+            glActiveTexture(GL_TEXTURE0);
+            rc.environment.environmentMap.unbind();
+        }
     }
 }

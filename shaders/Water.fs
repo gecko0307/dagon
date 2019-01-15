@@ -66,6 +66,15 @@ subroutine(srtEnv) vec3 environmentTexture(in vec3 wN, in vec3 wSun, in float ro
     return textureLod(envTexture, envMapEquirect(wN), lod).rgb;
 }
 
+uniform samplerCube envTextureCube;
+subroutine(srtEnv) vec3 environmentCubemap(in vec3 wN, in vec3 wSun, in float roughness)
+{
+    ivec2 envMapSize = textureSize(envTextureCube, 0);
+    float maxLod = log2(float(max(envMapSize.x, envMapSize.y)));
+    float lod = maxLod * roughness;
+    return textureLod(envTextureCube, wN, lod).rgb;
+}
+
 subroutine uniform srtEnv environment;
 
 uniform sampler2D rippleTexture;

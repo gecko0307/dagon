@@ -71,6 +71,12 @@ subroutine(srtEnv) vec3 environmentTexture(in vec3 wN, in vec3 wSun)
     return texture(envTexture, envMapEquirect(wN)).rgb;
 }
 
+uniform samplerCube envTextureCube;
+subroutine(srtEnv) vec3 environmentCubemap(in vec3 wN, in vec3 wSun)
+{
+    return texture(envTextureCube, wN).rgb;
+}
+
 subroutine uniform srtEnv environment;
 
 float luminance(vec3 color)

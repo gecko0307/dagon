@@ -42,6 +42,7 @@ import dagon.core.ownership;
 import dagon.graphics.rc;
 import dagon.graphics.shadow;
 import dagon.graphics.texture;
+import dagon.graphics.cubemap;
 import dagon.graphics.material;
 import dagon.graphics.shader;
 
@@ -139,7 +140,7 @@ class StandardShader: Shader
         setParameter("prevModelViewProjMatrix", rc.prevModelViewProjMatrix);
         setParameter("blurModelViewProjMatrix", rc.blurModelViewProjMatrix);
         setParameter("blurMask", rc.blurMask);
-        
+
         setParameter("textureScale", itextureScale.asVector2f);
 
         setParameter("sunDirection", rc.environment.sunDirectionEye(rc.viewMatrix));
@@ -235,8 +236,16 @@ class StandardShader: Shader
         // Environment
         if (rc.environment.environmentMap)
         {
-            setParameter("envTexture", 4);
-            setParameterSubroutine("environment", ShaderType.Fragment, "environmentTexture");
+            if (cast(Cubemap)rc.environment.environmentMap)
+            {
+                setParameter("envTextureCube", 4);
+                setParameterSubroutine("environment", ShaderType.Fragment, "environmentCubemap");
+            }
+            else
+            {
+                setParameter("envTexture", 4);
+                setParameterSubroutine("environment", ShaderType.Fragment, "environmentTexture");
+            }
         }
         else
         {
@@ -298,6 +307,7 @@ class StandardShader: Shader
 
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, 0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
         glActiveTexture(GL_TEXTURE5);
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);

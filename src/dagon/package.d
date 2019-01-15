@@ -72,6 +72,7 @@ public
     import dagon.graphics.shapes;
     import dagon.graphics.screensurface;
     import dagon.graphics.texture;
+    import dagon.graphics.cubemap;
 	import dagon.graphics.shader;
     import dagon.graphics.material;
     import dagon.graphics.environment;
