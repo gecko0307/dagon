@@ -170,7 +170,7 @@ Matrix4x4f cubeFaceMatrix(CubeFace cf)
     }
 }
 
-Matrix4x4f cubeFacenMatrix(CubeFace cf, Vector3f pos)
+Matrix4x4f cubeFaceCameraMatrix(CubeFace cf, Vector3f pos)
 {
     Matrix4x4f m;
     switch(cf)
