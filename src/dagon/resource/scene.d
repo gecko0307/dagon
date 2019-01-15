@@ -757,7 +757,7 @@ class Scene: BaseScene
     {
     }
 
-    void fixedStepUpdate()
+    void fixedStepUpdate(bool logicsUpdate = true)
     {
         if (view)
         {
@@ -776,7 +776,8 @@ class Scene: BaseScene
 
         particleSystem.update(fixedTimeStep);
 
-        onLogicsUpdate(fixedTimeStep);
+        if (logicsUpdate)
+            onLogicsUpdate(fixedTimeStep);
 
         environment.update(fixedTimeStep);
 

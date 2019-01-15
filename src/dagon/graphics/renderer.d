@@ -173,7 +173,7 @@ class Renderer: Owner
 
     void renderToCubemap(Vector3f position, Cubemap cubemap, CubemapRenderTarget rt)
     {
-        scene.fixedStepUpdate();
+        scene.fixedStepUpdate(false);
 
         RenderingContext rcProbe;
         rcProbe.init(eventManager, scene.environment);
