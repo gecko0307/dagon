@@ -21,6 +21,7 @@ Features
 * Physically based rendering (PBR)
 * HDR rendering with auto-exposure (eye adaptation), Reinhard, Hable/Uncharted and ACES tonemapping operators
 * Cube and equirectangular HDRI environment maps
+* Cubemap baking
 * Spherical and tube area lights
 * Normal/parallax mapping, parallax occlusion mapping
 * Cascaded shadow maps for directional light
