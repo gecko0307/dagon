@@ -54,6 +54,7 @@ import dagon.core.application;
 import dagon.resource.asset;
 import dagon.resource.textasset;
 import dagon.resource.textureasset;
+import dagon.resource.imageasset;
 import dagon.resource.fontasset;
 import dagon.resource.obj;
 import dagon.resource.iqm;
@@ -538,6 +539,19 @@ class Scene: BaseScene
             addAsset(tex, filename, preload);
         }
         return tex;
+    }
+
+    ImageAsset addImageAsset(string filename, bool preload = false)
+    {
+        ImageAsset img;
+        if (assetManager.assetExists(filename))
+            img = cast(ImageAsset)assetManager.getAsset(filename);
+        else
+        {
+            img = New!ImageAsset(assetManager.imageFactory, assetManager.hdrImageFactory, assetManager);
+            addAsset(img, filename, preload);
+        }
+        return img;
     }
 
     FontAsset addFontAsset(string filename, uint height, bool preload = false)

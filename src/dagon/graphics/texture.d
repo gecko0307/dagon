@@ -41,22 +41,24 @@ import dagon.core.ownership;
 class Texture: Owner
 {
     SuperImage image;
-    
+
     GLuint tex;
     GLenum format;
     GLint intFormat;
     GLenum type;
-    
+
     int width;
     int height;
     int numMipmapLevels;
-    
+
     Vector2f translation;
     Vector2f scale;
     float rotation;
-    
+
     bool useMipmapFiltering = true;
     bool useLinearFiltering = true;
+
+    protected bool mipmapGenerated = false;
 
     this(Owner o)
     {
@@ -77,40 +79,30 @@ class Texture: Owner
 
     void createFromImage(SuperImage img, bool genMipmaps = true)
     {
+        releaseGLTexture();
+
         image = img;
         width = img.width;
         height = img.height;
 
-        switch (img.pixelFormat)
-        {
-            case PixelFormat.L8:         intFormat = GL_R8;      format = GL_RED;  type = GL_UNSIGNED_BYTE; break;
-            case PixelFormat.LA8:        intFormat = GL_RG8;     format = GL_RG;   type = GL_UNSIGNED_BYTE; break;
-            case PixelFormat.RGB8:       intFormat = GL_RGB8;    format = GL_RGB;  type = GL_UNSIGNED_BYTE; break;
-            case PixelFormat.RGBA8:      intFormat = GL_RGBA8;   format = GL_RGBA; type = GL_UNSIGNED_BYTE; break;
-            case PixelFormat.RGBA_FLOAT: intFormat = GL_RGBA32F; format = GL_RGBA; type = GL_FLOAT; break;
-            default:
-                writefln("Unsupported pixel format %s", img.pixelFormat);
-                return;
-        }
+        if (!pixelFormatToTextureFormat(cast(PixelFormat)img.pixelFormat, format, intFormat, type))
+            writefln("Unsupported pixel format %s", img.pixelFormat);
 
         glGenTextures(1, &tex);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, tex);
 
-        //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        
+
         //if (DerelictGL.isExtSupported("GL_EXT_texture_filter_anisotropic"))
         //    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16.0f);
-       
+
         glTexImage2D(GL_TEXTURE_2D, 0, intFormat, width, height, 0, format, type, cast(void*)img.data.ptr);
 
-        //if (genMipmaps)
-        glGenerateMipmap(GL_TEXTURE_2D);
+        useMipmapFiltering = genMipmaps;
 
         glBindTexture(GL_TEXTURE_2D, 0);
     }
@@ -118,16 +110,24 @@ class Texture: Owner
     void bind()
     {
         if (glIsTexture(tex))
-            glBindTexture(GL_TEXTURE_2D, tex);
-            
-        if (useMipmapFiltering)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        else if (useLinearFiltering)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        else
         {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glBindTexture(GL_TEXTURE_2D, tex);
+
+            if (!mipmapGenerated && useMipmapFiltering)
+            {
+                glGenerateMipmap(GL_TEXTURE_2D);
+                mipmapGenerated = true;
+            }
+
+            if (useMipmapFiltering)
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            else if (useLinearFiltering)
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            else
+            {
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            }
         }
     }
 
@@ -136,23 +136,27 @@ class Texture: Owner
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glBindTexture(GL_TEXTURE_2D, 0);
     }
-    
+
     bool valid()
     {
         return cast(bool)glIsTexture(tex);
     }
-    
+
     Color4f sample(float u, float v)
     {
-        int x = cast(int)floor(u * width);
-        int y = cast(int)floor(v * height);
-        return image[x, y];
+        if (image)
+        {
+            int x = cast(int)floor(u * width);
+            int y = cast(int)floor(v * height);
+            return image[x, y];
+        }
+        else
+            return Color4f(0, 0, 0, 0);
     }
 
     void release()
     {
-        if (glIsTexture(tex))
-            glDeleteTextures(1, &tex);
+        releaseGLTexture();
         if (image)
         {
             Delete(image);
@@ -160,8 +164,30 @@ class Texture: Owner
         }
     }
 
+    void releaseGLTexture()
+    {
+        if (glIsTexture(tex))
+            glDeleteTextures(1, &tex);
+    }
+
     ~this()
     {
         release();
     }
+}
+
+bool pixelFormatToTextureFormat(PixelFormat pixelFormat, out GLenum textureFormat, out GLint textureInternalFormat, out GLenum pixelType)
+{
+    switch (pixelFormat)
+    {
+        case PixelFormat.L8:         textureInternalFormat = GL_R8;      textureFormat = GL_RED;  pixelType = GL_UNSIGNED_BYTE; break;
+        case PixelFormat.LA8:        textureInternalFormat = GL_RG8;     textureFormat = GL_RG;   pixelType = GL_UNSIGNED_BYTE; break;
+        case PixelFormat.RGB8:       textureInternalFormat = GL_RGB8;    textureFormat = GL_RGB;  pixelType = GL_UNSIGNED_BYTE; break;
+        case PixelFormat.RGBA8:      textureInternalFormat = GL_RGBA8;   textureFormat = GL_RGBA; pixelType = GL_UNSIGNED_BYTE; break;
+        case PixelFormat.RGBA_FLOAT: textureInternalFormat = GL_RGBA32F; textureFormat = GL_RGBA; pixelType = GL_FLOAT; break;
+        default:
+            return false;
+    }
+
+    return true;
 }

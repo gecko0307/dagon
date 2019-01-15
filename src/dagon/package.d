@@ -48,6 +48,7 @@ public
     import dagon.resource.asset;
     import dagon.resource.textasset;
     import dagon.resource.textureasset;
+    import dagon.resource.imageasset;
     import dagon.resource.obj;
     import dagon.resource.iqm;
     import dagon.resource.fontasset;
@@ -108,6 +109,6 @@ public
     import dagon.ui.font;
     import dagon.ui.ftfont;
     import dagon.ui.textline;
-    
+
     import dagon.physics;
 }
