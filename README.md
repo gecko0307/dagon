@@ -20,7 +20,7 @@ Features
 * Deferred pipeline for opaque materials, forward pipeline for transparent materials and materials with custom shaders
 * Physically based rendering (PBR)
 * HDR rendering with auto-exposure (eye adaptation), Reinhard, Hable/Uncharted and ACES tonemapping operators
-* Equirectangular HDRI environment maps
+* Cube and equirectangular HDRI environment maps
 * Spherical and tube area lights
 * Normal/parallax mapping, parallax occlusion mapping
 * Cascaded shadow maps for directional light
