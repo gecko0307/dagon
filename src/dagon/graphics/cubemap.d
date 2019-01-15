@@ -184,6 +184,11 @@ class Cubemap: Texture
     {
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     }
+
+    void invalidateMipmap()
+    {
+        mipmapGenerated = false;
+    }
 }
 
 Matrix4x4f cubeFaceMatrix(CubeFace cf)

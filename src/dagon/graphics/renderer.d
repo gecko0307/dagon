@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.graphics.renderer;
 
+import std.stdio;
 import std.math;
 import std.algorithm;
 import std.traits;
@@ -166,6 +167,12 @@ class Renderer: Owner
 
     void renderToCubemap(Vector3f position, Cubemap cubemap)
     {
+        if (scene.environment.environmentMap is cubemap)
+        {
+            writeln("Warning: feedback loop detected in renderToCubemap");
+            return;
+        }
+
         CubemapRenderTarget rt = New!CubemapRenderTarget(cubemap.width, null);
         renderToCubemap(position, cubemap, rt);
         Delete(rt);
@@ -173,6 +180,12 @@ class Renderer: Owner
 
     void renderToCubemap(Vector3f position, Cubemap cubemap, CubemapRenderTarget rt)
     {
+        if (scene.environment.environmentMap is cubemap)
+        {
+            writeln("Warning: feedback loop detected in renderToCubemap");
+            return;
+        }
+
         scene.fixedStepUpdate(false);
 
         RenderingContext rcProbe;
@@ -189,6 +202,8 @@ class Renderer: Owner
             renderPreStep(rt.gbuffer, &rcProbe);
             renderToTarget(rt, rt.gbuffer, &rcProbe);
         }
+
+        cubemap.invalidateMipmap();
     }
 
     void render()
