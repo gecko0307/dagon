@@ -70,12 +70,12 @@ class SkyShader: Shader
         setParameter("sunColor", rc.environment.sunColor);
         setParameter("sunEnergy", rc.environment.sunEnergy);
 
-        if (rc.environment.environmentMap)
+        if (rc.environment.skyMap)
         {
             glActiveTexture(GL_TEXTURE0);
-            rc.environment.environmentMap.bind();
+            rc.environment.skyMap.bind();
 
-            if (cast(Cubemap)rc.environment.environmentMap)
+            if (cast(Cubemap)rc.environment.skyMap)
             {
                 setParameter("envTextureCube", 0);
                 setParameterSubroutine("environment", ShaderType.Fragment, "environmentCubemap");

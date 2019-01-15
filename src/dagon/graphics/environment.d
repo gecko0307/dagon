@@ -54,6 +54,7 @@ class Environment: Owner
     Color4f ambientConstant = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
 
     Texture environmentMap;
+    Texture skyMap;
 
     Color4f sunZenithColor = Color4f(1.0, 0.9, 0.8, 1.0);
     Color4f sunHorizonColor = Color4f(1.0, 0.3, 0.0, 1.0);
@@ -127,7 +128,7 @@ class Environment: Owner
         if (h >= 24) h = h % 24;
         if (m >= 60) m = m % 60;
         if (s >= 60) s = s % 60;
-        
+
         float t = (h * 3600.0f + m * 60.0f + s) / (3600.0f * 24.0f);
         while (t > 1.0f) t -= 1.0f;
         sunRotation = rotationQuaternion(Axis.x, degtorad(-(t * 360.0f - 90.0f)));

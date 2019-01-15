@@ -41,6 +41,7 @@ import dlib.math.utils;
 import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.graphics.texture;
+import dagon.graphics.framebuffer;
 
 enum CubeFace
 {
@@ -60,6 +61,12 @@ class Cubemap: Texture
         initialize();
     }
 
+    this(uint resolution, Owner o)
+    {
+        super(o);
+        initialize(resolution);
+    }
+
     ~this()
     {
         release();
@@ -67,6 +74,8 @@ class Cubemap: Texture
 
     void initialize()
     {
+        releaseGLTexture();
+
         glActiveTexture(GL_TEXTURE0);
 
         glGenTextures(1, &tex);
@@ -77,6 +86,34 @@ class Cubemap: Texture
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    }
+
+    void initialize(uint resolution)
+    {
+        releaseGLTexture();
+
+        width = resolution;
+        height = resolution;
+
+        glActiveTexture(GL_TEXTURE0);
+
+        glGenTextures(1, &tex);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, tex);
+
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA16F, resolution, resolution, 0, GL_RGBA, GL_FLOAT, null);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA16F, resolution, resolution, 0, GL_RGBA, GL_FLOAT, null);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA16F, resolution, resolution, 0, GL_RGBA, GL_FLOAT, null);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGBA16F, resolution, resolution, 0, GL_RGBA, GL_FLOAT, null);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGBA16F, resolution, resolution, 0, GL_RGBA, GL_FLOAT, null);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGBA16F, resolution, resolution, 0, GL_RGBA, GL_FLOAT, null);
 
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     }

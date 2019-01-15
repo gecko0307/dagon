@@ -29,9 +29,13 @@ module dagon.graphics.renderer;
 
 import std.math;
 import std.algorithm;
+import std.traits;
 
 import dlib.core.memory;
 import dlib.container.array;
+import dlib.math.vector;
+import dlib.math.matrix;
+import dlib.math.transformation;
 
 import dagon.core.libs;
 import dagon.core.ownership;
@@ -43,6 +47,8 @@ import dagon.graphics.shadow;
 import dagon.graphics.rc;
 import dagon.graphics.postproc;
 import dagon.graphics.texture;
+import dagon.graphics.cubemap;
+import dagon.graphics.cubemaprendertarget;
 import dagon.resource.scene;
 
 import dagon.graphics.filters.fxaa;
@@ -156,6 +162,33 @@ class Renderer: Owner
     {
         postFilters.append(f);
         return f;
+    }
+
+    void renderToCubemap(Vector3f position, Cubemap cubemap)
+    {
+        CubemapRenderTarget rt = New!CubemapRenderTarget(cubemap.width, null);
+        renderToCubemap(position, cubemap, rt);
+        Delete(rt);
+    }
+
+    void renderToCubemap(Vector3f position, Cubemap cubemap, CubemapRenderTarget rt)
+    {
+        scene.fixedStepUpdate();
+
+        RenderingContext rcProbe;
+        rcProbe.init(eventManager, scene.environment);
+        rcProbe.projectionMatrix = perspectiveMatrix(90.0f, 1.0f, 0.001f, 1000.0f);
+
+        rt.gbuffer.render(scene, &rcProbe);
+
+        foreach(face; EnumMembers!CubeFace)
+        {
+            rt.prepareRC(face, position, &rcProbe);
+            rt.setCubemapFace(cubemap, face);
+            shadowMap.update(&rcProbe, scene.fixedTimeStep);
+            renderPreStep(rt.gbuffer, &rcProbe);
+            renderToTarget(rt, rt.gbuffer, &rcProbe);
+        }
     }
 
     void render()
