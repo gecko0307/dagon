@@ -188,19 +188,17 @@ class Renderer: Owner
 
         scene.fixedStepUpdate(false);
 
-        RenderingContext rcProbe;
-        rcProbe.init(eventManager, scene.environment);
-        rcProbe.projectionMatrix = perspectiveMatrix(90.0f, 1.0f, 0.001f, 1000.0f);
-
-        rt.gbuffer.render(scene, &rcProbe);
+        RenderingContext rcCubemap;
+        rcCubemap.init(eventManager, scene.environment);
+        rcCubemap.projectionMatrix = perspectiveMatrix(90.0f, 1.0f, 0.001f, 1000.0f);
 
         foreach(face; EnumMembers!CubeFace)
         {
-            rt.prepareRC(face, position, &rcProbe);
+            rt.prepareRC(face, position, &rcCubemap);
             rt.setCubemapFace(cubemap, face);
-            shadowMap.update(&rcProbe, scene.fixedTimeStep);
-            renderPreStep(rt.gbuffer, &rcProbe);
-            renderToTarget(rt, rt.gbuffer, &rcProbe);
+            shadowMap.update(&rcCubemap, scene.fixedTimeStep);
+            renderPreStep(rt.gbuffer, &rcCubemap);
+            renderToTarget(rt, rt.gbuffer, &rcCubemap);
         }
 
         cubemap.invalidateMipmap();
