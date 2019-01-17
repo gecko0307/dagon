@@ -50,22 +50,17 @@ class EnvironmentPassShader: Shader
     string fs = import("EnvironmentPass.fs");
 
     GBuffer gbuffer;
-    //CascadedShadowMap shadowMap;
-
-    //Matrix4x4f defaultShadowMatrix;
 
     bool enableSSAO = false;
     int ssaoSamples = 16;
     float ssaoRadius = 0.2f;
     float ssaoPower = 4.0f;
 
-    this(GBuffer gbuffer, /*CascadedShadowMap shadowMap,*/ Owner o)
+    this(GBuffer gbuffer, Owner o)
     {
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, o);
         this.gbuffer = gbuffer;
-        //this.shadowMap = shadowMap;
-        //this.defaultShadowMatrix = Matrix4x4f.identity;
     }
 
     void bind(RenderingContext* rc2d, RenderingContext* rc3d)
@@ -80,8 +75,6 @@ class EnvironmentPassShader: Shader
         setParameter("viewSize", Vector2f(gbuffer.width, gbuffer.height));
 
         setParameter("sunDirection", rc3d.environment.sunDirectionEye(rc3d.viewMatrix));
-        //setParameter("sunColor", rc3d.environment.sunColor);
-        //setParameter("sunEnergy", rc3d.environment.sunEnergy);
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
@@ -134,26 +127,6 @@ class EnvironmentPassShader: Shader
         glActiveTexture(GL_TEXTURE5);
         glBindTexture(GL_TEXTURE_2D, gbuffer.emissionTexture);
         setParameter("emissionBuffer", 5);
-
-        /*
-        // Texture 6 - shadow map cascades (3 layer texture array)
-        if (shadowMap)
-        {
-            glActiveTexture(GL_TEXTURE6);
-            glBindTexture(GL_TEXTURE_2D_ARRAY, shadowMap.depthTexture);
-            setParameter("shadowTextureArray", 6);
-            setParameter("shadowTextureSize", cast(float)shadowMap.size);
-            setParameter("shadowMatrix1", shadowMap.area1.shadowMatrix);
-            setParameter("shadowMatrix2", shadowMap.area2.shadowMatrix);
-            setParameter("shadowMatrix3", shadowMap.area3.shadowMatrix);
-        }
-        else
-        {
-            setParameter("shadowMatrix1", defaultShadowMatrix);
-            setParameter("shadowMatrix2", defaultShadowMatrix);
-            setParameter("shadowMatrix3", defaultShadowMatrix);
-        }
-        */
 
         // SSAO
         setParameter("enableSSAO", enableSSAO);

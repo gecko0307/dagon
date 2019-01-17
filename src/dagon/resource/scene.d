@@ -787,7 +787,7 @@ class Scene: BaseScene
 
         environment.update(fixedTimeStep);
 
-        if (view) // TODO: allow to turn this off
+        if (view)
             lightManager.updateShadows(view, &renderer.rc3d, fixedTimeStep);
     }
 

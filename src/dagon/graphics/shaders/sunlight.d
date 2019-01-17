@@ -109,25 +109,28 @@ class SunLightShader: Shader
         setParameter("emissionBuffer", 5);
 
         // Texture 6 - shadow map cascades (3 layer texture array)
-        if (light.cascadedShadowMap)
+        if (light)
         {
-            glActiveTexture(GL_TEXTURE6);
-            glBindTexture(GL_TEXTURE_2D_ARRAY, light.cascadedShadowMap.depthTexture);
-            setParameter("shadowTextureArray", 6);
-            setParameter("shadowTextureSize", cast(float)light.cascadedShadowMap.size);
-            setParameter("shadowMatrix1", light.cascadedShadowMap.area1.shadowMatrix);
-            setParameter("shadowMatrix2", light.cascadedShadowMap.area2.shadowMatrix);
-            setParameter("shadowMatrix3", light.cascadedShadowMap.area3.shadowMatrix);
+            if (light.cascadedShadowMap)
+            {
+                glActiveTexture(GL_TEXTURE6);
+                glBindTexture(GL_TEXTURE_2D_ARRAY, light.cascadedShadowMap.depthTexture);
+                setParameter("shadowTextureArray", 6);
+                setParameter("shadowTextureSize", cast(float)light.cascadedShadowMap.size);
+                setParameter("shadowMatrix1", light.cascadedShadowMap.area1.shadowMatrix);
+                setParameter("shadowMatrix2", light.cascadedShadowMap.area2.shadowMatrix);
+                setParameter("shadowMatrix3", light.cascadedShadowMap.area3.shadowMatrix);
 
-            setParameterSubroutine("shadowMap", ShaderType.Fragment, "shadowMapCascaded");
-        }
-        else
-        {
-            //setParameter("shadowMatrix1", defaultShadowMatrix);
-            //setParameter("shadowMatrix2", defaultShadowMatrix);
-            //setParameter("shadowMatrix3", defaultShadowMatrix);
+                setParameterSubroutine("shadowMap", ShaderType.Fragment, "shadowMapCascaded");
+            }
+            else
+            {
+                setParameter("shadowMatrix1", defaultShadowMatrix);
+                setParameter("shadowMatrix2", defaultShadowMatrix);
+                setParameter("shadowMatrix3", defaultShadowMatrix);
 
-            setParameterSubroutine("shadowMap", ShaderType.Fragment, "shadowMapNone");
+                setParameterSubroutine("shadowMap", ShaderType.Fragment, "shadowMapNone");
+            }
         }
 
         glActiveTexture(GL_TEXTURE0);

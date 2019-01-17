@@ -60,7 +60,6 @@ class LightSource: Owner
 {
     Vector3f position;
     Quaternionf rotation;
-    //Vector3f direction;
     Vector3f color;
     float radius; // max light attenuation radius
     float areaRadius; // light's own radius
@@ -74,7 +73,6 @@ class LightSource: Owner
         super(o);
         this.position = Vector3f(0.0f, 0.0f, 0.0f);
         this.rotation = Quaternionf.identity;
-        //this.direction = Vector3f(0.0f, 0.0f, 1.0f);
         this.tubeLength = 1.0f;
         this.color = Vector3f(1.0f, 1.0f, 1.0f);
         this.radius = 1.0f;
@@ -88,7 +86,6 @@ class LightSource: Owner
         super(o);
         this.position = pos;
         this.rotation = Quaternionf.identity;
-        //this.direction = Vector3f(0.0f, 0.0f, 1.0f);
         this.tubeLength = 1.0f;
         this.color = col;
         this.radius = attRadius;

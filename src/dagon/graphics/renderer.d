@@ -71,8 +71,6 @@ class Renderer: Owner
     DeferredEnvironmentPass deferredEnvPass;
     DeferredLightPass deferredLightPass;
 
-    //CascadedShadowMap shadowMap;
-
     DynamicArray!PostFilter postFilters;
 
     PostFilterHDR hdrFilter;
@@ -111,9 +109,8 @@ class Renderer: Owner
 
         gbuffer = New!GBuffer(eventManager.windowWidth, eventManager.windowHeight, this);
         sceneFramebuffer = New!Framebuffer(gbuffer, eventManager.windowWidth, eventManager.windowHeight, true, true, this);
-        //shadowMap = New!CascadedShadowMap(1024, 10, 30, 200, -100, 100, this);
 
-        deferredEnvPass = New!DeferredEnvironmentPass(gbuffer, /*shadowMap,*/ this);
+        deferredEnvPass = New!DeferredEnvironmentPass(gbuffer, this);
         deferredLightPass = New!DeferredLightPass(gbuffer, this);
 
         ssao.renderer = this;
@@ -166,13 +163,6 @@ class Renderer: Owner
         return f;
     }
 
-    /*
-    void updateShadows(View view, double timeStep)
-    {
-        deferredLightPass.updateShadows(view, &rc3d, timeStep);
-    }
-    */
-
     void renderToCubemap(Vector3f position, Cubemap cubemap)
     {
         if (scene.environment.environmentMap is cubemap)
@@ -204,6 +194,7 @@ class Renderer: Owner
         {
             rt.prepareRC(face, position, &rcCubemap);
             rt.setCubemapFace(cubemap, face);
+            //TODO: simplified shadow rendering (lower resolution, only one cascade, render only once per cubemap)
             scene.lightManager.updateShadows(position, Vector3f(0.0f, 0.0f, 1.0f), &rcCubemap, scene.fixedTimeStep);
             renderPreStep(rt.gbuffer, &rcCubemap);
             renderToTarget(rt, rt.gbuffer, &rcCubemap);

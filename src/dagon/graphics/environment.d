@@ -82,7 +82,6 @@ class Environment: Owner
     Color4f fogColor = Color4f(0.1f, 0.1f, 0.1f, 1.0f);
     float fogStart = 0.0f;
     float fogEnd = 10000.0f;
-    //float fogEnergy = 0.1f;
 
     Color4f skyZenithColor = Color4f(0.223, 0.572, 0.752, 1.0);
     Color4f skyHorizonColor = Color4f(0.9, 1.0, 1.0, 1.0);
@@ -105,7 +104,6 @@ class Environment: Owner
     {
         skyZenithColor = lerpColorsBySunAngle(skyZenithColorAtMidday, skyZenithColorAtSunset, skyZenithColorAtMidnight);
         skyHorizonColor = lerpColorsBySunAngle(skyHorizonColorAtMidday, skyHorizonColorAtSunset, skyHorizonColorAtMidnight);
-        //backgroundColor = skyZenithColor;
 
         Vector3f sunDir = sunDirection();
 
@@ -118,7 +116,7 @@ class Environment: Owner
         groundEnergy = lerp(lerp(groundEnergyAtSunset, groundEnergyAtMidnight, s2), groundEnergyAtMidday, s1);
 
         if (atmosphericFog)
-            fogColor = skyHorizonColor * skyEnergy; //lerpColorsBySunAngle(skyZenithColor, skyHorizonColor, Color4f(0, 0, 0, 0)) * fogEnergy;
+            fogColor = skyHorizonColor * skyEnergy;
         else
             fogColor = backgroundColor;
     }
