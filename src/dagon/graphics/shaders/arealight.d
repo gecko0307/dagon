@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.graphics.shaders.lightpass;
+module dagon.graphics.shaders.arealight;
 
 import std.stdio;
 import std.math;
@@ -43,10 +43,10 @@ import dagon.graphics.shader;
 import dagon.graphics.gbuffer;
 import dagon.graphics.light;
 
-class LightPassShader: Shader
+class AreaLightShader: Shader
 {
-    string vs = import("LightPass.vs");
-    string fs = import("LightPass.fs");
+    string vs = import("AreaLight.vs");
+    string fs = import("AreaLight.fs");
 
     GBuffer gbuffer;
     LightSource light;

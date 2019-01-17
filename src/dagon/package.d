@@ -95,7 +95,7 @@ public
     import dagon.graphics.shaders.shadowpass;
     import dagon.graphics.shaders.geometrypass;
     import dagon.graphics.shaders.environmentpass;
-    import dagon.graphics.shaders.lightpass;
+    import dagon.graphics.shaders.arealight;
     import dagon.graphics.shaders.standard;
     import dagon.graphics.shaders.sky;
     import dagon.graphics.shaders.rayleigh;

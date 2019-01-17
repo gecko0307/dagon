@@ -47,7 +47,8 @@ import dagon.logics.behaviour;
 enum LightType
 {
     AreaSphere = 1,
-    AreaTube = 2
+    AreaTube = 2,
+    Sun = 3,
 }
 
 class LightSource
