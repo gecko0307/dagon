@@ -451,7 +451,8 @@ class Scene: BaseScene
         renderer = New!Renderer(this, assetManager);
 
         standardShader = New!StandardShader(assetManager);
-        //standardShader.shadowMap = renderer.shadowMap;
+        // TODO: default shadow map for standardShader
+
         skyShader = New!SkyShader(assetManager);
         particleShader = New!ParticleShader(renderer.gbuffer, assetManager);
 
