@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018 Timur Gafarov
+Copyright (c) 2019 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -48,6 +48,7 @@ import dagon.graphics.screensurface;
 import dagon.graphics.shapes;
 import dagon.graphics.shaders.environmentpass;
 import dagon.graphics.shaders.arealight;
+import dagon.graphics.shaders.sunlight;
 import dagon.resource.scene;
 
 class DeferredEnvironmentPass: Owner
@@ -86,20 +87,25 @@ class DeferredEnvironmentPass: Owner
 class DeferredLightPass: Owner
 {
     AreaLightShader areaLightShader;
+    SunLightShader sunLightShader;
     GBuffer gbuffer;
     ShapeSphere lightVolume;
+    ScreenSurface surface;
 
     this(GBuffer gbuffer, Owner o)
     {
         super(o);
         this.areaLightShader = New!AreaLightShader(gbuffer, this);
+        this.sunLightShader = New!SunLightShader(gbuffer, this);
         this.gbuffer = gbuffer;
         this.lightVolume = New!ShapeSphere(1.0f, 8, 4, false, this);
+        this.surface = New!ScreenSurface(this);
     }
 
     void render(Scene scene, RenderingContext* rc2d, RenderingContext* rc3d)
     {
         areaLightShader.gbuffer = gbuffer;
+        sunLightShader.gbuffer = gbuffer;
 
         glDisable(GL_DEPTH_TEST);
         glDepthMask(GL_FALSE);
@@ -115,6 +121,7 @@ class DeferredLightPass: Owner
 
         auto rc3dLocal = *rc3d;
         rc3dLocal.rebindShaderProgram = false;
+
         areaLightShader.bindProgram();
         foreach(light; scene.lightManager.lightSources.data)
         if (light.type == LightType.AreaSphere || light.type == LightType.AreaTube)
@@ -126,7 +133,16 @@ class DeferredLightPass: Owner
         }
         areaLightShader.unbindProgram();
 
-        // TODO: sun lights
+        sunLightShader.bindProgram();
+        foreach(light; scene.lightManager.lightSources.data)
+        if (light.type == LightType.Sun)
+        {
+            sunLightShader.light = light;
+            sunLightShader.bind(rc2d, &rc3dLocal);
+            surface.render(rc2d);
+            sunLightShader.unbind(rc2d, &rc3dLocal);
+        }
+        sunLightShader.unbindProgram();
 
         glDisablei(GL_BLEND, 0);
         glDisablei(GL_BLEND, 1);

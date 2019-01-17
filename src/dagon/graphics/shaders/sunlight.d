@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018-2019 Timur Gafarov
+Copyright (c) 2019 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.graphics.shaders.arealight;
+module dagon.graphics.shaders.sunlight;
 
 import std.stdio;
 import std.math;
@@ -33,35 +33,54 @@ import std.math;
 import dlib.core.memory;
 import dlib.math.vector;
 import dlib.math.matrix;
-import dlib.math.transformation;
 import dlib.image.color;
 
 import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.graphics.rc;
-import dagon.graphics.shader;
 import dagon.graphics.gbuffer;
 import dagon.graphics.light;
+import dagon.graphics.shadow;
+import dagon.graphics.shader;
+import dagon.graphics.framebuffer;
+import dagon.graphics.cubemap;
 
-class AreaLightShader: Shader
+class SunLightShader: Shader
 {
-    string vs = import("AreaLight.vs");
-    string fs = import("AreaLight.fs");
+    string vs = import("SunLight.vs");
+    string fs = import("SunLight.fs");
 
     GBuffer gbuffer;
     LightSource light;
+    CascadedShadowMap shadowMap;
+
+    Matrix4x4f defaultShadowMatrix;
 
     this(GBuffer gbuffer, Owner o)
     {
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, o);
         this.gbuffer = gbuffer;
+        this.defaultShadowMatrix = Matrix4x4f.identity;
     }
 
     void bind(RenderingContext* rc2d, RenderingContext* rc3d)
     {
-        setParameter("projectionMatrix", rc3d.projectionMatrix);
+        setParameter("modelViewMatrix", rc2d.modelViewMatrix);
+        setParameter("projectionMatrix", rc2d.projectionMatrix);
+
+        setParameter("camProjectionMatrix", rc3d.projectionMatrix);
+        setParameter("camViewMatrix", rc3d.viewMatrix);
+        setParameter("camInvViewMatrix", rc3d.invViewMatrix);
+
         setParameter("viewSize", Vector2f(gbuffer.width, gbuffer.height));
+
+        if (light)
+        {
+            setParameter("sunDirection", light.directionEye(rc3d.viewMatrix));
+            setParameter("sunColor", light.color);
+            setParameter("sunEnergy", light.energy);
+        }
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
@@ -83,50 +102,41 @@ class AreaLightShader: Shader
         glBindTexture(GL_TEXTURE_2D, gbuffer.normalTexture);
         setParameter("normalBuffer", 3);
 
-        glActiveTexture(GL_TEXTURE0);
+        // Texture 5 - emission buffer
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, gbuffer.emissionTexture);
+        setParameter("emissionBuffer", 5);
 
-        if (light)
+        // Texture 6 - shadow map cascades (3 layer texture array)
+        if (shadowMap)
         {
-            Matrix4x4f modelViewMatrix =
-                rc3d.viewMatrix *
-                translationMatrix(light.position) *
-                scaleMatrix(Vector3f(light.radius, light.radius, light.radius));
+            glActiveTexture(GL_TEXTURE6);
+            glBindTexture(GL_TEXTURE_2D_ARRAY, shadowMap.depthTexture);
+            setParameter("shadowTextureArray", 6);
+            setParameter("shadowTextureSize", cast(float)shadowMap.size);
+            setParameter("shadowMatrix1", shadowMap.area1.shadowMatrix);
+            setParameter("shadowMatrix2", shadowMap.area2.shadowMatrix);
+            setParameter("shadowMatrix3", shadowMap.area3.shadowMatrix);
 
-            Vector3f lightPositionEye = light.position * rc3d.viewMatrix;
-
-            setParameter("modelViewMatrix", modelViewMatrix);
-            setParameter("lightPosition", lightPositionEye);
-            setParameter("lightRadius", light.radius);
-            setParameter("lightAreaRadius", light.areaRadius);
-            setParameter("lightColor", light.color);
-            setParameter("lightEnergy", light.energy);
-
-            if (light.type == LightType.AreaSphere)
-            {
-                setParameterSubroutine("lightRadiance", ShaderType.Fragment, "lightRadianceAreaSphere");
-            }
-            else if (light.type == LightType.AreaTube)
-            {
-                Vector3f lightPosition2Eye = (light.position + light.direction * light.tubeLength) * rc3d.viewMatrix;
-                setParameter("lightPosition2", lightPosition2Eye);
-                setParameterSubroutine("lightRadiance", ShaderType.Fragment, "lightRadianceAreaTube");
-            }
-            else // unsupported light type
-            {
-                setParameterSubroutine("lightRadiance", ShaderType.Fragment, "lightRadianceFallback");
-            }
+            setParameterSubroutine("shadowMap", ShaderType.Fragment, "shadowMapCascaded");
         }
         else
         {
-            setParameterSubroutine("lightRadiance", ShaderType.Fragment, "lightRadianceFallback");
+            //setParameter("shadowMatrix1", defaultShadowMatrix);
+            //setParameter("shadowMatrix2", defaultShadowMatrix);
+            //setParameter("shadowMatrix3", defaultShadowMatrix);
+
+            setParameterSubroutine("shadowMap", ShaderType.Fragment, "shadowMapNone");
         }
 
-        super.bind(rc3d);
+        glActiveTexture(GL_TEXTURE0);
+
+        super.bind(rc2d);
     }
 
     void unbind(RenderingContext* rc2d, RenderingContext* rc3d)
     {
-        super.unbind(rc3d);
+        super.unbind(rc2d);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -138,6 +148,19 @@ class AreaLightShader: Shader
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        glActiveTexture(GL_TEXTURE4);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        glActiveTexture(GL_TEXTURE6);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+
+        glActiveTexture(GL_TEXTURE7);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE0);

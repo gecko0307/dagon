@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2018 Timur Gafarov
+Copyright (c) 2017-2019 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -96,6 +96,7 @@ public
     import dagon.graphics.shaders.geometrypass;
     import dagon.graphics.shaders.environmentpass;
     import dagon.graphics.shaders.arealight;
+    import dagon.graphics.shaders.sunlight;
     import dagon.graphics.shaders.standard;
     import dagon.graphics.shaders.sky;
     import dagon.graphics.shaders.rayleigh;

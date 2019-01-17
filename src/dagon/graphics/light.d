@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2018 Timur Gafarov
+Copyright (c) 2017-2019 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -34,6 +34,7 @@ import std.random;
 
 import dlib.core.memory;
 import dlib.math.vector;
+import dlib.math.matrix;
 import dlib.container.array;
 import dlib.image.color;
 
@@ -72,6 +73,13 @@ class LightSource
         this.areaRadius = areaRadius;
         this.energy = energy;
         this.type = LightType.AreaSphere;
+    }
+
+    Vector3f directionEye(Matrix4x4f viewMatrix)
+    {
+        Vector4f dirHGVector = Vector4f(direction);
+        dirHGVector.w = 0.0;
+        return (dirHGVector * viewMatrix).xyz;
     }
 }
 
