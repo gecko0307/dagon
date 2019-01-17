@@ -212,7 +212,7 @@ void main()
         float denominator = 4.0 * max(dot(N, E), 0.0) * NL;
         vec3 specular = numerator / max(denominator, 0.001);
 
-        radiance += (kD * albedo / PI + specular) * toLinear(sunColor.rgb) * NL * sunEnergy; // * sh;
+        radiance += (kD * albedo / PI + specular) * toLinear(sunColor.rgb) * NL * sunEnergy * sh;
     }
 
     frag_color = vec4(radiance, 1.0);
