@@ -35,6 +35,8 @@ import std.random;
 import dlib.core.memory;
 import dlib.math.vector;
 import dlib.math.matrix;
+import dlib.math.transformation;
+import dlib.math.quaternion;
 import dlib.container.array;
 import dlib.image.color;
 
@@ -42,8 +44,10 @@ import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.graphics.view;
 import dagon.graphics.rc;
+import dagon.graphics.shadow;
 import dagon.logics.entity;
 import dagon.logics.behaviour;
+import dagon.resource.scene;
 
 enum LightType
 {
@@ -52,21 +56,25 @@ enum LightType
     Sun = 3,
 }
 
-class LightSource
+class LightSource: Owner
 {
     Vector3f position;
-    Vector3f direction;
+    Quaternionf rotation;
+    //Vector3f direction;
     Vector3f color;
     float radius; // max light attenuation radius
     float areaRadius; // light's own radius
     float tubeLength;
     float energy;
     LightType type;
+    CascadedShadowMap cascadedShadowMap;
 
-    this()
+    this(Owner o)
     {
+        super(o);
         this.position = Vector3f(0.0f, 0.0f, 0.0f);
-        this.direction = Vector3f(0.0f, 0.0f, 1.0f);
+        this.rotation = Quaternionf.identity;
+        //this.direction = Vector3f(0.0f, 0.0f, 1.0f);
         this.tubeLength = 1.0f;
         this.color = Vector3f(1.0f, 1.0f, 1.0f);
         this.radius = 1.0f;
@@ -75,10 +83,12 @@ class LightSource
         this.type = LightType.AreaSphere;
     }
 
-    this(Vector3f pos, Vector3f col, float attRadius, float areaRadius, float energy)
+    this(Vector3f pos, Vector3f col, float attRadius, float areaRadius, float energy, Owner o)
     {
+        super(o);
         this.position = pos;
-        this.direction = Vector3f(0.0f, 0.0f, 1.0f);
+        this.rotation = Quaternionf.identity;
+        //this.direction = Vector3f(0.0f, 0.0f, 1.0f);
         this.tubeLength = 1.0f;
         this.color = col;
         this.radius = attRadius;
@@ -87,11 +97,45 @@ class LightSource
         this.type = LightType.AreaSphere;
     }
 
+    Vector3f direction() @property
+    {
+        return rotation.rotate(Vector3f(0, 0, 1));
+    }
+
     Vector3f directionEye(Matrix4x4f viewMatrix)
     {
         Vector4f dirHGVector = Vector4f(direction);
         dirHGVector.w = 0.0;
         return (dirHGVector * viewMatrix).xyz;
+    }
+
+    CascadedShadowMap createShadow()
+    {
+        return createShadow(1024, 10, 30, 200, -100, 100);
+    }
+
+    CascadedShadowMap createShadow(uint size, float projSizeNear, float projSizeMid, float projSizeFar, float zStart, float zEnd)
+    {
+        cascadedShadowMap = New!CascadedShadowMap(size, projSizeNear, projSizeMid, projSizeFar, zStart, zEnd, this);
+        return cascadedShadowMap;
+    }
+
+    void updateShadow(Vector3f cameraPosition, Vector3f cameraDirection, RenderingContext* rc, double timeStep)
+    {
+        if (type == LightType.Sun)
+        {
+            if (cascadedShadowMap)
+                cascadedShadowMap.update(rotation, cameraPosition, cameraDirection, rc, timeStep);
+        }
+    }
+
+    void renderShadow(Scene scene, RenderingContext* rc)
+    {
+        if (type == LightType.Sun)
+        {
+            if (cascadedShadowMap)
+                cascadedShadowMap.render(scene, rc);
+        }
     }
 }
 
@@ -106,27 +150,44 @@ class LightManager: Owner
 
     ~this()
     {
-        foreach(light; lightSources)
-            Delete(light);
-
         lightSources.free();
     }
 
     LightSource addPointLight(Vector3f position, Color4f color, float energy, float radius, float areaRadius = 0.0f)
     {
-        lightSources.append(New!LightSource(position, color.rgb, radius, areaRadius, energy));
+        lightSources.append(New!LightSource(position, color.rgb, radius, areaRadius, energy, this));
         return lightSources.data[$-1];
     }
 
-    LightSource addSunLight(Vector3f direction, Color4f color, float energy)
+    LightSource addSunLight(Quaternionf rotation, Color4f color, float energy)
     {
-        LightSource light = New!LightSource();
-        light.direction = direction;
+        LightSource light = New!LightSource(this);
+        light.rotation = rotation;
         light.color = color.rgb;
         light.energy = energy;
         light.type = LightType.Sun;
         lightSources.append(light);
         return light;
+    }
+
+    void updateShadows(View view, RenderingContext* rc, double timeStep)
+    {
+        Vector3f cameraDirection = -view.invViewMatrix.forward;
+        cameraDirection.y = 0.0f;
+        cameraDirection = cameraDirection.normalized;
+        updateShadows(view.cameraPosition, cameraDirection, rc, timeStep);
+    }
+
+    void updateShadows(Vector3f cameraPosition, Vector3f cameraDirection, RenderingContext* rc, double timeStep)
+    {
+        foreach(light; lightSources.data)
+            light.updateShadow(cameraPosition, cameraDirection, rc, timeStep);
+    }
+
+    void renderShadows(Scene scene, RenderingContext* rc)
+    {
+        foreach(light; lightSources.data)
+            light.renderShadow(scene, rc);
     }
 }
 

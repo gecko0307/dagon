@@ -35,6 +35,7 @@ import dlib.core.memory;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;
+import dlib.math.quaternion;
 import dlib.math.interpolation;
 import dlib.image.color;
 import dlib.image.unmanaged;
@@ -97,10 +98,10 @@ class ShadowArea: Owner
         this.invViewMatrix = Matrix4x4f.identity;
     }
 
-    void update(RenderingContext* rc, double dt)
+    void update(Quaternionf lightRotation, RenderingContext* rc, double dt)
     {
         auto t = translationMatrix(position);
-        auto r = rc.environment.sunRotation.toMatrix4x4;
+        auto r = lightRotation.toMatrix4x4;
         invViewMatrix = t * r;
         viewMatrix = invViewMatrix.inverse;
         shadowMatrix = scaleMatrix(Vector3f(scale, scale, 1.0f)) * biasMatrix * projectionMatrix * viewMatrix * rc.invViewMatrix;
@@ -110,6 +111,7 @@ class ShadowArea: Owner
 class CascadedShadowMap: Owner
 {
     uint size;
+
     ShadowArea area1;
     ShadowArea area2;
     ShadowArea area3;
@@ -216,11 +218,15 @@ class CascadedShadowMap: Owner
             glDeleteTextures(1, &depthTexture);
     }
 
-    void update(RenderingContext* rc, double dt)
+    void update(Quaternionf lightRotation, Vector3f cameraPosition, Vector3f cameraDirection, RenderingContext* rc, double dt)
     {
-        area1.update(rc, dt);
-        area2.update(rc, dt);
-        area3.update(rc, dt);
+        area1.position = cameraPosition + cameraDirection * (projSize1 * 0.5f - 1.0f);
+        area2.position = cameraPosition + cameraDirection * projSize2 * 0.5f;
+        area3.position = cameraPosition + cameraDirection * projSize3 * 0.5f;
+
+        area1.update(lightRotation, rc, dt);
+        area2.update(lightRotation, rc, dt);
+        area3.update(lightRotation, rc, dt);
     }
 
     void render(Scene scene, RenderingContext* rc)

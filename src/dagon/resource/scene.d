@@ -41,6 +41,7 @@ import dlib.container.dict;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;
+import dlib.math.quaternion;
 import dlib.image.color;
 import dlib.image.image;
 import dlib.image.unmanaged;
@@ -449,8 +450,8 @@ class Scene: BaseScene
 
         renderer = New!Renderer(this, assetManager);
 
-		standardShader = New!StandardShader(assetManager);
-        standardShader.shadowMap = renderer.shadowMap;
+        standardShader = New!StandardShader(assetManager);
+        //standardShader.shadowMap = renderer.shadowMap;
         skyShader = New!SkyShader(assetManager);
         particleShader = New!ParticleShader(renderer.gbuffer, assetManager);
 
@@ -703,18 +704,18 @@ class Scene: BaseScene
         return light;
     }
 
-    LightSource createLightTube(Vector3f position, Color4f color, float energy, float volumeRadius, float tubeRadius, Vector3f direction, float tubeLength)
+    LightSource createLightTube(Vector3f position, Color4f color, float energy, float volumeRadius, float tubeRadius, Quaternionf rotation, float tubeLength)
     {
         auto light = lightManager.addPointLight(position, color, energy, volumeRadius, tubeRadius);
         light.type = LightType.AreaTube;
-        light.direction = direction;
+        light.rotation = rotation;
         light.tubeLength = tubeLength;
         return light;
     }
 
-    LightSource createLightSun(Vector3f direction, Color4f color, float energy)
+    LightSource createLightSun(Quaternionf rotation, Color4f color, float energy)
     {
-        return lightManager.addSunLight(direction, color, energy);
+        return lightManager.addSunLight(rotation, color, energy);
     }
 
     override void onRelease()
@@ -787,17 +788,7 @@ class Scene: BaseScene
         environment.update(fixedTimeStep);
 
         if (view) // TODO: allow to turn this off
-        {
-            Vector3f cameraDirection = -view.invViewMatrix.forward;
-            cameraDirection.y = 0.0f;
-            cameraDirection = cameraDirection.normalized;
-
-            renderer.shadowMap.area1.position = view.cameraPosition + cameraDirection * (renderer.shadowMap.projSize1  * 0.5f - 1.0f);
-            renderer.shadowMap.area2.position = view.cameraPosition + cameraDirection * renderer.shadowMap.projSize2 * 0.5f;
-            renderer.shadowMap.area3.position = view.cameraPosition + cameraDirection * renderer.shadowMap.projSize3 * 0.5f;
-        }
-
-        renderer.shadowMap.update(&renderer.rc3d, fixedTimeStep);
+            lightManager.updateShadows(view, &renderer.rc3d, fixedTimeStep);
     }
 
     override void onUpdate(double dt)

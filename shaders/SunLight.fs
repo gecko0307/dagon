@@ -196,7 +196,7 @@ void main()
 
     // Sun light
     {
-        vec3 L = -sunDirection;
+        vec3 L = sunDirection;
         float NL = max(dot(N, L), 0.0); 
         vec3 H = normalize(E + L); 
 

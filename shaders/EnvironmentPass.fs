@@ -10,19 +10,24 @@ uniform sampler2D normalBuffer;
 uniform sampler2D emissionBuffer;
 uniform vec2 viewSize;
 
+/*
 uniform sampler2DArrayShadow shadowTextureArray;
 uniform float shadowTextureSize;
 uniform mat4 shadowMatrix1;
 uniform mat4 shadowMatrix2;
 uniform mat4 shadowMatrix3;
+*/
 
 uniform mat4 camViewMatrix;
 uniform mat4 camInvViewMatrix;
 uniform mat4 camProjectionMatrix;
 
 uniform vec3 sunDirection;
+
+/*
 uniform vec4 sunColor;
 uniform float sunEnergy;
+*/
 
 uniform vec4 fogColor;
 uniform float fogStart;
@@ -32,13 +37,14 @@ uniform bool enableSSAO;
 
 in vec2 texCoord;
 
-const float eyeSpaceNormalShift = 0.05;
+//const float eyeSpaceNormalShift = 0.05;
 
 vec3 toLinear(vec3 v)
 {
     return pow(v, vec3(2.2));
 }
 
+/*
 float shadowLookup(in sampler2DArrayShadow depths, in float layer, in vec4 coord, in vec2 offset)
 {
     float texelSize = 1.0 / shadowTextureSize;
@@ -75,6 +81,7 @@ float weight(in vec4 tc, in float coef)
     proj = clamp(proj, 0.0, 1.0);
     return min(proj.x, proj.y);
 }
+*/
 
 float rescale(float x, float mi, float ma)
 {
@@ -155,6 +162,7 @@ vec3 fresnelRoughness(float cosTheta, vec3 f0, float roughness)
     return f0 + (max(vec3(1.0 - roughness), f0) - f0) * pow(1.0 - cosTheta, 5.0);
 }
 
+/*
 float distributionGGX(vec3 N, vec3 H, float roughness)
 {
     float a = roughness * roughness;
@@ -184,6 +192,7 @@ float geometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
     float ggx1  = geometrySchlickGGX(NdotL, roughness);
     return ggx1 * ggx2;
 }
+*/
 
 // SSAO implementation based on code by Reinder Nijhoff
 // https://www.shadertoy.com/view/Ms33WB
@@ -291,6 +300,7 @@ void main()
     vec3 worldR = reflect(worldView, worldN);
     vec3 worldSun = sunDirection * mat3(camViewMatrix);
 
+    /*
     vec4 posShifted = vec4(eyePos, 1.0) + vec4(N * eyeSpaceNormalShift, 0.0);
     vec4 shadowCoord1 = shadowMatrix1 * posShifted;
     vec4 shadowCoord2 = shadowMatrix2 * posShifted;
@@ -309,6 +319,7 @@ void main()
         s2 = mix(s3, s2, w2);
         s1 = mix(s2, s1, w1); // s1 stores resulting shadow value
     }
+	*/
 
     // SSAO
     float occlusion = 1.0;
@@ -323,6 +334,7 @@ void main()
     vec3 f0 = vec3(0.04); 
     f0 = mix(f0, albedo, metallic);
 
+    /*
     // Sun light
     {
         vec3 L = sunDirection;
@@ -343,6 +355,7 @@ void main()
 
         radiance += (kD * albedo / PI + specular) * toLinear(sunColor.rgb) * NL * sunEnergy * s1;
     }
+	*/
 
     // Ambient light
     {
