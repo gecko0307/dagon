@@ -698,18 +698,23 @@ class Scene: BaseScene
 
     LightSource createLightSphere(Vector3f position, Color4f color, float energy, float volumeRadius, float areaRadius)
     {
-        auto light = lightManager.addLight(position, color, energy, volumeRadius, areaRadius);
+        auto light = lightManager.addPointLight(position, color, energy, volumeRadius, areaRadius);
         light.type = LightType.AreaSphere;
         return light;
     }
 
     LightSource createLightTube(Vector3f position, Color4f color, float energy, float volumeRadius, float tubeRadius, Vector3f direction, float tubeLength)
     {
-        auto light = lightManager.addLight(position, color, energy, volumeRadius, tubeRadius);
+        auto light = lightManager.addPointLight(position, color, energy, volumeRadius, tubeRadius);
         light.type = LightType.AreaTube;
         light.direction = direction;
         light.tubeLength = tubeLength;
         return light;
+    }
+
+    LightSource createLightSun(Vector3f direction, Color4f color, float energy)
+    {
+        return lightManager.addSunLight(direction, color, energy);
     }
 
     override void onRelease()

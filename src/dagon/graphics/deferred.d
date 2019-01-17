@@ -133,6 +133,9 @@ class DeferredLightPass: Owner
         }
         areaLightShader.unbindProgram();
 
+        glCullFace(GL_BACK);
+        glDisable(GL_CULL_FACE);
+
         sunLightShader.bindProgram();
         foreach(light; scene.lightManager.lightSources.data)
         if (light.type == LightType.Sun)
@@ -146,9 +149,6 @@ class DeferredLightPass: Owner
 
         glDisablei(GL_BLEND, 0);
         glDisablei(GL_BLEND, 1);
-
-        glCullFace(GL_BACK);
-        glDisable(GL_CULL_FACE);
 
         glDepthMask(GL_TRUE);
         glEnable(GL_DEPTH_TEST);

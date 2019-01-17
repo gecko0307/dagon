@@ -63,6 +63,18 @@ class LightSource
     float energy;
     LightType type;
 
+    this()
+    {
+        this.position = Vector3f(0.0f, 0.0f, 0.0f);
+        this.direction = Vector3f(0.0f, 0.0f, 1.0f);
+        this.tubeLength = 1.0f;
+        this.color = Vector3f(1.0f, 1.0f, 1.0f);
+        this.radius = 1.0f;
+        this.areaRadius = 0.0f;
+        this.energy = 1.0f;
+        this.type = LightType.AreaSphere;
+    }
+
     this(Vector3f pos, Vector3f col, float attRadius, float areaRadius, float energy)
     {
         this.position = pos;
@@ -100,10 +112,21 @@ class LightManager: Owner
         lightSources.free();
     }
 
-    LightSource addLight(Vector3f position, Color4f color, float energy, float radius, float areaRadius = 0.0f)
+    LightSource addPointLight(Vector3f position, Color4f color, float energy, float radius, float areaRadius = 0.0f)
     {
         lightSources.append(New!LightSource(position, color.rgb, radius, areaRadius, energy));
         return lightSources.data[$-1];
+    }
+
+    LightSource addSunLight(Vector3f direction, Color4f color, float energy)
+    {
+        LightSource light = New!LightSource();
+        light.direction = direction;
+        light.color = color.rgb;
+        light.energy = energy;
+        light.type = LightType.Sun;
+        lightSources.append(light);
+        return light;
     }
 }
 

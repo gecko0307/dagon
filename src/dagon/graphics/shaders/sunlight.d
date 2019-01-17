@@ -78,7 +78,8 @@ class SunLightShader: Shader
         if (light)
         {
             setParameter("sunDirection", light.directionEye(rc3d.viewMatrix));
-            setParameter("sunColor", light.color);
+            Color4f col = Color4f(light.color.x, light.color.y, light.color.z, 1.0f);
+            setParameter("sunColor", col);
             setParameter("sunEnergy", light.energy);
         }
 
