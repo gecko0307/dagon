@@ -22,9 +22,9 @@ Features
 * HDR rendering with auto-exposure (eye adaptation), Reinhard, Hable/Uncharted and ACES tonemapping operators
 * Cube and equirectangular HDRI environment maps
 * Cubemap baking
+* Directional lights with cascaded shadow mapping
 * Spherical and tube area lights
 * Normal/parallax mapping, parallax occlusion mapping
-* Cascaded shadow maps for directional light
 * Dynamic skydome with sun and day/night cycle. Simple and Rayleigh sky models
 * Particle system with force fields. Blended particles, soft particles, shaded particles with normal map support, particle shadows
 * Terrain rendering. Procedural terrain using OpenSimplex noise
