@@ -64,7 +64,7 @@ Dagon depends on the following D packages:
 
 Runtime dependencies (dynamic link libraries):
 * [SDL](https://www.libsdl.org) 2.0.5
-* [Freetype](https://www.freetype.org)
+* [Freetype](https://www.freetype.org) 2.8.1
 
 Under Windows runtime dependencies are automatically deployed if you are building with Dub. Under other OSes you have to install them manually.
 
