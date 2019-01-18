@@ -5,7 +5,7 @@
 
 Dagon
 =====
-The goal of this project is creating a modern, easy to use, extendable 3D game engine for D language due to the lack of such. Dagon is based on OpenGL 4.0 core profile, [SDL2](https://www.libsdl.org) and [Freetype](https://www.freetype.org). It works on Windows and Linux, both 32 and 64-bit. It doesn't support macOS because [Apple doesn't support OpenGL anymore](https://developer.apple.com/macos/whats-new/#deprecationofopenglandopencl).
+The goal of this project is creating a modern, easy to use, extendable 3D game engine for D language due to the lack of such. Dagon is based on OpenGL 4.0 core profile. It works on Windows and Linux, both 32 and 64-bit. It doesn't support macOS because [Apple doesn't support OpenGL anymore](https://developer.apple.com/macos/whats-new/#deprecationofopenglandopencl).
 
 Dagon is still under development and lacks a lot of important functionality. Currently it is not recommended to use Dagon in production due to unstable API. Follow Dagon development on [Trello](https://trello.com/b/4sDgRjZI/dagon). 
 
@@ -63,8 +63,8 @@ Dagon depends on the following D packages:
 * [bindbc-ft](https://github.com/gecko0307/bindbc-ft)
 
 Runtime dependencies (dynamic link libraries):
-* SDL 2.0.5
-* Freetype 2.8.1
+* [SDL](https://www.libsdl.org) 2.0.5
+* [Freetype](https://www.freetype.org)
 
 Under Windows runtime dependencies are automatically deployed if you are building with Dub. Under other OSes you have to install them manually.
 
