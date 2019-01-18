@@ -28,8 +28,8 @@ Features
 * Normal/parallax mapping, parallax occlusion mapping
 * Dynamic skydome with sun and day/night cycle. Simple and Rayleigh sky models
 * Particle system with force fields. Blended particles, soft particles, shaded particles with normal map support, particle shadows
-* Terrain rendering. Procedural terrain using OpenSimplex noise
-* Procedural water shader
+* Terrain rendering. Procedural terrain using OpenSimplex noise or any custom height field
+* Water rendering
 * Post-processing (FXAA, SSAO, lens distortion, motion blur, glow, LUT color grading)
 * UTF-8 text rendering using TTF fonts via Freetype
 * Ownership memory model - every object belongs to some object (owner), and deleting the owner will delete all of its owned objects. This allows semi-automatic memory management - you have to manually delete only root owners
