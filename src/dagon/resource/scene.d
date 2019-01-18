@@ -427,6 +427,8 @@ class Scene: BaseScene
     double fixedTimeStep = 1.0 / 60.0;
     uint maxUpdatesPerFrame = 5;
 
+    LightSource mainSunLight;
+
     this(SceneManager smngr)
     {
         super(smngr);
@@ -719,6 +721,16 @@ class Scene: BaseScene
         return lightManager.addSunLight(rotation, color, energy);
     }
 
+    void mainSun(LightSource sun) @property
+    {
+        mainSunLight = sun;
+    }
+
+    LightSource mainSun() @property
+    {
+        return mainSunLight;
+    }
+
     override void onRelease()
     {
         _entities3D.free();
@@ -774,6 +786,16 @@ class Scene: BaseScene
 
         renderer.rc3d.time += fixedTimeStep;
         renderer.rc2d.time += fixedTimeStep;
+
+        if (mainSunLight)
+        {
+            if (mainSunLight.shadow && mainSunLight.cascadedShadowMap)
+                standardShader.shadowMap = mainSunLight.cascadedShadowMap;
+
+            mainSunLight.rotation = environment.sunRotation;
+            mainSunLight.color = environment.sunColor;
+            mainSunLight.energy = environment.sunEnergy;
+        }
 
         foreach(e; _entities3D)
             e.update(fixedTimeStep);
