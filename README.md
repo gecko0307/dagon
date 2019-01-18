@@ -61,7 +61,12 @@ Dagon depends on the following D packages:
 * [bindbc-opengl](https://github.com/BindBC/bindbc-opengl)
 * [bindbc-sdl](https://github.com/BindBC/bindbc-sdl)
 * [bindbc-ft](https://github.com/gecko0307/bindbc-ft)
-To run a Dagon application, make sure you have SDL 2.0.5 and Freetype 2.8.1 installed. Under Windows they are automatically deployed if you are building with Dub. Under other OSes you have to install them manually.
+
+Runtime dependencies (dynamic link libraries):
+* SDL 2.0.5
+* Freetype 2.8.1
+
+Under Windows runtime dependencies are automatically deployed if you are building with Dub. Under other OSes you have to install them manually.
 
 Usage
 -----
