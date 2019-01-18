@@ -52,7 +52,7 @@ Screenshots
 
 Video
 -----
-[https://www.youtube.com/watch?v=UhQfMkObTEs](https://www.youtube.com/watch?v=UhQfMkObTEs)
+[https://www.youtube.com/watch?v=nhdOhPQ9g90](https://www.youtube.com/watch?v=nhdOhPQ9g90)
 
 Usage
 -----
