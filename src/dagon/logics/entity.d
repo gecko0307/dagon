@@ -145,24 +145,7 @@ class Entity: Owner, Drawable
 
     void removeChild(Entity e)
     {
-        size_t index;
-        bool found = false;
-
-        for (size_t i = 0; i < children.data.length; i++)
-        {
-            Entity e2 = children.data[i];
-            if (e is e2)
-            {
-                index = i;
-                found = true;
-                break;
-            }
-        }
-
-        if (found)
-        {
-            children.removeKey(index);
-        }
+        children.removeFirst(e);
     }
 
     void release()

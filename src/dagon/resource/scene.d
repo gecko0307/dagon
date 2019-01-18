@@ -653,41 +653,8 @@ class Scene: BaseScene
 
     void deleteEntity(Entity e)
     {
-        size_t index;
-        bool found = false;
-
-        for (size_t i = 0; i < _entities3D.data.length; i++)
-        {
-            Entity e2 = _entities3D.data[i];
-            if (e is e2)
-            {
-                index = i;
-                found = true;
-                break;
-            }
-        }
-
-        if (found)
-        {
-            _entities3D.removeKey(index);
-        }
-        else
-        {
-            for (size_t i = 0; i < _entities2D.data.length; i++)
-            {
-                Entity e2 = _entities2D.data[i];
-                if (e is e2)
-                {
-                    index = i;
-                    found = true;
-                    break;
-                }
-            }
-
-            if (found)
-                _entities2D.removeKey(index);
-        }
-
+        if (!_entities3D.removeFirst(e))
+            _entities2D.removeFirst(e);
         assetManager.deleteOwnedObject(e);
     }
 
