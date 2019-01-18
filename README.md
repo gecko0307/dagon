@@ -24,6 +24,7 @@ Features
 * Cubemap baking
 * Directional lights with cascaded shadow mapping
 * Spherical and tube area lights
+* Spot lights
 * Normal/parallax mapping, parallax occlusion mapping
 * Dynamic skydome with sun and day/night cycle. Simple and Rayleigh sky models
 * Particle system with force fields. Blended particles, soft particles, shaded particles with normal map support, particle shadows
