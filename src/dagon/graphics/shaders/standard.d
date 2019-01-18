@@ -76,7 +76,12 @@ class StandardShader: Shader
         auto itextureScale = "textureScale" in rc.material.inputs;
 
         bool shadeless = rc.material.boolProp("shadeless");
-        bool useShadows = (shadowMap !is null) && rc.material.boolProp("shadowsEnabled");
+
+        bool useShadows;
+        if (shadowMap is null)
+            useShadows = false;
+        else
+            useShadows = shadowMap.enabled && rc.material.boolProp("shadowsEnabled");
 
         auto iparallax = "parallax" in rc.material.inputs;
 

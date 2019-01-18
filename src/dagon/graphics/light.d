@@ -66,6 +66,7 @@ class LightSource: Owner
     float tubeLength;
     float energy;
     LightType type;
+    bool shadowEnabled;
     CascadedShadowMap cascadedShadowMap;
 
     this(Owner o)
@@ -79,6 +80,7 @@ class LightSource: Owner
         this.areaRadius = 0.0f;
         this.energy = 1.0f;
         this.type = LightType.AreaSphere;
+        this.shadowEnabled = false;
     }
 
     this(Vector3f pos, Vector3f col, float attRadius, float areaRadius, float energy, Owner o)
@@ -92,6 +94,7 @@ class LightSource: Owner
         this.areaRadius = areaRadius;
         this.energy = energy;
         this.type = LightType.AreaSphere;
+        this.shadowEnabled = false;
     }
 
     Vector3f direction() @property
@@ -106,22 +109,30 @@ class LightSource: Owner
         return (dirHGVector * viewMatrix).xyz;
     }
 
-    CascadedShadowMap createShadow()
+    void shadow(bool mode) @property
     {
-        return createShadow(1024, 10, 30, 200, -100, 100);
+        if (mode)
+        {
+            if (type == LightType.Sun)
+            {
+                if (cascadedShadowMap is null)
+                    cascadedShadowMap = New!CascadedShadowMap(this, 1024, 10, 30, 200, -100, 100, this);
+            }
+        }
+
+        shadowEnabled = mode;
     }
 
-    CascadedShadowMap createShadow(uint size, float projSizeNear, float projSizeMid, float projSizeFar, float zStart, float zEnd)
+    bool shadow() @property
     {
-        cascadedShadowMap = New!CascadedShadowMap(size, projSizeNear, projSizeMid, projSizeFar, zStart, zEnd, this);
-        return cascadedShadowMap;
+        return shadowEnabled;
     }
 
     void updateShadow(Vector3f cameraPosition, Vector3f cameraDirection, RenderingContext* rc, double timeStep)
     {
         if (type == LightType.Sun)
         {
-            if (cascadedShadowMap)
+            if (cascadedShadowMap && shadowEnabled)
                 cascadedShadowMap.update(rotation, cameraPosition, cameraDirection, rc, timeStep);
         }
     }
@@ -130,7 +141,7 @@ class LightSource: Owner
     {
         if (type == LightType.Sun)
         {
-            if (cascadedShadowMap)
+            if (cascadedShadowMap && shadowEnabled)
                 cascadedShadowMap.render(scene, rc);
         }
     }

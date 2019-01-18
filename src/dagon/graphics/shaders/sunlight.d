@@ -111,7 +111,7 @@ class SunLightShader: Shader
         // Texture 6 - shadow map cascades (3 layer texture array)
         if (light)
         {
-            if (light.cascadedShadowMap)
+            if (light.shadow && light.cascadedShadowMap)
             {
                 glActiveTexture(GL_TEXTURE6);
                 glBindTexture(GL_TEXTURE_2D_ARRAY, light.cascadedShadowMap.depthTexture);

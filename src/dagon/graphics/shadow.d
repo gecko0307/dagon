@@ -53,6 +53,7 @@ import dagon.graphics.rc;
 import dagon.graphics.environment;
 import dagon.graphics.material;
 import dagon.graphics.shaders.shadowpass;
+import dagon.graphics.light;
 import dagon.resource.scene;
 
 class ShadowArea: Owner
@@ -134,9 +135,13 @@ class CascadedShadowMap: Owner
     float shadowBrightness = 0.1f;
     bool useHeightCorrectedShadows = false;
 
-    this(uint size, float projSizeNear, float projSizeMid, float projSizeFar, float zStart, float zEnd, Owner o)
+    LightSource light;
+
+    this(LightSource light, uint size, float projSizeNear, float projSizeMid, float projSizeFar, float zStart, float zEnd, Owner o)
     {
         super(o);
+        this.light = light;
+
         this.size = size;
 
         projSize1 = projSizeNear;
@@ -193,6 +198,11 @@ class CascadedShadowMap: Owner
 	    glReadBuffer(GL_NONE);
         glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0, 2);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    bool enabled() @property
+    {
+        return light.shadowEnabled;
     }
 
     Vector3f position()
