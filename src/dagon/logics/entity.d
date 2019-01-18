@@ -143,9 +143,38 @@ class Entity: Owner, Drawable
         this.parent = parent;
     }
 
+    void removeChild(Entity e)
+    {
+        size_t index;
+        bool found = false;
+
+        for (size_t i = 0; i < children.data.length; i++)
+        {
+            Entity e2 = children.data[i];
+            if (e is e2)
+            {
+                index = i;
+                found = true;
+                break;
+            }
+        }
+
+        if (found)
+        {
+            children.removeKey(index);
+        }
+    }
+
     void release()
     {
+        if (parent)
+            parent.removeChild(this);
+
         behaviours.free();
+
+        for (size_t i = 0; i < children.data.length; i++)
+            children.data[i].parent = null;
+
         children.free();
     }
 
