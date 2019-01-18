@@ -54,6 +54,7 @@ enum LightType
     AreaSphere = 1,
     AreaTube = 2,
     Sun = 3,
+    Spot = 4
 }
 
 class LightSource: Owner
@@ -65,6 +66,8 @@ class LightSource: Owner
     float areaRadius; // light's own radius
     float tubeLength;
     float energy;
+    float spotCutoff;
+    float spotExponent;
     LightType type;
     bool shadowEnabled;
     CascadedShadowMap cascadedShadowMap;
@@ -174,6 +177,21 @@ class LightManager: Owner
         light.color = color.rgb;
         light.energy = energy;
         light.type = LightType.Sun;
+        lightSources.append(light);
+        return light;
+    }
+
+    LightSource addSpotLight(Vector3f position, Color4f color, float energy, Quaternionf rotation, float cutoff, float exponent, float volumeRadius)
+    {
+        LightSource light = New!LightSource(this);
+        light.position = position;
+        light.rotation = rotation;
+        light.color = color.rgb;
+        light.energy = energy;
+        light.spotCutoff = cutoff;
+        light.spotExponent = exponent;
+        light.radius = volumeRadius;
+        light.type = LightType.Spot;
         lightSources.append(light);
         return light;
     }

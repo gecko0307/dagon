@@ -123,7 +123,9 @@ class DeferredLightPass: Owner
 
         areaLightShader.bindProgram();
         foreach(light; scene.lightManager.lightSources.data)
-        if (light.type == LightType.AreaSphere || light.type == LightType.AreaTube)
+        if (light.type == LightType.AreaSphere ||
+            light.type == LightType.AreaTube ||
+            light.type == LightType.Spot)
         {
             areaLightShader.light = light;
             areaLightShader.bind(rc2d, &rc3dLocal);

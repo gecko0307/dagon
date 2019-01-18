@@ -15,6 +15,10 @@ uniform float lightRadius;
 uniform float lightAreaRadius;
 uniform vec3 lightColor;
 uniform float lightEnergy;
+uniform float lightSpotCutoff;
+uniform float lightSpotCosCutoff;
+uniform float lightSpotExponent;
+uniform vec3 lightSpotDirection;
 
 vec3 toLinear(vec3 v)
 {
@@ -133,6 +137,43 @@ subroutine(srtLightRadiance) vec3 lightRadianceAreaTube(in vec3 pos, in vec3 N, 
     vec3 Lpt = normalize(positionToLightSource);
 
     float NL = max(dot(N, Lpt), 0.0); 
+    vec3 H = normalize(E + L);
+
+    float NDF = distributionGGX(N, H, roughness);
+    float G = geometrySmith(N, E, L, roughness);      
+    vec3 F = fresnel(max(dot(H, E), 0.0), f0);
+
+    vec3 kS = F;
+    vec3 kD = vec3(1.0) - kS;
+    kD *= 1.0 - metallic;
+
+    vec3 numerator = NDF * G * F;
+    float denominator = 4.0 * max(dot(N, E), 0.0) * NL;
+    vec3 specular = numerator / max(denominator, 0.001);
+
+    vec3 radiance = (kD * albedo / PI + specular) * toLinear(lightColor) * attenuation * NL;
+
+    return radiance;
+}
+
+subroutine(srtLightRadiance) vec3 lightRadianceSpot(in vec3 pos, in vec3 N, in vec3 E, in vec3 albedo, in float roughness, in float metallic)
+{
+    vec3 R = reflect(E, N);
+    vec3 f0 = vec3(0.04); 
+    f0 = mix(f0, albedo, metallic);
+
+    vec3 positionToLightSource = lightPosition - pos;
+    float distanceToLight = length(positionToLightSource);
+    vec3 L = normalize(positionToLightSource);
+    float attenuation = pow(clamp(1.0 - (distanceToLight / lightRadius), 0.0, 1.0), 2.0) * lightEnergy;
+
+    if (lightSpotCutoff <= 90.0)
+    {
+        float spotCos = dot(L, normalize(lightSpotDirection));
+        attenuation *= clamp(pow(spotCos, lightSpotExponent) * step(lightSpotCosCutoff, spotCos), 0.0, 1.0);
+    }
+
+    float NL = max(dot(N, L), 0.0); 
     vec3 H = normalize(E + L);
 
     float NDF = distributionGGX(N, H, roughness);

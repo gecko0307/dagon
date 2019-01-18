@@ -111,6 +111,15 @@ class AreaLightShader: Shader
                 setParameter("lightPosition2", lightPosition2Eye);
                 setParameterSubroutine("lightRadiance", ShaderType.Fragment, "lightRadianceAreaTube");
             }
+            else if (light.type == LightType.Spot)
+            {
+                setParameter("lightSpotCutoff", light.spotCutoff);
+                setParameter("lightSpotCosCutoff", cos(light.spotCutoff));
+                Vector3f spotDirection = light.directionEye(rc3d.viewMatrix);
+                setParameter("lightSpotDirection", spotDirection);
+                setParameter("lightSpotExponent", light.spotExponent);
+                setParameterSubroutine("lightRadiance", ShaderType.Fragment, "lightRadianceSpot");
+            }
             else // unsupported light type
             {
                 setParameterSubroutine("lightRadiance", ShaderType.Fragment, "lightRadianceFallback");
