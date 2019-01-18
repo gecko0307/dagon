@@ -66,6 +66,16 @@ vec3 tonemapACES(vec3 x, float expo)
     return pow(res, vec3(1.0 / 2.2));
 }
 
+uniform float parametricCurveK;
+vec3 tonemapParametric(vec3 x, float expo)
+{
+	float k = parametricCurveK;
+	vec3 c = x * expo;
+    c = (c + c * k - k * 0.5 - 0.5) / (abs(c * k * 4.0 - k * 2.0) - k + 1.0) + 0.5;
+	c = clamp(c, 0.0, 1.0);
+	return pow(c, vec3(1.0 / 2.2));
+}
+
 vec3 lookupColor(sampler2D lookupTable, vec3 textureColor)
 {
     textureColor = clamp(textureColor, 0.0, 1.0);
@@ -126,7 +136,9 @@ void main()
         res = res / usedSamples;
     }
     
-    if (tonemapFunction == 2)
+	if (tonemapFunction == 3)
+        res = tonemapParametric(res, exposure);
+    else if (tonemapFunction == 2)
         res = tonemapACES(res, exposure);
     else if (tonemapFunction == 1)
         res = tonemapHable(res, exposure);

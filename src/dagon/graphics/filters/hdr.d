@@ -38,7 +38,8 @@ enum Tonemapper
 {
     Reinhard = 0,
     Hable = 1,
-    ACES = 2
+    ACES = 2,
+    Parametric = 3
 }
 
 class PostFilterHDR: PostFilter
@@ -68,6 +69,7 @@ class PostFilterHDR: PostFilter
     GLint motionBlurSamplesLoc;
     GLint shutterFpsLoc;
     GLint timeStepLoc;
+    GLint parametricCurveKLoc;
 
     bool autoExposure = false;
 
@@ -78,6 +80,7 @@ class PostFilterHDR: PostFilter
 
     float exposure = 0.5f;
     Tonemapper tonemapFunction = Tonemapper.ACES;
+    float parametricTonemapperLinearity = 0.2;
 
     GLuint velocityTexture;
     bool mblurEnabled = false;
@@ -104,6 +107,7 @@ class PostFilterHDR: PostFilter
         motionBlurSamplesLoc = glGetUniformLocation(shaderProgram, "motionBlurSamples");
         shutterFpsLoc = glGetUniformLocation(shaderProgram, "shutterFps");
         timeStepLoc = glGetUniformLocation(shaderProgram, "timeStep");
+        parametricCurveKLoc = glGetUniformLocation(shaderProgram, "parametricCurveK");
     }
 
     override void bind(RenderingContext* rc)
@@ -141,6 +145,7 @@ class PostFilterHDR: PostFilter
         glUniform1i(motionBlurSamplesLoc, motionBlurSamples);
         glUniform1f(shutterFpsLoc, shutterFps);
         glUniform1f(timeStepLoc, rc.eventManager.deltaTime);
+        glUniform1f(parametricCurveKLoc, 1.0 - parametricTonemapperLinearity);
     }
 
     override void unbind(RenderingContext* rc)

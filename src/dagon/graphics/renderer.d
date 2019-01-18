@@ -414,6 +414,8 @@ struct HDRSettings
     float keyValue() @property { return renderer.hdrFilter.keyValue; }
     void adaptationSpeed(float s) @property { renderer.hdrFilter.adaptationSpeed = s; }
     float adaptationSpeed() @property { return renderer.hdrFilter.adaptationSpeed; }
+    void linearity(float l) @property { renderer.hdrFilter.parametricTonemapperLinearity = l; }
+    float linearity() @property { return renderer.hdrFilter.parametricTonemapperLinearity; }
 }
 
 struct GlowSettings
