@@ -30,7 +30,7 @@ uniform float shadowTextureSize;
 uniform mat4 shadowMatrix1;
 uniform mat4 shadowMatrix2;
 uniform mat4 shadowMatrix3;
-const float eyeSpaceNormalShift = 0.05;
+uniform float eyeSpaceNormalShift; // = 0.05;
 
 float shadowLookup(in sampler2DArrayShadow depths, in float layer, in vec4 coord, in vec2 offset)
 {

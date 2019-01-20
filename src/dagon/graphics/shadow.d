@@ -136,6 +136,8 @@ class CascadedShadowMap: Owner
     bool useHeightCorrectedShadows = false;
 
     LightSource light;
+    
+    float eyeSpaceNormalShift = 0.0;
 
     this(LightSource light, uint size, float projSizeNear, float projSizeMid, float projSizeFar, float zStart, float zEnd, Owner o)
     {

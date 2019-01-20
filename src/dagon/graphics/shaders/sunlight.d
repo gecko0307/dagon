@@ -120,6 +120,7 @@ class SunLightShader: Shader
                 setParameter("shadowMatrix1", light.cascadedShadowMap.area1.shadowMatrix);
                 setParameter("shadowMatrix2", light.cascadedShadowMap.area2.shadowMatrix);
                 setParameter("shadowMatrix3", light.cascadedShadowMap.area3.shadowMatrix);
+                setParameter("eyeSpaceNormalShift", light.cascadedShadowMap.eyeSpaceNormalShift);
 
                 setParameterSubroutine("shadowMap", ShaderType.Fragment, "shadowMapCascaded");
             }
