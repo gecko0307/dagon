@@ -409,6 +409,7 @@ class Scene: BaseScene
 
 	StandardShader standardShader;
     SkyShader skyShader;
+    Material defaultSkyMaterial;
     ParticleShader particleShader;
     Material defaultMaterial3D;
     View view;
@@ -456,6 +457,9 @@ class Scene: BaseScene
         // TODO: default shadow map for standardShader
 
         skyShader = New!SkyShader(assetManager);
+        defaultSkyMaterial = New!Material(skyShader, assetManager);
+        defaultSkyMaterial.depthWrite = false;
+        
         particleShader = New!ParticleShader(renderer.gbuffer, assetManager);
 
         particleSystem = New!ParticleSystem(assetManager);
@@ -662,14 +666,9 @@ class Scene: BaseScene
     {
         Material matSky;
         if (mat is null)
-        {
-            matSky = New!Material(skyShader, assetManager);
-            matSky.depthWrite = false;
-        }
+            matSky = defaultSkyMaterial;
         else
-        {
             matSky = mat;
-        }
 
         auto eSky = createEntity3D();
         eSky.layer = 0;
