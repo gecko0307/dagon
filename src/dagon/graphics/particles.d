@@ -60,8 +60,8 @@ struct Particle
     Vector3f velocity;
     Vector3f gravityVector;
     Vector3f scale;
-    float lifetime;
-    float time;
+    double lifetime;
+    double time;
     bool move;
     bool active;
 }
@@ -189,8 +189,8 @@ class Emitter: Behaviour
 {
     Particle[] particles;
 
-    float minLifetime = 1.0f;
-    float maxLifetime = 3.0f;
+    double minLifetime = 1.0;
+    double maxLifetime = 3.0;
 
     float minSize = 0.25f;
     float maxSize = 1.0f;
@@ -417,11 +417,11 @@ class ParticleSystem: Owner
         {
             foreach(e; emitters)
             if (e.entity.visible)
-            {   
+            {
                 bool shouldRender = true;
                 if (rc.shadowPass)
                     shouldRender = e.entity.castShadow;
-                
+
                 if (shouldRender)
                 {
                     if (e.material)
