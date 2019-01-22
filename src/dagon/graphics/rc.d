@@ -73,7 +73,7 @@ struct RenderingContext
     Shader overrideShader;
     Material overrideMaterial;
 
-    float time;
+    double time;
     float blurMask;
 
     bool depthPass;
@@ -106,7 +106,7 @@ struct RenderingContext
         eventManager = emngr;
         environment = env;
         overrideMaterial = null;
-        time = 0.0f;
+        time = 0.0;
         depthPass = true;
         colorPass = true;
         shadowPass = false;
