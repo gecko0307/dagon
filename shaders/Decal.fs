@@ -65,7 +65,7 @@ void main()
     vec4 d3 = diffuse(zUV);
     vec3 color3 = d3.rgb;
     
-    vec3 blendWeights = pow(abs(N), vec3(2.0));
+    vec3 blendWeights = pow(abs(N), vec3(32.0));
     blendWeights = blendWeights / (blendWeights.x + blendWeights.y + blendWeights.z);
     
     vec3 color = color1 * blendWeights.x + color2 * blendWeights.y + color3 * blendWeights.z;
