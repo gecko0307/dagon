@@ -283,7 +283,8 @@ class Renderer: Owner
     void renderPreStep(GBuffer gbuf, RenderingContext *rc)
     {
         scene.lightManager.renderShadows(scene, rc);
-        gbuf.render(scene, rc);
+        gbuf.clear();
+        gbuf.renderStatic(scene, rc);
 
         glBindFramebuffer(GL_FRAMEBUFFER, decalFbo);
         glDisable(GL_DEPTH_TEST);
@@ -291,6 +292,8 @@ class Renderer: Owner
             e.render(rc);
         glEnable(GL_DEPTH_TEST);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        
+        gbuf.renderDynamic(scene, rc);
     }
 
     void renderToTarget(RenderTarget rt, GBuffer gbuf, RenderingContext *rc)
@@ -334,6 +337,30 @@ class Renderer: Owner
         RenderingContext rcLocal = *rc;
         rcLocal.ignoreTransparentEntities = true;
         foreach(e; scene.entities3Dflat)
+        {
+            if (e.layer > 0)
+                e.render(&rcLocal);
+        }
+    }
+    
+    void renderStaticOpaqueEntities3D(Scene scene, RenderingContext* rc)
+    {
+        glEnable(GL_DEPTH_TEST);
+        RenderingContext rcLocal = *rc;
+        rcLocal.ignoreTransparentEntities = true;
+        foreach(e; scene.entities3DStatic)
+        {
+            if (e.layer > 0)
+                e.render(&rcLocal);
+        }
+    }
+    
+    void renderDynamicOpaqueEntities3D(Scene scene, RenderingContext* rc)
+    {
+        glEnable(GL_DEPTH_TEST);
+        RenderingContext rcLocal = *rc;
+        rcLocal.ignoreTransparentEntities = true;
+        foreach(e; scene.entities3DDynamic)
         {
             if (e.layer > 0)
                 e.render(&rcLocal);

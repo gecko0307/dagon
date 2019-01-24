@@ -420,6 +420,9 @@ class Scene: BaseScene
     DynamicArray!Entity _entities2D;
     Entities3D entities3Dflat;
     Entities2D entities2Dflat;
+    
+    Entities3DStatic entities3DStatic;
+    Entities3DDynamic entities3DDynamic;
 
     DynamicArray!Entity decals;
 
@@ -454,6 +457,9 @@ class Scene: BaseScene
 
         entities3Dflat = New!Entities3D(this, assetManager);
         entities2Dflat = New!Entities2D(this, assetManager);
+        
+        entities3DStatic = New!Entities3DStatic(this, assetManager);
+        entities3DDynamic = New!Entities3DDynamic(this, assetManager);
 
         renderer = New!Renderer(this, assetManager);
 
@@ -961,6 +967,101 @@ class Entities2D: Owner, EntityGroup
 
         if (res == 0)
             res = dg(e);
+
+        return res;
+    }
+}
+
+class Entities3DDynamic: Owner, EntityGroup
+{
+    Scene scene;
+
+    this(Scene scene, Owner o)
+    {
+        super(o);
+        this.scene = scene;
+    }
+
+    int opApply(scope int delegate(Entity) dg)
+    {
+        int res = 0;
+        for(size_t i = 0; i < scene._entities3D.data.length; i++)
+        {
+            auto e = scene._entities3D.data[i];
+
+            res = traverseEntitiesTree(e, dg);
+            if (res)
+                break;
+        }
+        return res;
+    }
+
+    protected int traverseEntitiesTree(Entity e, scope int delegate(Entity) dg)
+    {
+        int res = 0;
+        
+        if (e.dynamic)
+        {
+            for(size_t i = 0; i < e.children.data.length; i++)
+            {
+                auto c = e.children.data[i];
+
+                res = traverseEntitiesTree(c, dg);
+                if (res)
+                    break;
+            }
+
+            if (res == 0)
+                res = dg(e);
+        }
+
+        return res;
+    }
+}
+
+
+class Entities3DStatic: Owner, EntityGroup
+{
+    Scene scene;
+
+    this(Scene scene, Owner o)
+    {
+        super(o);
+        this.scene = scene;
+    }
+
+    int opApply(scope int delegate(Entity) dg)
+    {
+        int res = 0;
+        for(size_t i = 0; i < scene._entities3D.data.length; i++)
+        {
+            auto e = scene._entities3D.data[i];
+
+            res = traverseEntitiesTree(e, dg);
+            if (res)
+                break;
+        }
+        return res;
+    }
+
+    protected int traverseEntitiesTree(Entity e, scope int delegate(Entity) dg)
+    {
+        int res = 0;
+        
+        if (!e.dynamic)
+        {
+            for(size_t i = 0; i < e.children.data.length; i++)
+            {
+                auto c = e.children.data[i];
+
+                res = traverseEntitiesTree(c, dg);
+                if (res)
+                    break;
+            }
+
+            if (res == 0)
+                res = dg(e);
+        }
 
         return res;
     }

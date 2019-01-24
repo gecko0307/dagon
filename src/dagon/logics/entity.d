@@ -107,6 +107,8 @@ class Entity: Owner, Drawable
     int layer = 1;
 
     bool solid = false;
+    
+    bool dynamic = true;
 
     this(EventManager emngr, Owner owner)
     {

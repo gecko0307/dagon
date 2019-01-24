@@ -180,31 +180,13 @@ class GBuffer: Owner
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-
-    void render(Scene scene, RenderingContext* rc)
+    
+    void clear()
     {
         bind();
 
         glViewport(0, 0, width, height);
         glScissor(0, 0, width, height);
-        clear();
-
-        glEnable(GL_DEPTH_TEST);
-
-        auto rcLocal = *rc;
-
-        rcLocal.overrideShader = geometryPassShader;
-        rcLocal.rebindShaderProgram = false;
-        geometryPassShader.bindProgram();
-        scene.renderer.renderOpaqueEntities3D(scene, &rcLocal);
-        //renderOpaqueEntities3D(scene, &rcLocal);
-        geometryPassShader.unbindProgram();
-
-        unbind();
-    }
-
-    void clear()
-    {
         glClear(GL_DEPTH_BUFFER_BIT);
         Color4f zero = Color4f(0, 0, 0, 0);
         glClearBufferfv(GL_COLOR, 0, zero.arrayof.ptr);
@@ -213,5 +195,43 @@ class GBuffer: Owner
         glClearBufferfv(GL_COLOR, 3, zero.arrayof.ptr);
         glClearBufferfv(GL_COLOR, 4, zero.arrayof.ptr);
         glClearBufferfv(GL_COLOR, 5, zero.arrayof.ptr);
+        
+        unbind();
+    }
+
+    void renderStatic(Scene scene, RenderingContext* rc)
+    {
+        bind();
+
+        glEnable(GL_DEPTH_TEST);
+
+        auto rcLocal = *rc;
+
+        rcLocal.overrideShader = geometryPassShader;
+        rcLocal.rebindShaderProgram = false;
+        geometryPassShader.bindProgram();
+        scene.renderer.renderStaticOpaqueEntities3D(scene, &rcLocal);
+        //renderOpaqueEntities3D(scene, &rcLocal);
+        geometryPassShader.unbindProgram();
+
+        unbind();
+    }
+    
+    void renderDynamic(Scene scene, RenderingContext* rc)
+    {
+        bind();
+
+        glEnable(GL_DEPTH_TEST);
+
+        auto rcLocal = *rc;
+
+        rcLocal.overrideShader = geometryPassShader;
+        rcLocal.rebindShaderProgram = false;
+        geometryPassShader.bindProgram();
+        scene.renderer.renderDynamicOpaqueEntities3D(scene, &rcLocal);
+        //renderOpaqueEntities3D(scene, &rcLocal);
+        geometryPassShader.unbindProgram();
+
+        unbind();
     }
 }
