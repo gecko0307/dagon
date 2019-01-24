@@ -142,7 +142,7 @@ class DeferredLightPass: Owner
         if (light.type == LightType.Sun)
         {
             sunLightShader.light = light;
-            sunLightShader.shadowMap = light.cascadedShadowMap;
+            sunLightShader.shadowMap = cast(CascadedShadowMap)light.shadowMap;
             sunLightShader.bind(rc2d, &rc3dLocal);
             surface.render(rc2d);
             sunLightShader.unbind(rc2d, &rc3dLocal);

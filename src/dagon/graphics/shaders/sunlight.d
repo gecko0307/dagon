@@ -111,16 +111,17 @@ class SunLightShader: Shader
         // Texture 6 - shadow map cascades (3 layer texture array)
         if (light)
         {
-            if (light.shadow && light.cascadedShadowMap)
+            if (light.shadow && light.shadowMap)
             {
+                auto cascadedShadowMap = cast(CascadedShadowMap)light.shadowMap;
                 glActiveTexture(GL_TEXTURE6);
-                glBindTexture(GL_TEXTURE_2D_ARRAY, light.cascadedShadowMap.depthTexture);
+                glBindTexture(GL_TEXTURE_2D_ARRAY, cascadedShadowMap.depthTexture);
                 setParameter("shadowTextureArray", 6);
-                setParameter("shadowTextureSize", cast(float)light.cascadedShadowMap.size);
-                setParameter("shadowMatrix1", light.cascadedShadowMap.area1.shadowMatrix);
-                setParameter("shadowMatrix2", light.cascadedShadowMap.area2.shadowMatrix);
-                setParameter("shadowMatrix3", light.cascadedShadowMap.area3.shadowMatrix);
-                setParameter("eyeSpaceNormalShift", light.cascadedShadowMap.eyeSpaceNormalShift);
+                setParameter("shadowTextureSize", cast(float)cascadedShadowMap.size);
+                setParameter("shadowMatrix1", cascadedShadowMap.area1.shadowMatrix);
+                setParameter("shadowMatrix2", cascadedShadowMap.area2.shadowMatrix);
+                setParameter("shadowMatrix3", cascadedShadowMap.area3.shadowMatrix);
+                setParameter("eyeSpaceNormalShift", cascadedShadowMap.eyeSpaceNormalShift);
 
                 setParameterSubroutine("shadowMap", ShaderType.Fragment, "shadowMapCascaded");
             }

@@ -70,7 +70,7 @@ class LightSource: Owner
     float spotExponent;
     LightType type;
     bool shadowEnabled;
-    CascadedShadowMap cascadedShadowMap;
+    ShadowMap shadowMap;
 
     this(Owner o)
     {
@@ -118,8 +118,8 @@ class LightSource: Owner
         {
             if (type == LightType.Sun)
             {
-                if (cascadedShadowMap is null)
-                    cascadedShadowMap = New!CascadedShadowMap(this, 1024, 10, 30, 200, -100, 100, this);
+                if (shadowMap is null)
+                    shadowMap = New!CascadedShadowMap(this, 1024, 10, 30, 200, -100, 100, this);
             }
         }
 
@@ -135,8 +135,8 @@ class LightSource: Owner
     {
         if (type == LightType.Sun)
         {
-            if (cascadedShadowMap && shadowEnabled)
-                cascadedShadowMap.update(rotation, cameraPosition, cameraDirection, rc, timeStep);
+            if (shadowMap && shadowEnabled)
+                shadowMap.update(cameraPosition, cameraDirection, rc, timeStep);
         }
     }
 
@@ -144,8 +144,8 @@ class LightSource: Owner
     {
         if (type == LightType.Sun)
         {
-            if (cascadedShadowMap && shadowEnabled)
-                cascadedShadowMap.render(scene, rc);
+            if (shadowMap && shadowEnabled)
+                shadowMap.render(scene, rc);
         }
     }
 }

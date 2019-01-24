@@ -109,10 +109,30 @@ class ShadowArea: Owner
     }
 }
 
-class CascadedShadowMap: Owner
+abstract class ShadowMap: Owner
 {
     uint size;
+    LightSource light;
 
+    this(Owner o)
+    {
+        super(o);
+    }
+
+    bool enabled() @property
+    {
+        return light.shadowEnabled;
+    }
+
+    Vector3f position();
+    Vector3f position(Vector3f pos);
+
+    void update(Vector3f cameraPosition, Vector3f cameraDirection, RenderingContext* rc, double dt);
+    void render(Scene scene, RenderingContext* rc);
+}
+
+class CascadedShadowMap: ShadowMap
+{
     ShadowArea area1;
     ShadowArea area2;
     ShadowArea area3;
@@ -135,8 +155,6 @@ class CascadedShadowMap: Owner
     float shadowBrightness = 0.1f;
     bool useHeightCorrectedShadows = false;
 
-    LightSource light;
-    
     float eyeSpaceNormalShift = 0.0;
 
     this(LightSource light, uint size, float projSizeNear, float projSizeMid, float projSizeFar, float zStart, float zEnd, Owner o)
@@ -202,21 +220,17 @@ class CascadedShadowMap: Owner
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    bool enabled() @property
-    {
-        return light.shadowEnabled;
-    }
-
-    Vector3f position()
+    override Vector3f position()
     {
         return area1.position;
     }
 
-    void position(Vector3f pos)
+    override Vector3f position(Vector3f pos)
     {
         area1.position = pos;
         area2.position = pos;
         area3.position = pos;
+        return pos;
     }
 
     ~this()
@@ -230,18 +244,18 @@ class CascadedShadowMap: Owner
             glDeleteTextures(1, &depthTexture);
     }
 
-    void update(Quaternionf lightRotation, Vector3f cameraPosition, Vector3f cameraDirection, RenderingContext* rc, double dt)
+    override void update(Vector3f cameraPosition, Vector3f cameraDirection, RenderingContext* rc, double dt)
     {
         area1.position = cameraPosition + cameraDirection * (projSize1 * 0.5f - 1.0f);
         area2.position = cameraPosition + cameraDirection * projSize2 * 0.5f;
         area3.position = cameraPosition + cameraDirection * projSize3 * 0.5f;
 
-        area1.update(lightRotation, rc, dt);
-        area2.update(lightRotation, rc, dt);
-        area3.update(lightRotation, rc, dt);
+        area1.update(light.rotation, rc, dt);
+        area2.update(light.rotation, rc, dt);
+        area3.update(light.rotation, rc, dt);
     }
 
-    void render(Scene scene, RenderingContext* rc)
+    override void render(Scene scene, RenderingContext* rc)
     {
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer1);
 

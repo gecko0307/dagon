@@ -459,7 +459,7 @@ class Scene: BaseScene
         skyShader = New!SkyShader(assetManager);
         defaultSkyMaterial = New!Material(skyShader, assetManager);
         defaultSkyMaterial.depthWrite = false;
-        
+
         particleShader = New!ParticleShader(renderer.gbuffer, assetManager);
 
         particleSystem = New!ParticleSystem(assetManager);
@@ -800,8 +800,9 @@ class Scene: BaseScene
 
         if (mainSunLight)
         {
-            if (mainSunLight.shadow && mainSunLight.cascadedShadowMap)
-                standardShader.shadowMap = mainSunLight.cascadedShadowMap;
+            if (mainSunLight.type == LightType.Sun &&
+                mainSunLight.shadow && mainSunLight.shadowMap)
+                standardShader.shadowMap = cast(CascadedShadowMap)mainSunLight.shadowMap;
 
             mainSunLight.rotation = environment.sunRotation;
             mainSunLight.color = environment.sunColor;
