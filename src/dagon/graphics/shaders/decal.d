@@ -68,13 +68,13 @@ class DecalShader: Shader
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, gbuffer.positionTexture);
-        setParameter("positionTexture", 0);
+        setParameter("positionTexture", cast(int)0);
 
         if (idiffuse.texture)
         {
             glActiveTexture(GL_TEXTURE1);
             idiffuse.texture.bind();
-            setParameter("diffuseTexture", 1);
+            setParameter("diffuseTexture", cast(int)1);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
         }
         else
@@ -82,6 +82,8 @@ class DecalShader: Shader
             setParameter("diffuseVector", rc.material.diffuse.asVector4f);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
         }
+
+        glActiveTexture(GL_TEXTURE0);
 
         super.bind(rc);
     }
