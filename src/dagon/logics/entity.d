@@ -238,11 +238,15 @@ class Entity: Owner, Drawable
         {
             absoluteTransformation = parent.absoluteTransformation * transformation;
             prevAbsoluteTransformation = parent.prevAbsoluteTransformation * prevTransformation;
+
+            //invAbsoluteTransformation = transformation.inverse * parent.invAbsoluteTransformation;
         }
         else
         {
             absoluteTransformation = transformation;
             prevAbsoluteTransformation = prevTransformation;
+
+            //invAbsoluteTransformation = invTransformation;
         }
     }
 
@@ -316,7 +320,7 @@ class Entity: Owner, Drawable
             else
             {
                 rcLocal.modelMatrix = absoluteTransformation;
-                rcLocal.invModelMatrix = invAbsoluteTransformation;
+                rcLocal.invModelMatrix = invTransformation; //invAbsoluteTransformation;
 
                 if (useMotionBlur)
                     rcLocal.prevModelViewProjMatrix = rcLocal.projectionMatrix * (rcLocal.prevViewMatrix * prevAbsoluteTransformation);

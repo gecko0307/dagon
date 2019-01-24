@@ -412,12 +412,16 @@ class Scene: BaseScene
     Material defaultSkyMaterial;
     ParticleShader particleShader;
     Material defaultMaterial3D;
+    DecalShader decalShader;
+    Material decalMaterial;
     View view;
 
     DynamicArray!Entity _entities3D;
     DynamicArray!Entity _entities2D;
     Entities3D entities3Dflat;
     Entities2D entities2Dflat;
+
+    DynamicArray!Entity decals;
 
     ShapeQuad loadingProgressBar;
     Entity eLoadingProgressBar;
@@ -463,6 +467,9 @@ class Scene: BaseScene
         particleShader = New!ParticleShader(renderer.gbuffer, assetManager);
 
         particleSystem = New!ParticleSystem(assetManager);
+
+        decalShader = New!DecalShader(renderer.gbuffer, assetManager);
+        decalMaterial = New!Material(decalShader, assetManager);
 
         defaultMaterial3D = createMaterial();
 
@@ -655,6 +662,14 @@ class Scene: BaseScene
         return e;
     }
 
+    Entity addDecal()
+    {
+        auto decal = New!Entity(eventManager, assetManager);
+        decals.append(decal);
+        decal.material = decalMaterial;
+        return decal;
+    }
+
     void deleteEntity(Entity e)
     {
         if (!_entities3D.removeFirst(e))
@@ -746,6 +761,7 @@ class Scene: BaseScene
     {
         _entities3D.free();
         _entities2D.free();
+        decals.free();
     }
 
     // TODO: move to separate class
@@ -813,6 +829,9 @@ class Scene: BaseScene
             e.update(fixedTimeStep);
 
         foreach(e; _entities2D)
+            e.update(fixedTimeStep);
+
+        foreach(e; decals)
             e.update(fixedTimeStep);
 
         particleSystem.update(fixedTimeStep);

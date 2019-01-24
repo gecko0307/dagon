@@ -60,6 +60,94 @@ import dagon.graphics.filters.hdr;
 import dagon.graphics.filters.blur;
 import dagon.graphics.filters.finalizer;
 
+import dagon.graphics.shader;
+import dagon.logics.entity;
+
+class DecalShader: Shader
+{
+    string vs = "
+#version 400 core
+
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
+
+layout (location = 0) in vec3 va_Vertex;
+
+void main()
+{
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(va_Vertex, 1.0);
+}
+";
+    string fs = "
+#version 400 core
+
+uniform sampler2D positionBuffer;
+
+uniform vec2 viewSize;
+
+uniform mat4 invViewMatrix;
+uniform mat4 invModelMatrix;
+
+vec3 toLinear(vec3 v)
+{
+    return pow(v, vec3(2.2));
+}
+
+layout(location = 0) out vec4 frag_color;
+
+void main()
+{
+    vec2 texCoord = gl_FragCoord.xy / viewSize;
+
+    vec3 eyePos = texture(positionBuffer, texCoord).xyz;
+
+    vec3 worldPos = (invViewMatrix * vec4(eyePos, 1.0)).xyz;
+    vec3 objPos = (invModelMatrix * vec4(worldPos, 1.0)).xyz;
+
+    // Perform bounds check to discard fragments outside the decal box
+    vec3 c = vec3(0.0, 1.0, 0.0);
+    if (abs(objPos.x) > 1.0) c = vec3(1.0, 0.0, 0.0);
+    if (abs(objPos.y) > 1.0) c = vec3(1.0, 0.0, 0.0);
+    if (abs(objPos.z) > 1.0) c = vec3(1.0, 0.0, 0.0);
+
+    vec3 color = toLinear(c);
+
+    frag_color = vec4(color, 1.0);
+}
+";
+    GBuffer gbuffer;
+
+    this(GBuffer gbuffer, Owner o)
+    {
+        auto myProgram = New!ShaderProgram(vs, fs, this);
+        super(myProgram, o);
+        this.gbuffer = gbuffer;
+    }
+
+    override void bind(RenderingContext* rc)
+    {
+        setParameter("modelViewMatrix", rc.modelViewMatrix);
+        setParameter("projectionMatrix", rc.projectionMatrix);
+        setParameter("invViewMatrix", rc.invViewMatrix);
+        setParameter("invModelMatrix", rc.invModelMatrix);
+        setParameter("viewSize", Vector2f(gbuffer.width, gbuffer.height));
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, gbuffer.positionTexture);
+        setParameter("positionTexture", 0);
+
+        super.bind(rc);
+    }
+
+    override void unbind(RenderingContext* rc)
+    {
+        super.unbind(rc);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+}
+
 class Renderer: Owner
 {
     Scene scene;
@@ -99,6 +187,8 @@ class Renderer: Owner
 
     RenderingContext rc3d;
     RenderingContext rc2d;
+
+    GLuint decalFbo;
 
     this(Scene scene, Owner o)
     {
@@ -150,11 +240,28 @@ class Renderer: Owner
 
         rc3d.initPerspective(eventManager, scene.environment, 60.0f, 0.1f, 1000.0f);
         rc2d.initOrtho(eventManager, scene.environment, 0.0f, 100.0f);
+
+        glGenFramebuffers(1, &decalFbo);
+        glBindFramebuffer(GL_FRAMEBUFFER, decalFbo);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gbuffer.colorTexture, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, gbuffer.depthTexture, 0);
+
+        GLenum[1] bufs = [GL_COLOR_ATTACHMENT0];
+        glDrawBuffers(1, bufs.ptr);
+
+        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        if (status != GL_FRAMEBUFFER_COMPLETE)
+            writeln(status);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     ~this()
     {
         postFilters.free();
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glDeleteFramebuffers(1, &decalFbo);
     }
 
     PostFilter addFilter(PostFilter f)
@@ -262,6 +369,13 @@ class Renderer: Owner
     {
         scene.lightManager.renderShadows(scene, rc);
         gbuf.render(scene, rc);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, decalFbo);
+        glDisable(GL_DEPTH_TEST);
+        foreach(e; scene.decals)
+            e.render(rc);
+        glEnable(GL_DEPTH_TEST);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     void renderToTarget(RenderTarget rt, GBuffer gbuf, RenderingContext *rc)
