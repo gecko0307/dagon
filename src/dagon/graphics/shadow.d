@@ -151,9 +151,9 @@ class CascadedShadowMap: ShadowMap
     float zStart = -300.0f;
     float zEnd = 300.0f;
 
-    Color4f shadowColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
-    float shadowBrightness = 0.1f;
-    bool useHeightCorrectedShadows = false;
+    //Color4f shadowColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+    //float shadowBrightness = 0.1f;
+    //bool useHeightCorrectedShadows = false;
 
     float eyeSpaceNormalShift = 0.0;
 
