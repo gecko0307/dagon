@@ -29,8 +29,8 @@ void main()
     if (abs(objPos.y) > 1.0) discard;
     if (abs(objPos.z) > 1.0) discard;
     
-    // Texcoord (go from -0.5..0.5 to 0..1)
-    vec2 texCoord = objPos.xz + 0.5;
+    // Texcoord (go from -1..1 to 0..1)
+    vec2 texCoord = objPos.xz * 0.5 + 0.5;
     
     // Normal
     vec3 ddxWp = dFdx(worldPos);
