@@ -414,7 +414,6 @@ class Scene: BaseScene
     ParticleShader particleShader;
     Material defaultMaterial3D;
     DecalShader decalShader;
-    Material decalMaterial;
     View view;
 
     DynamicArray!Entity _entities3D;
@@ -470,7 +469,6 @@ class Scene: BaseScene
         particleSystem = New!ParticleSystem(assetManager);
 
         decalShader = New!DecalShader(renderer.gbuffer, assetManager);
-        decalMaterial = New!Material(decalShader, assetManager);
 
         defaultMaterial3D = createMaterial();
 
@@ -667,7 +665,8 @@ class Scene: BaseScene
     {
         auto decal = New!Entity(eventManager, assetManager);
         decals.append(decal);
-        decal.material = decalMaterial;
+        // TODO: procedural box mesh
+        decal.material = New!Material(decalShader, assetManager);
         return decal;
     }
 

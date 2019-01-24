@@ -58,6 +58,8 @@ class DecalShader: Shader
 
     override void bind(RenderingContext* rc)
     {
+        auto idiffuse = "diffuse" in rc.material.inputs;
+
         setParameter("modelViewMatrix", rc.modelViewMatrix);
         setParameter("projectionMatrix", rc.projectionMatrix);
         setParameter("invViewMatrix", rc.invViewMatrix);
@@ -68,6 +70,19 @@ class DecalShader: Shader
         glBindTexture(GL_TEXTURE_2D, gbuffer.positionTexture);
         setParameter("positionTexture", 0);
 
+        if (idiffuse.texture)
+        {
+            glActiveTexture(GL_TEXTURE1);
+            idiffuse.texture.bind();
+            setParameter("diffuseTexture", 1);
+            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
+        }
+        else
+        {
+            setParameter("diffuseVector", rc.material.diffuse.asVector4f);
+            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
+        }
+
         super.bind(rc);
     }
 
@@ -77,5 +92,10 @@ class DecalShader: Shader
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, 0);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        glActiveTexture(GL_TEXTURE0);
     }
 }
