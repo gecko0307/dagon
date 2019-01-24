@@ -25,9 +25,9 @@ void main()
 
     // Perform bounds check to discard fragments outside the decal box
     vec3 c = vec3(0.0, 1.0, 0.0);
-    if (abs(objPos.x) > 1.0) c = vec3(1.0, 0.0, 0.0);
-    if (abs(objPos.y) > 1.0) c = vec3(1.0, 0.0, 0.0);
-    if (abs(objPos.z) > 1.0) c = vec3(1.0, 0.0, 0.0);
+    if (abs(objPos.x) > 1.0) discard;
+    if (abs(objPos.y) > 1.0) discard;
+    if (abs(objPos.z) > 1.0) discard;
     
     // Texcoord (go from -0.5..0.5 to 0..1)
     vec2 texCoord = objPos.xz + 0.5;
