@@ -16,9 +16,9 @@ layout(location = 0) out vec4 frag_color;
 
 void main()
 {
-    vec2 texCoord = gl_FragCoord.xy / viewSize;
+    vec2 gbufTexCoord = gl_FragCoord.xy / viewSize;
 
-    vec3 eyePos = texture(positionBuffer, texCoord).xyz;
+    vec3 eyePos = texture(positionBuffer, gbufTexCoord).xyz;
 
     vec3 worldPos = (invViewMatrix * vec4(eyePos, 1.0)).xyz;
     vec3 objPos = (invModelMatrix * vec4(worldPos, 1.0)).xyz;
@@ -28,8 +28,16 @@ void main()
     if (abs(objPos.x) > 1.0) c = vec3(1.0, 0.0, 0.0);
     if (abs(objPos.y) > 1.0) c = vec3(1.0, 0.0, 0.0);
     if (abs(objPos.z) > 1.0) c = vec3(1.0, 0.0, 0.0);
-
+    
+    // Texcoord (go from -0.5..0.5 to 0..1)
+    vec2 texCoord = objPos.xz + 0.5;
+    
+    // Normal
+    vec3 ddxWp = dFdx(worldPos);
+    vec3 ddyWp = dFdy(worldPos);
+    vec3 N = normalize(cross(ddyWp, ddxWp));
+    
     vec3 color = toLinear(c);
-
+    
     frag_color = vec4(color, 1.0);
 }
