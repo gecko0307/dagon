@@ -53,23 +53,11 @@ void main()
     vec3 ddyWp = dFdy(worldPos);
     vec3 N = normalize(cross(ddyWp, ddxWp));
     
-    // Texcoords (go from -1..1 to 0..1)
-    vec2 xUV = objPos.xy * 0.5 + 0.5;
-    vec2 yUV = objPos.xz * 0.5 + 0.5;
-    vec2 zUV = objPos.zy * 0.5 + 0.5;
+    // Texcoord (go from -1..1 to 0..1)
+    vec2 texCoord = objPos.xz * 0.5 + 0.5;
     
-    vec4 d1 = diffuse(xUV);
-    vec3 color1 = d1.rgb;
-    vec4 d2 = diffuse(yUV);
-    vec3 color2 = d2.rgb;
-    vec4 d3 = diffuse(zUV);
-    vec3 color3 = d3.rgb;
+    vec4 d = diffuse(texCoord);
+    vec3 color = d.rgb;
     
-    vec3 blendWeights = pow(abs(N), vec3(32.0));
-    blendWeights = blendWeights / (blendWeights.x + blendWeights.y + blendWeights.z);
-    
-    vec3 color = color1 * blendWeights.x + color2 * blendWeights.y + color3 * blendWeights.z;
-    float alpha = d1.a * blendWeights.x + d2.a * blendWeights.y + d3.a * blendWeights.z;
-    
-    frag_color = vec4(color, alpha);
+    frag_color = vec4(color, d.a);
 }
