@@ -78,7 +78,7 @@ If you want to test new features, use `"dagon": "~master"`. The master should be
 
 Demos
 -----
-A test application that demonstrates Dagon's features is hosted [here](https://github.com/gecko0307/dagon-demo). If you are starting from scratch, we recommend to use it for learning purposes.
+A test application that demonstrates almost all of Dagon's features is hosted [here](https://github.com/gecko0307/dagon-demo). There are also [simple introductory examples](https://github.com/gecko0307/dagon-tutorials).
 
 Documentation
 -------------
