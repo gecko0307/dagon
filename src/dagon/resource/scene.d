@@ -81,6 +81,7 @@ import dagon.graphics.shaders.standard;
 import dagon.graphics.shaders.sky;
 import dagon.graphics.shaders.particle;
 import dagon.graphics.shaders.hud;
+import dagon.graphics.shaders.decal;
 
 import dagon.logics.entity;
 
