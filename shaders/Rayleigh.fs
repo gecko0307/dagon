@@ -97,7 +97,7 @@ void main()
     float sundisk = smoothstep(sunAngularDiameterCos, sunAngularDiameterCos + 0.00002, cosTheta);
     L0 += (vSunE * 19000.0 * Fex) * sundisk;
     vec3 color = (Lin + L0) * 0.04 + vec3(0.0, 0.0003, 0.00075);
-    vec3 env = pow(color, vec3(1.0 / (1.2 + (1.2 * vSunfade))));
+    vec3 env = pow(color, vec3(1.0 / (1.0 + (1.0 * vSunfade))));
 
     vec2 posScreen = (blurPosition.xy / blurPosition.w) * 0.5 + 0.5;
     vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;
