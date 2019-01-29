@@ -34,6 +34,7 @@ import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.quaternion;
+import dlib.math.utils;
 
 import dagon.core.libs;
 import dagon.core.interfaces;
@@ -263,6 +264,26 @@ class Entity: Owner, Drawable
         else
         {
             Tween t = Tween(this, TweenType.Position, point, position, duration, easing);
+            tweens.append(t);
+            return &tweens.data[$-1];
+        }
+    }
+
+    Tween* rotateTo(float x, float y, float z, double duration, Easing easing = Easing.Linear)
+    {
+        Tween* existingTween = getInactiveTween();
+
+        Vector3f start = rotation.toEulerAngles;
+        Vector3f end = Vector3f(degtorad(x), degtorad(y), degtorad(z));
+
+        if (existingTween)
+        {
+            *existingTween = Tween(this, TweenType.Rotation, start, end, duration, easing);
+            return existingTween;
+        }
+        else
+        {
+            Tween t = Tween(this, TweenType.Rotation, start, end, duration, easing);
             tweens.append(t);
             return &tweens.data[$-1];
         }

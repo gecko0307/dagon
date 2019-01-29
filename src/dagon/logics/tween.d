@@ -31,6 +31,7 @@ import dlib.math.vector;
 import dlib.math.quaternion;
 import dlib.math.easing;
 import dlib.math.interpolation;
+import dlib.math.utils;
 import dlib.image.color;
 import dagon.logics.entity;
 
@@ -38,7 +39,6 @@ enum TweenDataType
 {
     Float,
     Vector,
-    Quaternion,
     Color
 }
 
@@ -79,7 +79,6 @@ struct Tween
 
     union
     {
-        Quaternionf fromQuaternion;
         Color4f fromColor;
         Vector3f fromVector;
         float fromFloat;
@@ -87,25 +86,9 @@ struct Tween
 
     union
     {
-        Quaternionf toQuaternion;
         Color4f toColor;
         Vector3f toVector;
         float toFloat;
-    }
-
-    this(Entity entity, TweenType type, Quaternionf start, Quaternionf end, double duration, Easing easing = Easing.Linear)
-    {
-        this.dataType = TweenDataType.Quaternion;
-        this.type = type;
-        this.easing = easing;
-        this.active = true;
-        this.entity = entity;
-        this.duration = duration;
-        this.time = 0.0f;
-        this.fromQuaternion = start;
-        this.toQuaternion = end;
-        this.repeatCounter = 0;
-        this.isPlaying = true;
     }
 
     this(Entity entity, TweenType type, Vector3f start, Vector3f end, double duration, Easing easing = Easing.Linear)
@@ -212,7 +195,14 @@ struct Tween
         if (type == TweenType.Position)
             entity.position = lerp(fromVector, toVector, ease(t));
         else if (type == TweenType.Rotation)
-            entity.rotation = slerp(fromQuaternion, toQuaternion, ease(t));
+        {
+            Vector3f a = lerp(fromVector, toVector, ease(t));
+            Quaternionf q =
+                rotationQuaternion!float(Axis.x, a.x) *
+                rotationQuaternion!float(Axis.y, a.y) *
+                rotationQuaternion!float(Axis.z, a.z);
+            entity.rotation = q; //slerp(fromQuaternion, toQuaternion, ease(t));
+        }
         else if (type == TweenType.Scaling)
             entity.scaling = lerp(fromVector, toVector, ease(t));
     }
