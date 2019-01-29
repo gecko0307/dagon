@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2018 Timur Gafarov
+Copyright (c) 2014-2019 Timur Gafarov, Mateusz Muszyński
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -229,24 +229,6 @@ class EventManager
                 case SDL_KEYDOWN:
                     if (event.key.repeat && !enableKeyRepeat)
                         break;
-                    //auto unicode = event.key.keysym.keycode;
-                    
-                    if ((event.key.keysym.sym & 0xFF80) == 0)
-                    {
-                        auto asciiChar = event.key.keysym.sym & 0x7F;
-                        if (isPrintable(asciiChar))
-                        {
-                            e = Event(EventType.TextInput);
-                            e.unicode = asciiChar;
-                            addEvent(e);
-                        }
-                    }
-                    else
-                    {
-                        e = Event(EventType.TextInput);
-                        e.unicode = event.key.keysym.sym; //event.key.keysym.unicode;
-                        addEvent(e);
-                    }
 
                     keyPressed[event.key.keysym.scancode] = true;
                     e = Event(EventType.KeyDown);
@@ -258,6 +240,27 @@ class EventManager
                     keyPressed[event.key.keysym.scancode] = false;
                     e = Event(EventType.KeyUp);
                     e.key = event.key.keysym.scancode;
+                    addEvent(e);
+                    break;
+
+                case SDL_TEXTINPUT:
+                    e = Event(EventType.TextInput);
+                    if((event.text.text[0] & 0x80) == 0)
+                    {
+                        e.unicode =  *cast(ubyte*)(event.text.text);
+                    }
+                    else if((event.text.text[0] & 0xE0) == 0xC0)
+                    {
+                        e.unicode =  *cast(ushort*)(event.text.text);
+                    }
+                    else if((event.text.text[0] & 0xF0) == 0xE0)
+                    {
+                        e.unicode = event.text.text[0] + event.text.text[1] >> 8 + event.text.text[2] >> 16;
+                    }
+                    else if((event.text.text[0] & 0xF8) == 0xF0)
+                    {
+                        e.unicode =  *cast(uint*)(event.text.text);
+                    }
                     addEvent(e);
                     break;
 
