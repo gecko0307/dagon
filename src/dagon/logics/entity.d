@@ -235,18 +235,18 @@ class Entity: Owner, Drawable
         return inactiveTween;
     }
 
-    Tween* moveTo(Vector3f point, double duration, Easing easing = Easing.Linear)
+    Tween* moveFromTo(Vector3f pointFrom, Vector3f pointTo, double duration, Easing easing = Easing.Linear)
     {
         Tween* existingTween = getInactiveTween();
 
         if (existingTween)
         {
-            *existingTween = Tween(this, TweenType.Position, position, point, duration, easing);
+            *existingTween = Tween(this, TweenType.Position, pointFrom, pointTo, duration, easing);
             return existingTween;
         }
         else
         {
-            Tween t = Tween(this, TweenType.Position, position, point, duration, easing);
+            Tween t = Tween(this, TweenType.Position, pointFrom, pointTo, duration, easing);
             tweens.append(t);
             return &tweens.data[$-1];
         }
@@ -254,27 +254,20 @@ class Entity: Owner, Drawable
 
     Tween* moveFrom(Vector3f point, double duration, Easing easing = Easing.Linear)
     {
-        Tween* existingTween = getInactiveTween();
-
-        if (existingTween)
-        {
-            *existingTween = Tween(this, TweenType.Position, point, position, duration, easing);
-            return existingTween;
-        }
-        else
-        {
-            Tween t = Tween(this, TweenType.Position, point, position, duration, easing);
-            tweens.append(t);
-            return &tweens.data[$-1];
-        }
+        return moveFromTo(point, position, duration, easing);
     }
 
-    Tween* rotateTo(float x, float y, float z, double duration, Easing easing = Easing.Linear)
+    Tween* moveTo(Vector3f point, double duration, Easing easing = Easing.Linear)
+    {
+        return moveFromTo(position, point, duration, easing);
+    }
+
+    Tween* rotateFromTo(Vector3f anglesFrom, Vector3f anglesTo, double duration, Easing easing = Easing.Linear)
     {
         Tween* existingTween = getInactiveTween();
 
-        Vector3f start = rotation.toEulerAngles;
-        Vector3f end = Vector3f(degtorad(x), degtorad(y), degtorad(z));
+        Vector3f start = Vector3f(degtorad(anglesFrom.x), degtorad(anglesFrom.y), degtorad(anglesFrom.z));
+        Vector3f end = Vector3f(degtorad(anglesTo.x), degtorad(anglesTo.y), degtorad(anglesTo.z));
 
         if (existingTween)
         {
@@ -287,6 +280,16 @@ class Entity: Owner, Drawable
             tweens.append(t);
             return &tweens.data[$-1];
         }
+    }
+
+    Tween* rotateFrom(Vector3f angles, double duration, Easing easing = Easing.Linear)
+    {
+        return rotateFromTo(angles, rotation.toEulerAngles, duration, easing);
+    }
+
+    Tween* rotateTo(Vector3f angles, double duration, Easing easing = Easing.Linear)
+    {
+        return rotateFromTo(rotation.toEulerAngles, angles, duration, easing);
     }
 
     void processEvents()
