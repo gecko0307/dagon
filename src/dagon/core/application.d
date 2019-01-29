@@ -92,6 +92,12 @@ class Application: EventListener
                 exitWithError("Error: Freetype library is not found. Please, install Freetype 2.8.1");
         }
 
+        NuklearSupport nuksup = loadNuklear();
+        if (nuksup != NuklearSupport.Nuklear4)
+        {
+            exitWithError("Error: Nuklear library is not found. Please, install Nuklear.");
+        }
+
         SDLSupport sdlsup = loadSDL();
         if (sdlsup != sdlSupport)
         {
