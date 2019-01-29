@@ -19,10 +19,11 @@
         "dlib": "~master",
         "bindbc-opengl": "0.4.0",
         "bindbc-sdl": "0.4.1",
-        "bindbc-ft": "0.0.1"
+        "bindbc-ft": "0.0.1",
+        "bindbc-nuklear": "0.1.0"
     },
 
-    "versions": ["SDL_205", "GL_40"],
+    "versions": ["SDL_205", "GL_40", "NK_ALL"],
 
     "buildRequirements":[
         "allowWarnings"
