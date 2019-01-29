@@ -133,11 +133,11 @@ class NuklearGUI : Owner, Drawable
     string vs = import("Nuklear.vs");
     string fs = import("Nuklear.fs");
 
-    EventManager* eventManager;
+    EventManager* eventManager; // Needed for mouse position
 
     this(EventManager* em, Owner o)
     {
-	    super(o);
+        super(o);
 
         eventManager = em;
 
@@ -232,10 +232,10 @@ class NuklearGUI : Owner, Drawable
         nk_input_motion(&ctx, eventManager.mouseX, eventManager.mouseY);
 
         // perform all inputs
-        while(eventsCount != 0)
+        while (eventsCount != 0)
         {
             auto e = events[--eventsCount];
-            switch(e.type)
+            switch (e.type)
             {
                 case NuklearEventType.Key:
                     nk_input_key(&ctx, cast(nk_keys)e.key, e.down);
@@ -342,7 +342,7 @@ class NuklearGUI : Owner, Drawable
         auto e = NuklearEvent(NuklearEventType.Key);
         e.key = key;
         e.down = down;
-        if(eventsCount < 10)
+        if (eventsCount < 10)
             events[eventsCount++] = e;
     }
 
@@ -359,7 +359,7 @@ class NuklearGUI : Owner, Drawable
     void inputButton(int button, int down)
     {
         auto e = NuklearEvent(NuklearEventType.MouseButton);
-        switch(button)
+        switch (button)
         {
             case MB_LEFT: e.button = nk_buttons.NK_BUTTON_LEFT; break;
             case MB_MIDDLE: e.button = nk_buttons.NK_BUTTON_MIDDLE; break;
@@ -370,7 +370,7 @@ class NuklearGUI : Owner, Drawable
         e.x = eventManager.mouseX;
         e.y = eventManager.mouseY;
         e.down = down;
-        if(eventsCount < 10)
+        if (eventsCount < 10)
             events[eventsCount++] = e;
     }
 
@@ -389,7 +389,7 @@ class NuklearGUI : Owner, Drawable
         auto e = NuklearEvent(NuklearEventType.MouseScroll);
         e.x = x;
         e.y = y;
-        if(eventsCount < 10)
+        if (eventsCount < 10)
             events[eventsCount++] = e;
     }
 
@@ -397,7 +397,7 @@ class NuklearGUI : Owner, Drawable
     {
         auto e = NuklearEvent(NuklearEventType.TextInput);
         e.unicode = key;
-        if(eventsCount < 10)
+        if (eventsCount < 10)
             events[eventsCount++] = e;
     }
 
@@ -523,7 +523,7 @@ class NuklearGUI : Owner, Drawable
 
     void windowCollapseIf(const(char)* name, nk_collapse_states state, int cond)
     {
-        nk_window_collapse_if(&ctx, name, state, cond);
+        nk_window_collapse_if (&ctx, name, state, cond);
     }
 
     void windowShow(const(char)* name, nk_show_states state)
@@ -533,7 +533,7 @@ class NuklearGUI : Owner, Drawable
 
     void windowShowIf(const(char)* name, nk_show_states state, int cond)
     {
-        nk_window_show_if(&ctx, name, state, cond);
+        nk_window_show_if (&ctx, name, state, cond);
     }
 
     void layoutSetMinRowHeight(float height)
