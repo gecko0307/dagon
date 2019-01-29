@@ -251,6 +251,23 @@ class Entity: Owner, Drawable
         }
     }
 
+    Tween* moveFrom(Vector3f point, double duration, Easing easing = Easing.Linear)
+    {
+        Tween* existingTween = getInactiveTween();
+
+        if (existingTween)
+        {
+            *existingTween = Tween(this, TweenType.Position, point, position, duration, easing);
+            return existingTween;
+        }
+        else
+        {
+            Tween t = Tween(this, TweenType.Position, point, position, duration, easing);
+            tweens.append(t);
+            return &tweens.data[$-1];
+        }
+    }
+
     void processEvents()
     {
         foreach(i, ble; behaviours)
