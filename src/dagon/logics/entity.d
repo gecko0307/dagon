@@ -41,6 +41,7 @@ import dagon.core.ownership;
 import dagon.core.event;
 import dagon.logics.controller;
 import dagon.logics.behaviour;
+import dagon.logics.tween;
 import dagon.graphics.material;
 import dagon.graphics.rc;
 
@@ -71,6 +72,8 @@ class Entity: Owner, Drawable
     }
 
     DynamicArray!BehaviourListEntry behaviours;
+    DynamicArray!Tween tweens;
+
     Drawable drawable;
     EventManager eventManager;
 
@@ -107,7 +110,7 @@ class Entity: Owner, Drawable
     int layer = 1;
 
     bool solid = false;
-    
+
     bool dynamic = true;
 
     this(EventManager emngr, Owner owner)
@@ -129,6 +132,8 @@ class Entity: Owner, Drawable
         invAbsoluteTransformation = Matrix4x4f.identity;
         prevTransformation = Matrix4x4f.identity;
         prevAbsoluteTransformation = Matrix4x4f.identity;
+
+        tweens.reserve(10);
     }
 
     this(Entity parent)
@@ -161,6 +166,8 @@ class Entity: Owner, Drawable
             children.data[i].parent = null;
 
         children.free();
+
+        tweens.free();
     }
 
     ~this()
@@ -213,6 +220,37 @@ class Entity: Owner, Drawable
         return result;
     }
 
+    Tween* getInactiveTween()
+    {
+        Tween* inactiveTween = null;
+        foreach(i, ref t; tweens.data)
+        {
+            if (!t.active)
+            {
+                inactiveTween = &tweens.data[i];
+                break;
+            }
+        }
+        return inactiveTween;
+    }
+
+    Tween* moveTo(Vector3f point, double duration, Easing easing = Easing.Linear)
+    {
+        Tween* existingTween = getInactiveTween();
+
+        if (existingTween)
+        {
+            *existingTween = Tween(this, TweenType.Position, position, point, duration, easing);
+            return existingTween;
+        }
+        else
+        {
+            Tween t = Tween(this, TweenType.Position, position, point, duration, easing);
+            tweens.append(t);
+            return &tweens.data[$-1];
+        }
+    }
+
     void processEvents()
     {
         foreach(i, ble; behaviours)
@@ -250,6 +288,11 @@ class Entity: Owner, Drawable
 
     void update(double dt)
     {
+        foreach(i, ref tween; tweens.data)
+        {
+            tween.update(dt);
+        }
+
         updateTransformation();
 
         foreach(i, ble; behaviours)
