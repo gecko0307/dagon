@@ -73,7 +73,8 @@ struct Tween
     Entity entity;
     double duration;
     double time = 0.0f;
-    bool loop = false;
+    uint repeat = 1;
+    uint repeatCounter;
 
     union
     {
@@ -102,6 +103,7 @@ struct Tween
         this.time = 0.0f;
         this.fromQuaternion = start;
         this.toQuaternion = end;
+        this.repeatCounter = 0;
     }
 
     this(Entity entity, TweenType type, Vector3f start, Vector3f end, double duration, Easing easing = Easing.Linear)
@@ -115,6 +117,7 @@ struct Tween
         this.time = 0.0f;
         this.fromVector = start;
         this.toVector = end;
+        this.repeatCounter = 0;
     }
 
     this(Entity entity, TweenType type, Color4f start, Color4f end, double duration, Easing easing = Easing.Linear)
@@ -128,6 +131,7 @@ struct Tween
         this.time = 0.0f;
         this.fromColor = start;
         this.toColor = end;
+        this.repeatCounter = 0;
     }
 
     this(Entity entity, TweenType type, float start, float end, double duration, Easing easing = Easing.Linear)
@@ -141,6 +145,7 @@ struct Tween
         this.time = 0.0f;
         this.fromFloat = start;
         this.toFloat = end;
+        this.repeatCounter = 0;
     }
 
     void update(double dt)
@@ -153,8 +158,16 @@ struct Tween
             {
                 time = 0.0;
                 t = 0.0f;
-                if (!loop)
-                    active = false;
+                if (repeat >= 0)
+                {
+                    repeatCounter++;
+                    if (repeatCounter >= repeat)
+                    {
+                        repeatCounter = 0;
+                        active = false;
+                        t = 1.0f;
+                    }
+                }
             }
             else
             {
