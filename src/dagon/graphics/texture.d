@@ -181,7 +181,8 @@ class Texture: Owner
         return img;
     }
 
-    alias toNuklearImage this; // allow implicit convertion to nk_image
+    // Commented out due to bug in DMD
+    //alias toNuklearImage this; // allow implicit convertion to nk_image
 
     ~this()
     {
