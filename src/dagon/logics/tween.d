@@ -75,6 +75,7 @@ struct Tween
     double time = 0.0f;
     uint repeat = 1;
     uint repeatCounter;
+    bool isPlaying = true;
 
     union
     {
@@ -104,6 +105,7 @@ struct Tween
         this.fromQuaternion = start;
         this.toQuaternion = end;
         this.repeatCounter = 0;
+        this.isPlaying = true;
     }
 
     this(Entity entity, TweenType type, Vector3f start, Vector3f end, double duration, Easing easing = Easing.Linear)
@@ -118,6 +120,7 @@ struct Tween
         this.fromVector = start;
         this.toVector = end;
         this.repeatCounter = 0;
+        this.isPlaying = true;
     }
 
     this(Entity entity, TweenType type, Color4f start, Color4f end, double duration, Easing easing = Easing.Linear)
@@ -132,6 +135,7 @@ struct Tween
         this.fromColor = start;
         this.toColor = end;
         this.repeatCounter = 0;
+        this.isPlaying = true;
     }
 
     this(Entity entity, TweenType type, float start, float end, double duration, Easing easing = Easing.Linear)
@@ -146,14 +150,39 @@ struct Tween
         this.fromFloat = start;
         this.toFloat = end;
         this.repeatCounter = 0;
+        this.isPlaying = true;
+    }
+
+    void pause()
+    {
+        isPlaying = false;
+    }
+
+    void play()
+    {
+        isPlaying = true;
+    }
+
+    void kill()
+    {
+        active = false;
+        time = 0.0;
+        repeatCounter = 0;
+        isPlaying = false;
+    }
+
+    void restart()
+    {
+        time = 0.0;
     }
 
     void update(double dt)
     {
-        if (active && entity)
+        if (active && entity && isPlaying)
         {
             time += dt;
             float t;
+
             if (time > duration)
             {
                 time = 0.0;
