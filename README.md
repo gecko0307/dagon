@@ -32,6 +32,7 @@ Features
 * Water rendering
 * Post-processing (FXAA, SSAO, lens distortion, motion blur, glow, LUT color grading)
 * UTF-8 text rendering using TTF fonts via Freetype
+* GUI based on [Nuklear](https://github.com/vurtun/nuklear)
 * Ownership memory model - every object belongs to some object (owner), and deleting the owner will delete all of its owned objects. This allows semi-automatic memory management - you have to manually delete only root owners
 * Entity-component model that allows game objects behave differently and combine many behaviours
 * Scene management. Any scene has its own assets, entities and logical context
@@ -61,10 +62,12 @@ Dagon depends on the following D packages:
 * [bindbc-opengl](https://github.com/BindBC/bindbc-opengl)
 * [bindbc-sdl](https://github.com/BindBC/bindbc-sdl)
 * [bindbc-ft](https://github.com/gecko0307/bindbc-ft)
+* [bindbc-nuklear](https://github.com/Timu5/bindbc-nuklear)
 
 Runtime dependencies (dynamic link libraries):
 * [SDL](https://www.libsdl.org) 2.0.5
 * [Freetype](https://www.freetype.org) 2.8.1
+* [Nuklear](https://github.com/vurtun/nuklear)
 
 Under Windows runtime dependencies are automatically deployed if you are building with Dub. Under other OSes you have to install them manually.
 
@@ -86,7 +89,7 @@ See [Tutorials](https://github.com/gecko0307/dagon/wiki/Tutorials).
 
 License
 -------
-Copyright (c) 2016-2019 Timur Gafarov, Rafał Ziemniewski, Björn Roberg, dayllenger. Distributed under the Boost Software License, Version 1.0 (see accompanying file COPYING or at http://www.boost.org/LICENSE_1_0.txt).
+Copyright (c) 2016-2019 Timur Gafarov, Rafał Ziemniewski, Mateusz Muszyński, Björn Roberg, dayllenger. Distributed under the Boost Software License, Version 1.0 (see accompanying file COPYING or at http://www.boost.org/LICENSE_1_0.txt).
 
 Sponsors
 --------
