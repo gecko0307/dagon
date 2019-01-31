@@ -28,6 +28,7 @@ DEALINGS IN THE SOFTWARE.
 module dagon.ui.nuklear;
 
 import core.stdc.stdio;
+import core.stdc.stdarg;
 import std.stdio;
 
 import dlib.core.memory;
@@ -228,6 +229,8 @@ class NuklearGUI : Owner, Drawable
 
     override void update(double dt)
     {
+        nk_clear(&ctx);
+
         nk_input_begin(&ctx);
         nk_input_motion(&ctx, eventManager.mouseX, eventManager.mouseY);
 
@@ -331,7 +334,6 @@ class NuklearGUI : Owner, Drawable
                             glDrawElements(GL_TRIANGLES, cmd.elem_count, GL_UNSIGNED_INT, offset);
                             offset += cmd.elem_count;
                         });
-        nk_clear(&ctx);
 
         glDisable(GL_BLEND);
         glDisable(GL_SCISSOR_TEST);
@@ -836,46 +838,34 @@ class NuklearGUI : Owner, Drawable
         nk_image_color(&ctx, img, color);
     }
 
-    /*void labelf(nk_flags, const(char)*, ...)
+    void labelf(nk_flags align_, const(char)* format, ...)
     {
-    nk_labelf(&ctx);
+        va_list args;
+        va_start(args, format);
+        nk_labelfv(&ctx, align_, format, args);
     }
 
-    void labelfColored(nk_flags, nk_color, const(char)*, ...)
+    void labelfColored(nk_flags align_, nk_color color, const(char)* format, ...)
     {
-    nk_labelf_colored(&ctx);
+        va_list args;
+        va_start(args, format);
+        nk_labelf_colored(&ctx, align_, color, format, args);
     }
 
-    void labelfWrap(const(char)*, ...)
+    void labelfWrap(const(char)* format, ...)
     {
-    nk_labelf_wrap(&ctx);
+        va_list args;
+        va_start(args, format);
+        nk_labelf_wrap(&ctx, format, args);
     }
 
-    void labelfColoredWrap(nk_color, const(char)*, ...)
+    void labelfColoredWrap(nk_color color, const(char)* format, ...)
     {
-    nk_labelf_colored_wrap(&ctx);
+        va_list args;
+        va_start(args, format);
+        nk_labelf_colored_wrap(&ctx, color, format, args);
     }
 
-    void labelfv(nk_flags, const(char)*, va_list)
-    {
-    nk_labelfv(&ctx);
-    }
-
-    void labelfvColored(nk_flags, nk_color, const(char)*, va_list)
-    {
-    nk_labelfv_colored(&ctx);
-    }
-
-    void labelfvWrap(const(char)*, va_list)
-    {
-    nk_labelfv_wrap(&ctx);
-    }
-
-    void labelfvColoredWrap(nk_color, const(char)*, va_list)
-    {
-    nk_labelfv_colored_wrap(&ctx);
-    }
-    */
     void valueBool(const(char)* prefix, int value)
     {
         nk_value_bool(&ctx, prefix, value);
@@ -1497,15 +1487,12 @@ class NuklearGUI : Owner, Drawable
         nk_tooltip(&ctx, txt);
     }
 
-    /*void tooltipf(const(char)*, ...)
+    void tooltipf(const(char)* format, ...)
     {
-    nk_tooltipf(&ctx);
+        va_list args;
+        va_start(args, format);
+        nk_tooltipfv(&ctx, format, args);
     }
-
-    void tooltipfv(const(char)*, va_list)
-    {
-    nk_tooltipfv(&ctx);
-    }*/
     
     int tooltipBegin(float width)
     {
