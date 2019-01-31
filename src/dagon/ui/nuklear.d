@@ -1693,4 +1693,104 @@ class NuklearGUI : Owner, Drawable
     {
         return nk_style_pop_color(&ctx);
     }
+
+    // Primitives
+
+    void strokeLine(float x0, float y0, float x1, float y1, float line_thickness, nk_color color)
+    {
+        if(ctx.current)
+            nk_stroke_line(&ctx.current.buffer, x0, y0, x1, y1, line_thickness, color);
+    }
+
+    void strokeCurve(float ax, float ay, float ctrl0x, float ctrl0y, float ctrl1x, float ctrl1y, float bx, float by, float line_thickness, nk_color color)
+    {
+        if(ctx.current)
+            nk_stroke_curve(&ctx.current.buffer, ax, ay, ctrl0x, ctrl0y, ctrl1x, ctrl1y, bx, by, line_thickness, color);
+    }
+
+    void strokeRect(nk_rect rect, float rounding, float line_thickness, nk_color color)
+    {
+        if(ctx.current)
+            nk_stroke_rect(&ctx.current.buffer, rect, rounding, line_thickness, color);
+    }
+
+    void strokeCircle(nk_rect rect, float line_thickness, nk_color color)
+    {
+        if(ctx.current)
+            nk_stroke_circle(&ctx.current.buffer, rect, line_thickness, color);
+    }
+
+    void strokeArc(float cx, float cy, float radius, float a_min, float a_max, float line_thickness, nk_color color)
+    {
+        if(ctx.current)
+            nk_stroke_arc(&ctx.current.buffer, cx, cy, radius, a_min, a_max, line_thickness, color);
+    }
+
+    void strokeTriangle(float x0, float y0, float x1, float y1, float x2, float y2, float line_thichness, nk_color color)
+    {
+        if(ctx.current)
+            nk_stroke_triangle(&ctx.current.buffer, x0, y0, x1, y1, x2, y2, line_thichness, color);
+    }
+
+    void strokePolyline(float* points, int point_count, float line_thickness, nk_color color)
+    {
+        if(ctx.current)
+            nk_stroke_polyline(&ctx.current.buffer, points, point_count, line_thickness, color);
+    }
+
+    void strokePolygon(float* points, int point_count, float line_thickness, nk_color color)
+    {
+        if(ctx.current)
+            nk_stroke_polygon(&ctx.current.buffer, points, point_count, line_thickness, color);
+    }
+
+    void fillRect(nk_rect rect, float rounding, nk_color color)
+    {
+        if(ctx.current)
+            nk_fill_rect(&ctx.current.buffer, rect, rounding, color);
+    }
+
+    void fillRectMultiColor(nk_rect rect, nk_color left, nk_color top, nk_color right, nk_color bottom)
+    {
+        if(ctx.current)
+            nk_fill_rect_multi_color(&ctx.current.buffer, rect, left, top, right, bottom);
+    }
+
+    void fillCircle(nk_rect rect, nk_color color)
+    {
+        if(ctx.current)
+            nk_fill_circle(&ctx.current.buffer, rect, color);
+    }
+
+    void fillArc(float cx, float cy, float radius, float a_min, float a_max, nk_color color)
+    {
+        if(ctx.current)
+            nk_fill_arc(&ctx.current.buffer, cx, cy, radius, a_min, a_max, color);
+    }
+
+    void fillTriangle(float x0, float y0, float x1, float y1, float x2, float y2, nk_color color)
+    {
+        if(ctx.current)
+            nk_fill_triangle(&ctx.current.buffer, x0, y0, x1, y1, x2, y2, color);
+    }
+
+    void fillPolygon(float* points, int point_count, nk_color color)
+    {
+        if(ctx.current)
+            nk_fill_polygon(&ctx.current.buffer, points, point_count, color);
+    }
+
+    void drawImage(nk_rect rect, const(nk_image)* image, nk_color color)
+    {
+        if(ctx.current)
+            nk_draw_image(&ctx.current.buffer, rect, image, color);
+    }
+
+    void drawText(nk_rect rect, const(char)* txt, int len, const(nk_user_font)* font, nk_color bg, nk_color fg)
+    {
+        if(!font)
+            font = &atlas.default_font.handle;
+        if(ctx.current)
+            nk_draw_text(&ctx.current.buffer, rect, txt, len, font, bg, fg);
+    }
 }
