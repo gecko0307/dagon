@@ -221,7 +221,7 @@ class PackageAsset: Asset
                     entityAsset.entity.scaling = entityAsset.props.scale.toVector3f;
                 }
 
-                entityAsset.entity.updateTransformation();
+                entityAsset.entity.updateTransformation(0.0);
 
                 if ("visible" in entityAsset.props)
                 {

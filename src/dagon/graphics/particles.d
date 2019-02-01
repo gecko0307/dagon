@@ -460,7 +460,7 @@ class ParticleSystem: Owner
 
         foreach(child; e.particleEntity.children)
         {
-            child.updateTransformation();
+            child.updateTransformation(0.0);
         }
 
         e.particleEntity.render(&rcLocal);

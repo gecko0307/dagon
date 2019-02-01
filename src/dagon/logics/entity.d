@@ -85,6 +85,11 @@ class Entity: Owner, Drawable
     Quaternionf rotation;
     Vector3f scaling;
 
+    bool swapZY = false;
+
+    Vector3f angles;
+    bool useRotationAngles = true;
+
     Matrix4x4f transformation;
     Matrix4x4f invTransformation;
 
@@ -95,7 +100,7 @@ class Entity: Owner, Drawable
     Matrix4x4f prevAbsoluteTransformation;
 
     EntityController controller;
-    DefaultEntityController defaultController;
+    //DefaultEntityController defaultController;
 
     Material material;
     RenderingContext rcLocal;
@@ -126,8 +131,10 @@ class Entity: Owner, Drawable
         rotation = Quaternionf.identity;
         scaling = Vector3f(1, 1, 1);
 
-        defaultController = New!DefaultEntityController(this);
-        controller = defaultController;
+        angles = Vector3f(0, 0, 0);
+
+        //defaultController = New!DefaultEntityController(this);
+        //controller = defaultController;
 
         absoluteTransformation = Matrix4x4f.identity;
         invAbsoluteTransformation = Matrix4x4f.identity;
@@ -182,6 +189,81 @@ class Entity: Owner, Drawable
             return position * parent.transformation;
         else
             return position;
+    }
+
+    void translate(Vector3f v)
+    {
+        position += v;
+    }
+
+    void translate(float vx, float vy, float vz)
+    {
+        position += Vector3f(vx, vy, vz);
+    }
+
+    void move(float speed)
+    {
+        position += transformation.forward * speed;
+    }
+
+    void moveToPoint(Vector3f p, float speed)
+    {
+        Vector3f dir = (p - position).normalized;
+        float d = distance(p, position);
+        if (d > speed)
+            position += dir * speed;
+        else
+            position += dir * d;
+    }
+
+    void strafe(float speed)
+    {
+        position += transformation.right * speed;
+    }
+
+    void lift(float speed)
+    {
+        position += transformation.up * speed;
+    }
+
+    void rotate(Vector3f angles)
+    {
+        this.angles += angles;
+    }
+
+    void rotate(float pitch, float turn, float roll)
+    {
+        this.angles += Vector3f(pitch, turn, roll);
+    }
+
+    void pitch(float angle)
+    {
+        angles.x += angle;
+    }
+
+    void turn(float angle)
+    {
+        angles.y += angle;
+    }
+
+    void roll(float angle)
+    {
+        angles.z += angle;
+    }
+
+    Vector3f direction() @property
+    {
+        return transformation.forward;
+    }
+
+    Vector3f right() @property
+    {
+        return transformation.right;
+    }
+
+    Vector3f up() @property
+    {
+        return transformation.up;
     }
 
     Behaviour addBehaviour(Behaviour b)
@@ -308,12 +390,26 @@ class Entity: Owner, Drawable
         }
     }
 
-    void updateTransformation()
+    void updateTransformation(double dt)
     {
         prevTransformation = transformation;
 
         if (controller)
-            controller.update(0.0);
+            controller.update(dt);
+        else
+        {
+            //TODO: rotation from angles
+
+            transformation =
+                translationMatrix(position) *
+                rotation.toMatrix4x4 *
+                scaleMatrix(scaling);
+
+            if (swapZY)
+                transformation = transformation * rotationMatrix(Axis.x, degtorad(90.0f));
+
+            invTransformation = transformation.inverse;
+        }
 
         if (parent)
         {
@@ -334,7 +430,7 @@ class Entity: Owner, Drawable
             tween.update(dt);
         }
 
-        updateTransformation();
+        updateTransformation(dt);
 
         foreach(i, ble; behaviours)
         {
@@ -452,7 +548,7 @@ class Entity: Owner, Drawable
 
                 foreach(child; drawableEntity.children)
                 {
-                    child.updateTransformation();
+                    child.updateTransformation(0.0);
                 }
 
                 drawableEntity.render(&rcLocal, true);
