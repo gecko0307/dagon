@@ -445,6 +445,31 @@ class NuklearGUI : Owner, Drawable
         nk_end(&ctx);
     }
 
+    nk_style_window oldWindowStyle;
+
+    int canvasBegin(const(char)* title, nk_rect bounds, nk_color background)
+    {
+        oldWindowStyle = ctx.style.window;
+
+        ctx.style.window.spacing = nk_vec2(0, 0);
+        ctx.style.window.padding = nk_vec2(0, 0);
+        ctx.style.window.fixed_background = nk_style_item_color(background);
+
+        nk_begin(&ctx, "Window", bounds, NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BACKGROUND | NK_WINDOW_NO_INPUT);
+
+        nk_rect totalSpace = nk_window_get_content_region(&ctx);
+        nk_layout_row_dynamic(&ctx, totalSpace.h, 1);
+        nk_widget(&totalSpace, &ctx);
+
+        return 1;
+    }
+
+    void canvasEnd()
+    {
+        nk_end(&ctx);
+        ctx.style.window = oldWindowStyle;
+    }
+
     nk_window* windowFind(const(char)* name)
     {
         return nk_window_find(&ctx, name);
