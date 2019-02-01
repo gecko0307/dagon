@@ -127,9 +127,9 @@ class NuklearGUI : Owner, Drawable
     string vs = import("Nuklear.vs");
     string fs = import("Nuklear.fs");
 
-    EventManager* eventManager; // Needed for mouse position
+    EventManager eventManager; // Needed for mouse position
 
-    this(EventManager* em, Owner o)
+    this(EventManager em, Owner o)
     {
         super(o);
 
