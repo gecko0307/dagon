@@ -48,6 +48,7 @@ import dagon.ui.font;
 import dagon.graphics.rc;
 import dagon.graphics.shaderloader;
 import dagon.graphics.texture;
+import dagon.resource.fontasset;
 
 private extern(C) void clipboardPaste(nk_handle usr, nk_text_edit* edit)
 {
@@ -105,14 +106,17 @@ class NuklearGUI : Owner, Drawable
     alias nk_vec2 Vec2;
     alias nk_vec2i Vec2i;
     alias nk_cursor Cursor;
+    alias nk_font Font;
 
     NuklearEvent[10] events;
     int eventsCount = 0;
 
     nk_context ctx;
     nk_font_atlas atlas;
+    nk_font_atlas atlasDefault;
     nk_buffer cmds;
     nk_draw_null_texture nullTexture;
+    nk_font* lastFont;
 
     GLuint vbo;
     GLuint vao;
@@ -153,24 +157,8 @@ class NuklearGUI : Owner, Drawable
         prepareVAO();
 
         nk_font_atlas_init_default(&atlas);
-        nk_font_atlas_begin(&atlas);
 
-        const(void) *image = null;
-        int w = 0;
-        int h = 0;
-        image = nk_font_atlas_bake(&atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
-
-        glGenTextures(1, &fontTexture);
-        glBindTexture(GL_TEXTURE_2D, fontTexture);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cast(GLsizei)w, cast(GLsizei)h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-
-        nk_font_atlas_end(&atlas, nk_handle_id(cast(int)fontTexture), &nullTexture);
-        if (atlas.default_font)
-            nk_style_set_font(&ctx, &atlas.default_font.handle);
-
-        // TODO: add font loading
+        generateFontAtlas();
     }
 
     ~this()
@@ -227,6 +215,34 @@ class NuklearGUI : Owner, Drawable
         glBindVertexArray(0);
     }
 
+    void generateFontAtlas()
+    {
+        if(atlas.default_font && !lastFont)
+            return;
+
+        nk_font_atlas_begin(&atlas);
+
+        if(atlas.font_num == 0)
+            atlas.default_font = nk_font_atlas_add_default(&atlas, 13.0f, null);
+        else
+            atlas.default_font = lastFont;
+
+        int w = 0;
+        int h = 0;
+        const(void)* image = nk_font_atlas_bake(&atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
+
+        glGenTextures(1, &fontTexture);
+        glBindTexture(GL_TEXTURE_2D, fontTexture);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cast(GLsizei)w, cast(GLsizei)h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+
+        nk_font_atlas_end(&atlas, nk_handle_id(cast(int)fontTexture), &nullTexture);
+        nk_style_set_font(&ctx, &atlas.default_font.handle);
+
+        lastFont = null;
+    }
+
     override void update(double dt)
     {
         nk_clear(&ctx);
@@ -258,6 +274,7 @@ class NuklearGUI : Owner, Drawable
         }
 
         nk_input_end(&ctx);
+        //nk_style_set_font(&ctx, &atlas.fonts.next.next.handle);
     }
 
     override void render(RenderingContext* rc)
@@ -337,6 +354,11 @@ class NuklearGUI : Owner, Drawable
 
         glDisable(GL_BLEND);
         glDisable(GL_SCISSOR_TEST);
+    }
+
+    nk_font* addFont(FontAsset font, float height)
+    {
+        return lastFont = nk_font_atlas_add_from_memory(&atlas, font.buffer.ptr, font.buffer.length, height, null);
     }
 
     void inputKey(nk_keys key, int down)
@@ -683,14 +705,14 @@ class NuklearGUI : Owner, Drawable
         nk_group_scrolled_end(&ctx);
     }
 
-    int treePush(size_t line = __LINE__)(nk_context *ctx, nk_tree_type type, const(char) *title, nk_collapse_states state)
+    int treePush(size_t line = __LINE__)(nk_tree_type type, const(char) *title, nk_collapse_states state)
     {
-        return nk_tree_push_hashed(ctx, type, title, state, null, 0, line);
+        return nk_tree_push_hashed(&ctx, type, title, state, null, 0, line);
     }
 
-    int treePushId(nk_context *ctx, nk_tree_type type, const(char) *title, nk_collapse_states state, int id)
+    int treePushId(nk_tree_type type, const(char) *title, nk_collapse_states state, int id)
     {
-        return nk_tree_push_hashed(ctx, type, title, state, null, 0, id);
+        return nk_tree_push_hashed(&ctx, type, title, state, null, 0, id);
     }
 
     void treePop()
@@ -713,24 +735,24 @@ class NuklearGUI : Owner, Drawable
         nk_tree_state_pop(&ctx);
     }
 
-    auto treeElementPush(size_t line = __LINE__)(nk_context *ctx, nk_tree_type type, const(char) *title, nk_collapse_states state, int* selected)
+    auto treeElementPush(size_t line = __LINE__)(nk_tree_type type, const(char) *title, nk_collapse_states state, int* selected)
     {
-        return nk_tree_element_push_hashed(ctx, type, title, state, selected, null, 0, line);
+        return nk_tree_element_push_hashed(&ctx, type, title, state, selected, null, 0, line);
     }
 
-    auto treeElementPushId(nk_context *ctx, nk_tree_type type, const(char) *title, nk_collapse_states state, int* selected, int id)
+    auto treeElementPushId(nk_tree_type type, const(char) *title, nk_collapse_states state, int* selected, int id)
     {
-        return nk_tree_element_push_hashed(ctx, type, title, state, selected, null, 0, id);
+        return nk_tree_element_push_hashed(&ctx, type, title, state, selected, null, 0, id);
     }
 
-    auto treeElementImagePush(size_t line = __LINE__)(nk_context *ctx, nk_tree_type type, nk_image img, const(char) *title, nk_collapse_states state)
+    auto treeElementImagePush(size_t line = __LINE__)(nk_tree_type type, nk_image img, const(char) *title, nk_collapse_states state)
     {
-        return nk_tree_image_push_hashed(ctx, type, img, title, state, null,0, line);
+        return nk_tree_image_push_hashed(&ctx, type, img, title, state, null, 0, line);
     }
 
-    auto treeElementImagePushId(nk_context *ctx, nk_tree_type type, nk_image img, const(char) *title, nk_collapse_states state, int id)
+    auto treeElementImagePushId(nk_tree_type type, nk_image img, const(char) *title, nk_collapse_states state, int id)
     {
-        return nk_tree_image_push_hashed(ctx, type, img, title, state, null, 0, id);
+        return nk_tree_image_push_hashed(&ctx, type, img, title, state, null, 0, id);
     }
 
     void treeElementPop()
