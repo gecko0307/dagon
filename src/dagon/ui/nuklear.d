@@ -27,16 +27,8 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.ui.nuklear;
 
-import core.stdc.stdio;
 import core.stdc.stdarg;
-import std.stdio;
 
-import dlib.core.memory;
-import dlib.core.stream;
-import dlib.container.dict;
-import dlib.container.queue;
-import dlib.text.utf8;
-import dlib.math.vector;
 import dlib.image.color;
 
 import dagon.core.interfaces;
@@ -44,10 +36,7 @@ import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.core.event;
 import dagon.core.keycodes;
-import dagon.ui.font;
-import dagon.graphics.rc;
 import dagon.graphics.shaderloader;
-import dagon.graphics.texture;
 import dagon.resource.fontasset;
 
 private extern(C) void clipboardPaste(nk_handle usr, nk_text_edit* edit)
