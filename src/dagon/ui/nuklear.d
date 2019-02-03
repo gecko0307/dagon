@@ -263,7 +263,6 @@ class NuklearGUI : Owner, Drawable
         }
 
         nk_input_end(&ctx);
-        //nk_style_set_font(&ctx, &atlas.fonts.next.next.handle);
     }
 
     override void render(RenderingContext* rc)
@@ -345,9 +344,16 @@ class NuklearGUI : Owner, Drawable
         glDisable(GL_SCISSOR_TEST);
     }
 
-    nk_font* addFont(FontAsset font, float height)
+    static const(nk_rune[]) fontDefaultGlyphRanges = [ 0x0020, 0x00FF, 0 ];
+    static const(nk_rune[]) fontChineseGlyphRanges = [ 0x0020, 0x00FF, 0x3000, 0x30FF, 0x31F0, 0x31FF, 0xFF00, 0xFFEF, 0x4E00, 0x9FAF, 0 ];
+    static const(nk_rune[]) fontCyrillicGlyphRanges = [ 0x0020, 0x00FF,  0x0400, 0x052F, 0x2DE0, 0x2DFF, 0xA640, 0xA69F, 0 ];
+    static const(nk_rune[]) fontKoreanGlyphRanges = [ 0x0020, 0x00FF, 0x3131, 0x3163,  0xAC00, 0xD79D, 0 ];
+
+    nk_font* addFont(FontAsset font, float height = 13, const(nk_rune[]) range = fontDefaultGlyphRanges)
     {
-        return lastFont = nk_font_atlas_add_from_memory(&atlas, font.buffer.ptr, font.buffer.length, height, null);
+        nk_font_config cfg = nk_font_config_(0);
+        cfg.range = range.ptr;
+        return lastFont = nk_font_atlas_add_from_memory(&atlas, font.buffer.ptr, font.buffer.length, height, &cfg);
     }
 
     void inputKey(nk_keys key, int down)
@@ -1650,6 +1656,11 @@ class NuklearGUI : Owner, Drawable
         nk_style_load_all_cursors(&ctx, cursor);
     }
 
+    void styleSetFont(const(nk_font)* font)
+    {
+        nk_style_set_font(&ctx, &font.handle);
+    }
+
     void styleSetFont(const(nk_user_font)* font)
     {
         nk_style_set_font(&ctx, font);
@@ -1820,6 +1831,11 @@ class NuklearGUI : Owner, Drawable
     {
         if(ctx.current)
             nk_draw_image(&ctx.current.buffer, rect, image, color);
+    }
+
+    void drawText(nk_rect rect, const(char)* txt, int len, const(nk_font)* font, nk_color bg, nk_color fg)
+    {
+        drawText(rect, txt, len, &font.handle, bg, fg);
     }
 
     void drawText(nk_rect rect, const(char)* txt, int len, const(nk_user_font)* font, nk_color bg, nk_color fg)
