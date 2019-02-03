@@ -39,6 +39,17 @@ import dagon.core.keycodes;
 import dagon.graphics.shaderloader;
 import dagon.resource.fontasset;
 
+alias nk_color NkColor;
+alias nk_colorf NkColorf;
+alias nk_rect NkRect;
+alias nk_rect NkRecti;
+alias nk_vec2 NkVec2;
+alias nk_vec2i NkVec2i;
+alias nk_cursor NkCursor;
+alias nk_font NkFont;
+alias nk_flags NkFlags;
+alias nk_size NkSize;
+
 private extern(C) void clipboardPaste(nk_handle usr, nk_text_edit* edit)
 {
     char* text = SDL_GetClipboardText();
@@ -88,21 +99,11 @@ struct NuklearEvent
 
 class NuklearGUI : Owner, Drawable
 {
-    alias nk_color Color;
-    alias nk_colorf Colorf;
-    alias nk_rect Rect;
-    alias nk_rect Recti;
-    alias nk_vec2 Vec2;
-    alias nk_vec2i Vec2i;
-    alias nk_cursor Cursor;
-    alias nk_font Font;
-
     NuklearEvent[10] events;
     int eventsCount = 0;
 
     nk_context ctx;
     nk_font_atlas atlas;
-    nk_font_atlas atlasDefault;
     nk_buffer cmds;
     nk_draw_null_texture nullTexture;
     nk_font* lastFont;
