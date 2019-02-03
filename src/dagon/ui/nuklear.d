@@ -357,6 +357,18 @@ class NuklearGUI : Owner, Drawable
         return lastFont = nk_font_atlas_add_from_memory(&atlas, font.buffer.ptr, font.buffer.length, height, &cfg);
     }
 
+    float textWidth(const(char)* txt, int len)
+    {
+        const(nk_user_font) *f = ctx.style.font;
+        return f.width(cast(nk_handle)f.userdata, f.height, txt, len);
+    }
+
+    float textWidth(NkFont* font, const(char)* txt, int len)
+    {
+        const(nk_user_font) *f = &font.handle;
+        return f.width(cast(nk_handle)f.userdata, f.height, txt, len);
+    }
+
     void inputKey(nk_keys key, int down)
     {
         auto e = NuklearEvent(NuklearEventType.Key);
