@@ -1858,4 +1858,10 @@ class NuklearGUI : Owner, Drawable
         if(ctx.current)
             nk_draw_text(&ctx.current.buffer, rect, txt, len, font, bg, fg);
     }
+
+    void pushScissor(nk_rect rect)
+    {
+        if(ctx.current)
+            nk_push_scissor(&ctx.current.buffer, rect);
+    }
 }
