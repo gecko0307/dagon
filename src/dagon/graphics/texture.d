@@ -103,6 +103,11 @@ class Texture: Owner
         glTexImage2D(GL_TEXTURE_2D, 0, intFormat, width, height, 0, format, type, cast(void*)img.data.ptr);
 
         useMipmapFiltering = genMipmaps;
+        if (useMipmapFiltering)
+        {
+            glGenerateMipmap(GL_TEXTURE_2D);
+            mipmapGenerated = true;
+        }
 
         glBindTexture(GL_TEXTURE_2D, 0);
     }
