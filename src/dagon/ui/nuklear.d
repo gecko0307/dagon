@@ -1261,18 +1261,25 @@ class NuklearGUI : Owner, Drawable
         return nk_propertyd(&ctx, name, min, val, max, step, inc_per_pixel);
     }
 
+    alias nk_filter_default filterDefault;
+    alias nk_filter_ascii filterAscii;
+    alias nk_filter_float filterFloat;
+    alias nk_filter_decimal filterDecimal;
+    alias nk_filter_hex filterHex;
+    alias nk_filter_oct filterOct;
+    alias nk_filter_binary filterBinary;
 
-    nk_flags editString(nk_flags flags, char* buffer, int* len, int max, nk_plugin_filter filter)
+    nk_flags editString(nk_flags flags, char* buffer, int* len, int max, nk_plugin_filter filter = filterDefault)
     {
         return nk_edit_string(&ctx, flags, buffer, len, max, filter);
     }
 
-    nk_flags editStringZeroTerminated(nk_flags flags, char* buffer, int max, nk_plugin_filter filter)
+    nk_flags editStringZeroTerminated(nk_flags flags, char* buffer, int max, nk_plugin_filter filter = filterDefault)
     {
         return nk_edit_string_zero_terminated(&ctx, flags, buffer, max, filter);
     }
 
-    nk_flags editBuffer(nk_flags flags, nk_text_edit* edit, nk_plugin_filter filter)
+    nk_flags editBuffer(nk_flags flags, nk_text_edit* edit, nk_plugin_filter filter = filterDefault)
     {
         return nk_edit_buffer(&ctx, flags, edit, filter);
     }
