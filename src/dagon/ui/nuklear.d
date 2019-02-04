@@ -156,11 +156,8 @@ class NuklearGUI : Owner, Drawable
         nk_font_atlas_clear(&atlas);
         nk_free(&ctx);
         nk_buffer_free(&cmds);
-        glDetachShader(shaderProgram, vertexShader);
-        glDetachShader(shaderProgram, fragmentShader);
-        glDeleteShader(vertexShader);
-        glDeleteShader(fragmentShader);
-        glDeleteProgram(shaderProgram);
+
+        glDeleteProgram(shaderProgram); 
         glDeleteTextures(1, &fontTexture);
         glDeleteBuffers(1, &vbo);
         glDeleteBuffers(1, &ebo);
