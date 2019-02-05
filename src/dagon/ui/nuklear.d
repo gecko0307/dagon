@@ -49,6 +49,7 @@ alias nk_cursor NkCursor;
 alias nk_font NkFont;
 alias nk_flags NkFlags;
 alias nk_size NkSize;
+alias nk_image NkImage;
 
 private extern(C) void clipboardPaste(nk_handle usr, nk_text_edit* edit)
 {
@@ -343,6 +344,8 @@ class NuklearGUI : Owner, Drawable
     }
 
     static const(nk_rune[]) fontDefaultGlyphRanges = [ 0x0020, 0x00FF, 0 ];
+    static const(nk_rune[]) fontLatinExtentedAGlyphRanges = [ 0x0020, 0x017F, 0 ];
+    static const(nk_rune[]) fontLatinExtentedBGlyphRanges = [ 0x0020, 0x024F, 0 ];
     static const(nk_rune[]) fontChineseGlyphRanges = [ 0x0020, 0x00FF, 0x3000, 0x30FF, 0x31F0, 0x31FF, 0xFF00, 0xFFEF, 0x4E00, 0x9FAF, 0 ];
     static const(nk_rune[]) fontCyrillicGlyphRanges = [ 0x0020, 0x00FF,  0x0400, 0x052F, 0x2DE0, 0x2DFF, 0xA640, 0xA69F, 0 ];
     static const(nk_rune[]) fontKoreanGlyphRanges = [ 0x0020, 0x00FF, 0x3131, 0x3163,  0xAC00, 0xD79D, 0 ];
