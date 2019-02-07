@@ -37,6 +37,7 @@ import dagon.core.ownership;
 import dagon.core.event;
 import dagon.core.keycodes;
 import dagon.graphics.shaderloader;
+import dagon.graphics.texture;
 import dagon.resource.fontasset;
 
 alias nk_color NKColor;
@@ -54,6 +55,17 @@ alias nk_rune NKRune;
 alias nk_handle NKHandle;
 alias nk_window NKWindow;
 alias nk_panel NKPanel;
+
+NKImage toNKImage(Texture texture)
+{
+    NKImage img;
+    img.handle.id = cast(int)texture.tex;
+    img.w = cast(short)texture.width;
+    img.h = cast(short)texture.height;
+    img.region[2] = cast(short)texture.width;
+    img.region[3] = cast(short)texture.height;
+    return img;
+}
 
 private extern(C) void clipboardPaste(nk_handle usr, nk_text_edit* edit)
 {

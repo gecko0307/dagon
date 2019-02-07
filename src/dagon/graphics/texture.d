@@ -175,20 +175,6 @@ class Texture: Owner
             glDeleteTextures(1, &tex);
     }
 
-    nk_image toNuklearImage()
-    {
-        nk_image img;
-        img.handle.id = cast(int)tex;
-        img.w = cast(short)width;
-        img.h = cast(short)height;
-        img.region[2] = cast(short)width;
-        img.region[3] = cast(short)height;
-        return img;
-    }
-
-    // Commented out due to bug in DMD
-    //alias toNuklearImage this; // allow implicit convertion to nk_image
-
     ~this()
     {
         release();
