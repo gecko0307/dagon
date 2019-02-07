@@ -9,7 +9,7 @@ The goal of this project is creating a modern, easy to use, extendable 3D game e
 
 > Dagon is still under development and lacks a lot of important functionality. Currently it is not recommended to use Dagon in production due to unstable API. Follow Dagon development on [Trello](https://trello.com/b/4sDgRjZI/dagon) to see priority tasks. 
 
-If you like Dagon, please support its development on [Patreon](https://www.patreon.com/gecko0307) or [Liberapay](https://liberapay.com/gecko0307). You can also make one-time donation via [PayPal](https://www.paypal.me/tgafarov). I appreciate any support. Thanks in advance!
+> If you like Dagon, please support its development on [Patreon](https://www.patreon.com/gecko0307) or [Liberapay](https://liberapay.com/gecko0307). You can also make one-time donation via [PayPal](https://www.paypal.me/tgafarov). I appreciate any support. Thanks in advance!
 
 Features
 --------
@@ -33,6 +33,8 @@ Features
 * Post-processing (FXAA, SSAO, lens distortion, motion blur, glow, LUT color grading)
 * UTF-8 text rendering using TTF fonts via Freetype
 * GUI based on [Nuklear](https://github.com/vurtun/nuklear)
+* 2D canvas framework that renders vector shapes - lines, Bézier curves, rectangles, circles, arcs, triangles, and polygons
+* Keyboard, mouse, joystick input, Unicode text input
 * Ownership memory model - every object belongs to some object (owner), and deleting the owner will delete all of its owned objects. This allows semi-automatic memory management - you have to manually delete only root owners
 * Entity-component model that allows game objects behave differently and combine many behaviours
 * Scene management. Any scene has its own assets, entities and logical context
@@ -54,6 +56,13 @@ Screenshots
 Video
 -----
 [https://www.youtube.com/watch?v=nhdOhPQ9g90](https://www.youtube.com/watch?v=nhdOhPQ9g90)
+
+Made with Dagon
+---------------
+* [dagon-demo](https://github.com/gecko0307/dagon-demo) - a test application that demonstrates most of Dagon's features
+* [Dagoban](https://github.com/Timu5/dagoban) - a Sokoban clone based on Dagon and Nuklear
+* [dagon-shooter](https://github.com/aferust/dagon-shooter) - a shooter game using Dagon
+* [Introductory examples](https://github.com/gecko0307/dagon-tutorials).
 
 Dependencies
 ------------
@@ -78,10 +87,6 @@ To use latest stable Dagon, add the following dependency to your `dub.json`:
 "dagon": "0.9.2"
 ```
 If you want to test new features, use `"dagon": "~master"`. The master should be stable enough to compile a working application, but be ready for breaking changes at any time.
-
-Demos
------
-A test application that demonstrates almost all of Dagon's features is hosted [here](https://github.com/gecko0307/dagon-demo). There are also [simple introductory examples](https://github.com/gecko0307/dagon-tutorials).
 
 Documentation
 -------------
