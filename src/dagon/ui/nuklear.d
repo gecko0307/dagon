@@ -1882,4 +1882,56 @@ class NuklearGUI : Owner, Drawable
         if(ctx.current)
             nk_push_scissor(&ctx.current.buffer, rect);
     }
+
+    // Colors
+
+    NKColor rgb(int r, int g, int b)
+    {
+        return nk_rgb(r, g, b);
+    }
+
+    NKColor rgb(float r, float g, float b)
+    {
+        return nk_rgb_f(r, g, b);
+    }
+
+    NKColor rgb(char* hex)
+    {
+        return nk_rgb_hex(hex);
+    }
+
+    NKColor rgba(int r, int g, int b, int a)
+    {
+        return nk_rgba(r, g, b, a);
+    }
+
+    NKColor rgba(float r, float g, float b, float a)
+    {
+        return nk_rgba_f(r, g, b, a);
+    }
+
+    NKColor rgba(char* hex)
+    {
+        return nk_rgba_hex(hex);
+    }
+
+    NKColor hsv(int h, int s, int v)
+    {
+        return nk_hsv(h, s, v);
+    }
+
+    NKColor hsv(float h, float s, float v)
+    {
+        return nk_hsv_f(h, s, v);
+    }
+
+    NKColor hsva(int h, int s, int v, int a)
+    {
+        return nk_hsva(h, s, v, a);
+    }
+
+    NKColor hsva(float h, float s, float v, float a)
+    {
+        return nk_hsva_f(h, s, v, a);
+    }
 }
