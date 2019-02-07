@@ -103,6 +103,11 @@ class Texture: Owner
         glTexImage2D(GL_TEXTURE_2D, 0, intFormat, width, height, 0, format, type, cast(void*)img.data.ptr);
 
         useMipmapFiltering = genMipmaps;
+        if (useMipmapFiltering)
+        {
+            glGenerateMipmap(GL_TEXTURE_2D);
+            mipmapGenerated = true;
+        }
 
         glBindTexture(GL_TEXTURE_2D, 0);
     }
@@ -169,20 +174,6 @@ class Texture: Owner
         if (glIsTexture(tex))
             glDeleteTextures(1, &tex);
     }
-
-    nk_image toNuklearImage()
-    {
-        nk_image img;
-        img.handle.id = cast(int)tex;
-        img.w = cast(short)width;
-        img.h = cast(short)height;
-        img.region[2] = cast(short)width;
-        img.region[3] = cast(short)height;
-        return img;
-    }
-
-    // Commented out due to bug in DMD
-    //alias toNuklearImage this; // allow implicit convertion to nk_image
 
     ~this()
     {

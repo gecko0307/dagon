@@ -27,15 +27,8 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.ui.nuklear;
 
-import core.stdc.stdio;
-import std.stdio;
+import core.stdc.stdarg;
 
-import dlib.core.memory;
-import dlib.core.stream;
-import dlib.container.dict;
-import dlib.container.queue;
-import dlib.text.utf8;
-import dlib.math.vector;
 import dlib.image.color;
 
 import dagon.core.interfaces;
@@ -43,10 +36,36 @@ import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.core.event;
 import dagon.core.keycodes;
-import dagon.ui.font;
-import dagon.graphics.rc;
 import dagon.graphics.shaderloader;
 import dagon.graphics.texture;
+import dagon.resource.fontasset;
+
+alias nk_color NKColor;
+alias nk_colorf NKColorf;
+alias nk_rect NKRect;
+alias nk_rect NKRecti;
+alias nk_vec2 NKVec2;
+alias nk_vec2i NKVec2i;
+alias nk_cursor NKCursor;
+alias nk_font NKFont;
+alias nk_flags NKFlags;
+alias nk_size NKSize;
+alias nk_image NKImage;
+alias nk_rune NKRune;
+alias nk_handle NKHandle;
+alias nk_window NKWindow;
+alias nk_panel NKPanel;
+
+NKImage toNKImage(Texture texture)
+{
+    NKImage img;
+    img.handle.id = cast(int)texture.tex;
+    img.w = cast(short)texture.width;
+    img.h = cast(short)texture.height;
+    img.region[2] = cast(short)texture.width;
+    img.region[3] = cast(short)texture.height;
+    return img;
+}
 
 private extern(C) void clipboardPaste(nk_handle usr, nk_text_edit* edit)
 {
@@ -97,14 +116,6 @@ struct NuklearEvent
 
 class NuklearGUI : Owner, Drawable
 {
-    alias nk_color Color;
-    alias nk_colorf Colorf;
-    alias nk_rect Rect;
-    alias nk_rect Recti;
-    alias nk_vec2 Vec2;
-    alias nk_vec2i Vec2i;
-    alias nk_cursor Cursor;
-
     NuklearEvent[10] events;
     int eventsCount = 0;
 
@@ -112,6 +123,7 @@ class NuklearGUI : Owner, Drawable
     nk_font_atlas atlas;
     nk_buffer cmds;
     nk_draw_null_texture nullTexture;
+    nk_font* lastFont;
 
     GLuint vbo;
     GLuint vao;
@@ -133,9 +145,9 @@ class NuklearGUI : Owner, Drawable
     string vs = import("Nuklear.vs");
     string fs = import("Nuklear.fs");
 
-    EventManager* eventManager; // Needed for mouse position
+    EventManager eventManager; // Needed for mouse position
 
-    this(EventManager* em, Owner o)
+    this(EventManager em, Owner o)
     {
         super(o);
 
@@ -152,24 +164,8 @@ class NuklearGUI : Owner, Drawable
         prepareVAO();
 
         nk_font_atlas_init_default(&atlas);
-        nk_font_atlas_begin(&atlas);
 
-        const(void) *image = null;
-        int w = 0;
-        int h = 0;
-        image = nk_font_atlas_bake(&atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
-
-        glGenTextures(1, &fontTexture);
-        glBindTexture(GL_TEXTURE_2D, fontTexture);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cast(GLsizei)w, cast(GLsizei)h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-
-        nk_font_atlas_end(&atlas, nk_handle_id(cast(int)fontTexture), &nullTexture);
-        if (atlas.default_font)
-            nk_style_set_font(&ctx, &atlas.default_font.handle);
-
-        // TODO: add font loading
+        generateFontAtlas();
     }
 
     ~this()
@@ -177,11 +173,8 @@ class NuklearGUI : Owner, Drawable
         nk_font_atlas_clear(&atlas);
         nk_free(&ctx);
         nk_buffer_free(&cmds);
-        glDetachShader(shaderProgram, vertexShader);
-        glDetachShader(shaderProgram, fragmentShader);
-        glDeleteShader(vertexShader);
-        glDeleteShader(fragmentShader);
-        glDeleteProgram(shaderProgram);
+
+        glDeleteProgram(shaderProgram); 
         glDeleteTextures(1, &fontTexture);
         glDeleteBuffers(1, &vbo);
         glDeleteBuffers(1, &ebo);
@@ -226,8 +219,38 @@ class NuklearGUI : Owner, Drawable
         glBindVertexArray(0);
     }
 
+    void generateFontAtlas()
+    {
+        if(atlas.default_font && !lastFont)
+            return;
+
+        nk_font_atlas_begin(&atlas);
+
+        if(atlas.font_num == 0)
+            atlas.default_font = nk_font_atlas_add_default(&atlas, 13.0f, null);
+        else
+            atlas.default_font = lastFont;
+
+        int w = 0;
+        int h = 0;
+        const(void)* image = nk_font_atlas_bake(&atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
+
+        glGenTextures(1, &fontTexture);
+        glBindTexture(GL_TEXTURE_2D, fontTexture);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cast(GLsizei)w, cast(GLsizei)h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+
+        nk_font_atlas_end(&atlas, nk_handle_id(cast(int)fontTexture), &nullTexture);
+        nk_style_set_font(&ctx, &atlas.default_font.handle);
+
+        lastFont = null;
+    }
+
     override void update(double dt)
     {
+        nk_clear(&ctx);
+
         nk_input_begin(&ctx);
         nk_input_motion(&ctx, eventManager.mouseX, eventManager.mouseY);
 
@@ -331,10 +354,35 @@ class NuklearGUI : Owner, Drawable
                             glDrawElements(GL_TRIANGLES, cmd.elem_count, GL_UNSIGNED_INT, offset);
                             offset += cmd.elem_count;
                         });
-        nk_clear(&ctx);
 
         glDisable(GL_BLEND);
         glDisable(GL_SCISSOR_TEST);
+    }
+
+    static const(NKRune[]) fontDefaultGlyphRanges = [ 0x0020, 0x00FF, 0 ];
+    static const(NKRune[]) fontLatinExtendedAGlyphRanges = [ 0x0020, 0x017F, 0 ];
+    static const(NKRune[]) fontLatinExtendedBGlyphRanges = [ 0x0020, 0x024F, 0 ];
+    static const(NKRune[]) fontChineseGlyphRanges = [ 0x0020, 0x00FF, 0x3000, 0x30FF, 0x31F0, 0x31FF, 0xFF00, 0xFFEF, 0x4E00, 0x9FAF, 0 ];
+    static const(NKRune[]) fontCyrillicGlyphRanges = [ 0x0020, 0x00FF,  0x0400, 0x052F, 0x2DE0, 0x2DFF, 0xA640, 0xA69F, 0 ];
+    static const(NKRune[]) fontKoreanGlyphRanges = [ 0x0020, 0x00FF, 0x3131, 0x3163,  0xAC00, 0xD79D, 0 ];
+
+    NKFont* addFont(FontAsset font, float height = 13, const(NKRune[]) range = fontDefaultGlyphRanges)
+    {
+        nk_font_config cfg = nk_font_config_(0);
+        cfg.range = range.ptr;
+        return lastFont = nk_font_atlas_add_from_memory(&atlas, font.buffer.ptr, font.buffer.length, height, &cfg);
+    }
+
+    float textWidth(const(char)* txt, int len)
+    {
+        const(nk_user_font) *f = ctx.style.font;
+        return f.width(cast(nk_handle)f.userdata, f.height, txt, len);
+    }
+
+    float textWidth(NKFont* font, const(char)* txt, int len)
+    {
+        const(nk_user_font) *f = &font.handle;
+        return f.width(cast(nk_handle)f.userdata, f.height, txt, len);
     }
 
     void inputKey(nk_keys key, int down)
@@ -401,17 +449,12 @@ class NuklearGUI : Owner, Drawable
             events[eventsCount++] = e;
     }
 
-    void setUserData(nk_handle handle)
-    {
-        nk_set_user_data(&ctx, handle);
-    }
-
-    int begin(const(char)* title, nk_rect bounds, nk_flags flags)
+    int begin(const(char)* title, NKRect bounds, NKFlags flags)
     {
         return nk_begin(&ctx, title, bounds, flags);
     }
 
-    int beginTitled(const(char)* name, const(char)* title, nk_rect bounds, nk_flags flags)
+    int beginTitled(const(char)* name, const(char)* title, NKRect bounds, NKFlags flags)
     {
         return nk_begin_titled(&ctx, name, title, bounds, flags);
     }
@@ -421,32 +464,57 @@ class NuklearGUI : Owner, Drawable
         nk_end(&ctx);
     }
 
-    nk_window* windowFind(const(char)* name)
+    nk_style_window oldWindowStyle;
+
+    int canvasBegin(const(char)* title, NKRect bounds, NKColor background = NKColor(255,255,255,255))
+    {
+        oldWindowStyle = ctx.style.window;
+
+        ctx.style.window.spacing = nk_vec2(0, 0);
+        ctx.style.window.padding = nk_vec2(0, 0);
+        ctx.style.window.fixed_background = nk_style_item_color(background);
+
+        nk_begin(&ctx, title, bounds, NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BACKGROUND | NK_WINDOW_NO_INPUT);
+
+        nk_rect totalSpace = nk_window_get_content_region(&ctx);
+        nk_layout_row_dynamic(&ctx, totalSpace.h, 1);
+        nk_widget(&totalSpace, &ctx);
+
+        return 1;
+    }
+
+    void canvasEnd()
+    {
+        nk_end(&ctx);
+        ctx.style.window = oldWindowStyle;
+    }
+
+    NKWindow* windowFind(const(char)* name)
     {
         return nk_window_find(&ctx, name);
     }
 
-    nk_panel* windowGetPanel()
+    NKPanel* windowGetPanel()
     {
         return nk_window_get_panel(&ctx);
     }
 
-    nk_rect windowGetContentRegion()
+    NKRect windowGetContentRegion()
     {
         return nk_window_get_content_region(&ctx);
     }
 
-    nk_vec2 windowGetContentRegionMin()
+    NKVec2 windowGetContentRegionMin()
     {
         return nk_window_get_content_region_min(&ctx);
     }
 
-    nk_vec2 windowGetContentRegionMax()
+    NKVec2 windowGetContentRegionMax()
     {
         return nk_window_get_content_region_max(&ctx);
     }
 
-    nk_vec2 windowGetContentRegionSize()
+    NKVec2 windowGetContentRegionSize()
     {
         return nk_window_get_content_region_size(&ctx);
     }
@@ -491,17 +559,17 @@ class NuklearGUI : Owner, Drawable
         return nk_item_is_any_active(&ctx);
     }
 
-    void windowSetBounds(const(char)* name, nk_rect bounds)
+    void windowSetBounds(const(char)* name, NKRect bounds)
     {
         nk_window_set_bounds(&ctx, name, bounds);
     }
 
-    void windowSetPosition(const(char)* name, nk_vec2 pos)
+    void windowSetPosition(const(char)* name, NKVec2 pos)
     {
         nk_window_set_position(&ctx, name, pos);
     }
 
-    void windowSetSize(const(char)* name, nk_vec2 size)
+    void windowSetSize(const(char)* name, NKVec2 size)
     {
         nk_window_set_size(&ctx, name, size);
     }
@@ -546,7 +614,7 @@ class NuklearGUI : Owner, Drawable
         nk_layout_reset_min_row_height(&ctx);
     }
 
-    nk_rect layoutWidgetBounds()
+    NKRect layoutWidgetBounds()
     {
         return nk_layout_widget_bounds(&ctx);
     }
@@ -616,7 +684,7 @@ class NuklearGUI : Owner, Drawable
         nk_layout_space_begin(&ctx, foramt, height, widget_count);
     }
 
-    void layoutSpacePush(nk_rect bounds)
+    void layoutSpacePush(NKRect bounds)
     {
         nk_layout_space_push(&ctx, bounds);
     }
@@ -626,37 +694,37 @@ class NuklearGUI : Owner, Drawable
         nk_layout_space_end(&ctx);
     }
 
-    nk_rect layoutSpaceBounds()
+    NKRect layoutSpaceBounds()
     {
         return nk_layout_space_bounds(&ctx);
     }
 
-    nk_vec2 layoutSpaceToScreen(nk_vec2 a)
+    NKVec2 layoutSpaceToScreen(NKVec2 a)
     {
         return nk_layout_space_to_screen(&ctx, a);
     }
 
-    nk_vec2 layoutSpaceToLocal(nk_vec2 a)
+    NKVec2 layoutSpaceToLocal(NKVec2 a)
     {
         return nk_layout_space_to_local(&ctx, a);
     }
 
-    nk_rect layoutSpaceRectToScreen(nk_rect a)
+    NKRect layoutSpaceRectToScreen(NKRect a)
     {
         return nk_layout_space_rect_to_screen(&ctx, a);
     }
 
-    nk_rect layoutSpaceRectToLocal(nk_rect a)
+    NKRect layoutSpaceRectToLocal(NKRect a)
     {
         return nk_layout_space_rect_to_local(&ctx, a);
     }
 
-    int groupBegin(const(char)* title, nk_flags flags)
+    int groupBegin(const(char)* title, NKFlags flags)
     {
         return nk_group_begin(&ctx, title, flags);
     }
 
-    int groupBeginTitled(const(char)* name, const(char)* title, nk_flags flags)
+    int groupBeginTitled(const(char)* name, const(char)* title, NKFlags flags)
     {
         return nk_group_begin_titled(&ctx, name, title, flags);
     }
@@ -666,12 +734,12 @@ class NuklearGUI : Owner, Drawable
         nk_group_end(&ctx);
     }
 
-    int groupScrolledOffsetBegin(nk_uint* x_offset, nk_uint* y_offset, const(char)* title, nk_flags flags)
+    int groupScrolledOffsetBegin(nk_uint* x_offset, nk_uint* y_offset, const(char)* title, NKFlags flags)
     {
         return nk_group_scrolled_offset_begin(&ctx, x_offset, y_offset, title, flags);
     }
 
-    int groupScrolledBegin(nk_scroll* off, const(char)* title, nk_flags flags)
+    int groupScrolledBegin(nk_scroll* off, const(char)* title, NKFlags flags)
     {
         return nk_group_scrolled_begin(&ctx, off, title, flags);
     }
@@ -681,14 +749,14 @@ class NuklearGUI : Owner, Drawable
         nk_group_scrolled_end(&ctx);
     }
 
-    int treePush(size_t line = __LINE__)(nk_context *ctx, nk_tree_type type, const(char) *title, nk_collapse_states state)
+    int treePush(size_t line = __LINE__)(nk_tree_type type, const(char) *title, nk_collapse_states state)
     {
-        return nk_tree_push_hashed(ctx, type, title, state, null, 0, line);
+        return nk_tree_push_hashed(&ctx, type, title, state, null, 0, line);
     }
 
-    int treePushId(nk_context *ctx, nk_tree_type type, const(char) *title, nk_collapse_states state, int id)
+    int treePushId(nk_tree_type type, const(char) *title, nk_collapse_states state, int id)
     {
-        return nk_tree_push_hashed(ctx, type, title, state, null, 0, id);
+        return nk_tree_push_hashed(&ctx, type, title, state, null, 0, id);
     }
 
     void treePop()
@@ -701,7 +769,7 @@ class NuklearGUI : Owner, Drawable
         return nk_tree_state_push(&ctx, type, title, state);
     }
 
-    int treeStateImagePush(nk_tree_type type, nk_image image, const(char)* title, nk_collapse_states* state)
+    int treeStateImagePush(nk_tree_type type, NKImage image, const(char)* title, nk_collapse_states* state)
     {
         return nk_tree_state_image_push(&ctx, type, image, title, state);
     }
@@ -711,24 +779,24 @@ class NuklearGUI : Owner, Drawable
         nk_tree_state_pop(&ctx);
     }
 
-    auto treeElementPush(size_t line = __LINE__)(nk_context *ctx, nk_tree_type type, const(char) *title, nk_collapse_states state, int* selected)
+    auto treeElementPush(size_t line = __LINE__)(nk_tree_type type, const(char) *title, nk_collapse_states state, int* selected)
     {
-        return nk_tree_element_push_hashed(ctx, type, title, state, selected, null, 0, line);
+        return nk_tree_element_push_hashed(&ctx, type, title, state, selected, null, 0, line);
     }
 
-    auto treeElementPushId(nk_context *ctx, nk_tree_type type, const(char) *title, nk_collapse_states state, int* selected, int id)
+    auto treeElementPushId(nk_tree_type type, const(char) *title, nk_collapse_states state, int* selected, int id)
     {
-        return nk_tree_element_push_hashed(ctx, type, title, state, selected, null, 0, id);
+        return nk_tree_element_push_hashed(&ctx, type, title, state, selected, null, 0, id);
     }
 
-    auto treeElementImagePush(size_t line = __LINE__)(nk_context *ctx, nk_tree_type type, nk_image img, const(char) *title, nk_collapse_states state)
+    auto treeElementImagePush(size_t line = __LINE__)(nk_tree_type type, NKImage img, const(char) *title, nk_collapse_states state)
     {
-        return nk_tree_image_push_hashed(ctx, type, img, title, state, null,0, line);
+        return nk_tree_image_push_hashed(&ctx, type, img, title, state, null, 0, line);
     }
 
-    auto treeElementImagePushId(nk_context *ctx, nk_tree_type type, nk_image img, const(char) *title, nk_collapse_states state, int id)
+    auto treeElementImagePushId(nk_tree_type type, NKImage img, const(char) *title, nk_collapse_states state, int id)
     {
-        return nk_tree_image_push_hashed(ctx, type, img, title, state, null, 0, id);
+        return nk_tree_image_push_hashed(&ctx, type, img, title, state, null, 0, id);
     }
 
     void treeElementPop()
@@ -736,22 +804,22 @@ class NuklearGUI : Owner, Drawable
         nk_tree_element_pop(&ctx);
     }
 
-    int listViewBegin(nk_list_view* out_, const(char)* id, nk_flags flags, int row_height, int row_count)
+    int listViewBegin(nk_list_view* out_, const(char)* id, NKFlags flags, int row_height, int row_count)
     {
         return nk_list_view_begin(&ctx, out_, id, flags, row_height, row_count);
     }
 
-    nk_rect widgetBounds()
+    NKRect widgetBounds()
     {
         return nk_widget_bounds(&ctx);
     }
 
-    nk_vec2 widgetPosition()
+    NKVec2 widgetPosition()
     {
         return nk_widget_position(&ctx);
     }
 
-    nk_vec2 widgetSize()
+    NKVec2 widgetSize()
     {
         return nk_widget_size(&ctx);
     }
@@ -786,12 +854,12 @@ class NuklearGUI : Owner, Drawable
         nk_spacing(&ctx, cols);
     }
 
-    void text(const(char)* txt, int len, nk_flags flags)
+    void text(const(char)* txt, int len, NKFlags flags)
     {
         nk_text(&ctx, txt, len, flags);
     }
 
-    void textColored(const(char)* txt, int len, nk_flags flags, nk_color color)
+    void textColored(const(char)* txt, int len, NKFlags flags, NKColor color)
     {
         nk_text_colored(&ctx, txt, len, flags, color);
     }
@@ -801,17 +869,17 @@ class NuklearGUI : Owner, Drawable
         nk_text_wrap(&ctx, txt, len);
     }
 
-    void textWrapColored(const(char)* txt, int len, nk_color color)
+    void textWrapColored(const(char)* txt, int len, NKColor color)
     {
         nk_text_wrap_colored(&ctx, txt, len, color);
     }
 
-    void label(const(char)* txt, nk_flags align__)
+    void label(const(char)* txt, NKFlags align__)
     {
         nk_label(&ctx, txt, align__);
     }
 
-    void labelColored(const(char)* txt, nk_flags align__, nk_color color)
+    void labelColored(const(char)* txt, NKFlags align__, NKColor color)
     {
         nk_label_colored(&ctx, txt, align__, color);
     }
@@ -821,61 +889,49 @@ class NuklearGUI : Owner, Drawable
         nk_label_wrap(&ctx, txt);
     }
 
-    void labelColoredWrap(const(char)* txt, nk_color color)
+    void labelColoredWrap(const(char)* txt, NKColor color)
     {
         nk_label_colored_wrap(&ctx, txt, color);
     }
 
-    void image(nk_image img)
+    void image(NKImage img)
     {
         nk_image_(&ctx, img);
     }
 
-    void imageColor(nk_image img, nk_color color)
+    void imageColor(NKImage img, NKColor color)
     {
         nk_image_color(&ctx, img, color);
     }
 
-    /*void labelf(nk_flags, const(char)*, ...)
+    void labelf(NKFlags align_, const(char)* format, ...)
     {
-    nk_labelf(&ctx);
+        va_list args;
+        va_start(args, format);
+        nk_labelfv(&ctx, align_, format, args);
     }
 
-    void labelfColored(nk_flags, nk_color, const(char)*, ...)
+    void labelfColored(NKFlags align_, NKColor color, const(char)* format, ...)
     {
-    nk_labelf_colored(&ctx);
+        va_list args;
+        va_start(args, format);
+        nk_labelf_colored(&ctx, align_, color, format, args);
     }
 
-    void labelfWrap(const(char)*, ...)
+    void labelfWrap(const(char)* format, ...)
     {
-    nk_labelf_wrap(&ctx);
+        va_list args;
+        va_start(args, format);
+        nk_labelf_wrap(&ctx, format, args);
     }
 
-    void labelfColoredWrap(nk_color, const(char)*, ...)
+    void labelfColoredWrap(NKColor color, const(char)* format, ...)
     {
-    nk_labelf_colored_wrap(&ctx);
+        va_list args;
+        va_start(args, format);
+        nk_labelf_colored_wrap(&ctx, color, format, args);
     }
 
-    void labelfv(nk_flags, const(char)*, va_list)
-    {
-    nk_labelfv(&ctx);
-    }
-
-    void labelfvColored(nk_flags, nk_color, const(char)*, va_list)
-    {
-    nk_labelfv_colored(&ctx);
-    }
-
-    void labelfvWrap(const(char)*, va_list)
-    {
-    nk_labelfv_wrap(&ctx);
-    }
-
-    void labelfvColoredWrap(nk_color, const(char)*, va_list)
-    {
-    nk_labelfv_colored_wrap(&ctx);
-    }
-    */
     void valueBool(const(char)* prefix, int value)
     {
         nk_value_bool(&ctx, prefix, value);
@@ -896,17 +952,17 @@ class NuklearGUI : Owner, Drawable
         nk_value_float(&ctx, prefix, value);
     }
 
-    void valueColorByte(const(char)* prefix, nk_color value)
+    void valueColorByte(const(char)* prefix, NKColor value)
     {
         nk_value_color_byte(&ctx, prefix, value);
     }
 
-    void valueColorFloat(const(char)* prefix, nk_color value)
+    void valueColorFloat(const(char)* prefix, NKColor value)
     {
         nk_value_color_float(&ctx, prefix, value);
     }
 
-    void valueColorHex(const(char)* prefix, nk_color value)
+    void valueColorHex(const(char)* prefix, NKColor value)
     {
         nk_value_color_hex(&ctx, prefix, value);
     }
@@ -921,7 +977,7 @@ class NuklearGUI : Owner, Drawable
         return nk_button_label(&ctx, title);
     }
 
-    int buttonColor(nk_color color)
+    int buttonColor(NKColor color)
     {
         return nk_button_color(&ctx,  color);
     }
@@ -931,27 +987,27 @@ class NuklearGUI : Owner, Drawable
         return nk_button_symbol(&ctx, type);
     }
 
-    int buttonImage(nk_image img)
+    int buttonImage(NKImage img)
     {
         return nk_button_image(&ctx, img);
     }
 
-    int buttonSymbolLabel(nk_symbol_type type, const(char)* label, nk_flags text_alignment)
+    int buttonSymbolLabel(nk_symbol_type type, const(char)* label, NKFlags text_alignment)
     {
         return nk_button_symbol_label(&ctx, type, label, text_alignment);
     }
 
-    int buttonSymbolText(nk_symbol_type type, const(char)* txt, int len, nk_flags align_ment)
+    int buttonSymbolText(nk_symbol_type type, const(char)* txt, int len, NKFlags align_ment)
     {
         return nk_button_symbol_text(&ctx, type, txt, len, align_ment);
     }
 
-    int buttonImageLabel(nk_image img, const(char)* txt, nk_flags text_alignment)
+    int buttonImageLabel(NKImage img, const(char)* txt, NKFlags text_alignment)
     {
         return nk_button_image_label(&ctx, img, txt, text_alignment);
     }
 
-    int buttonImageText(nk_image img, const(char)* txt, int len, nk_flags align_ment)
+    int buttonImageText(NKImage img, const(char)* txt, int len, NKFlags align_ment)
     {
         return nk_button_image_text(&ctx, img, txt, len, align_ment);
     }
@@ -971,27 +1027,27 @@ class NuklearGUI : Owner, Drawable
         return nk_button_symbol_styled(&ctx, style, type);
     }
 
-    int buttonImageStyled(const(nk_style_button)* style, nk_image img)
+    int buttonImageStyled(const(nk_style_button)* style, NKImage img)
     {
         return nk_button_image_styled(&ctx, style, img);
     }
 
-    int buttonSymbolTextStyled(const(nk_style_button)* style, nk_symbol_type type, const(char)* txt, int len, nk_flags align_ment)
+    int buttonSymbolTextStyled(const(nk_style_button)* style, nk_symbol_type type, const(char)* txt, int len, NKFlags align_ment)
     {
         return nk_button_symbol_text_styled(&ctx, style, type, txt, len, align_ment);
     }
 
-    int buttonSymbolLabelStyled(const(nk_style_button)* style, nk_symbol_type symbol, const(char)* title, nk_flags align_)
+    int buttonSymbolLabelStyled(const(nk_style_button)* style, nk_symbol_type symbol, const(char)* title, NKFlags align_)
     {
         return nk_button_symbol_label_styled(&ctx, style, symbol, title, align_);
     }
 
-    int buttonImageLabelStyled(const(nk_style_button)* style, nk_image img, const(char)* label, nk_flags text_alignment)
+    int buttonImageLabelStyled(const(nk_style_button)* style, NKImage img, const(char)* label, NKFlags text_alignment)
     {
         return nk_button_image_label_styled(&ctx, style, img, label, text_alignment);
     }
 
-    int buttonImageTextStyled(const(nk_style_button)* style, nk_image img, const(char)* txt, int len, nk_flags align_ment)
+    int buttonImageTextStyled(const(nk_style_button)* style, NKImage img, const(char)* txt, int len, NKFlags align_ment)
     {
         return nk_button_image_text_styled(&ctx, style, img, txt, len, align_ment);
     }
@@ -1071,62 +1127,62 @@ class NuklearGUI : Owner, Drawable
         return nk_option_text(&ctx, txt, len, active);
     }
 
-    int selectableLabel(const(char)* label, nk_flags align_, int* value)
+    int selectableLabel(const(char)* label, NKFlags align_, int* value)
     {
         return nk_selectable_label(&ctx, label, align_, value);
     }
 
-    int selectableText(const(char)* txt, int len, nk_flags align_, int* value)
+    int selectableText(const(char)* txt, int len, NKFlags align_, int* value)
     {
         return nk_selectable_text(&ctx, txt, len, align_, value);
     }
 
-    int selectableImageLabel(nk_image img, const(char)* label, nk_flags align_, int* value)
+    int selectableImageLabel(NKImage img, const(char)* label, NKFlags align_, int* value)
     {
         return nk_selectable_image_label(&ctx, img, label, align_, value);
     }
 
-    int selectableImageText(nk_image img, const(char)* text, int len, nk_flags align_, int* value)
+    int selectableImageText(NKImage img, const(char)* text, int len, NKFlags align_, int* value)
     {
         return nk_selectable_image_text(&ctx, img, text, len, align_, value);
     }
 
-    int selectableSymbolLabel(nk_symbol_type type, const(char)* label, nk_flags align_, int* value)
+    int selectableSymbolLabel(nk_symbol_type type, const(char)* label, NKFlags align_, int* value)
     {
         return nk_selectable_symbol_label(&ctx, type, label, align_, value);
     }
 
-    int selectableSymbolText(nk_symbol_type type, const(char)* txt, int len, nk_flags align_, int* value)
+    int selectableSymbolText(nk_symbol_type type, const(char)* txt, int len, NKFlags align_, int* value)
     {
         return nk_selectable_symbol_text(&ctx, type, txt, len, align_, value);
     }
 
-    int selectLabel(const(char)* label, nk_flags align_, int value)
+    int selectLabel(const(char)* label, NKFlags align_, int value)
     {
         return nk_select_label(&ctx, label, align_, value);
     }
 
-    int selectText(const(char)* txt, int len, nk_flags align_, int value)
+    int selectText(const(char)* txt, int len, NKFlags align_, int value)
     {
         return nk_select_text(&ctx, txt, len, align_, value);
     }
 
-    int selectImageLabel(nk_image img, const(char)* label, nk_flags align_, int value)
+    int selectImageLabel(NKImage img, const(char)* label, NKFlags align_, int value)
     {
         return nk_select_image_label(&ctx, img, label, align_, value);
     }
 
-    int selectImageText(nk_image img, const(char)* txt, int len, nk_flags align_, int value)
+    int selectImageText(NKImage img, const(char)* txt, int len, NKFlags align_, int value)
     {
         return nk_select_image_text(&ctx, img, txt, len, align_, value);
     }
 
-    int selectSymbolLabel(nk_symbol_type type, const(char)* label, nk_flags align_, int value)
+    int selectSymbolLabel(nk_symbol_type type, const(char)* label, NKFlags align_, int value)
     {
         return nk_select_symbol_label(&ctx, type, label, align_, value);
     }
 
-    int selectSymbolText(nk_symbol_type type, const(char)* txt, int len, nk_flags align_, int value)
+    int selectSymbolText(nk_symbol_type type, const(char)* txt, int len, NKFlags align_, int value)
     {
         return nk_select_symbol_text(&ctx, type, txt, len, align_, value);
     }
@@ -1151,17 +1207,17 @@ class NuklearGUI : Owner, Drawable
         return nk_slider_int(&ctx, min, val, max, step);
     }
 
-    int progress(nk_size* cur, nk_size max, int modifyable)
+    int progress(NKSize* cur, NKSize max, int modifyable)
     {
         return nk_progress(&ctx, cur, max, modifyable);
     }
 
-    nk_size prog(nk_size cur, nk_size max, int modifyable)
+    NKSize prog(NKSize cur, NKSize max, int modifyable)
     {
         return nk_prog(&ctx, cur, max, modifyable);
     }
 
-    nk_colorf colorPicker(nk_colorf color, nk_color_format format)
+    NKColorf colorPicker(NKColorf color, nk_color_format format)
     {
         return nk_color_picker(&ctx, color, format);
     }
@@ -1173,7 +1229,7 @@ class NuklearGUI : Owner, Drawable
         return Color4f(tmp.r, tmp.g, tmp.b, tmp.a);
     }
 
-    int colorPick(nk_colorf* color, nk_color_format format)
+    int colorPick(NKColorf* color, nk_color_format format)
     {
         return nk_color_pick(&ctx, color, format);
     }
@@ -1216,23 +1272,30 @@ class NuklearGUI : Owner, Drawable
         return nk_propertyd(&ctx, name, min, val, max, step, inc_per_pixel);
     }
 
+    alias nk_filter_default filterDefault;
+    alias nk_filter_ascii filterAscii;
+    alias nk_filter_float filterFloat;
+    alias nk_filter_decimal filterDecimal;
+    alias nk_filter_hex filterHex;
+    alias nk_filter_oct filterOct;
+    alias nk_filter_binary filterBinary;
 
-    nk_flags editString(nk_flags flags, char* buffer, int* len, int max, nk_plugin_filter filter)
+    NKFlags editString(NKFlags flags, char* buffer, int* len, int max, nk_plugin_filter filter = filterDefault)
     {
         return nk_edit_string(&ctx, flags, buffer, len, max, filter);
     }
 
-    nk_flags editStringZeroTerminated(nk_flags flags, char* buffer, int max, nk_plugin_filter filter)
+    NKFlags editStringZeroTerminated(NKFlags flags, char* buffer, int max, nk_plugin_filter filter = filterDefault)
     {
         return nk_edit_string_zero_terminated(&ctx, flags, buffer, max, filter);
     }
 
-    nk_flags editBuffer(nk_flags flags, nk_text_edit* edit, nk_plugin_filter filter)
+    NKFlags editBuffer(NKFlags flags, nk_text_edit* edit, nk_plugin_filter filter = filterDefault)
     {
         return nk_edit_buffer(&ctx, flags, edit, filter);
     }
 
-    void editFocus(nk_flags flags)
+    void editFocus(NKFlags flags)
     {
         nk_edit_focus(&ctx, flags);
     }
@@ -1247,7 +1310,7 @@ class NuklearGUI : Owner, Drawable
         return nk_chart_begin(&ctx, type, num, min, max);
     }
 
-    int chartBeginColored(nk_chart_type type, nk_color color, nk_color active, int num, float min, float max)
+    int chartBeginColored(nk_chart_type type, NKColor color, NKColor active, int num, float min, float max)
     {
         return nk_chart_begin_colored(&ctx, type, color, active, num, min, max);
     }
@@ -1257,17 +1320,17 @@ class NuklearGUI : Owner, Drawable
         nk_chart_add_slot(&ctx, type, count, min_value, max_value);
     }
 
-    void chartAddSlotColored(const(nk_chart_type) type, nk_color color, nk_color active, int count, float min_value, float max_value)
+    void chartAddSlotColored(const(nk_chart_type) type, NKColor color, NKColor active, int count, float min_value, float max_value)
     {
         nk_chart_add_slot_colored(&ctx, type, color, active, count, min_value, max_value);
     }
 
-    nk_flags chartPush(float value)
+    NKFlags chartPush(float value)
     {
         return nk_chart_push(&ctx, value);
     }
 
-    nk_flags chartPushSlot(float value, int slot)
+    NKFlags chartPushSlot(float value, int slot)
     {
         return nk_chart_push_slot(&ctx, value, slot);
     }
@@ -1307,7 +1370,7 @@ class NuklearGUI : Owner, Drawable
         }
     }
 
-    int popupBegin(nk_popup_type type, const(char)* title, nk_flags flags, nk_rect bounds)
+    int popupBegin(nk_popup_type type, const(char)* title, NKFlags flags, NKRect bounds)
     {
         return nk_popup_begin(&ctx, type, title, flags, bounds);
     }
@@ -1322,117 +1385,117 @@ class NuklearGUI : Owner, Drawable
         nk_popup_end(&ctx);
     }
 
-    int combo(const(char)** items, int count, int selected, int item_height, nk_vec2 size)
+    int combo(const(char)** items, int count, int selected, int item_height, NKVec2 size)
     {
         return nk_combo(&ctx, items, count, selected, item_height, size);
     }
 
-    int comboSeparator(const(char)* items_separated_by_separator, int separator, int selected, int count, int item_height, nk_vec2 size)
+    int comboSeparator(const(char)* items_separated_by_separator, int separator, int selected, int count, int item_height, NKVec2 size)
     {
         return nk_combo_separator(&ctx, items_separated_by_separator, separator, selected, count, item_height, size);
     }
 
-    int comboString(const(char)* items_separated_by_zeros, int selected, int count, int item_height, nk_vec2 size)
+    int comboString(const(char)* items_separated_by_zeros, int selected, int count, int item_height, NKVec2 size)
     {
         return nk_combo_string(&ctx, items_separated_by_zeros, selected, count, item_height, size);
     }
 
-    /*int comboCallback(void func(void*, int, const(char) **) fn, void *userdata, int selected, int count, int item_height, nk_vec2 size)
+    /*int comboCallback(void func(void*, int, const(char) **) fn, void *userdata, int selected, int count, int item_height, NKVec2 size)
     {
     return nk_combo_callback(&ctx, fn, userdata, selected, count, item_height, size);
     }*/
 
-    void combobox(const(char)** items, int count, int* selected, int item_height, nk_vec2 size)
+    void combobox(const(char)** items, int count, int* selected, int item_height, NKVec2 size)
     {
         nk_combobox(&ctx, items, count, selected, item_height, size);
     }
 
-    void comboboxString(const(char)* items_separated_by_zeros, int* selected, int count, int item_height, nk_vec2 size)
+    void comboboxString(const(char)* items_separated_by_zeros, int* selected, int count, int item_height, NKVec2 size)
     {
         nk_combobox_string(&ctx, items_separated_by_zeros, selected, count, item_height, size);
     }
 
-    void comboboxSeparator(const(char)* items_separated_by_separator, int separator, int* selected, int count, int item_height, nk_vec2 size)
+    void comboboxSeparator(const(char)* items_separated_by_separator, int separator, int* selected, int count, int item_height, NKVec2 size)
     {
         nk_combobox_separator(&ctx, items_separated_by_separator, separator, selected, count, item_height, size);
     }
 
-    /*void comboboxCallback(void function(void*, int, const(char) **), void*, int *selected, int count, int item_height, nk_vec2 size)
+    /*void comboboxCallback(void function(void*, int, const(char) **), void*, int *selected, int count, int item_height, NKVec2 size)
     {
     nk_combobox_callback(&ctx);
     }*/
     
-    int comboBeginText(const(char)* selected, int len, nk_vec2 size)
+    int comboBeginText(const(char)* selected, int len, NKVec2 size)
     {
         return nk_combo_begin_text(&ctx, selected, len, size);
     }
 
-    int comboBeginLabel(const(char)* selected, nk_vec2 size)
+    int comboBeginLabel(const(char)* selected, NKVec2 size)
     {
         return nk_combo_begin_label(&ctx, selected, size);
     }
 
-    int comboBeginColor(nk_color color, nk_vec2 size)
+    int comboBeginColor(NKColor color, NKVec2 size)
     {
         return nk_combo_begin_color(&ctx, color, size);
     }
 
-    int comboBeginSymbol(nk_symbol_type type, nk_vec2 size)
+    int comboBeginSymbol(nk_symbol_type type, NKVec2 size)
     {
         return nk_combo_begin_symbol(&ctx, type, size);
     }
 
-    int comboBeginSymbolLabel(const(char)* selected, nk_symbol_type type, nk_vec2 size)
+    int comboBeginSymbolLabel(const(char)* selected, nk_symbol_type type, NKVec2 size)
     {
         return nk_combo_begin_symbol_label(&ctx, selected, type, size);
     }
 
-    int comboBeginSymbolText(const(char)* selected, int len, nk_symbol_type type, nk_vec2 size)
+    int comboBeginSymbolText(const(char)* selected, int len, nk_symbol_type type, NKVec2 size)
     {
         return nk_combo_begin_symbol_text(&ctx, selected, len, type, size);
     }
 
-    int comboBeginImage(nk_image img, nk_vec2 size)
+    int comboBeginImage(NKImage img, NKVec2 size)
     {
         return nk_combo_begin_image(&ctx, img, size);
     }
 
-    int comboBeginImageLabel(const(char)* selected, nk_image img, nk_vec2 size)
+    int comboBeginImageLabel(const(char)* selected, NKImage img, NKVec2 size)
     {
         return nk_combo_begin_image_label(&ctx, selected, img, size);
     }
 
-    int comboBeginImageText(const(char)* selected, int len, nk_image img, nk_vec2 size)
+    int comboBeginImageText(const(char)* selected, int len, NKImage img, NKVec2 size)
     {
         return nk_combo_begin_image_text(&ctx, selected, len, img, size);
     }
 
-    int comboItemLabel(const(char)* label, nk_flags align_ment)
+    int comboItemLabel(const(char)* label, NKFlags align_ment)
     {
         return nk_combo_item_label(&ctx, label, align_ment);
     }
 
-    int comboItemText(const(char)* txt, int len, nk_flags align_ment)
+    int comboItemText(const(char)* txt, int len, NKFlags align_ment)
     {
         return nk_combo_item_text(&ctx, txt, len, align_ment);
     }
 
-    int comboItemImageLabel(nk_image img, const(char)* label, nk_flags align_ment)
+    int comboItemImageLabel(NKImage img, const(char)* label, NKFlags align_ment)
     {
         return nk_combo_item_image_label(&ctx, img, label, align_ment);
     }
 
-    int comboItemImageText(nk_image img, const(char)* txt, int len, nk_flags align_ment)
+    int comboItemImageText(NKImage img, const(char)* txt, int len, NKFlags align_ment)
     {
         return nk_combo_item_image_text(&ctx, img, txt, len, align_ment);
     }
 
-    int comboItemSymbolLabel(nk_symbol_type type, const(char)* label, nk_flags align_ment)
+    int comboItemSymbolLabel(nk_symbol_type type, const(char)* label, NKFlags align_ment)
     {
         return nk_combo_item_symbol_label(&ctx, type, label, align_ment);
     }
 
-    int comboItemSymbolText(nk_symbol_type type, const(char)* txt, int len, nk_flags align_ment)
+    int comboItemSymbolText(nk_symbol_type type, const(char)* txt, int len, NKFlags align_ment)
     {
         return nk_combo_item_symbol_text(&ctx, type, txt, len, align_ment);
     }
@@ -1447,37 +1510,37 @@ class NuklearGUI : Owner, Drawable
         nk_combo_end(&ctx);
     }
 
-    int contextualBegin(nk_flags flags, nk_vec2 size, nk_rect trigger_bounds)
+    int contextualBegin(NKFlags flags, NKVec2 size, NKRect trigger_bounds)
     {
         return nk_contextual_begin(&ctx, flags, size, trigger_bounds);
     }
 
-    int contextualItemText(const(char)* txt, int len, nk_flags align_)
+    int contextualItemText(const(char)* txt, int len, NKFlags align_)
     {
         return nk_contextual_item_text(&ctx, txt, len, align_);
     }
 
-    int contextualItemLabel(const(char)* label, nk_flags align_)
+    int contextualItemLabel(const(char)* label, NKFlags align_)
     {
         return nk_contextual_item_label(&ctx, label, align_);
     }
 
-    int contextualItemImageLabel(nk_image img, const(char)* label, nk_flags align_ment)
+    int contextualItemImageLabel(NKImage img, const(char)* label, NKFlags align_ment)
     {
         return nk_contextual_item_image_label(&ctx, img, label, align_ment);
     }
 
-    int contextualItemImageText(nk_image img, const(char)* txt, int len, nk_flags align_ment)
+    int contextualItemImageText(NKImage img, const(char)* txt, int len, NKFlags align_ment)
     {
         return nk_contextual_item_image_text(&ctx, img, txt, len, align_ment);
     }
 
-    int contextualItemSymbolLabel(nk_symbol_type type, const(char)* label, nk_flags align_ment)
+    int contextualItemSymbolLabel(nk_symbol_type type, const(char)* label, NKFlags align_ment)
     {
         return nk_contextual_item_symbol_label(&ctx, type, label, align_ment);
     }
 
-    int contextualItemSymbolText(nk_symbol_type type, const(char)* txt, int len, nk_flags align_ment)
+    int contextualItemSymbolText(nk_symbol_type type, const(char)* txt, int len, NKFlags align_ment)
     {
         return nk_contextual_item_symbol_text(&ctx, type, txt, len, align_ment);
     }
@@ -1497,15 +1560,12 @@ class NuklearGUI : Owner, Drawable
         nk_tooltip(&ctx, txt);
     }
 
-    /*void tooltipf(const(char)*, ...)
+    void tooltipf(const(char)* format, ...)
     {
-    nk_tooltipf(&ctx);
+        va_list args;
+        va_start(args, format);
+        nk_tooltipfv(&ctx, format, args);
     }
-
-    void tooltipfv(const(char)*, va_list)
-    {
-    nk_tooltipfv(&ctx);
-    }*/
     
     int tooltipBegin(float width)
     {
@@ -1527,72 +1587,72 @@ class NuklearGUI : Owner, Drawable
         nk_menubar_end(&ctx);
     }
 
-    int menuBeginText(const(char)* title, int title_len, nk_flags align_, nk_vec2 size)
+    int menuBeginText(const(char)* title, int title_len, NKFlags align_, NKVec2 size)
     {
         return nk_menu_begin_text(&ctx, title, title_len, align_, size);
     }
 
-    int menuBeginLabel(const(char)* label, nk_flags align_, nk_vec2 size)
+    int menuBeginLabel(const(char)* label, NKFlags align_, NKVec2 size)
     {
         return nk_menu_begin_label(&ctx, label, align_, size);
     }
 
-    int menuBeginImage(const(char)* label, nk_image img, nk_vec2 size)
+    int menuBeginImage(const(char)* label, NKImage img, NKVec2 size)
     {
         return nk_menu_begin_image(&ctx, label, img, size);
     }
 
-    int menuBeginImageText(const(char)* txt, int len, nk_flags align_, nk_image img, nk_vec2 size)
+    int menuBeginImageText(const(char)* txt, int len, NKFlags align_, NKImage img, NKVec2 size)
     {
         return nk_menu_begin_image_text(&ctx, txt, len, align_, img, size);
     }
 
-    int menuBeginImageLabel(const(char)* label, nk_flags align_, nk_image img, nk_vec2 size)
+    int menuBeginImageLabel(const(char)* label, NKFlags align_, NKImage img, NKVec2 size)
     {
         return nk_menu_begin_image_label(&ctx, label, align_, img, size);
     }
 
-    int menuBeginSymbol(const(char)* label, nk_symbol_type type, nk_vec2 size)
+    int menuBeginSymbol(const(char)* label, nk_symbol_type type, NKVec2 size)
     {
         return nk_menu_begin_symbol(&ctx, label, type, size);
     }
 
-    int menuBeginSymbolText(const(char)* txt, int len, nk_flags align_, nk_symbol_type type, nk_vec2 size)
+    int menuBeginSymbolText(const(char)* txt, int len, NKFlags align_, nk_symbol_type type, NKVec2 size)
     {
         return nk_menu_begin_symbol_text(&ctx, txt, len, align_, type, size);
     }
 
-    int menuBeginSymbolLabel(const(char)* label, nk_flags align_, nk_symbol_type type, nk_vec2 size)
+    int menuBeginSymbolLabel(const(char)* label, NKFlags align_, nk_symbol_type type, NKVec2 size)
     {
         return nk_menu_begin_symbol_label(&ctx, label, align_, type, size);
     }
 
-    int menuItemText(const(char)* txt, int len, nk_flags align_)
+    int menuItemText(const(char)* txt, int len, NKFlags align_)
     {
         return nk_menu_item_text(&ctx, txt, len, align_);
     }
 
-    int menuItemLabel(const(char)* label, nk_flags align_ment)
+    int menuItemLabel(const(char)* label, NKFlags align_ment)
     {
         return nk_menu_item_label(&ctx, label, align_ment);
     }
 
-    int menuItemImageLabel(nk_image img, const(char)* label, nk_flags align_ment)
+    int menuItemImageLabel(NKImage img, const(char)* label, NKFlags align_ment)
     {
         return nk_menu_item_image_label(&ctx, img, label, align_ment);
     }
 
-    int menuItemImageText(nk_image img, const(char)* txt, int len, nk_flags align_ment)
+    int menuItemImageText(NKImage img, const(char)* txt, int len, NKFlags align_ment)
     {
         return nk_menu_item_image_text(&ctx, img, txt, len, align_ment);
     }
 
-    int menuItemSymbolText(nk_symbol_type type, const(char)* txt, int len, nk_flags align_ment)
+    int menuItemSymbolText(nk_symbol_type type, const(char)* txt, int len, NKFlags align_ment)
     {
         return nk_menu_item_symbol_text(&ctx, type, txt, len, align_ment);
     }
 
-    int menuItemSymbolLabel(nk_symbol_type type, const(char)* label, nk_flags align_ment)
+    int menuItemSymbolLabel(nk_symbol_type type, const(char)* label, NKFlags align_ment)
     {
         return nk_menu_item_symbol_label(&ctx, type, label, align_ment);
     }
@@ -1612,19 +1672,24 @@ class NuklearGUI : Owner, Drawable
         nk_style_default(&ctx);
     }
 
-    void styleFromTable(const(nk_color)* colors)
+    void styleFromTable(const(NKColor)* colors)
     {
         nk_style_from_table(&ctx, colors);
     }
 
-    void styleLoadCursor(nk_style_cursor cursor, const(nk_cursor)* c)
+    void styleLoadCursor(nk_style_cursor cursor, const(NKCursor)* c)
     {
         nk_style_load_cursor(&ctx, cursor, c);
     }
     
-    void styleLoadAllCursors(nk_cursor* cursor)
+    void styleLoadAllCursors(NKCursor* cursor)
     {
         nk_style_load_all_cursors(&ctx, cursor);
+    }
+
+    void styleSetFont(const(NKFont)* font)
+    {
+        nk_style_set_font(&ctx, &font.handle);
     }
 
     void styleSetFont(const(nk_user_font)* font)
@@ -1657,7 +1722,7 @@ class NuklearGUI : Owner, Drawable
         return nk_style_push_float(&ctx, address, value);
     }
 
-    int stylePushVec2(nk_vec2* address, nk_vec2 value)
+    int stylePushVec2(NKVec2* address, NKVec2 value)
     {
         return nk_style_push_vec2(&ctx, address, value);
     }
@@ -1667,12 +1732,12 @@ class NuklearGUI : Owner, Drawable
         return nk_style_push_style_item(&ctx, address, value);
     }
 
-    int stylePushFlags(nk_flags* address, nk_flags value)
+    int stylePushFlags(NKFlags* address, NKFlags value)
     {
         return nk_style_push_flags(&ctx, address, value);
     }
 
-    int stylePushColor(nk_color* address, nk_color value)
+    int stylePushColor(NKColor* address, NKColor value)
     {
         return nk_style_push_color(&ctx, address, value);
     }
@@ -1705,5 +1770,168 @@ class NuklearGUI : Owner, Drawable
     int stylePopColor()
     {
         return nk_style_pop_color(&ctx);
+    }
+
+    // Primitives
+
+    void strokeLine(float x0, float y0, float x1, float y1, float line_thickness, NKColor color)
+    {
+        if(ctx.current)
+            nk_stroke_line(&ctx.current.buffer, x0, y0, x1, y1, line_thickness, color);
+    }
+
+    void strokeCurve(float ax, float ay, float ctrl0x, float ctrl0y, float ctrl1x, float ctrl1y, float bx, float by, float line_thickness, NKColor color)
+    {
+        if(ctx.current)
+            nk_stroke_curve(&ctx.current.buffer, ax, ay, ctrl0x, ctrl0y, ctrl1x, ctrl1y, bx, by, line_thickness, color);
+    }
+
+    void strokeRect(NKRect rect, float rounding, float line_thickness, NKColor color)
+    {
+        if(ctx.current)
+            nk_stroke_rect(&ctx.current.buffer, rect, rounding, line_thickness, color);
+    }
+
+    void strokeCircle(NKRect rect, float line_thickness, NKColor color)
+    {
+        if(ctx.current)
+            nk_stroke_circle(&ctx.current.buffer, rect, line_thickness, color);
+    }
+
+    void strokeArc(float cx, float cy, float radius, float a_min, float a_max, float line_thickness, NKColor color)
+    {
+        if(ctx.current)
+            nk_stroke_arc(&ctx.current.buffer, cx, cy, radius, a_min, a_max, line_thickness, color);
+    }
+
+    void strokeTriangle(float x0, float y0, float x1, float y1, float x2, float y2, float line_thichness, NKColor color)
+    {
+        if(ctx.current)
+            nk_stroke_triangle(&ctx.current.buffer, x0, y0, x1, y1, x2, y2, line_thichness, color);
+    }
+
+    void strokePolyline(float* points, int point_count, float line_thickness, NKColor color)
+    {
+        if(ctx.current)
+            nk_stroke_polyline(&ctx.current.buffer, points, point_count, line_thickness, color);
+    }
+
+    void strokePolygon(float* points, int point_count, float line_thickness, NKColor color)
+    {
+        if(ctx.current)
+            nk_stroke_polygon(&ctx.current.buffer, points, point_count, line_thickness, color);
+    }
+
+    void fillRect(NKRect rect, float rounding, NKColor color)
+    {
+        if(ctx.current)
+            nk_fill_rect(&ctx.current.buffer, rect, rounding, color);
+    }
+
+    void fillRectMultiColor(NKRect rect, NKColor left, NKColor top, NKColor right, NKColor bottom)
+    {
+        if(ctx.current)
+            nk_fill_rect_multi_color(&ctx.current.buffer, rect, left, top, right, bottom);
+    }
+
+    void fillCircle(NKRect rect, NKColor color)
+    {
+        if(ctx.current)
+            nk_fill_circle(&ctx.current.buffer, rect, color);
+    }
+
+    void fillArc(float cx, float cy, float radius, float a_min, float a_max, NKColor color)
+    {
+        if(ctx.current)
+            nk_fill_arc(&ctx.current.buffer, cx, cy, radius, a_min, a_max, color);
+    }
+
+    void fillTriangle(float x0, float y0, float x1, float y1, float x2, float y2, NKColor color)
+    {
+        if(ctx.current)
+            nk_fill_triangle(&ctx.current.buffer, x0, y0, x1, y1, x2, y2, color);
+    }
+
+    void fillPolygon(float* points, int point_count, NKColor color)
+    {
+        if(ctx.current)
+            nk_fill_polygon(&ctx.current.buffer, points, point_count, color);
+    }
+
+    void drawImage(NKRect rect, const(NKImage)* image, NKColor color)
+    {
+        if(ctx.current)
+            nk_draw_image(&ctx.current.buffer, rect, image, color);
+    }
+
+    void drawText(NKRect rect, const(char)* txt, int len, const(NKFont)* font, NKColor bg, NKColor fg)
+    {
+        drawText(rect, txt, len, &font.handle, bg, fg);
+    }
+
+    void drawText(NKRect rect, const(char)* txt, int len, const(nk_user_font)* font, NKColor bg, NKColor fg)
+    {
+        if(!font)
+            font = &atlas.default_font.handle;
+        if(ctx.current)
+            nk_draw_text(&ctx.current.buffer, rect, txt, len, font, bg, fg);
+    }
+
+    void pushScissor(NKRect rect)
+    {
+        if(ctx.current)
+            nk_push_scissor(&ctx.current.buffer, rect);
+    }
+
+    // Colors
+
+    NKColor rgb(int r, int g, int b)
+    {
+        return nk_rgb(r, g, b);
+    }
+
+    NKColor rgb(float r, float g, float b)
+    {
+        return nk_rgb_f(r, g, b);
+    }
+
+    NKColor rgb(char* hex)
+    {
+        return nk_rgb_hex(hex);
+    }
+
+    NKColor rgba(int r, int g, int b, int a)
+    {
+        return nk_rgba(r, g, b, a);
+    }
+
+    NKColor rgba(float r, float g, float b, float a)
+    {
+        return nk_rgba_f(r, g, b, a);
+    }
+
+    NKColor rgba(char* hex)
+    {
+        return nk_rgba_hex(hex);
+    }
+
+    NKColor hsv(int h, int s, int v)
+    {
+        return nk_hsv(h, s, v);
+    }
+
+    NKColor hsv(float h, float s, float v)
+    {
+        return nk_hsv_f(h, s, v);
+    }
+
+    NKColor hsva(int h, int s, int v, int a)
+    {
+        return nk_hsva(h, s, v, a);
+    }
+
+    NKColor hsva(float h, float s, float v, float a)
+    {
+        return nk_hsva_f(h, s, v, a);
     }
 }

@@ -245,21 +245,22 @@ class EventManager
 
                 case SDL_TEXTINPUT:
                     e = Event(EventType.TextInput);
-                    if ((event.text.text[0] & 0x80) == 0)
+                    char[] input = event.text.text;
+                    if ((input[0] & 0x80) == 0)
                     {
-                        e.unicode = *cast(ubyte*)(event.text.text);
+                        e.unicode = input[0];
                     }
-                    else if ((event.text.text[0] & 0xE0) == 0xC0)
+                    else if ((input[0] & 0xE0) == 0xC0)
                     {
-                        e.unicode = *cast(ushort*)(event.text.text);
+                        e.unicode = ((input[0] & 0x1F) << 6) | (input[1] & 0x3F);
                     }
-                    else if ((event.text.text[0] & 0xF0) == 0xE0)
+                    else if ((input[0] & 0xF0) == 0xE0)
                     {
-                        e.unicode = event.text.text[0] + event.text.text[1] >> 8 + event.text.text[2] >> 16;
+                        e.unicode = ((input[0] & 0x0F) << 12) | ((input[1] & 0x3F) << 6) | (input[2] & 0x3F);
                     }
-                    else if ((event.text.text[0] & 0xF8) == 0xF0)
+                    else if ((input[0] & 0xF8) == 0xF0)
                     {
-                        e.unicode = *cast(uint*)(event.text.text);
+                        e.unicode = (((input[0] & 0x0F) << 18) | ((input[1] & 0x3F) << 12) | ((input[2] & 0x3F) << 6) | (input[3] & 0x3F));
                     }
                     addEvent(e);
                     break;
