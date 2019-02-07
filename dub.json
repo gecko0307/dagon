@@ -19,7 +19,7 @@
         "dlib": "~master",
         "bindbc-opengl": "0.4.0",
         "bindbc-sdl": "0.4.1",
-        "bindbc-ft": "0.0.1",
+        "bindbc-ft": "0.1.0",
         "bindbc-nuklear": "0.1.0"
     },
 
