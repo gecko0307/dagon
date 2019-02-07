@@ -151,7 +151,7 @@ class CascadedShadowMap: ShadowMap
     float zStart = -300.0f;
     float zEnd = 300.0f;
 
-    float eyeSpaceNormalShift = 0.0;
+    float eyeSpaceNormalShift = 0.008f;
 
     this(LightSource light, uint size, float projSizeNear, float projSizeMid, float projSizeFar, float zStart, float zEnd, Owner o)
     {
