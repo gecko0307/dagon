@@ -49,6 +49,7 @@ abstract class EntityController: Owner
     void update(double dt);
 }
 
+/*
 class DefaultEntityController: EntityController
 {
     bool swapZY = false;
@@ -60,15 +61,15 @@ class DefaultEntityController: EntityController
 
     override void update(double dt)
     {
-        entity.transformation = 
+        entity.transformation =
             translationMatrix(entity.position) *
             entity.rotation.toMatrix4x4 *
             scaleMatrix(entity.scaling);
-            
+
         if (swapZY)
             entity.transformation = entity.transformation * rotationMatrix(Axis.x, degtorad(90.0f));
-            
+
         entity.invTransformation = entity.transformation.inverse;
     }
 }
-
+*/
