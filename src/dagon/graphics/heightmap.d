@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.graphics.heightmap;
 
+import std.math;
 import dlib.core.memory;
 import dlib.image.image;
 import dagon.core.ownership;
@@ -41,18 +42,18 @@ class ImageHeightmap: Owner, Heightmap
 {
     SuperImage img;
     float scale;
-    
+
     this(SuperImage img, float scale, Owner o)
     {
         super(o);
         this.img = img;
         this.scale = scale;
     }
-    
+
     float getHeight(float x, float z)
     {
         return img.bilinearPixel(
-            x * cast(float)img.width, 
+            x * cast(float)img.width,
             z * cast(float)img.height).r * scale;
     }
 }
@@ -60,7 +61,8 @@ class ImageHeightmap: Owner, Heightmap
 class OpenSimplexHeightmap: Owner, Heightmap
 {
     OpenSimplexNoise!float noise;
-    
+    bool tiling = true;
+
     // TODO: make customizeable
     float[2][3] scaleLayers =
     [
@@ -68,19 +70,33 @@ class OpenSimplexHeightmap: Owner, Heightmap
         [8.0, 20.0],
         [19.4, 15.0],
     ];
-    
+
     this(Owner o)
     {
         super(o);
         noise = New!(OpenSimplexNoise!float)(this);
     }
-    
-    float getHeight(float x, float z)
+
+    float getHeight(float s, float t)
     {
+        float multiplier = 1.0f / (2.0f * PI);
+
         float y = 0;
         foreach(psl; scaleLayers)
         {
-            y += noise.eval(x * psl[0], z * psl[0]) * psl[1];
+            if (tiling)
+            {
+                float nx = cos(s * 2.0f * PI) * multiplier;
+                float ny = cos(t * 2.0f * PI) * multiplier;
+                float nz = sin(s * 2.0f * PI) * multiplier;
+                float nw = sin(t * 2.0f * PI) * multiplier;
+
+                y += noise.eval(nx * psl[0], ny * psl[0], nz * psl[0], nw * psl[0]) * psl[1];
+            }
+            else
+            {
+                y += noise.eval(s * psl[0], t * psl[0]) * psl[1];
+            }
         }
         return y;
     }
