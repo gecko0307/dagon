@@ -70,19 +70,23 @@ class Terrain: Owner, Drawable
     {
         Mesh mesh = New!Mesh(o);
 
-        mesh.vertices = New!(Vector3f[])(w * h);
-        mesh.normals = New!(Vector3f[])(w * h);
-        mesh.texcoords = New!(Vector2f[])(w * h);
-        mesh.indices = New!(uint[3][])(w * h * 2);
+        size_t numVerts = w * h;
+        mesh.vertices = New!(Vector3f[])(numVerts);
+        mesh.normals = New!(Vector3f[])(numVerts);
+        mesh.texcoords = New!(Vector2f[])(numVerts);
+        mesh.indices = New!(uint[3][])(numVerts * 2);
 
         int i = 0;
         foreach(x; 0..w)
         foreach(z; 0..h)
         {
-            mesh.vertices[i] = Vector3f(x * scale, 0, z * scale);
+            float y = heightmap.getHeight(
+                cast(float)x / cast(float)(w-1),
+                cast(float)z / cast(float)(h-1));
+            mesh.vertices[i] = Vector3f(x * scale, y, z * scale);
             mesh.texcoords[i] = Vector2f(
-                cast(float)x / cast(float)w,
-                cast(float)z / cast(float)h);
+                cast(float)x / cast(float)(w-1),
+                cast(float)z / cast(float)(h-1));
             i += 1;
         }
 
@@ -98,16 +102,6 @@ class Terrain: Owner, Drawable
             mesh.indices[i] = [LU, RU, RB];
             mesh.indices[i+1] = [LU, RB, LB];
             i += 2;
-        }
-
-        foreach(x; 0..w)
-        foreach(z; 0..h)
-        {
-            uint vi = x + z * w;
-            mesh.vertices[vi].y =
-                heightmap.getHeight(
-                    cast(float)x / cast(float)w,
-                    cast(float)z / cast(float)h);
         }
 
         mesh.generateNormals();
