@@ -60,6 +60,27 @@ enum string[GLenum] GLErrorStrings = [
     GL_OUT_OF_MEMORY: "GL_OUT_OF_MEMORY"
 ];
 
+extern(System) nothrow void messageCallback(
+    GLenum source,
+    GLenum type,
+    GLuint id,
+    GLenum severity,
+    GLsizei length,
+    const GLchar* message,
+    const GLvoid* userParam)
+{
+    string msg = "%stype = 0x%x, severity = 0x%x, message = %s\n";
+    string err = "OpenGL error: ";
+    string empty = "";
+    if (severity != GL_DEBUG_SEVERITY_NOTIFICATION)
+        printf(msg.ptr, (type == GL_DEBUG_TYPE_ERROR ? err.ptr : empty.ptr), type, severity, message);
+    if (type == GL_DEBUG_TYPE_ERROR)
+    {
+        Application app = cast(Application)userParam;
+        app.eventManager.running = false;
+    }
+}
+
 /++
     Base class to inherit Dagon applications from.
     `Application` wraps SDL2 window, loads dynamic link libraries using Derelict,
@@ -166,8 +187,19 @@ class Application: EventListener
         
         glClear(GL_COLOR_BUFFER_BIT);
         SDL_GL_SwapWindow(window);
-
-        //checkGLError();
+        
+        debug
+        {
+            if (hasKHRDebug)
+            {
+                glEnable(GL_DEBUG_OUTPUT);
+                glDebugMessageCallback(&messageCallback, null);
+            }
+            else
+            {
+                writeln("GL_KHR_debug is not supported, debug output is not available");
+            }
+        }
     }
 
     override void onUserEvent(int code)

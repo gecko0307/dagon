@@ -437,6 +437,11 @@ class Shader: Owner
         if (rc.rebindShaderProgram)
             unbindProgram();
     }
+    
+    void validate()
+    {
+        glValidateProgram(program.program);
+    }
 
     ~this()
     {
