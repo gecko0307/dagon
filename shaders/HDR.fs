@@ -120,14 +120,14 @@ void main()
 
         float invSamplesMinusOne = 1.0 / float(nSamples - 1);
         float usedSamples = 1.0;
-        const float depthThreshold = 20.0;
+        const float depthThreshold = 1.0;
 
         for (int i = 1; i < nSamples; i++)
         {
             vec2 offset = blurVec * (float(i) * invSamplesMinusOne - 0.5);
             float mask = texture(fbVelocity, texCoord + offset).w;
             float depth = texture(fbPosition, texCoord + offset).z;
-            float depthWeight = 1.0; //1.0 - clamp(abs(depth - depthRef), 0.0, depthThreshold) / depthThreshold;
+            float depthWeight = 1.0 - clamp(abs(depth - depthRef), 0.0, depthThreshold) / depthThreshold;
             res += texture(fbColor, texCoord + offset).rgb * mask * depthWeight;
             usedSamples += mask * depthWeight;
         }
