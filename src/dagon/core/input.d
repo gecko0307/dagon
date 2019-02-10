@@ -92,17 +92,17 @@ class InputManager/* : Owner*/
         //
         // maybe use SDL_GetScancodeName for beter format with acctual names ?
 
-        if(value.length < 3)
+        if (value.length < 3)
             return;
 
         BindingType type;
 
-        /*if(strncmp(value.ptr, "kb", 2) == 0)*/
-        if(value[0] == 'k' && value[1] == 'b') type = BindingType.Keyboard;
-        else if(value[0] == 'm' && value[1] == 'a') type = BindingType.MouseAxis;
-        else if(value[0] == 'm' && value[1] == 'b') type = BindingType.MouseButton;
-        else if(value[0] == 'g' && value[1] == 'a') type = BindingType.GamepadAxis;
-        else if(value[0] == 'g' && value[1] == 'b') type = BindingType.GamepadButton;
+        /*if (strncmp(value.ptr, "kb", 2) == 0)*/
+        if (value[0] == 'k' && value[1] == 'b') type = BindingType.Keyboard;
+        else if (value[0] == 'm' && value[1] == 'a') type = BindingType.MouseAxis;
+        else if (value[0] == 'm' && value[1] == 'b') type = BindingType.MouseButton;
+        else if (value[0] == 'g' && value[1] == 'a') type = BindingType.GamepadAxis;
+        else if (value[0] == 'g' && value[1] == 'b') type = BindingType.GamepadButton;
         else return;
 
         int result = 0;
@@ -115,10 +115,7 @@ class InputManager/* : Owner*/
     bool getButton(string name)
     {
         auto binding = name in bindings;
-        if(!binding)
-            return false;
-
-        if(bindings.length == 0)
+        if (!binding)
             return false;
 
         switch(binding.type)
@@ -130,7 +127,7 @@ class InputManager/* : Owner*/
                 return eventManager.mouseButtonPressed[binding.button];
 
             case BindingType.MouseAxis:
-                if(binding.axis == 0)
+                if (binding.axis == 0)
                     return eventManager.mouseRelX == 0;
                 else if (binding.axis == 1)
                     return eventManager.mouseRelY == 0;
@@ -138,13 +135,71 @@ class InputManager/* : Owner*/
                 return false;
 
             case BindingType.GamepadButton:
-                if(eventManager.gameControllerAvailable)
+                if (eventManager.gameControllerAvailable)
                     return SDL_GameControllerGetButton(eventManager.controller, cast(SDL_GameControllerButton)binding.button) == 0;
                 return false;
 
             case BindingType.GamepadAxis:
-                if(eventManager.gameControllerAvailable)
+                if (eventManager.gameControllerAvailable)
                     return eventManager.gameControllerAxis(binding.axis) > 0.001;
+                return false;
+
+            default:
+                return false;
+        }
+    }
+
+    bool getButtonUp(string name)
+    {
+        auto binding = name in bindings;
+        if (!binding)
+            return false;
+
+        switch(binding.type)
+        {
+            case BindingType.Keyboard:
+                return eventManager.keyUp[binding.key];
+
+            case BindingType.MouseButton:
+                return eventManager.mouseButtonUp[binding.button];
+
+            case BindingType.MouseAxis:
+                // Do we want to track this?
+                return false;
+
+            case BindingType.GamepadButton:
+                return eventManager.controllerButtonUp[binding.button];
+
+            case BindingType.GamepadAxis:
+                // And track this?
+                return false;
+
+            default:
+                return false;
+        }
+    }
+
+    bool getButtonDown(string name)
+    {
+        auto binding = name in bindings;
+        if (!binding)
+            return false;
+
+        switch(binding.type)
+        {
+            case BindingType.Keyboard:
+                return eventManager.keyDown[binding.key];
+
+            case BindingType.MouseButton:
+                return eventManager.mouseButtonDown[binding.button];
+
+            case BindingType.MouseAxis:
+                return false;
+
+            case BindingType.GamepadButton:
+                return eventManager.controllerButtonDown[binding.button];
+
+            case BindingType.GamepadAxis:
                 return false;
 
             default:
@@ -155,7 +210,7 @@ class InputManager/* : Owner*/
     float getAxis(string name)
     {
         auto binding = name in bindings;
-        if(!binding)
+        if (!binding)
             return 0.0f;
 
         switch(binding.type)
@@ -167,7 +222,7 @@ class InputManager/* : Owner*/
                 return eventManager.mouseButtonPressed[binding.button] ? 1.0f : 0.0f;
 
             case BindingType.MouseAxis:
-                if(binding.axis == 0)
+                if (binding.axis == 0)
                     return eventManager.mouseRelX / (eventManager.windowWidth * 0.5f); // map to -1 to 1 range
                 else if (binding.axis == 1)
                     return eventManager.mouseRelY / (eventManager.windowHeight * 0.5f);
@@ -175,12 +230,12 @@ class InputManager/* : Owner*/
                 return 0.0f;
 
             case BindingType.GamepadButton:
-                if(eventManager.gameControllerAvailable)
+                if (eventManager.gameControllerAvailable)
                     return SDL_GameControllerGetButton(eventManager.controller, cast(SDL_GameControllerButton)binding.button);
                 return 0.0f;
 
             case BindingType.GamepadAxis:
-                if(eventManager.gameControllerAvailable)
+                if (eventManager.gameControllerAvailable)
                     return eventManager.gameControllerAxis(binding.axis);
                 return 0.0f;
 

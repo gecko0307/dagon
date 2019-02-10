@@ -856,6 +856,8 @@ class Scene: BaseScene
 
         if (view)
             lightManager.updateShadows(view, &renderer.rc3d, fixedTimeStep);
+
+        eventManager.resetUpDown();
     }
 
     override void onUpdate(double dt)
