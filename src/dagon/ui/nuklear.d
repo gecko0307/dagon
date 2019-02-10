@@ -349,6 +349,24 @@ class NuklearGUI : Owner, Drawable
     static const(NKRune[]) fontCyrillicGlyphRanges = [ 0x0020, 0x00FF,  0x0400, 0x052F, 0x2DE0, 0x2DFF, 0xA640, 0xA69F, 0 ];
     static const(NKRune[]) fontKoreanGlyphRanges = [ 0x0020, 0x00FF, 0x3131, 0x3163,  0xAC00, 0xD79D, 0 ];
 
+    static const(NKRune[]) fontLocaleGlyphRanges()
+    {
+        import dagon.ui.locale;
+        import std.algorithm.searching;
+
+        string loc = getLocale();
+
+        if(loc.startsWith("zh"))      return fontChineseGlyphRanges;
+        else if(loc.startsWith("ru")) return fontCyrillicGlyphRanges;
+        else if(loc.startsWith("ko")) return fontKoreanGlyphRanges;
+        else if(loc.startsWith("de")) return fontLatinExtendedAGlyphRanges;
+        else if(loc.startsWith("pl")) return fontLatinExtendedAGlyphRanges;
+
+        // TODO: add more languages
+
+        return fontDefaultGlyphRanges;
+    }
+
     NKFont* addFont(FontAsset font, float height = 13, const(NKRune[]) range = fontDefaultGlyphRanges)
     {
         return addFont(font.buffer.ptr, font.buffer.length, height, range);
