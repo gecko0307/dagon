@@ -30,6 +30,7 @@ module dagon.ui.nuklear;
 import core.stdc.stdarg;
 
 import dlib.image.color;
+import dlib.container.array;
 
 import dagon.core.interfaces;
 import dagon.core.libs;
@@ -121,10 +122,11 @@ class NuklearGUI : Owner, Drawable
     int eventsCount = 0;
 
     nk_context ctx;
-    nk_font_atlas atlas;
     nk_buffer cmds;
     nk_draw_null_texture nullTexture;
-    nk_font* lastFont;
+
+    DynamicArray!nk_font_atlas atlases;
+    DynamicArray!GLuint fontsTextures;
 
     GLuint vbo;
     GLuint vao;
@@ -141,8 +143,6 @@ class NuklearGUI : Owner, Drawable
     GLint textureLoc;
     GLint projectionMatrixLoc;
 
-    GLuint fontTexture;
-
     string vs = import("Nuklear.vs");
     string fs = import("Nuklear.fs");
 
@@ -154,6 +154,9 @@ class NuklearGUI : Owner, Drawable
 
         eventManager = em;
 
+        atlases = DynamicArray!nk_font_atlas();
+        fontsTextures = DynamicArray!GLuint();
+
         nk_init_default(&ctx, null);
 
         ctx.clip.copy = cast(nk_plugin_copy)&clipboardCopy;
@@ -164,19 +167,27 @@ class NuklearGUI : Owner, Drawable
 
         prepareVAO();
 
-        nk_font_atlas_init_default(&atlas);
-
-        generateFontAtlas();
+        addFont(null, 0, 13.0f); // load default font
     }
 
     ~this()
     {
-        nk_font_atlas_clear(&atlas);
+        if (atlases.length)
+        {
+            foreach(atlas; atlases)
+                nk_font_atlas_clear(&atlas);
+            atlases.free();
+        }
         nk_free(&ctx);
         nk_buffer_free(&cmds);
 
-        glDeleteProgram(shaderProgram); 
-        glDeleteTextures(1, &fontTexture);
+        glDeleteProgram(shaderProgram);
+        if (fontsTextures.length)
+        {
+            foreach(tex; fontsTextures)
+                glDeleteTextures(1, &tex);
+            fontsTextures.free();
+        }
         glDeleteBuffers(1, &vbo);
         glDeleteBuffers(1, &ebo);
     }
@@ -218,34 +229,6 @@ class NuklearGUI : Owner, Drawable
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
-    }
-
-    void generateFontAtlas()
-    {
-        if(atlas.default_font && !lastFont)
-            return;
-
-        nk_font_atlas_begin(&atlas);
-
-        if(atlas.font_num == 0)
-            atlas.default_font = nk_font_atlas_add_default(&atlas, 13.0f, null);
-        else
-            atlas.default_font = lastFont;
-
-        int w = 0;
-        int h = 0;
-        const(void)* image = nk_font_atlas_bake(&atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
-
-        glGenTextures(1, &fontTexture);
-        glBindTexture(GL_TEXTURE_2D, fontTexture);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cast(GLsizei)w, cast(GLsizei)h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-
-        nk_font_atlas_end(&atlas, nk_handle_id(cast(int)fontTexture), &nullTexture);
-        nk_style_set_font(&ctx, &atlas.default_font.handle);
-
-        lastFont = null;
     }
 
     override void update(double dt)
@@ -440,9 +423,54 @@ class NuklearGUI : Owner, Drawable
 
     NKFont* addFont(FontAsset font, float height = 13, const(NKRune[]) range = fontDefaultGlyphRanges)
     {
+        return addFont(font.buffer.ptr, font.buffer.length, height, range);
+    }
+
+    NKFont* addFont(ubyte* buffer, ulong len, float height = 13, const(NKRune[]) range = fontDefaultGlyphRanges)
+    {
         nk_font_config cfg = nk_font_config_(0);
         cfg.range = range.ptr;
-        return lastFont = nk_font_atlas_add_from_memory(&atlas, font.buffer.ptr, font.buffer.length, height, &cfg);
+
+        nk_font_atlas atlas;
+        nk_font_atlas_init_default(&atlas);
+        nk_font_atlas_begin(&atlas);
+
+        nk_font* nkfont;
+        if(buffer)
+            nkfont = nk_font_atlas_add_from_memory(&atlas, buffer, cast(int)len, height, &cfg);
+        else
+            nkfont = nk_font_atlas_add_default(&atlas, height, &cfg);
+
+        atlas.default_font = nkfont;
+
+        int w = 0;
+        int h = 0;
+        const(void)* image = nk_font_atlas_bake(&atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
+
+        GLuint texture;
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cast(GLsizei)w, cast(GLsizei)h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+
+        nk_font_atlas_end(&atlas, nk_handle_id(cast(int)texture), &nullTexture);
+        nk_style_set_font(&ctx, &atlas.default_font.handle);
+
+        atlases.insertBack(atlas);
+        fontsTextures.insertBack(texture);
+
+        return nkfont;
+    }
+
+    deprecated("No need to call generateFontAtlas()") void generateFontAtlas() {}
+
+    NKFont* getFont(uint index)
+    {
+        if(index >= atlases.length)
+            return atlases[0].default_font;
+
+        return atlases[index].default_font;
     }
 
     float textWidth(const(char)* txt, int len)
@@ -1759,6 +1787,11 @@ class NuklearGUI : Owner, Drawable
         nk_style_load_all_cursors(&ctx, cursor);
     }
 
+    void styleSetFont(uint index)
+    {
+        nk_style_set_font(&ctx, &(getFont(index)).handle);
+    }
+
     void styleSetFont(const(NKFont)* font)
     {
         nk_style_set_font(&ctx, &font.handle);
@@ -1944,7 +1977,7 @@ class NuklearGUI : Owner, Drawable
     void drawText(NKRect rect, const(char)* txt, int len, const(nk_user_font)* font, NKColor bg, NKColor fg)
     {
         if(!font)
-            font = &atlas.default_font.handle;
+            font = &atlases[0].default_font.handle;
         if(ctx.current)
             nk_draw_text(&ctx.current.buffer, rect, txt, len, font, bg, fg);
     }
