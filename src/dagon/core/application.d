@@ -74,11 +74,6 @@ extern(System) nothrow void messageCallback(
     string empty = "";
     if (severity != GL_DEBUG_SEVERITY_NOTIFICATION)
         printf(msg.ptr, (type == GL_DEBUG_TYPE_ERROR ? err.ptr : empty.ptr), type, severity, message);
-    if (type == GL_DEBUG_TYPE_ERROR)
-    {
-        Application app = cast(Application)userParam;
-        app.eventManager.running = false;
-    }
 }
 
 /++
