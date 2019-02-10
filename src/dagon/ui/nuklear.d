@@ -171,14 +171,22 @@ class NuklearGUI : Owner, Drawable
 
     ~this()
     {
-        foreach(atlas; atlases)
-            nk_font_atlas_clear(&atlas);
+        if (atlases.length)
+        {
+            foreach(atlas; atlases)
+                nk_font_atlas_clear(&atlas);
+            atlases.free();
+        }
         nk_free(&ctx);
         nk_buffer_free(&cmds);
 
-        glDeleteProgram(shaderProgram); 
-        foreach(tex; fontsTextures)
-            glDeleteTextures(1, &tex);
+        glDeleteProgram(shaderProgram);
+        if (fontsTextures.length)
+        {
+            foreach(tex; fontsTextures)
+                glDeleteTextures(1, &tex);
+            fontsTextures.free();
+        }
         glDeleteBuffers(1, &vbo);
         glDeleteBuffers(1, &ebo);
     }
