@@ -116,7 +116,6 @@ public
     import dagon.ui.ftfont;
     import dagon.ui.textline;
     import dagon.ui.nuklear;
-    import dagon.ui.locale;
 
     import dagon.physics;
 }
