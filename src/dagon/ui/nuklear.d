@@ -1715,6 +1715,11 @@ class NuklearGUI : Owner, Drawable
         nk_style_load_all_cursors(&ctx, cursor);
     }
 
+    void styleSetFont(uint index)
+    {
+        nk_style_set_font(&ctx, &(getFont(index)).handle);
+    }
+
     void styleSetFont(const(NKFont)* font)
     {
         nk_style_set_font(&ctx, &font.handle);
