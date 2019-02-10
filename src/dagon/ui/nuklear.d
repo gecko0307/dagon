@@ -383,7 +383,7 @@ class NuklearGUI : Owner, Drawable
 
         nk_font* nkfont;
         if(buffer)
-            nkfont = nk_font_atlas_add_from_memory(&atlas, buffer, len, height, &cfg);
+            nkfont = nk_font_atlas_add_from_memory(&atlas, buffer, cast(int)len, height, &cfg);
         else
             nkfont = nk_font_atlas_add_default(&atlas, height, &cfg);
 
