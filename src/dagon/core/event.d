@@ -87,6 +87,7 @@ class EventManager
 
     bool[512] keyPressed = false;
     bool[255] mouseButtonPressed = false;
+    bool[255] controllerButtonPressed = false;
     int mouseX = 0;
     int mouseY = 0;
     int mouseRelX = 0;
@@ -315,9 +316,15 @@ class EventManager
                 case SDL_CONTROLLERBUTTONDOWN:
                     // TODO: add state modification
                     if (event.cbutton.state == SDL_PRESSED)
+                    {
+                        controllerButtonPressed[event.cbutton.button] = true;
                         e = Event(EventType.JoystickButtonDown);
+                    }
                     else if (event.cbutton.state == SDL_RELEASED)
+                    {
+                        controllerButtonPressed[event.cbutton.button] = false;
                         e = Event(EventType.JoystickButtonUp);
+                    }
                     e.joystickButton = event.cbutton.button;
                     addEvent(e);
                     break;
@@ -325,9 +332,15 @@ class EventManager
                 case SDL_CONTROLLERBUTTONUP: 
                     // TODO: add state modification
                     if (event.cbutton.state == SDL_PRESSED)
+                    {
+                        controllerButtonPressed[event.cbutton.button] = true;
                         e = Event(EventType.JoystickButtonDown);
+                    }
                     else if (event.cbutton.state == SDL_RELEASED)
+                    {
+                        controllerButtonPressed[event.cbutton.button] = false;
                         e = Event(EventType.JoystickButtonUp);
+                    }
                     e.joystickButton = event.cbutton.button;
                     addEvent(e);
                     break;
