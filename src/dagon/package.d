@@ -43,6 +43,7 @@ public
     import dagon.core.event;
     import dagon.core.keycodes;
     import dagon.core.vfs;
+    import dagon.core.locale;
 
     import dagon.resource.scene;
     import dagon.resource.asset;

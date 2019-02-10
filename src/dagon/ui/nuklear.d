@@ -37,6 +37,7 @@ import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.core.event;
 import dagon.core.keycodes;
+import dagon.core.locale;
 import dagon.graphics.shaderloader;
 import dagon.graphics.texture;
 import dagon.resource.fontasset;
@@ -342,12 +343,83 @@ class NuklearGUI : Owner, Drawable
         glDisable(GL_SCISSOR_TEST);
     }
 
+    // TODO: move this to a separate module for easier extending?
     static const(NKRune[]) fontDefaultGlyphRanges = [ 0x0020, 0x00FF, 0 ];
     static const(NKRune[]) fontLatinExtendedAGlyphRanges = [ 0x0020, 0x017F, 0 ];
     static const(NKRune[]) fontLatinExtendedBGlyphRanges = [ 0x0020, 0x024F, 0 ];
-    static const(NKRune[]) fontChineseGlyphRanges = [ 0x0020, 0x00FF, 0x3000, 0x30FF, 0x31F0, 0x31FF, 0xFF00, 0xFFEF, 0x4E00, 0x9FAF, 0 ];
     static const(NKRune[]) fontCyrillicGlyphRanges = [ 0x0020, 0x00FF,  0x0400, 0x052F, 0x2DE0, 0x2DFF, 0xA640, 0xA69F, 0 ];
+    static const(NKRune[]) fontGreekGlyphRanges = [ 0x0020, 0x00FF, 0x0370, 0x03FF, 0 ];
+    static const(NKRune[]) fontChineseGlyphRanges = [ 0x0020, 0x00FF, 0x3000, 0x30FF, 0x31F0, 0x31FF, 0xFF00, 0xFFEF, 0x4E00, 0x9FAF, 0 ];
+    static const(NKRune[]) fontJapaneseGlyphRanges = [ 0x0020, 0x00FF, 0x3000, 0x303F, 0x3040, 0x309F, 0x30A0, 0x30FF, 0 ];
     static const(NKRune[]) fontKoreanGlyphRanges = [ 0x0020, 0x00FF, 0x3131, 0x3163,  0xAC00, 0xD79D, 0 ];
+    static const(NKRune[]) fontHebrewGlyphRanges = [ 0x0020, 0x00FF, 0x0590, 0x05FF, 0 ];
+    static const(NKRune[]) fontArabicGlyphRanges = [ 0x0020, 0x00FF, 0x0600, 0x06FF, 0 ];
+    static const(NKRune[]) fontArmenianGlyphRanges = [ 0x0020, 0x00FF, 0x0530, 0x058F, 0 ];
+    static const(NKRune[]) fontGeorgianGlyphRanges = [ 0x0020, 0x00FF, 0x10A0, 0x10FF, 0 ];
+    
+    static const(NKRune[]) localeGlyphRanges(string locale = systemLocale())
+    {
+        if (locale == "ru_RU" || // Russian
+            locale == "tt_RU")   // Tatar
+            return fontCyrillicGlyphRanges;
+            
+        else if (locale == "fr_FR" || // French
+                 locale == "de_DE" || // German
+                 locale == "is_IS" || // Icelandic
+                 locale == "es_ES" || // Spanish
+                 locale == "ca_ES" || // Catalan
+                 locale == "pl_PL" || // Polish
+                 locale == "cs_CZ" || // Czech
+                 locale == "lv_LV" || // Latvian
+                 locale == "lt_LT" || // Lithuanian
+                 locale == "sk_SK" || // Slovak
+                 locale == "tr_TR" || // Turkish
+                 locale == "cy_GB")   // Welsh
+            return fontLatinExtendedAGlyphRanges;
+            
+        else if (locale == "el_GR") // Greek
+            return fontGreekGlyphRanges;
+            
+        else if (locale == "zh_CN") // Chinese
+            return fontChineseGlyphRanges;
+            
+        else if (locale == "ja_JP") // Japanese
+            return fontJapaneseGlyphRanges;
+            
+        else if (locale == "ko_KR") // Korean
+            return fontKoreanGlyphRanges;
+            
+        else if (locale == "he_IL") // Hebrew
+            return fontHebrewGlyphRanges;
+            
+        else if (locale == "ar_AE" || // Arabic (United Arab Emirates)
+                 locale == "ar_DZ" || // Arabic (Algeria)
+                 locale == "ar_BH" || // Arabic (Bahrain)
+                 locale == "ar_EG" || // Arabic (Egypt)
+                 locale == "ar_IQ" || // Arabic (Iraq)
+                 locale == "ar_JO" || // Arabic (Jordan)
+                 locale == "ar_KW" || // Arabic (Kuwait)
+                 locale == "ar_LB" || // Arabic (Lebanon)
+                 locale == "ar_LY" || // Arabic (Libya)
+                 locale == "ar_MA" || // Arabic (Morocco)
+                 locale == "ar_OM" || // Arabic (Oman)
+                 locale == "ar_QA" || // Arabic (Qatar)
+                 locale == "ar_SA" || // Arabic (Saudi Arabia)
+                 locale == "ar_SD" || // Arabic (Sudan)
+                 locale == "ar_SY" || // Arabic (Syria)
+                 locale == "ar_TN" || // Arabic (Tunisia)
+                 locale == "ar_YE")   // Arabic (Yemen)
+            return fontArabicGlyphRanges;
+            
+        else if (locale == "hy_AM") // Armenian 
+            return fontArmenianGlyphRanges;
+            
+        else if (locale == "ka_GE") // Georgian 
+            return fontArmenianGlyphRanges;
+            
+        else // Assume English
+            return fontDefaultGlyphRanges;
+    }
 
     static const(NKRune[]) fontLocaleGlyphRanges()
     {
