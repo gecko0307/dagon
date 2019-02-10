@@ -385,6 +385,14 @@ class NuklearGUI : Owner, Drawable
 
     deprecated("No need to call generateFontAtlas()") void generateFontAtlas() {}
 
+    NKFont* getFont(uint index)
+    {
+        if(index >= atlases.length)
+            return atlases[0].default_font;
+
+        return atlases[index].default_font;
+    }
+
     float textWidth(const(char)* txt, int len)
     {
         const(nk_user_font) *f = ctx.style.font;
