@@ -32,6 +32,7 @@ import std.stdio;
 import std.ascii;
 import std.conv;
 import dlib.core.memory;
+import dlib.container.array;
 import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.resource.asset;
@@ -86,8 +87,19 @@ class EventManager
     bool running = true;
 
     bool[512] keyPressed = false;
+    bool[512] keyUp = false;
+    bool[512] keyDown = false;
+
     bool[255] mouseButtonPressed = false;
+    bool[255] mouseButtonUp = false;
+    bool[255] mouseButtonDown = false;
+
     bool[255] controllerButtonPressed = false;
+    bool[255] controllerButtonUp = false;
+    bool[255] controllerButtonDown = false;
+
+    DynamicArray!(bool*) toReset; // Used for resetting UP and DOWN events after end of frame
+
     int mouseX = 0;
     int mouseY = 0;
     int mouseRelX = 0;
@@ -137,6 +149,13 @@ class EventManager
         {
             joystick = SDL_JoystickOpen(0);
         }
+
+        toReset = DynamicArray!(bool*)();
+    }
+
+    ~this()
+    {
+        toReset.free();
     }
 
     void addEvent(Event e)
@@ -232,6 +251,9 @@ class EventManager
                         break;
 
                     keyPressed[event.key.keysym.scancode] = true;
+                    keyDown[event.key.keysym.scancode] = true;
+                    toReset.insertBack(&keyDown[event.key.keysym.scancode]);
+
                     e = Event(EventType.KeyDown);
                     e.key = event.key.keysym.scancode;
                     addEvent(e);
@@ -239,6 +261,9 @@ class EventManager
 
                 case SDL_KEYUP:
                     keyPressed[event.key.keysym.scancode] = false;
+                    keyUp[event.key.keysym.scancode] = true;
+                    toReset.insertBack(&keyUp[event.key.keysym.scancode]);
+
                     e = Event(EventType.KeyUp);
                     e.key = event.key.keysym.scancode;
                     addEvent(e);
@@ -275,6 +300,9 @@ class EventManager
 
                 case SDL_MOUSEBUTTONDOWN:
                     mouseButtonPressed[event.button.button] = true;
+                    mouseButtonDown[event.button.button] = true;
+                    toReset.insertBack(&mouseButtonDown[event.button.button]);
+
                     e = Event(EventType.MouseButtonDown);
                     e.button = event.button.button;
                     addEvent(e);
@@ -282,6 +310,9 @@ class EventManager
 
                 case SDL_MOUSEBUTTONUP:
                     mouseButtonPressed[event.button.button] = false;
+                    mouseButtonUp[event.button.button] = true;
+                    toReset.insertBack(&mouseButtonUp[event.button.button]);
+
                     e = Event(EventType.MouseButtonUp);
                     e.button = event.button.button;
                     addEvent(e);
@@ -315,32 +346,22 @@ class EventManager
 
                 case SDL_CONTROLLERBUTTONDOWN:
                     // TODO: add state modification
-                    if (event.cbutton.state == SDL_PRESSED)
-                    {
-                        controllerButtonPressed[event.cbutton.button] = true;
-                        e = Event(EventType.JoystickButtonDown);
-                    }
-                    else if (event.cbutton.state == SDL_RELEASED)
-                    {
-                        controllerButtonPressed[event.cbutton.button] = false;
-                        e = Event(EventType.JoystickButtonUp);
-                    }
+                    controllerButtonPressed[event.cbutton.button] = true;
+                    controllerButtonDown[event.cbutton.button] = true;
+                    toReset.insertBack(&controllerButtonDown[event.cbutton.button]);
+
+                    e = Event(EventType.JoystickButtonDown);
                     e.joystickButton = event.cbutton.button;
                     addEvent(e);
                     break;
 
                 case SDL_CONTROLLERBUTTONUP: 
                     // TODO: add state modification
-                    if (event.cbutton.state == SDL_PRESSED)
-                    {
-                        controllerButtonPressed[event.cbutton.button] = true;
-                        e = Event(EventType.JoystickButtonDown);
-                    }
-                    else if (event.cbutton.state == SDL_RELEASED)
-                    {
-                        controllerButtonPressed[event.cbutton.button] = false;
-                        e = Event(EventType.JoystickButtonUp);
-                    }
+                    controllerButtonPressed[event.cbutton.button] = false;
+                    controllerButtonUp[event.cbutton.button] = true;
+                    toReset.insertBack(&controllerButtonUp[event.cbutton.button]);
+
+                    e = Event(EventType.JoystickButtonUp);
                     e.joystickButton = event.cbutton.button;
                     addEvent(e);
                     break;
@@ -469,6 +490,16 @@ class EventManager
     float aspectRatio()
     {
         return cast(float)windowWidth / cast(float)windowHeight;
+    }
+
+    void resetUpDown()
+    {
+        // reset all UP and DOWN events
+        foreach(key; toReset)
+        {
+            *key = false;
+        }
+        toReset.removeBack(cast(uint)toReset.length);
     }
 }
 
