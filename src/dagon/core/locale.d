@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019 Mateusz Muszyński
+Copyright (c) 2019 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,40 +25,67 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.ui.locale;
+module dagon.core.locale;
 
-import std.string;
 import std.conv;
+import std.format;
 import std.process;
 
-enum defaultLocale = "en_US";
-
-string getLocale()
+version(Windows)
 {
+    extern(Windows) int GetLocaleInfoW(
+        in uint Locale,
+        in uint LCType,
+        wchar* lpLCData,
+        in int cchData
+    );
+    
+    extern(Windows) int GetLocaleInfoA(
+        in uint Locale,
+        in uint LCType,
+        char* lpLCData,
+        in int cchData
+    );
+    
+    enum uint LOCALE_USER_DEFAULT = 0x0400;
+    enum uint LOCALE_SISO639LANGNAME = 0x59;
+    enum uint LOCALE_SISO3166CTRYNAME = 0x5a;
+}
+
+private string syslocale = "en_US";
+static this()
+{
+    // TODO: don't use GC
     version(Windows)
     {
-        import core.sys.windows.windows;
-
-        char[16] str;
-        int len = 0;
-        if ((len = GetLocaleInfoA(LOCALE_USER_DEFAULT, LOCALE_SISO639LANGNAME, str.ptr, str.length)) != 3)
-            return defaultLocale;
-
-        if (GetLocaleInfoA(LOCALE_USER_DEFAULT, LOCALE_SISO3166CTRYNAME, str.ptr + 3, str.length - 3) != 3)
-            return defaultLocale;
-
-        str[2] = '_';
-
-        return to!string(str.ptr); // hmm, memory allocation?
+        string getLanguage()
+        {
+            char[16] str;
+            GetLocaleInfoA(LOCALE_USER_DEFAULT, LOCALE_SISO639LANGNAME, str.ptr, str.length);
+            return str.ptr.to!string;
+        }
+        
+        string getCountry()
+        {
+            char[16] str;
+            GetLocaleInfoA(LOCALE_USER_DEFAULT, LOCALE_SISO3166CTRYNAME, str.ptr, str.length);
+            return str.ptr.to!string;
+        }
+    
+        string lang = getLanguage();
+        string country = getCountry();
+        syslocale = format("%s_%s", lang, country);
     }
     else version(Posix)
     {
-        return environment.get("LANG", defaultLocale);
-    }
-    else
-    {
-        return defaultLocale;
+        string lang = environment.get("LANG", "en_US.utf8");
+        string locale, encoding;
+        formattedRead(lang, "%s.%s", &locale, &encoding);
+        syslocale = locale;
     }
 }
 
-
+string systemLocale()
+{
+    return syslocale;
+}
