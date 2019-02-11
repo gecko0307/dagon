@@ -35,6 +35,7 @@ import dlib.core.memory;
 import dlib.container.array;
 import dagon.core.libs;
 import dagon.core.ownership;
+import dagon.core.input;
 import dagon.resource.asset;
 
 enum EventType
@@ -121,6 +122,8 @@ class EventManager
     SDL_GameController* controller = null;
     SDL_Joystick* joystick = null;
 
+    InputManager inputManager;
+
     this(SDL_Window* win, uint winWidth, uint winHeight)
     {
         window = win;
@@ -151,11 +154,14 @@ class EventManager
         }
 
         toReset = DynamicArray!(bool*)();
+
+        inputManager = New!InputManager(this);
     }
 
     ~this()
     {
         toReset.free();
+        Delete(inputManager);
     }
 
     void addEvent(Event e)
@@ -506,12 +512,14 @@ class EventManager
 abstract class EventListener: Owner
 {
     EventManager eventManager;
+    InputManager inputManager;
     bool enabled = true;
 
     this(EventManager emngr, Owner owner)
     {
         super(owner);
         eventManager = emngr;
+        inputManager = emngr.inputManager;
     }
 
     protected void generateUserEvent(int code)
