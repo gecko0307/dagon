@@ -73,14 +73,18 @@ class InputManager/* : Owner*/
         bindings = dict!(Binding, string)();
     }
 
-    void addBinding(string name, BindingType type, int value)
+    ~this()
+    {
+        d.free();
+    }
+
+    void setBinding(string name, BindingType type, int value)
     {
         bindings[name] = Binding(name, type, value);
     }
 
-    void addBinding(string name, string value)
+    void setBinding(string name, string value)
     {
-        import core.stdc.string;
         // Binding format consist of device type and number in
         // decimal coresponding to button or axis of this device
         // eg. kb101, ma0, mb1, gb4, ga1
@@ -97,7 +101,6 @@ class InputManager/* : Owner*/
 
         BindingType type;
 
-        /*if (strncmp(value.ptr, "kb", 2) == 0)*/
         if (value[0] == 'k' && value[1] == 'b') type = BindingType.Keyboard;
         else if (value[0] == 'm' && value[1] == 'a') type = BindingType.MouseAxis;
         else if (value[0] == 'm' && value[1] == 'b') type = BindingType.MouseButton;
@@ -128,9 +131,9 @@ class InputManager/* : Owner*/
 
             case BindingType.MouseAxis:
                 if (binding.axis == 0)
-                    return eventManager.mouseRelX == 0;
+                    return eventManager.mouseRelX != 0;
                 else if (binding.axis == 1)
-                    return eventManager.mouseRelY == 0;
+                    return eventManager.mouseRelY != 0;
 
                 return false;
 
