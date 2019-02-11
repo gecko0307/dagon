@@ -38,6 +38,7 @@ import dagon.core.event;
 import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.resource.asset;
+import dagon.resource.config;
 
 enum BindingType
 {
@@ -61,12 +62,11 @@ struct Binding
     }
 }
 
-class InputManager/* : Owner*/
+class InputManager
 {
     EventManager eventManager;
 
     Dict!(Binding, string) bindings;
-    //Dict!(DynamicArray!Binding, string) bindings;
 
     this(EventManager em)
     {
@@ -160,9 +160,7 @@ class InputManager/* : Owner*/
                 return false;
 
             case BindingType.GamepadButton:
-                if (eventManager.gameControllerAvailable)
-                    return SDL_GameControllerGetButton(eventManager.controller, cast(SDL_GameControllerButton)binding.button) == 0;
-                return false;
+                return eventManager.controllerButtonPressed[binding.button];
 
             case BindingType.GamepadAxis:
                 if (eventManager.gameControllerAvailable)
@@ -255,13 +253,12 @@ class InputManager/* : Owner*/
                 return 0.0f;
 
             case BindingType.GamepadButton:
-                if (eventManager.gameControllerAvailable)
-                    return SDL_GameControllerGetButton(eventManager.controller, cast(SDL_GameControllerButton)binding.button);
-                return 0.0f;
+                return eventManager.controllerButtonPressed[binding.button] ? 1.0f : 0.0f;
 
             case BindingType.GamepadAxis:
                 if (eventManager.gameControllerAvailable)
                     return eventManager.gameControllerAxis(binding.axis);
+
                 return 0.0f;
 
             default:

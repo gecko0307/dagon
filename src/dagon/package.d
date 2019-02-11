@@ -43,7 +43,7 @@ public
     import dagon.core.event;
     import dagon.core.keycodes;
     import dagon.core.vfs;
-    import dagon.core.local;
+    import dagon.core.locale;
     import dagon.core.input;
 
     import dagon.resource.scene;
@@ -117,7 +117,6 @@ public
     import dagon.ui.ftfont;
     import dagon.ui.textline;
     import dagon.ui.nuklear;
-    import dagon.ui.locale;
 
     import dagon.physics;
 }
