@@ -31,6 +31,7 @@ module dagon.core.input;
 import std.stdio;
 import std.ascii;
 import std.conv;
+import std.algorithm.searching : startsWith;
 import dlib.core.memory;
 import dlib.container.dict;
 import dagon.core.event;
@@ -75,7 +76,7 @@ class InputManager/* : Owner*/
 
     ~this()
     {
-        d.free();
+        bindings.free();
     }
 
     void setBinding(string name, BindingType type, int value)
@@ -85,32 +86,53 @@ class InputManager/* : Owner*/
 
     void setBinding(string name, string value)
     {
-        // Binding format consist of device type and number in
-        // decimal coresponding to button or axis of this device
-        // eg. kb101, ma0, mb1, gb4, ga1
+        // Binding format consist of device type and name(or number)
+        // coresponding to button or axis of this device
+        // eg. kb_up, kb_w, ma_0, mb_1, gb_a, gb_x, ga_leftx, ga_lefttrigger
         // kb -> keybaord
         // ma -> mouse axis
         // mb -> mouse button
         // ga -> gamepad axis
         // gb -> gamepad button
-        //
-        // maybe use SDL_GetScancodeName for beter format with acctual names ?
 
-        if (value.length < 3)
+        if (value.length < 4)
             return;
 
         BindingType type;
 
-        if (value[0] == 'k' && value[1] == 'b') type = BindingType.Keyboard;
-        else if (value[0] == 'm' && value[1] == 'a') type = BindingType.MouseAxis;
-        else if (value[0] == 'm' && value[1] == 'b') type = BindingType.MouseButton;
-        else if (value[0] == 'g' && value[1] == 'a') type = BindingType.GamepadAxis;
-        else if (value[0] == 'g' && value[1] == 'b') type = BindingType.GamepadButton;
+        int result = -1;
+
+        if (value.startsWith("kb_"))
+        {
+            type = BindingType.Keyboard;
+            result = cast(int)SDL_GetScancodeFromName(value.ptr + 3);
+        }
+        else if (value.startsWith("ma_"))
+        {
+            type = BindingType.MouseAxis;
+        }
+        else if (value.startsWith("mb_"))
+        {
+            type = BindingType.MouseButton;
+        }
+        else if (value.startsWith("ga_"))
+        {
+            type = BindingType.GamepadAxis;
+            result = cast(int)SDL_GameControllerGetAxisFromString(value.ptr + 3);
+        }
+        else if (value.startsWith("gb_"))
+        {
+            type = BindingType.GamepadButton;
+            result = cast(int)SDL_GameControllerGetButtonFromString(value.ptr + 3);
+        }
         else return;
 
-        int result = 0;
-        for(int i = 2; i < value.length; i++)
-            result = result * 10 + (value[i] - '0');
+        if(result == -1)
+        {
+            result = 0;
+            for(int i = 2; i < value.length; i++)
+                result = result * 10 + (value[i] - '0');
+        }
 
         bindings[name] = Binding(name, type, result);
     }
