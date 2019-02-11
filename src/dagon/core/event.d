@@ -134,14 +134,12 @@ class EventManager
         //auto videoInfo = SDL_GetVideoInfo();
         //videoWidth = videoInfo.current_w;
         //videoHeight = videoInfo.current_h;
-        
-        SDL_InitSubSystem(SDL_INIT_JOYSTICK);
+
+        SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
 
         if (SDL_IsGameController(0))
         {
             controller = SDL_GameControllerOpen(0);
-            
-            SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
             
             if (SDL_GameControllerMapping(controller) is null)
                 writeln("Warning: no mapping found for controller!");
@@ -332,6 +330,7 @@ class EventManager
                     break;
                     
                 case SDL_JOYBUTTONDOWN:
+                    if(joystick is null) break;
                     if (event.jbutton.state == SDL_PRESSED)
                         e = Event(EventType.JoystickButtonDown);
                     else if (event.jbutton.state == SDL_RELEASED)
@@ -342,6 +341,7 @@ class EventManager
                     
                 case SDL_JOYBUTTONUP: 
                     // TODO: add state modification
+                    if(joystick is null) break;
                     if (event.jbutton.state == SDL_PRESSED)
                         e = Event(EventType.JoystickButtonDown);
                     else if (event.jbutton.state == SDL_RELEASED)
