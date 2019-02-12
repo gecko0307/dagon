@@ -68,15 +68,29 @@ class InputManager
 
     Dict!(Binding, string) bindings;
 
+    Configuration config;
+
     this(EventManager em)
     {
         eventManager = em;
         bindings = dict!(Binding, string)();
+
+        config = New!Configuration(null);
+        if (!config.fromFile("input.conf"))
+        {
+            writeln("Warning: no \"input.conf\" found");
+        }
+
+        foreach(name, value; config.props.props)
+        {
+            setBinding(name, value);
+        }
     }
 
     ~this()
     {
         bindings.free();
+        Delete(config);
     }
 
     void setBinding(string name, BindingType type, int value)
