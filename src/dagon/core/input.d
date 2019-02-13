@@ -34,6 +34,8 @@ import std.conv;
 import std.algorithm.searching : startsWith;
 import dlib.core.memory;
 import dlib.container.dict;
+import dlib.text.lexer;
+import dlib.text.unmanagedstring;
 import dagon.core.event;
 import dagon.core.libs;
 import dagon.core.ownership;
@@ -42,6 +44,7 @@ import dagon.resource.config;
 
 enum BindingType
 {
+    None,
     Keyboard,
     MouseButton,
     MouseAxis,
@@ -83,7 +86,7 @@ class InputManager
 
         foreach(name, value; config.props.props)
         {
-            setBinding(name, value);
+            setBinding(name, value.data);
         }
     }
 
@@ -109,44 +112,61 @@ class InputManager
         // ga -> gamepad axis
         // gb -> gamepad button
 
-        if (value.length < 4)
-            return;
-
-        BindingType type;
-
+        BindingType type = BindingType.None;
         int result = -1;
 
-        if (value.startsWith("kb_"))
-        {
-            type = BindingType.Keyboard;
-            result = cast(int)SDL_GetScancodeFromName(value.ptr + 3);
-        }
-        else if (value.startsWith("ma_"))
-        {
-            type = BindingType.MouseAxis;
-        }
-        else if (value.startsWith("mb_"))
-        {
-            type = BindingType.MouseButton;
-        }
-        else if (value.startsWith("ga_"))
-        {
-            type = BindingType.GamepadAxis;
-            result = cast(int)SDL_GameControllerGetAxisFromString(value.ptr + 3);
-        }
-        else if (value.startsWith("gb_"))
-        {
-            type = BindingType.GamepadButton;
-            result = cast(int)SDL_GameControllerGetButtonFromString(value.ptr + 3);
-        }
-        else return;
+        auto lexer = New!Lexer(value, ["_"]);
+        lexer.ignoreWhitespaces = true;
 
-        if(result == -1)
+        String svalue;
+
+        loop: while(true)
         {
-            result = 0;
-            for(int i = 2; i < value.length; i++)
-                result = result * 10 + (value[i] - '0');
+            auto lexeme = lexer.getLexeme();
+            switch(lexeme)
+            {
+                case "kb": type = BindingType.Keyboard; break;
+                case "ma": type = BindingType.MouseAxis; break;
+                case "mb": type = BindingType.MouseButton; break;
+                case "ga": type = BindingType.GamepadAxis; break;
+                case "gb": type = BindingType.GamepadButton; break;
+
+                default: break loop;
+            }
+
+            lexeme = lexer.getLexeme();
+
+            if(lexeme != "_")
+            {
+                break;
+            }
+
+            lexeme = lexer.getLexeme();
+
+            svalue = String(lexeme);
+            char* cvalue = svalue.cString;
+
+            switch(type)
+            {
+                case BindingType.Keyboard:      result = cast(int)SDL_GetScancodeFromName(cvalue); break;
+                case BindingType.MouseAxis:     result = to!int(lexeme); break;
+                case BindingType.MouseButton:   result = to!int(lexeme); break;
+                case BindingType.GamepadAxis:   result = cast(int)SDL_GameControllerGetAxisFromString(cvalue); break;
+                case BindingType.GamepadButton: result = cast(int)SDL_GameControllerGetButtonFromString(cvalue); break;
+
+                default: break loop;
+            }
+
+            lexeme = lexer.getLexeme();
         }
+
+        if(type == BindingType.None || result <= 0)
+        {
+            writefln("Error: wrong binding format \"%s\"", value);
+        }
+
+        svalue.free();
+        Delete(lexer);
 
         bindings[name] = Binding(name, type, result);
     }
