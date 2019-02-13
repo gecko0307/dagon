@@ -30,10 +30,12 @@ module dagon.core.input;
 
 import std.stdio;
 import std.ascii;
-import std.conv;
+import std.conv : to;
+import std.math : abs;
 import std.algorithm.searching : startsWith;
 import dlib.core.memory;
 import dlib.container.dict;
+import dlib.container.array;
 import dlib.text.lexer;
 import dlib.text.unmanagedstring;
 import dagon.core.event;
@@ -54,8 +56,6 @@ enum BindingType
 
 struct Binding
 {
-    string name;
-
     BindingType type;
     union
     {
@@ -69,14 +69,16 @@ class InputManager
 {
     EventManager eventManager;
 
-    Dict!(Binding, string) bindings;
+    alias Bindings = DynamicArray!Binding;
+
+    Dict!(Bindings, string) bindings;
 
     Configuration config;
 
     this(EventManager em)
     {
         eventManager = em;
-        bindings = dict!(Binding, string)();
+        bindings = dict!(Bindings, string)();
 
         config = New!Configuration(null);
         if (!config.fromFile("input.conf"))
@@ -98,7 +100,16 @@ class InputManager
 
     void setBinding(string name, BindingType type, int value)
     {
-        bindings[name] = Binding(name, type, value);
+        if(auto binding = name in bindings)
+        {
+            binding.insertBack(Binding(type, value));
+        }
+        else
+        {
+            auto b = Bindings();
+            b.insertBack(Binding(type, value));
+            bindings[name] = b;
+        }
     }
 
     void setBinding(string name, string value)
@@ -115,12 +126,13 @@ class InputManager
         BindingType type = BindingType.None;
         int result = -1;
 
-        auto lexer = New!Lexer(value, ["_"]);
+        auto lexer = New!Lexer(value, ["_", ","]);
         lexer.ignoreWhitespaces = true;
 
         String svalue;
+        char* cvalue;
 
-        loop: while(true)
+        while(true)
         {
             auto lexeme = lexer.getLexeme();
             switch(lexeme)
@@ -131,20 +143,20 @@ class InputManager
                 case "ga": type = BindingType.GamepadAxis; break;
                 case "gb": type = BindingType.GamepadButton; break;
 
-                default: break loop;
+                default: goto check;
             }
 
             lexeme = lexer.getLexeme();
 
             if(lexeme != "_")
             {
-                break;
+                goto check;
             }
 
             lexeme = lexer.getLexeme();
 
             svalue = String(lexeme);
-            char* cvalue = svalue.cString;
+            cvalue = svalue.cString;
 
             switch(type)
             {
@@ -154,149 +166,202 @@ class InputManager
                 case BindingType.GamepadAxis:   result = cast(int)SDL_GameControllerGetAxisFromString(cvalue); break;
                 case BindingType.GamepadButton: result = cast(int)SDL_GameControllerGetButtonFromString(cvalue); break;
 
-                default: break loop;
+                default: break;
             }
 
+        check:
+            if(type == BindingType.None || result <= 0)
+            {
+                writefln("Error: wrong binding format \"%s\"", value);
+                break;
+            }
+            setBinding(name, type, result);
+
             lexeme = lexer.getLexeme();
+            if(lexeme != ",")
+                break;
         }
-
-        if(type == BindingType.None || result <= 0)
-        {
-            writefln("Error: wrong binding format \"%s\"", value);
-        }
-
         svalue.free();
         Delete(lexer);
-
-        bindings[name] = Binding(name, type, result);
     }
 
     bool getButton(string name)
     {
-        auto binding = name in bindings;
-        if (!binding)
+        auto b = name in bindings;
+        if (!b)
             return false;
 
-        switch(binding.type)
+        for(int i = 0; i < b.length; i++)
         {
-            case BindingType.Keyboard:
-                return eventManager.keyPressed[binding.key];
+            auto binding = (*b)[i];
 
-            case BindingType.MouseButton:
-                return eventManager.mouseButtonPressed[binding.button];
+            switch(binding.type)
+            {
+                case BindingType.Keyboard:
+                    if(eventManager.keyPressed[binding.key]) return true;
+                    break;
 
-            case BindingType.MouseAxis:
-                if (binding.axis == 0)
-                    return eventManager.mouseRelX != 0;
-                else if (binding.axis == 1)
-                    return eventManager.mouseRelY != 0;
+                case BindingType.MouseButton:
+                    if(eventManager.mouseButtonPressed[binding.button]) return true;
+                    break;
 
-                return false;
+                case BindingType.MouseAxis:
+                    if (binding.axis == 0)
+                    {
+                        if(eventManager.mouseRelX != 0) return true;
+                    }
+                    else if (binding.axis == 1)
+                    {
+                        if(eventManager.mouseRelY != 0) return true;
+                    }
+                    break;
 
-            case BindingType.GamepadButton:
-                return eventManager.controllerButtonPressed[binding.button];
+                case BindingType.GamepadButton:
+                    if(eventManager.controllerButtonPressed[binding.button]) return true;
+                    break;
 
-            case BindingType.GamepadAxis:
-                if (eventManager.gameControllerAvailable)
-                    return eventManager.gameControllerAxis(binding.axis) > 0.001;
-                return false;
+                case BindingType.GamepadAxis:
+                    if (eventManager.gameControllerAvailable)
+                        if(eventManager.gameControllerAxis(binding.axis) > 0.01)
+                            return true;
+                    break;
 
-            default:
-                return false;
+                default:
+                    break;
+            }
         }
+
+        return false;
     }
 
     bool getButtonUp(string name)
     {
-        auto binding = name in bindings;
-        if (!binding)
+        auto b = name in bindings;
+        if (!b)
             return false;
 
-        switch(binding.type)
+        for(int i = 0; i < b.length; i++)
         {
-            case BindingType.Keyboard:
-                return eventManager.keyUp[binding.key];
+            auto binding = (*b)[i];
+            switch(binding.type)
+            {
+                case BindingType.Keyboard:
+                    if(eventManager.keyUp[binding.key]) return true;
+                    break;
 
-            case BindingType.MouseButton:
-                return eventManager.mouseButtonUp[binding.button];
+                case BindingType.MouseButton:
+                    if(eventManager.mouseButtonUp[binding.button]) return true;
+                    break;
 
-            case BindingType.MouseAxis:
-                // Do we want to track this?
-                return false;
+                case BindingType.MouseAxis:
+                    // Do we want to track this?
+                    break;
 
-            case BindingType.GamepadButton:
-                return eventManager.controllerButtonUp[binding.button];
+                case BindingType.GamepadButton:
+                    if(eventManager.controllerButtonUp[binding.button]) return true;
+                    break;
 
-            case BindingType.GamepadAxis:
-                // And track this?
-                return false;
+                case BindingType.GamepadAxis:
+                    // And track that?
+                    break;
 
-            default:
-                return false;
+                default:
+                    break;
+            }
         }
+
+        return false;
     }
 
     bool getButtonDown(string name)
     {
-        auto binding = name in bindings;
-        if (!binding)
+        auto b = name in bindings;
+        if (!b)
             return false;
 
-        switch(binding.type)
+        for(int i = 0; i < b.length; i++)
         {
-            case BindingType.Keyboard:
-                return eventManager.keyDown[binding.key];
+            auto binding = (*b)[i];
 
-            case BindingType.MouseButton:
-                return eventManager.mouseButtonDown[binding.button];
+            switch(binding.type)
+            {
+                case BindingType.Keyboard:
+                    if(eventManager.keyDown[binding.key]) return true;
+                    break;
 
-            case BindingType.MouseAxis:
-                return false;
+                case BindingType.MouseButton:
+                    if(eventManager.mouseButtonDown[binding.button]) return true;
+                    break;
 
-            case BindingType.GamepadButton:
-                return eventManager.controllerButtonDown[binding.button];
+                case BindingType.MouseAxis:
+                    break;
 
-            case BindingType.GamepadAxis:
-                return false;
+                case BindingType.GamepadButton:
+                    if(eventManager.controllerButtonDown[binding.button]) return true;
+                    break;
 
-            default:
-                return false;
+                case BindingType.GamepadAxis:
+                    break;
+
+                default:
+                    break;
+            }
         }
+
+        return false;
     }
 
     float getAxis(string name)
     {
-        auto binding = name in bindings;
-        if (!binding)
-            return 0.0f;
+        auto b = name in bindings;
+        if (!b)
+            return false;
 
-        switch(binding.type)
+        float result = 0.0f;
+        float aresult = 0.0f; // absolute result
+
+        for(int i = 0; i < b.length; i++)
         {
-            case BindingType.Keyboard:
-                return eventManager.keyPressed[binding.key] ? 1.0f : 0.0f;
+            auto binding = (*b)[i];
+            float value = 0.0f;
 
-            case BindingType.MouseButton:
-                return eventManager.mouseButtonPressed[binding.button] ? 1.0f : 0.0f;
+            switch(binding.type)
+            {
+                case BindingType.Keyboard:
+                    value = eventManager.keyPressed[binding.key] ? 1.0f : 0.0f;
+                    break;
 
-            case BindingType.MouseAxis:
-                if (binding.axis == 0)
-                    return eventManager.mouseRelX / (eventManager.windowWidth * 0.5f); // map to -1 to 1 range
-                else if (binding.axis == 1)
-                    return eventManager.mouseRelY / (eventManager.windowHeight * 0.5f);
+                case BindingType.MouseButton:
+                    value = eventManager.mouseButtonPressed[binding.button] ? 1.0f : 0.0f;
+                    break;
 
-                return 0.0f;
+                case BindingType.MouseAxis:
+                    if (binding.axis == 0)
+                        value = eventManager.mouseRelX / (eventManager.windowWidth * 0.5f); // map to -1 to 1 range
+                    else if (binding.axis == 1)
+                        value = eventManager.mouseRelY / (eventManager.windowHeight * 0.5f);
+                    break;
 
-            case BindingType.GamepadButton:
-                return eventManager.controllerButtonPressed[binding.button] ? 1.0f : 0.0f;
+                case BindingType.GamepadButton:
+                    value = eventManager.controllerButtonPressed[binding.button] ? 1.0f : 0.0f;
+                    break;
 
-            case BindingType.GamepadAxis:
-                if (eventManager.gameControllerAvailable)
-                    return eventManager.gameControllerAxis(binding.axis);
+                case BindingType.GamepadAxis:
+                    if (eventManager.gameControllerAvailable)
+                        value = eventManager.gameControllerAxis(binding.axis);
+                    break;
 
-                return 0.0f;
-
-            default:
-                return 0.0f;
+                default:
+                    break;
+            }
+            float avalue = abs(value);
+            if(avalue > aresult)
+            {
+                result = value;
+                aresult = avalue;
+            }
         }
+
+        return result;
     }
 }
