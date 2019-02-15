@@ -259,25 +259,8 @@ class InputManager
                 if(eventManager.mouseButtonPressed[binding.button]) return true;
                 break;
 
-            case BindingType.MouseAxis:
-                if (binding.axis == 0)
-                {
-                    if(eventManager.mouseRelX != 0) return true;
-                }
-                else if (binding.axis == 1)
-                {
-                    if(eventManager.mouseRelY != 0) return true;
-                }
-                break;
-
             case BindingType.GamepadButton:
                 if(eventManager.controllerButtonPressed[binding.button]) return true;
-                break;
-
-            case BindingType.GamepadAxis:
-                if (eventManager.gameControllerAvailable)
-                    if(eventManager.gameControllerAxis(binding.axis) > 0.01)
-                        return true;
                 break;
 
             default:
@@ -320,16 +303,8 @@ class InputManager
                     if(eventManager.mouseButtonUp[binding.button]) return true;
                     break;
 
-                case BindingType.MouseAxis:
-                    // Do we want to track this?
-                    break;
-
                 case BindingType.GamepadButton:
                     if(eventManager.controllerButtonUp[binding.button]) return true;
-                    break;
-
-                case BindingType.GamepadAxis:
-                    // And track that?
                     break;
 
                 default:
@@ -360,14 +335,8 @@ class InputManager
                     if(eventManager.mouseButtonDown[binding.button]) return true;
                     break;
 
-                case BindingType.MouseAxis:
-                    break;
-
                 case BindingType.GamepadButton:
                     if(eventManager.controllerButtonDown[binding.button]) return true;
-                    break;
-
-                case BindingType.GamepadAxis:
                     break;
 
                 default:
