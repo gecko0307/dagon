@@ -33,6 +33,7 @@ import std.ascii;
 import std.conv : to;
 import std.math : abs;
 import std.algorithm.searching : startsWith;
+import std.string : isNumeric;
 import dlib.core.memory;
 import dlib.container.dict;
 import dlib.container.array;
@@ -151,21 +152,25 @@ class InputManager
 
             lexeme = lexer.getLexeme();
 
-            String svalue = String(lexeme);
-            char* cvalue = svalue.cString;
-
-            switch(type)
+            if(lexeme.isNumeric)
             {
-                case BindingType.Keyboard:      result = cast(int)SDL_GetScancodeFromName(cvalue); break;
-                case BindingType.MouseAxis:     result = to!int(lexeme); break;
-                case BindingType.MouseButton:   result = to!int(lexeme); break;
-                case BindingType.GamepadAxis:   result = cast(int)SDL_GameControllerGetAxisFromString(cvalue); break;
-                case BindingType.GamepadButton: result = cast(int)SDL_GameControllerGetButtonFromString(cvalue); break;
-
-                default: break;
+                result = to!int(lexeme);
             }
+            else
+            {
+                String svalue = String(lexeme);
+                char* cvalue = svalue.cString;
+                switch(type)
+                {
+                    case BindingType.Keyboard:      result = cast(int)SDL_GetScancodeFromName(cvalue); break;
+                    case BindingType.GamepadAxis:   result = cast(int)SDL_GameControllerGetAxisFromString(cvalue); break;
+                    case BindingType.GamepadButton: result = cast(int)SDL_GameControllerGetButtonFromString(cvalue); break;
 
-            svalue.free();
+                    default: break;
+                }
+
+                svalue.free();
+            }
 
             if (type != BindingType.None || result > 0)
                 return Binding(type, result);
