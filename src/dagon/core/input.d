@@ -99,28 +99,18 @@ class InputManager
 
         foreach(name, value; config.props.props)
         {
-            setBinding(name, value.data);
+            addBindings(name, value.data);
         }
     }
 
     ~this()
     {
+        foreach(name, bind; bindings)
+        {
+            bind.free();
+        }
         bindings.free();
         Delete(config);
-    }
-
-    void setBinding(string name, Binding bind)
-    {
-        if(auto binding = name in bindings)
-        {
-            binding.insertBack(bind);
-        }
-        else
-        {
-            auto b = Bindings();
-            b.insertBack(bind);
-            bindings[name] = b;
-        }
     }
 
     private Binding parseBinding(Lexer lexer)
@@ -154,9 +144,9 @@ class InputManager
 
         lexeme = lexer.getLexeme();
 
-        if(type != BindingType.VirtualAxis)
+        if (type != BindingType.VirtualAxis)
         {
-            if(lexeme != "_")
+            if (lexeme != "_")
                 goto fail;
 
             lexeme = lexer.getLexeme();
@@ -177,35 +167,36 @@ class InputManager
 
             svalue.free();
 
-            if(type != BindingType.None || result > 0)
+            if (type != BindingType.None || result > 0)
                 return Binding(type, result);
         }
         else
         {
-            if(lexeme != "(")
+            // Virtual axis
+            if (lexeme != "(")
                 goto fail;
 
             Binding pos = parseBinding(lexer);
 
-            if(pos.type != BindingType.Keyboard &&
+            if (pos.type != BindingType.Keyboard &&
                pos.type != BindingType.MouseButton &&
                pos.type != BindingType.GamepadButton)
                 goto fail;
 
             lexeme = lexer.getLexeme();
-            if(lexeme != ",")
+            if (lexeme != ",")
                 goto fail;
 
             Binding neg = parseBinding(lexer);
 
-            if(neg.type != BindingType.Keyboard &&
+            if (neg.type != BindingType.Keyboard &&
                neg.type != BindingType.MouseButton &&
                neg.type != BindingType.GamepadButton)
                 goto fail;
 
             lexeme = lexer.getLexeme();
 
-            if(lexeme != ")")
+            if (lexeme != ")")
                 goto fail;
 
             Binding bind = Binding(type);
@@ -220,7 +211,7 @@ class InputManager
         return Binding(BindingType.None, -1);
     }
 
-    void setBinding(string name, string value)
+    void addBindings(string name, string value)
     {
         auto lexer = New!Lexer(value, ["_", ",", "(", ")"]);
         lexer.ignoreWhitespaces = true;
@@ -228,23 +219,40 @@ class InputManager
         while(true)
         {
             Binding b = parseBinding(lexer);
-            if(b.type == BindingType.None && b.key == -1)
+            if (b.type == BindingType.None && b.key == -1)
             {
                 writefln("Error: wrong binding format \"%s\"", value);
                 break;
             }
 
-            setBinding(name, b);
+            if (auto binding = name in bindings)
+            {
+                binding.insertBack(b);
+            }
+            else
+            {
+                auto binds = Bindings();
+                binds.insertBack(b);
+                bindings[name] = binds;
+            }
 
             auto lexeme = lexer.getLexeme();
-            if(lexeme == ",")
+            if (lexeme == ",")
                 continue;
 
-            if(lexeme == "")
+            if (lexeme == "")
                 break;
         }
 
         Delete(lexer);
+    }
+
+    void clearBindings(string name)
+    {
+        if (auto binding = name in bindings)
+        {
+            binding.removeBack(cast(uint)binding.length);
+        }
     }
 
     bool getButton(Binding binding)
@@ -252,15 +260,15 @@ class InputManager
         switch(binding.type)
         {
             case BindingType.Keyboard:
-                if(eventManager.keyPressed[binding.key]) return true;
+                if (eventManager.keyPressed[binding.key]) return true;
                 break;
 
             case BindingType.MouseButton:
-                if(eventManager.mouseButtonPressed[binding.button]) return true;
+                if (eventManager.mouseButtonPressed[binding.button]) return true;
                 break;
 
             case BindingType.GamepadButton:
-                if(eventManager.controllerButtonPressed[binding.button]) return true;
+                if (eventManager.controllerButtonPressed[binding.button]) return true;
                 break;
 
             default:
@@ -278,7 +286,7 @@ class InputManager
 
         for(int i = 0; i < b.length; i++)
         {
-            if(getButton((*b)[i])) return true;
+            if (getButton((*b)[i])) return true;
         }
 
         return false;
@@ -296,15 +304,15 @@ class InputManager
             switch(binding.type)
             {
                 case BindingType.Keyboard:
-                    if(eventManager.keyUp[binding.key]) return true;
+                    if (eventManager.keyUp[binding.key]) return true;
                     break;
 
                 case BindingType.MouseButton:
-                    if(eventManager.mouseButtonUp[binding.button]) return true;
+                    if (eventManager.mouseButtonUp[binding.button]) return true;
                     break;
 
                 case BindingType.GamepadButton:
-                    if(eventManager.controllerButtonUp[binding.button]) return true;
+                    if (eventManager.controllerButtonUp[binding.button]) return true;
                     break;
 
                 default:
@@ -328,15 +336,15 @@ class InputManager
             switch(binding.type)
             {
                 case BindingType.Keyboard:
-                    if(eventManager.keyDown[binding.key]) return true;
+                    if (eventManager.keyDown[binding.key]) return true;
                     break;
 
                 case BindingType.MouseButton:
-                    if(eventManager.mouseButtonDown[binding.button]) return true;
+                    if (eventManager.mouseButtonDown[binding.button]) return true;
                     break;
 
                 case BindingType.GamepadButton:
-                    if(eventManager.controllerButtonDown[binding.button]) return true;
+                    if (eventManager.controllerButtonDown[binding.button]) return true;
                     break;
 
                 default:
@@ -363,23 +371,11 @@ class InputManager
 
             switch(binding.type)
             {
-                case BindingType.Keyboard:
-                    value = eventManager.keyPressed[binding.key] ? 1.0f : 0.0f;
-                    break;
-
-                case BindingType.MouseButton:
-                    value = eventManager.mouseButtonPressed[binding.button] ? 1.0f : 0.0f;
-                    break;
-
                 case BindingType.MouseAxis:
                     if (binding.axis == 0)
                         value = eventManager.mouseRelX / (eventManager.windowWidth * 0.5f); // map to -1 to 1 range
                     else if (binding.axis == 1)
                         value = eventManager.mouseRelY / (eventManager.windowHeight * 0.5f);
-                    break;
-
-                case BindingType.GamepadButton:
-                    value = eventManager.controllerButtonPressed[binding.button] ? 1.0f : 0.0f;
                     break;
 
                 case BindingType.GamepadAxis:
@@ -396,7 +392,7 @@ class InputManager
                     break;
             }
             float avalue = abs(value);
-            if(avalue > aresult)
+            if (avalue > aresult)
             {
                 result = value;
                 aresult = avalue;
