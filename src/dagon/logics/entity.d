@@ -343,35 +343,32 @@ class Entity: Owner, Drawable
     {
         return moveFromTo(position, point, duration, easing);
     }
-
+    
     Tween* rotateFromTo(Vector3f anglesFrom, Vector3f anglesTo, double duration, Easing easing = Easing.Linear)
     {
         Tween* existingTween = getInactiveTween();
 
-        Vector3f start = Vector3f(degtorad(anglesFrom.x), degtorad(anglesFrom.y), degtorad(anglesFrom.z));
-        Vector3f end = Vector3f(degtorad(anglesTo.x), degtorad(anglesTo.y), degtorad(anglesTo.z));
-
         if (existingTween)
         {
-            *existingTween = Tween(this, TweenType.Rotation, start, end, duration, easing);
+            *existingTween = Tween(this, TweenType.Rotation, anglesFrom, anglesTo, duration, easing);
             return existingTween;
         }
         else
         {
-            Tween t = Tween(this, TweenType.Rotation, start, end, duration, easing);
+            Tween t = Tween(this, TweenType.Rotation, anglesFrom, anglesTo, duration, easing);
             tweens.append(t);
             return &tweens.data[$-1];
         }
     }
 
-    Tween* rotateFrom(Vector3f angles, double duration, Easing easing = Easing.Linear)
+    Tween* rotateFrom(Vector3f anglesFrom, double duration, Easing easing = Easing.Linear)
     {
-        return rotateFromTo(angles, rotation.toEulerAngles, duration, easing);
+        return rotateFromTo(anglesFrom, angles, duration, easing);
     }
 
-    Tween* rotateTo(Vector3f angles, double duration, Easing easing = Easing.Linear)
+    Tween* rotateTo(Vector3f anglesTo, double duration, Easing easing = Easing.Linear)
     {
-        return rotateFromTo(rotation.toEulerAngles, angles, duration, easing);
+        return rotateFromTo(angles, anglesTo, duration, easing);
     }
 
     void processEvents()
@@ -398,11 +395,16 @@ class Entity: Owner, Drawable
             controller.update(dt);
         else
         {
-            //TODO: rotation from angles
+            Quaternionf rot = rotation;
+            
+            if (useRotationAngles)
+                rot *= rotationQuaternion!float(Axis.x, degtorad(angles.x)) *
+                       rotationQuaternion!float(Axis.y, degtorad(angles.y)) * 
+                       rotationQuaternion!float(Axis.z, degtorad(angles.z));
 
             transformation =
                 translationMatrix(position) *
-                rotation.toMatrix4x4 *
+                rot.toMatrix4x4 *
                 scaleMatrix(scaling);
 
             if (swapZY)

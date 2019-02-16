@@ -195,14 +195,7 @@ struct Tween
         if (type == TweenType.Position)
             entity.position = lerp(fromVector, toVector, ease(t));
         else if (type == TweenType.Rotation)
-        {
-            Vector3f a = lerp(fromVector, toVector, ease(t));
-            Quaternionf q =
-                rotationQuaternion!float(Axis.x, a.x) *
-                rotationQuaternion!float(Axis.y, a.y) *
-                rotationQuaternion!float(Axis.z, a.z);
-            entity.rotation = q; //slerp(fromQuaternion, toQuaternion, ease(t));
-        }
+            entity.angles = lerp(fromVector, toVector, ease(t));
         else if (type == TweenType.Scaling)
             entity.scaling = lerp(fromVector, toVector, ease(t));
     }
