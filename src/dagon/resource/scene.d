@@ -426,6 +426,7 @@ class Scene: BaseScene
     Entities3DDynamic entities3DDynamic;
 
     DynamicArray!Entity decals;
+    ShapeBox decalShape;
 
     ShapeQuad loadingProgressBar;
     Entity eLoadingProgressBar;
@@ -477,6 +478,7 @@ class Scene: BaseScene
 
         decalShader = New!DecalShader(renderer.gbuffer, assetManager);
         defaultDecalMaterial = createDecalMaterial();
+        decalShape = New!ShapeBox(Vector3f(1, 1, 1), assetManager);
 
         defaultMaterial3D = createMaterial();
 
@@ -673,8 +675,8 @@ class Scene: BaseScene
     {
         auto decal = New!Entity(eventManager, assetManager);
         decals.append(decal);
-        // TODO: procedural box mesh
         decal.material = defaultDecalMaterial;
+        decal.drawable = decalShape;
         return decal;
     }
     
