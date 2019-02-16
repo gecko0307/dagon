@@ -89,6 +89,8 @@ class Application: EventListener
     SDL_GLContext glcontext;
     string libdir;
 
+    EventManager eventManager;
+
     /++
         Constructor.
         * `winWidth` - window width
@@ -168,7 +170,7 @@ class Application: EventListener
         if (fullscreen)
             SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
 
-        EventManager eventManager = new EventManager(window, width, height);
+        eventManager = new EventManager(window, width, height);
         super(eventManager, null);
 
         // Initialize OpenGL
@@ -256,6 +258,7 @@ class Application: EventListener
 
     ~this()
     {
+        destroy(eventManager);
         SDL_GL_DeleteContext(glcontext);
         SDL_DestroyWindow(window);
         SDL_Quit();
