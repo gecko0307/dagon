@@ -256,6 +256,21 @@ class Entity: Owner, Drawable
     {
         scaling += s;
     }
+    
+    void scaleX(float s)
+    {
+        scaling.x += s;
+    }
+    
+    void scaleY(float s)
+    {
+        scaling.y += s;
+    }
+    
+    void scaleZ(float s)
+    {
+        scaling.z += s;
+    }
 
     Vector3f direction() @property
     {
