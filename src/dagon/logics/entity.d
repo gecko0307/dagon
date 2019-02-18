@@ -100,7 +100,6 @@ class Entity: Owner, Drawable
     Matrix4x4f prevAbsoluteTransformation;
 
     EntityController controller;
-    //DefaultEntityController defaultController;
 
     Material material;
     RenderingContext rcLocal;
@@ -132,9 +131,6 @@ class Entity: Owner, Drawable
         scaling = Vector3f(1, 1, 1);
 
         angles = Vector3f(0, 0, 0);
-
-        //defaultController = New!DefaultEntityController(this);
-        //controller = defaultController;
 
         absoluteTransformation = Matrix4x4f.identity;
         invAbsoluteTransformation = Matrix4x4f.identity;
@@ -249,6 +245,16 @@ class Entity: Owner, Drawable
     void roll(float angle)
     {
         angles.z += angle;
+    }
+    
+    void scale(float s)
+    {
+        scaling += Vector3f(s, s, s);
+    }
+    
+    void scale(Vector3f s)
+    {
+        scaling += s;
     }
 
     Vector3f direction() @property
@@ -369,6 +375,33 @@ class Entity: Owner, Drawable
     Tween* rotateTo(Vector3f anglesTo, double duration, Easing easing = Easing.Linear)
     {
         return rotateFromTo(angles, anglesTo, duration, easing);
+    }
+    
+    Tween* scaleFromTo(Vector3f sFrom, Vector3f sTo, double duration, Easing easing = Easing.Linear)
+    {
+        Tween* existingTween = getInactiveTween();
+
+        if (existingTween)
+        {
+            *existingTween = Tween(this, TweenType.Scaling, sFrom, sTo, duration, easing);
+            return existingTween;
+        }
+        else
+        {
+            Tween t = Tween(this, TweenType.Scaling, sFrom, sTo, duration, easing);
+            tweens.append(t);
+            return &tweens.data[$-1];
+        }
+    }
+
+    Tween* scaleFrom(Vector3f sFrom, double duration, Easing easing = Easing.Linear)
+    {
+        return scaleFromTo(sFrom, scaling, duration, easing);
+    }
+
+    Tween* scaleTo(Vector3f sTo, double duration, Easing easing = Easing.Linear)
+    {
+        return scaleFromTo(scaling, sTo, duration, easing);
     }
 
     void processEvents()
