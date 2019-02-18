@@ -6,8 +6,13 @@ os:
 language: d
 
 d:
- - dmd-2.082.0
- - ldc-1.11.0
+ - dmd-2.084.1
+ - dmd-2.083.1
+ - ldc-1.13.0
+ - ldc-1.12.0
+
+matrix:
+  fast_finish: true
 
 env: 
   matrix:
