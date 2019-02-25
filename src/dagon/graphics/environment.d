@@ -116,7 +116,7 @@ class Environment: Owner
         groundEnergy = lerp(lerp(groundEnergyAtSunset, groundEnergyAtMidnight, s2), groundEnergyAtMidday, s1);
 
         if (atmosphericFog)
-            fogColor = skyHorizonColor * skyEnergy;
+            fogColor = skyZenithColor * skyEnergy * 0.5f;
         else
             fogColor = backgroundColor;
     }
