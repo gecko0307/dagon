@@ -227,7 +227,8 @@ class Renderer: Owner
 
     void render()
     {
-        RenderingContext *rc = &rc3d;
+        RenderingContext rcLocal = rc3d;
+        RenderingContext *rc = &rcLocal;
 
         renderPreStep(gbuffer, rc);
         renderToTarget(sceneFramebuffer, gbuffer, rc);

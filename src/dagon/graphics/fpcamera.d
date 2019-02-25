@@ -74,7 +74,7 @@ class FirstPersonCamera: EntityController
         m *= rotationMatrix(Axis.y, degtorad(turn));
         characterMatrix = m;
         m *= rotationMatrix(Axis.x, degtorad(pitch));
-        m *= rotationMatrix(Axis.z, degtorad(roll));
+        m *= rotationMatrix(Axis.z, degtorad(roll));        
         return m;
     }
 

@@ -820,24 +820,27 @@ class Scene: BaseScene
 
     void fixedStepUpdate(bool logicsUpdate = true)
     {
-        if (view)
+        if (logicsUpdate)
         {
-            view.update(fixedTimeStep);
-            view.prepareRC(&renderer.rc3d);
-        }
+            if (view)
+            {
+                view.update(fixedTimeStep);
+                view.prepareRC(&renderer.rc3d);
+            }
 
-        renderer.rc3d.time += fixedTimeStep;
-        renderer.rc2d.time += fixedTimeStep;
+            renderer.rc3d.time += fixedTimeStep;
+            renderer.rc2d.time += fixedTimeStep;
 
-        if (mainSunLight)
-        {
-            if (mainSunLight.type == LightType.Sun &&
-                mainSunLight.shadow && mainSunLight.shadowMap)
-                standardShader.shadowMap = cast(CascadedShadowMap)mainSunLight.shadowMap;
+            if (mainSunLight)
+            {
+                if (mainSunLight.type == LightType.Sun &&
+                    mainSunLight.shadow && mainSunLight.shadowMap)
+                    standardShader.shadowMap = cast(CascadedShadowMap)mainSunLight.shadowMap;
 
-            mainSunLight.rotation = environment.sunRotation;
-            mainSunLight.color = environment.sunColor;
-            mainSunLight.energy = environment.sunEnergy;
+                mainSunLight.rotation = environment.sunRotation;
+                mainSunLight.color = environment.sunColor;
+                mainSunLight.energy = environment.sunEnergy;
+            }
         }
 
         foreach(e; _entities3D)
@@ -849,10 +852,11 @@ class Scene: BaseScene
         foreach(e; decals)
             e.update(fixedTimeStep);
 
-        particleSystem.update(fixedTimeStep);
-
         if (logicsUpdate)
+        {
+            particleSystem.update(fixedTimeStep);
             onLogicsUpdate(fixedTimeStep);
+        }
 
         environment.update(fixedTimeStep);
 

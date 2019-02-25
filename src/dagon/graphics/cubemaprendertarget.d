@@ -107,6 +107,8 @@ class CubemapRenderTarget: RenderTarget
 
     void prepareRC(CubeFace face, Vector3f position, RenderingContext* rc)
     {
+        rc.prevViewMatrix = rc.viewMatrix;
+        
         rc.invViewMatrix = cubeFaceCameraMatrix(face, position);
         rc.viewMatrix = rc.invViewMatrix.inverse;
 
@@ -117,7 +119,6 @@ class CubemapRenderTarget: RenderTarget
         rc.frustum.fromMVP(mvp);
 
         rc.prevCameraPosition = position;
-        rc.prevViewMatrix = rc.viewMatrix;
 
         rc.viewRotationMatrix = matrix3x3to4x4(matrix4x4to3x3(rc.viewMatrix));
         rc.invViewRotationMatrix = matrix3x3to4x4(matrix4x4to3x3(rc.invViewMatrix));
