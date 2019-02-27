@@ -140,20 +140,25 @@ class Cubemap: Texture
         glTexImage2D(face, 0, intFormat, width, height, 0, format, type, cast(void*)img.data.ptr);
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     }
-
-    void fromEquirectangularMap(SuperImage envmap, uint resolution)
+    
+    void fromEquirectangularMap(Texture tex)
     {
-        SuperImage faceImage = envmap.createSameFormat(resolution, resolution);
+        fromEquirectangularMap(tex.image);
+    }
+
+    void fromEquirectangularMap(SuperImage envmap)
+    {
+        SuperImage faceImage = envmap.createSameFormat(width, width);
 
         foreach(i, face; EnumMembers!CubeFace)
         {
             Matrix4x4f dirTransform = cubeFaceMatrix(face);
 
-            foreach(x; 0..resolution)
-            foreach(y; 0..resolution)
+            foreach(x; 0..width)
+            foreach(y; 0..width)
             {
-                float cubex = (cast(float)x / cast(float)resolution) * 2.0f - 1.0f;
-                float cubey = (1.0f - cast(float)y / cast(float)resolution) * 2.0f - 1.0f;
+                float cubex = (cast(float)x / cast(float)width) * 2.0f - 1.0f;
+                float cubey = (1.0f - cast(float)y / cast(float)width) * 2.0f - 1.0f;
                 Vector3f dir = Vector3f(cubex, cubey, 1.0f).normalized * dirTransform;
                 Vector2f uv = equirectProj(dir);
                 Color4f c = bilinearPixel(envmap, uv.x * envmap.width, uv.y * envmap.height);

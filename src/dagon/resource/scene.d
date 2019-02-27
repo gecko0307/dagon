@@ -471,6 +471,7 @@ class Scene: BaseScene
         skyShader = New!SkyShader(assetManager);
         defaultSkyMaterial = New!Material(skyShader, assetManager);
         defaultSkyMaterial.depthWrite = false;
+        defaultSkyMaterial.culling = false;
 
         particleShader = New!ParticleShader(renderer.gbuffer, assetManager);
 
@@ -706,7 +707,8 @@ class Scene: BaseScene
         eSky.castShadow = false;
         eSky.material = matSky;
         // TODO: use box instead of sphere
-        eSky.drawable = New!ShapeSphere(1.0f, 16, 8, true, assetManager);
+        eSky.drawable = New!ShapeBox(Vector3f(1.0f, 1.0f, 1.0f), assetManager); 
+        //New!ShapeSphere(1.0f, 16, 8, true, assetManager);
         eSky.scaling = Vector3f(100.0f, 100.0f, 100.0f);
         return eSky;
     }
