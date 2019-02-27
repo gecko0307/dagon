@@ -100,6 +100,8 @@ class SkyShader: Shader
         setParameter("showSunHalo", rc.environment.showSunHalo);
         setParameter("sunSize", rc.environment.sunSize);
         setParameter("sunScattering", rc.environment.sunScattering);
+        
+        setParameter("skyBrightness", rc.environment.skyBrightness);
 
         super.bind(rc);
     }
