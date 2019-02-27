@@ -88,6 +88,8 @@ float luminance(vec3 color)
     );
 }
 
+uniform float skyBrightness;
+
 layout(location = 0) out vec4 frag_color;
 layout(location = 1) out vec4 frag_luma;
 layout(location = 2) out vec4 frag_velocity;
@@ -95,7 +97,7 @@ layout(location = 2) out vec4 frag_velocity;
 void main()
 {
     vec3 normalWorldN = normalize(worldNormal);
-    vec3 env = environment(-normalWorldN, sunDirection);
+    vec3 env = environment(-normalWorldN, sunDirection) * skyBrightness;
 
     vec2 posScreen = (blurPosition.xy / blurPosition.w) * 0.5 + 0.5;
     vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;

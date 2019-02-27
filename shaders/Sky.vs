@@ -20,8 +20,10 @@ void main()
 {
     vec4 pos = modelViewMatrix * vec4(va_Vertex, 1.0);
     eyePosition = pos.xyz;
+    
+    vec3 vWorldPosition = (invViewMatrix * pos).xyz;
 
-    worldNormal = va_Normal;
+    worldNormal = -normalize(va_Vertex); //va_Normal;
 
     blurPosition = blurModelViewProjMatrix * vec4(va_Vertex, 1.0);
     prevPosition = prevModelViewProjMatrix * vec4(va_Vertex, 1.0);

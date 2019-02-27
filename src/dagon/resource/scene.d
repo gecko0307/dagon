@@ -478,6 +478,7 @@ class Scene: BaseScene
         skyShader = New!SkyShader(assetManager);
         defaultSkyMaterial = New!Material(skyShader, assetManager);
         defaultSkyMaterial.depthWrite = false;
+        defaultSkyMaterial.culling = false;
 
         particleShader = New!ParticleShader(renderer.gbuffer, assetManager);
 
@@ -713,7 +714,8 @@ class Scene: BaseScene
         eSky.castShadow = false;
         eSky.material = matSky;
         // TODO: use box instead of sphere
-        eSky.drawable = New!ShapeSphere(1.0f, 16, 8, true, assetManager);
+        eSky.drawable = New!ShapeBox(Vector3f(1.0f, 1.0f, 1.0f), assetManager); 
+        //New!ShapeSphere(1.0f, 16, 8, true, assetManager);
         eSky.scaling = Vector3f(100.0f, 100.0f, 100.0f);
         return eSky;
     }
@@ -827,24 +829,27 @@ class Scene: BaseScene
 
     void fixedStepUpdate(bool logicsUpdate = true)
     {
-        if (view)
+        if (logicsUpdate)
         {
-            view.update(fixedTimeStep);
-            view.prepareRC(&renderer.rc3d);
-        }
+            if (view)
+            {
+                view.update(fixedTimeStep);
+                view.prepareRC(&renderer.rc3d);
+            }
 
-        renderer.rc3d.time += fixedTimeStep;
-        renderer.rc2d.time += fixedTimeStep;
+            renderer.rc3d.time += fixedTimeStep;
+            renderer.rc2d.time += fixedTimeStep;
 
-        if (mainSunLight)
-        {
-            if (mainSunLight.type == LightType.Sun &&
-                mainSunLight.shadow && mainSunLight.shadowMap)
-                standardShader.shadowMap = cast(CascadedShadowMap)mainSunLight.shadowMap;
+            if (mainSunLight)
+            {
+                if (mainSunLight.type == LightType.Sun &&
+                    mainSunLight.shadow && mainSunLight.shadowMap)
+                    standardShader.shadowMap = cast(CascadedShadowMap)mainSunLight.shadowMap;
 
-            mainSunLight.rotation = environment.sunRotation;
-            mainSunLight.color = environment.sunColor;
-            mainSunLight.energy = environment.sunEnergy;
+                mainSunLight.rotation = environment.sunRotation;
+                mainSunLight.color = environment.sunColor;
+                mainSunLight.energy = environment.sunEnergy;
+            }
         }
 
         foreach(e; _entities3D)
@@ -856,10 +861,11 @@ class Scene: BaseScene
         foreach(e; decals)
             e.update(fixedTimeStep);
 
-        particleSystem.update(fixedTimeStep);
-
         if (logicsUpdate)
+        {
+            particleSystem.update(fixedTimeStep);
             onLogicsUpdate(fixedTimeStep);
+        }
 
         environment.update(fixedTimeStep);
 

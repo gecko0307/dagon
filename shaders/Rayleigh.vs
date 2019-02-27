@@ -60,7 +60,7 @@ void main()
     eyePosition = pos.xyz;
     vWorldPosition = (invViewMatrix * pos).xyz;
 
-    worldNormal = va_Normal;
+    worldNormal = -normalize(va_Vertex); //va_Normal;
 
     blurPosition = blurModelViewProjMatrix * vec4(va_Vertex, 1.0);
     prevPosition = prevModelViewProjMatrix * vec4(va_Vertex, 1.0);

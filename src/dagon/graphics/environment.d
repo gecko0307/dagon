@@ -87,6 +87,8 @@ class Environment: Owner
     Color4f skyHorizonColor = Color4f(0.9, 1.0, 1.0, 1.0);
     float skyEnergy = 1.0f;
     float groundEnergy = 1.0f;
+    
+    float skyBrightness = 1.0f;
 
     bool showSun = true;
     bool showSunHalo = true;
@@ -116,7 +118,7 @@ class Environment: Owner
         groundEnergy = lerp(lerp(groundEnergyAtSunset, groundEnergyAtMidnight, s2), groundEnergyAtMidday, s1);
 
         if (atmosphericFog)
-            fogColor = skyHorizonColor * skyEnergy;
+            fogColor = skyZenithColor * skyEnergy * 0.5f;
         else
             fogColor = backgroundColor;
     }

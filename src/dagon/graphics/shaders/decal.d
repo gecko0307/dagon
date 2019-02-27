@@ -41,6 +41,7 @@ import dagon.core.ownership;
 import dagon.graphics.rc;
 import dagon.graphics.shader;
 import dagon.graphics.gbuffer;
+import dagon.graphics.material;
 
 class DecalShader: Shader
 {
@@ -59,7 +60,22 @@ class DecalShader: Shader
     override void bind(RenderingContext* rc)
     {
         auto idiffuse = "diffuse" in rc.material.inputs;
+        auto inormal = "normal" in rc.material.inputs;
+        auto iheight = "height" in rc.material.inputs;
+        auto iparallax = "parallax" in rc.material.inputs;
+        auto ipbr = "pbr" in rc.material.inputs;
+        auto iroughness = "roughness" in rc.material.inputs;
+        auto imetallic = "metallic" in rc.material.inputs;
+        auto iemission = "emission" in rc.material.inputs;
+        auto ienergy = "energy" in rc.material.inputs;
+        
+        int parallaxMethod = iparallax.asInteger;
+        if (parallaxMethod > ParallaxOcclusionMapping)
+            parallaxMethod = ParallaxOcclusionMapping;
+        if (parallaxMethod < 0)
+            parallaxMethod = 0;
 
+        //setParameter("viewMatrix", rc.viewMatrix);
         setParameter("modelViewMatrix", rc.modelViewMatrix);
         setParameter("projectionMatrix", rc.projectionMatrix);
         setParameter("invViewMatrix", rc.invViewMatrix);
@@ -70,6 +86,7 @@ class DecalShader: Shader
         glBindTexture(GL_TEXTURE_2D, gbuffer.positionTexture);
         setParameter("positionTexture", cast(int)0);
 
+        // Diffuse
         if (idiffuse.texture)
         {
             glActiveTexture(GL_TEXTURE1);
@@ -82,6 +99,104 @@ class DecalShader: Shader
             setParameter("diffuseVector", rc.material.diffuse.asVector4f);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
         }
+        
+        // Normal/height
+        bool haveHeightMap = inormal.texture !is null;
+        if (haveHeightMap)
+            haveHeightMap = inormal.texture.image.channels == 4;
+
+        if (!haveHeightMap)
+        {
+            if (inormal.texture is null)
+            {
+                if (iheight.texture !is null) // we have height map, but no normal map
+                {
+                    Color4f color = Color4f(0.5f, 0.5f, 1.0f, 0.0f); // default normal pointing upwards
+                    inormal.texture = rc.material.makeTexture(color, iheight.texture);
+                    haveHeightMap = true;
+                }
+            }
+            else
+            {
+                if (iheight.texture !is null) // we have both normal and height maps
+                {
+                    inormal.texture = rc.material.makeTexture(inormal.texture, iheight.texture);
+                    haveHeightMap = true;
+                }
+            }
+        }
+        
+        if (inormal.texture)
+        {
+            setParameter("normalTexture", cast(int)2);
+            setParameterSubroutine("normal", ShaderType.Fragment, "normalMap");
+
+            glActiveTexture(GL_TEXTURE2);
+            inormal.texture.bind();
+        }
+        else
+        {
+            setParameter("normalVector", rc.material.normal.asVector3f);
+            setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
+        }
+        
+        // Height and parallax
+
+        // TODO: make these material properties
+        float parallaxScale = 0.03f;
+        float parallaxBias = -0.01f;
+        setParameter("parallaxScale", parallaxScale);
+        setParameter("parallaxBias", parallaxBias);
+
+        if (haveHeightMap)
+        {
+            setParameterSubroutine("height", ShaderType.Fragment, "heightMap");
+        }
+        else
+        {
+            float h = 0.0f; //-parallaxBias / parallaxScale;
+            setParameter("heightScalar", h);
+            setParameterSubroutine("height", ShaderType.Fragment, "heightValue");
+            parallaxMethod = ParallaxNone;
+        }
+
+        if (parallaxMethod == ParallaxSimple)
+            setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxSimple");
+        else if (parallaxMethod == ParallaxOcclusionMapping)
+            setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxOcclusionMapping");
+        else
+            setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxNone");
+
+        // PBR
+        // TODO: pass solid values as uniforms, make subroutine for each mode
+        if (ipbr is null)
+        {
+            rc.material.setInput("pbr", 0.0f);
+            ipbr = "pbr" in rc.material.inputs;
+        }
+
+        if (ipbr.texture is null)
+            ipbr.texture = rc.material.makeTexture(*iroughness, *imetallic, materialInput(0.0f), materialInput(0.0f));
+        glActiveTexture(GL_TEXTURE3);
+        ipbr.texture.bind();
+        setParameter("pbrTexture", 3);
+        
+        // Emission
+        if (iemission.texture)
+        {
+            glActiveTexture(GL_TEXTURE4);
+            iemission.texture.bind();
+
+            setParameter("emissionTexture", 4);
+            setParameterSubroutine("emission", ShaderType.Fragment, "emissionMap");
+        }
+        else
+        {
+            setParameter("emissionVector", rc.material.emission.asVector4f);
+            setParameterSubroutine("emission", ShaderType.Fragment, "emissionValue");
+        }
+
+        setParameter("emissionEnergy", ienergy.asFloat);
 
         glActiveTexture(GL_TEXTURE0);
 
@@ -96,6 +211,15 @@ class DecalShader: Shader
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE0);
