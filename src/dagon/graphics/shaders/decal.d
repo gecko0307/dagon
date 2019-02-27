@@ -66,6 +66,8 @@ class DecalShader: Shader
         auto ipbr = "pbr" in rc.material.inputs;
         auto iroughness = "roughness" in rc.material.inputs;
         auto imetallic = "metallic" in rc.material.inputs;
+        auto iemission = "emission" in rc.material.inputs;
+        auto ienergy = "energy" in rc.material.inputs;
         
         int parallaxMethod = iparallax.asInteger;
         if (parallaxMethod > ParallaxOcclusionMapping)
@@ -178,6 +180,23 @@ class DecalShader: Shader
         glActiveTexture(GL_TEXTURE3);
         ipbr.texture.bind();
         setParameter("pbrTexture", 3);
+        
+        // Emission
+        if (iemission.texture)
+        {
+            glActiveTexture(GL_TEXTURE4);
+            iemission.texture.bind();
+
+            setParameter("emissionTexture", 4);
+            setParameterSubroutine("emission", ShaderType.Fragment, "emissionMap");
+        }
+        else
+        {
+            setParameter("emissionVector", rc.material.emission.asVector4f);
+            setParameterSubroutine("emission", ShaderType.Fragment, "emissionValue");
+        }
+
+        setParameter("emissionEnergy", ienergy.asFloat);
 
         glActiveTexture(GL_TEXTURE0);
 
@@ -198,6 +217,9 @@ class DecalShader: Shader
         glBindTexture(GL_TEXTURE_2D, 0);
         
         glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE0);

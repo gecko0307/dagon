@@ -145,9 +145,32 @@ subroutine uniform srtParallax parallax;
 uniform sampler2D pbrTexture;
 
 
+/*
+ * Emission
+ */
+subroutine vec4 srtEmission(in vec2 uv);
+
+uniform vec4 emissionVector;
+subroutine(srtEmission) vec4 emissionValue(in vec2 uv)
+{
+    return emissionVector;
+}
+
+uniform sampler2D emissionTexture;
+subroutine(srtEmission) vec4 emissionMap(in vec2 uv)
+{
+    return texture(emissionTexture, uv);
+}
+
+subroutine uniform srtEmission emission;
+
+uniform float emissionEnergy;
+
+
 layout(location = 0) out vec4 frag_color;
 layout(location = 1) out vec4 frag_rms;
 layout(location = 2) out vec4 frag_normal;
+layout(location = 3) out vec4 frag_emission;
 
 void main()
 {
@@ -183,7 +206,10 @@ void main()
     
     vec4 rms = texture(pbrTexture, shiftedTexCoord);
     
+    vec3 emiss = emission(shiftedTexCoord).rgb * emissionEnergy;
+    
     frag_color = vec4(color, d.a);
     frag_rms = vec4(rms.r, rms.g, 1.0, d.a);
     frag_normal = vec4(N, d.a);
+    frag_emission = vec4(emiss, d.a);
 }
