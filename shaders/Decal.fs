@@ -139,8 +139,15 @@ subroutine(srtParallax) vec2 parallaxOcclusionMapping(in vec3 E, in vec2 uv, in 
 subroutine uniform srtParallax parallax;
 
 
+/*
+ * PBR parameters
+ */
+uniform sampler2D pbrTexture;
+
+
 layout(location = 0) out vec4 frag_color;
-layout(location = 1) out vec4 frag_normal;
+layout(location = 1) out vec4 frag_rms;
+layout(location = 2) out vec4 frag_normal;
 
 void main()
 {
@@ -174,6 +181,9 @@ void main()
     vec4 d = diffuse(shiftedTexCoord);
     vec3 color = d.rgb;
     
+    vec4 rms = texture(pbrTexture, shiftedTexCoord);
+    
     frag_color = vec4(color, d.a);
+    frag_rms = vec4(rms.r, rms.g, 1.0, d.a);
     frag_normal = vec4(N, d.a);
 }

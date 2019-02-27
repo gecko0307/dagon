@@ -63,6 +63,9 @@ class DecalShader: Shader
         auto inormal = "normal" in rc.material.inputs;
         auto iheight = "height" in rc.material.inputs;
         auto iparallax = "parallax" in rc.material.inputs;
+        auto ipbr = "pbr" in rc.material.inputs;
+        auto iroughness = "roughness" in rc.material.inputs;
+        auto imetallic = "metallic" in rc.material.inputs;
         
         int parallaxMethod = iparallax.asInteger;
         if (parallaxMethod > ParallaxOcclusionMapping)
@@ -162,6 +165,20 @@ class DecalShader: Shader
         else
             setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxNone");
 
+        // PBR
+        // TODO: pass solid values as uniforms, make subroutine for each mode
+        if (ipbr is null)
+        {
+            rc.material.setInput("pbr", 0.0f);
+            ipbr = "pbr" in rc.material.inputs;
+        }
+
+        if (ipbr.texture is null)
+            ipbr.texture = rc.material.makeTexture(*iroughness, *imetallic, materialInput(0.0f), materialInput(0.0f));
+        glActiveTexture(GL_TEXTURE3);
+        ipbr.texture.bind();
+        setParameter("pbrTexture", 3);
+
         glActiveTexture(GL_TEXTURE0);
 
         super.bind(rc);
@@ -178,6 +195,9 @@ class DecalShader: Shader
         glBindTexture(GL_TEXTURE_2D, 0);
         
         glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE0);
