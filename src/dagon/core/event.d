@@ -135,20 +135,23 @@ class EventManager
         //videoWidth = videoInfo.current_w;
         //videoHeight = videoInfo.current_h;
 
-        SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
+        if(SDL_NumJoysticks() > 0)
+        {
+            SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
 
-        if (SDL_IsGameController(0))
-        {
-            controller = SDL_GameControllerOpen(0);
-            
-            if (SDL_GameControllerMapping(controller) is null)
-                writeln("Warning: no mapping found for controller!");
-            
-            SDL_GameControllerEventState(SDL_ENABLE);
-        }
-        else
-        {
-            joystick = SDL_JoystickOpen(0);
+            if (SDL_IsGameController(0))
+            {
+                controller = SDL_GameControllerOpen(0);
+
+                if (SDL_GameControllerMapping(controller) is null)
+                    writeln("Warning: no mapping found for controller!");
+
+                SDL_GameControllerEventState(SDL_ENABLE);
+            }
+            else
+            {
+                joystick = SDL_JoystickOpen(0);
+            }
         }
 
         toReset = DynamicArray!(bool*)();
@@ -156,8 +159,10 @@ class EventManager
         inputManager = New!InputManager(this);
     }
 
-    ~this()
+    void exit()
     {
+        running = false;
+
         toReset.free();
         Delete(inputManager);
     }
@@ -438,7 +443,7 @@ class EventManager
                     break;
 */
                 case SDL_QUIT:
-                    running = false;
+                    exit();
                     e = Event(EventType.Quit);
                     addEvent(e);
                     break;
