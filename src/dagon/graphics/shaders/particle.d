@@ -167,6 +167,8 @@ class ParticleShader: Shader
             setParameter("groundEnergy", rc.environment.groundEnergy);
             setParameterSubroutine("environment", ShaderType.Fragment, "environmentSky");
         }
+        
+        setParameter("environmentBrightness", rc.environment.environmentBrightness);
 
         glActiveTexture(GL_TEXTURE0);
 

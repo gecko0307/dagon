@@ -98,6 +98,8 @@ subroutine(srtEnv) vec3 environmentCubemap(in vec3 wN, in vec3 wSun, in float ro
 
 subroutine uniform srtEnv environment;
 
+uniform float environmentBrightness;
+
 vec3 fresnel(float cosTheta, vec3 f0)
 {
     return f0 + (1.0 - f0) * pow(1.0 - cosTheta, 5.0);
@@ -236,7 +238,7 @@ void main()
         vec3 kS = F;
         vec3 kD = 1.0 - kS;
         kD *= 1.0 - metallic;
-        radiance += kD * ambientDiffuse * albedo * occlusion + F * ambientSpecular;
+        radiance += (kD * ambientDiffuse * albedo * occlusion + F * ambientSpecular) * environmentBrightness;
     }
 
     // Emission

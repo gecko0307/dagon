@@ -143,6 +143,8 @@ subroutine(srtEnv) vec3 environmentCubemap(in vec3 wN, in vec3 wSun, in float ro
 
 subroutine uniform srtEnv environment;
 
+uniform float environmentBrightness;
+
 
 uniform vec2 viewSize;
 uniform sampler2D positionTexture;
@@ -194,7 +196,7 @@ void main()
     // TODO: make uniform
     const float wrapFactor = 0.5f;
 
-    vec3 ambient = environment(worldN, worldSun, 0.9);
+    vec3 ambient = environment(worldN, worldSun, 0.9) * environmentBrightness;
 
     vec3 radiance = shaded? 
         ambient + toLinear(sunColor.rgb) * max(dot(N, sunDirection) + wrapFactor, 0.0) / (1.0 + wrapFactor) * sunEnergy :

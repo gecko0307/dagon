@@ -122,6 +122,8 @@ class WaterShader: Shader
             setParameter("groundEnergy", rc.environment.groundEnergy);
             setParameterSubroutine("environment", ShaderType.Fragment, "environmentSky");
         }
+        
+        setParameter("environmentBrightness", rc.environment.environmentBrightness);
 
         // Ripple parameters
         glActiveTexture(GL_TEXTURE2);

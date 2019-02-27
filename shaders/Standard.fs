@@ -211,6 +211,8 @@ subroutine(srtEnv) vec3 environmentCubemap(in vec3 wN, in vec3 wSun, in float ro
 
 subroutine uniform srtEnv environment;
 
+uniform float environmentBrightness;
+
 
 /*
  * Shadow subroutines.
@@ -362,7 +364,7 @@ subroutine(srtBRDF) vec3 brdfPBR(in vec3 albedo, in float roughness, in float me
         vec3 kD = 1.0 - kS;
         kD *= 1.0 - metallic;
 
-        Lo += kD * envDiffuse * albedo + F * envSpecular;
+        Lo += (kD * envDiffuse * albedo + F * envSpecular) * environmentBrightness;
     }
 
     // Sun light

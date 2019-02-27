@@ -122,6 +122,8 @@ class EnvironmentPassShader: Shader
             setParameter("groundEnergy", rc3d.environment.groundEnergy);
             setParameterSubroutine("environment", ShaderType.Fragment, "environmentSky");
         }
+        
+        setParameter("environmentBrightness", rc3d.environment.environmentBrightness);
 
         // Texture 5 - emission buffer
         glActiveTexture(GL_TEXTURE5);

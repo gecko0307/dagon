@@ -77,6 +77,8 @@ subroutine(srtEnv) vec3 environmentCubemap(in vec3 wN, in vec3 wSun, in float ro
 
 subroutine uniform srtEnv environment;
 
+uniform float environmentBrightness;
+
 uniform sampler2D rippleTexture;
 uniform vec4 rippleTimes;
 const float textureScale = 4.0;
@@ -146,7 +148,7 @@ void main()
     vec3 waterColor = vec3(0.1, 0.1, 0.0);
     float waterAlpha = 0.95;
     
-    vec3 reflection = environment(worldR, worldSun, 0.0);
+    vec3 reflection = environment(worldR, worldSun, 0.0) * environmentBrightness;
     
     const float softDistance = 0.5;
     float soft = ((pos.w > 0.0)? clamp((worldPosition.y - referenceEyePos.y) / softDistance, 0.0, 1.0) : 1.0);

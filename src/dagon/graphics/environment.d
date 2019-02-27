@@ -89,6 +89,7 @@ class Environment: Owner
     float groundEnergy = 1.0f;
     
     float skyBrightness = 1.0f;
+    float environmentBrightness = 1.0f;
 
     bool showSun = true;
     bool showSunHalo = true;
