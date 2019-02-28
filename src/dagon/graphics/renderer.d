@@ -292,8 +292,10 @@ class Renderer: Owner
 
         glBindFramebuffer(GL_FRAMEBUFFER, decalFbo);
         glDisable(GL_DEPTH_TEST);
+        glCullFace(GL_FRONT);
         foreach(e; scene.decals)
             e.render(rc);
+        glCullFace(GL_BACK);
         glEnable(GL_DEPTH_TEST);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         
