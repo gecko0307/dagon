@@ -110,10 +110,10 @@ class SkyShader: Shader
     {
         super.unbind(rc);
 
-        if (rc.environment.environmentMap)
+        if (rc.environment.skyMap)
         {
             glActiveTexture(GL_TEXTURE0);
-            rc.environment.environmentMap.unbind();
+            rc.environment.skyMap.unbind();
         }
     }
 }
