@@ -110,7 +110,7 @@ class InputManager
         {
             bind.free();
         }
-        bindings.free();
+        Delete(bindings);
         Delete(config);
     }
 

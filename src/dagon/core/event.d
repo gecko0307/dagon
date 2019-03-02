@@ -158,13 +158,16 @@ class EventManager
 
         inputManager = New!InputManager(this);
     }
+    
+    ~this()
+    {
+        toReset.free();
+        Delete(inputManager);
+    }
 
     void exit()
     {
         running = false;
-
-        toReset.free();
-        Delete(inputManager);
     }
 
     void addEvent(Event e)

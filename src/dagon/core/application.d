@@ -37,6 +37,7 @@ import std.string;
 import std.file;
 import core.stdc.stdlib;
 
+import dlib.core.memory;
 import dagon.core.libs;
 import dagon.core.event;
 
@@ -88,6 +89,8 @@ class Application: EventListener
     SDL_Window* window = null;
     SDL_GLContext glcontext;
     string libdir;
+    
+    private EventManager _eventManager;
 
     /++
         Constructor.
@@ -168,8 +171,8 @@ class Application: EventListener
         if (fullscreen)
             SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
 
-        EventManager eventManager = new EventManager(window, width, height);
-        super(eventManager, null);
+        _eventManager = New!EventManager(window, width, height);
+        super(_eventManager, null);
 
         // Initialize OpenGL
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -222,7 +225,7 @@ class Application: EventListener
         if (error != GL_NO_ERROR)
         {
             writefln("OpenGL error %s: %s", error, GLErrorStrings[error]);
-            eventManager.running = false;
+            //eventManager.running = false;
         }
     }
 
@@ -259,5 +262,6 @@ class Application: EventListener
         SDL_GL_DeleteContext(glcontext);
         SDL_DestroyWindow(window);
         SDL_Quit();
+        Delete(_eventManager);
     }
 }
