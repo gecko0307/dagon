@@ -27,6 +27,7 @@ Features
 * Spherical and tube area lights
 * Spot lights
 * Normal/parallax mapping, parallax occlusion mapping
+* Deferred decals with normal mapping and PBR material properties
 * Dynamic skydome with sun and day/night cycle. Simple and Rayleigh sky models
 * Particle system with force fields. Blended particles, soft particles, shaded particles with normal map support, particle shadows
 * Terrain rendering. Procedural terrain using OpenSimplex noise or any custom height field
