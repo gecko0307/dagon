@@ -524,7 +524,8 @@ abstract class EventListener: Owner
     {
         super(owner);
         eventManager = emngr;
-        inputManager = emngr.inputManager;
+        if(emngr !is null)
+            inputManager = emngr.inputManager;
     }
 
     protected void generateUserEvent(int code)
