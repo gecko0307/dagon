@@ -63,10 +63,6 @@ class Configuration: Owner
         }
 
         props = New!Properties(this);
-        props.set(DPropType.Number, "windowWidth", "1280");
-        props.set(DPropType.Number, "windowHeight", "720");
-        props.set(DPropType.Number, "fullscreen", "0");
-        props.set(DPropType.Number, "mouseSensibility", "0.2");
     }
 
     ~this()

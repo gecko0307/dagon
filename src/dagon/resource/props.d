@@ -102,7 +102,7 @@ struct DProperty
 
 class Properties: Owner
 {
-    protected Dict!(DProperty, string) props;
+    Dict!(DProperty, string) props;
     
     this(Owner o)
     {

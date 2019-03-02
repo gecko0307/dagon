@@ -336,6 +336,7 @@ class SceneApplication: Application
         super(w, h, fullscreen, windowTitle, args);
 
         config = New!Configuration(this);
+        config.props.set(DPropType.Number, "mouseSensibility", "0.2");
         config.fromFile("settings.conf");
         config.props.set(DPropType.Number, "windowWidth", w.to!string);
         config.props.set(DPropType.Number, "windowHeight", h.to!string);
@@ -352,7 +353,13 @@ class SceneApplication: Application
     {
         config = New!Configuration(this);
         if (!config.fromFile("settings.conf"))
+        {
             writeln("Warning: no \"settings.conf\" found, using default configuration");
+            config.props.set(DPropType.Number, "windowWidth", "1280");
+            config.props.set(DPropType.Number, "windowHeight", "720");
+            config.props.set(DPropType.Number, "fullscreen", "0");
+            config.props.set(DPropType.Number, "mouseSensibility", "0.2");
+        }
 
         super(
             config.props.windowWidth.toUInt,
@@ -864,6 +871,8 @@ class Scene: BaseScene
 
         if (view)
             lightManager.updateShadows(view, &renderer.rc3d, fixedTimeStep);
+
+        eventManager.resetUpDown();
     }
 
     override void onUpdate(double dt)

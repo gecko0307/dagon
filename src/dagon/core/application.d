@@ -251,7 +251,7 @@ class Application: EventListener
 
     void exit()
     {
-        eventManager.running = false;
+        eventManager.exit();
     }
 
     ~this()
