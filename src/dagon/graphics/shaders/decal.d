@@ -68,6 +68,10 @@ class DecalShader: Shader
         auto imetallic = "metallic" in rc.material.inputs;
         auto iemission = "emission" in rc.material.inputs;
         auto ienergy = "energy" in rc.material.inputs;
+        auto ioutputColor = "outputColor" in rc.material.inputs;
+        auto ioutputNormal = "outputNormal" in rc.material.inputs;
+        auto ioutputPBR = "outputPBR" in rc.material.inputs;
+        auto ioutputEmission = "outputEmission" in rc.material.inputs;
         
         int parallaxMethod = iparallax.asInteger;
         if (parallaxMethod > ParallaxOcclusionMapping)
@@ -98,6 +102,11 @@ class DecalShader: Shader
         {
             setParameter("diffuseVector", rc.material.diffuse.asVector4f);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
+        }
+        
+        if (!ioutputColor.asBool)
+        {
+            glColorMaski(0, 0, 0, 0, 0);
         }
         
         // Normal/height
@@ -138,6 +147,11 @@ class DecalShader: Shader
         {
             setParameter("normalVector", rc.material.normal.asVector3f);
             setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
+        }
+        
+        if (!ioutputNormal.asBool)
+        {
+            glColorMaski(2, 0, 0, 0, 0);
         }
         
         // Height and parallax
@@ -181,6 +195,11 @@ class DecalShader: Shader
         ipbr.texture.bind();
         setParameter("pbrTexture", 3);
         
+        if (!ioutputPBR.asBool)
+        {
+            glColorMaski(1, 0, 0, 0, 0);
+        }
+        
         // Emission
         if (iemission.texture)
         {
@@ -197,6 +216,11 @@ class DecalShader: Shader
         }
 
         setParameter("emissionEnergy", ienergy.asFloat);
+        
+        if (!ioutputEmission.asBool)
+        {
+            glColorMaski(3, 0, 0, 0, 0);
+        }
 
         glActiveTexture(GL_TEXTURE0);
 
@@ -206,6 +230,11 @@ class DecalShader: Shader
     override void unbind(RenderingContext* rc)
     {
         super.unbind(rc);
+        
+        glColorMaski(0, 1, 1, 1, 1);
+        glColorMaski(1, 1, 1, 1, 1);
+        glColorMaski(2, 1, 1, 1, 1);
+        glColorMaski(3, 1, 1, 1, 1);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, 0);

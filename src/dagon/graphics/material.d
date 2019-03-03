@@ -183,6 +183,11 @@ class Material: Owner
         setInput("particleColor", Color4f(1.0f, 1.0f, 1.0f, 1.0f));
         setInput("particleSphericalNormal", false);
         setInput("textureScale", Vector2f(1.0f, 1.0f));
+        
+        setInput("outputColor", true);
+        setInput("outputNormal", true);
+        setInput("outputPBR", true);
+        setInput("outputEmission", true);
     }
 
     final auto opDispatch(string name)() @property
