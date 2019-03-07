@@ -36,6 +36,17 @@ import dagon.core.ownership;
 import dagon.resource.asset;
 import dagon.ui.ftfont;
 
+version(NoFreetype)
+{
+    pragma(msg, "Warning: Dagon is compiled without Freetype support, dagon.resource.fontasset is not available");
+}
+else
+{
+    version = EnableFreetype;
+}
+
+version(EnableFreetype):
+
 class FontAsset: Asset
 {
     FreeTypeFont font;

@@ -33,7 +33,6 @@ import dlib.image.color;
 import dlib.container.array;
 
 import dagon.core.interfaces;
-import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.core.event;
 import dagon.core.keycodes;
@@ -41,6 +40,19 @@ import dagon.core.locale;
 import dagon.graphics.shaderloader;
 import dagon.graphics.texture;
 import dagon.resource.fontasset;
+
+version(NoNuklear)
+{
+    pragma(msg, "Warning: Dagon is compiled without Nuklear support, dagon.ui.nuklear is not available");
+}
+else
+{
+    version = EnableNuklear;
+}
+
+version(EnableNuklear):
+
+import dagon.core.libs;
 
 alias nk_color NKColor;
 alias nk_colorf NKColorf;

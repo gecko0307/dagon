@@ -102,19 +102,31 @@ class Application: EventListener
     +/
     this(uint winWidth, uint winHeight, bool fullscreen, string windowTitle, string[] args)
     {
-        FreetypeSupport ftsup = loadFreetype();
-        if (ftsup != freetypeSupport)
+        version(NoFreetype)
         {
-            if (ftsup == FreetypeSupport.badLibrary)
-                writeln("Warning: failed to load some Freetype functions. It seems that you have an old version of Freetype. Dagon will try to use it, but it is recommended to install Freetype 2.8.1 or higher");
-            else
-                exitWithError("Error: Freetype library is not found. Please, install Freetype 2.8.1");
+        }
+        else
+        {
+            FreetypeSupport ftsup = loadFreetype();
+            if (ftsup != freetypeSupport)
+            {
+                if (ftsup == FreetypeSupport.badLibrary)
+                    writeln("Warning: failed to load some Freetype functions. It seems that you have an old version of Freetype. Dagon will try to use it, but it is recommended to install Freetype 2.8.1 or higher");
+                else
+                    exitWithError("Error: Freetype library is not found. Please, install Freetype 2.8.1");
+            }
         }
 
-        NuklearSupport nuksup = loadNuklear();
-        if (nuksup != NuklearSupport.Nuklear4)
+        version(NoNuklear)
         {
-            exitWithError("Error: Nuklear library is not found. Please, install Nuklear.");
+        }
+        else
+        {
+            NuklearSupport nuksup = loadNuklear();
+            if (nuksup != NuklearSupport.Nuklear4)
+            {
+                exitWithError("Error: Nuklear library is not found. Please, install Nuklear.");
+            }
         }
 
         SDLSupport sdlsup = loadSDL();

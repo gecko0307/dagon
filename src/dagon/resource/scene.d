@@ -586,17 +586,24 @@ class Scene: BaseScene
         return img;
     }
 
-    FontAsset addFontAsset(string filename, uint height, bool preload = false)
+    version(NoFreetype)
     {
-        FontAsset font;
-        if (assetManager.assetExists(filename))
-            font = cast(FontAsset)assetManager.getAsset(filename);
-        else
+        pragma(msg, "Warning: Dagon is compiled without Freetype support, Scene.addFontAsset is not available");
+    }
+    else
+    {
+        FontAsset addFontAsset(string filename, uint height, bool preload = false)
         {
-            font = New!FontAsset(height, assetManager);
-            addAsset(font, filename, preload);
+            FontAsset font;
+            if (assetManager.assetExists(filename))
+                font = cast(FontAsset)assetManager.getAsset(filename);
+            else
+            {
+                font = New!FontAsset(height, assetManager);
+                addAsset(font, filename, preload);
+            }
+            return font;
         }
-        return font;
     }
 
     OBJAsset addOBJAsset(string filename, bool preload = false)

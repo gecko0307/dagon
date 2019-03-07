@@ -114,7 +114,7 @@ public
     import dagon.graphics.filters.finalizer;
 
     import dagon.ui.font;
-    import dagon.ui.ftfont;
+    import dagon.ui.ftfont;   
     import dagon.ui.textline;
     import dagon.ui.nuklear;
 

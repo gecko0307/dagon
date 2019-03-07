@@ -4,6 +4,20 @@ public
 {
     import bindbc.sdl;
     import bindbc.opengl;
-    import bindbc.freetype;
-    import bindbc.nuklear;
+    
+    version(NoFreetype)
+    {
+    }
+    else
+    {
+        import bindbc.freetype;
+    }
+    
+    version(NoNuklear)
+    {
+    }
+    else
+    {
+        import bindbc.nuklear;
+    }
 }

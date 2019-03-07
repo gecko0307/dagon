@@ -18,9 +18,7 @@
     "dependencies": {
         "dlib": "~master",
         "bindbc-opengl": "0.4.0",
-        "bindbc-sdl": "0.4.1",
-        "bindbc-ft": "0.1.0",
-        "bindbc-nuklear": "0.1.0"
+        "bindbc-sdl": "0.4.1"
     },
 
     "versions": [
@@ -33,15 +31,40 @@
     "buildRequirements":[
         "allowWarnings"
     ],
-
+    
     "configurations": [
         {
             "name": "library",
-            "targetType": "library"
-        }
+            "targetType": "library",
+            "dependencies": {
+                "bindbc-ft": "0.1.0",
+                "bindbc-nuklear": "0.1.0"
+            },
+        },
+        {
+            "name": "Minimal",
+            "targetType": "library",
+            "versions": ["NoFreetype", "NoNuklear"]
+        },
+        {
+            "name": "NoFreetype",
+            "targetType": "library",
+            "dependencies": {
+                "bindbc-nuklear": "0.1.0"
+            },
+            "versions": ["NoFreetype"]
+        },
+        {
+            "name": "NoNuklear",
+            "targetType": "library",
+            "dependencies": {
+                "bindbc-ft": "0.1.0",
+            },
+            "versions": ["NoNuklear"]
+        },
     ],
-
+    
+    "copyFiles-windows-x86": ["lib/x86/*.dll"],
+    "copyFiles-windows-x86_64": ["lib/x64/*.dll"],
     "copyFiles": ["data", "gamecontrollerdb.txt"],
-    "copyFiles-windows-x86" : ["lib/x86/*.dll"],
-    "copyFiles-windows-x86_64" : ["lib/x64/*.dll"]
 }

@@ -41,11 +41,23 @@ import dlib.text.utf8;
 import dlib.math.vector;
 import dlib.image.color;
 
-import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.ui.font;
 import dagon.graphics.rc;
 import dagon.graphics.shaderloader;
+
+version(NoFreetype)
+{
+    pragma(msg, "Warning: Dagon is compiled without Freetype support, dagon.ui.ftfont is not available");
+}
+else
+{
+    version = EnableFreetype;
+}
+
+version(EnableFreetype):
+
+import dagon.core.libs;
 
 struct Glyph
 {
