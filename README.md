@@ -80,7 +80,15 @@ Runtime dependencies (dynamic link libraries):
 * [Freetype](https://www.freetype.org) 2.8.1
 * [Nuklear](https://github.com/vurtun/nuklear)
 
-Under Windows runtime dependencies are automatically deployed if you are building with Dub. Under other OSes you have to install them manually.
+Under Windows runtime dependencies are automatically deployed if you are building with Dub. Under other OSes you have to install them manually. You can also compile Dagon without Freetype and Nuklear support, if you don't need text and UI rendering. To do that, add the following to your project's `dub.json`:
+
+```d
+"subConfigurations": {
+    "dagon": "Minimal"
+}
+```
+
+Supported subConfigurations are also `"NoNuklear"` and `"NoFreetype"` to remove these dependencies separately.
 
 Usage
 -----
