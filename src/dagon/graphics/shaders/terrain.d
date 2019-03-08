@@ -44,20 +44,16 @@ import dagon.graphics.shadow;
 import dagon.graphics.texture;
 import dagon.graphics.material;
 import dagon.graphics.shader;
-import dagon.graphics.terrain;
 
 class TerrainShader: Shader
 {
     string vs = import("Terrain.vs");
     string fs = import("Terrain.fs");
-    
-    Terrain terrain;
 
-    this(Terrain terrain, Owner o)
+    this(Owner o)
     {
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, o);
-        this.terrain = terrain;
     }
 
     override void bind(RenderingContext* rc)
@@ -101,8 +97,6 @@ class TerrainShader: Shader
         setParameter("textureScale2", itextureScale2.asVector2f);
         setParameter("textureScale3", itextureScale3.asVector2f);
         setParameter("textureScale4", itextureScale4.asVector2f);
-        
-        setParameter("terrainSize", Vector2f(terrain.width, terrain.height));
         
         // Diffuse 1
         if (idiffuse.texture)

@@ -181,7 +181,9 @@ subroutine(srtNormal) vec3 normal4Map(in vec2 uv, in float ysign, in mat3 tangen
 
 subroutine uniform srtNormal normal4;
 
-
+/*
+ * PBR properties
+ */
 uniform vec4 rms1;
 uniform vec4 rms2;
 uniform vec4 rms3;

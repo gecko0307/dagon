@@ -82,6 +82,7 @@ import dagon.graphics.shaders.sky;
 import dagon.graphics.shaders.particle;
 import dagon.graphics.shaders.hud;
 import dagon.graphics.shaders.decal;
+import dagon.graphics.shaders.terrain;
 
 import dagon.logics.entity;
 
@@ -419,6 +420,7 @@ class Scene: BaseScene
     SkyShader skyShader;
     Material defaultSkyMaterial;
     ParticleShader particleShader;
+    TerrainShader terrainShader;
     Material defaultMaterial3D;
     DecalShader decalShader;
     Material defaultDecalMaterial;
@@ -473,12 +475,13 @@ class Scene: BaseScene
         renderer = New!Renderer(this, assetManager);
 
         standardShader = New!StandardShader(assetManager);
-        // TODO: default shadow map for standardShader
 
         skyShader = New!SkyShader(assetManager);
         defaultSkyMaterial = New!Material(skyShader, assetManager);
         defaultSkyMaterial.depthWrite = false;
         defaultSkyMaterial.culling = false;
+        
+        terrainShader = New!TerrainShader(assetManager);
 
         particleShader = New!ParticleShader(renderer.gbuffer, assetManager);
 
@@ -744,6 +747,13 @@ class Scene: BaseScene
     {
         if (shader is null)
             shader = particleShader;
+        return New!Material(shader, assetManager);
+    }
+    
+    Material createTerrainMaterial(Shader shader = null)
+    {
+        if (shader is null)
+            shader = terrainShader;
         return New!Material(shader, assetManager);
     }
 

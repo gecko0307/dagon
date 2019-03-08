@@ -11,10 +11,6 @@ uniform mat4 projectionMatrix;
 uniform mat4 prevModelViewProjMatrix;
 uniform mat4 blurModelViewProjMatrix;
 
-//uniform vec2 textureScale;
-
-uniform vec2 terrainSize;
-
 out vec3 eyePosition;
 out vec3 eyeNormal;
 out vec2 texCoord;
@@ -27,7 +23,7 @@ void main()
     vec4 pos = modelViewMatrix * vec4(va_Vertex, 1.0);
     eyePosition = pos.xyz;
     eyeNormal = (normalMatrix * vec4(va_Normal, 0.0)).xyz;
-    texCoord = va_Texcoord; // * textureScale;
+    texCoord = va_Texcoord;
     splatTexCoord = va_Texcoord;
     
     blurPosition = blurModelViewProjMatrix * vec4(va_Vertex, 1.0);
