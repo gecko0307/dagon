@@ -66,6 +66,17 @@ class TerrainShader: Shader
         auto idiffuse2 = "diffuse2" in rc.material.inputs;
         auto idiffuse3 = "diffuse3" in rc.material.inputs;
         auto idiffuse4 = "diffuse4" in rc.material.inputs;
+        
+        auto inormal = "normal" in rc.material.inputs;
+        auto inormal2 = "normal2" in rc.material.inputs;
+        auto inormal3 = "normal3" in rc.material.inputs;
+        auto inormal4 = "normal4" in rc.material.inputs;
+        
+        auto iheight = "height" in rc.material.inputs;
+        auto iheight2 = "height2" in rc.material.inputs;
+        auto iheight3 = "height3" in rc.material.inputs;
+        auto iheight4 = "height4" in rc.material.inputs;
+        
         auto itextureScale = "textureScale" in rc.material.inputs;
         auto itextureScale2 = "textureScale2" in rc.material.inputs;
         auto itextureScale3 = "textureScale3" in rc.material.inputs;
@@ -107,6 +118,44 @@ class TerrainShader: Shader
             setParameterSubroutine("diffuse1", ShaderType.Fragment, "diffuse1ColorValue");
         }
         
+        // Normal/height 1
+        bool haveHeightMap1 = inormal.texture !is null;
+        if (haveHeightMap1)
+            haveHeightMap1 = inormal.texture.image.channels == 4;
+        if (!haveHeightMap1)
+        {
+            if (inormal.texture is null)
+            {
+                if (iheight.texture !is null) // we have height map, but no normal map
+                {
+                    Color4f color = Color4f(0.5f, 0.5f, 1.0f, 0.0f); // default normal pointing upwards
+                    inormal.texture = rc.material.makeTexture(color, iheight.texture);
+                    haveHeightMap1 = true;
+                }
+            }
+            else
+            {
+                if (iheight.texture !is null) // we have both normal and height maps
+                {
+                    inormal.texture = rc.material.makeTexture(inormal.texture, iheight.texture);
+                    haveHeightMap1 = true;
+                }
+            }
+        }
+        if (inormal.texture)
+        {
+            setParameter("normal1Texture", 1);
+            setParameterSubroutine("normal1", ShaderType.Fragment, "normal1Map");
+
+            glActiveTexture(GL_TEXTURE1);
+            inormal.texture.bind();
+        }
+        else
+        {
+            setParameter("normal1Vector", rc.material.normal.asVector3f);
+            setParameterSubroutine("normal1", ShaderType.Fragment, "normal1Value");
+        }
+        
         // Diffuse 2
         if (idiffuse2.texture)
         {
@@ -119,6 +168,44 @@ class TerrainShader: Shader
         {
             setParameter("diffuse2Vector", rc.material.diffuse2.asVector4f);
             setParameterSubroutine("diffuse2", ShaderType.Fragment, "diffuse2ColorValue");
+        }
+        
+        // Normal/height 2
+        bool haveHeightMap2 = inormal2.texture !is null;
+        if (haveHeightMap2)
+            haveHeightMap2 = inormal2.texture.image.channels == 4;
+        if (!haveHeightMap2)
+        {
+            if (inormal2.texture is null)
+            {
+                if (iheight2.texture !is null) // we have height map, but no normal map
+                {
+                    Color4f color = Color4f(0.5f, 0.5f, 1.0f, 0.0f); // default normal pointing upwards
+                    inormal2.texture = rc.material.makeTexture(color, iheight2.texture);
+                    haveHeightMap2 = true;
+                }
+            }
+            else
+            {
+                if (iheight2.texture !is null) // we have both normal and height maps
+                {
+                    inormal2.texture = rc.material.makeTexture(inormal2.texture, iheight2.texture);
+                    haveHeightMap2 = true;
+                }
+            }
+        }
+        if (inormal2.texture)
+        {
+            setParameter("normal2Texture", 3);
+            setParameterSubroutine("normal2", ShaderType.Fragment, "normal2Map");
+
+            glActiveTexture(GL_TEXTURE3);
+            inormal2.texture.bind();
+        }
+        else
+        {
+            setParameter("normal2Vector", rc.material.normal2.asVector3f);
+            setParameterSubroutine("normal2", ShaderType.Fragment, "normal2Value");
         }
         
         // Diffuse 3
@@ -135,6 +222,44 @@ class TerrainShader: Shader
             setParameterSubroutine("diffuse3", ShaderType.Fragment, "diffuse3ColorValue");
         }
         
+        // Normal/height 3
+        bool haveHeightMap3 = inormal3.texture !is null;
+        if (haveHeightMap3)
+            haveHeightMap3 = inormal3.texture.image.channels == 4;
+        if (!haveHeightMap3)
+        {
+            if (inormal3.texture is null)
+            {
+                if (iheight3.texture !is null) // we have height map, but no normal map
+                {
+                    Color4f color = Color4f(0.5f, 0.5f, 1.0f, 0.0f); // default normal pointing upwards
+                    inormal3.texture = rc.material.makeTexture(color, iheight3.texture);
+                    haveHeightMap3 = true;
+                }
+            }
+            else
+            {
+                if (iheight3.texture !is null) // we have both normal and height maps
+                {
+                    inormal3.texture = rc.material.makeTexture(inormal3.texture, iheight3.texture);
+                    haveHeightMap3 = true;
+                }
+            }
+        }
+        if (inormal3.texture)
+        {
+            setParameter("normal3Texture", 5);
+            setParameterSubroutine("normal3", ShaderType.Fragment, "normal3Map");
+
+            glActiveTexture(GL_TEXTURE5);
+            inormal3.texture.bind();
+        }
+        else
+        {
+            setParameter("normal3Vector", rc.material.normal3.asVector3f);
+            setParameterSubroutine("normal3", ShaderType.Fragment, "normal3Value");
+        }
+        
         // Diffuse 4
         if (idiffuse4.texture)
         {
@@ -149,12 +274,62 @@ class TerrainShader: Shader
             setParameterSubroutine("diffuse4", ShaderType.Fragment, "diffuse4ColorValue");
         }
         
+        // Normal/height 4
+        bool haveHeightMap4 = inormal4.texture !is null;
+        if (haveHeightMap4)
+            haveHeightMap4 = inormal4.texture.image.channels == 4;
+        if (!haveHeightMap4)
+        {
+            if (inormal4.texture is null)
+            {
+                if (iheight4.texture !is null) // we have height map, but no normal map
+                {
+                    Color4f color = Color4f(0.5f, 0.5f, 1.0f, 0.0f); // default normal pointing upwards
+                    inormal4.texture = rc.material.makeTexture(color, iheight4.texture);
+                    haveHeightMap4 = true;
+                }
+            }
+            else
+            {
+                if (iheight4.texture !is null) // we have both normal and height maps
+                {
+                    inormal4.texture = rc.material.makeTexture(inormal4.texture, iheight4.texture);
+                    haveHeightMap4 = true;
+                }
+            }
+        }
+        if (inormal4.texture)
+        {
+            setParameter("normal4Texture", 7);
+            setParameterSubroutine("normal4", ShaderType.Fragment, "normal4Map");
+
+            glActiveTexture(GL_TEXTURE7);
+            inormal4.texture.bind();
+        }
+        else
+        {
+            setParameter("normal4Vector", rc.material.normal4.asVector3f);
+            setParameterSubroutine("normal4", ShaderType.Fragment, "normal4Value");
+        }
+        
         // Splatmap
         if (isplat is null)
         {
             rc.material.setInput("splat", 0.0f);
             isplat = "splat" in rc.material.inputs;
         }
+        
+        // PBR
+        Vector4f rms1 = Vector4f(rc.material.roughness.asFloat, rc.material.metallic.asFloat, 0.0f, 1.0f);
+        Vector4f rms2 = Vector4f(rc.material.roughness2.asFloat, rc.material.metallic2.asFloat, 0.0f, 1.0f);
+        Vector4f rms3 = Vector4f(rc.material.roughness3.asFloat, rc.material.metallic3.asFloat, 0.0f, 1.0f);
+        Vector4f rms4 = Vector4f(rc.material.roughness4.asFloat, rc.material.metallic4.asFloat, 0.0f, 1.0f);
+        
+        setParameter("rms1", rms1);
+        setParameter("rms2", rms2);
+        setParameter("rms3", rms3);
+        setParameter("rms4", rms4);
+        
 
         if (isplat.texture is null)
             isplat.texture = rc.material.makeTexture(*isplatmap1, *isplatmap2, *isplatmap3, *isplatmap4);
@@ -174,13 +349,25 @@ class TerrainShader: Shader
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, 0);
         
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
         glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, 0);
         
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, 0);
         
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
         glActiveTexture(GL_TEXTURE6);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE7);
         glBindTexture(GL_TEXTURE_2D, 0);
         
         glActiveTexture(GL_TEXTURE8);

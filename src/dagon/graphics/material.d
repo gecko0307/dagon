@@ -191,6 +191,22 @@ class Material: Owner
         setInput("diffuse3", Color4f(0.8f, 0.8f, 0.8f, 1.0f));
         setInput("diffuse4", Color4f(0.8f, 0.8f, 0.8f, 1.0f));
         
+        setInput("normal2", Vector3f(0.0f, 0.0f, 1.0f));
+        setInput("normal3", Vector3f(0.0f, 0.0f, 1.0f));
+        setInput("normal4", Vector3f(0.0f, 0.0f, 1.0f));
+        
+        setInput("height2", 0.0f);
+        setInput("height3", 0.0f);
+        setInput("height4", 0.0f);
+        
+        setInput("roughness2", 0.5f);
+        setInput("roughness3", 0.5f);
+        setInput("roughness4", 0.5f);
+        
+        setInput("metallic2", 0.0f);
+        setInput("metallic3", 0.0f);
+        setInput("metallic4", 0.0f);
+        
         setInput("textureScale2", Vector2f(1.0f, 1.0f));
         setInput("textureScale3", Vector2f(1.0f, 1.0f));
         setInput("textureScale4", Vector2f(1.0f, 1.0f));
