@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018 Timur Gafarov
+Copyright (c) 2018-2019 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -38,6 +38,7 @@ import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.graphics.rc;
 import dagon.graphics.shaders.geometrypass;
+import dagon.graphics.terrain;
 import dagon.resource.scene;
 
 class GBuffer: Owner
@@ -232,6 +233,20 @@ class GBuffer: Owner
         //renderOpaqueEntities3D(scene, &rcLocal);
         geometryPassShader.unbindProgram();
 
+        unbind();
+    }
+    
+    void renderTerrains(Scene scene, RenderingContext* rc)
+    {
+        bind();
+        
+        glEnable(GL_DEPTH_TEST);
+        foreach(e; scene.entities3Dflat)
+        {
+            if (entityIsTerrain(e))
+                e.render(rc);
+        }
+        
         unbind();
     }
 }

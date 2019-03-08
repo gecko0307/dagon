@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018 Rafał Ziemniewski
+Copyright (c) 2018-2019 Rafał Ziemniewski, Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -36,6 +36,7 @@ import dagon.core.ownership;
 import dagon.core.interfaces;
 import dagon.graphics.mesh;
 import dagon.graphics.heightmap;
+import dagon.logics.entity;
 
 class Terrain: Owner, Drawable
 {
@@ -153,13 +154,8 @@ struct TerrainSphereTraverseAggregate
         else if (c.z < 0) y = 0;
         else y = cast(uint)c.z;
 
-        //import std.stdio;
-        //writeln(x, ", ", y);
-
         Triangle tri = terrain.mesh.getTriangle(y * terrain.width + x);
         tri.barycenter = (tri.v[0] + tri.v[1] + tri.v[2]) / 3;
-
-        //writeln(tri.barycenter);
 
         result = dg(tri);
 
@@ -167,3 +163,13 @@ struct TerrainSphereTraverseAggregate
     }
 }
 
+bool entityIsTerrain(Entity e)
+{
+    Drawable d = e.drawable;
+    if (d)
+    {
+        if (cast(Terrain)d)
+            return true;
+    }
+    return false;
+}

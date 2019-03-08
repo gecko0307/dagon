@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2018 Timur Gafarov
+Copyright (c) 2017-2019 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -183,11 +183,22 @@ class Material: Owner
         setInput("particleColor", Color4f(1.0f, 1.0f, 1.0f, 1.0f));
         setInput("particleSphericalNormal", false);
         setInput("textureScale", Vector2f(1.0f, 1.0f));
-        
         setInput("outputColor", true);
         setInput("outputNormal", true);
         setInput("outputPBR", true);
         setInput("outputEmission", true);
+        setInput("diffuse2", Color4f(0.8f, 0.8f, 0.8f, 1.0f));
+        setInput("diffuse3", Color4f(0.8f, 0.8f, 0.8f, 1.0f));
+        setInput("diffuse4", Color4f(0.8f, 0.8f, 0.8f, 1.0f));
+        
+        setInput("textureScale2", Vector2f(1.0f, 1.0f));
+        setInput("textureScale3", Vector2f(1.0f, 1.0f));
+        setInput("textureScale4", Vector2f(1.0f, 1.0f));
+        
+        setInput("splatmap1", Color4f(1.0f, 1.0f, 1.0f, 1.0f));
+        setInput("splatmap2", Color4f(0.0f, 0.0f, 0.0f, 0.0f));
+        setInput("splatmap3", Color4f(0.0f, 0.0f, 0.0f, 0.0f));
+        setInput("splatmap4", Color4f(0.0f, 0.0f, 0.0f, 0.0f));
     }
 
     final auto opDispatch(string name)() @property

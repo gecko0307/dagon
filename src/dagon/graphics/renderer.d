@@ -51,6 +51,7 @@ import dagon.graphics.postproc;
 import dagon.graphics.texture;
 import dagon.graphics.cubemap;
 import dagon.graphics.cubemaprendertarget;
+import dagon.graphics.terrain;
 import dagon.resource.scene;
 
 import dagon.graphics.filters.fxaa;
@@ -288,6 +289,7 @@ class Renderer: Owner
     {
         scene.lightManager.renderShadows(scene, rc);
         gbuf.clear();
+        gbuf.renderTerrains(scene, rc);
         gbuf.renderStatic(scene, rc);
 
         glBindFramebuffer(GL_FRAMEBUFFER, decalFbo);
@@ -327,22 +329,21 @@ class Renderer: Owner
         rt.unbind();
     }
 
-    // TODO: add EntityGroup for this
     void renderBackgroundEntities3D(Scene scene, RenderingContext* rc)
     {
         glEnable(GL_DEPTH_TEST);
         foreach(e; scene.entities3Dflat)
-            if (e.layer <= 0)
+            if (e.layer <= 0 && !entityIsTerrain(e))
                 e.render(rc);
     }
 
-    // TODO: add EntityGroup for this
     void renderOpaqueEntities3D(Scene scene, RenderingContext* rc)
     {
         glEnable(GL_DEPTH_TEST);
         RenderingContext rcLocal = *rc;
         rcLocal.ignoreTransparentEntities = true;
         foreach(e; scene.entities3Dflat)
+        if (!entityIsTerrain(e))
         {
             if (e.layer > 0)
                 e.render(&rcLocal);
@@ -355,6 +356,7 @@ class Renderer: Owner
         RenderingContext rcLocal = *rc;
         rcLocal.ignoreTransparentEntities = true;
         foreach(e; scene.entities3DStatic)
+        if (!entityIsTerrain(e))
         {
             if (e.layer > 0)
                 e.render(&rcLocal);
@@ -367,19 +369,20 @@ class Renderer: Owner
         RenderingContext rcLocal = *rc;
         rcLocal.ignoreTransparentEntities = true;
         foreach(e; scene.entities3DDynamic)
+        if (!entityIsTerrain(e))
         {
             if (e.layer > 0)
                 e.render(&rcLocal);
         }
     }
 
-    // TODO: add EntityGroup for this
     void renderTransparentEntities3D(Scene scene, RenderingContext* rc)
     {
         glEnable(GL_DEPTH_TEST);
         RenderingContext rcLocal = *rc;
         rcLocal.ignoreOpaqueEntities = true;
         foreach(e; scene.entities3Dflat)
+        if (!entityIsTerrain(e))
         {
             if (e.layer > 0)
                 e.render(&rcLocal);
@@ -390,14 +393,16 @@ class Renderer: Owner
     {
         glEnable(GL_DEPTH_TEST);
         foreach(e; scene.entities3Dflat)
-            e.render(rc);
+            if (!entityIsTerrain(e))
+                e.render(rc);
     }
 
     void renderEntities2D(Scene scene, RenderingContext* rc)
     {
         glDisable(GL_DEPTH_TEST);
         foreach(e; scene.entities2Dflat)
-            e.render(rc);
+            if (!entityIsTerrain(e))
+                e.render(rc);
     }
 
     void prepareViewport(RenderTarget rt = null)
