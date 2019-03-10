@@ -57,7 +57,7 @@ Screenshots
 
 Video
 -----
-[https://www.youtube.com/watch?v=nhdOhPQ9g90](https://www.youtube.com/watch?v=nhdOhPQ9g90)
+[https://www.youtube.com/watch?v=bvTX9kqtH08](https://www.youtube.com/watch?v=bvTX9kqtH08)
 
 Made with Dagon
 ---------------
