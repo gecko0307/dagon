@@ -10,8 +10,6 @@ uniform mat4 perspectiveMatrix;
 
 uniform bool useGlow;
 uniform float glowBrightness;
-uniform float glowMinLuminanceThreshold = 0.01;
-uniform float glowMaxLuminanceThreshold = 0.5;
 
 in vec2 texCoord;
 
@@ -24,9 +22,7 @@ void main()
     if (useGlow)
     {
         vec3 glow = texture(fbBlurred, texCoord).rgb;
-        float lum = glow.r * 0.2126 + glow.g * 0.7152 + glow.b * 0.0722;
-        lum = (clamp(lum, glowMinLuminanceThreshold, glowMaxLuminanceThreshold) - glowMinLuminanceThreshold) / (glowMaxLuminanceThreshold - glowMinLuminanceThreshold);
-        res = mix(res, res + glow * glowBrightness, lum);
+        res += glow * glowBrightness;
     }
 
     frag_color = vec4(res, 1.0); 

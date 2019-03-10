@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2018 Timur Gafarov
+Copyright (c) 2019 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,25 +25,22 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.graphics.filters.hdrprepass;
+module dagon.graphics.filters.brightpass;
 
-import dlib.math.matrix;
+import dlib.math.vector;
 import dagon.core.libs;
 import dagon.core.ownership;
 import dagon.graphics.postproc;
 import dagon.graphics.framebuffer;
 import dagon.graphics.rc;
 
-/*
- * HDR prepass filter applies HDR effects that should be done before motion blur:
- * - Glow
- * - DoF (TODO)
- */
-
-class PostFilterHDRPrepass: PostFilter
+class PostFilterBrightPass: PostFilter
 {
-    private string vs = import("HDRPrepass.vs");
-    private string fs = import("HDRPrepass.fs");
+    private string vs = import("BrightPass.vs");
+    private string fs = import("BrightPass.fs");
+    
+    GLint luminanceThresholdLoc;
+    float luminanceThreshold = 1.0f;
 
     override string vertexShader()
     {
@@ -55,52 +52,15 @@ class PostFilterHDRPrepass: PostFilter
         return fs;
     }
 
-    GLint perspectiveMatrixLoc;
-    Matrix4x4f perspectiveMatrix;
-
-    GLint fbBlurredLoc;
-    GLint useGlowLoc;
-    GLint glowBrightnessLoc;
-    GLint glowMinLuminanceThresholdLoc;
-    GLint glowMaxLuminanceThresholdLoc;
-
-    bool glowEnabled = false;
-    float glowBrightness = 0.5;
-    GLuint blurredTexture;
-
     this(Framebuffer inputBuffer, Framebuffer outputBuffer, Owner o)
     {
         super(inputBuffer, outputBuffer, o);
-
-        perspectiveMatrixLoc = glGetUniformLocation(shaderProgram, "perspectiveMatrix");
-        fbBlurredLoc = glGetUniformLocation(shaderProgram, "fbBlurred");
-        useGlowLoc = glGetUniformLocation(shaderProgram, "useGlow");
-        glowBrightnessLoc = glGetUniformLocation(shaderProgram, "glowBrightness");
-
-        perspectiveMatrix = Matrix4x4f.identity;
+        luminanceThresholdLoc = glGetUniformLocation(shaderProgram, "luminanceThreshold");
     }
 
     override void bind(RenderingContext* rc)
     {
         super.bind(rc);
-
-        glUniformMatrix4fv(perspectiveMatrixLoc, 1, GL_FALSE, perspectiveMatrix.arrayof.ptr);
-
-        glActiveTexture(GL_TEXTURE5);
-        glBindTexture(GL_TEXTURE_2D, blurredTexture);
-        glActiveTexture(GL_TEXTURE0);
-
-        glUniform1i(fbBlurredLoc, 5);
-        glUniform1i(useGlowLoc, glowEnabled);
-        glUniform1f(glowBrightnessLoc, glowBrightness);
-    }
-
-    override void unbind(RenderingContext* rc)
-    {
-        glActiveTexture(GL_TEXTURE5);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        glActiveTexture(GL_TEXTURE0);
-
-        super.unbind(rc);
+        glUniform1f(luminanceThresholdLoc, luminanceThreshold);
     }
 }

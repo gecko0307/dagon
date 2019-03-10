@@ -58,6 +58,7 @@ import dagon.graphics.filters.fxaa;
 import dagon.graphics.filters.lens;
 import dagon.graphics.filters.hdrprepass;
 import dagon.graphics.filters.hdr;
+import dagon.graphics.filters.brightpass;
 import dagon.graphics.filters.blur;
 import dagon.graphics.filters.finalizer;
 
@@ -84,6 +85,8 @@ class Renderer: Owner
 
     Framebuffer hblurredFramebuffer;
     Framebuffer vblurredFramebuffer;
+    
+    PostFilterBrightPass brightPass;
     PostFilterBlur hblur;
     PostFilterBlur vblur;
 
@@ -130,9 +133,10 @@ class Renderer: Owner
         lensDistortion.renderer = this;
 
         hblurredFramebuffer = New!Framebuffer(gbuffer, eventManager.windowWidth / 2, eventManager.windowHeight / 2, true, false, this);
-        hblur = New!PostFilterBlur(true, sceneFramebuffer, hblurredFramebuffer, this);
-
-        vblurredFramebuffer = New!Framebuffer(gbuffer, eventManager.windowWidth / 2, eventManager.windowHeight / 2, true, false, this);
+        vblurredFramebuffer = New!Framebuffer(gbuffer, eventManager.windowWidth / 2, eventManager.windowHeight / 2, true, false, this); 
+       
+        brightPass = New!PostFilterBrightPass(sceneFramebuffer, vblurredFramebuffer, this);
+        hblur = New!PostFilterBlur(true, vblurredFramebuffer, hblurredFramebuffer, this);
         vblur = New!PostFilterBlur(false, hblurredFramebuffer, vblurredFramebuffer, this);
 
         hdrPrepassFramebuffer = New!Framebuffer(gbuffer, eventManager.windowWidth, eventManager.windowHeight, true, false, this);
@@ -253,7 +257,9 @@ class Renderer: Owner
         }
 
         if (hdrPrepassFilter.glowEnabled)
+        {
             renderBlur(glow.radius);
+        }
 
         RenderingContext rcTmp;
         Framebuffer nextInput = sceneFramebuffer;
@@ -427,6 +433,12 @@ class Renderer: Owner
     void renderBlur(uint iterations)
     {
         RenderingContext rcTmp;
+        
+        brightPass.outputBuffer.bind();
+        rcTmp.initOrtho(eventManager, scene.environment, brightPass.outputBuffer.width, brightPass.outputBuffer.height, 0.0f, 100.0f);
+        prepareViewport(brightPass.outputBuffer);
+        brightPass.render(&rcTmp);
+        brightPass.outputBuffer.unbind();
 
         foreach(i; 1..iterations+1)
         {
@@ -447,7 +459,7 @@ class Renderer: Owner
             hblur.inputBuffer = vblur.outputBuffer;
         }
 
-        hblur.inputBuffer = sceneFramebuffer;
+        hblur.inputBuffer = brightPass.outputBuffer; //sceneFramebuffer;
     }
 }
 
@@ -498,10 +510,9 @@ struct GlowSettings
     bool enabled() @property { return renderer.hdrPrepassFilter.glowEnabled; }
     void brightness(float b) @property { renderer.hdrPrepassFilter.glowBrightness = b; }
     float brightness() @property { return renderer.hdrPrepassFilter.glowBrightness; }
-    void minLuminanceThreshold(float t) @property { renderer.hdrPrepassFilter.glowMinLuminanceThreshold = t; }
-    float minLuminanceThreshold() @property { return renderer.hdrPrepassFilter.glowMinLuminanceThreshold; }
-    void maxLuminanceThreshold(float t) @property { renderer.hdrPrepassFilter.glowMaxLuminanceThreshold = t; }
-    float maxLuminanceThreshold() @property { return renderer.hdrPrepassFilter.glowMaxLuminanceThreshold; }
+    
+    void luminanceThreshold(float t) @property { renderer.brightPass.luminanceThreshold = t; }
+    float luminanceThreshold() @property { return renderer.brightPass.luminanceThreshold; }
 }
 
 struct MotionBlurSettings
