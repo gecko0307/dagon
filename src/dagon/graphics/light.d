@@ -66,8 +66,9 @@ class LightSource: Owner
     float areaRadius; // light's own radius
     float tubeLength;
     float energy;
-    float spotCutoff;
-    float spotExponent;
+    float spotOuterCutoff;
+    float spotInnerCutoff;
+    //float spotExponent;
     LightType type;
     bool shadowEnabled;
     ShadowMap shadowMap;
@@ -181,15 +182,16 @@ class LightManager: Owner
         return light;
     }
 
-    LightSource addSpotLight(Vector3f position, Color4f color, float energy, Quaternionf rotation, float cutoff, float exponent, float volumeRadius)
+    LightSource addSpotLight(Vector3f position, Color4f color, float energy, Quaternionf rotation, float outerCutoff, float innerCutoff, float volumeRadius)
     {
         LightSource light = New!LightSource(this);
         light.position = position;
         light.rotation = rotation;
         light.color = color.rgb;
         light.energy = energy;
-        light.spotCutoff = cutoff;
-        light.spotExponent = exponent;
+        light.spotOuterCutoff = outerCutoff;
+        light.spotInnerCutoff = innerCutoff;
+        //light.spotExponent = exponent;
         light.radius = volumeRadius;
         light.type = LightType.Spot;
         lightSources.append(light);

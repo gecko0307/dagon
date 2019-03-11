@@ -783,9 +783,9 @@ class Scene: BaseScene
         return lightManager.addSunLight(rotation, color, energy);
     }
 
-    LightSource createLightSpot(Vector3f position, Color4f color, float energy, Quaternionf rotation, float cutoff, float exponent, float volumeRadius)
+    LightSource createLightSpot(Vector3f position, Color4f color, float energy, Quaternionf rotation, float outerCutoff, float innerCutoff, float volumeRadius)
     {
-        return lightManager.addSpotLight(position, color, energy, rotation, cutoff, exponent, volumeRadius);
+        return lightManager.addSpotLight(position, color, energy, rotation, outerCutoff, innerCutoff, volumeRadius);
     }
 
     void mainSun(LightSource sun) @property

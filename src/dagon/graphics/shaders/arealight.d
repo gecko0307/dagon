@@ -34,6 +34,7 @@ import dlib.core.memory;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;
+import dlib.math.utils;
 import dlib.image.color;
 
 import dagon.core.libs;
@@ -113,11 +114,12 @@ class AreaLightShader: Shader
             }
             else if (light.type == LightType.Spot)
             {
-                setParameter("lightSpotCutoff", light.spotCutoff);
-                setParameter("lightSpotCosCutoff", cos(light.spotCutoff));
+                //setParameter("lightSpotCutoff", light.spotCutoff);
+                setParameter("lightSpotCosCutoff", cos(degtorad(light.spotOuterCutoff)));
+                setParameter("lightSpotCosInnerCutoff", cos(degtorad(light.spotInnerCutoff)));
                 Vector3f spotDirection = light.directionEye(rc3d.viewMatrix);
                 setParameter("lightSpotDirection", spotDirection);
-                setParameter("lightSpotExponent", light.spotExponent);
+                //setParameter("lightSpotExponent", light.spotExponent);
                 setParameterSubroutine("lightRadiance", ShaderType.Fragment, "lightRadianceSpot");
             }
             else // unsupported light type

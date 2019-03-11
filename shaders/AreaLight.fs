@@ -15,8 +15,9 @@ uniform float lightRadius;
 uniform float lightAreaRadius;
 uniform vec3 lightColor;
 uniform float lightEnergy;
-uniform float lightSpotCutoff;
+//uniform float lightSpotCutoff;
 uniform float lightSpotCosCutoff;
+uniform float lightSpotCosInnerCutoff;
 uniform float lightSpotExponent;
 uniform vec3 lightSpotDirection;
 
@@ -167,11 +168,11 @@ subroutine(srtLightRadiance) vec3 lightRadianceSpot(in vec3 pos, in vec3 N, in v
     vec3 L = normalize(positionToLightSource);
     float attenuation = pow(clamp(1.0 - (distanceToLight / lightRadius), 0.0, 1.0), 2.0) * lightEnergy;
 
-    if (lightSpotCutoff <= 90.0)
-    {
-        float spotCos = dot(L, normalize(lightSpotDirection));
-        attenuation *= clamp(pow(spotCos, lightSpotExponent) * step(lightSpotCosCutoff, spotCos), 0.0, 1.0);
-    }
+    float spotCos = clamp(dot(L, normalize(lightSpotDirection)), 0.0, 1.0);
+    //float spotValue = float(spotCos > lightSpotCosCutoff);
+    //spotValue *= pow(spotCos, lightSpotExponent);
+    float spotValue = smoothstep(lightSpotCosCutoff, lightSpotCosInnerCutoff, spotCos);
+    attenuation *= spotValue;
 
     float NL = max(dot(N, L), 0.0); 
     vec3 H = normalize(E + L);
