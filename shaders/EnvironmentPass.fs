@@ -122,23 +122,11 @@ uniform float ssaoPower;
 #define SSAO_MOD3 vec3(0.1031, 0.11369, 0.13787)
 //#define SSAO_MAX_DISTANCE 0.2
 
-float hash12(vec2 p)
-{
-    vec3 p3  = fract(vec3(p.xyx) * SSAO_MOD3);
-    p3 += dot(p3, p3.yzx + 19.19);
-    return fract((p3.x + p3.y) * p3.z);
-}
-
-vec2 hash22(vec2 p)
+float hash(vec2 p)
 {
     vec3 p3 = fract(vec3(p.xyx) * SSAO_MOD3);
     p3 += dot(p3, p3.yzx + 19.19);
-    return fract(vec2((p3.x + p3.y) * p3.z, (p3.x + p3.z) * p3.y));
-}
-
-vec2 getRandom(vec2 uv)
-{
-    return normalize(hash22(uv*126.1231) * 2.0 - 1.0);
+    return fract((p3.x + p3.y) * p3.z);
 }
 
 float ssao(in vec2 tcoord, in vec2 uv, in vec3 p, in vec3 cnorm)
@@ -160,7 +148,7 @@ float spiralSSAO(vec2 uv, vec3 p, vec3 n, float rad)
     float inv = 1.0 / float(ssaoSamples);
     float radius = 0.0;
 
-    float rotatePhase = hash12(uv * 100.0) * 6.28;
+    float rotatePhase = hash(uv * 100.0) * 6.28;
     float rStep = inv * rad;
     vec2 spiralUV;
 
