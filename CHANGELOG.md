@@ -207,8 +207,8 @@ Dagon 0.1.0 - 8 Jun, 2017
   
 Dagon 0.0.3 - 10 Apr, 2017
 --------------------------
-- Removed libraries from main repository, they now should be downloaded separately from [here](https://github.com/gecko0307/dagon/releases/tag/v0.0.2).
-- Demos are now hosted as a [separate project](https://github.com/gecko0307/dagon-demo)
+* Removed libraries from main repository, they now should be downloaded separately from [here](https://github.com/gecko0307/dagon/releases/tag/v0.0.2).
+* Demos are now hosted as a [separate project](https://github.com/gecko0307/dagon-demo)
 * Material system
 * OBJ format support
 * Font and text support
