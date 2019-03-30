@@ -16,7 +16,7 @@
     "stringImportPaths": ["shaders", "data/__internal"],
 
     "dependencies": {
-        "dlib": "~master",
+        "dlib": "0.16.0",
         "bindbc-opengl": "0.4.0",
         "bindbc-sdl": "0.4.1"
     },
