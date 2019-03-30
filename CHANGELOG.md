@@ -1,3 +1,57 @@
+Dagon 0.10.0 - 31 Mar, 2019
+---------------------------
+- **Rendering**
+  - Terrain renderer with image-based and procedural (OpenSimplex noise) heightmaps. Thanks to Rafal Ziemniewski for the implementation
+  - Decals support in deferred renderer. Decals are special `Entities` that project a texture/material to geometry in the G-buffer. They can be used to place details over static geometry, such as bullet holes, graffiti, blood, dirt, footprints, clutter, etc. By default they project along -Y axis (towards the ground), but they can be transformed like any other `Entity` to project on non-horizontal surfaces as well. Decal is created using `Scene.createDecal`. Decals are visible only on Entities with `dynamic` property turned off. To create a decal material, use `Scene.createDecalMaterial`. Decal material properties are the same as for standard materials - they can have diffuse, normal, roughness, metallic and emission maps
+  - Tube area lights support in deferred renderer. These are capsule-like lights that have length and radius. `Scene.createLight` is now deprecated, use `Scene.createLightSphere` and `Scene.createLightTube` instead
+  - Spot lights support. They can be created using `Scene.createLightSpot` method
+  - Custom directional lights support. They can be created using `Scene.createLightSun` method
+  - Shadow rendering mechanism has been changed. Now there's no global shadow map, each directional light can have its own shadow map. It is turned on by `light.shadow = true`
+  - Particles now don't drop shadows if `dropShadow` is set to false for emitter's `Entity`
+  - `CascadedShadowMap.eyeSpaceNormalShift` - controls displacement of shadow coordinates by the surface normal (0.008 by default)
+- **Materials**
+  - Cubemap textures support (`dagon.graphics.cubemap`). You can build a cubemap from individual face images, generate from equirectangular environment map, or render the scene into cubemap
+  - `ImageAsset` - a new asset type for loading raw images with Dagon, without creating OpenGL textures for them. They are useful to load cubemaps, as well as to store non-color data. `ImageAsset` supports the same formats as `TextureAsset` - PNG, JPEG, TGA, BMP, HDR
+  - `textureScale` property for materials - bidirectional scale factor for texture coordinates
+  - Built-in terrain shader (`dagon.graphics.shaders.terrain`) with 4 texture layers and splatting. Each layer supports diffuse and normal maps. To create terrain material, use `Scene.createTerrainMaterial`. Textures are passed via material properties, `diffuse` and `normal` being the first layer, `diffuse2` and `normal2` the second, and so on. There are also `textureScale`, `roughness` and `metallic` for each layer (`textureScale2`, etc). Roughness and metallic properties are limited to numeric values. Splatting textures (that is, bw textures that define blending between layers) are passed using `splatmap1`, `splatmap2`, etc.
+- **UI**
+  - [Nuklear](https://github.com/vurtun/nuklear) integration (`dagon.ui.nuklear`). It is a lightweight immediate mode GUI toolkit which can be used to render windows and widgets over the rendered scene. To use Nuklear, create `NuklearGUI` object and attach is to 2D entity's drawable, then use its methods to 'draw' widgets in `onLogicsUpdate` (API is very close to original Nuklear functions). Nuklear also provides a canvas windget to draw 2D vector shapes - lines, Bezier curves, rectangles, circles, arcs, triangles, and polygons. Thanks to [Mateusz Muszynski](https://github.com/Timu5) for the implementation and [bindbc-nuklear](https://github.com/Timu5/bindbc-nuklear) binding
+- **Environment**
+  - Breaking change: now there is no default sun for deferred renderer, it should be created explicitly. Forward mode shaders still use sun settings from `Environment` (as well as sky shaders), so these settings should be synced with a custom `LightSource` by specifying `Scene.mainSun`:
+```d
+    mainSun = createLightSun(Quaternionf.identity, environment.sunColor, environment.sunEnergy);
+    mainSun.shadow = true;
+```
+  - Breaking change: `Environment.environmentMap` now is used only for image-based lighting - to apply an environment map to sky object, use `Environment.skyMap` property. Both of them now support `Cubemap` textures also
+  - `Environment.environmentBrightness` was added. It is a final brightness multiplier applied to environment map, both texture-based and procedural
+  - `Environment.skyBrightness` was added. It is a final brightness multiplier in standard sky shader
+  - Built-in sky object now uses `ShapeBox` instead of `ShapeSphere`
+- **Post-processing**
+  - Breaking change: post-processing settings are now part of the `Renderer` class, not `Scene`
+  - Improved HDR glow quality. New glow parameters have been added to `Scene`: `minLuminanceThreshold`, `maxLuminanceThreshold`. They define luminance range in which glow should be gradually decreased (`minLuminanceThreshold` - glow is zero at this luminance and lower, `maxLuminanceThreshold` - glow is full bright at this luminance and higher).
+- **Assets & logics**
+  - Transformation methods for `Entity`: `translate`, `rotate`, `move`, `moveToPoint`, `strafe`, `lift`, `pitch`, `turn`, `roll`, `scale`, `scaleX`, `scaleY`, `scaleZ`, `direction`, `right`, `up`
+  - Now `Entity` has two separate rotation mechanisms - quaternion (`Entity.rotation`) and axis-angles vector (`Entity.angles`). You can use any of the two, or both simultaneously. This distinction was introduced to simplify user-programmed rotations while maintaining easy integration of quaternion-based systems (such as dmech). Axis-angles vector represents sequiential rotation around three local axes (X, Y, Z) in degrees. This rotation is always applied after the quaternion, so you can use `Entity.rotation` as a 'primary' rotation coming from physics engine, and `Entity.angles` as a 'secondary' rotation applying only to graphical representation of the object
+  - Basic animation tweens (`dagon.logics.tween`) - objects that interpolate `Entity` transformation over time with easing functions. There are several common in and out easing functions (linear, quad, back, bounce). To create tweens, use `Entity.moveTo`, `Entity.moveFrom`, `Entity.moveFromTo`, `Entity.rotateTo`, `Entity.rotateFrom`, `Entity.rotateFromTo`, `Entity.scaleFrom`, `Entity.scaleTo`, `Entity.scaleFromTo`
+  - `Entity.dynamic` to distinguish static/dynamic objects in renderer (you still can move static objects). Static entities are rendered before decals and meant to be immovable
+  - Now `Entity` doesn't have default controller. `DefaultEntityController` functionality was integrated into `Entity`. Custom controllers are still supported
+  - `Scene.deleteEntity` method
+  - `BoxShape` in `dagon.graphics.shapes`
+  - `Scene.asset` - generic asset adding method
+  - Update timer was fixed, so that the application runs with a consistent speed at varying framerates. Dagon games are now playable on low-end hardware
+- **Misc**
+  - A simple configuration system. Dagon applications now support optional [settings.conf](https://github.com/gecko0307/dagon/blob/master/settings.conf) file in the working directory or in user's home directory (`%APPDATA%/.dagon` under Windows, `$HOME/.dagon` under Posix). You can access loaded configuration via `SceneApplication.config` property
+  - `dagon.core.input.InputManager` - an abstraction layer for mapping between logical commands and input events (Thanks to [Mateusz Muszynski](https://github.com/Timu5) for the implementation). It allows to remap inputs without changing code. It supports keyboard, mouse and game controller devices. Mapping are stored in `input.conf` file, which has the same syntax as `settings.conf`:
+```
+    upDownAxis: "ga_lefty, va(kb_down, kb_up)";
+    myButton: "kb_p, gb_leftshoulder";
+```
+  - `dagon.core.locale` - a module that detects system locale. It can be used to automatically switch application's language
+  - In debug builds Dagon now shows informative error messages from graphics driver using debug output extension (GL_KHR_debug) when it is available
+  - BindBC bindings have been excluded from source tree and used as Dub dependencies. Freetype binding is now a separate project, [bindbc-ft](https://github.com/gecko0307/bindbc-ft)
+  - Dagon can be compiled without Freetype and Nuklear dependencies (thus disabling text and UI rendering). See README.md for details on how to do it
+  - Dagon now uses dlib 0.16.0.
+
 Dagon 0.9.0 - 13 Nov, 2018
 --------------------------
 **Important:** Dagon now officially doesn't support macOS. This is because [Apple has deprecated OpenGL](https://developer.apple.com/macos/whats-new/#deprecationofopenglandopencl) in favour of Metal, which means that there will be no OpenGL above 4.1, and notorious driver issues will not be fixed. This makes targeting macOS in a non-commercial cross-platform game engine development virtually impossible. Dagon will stick with OpenGL 4.x and platforms that support it (Windows and Linux), and there are no plans to port the engine to other graphics APIs.
