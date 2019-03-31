@@ -82,12 +82,16 @@
       <li>Spherical and tube area lights</li>
       <li>Spot lights</li>
       <li>Normal/parallax mapping, parallax occlusion mapping</li>
+      <li>Deferred decals with normal mapping and PBR material properties</li>
       <li>Dynamic skydome with sun and day/night cycle. Simple and Rayleigh sky models</li>
       <li>Particle system with force fields. Blended particles, soft particles, shaded particles with normal map support, particle shadows</li>
       <li>Terrain rendering. Procedural terrain using OpenSimplex noise or any custom height field</li>
       <li>Water rendering</li>
       <li>Post-processing (FXAA, SSAO, lens distortion, motion blur, glow, LUT color grading)</li>
       <li>UTF-8 text rendering using TTF fonts via Freetype</li>
+      <li>GUI based on <a href="https://github.com/vurtun/nuklear" target="_blank">Nuklear</a></li>
+      <li>2D canvas framework that renders vector shapes - lines, Bézier curves, rectangles, circles, arcs, triangles, and polygons</li>
+      <li>Keyboard, mouse, joystick input, Unicode text input</li>
       <li>Ownership memory model - every object belongs to some object (owner), and deleting the owner will delete all of its owned objects. This allows semi-automatic memory management - you have to manually delete only root owners</li>
       <li>Entity-component model that allows game objects behave differently and combine many behaviours</li>
       <li>Scene management. Any scene has its own assets, entities and logical context</li>
@@ -103,7 +107,7 @@
       </p>
       <p>
 <pre><code class="nohighlight">
-"dagon": "~>0.9.2"
+"dagon": "~>0.10.0"
 </code></pre>
       </p>
       <p>
@@ -134,6 +138,11 @@ class TestScene: Scene
     {
         super.onAllocate();
         view = New!Freeview(eventManager, assetManager);
+        
+        mainSun = createLightSun(Quaternionf.identity, environment.sunColor, environment.sunEnergy);
+        mainSun.shadow = true;
+        environment.setDayTime(9, 00, 00);
+        
         auto eSuzanne = createEntity3D();
         eSuzanne.drawable = aOBJSuzanne.mesh;
     }
@@ -175,11 +184,10 @@ void main(string[] args)
       </p>
 	  
 	  <h2>Sponsors and Contributors</h2>
+      <p>Dagon was created by <b>Timur Gafarov</b> and contributors: <b>Rafał Ziemniewski</b>, <b>Mateusz Muszyński</b>, <b>Björn Roberg</b>, <b>dayllenger</b>, <b>my-ijet</b>.</p>
       <p>Big thanks to these awesome people for supporting Dagon: <b>Rafał Ziemniewski</b>, <b>Kumar Sookram</b>, <b>Aleksandr Kovalev</b>.<br/>
 	  Also thanks to 
 	  <a href="Bjorn Roberg">Björn Roberg</a>, 
-	  <a href="https://github.com/dayllenger">dayllenger</a>, 
-	  <a href="https://github.com/my-ijet">my-ijet</a>, 
 	  <a href="https://github.com/aberba">Lawrence Aberba</a>, 
 	  <a href="https://github.com/MrSmith33">Andrey Penechko</a>, 
 	  <a href="https://github.com/RUSshy">RUSshy</a> 
