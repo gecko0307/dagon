@@ -66,6 +66,15 @@ Made with Dagon
 * [dagon-shooter](https://github.com/aferust/dagon-shooter) - a shooter game using Dagon
 * [Introductory examples](https://github.com/gecko0307/dagon-tutorials).
 
+Usage
+-----
+To use latest stable Dagon, add the following dependency to your `dub.json`:
+```
+"dagon": "0.10.0"
+```
+If you want to test new features, use `"dagon": "~master"`. The master should be stable enough to compile a working application, but be ready for breaking changes at any time.
+
+
 Dependencies
 ------------
 Dagon depends on the following D packages:
@@ -89,14 +98,6 @@ Under Windows runtime dependencies are automatically deployed if you are buildin
 ```
 
 Supported subConfigurations are also `"NoNuklear"` and `"NoFreetype"` to remove these dependencies separately.
-
-Usage
------
-To use latest stable Dagon, add the following dependency to your `dub.json`:
-```
-"dagon": "0.10.0"
-```
-If you want to test new features, use `"dagon": "~master"`. The master should be stable enough to compile a working application, but be ready for breaking changes at any time.
 
 Documentation
 -------------
