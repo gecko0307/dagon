@@ -6,7 +6,7 @@
 
 Dagon
 =====
-The goal of this project is creating a modern, easy to use, extendable 3D game engine for D language due to the lack of such. Dagon is based on OpenGL 4.0 core profile. It works on Windows and Linux, both 32 and 64-bit. It doesn't support macOS because [Apple doesn't support OpenGL anymore](https://developer.apple.com/macos/whats-new/#deprecationofopenglandopencl).
+The goal of this project is creating a modern, easy to use, extendable 3D game engine for D language. Dagon is based on OpenGL 4.0 core profile. It works on Windows and Linux, both 32 and 64-bit. It doesn't support macOS because [Apple doesn't support OpenGL anymore](https://developer.apple.com/macos/whats-new/#deprecationofopenglandopencl).
 
 > Dagon is still under development and lacks a lot of important functionality. Currently it is not recommended to use Dagon in production due to unstable API. Follow Dagon development on [Trello](https://trello.com/b/4sDgRjZI/dagon) to see priority tasks. 
 
@@ -66,6 +66,15 @@ Made with Dagon
 * [dagon-shooter](https://github.com/aferust/dagon-shooter) - a shooter game using Dagon
 * [Introductory examples](https://github.com/gecko0307/dagon-tutorials).
 
+Usage
+-----
+To use latest stable Dagon, add the following dependency to your `dub.json`:
+```
+"dagon": "0.10.0"
+```
+If you want to test new features, use `"dagon": "~master"`. The master should be stable enough to compile a working application, but be ready for breaking changes at any time.
+
+
 Dependencies
 ------------
 Dagon depends on the following D packages:
@@ -89,14 +98,6 @@ Under Windows runtime dependencies are automatically deployed if you are buildin
 ```
 
 Supported subConfigurations are also `"NoNuklear"` and `"NoFreetype"` to remove these dependencies separately.
-
-Usage
------
-To use latest stable Dagon, add the following dependency to your `dub.json`:
-```
-"dagon": "0.10.0"
-```
-If you want to test new features, use `"dagon": "~master"`. The master should be stable enough to compile a working application, but be ready for breaking changes at any time.
 
 Documentation
 -------------

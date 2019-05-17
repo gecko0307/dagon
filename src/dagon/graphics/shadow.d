@@ -277,6 +277,15 @@ class CascadedShadowMap: ShadowMap
         ss.bindProgram();
         rcLocal.overrideShader = ss;
         rcLocal.rebindShaderProgram = false;
+        rcLocal.ignoreTransparentEntities = true;
+        rcLocal.ignoreOpaqueEntities = false;
+        foreach(e; scene.entities3Dflat)
+            if (e.castShadow)
+                e.render(&rcLocal);
+        rcLocal.overrideShader = null;
+        rcLocal.rebindShaderProgram = true;
+        rcLocal.ignoreTransparentEntities = false;
+        rcLocal.ignoreOpaqueEntities = true;
         foreach(e; scene.entities3Dflat)
             if (e.castShadow)
                 e.render(&rcLocal);
@@ -302,6 +311,15 @@ class CascadedShadowMap: ShadowMap
         ss.bindProgram();
         rcLocal.overrideShader = ss;
         rcLocal.rebindShaderProgram = false;
+        rcLocal.ignoreTransparentEntities = true;
+        rcLocal.ignoreOpaqueEntities = false;
+        foreach(e; scene.entities3Dflat)
+            if (e.castShadow)
+                e.render(&rcLocal);
+        rcLocal.overrideShader = null;
+        rcLocal.rebindShaderProgram = true;
+        rcLocal.ignoreTransparentEntities = false;
+        rcLocal.ignoreOpaqueEntities = true;
         foreach(e; scene.entities3Dflat)
             if (e.castShadow)
                 e.render(&rcLocal);
@@ -327,6 +345,15 @@ class CascadedShadowMap: ShadowMap
         ss.bindProgram();
         rcLocal.overrideShader = ss;
         rcLocal.rebindShaderProgram = false;
+        rcLocal.ignoreTransparentEntities = true;
+        rcLocal.ignoreOpaqueEntities = false;
+        foreach(e; scene.entities3Dflat)
+            if (e.castShadow)
+                e.render(&rcLocal);
+        rcLocal.overrideShader = null;
+        rcLocal.rebindShaderProgram = true;
+        rcLocal.ignoreTransparentEntities = false;
+        rcLocal.ignoreOpaqueEntities = true;
         foreach(e; scene.entities3Dflat)
             if (e.castShadow)
                 e.render(&rcLocal);
