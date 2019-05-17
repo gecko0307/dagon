@@ -31,6 +31,8 @@ import core.stdc.stdarg;
 
 import dlib.image.color;
 import dlib.container.array;
+import dlib.text.utf8;
+import dlib.text.unmanagedstring;
 
 import dagon.core.interfaces;
 import dagon.core.ownership;
@@ -86,21 +88,46 @@ private extern(C) void clipboardPaste(nk_handle usr, nk_text_edit* edit)
     char* text = SDL_GetClipboardText();
     if (text) 
     {
-        nk_textedit_paste(edit, text, nk_strlen(text));
+        // Determine how many codepoints do we have
+        uint numCharacters = 0;
+        size_t offset = 0;
+        while(true)
+        {
+            UTF8Decoder dec = UTF8Decoder(cast(string)text[offset..offset+4]);
+            auto code = dec.decodeNext();
+            if (code == 0)
+                break;
+            offset += dec.index;
+            numCharacters++;
+        }
+    
+        nk_textedit_paste(edit, text, numCharacters); //nk_strlen(text)
         SDL_free(text);
     }
 }
 
 private extern(C) void clipboardCopy(nk_handle usr, const(char)* text, int len)
 {
+    import core.stdc.stdio;
     import core.stdc.string;
     import core.stdc.stdlib;
     char *str = null;
     if (!len) return;
-    str = cast(char*)malloc(cast(size_t)len+1);
+    
+    // Decode len codepoints and determine byte length
+    size_t byteLen = 0;
+    for(int pos = 0; pos < len; pos++)
+    {
+        UTF8Decoder dec = UTF8Decoder(cast(string)text[byteLen..byteLen+4]);
+        dec.decodeNext();
+        byteLen += dec.index;
+    }
+    
+    str = cast(char*)malloc(byteLen+1);
     if (!str) return;
-    memcpy(str, text, cast(size_t)len);
-    str[len] = '\0';
+    memcpy(str, text, byteLen);
+    str[byteLen] = '\0';
+    printf("Copy: %s\n", str);
     SDL_SetClipboardText(str);
     free(str);
 }
