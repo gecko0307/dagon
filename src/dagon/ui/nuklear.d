@@ -127,7 +127,6 @@ private extern(C) void clipboardCopy(nk_handle usr, const(char)* text, int len)
     if (!str) return;
     memcpy(str, text, byteLen);
     str[byteLen] = '\0';
-    printf("Copy: %s\n", str);
     SDL_SetClipboardText(str);
     free(str);
 }
