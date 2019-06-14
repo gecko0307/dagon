@@ -70,9 +70,9 @@ Usage
 -----
 To use latest stable Dagon, add the following dependency to your `dub.json`:
 ```
-"dagon": "0.10.0"
+"dagon": "0.10.1"
 ```
-If you want to test new features, use `"dagon": "~master"`. The master should be stable enough to compile a working application, but be ready for breaking changes at any time.
+If you want to test new features, use development branch: `"dagon": "~dagon-ng"`.
 
 
 Dependencies

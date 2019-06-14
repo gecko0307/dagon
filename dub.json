@@ -39,7 +39,7 @@
             "dependencies": {
                 "bindbc-ft": "0.1.0",
                 "bindbc-nuklear": "0.1.0"
-            },
+            }
         },
         {
             "name": "Minimal",
@@ -58,13 +58,13 @@
             "name": "NoNuklear",
             "targetType": "library",
             "dependencies": {
-                "bindbc-ft": "0.1.0",
+                "bindbc-ft": "0.1.0"
             },
             "versions": ["NoNuklear"]
-        },
+        }
     ],
     
     "copyFiles-windows-x86": ["lib/x86/*.dll"],
     "copyFiles-windows-x86_64": ["lib/x64/*.dll"],
-    "copyFiles": ["data", "gamecontrollerdb.txt"],
+    "copyFiles": ["data", "gamecontrollerdb.txt"]
 }
