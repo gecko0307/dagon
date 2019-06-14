@@ -1,3 +1,8 @@
+Dagon 0.10.1 - 14 Jun, 2019
+---------------------------
+- Alpha cutout for shadows. Partially transparent objects now cast correct shadows
+- UTF8 support in Nuklear clipboard callbacks - Unicode copy/paste now work correctly.
+
 Dagon 0.10.0 - 31 Mar, 2019
 ---------------------------
 - **Rendering**
@@ -51,6 +56,16 @@ Dagon 0.10.0 - 31 Mar, 2019
   - BindBC bindings have been excluded from source tree and used as Dub dependencies. Freetype binding is now a separate project, [bindbc-ft](https://github.com/gecko0307/bindbc-ft)
   - Dagon can be compiled without Freetype and Nuklear dependencies (thus disabling text and UI rendering). See README.md for details on how to do it
   - Dagon now uses dlib 0.16.0.
+
+Dagon 0.9.2 - 20 Nov, 2018
+--------------------------
+- Fix GL_INVALID_OPERATION error.
+
+Dagon 0.9.1 - 17 Nov, 2018
+--------------------------
+- Fix shadows for semi-transparent particles
+- Fix 'not reachable' warning
+- Performance optimization by reducing shader switching for some passes.
 
 Dagon 0.9.0 - 13 Nov, 2018
 --------------------------
@@ -216,6 +231,14 @@ Dagon 0.0.3 - 10 Apr, 2017
 * BaseScene3D
 * Added unittests for Entity
 * A lot of small changes and bugfixes.
+
+Dagon 0.0.2 - 5 Apr, 2017
+-------------------------
+Added Dagon to DUB package registry.
+
+Dagon 0.0.1 - 28 Mar, 2017
+-------------------------
+Initial release.
 
 9 Oct, 2016
 -----------
