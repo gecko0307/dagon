@@ -81,6 +81,8 @@ class GeometryPassShader: Shader
         setParameter("modelViewMatrix", rc.modelViewMatrix);
         setParameter("projectionMatrix", rc.projectionMatrix);
         setParameter("normalMatrix", rc.normalMatrix);
+        
+        setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
 
         setParameter("prevModelViewProjMatrix", rc.prevModelViewProjMatrix);
         setParameter("blurModelViewProjMatrix", rc.blurModelViewProjMatrix);
