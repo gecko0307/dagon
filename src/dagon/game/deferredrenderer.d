@@ -51,8 +51,11 @@ class DeferredRenderer: Renderer
     DenoiseShader denoiseShader;
 
     ShadowStage stageShadow;
+    DeferredClearStage stageClear;
     DeferredBackgroundStage stageBackground;
-    DeferredGeometryStage stageGeom;
+    DeferredGeometryStage stageStaticGeometry;
+    DeferredDecalStage stageDecals;
+    DeferredGeometryStage stageDynamicGeometry;
     DeferredOcclusionStage stageOcclusion;
     FilterStage stageOcclusionDenoise;
     DeferredEnvironmentStage stageEnvironment;
@@ -87,13 +90,20 @@ class DeferredRenderer: Renderer
         gbuffer = New!GBuffer(view.width, view.height, radianceBuffer, this);
 
         stageShadow = New!ShadowStage(pipeline);
+        
+        stageClear = New!DeferredClearStage(pipeline, gbuffer);
 
         stageBackground = New!DeferredBackgroundStage(pipeline, gbuffer);
         stageBackground.view = view;
-        //stageBackground.outputBuffer = gbuffer;
 
-        stageGeom = New!DeferredGeometryStage(pipeline, gbuffer);
-        stageGeom.view = view;
+        stageStaticGeometry = New!DeferredGeometryStage(pipeline, gbuffer);
+        stageStaticGeometry.view = view;
+        
+        stageDecals = New!DeferredDecalStage(pipeline, gbuffer);
+        stageDecals.view = view;
+        
+        stageDynamicGeometry = New!DeferredGeometryStage(pipeline, gbuffer);
+        stageDynamicGeometry.view = view;
 
         stageOcclusion = New!DeferredOcclusionStage(pipeline, gbuffer);
         stageOcclusion.view = occlusionView;
@@ -149,12 +159,16 @@ class DeferredRenderer: Renderer
         stageShadow.group = s.spatial;
         stageShadow.lightGroup = s.lights;
         stageBackground.group = s.background;
-        stageGeom.group = s.spatialOpaque;
+        stageStaticGeometry.group = s.spatialOpaqueStatic;
+        stageDecals.group = s.decals;
+        stageDynamicGeometry.group = s.spatialOpaqueDynamic;
         stageLight.groupSunLights = s.sunLights;
         stageLight.groupAreaLights = s.areaLights;
 
         stageBackground.state.environment = s.environment;
-        stageGeom.state.environment = s.environment;
+        stageStaticGeometry.state.environment = s.environment;
+        stageDecals.state.environment = s.environment;
+        stageDynamicGeometry.state.environment = s.environment;
         stageEnvironment.state.environment = s.environment;
         stageLight.state.environment = s.environment;
         stageDebug.state.environment = s.environment;

@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.shaders.geometry;
+module dagon.render.shaders.decal;
 
 import std.stdio;
 import std.math;
@@ -42,18 +42,23 @@ import dagon.core.bindings;
 import dagon.graphics.material;
 import dagon.graphics.shader;
 import dagon.graphics.state;
+import dagon.render.gbuffer;
 
-class GeometryShader: Shader
+class DecalShader: Shader
 {
-    string vs = import("Geometry/Geometry.vert.glsl");
-    string fs = import("Geometry/Geometry.frag.glsl");
+    string vs = import("Decal/Decal.vert.glsl");
+    string fs = import("Decal/Decal.frag.glsl");
+    
+    GBuffer gbuffer;
 
-    this(Owner owner)
+    this(GBuffer gbuffer, Owner owner)
     {
         auto prog = New!ShaderProgram(vs, fs, this);
         super(prog, owner);
 
-        debug writeln("GeometryShader: program ", program.program);
+        debug writeln("Decal: program ", program.program);
+        
+        this.gbuffer = gbuffer;
     }
 
     override void bindParameters(GraphicsState* state)
@@ -61,47 +66,58 @@ class GeometryShader: Shader
         auto idiffuse = "diffuse" in state.material.inputs;
         auto inormal = "normal" in state.material.inputs;
         auto iheight = "height" in state.material.inputs;
+        auto iparallax = "parallax" in state.material.inputs;
         auto ipbr = "pbr" in state.material.inputs;
         auto iroughness = "roughness" in state.material.inputs;
         auto imetallic = "metallic" in state.material.inputs;
         auto ispecularity = "specularity" in state.material.inputs;
         auto itextureScale = "textureScale" in state.material.inputs;
-        auto iparallax = "parallax" in state.material.inputs;
         auto iemission = "emission" in state.material.inputs;
         auto ienergy = "energy" in state.material.inputs;
-        auto isphericalNormal = "sphericalNormal" in state.material.inputs;
-
-        setParameter("modelViewMatrix", state.modelViewMatrix);
-        setParameter("projectionMatrix", state.projectionMatrix);
-        setParameter("normalMatrix", state.normalMatrix);
-        setParameter("viewMatrix", state.viewMatrix);
-        setParameter("invViewMatrix", state.invViewMatrix);
-        setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
-
-        setParameter("layer", cast(float)(state.layer));
-        setParameter("opacity", state.opacity);
-        setParameter("textureScale", itextureScale.asVector2f);
-
+        auto ioutputColor = "outputColor" in state.material.inputs;
+        auto ioutputNormal = "outputNormal" in state.material.inputs;
+        auto ioutputPBR = "outputPBR" in state.material.inputs;
+        auto ioutputEmission = "outputEmission" in state.material.inputs;
+        
         int parallaxMethod = iparallax.asInteger;
         if (parallaxMethod > ParallaxOcclusionMapping)
             parallaxMethod = ParallaxOcclusionMapping;
         if (parallaxMethod < 0)
             parallaxMethod = 0;
 
-        setParameter("sphericalNormal", cast(int)isphericalNormal.asBool);
+        setParameter("modelViewMatrix", state.modelViewMatrix);
+        setParameter("projectionMatrix", state.projectionMatrix);
+        setParameter("invProjectionMatrix", state.invProjectionMatrix);
+        setParameter("normalMatrix", state.normalMatrix);
+        setParameter("viewMatrix", state.viewMatrix);
+        setParameter("invViewMatrix", state.invViewMatrix);
+        setParameter("invModelMatrix", state.invModelMatrix);
+        setParameter("resolution", state.resolution);
+
+        setParameter("opacity", state.opacity);
+        setParameter("textureScale", itextureScale.asVector2f);
+        
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, gbuffer.depthTexture);
+        setParameter("depthTexture", cast(int)0);
 
         // Diffuse
         if (idiffuse.texture)
         {
-            glActiveTexture(GL_TEXTURE0);
+            glActiveTexture(GL_TEXTURE1);
             idiffuse.texture.bind();
-            setParameter("diffuseTexture", cast(int)0);
+            setParameter("diffuseTexture", cast(int)1);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
         }
         else
         {
             setParameter("diffuseVector", idiffuse.asVector4f);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
+        }
+        
+        if (!ioutputColor.asBool)
+        {
+            glColorMaski(0, 0, 0, 0, 0);
         }
 
         // Normal/height
@@ -132,16 +148,21 @@ class GeometryShader: Shader
 
         if (inormal.texture)
         {
-            setParameter("normalTexture", 1);
+            setParameter("normalTexture", 2);
             setParameterSubroutine("normal", ShaderType.Fragment, "normalMap");
 
-            glActiveTexture(GL_TEXTURE1);
+            glActiveTexture(GL_TEXTURE2);
             inormal.texture.bind();
         }
         else
         {
             setParameter("normalVector", state.material.normal.asVector3f);
             setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
+        }
+        
+        if (!ioutputNormal.asBool)
+        {
+            glColorMaski(1, 0, 0, 0, 0);
         }
 
         // Height and parallax
@@ -180,9 +201,9 @@ class GeometryShader: Shader
         {
             ipbr.texture = state.material.makeTexture(*iroughness, *imetallic, *ispecularity, materialInput(0.0f));
         }
-        glActiveTexture(GL_TEXTURE2);
+        glActiveTexture(GL_TEXTURE3);
         ipbr.texture.bind();
-        setParameter("pbrTexture", 2);
+        setParameter("pbrTexture", 3);
 
         if (iroughness.texture is null)
         {
@@ -249,21 +270,31 @@ class GeometryShader: Shader
         {
             setParameterSubroutine("specularity", ShaderType.Fragment, "specularityMap");
         }
+        
+        if (!ioutputPBR.asBool)
+        {
+            glColorMaski(2, 0, 0, 0, 0);
+        }
 
         // Emission
         if (iemission.texture)
         {
-            glActiveTexture(GL_TEXTURE3);
+            glActiveTexture(GL_TEXTURE4);
             iemission.texture.bind();
-            setParameter("emissionTexture", cast(int)3);
-            setParameterSubroutine("emission", ShaderType.Fragment, "emissionColorTexture");
+            setParameter("emissionTexture", cast(int)4);
+            setParameterSubroutine("emission", ShaderType.Fragment, "emissionMap");
         }
         else
         {
             setParameter("emissionVector", iemission.asVector4f);
-            setParameterSubroutine("emission", ShaderType.Fragment, "emissionColorValue");
+            setParameterSubroutine("emission", ShaderType.Fragment, "emissionValue");
         }
         setParameter("energy", ienergy.asFloat);
+        
+        if (!ioutputEmission.asBool)
+        {
+            glColorMaski(3, 0, 0, 0, 0);
+        }
 
         glActiveTexture(GL_TEXTURE0);
 
@@ -274,16 +305,24 @@ class GeometryShader: Shader
     {
         super.unbindParameters(state);
 
+        glColorMaski(0, 1, 1, 1, 1);
+        glColorMaski(1, 1, 1, 1, 1);
+        glColorMaski(2, 1, 1, 1, 1);
+        glColorMaski(3, 1, 1, 1, 1);
+
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, 0);
-
+        
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, 0);
-
+        
         glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE0);

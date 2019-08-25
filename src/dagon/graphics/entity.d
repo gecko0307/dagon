@@ -76,6 +76,7 @@ class Entity: Owner, Updateable
     bool castShadow = true;
     bool solid = false;
     bool dynamic = true;
+    bool decal = false;
     float opacity = 1.0f;
 
     EntityManager manager;

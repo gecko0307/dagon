@@ -56,33 +56,6 @@ class DeferredGeometryStage: RenderStage
         geometryShader = New!GeometryShader(this);
         terrainShader = New!TerrainShader(this);
     }
-    
-    void renderEntity(Entity entity, Shader shader)
-    {
-        state.layer = entity.layer;
-        state.modelMatrix = entity.absoluteTransformation;
-        state.modelViewMatrix = state.viewMatrix * state.modelMatrix;
-        state.normalMatrix = state.modelViewMatrix.inverse.transposed;
-        state.prevModelViewMatrix = state.prevViewMatrix * entity.prevAbsoluteTransformation;
-        state.shader = shader;
-        state.opacity = entity.opacity;
-
-        if (entity.material)
-            entity.material.bind(&state);
-        else
-            defaultMaterial.bind(&state);
-
-        shader.bindParameters(&state);
-          
-        entity.drawable.render(&state);
-
-        shader.unbindParameters(&state);
-
-        if (entity.material)
-            entity.material.unbind(&state);
-        else
-            defaultMaterial.unbind(&state);
-    }
 
     override void render()
     {
@@ -92,14 +65,7 @@ class DeferredGeometryStage: RenderStage
 
             glScissor(0, 0, gbuffer.width, gbuffer.height);
             glViewport(0, 0, gbuffer.width, gbuffer.height);
-
-            glClear(GL_DEPTH_BUFFER_BIT);
             
-            Color4f zero = Color4f(0, 0, 0, 0);
-            glClearBufferfv(GL_COLOR, 0, zero.arrayof.ptr);
-            glClearBufferfv(GL_COLOR, 1, zero.arrayof.ptr);
-            glClearBufferfv(GL_COLOR, 2, zero.arrayof.ptr);
-
             geometryShader.bind();
             foreach(entity; group)
             {

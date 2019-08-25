@@ -31,14 +31,19 @@ import std.path;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.math.vector;
+
 import dagon.core.application;
 import dagon.core.bindings;
 import dagon.core.event;
 import dagon.core.time;
+
 import dagon.graphics.entity;
 import dagon.graphics.camera;
 import dagon.graphics.light;
 import dagon.graphics.environment;
+import dagon.graphics.shapes;
+
 import dagon.resource.asset;
 import dagon.resource.obj;
 import dagon.resource.image;
@@ -53,13 +58,16 @@ class Scene: EventListener
     AssetManager assetManager;
     EntityManager entityManager;
     EntityGroupSpatial spatial;
-    EntityGroupSpatialOpaque spatialOpaque;
+    EntityGroupSpatialOpaque spatialOpaqueStatic;
+    EntityGroupSpatialOpaque spatialOpaqueDynamic;
     EntityGroupBackground background;
     EntityGroupForeground foreground;
     EntityGroupLights lights;
     EntityGroupSunLights sunLights;
     EntityGroupAreaLights areaLights;
+    EntityGroupDecals decals;
     Environment environment;
+    ShapeBox decalShape;
     bool isLoading = false;
     bool loaded = false;
     bool canRender = false;
@@ -70,14 +78,17 @@ class Scene: EventListener
         this.application = application;
         entityManager = New!EntityManager(this);
         spatial = New!EntityGroupSpatial(entityManager, this);
-        spatialOpaque = New!EntityGroupSpatialOpaque(entityManager, this);
+        spatialOpaqueStatic = New!EntityGroupSpatialOpaque(entityManager, false, this);
+        spatialOpaqueDynamic = New!EntityGroupSpatialOpaque(entityManager, true, this);
         background = New!EntityGroupBackground(entityManager, this);
         foreground = New!EntityGroupForeground(entityManager, this);
         lights = New!EntityGroupLights(entityManager, this);
         sunLights = New!EntityGroupSunLights(entityManager, this);
         areaLights = New!EntityGroupAreaLights(entityManager, this);
-
+        decals = New!EntityGroupDecals(entityManager, this);
+        
         environment = New!Environment(this);
+        decalShape = New!ShapeBox(Vector3f(1, 1, 1), this);
 
         assetManager = New!AssetManager(eventManager, this);
         beforeLoad();
@@ -214,6 +225,16 @@ class Scene: EventListener
         light.type = type;
         return light;
     }
+    
+    Entity addDecal(Entity parent = null)
+    {
+        Entity e = New!Entity(entityManager);
+        e.decal = true;
+        e.drawable = decalShape;
+        if (parent)
+            e.setParent(parent);
+        return e;
+    }
 
     // Override me
     void beforeLoad()
@@ -287,7 +308,7 @@ class EntityGroupSpatial: Owner, EntityGroup
         for(size_t i = 0; i < entities.length; i++)
         {
             auto e = entities[i];
-            if (e.layer == EntityLayer.Spatial)
+            if (e.layer == EntityLayer.Spatial && !e.decal)
             {
                 res = dg(e);
                 if (res)
@@ -298,7 +319,7 @@ class EntityGroupSpatial: Owner, EntityGroup
     }
 }
 
-class EntityGroupSpatialOpaque: Owner, EntityGroup
+class EntityGroupDecals: Owner, EntityGroup
 {
     EntityManager entityManager;
 
@@ -315,15 +336,48 @@ class EntityGroupSpatialOpaque: Owner, EntityGroup
         for(size_t i = 0; i < entities.length; i++)
         {
             auto e = entities[i];
-            if (e.layer == EntityLayer.Spatial)
+            if (e.decal)
+            {
+                res = dg(e);
+                if (res)
+                    break;
+            }
+        }
+        return res;
+    }
+}
+
+class EntityGroupSpatialOpaque: Owner, EntityGroup
+{
+    EntityManager entityManager;
+    bool dynamic = true;
+
+    this(EntityManager entityManager, bool dynamic, Owner owner)
+    {
+        super(owner);
+        this.entityManager = entityManager;
+        this.dynamic = dynamic;
+    }
+
+    int opApply(scope int delegate(Entity) dg)
+    {
+        int res = 0;
+        auto entities = entityManager.entities.data;
+        for(size_t i = 0; i < entities.length; i++)
+        {
+            auto e = entities[i];
+            if (e.layer == EntityLayer.Spatial && !e.decal)
             {
                 bool opaque = true;
                 if (e.material)
                     opaque = !e.material.isTransparent;
 
-                res = dg(e);
-                if (res)
-                    break;
+                if (opaque && e.dynamic == dynamic) 
+                {
+                    res = dg(e);
+                    if (res)
+                        break;
+                }
             }
         }
         return res;

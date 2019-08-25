@@ -35,6 +35,7 @@ import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.image.color;
 import dlib.image.image;
+import dlib.image.hdri;
 import dlib.math.vector;
 
 import dagon.core.bindings;
@@ -148,7 +149,7 @@ class Texture: Owner
         }
         else
         {
-            if (!pixelFormatToTextureFormat(cast(PixelFormat)img.pixelFormat, format, intFormat, type))
+            if (!pixelFormatToTextureFormat(img.pixelFormat, format, intFormat, type))
             {
                 writeln("Unsupported pixel format ", img.pixelFormat);
                 fallback();
@@ -243,15 +244,15 @@ class Texture: Owner
     }
 }
 
-bool pixelFormatToTextureFormat(PixelFormat pixelFormat, out GLenum textureFormat, out GLint textureInternalFormat, out GLenum pixelType)
+bool pixelFormatToTextureFormat(uint pixelFormat, out GLenum textureFormat, out GLint textureInternalFormat, out GLenum pixelType)
 {
     switch (pixelFormat)
     {
-        case PixelFormat.L8:         textureInternalFormat = GL_R8;      textureFormat = GL_RED;  pixelType = GL_UNSIGNED_BYTE; break;
-        case PixelFormat.LA8:        textureInternalFormat = GL_RG8;     textureFormat = GL_RG;   pixelType = GL_UNSIGNED_BYTE; break;
-        case PixelFormat.RGB8:       textureInternalFormat = GL_RGB8;    textureFormat = GL_RGB;  pixelType = GL_UNSIGNED_BYTE; break;
-        case PixelFormat.RGBA8:      textureInternalFormat = GL_RGBA8;   textureFormat = GL_RGBA; pixelType = GL_UNSIGNED_BYTE; break;
-        case PixelFormat.RGBA_FLOAT: textureInternalFormat = GL_RGBA32F; textureFormat = GL_RGBA; pixelType = GL_FLOAT; break;
+        case PixelFormat.L8:           textureInternalFormat = GL_R8;      textureFormat = GL_RED;  pixelType = GL_UNSIGNED_BYTE; break;
+        case PixelFormat.LA8:          textureInternalFormat = GL_RG8;     textureFormat = GL_RG;   pixelType = GL_UNSIGNED_BYTE; break;
+        case PixelFormat.RGB8:         textureInternalFormat = GL_RGB8;    textureFormat = GL_RGB;  pixelType = GL_UNSIGNED_BYTE; break;
+        case PixelFormat.RGBA8:        textureInternalFormat = GL_RGBA8;   textureFormat = GL_RGBA; pixelType = GL_UNSIGNED_BYTE; break;
+        case FloatPixelFormat.RGBAF32: textureInternalFormat = GL_RGBA32F; textureFormat = GL_RGBA; pixelType = GL_FLOAT; break;
         default:
             return false;
     }

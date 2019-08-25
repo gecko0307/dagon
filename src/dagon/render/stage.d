@@ -90,6 +90,34 @@ class RenderStage: EventListener
             state.cameraPosition = view.cameraPosition;
         }
     }
+    
+    void renderEntity(Entity entity, Shader shader)
+    {
+        state.layer = entity.layer;
+        state.modelMatrix = entity.absoluteTransformation;
+        state.invModelMatrix = entity.invAbsoluteTransformation;
+        state.modelViewMatrix = state.viewMatrix * state.modelMatrix;
+        state.normalMatrix = state.modelViewMatrix.inverse.transposed;
+        state.prevModelViewMatrix = state.prevViewMatrix * entity.prevAbsoluteTransformation;
+        state.shader = shader;
+        state.opacity = entity.opacity;
+
+        if (entity.material)
+            entity.material.bind(&state);
+        else
+            defaultMaterial.bind(&state);
+
+        shader.bindParameters(&state);
+          
+        entity.drawable.render(&state);
+
+        shader.unbindParameters(&state);
+
+        if (entity.material)
+            entity.material.unbind(&state);
+        else
+            defaultMaterial.unbind(&state);
+    }
 
     void render()
     {
@@ -116,27 +144,7 @@ class RenderStage: EventListener
             foreach(entity; group)
             if (entity.visible && entity.drawable)
             {
-                state.layer = entity.layer;
-
-                state.modelMatrix = entity.absoluteTransformation;
-                state.modelViewMatrix = state.viewMatrix * state.modelMatrix;
-                state.normalMatrix = state.modelViewMatrix.inverse.transposed;
-
-                if (entity.material)
-                    entity.material.bind(&state);
-                else
-                    defaultMaterial.bind(&state);
-
-                defaultShader.bindParameters(&state);
-
-                entity.drawable.render(&state);
-
-                defaultShader.unbindParameters(&state);
-
-                if (entity.material)
-                    entity.material.unbind(&state);
-                else
-                    defaultMaterial.unbind(&state);
+                renderEntity(entity, defaultShader);
             }
             defaultShader.unbind();
         }

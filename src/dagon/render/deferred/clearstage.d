@@ -25,16 +25,35 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.deferred;
+module dagon.render.deferred.clearstage;
 
-public
+import std.stdio;
+
+import dlib.core.memory;
+import dlib.core.ownership;
+import dlib.image.color;
+
+import dagon.core.bindings;
+import dagon.graphics.entity;
+import dagon.render.pipeline;
+import dagon.render.stage;
+import dagon.render.gbuffer;
+
+class DeferredClearStage: RenderStage
 {
-    import dagon.render.deferred.backgroundstage;
-    import dagon.render.deferred.clearstage;
-    import dagon.render.deferred.debugoutputstage;
-    import dagon.render.deferred.decalstage;
-    import dagon.render.deferred.environmentstage;
-    import dagon.render.deferred.geometrystage;
-    import dagon.render.deferred.lightstage;
-    import dagon.render.deferred.occlusionstage;
+    GBuffer gbuffer;
+
+    this(RenderPipeline pipeline, GBuffer gbuffer)
+    {
+        super(pipeline, null);
+        this.gbuffer = gbuffer;
+    }
+
+    override void render()
+    {
+        if (gbuffer)
+        {
+            gbuffer.clear();
+        }
+    }
 }

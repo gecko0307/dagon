@@ -25,16 +25,60 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.deferred;
+module dagon.render.deferred.decalstage;
 
-public
+import std.stdio;
+
+import dlib.core.memory;
+import dlib.core.ownership;
+import dlib.image.color;
+
+import dagon.core.bindings;
+import dagon.graphics.entity;
+import dagon.graphics.shader;
+import dagon.render.pipeline;
+import dagon.render.stage;
+import dagon.render.gbuffer;
+import dagon.render.shaders.decal;
+
+class DeferredDecalStage: RenderStage
 {
-    import dagon.render.deferred.backgroundstage;
-    import dagon.render.deferred.clearstage;
-    import dagon.render.deferred.debugoutputstage;
-    import dagon.render.deferred.decalstage;
-    import dagon.render.deferred.environmentstage;
-    import dagon.render.deferred.geometrystage;
-    import dagon.render.deferred.lightstage;
-    import dagon.render.deferred.occlusionstage;
+    GBuffer gbuffer;
+    DecalShader decalShader;
+
+    this(RenderPipeline pipeline, GBuffer gbuffer, EntityGroup group = null)
+    {
+        super(pipeline, group);
+        this.gbuffer = gbuffer;
+        decalShader = New!DecalShader(gbuffer, this);
+    }
+
+    override void render()
+    {
+        if (group)
+        {
+            gbuffer.bind();
+
+            glScissor(0, 0, gbuffer.width, gbuffer.height);
+            glViewport(0, 0, gbuffer.width, gbuffer.height);
+            
+            state.depthMask = false;
+            
+            glDisable(GL_DEPTH_TEST);
+            
+            decalShader.bind();
+            foreach(entity; group)
+            {
+                if (entity.visible && entity.drawable)
+                {
+                    renderEntity(entity, decalShader);
+                }
+            }
+            decalShader.unbind();
+            
+            glEnable(GL_DEPTH_TEST);
+
+            gbuffer.unbind();
+        }
+    }
 }

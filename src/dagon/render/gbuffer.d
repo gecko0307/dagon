@@ -31,6 +31,7 @@ import std.stdio;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.image.color;
 
 import dagon.core.bindings;
 import dagon.render.framebuffer;
@@ -169,6 +170,23 @@ class GBuffer: Owner
 
     void unbind()
     {
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    }
+    
+    void clear()
+    {
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
+
+        glScissor(0, 0, width, height);
+        glViewport(0, 0, width, height);
+
+        glClear(GL_DEPTH_BUFFER_BIT);
+        
+        Color4f zero = Color4f(0, 0, 0, 0);
+        glClearBufferfv(GL_COLOR, 0, zero.arrayof.ptr);
+        glClearBufferfv(GL_COLOR, 1, zero.arrayof.ptr);
+        glClearBufferfv(GL_COLOR, 2, zero.arrayof.ptr);
+        
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     }
     
