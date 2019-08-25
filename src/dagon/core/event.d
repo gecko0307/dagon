@@ -32,11 +32,10 @@ import std.stdio;
 import std.ascii;
 import std.conv;
 import dlib.core.memory;
+import dlib.core.ownership;
 import dlib.container.array;
-import dagon.core.libs;
-import dagon.core.ownership;
+import dagon.core.bindings;
 import dagon.core.input;
-import dagon.resource.asset;
 
 enum EventType
 {
@@ -54,7 +53,8 @@ enum EventType
     FocusLoss,
     FocusGain,
     Quit,
-    AssetReload,
+    FileChange,
+    DropFile,
     UserEvent
 }
 
@@ -72,7 +72,7 @@ struct Event
     int userCode;
     int mouseWheelX;
     int mouseWheelY;
-    Asset asset;
+    string filename;
 }
 
 class EventManager
@@ -112,9 +112,6 @@ class EventManager
     uint deltaTimeMs = 0;
     int fps = 0;
 
-    //uint videoWidth;
-    //uint videoHeight;
-
     uint windowWidth;
     uint windowHeight;
     bool windowFocused = true;
@@ -130,10 +127,6 @@ class EventManager
 
         windowWidth = winWidth;
         windowHeight = winHeight;
-
-        //auto videoInfo = SDL_GetVideoInfo();
-        //videoWidth = videoInfo.current_w;
-        //videoHeight = videoInfo.current_h;
 
         if(SDL_NumJoysticks() > 0)
         {
@@ -181,10 +174,10 @@ class EventManager
             writeln("Warning: event stack overflow");
     }
     
-    void generateAssetReloadEvent(Asset asset)
+    void generateFileChangeEvent(string filename)
     {
-        Event e = Event(EventType.AssetReload);
-        e.asset = asset;
+        Event e = Event(EventType.FileChange);
+        e.filename = filename;
         addUserEvent(e);
     }
 
@@ -226,7 +219,7 @@ class EventManager
         if (joystick)
         {
             double a = cast(double)(SDL_JoystickGetAxis(joystick, axis));
-            return a / 32768.0f; //28000.0f;
+            return a / 32768.0f;
         }
         else if (controller)
         {
@@ -410,41 +403,13 @@ class EventManager
                         addEvent(e);
                     }
                     break;
-/*
-                case SDL_ACTIVEEVENT:
-                    if (event.active.state & SDL_APPACTIVE)
-                    {
-                        if (event.active.gain == 0)
-                        {
-                            writeln("Deactivated");
-                            windowFocused = false;
-                            e = Event(EventType.FocusLoss);
-                        }
-                        else
-                        {
-                            writeln("Activated");
-                            windowFocused = true;
-                            e = Event(EventType.FocusGain);
-                        }
-                    }
-                    else if (event.active.state & SDL_APPINPUTFOCUS)
-                    {
-                        if (event.active.gain == 0)
-                        {
-                            writeln("Lost focus");
-                            windowFocused = false;
-                            e = Event(EventType.FocusLoss);
-                        }
-                        else
-                        {
-                            writeln("Gained focus");
-                            windowFocused = true;
-                            e = Event(EventType.FocusGain);
-                        }
-                    }
+                    
+                case SDL_DROPFILE:
+                    e = Event(EventType.DropFile);
+                    e.filename = to!string(event.drop.file);
                     addEvent(e);
                     break;
-*/
+
                 case SDL_QUIT:
                     exit();
                     e = Event(EventType.Quit);
@@ -491,8 +456,8 @@ class EventManager
 
     void setMouseToCenter()
     {
-        float x = (cast(float)windowWidth)/2;
-        float y = (cast(float)windowHeight)/2;
+        float x = (cast(float)windowWidth) / 2;
+        float y = (cast(float)windowHeight) / 2;
         setMouse(cast(int)x, cast(int)y);
     }
 
@@ -591,8 +556,11 @@ abstract class EventListener: Owner
             case EventType.Quit:
                 onQuit();
                 break;
-            case EventType.AssetReload:
-                onAssetReload(e.asset);
+            case EventType.FileChange:
+                onFileChange(e.filename);
+                break;
+            case EventType.DropFile:
+                onDropFile(e.filename);
                 break;
             case EventType.UserEvent:
                 onUserEvent(e.userCode);
@@ -615,6 +583,7 @@ abstract class EventListener: Owner
     void onFocusLoss() {}
     void onFocusGain() {}
     void onQuit() {}
-    void onAssetReload(Asset asset) {}
+    void onFileChange(string filename) {}
+    void onDropFile(string filename) {}
     void onUserEvent(int code) {}
 }

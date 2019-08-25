@@ -28,11 +28,12 @@ DEALINGS IN THE SOFTWARE.
 module dagon.graphics.shaderloader;
 
 import std.stdio;
-import std.string : stripRight;
-import dlib.math.utils : min2;
-import dagon.core.libs;
+import std.string: stripRight;
+import dlib.math.utils: min2;
 
-enum ShaderStage : ubyte
+import dagon.core.bindings;
+
+enum ShaderStage: ubyte
 {
     vertex = 1,
     tessControl = 2,
@@ -122,7 +123,7 @@ private bool checkCompilation(const GLuint shaderID, const ShaderStage stage)
         char[logMaxLen + 1] infobuffer = 0;
         glGetShaderInfoLog(shaderID, logMaxLen, null, infobuffer.ptr);
         infolen = min2(infolen - 1, logMaxLen);
-        char[] s = stripRight(infobuffer[0 .. infolen]);
+        char[] s = stripRight(infobuffer[0..infolen]);
         // it can be some warning
         if (!ok)
             writefln("Failed to compile %s shader:", stage);
@@ -145,7 +146,7 @@ private bool checkLinking(const GLuint programID)
         char[logMaxLen + 1] infobuffer = 0;
         glGetProgramInfoLog(programID, logMaxLen, null, infobuffer.ptr);
         infolen = min2(infolen - 1, logMaxLen);
-        char[] s = stripRight(infobuffer[0 .. infolen]);
+        char[] s = stripRight(infobuffer[0..infolen]);
         // it can be some warning
         if (!ok)
             writeln("Failed to link shaders:");

@@ -50,14 +50,9 @@ Planned in future:
 
 Screenshots
 -----------
-[![Screenshot1](https://1.bp.blogspot.com/-grsFLVdZMFs/W6KqhXuBqOI/AAAAAAAADqA/pU6vuB8PKZUws3eP0Ac0GJ4p6fbIWi0kACPcBGAYYCw/s1600/screenshot001.jpg)](https://1.bp.blogspot.com/-grsFLVdZMFs/W6KqhXuBqOI/AAAAAAAADqA/pU6vuB8PKZUws3eP0Ac0GJ4p6fbIWi0kACPcBGAYYCw/s1600/screenshot001.jpg)
-[![Screenshot2](https://2.bp.blogspot.com/-r92DjuBgFGk/Ww2Q9xDVbxI/AAAAAAAADaQ/HxZTNLloXq8DVthWn9iDBEjnhs5skJv7wCPcBGAYYCw/s1600/Untitled%2B9.jpg)](https://2.bp.blogspot.com/-r92DjuBgFGk/Ww2Q9xDVbxI/AAAAAAAADaQ/HxZTNLloXq8DVthWn9iDBEjnhs5skJv7wCPcBGAYYCw/s1600/Untitled%2B9.jpg)
-[![Screenshot3](https://2.bp.blogspot.com/-kJFkO4qk15g/XFKeMCYok4I/AAAAAAAAD04/mB1uiIGcAoQMs0Ngo0Et2zf3ZvdKaVePACLcBGAs/s1600/nuklear.jpg)](https://2.bp.blogspot.com/-kJFkO4qk15g/XFKeMCYok4I/AAAAAAAAD04/mB1uiIGcAoQMs0Ngo0Et2zf3ZvdKaVePACLcBGAs/s1600/nuklear.jpg)
-[![Screenshot4](https://1.bp.blogspot.com/-o8H1blpZeFQ/W78a-nttgrI/AAAAAAAADrc/LPZZ4j_A5jIye0hib3bR7W17sAvY1ucYQCLcBGAs/s1600/dagon-demo-dwarf.jpg)](https://1.bp.blogspot.com/-o8H1blpZeFQ/W78a-nttgrI/AAAAAAAADrc/LPZZ4j_A5jIye0hib3bR7W17sAvY1ucYQCLcBGAs/s1600/dagon-demo-dwarf.jpg)
+[![Screenshot1](https://1.bp.blogspot.com/-qC2fIlkQA7E/XO2335jW2iI/AAAAAAAAD8M/Tc9Wjg2CkzUMyo2k_Kg35y70qkUj7-FIwCPcBGAYYCw/s1600/2019-05-29%2B01_20_42-Dagon%2BNG.jpg)](https://1.bp.blogspot.com/-qC2fIlkQA7E/XO2335jW2iI/AAAAAAAAD8M/Tc9Wjg2CkzUMyo2k_Kg35y70qkUj7-FIwCPcBGAYYCw/s1600/2019-05-29%2B01_20_42-Dagon%2BNG.jpg)
 
-Video
------
-[https://www.youtube.com/watch?v=bvTX9kqtH08](https://www.youtube.com/watch?v=bvTX9kqtH08)
+[![Screenshot2](https://1.bp.blogspot.com/-IaDVtXOtJZw/XWG0FeJPFuI/AAAAAAAAEHQ/lk9WdRFGlegSSt0hnNLFEdGw_6XyrS7NgCLcBGAs/s1600/ng-terrain-bushes.jpg)](https://1.bp.blogspot.com/-IaDVtXOtJZw/XWG0FeJPFuI/AAAAAAAAEHQ/lk9WdRFGlegSSt0hnNLFEdGw_6XyrS7NgCLcBGAs/s1600/ng-terrain-bushes.jpg)
 
 Made with Dagon
 ---------------
@@ -72,8 +67,7 @@ To use latest stable Dagon, add the following dependency to your `dub.json`:
 ```
 "dagon": "0.10.1"
 ```
-If you want to test new features, use development branch: `"dagon": "~dagon-ng"`.
-
+If you want to test new features, use master branch: `"dagon": "~master"`.
 
 Dependencies
 ------------
@@ -81,7 +75,7 @@ Dagon depends on the following D packages:
 * [dlib](https://github.com/gecko0307/dlib)
 * [bindbc-opengl](https://github.com/BindBC/bindbc-opengl)
 * [bindbc-sdl](https://github.com/BindBC/bindbc-sdl)
-* [bindbc-ft](https://github.com/gecko0307/bindbc-ft)
+* [bindbc-freetype](https://github.com/BindBC/bindbc-freetype)
 * [bindbc-nuklear](https://github.com/Timu5/bindbc-nuklear)
 
 Runtime dependencies (dynamic link libraries):
@@ -101,7 +95,7 @@ Supported subConfigurations are also `"NoNuklear"` and `"NoFreetype"` to remove 
 
 Documentation
 -------------
-See [Tutorials](https://github.com/gecko0307/dagon/wiki/Tutorials).
+See [Tutorials](https://github.com/gecko0307/dagon/wiki/Tutorials) (for Dagon 0.10).
 
 License
 -------
@@ -109,4 +103,4 @@ Copyright (c) 2016-2019 Timur Gafarov, Rafał Ziemniewski, Mateusz Muszyński, B
 
 Sponsors
 --------
-Rafał Ziemniewski, Kumar Sookram, Aleksandr Kovalev.
+Rafał Ziemniewski, Kumar Sookram, Aleksandr Kovalev, Robert Georges.

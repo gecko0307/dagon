@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018 Timur Gafarov
+Copyright (c) 2018-2019 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -27,13 +27,13 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.graphics.screensurface;
 
+import dlib.core.ownership;
 import dlib.math.vector;
 import dlib.math.matrix;
 
-import dagon.core.libs;
-import dagon.core.ownership;
-import dagon.core.interfaces;
-import dagon.graphics.rc;
+import dagon.core.bindings;
+import dagon.graphics.drawable;
+import dagon.graphics.state;
 
 class ScreenSurface: Owner, Drawable
 {
@@ -107,7 +107,7 @@ class ScreenSurface: Owner, Drawable
 	{
 	}
 	
-    void render(RenderingContext* rc)
+    void render(GraphicsState* state)
 	{
         glDisable(GL_DEPTH_TEST);
         glDepthMask(GL_FALSE);

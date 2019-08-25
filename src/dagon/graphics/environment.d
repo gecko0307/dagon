@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2018 Timur Gafarov
+Copyright (c) 2017-2019 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -27,144 +27,25 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.graphics.environment;
 
-import dlib.core.memory;
-import dlib.image.image;
-import dlib.image.unmanaged;
+import dlib.core.ownership;
 import dlib.image.color;
-import dlib.image.render.shapes;
-import dlib.image.hsv;
-import dlib.math.utils;
-import dlib.math.vector;
-import dlib.math.matrix;
-import dlib.math.quaternion;
-import dlib.math.interpolation;
 
-import dagon.core.libs;
-import dagon.core.ownership;
 import dagon.graphics.texture;
 
 class Environment: Owner
 {
-    // TODO: change/interpolate parameters based on object position?
-
-    bool useSkyColors = false;
-    bool atmosphericFog = false;
-
-    Color4f backgroundColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
-    Color4f ambientConstant = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
-
-    Texture environmentMap;
-    Texture skyMap;
-
-    Color4f sunZenithColor = Color4f(1.0, 0.9, 0.8, 1.0);
-    Color4f sunHorizonColor = Color4f(1.0, 0.3, 0.0, 1.0);
-    Quaternionf sunRotation;
-    float sunEnergy = 100.0f;
-
-    Color4f skyZenithColorAtMidday = Color4f(0.223, 0.572, 0.752, 1.0); //Color4f(0.1, 0.2, 1.0, 1.0);
-    Color4f skyZenithColorAtSunset = Color4f(0.1, 0.2, 0.4, 1.0);
-    Color4f skyZenithColorAtMidnight = Color4f(0.01, 0.01, 0.05, 1.0);
-
-    Color4f skyHorizonColorAtMidday = Color4f(0.9, 1.0, 1.0, 1.0); //Color4f(0.5, 0.6, 0.65, 1.0);
-    Color4f skyHorizonColorAtSunset = Color4f(0.87, 0.44, 0.1, 1.0);
-    Color4f skyHorizonColorAtMidnight = Color4f(0.1, 0.1, 0.1, 1.0);
-
-    float skyEnergyAtMidday = 5.0;
-    float skyEnergyAtSunset = 2.0;
-    float skyEnergyAtMidnight = 0.01;
-
-    Color4f groundColor = Color4f(0.5, 0.4, 0.4, 1.0);
-
-    float groundEnergyAtMidday = 1.0;
-    float groundEnergyAtSunset = 0.01;
-    float groundEnergyAtMidnight = 0.0;
-
-    Color4f fogColor = Color4f(0.1f, 0.1f, 0.1f, 1.0f);
-    float fogStart = 0.0f;
-    float fogEnd = 10000.0f;
-
-    Color4f skyZenithColor = Color4f(0.223, 0.572, 0.752, 1.0);
-    Color4f skyHorizonColor = Color4f(0.9, 1.0, 1.0, 1.0);
-    float skyEnergy = 1.0f;
-    float groundEnergy = 1.0f;
+    Color4f backgroundColor = Color4f(0.8f, 0.8f, 1.0f, 1.0f);
     
-    float skyBrightness = 1.0f;
-    float environmentBrightness = 1.0f;
-
-    bool showSun = true;
-    bool showSunHalo = true;
-    float sunSize = 1.0f;
-    float sunScattering = 0.05f;
-
+    Color4f ambientColor = Color4f(0.8f, 0.8f, 1.0f, 1.0f);
+    Texture ambientMap;
+    float ambientEnergy = 1.0f;
+    
+    Color4f fogColor = Color4f(0.8f, 0.8f, 1.0f, 1.0f);
+    float fogStart = 0.0f;
+    float fogEnd = 1000.0f;
+    
     this(Owner o)
     {
         super(o);
-
-        setDayTime(9, 0, 0);
-    }
-
-    void update(double dt)
-    {
-        skyZenithColor = lerpColorsBySunAngle(skyZenithColorAtMidday, skyZenithColorAtSunset, skyZenithColorAtMidnight);
-        skyHorizonColor = lerpColorsBySunAngle(skyHorizonColorAtMidday, skyHorizonColorAtSunset, skyHorizonColorAtMidnight);
-
-        Vector3f sunDir = sunDirection();
-
-        float s1 = clamp(dot(sunDir, Vector3f(0.0, 1.0, 0.0)), 0.0, 1.0);
-        float s2 = clamp(dot(sunDir, Vector3f(0.0, -1.0, 0.0)), 0.0, 1.0);
-
-        ambientConstant = (skyZenithColor + skyHorizonColor + Color4f(0.06f, 0.05f, 0.05f)) * 0.3f * lerp(lerp(0.01f, 0.001f, s2), 2.0f, s1);
-
-        skyEnergy = lerp(lerp(skyEnergyAtSunset, skyEnergyAtMidnight, s2), skyEnergyAtMidday, s1);
-        groundEnergy = lerp(lerp(groundEnergyAtSunset, groundEnergyAtMidnight, s2), groundEnergyAtMidday, s1);
-
-        if (atmosphericFog)
-            fogColor = skyZenithColor * skyEnergy * 0.5f;
-        else
-            fogColor = backgroundColor;
-    }
-
-    void setDayTime(uint h, uint m, float s)
-    {
-        if (h >= 24) h = h % 24;
-        if (m >= 60) m = m % 60;
-        if (s >= 60) s = s % 60;
-
-        float t = (h * 3600.0f + m * 60.0f + s) / (3600.0f * 24.0f);
-        while (t > 1.0f) t -= 1.0f;
-        sunRotation = rotationQuaternion(Axis.x, degtorad(-(t * 360.0f - 90.0f)));
-    }
-
-    Vector3f sunDirection()
-    {
-        return sunRotation.rotate(Vector3f(0, 0, 1));
-    }
-
-    Vector3f sunDirectionEye(Matrix4x4f viewMatrix)
-    {
-        Vector4f sunHGVector = Vector4f(sunRotation.rotate(Vector3f(0, 0, 1)));
-        sunHGVector.w = 0.0;
-        return (sunHGVector * viewMatrix).xyz;
-    }
-
-    Color4f sunColor()
-    {
-        return lerpColorsBySunAngle(sunZenithColor, sunHorizonColor, Color4f(0.0f, 0.0f, 0.0f, 1.0f));
-    }
-
-    Color4f lerpColorsBySunAngle(Color4f atZenith, Color4f atHorizon, Color4f atNightSide)
-    {
-        float s = dot(sunDirection, Vector3f(0.0, 1.0, 0.0));
-        Vector3f sunColor;
-        if (s < 0.01f)
-            sunColor = atNightSide;
-        else if (s < 0.08f)
-        {
-            sunColor = lerp(atHorizon, atZenith, s);
-            sunColor = lerp(sunColor, Vector3f(atNightSide), (0.07f - (s - 0.01f)) / 0.07f);
-        }
-        else
-            sunColor = lerp(Vector3f(atHorizon), Vector3f(atZenith), s);
-        return Color4f(sunColor.x, sunColor.y, sunColor.z, 1.0f);
     }
 }

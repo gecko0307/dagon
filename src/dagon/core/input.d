@@ -30,21 +30,20 @@ module dagon.core.input;
 
 import std.stdio;
 import std.ascii;
-import std.conv : to;
-import std.math : abs;
-import std.algorithm.searching : startsWith;
-import std.string : isNumeric;
+import std.conv: to;
+import std.math: abs;
+import std.algorithm.searching: startsWith;
+import std.string: isNumeric;
 import dlib.core.memory;
+import dlib.core.ownership;
 import dlib.container.dict;
 import dlib.container.array;
 import dlib.text.lexer;
 import dlib.text.unmanagedstring;
 import dagon.core.event;
-import dagon.core.libs;
-import dagon.core.ownership;
+import dagon.core.bindings;
 import dagon.core.keycodes;
-import dagon.resource.asset;
-import dagon.resource.config;
+import dagon.core.config;
 
 enum BindingType
 {

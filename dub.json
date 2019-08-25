@@ -7,8 +7,8 @@
         "Timur Gafarov",
         "Rafał Ziemniewski",
         "Björn Roberg",
-		"dayllenger",
-		"Mateusz Muszyński"
+        "dayllenger",
+        "Mateusz Muszyński"
     ],
 
     "importPaths": ["src"],
@@ -16,15 +16,16 @@
     "stringImportPaths": ["shaders", "data/__internal"],
 
     "dependencies": {
-        "dlib": "0.16.0",
-        "bindbc-opengl": "0.4.0",
-        "bindbc-sdl": "0.4.1"
+        "dlib": "~>0.16.0",
+        "bindbc-opengl": "~>0.8.0",
+        "bindbc-sdl": "~>0.8.0"
     },
 
     "versions": [
-        "SDL_205", 
-        "GL_40", 
-        "GL_KHR_debug", 
+        "SDL_205",
+        "GL_40",
+        "GL_KHR_debug",
+        "FT_28",
         "NK_ALL"
     ],
 
@@ -37,8 +38,8 @@
             "name": "library",
             "targetType": "library",
             "dependencies": {
-                "bindbc-ft": "0.1.0",
-                "bindbc-nuklear": "0.1.0"
+                "bindbc-freetype": "~>0.5.0",
+                "bindbc-nuklear": "~>0.2.0"
             }
         },
         {
@@ -50,7 +51,7 @@
             "name": "NoFreetype",
             "targetType": "library",
             "dependencies": {
-                "bindbc-nuklear": "0.1.0"
+                "bindbc-nuklear": "~>0.2.0"
             },
             "versions": ["NoFreetype"]
         },
@@ -58,7 +59,7 @@
             "name": "NoNuklear",
             "targetType": "library",
             "dependencies": {
-                "bindbc-ft": "0.1.0"
+                "bindbc-freetype": "~>0.5.0"
             },
             "versions": ["NoNuklear"]
         }

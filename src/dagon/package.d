@@ -29,95 +29,12 @@ module dagon;
 
 public
 {
-    import dagon.core.libs;
-
-    import dlib.core;
-    import dlib.math;
-    import dlib.geometry;
-    import dlib.image;
-    import dlib.container;
-
-    import dagon.core.ownership;
-    import dagon.core.interfaces;
-    import dagon.core.application;
-    import dagon.core.event;
-    import dagon.core.keycodes;
-    import dagon.core.vfs;
-    import dagon.core.locale;
-    import dagon.core.input;
-
-    import dagon.resource.scene;
-    import dagon.resource.asset;
-    import dagon.resource.textasset;
-    import dagon.resource.textureasset;
-    import dagon.resource.imageasset;
-    import dagon.resource.obj;
-    import dagon.resource.iqm;
-    import dagon.resource.fontasset;
-    import dagon.resource.entityasset;
-    import dagon.resource.materialasset;
-    import dagon.resource.packageasset;
-    import dagon.resource.props;
-    import dagon.resource.config;
-
-    import dagon.logics.entity;
-    import dagon.logics.behaviour;
-    import dagon.logics.controller;
-    import dagon.logics.rigidbodycontroller;
-    import dagon.logics.charactercontroller;
-    import dagon.logics.tween;
-
-    import dagon.graphics.rc;
-    import dagon.graphics.tbcamera;
-    import dagon.graphics.freeview;
-    import dagon.graphics.fpcamera;
-    import dagon.graphics.fpview;
-    import dagon.graphics.shapes;
-    import dagon.graphics.screensurface;
-    import dagon.graphics.texture;
-    import dagon.graphics.cubemap;
-    import dagon.graphics.cubemaprendertarget;
-	import dagon.graphics.shader;
-    import dagon.graphics.material;
-    import dagon.graphics.environment;
-    import dagon.graphics.mesh;
-    import dagon.graphics.animmodel;
-    import dagon.graphics.view;
-    import dagon.graphics.shadow;
-    import dagon.graphics.light;
-    import dagon.graphics.framebuffer;
-    import dagon.graphics.postproc;
-    import dagon.graphics.particles;
-    import dagon.graphics.gbuffer;
-    import dagon.graphics.deferred;
-    import dagon.graphics.renderer;
-    import dagon.graphics.opensimplex;
-    import dagon.graphics.terrain;
-    import dagon.graphics.heightmap;
-
-    import dagon.graphics.shaders.shadowpass;
-    import dagon.graphics.shaders.geometrypass;
-    import dagon.graphics.shaders.environmentpass;
-    import dagon.graphics.shaders.arealight;
-    import dagon.graphics.shaders.sunlight;
-    import dagon.graphics.shaders.standard;
-    import dagon.graphics.shaders.sky;
-    import dagon.graphics.shaders.rayleigh;
-    import dagon.graphics.shaders.particle;
-    import dagon.graphics.shaders.water;
-    import dagon.graphics.shaders.decal;
-    import dagon.graphics.shaders.terrain;
-
-    import dagon.graphics.filters.fxaa;
-    import dagon.graphics.filters.lens;
-    import dagon.graphics.filters.hdr;
-    import dagon.graphics.filters.blur;
-    import dagon.graphics.filters.finalizer;
-
-    import dagon.ui.font;
-    import dagon.ui.ftfont;   
-    import dagon.ui.textline;
-    import dagon.ui.nuklear;
-
-    import dagon.physics;
+    import dlib;
+    import dagon.core;
+    import dagon.game;
+    import dagon.graphics;
+    import dagon.postproc;
+    import dagon.render;
+    import dagon.resource;
+    import dagon.ui;
 }

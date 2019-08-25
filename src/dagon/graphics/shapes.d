@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2018 Timur Gafarov
+Copyright (c) 2017-2019 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -30,12 +30,12 @@ module dagon.graphics.shapes;
 import std.math;
 
 import dlib.core.memory;
+import dlib.core.ownership;
 import dlib.math.vector;
 import dlib.container.array;
 
-import dagon.core.libs;
-import dagon.core.interfaces;
-import dagon.core.ownership;
+import dagon.core.bindings;
+import dagon.graphics.drawable;
 import dagon.graphics.mesh;
 
 class ShapePlane: Mesh
@@ -100,9 +100,9 @@ class ShapeQuad: Owner, Drawable
     GLuint tbo = 0;
     GLuint eao = 0;
     
-    this(Owner o)
+    this(Owner owner)
     {
-        super(o);
+        super(owner);
 
         vertices[0] = Vector2f(0, 1);
         vertices[1] = Vector2f(0, 0);
@@ -157,11 +157,7 @@ class ShapeQuad: Owner, Drawable
         glDeleteBuffers(1, &eao);
     }
     
-    void update(double dt)
-    {
-    }
-    
-    void render(RenderingContext* rc)
+    void render(GraphicsState* state)
     {        
         glDepthMask(0);
         glBindVertexArray(vao);
@@ -237,9 +233,6 @@ enum HALF_PI = PI * 0.5f;
 
 Vector2f envMapEquirect(Vector3f dir)
 {
-    //float phi = acos(dir.y);
-    //float theta = atan2(dir.x, dir.z) + PI;
-    //return Vector2f(theta / PI2, phi / PI);
     Vector2f uv;
     uv.y = acos(dir.y) / PI;
     uv.x = (PI + atan2(dir.x, dir.z)) / PI2;
@@ -253,9 +246,9 @@ class ShapeSphere: Mesh
     DynamicArray!Vector2f daTexcoords;
     DynamicArray!(uint[3]) daIndices;
     
-    this(float radius, int slices, int stacks, bool invNormals, Owner o)
+    this(float radius, int slices, int stacks, bool invNormals, Owner owner)
     {
-        super(o);
+        super(owner);
         
         float X1, Y1, X2, Y2, Z1, Z2;
         float inc1, inc2, inc3, inc4, inc5, radius1, radius2;
@@ -360,96 +353,6 @@ class ShapeSphere: Mesh
                 i += 6;
             }
         }
-        
-        /*
-        for(int w = 0; w < resolution; w++)
-        {
-            
-        
-            for(int h = (-resolution/2); h < (resolution/2); h++)
-            {
-                inc1 = (w/cast(float)resolution)*2*PI;
-                inc2 = ((w+1)/cast(float)resolution)*2*PI;
-                 
-                inc3 = (h/cast(float)resolution)*PI;
-                inc4 = ((h+1)/cast(float)resolution)*PI;
-
-                X1 = sin(inc1);
-                Y1 = cos(inc1);
-                X2 = sin(inc2);
-                Y2 = cos(inc2);
-
-                radius1 = radius*cos(inc3);
-                radius2 = radius*cos(inc4);
-
-                Z1 = radius*sin(inc3); 
-                Z2 = radius*sin(inc4);
-                
-                daVertices.append(Vector3f(radius1*X1,Z1,radius1*Y1));
-                daVertices.append(Vector3f(radius1*X2,Z1,radius1*Y2));
-                daVertices.append(Vector3f(radius2*X2,Z2,radius2*Y2));
-
-                daVertices.append(Vector3f(radius1*X1,Z1,radius1*Y1));
-                daVertices.append(Vector3f(radius2*X2,Z2,radius2*Y2));
-                daVertices.append(Vector3f(radius2*X1,Z2,radius2*Y1));
-                
-                auto uv1 = Vector2f(0, 0);
-                auto uv2 = Vector2f(0, 1);
-                auto uv3 = Vector2f(1, 1);
-                auto uv4 = Vector2f(1, 0);
-
-                daTexcoords.append(uv1); 
-                daTexcoords.append(uv2); 
-                daTexcoords.append(uv3);
-
-                daTexcoords.append(uv1); 
-                daTexcoords.append(uv3); 
-                daTexcoords.append(uv4);
-                
-                float sign = invNormals? -1.0f : 1.0f;
-                
-                auto n1 = Vector3f(X1,Z1,Y1).normalized;
-                auto n2 = Vector3f(X2,Z1,Y2).normalized;
-                auto n3 = Vector3f(X2,Z2,Y2).normalized;
-                auto n4 = Vector3f(X1,Z2,Y1).normalized;
-                
-                daNormals.append(n1 * sign);
-                daNormals.append(n2 * sign);
-                daNormals.append(n3 * sign);
-                
-                daNormals.append(n1 * sign);
-                daNormals.append(n3 * sign);
-                daNormals.append(n4 * sign);
-                
-                if (invNormals)
-                {
-                    tri[0] = i+2;
-                    tri[1] = i+1;
-                    tri[2] = i;
-                    daIndices.append(tri);
-                    
-                    tri[0] = i+5;
-                    tri[1] = i+4;
-                    tri[2] = i+3;
-                    daIndices.append(tri);
-                }
-                else
-                {
-                    tri[0] = i;
-                    tri[1] = i+1;
-                    tri[2] = i+2;
-                    daIndices.append(tri);
-                    
-                    tri[0] = i+3;
-                    tri[1] = i+4;
-                    tri[2] = i+5;
-                    daIndices.append(tri);
-                }
-                
-                i += 6;
-            }
-        }
-        */
         
         vertices = New!(Vector3f[])(daVertices.length);
         vertices[] = daVertices.data[];

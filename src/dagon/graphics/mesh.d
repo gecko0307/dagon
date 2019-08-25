@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2018 Timur Gafarov
+Copyright (c) 2017-2019 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -28,12 +28,12 @@ DEALINGS IN THE SOFTWARE.
 module dagon.graphics.mesh;
 
 import dlib.core.memory;
+import dlib.core.ownership;
 import dlib.geometry.triangle;
 import dlib.math.vector;
 
-import dagon.core.libs;
-import dagon.core.interfaces;
-import dagon.core.ownership;
+import dagon.core.bindings;
+import dagon.graphics.drawable;
 
 enum VertexAttrib
 {
@@ -59,9 +59,9 @@ class Mesh: Owner, Drawable
     GLuint tbo = 0;
     GLuint eao = 0;
     
-    this(Owner o)
+    this(Owner owner)
     {
-        super(o);
+        super(owner);
     }
     
     ~this()
@@ -181,11 +181,7 @@ class Mesh: Owner, Drawable
         canRender = true;
     }
     
-    void update(double dt)
-    {
-    }
-    
-    void render(RenderingContext* rc)
+    void render(GraphicsState* state)
     {
         if (canRender)
         {
@@ -195,4 +191,3 @@ class Mesh: Owner, Drawable
         }
     }
 }
-

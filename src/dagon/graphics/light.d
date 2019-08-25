@@ -33,6 +33,7 @@ import std.conv;
 import std.random;
 
 import dlib.core.memory;
+import dlib.core.ownership;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;
@@ -40,14 +41,11 @@ import dlib.math.quaternion;
 import dlib.container.array;
 import dlib.image.color;
 
-import dagon.core.libs;
-import dagon.core.ownership;
-import dagon.graphics.view;
-import dagon.graphics.rc;
-import dagon.graphics.shadow;
-import dagon.logics.entity;
-import dagon.logics.behaviour;
-import dagon.resource.scene;
+import dagon.core.bindings;
+import dagon.graphics.state;
+import dagon.graphics.entity;
+import dagon.graphics.shadowmap;
+import dagon.graphics.csm;
 
 enum LightType
 {
@@ -57,182 +55,55 @@ enum LightType
     Spot = 4
 }
 
-class LightSource: Owner
+class Light: Entity
 {
-    Vector3f position;
-    Quaternionf rotation;
-    Vector3f color;
-    float radius; // max light attenuation radius
-    float areaRadius; // light's own radius
-    float tubeLength;
+    bool shining;
+    Color4f color;
+    float volumeRadius; // max light attenuation radius
+    float radius;
+    float length;
     float energy;
     float spotOuterCutoff;
     float spotInnerCutoff;
-    //float spotExponent;
     LightType type;
     bool shadowEnabled;
-    ShadowMap shadowMap;
+    bool scatteringEnabled;
+    float scattering;
+    float mediumDensity;
+    uint scatteringSamples;
+    float scatteringMaxRandomStepOffset;
+    ShadowMap _shadowMap;
 
-    this(Owner o)
+    this(EntityManager manager)
     {
-        super(o);
-        this.position = Vector3f(0.0f, 0.0f, 0.0f);
-        this.rotation = Quaternionf.identity;
-        this.tubeLength = 1.0f;
-        this.color = Vector3f(1.0f, 1.0f, 1.0f);
-        this.radius = 1.0f;
-        this.areaRadius = 0.0f;
-        this.energy = 1.0f;
-        this.type = LightType.AreaSphere;
-        this.shadowEnabled = false;
+        super(manager);
+        visible = false;
+        castShadow = false;
+        shining = true;
+        length = 1.0f;
+        color = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+        volumeRadius = 1.0f;
+        radius = 0.0f;
+        energy = 1.0f;
+        spotOuterCutoff = 30.0f;
+        spotInnerCutoff = 15.0f;
+        type = LightType.AreaSphere;
+        shadowEnabled = false;
+        scatteringEnabled = false;
+        scattering = 0.05f;
+        mediumDensity = 0.5f;
+        scatteringSamples = 20;
+        scatteringMaxRandomStepOffset = 0.2f;
     }
-
-    this(Vector3f pos, Vector3f col, float attRadius, float areaRadius, float energy, Owner o)
+    
+    ShadowMap shadowMap()
     {
-        super(o);
-        this.position = pos;
-        this.rotation = Quaternionf.identity;
-        this.tubeLength = 1.0f;
-        this.color = col;
-        this.radius = attRadius;
-        this.areaRadius = areaRadius;
-        this.energy = energy;
-        this.type = LightType.AreaSphere;
-        this.shadowEnabled = false;
-    }
-
-    Vector3f direction() @property
-    {
-        return rotation.rotate(Vector3f(0, 0, 1));
-    }
-
-    Vector3f directionEye(Matrix4x4f viewMatrix)
-    {
-        Vector4f dirHGVector = Vector4f(direction);
-        dirHGVector.w = 0.0;
-        return (dirHGVector * viewMatrix).xyz;
-    }
-
-    void shadow(bool mode) @property
-    {
-        if (mode)
+        if (_shadowMap is null && shadowEnabled)
         {
             if (type == LightType.Sun)
-            {
-                if (shadowMap is null)
-                    shadowMap = New!CascadedShadowMap(this, 1024, 10, 30, 200, -100, 100, this);
-            }
+                _shadowMap = New!CascadedShadowMap(this, this);
         }
-
-        shadowEnabled = mode;
-    }
-
-    bool shadow() @property
-    {
-        return shadowEnabled;
-    }
-
-    void updateShadow(Vector3f cameraPosition, Vector3f cameraDirection, RenderingContext* rc, double timeStep)
-    {
-        if (type == LightType.Sun)
-        {
-            if (shadowMap && shadowEnabled)
-                shadowMap.update(cameraPosition, cameraDirection, rc, timeStep);
-        }
-    }
-
-    void renderShadow(Scene scene, RenderingContext* rc)
-    {
-        if (type == LightType.Sun)
-        {
-            if (shadowMap && shadowEnabled)
-                shadowMap.render(scene, rc);
-        }
-    }
-}
-
-class LightManager: Owner
-{
-    DynamicArray!LightSource lightSources;
-
-	this(Owner o)
-    {
-		super(o);
-	}
-
-    ~this()
-    {
-        lightSources.free();
-    }
-
-    LightSource addPointLight(Vector3f position, Color4f color, float energy, float radius, float areaRadius = 0.0f)
-    {
-        lightSources.append(New!LightSource(position, color.rgb, radius, areaRadius, energy, this));
-        return lightSources.data[$-1];
-    }
-
-    LightSource addSunLight(Quaternionf rotation, Color4f color, float energy)
-    {
-        LightSource light = New!LightSource(this);
-        light.rotation = rotation;
-        light.color = color.rgb;
-        light.energy = energy;
-        light.type = LightType.Sun;
-        lightSources.append(light);
-        return light;
-    }
-
-    LightSource addSpotLight(Vector3f position, Color4f color, float energy, Quaternionf rotation, float outerCutoff, float innerCutoff, float volumeRadius)
-    {
-        LightSource light = New!LightSource(this);
-        light.position = position;
-        light.rotation = rotation;
-        light.color = color.rgb;
-        light.energy = energy;
-        light.spotOuterCutoff = outerCutoff;
-        light.spotInnerCutoff = innerCutoff;
-        //light.spotExponent = exponent;
-        light.radius = volumeRadius;
-        light.type = LightType.Spot;
-        lightSources.append(light);
-        return light;
-    }
-
-    void updateShadows(View view, RenderingContext* rc, double timeStep)
-    {
-        Vector3f cameraDirection = -view.invViewMatrix.forward;
-        cameraDirection.y = 0.0f;
-        cameraDirection = cameraDirection.normalized;
-        updateShadows(view.cameraPosition, cameraDirection, rc, timeStep);
-    }
-
-    void updateShadows(Vector3f cameraPosition, Vector3f cameraDirection, RenderingContext* rc, double timeStep)
-    {
-        foreach(light; lightSources.data)
-            light.updateShadow(cameraPosition, cameraDirection, rc, timeStep);
-    }
-
-    void renderShadows(Scene scene, RenderingContext* rc)
-    {
-        foreach(light; lightSources.data)
-            light.renderShadow(scene, rc);
-    }
-}
-
-// Attach a light to Entity
-class LightBehaviour: Behaviour
-{
-    LightSource light;
-
-    this(Entity e, LightSource light)
-    {
-        super(e);
-
-        this.light = light;
-    }
-
-    override void update(double dt)
-    {
-        light.position = entity.position;
+        
+        return _shadowMap;
     }
 }

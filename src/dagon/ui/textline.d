@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2018 Timur Gafarov
+Copyright (c) 2017-2019 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -28,26 +28,18 @@ DEALINGS IN THE SOFTWARE.
 module dagon.ui.textline;
 
 import dlib.core.memory;
+import dlib.core.ownership;
 import dlib.math.vector;
 import dlib.image.color;
 
-import dagon.core.libs;
-import dagon.core.interfaces;
-import dagon.core.ownership;
+import dagon.core.bindings;
+import dagon.graphics.drawable;
 import dagon.ui.font;
-
-enum Alignment
-{
-    Left,
-    Right,
-    Center
-}
 
 class TextLine: Owner, Drawable
 {
     Font font;
     float scaling;
-    Alignment alignment;
     Color4f color;
     string text;
     float width;
@@ -61,20 +53,19 @@ class TextLine: Owner, Drawable
         this.scaling = 1.0f;
         this.width = font.width(text);
         this.height = font.height;
-        this.alignment = Alignment.Left;
-        this.color = Color4f(0, 0, 0);
+        this.color = Color4f(1, 1, 1, 1);
     }
 
-    override void update(double dt)
+    override void render(GraphicsState* state)
     {
-    }
-
-    override void render(RenderingContext* rc)
-    {
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        font.render(rc, color, text);
+        font.render(state, color, text);
         glDisable(GL_BLEND);
+        glEnable(GL_CULL_FACE);
+        glEnable(GL_DEPTH_TEST);
     }
 
     void setFont(Font font)
@@ -90,4 +81,3 @@ class TextLine: Owner, Drawable
         this.width = font.width(t);
     }
 }
-

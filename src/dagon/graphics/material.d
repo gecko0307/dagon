@@ -27,20 +27,22 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.graphics.material;
 
+import std.traits;
 import std.math;
 import std.algorithm;
 
 import dlib.core.memory;
+import dlib.core.ownership;
 import dlib.math.vector;
 import dlib.image.color;
 import dlib.image.image;
 import dlib.image.unmanaged;
 import dlib.container.dict;
 
-import dagon.core.libs;
-import dagon.core.ownership;
+import dagon.core.bindings;
 import dagon.graphics.texture;
-import dagon.graphics.rc;
+import dagon.graphics.cubemap;
+import dagon.graphics.state;
 import dagon.graphics.shader;
 
 enum
@@ -142,15 +144,13 @@ class Material: Owner
 {
     Dict!(MaterialInput, string) inputs;
     Shader shader;
-    bool customShader = false;
 
-    this(Shader shader, Owner o)
+    this(Owner o)
     {
         super(o);
 
         inputs = New!(Dict!(MaterialInput, string));
         setStandardInputs();
-        this.shader = shader;
     }
 
     ~this()
@@ -168,6 +168,7 @@ class Material: Owner
         setInput("transparency", 1.0f);
         setInput("roughness", 0.5f);
         setInput("metallic", 0.0f);
+        setInput("specularity", 1.0f);
         setInput("normal", Vector3f(0.0f, 0.0f, 1.0f));
         setInput("height", 0.0f);
         setInput("parallax", ParallaxNone);
@@ -183,34 +184,37 @@ class Material: Owner
         setInput("particleColor", Color4f(1.0f, 1.0f, 1.0f, 1.0f));
         setInput("particleSphericalNormal", false);
         setInput("textureScale", Vector2f(1.0f, 1.0f));
+        setInput("sphericalNormal", false);
+        
         setInput("outputColor", true);
         setInput("outputNormal", true);
         setInput("outputPBR", true);
         setInput("outputEmission", true);
+        
         setInput("diffuse2", Color4f(0.8f, 0.8f, 0.8f, 1.0f));
         setInput("diffuse3", Color4f(0.8f, 0.8f, 0.8f, 1.0f));
         setInput("diffuse4", Color4f(0.8f, 0.8f, 0.8f, 1.0f));
-        
+
         setInput("normal2", Vector3f(0.0f, 0.0f, 1.0f));
         setInput("normal3", Vector3f(0.0f, 0.0f, 1.0f));
         setInput("normal4", Vector3f(0.0f, 0.0f, 1.0f));
-        
+
         setInput("height2", 0.0f);
         setInput("height3", 0.0f);
         setInput("height4", 0.0f);
-        
+
         setInput("roughness2", 0.5f);
         setInput("roughness3", 0.5f);
         setInput("roughness4", 0.5f);
-        
+
         setInput("metallic2", 0.0f);
         setInput("metallic3", 0.0f);
         setInput("metallic4", 0.0f);
-        
+
         setInput("textureScale2", Vector2f(1.0f, 1.0f));
         setInput("textureScale3", Vector2f(1.0f, 1.0f));
         setInput("textureScale4", Vector2f(1.0f, 1.0f));
-        
+
         setInput("splatmap1", Color4f(1.0f, 1.0f, 1.0f, 1.0f));
         setInput("splatmap2", Color4f(0.0f, 0.0f, 0.0f, 0.0f));
         setInput("splatmap3", Color4f(0.0f, 0.0f, 0.0f, 0.0f));
@@ -265,9 +269,9 @@ class Material: Owner
             input.type = MaterialInputType.Vec4;
             input.asVector4f = value;
         }
-        else static if (is(T == Texture))
+        else static if (is(T == Texture) || is(T == Cubemap))
         {
-            input.texture = value;
+            input.texture = cast(Texture)value;
             if (value.format == GL_RED)
                 input.type = MaterialInputType.Float;
             else if (value.format == GL_RG)
@@ -277,10 +281,7 @@ class Material: Owner
             else if (value.format == GL_RGBA)
                 input.type = MaterialInputType.Vec4;
         }
-        else
-        {
-            input.type = MaterialInputType.Undefined;
-        }
+        else static assert("Unsupported type " ~ T.stringof);
 
         inputs[name] = input;
         return (name in inputs);
@@ -427,12 +428,7 @@ class Material: Owner
         return (b == Transparent || b == Additive);
     }
 
-    bool usesCustomShader()
-    {
-        return customShader;
-    }
-
-    void bind(RenderingContext* rc)
+    void bind(GraphicsState* state)
     {
         auto iblending = "blending" in inputs;
         auto iculling = "culling" in inputs;
@@ -447,10 +443,6 @@ class Material: Owner
             glBlendFuncSeparatei(0, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
             glBlendFuncSeparatei(1, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
             glBlendFuncSeparatei(2, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-
-            //glBlendFunci(0, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            //glBlendFunci(1, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            //glBlendFunci(2, GL_SRC_ALPHA, GL_ONE);
         }
         else if (iblending.asInteger == Additive)
         {
@@ -462,60 +454,34 @@ class Material: Owner
             glBlendFunci(2, GL_SRC_ALPHA, GL_ONE);
         }
 
-        if (iculling.asBool)
+        if (iculling.asBool && state.culling)
         {
             glEnable(GL_CULL_FACE);
         }
+        else
+        {
+            glDisable(GL_CULL_FACE);
+        }
 
-        if (!icolorWrite.asBool)
+        if (!icolorWrite.asBool || !state.colorMask)
         {
             glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
         }
 
-        if (!idepthWrite.asBool && !rc.shadowPass)
+        if (!idepthWrite.asBool || !state.depthMask)
         {
             glDepthMask(GL_FALSE);
         }
 
-        RenderingContext rcLocal = *rc;
-        rcLocal.material = this;
-
-        if (rc.overrideShader)
-        {
-            rc.overrideShader.bind(&rcLocal);
-        }
-        else if (shader)
-        {
-            shader.bind(&rcLocal);
-        }
+        state.material = this;
     }
 
-    void unbind(RenderingContext* rc)
+    void unbind(GraphicsState* state)
     {
-        auto icolorWrite = "colorWrite" in inputs;
-        auto idepthWrite = "depthWrite" in inputs;
+        state.material = null;
 
-        RenderingContext rcLocal = *rc;
-        rcLocal.material = this;
-
-        if (rc.overrideShader)
-        {
-            rc.overrideShader.unbind(&rcLocal);
-        }
-        else if (shader)
-        {
-            shader.unbind(&rcLocal);
-        }
-
-        if (!idepthWrite.asBool && rc.depthPass)
-        {
-            glDepthMask(GL_TRUE);
-        }
-
-        if (!icolorWrite.asBool && rc.colorPass)
-        {
-            glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-        }
+        glDepthMask(GL_TRUE);
+        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
         glDisable(GL_CULL_FACE);
 
@@ -524,6 +490,3 @@ class Material: Owner
         glDisablei(GL_BLEND, 2);
     }
 }
-
-deprecated("use `Material` instead") alias GenericMaterial = Material;
-deprecated("use `Material` instead") alias ShaderMaterial = Material;

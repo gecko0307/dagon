@@ -28,15 +28,15 @@ DEALINGS IN THE SOFTWARE.
 module dagon.graphics.terrain;
 
 import dlib.core.memory;
+import dlib.core.ownership;
 import dlib.math.vector;
 import dlib.geometry.sphere;
 import dlib.geometry.triangle;
 
-import dagon.core.ownership;
-import dagon.core.interfaces;
+import dagon.graphics.drawable;
 import dagon.graphics.mesh;
 import dagon.graphics.heightmap;
-import dagon.logics.entity;
+import dagon.graphics.entity;
 
 class Terrain: Owner, Drawable
 {
@@ -115,15 +115,24 @@ class Terrain: Owner, Drawable
 
     }
 
-    void render(RenderingContext* rc)
+    void render(GraphicsState* state)
     {
-        mesh.render(rc);
+        mesh.render(state);
     }
 
     void refreshChanges()
     {
         mesh.generateNormals();
         mesh.prepareVAO();
+    }
+    
+    float getHeight(Entity e, Vector3f pos)
+    {
+        Vector3f ts = (pos - e.position) / e.scaling;
+        float x = ts.x / width;
+        float z = ts.z / height;
+        float y = heightmap.getHeight(x, z);
+        return y * e.scaling.y;
     }
 
     TerrainSphereTraverseAggregate traverseBySphere(Sphere* sphere)

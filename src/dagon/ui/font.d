@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2018 Timur Gafarov
+Copyright (c) 2017-2019 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -27,19 +27,21 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.ui.font;
 
+import dlib.core.ownership;
 import dlib.image.color;
-import dagon.core.ownership;
-import dagon.graphics.rc;
+import dagon.graphics.state;
 
 abstract class Font: Owner
 {
     float height;
-    float width(string str);
-    void render(RenderingContext* rc, Color4f color, string str);
     
     this(Owner o)
     {
         super(o);
+        height = 1.0f;
     }
+    
+    float width(string str);
+    void render(GraphicsState* state, Color4f color, string str);
 }
 

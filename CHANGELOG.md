@@ -1,3 +1,36 @@
+Dagon 0.11.0 - TBD
+------------------
+**Important:** This release features major redesign of almost every component in the engine and **breaks compatibility with old code**. 
+
+Changes:
+- **Overall**
+  - Breaking change: package structure was changed to reduce coupling. Now all modules strictly depend only on modules in the same or lower-level package. See #54 for details. `dagon.logics` is gone, its modules were moved to `dagon.graphics`
+  - Added new package `dagon.game` - a template application with typical game-oriented rendering setup and a fixed-step update timer
+- **Core**
+  - New module `dagon.core.time` which contains `Time` helper structure and `Cadencer` class
+- **Rendering**
+  - Renderer was entirely rewritten from scratch based on a new concept of pipelines and stages (see `dagon.render` package). A pipeline is a sequence of draw call groups - stages. Each stage traverses a subset of scene objects and renders them to a given buffer using a given shader. For example, a deferred pipeline contains geometry stage that fills G-buffer, environment stage and lighting stage
+  - Volumetric scattering (aka 'God rays') support for sun light
+  - Improved PBR - new roughness to lod mapping for environment maps, better looking metals and shiny dielectrics
+  - Multiple optimizations across the renderer, including less shader switches and data copying. 25-30% performance boost on some systems
+  - Render viewports can now be resized in runtime
+  - Transparent objects are now rendered in deferred pipeline using ordered dithering
+  - Standard shaders moved to `dagon.render.shaders`
+  - Discrete LOD drawables (`dagon.graphics.lod`). They render different user-specified drawables based on distance from the camera
+- **Materials**
+  - `specularity` property for materials. It specifies a luminance coefficient for the specular radiance component. It doesn't have a physical meaning, but is useful for material tweaking, for example to eliminate burnt highlights.
+- **Assets**
+  - DDS format support for textures. Supported compression types are S3TC (DXT1/BC1, DXT3/BC2, DXT5/BC3), RGTC (BC4, BC5), BPTC (BC6H, BC7)
+- **Environment**
+  - `Environment` object was simplified. Now there's no default procedural environment map, only `environment.ambientColor` and `environment.ambientMap`. To use procedural sky, render it into a cube map.
+- **Post-processing**
+  - Post-processing engine was also reimplemented and now exists as a separate render pipeline. See `dagon.postproc` and `dagon.game.postprocrenderer`
+  - Denoise filter for SSAO. A lot less samples are now needed to achieve smooth ambient occlusion. Also SSAO is now rendered into a separate buffer, so that its resolution can be lowered for better performance, and occlusion data can be used at several stages of the pipeline
+- **UI**
+  - File drag-and-drop event
+- **Misc**
+  - Dagon now uses [official BindBC Freetype binding](https://github.com/BindBC/bindbc-freetype) instead of custom one.
+
 Dagon 0.10.1 - 14 Jun, 2019
 ---------------------------
 - Alpha cutout for shadows. Partially transparent objects now cast correct shadows
