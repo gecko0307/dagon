@@ -44,6 +44,7 @@ import dagon.graphics.light;
 import dagon.graphics.environment;
 import dagon.graphics.shapes;
 import dagon.graphics.material;
+import dagon.graphics.cubemap;
 
 import dagon.resource.asset;
 import dagon.resource.obj;
@@ -206,7 +207,12 @@ class Scene: EventListener
         mat.culling = false;
         return mat;
     }
-
+    
+    Cubemap addCubemap(uint size)
+    {
+        return New!Cubemap(size, assetManager);
+    }
+    
     Entity addEntity(Entity parent = null)
     {
         Entity e = New!Entity(entityManager);
