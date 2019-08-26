@@ -156,7 +156,10 @@ class Application: EventListener
             NuklearSupport nuksup = loadNuklear();
             if (nuksup != NuklearSupport.Nuklear4)
             {
-                exitWithError("Error: Nuklear library is not found. Please, install Nuklear.");
+                if (nuksup == NuklearSupport.badLibrary)
+                    writeln("Warning: failed to load some Nuklear functions. It seems that you have an old version of Nuklear. Dagon will try to use it, but it is recommended to install Nuklear 4.01.0 or higher");
+                else
+                    exitWithError("Error: Nuklear library is not found. Please, install Nuklear 4.01.0");
             }
         }
 
