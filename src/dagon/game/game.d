@@ -66,6 +66,16 @@ class Game: Application
         postProcessingRenderer = New!PostProcRenderer(eventManager, deferredRenderer.outputBuffer, deferredRenderer.gbuffer, this);
         presentRenderer = New!PresentRenderer(eventManager, postProcessingRenderer.outputBuffer, this);
         hudRenderer = New!HUDRenderer(eventManager, this);
+        
+        deferredRenderer.setViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
+        postProcessingRenderer.setViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
+        presentRenderer.setViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
+        hudRenderer.setViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
+        
+        deferredRenderer.ssaoEnabled = false;
+        postProcessingRenderer.motionBlurEnabled = false;
+        postProcessingRenderer.glowEnabled = false;
+        postProcessingRenderer.fxaaEnabled = false;
     }
 
     void fixedUpdate(Time t)
@@ -101,5 +111,13 @@ class Game: Application
                 hudRenderer.render();
             }
         }
+    }
+    
+    override void onResize(int width, int height)
+    {
+        deferredRenderer.setViewport(0, 0, width, height);
+        postProcessingRenderer.setViewport(0, 0, width, height);
+        presentRenderer.setViewport(0, 0, width, height);
+        hudRenderer.setViewport(0, 0, width, height);
     }
 }
