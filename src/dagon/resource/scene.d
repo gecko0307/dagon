@@ -43,6 +43,7 @@ import dagon.graphics.camera;
 import dagon.graphics.light;
 import dagon.graphics.environment;
 import dagon.graphics.shapes;
+import dagon.graphics.material;
 
 import dagon.resource.asset;
 import dagon.resource.obj;
@@ -190,6 +191,20 @@ class Scene: EventListener
             addAsset(bin, filename, preload);
         }
         return bin;
+    }
+    
+    Material addMaterial()
+    {
+        return New!Material(assetManager);
+    }
+    
+    Material addDecalMaterial()
+    {
+        auto mat = addMaterial();
+        mat.blending = Transparent;
+        mat.depthWrite = false;
+        mat.culling = false;
+        return mat;
     }
 
     Entity addEntity(Entity parent = null)
