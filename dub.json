@@ -19,10 +19,7 @@
         "dlib": "~master",
         "bindbc-opengl": "~>0.8.0",
         "bindbc-sdl": "~>0.8.0",
-        "dagon:nuklear": {
-            "version": "*",
-            "optional": true
-        }
+        "dagon:nuklear": "*"
     },
 
     "versions": [
