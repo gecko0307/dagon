@@ -48,7 +48,7 @@ import dagon.graphics.texture;
 import dagon.resource.font;
 
 import dagon.core.bindings;
-import bindbc.nuklear;
+public import bindbc.nuklear;
 
 void initNuklear()
 {
