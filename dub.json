@@ -43,23 +43,7 @@
         {
             "name": "Minimal",
             "targetType": "library",
-            "versions": ["NoFreetype", "NoNuklear"]
-        },
-        {
-            "name": "NoFreetype",
-            "targetType": "library",
-            "dependencies": {
-                "bindbc-nuklear": "~>0.2.0"
-            },
             "versions": ["NoFreetype"]
-        },
-        {
-            "name": "NoNuklear",
-            "targetType": "library",
-            "dependencies": {
-                "bindbc-freetype": "~>0.5.0"
-            },
-            "versions": ["NoNuklear"]
         }
     ],
     
@@ -70,8 +54,8 @@
     "subPackages": [
 		{
 			"name": "nuklear",
-            "importPaths": ["nuklear/src"],
-            "sourcePaths": ["nuklear/src"],
+            "importPaths": ["extensions/nuklear/src"],
+            "sourcePaths": ["extensions/nuklear/src"],
             "dependencies": {
                 "dagon": "*",
                 "dlib": "~master",
