@@ -49,6 +49,7 @@ import dagon.ui.font;
 import dagon.graphics.shaderloader;
 import dagon.graphics.state;
 import dagon.resource.asset;
+import dagon.resource.scene;
 
 import dagon.core.bindings;
 public import bindbc.freetype;
@@ -460,4 +461,17 @@ class FontAsset: Asset
         if (buffer.length)
             Delete(buffer);
     }
+}
+
+FontAsset addFontAsset(Scene scene, string filename, uint height, bool preload = false)
+{
+    FontAsset font;
+    if (scene.assetManager.assetExists(filename))
+        font = cast(FontAsset)scene.assetManager.getAsset(filename);
+    else
+    {
+        font = New!FontAsset(height, scene.assetManager);
+        scene.addAsset(font, filename, preload);
+    }
+    return font;
 }
