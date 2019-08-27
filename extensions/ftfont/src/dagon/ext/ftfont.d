@@ -37,6 +37,8 @@ import std.file;
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.core.stream;
+import dlib.filesystem.filesystem;
+import dlib.filesystem.stdfs;
 import dlib.container.dict;
 import dlib.text.utf8;
 import dlib.math.vector;
@@ -45,6 +47,7 @@ import dlib.image.color;
 import dagon.ui.font;
 import dagon.graphics.shaderloader;
 import dagon.graphics.state;
+import dagon.resource.asset;
 
 import dagon.core.bindings;
 public import bindbc.freetype;
@@ -415,5 +418,45 @@ final class FreeTypeFont: Font
         } while(ch != UTF8_END && ch != UTF8_ERROR);
 
         return width;
+    }
+}
+
+class FontAsset: Asset
+{
+    FreeTypeFont font;
+    ubyte[] buffer;
+
+    this(uint height, Owner o)
+    {
+        super(o);
+        font = New!FreeTypeFont(height, this);
+    }
+
+    ~this()
+    {
+        release();
+    }
+
+    override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
+    {
+        FileStat s;
+        fs.stat(filename, s);
+        buffer = New!(ubyte[])(cast(size_t)s.sizeInBytes);
+        istrm.fillArray(buffer);
+        font.createFromMemory(buffer);
+        return true;
+    }
+
+    override bool loadThreadUnsafePart()
+    {
+        font.prepareVAO();
+        font.preloadASCII();
+        return true;
+    }
+
+    override void release()
+    {
+        if (buffer.length)
+            Delete(buffer);
     }
 }

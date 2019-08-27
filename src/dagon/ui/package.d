@@ -31,7 +31,7 @@ public
 {
     import dagon.ui.font;
     import dagon.ui.freeview;
-    import dagon.ui.ftfont;
+    //import dagon.ui.ftfont;
     //import dagon.ui.nuklear;
     import dagon.ui.textline;
 }

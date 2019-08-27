@@ -50,7 +50,7 @@ import dagon.resource.asset;
 import dagon.resource.obj;
 import dagon.resource.image;
 import dagon.resource.texture;
-import dagon.resource.font;
+//import dagon.resource.font;
 import dagon.resource.text;
 import dagon.resource.binary;
 
@@ -135,6 +135,7 @@ class Scene: EventListener
         return tex;
     }
 
+    /*
     version(NoFreetype)
     {
         pragma(msg, "Warning: Dagon is compiled without Freetype support, Scene.addFontAsset is not available");
@@ -154,6 +155,7 @@ class Scene: EventListener
             return font;
         }
     }
+    */
 
     OBJAsset addOBJAsset(string filename, bool preload = false)
     {
