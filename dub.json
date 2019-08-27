@@ -63,6 +63,7 @@
             "sourcePaths": ["extensions/nuklear/src"],
             "dependencies": {
                 "dagon": "*",
+                "dagon:ftfont": "*",
                 "dlib": "~master",
                 "bindbc-nuklear": "~>0.2.0"
             },
