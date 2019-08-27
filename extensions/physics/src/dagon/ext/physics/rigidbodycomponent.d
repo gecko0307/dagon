@@ -42,7 +42,7 @@ class RigidBodyComponent: EntityComponent
 
     this(EventManager em, Entity e, RigidBody b)
     {
-        super(e);
+        super(em, e);
         rbody = b;
         b.position = e.position;
         b.orientation = e.rotation;
