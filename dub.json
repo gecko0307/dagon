@@ -74,6 +74,8 @@
             "importPaths": ["nuklear/src"],
             "sourcePaths": ["nuklear/src"],
             "dependencies": {
+                "dagon": "*",
+                "dlib": "~master",
                 "bindbc-nuklear": "~>0.2.0"
             },
             
