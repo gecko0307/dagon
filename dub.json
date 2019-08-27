@@ -74,6 +74,16 @@
             "versions": [
                 "NK_ALL"
             ]
+		},
+        {
+			"name": "physics",
+            "importPaths": ["extensions/physics/src"],
+            "sourcePaths": ["extensions/physics/src"],
+            "dependencies": {
+                "dagon": "*",
+                "dagon:ftfont": "*",
+                "dlib": "~master"
+            }
 		}
 	]
 }
