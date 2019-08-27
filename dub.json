@@ -24,8 +24,7 @@
     "versions": [
         "SDL_205",
         "GL_40",
-        "GL_KHR_debug",
-        "FT_28"
+        "GL_KHR_debug"
     ],
 
     "buildRequirements":[
@@ -35,15 +34,7 @@
     "configurations": [
         {
             "name": "library",
-            "targetType": "library",
-            "dependencies": {
-                "bindbc-freetype": "~>0.5.0"
-            }
-        },
-        {
-            "name": "Minimal",
-            "targetType": "library",
-            "versions": ["NoFreetype"]
+            "targetType": "library"
         }
     ],
     
@@ -53,6 +44,20 @@
     
     "subPackages": [
 		{
+			"name": "ftfont",
+            "importPaths": ["extensions/ftfont/src"],
+            "sourcePaths": ["extensions/ftfont/src"],
+            "dependencies": {
+                "dagon": "*",
+                "dlib": "~master",
+                "bindbc-freetype": "~>0.5.0"
+            },
+            
+            "versions": [
+                "FT_28"
+            ]
+		},
+        {
 			"name": "nuklear",
             "importPaths": ["extensions/nuklear/src"],
             "sourcePaths": ["extensions/nuklear/src"],

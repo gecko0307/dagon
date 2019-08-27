@@ -133,6 +133,7 @@ class Application: EventListener
     +/
     this(uint winWidth, uint winHeight, bool fullscreen, string windowTitle, string[] args)
     {
+        /*
         version(NoFreetype)
         {
         }
@@ -147,6 +148,7 @@ class Application: EventListener
                     exitWithError("Error: Freetype library is not found. Please, install Freetype 2.8.1");
             }
         }
+        */
         
         /*
         version(NoNuklear)

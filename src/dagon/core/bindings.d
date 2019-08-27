@@ -32,6 +32,7 @@ public
     import bindbc.sdl;
     import bindbc.opengl;
     
+    /*
     version(NoFreetype)
     {
     }
@@ -39,6 +40,7 @@ public
     {
         import bindbc.freetype;
     }
+    */
     
     /*
     version(NoNuklear)
