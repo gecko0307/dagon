@@ -38,8 +38,6 @@
         }
     ],
     
-    "copyFiles-windows-x86": ["lib/x86/*.dll"],
-    "copyFiles-windows-x86_64": ["lib/x64/*.dll"],
     "copyFiles": ["data", "gamecontrollerdb.txt"],
     
     "subPackages": [
@@ -55,7 +53,10 @@
             
             "versions": [
                 "FT_28"
-            ]
+            ],
+            
+            "copyFiles-windows-x86": ["extensions/ftfont/lib/x86/*.dll"],
+            "copyFiles-windows-x86_64": ["extensions/ftfont/lib/x64/*.dll"]
 		},
         {
 			"name": "nuklear",
