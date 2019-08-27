@@ -36,6 +36,7 @@ import dlib.container.array;
 import dlib.text.utf8;
 import dlib.text.unmanagedstring;
 
+import dagon.core.application;
 import dagon.core.time;
 import dagon.core.event;
 import dagon.core.keycodes;

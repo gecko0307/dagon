@@ -18,8 +18,7 @@
     "dependencies": {
         "dlib": "~master",
         "bindbc-opengl": "~>0.8.0",
-        "bindbc-sdl": "~>0.8.0",
-        "dagon:nuklear": "*"
+        "bindbc-sdl": "~>0.8.0"
     },
 
     "versions": [
