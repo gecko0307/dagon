@@ -62,6 +62,11 @@ void initNuklear()
     }
 }
 
+static this()
+{
+    initNuklear();
+}
+
 alias nk_color NKColor;
 alias nk_colorf NKColorf;
 alias nk_rect NKRect;
