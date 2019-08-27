@@ -4,7 +4,8 @@ Dagon 0.11.0 - TBD
 
 Changes:
 - **Overall**
-  - Breaking change: package structure was changed to reduce coupling. Now all modules strictly depend only on modules in the same or lower-level package. See #54 for details. `dagon.logics` is gone, its modules were moved to `dagon.graphics`
+  - Source tree structure was changed to reduce coupling. Now all modules strictly depend only on modules in the same or lower-level package. See #54 for details. `dagon.logics` is gone, its modules were moved to `dagon.graphics`
+  - New extension infrastructure based on DUB subpackages to keep core Dagon more lightweight and easier to install. Currently there are two extensions - Nuklear integration and Freetype font loader, which are no more available from `dagon` package. You should explicitly add them to your DUB dependencies as `dagon:nuklear` and `dagon:ftfont`. They are importable as `dagon.ext.nuklear` and `dagon.ext.ftfont`. To create font assets, use `addFontAsset` which is now a free function, not a scene method
   - Added new package `dagon.game` - a template application with typical game-oriented rendering setup and a fixed-step update timer
 - **Core**
   - New module `dagon.core.time` which contains `Time` helper structure and `Cadencer` class
@@ -29,7 +30,7 @@ Changes:
 - **UI**
   - File drag-and-drop event
 - **Misc**
-  - Dagon now uses [official BindBC Freetype binding](https://github.com/BindBC/bindbc-freetype) instead of custom one.
+  - Dagon (`dagon:ftfont` extension, to be precise) now uses [official BindBC Freetype binding](https://github.com/BindBC/bindbc-freetype) instead of custom one.
 
 Dagon 0.10.1 - 14 Jun, 2019
 ---------------------------
