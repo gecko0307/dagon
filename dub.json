@@ -18,7 +18,8 @@
     "dependencies": {
         "dlib": "~master",
         "bindbc-opengl": "~>0.8.0",
-        "bindbc-sdl": "~>0.8.0"
+        "bindbc-sdl": "~>0.8.0",
+        "dagon:nuklear": "*"
     },
 
     "versions": [
@@ -68,6 +69,29 @@
     "copyFiles": ["data", "gamecontrollerdb.txt"],
     
     "subPackages": [
-		"./extra/nuklear/"
+		{
+			"name": "nuklear",
+            "description": "Nuklear integration to Dagon",
+            "homepage": "",
+            "license": "BSL-1.0",
+            "authors": [
+                "Mateusz Muszyński"
+            ],
+            "targetType": "library",
+            "importPaths": ["extra/nuklear/src"],
+            "sourcePaths": ["extra/nuklear/src"],
+            
+            "dependencies": {
+                "bindbc-nuklear": "~>0.2.0"
+            },
+            
+            "versions": [
+                "NK_ALL"
+            ],
+
+            "buildRequirements":[
+                "allowWarnings"
+            ]
+		}
 	]
 }
