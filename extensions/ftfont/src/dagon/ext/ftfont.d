@@ -44,6 +44,7 @@ import dlib.text.utf8;
 import dlib.math.vector;
 import dlib.image.color;
 
+import dagon.core.application;
 import dagon.ui.font;
 import dagon.graphics.shaderloader;
 import dagon.graphics.state;
