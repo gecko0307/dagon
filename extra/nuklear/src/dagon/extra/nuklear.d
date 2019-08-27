@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.ui.nuklear;
+module dagon.extra.nuklear;
 
 import std.stdio;
 import core.stdc.stdarg;
@@ -46,18 +46,20 @@ import dagon.graphics.shaderloader;
 import dagon.graphics.texture;
 import dagon.resource.font;
 
-version(NoNuklear)
-{
-    pragma(msg, "Warning: Dagon is compiled without Nuklear support, dagon.ui.nuklear is not available");
-}
-else
-{
-    version = EnableNuklear;
-}
-
-version(EnableNuklear):
-
 import dagon.core.bindings;
+import bindbc.nuklear;
+
+void initNuklear()
+{
+    NuklearSupport nuksup = loadNuklear();
+    if (nuksup != NuklearSupport.Nuklear4)
+    {
+        if (nuksup == NuklearSupport.badLibrary)
+            writeln("Warning: failed to load some Nuklear functions. It seems that you have an old version of Nuklear. Dagon will try to use it, but it is recommended to install Nuklear 4.01.0 or higher");
+        else
+            exitWithError("Error: Nuklear library is not found. Please, install Nuklear 4.01.0");
+    }
+}
 
 alias nk_color NKColor;
 alias nk_colorf NKColorf;

@@ -40,6 +40,7 @@ public
         import bindbc.freetype;
     }
     
+    /*
     version(NoNuklear)
     {
     }
@@ -47,4 +48,5 @@ public
     {
         import bindbc.nuklear;
     }
+    */
 }

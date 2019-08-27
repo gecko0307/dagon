@@ -25,8 +25,7 @@
         "SDL_205",
         "GL_40",
         "GL_KHR_debug",
-        "FT_28",
-        "NK_ALL"
+        "FT_28"
     ],
 
     "buildRequirements":[
@@ -38,8 +37,7 @@
             "name": "library",
             "targetType": "library",
             "dependencies": {
-                "bindbc-freetype": "~>0.5.0",
-                "bindbc-nuklear": "~>0.2.0"
+                "bindbc-freetype": "~>0.5.0"
             }
         },
         {
@@ -67,5 +65,9 @@
     
     "copyFiles-windows-x86": ["lib/x86/*.dll"],
     "copyFiles-windows-x86_64": ["lib/x64/*.dll"],
-    "copyFiles": ["data", "gamecontrollerdb.txt"]
+    "copyFiles": ["data", "gamecontrollerdb.txt"],
+    
+    "subPackages": [
+		"./extra/nuklear/"
+	]
 }

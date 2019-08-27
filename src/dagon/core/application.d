@@ -147,7 +147,8 @@ class Application: EventListener
                     exitWithError("Error: Freetype library is not found. Please, install Freetype 2.8.1");
             }
         }
-
+        
+        /*
         version(NoNuklear)
         {
         }
@@ -162,6 +163,7 @@ class Application: EventListener
                     exitWithError("Error: Nuklear library is not found. Please, install Nuklear 4.01.0");
             }
         }
+        */
 
         SDLSupport sdlsup = loadSDL();
         if (sdlsup != sdlSupport)
