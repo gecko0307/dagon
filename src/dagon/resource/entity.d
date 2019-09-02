@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019 Timur Gafarov
+Copyright (c) 2018 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,20 +25,55 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.resource;
+module dagon.resource.entity;
 
-public
+import dlib.core.memory;
+import dlib.core.stream;
+import dlib.core.ownership;
+import dlib.filesystem.filesystem;
+import dlib.filesystem.stdfs;
+import dlib.math.vector;
+import dlib.text.lexer;
+import dlib.text.utils;
+
+import dagon.core.props;
+import dagon.resource.asset;
+import dagon.graphics.entity;
+
+class EntityAsset: Asset
 {
-    import dagon.resource.asset;
-    import dagon.resource.binary;
-    import dagon.resource.boxfs;
-    import dagon.resource.dds;
-    import dagon.resource.entity;
-    import dagon.resource.image;
-    import dagon.resource.material;
-    import dagon.resource.obj;
-    import dagon.resource.packageasset;
-    import dagon.resource.scene;
-    import dagon.resource.text;
-    import dagon.resource.texture;
+    string text;
+    Properties props;
+    Entity entity;
+
+    this(Owner o)
+    {
+        super(o);
+    }
+
+    ~this()
+    {
+        release();
+    }
+
+    override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
+    {
+        text = readText(istrm);
+        props = New!Properties(mngr);
+        if (parseProperties(text, props))
+            return true;
+        else
+            return false;
+    }
+
+    override bool loadThreadUnsafePart()
+    {
+        return true;
+    }
+
+    override void release()
+    {
+        if (text.length)
+            Delete(text);
+    }
 }

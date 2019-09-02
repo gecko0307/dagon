@@ -53,6 +53,7 @@ import dagon.resource.texture;
 //import dagon.resource.font;
 import dagon.resource.text;
 import dagon.resource.binary;
+import dagon.resource.packageasset;
 
 class Scene: EventListener
 {
@@ -88,7 +89,7 @@ class Scene: EventListener
         sunLights = New!EntityGroupSunLights(entityManager, this);
         areaLights = New!EntityGroupAreaLights(entityManager, this);
         decals = New!EntityGroupDecals(entityManager, this);
-        
+
         environment = New!Environment(this);
         decalShape = New!ShapeBox(Vector3f(1, 1, 1), this);
 
@@ -195,12 +196,25 @@ class Scene: EventListener
         }
         return bin;
     }
-    
+
+    PackageAsset addPackageAsset(string filename, bool preload = false)
+    {
+        PackageAsset pa;
+        if (assetManager.assetExists(filename))
+            pa = cast(PackageAsset)assetManager.getAsset(filename);
+        else
+        {
+            pa = New!PackageAsset(this, assetManager);
+            addAsset(pa, filename, preload);
+        }
+        return pa;
+    }
+
     Material addMaterial()
     {
         return New!Material(assetManager);
     }
-    
+
     Material addDecalMaterial()
     {
         auto mat = addMaterial();
@@ -209,17 +223,23 @@ class Scene: EventListener
         mat.culling = false;
         return mat;
     }
-    
+
     Cubemap addCubemap(uint size)
     {
         return New!Cubemap(size, assetManager);
     }
-    
+
     Entity addEntity(Entity parent = null)
     {
         Entity e = New!Entity(entityManager);
         if (parent)
             e.setParent(parent);
+        return e;
+    }
+
+    Entity useEntity(Entity e)
+    {
+        entityManager.addEntity(e);
         return e;
     }
 
@@ -248,7 +268,7 @@ class Scene: EventListener
         light.type = type;
         return light;
     }
-    
+
     Entity addDecal(Entity parent = null)
     {
         Entity e = New!Entity(entityManager);
@@ -395,7 +415,7 @@ class EntityGroupSpatialOpaque: Owner, EntityGroup
                 if (e.material)
                     opaque = !e.material.isTransparent;
 
-                if (opaque && e.dynamic == dynamic) 
+                if (opaque && e.dynamic == dynamic)
                 {
                     res = dg(e);
                     if (res)
