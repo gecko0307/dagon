@@ -37,6 +37,7 @@ public
     import dagon.render.shaders.geometry;
     import dagon.render.shaders.hud;
     import dagon.render.shaders.rayleigh;
+    import dagon.render.shaders.particle;
     import dagon.render.shaders.shadow;
     import dagon.render.shaders.sky;
     import dagon.render.shaders.ssao;

@@ -25,17 +25,50 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.deferred;
+module dagon.render.shaders.particle;
 
-public
+import std.stdio;
+import std.math;
+
+import dlib.core.memory;
+import dlib.core.ownership;
+import dlib.math.vector;
+import dlib.math.matrix;
+import dlib.math.transformation;
+import dlib.math.interpolation;
+import dlib.image.color;
+
+import dagon.core.bindings;
+import dagon.graphics.material;
+import dagon.graphics.shader;
+import dagon.graphics.state;
+
+class ParticleShader: Shader
 {
-    import dagon.render.deferred.backgroundstage;
-    import dagon.render.deferred.clearstage;
-    import dagon.render.deferred.debugoutputstage;
-    import dagon.render.deferred.decalstage;
-    import dagon.render.deferred.environmentstage;
-    import dagon.render.deferred.geometrystage;
-    import dagon.render.deferred.lightstage;
-    import dagon.render.deferred.occlusionstage;
-    import dagon.render.deferred.particlesstage;
+    string vs = import("Particle/Particle.vert.glsl");
+    string fs = import("Particle/Particle.frag.glsl");
+
+    this(Owner owner)
+    {
+        auto prog = New!ShaderProgram(vs, fs, this);
+        super(prog, owner);
+
+        debug writeln("ParticleShader: program ", program.program);
+    }
+
+    override void bindParameters(GraphicsState* state)
+    {
+        setParameter("modelViewMatrix", state.modelViewMatrix);
+        setParameter("projectionMatrix", state.projectionMatrix);
+        setParameter("viewMatrix", state.viewMatrix);
+        setParameter("invViewMatrix", state.invViewMatrix);
+        setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
+
+        super.bindParameters(state);
+    }
+
+    override void unbindParameters(GraphicsState* state)
+    {
+        super.unbindParameters(state);
+    }
 }

@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.deferred.geometrystage;
+module dagon.render.deferred.particlesstage;
 
 import std.stdio;
 
@@ -35,61 +35,70 @@ import dlib.image.color;
 
 import dagon.core.bindings;
 import dagon.graphics.entity;
-import dagon.graphics.terrain;
-import dagon.graphics.particles;
 import dagon.graphics.shader;
+import dagon.graphics.particles;
 import dagon.render.pipeline;
 import dagon.render.stage;
+import dagon.render.framebuffer;
 import dagon.render.gbuffer;
-import dagon.render.shaders.geometry;
-import dagon.render.shaders.terrain;
+import dagon.render.shaders.particle;
 
-class DeferredGeometryStage: RenderStage
+class DeferredParticlesStage: RenderStage
 {
     GBuffer gbuffer;
-    GeometryShader geometryShader;
-    TerrainShader terrainShader;
+    ParticleShader particleShader;
+    Framebuffer outputBuffer;
 
     this(RenderPipeline pipeline, GBuffer gbuffer, EntityGroup group = null)
     {
         super(pipeline, group);
         this.gbuffer = gbuffer;
-        geometryShader = New!GeometryShader(this);
-        terrainShader = New!TerrainShader(this);
+        particleShader = New!ParticleShader(this);
+    }
+
+    void renderParticleSystem(Entity entity, ParticleSystem psys, Shader shader)
+    {
+        state.layer = entity.layer;
+        state.shader = shader;
+        state.opacity = entity.opacity;
+        psys.render(&state);
     }
 
     override void render()
     {
-        if (group && gbuffer)
+        if (group && outputBuffer && gbuffer)
         {
-            gbuffer.bind();
-
-            glScissor(0, 0, gbuffer.width, gbuffer.height);
-            glViewport(0, 0, gbuffer.width, gbuffer.height);
+            outputBuffer.bind();
             
-            geometryShader.bind();
+            // TODO: move depth blit to separate stage
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, gbuffer.framebuffer);
+            glBlitFramebuffer(0, 0, gbuffer.width, gbuffer.height, 0, 0, gbuffer.width, gbuffer.height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+
+            glScissor(0, 0, outputBuffer.width, outputBuffer.height);
+            glViewport(0, 0, outputBuffer.width, outputBuffer.height);
+            
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+            particleShader.bind();
             foreach(entity; group)
             {
-                if (entity.visible && entity.drawable)
+                if (entity.visible)
                 {
-                    if (!entityIsTerrain(entity) && !entityIsParticleSystem(entity))
-                        renderEntity(entity, geometryShader);
+                    foreach(comp; entity.components.data)
+                    {
+                        ParticleSystem psys = cast(ParticleSystem)comp;
+                        if (psys)
+                            renderParticleSystem(entity, psys, particleShader);
+                    }
                 }
             }
-            geometryShader.unbind();
+            particleShader.unbind();
             
-            terrainShader.bind();
-            foreach(entity; group)
-            {
-                if (entity.visible && entity.drawable)
-                {
-                    if (entityIsTerrain(entity))
-                        renderEntity(entity, terrainShader);
-                }
-            }
-            terrainShader.unbind();
+            glDisable(GL_BLEND);
 
-            gbuffer.unbind();
+            outputBuffer.unbind();
         }
     }
 }

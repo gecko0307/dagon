@@ -77,6 +77,8 @@ class RenderStage: EventListener
             state.viewMatrix = view.viewMatrix();
             state.invViewMatrix = view.invViewMatrix();
             
+            state.invViewRotationMatrix = matrix3x3to4x4(matrix4x4to3x3(state.invViewMatrix));
+            
             state.prevViewMatrix = prevViewMatrix;
             prevViewMatrix = state.viewMatrix;
 

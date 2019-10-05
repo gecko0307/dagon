@@ -48,6 +48,7 @@ struct GraphicsState
 
     Matrix4x4f modelMatrix;
     Matrix4x4f invModelMatrix;
+    Matrix4x4f invViewRotationMatrix;
 
     Matrix4x4f viewMatrix;
     Matrix4x4f invViewMatrix;
@@ -94,6 +95,7 @@ struct GraphicsState
 
         viewMatrix = Matrix4x4f.identity;
         invViewMatrix = Matrix4x4f.identity;
+        invViewRotationMatrix = Matrix4x4f.identity;
 
         projectionMatrix = Matrix4x4f.identity;
         invProjectionMatrix = Matrix4x4f.identity;

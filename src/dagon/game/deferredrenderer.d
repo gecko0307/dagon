@@ -60,6 +60,7 @@ class DeferredRenderer: Renderer
     FilterStage stageOcclusionDenoise;
     DeferredEnvironmentStage stageEnvironment;
     DeferredLightStage stageLight;
+    DeferredParticlesStage stageParticles;
     DeferredDebugOutputStage stageDebug;
 
     RenderView occlusionView;
@@ -124,6 +125,10 @@ class DeferredRenderer: Renderer
         stageLight.view = view;
         stageLight.outputBuffer = radianceBuffer;
         stageLight.occlusionBuffer = occlusionBuffer;
+        
+        stageParticles = New!DeferredParticlesStage(pipeline, gbuffer);
+        stageParticles.view = view;
+        stageParticles.outputBuffer = radianceBuffer;
 
         stageDebug = New!DeferredDebugOutputStage(pipeline, gbuffer);
         stageDebug.view = view;
@@ -164,6 +169,7 @@ class DeferredRenderer: Renderer
         stageDynamicGeometry.group = s.spatialOpaqueDynamic;
         stageLight.groupSunLights = s.sunLights;
         stageLight.groupAreaLights = s.areaLights;
+        stageParticles.group = s.spatial;
 
         stageBackground.state.environment = s.environment;
         stageStaticGeometry.state.environment = s.environment;
@@ -171,6 +177,7 @@ class DeferredRenderer: Renderer
         stageDynamicGeometry.state.environment = s.environment;
         stageEnvironment.state.environment = s.environment;
         stageLight.state.environment = s.environment;
+        stageParticles.state.environment = s.environment;
         stageDebug.state.environment = s.environment;
     }
 

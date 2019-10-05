@@ -43,6 +43,7 @@ public
     import dagon.graphics.material;
     import dagon.graphics.mesh;
     import dagon.graphics.opensimplex;
+    import dagon.graphics.particles;
     import dagon.graphics.screensurface;
     import dagon.graphics.shader;
     import dagon.graphics.shaderloader;
