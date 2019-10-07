@@ -102,6 +102,19 @@ class ParticleShader: Shader
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, state.depthTexture);
         setParameter("depthTexture", 1);
+        
+        if (state.environment)
+        {
+            setParameter("fogColor", state.environment.fogColor);
+            setParameter("fogStart", state.environment.fogStart);
+            setParameter("fogEnd", state.environment.fogEnd);
+        }
+        else
+        {
+            setParameter("fogColor", Color4f(0.5f, 0.5f, 0.5f, 1.0f));
+            setParameter("fogStart", 0.0f);
+            setParameter("fogEnd", 1000.0f);
+        }
 
         super.bindParameters(state);
     }

@@ -53,6 +53,10 @@ uniform float particleAlpha;
 uniform bool alphaCutout;
 uniform float alphaCutoutThreshold;
 
+uniform vec4 fogColor;
+uniform float fogStart;
+uniform float fogEnd;
+
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec4 fragVelocity;
 
@@ -69,6 +73,11 @@ void main()
     vec4 diff = diffuse(texCoord);
     vec3 outColor = toLinear(diff.rgb) * toLinear(particleColor.rgb);
     float outAlpha = diff.a * particleColor.a * particleAlpha * soft;
+    
+    // Fog
+    float linearDepth = abs(eyePosition.z);
+    float fogFactor = clamp((fogEnd - linearDepth) / (fogEnd - fogStart), 0.0, 1.0);
+    outColor = mix(toLinear(fogColor.rgb), outColor, fogFactor);
     
     fragColor = vec4(outColor, outAlpha);
     fragVelocity = vec4(0.0, 0.0, 0.0, 1.0);
