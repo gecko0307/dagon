@@ -70,6 +70,8 @@ class DeferredParticlesStage: RenderStage
         {
             outputBuffer.bind();
             
+            state.depthTexture = gbuffer.depthTexture;
+            
             // TODO: move depth blit to separate stage
             glBindFramebuffer(GL_READ_FRAMEBUFFER, gbuffer.framebuffer);
             glBlitFramebuffer(0, 0, gbuffer.width, gbuffer.height, 0, 0, gbuffer.width, gbuffer.height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);

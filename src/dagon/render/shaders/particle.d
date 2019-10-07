@@ -58,11 +58,50 @@ class ParticleShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
+        auto idiffuse = "diffuse" in state.material.inputs;
+        auto itransparency = "transparency" in state.material.inputs;
+        auto iparticleColor = "particleColor" in state.material.inputs;
+        
         setParameter("modelViewMatrix", state.modelViewMatrix);
         setParameter("projectionMatrix", state.projectionMatrix);
+        setParameter("invProjectionMatrix", state.invProjectionMatrix);
         setParameter("viewMatrix", state.viewMatrix);
         setParameter("invViewMatrix", state.invViewMatrix);
         setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
+        
+        setParameter("viewSize", state.resolution);
+        
+        Color4f particleColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+        if (iparticleColor)
+            particleColor = Color4f(iparticleColor.asVector4f);
+
+        float particleAlpha = 1.0f;
+        if (itransparency)
+            particleAlpha = itransparency.asFloat;
+        
+        setParameter("particleColor", particleColor);
+        setParameter("particleAlpha", particleAlpha);
+        setParameter("alphaCutout", false);
+        setParameter("alphaCutoutThreshold", 0.25f); // TODO: store in material properties
+        
+        // Texture 0 - diffuse texture
+        if (idiffuse.texture is null)
+        {
+            setParameter("diffuseVector", idiffuse.asVector4f);
+            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
+        }
+        else
+        {
+            glActiveTexture(GL_TEXTURE0);
+            idiffuse.texture.bind();
+            setParameter("diffuseTexture", 0);
+            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
+        }
+        
+        // Texture 1 - depth texture (for soft particles)
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, state.depthTexture);
+        setParameter("depthTexture", 1);
 
         super.bindParameters(state);
     }
@@ -70,5 +109,13 @@ class ParticleShader: Shader
     override void unbindParameters(GraphicsState* state)
     {
         super.unbindParameters(state);
+        
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE0);
     }
 }
