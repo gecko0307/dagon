@@ -128,6 +128,7 @@ class DeferredRenderer: Renderer
         
         stageParticles = New!DeferredParticlesStage(pipeline, gbuffer);
         stageParticles.view = view;
+        // TODO: velocity buffer as a second attachment
         stageParticles.outputBuffer = radianceBuffer;
 
         stageDebug = New!DeferredDebugOutputStage(pipeline, gbuffer);

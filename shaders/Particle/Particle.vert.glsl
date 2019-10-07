@@ -31,5 +31,5 @@ void main()
     currPosition = projectionMatrix * pos;
     prevPosition = projectionMatrix * prevModelViewMatrix * vec4(va_Vertex, 1.0);
     
-    gl_Position = projectionMatrix * pos;
+    gl_Position = currPosition;
 }

@@ -59,8 +59,10 @@ class ParticleShader: Shader
     override void bindParameters(GraphicsState* state)
     {
         auto idiffuse = "diffuse" in state.material.inputs;
+        auto inormal = "normal" in state.material.inputs;
         auto itransparency = "transparency" in state.material.inputs;
         auto iparticleColor = "particleColor" in state.material.inputs;
+        auto iparticleSphericalNormal = "particleSphericalNormal" in state.material.inputs;
         
         setParameter("modelViewMatrix", state.modelViewMatrix);
         setParameter("projectionMatrix", state.projectionMatrix);
@@ -83,6 +85,7 @@ class ParticleShader: Shader
         setParameter("particleAlpha", particleAlpha);
         setParameter("alphaCutout", false);
         setParameter("alphaCutoutThreshold", 0.25f); // TODO: store in material properties
+        setParameter("particlePosition", state.modelViewMatrix.translation);
         
         // Texture 0 - diffuse texture
         if (idiffuse.texture is null)
@@ -115,6 +118,31 @@ class ParticleShader: Shader
             setParameter("fogStart", 0.0f);
             setParameter("fogEnd", 1000.0f);
         }
+        
+        // Texture 2 - normal map
+        if (inormal.texture is null)
+        {
+            bool sphericalNormal = false;
+            if (iparticleSphericalNormal)
+                sphericalNormal = iparticleSphericalNormal.asBool;
+            if (sphericalNormal)
+            {
+                setParameterSubroutine("normal", ShaderType.Fragment, "normalFunctionHemisphere");
+            }
+            else
+            {
+                Vector3f nVec = inormal.asVector3f;
+                setParameter("normalVector", nVec);
+                setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
+            }
+        }
+        else
+        {
+            glActiveTexture(GL_TEXTURE2);
+            inormal.texture.bind();
+            setParameter("normalTexture", 2);
+            setParameterSubroutine("normal", ShaderType.Fragment, "normalMap");
+        }
 
         super.bindParameters(state);
     }
@@ -127,6 +155,9 @@ class ParticleShader: Shader
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, 0);
         
         glActiveTexture(GL_TEXTURE0);
