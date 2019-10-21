@@ -15,7 +15,6 @@ Changes:
   - Improved PBR - new roughness to lod mapping for environment maps, better looking metals and shiny dielectrics
   - Multiple optimizations across the renderer, including less shader switches and data copying. 25-30% performance boost on some systems
   - Render viewports can now be resized in runtime
-  - Transparent objects are now rendered in deferred pipeline using ordered dithering
   - Standard shaders moved to `dagon.render.shaders`
   - Discrete LOD drawables (`dagon.graphics.lod`). They render different user-specified drawables based on distance from the camera
 - **Materials**
