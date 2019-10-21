@@ -44,8 +44,8 @@ import dagon.graphics.state;
 
 class ShadowShader: Shader
 {
-    string vs = import("Shadow/Shadow.vert.glsl");
-    string fs = import("Shadow/Shadow.frag.glsl");
+    string vs = import("shaders/Shadow/Shadow.vert.glsl");
+    string fs = import("shaders/Shadow/Shadow.frag.glsl");
 
     this(Owner owner)
     {

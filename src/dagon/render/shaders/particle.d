@@ -45,8 +45,8 @@ import dagon.graphics.state;
 
 class ParticleShader: Shader
 {
-    string vs = import("Particle/Particle.vert.glsl");
-    string fs = import("Particle/Particle.frag.glsl");
+    string vs = import("shaders/Particle/Particle.vert.glsl");
+    string fs = import("shaders/Particle/Particle.frag.glsl");
 
     this(Owner owner)
     {

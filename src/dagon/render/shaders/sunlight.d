@@ -45,8 +45,8 @@ import dagon.graphics.csm;
 
 class SunLightShader: Shader
 {
-    string vs = import("SunLight/SunLight.vert.glsl");
-    string fs = import("SunLight/SunLight.frag.glsl");
+    string vs = import("shaders/SunLight/SunLight.vert.glsl");
+    string fs = import("shaders/SunLight/SunLight.frag.glsl");
 
     Matrix4x4f defaultShadowMatrix;
     GLuint defaultShadowTexture;

@@ -45,8 +45,8 @@ import dagon.graphics.state;
 
 class EnvironmentShader: Shader
 {
-    string vs = import("Environment/Environment.vert.glsl");
-    string fs = import("Environment/Environment.frag.glsl");
+    string vs = import("shaders/Environment/Environment.vert.glsl");
+    string fs = import("shaders/Environment/Environment.frag.glsl");
 
     this(Owner owner)
     {

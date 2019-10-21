@@ -52,8 +52,8 @@ enum Tonemapper
 
 class TonemapShader: Shader
 {
-    string vs = import("Tonemap/Tonemap.vert.glsl");
-    string fs = import("Tonemap/Tonemap.frag.glsl");
+    string vs = import("shaders/Tonemap/Tonemap.vert.glsl");
+    string fs = import("shaders/Tonemap/Tonemap.frag.glsl");
 
     bool enabled = true;
     Tonemapper tonemapper = Tonemapper.ACES;

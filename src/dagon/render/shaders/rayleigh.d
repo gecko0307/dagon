@@ -44,8 +44,8 @@ import dagon.graphics.cubemap;
 
 class RayleighShader: Shader
 {
-    string vs = import("Rayleigh/Rayleigh.vert.glsl");
-    string fs = import("Rayleigh/Rayleigh.frag.glsl");
+    string vs = import("shaders/Rayleigh/Rayleigh.vert.glsl");
+    string fs = import("shaders/Rayleigh/Rayleigh.frag.glsl");
 
     Vector3f sunDirection = Vector3f(-1.0f, -1.0f, -1.0f).normalized;
 

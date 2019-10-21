@@ -44,8 +44,8 @@ import dagon.render.deferred;
 
 class BlurShader: Shader
 {
-    string vs = import("Blur/Blur.vert.glsl");
-    string fs = import("Blur/Blur.frag.glsl");
+    string vs = import("shaders/Blur/Blur.vert.glsl");
+    string fs = import("shaders/Blur/Blur.frag.glsl");
 
     bool enabled = true;
     Vector2f direction;

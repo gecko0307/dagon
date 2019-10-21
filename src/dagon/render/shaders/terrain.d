@@ -45,8 +45,8 @@ import dagon.graphics.state;
 
 class TerrainShader: Shader
 {
-    string vs = import("Terrain/Terrain.vert.glsl");
-    string fs = import("Terrain/Terrain.frag.glsl");
+    string vs = import("shaders/Terrain/Terrain.vert.glsl");
+    string fs = import("shaders/Terrain/Terrain.frag.glsl");
 
     this(Owner owner)
     {

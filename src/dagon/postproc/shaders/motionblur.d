@@ -44,8 +44,8 @@ import dagon.render.gbuffer;
 
 class MotionBlurShader: Shader
 {
-    string vs = import("MotionBlur/MotionBlur.vert.glsl");
-    string fs = import("MotionBlur/MotionBlur.frag.glsl");
+    string vs = import("shaders/MotionBlur/MotionBlur.vert.glsl");
+    string fs = import("shaders/MotionBlur/MotionBlur.frag.glsl");
 
     bool enabled = true;
     int samples = 16;

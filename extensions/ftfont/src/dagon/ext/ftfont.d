@@ -118,8 +118,8 @@ final class FreeTypeFont: Font
     GLint glyphTextureLoc;
     GLint glyphColorLoc;
 
-    string vs = import("Glyph/Glyph.vert.glsl");
-    string fs = import("Glyph/Glyph.frag.glsl");
+    string vs = import("shaders/Glyph/Glyph.vert.glsl");
+    string fs = import("shaders/Glyph/Glyph.frag.glsl");
 
     this(uint height, Owner o)
     {

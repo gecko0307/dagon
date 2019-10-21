@@ -43,8 +43,8 @@ import dagon.graphics.state;
 
 class DenoiseShader: Shader
 {
-    string vs = import("Denoise/Denoise.vert.glsl");
-    string fs = import("Denoise/Denoise.frag.glsl");
+    string vs = import("shaders/Denoise/Denoise.vert.glsl");
+    string fs = import("shaders/Denoise/Denoise.frag.glsl");
 
     bool enabled = true;
     float factor = 0.5f;

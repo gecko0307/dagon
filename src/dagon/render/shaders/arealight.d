@@ -46,8 +46,8 @@ import dagon.graphics.light;
 
 class AreaLightShader: Shader
 {
-    string vs = import("AreaLight/AreaLight.vert.glsl");
-    string fs = import("AreaLight/AreaLight.frag.glsl");
+    string vs = import("shaders/AreaLight/AreaLight.vert.glsl");
+    string fs = import("shaders/AreaLight/AreaLight.frag.glsl");
 
     this(Owner owner)
     {

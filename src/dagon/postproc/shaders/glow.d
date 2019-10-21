@@ -44,8 +44,8 @@ import dagon.render.framebuffer;
 
 class GlowShader: Shader
 {
-    string vs = import("Glow/Glow.vert.glsl");
-    string fs = import("Glow/Glow.frag.glsl");
+    string vs = import("shaders/Glow/Glow.vert.glsl");
+    string fs = import("shaders/Glow/Glow.frag.glsl");
 
     bool enabled = true;
 

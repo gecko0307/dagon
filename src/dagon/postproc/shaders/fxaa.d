@@ -44,8 +44,8 @@ import dagon.render.deferred;
 
 class FXAAShader: Shader
 {
-    string vs = import("FXAA/FXAA.vert.glsl");
-    string fs = import("FXAA/FXAA.frag.glsl");
+    string vs = import("shaders/FXAA/FXAA.vert.glsl");
+    string fs = import("shaders/FXAA/FXAA.frag.glsl");
 
     bool enabled = true;
 

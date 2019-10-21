@@ -45,8 +45,8 @@ import dagon.graphics.state;
 
 class GeometryShader: Shader
 {
-    string vs = import("Geometry/Geometry.vert.glsl");
-    string fs = import("Geometry/Geometry.frag.glsl");
+    string vs = import("shaders/Geometry/Geometry.vert.glsl");
+    string fs = import("shaders/Geometry/Geometry.frag.glsl");
 
     this(Owner owner)
     {

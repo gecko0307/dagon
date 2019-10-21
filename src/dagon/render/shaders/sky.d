@@ -44,8 +44,8 @@ import dagon.graphics.cubemap;
 
 class SkyShader: Shader
 {
-    string vs = import("Sky/Sky.vert.glsl");
-    string fs = import("Sky/Sky.frag.glsl");
+    string vs = import("shaders/Sky/Sky.vert.glsl");
+    string fs = import("shaders/Sky/Sky.frag.glsl");
 
     this(Owner owner)
     {

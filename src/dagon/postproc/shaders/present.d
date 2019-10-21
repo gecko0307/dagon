@@ -44,8 +44,8 @@ import dagon.render.deferred;
 
 class PresentShader: Shader
 {
-    string vs = import("Present/Present.vert.glsl");
-    string fs = import("Present/Present.frag.glsl");
+    string vs = import("shaders/Present/Present.vert.glsl");
+    string fs = import("shaders/Present/Present.frag.glsl");
 
     this(Owner owner)
     {

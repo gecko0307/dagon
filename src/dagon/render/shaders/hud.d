@@ -44,8 +44,8 @@ import dagon.graphics.state;
 
 class HUDShader: Shader
 {
-    string vs = import("HUD/HUD.vert.glsl");
-    string fs = import("HUD/HUD.frag.glsl");
+    string vs = import("shaders/HUD/HUD.vert.glsl");
+    string fs = import("shaders/HUD/HUD.frag.glsl");
 
     this(Owner owner)
     {

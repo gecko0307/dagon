@@ -44,8 +44,8 @@ import dagon.graphics.state;
 
 class FallbackShader: Shader
 {
-    string vs = import("Fallback/Fallback.vert.glsl");
-    string fs = import("Fallback/Fallback.frag.glsl");
+    string vs = import("shaders/Fallback/Fallback.vert.glsl");
+    string fs = import("shaders/Fallback/Fallback.frag.glsl");
 
     this(Owner owner)
     {

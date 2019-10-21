@@ -46,8 +46,8 @@ import dagon.render.gbuffer;
 
 class DecalShader: Shader
 {
-    string vs = import("Decal/Decal.vert.glsl");
-    string fs = import("Decal/Decal.frag.glsl");
+    string vs = import("shaders/Decal/Decal.vert.glsl");
+    string fs = import("shaders/Decal/Decal.frag.glsl");
     
     GBuffer gbuffer;
 
