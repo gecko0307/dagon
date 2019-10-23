@@ -27,13 +27,7 @@ in vec2 texCoord;
 
 layout(location = 0) out vec4 fragColor;
 
-// Converts normalized device coordinates to eye space position
-vec3 unproject(vec3 ndc)
-{
-    vec4 clipPos = vec4(ndc * 2.0 - 1.0, 1.0);
-    vec4 res = invProjectionMatrix * clipPos;
-    return res.xyz / res.w;
-}
+#include <unproject.glsl>
 
 void main()
 {
@@ -43,7 +37,7 @@ void main()
     vec3 albedo = col.rgb;
     
     float depth = texture(depthBuffer, texCoord).x;
-    vec3 eyePos = unproject(vec3(texCoord, depth));
+    vec3 eyePos = unproject(invProjectionMatrix, vec3(texCoord, depth));
     vec3 worldPos = (invViewMatrix * vec4(eyePos, 1.0)).xyz;
     vec3 N = normalize(texture(normalBuffer, texCoord).rgb);
     

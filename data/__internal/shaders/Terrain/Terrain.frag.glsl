@@ -239,7 +239,7 @@ void main()
 
     fragColor = vec4(diffuseColor, layer);
     fragNormal = vec4(N, 1.0);
-    fragPBR = vec4(rms.r, rms.g, 1.0, 1.0);
+    fragPBR = vec4(rms.r, rms.g, 1.0, 0.0);
     fragRadiance = vec4(0.0, 0.0, 0.0, 1.0);
     fragVelocity = vec4(velocity, blurMask, 0.0);
 }

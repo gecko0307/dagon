@@ -37,6 +37,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
 import dlib.image.color;
+import dlib.text.unmanagedstring;
 
 import dagon.core.bindings;
 import dagon.graphics.shader;
@@ -45,17 +46,25 @@ import dagon.render.deferred;
 
 class DebugOutputShader: Shader
 {
-    string vs = import("shaders/DebugOutput/DebugOutput.vert.glsl");
-    string fs = import("shaders/DebugOutput/DebugOutput.frag.glsl");
+    String vs, fs;
 
     DebugOutputMode outputMode = DebugOutputMode.Radiance;
 
     this(Owner owner)
     {
+        vs = Shader.load("data/__internal/shaders/DebugOutput/DebugOutput.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/DebugOutput/DebugOutput.frag.glsl");
+    
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
 
         debug writeln("DebugOutputShader: program ", program.program);
+    }
+    
+    ~this()
+    {
+        vs.free();
+        fs.free();
     }
 
     override void bindParameters(GraphicsState* state)

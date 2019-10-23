@@ -169,6 +169,7 @@ class Material: Owner
         setInput("roughness", 0.5f);
         setInput("metallic", 0.0f);
         setInput("specularity", 1.0f);
+        setInput("translucency", 0.0f);
         setInput("normal", Vector3f(0.0f, 0.0f, 1.0f));
         setInput("height", 0.0f);
         setInput("parallax", ParallaxNone);

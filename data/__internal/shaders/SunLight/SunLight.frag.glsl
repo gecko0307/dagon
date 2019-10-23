@@ -195,6 +195,7 @@ void main()
     float roughness = pbr.r;
     float metallic = pbr.g;
     float specularity = pbr.b;
+    float translucency = pbr.a;
     
     float occlusion = haveOcclusionBuffer? texture(occlusionBuffer, texCoord).r : 1.0;
     
@@ -218,8 +219,15 @@ void main()
 
         vec3 kD = (1.0 - F) * (1.0 - metallic);
         vec3 specular = (NDF * G * F) / max(4.0 * max(dot(N, E), 0.0) * NL, 0.001);
+        
+        vec3 incomingLight = toLinear(lightColor.rgb) * lightEnergy;
+        vec3 diffuse = albedo * invPI * occlusion;
 
-        radiance += (kD * albedo * invPI * occlusion + specular * specularity) * toLinear(lightColor.rgb) * NL * lightEnergy * shadow;
+        radiance += (kD * diffuse + specular * specularity) * NL * incomingLight * shadow;
+        
+        // Fake SSS
+        float rim = pow(1.0 - abs(min(dot(N, L), 0.0)), 10.0);
+        radiance += (rim * diffuse) * incomingLight * translucency;
         
         // Fog
         float linearDepth = abs(eyePos.z);

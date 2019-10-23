@@ -27,8 +27,12 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.graphics.shader;
 
+import core.stdc.string;
+import std.stdio;
 import std.stdio;
 import std.string;
+import std.algorithm;
+import std.file;
 
 import dlib.core.ownership;
 import dlib.core.memory;
@@ -37,6 +41,8 @@ import dlib.container.dict;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.image.color;
+import dlib.filesystem.stdfs;
+import dlib.text.unmanagedstring;
 
 import dagon.core.bindings;
 import dagon.graphics.shaderloader;
@@ -277,6 +283,56 @@ class Shader: Owner
         super(o);
         this.program = program;
         this.parameters = New!(MappedList!BaseShaderParameter)(this);
+    }
+    
+    static String load(string filename)
+    {
+        auto fs = New!StdFileSystem();
+        auto istrm = fs.openForInput(filename);
+        string inputText = readText(istrm);
+        Delete(istrm);
+        
+        string includePath = "data/__internal/shaders/include/";
+        String outputText;
+        foreach(line; lineSplitter(inputText))
+        {
+            auto s = line.strip;
+            if (s.startsWith("#include"))
+            {
+                char[64] buf;
+                if (sscanf(s.ptr, "#include <%s>", buf.ptr) == 1)
+                {
+                    string includeFilename = cast(string)buf[0..strlen(buf.ptr)-1];
+                    String includeFullPath = includePath;
+                    includeFullPath ~= includeFilename;
+                    if (exists(includeFullPath))
+                    {
+                        istrm = fs.openForInput(includeFullPath.toString);
+                        string includeText = readText(istrm);
+                        Delete(istrm);
+                        outputText ~= includeText;
+                        outputText ~= "\n";
+                        Delete(includeText);
+                    }
+                    includeFullPath.free();
+                }
+                else
+                {
+                    writeln("Error");
+                    break;
+                }
+            }
+            else
+            {
+                outputText ~= line;
+                outputText ~= "\n";
+            }
+        }
+        
+        Delete(fs);
+        Delete(inputText);
+        
+        return outputText;
     }
 
     ShaderSubroutine setParameterSubroutine(string name, ShaderType shaderType, string subroutineName)

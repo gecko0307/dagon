@@ -65,6 +65,7 @@ class GeometryShader: Shader
         auto iroughness = "roughness" in state.material.inputs;
         auto imetallic = "metallic" in state.material.inputs;
         auto ispecularity = "specularity" in state.material.inputs;
+        auto itranslucency = "translucency" in state.material.inputs;
         auto itextureScale = "textureScale" in state.material.inputs;
         auto iparallax = "parallax" in state.material.inputs;
         auto iemission = "emission" in state.material.inputs;
@@ -178,7 +179,7 @@ class GeometryShader: Shader
         }
         if (ipbr.texture is null)
         {
-            ipbr.texture = state.material.makeTexture(*iroughness, *imetallic, *ispecularity, materialInput(0.0f));
+            ipbr.texture = state.material.makeTexture(*iroughness, *imetallic, *ispecularity, *itranslucency);
         }
         glActiveTexture(GL_TEXTURE2);
         ipbr.texture.bind();
@@ -248,6 +249,28 @@ class GeometryShader: Shader
         else
         {
             setParameterSubroutine("specularity", ShaderType.Fragment, "specularityMap");
+        }
+        
+        if (itranslucency.texture is null)
+        {
+            setParameterSubroutine("translucency", ShaderType.Fragment, "translucencyValue");
+
+            if (itranslucency.type == MaterialInputType.Float)
+                setParameter("translucencyScalar", itranslucency.asFloat);
+            else if (itranslucency.type == MaterialInputType.Bool)
+                setParameter("translucencyScalar", cast(float)itranslucency.asBool);
+            else if (itranslucency.type == MaterialInputType.Integer)
+                setParameter("translucencyScalar", cast(float)itranslucency.asInteger);
+            else if (itranslucency.type == MaterialInputType.Vec2)
+                setParameter("translucencyScalar", itranslucency.asVector2f.r);
+            else if (itranslucency.type == MaterialInputType.Vec3)
+                setParameter("translucencyScalar", itranslucency.asVector3f.r);
+            else if (itranslucency.type == MaterialInputType.Vec4)
+                setParameter("translucencyScalar", itranslucency.asVector4f.r);
+        }
+        else
+        {
+            setParameterSubroutine("translucency", ShaderType.Fragment, "translucencyMap");
         }
 
         // Emission

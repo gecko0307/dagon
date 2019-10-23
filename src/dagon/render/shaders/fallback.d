@@ -37,6 +37,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
 import dlib.image.color;
+import dlib.text.unmanagedstring;
 
 import dagon.core.bindings;
 import dagon.graphics.shader;
@@ -44,15 +45,23 @@ import dagon.graphics.state;
 
 class FallbackShader: Shader
 {
-    string vs = import("shaders/Fallback/Fallback.vert.glsl");
-    string fs = import("shaders/Fallback/Fallback.frag.glsl");
+    String vs, fs;
 
     this(Owner owner)
     {
+        vs = Shader.load("data/__internal/shaders/Fallback/Fallback.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/Fallback/Fallback.frag.glsl");
+        
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
 
         debug writeln("FallbackShader: program ", program.program);
+    }
+    
+    ~this()
+    {
+        vs.free();
+        fs.free();
     }
 
     override void bindParameters(GraphicsState* state)

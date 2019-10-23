@@ -197,6 +197,25 @@ subroutine uniform srtSpecularity specularity;
 
 
 /*
+ * Translucensy
+ */
+subroutine float srtTranslucency(in vec2 uv);
+
+uniform float translucencyScalar;
+subroutine(srtTranslucency) float translucencyValue(in vec2 uv)
+{
+    return translucencyScalar;
+}
+
+subroutine(srtTranslucency) float translucencyMap(in vec2 uv)
+{
+    return texture(pbrTexture, uv).a;
+}
+
+subroutine uniform srtTranslucency translucency;
+
+
+/*
  * Emission
  */
 subroutine vec3 srtEmission(in vec2 uv);
@@ -246,7 +265,11 @@ void main()
     
     fragColor = vec4(fragDiffuse.rgb, layer);
     fragNormal = vec4(N, 0.0);
-    fragPBR = vec4(roughness(shiftedTexCoord), metallic(shiftedTexCoord), specularity(shiftedTexCoord), 0.0);
+    fragPBR = vec4(
+        roughness(shiftedTexCoord), 
+        metallic(shiftedTexCoord), 
+        specularity(shiftedTexCoord), 
+        translucency(shiftedTexCoord));
     fragRadiance = vec4(emission(shiftedTexCoord), 1.0);
     fragVelocity = vec4(velocity, blurMask, 0.0);
 }

@@ -37,6 +37,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
 import dlib.image.color;
+import dlib.text.unmanagedstring;
 
 import dagon.core.bindings;
 import dagon.graphics.material;
@@ -46,19 +47,27 @@ import dagon.render.gbuffer;
 
 class DecalShader: Shader
 {
-    string vs = import("shaders/Decal/Decal.vert.glsl");
-    string fs = import("shaders/Decal/Decal.frag.glsl");
+    String vs, fs;
     
     GBuffer gbuffer;
 
     this(GBuffer gbuffer, Owner owner)
     {
+        vs = Shader.load("data/__internal/shaders/Decal/Decal.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/Decal/Decal.frag.glsl");
+        
         auto prog = New!ShaderProgram(vs, fs, this);
         super(prog, owner);
 
         debug writeln("Decal: program ", program.program);
         
         this.gbuffer = gbuffer;
+    }
+    
+    ~this()
+    {
+        vs.free();
+        fs.free();
     }
 
     override void bindParameters(GraphicsState* state)

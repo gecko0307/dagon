@@ -37,6 +37,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
 import dlib.image.color;
+import dlib.text.unmanagedstring;
 
 import dagon.core.bindings;
 import dagon.graphics.shader;
@@ -45,15 +46,23 @@ import dagon.graphics.state;
 
 class EnvironmentShader: Shader
 {
-    string vs = import("shaders/Environment/Environment.vert.glsl");
-    string fs = import("shaders/Environment/Environment.frag.glsl");
+    String vs, fs;
 
     this(Owner owner)
     {
+        vs = Shader.load("data/__internal/shaders/Environment/Environment.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/Environment/Environment.frag.glsl");
+        
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
 
         debug writeln("EnvironmentShader: program ", program.program);
+    }
+    
+    ~this()
+    {
+        vs.free();
+        fs.free();
     }
 
     override void bindParameters(GraphicsState* state)
