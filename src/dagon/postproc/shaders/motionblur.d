@@ -36,6 +36,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
 import dlib.image.color;
+import dlib.text.unmanagedstring;
 
 import dagon.core.bindings;
 import dagon.graphics.shader;
@@ -44,8 +45,7 @@ import dagon.render.gbuffer;
 
 class MotionBlurShader: Shader
 {
-    string vs = import("shaders/MotionBlur/MotionBlur.vert.glsl");
-    string fs = import("shaders/MotionBlur/MotionBlur.frag.glsl");
+    String vs, fs;
 
     bool enabled = true;
     int samples = 16;
@@ -56,10 +56,17 @@ class MotionBlurShader: Shader
 
     this(Owner owner)
     {
+        vs = Shader.load("data/__internal/shaders/MotionBlur/MotionBlur.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/MotionBlur/MotionBlur.frag.glsl");
+        
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
-
-        debug writeln("MotionBlurShader: program ", program.program);
+    }
+    
+    ~this()
+    {
+        vs.free();
+        fs.free();
     }
 
     override void bindParameters(GraphicsState* state)

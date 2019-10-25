@@ -36,6 +36,7 @@ import dlib.core.ownership;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.image.color;
+import dlib.text.unmanagedstring;
 
 import dagon.core.bindings;
 import dagon.graphics.state;
@@ -44,13 +45,21 @@ import dagon.graphics.cubemap;
 
 class SkyShader: Shader
 {
-    string vs = import("shaders/Sky/Sky.vert.glsl");
-    string fs = import("shaders/Sky/Sky.frag.glsl");
+    String vs, fs;
 
     this(Owner owner)
     {
+        vs = Shader.load("data/__internal/shaders/Sky/Sky.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/Sky/Sky.frag.glsl");
+        
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
+    }
+    
+    ~this()
+    {
+        vs.free();
+        fs.free();
     }
 
     override void bindParameters(GraphicsState* state)

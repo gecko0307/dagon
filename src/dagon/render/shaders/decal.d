@@ -58,8 +58,6 @@ class DecalShader: Shader
         
         auto prog = New!ShaderProgram(vs, fs, this);
         super(prog, owner);
-
-        debug writeln("Decal: program ", program.program);
         
         this.gbuffer = gbuffer;
     }

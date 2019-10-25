@@ -36,6 +36,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
 import dlib.image.color;
+import dlib.text.unmanagedstring;
 
 import dagon.core.bindings;
 import dagon.graphics.shader;
@@ -44,15 +45,21 @@ import dagon.render.deferred;
 
 class PresentShader: Shader
 {
-    string vs = import("shaders/Present/Present.vert.glsl");
-    string fs = import("shaders/Present/Present.frag.glsl");
+    String vs, fs;
 
     this(Owner owner)
     {
+        vs = Shader.load("data/__internal/shaders/Present/Present.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/Present/Present.frag.glsl");
+        
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
-
-        debug writeln("PresentShader: program ", program.program);
+    }
+    
+    ~this()
+    {
+        vs.free();
+        fs.free();
     }
 
     override void bindParameters(GraphicsState* state)

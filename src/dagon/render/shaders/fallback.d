@@ -54,8 +54,6 @@ class FallbackShader: Shader
         
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
-
-        debug writeln("FallbackShader: program ", program.program);
     }
     
     ~this()

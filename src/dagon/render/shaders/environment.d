@@ -55,8 +55,6 @@ class EnvironmentShader: Shader
         
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
-
-        debug writeln("EnvironmentShader: program ", program.program);
     }
     
     ~this()

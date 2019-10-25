@@ -56,8 +56,6 @@ class AreaLightShader: Shader
         
         auto myProgram = New!ShaderProgram(vs.toString, fs.toString, this);
         super(myProgram, owner);
-
-        debug writeln("AreaLightShader: program ", program.program);
     }
     
     ~this()

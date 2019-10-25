@@ -36,6 +36,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
 import dlib.image.color;
+import dlib.text.unmanagedstring;
 
 import dagon.core.bindings;
 import dagon.graphics.shader;
@@ -44,8 +45,7 @@ import dagon.render.deferred;
 
 class BlurShader: Shader
 {
-    string vs = import("shaders/Blur/Blur.vert.glsl");
-    string fs = import("shaders/Blur/Blur.frag.glsl");
+    String vs, fs;
 
     bool enabled = true;
     Vector2f direction;
@@ -53,12 +53,19 @@ class BlurShader: Shader
 
     this(Owner owner)
     {
+        vs = Shader.load("data/__internal/shaders/Blur/Blur.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/Blur/Blur.frag.glsl");
+        
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
 
-        debug writeln("BlurShader: program ", program.program);
-
         direction = Vector2f(1.0f, 0.0f);
+    }
+    
+    ~this()
+    {
+        vs.free();
+        fs.free();
     }
 
     override void bindParameters(GraphicsState* state)

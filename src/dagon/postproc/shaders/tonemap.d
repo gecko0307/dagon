@@ -36,6 +36,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
 import dlib.image.color;
+import dlib.text.unmanagedstring;
 
 import dagon.core.bindings;
 import dagon.graphics.shader;
@@ -52,8 +53,7 @@ enum Tonemapper
 
 class TonemapShader: Shader
 {
-    string vs = import("shaders/Tonemap/Tonemap.vert.glsl");
-    string fs = import("shaders/Tonemap/Tonemap.frag.glsl");
+    String vs, fs;
 
     bool enabled = true;
     Tonemapper tonemapper = Tonemapper.ACES;
@@ -61,10 +61,17 @@ class TonemapShader: Shader
 
     this(Owner owner)
     {
+        vs = Shader.load("data/__internal/shaders/Tonemap/Tonemap.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/Tonemap/Tonemap.frag.glsl");
+        
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
-
-        debug writeln("TonemapShader: program ", program.program);
+    }
+    
+    ~this()
+    {
+        vs.free();
+        fs.free();
     }
 
     override void bindParameters(GraphicsState* state)

@@ -36,6 +36,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
 import dlib.image.color;
+import dlib.text.unmanagedstring;
 
 import dagon.core.bindings;
 import dagon.graphics.shader;
@@ -44,8 +45,7 @@ import dagon.render.framebuffer;
 
 class GlowShader: Shader
 {
-    string vs = import("shaders/Glow/Glow.vert.glsl");
-    string fs = import("shaders/Glow/Glow.frag.glsl");
+    String vs, fs;
 
     bool enabled = true;
 
@@ -55,10 +55,17 @@ class GlowShader: Shader
 
     this(Owner owner)
     {
+        vs = Shader.load("data/__internal/shaders/Glow/Glow.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/Glow/Glow.frag.glsl");
+        
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
-
-        debug writeln("GlowShader: program ", program.program);
+    }
+    
+    ~this()
+    {
+        vs.free();
+        fs.free();
     }
 
     override void bindParameters(GraphicsState* state)

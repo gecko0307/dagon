@@ -36,6 +36,7 @@ import dlib.core.ownership;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.image.color;
+import dlib.text.unmanagedstring;
 
 import dagon.core.bindings;
 import dagon.graphics.state;
@@ -44,15 +45,23 @@ import dagon.graphics.cubemap;
 
 class RayleighShader: Shader
 {
-    string vs = import("shaders/Rayleigh/Rayleigh.vert.glsl");
-    string fs = import("shaders/Rayleigh/Rayleigh.frag.glsl");
+    String vs, fs;
 
     Vector3f sunDirection = Vector3f(-1.0f, -1.0f, -1.0f).normalized;
 
     this(Owner owner)
     {
+        vs = Shader.load("data/__internal/shaders/Rayleigh/Rayleigh.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/Rayleigh/Rayleigh.frag.glsl");
+        
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
+    }
+    
+    ~this()
+    {
+        vs.free();
+        fs.free();
     }
 
     override void bindParameters(GraphicsState* state)

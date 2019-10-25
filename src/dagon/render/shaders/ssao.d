@@ -37,6 +37,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
 import dlib.image.color;
+import dlib.text.unmanagedstring;
 
 import dagon.core.bindings;
 import dagon.graphics.shader;
@@ -44,8 +45,7 @@ import dagon.graphics.state;
 
 class SSAOShader: Shader
 {
-    string vs = import("shaders/SSAO/SSAO.vert.glsl");
-    string fs = import("shaders/SSAO/SSAO.frag.glsl");
+    String vs, fs;
 
     int samples = 16;
     float radius = 0.2f;
@@ -53,10 +53,17 @@ class SSAOShader: Shader
 
     this(Owner owner)
     {
+        vs = Shader.load("data/__internal/shaders/SSAO/SSAO.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/SSAO/SSAO.frag.glsl");
+        
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
-
-        debug writeln("SSAOShader: program ", program.program);
+    }
+    
+    ~this()
+    {
+        vs.free();
+        fs.free();
     }
 
     override void bindParameters(GraphicsState* state)

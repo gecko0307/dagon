@@ -37,6 +37,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
 import dlib.image.color;
+import dlib.text.unmanagedstring;
 
 import dagon.core.bindings;
 import dagon.graphics.shader;
@@ -45,18 +46,18 @@ import dagon.graphics.csm;
 
 class SunLightShader: Shader
 {
-    string vs = import("shaders/SunLight/SunLight.vert.glsl");
-    string fs = import("shaders/SunLight/SunLight.frag.glsl");
+    String vs, fs;
 
     Matrix4x4f defaultShadowMatrix;
     GLuint defaultShadowTexture;
 
     this(Owner owner)
     {
+        vs = Shader.load("data/__internal/shaders/SunLight/SunLight.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/SunLight/SunLight.frag.glsl");
+        
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
-
-        debug writeln("SunLightShader: program ", program.program);
 
         defaultShadowMatrix = Matrix4x4f.identity;
 
@@ -73,6 +74,9 @@ class SunLightShader: Shader
     {
         if (glIsFramebuffer(defaultShadowTexture))
             glDeleteFramebuffers(1, &defaultShadowTexture);
+        
+        vs.free();
+        fs.free();
     }
 
     override void bindParameters(GraphicsState* state)

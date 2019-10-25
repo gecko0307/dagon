@@ -37,6 +37,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
 import dlib.image.color;
+import dlib.text.unmanagedstring;
 
 import dagon.core.bindings;
 import dagon.graphics.material;
@@ -45,15 +46,21 @@ import dagon.graphics.state;
 
 class GeometryShader: Shader
 {
-    string vs = import("shaders/Geometry/Geometry.vert.glsl");
-    string fs = import("shaders/Geometry/Geometry.frag.glsl");
+    String vs, fs;
 
     this(Owner owner)
     {
+        vs = Shader.load("data/__internal/shaders/Geometry/Geometry.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/Geometry/Geometry.frag.glsl");
+        
         auto prog = New!ShaderProgram(vs, fs, this);
         super(prog, owner);
-
-        debug writeln("GeometryShader: program ", program.program);
+    }
+    
+    ~this()
+    {
+        vs.free();
+        fs.free();
     }
 
     override void bindParameters(GraphicsState* state)
