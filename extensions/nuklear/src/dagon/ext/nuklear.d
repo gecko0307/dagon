@@ -202,9 +202,8 @@ class NuklearGUI : Owner, Updateable, Drawable
 
     GLint textureLoc;
     GLint projectionMatrixLoc;
-
-    string vs = import("shaders/Nuklear/Nuklear.vert.glsl");
-    string fs = import("shaders/Nuklear/Nuklear.frag.glsl");
+    
+    String vs, fs;
 
     EventManager eventManager; // Needed for mouse position
 
@@ -254,6 +253,9 @@ class NuklearGUI : Owner, Updateable, Drawable
 
     void prepareVAO()
     {
+        vs = Shader.load("data/__internal/shaders/Nuklear/Nuklear.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/Nuklear/Nuklear.frag.glsl"); 
+        
         vertexShader = compileShader(vs, ShaderStage.vertex);
         fragmentShader = compileShader(fs, ShaderStage.fragment);
         if (vertexShader != 0 && fragmentShader != 0)
