@@ -49,6 +49,7 @@ import dagon.core.application;
 import dagon.ui.font;
 import dagon.graphics.shaderloader;
 import dagon.graphics.state;
+import dagon.graphics.shader;
 import dagon.resource.asset;
 import dagon.resource.scene;
 
