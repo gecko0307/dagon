@@ -227,7 +227,7 @@ void main()
         
         // Fake SSS
         float rim = pow(1.0 - abs(min(dot(N, L), 0.0)), 10.0);
-        radiance += (rim * diffuse) * incomingLight * translucency;
+        radiance += (rim * kD * diffuse) * incomingLight * translucency;
         
         // Fog
         float linearDepth = abs(eyePos.z);
