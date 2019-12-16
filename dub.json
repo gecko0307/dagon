@@ -68,7 +68,7 @@
                 "dagon": "*",
                 "dagon:ftfont": "*",
                 "dlib": "0.17.0",
-                "bindbc-nuklear": "~>0.3.0"
+                "bindbc-nuklear": "~>0.2.1"
             },
             
             "versions": [
