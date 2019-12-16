@@ -17,8 +17,8 @@
 
     "dependencies": {
         "dlib": "0.17.0",
-        "bindbc-opengl": "~>0.8.0",
-        "bindbc-sdl": "~>0.8.0"
+        "bindbc-opengl": "~>0.9.0",
+        "bindbc-sdl": "~>0.13.0"
     },
 
     "versions": [
@@ -50,7 +50,7 @@
             "dependencies": {
                 "dagon": "*",
                 "dlib": "0.17.0",
-                "bindbc-freetype": "~>0.5.0"
+                "bindbc-freetype": "~>0.8.0"
             },
             
             "versions": [
@@ -68,7 +68,7 @@
                 "dagon": "*",
                 "dagon:ftfont": "*",
                 "dlib": "0.17.0",
-                "bindbc-nuklear": "~>0.2.1"
+                "bindbc-nuklear": "~>0.3.0"
             },
             
             "versions": [
