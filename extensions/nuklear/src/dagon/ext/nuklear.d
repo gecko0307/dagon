@@ -58,9 +58,9 @@ void initNuklear()
     if (nuksup != NuklearSupport.Nuklear4)
     {
         if (nuksup == NuklearSupport.badLibrary)
-            writeln("Warning: failed to load some Nuklear functions. It seems that you have an old version of Nuklear. Dagon will try to use it, but it is recommended to install Nuklear 4.01.0 or higher");
+            writeln("Warning: failed to load some Nuklear functions. It seems that you have an old version of Nuklear. Dagon will try to use it, but it is recommended to install Nuklear 4.01");
         else
-            exitWithError("Error: Nuklear library is not found. Please, install Nuklear 4.01.0");
+            exitWithError("Error: Nuklear library is not found. Please, install Nuklear 4.01");
     }
 }
 
@@ -177,7 +177,7 @@ struct NuklearEvent
     int down;
 }
 
-class NuklearGUI : Owner, Updateable, Drawable
+class NuklearGUI: Owner, Updateable, Drawable
 {
     NuklearEvent[10] events;
     int eventsCount = 0;
@@ -214,9 +214,6 @@ class NuklearGUI : Owner, Updateable, Drawable
 
         eventManager = em;
 
-        atlases = DynamicArray!nk_font_atlas();
-        fontsTextures = DynamicArray!GLuint();
-
         nk_init_default(&ctx, null);
 
         ctx.clip.copy = cast(nk_plugin_copy)&clipboardCopy;
@@ -232,22 +229,22 @@ class NuklearGUI : Owner, Updateable, Drawable
 
     ~this()
     {
-        if (atlases.length)
-        {
-            foreach(atlas; atlases)
-                nk_font_atlas_clear(&atlas);
-            atlases.free();
-        }
+        if (vs.length) vs.free();
+        if (fs.length) fs.free();
+        
+        foreach(atlas; atlases)
+            nk_font_atlas_clear(&atlas);
+        atlases.free();
+        
+        foreach(tex; fontsTextures)
+            glDeleteTextures(1, &tex);
+        fontsTextures.free();
+        
         nk_free(&ctx);
         nk_buffer_free(&cmds);
 
         glDeleteProgram(shaderProgram);
-        if (fontsTextures.length)
-        {
-            foreach(tex; fontsTextures)
-                glDeleteTextures(1, &tex);
-            fontsTextures.free();
-        }
+
         glDeleteBuffers(1, &vbo);
         glDeleteBuffers(1, &ebo);
     }
@@ -542,7 +539,7 @@ class NuklearGUI : Owner, Updateable, Drawable
         return nkfont;
     }
 
-    deprecated("No need to call generateFontAtlas()") void generateFontAtlas() {}
+    //deprecated("No need to call generateFontAtlas()") void generateFontAtlas() {}
 
     NKFont* getFont(uint index)
     {
