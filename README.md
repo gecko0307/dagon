@@ -34,7 +34,7 @@ Features
 * Water rendering
 * Post-processing (FXAA, SSAO, lens distortion, motion blur, glow, LUT color grading)
 * UTF-8 text rendering using TTF fonts via Freetype
-* GUI based on [Nuklear](https://github.com/vurtun/nuklear)
+* GUI based on [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear)
 * 2D canvas framework that renders vector shapes - lines, Bézier curves, rectangles, circles, arcs, triangles, and polygons
 * Keyboard, mouse, joystick input, Unicode text input
 * Ownership memory model - every object belongs to some object (owner), and deleting the owner will delete all of its owned objects. This allows semi-automatic memory management - you have to manually delete only root owners
