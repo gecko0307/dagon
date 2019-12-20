@@ -1,19 +1,23 @@
 # Material
-Material in Dagon is a description of entity's surface properties. Dagon implements physically based rendering (PBR) and follows roughness/metallic workflow for materials.
+Material in Dagon is a description of entity's surface properties. Dagon implements physically based rendering (PBR) and follows roughness/metallic workflow for materials. 
 
+## PBR
+PBR a combination of rendering techniques that bring real-time graphics closer to real world by following laws of optics. PBR operates on a unified set of inputs that are completely independent from lighting, so PBR materials look consistent in any environment and are usually portable between different graphics software and game engines. 
+
+## Properties
 Materials in Dagon are heterogeneous, meaning that their properties (`MaterialInput` structs) have dynamic typing and can handle both numeric values and textures.
 
-`diffuse` - diffuse color (albedo), `Color4f` or `Texture`. The alpha channel defines surface transparency if `blending` property is set to `Transparent`.
+`diffuse` - color of a surface. This is also called albedo or base color. You can assign `Color4f` or `Texture` to it. The alpha channel defines surface transparency if `blending` property is set to `Transparent`.
 
 `transparency` - transparency multiplier for diffuse color, `float`.
+
+`roughness` - roughness of a surface, a number between 0.0 and 1.0. This affects blurriness of specular reflection. Materials like metal, shiny plastic or polished wood have low roughness, and materials like raw stone, concrete or cloth have high roughness. You can assign `float` or `Texture` to it (though only R channel of a texture will be used).
+
+`metallic` - metallicity of a surface, a number between 0.0 and 1.0. This affects color of specular reflection: for metals (conductors) incoming light color is modulated by surface color, and for other materials (dielectrics) it isn't, so, for example, a red chrome covered christmas ball looks different from red plastic ball. You can assign `float` or `Texture` to it (though only R channel of a texture will be used).
 
 `emission` - self-illumination color, `Color4f` of `Texture`.
 
 `energy` - self-illumination brightness, `float`.
-
-`roughness` - roughness of a surface, `float` or `Texture`. For color textures, only R channel will be used.
-
-`metallic` - metallicity of a surface, `float` or `Texture`. For color textures, only R channel will be used.
 
 `normal` - per-pixel normal of a surface in tangent space, `Vector3f` or `Texture`.
 
