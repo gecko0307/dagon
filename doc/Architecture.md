@@ -25,7 +25,9 @@ void main(string[] args)
 Note that Dagon doesn't use D's built-in memory allocator (`new` operator), instead it allocates all its data with `New` and `Delete` functions from `dlib.core.memory`. You are also expected to do so. You still can use garbage collected data in Dagon, but this may result in weird bugs, so you are strongly recommended to do things our way. Most part of the engine is built around dlib's ownership model - every object belongs to some other object (owner), and deleting the owner will delete all of its owned objects. This allows semi-automatic memory management - you have to manually delete only root owner, which usually is a game object.
 
 ## Scene
-`Game` usually controls one or more scene objects. Each scene has its own assets, logics, event system, etc. You can think of a scene as a game level. Similarly to a `Game`, you have to define your own scenes that derive from standard `Scene` class:
+Dagon's core logic is based on a concept of a scene. A scene is an incapsulator for assets and game objects (which are called entities) and any custom data logically tied to them. Scene loads assets, allocates entities, configurates them and initiates game loop. Only one scene is active at any given time. Switching an active scene can optionally cause releasing current assets and loading new ones, as you would expect when going from one game level or location to another.
+
+Similarly to a `Game`, you have to define your own scenes that derive from standard `Scene` class:
 ```d
 class MyScene: Scene
 {
