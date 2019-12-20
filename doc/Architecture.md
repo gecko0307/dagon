@@ -2,6 +2,8 @@
 ## Game
 Dagon is object oriented: all entities in it are classes. At the root of an application hierarchy there is an `Application` object. Usually you'll want to use its more feature-rich derived class, `Game`. Typical use case is to make a custom game class that derives from `Game` and encapsulates your components:
 ```d
+import dagon;
+
 class MyGame: Game
 {
     this(uint w, uint h, bool fullscreen, string title, string[] args)
