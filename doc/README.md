@@ -26,5 +26,7 @@ Dagon is written with extendability in mind, so you can easily add your own draw
 
 ## Further reading
 [Engine Architecture](https://github.com/gecko0307/dagon/blob/master/doc/Architecture.md)
+
 [Materials](https://github.com/gecko0307/dagon/blob/master/doc/Material.md)
+
 [Tutorials](https://github.com/gecko0307/dagon/wiki/Tutorials)
