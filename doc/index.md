@@ -1,3 +1,4 @@
+## Dagon
 Dagon is a 3D game engine for D language based on OpenGL 4.0 and SDL2. It features deferred HDR renderer, PBR materials, an event manager, scene manager, asset manager, and entity-component model. 
 
 ### Project Goals
