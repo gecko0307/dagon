@@ -1,5 +1,5 @@
 # Material
-Material in Dagon is a description of entity's surface properties. Dagon implements physically based rendering (PBR) and follows roughness/metallic workflow for materials.
+Material in Dagon is a description of entity's surface. Dagon implements physically based rendering (PBR) and follows roughness/metallic workflow for materials.
 
 Materials in Dagon are heterogeneous, meaning that their properties (`MaterialInput` structs) have dynamic typing and can handle both numeric values and textures.
 
