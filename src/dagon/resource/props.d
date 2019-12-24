@@ -168,7 +168,7 @@ class Properties: Owner
             return DProperty(DPropType.Undefined, "");
     }
     
-    DProperty* opIn_r(string k)
+    DProperty* opBinaryRight(string op)(string k) if (op == "in")
     {
         return (k in props);
     }
