@@ -182,7 +182,7 @@ class Texture: Owner
     }
 }
 
-bool pixelFormatToTextureFormat(PixelFormat pixelFormat, out GLenum textureFormat, out GLint textureInternalFormat, out GLenum pixelType)
+bool pixelFormatToTextureFormat(uint pixelFormat, out GLenum textureFormat, out GLint textureInternalFormat, out GLenum pixelType)
 {
     switch (pixelFormat)
     {
