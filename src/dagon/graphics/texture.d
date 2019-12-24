@@ -190,7 +190,7 @@ bool pixelFormatToTextureFormat(PixelFormat pixelFormat, out GLenum textureForma
         case PixelFormat.LA8:        textureInternalFormat = GL_RG8;     textureFormat = GL_RG;   pixelType = GL_UNSIGNED_BYTE; break;
         case PixelFormat.RGB8:       textureInternalFormat = GL_RGB8;    textureFormat = GL_RGB;  pixelType = GL_UNSIGNED_BYTE; break;
         case PixelFormat.RGBA8:      textureInternalFormat = GL_RGBA8;   textureFormat = GL_RGBA; pixelType = GL_UNSIGNED_BYTE; break;
-        case PixelFormat.RGBAF32:    textureInternalFormat = GL_RGBA32F; textureFormat = GL_RGBA; pixelType = GL_FLOAT; break;
+        case FloatPixelFormat.RGBAF32: textureInternalFormat = GL_RGBA32F; textureFormat = GL_RGBA; pixelType = GL_FLOAT; break;
         default:
             return false;
     }
