@@ -33,6 +33,7 @@ import std.math;
 import dlib.core.memory;
 import dlib.image.color;
 import dlib.image.image;
+import dlib.image.hdri;
 import dlib.math.vector;
 
 import dagon.core.libs;
@@ -189,7 +190,7 @@ bool pixelFormatToTextureFormat(PixelFormat pixelFormat, out GLenum textureForma
         case PixelFormat.LA8:        textureInternalFormat = GL_RG8;     textureFormat = GL_RG;   pixelType = GL_UNSIGNED_BYTE; break;
         case PixelFormat.RGB8:       textureInternalFormat = GL_RGB8;    textureFormat = GL_RGB;  pixelType = GL_UNSIGNED_BYTE; break;
         case PixelFormat.RGBA8:      textureInternalFormat = GL_RGBA8;   textureFormat = GL_RGBA; pixelType = GL_UNSIGNED_BYTE; break;
-        case PixelFormat.RGBA_FLOAT: textureInternalFormat = GL_RGBA32F; textureFormat = GL_RGBA; pixelType = GL_FLOAT; break;
+        case PixelFormat.RGBAF32:    textureInternalFormat = GL_RGBA32F; textureFormat = GL_RGBA; pixelType = GL_FLOAT; break;
         default:
             return false;
     }
