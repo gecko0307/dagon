@@ -25,36 +25,10 @@ in vec2 texCoord;
 
 layout(location = 0) out vec4 fragColor;
 
-// Converts normalized device coordinates to eye space position
-vec3 unproject(vec3 ndc)
-{
-    vec4 clipPos = vec4(ndc * 2.0 - 1.0, 1.0);
-    vec4 res = invProjectionMatrix * clipPos;
-    return res.xyz / res.w;
-}
-
-vec3 toLinear(vec3 v)
-{
-    return pow(v, vec3(2.2));
-}
-
-vec3 toGamma(vec3 v)
-{
-    return pow(v, vec3(1.0 / 2.2));
-}
-
-vec3 fresnelRoughness(float cosTheta, vec3 f0, float roughness)
-{
-    return f0 + (max(vec3(1.0 - roughness), f0) - f0) * pow(1.0 - cosTheta, 5.0);
-}
-
-vec2 envMapEquirect(in vec3 dir)
-{
-    float phi = acos(dir.y);
-    float theta = atan(dir.x, dir.z) + PI;
-    return vec2(theta / PI2, phi / PI);
-}
-
+#include <unproject.glsl>
+#include <gamma.glsl>
+#include <fresnel.glsl>
+#include <envMapEquirect.glsl>
 
 uniform float ambientEnergy;
 
@@ -98,7 +72,7 @@ void main()
     vec3 albedo = toLinear(col.rgb);
     
     float depth = texture(depthBuffer, texCoord).x;
-    vec3 eyePos = unproject(vec3(texCoord, depth));
+    vec3 eyePos = unproject(invProjectionMatrix, vec3(texCoord, depth));
     vec3 worldPos = (invViewMatrix * vec4(eyePos, 1.0)).xyz;
     vec3 N = normalize(texture(normalBuffer, texCoord).rgb);
     vec3 E = normalize(-eyePos);

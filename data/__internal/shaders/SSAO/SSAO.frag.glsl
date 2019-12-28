@@ -18,13 +18,8 @@ in vec2 texCoord;
 
 layout(location = 0) out vec4 fragColor;
 
-// Converts normalized device coordinates to eye space position
-vec3 unproject(vec3 ndc)
-{
-    vec4 clipPos = vec4(ndc * 2.0 - 1.0, 1.0);
-    vec4 res = invProjectionMatrix * clipPos;
-    return res.xyz / res.w;
-}
+#include <unproject.glsl>
+#include <hash.glsl>
 
 // SSAO implementation based on code by Reinder Nijhoff
 // https://www.shadertoy.com/view/Ms33WB
@@ -36,17 +31,10 @@ uniform float ssaoPower;
 #define SSAO_SCALE 1.0
 #define SSAO_BIAS 0.05
 
-float hash(vec2 p)
-{
-    vec3 p3 = fract(vec3(p.xyx) * vec3(0.1031, 0.11369, 0.13787));
-    p3 += dot(p3, p3.yzx + 19.19);
-    return fract((p3.x + p3.y) * p3.z);
-}
-
 float ssao(in vec2 tcoord, in vec2 uv, in vec3 p, in vec3 cnorm)
 {
     float depth = texture(depthBuffer, tcoord + uv).x;
-    vec3 pos = unproject(vec3(tcoord + uv, depth));
+    vec3 pos = unproject(invProjectionMatrix, vec3(tcoord + uv, depth));
     
     vec3 diff = pos - p;
     float l = length(diff);
@@ -87,7 +75,7 @@ void main()
         discard;
         
     float depth = texture(depthBuffer, texCoord).x;
-    vec3 eyePos = unproject(vec3(texCoord, depth));
+    vec3 eyePos = unproject(invProjectionMatrix, vec3(texCoord, depth));
     vec3 N = normalize(texture(normalBuffer, texCoord).rgb);
 
     float occlusion = spiralSSAO(texCoord, eyePos, N, ssaoRadius / eyePos.z);

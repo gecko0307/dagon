@@ -12,18 +12,9 @@ in vec4 prevPosition;
 uniform mat4 viewMatrix;
 uniform mat4 invProjectionMatrix;
 
-// Converts normalized device coordinates to eye space position
-vec3 unproject(vec3 ndc)
-{
-    vec4 clipPos = vec4(ndc * 2.0 - 1.0, 1.0);
-    vec4 res = invProjectionMatrix * clipPos;
-    return res.xyz / res.w;
-}
-
-vec3 toLinear(vec3 v)
-{
-    return pow(v, vec3(2.2));
-}
+#include <unproject.glsl>
+#include <gamma.glsl>
+#include <cotangentFrame.glsl>
 
 /*
  * Diffuse color subroutines.
@@ -49,20 +40,6 @@ subroutine uniform srtColor diffuse;
  * Normal mapping subroutines.
  */
 subroutine vec3 srtNormal(in vec2 uv, in float ysign, in mat3 tangentToEye);
-
-mat3 cotangentFrame(in vec3 N, in vec3 p, in vec2 uv)
-{
-    vec3 dp1 = dFdx(p);
-    vec3 dp2 = dFdy(p);
-    vec2 duv1 = dFdx(uv);
-    vec2 duv2 = dFdy(uv);
-    vec3 dp2perp = cross(dp2, N);
-    vec3 dp1perp = cross(N, dp1);
-    vec3 T = dp2perp * duv1.x + dp1perp * duv2.x;
-    vec3 B = dp2perp * duv1.y + dp1perp * duv2.y;
-    float invmax = inversesqrt(max(dot(T, T), dot(B, B)));
-    return mat3(T * invmax, B * invmax, N);
-}
 
 uniform vec3 normalVector;
 subroutine(srtNormal) vec3 normalValue(in vec2 uv, in float ysign, in mat3 tangentToEye)
@@ -114,7 +91,7 @@ void main()
 {
     vec2 screenTexcoord = gl_FragCoord.xy / viewSize;
     float depth = texture(depthTexture, screenTexcoord).x;
-    vec3 referenceEyePos = unproject(vec3(screenTexcoord, depth));
+    vec3 referenceEyePos = unproject(invProjectionMatrix, vec3(screenTexcoord, depth));
     vec3 E = normalize(-eyePosition);
     
     vec3 N = normalize(-particlePosition);

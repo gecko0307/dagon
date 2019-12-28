@@ -11,12 +11,7 @@ in vec3 worldNormal;
 in vec4 currPosition;
 in vec4 prevPosition;
 
-vec2 envMapEquirect(in vec3 dir)
-{
-    float phi = acos(dir.y);
-    float theta = atan(dir.x, dir.z) + PI;
-    return vec2(theta / PI2, phi / PI);
-}
+#include <envMapEquirect.glsl>
 
 /*
  * Diffuse color
