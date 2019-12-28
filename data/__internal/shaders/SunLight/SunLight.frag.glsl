@@ -158,6 +158,7 @@ void main()
         float invSamples = 1.0 / float(lightScatteringSamples);
         float prevValue = 0.0;
         float offset = hash(texCoord * 467.759 * eyePos.z);
+        // TODO: disable shadow
         for (float i = 0; i < float(lightScatteringSamples); i+=1.0)
         {
             accumScatter += shadowLookup(shadowTextureArray, 1.0, shadowMatrix2 * vec4(currentPosition, 1.0), vec2(0.0));

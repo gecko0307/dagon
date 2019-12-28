@@ -1,6 +1,7 @@
 #version 400 core
 
 #define PI 3.14159265359
+const float PI2 = PI * 2.0;
 
 in vec3 eyePosition;
 in vec2 texCoord;
@@ -18,12 +19,14 @@ uniform bool shaded;
 uniform vec3 sunDirection;
 uniform vec4 sunColor;
 uniform float sunEnergy;
-
+uniform bool sunScattering;
 uniform float sunScatteringG;
+uniform float sunScatteringDensity;
 
 #include <unproject.glsl>
 #include <gamma.glsl>
 #include <cotangentFrame.glsl>
+#include <envMapEquirect.glsl>
 
 /*
  * Diffuse color subroutines.
@@ -80,6 +83,39 @@ subroutine(srtNormal) vec3 normalFunctionHemisphere(in vec2 uv, in float ysign, 
 subroutine uniform srtNormal normal;
 
 
+uniform float ambientEnergy;
+
+subroutine vec3 srtAmbient(in vec3 wN, in float roughness);
+
+uniform vec4 ambientVector;
+subroutine(srtAmbient) vec3 ambientColor(in vec3 wN, in float roughness)
+{
+    return toLinear(ambientVector.rgb) * ambientEnergy;
+}
+
+uniform sampler2D ambientTexture;
+subroutine(srtAmbient) vec3 ambientEquirectangularMap(in vec3 wN, in float roughness)
+{
+    ivec2 envMapSize = textureSize(ambientTexture, 0);
+    float size = float(max(envMapSize.x, envMapSize.y));
+    float glossyExponent = 2.0 / pow(roughness, 4.0) - 2.0;
+    float lod = log2(size * sqrt(3.0)) - 0.5 * log2(glossyExponent + 1.0);
+    return textureLod(ambientTexture, envMapEquirect(wN), lod).rgb * ambientEnergy;
+}
+
+uniform samplerCube ambientTextureCube;
+subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float roughness)
+{
+    ivec2 envMapSize = textureSize(ambientTextureCube, 0);
+    float size = float(max(envMapSize.x, envMapSize.y));
+    float glossyExponent = 2.0 / pow(roughness, 4.0) - 2.0;
+    float lod = log2(size * sqrt(3.0)) - 0.5 * log2(glossyExponent + 1.0);
+    return textureLod(ambientTextureCube, wN, lod).rgb * ambientEnergy;
+}
+
+subroutine uniform srtAmbient ambient;
+
+
 // Mie scaterring approximated with Henyey-Greenstein phase function.
 float scattering(float lightDotView)
 {
@@ -118,20 +154,19 @@ void main()
 
     vec3 worldN = N * mat3(viewMatrix);
     
-    // TODO: ambient
-    vec3 ambient = vec3(0.0, 0.0, 0.0);
+    // Shading
     const float wrapFactor = 0.5;
     vec3 radiance = shaded? 
-        ambient + toLinear(sunColor.rgb) * max(dot(N, sunDirection) + wrapFactor, 0.0) / (1.0 + wrapFactor) * sunEnergy :
+        ambient(worldN, 0.9) + 
+        toLinear(sunColor.rgb) * max(dot(N, sunDirection) + wrapFactor, 0.0) / (1.0 + wrapFactor) * sunEnergy :
         vec3(1.0);
     
     // Scattering
-    const bool sunScattering = true;
-    const float sunScatteringDensity = 1.0;
+    vec3 scatteringRadiance = vec3(0.0);
     if (sunScattering)
     {
         float scattFactor = scattering(dot(-sunDirection, E)) * sunScatteringDensity;
-        radiance += toLinear(sunColor.rgb) * sunEnergy * scattFactor;
+        scatteringRadiance = toLinear(sunColor.rgb) * sunEnergy * scattFactor;
     }
     
     // TODO: make uniform
@@ -139,7 +174,7 @@ void main()
     float soft = alphaCutout? 1.0 : clamp((eyePosition.z - referenceEyePos.z) / softDistance, 0.0, 1.0);
         
     vec4 diff = diffuse(texCoord);
-    vec3 outColor = radiance * toLinear(diff.rgb) * toLinear(particleColor.rgb);
+    vec3 outColor = radiance * toLinear(diff.rgb) * toLinear(particleColor.rgb) + scatteringRadiance;
     float outAlpha = diff.a * particleColor.a * particleAlpha * soft;
     
     if (alphaCutout && outAlpha <= alphaCutoutThreshold)

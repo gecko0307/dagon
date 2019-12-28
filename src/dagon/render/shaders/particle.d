@@ -43,6 +43,7 @@ import dagon.core.bindings;
 import dagon.graphics.material;
 import dagon.graphics.shader;
 import dagon.graphics.state;
+import dagon.graphics.cubemap;
 
 class ParticleShader: Shader
 {
@@ -99,7 +100,10 @@ class ParticleShader: Shader
         Vector3f sunDirection = Vector3f(0.0f, 0.0f, 1.0f);
         Color4f sunColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
         float sunEnergy = 1.0f;
-        float sunScatteringG = 1.0f - 0.05f;
+        float sunScatteringG = 0.0f;
+        float sunScatteringDensity = 1.0f;
+        bool shaded = false;
+        bool scatteringEnabled = false;
         if (state.material.sun)
         {
             auto sun = state.material.sun;
@@ -107,6 +111,9 @@ class ParticleShader: Shader
             sunColor = sun.color;
             sunEnergy = sun.energy;
             sunScatteringG = 1.0f - sun.scattering;
+            sunScatteringDensity = sun.mediumDensity;
+            shaded = !ishadeless.asBool;
+            scatteringEnabled = sun.scatteringEnabled;
         }
         Vector4f sunDirHg = Vector4f(sunDirection);
         sunDirHg.w = 0.0;
@@ -114,8 +121,8 @@ class ParticleShader: Shader
         setParameter("sunColor", sunColor);
         setParameter("sunEnergy", sunEnergy);
         setParameter("sunScatteringG", sunScatteringG);
-        
-        bool shaded = !ishadeless.asBool;
+        setParameter("sunScatteringDensity", sunScatteringDensity);
+        setParameter("sunScattering", scatteringEnabled);
         setParameter("shaded", shaded);
         
         // Texture 0 - diffuse texture
@@ -136,19 +143,6 @@ class ParticleShader: Shader
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, state.depthTexture);
         setParameter("depthTexture", 1);
-        
-        if (state.environment)
-        {
-            setParameter("fogColor", state.environment.fogColor);
-            setParameter("fogStart", state.environment.fogStart);
-            setParameter("fogEnd", state.environment.fogEnd);
-        }
-        else
-        {
-            setParameter("fogColor", Color4f(0.5f, 0.5f, 0.5f, 1.0f));
-            setParameter("fogStart", 0.0f);
-            setParameter("fogEnd", 1000.0f);
-        }
         
         // Texture 2 - normal map
         if (inormal.texture is null)
@@ -174,6 +168,45 @@ class ParticleShader: Shader
             setParameter("normalTexture", 2);
             setParameterSubroutine("normal", ShaderType.Fragment, "normalMap");
         }
+        
+        // Texture 4 - environment
+        if (state.environment)
+        {
+            setParameter("fogColor", state.environment.fogColor);
+            setParameter("fogStart", state.environment.fogStart);
+            setParameter("fogEnd", state.environment.fogEnd);
+            setParameter("ambientEnergy", state.environment.ambientEnergy);
+
+            if (state.environment.ambientMap)
+            {
+                glActiveTexture(GL_TEXTURE4);
+                state.environment.ambientMap.bind();
+                if (cast(Cubemap)state.environment.ambientMap)
+                {
+                    setParameter("ambientTextureCube", 4);
+                    setParameterSubroutine("ambient", ShaderType.Fragment, "ambientCubemap");
+                }
+                else
+                {
+                    setParameter("ambientTexture", 4);
+                    setParameterSubroutine("ambient", ShaderType.Fragment, "ambientEquirectangularMap");
+                }
+            }
+            else
+            {
+                setParameter("ambientVector", state.environment.ambientColor);
+                setParameterSubroutine("ambient", ShaderType.Fragment, "ambientColor");
+            }
+        }
+        else
+        {
+            setParameter("fogColor", Color4f(0.5f, 0.5f, 0.5f, 1.0f));
+            setParameter("fogStart", 0.0f);
+            setParameter("fogEnd", 1000.0f);
+            setParameter("ambientEnergy", 1.0f);
+            setParameter("ambientVector", Color4f(0.5f, 0.5f, 0.5f, 1.0f));
+            setParameterSubroutine("ambient", ShaderType.Fragment, "ambientColor");
+        }
 
         super.bindParameters(state);
     }
@@ -190,6 +223,10 @@ class ParticleShader: Shader
         
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE4);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
         
         glActiveTexture(GL_TEXTURE0);
     }
