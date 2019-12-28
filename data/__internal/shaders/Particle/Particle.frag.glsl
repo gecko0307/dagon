@@ -1,5 +1,7 @@
 #version 400 core
 
+#define PI 3.14159265359
+
 in vec3 eyePosition;
 in vec2 texCoord;
 
@@ -16,6 +18,8 @@ uniform bool shaded;
 uniform vec3 sunDirection;
 uniform vec4 sunColor;
 uniform float sunEnergy;
+
+uniform float sunScatteringG;
 
 #include <unproject.glsl>
 #include <gamma.glsl>
@@ -76,6 +80,15 @@ subroutine(srtNormal) vec3 normalFunctionHemisphere(in vec2 uv, in float ysign, 
 subroutine uniform srtNormal normal;
 
 
+// Mie scaterring approximated with Henyey-Greenstein phase function.
+float scattering(float lightDotView)
+{
+    float result = 1.0 - sunScatteringG * sunScatteringG;
+    result /= 4.0 * PI * pow(1.0 + sunScatteringG * sunScatteringG - (2.0 * sunScatteringG) * lightDotView, 1.5);
+    return result;
+}
+
+
 uniform vec2 viewSize;
 uniform sampler2D depthTexture;
 
@@ -111,6 +124,15 @@ void main()
     vec3 radiance = shaded? 
         ambient + toLinear(sunColor.rgb) * max(dot(N, sunDirection) + wrapFactor, 0.0) / (1.0 + wrapFactor) * sunEnergy :
         vec3(1.0);
+    
+    // Scattering
+    const bool sunScattering = true;
+    const float sunScatteringDensity = 1.0;
+    if (sunScattering)
+    {
+        float scattFactor = scattering(dot(-sunDirection, E)) * sunScatteringDensity;
+        radiance += toLinear(sunColor.rgb) * sunEnergy * scattFactor;
+    }
     
     // TODO: make uniform
     const float softDistance = 3.0;
