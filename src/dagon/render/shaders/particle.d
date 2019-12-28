@@ -70,6 +70,7 @@ class ParticleShader: Shader
         auto itransparency = "transparency" in state.material.inputs;
         auto iparticleColor = "particleColor" in state.material.inputs;
         auto iparticleSphericalNormal = "particleSphericalNormal" in state.material.inputs;
+        auto ishadeless = "shadeless" in state.material.inputs;
         
         setParameter("modelViewMatrix", state.modelViewMatrix);
         setParameter("projectionMatrix", state.projectionMatrix);
@@ -93,6 +94,26 @@ class ParticleShader: Shader
         setParameter("alphaCutout", false);
         setParameter("alphaCutoutThreshold", 0.25f); // TODO: store in material properties
         setParameter("particlePosition", state.modelViewMatrix.translation);
+        
+        // Sun
+        Vector3f sunDirection = Vector3f(0.0f, 0.0f, 1.0f);
+        Color4f sunColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+        float sunEnergy = 1.0f;
+        if (state.material.sun)
+        {
+            auto sun = state.material.sun;
+            sunDirection = sun.directionAbsolute;
+            sunColor = sun.color;
+            sunEnergy = sun.energy;
+        }
+        Vector4f sunDirHg = Vector4f(sunDirection);
+        sunDirHg.w = 0.0;
+        setParameter("sunDirection", (sunDirHg * state.viewMatrix).xyz);
+        setParameter("sunColor", sunColor);
+        setParameter("sunEnergy", sunEnergy);
+        
+        bool shaded = !ishadeless.asBool;
+        setParameter("shaded", shaded);
         
         // Texture 0 - diffuse texture
         if (idiffuse.texture is null)

@@ -12,6 +12,11 @@ in vec4 prevPosition;
 uniform mat4 viewMatrix;
 uniform mat4 invProjectionMatrix;
 
+uniform bool shaded;
+uniform vec3 sunDirection;
+uniform vec4 sunColor;
+uniform float sunEnergy;
+
 #include <unproject.glsl>
 #include <gamma.glsl>
 #include <cotangentFrame.glsl>
@@ -100,14 +105,19 @@ void main()
 
     vec3 worldN = N * mat3(viewMatrix);
     
-    // TODO: radiance
+    // TODO: ambient
+    vec3 ambient = vec3(0.0, 0.0, 0.0);
+    const float wrapFactor = 0.5;
+    vec3 radiance = shaded? 
+        ambient + toLinear(sunColor.rgb) * max(dot(N, sunDirection) + wrapFactor, 0.0) / (1.0 + wrapFactor) * sunEnergy :
+        vec3(1.0);
     
     // TODO: make uniform
     const float softDistance = 3.0;
     float soft = alphaCutout? 1.0 : clamp((eyePosition.z - referenceEyePos.z) / softDistance, 0.0, 1.0);
         
     vec4 diff = diffuse(texCoord);
-    vec3 outColor = toLinear(diff.rgb) * toLinear(particleColor.rgb);
+    vec3 outColor = radiance * toLinear(diff.rgb) * toLinear(particleColor.rgb);
     float outAlpha = diff.a * particleColor.a * particleAlpha * soft;
     
     if (alphaCutout && outAlpha <= alphaCutoutThreshold)

@@ -44,6 +44,7 @@ import dagon.graphics.texture;
 import dagon.graphics.cubemap;
 import dagon.graphics.state;
 import dagon.graphics.shader;
+import dagon.graphics.light;
 
 enum
 {
@@ -144,6 +145,7 @@ class Material: Owner
 {
     Dict!(MaterialInput, string) inputs;
     Shader shader;
+    Light sun;
 
     this(Owner o)
     {
