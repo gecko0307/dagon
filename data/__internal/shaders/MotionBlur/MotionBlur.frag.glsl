@@ -29,8 +29,10 @@ void main()
     if (enabled)
     {
         vec2 blurVec = velocity.xy;
-        blurVec = blurVec * blurScale;
-
+        float len = length(blurVec);
+        
+        blurVec = normalize(blurVec) * clamp(len, 0.0, 100.0) * blurScale;
+        
         float speed = length(blurVec * viewSize);
         int nSamples = clamp(int(speed), 1, samples);
 
@@ -44,7 +46,7 @@ void main()
             vec2 offset = blurVec * (float(i) * invSamplesMinusOne - 0.5);
             float mask = texture(velocityBuffer, texCoord + offset).z;
             float z = unproject(invProjectionMatrix, vec3(texCoord, texture(depthBuffer, texCoord + offset).x)).z; 
-            mask *= 1.0 - clamp(abs(zCenter - z), 0.0, 100.0) / 100.0;
+            //mask *= 1.0 - clamp(abs(zCenter - z), 0.0, 1.0) / 1.0;
             res += texture(colorBuffer, texCoord + offset).rgb * mask;
             usedSamples += mask;
         }
