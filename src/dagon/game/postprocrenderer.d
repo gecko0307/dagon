@@ -283,7 +283,6 @@ class PostProcRenderer: Renderer
         if (lutShader.colorLookupTable)
         {
             lutShader.colorLookupTable.useMipmapFiltering = false;
-            lutShader.colorLookupTable.useLinearFiltering = false;
         }
     }
     
