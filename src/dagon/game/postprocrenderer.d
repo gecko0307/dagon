@@ -32,6 +32,7 @@ import dlib.core.ownership;
 
 import dagon.core.event;
 import dagon.core.time;
+import dagon.graphics.texture;
 import dagon.resource.scene;
 import dagon.render.stage;
 import dagon.render.deferred;
@@ -48,6 +49,7 @@ import dagon.postproc.shaders.glow;
 import dagon.postproc.shaders.motionblur;
 import dagon.postproc.shaders.tonemap;
 import dagon.postproc.shaders.fxaa;
+import dagon.postproc.shaders.lut;
 import dagon.game.renderer;
 
 class PostProcRenderer: Renderer
@@ -75,17 +77,20 @@ class PostProcRenderer: Renderer
     MotionBlurShader motionBlurShader;
     TonemapShader tonemapShader;
     FXAAShader fxaaShader;
+    LUTShader lutShader;
     
     FilterStage stageMotionBlur;
     FilterStage stageBrightPass;
     FilterStage stageGlow;
     FilterStage stageTonemap;
     FilterStage stageFXAA;
+    FilterStage stageLUT;
     PresentStage stagePresent;
     
     bool _motionBlurEnabled = false;
     bool _glowEnabled = false;
     bool _fxaaEnabled = false;
+    bool _lutEnabled = false;
     
     public:
     
@@ -99,6 +104,8 @@ class PostProcRenderer: Renderer
     
     uint motionBlurSamples = 16;
     uint motionBlurFramerate = 24;
+    
+    Texture colorLookupTable;
     
     this(EventManager eventManager, Framebuffer inputBuffer, GBuffer gbuffer, Owner owner)
     {
@@ -157,7 +164,13 @@ class PostProcRenderer: Renderer
         stageFXAA.inputBuffer = stageTonemap.outputBuffer;
         stageFXAA.outputBuffer = ldrBuffer2;
         
-        outputBuffer = stageFXAA.outputBuffer;
+        lutShader = New!LUTShader(this);
+        stageLUT = New!FilterStage(pipeline, lutShader);
+        stageLUT.view = view;
+        stageLUT.inputBuffer = stageFXAA.outputBuffer;
+        stageLUT.outputBuffer = ldrBuffer1;
+        
+        outputBuffer = stageLUT.outputBuffer;
     }
     
     void motionBlurEnabled(bool mode) @property
@@ -205,23 +218,53 @@ class PostProcRenderer: Renderer
         return _glowEnabled;
     }
     
+    
     void fxaaEnabled(bool mode) @property
     {
         _fxaaEnabled = mode;
         stageFXAA.active = mode;
         if (!_fxaaEnabled)
         {
-            outputBuffer = stageTonemap.outputBuffer;
+            if (_lutEnabled)
+                stageLUT.inputBuffer = stageTonemap.outputBuffer;
+            else
+                outputBuffer = stageTonemap.outputBuffer;
         }
         else
         {
-            outputBuffer = stageFXAA.outputBuffer;
+            if (_lutEnabled)
+                stageLUT.inputBuffer = stageFXAA.outputBuffer;
+            else
+                outputBuffer = stageFXAA.outputBuffer;
         }
     }
-    
+
     bool fxaaEnabled() @property
     {
         return _fxaaEnabled;
+    }
+    
+    
+    void lutEnabled(bool mode) @property
+    {
+        _lutEnabled = mode;
+        stageLUT.active = mode;
+        if (!_lutEnabled)
+        {
+            if (_fxaaEnabled)
+                outputBuffer = stageFXAA.outputBuffer;
+            else
+                outputBuffer = stageTonemap.outputBuffer;
+        }
+        else
+        {
+            outputBuffer = stageLUT.outputBuffer;
+        }
+    }
+    
+    bool lutEnabled() @property
+    {
+        return _lutEnabled;
     }
     
     override void update(Time t)
@@ -236,6 +279,12 @@ class PostProcRenderer: Renderer
         motionBlurShader.samples = motionBlurSamples;
         motionBlurShader.currentFramerate = 1.0 / t.delta;
         motionBlurShader.shutterFramerate = motionBlurFramerate;
+        lutShader.colorLookupTable = colorLookupTable;
+        if (lutShader.colorLookupTable)
+        {
+            lutShader.colorLookupTable.useMipmapFiltering = false;
+            lutShader.colorLookupTable.useLinearFiltering = false;
+        }
     }
     
     override void render()
