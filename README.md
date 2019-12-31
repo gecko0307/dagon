@@ -65,7 +65,7 @@ Usage
 -----
 To use latest stable Dagon, add the following dependency to your `dub.json`:
 ```
-"dagon": "0.10.1"
+"dagon": "0.10.2"
 ```
 If you want to test new features, use master branch: `"dagon": "~master"`.
 
