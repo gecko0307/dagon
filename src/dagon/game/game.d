@@ -77,6 +77,7 @@ class Game: Application
         postProcessingRenderer.glowEnabled = false;
         postProcessingRenderer.fxaaEnabled = false;
         postProcessingRenderer.lutEnabled = false;
+        postProcessingRenderer.lensDistortionEnabled = false;
     }
 
     void fixedUpdate(Time t)

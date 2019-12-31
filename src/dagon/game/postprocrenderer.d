@@ -50,7 +50,65 @@ import dagon.postproc.shaders.motionblur;
 import dagon.postproc.shaders.tonemap;
 import dagon.postproc.shaders.fxaa;
 import dagon.postproc.shaders.lut;
+import dagon.postproc.shaders.lensdistortion;
 import dagon.game.renderer;
+
+import dagon.core.bindings;
+
+class DoubleBuffer: Framebuffer
+{
+    Framebuffer writeBuffer;
+    Framebuffer readBuffer;
+   
+    this(Framebuffer writeBuffer, Framebuffer readBuffer, Owner owner)
+    {
+        super(writeBuffer.width, writeBuffer.height, owner);
+        this.writeBuffer = writeBuffer;
+        this.readBuffer = readBuffer;
+    }
+    
+    void swap()
+    {
+        auto w = writeBuffer;
+        writeBuffer = readBuffer;
+        readBuffer = w;
+    }
+    
+    override GLuint colorTexture()
+    {
+        return readBuffer.colorTexture();
+    }
+    
+    override GLuint depthTexture()
+    {
+        return readBuffer.depthTexture();
+    }
+    
+    override void bind()
+    {
+        writeBuffer.bind();
+    }
+    
+    override void unbind()
+    {
+        writeBuffer.unbind();
+    }
+    
+    override void resize(uint width, uint height)
+    {
+        
+    }
+    
+    override void blitColorBuffer()
+    {
+        
+    }
+    
+    override void blitDepthBuffer()
+    {
+    
+    }
+}
 
 class PostProcRenderer: Renderer
 {
@@ -60,6 +118,8 @@ class PostProcRenderer: Renderer
     Framebuffer outputBuffer;
 
     protected:
+    
+    DoubleBuffer ldrDoubleBuffer;
     
     Framebuffer ldrBuffer1;
     Framebuffer ldrBuffer2;
@@ -77,6 +137,7 @@ class PostProcRenderer: Renderer
     MotionBlurShader motionBlurShader;
     TonemapShader tonemapShader;
     FXAAShader fxaaShader;
+    LensDistortionShader lensDistortionShader;
     LUTShader lutShader;
     
     FilterStage stageMotionBlur;
@@ -84,13 +145,12 @@ class PostProcRenderer: Renderer
     FilterStage stageGlow;
     FilterStage stageTonemap;
     FilterStage stageFXAA;
+    FilterStage stageLensDistortion;
     FilterStage stageLUT;
     PresentStage stagePresent;
     
     bool _motionBlurEnabled = false;
     bool _glowEnabled = false;
-    bool _fxaaEnabled = false;
-    bool _lutEnabled = false;
     
     public:
     
@@ -117,6 +177,7 @@ class PostProcRenderer: Renderer
         
         ldrBuffer1 = New!FramebufferRGBA8(view.width, view.height, this);
         ldrBuffer2 = New!FramebufferRGBA8(view.width, view.height, this);
+        ldrDoubleBuffer = New!DoubleBuffer(ldrBuffer1, ldrBuffer2, this);
         
         hdrBuffer1 = New!FramebufferRGBA16f(viewHalf.width, viewHalf.height, this);
         hdrBuffer2 = New!FramebufferRGBA16f(viewHalf.width, viewHalf.height, this);
@@ -156,21 +217,27 @@ class PostProcRenderer: Renderer
         stageTonemap = New!FilterStage(pipeline, tonemapShader);
         stageTonemap.view = view;
         stageTonemap.inputBuffer = stageGlow.outputBuffer;
-        stageTonemap.outputBuffer = ldrBuffer1;
+        stageTonemap.outputBuffer = ldrDoubleBuffer;
         
         fxaaShader = New!FXAAShader(this);
         stageFXAA = New!FilterStage(pipeline, fxaaShader);
         stageFXAA.view = view;
-        stageFXAA.inputBuffer = stageTonemap.outputBuffer;
-        stageFXAA.outputBuffer = ldrBuffer2;
+        stageFXAA.inputBuffer = ldrDoubleBuffer;
+        stageFXAA.outputBuffer = ldrDoubleBuffer;
+        
+        lensDistortionShader = New!LensDistortionShader(this);
+        stageLensDistortion = New!FilterStage(pipeline, lensDistortionShader);
+        stageLensDistortion.view = view;
+        stageLensDistortion.inputBuffer = ldrDoubleBuffer;
+        stageLensDistortion.outputBuffer = ldrDoubleBuffer;
         
         lutShader = New!LUTShader(this);
         stageLUT = New!FilterStage(pipeline, lutShader);
         stageLUT.view = view;
-        stageLUT.inputBuffer = stageFXAA.outputBuffer;
-        stageLUT.outputBuffer = ldrBuffer1;
+        stageLUT.inputBuffer = ldrDoubleBuffer;
+        stageLUT.outputBuffer = ldrDoubleBuffer;
         
-        outputBuffer = stageLUT.outputBuffer;
+        outputBuffer = ldrDoubleBuffer;
     }
     
     void motionBlurEnabled(bool mode) @property
@@ -188,7 +255,6 @@ class PostProcRenderer: Renderer
             stageGlow.inputBuffer = stageMotionBlur.outputBuffer;
         }
     }
-    
     bool motionBlurEnabled() @property
     {
         return _motionBlurEnabled;
@@ -212,59 +278,36 @@ class PostProcRenderer: Renderer
             stageTonemap.inputBuffer = stageGlow.outputBuffer;
         }
     }
-    
     bool glowEnabled() @property
     {
         return _glowEnabled;
     }
     
-    
     void fxaaEnabled(bool mode) @property
     {
-        _fxaaEnabled = mode;
         stageFXAA.active = mode;
-        if (!_fxaaEnabled)
-        {
-            if (_lutEnabled)
-                stageLUT.inputBuffer = stageTonemap.outputBuffer;
-            else
-                outputBuffer = stageTonemap.outputBuffer;
-        }
-        else
-        {
-            if (_lutEnabled)
-                stageLUT.inputBuffer = stageFXAA.outputBuffer;
-            else
-                outputBuffer = stageFXAA.outputBuffer;
-        }
     }
-
     bool fxaaEnabled() @property
     {
-        return _fxaaEnabled;
+        return stageFXAA.active;
     }
     
+    void lensDistortionEnabled(bool mode) @property
+    {
+        stageLensDistortion.active = mode;
+    }
+    bool lensDistortionEnabled() @property
+    {
+        return stageLensDistortion.active;
+    }
     
     void lutEnabled(bool mode) @property
     {
-        _lutEnabled = mode;
         stageLUT.active = mode;
-        if (!_lutEnabled)
-        {
-            if (_fxaaEnabled)
-                outputBuffer = stageFXAA.outputBuffer;
-            else
-                outputBuffer = stageTonemap.outputBuffer;
-        }
-        else
-        {
-            outputBuffer = stageLUT.outputBuffer;
-        }
     }
-    
     bool lutEnabled() @property
     {
-        return _lutEnabled;
+        return stageLUT.active;
     }
     
     override void update(Time t)
@@ -294,7 +337,10 @@ class PostProcRenderer: Renderer
         foreach(stage; pipeline.stages.data)
         {
             if (stage.active)
+            {
                 stage.render();
+                ldrDoubleBuffer.swap();
+            }
         }
         
         if (outputBuffer)

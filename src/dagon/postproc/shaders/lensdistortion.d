@@ -25,58 +25,70 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.postproc.filterstage;
+module dagon.postproc.shaders.lensdistortion;
 
 import std.stdio;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.math.vector;
+import dlib.math.matrix;
+import dlib.math.transformation;
+import dlib.math.interpolation;
+import dlib.image.color;
+import dlib.text.unmanagedstring;
 
 import dagon.core.bindings;
-import dagon.graphics.screensurface;
 import dagon.graphics.shader;
-import dagon.render.pipeline;
-import dagon.render.stage;
+import dagon.graphics.state;
 import dagon.render.framebuffer;
 
-class FilterStage: RenderStage
+class LensDistortionShader: Shader
 {
-    Framebuffer inputBuffer;
-    Framebuffer outputBuffer;
-    ScreenSurface screenSurface;
-    Shader shader;
+    String vs, fs;
+    
+    float scale = 1.0f;
+    float dispersion = 0.1f;
 
-    this(RenderPipeline pipeline, Shader shader)
+    this(Owner owner)
     {
-        super(pipeline);
-        screenSurface = New!ScreenSurface(this);
-        this.shader = shader;
+        vs = Shader.load("data/__internal/shaders/LensDistortion/LensDistortion.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/LensDistortion/LensDistortion.frag.glsl");
+        
+        auto myProgram = New!ShaderProgram(vs, fs, this);
+        super(myProgram, owner);
+    }
+    
+    ~this()
+    {
+        vs.free();
+        fs.free();
     }
 
-    override void render()
+    override void bindParameters(GraphicsState* state)
     {
-        if (inputBuffer && view)
-        {
-            if (outputBuffer)
-                outputBuffer.bind();
+        setParameter("viewSize", state.resolution);
 
-            state.colorTexture = inputBuffer.colorTexture;
-            state.depthTexture = inputBuffer.depthTexture;
+        // Texture 0 - color buffer
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, state.colorTexture);
+        setParameter("colorBuffer", 0);
+        
+        setParameter("scale", scale);
+        setParameter("dispersion", dispersion);
 
-            glScissor(view.x, view.y, view.width, view.height);
-            glViewport(view.x, view.y, view.width, view.height);
+        glActiveTexture(GL_TEXTURE0);
 
-            glDisable(GL_DEPTH_TEST);
-            shader.bind();
-            shader.bindParameters(&state);
-            screenSurface.render(&state);
-            shader.unbindParameters(&state);
-            shader.unbind();
-            glEnable(GL_DEPTH_TEST);
+        super.bindParameters(state);
+    }
 
-            if (outputBuffer)
-                outputBuffer.unbind();
-        }
+    override void unbindParameters(GraphicsState* state)
+    {
+        super.unbindParameters(state);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        glActiveTexture(GL_TEXTURE0);
     }
 }
-
