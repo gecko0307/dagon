@@ -13,6 +13,8 @@ d:
 
 matrix:
   fast_finish: true
+  allow_failures:
+   - d: dmd-2.089.0
 
 env: 
   matrix:

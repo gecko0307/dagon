@@ -181,6 +181,7 @@ class PostProcRenderer: Renderer
         
         hdrBuffer1 = New!FramebufferRGBA16f(viewHalf.width, viewHalf.height, this);
         hdrBuffer2 = New!FramebufferRGBA16f(viewHalf.width, viewHalf.height, this);
+        
         hdrBuffer3 = New!FramebufferRGBA16f(view.width, view.height, this);
         hdrBuffer4 = New!FramebufferRGBA16f(view.width, view.height, this);
         
