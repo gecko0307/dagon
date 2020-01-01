@@ -50,9 +50,9 @@ Planned in future:
 
 Screenshots
 -----------
-[![Screenshot1](https://1.bp.blogspot.com/-qC2fIlkQA7E/XO2335jW2iI/AAAAAAAAD8M/Tc9Wjg2CkzUMyo2k_Kg35y70qkUj7-FIwCPcBGAYYCw/s1600/2019-05-29%2B01_20_42-Dagon%2BNG.jpg)](https://1.bp.blogspot.com/-qC2fIlkQA7E/XO2335jW2iI/AAAAAAAAD8M/Tc9Wjg2CkzUMyo2k_Kg35y70qkUj7-FIwCPcBGAYYCw/s1600/2019-05-29%2B01_20_42-Dagon%2BNG.jpg)
+[![Screenshot2](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/fire5_1.jpg)](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/fire5_1.jpg)
 
-[![Screenshot2](https://1.bp.blogspot.com/-IaDVtXOtJZw/XWG0FeJPFuI/AAAAAAAAEHQ/lk9WdRFGlegSSt0hnNLFEdGw_6XyrS7NgCLcBGAs/s1600/ng-terrain-bushes.jpg)](https://1.bp.blogspot.com/-IaDVtXOtJZw/XWG0FeJPFuI/AAAAAAAAEHQ/lk9WdRFGlegSSt0hnNLFEdGw_6XyrS7NgCLcBGAs/s1600/ng-terrain-bushes.jpg)
+[![Screenshot1](https://1.bp.blogspot.com/-qC2fIlkQA7E/XO2335jW2iI/AAAAAAAAD8M/Tc9Wjg2CkzUMyo2k_Kg35y70qkUj7-FIwCPcBGAYYCw/s1600/2019-05-29%2B01_20_42-Dagon%2BNG.jpg)](https://1.bp.blogspot.com/-qC2fIlkQA7E/XO2335jW2iI/AAAAAAAAD8M/Tc9Wjg2CkzUMyo2k_Kg35y70qkUj7-FIwCPcBGAYYCw/s1600/2019-05-29%2B01_20_42-Dagon%2BNG.jpg)
 
 Made with Dagon
 ---------------
