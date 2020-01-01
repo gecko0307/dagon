@@ -12,6 +12,12 @@ The goal of this project is creating a modern, easy to use, extendable 3D game e
 
 If you like Dagon, please support its development on [Patreon](https://www.patreon.com/gecko0307) or [Liberapay](https://liberapay.com/gecko0307). You can also make one-time donation via [PayPal](https://www.paypal.me/tgafarov). I appreciate any support. Thanks in advance!
 
+Screenshots
+-----------
+[![Screenshot2](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/fire5_1.jpg)](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/fire5_1.jpg)
+
+[![Screenshot1](https://1.bp.blogspot.com/-qC2fIlkQA7E/XO2335jW2iI/AAAAAAAAD8M/Tc9Wjg2CkzUMyo2k_Kg35y70qkUj7-FIwCPcBGAYYCw/s1600/2019-05-29%2B01_20_42-Dagon%2BNG.jpg)](https://1.bp.blogspot.com/-qC2fIlkQA7E/XO2335jW2iI/AAAAAAAAD8M/Tc9Wjg2CkzUMyo2k_Kg35y70qkUj7-FIwCPcBGAYYCw/s1600/2019-05-29%2B01_20_42-Dagon%2BNG.jpg)
+
 Features
 --------
 * Static and animated meshes, OBJ and [IQM](https://github.com/lsalzman/iqm) formats support
@@ -47,12 +53,6 @@ Features
 
 Planned in future:
 * Screen-space reflections
-
-Screenshots
------------
-[![Screenshot2](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/fire5_1.jpg)](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/fire5_1.jpg)
-
-[![Screenshot1](https://1.bp.blogspot.com/-qC2fIlkQA7E/XO2335jW2iI/AAAAAAAAD8M/Tc9Wjg2CkzUMyo2k_Kg35y70qkUj7-FIwCPcBGAYYCw/s1600/2019-05-29%2B01_20_42-Dagon%2BNG.jpg)](https://1.bp.blogspot.com/-qC2fIlkQA7E/XO2335jW2iI/AAAAAAAAD8M/Tc9Wjg2CkzUMyo2k_Kg35y70qkUj7-FIwCPcBGAYYCw/s1600/2019-05-29%2B01_20_42-Dagon%2BNG.jpg)
 
 Made with Dagon
 ---------------
