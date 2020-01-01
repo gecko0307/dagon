@@ -72,6 +72,8 @@ class ParticleShader: Shader
         auto iparticleColor = "particleColor" in state.material.inputs;
         auto iparticleSphericalNormal = "particleSphericalNormal" in state.material.inputs;
         auto ishadeless = "shadeless" in state.material.inputs;
+        auto ialphaCutout = "alphaCutout" in state.material.inputs;
+        auto ialphaCutoutThreshold = "alphaCutoutThreshold" in state.material.inputs;
         
         setParameter("modelViewMatrix", state.modelViewMatrix);
         setParameter("projectionMatrix", state.projectionMatrix);
@@ -92,8 +94,14 @@ class ParticleShader: Shader
         
         setParameter("particleColor", particleColor);
         setParameter("particleAlpha", particleAlpha);
-        setParameter("alphaCutout", false);
-        setParameter("alphaCutoutThreshold", 0.25f); // TODO: store in material properties
+        if (ialphaCutout)
+            setParameter("alphaCutout", ialphaCutout.asBool);
+        else
+            setParameter("alphaCutout", false);
+        if (ialphaCutoutThreshold)
+            setParameter("alphaCutoutThreshold", ialphaCutoutThreshold.asFloat);
+        else
+            setParameter("alphaCutoutThreshold", 0.5f);
         setParameter("particlePosition", state.modelViewMatrix.translation);
         
         // Sun

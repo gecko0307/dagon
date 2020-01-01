@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.graphics.particles;
 
+import std.math;
 import std.random;
 import std.algorithm;
 
@@ -46,7 +47,6 @@ import dagon.core.event;
 import dagon.core.bindings;
 import dagon.graphics.entity;
 import dagon.graphics.texture;
-//import dagon.graphics.view;
 import dagon.graphics.state;
 import dagon.graphics.material;
 import dagon.graphics.mesh;
@@ -61,6 +61,8 @@ struct Particle
     Vector3f velocity;
     Vector3f gravityVector;
     Vector3f scale;
+    float rotation;
+    float rotationDirection;
     double lifetime;
     double time;
     bool move;
@@ -191,6 +193,8 @@ class Emitter: EntityComponent
     float minSize = 0.25f;
     float maxSize = 1.0f;
     Vector3f scaleStep = Vector3f(0, 0, 0);
+    
+    float rotationStep = 0.0f;
 
     float initialPositionRandomRadius = 0.0f;
 
@@ -264,6 +268,8 @@ class Emitter: EntityComponent
         else
             s = maxSize;
 
+        p.rotation = uniform(0.0f, 2.0f * PI);
+        p.rotationDirection = choice([1.0f, -1.0f]);
         p.scale = Vector3f(s, s, s);
         p.time = 0.0f;
         p.move = true;
@@ -367,6 +373,7 @@ class ParticleSystem: EntityComponent
         float t = p.time / p.lifetime;
         p.color = lerp(e.startColor, e.endColor, t);
         p.scale = p.scale + e.scaleStep * dt;
+        p.rotation = p.rotation + e.rotationStep * p.rotationDirection * dt;
 
         if (p.move)
         {
@@ -482,6 +489,7 @@ class ParticleSystem: EntityComponent
             state.viewMatrix *
             translationMatrix(p.position) *
             state.invViewRotationMatrix *
+            rotationMatrix(Axis.z, p.rotation) *
             scaleMatrix(Vector3f(p.scale.x, p.scale.y, 1.0f));
         
         GraphicsState stateLocal = *state;
