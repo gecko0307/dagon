@@ -317,6 +317,20 @@ class Material: Owner
         }
         return res;
     }
+    
+    final Texture makeTexture(Color4f rgb)
+    {
+        SuperImage rgbaImg = New!UnmanagedImageRGBA8(8, 8);
+
+        foreach(y; 0..rgbaImg.height)
+        foreach(x; 0..rgbaImg.width)
+        {
+            rgbaImg[x, y] = rgb;
+        }
+
+        auto tex = New!Texture(rgbaImg, this);
+        return tex;
+    }
 
     final Texture makeTexture(Color4f rgb, Texture alpha)
     {
