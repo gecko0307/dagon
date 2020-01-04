@@ -208,6 +208,13 @@ class FreeviewComponent: EntityComponent
         entity.prevAbsoluteTransformation = entity.prevTransformation;
     }
     
+    void setRotation(float p, float t, float r)
+    {
+        rotPitchTheta = p;
+        rotTurnTheta = t;
+        rotRollTheta = r;
+    }
+    
     void pitch(float theta)
     {
         rotPitchTheta += theta;
