@@ -14,9 +14,11 @@ If you like Dagon, please support its development on [Patreon](https://www.patre
 
 Screenshots
 -----------
-[![Screenshot2](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/fire5_1.jpg)](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/fire5_1.jpg)
+[![Screenshot1](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/snow2.jpg)](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/snow2.jpg)
 
-[![Screenshot1](https://1.bp.blogspot.com/-qC2fIlkQA7E/XO2335jW2iI/AAAAAAAAD8M/Tc9Wjg2CkzUMyo2k_Kg35y70qkUj7-FIwCPcBGAYYCw/s1600/2019-05-29%2B01_20_42-Dagon%2BNG.jpg)](https://1.bp.blogspot.com/-qC2fIlkQA7E/XO2335jW2iI/AAAAAAAAD8M/Tc9Wjg2CkzUMyo2k_Kg35y70qkUj7-FIwCPcBGAYYCw/s1600/2019-05-29%2B01_20_42-Dagon%2BNG.jpg)
+[![Screenshot2](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/forest2.jpg)](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/forest2.jpg)
+
+[![Screenshot3](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/cerberus.jpg)](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/cerberus.jpg)
 
 Features
 --------
