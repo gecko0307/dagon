@@ -20,6 +20,8 @@ Screenshots
 
 [![Screenshot3](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/cerberus.jpg)](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/cerberus.jpg)
 
+[![Screenshot4](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/car.jpg)](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/car.jpg)
+
 Features
 --------
 * Static and animated meshes, OBJ and [IQM](https://github.com/lsalzman/iqm) formats support
