@@ -127,6 +127,11 @@ class GeometryShader: Shader
                     inormal.texture = state.material.makeTexture(color, iheight.texture);
                     haveHeightMap = true;
                 }
+                else
+                {
+                    Color4f color = Color4f(0.5f, 0.5f, 1.0f, 0.0f); // default normal pointing upwards
+                    inormal.texture = state.material.makeTexture(color);
+                }
             }
             else
             {
