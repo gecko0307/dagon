@@ -61,6 +61,7 @@ class DeferredRenderer: Renderer
     DeferredEnvironmentStage stageEnvironment;
     DeferredLightStage stageLight;
     DeferredParticlesStage stageParticles;
+    DeferredForwardStage stageForward;
     DeferredDebugOutputStage stageDebug;
 
     RenderView occlusionView;
@@ -130,6 +131,11 @@ class DeferredRenderer: Renderer
         stageParticles.view = view;
         // TODO: velocity buffer as a second attachment
         stageParticles.outputBuffer = radianceBuffer;
+        
+        stageForward = New!DeferredForwardStage(pipeline);
+        stageForward.view = view;
+        // TODO: velocity buffer as a second attachment
+        stageForward.outputBuffer = radianceBuffer;
 
         stageDebug = New!DeferredDebugOutputStage(pipeline, gbuffer);
         stageDebug.view = view;
@@ -171,6 +177,7 @@ class DeferredRenderer: Renderer
         stageLight.groupSunLights = s.sunLights;
         stageLight.groupAreaLights = s.areaLights;
         stageParticles.group = s.spatial;
+        stageForward.group = s.spatialTransparent;
 
         stageBackground.state.environment = s.environment;
         stageStaticGeometry.state.environment = s.environment;
@@ -180,6 +187,7 @@ class DeferredRenderer: Renderer
         stageLight.state.environment = s.environment;
         stageParticles.state.environment = s.environment;
         stageDebug.state.environment = s.environment;
+        stageForward.state.environment = s.environment;
     }
 
     override void update(Time t)

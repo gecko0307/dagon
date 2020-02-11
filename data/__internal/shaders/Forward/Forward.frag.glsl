@@ -1,5 +1,8 @@
 #version 400 core
 
+#define PI 3.14159265359
+const float PI2 = PI * 2.0;
+
 in vec3 eyeNormal;
 in vec3 eyePosition;
 in vec2 texCoord;
@@ -11,11 +14,21 @@ uniform float layer;
 uniform float energy;
 uniform float opacity;
 
+uniform bool shaded;
+uniform vec3 sunDirection;
+uniform vec4 sunColor;
+uniform float sunEnergy;
+uniform bool sunScattering;
+uniform float sunScatteringG;
+uniform float sunScatteringDensity;
+
 #include <gamma.glsl>
 #include <cotangentFrame.glsl>
+#include <envMapEquirect.glsl>
 
 /*
- * Diffuse color
+ * Diffuse color subroutines.
+ * Used to switch color/texture.
  */
 subroutine vec4 srtColor(in vec2 uv);
 
@@ -33,9 +46,8 @@ subroutine(srtColor) vec4 diffuseColorTexture(in vec2 uv)
 
 subroutine uniform srtColor diffuse;
 
-
 /*
- * Normal mapping
+ * Normal mapping subroutines.
  */
 subroutine vec3 srtNormal(in vec2 uv, in float ysign, in mat3 tangentToEye);
 
@@ -186,25 +198,6 @@ subroutine uniform srtSpecularity specularity;
 
 
 /*
- * Translucensy
- */
-subroutine float srtTranslucency(in vec2 uv);
-
-uniform float translucencyScalar;
-subroutine(srtTranslucency) float translucencyValue(in vec2 uv)
-{
-    return translucencyScalar;
-}
-
-subroutine(srtTranslucency) float translucencyMap(in vec2 uv)
-{
-    return texture(pbrTexture, uv).a;
-}
-
-subroutine uniform srtTranslucency translucency;
-
-
-/*
  * Emission
  */
 subroutine vec3 srtEmission(in vec2 uv);
@@ -224,11 +217,59 @@ subroutine(srtEmission) vec3 emissionColorTexture(in vec2 uv)
 subroutine uniform srtEmission emission;
 
 
+/*
+ * Ambient
+ */
+uniform float ambientEnergy;
+
+subroutine vec3 srtAmbient(in vec3 wN, in float roughness);
+
+uniform vec4 ambientVector;
+subroutine(srtAmbient) vec3 ambientColor(in vec3 wN, in float roughness)
+{
+    return toLinear(ambientVector.rgb) * ambientEnergy;
+}
+
+uniform sampler2D ambientTexture;
+subroutine(srtAmbient) vec3 ambientEquirectangularMap(in vec3 wN, in float roughness)
+{
+    ivec2 envMapSize = textureSize(ambientTexture, 0);
+    float size = float(max(envMapSize.x, envMapSize.y));
+    float glossyExponent = 2.0 / pow(roughness, 4.0) - 2.0;
+    float lod = log2(size * sqrt(3.0)) - 0.5 * log2(glossyExponent + 1.0);
+    return textureLod(ambientTexture, envMapEquirect(wN), lod).rgb * ambientEnergy;
+}
+
+uniform samplerCube ambientTextureCube;
+subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float roughness)
+{
+    ivec2 envMapSize = textureSize(ambientTextureCube, 0);
+    float size = float(max(envMapSize.x, envMapSize.y));
+    float glossyExponent = 2.0 / pow(roughness, 4.0) - 2.0;
+    float lod = log2(size * sqrt(3.0)) - 0.5 * log2(glossyExponent + 1.0);
+    return textureLod(ambientTextureCube, wN, lod).rgb * ambientEnergy;
+}
+
+subroutine uniform srtAmbient ambient;
+
+
+// Mie scaterring approximated with Henyey-Greenstein phase function.
+float scattering(float lightDotView)
+{
+    float result = 1.0 - sunScatteringG * sunScatteringG;
+    result /= 4.0 * PI * pow(1.0 + sunScatteringG * sunScatteringG - (2.0 * sunScatteringG) * lightDotView, 1.5);
+    return result;
+}
+
+
+uniform vec2 viewSize;
+
+uniform vec4 fogColor;
+uniform float fogStart;
+uniform float fogEnd;
+
 layout(location = 0) out vec4 fragColor;
-layout(location = 1) out vec4 fragNormal;
-layout(location = 2) out vec4 fragPBR;
-layout(location = 3) out vec4 fragRadiance;
-layout(location = 4) out vec4 fragVelocity;
+layout(location = 1) out vec4 fragVelocity;
 
 void main()
 {
@@ -241,24 +282,24 @@ void main()
     vec2 shiftedTexCoord = parallax(tE, texCoord, height(texCoord));
 
     N = normal(shiftedTexCoord, -1.0, tangentToEye);
-    
+
     vec4 fragDiffuse = diffuse(shiftedTexCoord);
     
-    if ((fragDiffuse.a * opacity) < 0.5)
-        discard;
+    // 
+    vec3 outColor = toLinear(fragDiffuse.rgb);
     
+    // TODO: shading
+    
+    // Fog
+    float linearDepth = abs(eyePosition.z);
+    float fogFactor = clamp((fogEnd - linearDepth) / (fogEnd - fogStart), 0.0, 1.0);
+    outColor = mix(toLinear(fogColor.rgb), outColor, fogFactor);
+    
+    // Velocity
     vec2 posScreen = (currPosition.xy / currPosition.w) * 0.5 + 0.5;
     vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;
-    vec2 velocity = posScreen - prevPosScreen;
-    const float blurMask = 1.0; 
+    vec2 screenVelocity = posScreen - prevPosScreen;
     
-    fragColor = vec4(fragDiffuse.rgb, layer);
-    fragNormal = vec4(N, 0.0);
-    fragPBR = vec4(
-        roughness(shiftedTexCoord), 
-        metallic(shiftedTexCoord), 
-        specularity(shiftedTexCoord), 
-        translucency(shiftedTexCoord));
-    fragRadiance = vec4(emission(shiftedTexCoord), 1.0);
-    fragVelocity = vec4(velocity, blurMask, 0.0);
+    fragColor = vec4(outColor, fragDiffuse.a);
+    fragVelocity = vec4(screenVelocity, 0.0, 1.0);
 }

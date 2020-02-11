@@ -63,6 +63,7 @@ class Scene: EventListener
     EntityGroupSpatial spatial;
     EntityGroupSpatialOpaque spatialOpaqueStatic;
     EntityGroupSpatialOpaque spatialOpaqueDynamic;
+    EntityGroupSpatialTransparent spatialTransparent;
     EntityGroupBackground background;
     EntityGroupForeground foreground;
     EntityGroupLights lights;
@@ -83,6 +84,7 @@ class Scene: EventListener
         spatial = New!EntityGroupSpatial(entityManager, this);
         spatialOpaqueStatic = New!EntityGroupSpatialOpaque(entityManager, false, this);
         spatialOpaqueDynamic = New!EntityGroupSpatialOpaque(entityManager, true, this);
+        spatialTransparent = New!EntityGroupSpatialTransparent(entityManager, this);
         background = New!EntityGroupBackground(entityManager, this);
         foreground = New!EntityGroupForeground(entityManager, this);
         lights = New!EntityGroupLights(entityManager, this);
@@ -135,28 +137,6 @@ class Scene: EventListener
         }
         return tex;
     }
-
-    /*
-    version(NoFreetype)
-    {
-        pragma(msg, "Warning: Dagon is compiled without Freetype support, Scene.addFontAsset is not available");
-    }
-    else
-    {
-        FontAsset addFontAsset(string filename, uint height, bool preload = false)
-        {
-            FontAsset font;
-            if (assetManager.assetExists(filename))
-                font = cast(FontAsset)assetManager.getAsset(filename);
-            else
-            {
-                font = New!FontAsset(height, assetManager);
-                addAsset(font, filename, preload);
-            }
-            return font;
-        }
-    }
-    */
 
     OBJAsset addOBJAsset(string filename, bool preload = false)
     {
@@ -411,11 +391,46 @@ class EntityGroupSpatialOpaque: Owner, EntityGroup
             auto e = entities[i];
             if (e.layer == EntityLayer.Spatial && !e.decal)
             {
-                bool opaque = true;
+                bool opaque = false;
                 if (e.material)
                     opaque = !e.material.isTransparent;
 
                 if (opaque && e.dynamic == dynamic)
+                {
+                    res = dg(e);
+                    if (res)
+                        break;
+                }
+            }
+        }
+        return res;
+    }
+}
+
+class EntityGroupSpatialTransparent: Owner, EntityGroup
+{
+    EntityManager entityManager;
+
+    this(EntityManager entityManager, Owner owner)
+    {
+        super(owner);
+        this.entityManager = entityManager;
+    }
+
+    int opApply(scope int delegate(Entity) dg)
+    {
+        int res = 0;
+        auto entities = entityManager.entities.data;
+        for(size_t i = 0; i < entities.length; i++)
+        {
+            auto e = entities[i];
+            if (e.layer == EntityLayer.Spatial && !e.decal)
+            {
+                bool transparent = false;
+                if (e.material)
+                    transparent = e.material.isTransparent;
+
+                if (transparent)
                 {
                     res = dg(e);
                     if (res)
