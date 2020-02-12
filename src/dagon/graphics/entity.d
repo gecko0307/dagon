@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019 Timur Gafarov
+Copyright (c) 2019-2020 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -27,6 +27,8 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.graphics.entity;
 
+import std.math;
+
 import dlib.core.ownership;
 import dlib.container.array;
 import dlib.math.vector;
@@ -41,6 +43,7 @@ import dagon.core.time;
 import dagon.graphics.updateable;
 import dagon.graphics.drawable;
 import dagon.graphics.material;
+import dagon.graphics.tween;
 
 class EntityManager: Owner
 {
@@ -85,6 +88,7 @@ class Entity: Owner, Updateable
     DynamicArray!Entity children;
 
     DynamicArray!EntityComponent components;
+    DynamicArray!Tween tweens;
 
     Drawable drawable;
     Material material;
@@ -125,6 +129,8 @@ class Entity: Owner, Updateable
 
         prevTransformation = Matrix4x4f.identity;
         prevAbsoluteTransformation = Matrix4x4f.identity;
+        
+        tweens.reserve(10);
     }
 
     void setParent(Entity e)
@@ -183,6 +189,11 @@ class Entity: Owner, Updateable
 
     void update(Time t)
     {
+        foreach(i, ref tween; tweens.data)
+        {
+            tween.update(t.delta);
+        }
+        
         updateTransformation();
 
         foreach(c; components)
@@ -201,6 +212,7 @@ class Entity: Owner, Updateable
 
         children.free();
         components.free();
+        tweens.free();
     }
 
     Vector3f positionAbsolute()
@@ -250,18 +262,28 @@ class Entity: Owner, Updateable
     {
         position += transformation.up * speed;
     }
-
-    /*
-    void rotate(Vector3f angles)
+    
+    void angles(Vector3f v)
     {
-        this.angles += angles;
+        rotation = 
+            rotationQuaternion!float(Axis.x, degtorad(v.x)) *
+            rotationQuaternion!float(Axis.y, degtorad(v.y)) *
+            rotationQuaternion!float(Axis.z, degtorad(v.z));
     }
-
-    void rotate(float pitch, float turn, float roll)
+    
+    void rotate(Vector3f v)
     {
-        this.angles += Vector3f(pitch, turn, roll);
+        auto r = 
+            rotationQuaternion!float(Axis.x, degtorad(v.x)) *
+            rotationQuaternion!float(Axis.y, degtorad(v.y)) *
+            rotationQuaternion!float(Axis.z, degtorad(v.z));
+        rotation *= r;
     }
-    */
+    
+    void rotate(float x, float y, float z)
+    {
+        rotate(Vector3f(x, y, z));
+    }
 
     void pitch(float angle)
     {
@@ -331,6 +353,71 @@ class Entity: Owner, Updateable
     Vector3f upAbsolute() @property
     {
         return absoluteTransformation.up;
+    }
+    
+    Tween* getInactiveTween()
+    {
+        Tween* inactiveTween = null;
+        foreach(i, ref t; tweens.data)
+        {
+            if (!t.active)
+            {
+                inactiveTween = &tweens.data[i];
+                break;
+            }
+        }
+        return inactiveTween;
+    }
+
+    Tween* moveFromTo(Vector3f pointFrom, Vector3f pointTo, double duration, Easing easing = Easing.Linear)
+    {
+        Tween* existingTween = getInactiveTween();
+
+        if (existingTween)
+        {
+            *existingTween = Tween(this, TweenType.Position, pointFrom, pointTo, duration, easing);
+            return existingTween;
+        }
+        else
+        {
+            Tween t = Tween(this, TweenType.Position, pointFrom, pointTo, duration, easing);
+            tweens.append(t);
+            return &tweens.data[$-1];
+        }
+    }
+    
+    Tween* rotateFromTo(Vector3f anglesFrom, Vector3f anglesTo, double duration, Easing easing = Easing.Linear)
+    {
+        Tween* existingTween = getInactiveTween();
+
+        if (existingTween)
+        {
+            *existingTween = Tween(this, TweenType.Rotation, anglesFrom, anglesTo, duration, easing);
+            return existingTween;
+        }
+        else
+        {
+            Tween t = Tween(this, TweenType.Rotation, anglesFrom, anglesTo, duration, easing);
+            tweens.append(t);
+            return &tweens.data[$-1];
+        }
+    }
+    
+    Tween* scaleFromTo(Vector3f sFrom, Vector3f sTo, double duration, Easing easing = Easing.Linear)
+    {
+        Tween* existingTween = getInactiveTween();
+
+        if (existingTween)
+        {
+            *existingTween = Tween(this, TweenType.Scaling, sFrom, sTo, duration, easing);
+            return existingTween;
+        }
+        else
+        {
+            Tween t = Tween(this, TweenType.Scaling, sFrom, sTo, duration, easing);
+            tweens.append(t);
+            return &tweens.data[$-1];
+        }
     }
 
     ~this()
