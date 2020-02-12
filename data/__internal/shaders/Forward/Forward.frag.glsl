@@ -11,6 +11,9 @@ in vec2 texCoord;
 in vec4 currPosition;
 in vec4 prevPosition;
 
+uniform mat4 viewMatrix;
+uniform mat4 invViewMatrix;
+
 uniform float layer;
 uniform float energy;
 uniform float opacity;
@@ -328,6 +331,12 @@ void main()
     N = normal(shiftedTexCoord, -1.0, tangentToEye);
     vec3 R = reflect(E, N);
     
+    vec3 worldPos = (invViewMatrix * vec4(eyePosition, 1.0)).xyz;
+    vec3 worldCamPos = (invViewMatrix[3]).xyz;
+    vec3 worldE = normalize(worldPos - worldCamPos);
+    vec3 worldN = normalize(N * mat3(viewMatrix));
+    vec3 worldR = reflect(worldE, worldN);
+    
     vec3 L = sunDirection;
 
     vec4 diff = diffuse(shiftedTexCoord);
@@ -342,7 +351,14 @@ void main()
     
     vec3 radiance = vec3(0.0);
     
-    // TODO: ambient light
+    // Ambient light
+    {
+        vec3 ambientDiffuse = ambient(worldN, 0.99);
+        vec3 ambientSpecular = ambient(worldR, r) * s;
+        vec3 F = fresnelRoughness(max(dot(N, E), 0.0), f0, r);
+        vec3 kD = (1.0 - F) * (1.0 - m);
+        radiance += kD * ambientDiffuse * albedo + F * ambientSpecular;
+    }
     
     // Sun light
     {
@@ -361,7 +377,7 @@ void main()
         radiance += (kD * albedo * invPI + specular * s) * NL * incomingLight;
     }
     
-    float scattFactor = 0.0;
+    // Sun light scattering
     if (sunScattering)
     {
         vec3 startPosition = vec3(0.0);    
@@ -374,13 +390,13 @@ void main()
         // TODO: disable shadow
         float invSamples = 1.0 / float(sunScatteringSamples);
         float offset = hash(texCoord * 467.759 * eyePosition.z);
-        for (float i = 0; i < float(sunScatteringSamples); i+=1.0)
+        for (float i = 0; i < float(sunScatteringSamples); i += 1.0)
         {
             accumScatter += shadowLookup(shadowTextureArray, 1.0, shadowMatrix2 * vec4(currentPosition, 1.0), vec2(0.0));
             currentPosition += rayDirection * (stepSize - offset * sunScatteringMaxRandomStepOffset);
         }
         accumScatter *= invSamples;
-        scattFactor = accumScatter * scattering(dot(-L, E)) * sunScatteringDensity;
+        float scattFactor = accumScatter * scattering(dot(-L, E)) * sunScatteringDensity;
         radiance += toLinear(sunColor.rgb) * sunEnergy * scattFactor;
     }
     
