@@ -22,12 +22,15 @@ uniform float sunEnergy;
 uniform bool sunScattering;
 uniform float sunScatteringG;
 uniform float sunScatteringDensity;
+uniform int sunScatteringSamples;
+uniform float sunScatteringMaxRandomStepOffset;
 
 #include <gamma.glsl>
 #include <cotangentFrame.glsl>
 #include <envMapEquirect.glsl>
 #include <fresnel.glsl>
 #include <ggx.glsl>
+#include <hash.glsl>
 
 /*
  * Diffuse color subroutines.
@@ -285,6 +288,8 @@ void main()
 
     N = normal(shiftedTexCoord, -1.0, tangentToEye);
     vec3 R = reflect(E, N);
+    
+    vec3 L = sunDirection;
 
     vec4 diff = diffuse(shiftedTexCoord);
     vec3 albedo = toLinear(diff.rgb);
@@ -300,7 +305,6 @@ void main()
     
     // Sun light
     {
-        vec3 L = sunDirection;
         float NL = max(dot(N, L), 0.0);
         vec3 H = normalize(E + L);
         
@@ -314,6 +318,33 @@ void main()
         vec3 incomingLight = toLinear(sunColor.rgb) * sunEnergy; // * shadow
         
         radiance += (kD * albedo * invPI + specular * s) * NL * incomingLight;
+    }
+    
+    float scattFactor = 0.0;
+    if (sunScattering)
+    {
+        vec3 startPosition = vec3(0.0);    
+        vec3 rayVector = eyePosition;
+        float rayLength = length(rayVector);
+        vec3 rayDirection = rayVector / rayLength;
+        float stepSize = rayLength / float(sunScatteringSamples);
+        vec3 currentPosition = startPosition;
+        float accumScatter = 0.0;
+        // TODO: disable shadow
+        /*
+        float invSamples = 1.0 / float(sunScatteringSamples);
+        float offset = hash(texCoord * 467.759 * eyePosition.z);
+        for (float i = 0; i < float(sunScatteringSamples); i+=1.0)
+        {
+            accumScatter += shadowLookup(shadowTextureArray, 1.0, shadowMatrix2 * vec4(currentPosition, 1.0), vec2(0.0));
+            currentPosition += rayDirection * (stepSize - offset * sunScatteringMaxRandomStepOffset);
+        }
+        accumScatter *= invSamples;
+        */
+        accumScatter = 1.0;
+        
+        scattFactor = accumScatter * scattering(dot(-L, E)) * sunScatteringDensity;
+        radiance += toLinear(sunColor.rgb) * sunEnergy * scattFactor;
     }
     
     // TODO: fixed number of area lights
