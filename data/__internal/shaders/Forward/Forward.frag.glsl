@@ -2,6 +2,7 @@
 
 #define PI 3.14159265359
 const float PI2 = PI * 2.0;
+const float invPI = 1.0 / PI;
 
 in vec3 eyeNormal;
 in vec3 eyePosition;
@@ -25,6 +26,8 @@ uniform float sunScatteringDensity;
 #include <gamma.glsl>
 #include <cotangentFrame.glsl>
 #include <envMapEquirect.glsl>
+#include <fresnel.glsl>
+#include <ggx.glsl>
 
 /*
  * Diffuse color subroutines.
@@ -278,28 +281,53 @@ void main()
     
     mat3 tangentToEye = cotangentFrame(N, eyePosition, texCoord);
     vec3 tE = normalize(E * tangentToEye);
-    
     vec2 shiftedTexCoord = parallax(tE, texCoord, height(texCoord));
 
     N = normal(shiftedTexCoord, -1.0, tangentToEye);
+    vec3 R = reflect(E, N);
 
-    vec4 fragDiffuse = diffuse(shiftedTexCoord);
+    vec4 diff = diffuse(shiftedTexCoord);
+    vec3 albedo = toLinear(diff.rgb);
+    float alpha = diff.a * opacity;
+    float r = roughness(shiftedTexCoord);
+    float m = metallic(shiftedTexCoord);
+    float s = specularity(shiftedTexCoord);
+    vec3 f0 = mix(vec3(0.04), albedo, m);
     
-    // 
-    vec3 outColor = toLinear(fragDiffuse.rgb);
+    vec3 radiance = vec3(0.0);
     
-    // TODO: shading
+    // TODO: ambient light
+    
+    // Sun light
+    {
+        vec3 L = sunDirection;
+        float NL = max(dot(N, L), 0.0);
+        vec3 H = normalize(E + L);
+        
+        float NDF = distributionGGX(N, H, r);
+        float G = geometrySmith(N, E, L, r);
+        vec3 F = fresnelRoughness(max(dot(H, E), 0.0), f0, r);
+        
+        vec3 kD = (1.0 - F) * (1.0 - m);
+        vec3 specular = (NDF * G * F) / max(4.0 * max(dot(N, E), 0.0) * NL, 0.001);
+        
+        vec3 incomingLight = toLinear(sunColor.rgb) * sunEnergy; // * shadow
+        
+        radiance += (kD * albedo * invPI + specular * s) * NL * incomingLight;
+    }
+    
+    // TODO: fixed number of area lights
     
     // Fog
     float linearDepth = abs(eyePosition.z);
     float fogFactor = clamp((fogEnd - linearDepth) / (fogEnd - fogStart), 0.0, 1.0);
-    outColor = mix(toLinear(fogColor.rgb), outColor, fogFactor);
+    radiance = mix(toLinear(fogColor.rgb), radiance, fogFactor);
     
     // Velocity
     vec2 posScreen = (currPosition.xy / currPosition.w) * 0.5 + 0.5;
     vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;
     vec2 screenVelocity = posScreen - prevPosScreen;
     
-    fragColor = vec4(outColor, fragDiffuse.a);
+    fragColor = vec4(radiance, alpha);
     fragVelocity = vec4(screenVelocity, 0.0, 1.0);
 }

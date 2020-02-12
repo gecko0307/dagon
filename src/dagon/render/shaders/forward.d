@@ -98,10 +98,12 @@ class ForwardShader: Shader
         Vector3f sunDirection = Vector3f(0.0f, 0.0f, 1.0f);
         Color4f sunColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
         float sunEnergy = 1.0f;
+        bool sunScatteringEnabled = false;
         float sunScatteringG = 0.0f;
         float sunScatteringDensity = 1.0f;
-        bool shaded = false;
-        bool scatteringEnabled = false;
+        int sunScatteringSamples = 1;
+        float sunScatteringMaxRandomStepOffset = 0.0f;
+        bool shaded = !ishadeless.asBool;
         if (state.material.sun)
         {
             auto sun = state.material.sun;
@@ -110,8 +112,7 @@ class ForwardShader: Shader
             sunEnergy = sun.energy;
             sunScatteringG = 1.0f - sun.scattering;
             sunScatteringDensity = sun.mediumDensity;
-            shaded = !ishadeless.asBool;
-            scatteringEnabled = sun.scatteringEnabled;
+            sunScatteringEnabled = sun.scatteringEnabled;
         }
         Vector4f sunDirHg = Vector4f(sunDirection);
         sunDirHg.w = 0.0;
@@ -120,7 +121,9 @@ class ForwardShader: Shader
         setParameter("sunEnergy", sunEnergy);
         setParameter("sunScatteringG", sunScatteringG);
         setParameter("sunScatteringDensity", sunScatteringDensity);
-        setParameter("sunScattering", scatteringEnabled);
+        setParameter("sunScattering", sunScatteringEnabled);
+        setParameter("sunScatteringSamples", sunScatteringSamples);
+        setParameter("sunScatteringMaxRandomStepOffset", sunScatteringMaxRandomStepOffset);
         setParameter("shaded", shaded);
 
         // Parallax mode
