@@ -25,11 +25,18 @@ uniform float sunScatteringDensity;
 uniform int sunScatteringSamples;
 uniform float sunScatteringMaxRandomStepOffset;
 
+uniform sampler2DArrayShadow shadowTextureArray;
+uniform float shadowResolution;
+uniform mat4 shadowMatrix1;
+uniform mat4 shadowMatrix2;
+uniform mat4 shadowMatrix3;
+
 #include <gamma.glsl>
 #include <cotangentFrame.glsl>
 #include <envMapEquirect.glsl>
 #include <fresnel.glsl>
 #include <ggx.glsl>
+#include <shadow.glsl>
 #include <hash.glsl>
 
 /*
@@ -259,6 +266,38 @@ subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float roughness)
 subroutine uniform srtAmbient ambient;
 
 
+subroutine float srtShadow(in vec3 pos, in vec3 N);
+
+subroutine(srtShadow) float shadowMapNone(in vec3 pos, in vec3 N)
+{
+    return 1.0;
+}
+
+const float eyeSpaceNormalShift = 0.008;
+subroutine(srtShadow) float shadowMapCascaded(in vec3 pos, in vec3 N)
+{
+    vec3 posShifted = pos + N * eyeSpaceNormalShift;
+    vec4 shadowCoord1 = shadowMatrix1 * vec4(posShifted, 1.0);
+    vec4 shadowCoord2 = shadowMatrix2 * vec4(posShifted, 1.0);
+    vec4 shadowCoord3 = shadowMatrix3 * vec4(posShifted, 1.0);
+    
+    float s1 = shadowLookupPCF(shadowTextureArray, 0.0, shadowCoord1, 2.0);
+    float s2 = shadowLookup(shadowTextureArray, 1.0, shadowCoord2, vec2(0.0, 0.0));
+    float s3 = shadowLookup(shadowTextureArray, 2.0, shadowCoord3, vec2(0.0, 0.0));
+    
+    float w1 = shadowCascadeWeight(shadowCoord1, 8.0);
+    float w2 = shadowCascadeWeight(shadowCoord2, 8.0);
+    float w3 = shadowCascadeWeight(shadowCoord3, 8.0);
+    s3 = mix(1.0, s3, w3); 
+    s2 = mix(s3, s2, w2);
+    s1 = mix(s2, s1, w1);
+    
+    return s1;
+}
+
+subroutine uniform srtShadow shadowMap;
+
+
 // Mie scaterring approximated with Henyey-Greenstein phase function.
 float scattering(float lightDotView)
 {
@@ -299,6 +338,8 @@ void main()
     float s = specularity(shiftedTexCoord);
     vec3 f0 = mix(vec3(0.04), albedo, m);
     
+    float shadow = shadowMap(eyePosition, N);
+    
     vec3 radiance = vec3(0.0);
     
     // TODO: ambient light
@@ -315,7 +356,7 @@ void main()
         vec3 kD = (1.0 - F) * (1.0 - m);
         vec3 specular = (NDF * G * F) / max(4.0 * max(dot(N, E), 0.0) * NL, 0.001);
         
-        vec3 incomingLight = toLinear(sunColor.rgb) * sunEnergy; // * shadow
+        vec3 incomingLight = toLinear(sunColor.rgb) * sunEnergy * shadow;
         
         radiance += (kD * albedo * invPI + specular * s) * NL * incomingLight;
     }
@@ -331,7 +372,6 @@ void main()
         vec3 currentPosition = startPosition;
         float accumScatter = 0.0;
         // TODO: disable shadow
-        /*
         float invSamples = 1.0 / float(sunScatteringSamples);
         float offset = hash(texCoord * 467.759 * eyePosition.z);
         for (float i = 0; i < float(sunScatteringSamples); i+=1.0)
@@ -340,9 +380,6 @@ void main()
             currentPosition += rayDirection * (stepSize - offset * sunScatteringMaxRandomStepOffset);
         }
         accumScatter *= invSamples;
-        */
-        accumScatter = 1.0;
-        
         scattFactor = accumScatter * scattering(dot(-L, E)) * sunScatteringDensity;
         radiance += toLinear(sunColor.rgb) * sunEnergy * scattFactor;
     }
