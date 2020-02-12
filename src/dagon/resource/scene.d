@@ -391,7 +391,7 @@ class EntityGroupSpatialOpaque: Owner, EntityGroup
             auto e = entities[i];
             if (e.layer == EntityLayer.Spatial && !e.decal)
             {
-                bool opaque = false;
+                bool opaque = true;
                 if (e.material)
                     opaque = !e.material.isTransparent;
 
