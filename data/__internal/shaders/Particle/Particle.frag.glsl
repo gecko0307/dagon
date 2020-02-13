@@ -184,6 +184,7 @@ void main()
     float linearDepth = abs(eyePosition.z);
     float fogFactor = clamp((fogEnd - linearDepth) / (fogEnd - fogStart), 0.0, 1.0);
     outColor = mix(toLinear(fogColor.rgb), outColor, fogFactor);
+    outAlpha *= fogFactor;
     
     // Velocity
     vec2 posScreen = (currPosition.xy / currPosition.w) * 0.5 + 0.5;
