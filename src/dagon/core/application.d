@@ -121,7 +121,6 @@ class Application: EventListener
     SDL_Window* window = null;
     SDL_GLContext glcontext;
     private EventManager _eventManager;
-    private double elapsedTime = 0.0;
 
     /++
         Constructor.
@@ -133,40 +132,6 @@ class Application: EventListener
     +/
     this(uint winWidth, uint winHeight, bool fullscreen, string windowTitle, string[] args)
     {
-        /*
-        version(NoFreetype)
-        {
-        }
-        else
-        {
-            FTSupport ftsup = loadFreeType();
-            if (ftsup != ftSupport)
-            {
-                if (ftsup == FTSupport.badLibrary)
-                    writeln("Warning: failed to load some Freetype functions. It seems that you have an old version of Freetype. Dagon will try to use it, but it is recommended to install Freetype 2.8.1 or higher");
-                else
-                    exitWithError("Error: Freetype library is not found. Please, install Freetype 2.8.1");
-            }
-        }
-        */
-        
-        /*
-        version(NoNuklear)
-        {
-        }
-        else
-        {
-            NuklearSupport nuksup = loadNuklear();
-            if (nuksup != NuklearSupport.Nuklear4)
-            {
-                if (nuksup == NuklearSupport.badLibrary)
-                    writeln("Warning: failed to load some Nuklear functions. It seems that you have an old version of Nuklear. Dagon will try to use it, but it is recommended to install Nuklear 4.01.0 or higher");
-                else
-                    exitWithError("Error: Nuklear library is not found. Please, install Nuklear 4.01.0");
-            }
-        }
-        */
-
         SDLSupport sdlsup = loadSDL();
         if (sdlsup != sdlSupport)
         {
@@ -298,17 +263,15 @@ class Application: EventListener
 
     void run()
     {
-        Time t;
+        Time t = Time(0.0, 0.0);
         while(eventManager.running)
         {
             eventManager.update();
             processEvents();
 
             t.delta = eventManager.deltaTime;
-            t.elapsed = elapsedTime;
-            elapsedTime += t.elapsed;
-
             onUpdate(t);
+            t.elapsed += t.delta;
             onRender();
 
             debug checkGLError();

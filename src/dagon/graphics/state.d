@@ -31,6 +31,7 @@ import dlib.math.vector;
 import dlib.math.matrix;
 
 import dagon.core.bindings;
+import dagon.core.time;
 import dagon.graphics.material;
 import dagon.graphics.shader;
 import dagon.graphics.environment;
@@ -79,6 +80,8 @@ struct GraphicsState
     GLuint normalTexture;
     GLuint pbrTexture;
     GLuint occlusionTexture;
+    
+    Time time;
 
     void reset()
     {
@@ -123,5 +126,7 @@ struct GraphicsState
         normalTexture = 0;
         pbrTexture = 0;
         occlusionTexture = 0;
+        
+        time = Time(0.0, 0.0);
     }
 }

@@ -72,6 +72,8 @@ class RenderStage: EventListener
     {
         processEvents();
 
+        state.time = t;
+
         if (view)
         {
             state.viewMatrix = view.viewMatrix();
