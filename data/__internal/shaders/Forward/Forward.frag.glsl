@@ -377,6 +377,13 @@ void main()
         radiance += (kD * albedo * invPI + specular * s) * NL * incomingLight;
     }
     
+    // TODO: fixed number of area lights
+    
+    // Fog
+    float linearDepth = abs(eyePosition.z);
+    float fogFactor = clamp((fogEnd - linearDepth) / (fogEnd - fogStart), 0.0, 1.0);
+    radiance = mix(toLinear(fogColor.rgb), radiance, fogFactor);
+    
     // Sun light scattering
     if (sunScattering)
     {
@@ -399,13 +406,6 @@ void main()
         float scattFactor = accumScatter * scattering(dot(-L, E)) * sunScatteringDensity;
         radiance += toLinear(sunColor.rgb) * sunEnergy * scattFactor;
     }
-    
-    // TODO: fixed number of area lights
-    
-    // Fog
-    float linearDepth = abs(eyePosition.z);
-    float fogFactor = clamp((fogEnd - linearDepth) / (fogEnd - fogStart), 0.0, 1.0);
-    radiance = mix(toLinear(fogColor.rgb), radiance, fogFactor);
     
     // Velocity
     vec2 posScreen = (currPosition.xy / currPosition.w) * 0.5 + 0.5;

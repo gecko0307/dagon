@@ -35,6 +35,7 @@ uniform mat4 shadowMatrix3;
 
 #include <unproject.glsl>
 #include <gamma.glsl>
+#include <cotangentFrame.glsl>
 #include <envMapEquirect.glsl>
 #include <shadow.glsl>
 #include <hash.glsl>
@@ -148,8 +149,8 @@ void main()
     
     vec3 N = normalize(eyeNormal);
     vec3 E = normalize(-eyePosition);
-    
     vec3 L = sunDirection;
+    vec3 H = normalize(L + E);
     
     vec3 worldPosition = (invViewMatrix * vec4(eyePosition, 1.0)).xyz;
     
@@ -174,49 +175,58 @@ void main()
         weights.w * ripple4.xy, 
         Z.x * Z.y * Z.z * Z.w);                             
     n = normalize(n);
+    
+    mat3 tangentToEye = cotangentFrame(N, eyePosition, texCoord);
+    N = normalize(tangentToEye * n);
 
     vec3 worldN = n.xzy;
     vec3 worldR = reflect(normalize(worldView), worldN);
-    //worldR = normalize(vec3(-worldR.x, worldR.y, -worldR.z));
     vec3 worldSun = L * mat3(viewMatrix);
     
     // TODO: make uniforms
-    vec3 waterColor = vec3(0.02, 0.1, 0.01);
+    vec3 waterColor = vec3(0.02, 0.08, 0.02);
     float waterAlpha = 0.8;
-    
-    // TODO: make uniform
-    const float softDistance = 0.5;
-    float soft = clamp((worldPosition.y - referenceWorldPos.y) / softDistance, 0.0, 1.0);
-    
-    float shadow = shadowMap(eyePosition, N);
-    float light = max(dot(N, L), 0.0);
-    // TODO: sun color, energy
     
     const float fresnelPower = 3.0;
     const float f0 = 0.03;
     float fresnel = f0 + pow(1.0 - dot(N, E), fresnelPower);
     
+    // TODO: make uniform
+    float softDistance = mix(0.5, 0.1, fresnel);
+    float soft = clamp((worldPosition.y - referenceWorldPos.y) / softDistance, 0.0, 1.0);
+    
     float alpha = soft * mix(waterAlpha, 1.0, fresnel);
     
     vec3 radiance = vec3(0.0); 
     
+    vec3 sunLight = toLinear(sunColor.rgb) * sunEnergy;
+    
     // Light
     {
-        vec3 diffuseLight = waterColor * light * toLinear(sunColor.rgb) * sunEnergy * shadow * alpha;
         vec3 reflection = ambient(worldR, pow(fresnel, 2.0));
-        radiance += mix(diffuseLight, reflection, fresnel);
+        
+        float shadow = shadowMap(eyePosition, N);
+        float light = max(dot(N, L), 0.0);
+    
+        vec3 diffuseLight = waterColor * light * sunLight * shadow * alpha;
+        
+        float NH = dot(N, H);
+        float specular = float(max(NH, 0.0) > 0.999);
+        vec3 specularLight = sunLight * specular * shadow * alpha;
+        
+        radiance += mix(diffuseLight, reflection, fresnel) + specularLight;
     }
 
-    if (sunScattering)
-    {
-        float scattFactor = scattering(dot(-L, E)) * sunScatteringDensity;
-        radiance += toLinear(sunColor.rgb) * sunEnergy * scattFactor;
-    }
-    
     // Fog
     float linearDepth = abs(eyePosition.z);
     float fogFactor = clamp((fogEnd - linearDepth) / (fogEnd - fogStart), 0.0, 1.0);
     radiance = mix(toLinear(fogColor.rgb), radiance, fogFactor);
+
+    if (sunScattering)
+    {
+        float scattFactor = scattering(dot(-L, E)) * sunScatteringDensity;
+        radiance += sunLight * scattFactor;
+    }
     
     frag_color = vec4(radiance, alpha);
     frag_velocity = vec4(screenVelocity, 0.0, 1.0);
