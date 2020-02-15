@@ -40,6 +40,10 @@ uniform mat4 shadowMatrix3;
 #include <shadow.glsl>
 #include <hash.glsl>
 
+uniform float time;
+uniform sampler2D normalTexture1;
+uniform sampler2D normalTexture2;
+
 /*
  * Ambient
  */
@@ -152,6 +156,8 @@ void main()
     vec3 L = sunDirection;
     vec3 H = normalize(L + E);
     
+    mat3 tangentToEye = cotangentFrame(N, eyePosition, texCoord);
+    
     vec3 worldPosition = (invViewMatrix * vec4(eyePosition, 1.0)).xyz;
     
     vec2 posScreen = (blurPosition.xy / blurPosition.w) * 0.5 + 0.5;
@@ -168,23 +174,32 @@ void main()
     vec3 ripple4 = computeRipple(uv + vec2( 0.5,-0.75), rippleTimes.w, weights.w);
     
     vec4 Z = mix(vec4(1.0, 1.0, 1.0, 1.0), vec4(ripple1.z, ripple2.z, ripple3.z, ripple4.z), weights);
-    vec3 n = vec3(
+    vec3 rippleN = vec3(
         weights.x * ripple1.xy +
         weights.y * ripple2.xy + 
         weights.z * ripple3.xy + 
         weights.w * ripple4.xy, 
-        Z.x * Z.y * Z.z * Z.w);                             
-    n = normalize(n);
+        Z.x * Z.y * Z.z * Z.w);
+    rippleN = normalize(rippleN);
     
-    mat3 tangentToEye = cotangentFrame(N, eyePosition, texCoord);
-    N = normalize(tangentToEye * n);
+    // TODO: make uniform
+    const float flowSpeed = 0.1;
+    const float waveAmplitude = 0.2;
+    
+    vec2 scrolluv1 = vec2(uv.x, uv.y + time * flowSpeed);
+    vec2 scrolluv2 = vec2(uv.x + time * flowSpeed, uv.y);
+    vec3 wave1N = normalize(texture2D(normalTexture1, scrolluv1).rgb * 2.0 - 1.0);
+    vec3 wave2N = normalize(texture2D(normalTexture2, scrolluv2).rgb * 2.0 - 1.0);
+    N = mix(vec3(0.0, 0.0, 1.0), (wave1N + wave2N) * 0.5, waveAmplitude);  
+    N = (N + rippleN) * 0.5;
+    N = normalize(tangentToEye * N);
 
-    vec3 worldN = n.xzy;
+    vec3 worldN = N * mat3(viewMatrix); //n.xzy;
     vec3 worldR = reflect(normalize(worldView), worldN);
     vec3 worldSun = L * mat3(viewMatrix);
     
     // TODO: make uniforms
-    vec3 waterColor = vec3(0.02, 0.08, 0.02);
+    vec3 waterColor = vec3(0.02, 0.02, 0.08);
     float waterAlpha = 0.8;
     
     const float fresnelPower = 3.0;
@@ -203,7 +218,7 @@ void main()
     
     // Light
     {
-        vec3 reflection = ambient(worldR, pow(fresnel, 2.0));
+        vec3 reflection = ambient(worldR, pow(fresnel, 2.0)) * 0.8;
         
         float shadow = shadowMap(eyePosition, N);
         float light = max(dot(N, L), 0.0);

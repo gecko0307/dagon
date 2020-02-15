@@ -63,6 +63,8 @@ class WaterShader: Shader
 
     GBuffer gbuffer;
     Texture rippleTexture;
+    Texture normalTexture1;
+    Texture normalTexture2;
     
     Matrix4x4f defaultShadowMatrix;
     GLuint defaultShadowTexture;
@@ -77,8 +79,14 @@ class WaterShader: Shader
         
         this.gbuffer = gbuffer;
 
-        TextureAsset rippleTextureAsset = textureAsset(assetManager, "data/__internal/ripples.png");
+        TextureAsset rippleTextureAsset = textureAsset(assetManager, "data/__internal/textures/ripples.png");
         rippleTexture = rippleTextureAsset.texture;
+        
+        TextureAsset normalTexture1Asset = textureAsset(assetManager, "data/__internal/textures/water_normal1.png");
+        normalTexture1 = normalTexture1Asset.texture;
+        
+        TextureAsset normalTexture2Asset = textureAsset(assetManager, "data/__internal/textures/water_normal2.png");
+        normalTexture2 = normalTexture2Asset.texture;
         
         defaultShadowMatrix = Matrix4x4f.identity;
 
@@ -241,6 +249,17 @@ class WaterShader: Shader
             setParameter("shadowMatrix3", defaultShadowMatrix);
             setParameterSubroutine("shadowMap", ShaderType.Fragment, "shadowMapNone");
         }
+        
+        // Normal maps
+        glActiveTexture(GL_TEXTURE4);
+        normalTexture1.bind();
+        setParameter("normalTexture1", 4);
+        
+        glActiveTexture(GL_TEXTURE5);
+        normalTexture2.bind();
+        setParameter("normalTexture2", 5);
+        
+        setParameter("time", cast(float)state.time.elapsed);
 
         super.bindParameters(state);
     }
@@ -260,6 +279,12 @@ class WaterShader: Shader
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
         
         glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE4);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE5);
         glBindTexture(GL_TEXTURE_2D, 0);
         
         glActiveTexture(GL_TEXTURE0);
