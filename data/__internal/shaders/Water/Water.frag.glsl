@@ -211,7 +211,7 @@ void main()
     
     // Light
     {
-        vec3 reflection = ambient(worldR, pow(fresnel, 2.0)) * 0.8;
+        vec3 reflection = ambient(worldR, pow(fresnel, 2.0));
         
         float shadow = shadowMap(eyePosition, N);
         float light = max(dot(N, L), 0.0);

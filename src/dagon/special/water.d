@@ -69,7 +69,7 @@ class WaterShader: Shader
     Matrix4x4f defaultShadowMatrix;
     GLuint defaultShadowTexture;
     
-    Color4f waterColor = Color4f(0.02f, 0.02f, 0.08f, 0.8f);
+    Color4f waterColor = Color4f(0.02f, 0.02f, 0.08f, 0.9f);
     float rainIntensity = 0.1f;
     float flowSpeed = 0.08f;
     float waveAmplitude = 0.3f;
