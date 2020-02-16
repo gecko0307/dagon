@@ -120,11 +120,14 @@ float scattering(float lightDotView)
     return result;
 }
 
+uniform vec2 textureScale;
 
+uniform vec4 waterColor;
 uniform sampler2D rippleTexture;
 uniform vec4 rippleTimes;
-const float textureScale = 4.0;
-const float rainIntensity = 2.0;
+uniform float rainIntensity;
+uniform float flowSpeed;
+uniform float waveAmplitude;
 
 vec3 computeRipple(vec2 uv, float currentTime, float weight)
 {
@@ -182,10 +185,6 @@ void main()
         Z.x * Z.y * Z.z * Z.w);
     rippleN = normalize(rippleN);
     
-    // TODO: make uniform
-    const float flowSpeed = 0.1;
-    const float waveAmplitude = 0.2;
-    
     vec2 scrolluv1 = vec2(uv.x, uv.y + time * flowSpeed);
     vec2 scrolluv2 = vec2(uv.x + time * flowSpeed, uv.y);
     vec3 wave1N = normalize(texture2D(normalTexture1, scrolluv1).rgb * 2.0 - 1.0);
@@ -194,23 +193,17 @@ void main()
     N = (N + rippleN) * 0.5;
     N = normalize(tangentToEye * N);
 
-    vec3 worldN = N * mat3(viewMatrix); //n.xzy;
+    vec3 worldN = N * mat3(viewMatrix);
     vec3 worldR = reflect(normalize(worldView), worldN);
     vec3 worldSun = L * mat3(viewMatrix);
-    
-    // TODO: make uniforms
-    vec3 waterColor = vec3(0.02, 0.02, 0.08);
-    float waterAlpha = 0.8;
     
     const float fresnelPower = 3.0;
     const float f0 = 0.03;
     float fresnel = f0 + pow(1.0 - dot(N, E), fresnelPower);
     
-    // TODO: make uniform
     float softDistance = mix(0.5, 0.1, fresnel);
     float soft = clamp((worldPosition.y - referenceWorldPos.y) / softDistance, 0.0, 1.0);
-    
-    float alpha = soft * mix(waterAlpha, 1.0, fresnel);
+    float alpha = soft * mix(waterColor.a, 1.0, fresnel);
     
     vec3 radiance = vec3(0.0); 
     
@@ -223,7 +216,7 @@ void main()
         float shadow = shadowMap(eyePosition, N);
         float light = max(dot(N, L), 0.0);
     
-        vec3 diffuseLight = waterColor * light * sunLight * shadow * alpha;
+        vec3 diffuseLight = toLinear(waterColor.rgb) * light * sunLight * shadow * alpha;
         
         float NH = dot(N, H);
         float specular = float(max(NH, 0.0) > 0.999);

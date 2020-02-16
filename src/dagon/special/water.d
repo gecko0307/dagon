@@ -68,6 +68,11 @@ class WaterShader: Shader
     
     Matrix4x4f defaultShadowMatrix;
     GLuint defaultShadowTexture;
+    
+    Color4f waterColor = Color4f(0.02f, 0.02f, 0.08f, 0.8f);
+    float rainIntensity = 0.1f;
+    float flowSpeed = 0.08f;
+    float waveAmplitude = 0.3f;
 
     this(GBuffer gbuffer, AssetManager assetManager, Owner owner)
     {
@@ -124,6 +129,12 @@ class WaterShader: Shader
         setParameter("textureScale", itextureScale.asVector2f);
         
         setParameter("viewSize", state.resolution);
+        
+        // Water props
+        setParameter("waterColor", waterColor);
+        setParameter("rainIntensity", rainIntensity);
+        setParameter("flowSpeed", flowSpeed);
+        setParameter("waveAmplitude", waveAmplitude);
         
         // Sun
         Vector3f sunDirection = Vector3f(0.0f, 0.0f, 1.0f);
