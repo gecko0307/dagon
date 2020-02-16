@@ -16,7 +16,7 @@ Screenshots
 -----------
 [![Screenshot1](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/snow2.jpg)](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/snow2.jpg)
 
-[![Screenshot2](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/forest2.jpg)](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/forest2.jpg)
+[![Screenshot2](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/02/water7.jpg)](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/02/water7.jpg)
 
 [![Screenshot3](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/cerberus.jpg)](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/cerberus.jpg)
 
