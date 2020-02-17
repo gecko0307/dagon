@@ -19,10 +19,11 @@ Changes:
   - Discrete LOD drawables (`dagon.graphics.lod`). They render different user-specified drawables based on distance from the camera
 - **Materials**
   - `specularity` property for materials. It specifies a luminance coefficient for the specular radiance component. It doesn't have a physical meaning, but is useful for material tweaking, for example to eliminate burnt highlights.
+  - Improved water shader, animated waves support
 - **Assets**
   - DDS format support for textures. Supported compression types are S3TC (DXT1/BC1, DXT3/BC2, DXT5/BC3), RGTC (BC4, BC5), BPTC (BC6H, BC7)
 - **Environment**
-  - `Environment` object was simplified. Now there's no default procedural environment map, only `environment.ambientColor` and `environment.ambientMap`. To use procedural sky, render it into a cube map.
+  - `Environment` object was simplified. Now there's no default procedural environment map, only `environment.ambientColor` and `environment.ambientMap`. To use procedural sky, render it into a cube map
 - **Post-processing**
   - Post-processing engine was also reimplemented and now exists as a separate render pipeline. See `dagon.postproc` and `dagon.game.postprocrenderer`
   - Denoise filter for SSAO. A lot less samples are now needed to achieve smooth ambient occlusion. Also SSAO is now rendered into a separate buffer, so that its resolution can be lowered for better performance, and occlusion data can be used at several stages of the pipeline
