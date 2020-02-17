@@ -17,6 +17,7 @@ Changes:
   - Render viewports can now be resized in runtime
   - Standard shaders moved to `dagon.render.shaders`
   - Discrete LOD drawables (`dagon.graphics.lod`). They render different user-specified drawables based on distance from the camera
+  - Now there's no `Scene.mainSun` - fallback light source should be set for each transparent material using `Material.sun` property
 - **Materials**
   - `specularity` property for materials. It specifies a luminance coefficient for the specular radiance component. It doesn't have a physical meaning, but is useful for material tweaking, for example to eliminate burnt highlights.
   - Improved water shader, animated waves support
