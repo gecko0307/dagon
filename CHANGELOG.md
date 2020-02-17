@@ -31,6 +31,7 @@ Changes:
 - **UI**
   - File drag-and-drop event
 - **Misc**
+  - Dagon now uses dlib 0.17.0
   - Dagon (`dagon:ftfont` extension, to be precise) now uses [official BindBC Freetype binding](https://github.com/BindBC/bindbc-freetype) instead of custom one.
 
 Dagon 0.10.1 - 14 Jun, 2019
