@@ -49,7 +49,7 @@ void main()
     if (outputMode == 0)
         discard;
 
-    vec3 output = 
+    vec3 coutput = 
         albedo * float(outputMode == 1) + 
         N * float(outputMode == 2) + 
         eyePos * float(outputMode == 3) +
@@ -57,5 +57,5 @@ void main()
         vec3(metallic) * float(outputMode == 5) +
         vec3(occlusion) * float(outputMode == 6);
     
-    fragColor = vec4(output, 1.0);
+    fragColor = vec4(coutput, 1.0);
 }
