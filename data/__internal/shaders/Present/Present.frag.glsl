@@ -9,7 +9,7 @@ layout(location = 0) out vec4 fragColor;
 
 void main()
 {
-    vec4 output = texture(colorBuffer, texCoord);
-    fragColor = vec4(output.rgb, 1.0);
+    vec4 coutput = texture(colorBuffer, texCoord);
+    fragColor = vec4(coutput.rgb, 1.0);
     gl_FragDepth = texture(depthBuffer, texCoord).r;
 }
