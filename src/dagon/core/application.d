@@ -161,12 +161,13 @@ class Application: EventListener
         if (window is null)
             exitWithError("Error: failed to create window: " ~ to!string(SDL_GetError()));
 
-        SDL_GL_SetSwapInterval(1);
 
         glcontext = SDL_GL_CreateContext(window);
         if (glcontext is null)
             exitWithError("Error: failed to create OpenGL context: " ~ to!string(SDL_GetError()));
 
+        SDL_GL_SetSwapInterval(1);
+        
         SDL_GL_MakeCurrent(window, glcontext);
 
         GLSupport glsup = loadOpenGL();
