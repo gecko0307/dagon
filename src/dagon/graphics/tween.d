@@ -29,7 +29,6 @@ module dagon.graphics.tween;
 
 import dlib.math.vector;
 import dlib.math.quaternion;
-import dlib.math.easing;
 import dlib.math.interpolation;
 import dlib.math.utils;
 import dlib.image.color;
