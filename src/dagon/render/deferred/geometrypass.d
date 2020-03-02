@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.deferred.decalstage;
+module dagon.render.deferred.geometrypass;
 
 import std.stdio;
 
@@ -35,48 +35,59 @@ import dlib.image.color;
 
 import dagon.core.bindings;
 import dagon.graphics.entity;
+import dagon.graphics.terrain;
+import dagon.graphics.particles;
 import dagon.graphics.shader;
 import dagon.render.pipeline;
-import dagon.render.stage;
+import dagon.render.pass;
 import dagon.render.gbuffer;
-import dagon.render.shaders.decal;
+import dagon.render.shaders.geometry;
+import dagon.render.shaders.terrain;
 
-class DeferredDecalStage: RenderStage
+class DeferredGeometryPass: RenderPass
 {
     GBuffer gbuffer;
-    DecalShader decalShader;
+    GeometryShader geometryShader;
+    TerrainShader terrainShader;
 
     this(RenderPipeline pipeline, GBuffer gbuffer, EntityGroup group = null)
     {
         super(pipeline, group);
         this.gbuffer = gbuffer;
-        decalShader = New!DecalShader(gbuffer, this);
+        geometryShader = New!GeometryShader(this);
+        terrainShader = New!TerrainShader(this);
     }
 
     override void render()
     {
-        if (group)
+        if (group && gbuffer)
         {
             gbuffer.bind();
 
             glScissor(0, 0, gbuffer.width, gbuffer.height);
             glViewport(0, 0, gbuffer.width, gbuffer.height);
-            
-            state.depthMask = false;
-            
-            glDisable(GL_DEPTH_TEST);
-            
-            decalShader.bind();
+
+            geometryShader.bind();
             foreach(entity; group)
             {
                 if (entity.visible && entity.drawable)
                 {
-                    renderEntity(entity, decalShader);
+                    if (!entityIsTerrain(entity) && !entityIsParticleSystem(entity))
+                        renderEntity(entity, geometryShader);
                 }
             }
-            decalShader.unbind();
-            
-            glEnable(GL_DEPTH_TEST);
+            geometryShader.unbind();
+
+            terrainShader.bind();
+            foreach(entity; group)
+            {
+                if (entity.visible && entity.drawable)
+                {
+                    if (entityIsTerrain(entity))
+                        renderEntity(entity, terrainShader);
+                }
+            }
+            terrainShader.unbind();
 
             gbuffer.unbind();
         }

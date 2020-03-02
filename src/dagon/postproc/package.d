@@ -29,8 +29,8 @@ module dagon.postproc;
 
 public
 {
-    import dagon.postproc.blurstage;
-    import dagon.postproc.filterstage;
-    import dagon.postproc.presentstage;
+    import dagon.postproc.blurpass;
+    import dagon.postproc.filterpass;
+    import dagon.postproc.presentpass;
     import dagon.postproc.shaders;
 }

@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.stage;
+module dagon.render.pass;
 
 import dlib.core.memory;
 import dlib.core.ownership;
@@ -44,7 +44,7 @@ import dagon.render.pipeline;
 import dagon.render.view;
 import dagon.render.shaders.fallback;
 
-class RenderStage: EventListener
+class RenderPass: EventListener
 {
     RenderPipeline pipeline;
     RenderView view;
@@ -61,7 +61,7 @@ class RenderStage: EventListener
         super(pipeline.eventManager, pipeline);
         this.pipeline = pipeline;
         this.group = group;
-        pipeline.addStage(this);
+        pipeline.addPass(this);
         state.reset();
         defaultShader = New!FallbackShader(this);
         defaultMaterial = New!Material(this);
@@ -78,9 +78,9 @@ class RenderStage: EventListener
         {
             state.viewMatrix = view.viewMatrix();
             state.invViewMatrix = view.invViewMatrix();
-            
+
             state.invViewRotationMatrix = matrix3x3to4x4(matrix4x4to3x3(state.invViewMatrix));
-            
+
             state.prevViewMatrix = prevViewMatrix;
             prevViewMatrix = state.viewMatrix;
 
@@ -94,7 +94,7 @@ class RenderStage: EventListener
             state.cameraPosition = view.cameraPosition;
         }
     }
-    
+
     void renderEntity(Entity entity, Shader shader)
     {
         state.layer = entity.layer;
@@ -112,7 +112,7 @@ class RenderStage: EventListener
             defaultMaterial.bind(&state);
 
         shader.bindParameters(&state);
-          
+
         entity.drawable.render(&state);
 
         shader.unbindParameters(&state);

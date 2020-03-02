@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.deferred.environmentstage;
+module dagon.render.deferred.occlusionpass;
 
 import std.stdio;
 
@@ -36,57 +36,49 @@ import dlib.image.color;
 import dagon.core.bindings;
 import dagon.graphics.screensurface;
 import dagon.render.pipeline;
-import dagon.render.stage;
+import dagon.render.pass;
 import dagon.render.framebuffer;
 import dagon.render.gbuffer;
-import dagon.render.shaders.environment;
+import dagon.render.shaders.ssao;
 
-class DeferredEnvironmentStage: RenderStage
+class DeferredOcclusionPass: RenderPass
 {
     GBuffer gbuffer;
     ScreenSurface screenSurface;
-    EnvironmentShader environmentShader;
+    SSAOShader ssaoShader;
     Framebuffer outputBuffer;
-    Framebuffer occlusionBuffer;
 
     this(RenderPipeline pipeline, GBuffer gbuffer)
     {
         super(pipeline);
         this.gbuffer = gbuffer;
         screenSurface = New!ScreenSurface(this);
-        environmentShader = New!EnvironmentShader(this);
+        ssaoShader = New!SSAOShader(this);
     }
 
     override void render()
     {
-        if (outputBuffer && gbuffer)
+        if (view && gbuffer)
         {
-            outputBuffer.bind();
+            if (outputBuffer)
+                outputBuffer.bind();
 
             state.colorTexture = gbuffer.colorTexture;
             state.depthTexture = gbuffer.depthTexture;
             state.normalTexture = gbuffer.normalTexture;
             state.pbrTexture = gbuffer.pbrTexture;
-            if (occlusionBuffer)
-                state.occlusionTexture = occlusionBuffer.colorTexture;
-            else
-                state.occlusionTexture = 0;
 
-            glScissor(0, 0, outputBuffer.width, outputBuffer.height);
-            glViewport(0, 0, outputBuffer.width, outputBuffer.height);
-            
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+            glScissor(view.x, view.y, view.width, view.height);
+            glViewport(view.x, view.y, view.width, view.height);
 
-            environmentShader.bind();
-            environmentShader.bindParameters(&state);
+            ssaoShader.bind();
+            ssaoShader.bindParameters(&state);
             screenSurface.render(&state);
-            environmentShader.unbindParameters(&state);
-            environmentShader.unbind();
-            
-            glDisable(GL_BLEND);
+            ssaoShader.unbindParameters(&state);
+            ssaoShader.unbind();
 
-            outputBuffer.unbind();
+            if (outputBuffer)
+                outputBuffer.unbind();
         }
     }
 }

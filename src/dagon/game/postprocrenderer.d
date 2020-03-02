@@ -34,16 +34,16 @@ import dagon.core.event;
 import dagon.core.time;
 import dagon.graphics.texture;
 import dagon.resource.scene;
-import dagon.render.stage;
+import dagon.render.pass;
 import dagon.render.deferred;
 import dagon.render.view;
 import dagon.render.framebuffer;
 import dagon.render.framebuffer_rgba8;
 import dagon.render.framebuffer_rgba16f;
 import dagon.render.gbuffer;
-import dagon.postproc.filterstage;
-import dagon.postproc.blurstage;
-import dagon.postproc.presentstage;
+import dagon.postproc.filterpass;
+import dagon.postproc.blurpass;
+import dagon.postproc.presentpass;
 import dagon.postproc.shaders.brightpass;
 import dagon.postproc.shaders.glow;
 import dagon.postproc.shaders.motionblur;
@@ -59,79 +59,79 @@ class DoubleBuffer: Framebuffer
 {
     Framebuffer writeBuffer;
     Framebuffer readBuffer;
-   
+
     this(Framebuffer writeBuffer, Framebuffer readBuffer, Owner owner)
     {
         super(writeBuffer.width, writeBuffer.height, owner);
         this.writeBuffer = writeBuffer;
         this.readBuffer = readBuffer;
     }
-    
+
     void swap()
     {
         auto w = writeBuffer;
         writeBuffer = readBuffer;
         readBuffer = w;
     }
-    
+
     override GLuint colorTexture()
     {
         return readBuffer.colorTexture();
     }
-    
+
     override GLuint depthTexture()
     {
         return readBuffer.depthTexture();
     }
-    
+
     override void bind()
     {
         writeBuffer.bind();
     }
-    
+
     override void unbind()
     {
         writeBuffer.unbind();
     }
-    
+
     override void resize(uint width, uint height)
     {
-        
+
     }
-    
+
     override void blitColorBuffer()
     {
-        
+
     }
-    
+
     override void blitDepthBuffer()
     {
-    
+
     }
 }
 
 class PostProcRenderer: Renderer
 {
     public:
-    
+
     Framebuffer inputBuffer;
     Framebuffer outputBuffer;
 
     protected:
-    
+
     DoubleBuffer ldrDoubleBuffer;
-    
+
     Framebuffer ldrBuffer1;
     Framebuffer ldrBuffer2;
-    
+
     Framebuffer hdrBuffer1;
     Framebuffer hdrBuffer2;
     Framebuffer hdrBuffer3;
     Framebuffer hdrBuffer4;
-    
+
     RenderView viewHalf;
-    BlurStage stageBlur;
-    
+    BlurPass passBlur;
+
     BrightPassShader brightPassShader;
     GlowShader glowShader;
     MotionBlurShader motionBlurShader;
@@ -139,185 +139,185 @@ class PostProcRenderer: Renderer
     FXAAShader fxaaShader;
     LensDistortionShader lensDistortionShader;
     LUTShader lutShader;
-    
-    FilterStage stageMotionBlur;
-    FilterStage stageBrightPass;
-    FilterStage stageGlow;
-    FilterStage stageTonemap;
-    FilterStage stageFXAA;
-    FilterStage stageLensDistortion;
-    FilterStage stageLUT;
-    PresentStage stagePresent;
-    
+
+    FilterPass passMotionBlur;
+    FilterPass passBrightPass;
+    FilterPass passGlow;
+    FilterPass passTonemap;
+    FilterPass passFXAA;
+    FilterPass passLensDistortion;
+    FilterPass passLUT;
+    PresentPass passPresent;
+
     bool _motionBlurEnabled = false;
     bool _glowEnabled = false;
-    
+
     public:
-    
+
     float glowViewScale = 0.33f;
-    
+
     float glowThreshold = 0.8f;
     float glowIntensity = 0.2f;
     int glowRadius = 5;
     Tonemapper tonemapper = Tonemapper.ACES;
     float exposure = 1.0f;
-    
+
     uint motionBlurSamples = 16;
     uint motionBlurFramerate = 24;
-    
+
     Texture colorLookupTable;
-    
+
     this(EventManager eventManager, Framebuffer inputBuffer, GBuffer gbuffer, Owner owner)
     {
         super(eventManager, owner);
-        
+
         this.inputBuffer = inputBuffer;
-        
+
         viewHalf = New!RenderView(0, 0, cast(uint)(view.width * glowViewScale), cast(uint)(view.height * glowViewScale), this);
-        
+
         ldrBuffer1 = New!FramebufferRGBA8(view.width, view.height, this);
         ldrBuffer2 = New!FramebufferRGBA8(view.width, view.height, this);
         ldrDoubleBuffer = New!DoubleBuffer(ldrBuffer1, ldrBuffer2, this);
-        
+
         hdrBuffer1 = New!FramebufferRGBA16f(viewHalf.width, viewHalf.height, this);
         hdrBuffer2 = New!FramebufferRGBA16f(viewHalf.width, viewHalf.height, this);
-        
+
         hdrBuffer3 = New!FramebufferRGBA16f(view.width, view.height, this);
         hdrBuffer4 = New!FramebufferRGBA16f(view.width, view.height, this);
-        
+
         motionBlurShader = New!MotionBlurShader(this);
         motionBlurShader.gbuffer = gbuffer;
-        stageMotionBlur = New!FilterStage(pipeline, motionBlurShader);
-        stageMotionBlur.view = view;
-        stageMotionBlur.inputBuffer = inputBuffer;
-        stageMotionBlur.outputBuffer = hdrBuffer4;
-        
+        passMotionBlur = New!FilterPass(pipeline, motionBlurShader);
+        passMotionBlur.view = view;
+        passMotionBlur.inputBuffer = inputBuffer;
+        passMotionBlur.outputBuffer = hdrBuffer4;
+
         brightPassShader = New!BrightPassShader(this);
         brightPassShader.luminanceThreshold = glowThreshold;
-        stageBrightPass = New!FilterStage(pipeline, brightPassShader);
-        stageBrightPass.view = viewHalf;
-        stageBrightPass.inputBuffer = stageMotionBlur.outputBuffer;
-        stageBrightPass.outputBuffer = hdrBuffer1;
-        
-        stageBlur = New!BlurStage(pipeline);
-        stageBlur.view = viewHalf;
-        stageBlur.inputBuffer = stageBrightPass.outputBuffer;
-        stageBlur.outputBuffer = hdrBuffer1;
-        stageBlur.outputBuffer2 = hdrBuffer2;
-        stageBlur.radius = glowRadius;
-        
+        passBrightPass = New!FilterPass(pipeline, brightPassShader);
+        passBrightPass.view = viewHalf;
+        passBrightPass.inputBuffer = passMotionBlur.outputBuffer;
+        passBrightPass.outputBuffer = hdrBuffer1;
+
+        passBlur = New!BlurPass(pipeline);
+        passBlur.view = viewHalf;
+        passBlur.inputBuffer = passBrightPass.outputBuffer;
+        passBlur.outputBuffer = hdrBuffer1;
+        passBlur.outputBuffer2 = hdrBuffer2;
+        passBlur.radius = glowRadius;
+
         glowShader = New!GlowShader(this);
-        glowShader.blurredBuffer = stageBlur.outputBuffer;
+        glowShader.blurredBuffer = passBlur.outputBuffer;
         glowShader.intensity = glowIntensity;
-        stageGlow = New!FilterStage(pipeline, glowShader);
-        stageGlow.view = view;
-        stageGlow.inputBuffer = stageMotionBlur.outputBuffer;
-        stageGlow.outputBuffer = hdrBuffer3;
-        
+        passGlow = New!FilterPass(pipeline, glowShader);
+        passGlow.view = view;
+        passGlow.inputBuffer = passMotionBlur.outputBuffer;
+        passGlow.outputBuffer = hdrBuffer3;
+
         tonemapShader = New!TonemapShader(this);
-        stageTonemap = New!FilterStage(pipeline, tonemapShader);
-        stageTonemap.view = view;
-        stageTonemap.inputBuffer = stageGlow.outputBuffer;
-        stageTonemap.outputBuffer = ldrDoubleBuffer;
-        
+        passTonemap = New!FilterPass(pipeline, tonemapShader);
+        passTonemap.view = view;
+        passTonemap.inputBuffer = passGlow.outputBuffer;
+        passTonemap.outputBuffer = ldrDoubleBuffer;
+
         fxaaShader = New!FXAAShader(this);
-        stageFXAA = New!FilterStage(pipeline, fxaaShader);
-        stageFXAA.view = view;
-        stageFXAA.inputBuffer = ldrDoubleBuffer;
-        stageFXAA.outputBuffer = ldrDoubleBuffer;
-        
+        passFXAA = New!FilterPass(pipeline, fxaaShader);
+        passFXAA.view = view;
+        passFXAA.inputBuffer = ldrDoubleBuffer;
+        passFXAA.outputBuffer = ldrDoubleBuffer;
+
         lensDistortionShader = New!LensDistortionShader(this);
-        stageLensDistortion = New!FilterStage(pipeline, lensDistortionShader);
-        stageLensDistortion.view = view;
-        stageLensDistortion.inputBuffer = ldrDoubleBuffer;
-        stageLensDistortion.outputBuffer = ldrDoubleBuffer;
-        
+        passLensDistortion = New!FilterPass(pipeline, lensDistortionShader);
+        passLensDistortion.view = view;
+        passLensDistortion.inputBuffer = ldrDoubleBuffer;
+        passLensDistortion.outputBuffer = ldrDoubleBuffer;
+
         lutShader = New!LUTShader(this);
-        stageLUT = New!FilterStage(pipeline, lutShader);
-        stageLUT.view = view;
-        stageLUT.inputBuffer = ldrDoubleBuffer;
-        stageLUT.outputBuffer = ldrDoubleBuffer;
-        
+        passLUT = New!FilterPass(pipeline, lutShader);
+        passLUT.view = view;
+        passLUT.inputBuffer = ldrDoubleBuffer;
+        passLUT.outputBuffer = ldrDoubleBuffer;
+
         outputBuffer = ldrDoubleBuffer;
     }
-    
+
     void motionBlurEnabled(bool mode) @property
     {
         _motionBlurEnabled = mode;
-        stageMotionBlur.active = mode;
+        passMotionBlur.active = mode;
         if (!_motionBlurEnabled)
         {
-            stageBrightPass.inputBuffer = inputBuffer;
-            stageGlow.inputBuffer = inputBuffer;
+            passBrightPass.inputBuffer = inputBuffer;
+            passGlow.inputBuffer = inputBuffer;
         }
         else
         {
-            stageBrightPass.inputBuffer = stageMotionBlur.outputBuffer;
-            stageGlow.inputBuffer = stageMotionBlur.outputBuffer;
+            passBrightPass.inputBuffer = passMotionBlur.outputBuffer;
+            passGlow.inputBuffer = passMotionBlur.outputBuffer;
         }
     }
     bool motionBlurEnabled() @property
     {
         return _motionBlurEnabled;
     }
-    
+
     void glowEnabled(bool mode) @property
     {
         _glowEnabled = mode;
-        stageBrightPass.active = mode;
-        stageBlur.active = mode;
-        stageGlow.active = mode;
+        passBrightPass.active = mode;
+        passBlur.active = mode;
+        passGlow.active = mode;
         if (!_glowEnabled)
         {
             if (_motionBlurEnabled)
-                stageTonemap.inputBuffer = stageMotionBlur.outputBuffer;
+                passTonemap.inputBuffer = passMotionBlur.outputBuffer;
             else
-                stageTonemap.inputBuffer = inputBuffer;
+                passTonemap.inputBuffer = inputBuffer;
         }
         else
         {
-            stageTonemap.inputBuffer = stageGlow.outputBuffer;
+            passTonemap.inputBuffer = passGlow.outputBuffer;
         }
     }
     bool glowEnabled() @property
     {
         return _glowEnabled;
     }
-    
+
     void fxaaEnabled(bool mode) @property
     {
-        stageFXAA.active = mode;
+        passFXAA.active = mode;
     }
     bool fxaaEnabled() @property
     {
-        return stageFXAA.active;
+        return passFXAA.active;
     }
-    
+
     void lensDistortionEnabled(bool mode) @property
     {
-        stageLensDistortion.active = mode;
+        passLensDistortion.active = mode;
     }
     bool lensDistortionEnabled() @property
     {
-        return stageLensDistortion.active;
+        return passLensDistortion.active;
     }
-    
+
     void lutEnabled(bool mode) @property
     {
-        stageLUT.active = mode;
+        passLUT.active = mode;
     }
     bool lutEnabled() @property
     {
-        return stageLUT.active;
+        return passLUT.active;
     }
-    
+
     override void update(Time t)
     {
         super.update(t);
-        
+
         brightPassShader.luminanceThreshold = glowThreshold;
         glowShader.intensity = glowIntensity;
-        stageBlur.radius = glowRadius;
+        passBlur.radius = glowRadius;
         tonemapShader.tonemapper = tonemapper;
         tonemapShader.exposure = exposure;
         motionBlurShader.samples = motionBlurSamples;
@@ -329,34 +329,34 @@ class PostProcRenderer: Renderer
             lutShader.colorLookupTable.useMipmapFiltering = false;
         }
     }
-    
+
     override void render()
     {
         if (outputBuffer)
             outputBuffer.bind();
-        
-        foreach(stage; pipeline.stages.data)
+
+        foreach(pass; pipeline.passes.data)
         {
-            if (stage.active)
+            if (pass.active)
             {
-                stage.render();
+                pass.render();
                 ldrDoubleBuffer.swap();
             }
         }
-        
+
         if (outputBuffer)
             outputBuffer.unbind();
     }
-    
+
     override void setViewport(uint x, uint y, uint w, uint h)
     {
         super.setViewport(x, y, w, h);
-        
+
         viewHalf.resize(cast(uint)(view.width * glowViewScale), cast(uint)(view.height * glowViewScale));
-        
+
         ldrBuffer1.resize(view.width, view.height);
         ldrBuffer2.resize(view.width, view.height);
-        
+
         hdrBuffer1.resize(viewHalf.width, viewHalf.height);
         hdrBuffer2.resize(viewHalf.width, viewHalf.height);
         hdrBuffer3.resize(view.width, view.height);

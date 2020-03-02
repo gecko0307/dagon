@@ -35,7 +35,6 @@ import dagon.core.time;
 import dagon.graphics.camera;
 import dagon.render.view;
 import dagon.render.pipeline;
-import dagon.render.stage;
 import dagon.render.framebuffer;
 import dagon.resource.scene;
 
@@ -44,41 +43,41 @@ class Renderer: Owner
     RenderView view;
     RenderPipeline pipeline;
     Framebuffer outputBuffer;
-    
+
     void activeCamera(Camera camera)
     {
         view.camera = camera;
     }
-    
+
     Camera activeCamera()
     {
         return view.camera;
     }
-    
+
     this(EventManager eventManager, Owner owner)
     {
         super(owner);
         view = New!RenderView(0, 0, eventManager.windowWidth, eventManager.windowHeight, this);
         pipeline = New!RenderPipeline(eventManager, this);
     }
-    
+
     // Override me
     void scene(Scene s)
     {
     }
-    
+
     void update(Time t)
     {
         pipeline.update(t);
     }
-    
+
     void render()
     {
         if (outputBuffer)
             outputBuffer.bind();
-        
+
         pipeline.render();
-        
+
         if (outputBuffer)
             outputBuffer.unbind();
     }

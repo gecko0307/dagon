@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.shadowstage;
+module dagon.render.shadowpass;
 
 import std.stdio;
 
@@ -41,10 +41,10 @@ import dagon.graphics.light;
 import dagon.graphics.csm;
 import dagon.graphics.shader;
 import dagon.render.pipeline;
-import dagon.render.stage;
+import dagon.render.pass;
 import dagon.render.shaders.shadow;
 
-class ShadowStage: RenderStage
+class ShadowPass: RenderPass
 {
     EntityGroup lightGroup;
     ShadowShader csmShader;
@@ -74,9 +74,9 @@ class ShadowStage: RenderStage
                         CascadedShadowMap csm = cast(CascadedShadowMap)light.shadowMap;
                         if (csm)
                             csm.camera = camera;
-                            
+
                         // TODO: other shadow types
-                            
+
                         light.shadowMap.update(t);
                     }
                 }
@@ -100,7 +100,7 @@ class ShadowStage: RenderStage
 
                         if (light.type == LightType.Sun && csm)
                             renderCSM(csm);
-                            
+
                         // TODO: other shadow types
                     }
                 }

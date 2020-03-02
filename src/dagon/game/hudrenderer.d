@@ -37,11 +37,11 @@ import dagon.core.time;
 import dagon.graphics.entity;
 import dagon.resource.scene;
 import dagon.render.pipeline;
-import dagon.render.stage;
+import dagon.render.pass;
 import dagon.render.deferred;
 import dagon.game.renderer;
 
-class HUDStage: RenderStage
+class HUDPass: RenderPass
 {
     this(RenderPipeline pipeline, EntityGroup group = null)
     {
@@ -108,7 +108,7 @@ class HUDStage: RenderStage
 
 class HUDRenderer: Renderer
 {
-    RenderStage stageHUD;
+    HUDPass passHUD;
 
     this(EventManager eventManager, Owner owner)
     {
@@ -117,15 +117,15 @@ class HUDRenderer: Renderer
         setViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
         view.ortho = true;
 
-        stageHUD = New!HUDStage(pipeline);
-        stageHUD.clear = false;
-        stageHUD.defaultMaterial.depthWrite = false;
-        stageHUD.defaultMaterial.culling = false;
-        stageHUD.view = view;
+        passHUD = New!HUDPass(pipeline);
+        passHUD.clear = false;
+        passHUD.defaultMaterial.depthWrite = false;
+        passHUD.defaultMaterial.culling = false;
+        passHUD.view = view;
     }
 
     override void scene(Scene s)
     {
-        stageHUD.group = s.foreground;
+        passHUD.group = s.foreground;
     }
 }

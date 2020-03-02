@@ -29,14 +29,14 @@ module dagon.render.deferred;
 
 public
 {
-    import dagon.render.deferred.backgroundstage;
-    import dagon.render.deferred.clearstage;
-    import dagon.render.deferred.debugoutputstage;
-    import dagon.render.deferred.decalstage;
-    import dagon.render.deferred.environmentstage;
-    import dagon.render.deferred.geometrystage;
-    import dagon.render.deferred.lightstage;
-    import dagon.render.deferred.occlusionstage;
-    import dagon.render.deferred.particlesstage;
-    import dagon.render.deferred.forwardstage;
+    import dagon.render.deferred.backgroundpass;
+    import dagon.render.deferred.clearpass;
+    import dagon.render.deferred.debugoutputpass;
+    import dagon.render.deferred.decalpass;
+    import dagon.render.deferred.environmentpass;
+    import dagon.render.deferred.geometrypass;
+    import dagon.render.deferred.lightpass;
+    import dagon.render.deferred.occlusionpass;
+    import dagon.render.deferred.particlespass;
+    import dagon.render.deferred.forwardpass;
 }

@@ -36,49 +36,49 @@ import dagon.core.bindings;
 import dagon.core.event;
 import dagon.core.time;
 import dagon.graphics.entity;
-import dagon.render.stage;
+import dagon.render.pass;
 
 class RenderPipeline: EventListener
 {
-    DynamicArray!RenderStage stages;
-    
+    DynamicArray!RenderPass passes;
+
     this(EventManager eventManager, Owner owner)
     {
         super(eventManager, owner);
     }
-    
+
     ~this()
     {
-        stages.free();
+        passes.free();
     }
-    
-    void addStage(RenderStage stage)
+
+    void addPass(RenderPass pass)
     {
-        stages.append(stage);
+        passes.append(pass);
     }
-    
-    void removeStage(RenderStage stage)
+
+    void removePass(RenderPass pass)
     {
-        stages.removeFirst(stage);
+        passes.removeFirst(pass);
     }
-    
+
     void update(Time t)
     {
         processEvents();
-        
-        foreach(stage; stages.data)
+
+        foreach(pass; passes.data)
         {
-            if (stage.active)
-                stage.update(t);
+            if (pass.active)
+                pass.update(t);
         }
     }
-    
+
     void render()
-    {   
-        foreach(stage; stages.data)
+    {
+        foreach(pass; passes.data)
         {
-            if (stage.active)
-                stage.render();
+            if (pass.active)
+                pass.render();
         }
     }
 }

@@ -37,10 +37,10 @@ import dagon.render.deferred;
 import dagon.render.gbuffer;
 import dagon.render.view;
 import dagon.render.framebuffer;
-import dagon.render.shadowstage;
+import dagon.render.shadowpass;
 import dagon.render.framebuffer_rgba16f;
 import dagon.render.framebuffer_r8;
-import dagon.postproc.filterstage;
+import dagon.postproc.filterpass;
 import dagon.postproc.shaders.denoise;
 import dagon.game.renderer;
 
@@ -50,26 +50,26 @@ class DeferredRenderer: Renderer
 
     DenoiseShader denoiseShader;
 
-    ShadowStage stageShadow;
-    DeferredClearStage stageClear;
-    DeferredBackgroundStage stageBackground;
-    DeferredGeometryStage stageStaticGeometry;
-    DeferredDecalStage stageDecals;
-    DeferredGeometryStage stageDynamicGeometry;
-    DeferredOcclusionStage stageOcclusion;
-    FilterStage stageOcclusionDenoise;
-    DeferredEnvironmentStage stageEnvironment;
-    DeferredLightStage stageLight;
-    DeferredParticlesStage stageParticles;
-    DeferredForwardStage stageForward;
-    DeferredDebugOutputStage stageDebug;
+    ShadowPass passShadow;
+    DeferredClearPass passClear;
+    DeferredBackgroundPass passBackground;
+    DeferredGeometryPass passStaticGeometry;
+    DeferredDecalPass passDecals;
+    DeferredGeometryPass passDynamicGeometry;
+    DeferredOcclusionPass passOcclusion;
+    FilterPass passOcclusionDenoise;
+    DeferredEnvironmentPass passEnvironment;
+    DeferredLightPass passLight;
+    DeferredParticlesPass passParticles;
+    DeferredForwardPass passForward;
+    DeferredDebugOutputPass passDebug;
 
     RenderView occlusionView;
     FramebufferR8 occlusionNoisyBuffer;
     FramebufferR8 occlusionBuffer;
 
     DebugOutputMode outputMode = DebugOutputMode.Radiance;
-    
+
     bool _ssaoEnabled = true;
 
     int ssaoSamples = 10;
@@ -91,76 +91,76 @@ class DeferredRenderer: Renderer
 
         gbuffer = New!GBuffer(view.width, view.height, radianceBuffer, this);
 
-        stageShadow = New!ShadowStage(pipeline);
-        
-        stageClear = New!DeferredClearStage(pipeline, gbuffer);
+        passShadow = New!ShadowPass(pipeline);
 
-        stageBackground = New!DeferredBackgroundStage(pipeline, gbuffer);
-        stageBackground.view = view;
+        passClear = New!DeferredClearPass(pipeline, gbuffer);
 
-        stageStaticGeometry = New!DeferredGeometryStage(pipeline, gbuffer);
-        stageStaticGeometry.view = view;
-        
-        stageDecals = New!DeferredDecalStage(pipeline, gbuffer);
-        stageDecals.view = view;
-        
-        stageDynamicGeometry = New!DeferredGeometryStage(pipeline, gbuffer);
-        stageDynamicGeometry.view = view;
+        passBackground = New!DeferredBackgroundPass(pipeline, gbuffer);
+        passBackground.view = view;
 
-        stageOcclusion = New!DeferredOcclusionStage(pipeline, gbuffer);
-        stageOcclusion.view = occlusionView;
-        stageOcclusion.outputBuffer = occlusionNoisyBuffer;
+        passStaticGeometry = New!DeferredGeometryPass(pipeline, gbuffer);
+        passStaticGeometry.view = view;
+
+        passDecals = New!DeferredDecalPass(pipeline, gbuffer);
+        passDecals.view = view;
+
+        passDynamicGeometry = New!DeferredGeometryPass(pipeline, gbuffer);
+        passDynamicGeometry.view = view;
+
+        passOcclusion = New!DeferredOcclusionPass(pipeline, gbuffer);
+        passOcclusion.view = occlusionView;
+        passOcclusion.outputBuffer = occlusionNoisyBuffer;
 
         denoiseShader = New!DenoiseShader(this);
-        stageOcclusionDenoise = New!FilterStage(pipeline, denoiseShader);
-        stageOcclusionDenoise.view = occlusionView;
-        stageOcclusionDenoise.inputBuffer = occlusionNoisyBuffer;
-        stageOcclusionDenoise.outputBuffer = occlusionBuffer;
+        passOcclusionDenoise = New!FilterPass(pipeline, denoiseShader);
+        passOcclusionDenoise.view = occlusionView;
+        passOcclusionDenoise.inputBuffer = occlusionNoisyBuffer;
+        passOcclusionDenoise.outputBuffer = occlusionBuffer;
 
-        stageEnvironment = New!DeferredEnvironmentStage(pipeline, gbuffer);
-        stageEnvironment.view = view;
-        stageEnvironment.outputBuffer = radianceBuffer;
-        stageEnvironment.occlusionBuffer = occlusionBuffer;
+        passEnvironment = New!DeferredEnvironmentPass(pipeline, gbuffer);
+        passEnvironment.view = view;
+        passEnvironment.outputBuffer = radianceBuffer;
+        passEnvironment.occlusionBuffer = occlusionBuffer;
 
-        stageLight = New!DeferredLightStage(pipeline, gbuffer);
-        stageLight.view = view;
-        stageLight.outputBuffer = radianceBuffer;
-        stageLight.occlusionBuffer = occlusionBuffer;
-        
-        stageParticles = New!DeferredParticlesStage(pipeline, gbuffer);
-        stageParticles.view = view;
+        passLight = New!DeferredLightPass(pipeline, gbuffer);
+        passLight.view = view;
+        passLight.outputBuffer = radianceBuffer;
+        passLight.occlusionBuffer = occlusionBuffer;
+
+        passParticles = New!DeferredParticlesPass(pipeline, gbuffer);
+        passParticles.view = view;
         // TODO: velocity buffer as a second attachment
-        stageParticles.outputBuffer = radianceBuffer;
-        
-        stageForward = New!DeferredForwardStage(pipeline);
-        stageForward.view = view;
-        // TODO: velocity buffer as a second attachment
-        stageForward.outputBuffer = radianceBuffer;
+        passParticles.outputBuffer = radianceBuffer;
 
-        stageDebug = New!DeferredDebugOutputStage(pipeline, gbuffer);
-        stageDebug.view = view;
-        stageDebug.active = false;
-        stageDebug.outputBuffer = radianceBuffer;
-        stageDebug.occlusionBuffer = occlusionBuffer;
+        passForward = New!DeferredForwardPass(pipeline);
+        passForward.view = view;
+        // TODO: velocity buffer as a second attachment
+        passForward.outputBuffer = radianceBuffer;
+
+        passDebug = New!DeferredDebugOutputPass(pipeline, gbuffer);
+        passDebug.view = view;
+        passDebug.active = false;
+        passDebug.outputBuffer = radianceBuffer;
+        passDebug.occlusionBuffer = occlusionBuffer;
     }
-    
+
     void ssaoEnabled(bool mode) @property
     {
         _ssaoEnabled = mode;
-        stageOcclusion.active = mode;
-        stageOcclusionDenoise.active = mode;
+        passOcclusion.active = mode;
+        passOcclusionDenoise.active = mode;
         if (_ssaoEnabled)
         {
-            stageEnvironment.occlusionBuffer = occlusionBuffer;
-            stageLight.occlusionBuffer = occlusionBuffer;
+            passEnvironment.occlusionBuffer = occlusionBuffer;
+            passLight.occlusionBuffer = occlusionBuffer;
         }
         else
         {
-            stageEnvironment.occlusionBuffer = null;
-            stageLight.occlusionBuffer = null;
+            passEnvironment.occlusionBuffer = null;
+            passLight.occlusionBuffer = null;
         }
     }
-    
+
     bool ssaoEnabled() @property
     {
         return _ssaoEnabled;
@@ -168,37 +168,37 @@ class DeferredRenderer: Renderer
 
     override void scene(Scene s)
     {
-        stageShadow.group = s.spatial;
-        stageShadow.lightGroup = s.lights;
-        stageBackground.group = s.background;
-        stageStaticGeometry.group = s.spatialOpaqueStatic;
-        stageDecals.group = s.decals;
-        stageDynamicGeometry.group = s.spatialOpaqueDynamic;
-        stageLight.groupSunLights = s.sunLights;
-        stageLight.groupAreaLights = s.areaLights;
-        stageParticles.group = s.spatial;
-        stageForward.group = s.spatialTransparent;
+        passShadow.group = s.spatial;
+        passShadow.lightGroup = s.lights;
+        passBackground.group = s.background;
+        passStaticGeometry.group = s.spatialOpaqueStatic;
+        passDecals.group = s.decals;
+        passDynamicGeometry.group = s.spatialOpaqueDynamic;
+        passLight.groupSunLights = s.sunLights;
+        passLight.groupAreaLights = s.areaLights;
+        passParticles.group = s.spatial;
+        passForward.group = s.spatialTransparent;
 
-        stageBackground.state.environment = s.environment;
-        stageStaticGeometry.state.environment = s.environment;
-        stageDecals.state.environment = s.environment;
-        stageDynamicGeometry.state.environment = s.environment;
-        stageEnvironment.state.environment = s.environment;
-        stageLight.state.environment = s.environment;
-        stageParticles.state.environment = s.environment;
-        stageDebug.state.environment = s.environment;
-        stageForward.state.environment = s.environment;
+        passBackground.state.environment = s.environment;
+        passStaticGeometry.state.environment = s.environment;
+        passDecals.state.environment = s.environment;
+        passDynamicGeometry.state.environment = s.environment;
+        passEnvironment.state.environment = s.environment;
+        passLight.state.environment = s.environment;
+        passParticles.state.environment = s.environment;
+        passDebug.state.environment = s.environment;
+        passForward.state.environment = s.environment;
     }
 
     override void update(Time t)
     {
-        stageShadow.camera = activeCamera;
-        stageDebug.active = (outputMode != DebugOutputMode.Radiance);
-        stageDebug.outputMode = outputMode;
+        passShadow.camera = activeCamera;
+        passDebug.active = (outputMode != DebugOutputMode.Radiance);
+        passDebug.outputMode = outputMode;
 
-        stageOcclusion.ssaoShader.samples = ssaoSamples;
-        stageOcclusion.ssaoShader.radius = ssaoRadius;
-        stageOcclusion.ssaoShader.power = ssaoPower;
+        passOcclusion.ssaoShader.samples = ssaoSamples;
+        passOcclusion.ssaoShader.radius = ssaoRadius;
+        passOcclusion.ssaoShader.power = ssaoPower;
         denoiseShader.factor = ssaoDenoise;
 
         super.update(t);

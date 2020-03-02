@@ -25,35 +25,57 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.deferred.clearstage;
+module dagon.postproc.filterpass;
 
 import std.stdio;
 
 import dlib.core.memory;
 import dlib.core.ownership;
-import dlib.image.color;
 
 import dagon.core.bindings;
-import dagon.graphics.entity;
+import dagon.graphics.screensurface;
+import dagon.graphics.shader;
 import dagon.render.pipeline;
-import dagon.render.stage;
-import dagon.render.gbuffer;
+import dagon.render.pass;
+import dagon.render.framebuffer;
 
-class DeferredClearStage: RenderStage
+class FilterPass: RenderPass
 {
-    GBuffer gbuffer;
+    Framebuffer inputBuffer;
+    Framebuffer outputBuffer;
+    ScreenSurface screenSurface;
+    Shader shader;
 
-    this(RenderPipeline pipeline, GBuffer gbuffer)
+    this(RenderPipeline pipeline, Shader shader)
     {
-        super(pipeline, null);
-        this.gbuffer = gbuffer;
+        super(pipeline);
+        screenSurface = New!ScreenSurface(this);
+        this.shader = shader;
     }
 
     override void render()
     {
-        if (gbuffer)
+        if (inputBuffer && view)
         {
-            gbuffer.clear();
+            if (outputBuffer)
+                outputBuffer.bind();
+
+            state.colorTexture = inputBuffer.colorTexture;
+            state.depthTexture = inputBuffer.depthTexture;
+
+            glScissor(view.x, view.y, view.width, view.height);
+            glViewport(view.x, view.y, view.width, view.height);
+
+            glDisable(GL_DEPTH_TEST);
+            shader.bind();
+            shader.bindParameters(&state);
+            screenSurface.render(&state);
+            shader.unbindParameters(&state);
+            shader.unbind();
+            glEnable(GL_DEPTH_TEST);
+
+            if (outputBuffer)
+                outputBuffer.unbind();
         }
     }
 }

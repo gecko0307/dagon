@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.deferred.debugoutputstage;
+module dagon.render.deferred.debugoutputpass;
 
 import std.stdio;
 
@@ -36,7 +36,7 @@ import dlib.image.color;
 import dagon.core.bindings;
 import dagon.graphics.screensurface;
 import dagon.render.pipeline;
-import dagon.render.stage;
+import dagon.render.pass;
 import dagon.render.framebuffer;
 import dagon.render.gbuffer;
 import dagon.render.shaders.debugoutput;
@@ -52,7 +52,7 @@ enum DebugOutputMode: int
     Occlusion = 6
 }
 
-class DeferredDebugOutputStage: RenderStage
+class DeferredDebugOutputPass: RenderPass
 {
     GBuffer gbuffer;
     Framebuffer occlusionBuffer;

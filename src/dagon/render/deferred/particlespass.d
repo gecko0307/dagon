@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020 Timur Gafarov
+Copyright (c) 2019 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,69 +25,79 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.deferred.forwardstage;
+module dagon.render.deferred.particlespass;
 
 import std.stdio;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.image.color;
 
 import dagon.core.bindings;
 import dagon.graphics.entity;
 import dagon.graphics.shader;
-import dagon.graphics.terrain;
 import dagon.graphics.particles;
 import dagon.render.pipeline;
-import dagon.render.stage;
+import dagon.render.pass;
 import dagon.render.framebuffer;
-import dagon.render.shaders.forward;
+import dagon.render.gbuffer;
+import dagon.render.shaders.particle;
 
-class DeferredForwardStage: RenderStage
+class DeferredParticlesPass: RenderPass
 {
-    ForwardShader forwardShader;
+    GBuffer gbuffer;
+    ParticleShader particleShader;
     Framebuffer outputBuffer;
 
-    this(RenderPipeline pipeline, EntityGroup group = null)
+    this(RenderPipeline pipeline, GBuffer gbuffer, EntityGroup group = null)
     {
         super(pipeline, group);
-        forwardShader = New!ForwardShader(this);
+        this.gbuffer = gbuffer;
+        particleShader = New!ParticleShader(this);
+    }
+
+    void renderParticleSystem(Entity entity, ParticleSystem psys, Shader shader)
+    {
+        state.layer = entity.layer;
+        state.shader = shader;
+        state.opacity = entity.opacity;
+        psys.render(&state);
     }
 
     override void render()
     {
-        if (group && outputBuffer)
+        if (group && outputBuffer && gbuffer)
         {
             outputBuffer.bind();
 
+            state.depthTexture = gbuffer.depthTexture;
+
+            // TODO: move depth blit to separate stage
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, gbuffer.framebuffer);
+            glBlitFramebuffer(0, 0, gbuffer.width, gbuffer.height, 0, 0, gbuffer.width, gbuffer.height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+
             glScissor(0, 0, outputBuffer.width, outputBuffer.height);
             glViewport(0, 0, outputBuffer.width, outputBuffer.height);
-            
+
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-            //forwardShader.bind();
+            particleShader.bind();
             foreach(entity; group)
             {
-                if (entity.visible && entity.drawable)
+                if (entity.visible)
                 {
-                    if (!entityIsTerrain(entity) && !entityIsParticleSystem(entity))
+                    foreach(comp; entity.components.data)
                     {
-                        Shader shader = forwardShader;
-                        
-                        if (entity.material)
-                        {
-                            if (entity.material.shader)
-                                shader = entity.material.shader;
-                        }
-                        
-                        shader.bind();
-                        renderEntity(entity, shader);
-                        shader.unbind();
+                        ParticleSystem psys = cast(ParticleSystem)comp;
+                        if (psys)
+                            renderParticleSystem(entity, psys, particleShader);
                     }
                 }
             }
-            //forwardShader.unbind();
-            
+            particleShader.unbind();
+
             glDisable(GL_BLEND);
 
             outputBuffer.unbind();

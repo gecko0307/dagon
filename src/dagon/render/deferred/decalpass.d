@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.deferred.particlesstage;
+module dagon.render.deferred.decalpass;
 
 import std.stdio;
 
@@ -36,71 +36,49 @@ import dlib.image.color;
 import dagon.core.bindings;
 import dagon.graphics.entity;
 import dagon.graphics.shader;
-import dagon.graphics.particles;
 import dagon.render.pipeline;
-import dagon.render.stage;
-import dagon.render.framebuffer;
+import dagon.render.pass;
 import dagon.render.gbuffer;
-import dagon.render.shaders.particle;
+import dagon.render.shaders.decal;
 
-class DeferredParticlesStage: RenderStage
+class DeferredDecalPass: RenderPass
 {
     GBuffer gbuffer;
-    ParticleShader particleShader;
-    Framebuffer outputBuffer;
+    DecalShader decalShader;
 
     this(RenderPipeline pipeline, GBuffer gbuffer, EntityGroup group = null)
     {
         super(pipeline, group);
         this.gbuffer = gbuffer;
-        particleShader = New!ParticleShader(this);
-    }
-
-    void renderParticleSystem(Entity entity, ParticleSystem psys, Shader shader)
-    {
-        state.layer = entity.layer;
-        state.shader = shader;
-        state.opacity = entity.opacity;
-        psys.render(&state);
+        decalShader = New!DecalShader(gbuffer, this);
     }
 
     override void render()
     {
-        if (group && outputBuffer && gbuffer)
+        if (group)
         {
-            outputBuffer.bind();
-            
-            state.depthTexture = gbuffer.depthTexture;
-            
-            // TODO: move depth blit to separate stage
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, gbuffer.framebuffer);
-            glBlitFramebuffer(0, 0, gbuffer.width, gbuffer.height, 0, 0, gbuffer.width, gbuffer.height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+            gbuffer.bind();
 
-            glScissor(0, 0, outputBuffer.width, outputBuffer.height);
-            glViewport(0, 0, outputBuffer.width, outputBuffer.height);
-            
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+            glScissor(0, 0, gbuffer.width, gbuffer.height);
+            glViewport(0, 0, gbuffer.width, gbuffer.height);
 
-            particleShader.bind();
+            state.depthMask = false;
+
+            glDisable(GL_DEPTH_TEST);
+
+            decalShader.bind();
             foreach(entity; group)
             {
-                if (entity.visible)
+                if (entity.visible && entity.drawable)
                 {
-                    foreach(comp; entity.components.data)
-                    {
-                        ParticleSystem psys = cast(ParticleSystem)comp;
-                        if (psys)
-                            renderParticleSystem(entity, psys, particleShader);
-                    }
+                    renderEntity(entity, decalShader);
                 }
             }
-            particleShader.unbind();
-            
-            glDisable(GL_BLEND);
+            decalShader.unbind();
 
-            outputBuffer.unbind();
+            glEnable(GL_DEPTH_TEST);
+
+            gbuffer.unbind();
         }
     }
 }

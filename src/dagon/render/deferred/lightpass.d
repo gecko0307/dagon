@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.deferred.lightstage;
+module dagon.render.deferred.lightpass;
 
 import std.stdio;
 
@@ -41,13 +41,13 @@ import dagon.graphics.entity;
 import dagon.graphics.light;
 import dagon.graphics.shapes;
 import dagon.render.pipeline;
-import dagon.render.stage;
+import dagon.render.pass;
 import dagon.render.framebuffer;
 import dagon.render.gbuffer;
 import dagon.render.shaders.sunlight;
 import dagon.render.shaders.arealight;
 
-class DeferredLightStage: RenderStage
+class DeferredLightPass: RenderPass
 {
     GBuffer gbuffer;
     ScreenSurface screenSurface;
@@ -107,13 +107,13 @@ class DeferredLightStage: RenderStage
                 }
             }
             sunLightShader.unbind();
-            
+
             glDisable(GL_DEPTH_TEST);
             glDepthMask(GL_FALSE);
 
             glEnable(GL_CULL_FACE);
             glCullFace(GL_FRONT);
-        
+
             areaLightShader.bind();
             foreach(entity; groupAreaLights)
             {
@@ -123,13 +123,13 @@ class DeferredLightStage: RenderStage
                     if (light.shining)
                     {
                         state.light = light;
-                        
-                        state.modelMatrix = 
+
+                        state.modelMatrix =
                             translationMatrix(light.positionAbsolute) *
                             scaleMatrix(Vector3f(light.volumeRadius, light.volumeRadius, light.volumeRadius));
-                        
+
                         state.modelViewMatrix = state.viewMatrix * state.modelMatrix;
-                        
+
                         state.normalMatrix = state.modelViewMatrix.inverse.transposed;
 
                         areaLightShader.bindParameters(&state);
@@ -139,10 +139,10 @@ class DeferredLightStage: RenderStage
                 }
             }
             areaLightShader.unbind();
-            
+
             glCullFace(GL_BACK);
             glDisable(GL_CULL_FACE);
-            
+
             glDepthMask(GL_TRUE);
             glEnable(GL_DEPTH_TEST);
 

@@ -35,9 +35,9 @@ public
     import dagon.render.framebuffer_rgba8;
     import dagon.render.framebuffer_rgba16f;
     import dagon.render.gbuffer;
+    import dagon.render.pass;
     import dagon.render.pipeline;
-    import dagon.render.shadowstage;
-    import dagon.render.stage;
-    import dagon.render.view;
     import dagon.render.shaders;
+    import dagon.render.shadowpass;
+    import dagon.render.view;
 }

@@ -33,33 +33,33 @@ import dlib.core.ownership;
 import dagon.core.event;
 import dagon.core.time;
 import dagon.resource.scene;
-import dagon.render.stage;
+import dagon.render.pass;
 import dagon.render.deferred;
 import dagon.render.framebuffer;
-import dagon.postproc.presentstage;
+import dagon.postproc.presentpass;
 import dagon.game.renderer;
 
 class PresentRenderer: Renderer
 {
     Framebuffer _inputBuffer;
-    PresentStage stagePresent;
-    
+    PresentPass passPresent;
+
     this(EventManager eventManager, Framebuffer inputBuffer, Owner owner)
     {
         super(eventManager, owner);
-        
+
         this._inputBuffer = inputBuffer;
-        stagePresent = New!PresentStage(pipeline);
-        stagePresent.view = view;
-        stagePresent.inputBuffer = inputBuffer;
+        passPresent = New!PresentPass(pipeline);
+        passPresent.view = view;
+        passPresent.inputBuffer = inputBuffer;
     }
     
     void inputBuffer(Framebuffer b)
     {
         _inputBuffer = b;
-        stagePresent.inputBuffer = b;
+        passPresent.inputBuffer = b;
     }
-    
+
     Framebuffer inputBuffer()
     {
         return _inputBuffer;

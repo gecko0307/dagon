@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019 Timur Gafarov
+Copyright (c) 2020 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,71 +25,72 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.deferred.geometrystage;
+module dagon.render.deferred.forwardpass;
 
 import std.stdio;
 
 import dlib.core.memory;
 import dlib.core.ownership;
-import dlib.image.color;
 
 import dagon.core.bindings;
 import dagon.graphics.entity;
+import dagon.graphics.shader;
 import dagon.graphics.terrain;
 import dagon.graphics.particles;
-import dagon.graphics.shader;
 import dagon.render.pipeline;
-import dagon.render.stage;
-import dagon.render.gbuffer;
-import dagon.render.shaders.geometry;
-import dagon.render.shaders.terrain;
+import dagon.render.pass;
+import dagon.render.framebuffer;
+import dagon.render.shaders.forward;
 
-class DeferredGeometryStage: RenderStage
+class DeferredForwardPass: RenderPass
 {
-    GBuffer gbuffer;
-    GeometryShader geometryShader;
-    TerrainShader terrainShader;
+    ForwardShader forwardShader;
+    Framebuffer outputBuffer;
 
-    this(RenderPipeline pipeline, GBuffer gbuffer, EntityGroup group = null)
+    this(RenderPipeline pipeline, EntityGroup group = null)
     {
         super(pipeline, group);
-        this.gbuffer = gbuffer;
-        geometryShader = New!GeometryShader(this);
-        terrainShader = New!TerrainShader(this);
+        forwardShader = New!ForwardShader(this);
     }
 
     override void render()
     {
-        if (group && gbuffer)
+        if (group && outputBuffer)
         {
-            gbuffer.bind();
+            outputBuffer.bind();
 
-            glScissor(0, 0, gbuffer.width, gbuffer.height);
-            glViewport(0, 0, gbuffer.width, gbuffer.height);
-            
-            geometryShader.bind();
+            glScissor(0, 0, outputBuffer.width, outputBuffer.height);
+            glViewport(0, 0, outputBuffer.width, outputBuffer.height);
+
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+            //forwardShader.bind();
             foreach(entity; group)
             {
                 if (entity.visible && entity.drawable)
                 {
                     if (!entityIsTerrain(entity) && !entityIsParticleSystem(entity))
-                        renderEntity(entity, geometryShader);
-                }
-            }
-            geometryShader.unbind();
-            
-            terrainShader.bind();
-            foreach(entity; group)
-            {
-                if (entity.visible && entity.drawable)
-                {
-                    if (entityIsTerrain(entity))
-                        renderEntity(entity, terrainShader);
-                }
-            }
-            terrainShader.unbind();
+                    {
+                        Shader shader = forwardShader;
 
-            gbuffer.unbind();
+                        if (entity.material)
+                        {
+                            if (entity.material.shader)
+                                shader = entity.material.shader;
+                        }
+
+                        shader.bind();
+                        renderEntity(entity, shader);
+                        shader.unbind();
+                    }
+                }
+            }
+            //forwardShader.unbind();
+
+            glDisable(GL_BLEND);
+
+            outputBuffer.unbind();
         }
     }
 }

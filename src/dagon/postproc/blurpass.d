@@ -25,60 +25,83 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.deferred.occlusionstage;
+module dagon.postproc.blurpass;
 
 import std.stdio;
 
 import dlib.core.memory;
 import dlib.core.ownership;
-import dlib.image.color;
+import dlib.math.vector;
 
 import dagon.core.bindings;
 import dagon.graphics.screensurface;
+import dagon.graphics.shader;
 import dagon.render.pipeline;
-import dagon.render.stage;
+import dagon.render.pass;
 import dagon.render.framebuffer;
-import dagon.render.gbuffer;
-import dagon.render.shaders.ssao;
+import dagon.postproc.shaders.blur;
 
-class DeferredOcclusionStage: RenderStage
+class BlurPass: RenderPass
 {
-    GBuffer gbuffer;
-    ScreenSurface screenSurface;
-    SSAOShader ssaoShader;
+    Framebuffer inputBuffer;
     Framebuffer outputBuffer;
+    Framebuffer outputBuffer2;
+    ScreenSurface screenSurface;
+    BlurShader blurShader;
+    uint radius = 1;
 
-    this(RenderPipeline pipeline, GBuffer gbuffer)
+    this(RenderPipeline pipeline)
     {
         super(pipeline);
-        this.gbuffer = gbuffer;
         screenSurface = New!ScreenSurface(this);
-        ssaoShader = New!SSAOShader(this);
+        blurShader = New!BlurShader(this);
     }
 
     override void render()
     {
-        if (view && gbuffer)
+        if (inputBuffer && outputBuffer && outputBuffer2 && view)
         {
-            if (outputBuffer)
-                outputBuffer.bind();
-
-            state.colorTexture = gbuffer.colorTexture;
-            state.depthTexture = gbuffer.depthTexture;
-            state.normalTexture = gbuffer.normalTexture;
-            state.pbrTexture = gbuffer.pbrTexture;
+            Framebuffer currentInputBuffer = inputBuffer;
+            Framebuffer currentOutputBuffer = outputBuffer2;
 
             glScissor(view.x, view.y, view.width, view.height);
             glViewport(view.x, view.y, view.width, view.height);
 
-            ssaoShader.bind();
-            ssaoShader.bindParameters(&state);
-            screenSurface.render(&state);
-            ssaoShader.unbindParameters(&state);
-            ssaoShader.unbind();
+            glDisable(GL_DEPTH_TEST);
 
-            if (outputBuffer)
-                outputBuffer.unbind();
+            blurShader.bind();
+
+            foreach(i; 1..radius+1)
+            {
+                state.colorTexture = currentInputBuffer.colorTexture;
+                currentOutputBuffer.bind();
+                blurShader.radius = i;
+                blurShader.direction = Vector2f(1.0f, 0.0f);
+
+                blurShader.bindParameters(&state);
+                screenSurface.render(&state);
+                blurShader.unbindParameters(&state);
+                currentOutputBuffer.unbind();
+
+                currentInputBuffer = currentOutputBuffer;
+                currentOutputBuffer = outputBuffer;
+
+                state.colorTexture = currentInputBuffer.colorTexture;
+                currentOutputBuffer.bind();
+                blurShader.direction = Vector2f(0.0f, 1.0f);
+                blurShader.bindParameters(&state);
+                screenSurface.render(&state);
+                blurShader.unbindParameters(&state);
+
+                currentOutputBuffer.unbind();
+
+                currentInputBuffer = currentOutputBuffer;
+                currentOutputBuffer = outputBuffer2;
+            }
+
+            blurShader.unbind();
+
+            glEnable(GL_DEPTH_TEST);
         }
     }
 }

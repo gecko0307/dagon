@@ -25,51 +25,68 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.postproc.presentstage;
+module dagon.render.deferred.environmentpass;
 
 import std.stdio;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.image.color;
 
 import dagon.core.bindings;
 import dagon.graphics.screensurface;
 import dagon.render.pipeline;
-import dagon.render.stage;
+import dagon.render.pass;
 import dagon.render.framebuffer;
-import dagon.postproc.shaders.present;
+import dagon.render.gbuffer;
+import dagon.render.shaders.environment;
 
-class PresentStage: RenderStage
+class DeferredEnvironmentPass: RenderPass
 {
-    Framebuffer inputBuffer;
+    GBuffer gbuffer;
     ScreenSurface screenSurface;
-    PresentShader presentShader;
+    EnvironmentShader environmentShader;
+    Framebuffer outputBuffer;
+    Framebuffer occlusionBuffer;
 
-    this(RenderPipeline pipeline)
+    this(RenderPipeline pipeline, GBuffer gbuffer)
     {
         super(pipeline);
+        this.gbuffer = gbuffer;
         screenSurface = New!ScreenSurface(this);
-        presentShader = New!PresentShader(this);
+        environmentShader = New!EnvironmentShader(this);
     }
 
     override void render()
     {
-        if (inputBuffer && view)
+        if (outputBuffer && gbuffer)
         {
-            state.colorTexture = inputBuffer.colorTexture;
-            state.depthTexture = inputBuffer.depthTexture;
+            outputBuffer.bind();
 
-            glScissor(view.x, view.y, view.width, view.height);
-            glViewport(view.x, view.y, view.width, view.height);
+            state.colorTexture = gbuffer.colorTexture;
+            state.depthTexture = gbuffer.depthTexture;
+            state.normalTexture = gbuffer.normalTexture;
+            state.pbrTexture = gbuffer.pbrTexture;
+            if (occlusionBuffer)
+                state.occlusionTexture = occlusionBuffer.colorTexture;
+            else
+                state.occlusionTexture = 0;
 
-            glClearColor(0.0, 0.0, 0.0, 1.0);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glScissor(0, 0, outputBuffer.width, outputBuffer.height);
+            glViewport(0, 0, outputBuffer.width, outputBuffer.height);
 
-            presentShader.bind();
-            presentShader.bindParameters(&state);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+            environmentShader.bind();
+            environmentShader.bindParameters(&state);
             screenSurface.render(&state);
-            presentShader.unbindParameters(&state);
-            presentShader.unbind();
+            environmentShader.unbindParameters(&state);
+            environmentShader.unbind();
+
+            glDisable(GL_BLEND);
+
+            outputBuffer.unbind();
         }
     }
 }

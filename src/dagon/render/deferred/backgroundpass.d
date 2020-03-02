@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.deferred.backgroundstage;
+module dagon.render.deferred.backgroundpass;
 
 import std.stdio;
 
@@ -37,11 +37,11 @@ import dagon.core.bindings;
 import dagon.graphics.entity;
 import dagon.graphics.shader;
 import dagon.render.pipeline;
-import dagon.render.stage;
+import dagon.render.pass;
 import dagon.render.gbuffer;
 import dagon.render.shaders.sky;
 
-class DeferredBackgroundStage: RenderStage
+class DeferredBackgroundPass: RenderPass
 {
     GBuffer gbuffer;
     SkyShader skyShader;
@@ -65,13 +65,13 @@ class DeferredBackgroundStage: RenderStage
             Color4f backgroundColor = Color4f(0.0f, 0.0f, 0.0f, 0.0f);
             if (state.environment)
                 backgroundColor = state.environment.backgroundColor;
-            
+
             glClear(GL_DEPTH_BUFFER_BIT);
-            
+
             Color4f zero = Color4f(0, 0, 0, 0);
             glClearBufferfv(GL_COLOR, 3, zero.arrayof.ptr);
             glClearBufferfv(GL_COLOR, 4, zero.arrayof.ptr);
-            
+
             foreach(entity; group)
             if (entity.visible && entity.drawable)
             {
@@ -90,9 +90,9 @@ class DeferredBackgroundStage: RenderStage
                 Shader shader = skyShader;
                 if (entity.material.shader)
                     shader = entity.material.shader;
-                
+
                 state.shader = shader;
-                
+
                 shader.bind();
                 shader.bindParameters(&state);
 
