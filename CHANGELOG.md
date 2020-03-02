@@ -1,6 +1,6 @@
 Dagon 0.11.0 - TBD
 ------------------
-**Important:** This release features major redesign of almost every component in the engine and **breaks compatibility with old code**. 
+**Important:** This release features major redesign of almost every component in the engine and **breaks compatibility with old code**.
 
 Changes:
 - **Overall**
@@ -10,8 +10,8 @@ Changes:
 - **Core**
   - New module `dagon.core.time` which contains `Time` helper structure and `Cadencer` class
 - **Rendering**
-  - Renderer was entirely rewritten from scratch based on a new concept of pipelines and stages (see `dagon.render` package). A pipeline is a sequence of draw call groups - stages. Each stage traverses a subset of scene objects and renders them to a given buffer using a given shader. For example, a deferred pipeline contains geometry stage that fills G-buffer, environment stage and lighting stage
-  - Volumetric scattering (aka 'God rays') support for sun light
+  - Renderer was entirely rewritten from scratch based on a new concept of pipelines (see `dagon.render` package). A pipeline is a sequence of draw call groups - passes. Each pass traverses a subset of scene objects and renders them to a given buffer using a given shader. For example, a deferred pipeline contains geometry pass that fills G-buffer, environment pass and lighting pass
+  - Volumetric scattering (aka 'God rays') for sun light
   - Improved PBR - new roughness to lod mapping for environment maps, better looking metals and shiny dielectrics
   - Multiple optimizations across the renderer, including less shader switches and data copying. 25-30% performance boost on some systems
   - Render viewports can now be resized in runtime
@@ -32,7 +32,7 @@ Changes:
   - File drag-and-drop event
 - **Misc**
   - Dagon (`dagon:ftfont` extension, to be precise) now uses [official BindBC Freetype binding](https://github.com/BindBC/bindbc-freetype) instead of custom one.
-  
+
 Dagon 0.10.2 - 24 Dec, 2019
 ---------------------------
 - Use dlib 0.17.0
@@ -190,7 +190,7 @@ Dagon 0.7.0 - 17 May, 2018
   - Legacy material backends (`BlinnPhongBackend` and `BlinnPhongClusteredBackend`) have been removed. `StandardBackend` (former `PBRClusteredBackend`) should be used instead (which is already used by default)
   - Cook-Torrance BRDF is now used in standard shader instead of Blinn-Phong (both for sun light and point/area lights)
   - Texture support for `roughness` and `metallic` material properties
-  - `energy` property for `GenericMaterial` which controls emission brightness 
+  - `energy` property for `GenericMaterial` which controls emission brightness
   - Improved standard shader performance, especially on low-end systems
 - **Post-processing**
   - New post-processing filters: camera motion blur, HDR glow, LUT color grading, improved lens distortion. Post-processing stack is now a part of `BaseScene3D`. Many filters are built-in, so you only have to enable them (they can be enabled/disabled individually). Read more on filters setup [here](https://github.com/gecko0307/dagon/wiki/Tutorial-9.-Post-processing).
@@ -259,7 +259,7 @@ Dagon 0.1.0 - 8 Jun, 2017
 * Use dlib 0.11.1
 * `FirstPersonView` now utilizes SDL's relative mouse mode and can be activated/deactivated
 * Fixed lots of bugs, including asset management bug with reloading scenes.
-  
+
 Dagon 0.0.3 - 10 Apr, 2017
 --------------------------
 * Removed libraries from main repository, they now should be downloaded separately from [here](https://github.com/gecko0307/dagon/releases/tag/v0.0.2).
