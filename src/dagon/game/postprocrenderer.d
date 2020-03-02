@@ -38,8 +38,6 @@ import dagon.render.pass;
 import dagon.render.deferred;
 import dagon.render.view;
 import dagon.render.framebuffer;
-import dagon.render.framebuffer_rgba8;
-import dagon.render.framebuffer_rgba16f;
 import dagon.render.gbuffer;
 import dagon.postproc.filterpass;
 import dagon.postproc.blurpass;
@@ -62,7 +60,8 @@ class DoubleBuffer: Framebuffer
 
     this(Framebuffer writeBuffer, Framebuffer readBuffer, Owner owner)
     {
-        super(writeBuffer.width, writeBuffer.height, owner);
+        super(owner);
+        //super(writeBuffer.width, writeBuffer.height, true, owner);
         this.writeBuffer = writeBuffer;
         this.readBuffer = readBuffer;
     }
@@ -175,15 +174,15 @@ class PostProcRenderer: Renderer
 
         viewHalf = New!RenderView(0, 0, cast(uint)(view.width * glowViewScale), cast(uint)(view.height * glowViewScale), this);
 
-        ldrBuffer1 = New!FramebufferRGBA8(view.width, view.height, this);
-        ldrBuffer2 = New!FramebufferRGBA8(view.width, view.height, this);
+        ldrBuffer1 = New!Framebuffer(view.width, view.height, FrameBufferFormat.RGBA8, true, this);
+        ldrBuffer2 = New!Framebuffer(view.width, view.height, FrameBufferFormat.RGBA8, true, this);
         ldrDoubleBuffer = New!DoubleBuffer(ldrBuffer1, ldrBuffer2, this);
 
-        hdrBuffer1 = New!FramebufferRGBA16f(viewHalf.width, viewHalf.height, this);
-        hdrBuffer2 = New!FramebufferRGBA16f(viewHalf.width, viewHalf.height, this);
+        hdrBuffer1 = New!Framebuffer(viewHalf.width, viewHalf.height, FrameBufferFormat.RGBA16F, true, this);
+        hdrBuffer2 = New!Framebuffer(viewHalf.width, viewHalf.height, FrameBufferFormat.RGBA16F, true, this);
 
-        hdrBuffer3 = New!FramebufferRGBA16f(view.width, view.height, this);
-        hdrBuffer4 = New!FramebufferRGBA16f(view.width, view.height, this);
+        hdrBuffer3 = New!Framebuffer(view.width, view.height, FrameBufferFormat.RGBA16F, true, this);
+        hdrBuffer4 = New!Framebuffer(view.width, view.height, FrameBufferFormat.RGBA16F, true, this);
 
         motionBlurShader = New!MotionBlurShader(this);
         motionBlurShader.gbuffer = gbuffer;

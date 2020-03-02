@@ -38,8 +38,6 @@ import dagon.render.gbuffer;
 import dagon.render.view;
 import dagon.render.framebuffer;
 import dagon.render.shadowpass;
-import dagon.render.framebuffer_rgba16f;
-import dagon.render.framebuffer_r8;
 import dagon.postproc.filterpass;
 import dagon.postproc.shaders.denoise;
 import dagon.game.renderer;
@@ -65,8 +63,8 @@ class DeferredRenderer: Renderer
     DeferredDebugOutputPass passDebug;
 
     RenderView occlusionView;
-    FramebufferR8 occlusionNoisyBuffer;
-    FramebufferR8 occlusionBuffer;
+    Framebuffer occlusionNoisyBuffer;
+    Framebuffer occlusionBuffer;
 
     DebugOutputMode outputMode = DebugOutputMode.Radiance;
 
@@ -82,11 +80,11 @@ class DeferredRenderer: Renderer
         super(eventManager, owner);
 
         occlusionView = New!RenderView(0, 0, view.width / 2, view.height / 2, this);
-        occlusionNoisyBuffer = New!FramebufferR8(occlusionView.width, occlusionView.height, this);
-        occlusionBuffer = New!FramebufferR8(occlusionView.width, occlusionView.height, this);
+        occlusionNoisyBuffer = New!Framebuffer(occlusionView.width, occlusionView.height, FrameBufferFormat.R8, false, this);
+        occlusionBuffer = New!Framebuffer(occlusionView.width, occlusionView.height, FrameBufferFormat.R8, false, this);
 
         // HDR buffer
-        auto radianceBuffer = New!FramebufferRGBA16f(eventManager.windowWidth, eventManager.windowHeight, this);
+        auto radianceBuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, FrameBufferFormat.RGBA16F, true, this);
         outputBuffer = radianceBuffer;
 
         gbuffer = New!GBuffer(view.width, view.height, radianceBuffer, this);

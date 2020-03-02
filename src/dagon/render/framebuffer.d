@@ -27,29 +27,163 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.render.framebuffer;
 
+import std.stdio;
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.image.color;
 
 import dagon.core.bindings;
 
-abstract class Framebuffer: Owner
+enum FrameBufferFormat
+{
+    R8,
+    RGBA8,
+    RGBA16F
+}
+
+class Framebuffer: Owner
 {
     uint width;
     uint height;
-    
-    this(uint w, uint h, Owner owner)
+    FrameBufferFormat colorFormat;
+    bool hasDepthBuffer;
+    GLuint _colorTexture = 0;
+    GLuint _depthTexture = 0;
+    GLuint framebuffer;
+
+    this(Owner owner)
     {
         super(owner);
+    }
+
+    this(uint w, uint h, FrameBufferFormat format, bool depth, Owner owner)
+    {
+        super(owner);
+        init(w, h, format, depth);
+    }
+
+    void init(uint w, uint h, FrameBufferFormat format, bool depth)
+    {
         width = w;
         height = h;
+        colorFormat = format;
+        hasDepthBuffer = depth;
+        createFramebuffer();
     }
-    
-    GLuint colorTexture();
-    GLuint depthTexture();
-    void bind();
-    void unbind();
-    void resize(uint width, uint height);
-    void blitColorBuffer();
-    void blitDepthBuffer();
+
+    ~this()
+    {
+        releaseFramebuffer();
+    }
+
+    protected void createFramebuffer()
+    {
+        releaseFramebuffer();
+
+        GLint intFormat;
+        GLenum textureFormat;
+        GLenum pixelType;
+
+        switch (colorFormat)
+        {
+            case FrameBufferFormat.R8:      intFormat = GL_R8;      textureFormat = GL_RED;  pixelType = GL_UNSIGNED_BYTE; break;
+            case FrameBufferFormat.RGBA8:   intFormat = GL_RGBA8;   textureFormat = GL_RGBA; pixelType = GL_UNSIGNED_BYTE; break;
+            case FrameBufferFormat.RGBA16F: intFormat = GL_RGBA16F; textureFormat = GL_RGBA; pixelType = GL_FLOAT; break;
+            default: break;
+        }
+
+        glActiveTexture(GL_TEXTURE0);
+
+        glGenTextures(1, &_colorTexture);
+        glBindTexture(GL_TEXTURE_2D, _colorTexture);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexImage2D(GL_TEXTURE_2D, 0, intFormat, width, height, 0, textureFormat, pixelType, null);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        if (hasDepthBuffer)
+        {
+            glGenTextures(1, &_depthTexture);
+            glBindTexture(GL_TEXTURE_2D, _depthTexture);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, null);
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
+
+        glGenFramebuffers(1, &framebuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _colorTexture, 0);
+        if (hasDepthBuffer)
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, _depthTexture, 0);
+
+        GLenum[1] drawBuffers = [GL_COLOR_ATTACHMENT0];
+        glDrawBuffers(drawBuffers.length, drawBuffers.ptr);
+
+        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        if (status != GL_FRAMEBUFFER_COMPLETE)
+            writeln(status);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    void releaseFramebuffer()
+    {
+        if (glIsFramebuffer(framebuffer))
+            glDeleteFramebuffers(1, &framebuffer);
+
+        if (glIsTexture(_colorTexture))
+            glDeleteTextures(1, &_colorTexture);
+
+        if (glIsTexture(_depthTexture))
+            glDeleteTextures(1, &_depthTexture);
+    }
+
+    GLuint colorTexture()
+    {
+        return _colorTexture;
+    }
+
+    GLuint depthTexture()
+    {
+        return _depthTexture;
+    }
+
+    void bind()
+    {
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
+    }
+
+    void unbind()
+    {
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    }
+
+    void resize(uint w, uint h)
+    {
+        width = w;
+        height = h;
+        createFramebuffer();
+    }
+
+    void blitColorBuffer()
+    {
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer);
+        glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    }
+
+    void blitDepthBuffer()
+    {
+        if (hasDepthBuffer)
+        {
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer);
+            glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+        }
+    }
 }
