@@ -53,6 +53,11 @@ class Game: Application
     PostProcRenderer postProcessingRenderer;
     PresentRenderer presentRenderer;
     HUDRenderer hudRenderer;
+    
+    alias deferred = deferredRenderer;
+    alias postProc = postProcessingRenderer;
+    alias present = presentRenderer;
+    alias hud = hudRenderer;
 
     this(uint w, uint h, bool fullscreen, string title, string[] args)
     {
