@@ -139,6 +139,8 @@ class SunLightShader: Shader
         setParameter("lightScatteringDensity", lightScatteringDensity);
         setParameter("lightScatteringSamples", lightScatteringSamples);
         setParameter("lightScatteringMaxRandomStepOffset", lightScatteringMaxRandomStepOffset);
+        
+        setParameter("time", state.localTime);
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);

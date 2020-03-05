@@ -51,6 +51,7 @@ class MotionBlurShader: Shader
     int samples = 16;
     float currentFramerate = 60.0;
     float shutterFramerate = 30.0;
+    float offsetRandomCoefficient = 1.0;
 
     GBuffer gbuffer;
 
@@ -80,6 +81,8 @@ class MotionBlurShader: Shader
 
         setParameter("blurScale", currentFramerate / shutterFramerate);
         setParameter("samples", samples);
+        setParameter("offsetRandomCoef", offsetRandomCoefficient);
+        setParameter("time", state.localTime);
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);

@@ -82,6 +82,8 @@ struct GraphicsState
     GLuint occlusionTexture;
     
     Time time;
+    
+    float localTime; // 0.0 .. 1.0
 
     void reset()
     {
@@ -128,5 +130,6 @@ struct GraphicsState
         occlusionTexture = 0;
         
         time = Time(0.0, 0.0);
+        localTime = 0.0f;
     }
 }

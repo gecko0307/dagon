@@ -73,6 +73,9 @@ class RenderPass: EventListener
         processEvents();
 
         state.time = t;
+        state.localTime += t.delta;
+        if (state.localTime >= 1.0f)
+            state.localTime = 0.0f;
 
         if (view)
         {

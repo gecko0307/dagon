@@ -16,10 +16,13 @@ out vec4 fragColor;
 
 uniform float blurScale;
 uniform int samples;
+uniform float offsetRandomCoef;
+uniform float time;
 
 uniform mat4 invProjectionMatrix;
 
 #include <unproject.glsl>
+#include <hash.glsl>
 
 void main()
 {
@@ -40,10 +43,12 @@ void main()
         float usedSamples = 1.0;
         
         float zCenter = unproject(invProjectionMatrix, vec3(texCoord, texture(depthBuffer, texCoord).x)).z;
+        
+        float rnd = hash(texCoord * 467.759 + time) * offsetRandomCoef;
 
         for (int i = 1; i < nSamples; i++)
         {
-            vec2 offset = blurVec * (float(i) * invSamplesMinusOne - 0.5);
+            vec2 offset = blurVec * (float(i) * invSamplesMinusOne - rnd);
             float mask = texture(velocityBuffer, texCoord + offset).z;
             float z = unproject(invProjectionMatrix, vec3(texCoord, texture(depthBuffer, texCoord + offset).x)).z; 
             //mask *= 1.0 - clamp(abs(zCenter - z), 0.0, 1.0) / 1.0;

@@ -31,6 +31,8 @@ uniform float lightScatteringDensity;
 uniform int lightScatteringSamples;
 uniform float lightScatteringMaxRandomStepOffset;
 
+uniform float time;
+
 uniform sampler2DArrayShadow shadowTextureArray;
 uniform float shadowResolution;
 uniform mat4 shadowMatrix1;
@@ -157,7 +159,7 @@ void main()
         float accumScatter = 0.0;
         float invSamples = 1.0 / float(lightScatteringSamples);
         float prevValue = 0.0;
-        float offset = hash(texCoord * 467.759 * eyePos.z);
+        float offset = hash((texCoord * 467.759 + time) * eyePos.z);
         // TODO: disable shadow
         for (float i = 0; i < float(lightScatteringSamples); i+=1.0)
         {
