@@ -50,7 +50,7 @@ class MotionBlurShader: Shader
     bool enabled = true;
     int samples = 16;
     float currentFramerate = 60.0;
-    float shutterFramerate = 24.0;
+    float shutterFramerate = 30.0;
 
     GBuffer gbuffer;
 

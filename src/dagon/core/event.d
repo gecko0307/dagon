@@ -108,9 +108,7 @@ class EventManager
     bool enableKeyRepeat = false;
 
     double deltaTime = 0.0;
-    double averageDelta = 0.0;
     uint deltaTimeMs = 0;
-    int fps = 0;
 
     uint windowWidth;
     uint windowHeight;
@@ -231,7 +229,6 @@ class EventManager
     void update()
     {
         numEvents = 0;
-        updateTimer();
         
         mouseRelX = 0;
         mouseRelY = 0;
@@ -422,29 +419,14 @@ class EventManager
         }
     }
 
+    protected int lastTime = 0;
     void updateTimer()
     {
-        static int currentTime;
-        static int lastTime;
-
-        static int FPSTickCounter;
-        static int FPSCounter = 0;
-
-        currentTime = SDL_GetTicks();
+        int currentTime = SDL_GetTicks();
         auto elapsedTime = currentTime - lastTime;
         lastTime = currentTime;
         deltaTimeMs = elapsedTime;
         deltaTime = cast(double)(elapsedTime) * 0.001;
-
-        FPSTickCounter += elapsedTime;
-        FPSCounter++;
-        if (FPSTickCounter >= 1000) // 1 sec interval
-        {
-            fps = FPSCounter;
-            FPSCounter = 0;
-            FPSTickCounter = 0;
-            averageDelta = 1.0 / cast(double)(fps);
-        }
     }
 
     void setMouse(int x, int y)

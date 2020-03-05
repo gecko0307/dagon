@@ -121,6 +121,7 @@ class Application: EventListener
     SDL_Window* window = null;
     SDL_GLContext glcontext;
     private EventManager _eventManager;
+    Cadencer cadencer;
 
     /++
         Constructor.
@@ -217,6 +218,8 @@ class Application: EventListener
                 writeln("GL_KHR_debug is not supported, debug output is not available");
             }
         }
+        
+        cadencer = New!Cadencer(&onAnimationFrame, 60, this);
     }
 
     ~this()
@@ -252,6 +255,16 @@ class Application: EventListener
         // Override me
     }
 
+    void onAnimationFrame(Time t)
+    {
+        eventManager.update();
+        processEvents();
+        onUpdate(t);
+        onRender();
+        debug checkGLError();
+        SDL_GL_SwapWindow(window);
+    }
+
     void checkGLError()
     {
         GLenum error = GL_NO_ERROR;
@@ -267,17 +280,10 @@ class Application: EventListener
         Time t = Time(0.0, 0.0);
         while(eventManager.running)
         {
-            eventManager.update();
-            processEvents();
-
+            eventManager.updateTimer();
             t.delta = eventManager.deltaTime;
-            onUpdate(t);
+            cadencer.update(t);
             t.elapsed += t.delta;
-            onRender();
-
-            debug checkGLError();
-
-            SDL_GL_SwapWindow(window);
         }
     }
 

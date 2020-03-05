@@ -37,10 +37,15 @@ struct Time
 
 class Cadencer: Owner
 {
+    protected:
     double elapsedTime = 0.0;
     double timeStep = 0.0;
-    uint maxTicksPerFrame = 5;
+    double fpsTimeCounter = 0.0;
+    int fpsCounter = 0;
     void delegate(Time) callback;
+    
+    public:
+    int fps = 0;
     
     this(void delegate(Time) callback, uint freq, Owner owner)
     {
@@ -51,15 +56,21 @@ class Cadencer: Owner
     
     void update(Time t)
     {
-        int tickCount = 0;
         elapsedTime += t.delta;
-        while (elapsedTime >= timeStep)
+        fpsTimeCounter += t.delta;
+        
+        if (elapsedTime >= timeStep)
         {
-            if (tickCount < maxTicksPerFrame)
-                callback(Time(timeStep, t.elapsed));
-
+            callback(Time(timeStep, t.elapsed));
             elapsedTime -= timeStep;
-            tickCount++;
+            fpsCounter++;
+        }
+        
+        if (fpsTimeCounter >= 1.0) // 1 sec interval
+        {
+            fps = fpsCounter;
+            fpsCounter = 0;
+            fpsTimeCounter = 0;
         }
     }
 }

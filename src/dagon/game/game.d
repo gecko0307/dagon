@@ -47,7 +47,6 @@ class Game: Application
 {
     // TODO: scene manager
     Scene currentScene;
-    Cadencer cadencer;
 
     Renderer renderer;
     DeferredRenderer deferredRenderer;
@@ -58,8 +57,6 @@ class Game: Application
     this(uint w, uint h, bool fullscreen, string title, string[] args)
     {
         super(w, h, fullscreen, title, args);
-
-        cadencer = New!Cadencer(&fixedUpdate, 60, this);
 
         deferredRenderer = New!DeferredRenderer(eventManager, this);
         renderer = deferredRenderer;
@@ -80,7 +77,7 @@ class Game: Application
         postProcessingRenderer.lensDistortionEnabled = false;
     }
 
-    void fixedUpdate(Time t)
+    override void onUpdate(Time t)
     {
         if (currentScene)
         {
@@ -93,11 +90,6 @@ class Game: Application
             presentRenderer.update(t);
             hudRenderer.update(t);
         }
-    }
-
-    override void onUpdate(Time t)
-    {
-        cadencer.update(t);
     }
 
     override void onRender()
