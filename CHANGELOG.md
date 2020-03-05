@@ -13,7 +13,7 @@ Changes:
   - Renderer was entirely rewritten from scratch based on a new concept of pipelines (see `dagon.render` package). A pipeline is a sequence of draw call groups - passes. Each pass traverses a subset of scene objects and renders them to a given buffer using a given shader. For example, a deferred pipeline contains geometry pass that fills G-buffer, environment pass and lighting pass
   - Volumetric scattering (aka 'God rays') for sun light
   - Improved PBR - new roughness to lod mapping for environment maps, better looking metals and shiny dielectrics
-  - Multiple optimizations across the renderer, including less shader switches and data copying. 25-30% performance boost on some systems
+  - Multiple optimizations across the renderer, including less shader switches and data copying, timer fixes, etc. 25-30% performance boost on some systems
   - Render viewports can now be resized in runtime
   - Standard shaders moved to `dagon.render.shaders`
   - Discrete LOD drawables (`dagon.graphics.lod`). They render different user-specified drawables based on distance from the camera

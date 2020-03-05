@@ -27,6 +27,9 @@ uniform float sunScatteringG;
 uniform float sunScatteringDensity;
 uniform int sunScatteringSamples;
 uniform float sunScatteringMaxRandomStepOffset;
+uniform bool sunScatteringShadow;
+
+uniform float time;
 
 uniform sampler2DArrayShadow shadowTextureArray;
 uniform float shadowResolution;
@@ -387,22 +390,27 @@ void main()
     // Sun light scattering
     if (sunScattering)
     {
-        vec3 startPosition = vec3(0.0);    
-        vec3 rayVector = eyePosition;
-        float rayLength = length(rayVector);
-        vec3 rayDirection = rayVector / rayLength;
-        float stepSize = rayLength / float(sunScatteringSamples);
-        vec3 currentPosition = startPosition;
-        float accumScatter = 0.0;
-        // TODO: disable shadow
-        float invSamples = 1.0 / float(sunScatteringSamples);
-        float offset = hash(texCoord * 467.759 * eyePosition.z);
-        for (float i = 0; i < float(sunScatteringSamples); i += 1.0)
+        float accumScatter = 1.0;
+        
+        if (sunScatteringShadow)
         {
-            accumScatter += shadowLookup(shadowTextureArray, 1.0, shadowMatrix2 * vec4(currentPosition, 1.0), vec2(0.0));
-            currentPosition += rayDirection * (stepSize - offset * sunScatteringMaxRandomStepOffset);
+            vec3 startPosition = vec3(0.0);    
+            vec3 rayVector = eyePosition;
+            float rayLength = length(rayVector);
+            vec3 rayDirection = rayVector / rayLength;
+            float stepSize = rayLength / float(sunScatteringSamples);
+            vec3 currentPosition = startPosition;
+            float invSamples = 1.0 / float(sunScatteringSamples);
+            float offset = hash((texCoord * 467.759 + time) * eyePosition.z);
+            accumScatter = 0.0;
+            for (float i = 0; i < float(sunScatteringSamples); i+=1.0)
+            {
+                accumScatter += shadowLookup(shadowTextureArray, 1.0, shadowMatrix2 * vec4(currentPosition, 1.0), vec2(0.0));
+                currentPosition += rayDirection * (stepSize - offset * sunScatteringMaxRandomStepOffset);
+            }
+            accumScatter *= invSamples;
         }
-        accumScatter *= invSamples;
+        
         float scattFactor = accumScatter * scattering(dot(-L, E)) * sunScatteringDensity;
         radiance += toLinear(sunColor.rgb) * sunEnergy * scattFactor;
     }

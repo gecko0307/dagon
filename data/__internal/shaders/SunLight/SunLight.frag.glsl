@@ -30,6 +30,7 @@ uniform float lightScatteringG;
 uniform float lightScatteringDensity;
 uniform int lightScatteringSamples;
 uniform float lightScatteringMaxRandomStepOffset;
+uniform bool lightScatteringShadow;
 
 uniform float time;
 
@@ -150,23 +151,27 @@ void main()
     float scattFactor = 0.0;
     if (lightScattering)
     {
-        vec3 startPosition = vec3(0.0);    
-        vec3 rayVector = eyePos;
-        float rayLength = length(rayVector);
-        vec3 rayDirection = rayVector / rayLength;
-        float stepSize = rayLength / float(lightScatteringSamples);
-        vec3 currentPosition = startPosition;
-        float accumScatter = 0.0;
-        float invSamples = 1.0 / float(lightScatteringSamples);
-        float prevValue = 0.0;
-        float offset = hash((texCoord * 467.759 + time) * eyePos.z);
-        // TODO: disable shadow
-        for (float i = 0; i < float(lightScatteringSamples); i+=1.0)
+        float accumScatter = 1.0;
+        
+        if (lightScatteringShadow)
         {
-            accumScatter += shadowLookup(shadowTextureArray, 1.0, shadowMatrix2 * vec4(currentPosition, 1.0), vec2(0.0));
-            currentPosition += rayDirection * (stepSize - offset * lightScatteringMaxRandomStepOffset);
+            vec3 startPosition = vec3(0.0);    
+            vec3 rayVector = eyePos;
+            float rayLength = length(rayVector);
+            vec3 rayDirection = rayVector / rayLength;
+            float stepSize = rayLength / float(lightScatteringSamples);
+            vec3 currentPosition = startPosition;
+            float invSamples = 1.0 / float(lightScatteringSamples);
+            float offset = hash((texCoord * 467.759 + time) * eyePos.z);
+            accumScatter = 0.0;
+            for (float i = 0; i < float(lightScatteringSamples); i+=1.0)
+            {
+                accumScatter += shadowLookup(shadowTextureArray, 1.0, shadowMatrix2 * vec4(currentPosition, 1.0), vec2(0.0));
+                currentPosition += rayDirection * (stepSize - offset * lightScatteringMaxRandomStepOffset);
+            }
+            accumScatter *= invSamples;
         }
-        accumScatter *= invSamples;
+        
         scattFactor = accumScatter * scattering(dot(-L, E)) * lightScatteringDensity;
         radiance += toLinear(lightColor.rgb) * lightEnergy * scattFactor;
     }

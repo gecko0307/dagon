@@ -72,6 +72,7 @@ class Light: Entity
     float mediumDensity;
     uint scatteringSamples;
     float scatteringMaxRandomStepOffset;
+    bool scatteringUseShadow;
     ShadowMap _shadowMap;
 
     this(EntityManager manager)
@@ -94,6 +95,7 @@ class Light: Entity
         mediumDensity = 0.5f;
         scatteringSamples = 20;
         scatteringMaxRandomStepOffset = 0.2f;
+        scatteringUseShadow = false;
     }
     
     ShadowMap shadowMap()

@@ -120,6 +120,7 @@ class ForwardShader: Shader
         float sunScatteringDensity = 1.0f;
         int sunScatteringSamples = 1;
         float sunScatteringMaxRandomStepOffset = 0.0f;
+        bool sunScatteringShadow = false;
         bool shaded = !ishadeless.asBool;
         if (state.material.sun)
         {
@@ -130,6 +131,9 @@ class ForwardShader: Shader
             sunScatteringG = 1.0f - sun.scattering;
             sunScatteringDensity = sun.mediumDensity;
             sunScatteringEnabled = sun.scatteringEnabled;
+            sunScatteringSamples = sun.scatteringSamples;
+            sunScatteringMaxRandomStepOffset = sun.scatteringMaxRandomStepOffset;
+            sunScatteringShadow = sun.scatteringUseShadow;
         }
         Vector4f sunDirHg = Vector4f(sunDirection);
         sunDirHg.w = 0.0;
@@ -141,7 +145,10 @@ class ForwardShader: Shader
         setParameter("sunScattering", sunScatteringEnabled);
         setParameter("sunScatteringSamples", sunScatteringSamples);
         setParameter("sunScatteringMaxRandomStepOffset", sunScatteringMaxRandomStepOffset);
+        setParameter("sunScatteringShadow", sunScatteringShadow);
         setParameter("shaded", shaded);
+        
+        setParameter("time", state.localTime);
 
         // Parallax mode
         int parallaxMethod = iparallax.asInteger;
