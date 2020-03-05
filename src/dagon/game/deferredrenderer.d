@@ -125,15 +125,15 @@ class DeferredRenderer: Renderer
         passLight.outputBuffer = radianceBuffer;
         passLight.occlusionBuffer = occlusionBuffer;
 
-        passParticles = New!DeferredParticlesPass(pipeline, gbuffer);
-        passParticles.view = view;
-        // TODO: velocity buffer as a second attachment
-        passParticles.outputBuffer = radianceBuffer;
-
         passForward = New!DeferredForwardPass(pipeline);
         passForward.view = view;
         // TODO: velocity buffer as a second attachment
         passForward.outputBuffer = radianceBuffer;
+
+        passParticles = New!DeferredParticlesPass(pipeline, gbuffer);
+        passParticles.view = view;
+        // TODO: velocity buffer as a second attachment
+        passParticles.outputBuffer = radianceBuffer;
 
         passDebug = New!DeferredDebugOutputPass(pipeline, gbuffer);
         passDebug.view = view;
@@ -174,18 +174,18 @@ class DeferredRenderer: Renderer
         passDynamicGeometry.group = s.spatialOpaqueDynamic;
         passLight.groupSunLights = s.sunLights;
         passLight.groupAreaLights = s.areaLights;
-        passParticles.group = s.spatial;
         passForward.group = s.spatialTransparent;
-
+        passParticles.group = s.spatial;
+        
         passBackground.state.environment = s.environment;
         passStaticGeometry.state.environment = s.environment;
         passDecals.state.environment = s.environment;
         passDynamicGeometry.state.environment = s.environment;
         passEnvironment.state.environment = s.environment;
         passLight.state.environment = s.environment;
+        passForward.state.environment = s.environment;
         passParticles.state.environment = s.environment;
         passDebug.state.environment = s.environment;
-        passForward.state.environment = s.environment;
     }
 
     override void update(Time t)
