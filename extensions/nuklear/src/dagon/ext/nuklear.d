@@ -52,15 +52,17 @@ public import bindbc.nuklear;
 
 import dagon.ext.ftfont;
 
+__gshared NuklearSupport nuklearSupport;
+
 void initNuklear()
 {
-    NuklearSupport nuksup = loadNuklear();
-    if (nuksup != NuklearSupport.Nuklear4)
+    nuklearSupport = loadNuklear();
+    if (nuklearSupport != NuklearSupport.Nuklear4)
     {
-        if (nuksup == NuklearSupport.badLibrary)
+        if (nuklearSupport == NuklearSupport.badLibrary)
             writeln("Warning: failed to load some Nuklear functions. It seems that you have an old version of Nuklear. Dagon will try to use it, but it is recommended to install Nuklear 4.01");
         else
-            exitWithError("Error: Nuklear library is not found. Please, install Nuklear 4.01");
+            writeln("Error: Nuklear library is not found. Please, install Nuklear 4.01");
     }
 }
 
