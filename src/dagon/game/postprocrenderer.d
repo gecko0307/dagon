@@ -244,16 +244,6 @@ class PostProcRenderer: Renderer
     {
         _motionBlurEnabled = mode;
         passMotionBlur.active = mode;
-        if (!_motionBlurEnabled)
-        {
-            passBrightPass.inputBuffer = inputBuffer;
-            passGlow.inputBuffer = inputBuffer;
-        }
-        else
-        {
-            passBrightPass.inputBuffer = passMotionBlur.outputBuffer;
-            passGlow.inputBuffer = passMotionBlur.outputBuffer;
-        }
     }
     bool motionBlurEnabled() @property
     {
@@ -266,17 +256,6 @@ class PostProcRenderer: Renderer
         passBrightPass.active = mode;
         passBlur.active = mode;
         passGlow.active = mode;
-        if (!_glowEnabled)
-        {
-            if (_motionBlurEnabled)
-                passTonemap.inputBuffer = passMotionBlur.outputBuffer;
-            else
-                passTonemap.inputBuffer = inputBuffer;
-        }
-        else
-        {
-            passTonemap.inputBuffer = passGlow.outputBuffer;
-        }
     }
     bool glowEnabled() @property
     {
@@ -333,7 +312,30 @@ class PostProcRenderer: Renderer
     {
         if (outputBuffer)
             outputBuffer.bind();
-
+            
+        if (!_motionBlurEnabled)
+        {
+            passBrightPass.inputBuffer = inputBuffer;
+            passGlow.inputBuffer = inputBuffer;
+        }
+        else
+        {
+            passBrightPass.inputBuffer = passMotionBlur.outputBuffer;
+            passGlow.inputBuffer = passMotionBlur.outputBuffer;
+        }
+            
+        if (!_glowEnabled)
+        {
+            if (_motionBlurEnabled)
+                passTonemap.inputBuffer = passMotionBlur.outputBuffer;
+            else
+                passTonemap.inputBuffer = inputBuffer;
+        }
+        else
+        {
+            passTonemap.inputBuffer = passGlow.outputBuffer;
+        }
+        
         foreach(pass; pipeline.passes.data)
         {
             if (pass.active)
