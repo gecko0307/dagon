@@ -598,26 +598,9 @@ class PhysicsWorld: Owner
 
     ~this()
     {
-        //foreach(sh; shapeComponents.data)
-        //    sh.free();
         shapeComponents.free();
-
-        //foreach(b; dynamicBodies.data)
-        //    b.free();
         dynamicBodies.free();
-
-        //foreach(b; staticBodies.data)
-        //    b.free();
         staticBodies.free();
-
-        //foreach(c; constraints.data)
-        //    c.free();
         constraints.free();
-
-        //manifolds.free();
-
-        //proxyTriGeom.free();
-        //proxyTriShape.free();
-        //proxyTri.free();
     }
 }
