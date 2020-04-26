@@ -107,6 +107,8 @@ class RigidBody: Owner
     bool useFriction = true;
     
     float maxSpeed = float.max;
+    
+    uint layer = 0;
 
     this(PhysicsWorld world)
     {

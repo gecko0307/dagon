@@ -40,6 +40,12 @@ bool checkCollision(ShapeComponent shape1, ShapeComponent shape2, ref Contact c)
 {
     c.shape1 = shape1;
     c.shape2 = shape2;
+    
+    if (c.body1.layer != c.body2.layer)
+    {
+        if (c.body1.layer != 0 && c.body2.layer != 0)
+            return false;
+    }
 
     bool collided = MPRCollisionTest(shape1, shape2, c);
 
