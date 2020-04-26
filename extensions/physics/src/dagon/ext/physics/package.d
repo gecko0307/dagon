@@ -31,6 +31,7 @@ module dagon.ext.physics;
 public
 {
     import dagon.ext.physics.bvh;
+    import dagon.ext.physics.charactercontroller;
     import dagon.ext.physics.collision;
     import dagon.ext.physics.constraint;
     import dagon.ext.physics.contact;
