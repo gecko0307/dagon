@@ -4,7 +4,7 @@ uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 
 layout (location = 0) in vec2 va_Vertex;
-layout (location = 1) in vec2 va_Texcoord;
+layout (location = 2) in vec2 va_Texcoord;
 
 out vec2 texCoord;
 
