@@ -124,9 +124,9 @@ class OBJAsset: Asset
         tmpTexcoords[] = Vector2f(0, 0);
 
         float x, y, z;
-        int v1, v2, v3, v4;
-        int t1, t2, t3, t4;
-        int n1, n2, n3, n4;
+        uint v1, v2, v3, v4;
+        uint t1, t2, t3, t4;
+        uint n1, n2, n3, n4;
         uint vi = 0;
         uint ni = 0;
         uint ti = 0;
