@@ -138,14 +138,14 @@ class ShapeQuad: Owner, Drawable
         glBindVertexArray(vao);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eao);
     
-        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(VertexAttrib.Vertices);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, null);
+        glVertexAttribPointer(VertexAttrib.Vertices, 2, GL_FLOAT, GL_FALSE, 0, null);
     
-        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(VertexAttrib.Texcoords);
         glBindBuffer(GL_ARRAY_BUFFER, tbo);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, null);
-
+        glVertexAttribPointer(VertexAttrib.Texcoords, 2, GL_FLOAT, GL_FALSE, 0, null);
+        
         glBindVertexArray(0);
     }
     

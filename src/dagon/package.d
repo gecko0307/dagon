@@ -107,6 +107,7 @@ public
     import dagon.graphics.shaders.water;
     import dagon.graphics.shaders.decal;
     import dagon.graphics.shaders.terrain;
+    import dagon.graphics.shaders.hud;
 
     import dagon.graphics.filters.fxaa;
     import dagon.graphics.filters.lens;
