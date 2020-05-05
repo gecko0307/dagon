@@ -254,6 +254,7 @@ class EventManager
 
                     keyPressed[event.key.keysym.scancode] = true;
                     keyDown[event.key.keysym.scancode] = true;
+                    keyUp[event.key.keysym.scancode] = false;
                     toReset.insertBack(&keyDown[event.key.keysym.scancode]);
 
                     e = Event(EventType.KeyDown);
@@ -263,6 +264,7 @@ class EventManager
 
                 case SDL_KEYUP:
                     keyPressed[event.key.keysym.scancode] = false;
+                    keyDown[event.key.keysym.scancode] = false;
                     keyUp[event.key.keysym.scancode] = true;
                     toReset.insertBack(&keyUp[event.key.keysym.scancode]);
 
