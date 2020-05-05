@@ -28,6 +28,7 @@ DEALINGS IN THE SOFTWARE.
 module dagon.graphics.framebuffer;
 
 import std.stdio;
+import std.algorithm;
 import std.math;
 
 import dlib.math.vector;
@@ -225,7 +226,7 @@ class Framebuffer: RenderTarget
 
         glBindVertexArray(0);
 
-        maxMipmap = cast(int)log2(fmax(width, height));
+        maxMipmap = cast(int)log2(cast(float)max(width, height));
     }
 
     int maxMipmap;
