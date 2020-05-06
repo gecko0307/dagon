@@ -23,6 +23,10 @@ New code should at least:
 
 Adding new external dependencies should be avoided as much as possible. Only GC-free third-party D libraries are allowed. C libraries should be linked via BindBC binding.
 
+#### Branching strategy
+
+`master` branch is a development branch for the next release. When release is ready, a release branch is created from `master` (for example, `dev_0.10`). Release branches are not merged back into `master`, they are used to fix bugs and make minor updates.
+
 ####  Code style and standards 
 
 Dagon follows [D style](https://dlang.org/dstyle.html). Essential rules are the following:
