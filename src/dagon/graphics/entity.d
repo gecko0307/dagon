@@ -186,6 +186,13 @@ class Entity: Owner, Updateable
             prevAbsoluteTransformation = prevTransformation;
         }
     }
+    
+    void updateTransformationDeep()
+    {
+        if (parent)
+            parent.updateTransformationDeep();
+        updateTransformation();
+    }
 
     void update(Time t)
     {

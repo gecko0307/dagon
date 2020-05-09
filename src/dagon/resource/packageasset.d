@@ -206,6 +206,7 @@ class PackageAsset: Asset
 
                 entityAsset.entity = New!Entity(assetOwner);
                 entityAsset.entity.setParent(parent);
+                entityAsset.entity.layer = EntityLayer.Spatial;
                 entityAsset.entity.visible = true;
                 entityAsset.entity.castShadow = true;
                 entityAsset.entity.solid = true;
