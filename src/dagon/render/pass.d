@@ -31,6 +31,7 @@ import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.math.vector;
 import dlib.math.matrix;
+import dlib.geometry.frustum;
 import dlib.image.color;
 
 import dagon.core.event;
@@ -89,6 +90,8 @@ class RenderPass: EventListener
 
             state.projectionMatrix = view.projectionMatrix();
             state.invProjectionMatrix = state.projectionMatrix.inverse;
+            
+            state.frustum = Frustum(state.viewMatrix * state.projectionMatrix);
 
             state.resolution = Vector2f(view.width, view.height);
             state.zNear = view.zNear;

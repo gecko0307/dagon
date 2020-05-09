@@ -29,6 +29,7 @@ module dagon.graphics.state;
 
 import dlib.math.vector;
 import dlib.math.matrix;
+import dlib.geometry.frustum;
 
 import dagon.core.bindings;
 import dagon.core.time;
@@ -62,6 +63,8 @@ struct GraphicsState
     
     Matrix4x4f prevViewMatrix;
     Matrix4x4f prevModelViewMatrix;
+    
+    Frustum frustum;
 
     Material material;
     Shader shader;

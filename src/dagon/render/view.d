@@ -137,5 +137,4 @@ class RenderView: Owner
     // TODO: pixel to ray
     // TODO: point to pixel
     // TODO: pixel visible
-    // TODO: extract frustum
 }
