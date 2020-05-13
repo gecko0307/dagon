@@ -32,6 +32,7 @@ import std.stdio;
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.image.color;
+import dlib.geometry.frustum;
 
 import dagon.core.bindings;
 import dagon.graphics.entity;
@@ -49,6 +50,7 @@ class DeferredGeometryPass: RenderPass
     GBuffer gbuffer;
     GeometryShader geometryShader;
     TerrainShader terrainShader;
+    uint renderedEntities = 0;
 
     this(RenderPipeline pipeline, GBuffer gbuffer, EntityGroup group = null)
     {
@@ -57,9 +59,10 @@ class DeferredGeometryPass: RenderPass
         geometryShader = New!GeometryShader(this);
         terrainShader = New!TerrainShader(this);
     }
-
+    
     override void render()
     {
+        renderedEntities = 0;
         if (group && gbuffer)
         {
             gbuffer.bind();
@@ -73,7 +76,14 @@ class DeferredGeometryPass: RenderPass
                 if (entity.visible && entity.drawable)
                 {
                     if (!entityIsTerrain(entity) && !entityIsParticleSystem(entity))
-                        renderEntity(entity, geometryShader);
+                    {
+                        auto bb = entity.boundingBox();
+                        if (state.frustum.intersectsAABB(bb))
+                        {
+                            renderEntity(entity, geometryShader);
+                            renderedEntities++;
+                        }
+                    }
                 }
             }
             geometryShader.unbind();
@@ -84,7 +94,14 @@ class DeferredGeometryPass: RenderPass
                 if (entity.visible && entity.drawable)
                 {
                     if (entityIsTerrain(entity))
-                        renderEntity(entity, terrainShader);
+                    {
+                        auto bb = entity.boundingBox();
+                        if (state.frustum.intersectsAABB(bb))
+                        {
+                            renderEntity(entity, terrainShader);
+                            renderedEntities++;
+                        }
+                    }
                 }
             }
             terrainShader.unbind();

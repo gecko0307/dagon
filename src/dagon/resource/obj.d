@@ -335,6 +335,8 @@ class OBJAsset: Asset
         if (tmpFaces.length)
             Delete(tmpFaces);
         
+        mesh.calcBoundingBox();
+        
         mesh.dataReady = true;
 
         return true;

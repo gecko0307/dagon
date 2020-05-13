@@ -36,12 +36,15 @@ import dlib.math.matrix;
 import dlib.math.quaternion;
 import dlib.math.transformation;
 import dlib.math.utils;
+import dlib.geometry.aabb;
 
 import dagon.core.bindings;
 import dagon.core.event;
 import dagon.core.time;
 import dagon.graphics.updateable;
 import dagon.graphics.drawable;
+import dagon.graphics.mesh;
+import dagon.graphics.terrain;
 import dagon.graphics.material;
 import dagon.graphics.tween;
 
@@ -74,6 +77,7 @@ enum EntityLayer: int
 
 class Entity: Owner, Updateable
 {
+   public:
     EntityLayer layer = EntityLayer.Spatial;
     bool visible = true;
     bool castShadow = true;
@@ -105,7 +109,13 @@ class Entity: Owner, Updateable
 
     Matrix4x4f prevTransformation;
     Matrix4x4f prevAbsoluteTransformation;
+    
+    Vector3f boundingBoxSize;
+    
+   protected:
+    AABB aabb;
 
+   public:
     this(Owner owner)
     {
         super(owner);
@@ -131,6 +141,9 @@ class Entity: Owner, Updateable
         prevAbsoluteTransformation = Matrix4x4f.identity;
         
         tweens.reserve(10);
+        
+        boundingBoxSize = Vector3f(1.0f, 1.0f, 1.0f);
+        aabb = AABB(position, boundingBoxSize);
     }
 
     void setParent(Entity e)
@@ -185,6 +198,8 @@ class Entity: Owner, Updateable
             invAbsoluteTransformation = invTransformation;
             prevAbsoluteTransformation = prevTransformation;
         }
+        
+        aabb = AABB(absoluteTransformation.translation, boundingBoxSize);
     }
     
     void updateTransformationDeep()
@@ -426,6 +441,31 @@ class Entity: Owner, Updateable
             return &tweens.data[$-1];
         }
     }
+    
+    AABB boundingBox() @property
+    {
+        if (drawable)
+        {
+            Mesh mesh = cast(Mesh)drawable;
+            Terrain terrain = cast(Terrain)drawable;
+            
+            if (terrain)
+            {
+                mesh = terrain.mesh;
+            }
+            
+            if (mesh)
+            {
+                auto bb = mesh.boundingBox;
+                // TODO: transform bb with absoluteTransformation
+                return AABB(absoluteTransformation.translation + bb.center, bb.size * matrixScale(absoluteTransformation));
+            }
+            else
+                return aabb;
+        }
+        else
+            return aabb;
+    }
 
     ~this()
     {
@@ -466,4 +506,12 @@ class EntityComponent: EventListener, Updateable, Drawable
 interface EntityGroup
 {
     int opApply(scope int delegate(Entity) dg);
+}
+
+Vector3f matrixScale(Matrix4x4f m)
+{
+    float sx = Vector3f(m.a11, m.a12, m.a13).length;
+    float sy = Vector3f(m.a21, m.a22, m.a23).length;
+    float sz = Vector3f(m.a31, m.a32, m.a33).length;
+    return Vector3f(sx, sy, sz);
 }

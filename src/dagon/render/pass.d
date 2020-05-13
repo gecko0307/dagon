@@ -91,7 +91,7 @@ class RenderPass: EventListener
             state.projectionMatrix = view.projectionMatrix();
             state.invProjectionMatrix = state.projectionMatrix.inverse;
             
-            state.frustum = Frustum(state.viewMatrix * state.projectionMatrix);
+            state.frustum = Frustum(state.projectionMatrix * state.viewMatrix);
 
             state.resolution = Vector2f(view.width, view.height);
             state.zNear = view.zNear;

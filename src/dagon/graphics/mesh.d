@@ -27,10 +27,14 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.graphics.mesh;
 
+import std.math;
+import std.algorithm;
+
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.geometry.triangle;
 import dlib.math.vector;
+import dlib.geometry.aabb;
 
 import dagon.core.bindings;
 import dagon.graphics.drawable;
@@ -52,6 +56,8 @@ class Mesh: Owner, Drawable
     Vector3f[] normals;
     Vector2f[] texcoords;
     uint[3][] indices;
+    
+    AABB boundingBox;
     
     GLuint vao = 0;
     GLuint vbo = 0;
@@ -79,6 +85,25 @@ class Mesh: Owner, Drawable
             glDeleteBuffers(1, &tbo);
             glDeleteBuffers(1, &eao);
         }
+    }
+    
+    void calcBoundingBox()
+    {
+        float maxDimension = 0.0f;
+        
+        foreach(v; vertices)
+        {
+            float ax = abs(v.x);
+            float ay = abs(v.y);
+            float az = abs(v.z);
+            if (ax > maxDimension) maxDimension = ax;
+            if (ay > maxDimension) maxDimension = ay;
+            if (az > maxDimension) maxDimension = az;
+        }
+        
+        Vector3f furthest = Vector3f(maxDimension, maxDimension, maxDimension);
+
+        boundingBox = boxFromMinMaxPoints(-furthest, furthest);
     }
     
     Triangle getTriangle(size_t faceIndex)
