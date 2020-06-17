@@ -125,15 +125,14 @@ class DeferredRenderer: Renderer
         passLight.outputBuffer = radianceBuffer;
         passLight.occlusionBuffer = occlusionBuffer;
 
-        passForward = New!DeferredForwardPass(pipeline);
+        passForward = New!DeferredForwardPass(pipeline, gbuffer);
         passForward.view = view;
-        // TODO: velocity buffer as a second attachment
         passForward.outputBuffer = radianceBuffer;
 
         passParticles = New!DeferredParticlesPass(pipeline, gbuffer);
         passParticles.view = view;
-        // TODO: velocity buffer as a second attachment
         passParticles.outputBuffer = radianceBuffer;
+        passParticles.gbuffer = gbuffer;
 
         passDebug = New!DeferredDebugOutputPass(pipeline, gbuffer);
         passDebug.view = view;

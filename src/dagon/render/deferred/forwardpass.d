@@ -40,32 +40,65 @@ import dagon.graphics.particles;
 import dagon.render.pipeline;
 import dagon.render.pass;
 import dagon.render.framebuffer;
+import dagon.render.gbuffer;
 import dagon.render.shaders.forward;
 
 class DeferredForwardPass: RenderPass
 {
     ForwardShader forwardShader;
     Framebuffer outputBuffer;
+    GBuffer gbuffer;
+    GLuint framebuffer;
 
-    this(RenderPipeline pipeline, EntityGroup group = null)
+    this(RenderPipeline pipeline, GBuffer gbuffer, EntityGroup group = null)
     {
         super(pipeline, group);
         forwardShader = New!ForwardShader(this);
+        
+        this.gbuffer = gbuffer;
+    }
+    
+    void prepareFramebuffer()
+    {
+        if (framebuffer)
+            return;
+    
+        glGenFramebuffers(1, &framebuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, outputBuffer.colorTexture, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gbuffer.velocityTexture, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, outputBuffer.depthTexture, 0);
+        
+        GLenum[2] drawBuffers = 
+        [
+            GL_COLOR_ATTACHMENT0, 
+            GL_COLOR_ATTACHMENT1
+        ];
+        
+        glDrawBuffers(drawBuffers.length, drawBuffers.ptr);
+
+        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        if (status != GL_FRAMEBUFFER_COMPLETE)
+            writeln(status);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     override void render()
     {
         if (group && outputBuffer)
         {
-            outputBuffer.bind();
+            prepareFramebuffer();
+            
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
 
             glScissor(0, 0, outputBuffer.width, outputBuffer.height);
             glViewport(0, 0, outputBuffer.width, outputBuffer.height);
 
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+            glEnablei(GL_BLEND, 0);
+            glDisablei(GL_BLEND, 1);
+            glBlendFunci(0, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-            //forwardShader.bind();
             foreach(entity; group)
             {
                 if (entity.visible && entity.drawable)
@@ -86,11 +119,10 @@ class DeferredForwardPass: RenderPass
                     }
                 }
             }
-            //forwardShader.unbind();
 
-            glDisable(GL_BLEND);
+            glDisablei(GL_BLEND, 0);
 
-            outputBuffer.unbind();
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
         }
     }
 }

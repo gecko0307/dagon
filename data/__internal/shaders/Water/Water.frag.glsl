@@ -6,7 +6,7 @@ const float PI2 = PI * 2.0;
 in vec3 eyePosition;
 in vec3 eyeNormal;
 in vec2 texCoord;
-in vec4 blurPosition;
+in vec4 currPosition;
 in vec4 prevPosition;
 in vec3 worldView;
 
@@ -144,8 +144,8 @@ uniform vec4 fogColor;
 uniform float fogStart;
 uniform float fogEnd;
 
-layout(location = 0) out vec4 frag_color;
-layout(location = 1) out vec4 frag_velocity;
+layout(location = 0) out vec4 fragColor;
+layout(location = 1) out vec4 fragVelocity;
 
 void main()
 {
@@ -163,7 +163,7 @@ void main()
     
     vec3 worldPosition = (invViewMatrix * vec4(eyePosition, 1.0)).xyz;
     
-    vec2 posScreen = (blurPosition.xy / blurPosition.w) * 0.5 + 0.5;
+    vec2 posScreen = (currPosition.xy / currPosition.w) * 0.5 + 0.5;
     vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;
     vec2 screenVelocity = posScreen - prevPosScreen;
     
@@ -236,6 +236,6 @@ void main()
         radiance += sunLight * scattFactor;
     }
     
-    frag_color = vec4(radiance, alpha);
-    frag_velocity = vec4(screenVelocity, 0.0, 1.0);
+    fragColor = vec4(radiance, alpha);
+    fragVelocity = vec4(screenVelocity, 0.0, 1.0);
 }

@@ -8,14 +8,12 @@ uniform mat4 modelViewMatrix;
 uniform mat4 normalMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 invViewMatrix;
-
-uniform mat4 prevModelViewProjMatrix;
-uniform mat4 blurModelViewProjMatrix;
+uniform mat4 prevModelViewMatrix;
 
 out vec3 eyePosition;
 out vec3 eyeNormal;
 out vec2 texCoord;
-out vec4 blurPosition;
+out vec4 currPosition;
 out vec4 prevPosition;
 out vec3 worldView;
 
@@ -30,7 +28,8 @@ void main()
     vec3 worldCamPos = (invViewMatrix[3]).xyz;
     worldView = worldPosition - worldCamPos;
     
-    blurPosition = blurModelViewProjMatrix * vec4(va_Vertex, 1.0);
-    prevPosition = prevModelViewProjMatrix * vec4(va_Vertex, 1.0);
-    gl_Position = projectionMatrix * pos;
+    currPosition = projectionMatrix * pos;
+    prevPosition = projectionMatrix * prevModelViewMatrix * vec4(va_Vertex, 1.0);
+    
+    gl_Position = currPosition;
 }
