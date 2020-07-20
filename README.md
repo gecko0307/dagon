@@ -61,6 +61,7 @@ Planned in future:
 Made with Dagon
 ---------------
 * [dagon-demo](https://github.com/gecko0307/dagon-demo) - a test application that demonstrates most of Dagon's features
+* [dagon-sandbox](https://github.com/gecko0307/dagon-sandbox) - a test application for unstable version of Dagon
 * [Dagoban](https://github.com/Timu5/dagoban) - a Sokoban clone based on Dagon and Nuklear
 * [dagon-shooter](https://github.com/aferust/dagon-shooter) - a shooter game using Dagon
 * [Introductory examples](https://github.com/gecko0307/dagon-tutorials).
@@ -87,19 +88,11 @@ Runtime dependencies (dynamic link libraries):
 * [Freetype](https://www.freetype.org) 2.8.1
 * [Nuklear](https://github.com/vurtun/nuklear)
 
-Under Windows runtime dependencies are automatically deployed if you are building with Dub. Under other OSes you have to install them manually. You can also compile Dagon without Freetype and Nuklear support, if you don't need text and UI rendering. To do that, add the following to your project's `dub.json`:
-
-```d
-"subConfigurations": {
-    "dagon": "Minimal"
-}
-```
-
-Supported subConfigurations are also `"NoNuklear"` and `"NoFreetype"` to remove these dependencies separately.
+Under Windows runtime dependencies are automatically deployed if you are building with Dub. Under other OSes you have to install them manually. 
 
 Documentation
 -------------
-See [Tutorials](https://github.com/gecko0307/dagon/wiki/Tutorials) (for Dagon 0.10).
+See [Tutorials](https://github.com/gecko0307/dagon/wiki/Tutorials).
 
 License
 -------
