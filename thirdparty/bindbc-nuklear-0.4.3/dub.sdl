@@ -1,0 +1,35 @@
+name "bindbc-nuklear"
+description "Dynamic and static bindings to nuklear, compatible with -betterC, @nogc, and nothrow."
+homepage ""
+authors "Mateusz Muszynski"
+license "Boost"
+
+targetType "staticLibrary"
+targetPath "lib"
+targetName "BindBC_nuklear"
+
+configuration "dynamic" {
+    dependency "bindbc-loader" version="~>0.2.1"
+    copyFiles "lib/win32/nuklear.dll" platform="windows-x86"
+    copyFiles "lib/win64/nuklear.dll" platform="windows-x86_64"
+}
+
+configuration "dynamicBC" {
+    dependency "bindbc-loader" version="~>0.2.1"
+    subConfiguration "bindbc-loader" "yesBC"
+    copyFiles "lib/win32/nuklear.dll" platform="windows-x86"
+    copyFiles "lib/win64/nuklear.dll" platform="windows-x86_64"
+}
+
+configuration "static" {
+    versions "BindNuklear_Static"
+    excludedSourceFiles "source/bindbc/nuklear/binddynamic.d"
+    lflags "-L$PACKAGE_DIR/lib" "-lnuklear_static" "-lSDL2" platform="posix"
+}
+
+configuration "staticBC" {
+    dflags "-betterC"
+    versions "BindNuklear_Static"
+    excludedSourceFiles "source/bindbc/nuklear/binddynamic.d"
+    lflags "-L$PACKAGE_DIR/lib" "-lnuklear_static" "-lSDL2" platform="posix"
+}

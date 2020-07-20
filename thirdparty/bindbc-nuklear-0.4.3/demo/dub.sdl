@@ -1,0 +1,23 @@
+name "nuklear-demo"
+description "demo"
+authors "Mateusz Muszynski"
+license "BSL-1.0"
+dependency "bindbc-nuklear" path="./.."
+dependency "bindbc-opengl" version="~>0.9.0"
+dependency "bindbc-sdl" version="~>0.10.1"
+
+configuration "dynamic" {
+    targetType "executable"
+	buildOptions "betterC"
+    subConfiguration "bindbc-nuklear" "dynamicBC"
+    subConfiguration "bindbc-sdl" "dynamicBC"
+}
+
+configuration "static" {
+    targetType "executable"
+	buildOptions "betterC"
+    subConfiguration "bindbc-nuklear" "staticBC"
+    subConfiguration "bindbc-sdl" "staticBC"
+}
+
+versions "GL_30" "SDL_205" "NK_ALL"

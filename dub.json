@@ -11,14 +11,22 @@
         "Mateusz Muszyński"
     ],
 
-    "importPaths": ["src"],
-    "sourcePaths": ["src"],
+    "importPaths": [
+        "src",
+        "thirdparty/bindbc-loader-0.3.1/source",
+        "thirdparty/bindbc-opengl-0.13.0/source",
+        "thirdparty/bindbc-sdl-0.19.0/source"
+    ],
+    "sourcePaths": [
+        "src",
+        "thirdparty/bindbc-loader-0.3.1/source",
+        "thirdparty/bindbc-opengl-0.13.0/source",
+        "thirdparty/bindbc-sdl-0.19.0/source"
+    ],
     "stringImportPaths": ["data/__internal"],
 
     "dependencies": {
-        "dlib": "~master",
-        "bindbc-opengl": "~>0.13.0",
-        "bindbc-sdl": "~>0.19.0"
+        "dlib": "~master"
     },
 
     "versions": [
@@ -45,12 +53,17 @@
     "subPackages": [
 		{
 			"name": "ftfont",
-            "importPaths": ["extensions/ftfont/src"],
-            "sourcePaths": ["extensions/ftfont/src"],
+            "importPaths": [
+                "extensions/ftfont/src",
+                "thirdparty/bindbc-freetype-0.9.1/source"
+            ],
+            "sourcePaths": [
+                "extensions/ftfont/src",
+                "thirdparty/bindbc-freetype-0.9.1/source"
+            ],
             "dependencies": {
                 "dagon": "*",
-                "dlib": "~master",
-                "bindbc-freetype": "~>0.9.1"
+                "dlib": "~master"
             },
             
             "versions": [
@@ -62,8 +75,14 @@
 		},
         {
 			"name": "nuklear",
-            "importPaths": ["extensions/nuklear/src"],
-            "sourcePaths": ["extensions/nuklear/src"],
+            "importPaths": [
+                "extensions/nuklear/src",
+                "thirdparty/bindbc-nuklear-0.4.3/source"
+            ],
+            "sourcePaths": [
+                "extensions/nuklear/src",
+                "thirdparty/bindbc-nuklear-0.4.3/source"
+            ],
             "dependencies": {
                 "dagon": "*",
                 "dagon:ftfont": "*",
@@ -73,11 +92,18 @@
             "versions": [
                 "NK_ALL"
             ]
+            
+            "copyFiles-windows-x86": ["thirdparty/bindbc-nuklear-0.4.3/lib/win32/*.dll"],
+            "copyFiles-windows-x86_64": ["thirdparty/bindbc-nuklear-0.4.3/lib/win32/*.dll"]
 		},
         {
 			"name": "physics",
-            "importPaths": ["extensions/physics/src"],
-            "sourcePaths": ["extensions/physics/src"],
+            "importPaths": [
+                "extensions/physics/src"
+            ],
+            "sourcePaths": [
+                "extensions/physics/src"
+            ],
             "dependencies": {
                 "dagon": "*",
                 "dlib": "~master"

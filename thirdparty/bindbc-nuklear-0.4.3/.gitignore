@@ -1,0 +1,10 @@
+lib
+dub.selections.json
+.dub
+nuklear/*
+.exe
+.dll
+.vs
+.sln
+build
+include
