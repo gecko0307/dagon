@@ -94,7 +94,7 @@
             ],
             
             "copyFiles-windows-x86": ["thirdparty/bindbc-nuklear-0.4.3/lib/win32/*.dll"],
-            "copyFiles-windows-x86_64": ["thirdparty/bindbc-nuklear-0.4.3/lib/win32/*.dll"]
+            "copyFiles-windows-x86_64": ["thirdparty/bindbc-nuklear-0.4.3/lib/win64/*.dll"]
 		},
         {
 			"name": "physics",
