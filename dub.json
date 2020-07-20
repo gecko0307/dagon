@@ -17,8 +17,8 @@
 
     "dependencies": {
         "dlib": "~master",
-        "bindbc-opengl": "~>0.8.0",
-        "bindbc-sdl": "~>0.8.0"
+        "bindbc-opengl": "~>0.13.0",
+        "bindbc-sdl": "~>0.19.0"
     },
 
     "versions": [
@@ -50,7 +50,7 @@
             "dependencies": {
                 "dagon": "*",
                 "dlib": "~master",
-                "bindbc-freetype": "~>0.5.0"
+                "bindbc-freetype": "~>0.9.1"
             },
             
             "versions": [
