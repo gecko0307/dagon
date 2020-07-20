@@ -67,8 +67,7 @@
             "dependencies": {
                 "dagon": "*",
                 "dagon:ftfont": "*",
-                "dlib": "~master",
-                "bindbc-nuklear": "~>0.4.3"
+                "dlib": "~master"
             },
             
             "versions": [
