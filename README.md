@@ -100,4 +100,4 @@ Copyright (c) 2016-2020 Timur Gafarov, Rafał Ziemniewski, Mateusz Muszyński, B
 
 Sponsors
 --------
-Rafał Ziemniewski, Kumar Sookram, Aleksandr Kovalev, Robert Georges, Jan Jurzitza (WebFreak), Rais Safiullin (SARFEX).
+Rafał Ziemniewski, Kumar Sookram, Aleksandr Kovalev, Robert Georges, Jan Jurzitza (WebFreak), Rais Safiullin (SARFEX), Koichi Takio.
