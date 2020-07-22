@@ -66,21 +66,13 @@ To use latest stable Dagon, add the following dependency to your `dub.json`:
 ```
 If you want to test new features, use alpha version: `"dagon": "0.11.0-alpha1"`.
 
-Dependencies
-------------
-Dagon depends on the following D packages:
-* [dlib](https://github.com/gecko0307/dlib)
-* [bindbc-opengl](https://github.com/BindBC/bindbc-opengl)
-* [bindbc-sdl](https://github.com/BindBC/bindbc-sdl)
-* [bindbc-freetype](https://github.com/BindBC/bindbc-freetype)
-* [bindbc-nuklear](https://github.com/Timu5/bindbc-nuklear)
-
-Runtime dependencies (dynamic link libraries):
+Runtime Dependencies
+--------------------
 * [SDL](https://www.libsdl.org) 2.0.5
 * [Freetype](https://www.freetype.org) 2.8.1
 * [Nuklear](https://github.com/vurtun/nuklear)
 
-Under Windows runtime dependencies are automatically deployed if you are building with Dub. Under other OSes you have to install them manually. 
+On Windows runtime dependencies are automatically deployed if you are building with Dub. On other platforms you have to install them manually. 
 
 Documentation
 -------------
