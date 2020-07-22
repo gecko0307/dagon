@@ -58,14 +58,6 @@ Features
 Planned in future:
 * Screen-space reflections
 
-Made with Dagon
----------------
-* [dagon-demo](https://github.com/gecko0307/dagon-demo) - a test application that demonstrates most of Dagon's features
-* [dagon-sandbox](https://github.com/gecko0307/dagon-sandbox) - a test application for unstable version of Dagon
-* [Dagoban](https://github.com/Timu5/dagoban) - a Sokoban clone based on Dagon and Nuklear
-* [dagon-shooter](https://github.com/aferust/dagon-shooter) - a shooter game using Dagon
-* [Introductory examples](https://github.com/gecko0307/dagon-tutorials).
-
 Usage
 -----
 To use latest stable Dagon, add the following dependency to your `dub.json`:
@@ -92,7 +84,7 @@ Under Windows runtime dependencies are automatically deployed if you are buildin
 
 Documentation
 -------------
-See [Tutorials](https://github.com/gecko0307/dagon/wiki/Tutorials).
+See [tutorials](https://github.com/gecko0307/dagon/wiki/Tutorials) and corresponding [examples](https://github.com/gecko0307/dagon-tutorials).
 
 License
 -------
@@ -101,3 +93,10 @@ Copyright (c) 2016-2020 Timur Gafarov, Rafał Ziemniewski, Mateusz Muszyński, B
 Sponsors
 --------
 Rafał Ziemniewski, Kumar Sookram, Aleksandr Kovalev, Robert Georges, Jan Jurzitza (WebFreak), Rais Safiullin (SARFEX), Koichi Takio.
+
+Made with Dagon
+---------------
+* [dagon-demo](https://github.com/gecko0307/dagon-demo) - a test application that demonstrates most of Dagon's features
+* [dagon-sandbox](https://github.com/gecko0307/dagon-sandbox) - a test application for unstable version of Dagon
+* [Dagoban](https://github.com/Timu5/dagoban) - a Sokoban clone
+* [dagon-shooter](https://github.com/aferust/dagon-shooter) - a shooter game
