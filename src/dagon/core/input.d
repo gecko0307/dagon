@@ -158,7 +158,7 @@ class InputManager
             else
             {
                 String svalue = String(lexeme);
-                char* cvalue = svalue.ptr;
+                const(char)* cvalue = svalue.ptr;
                 switch(type)
                 {
                     case BindingType.Keyboard:      result = cast(int)SDL_GetScancodeFromName(cvalue); break;
