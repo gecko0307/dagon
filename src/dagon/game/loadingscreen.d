@@ -36,6 +36,7 @@ import dlib.math.interpolation;
 import dlib.image.color;
 
 import dagon.core.bindings;
+import dagon.core.application;
 import dagon.core.event;
 import dagon.core.time;
 import dagon.graphics.state;
@@ -43,19 +44,18 @@ import dagon.graphics.entity;
 import dagon.graphics.shapes;
 import dagon.graphics.material;
 import dagon.render.shaders.hud;
-import dagon.game.game;
 
 class LoadingScreen: EventListener
 {
-    Game game;
+    Application app;
     ShapeQuad loadingProgressBar;
     Entity eLoadingProgressBar;
     HUDShader hudShader;
 
-    this(Game game, Owner owner)
+    this(Application app, Owner owner)
     {
-        super(game.eventManager, owner);
-        this.game = game;
+        super(app.eventManager, owner);
+        this.app = app;
         loadingProgressBar = New!ShapeQuad(this);
         eLoadingProgressBar = New!Entity(this);
         eLoadingProgressBar.drawable = loadingProgressBar;
