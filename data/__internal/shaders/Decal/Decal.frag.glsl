@@ -217,7 +217,6 @@ void main()
 {
     vec2 gbufTexCoord = gl_FragCoord.xy / resolution;
 
-    //vec3 eyePos = texture(positionBuffer, gbufTexCoord).xyz;
     float depth = texture(depthBuffer, gbufTexCoord).x;
     vec3 eyePos = unproject(invProjectionMatrix, vec3(gbufTexCoord, depth));
     
@@ -246,15 +245,12 @@ void main()
     N = normal(shiftedTexCoord, -1.0, tangentToEye);
     
     vec4 d = diffuse(shiftedTexCoord);
-    vec3 color = d.rgb;
+    vec3 color = toLinear(d.rgb);
     
-    //vec4 rms = texture(pbrTexture, shiftedTexCoord);
-    
-    vec3 emiss = emission(shiftedTexCoord).rgb * emissionEnergy;
+    vec3 emiss = toLinear(emission(shiftedTexCoord).rgb) * emissionEnergy;
     
     fragColor = vec4(color, d.a);
     fragNormal = vec4(N, d.a);
-    //fragPBR = vec4(rms.r, rms.g, 1.0, d.a);
     fragPBR = vec4(roughness(shiftedTexCoord), metallic(shiftedTexCoord), specularity(shiftedTexCoord), d.a);
     fragEmission = vec4(emiss, d.a);
 }
