@@ -65,10 +65,10 @@ alias PairHashTable!PersistentContactManifold ContactCache;
 
 class PhysicsWorld: Owner
 {
-    DynamicArray!ShapeComponent shapeComponents;
-    DynamicArray!RigidBody staticBodies;
-    DynamicArray!RigidBody dynamicBodies;
-    DynamicArray!Constraint constraints;
+    Array!ShapeComponent shapeComponents;
+    Array!RigidBody staticBodies;
+    Array!RigidBody dynamicBodies;
+    Array!Constraint constraints;
 
     Vector3f gravity;
 
@@ -474,7 +474,7 @@ class PhysicsWorld: Owner
                     maxPen = contacts[i].penetration;
                 }
             }
-            
+
             if (deepestContactIdx >= 0)
             {
                 auto co = &contacts[deepestContactIdx];
@@ -496,7 +496,7 @@ class PhysicsWorld: Owner
 
                 c.body1.numContacts++;
                 c.body2.numContacts++;
-                
+
                 c.body1.contactEvent(*co);
                 c.body2.contactEvent(*co);
             }

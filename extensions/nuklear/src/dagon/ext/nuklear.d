@@ -34,7 +34,7 @@ import dlib.core.ownership;
 import dlib.image.color;
 import dlib.container.array;
 import dlib.text.utf8;
-import dlib.text.unmanagedstring;
+import dlib.text.str;
 
 import dagon.core.application;
 import dagon.core.time;
@@ -188,8 +188,8 @@ class NuklearGUI: Owner, Updateable, Drawable
     nk_buffer cmds;
     nk_draw_null_texture nullTexture;
 
-    DynamicArray!nk_font_atlas atlases;
-    DynamicArray!GLuint fontsTextures;
+    Array!nk_font_atlas atlases;
+    Array!GLuint fontsTextures;
 
     GLuint vbo;
     GLuint vao;
@@ -205,7 +205,7 @@ class NuklearGUI: Owner, Updateable, Drawable
 
     GLint textureLoc;
     GLint projectionMatrixLoc;
-    
+
     String vs, fs;
 
     EventManager eventManager; // Needed for mouse position
@@ -233,15 +233,15 @@ class NuklearGUI: Owner, Updateable, Drawable
     {
         if (vs.length) vs.free();
         if (fs.length) fs.free();
-        
+
         foreach(atlas; atlases)
             nk_font_atlas_clear(&atlas);
         atlases.free();
-        
+
         foreach(tex; fontsTextures)
             glDeleteTextures(1, &tex);
         fontsTextures.free();
-        
+
         nk_free(&ctx);
         nk_buffer_free(&cmds);
 
@@ -254,8 +254,8 @@ class NuklearGUI: Owner, Updateable, Drawable
     void prepareVAO()
     {
         vs = Shader.load("data/__internal/shaders/Nuklear/Nuklear.vert.glsl");
-        fs = Shader.load("data/__internal/shaders/Nuklear/Nuklear.frag.glsl"); 
-        
+        fs = Shader.load("data/__internal/shaders/Nuklear/Nuklear.frag.glsl");
+
         vertexShader = compileShader(vs, ShaderStage.vertex);
         fragmentShader = compileShader(fs, ShaderStage.fragment);
         if (vertexShader != 0 && fragmentShader != 0)

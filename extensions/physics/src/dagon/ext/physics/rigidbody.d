@@ -80,7 +80,7 @@ class RigidBody: Owner
     bool useGravity = true;
     bool enableRotation = true;
 
-    DynamicArray!ShapeComponent shapes;
+    Array!ShapeComponent shapes;
 
     bool dynamic;
 
@@ -92,7 +92,7 @@ class RigidBody: Owner
     bool useOwnGravity = false;
     Vector3f gravity = Vector3f(0, 0, 0);
 
-    DynamicArray!CollisionDispatcher collisionDispatchers;
+    Array!CollisionDispatcher collisionDispatchers;
 
     void contactEvent(Contact c)
     {
@@ -105,9 +105,9 @@ class RigidBody: Owner
     bool raycastable = true;
     uint numContacts = 0;
     bool useFriction = true;
-    
+
     float maxSpeed = float.max;
-    
+
     uint layer = 0;
 
     this(PhysicsWorld world)
@@ -217,9 +217,9 @@ class RigidBody: Owner
         float d = clamp(1.0f - dt * damping, 0.0f, 1.0f);
         linearVelocity *= d;
         angularVelocity *= d;
-        
+
         float speed = linearVelocity.length;
-        
+
         if (speed > maxSpeed)
             linearVelocity = linearVelocity.normalized * maxSpeed;
 

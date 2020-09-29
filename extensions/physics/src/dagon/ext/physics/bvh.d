@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2011-2019 Timur Gafarov 
+Copyright (c) 2011-2019 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -50,7 +50,7 @@ Axis boxGetMainAxis(AABB box)
     float xl = box.size.x;
     float yl = box.size.y;
     float zl = box.size.z;
-         
+
     if (xl < yl)
     {
         if (yl < zl)
@@ -59,7 +59,7 @@ Axis boxGetMainAxis(AABB box)
     }
     else if (xl < zl)
         return Axis.z;
-    return Axis.x;        
+    return Axis.x;
 }
 
 struct SplitPlane
@@ -67,7 +67,7 @@ struct SplitPlane
     public:
     float split;
     Axis axis;
-    
+
     this(float s, Axis ax)
     {
         split = s;
@@ -85,7 +85,7 @@ Compound!(AABB, AABB) boxSplitWithPlane(AABB box, SplitPlane sp)
     Vector3f minLP = box.pmin;
     Vector3f maxLP = box.pmax;
     maxLP[sp.axis] = sp.split;
-    
+
     Vector3f minRP = box.pmin;
     Vector3f maxRP = box.pmax;
     minRP[sp.axis] = sp.split;
@@ -100,14 +100,14 @@ AABB enclosingAABB(T)(T[] objects)
 {
     Vector3f pmin = objects[0].boundingBox.pmin;
     Vector3f pmax = pmin;
-    
+
     void adjustMinPoint(Vector3f p)
-    {    
+    {
         if (p.x < pmin.x) pmin.x = p.x;
         if (p.y < pmin.y) pmin.y = p.y;
         if (p.z < pmin.z) pmin.z = p.z;
     }
-    
+
     void adjustMaxPoint(Vector3f p)
     {
         if (p.x > pmax.x) pmax.x = p.x;
@@ -120,23 +120,23 @@ AABB enclosingAABB(T)(T[] objects)
         adjustMinPoint(obj.boundingBox.pmin);
         adjustMaxPoint(obj.boundingBox.pmax);
     }
-    
+
     return boxFromMinMaxPoints(pmin, pmax);
 }
 
 class BVHNode(T)
 {
-    DynamicArray!T objects;
+    Array!T objects;
     AABB aabb;
     BVHNode[2] child;
     uint userData;
 
-    this(DynamicArray!T objs)
+    this(Array!T objs)
     {
         objects = objs;
         aabb = enclosingAABB(objects.data);
     }
-    
+
     void free()
     {
         objects.free();
@@ -144,12 +144,12 @@ class BVHNode(T)
         if (child[1] !is null) child[1].free();
         Delete(this);
     }
-    
+
     SphereTraverseAggregate!T traverseBySphere(Sphere* sphere)
     {
         return SphereTraverseAggregate!(T)(this, sphere);
     }
-    
+
     RayTraverseAggregate!T traverseByRay(Ray* ray)
     {
         return RayTraverseAggregate!(T)(this, ray);
@@ -160,35 +160,35 @@ struct SphereTraverseAggregate(T)
 {
     BVHNode!T node;
     Sphere* sphere;
-    
+
     int opApply(int delegate(ref T) dg)
     {
         int result = 0;
-        
+
         Vector3f cn;
         float pd;
         if (node.aabb.intersectsSphere(*sphere, cn, pd))
-        {        
+        {
             if (node.child[0] !is null)
             {
                 result = node.child[0].traverseBySphere(sphere).opApply(dg);
                 if (result)
                     return result;
             }
-            
+
             if (node.child[1] !is null)
             {
                 result = node.child[1].traverseBySphere(sphere).opApply(dg);
                 if (result)
                     return result;
             }
-            
+
             foreach(ref obj; node.objects.data)
                 dg(obj);
         }
         else
             return result;
-            
+
         return result;
     }
 }
@@ -197,34 +197,34 @@ struct RayTraverseAggregate(T)
 {
     BVHNode!T node;
     Ray* ray;
-    
+
     int opApply(int delegate(ref T) dg) // TODO: nearest intersection point
     {
         int result = 0;
-        
+
         float it = 0.0f;
-        if (node.aabb.intersectsSegment(ray.p0, ray.p1, it))    
-        { 
+        if (node.aabb.intersectsSegment(ray.p0, ray.p1, it))
+        {
             if (node.child[0] !is null)
             {
                 result = node.child[0].traverseByRay(ray).opApply(dg);
                 if (result)
                     return result;
             }
-            
+
             if (node.child[1] !is null)
             {
                 result = node.child[1].traverseByRay(ray).opApply(dg);
                 if (result)
                     return result;
             }
-            
+
             foreach(ref obj; node.objects.data)
                 dg(obj);
         }
         else
             return result;
-            
+
         return result;
     }
 }
@@ -284,9 +284,9 @@ enum Heuristic
     //ESC  // Early Split Clipping
 }
 
-DynamicArray!T duplicate(T)(DynamicArray!T arr)
+Array!T duplicate(T)(Array!T arr)
 {
-    DynamicArray!T res;
+    Array!T res;
     foreach(v; arr.data)
         res.append(v);
     return res;
@@ -296,24 +296,24 @@ class BVHTree(T)
 {
     BVHNode!T root;
 
-    this(DynamicArray!T objects, 
+    this(Array!T objects,
          uint maxObjectsPerNode = 8,
          uint maxRecursionDepth = 10,
          Heuristic splitHeuristic = Heuristic.SAH)
     {
         root = construct(objects, 0, maxObjectsPerNode, maxRecursionDepth, splitHeuristic);
     }
-    
+
     void free()
     {
         root.free();
         Delete(this);
     }
-    
+
     import std.stdio;
 
     BVHNode!T construct(
-         DynamicArray!T objects, 
+         Array!T objects,
          uint rec,
          uint maxObjectsPerNode,
          uint maxRecursionDepth,
@@ -325,12 +325,12 @@ class BVHTree(T)
         {
             return node;
         }
-        
+
         if (rec == maxRecursionDepth)
         {
             return node;
         }
-        
+
         AABB box = enclosingAABB(node.objects.data);
 
         SplitPlane sp;
@@ -343,9 +343,9 @@ class BVHTree(T)
 
         auto boxes = boxSplitWithPlane(box, sp);
 
-        DynamicArray!T leftObjects;
-        DynamicArray!T rightObjects;
-        
+        Array!T leftObjects;
+        Array!T rightObjects;
+
         foreach(obj; node.objects.data)
         {
             if (boxes[0].intersectsAABB(obj.boundingBox))
@@ -370,7 +370,7 @@ class BVHTree(T)
         leftObjects.free();
         rightObjects.free();
 
-        return node;    
+        return node;
     }
 
     SplitPlane getHalfMainAxisSplitPlane(T[] objects, ref AABB box)
@@ -382,17 +382,17 @@ class BVHTree(T)
     SplitPlane getSAHSplitPlane(T[] objects, ref AABB box)
     {
         Axis axis = boxGetMainAxis(box);
-        
+
         float minAlongSplitPlane = box.pmin[axis];
         float maxAlongSplitPlane = box.pmax[axis];
-        
+
         float bestSAHCost = float.nan;
         float bestSplitPoint = float.nan;
 
         int iterations = 12;
         foreach (i; 0..iterations)
         {
-            float valueOfSplit = minAlongSplitPlane + 
+            float valueOfSplit = minAlongSplitPlane +
                                ((maxAlongSplitPlane - minAlongSplitPlane) / (iterations + 1.0f) * (i + 1.0f));
 
             SplitPlane SAHSplitPlane = SplitPlane(valueOfSplit, axis);
@@ -411,7 +411,7 @@ class BVHTree(T)
 
             if (leftObjectsLength > 0 && rightObjectsLength > 0)
             {
-                float SAHCost = getSAHCost(boxes[0], leftObjectsLength, 
+                float SAHCost = getSAHCost(boxes[0], leftObjectsLength,
                                            boxes[1], rightObjectsLength, box);
 
                 if (bestSAHCost.isNaN || SAHCost < bestSAHCost)
@@ -421,11 +421,11 @@ class BVHTree(T)
                 }
             }
         }
-        
+
         return SplitPlane(bestSplitPoint, axis);
     }
 
-    float getSAHCost(AABB leftBox, uint numLeftObjects, 
+    float getSAHCost(AABB leftBox, uint numLeftObjects,
                      AABB rightBox, uint numRightObjects,
                      AABB parentBox)
     {
@@ -441,4 +441,3 @@ class BVHTree(T)
         return 2.0f * (width * height + width * depth + height * depth);
     }
 }
-
