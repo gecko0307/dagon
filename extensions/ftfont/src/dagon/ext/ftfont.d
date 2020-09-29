@@ -43,7 +43,7 @@ import dlib.container.dict;
 import dlib.text.utf8;
 import dlib.math.vector;
 import dlib.image.color;
-import dlib.text.unmanagedstring;
+import dlib.text.str;
 
 import dagon.core.application;
 import dagon.ui.font;
@@ -59,7 +59,7 @@ public import bindbc.freetype;
 __gshared FTSupport freetypeSupport;
 
 void initFreetype()
-{  
+{
     freetypeSupport = loadFreeType();
     if (freetypeSupport != ftSupport)
     {
@@ -121,7 +121,7 @@ final class FreeTypeFont: Font
 
     GLint glyphTextureLoc;
     GLint glyphColorLoc;
-    
+
     String vs, fs;
 
     this(uint height, Owner o)
@@ -205,9 +205,9 @@ final class FreeTypeFont: Font
         //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
         glBindVertexArray(0);
-        
+
         vs = Shader.load("data/__internal/shaders/Glyph/Glyph.vert.glsl");
-        fs = Shader.load("data/__internal/shaders/Glyph/Glyph.frag.glsl"); 
+        fs = Shader.load("data/__internal/shaders/Glyph/Glyph.frag.glsl");
 
         GLuint vert = compileShader(vs, ShaderStage.vertex);
         GLuint frag = compileShader(fs, ShaderStage.fragment);
@@ -246,7 +246,7 @@ final class FreeTypeFont: Font
     {
         vs.free();
         fs.free();
-        
+
         if (canRender)
         {
             glDeleteVertexArrays(1, &vao);
