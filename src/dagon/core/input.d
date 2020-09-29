@@ -39,7 +39,7 @@ import dlib.core.ownership;
 import dlib.container.dict;
 import dlib.container.array;
 import dlib.text.lexer;
-import dlib.text.unmanagedstring;
+import dlib.text.str;
 import dagon.core.event;
 import dagon.core.bindings;
 import dagon.core.keycodes;
@@ -80,7 +80,7 @@ class InputManager
 {
     EventManager eventManager;
 
-    alias Bindings = DynamicArray!Binding;
+    alias Bindings = Array!Binding;
 
     Dict!(Bindings, string) bindings;
 

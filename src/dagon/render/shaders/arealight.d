@@ -38,7 +38,7 @@ import dlib.math.transformation;
 import dlib.math.interpolation;
 import dlib.math.utils;
 import dlib.image.color;
-import dlib.text.unmanagedstring;
+import dlib.text.str;
 
 import dagon.core.bindings;
 import dagon.graphics.shader;
@@ -52,12 +52,12 @@ class AreaLightShader: Shader
     this(Owner owner)
     {
         vs = Shader.load("data/__internal/shaders/AreaLight/AreaLight.vert.glsl");
-        fs = Shader.load("data/__internal/shaders/AreaLight/AreaLight.frag.glsl"); 
-        
+        fs = Shader.load("data/__internal/shaders/AreaLight/AreaLight.frag.glsl");
+
         auto myProgram = New!ShaderProgram(vs.toString, fs.toString, this);
         super(myProgram, owner);
     }
-    
+
     ~this()
     {
         vs.free();

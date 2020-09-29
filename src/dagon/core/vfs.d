@@ -73,7 +73,7 @@ class StdDirFileSystem: ReadOnlyFileSystem
 
 class VirtualFileSystem: ReadOnlyFileSystem
 {
-    DynamicArray!ReadOnlyFileSystem mounted;
+    Array!ReadOnlyFileSystem mounted;
 
     this()
     {

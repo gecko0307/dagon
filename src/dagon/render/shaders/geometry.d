@@ -37,7 +37,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
 import dlib.image.color;
-import dlib.text.unmanagedstring;
+import dlib.text.str;
 
 import dagon.core.bindings;
 import dagon.graphics.material;
@@ -52,11 +52,11 @@ class GeometryShader: Shader
     {
         vs = Shader.load("data/__internal/shaders/Geometry/Geometry.vert.glsl");
         fs = Shader.load("data/__internal/shaders/Geometry/Geometry.frag.glsl");
-        
+
         auto prog = New!ShaderProgram(vs, fs, this);
         super(prog, owner);
     }
-    
+
     ~this()
     {
         vs.free();
@@ -240,7 +240,7 @@ class GeometryShader: Shader
         {
             setParameterSubroutine("metallic", ShaderType.Fragment, "metallicMap");
         }
-        
+
         if (ispecularity.texture is null)
         {
             setParameterSubroutine("specularity", ShaderType.Fragment, "specularityValue");
@@ -262,7 +262,7 @@ class GeometryShader: Shader
         {
             setParameterSubroutine("specularity", ShaderType.Fragment, "specularityMap");
         }
-        
+
         if (itranslucency.texture is null)
         {
             setParameterSubroutine("translucency", ShaderType.Fragment, "translucencyValue");

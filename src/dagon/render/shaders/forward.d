@@ -37,7 +37,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
 import dlib.image.color;
-import dlib.text.unmanagedstring;
+import dlib.text.str;
 
 import dagon.core.bindings;
 import dagon.graphics.material;
@@ -49,7 +49,7 @@ import dagon.graphics.csm;
 class ForwardShader: Shader
 {
     String vs, fs;
-    
+
     Matrix4x4f defaultShadowMatrix;
     GLuint defaultShadowTexture;
 
@@ -57,10 +57,10 @@ class ForwardShader: Shader
     {
         vs = Shader.load("data/__internal/shaders/Forward/Forward.vert.glsl");
         fs = Shader.load("data/__internal/shaders/Forward/Forward.frag.glsl");
-        
+
         auto prog = New!ShaderProgram(vs, fs, this);
         super(prog, owner);
-        
+
         defaultShadowMatrix = Matrix4x4f.identity;
 
         glGenTextures(1, &defaultShadowTexture);
@@ -71,12 +71,12 @@ class ForwardShader: Shader
 	    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
     }
-    
+
     ~this()
     {
         if (glIsFramebuffer(defaultShadowTexture))
             glDeleteFramebuffers(1, &defaultShadowTexture);
-        
+
         vs.free();
         fs.free();
     }
@@ -97,7 +97,7 @@ class ForwardShader: Shader
         auto ienergy = "energy" in state.material.inputs;
         auto isphericalNormal = "sphericalNormal" in state.material.inputs;
         auto ishadeless = "shadeless" in state.material.inputs;
-        
+
         setParameter("modelViewMatrix", state.modelViewMatrix);
         setParameter("projectionMatrix", state.projectionMatrix);
         setParameter("normalMatrix", state.normalMatrix);
@@ -108,9 +108,9 @@ class ForwardShader: Shader
         setParameter("layer", cast(float)(state.layer));
         setParameter("opacity", state.opacity);
         setParameter("textureScale", itextureScale.asVector2f);
-        
+
         setParameter("viewSize", state.resolution);
-        
+
         // Sun
         Vector3f sunDirection = Vector3f(0.0f, 0.0f, 1.0f);
         Color4f sunColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -147,7 +147,7 @@ class ForwardShader: Shader
         setParameter("sunScatteringMaxRandomStepOffset", sunScatteringMaxRandomStepOffset);
         setParameter("sunScatteringShadow", sunScatteringShadow);
         setParameter("shaded", shaded);
-        
+
         setParameter("time", state.localTime);
 
         // Parallax mode
@@ -301,7 +301,7 @@ class ForwardShader: Shader
         {
             setParameterSubroutine("metallic", ShaderType.Fragment, "metallicMap");
         }
-        
+
         if (ispecularity.texture is null)
         {
             setParameterSubroutine("specularity", ShaderType.Fragment, "specularityValue");
@@ -323,7 +323,7 @@ class ForwardShader: Shader
         {
             setParameterSubroutine("specularity", ShaderType.Fragment, "specularityMap");
         }
-        
+
         if (itranslucency.texture is null)
         {
             setParameterSubroutine("translucency", ShaderType.Fragment, "translucencyValue");
@@ -360,7 +360,7 @@ class ForwardShader: Shader
             setParameterSubroutine("emission", ShaderType.Fragment, "emissionColorValue");
         }
         setParameter("energy", ienergy.asFloat);
-        
+
         // Environment
         if (state.environment)
         {
@@ -399,7 +399,7 @@ class ForwardShader: Shader
             setParameter("ambientVector", Color4f(0.5f, 0.5f, 0.5f, 1.0f));
             setParameterSubroutine("ambient", ShaderType.Fragment, "ambientColor");
         }
-        
+
         // Shadow map
         if (state.material.sun)
         {
@@ -444,26 +444,26 @@ class ForwardShader: Shader
     override void unbindParameters(GraphicsState* state)
     {
         super.unbindParameters(state);
-        
+
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, 0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-        
+
         glActiveTexture(GL_TEXTURE5);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE0);
     }
 }

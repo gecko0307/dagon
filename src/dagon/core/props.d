@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2016-2019 Timur Gafarov 
+Copyright (c) 2016-2019 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -73,7 +73,7 @@ struct DProperty
     {
         return to!int(data);
     }
-    
+
     int toUInt()
     {
         return to!uint(data);
@@ -103,18 +103,18 @@ struct DProperty
 class Properties: Owner
 {
     Dict!(DProperty, string) props;
-    
+
     this(Owner o)
     {
         super(o);
         props = dict!(DProperty, string);
     }
-    
+
     bool parse(string input)
     {
         return parseProperties(input, this);
     }
-    
+
     DProperty opIndex(string name)
     {
         if (name in props)
@@ -149,7 +149,7 @@ class Properties: Owner
         else
             return DProperty(DPropType.Undefined, "");
     }
-    
+
     DProperty* opBinaryRight(string op)(string k) if (op == "in")
     {
         return (k in props);
@@ -165,7 +165,7 @@ class Properties: Owner
             Delete(n);
         }
     }
-    
+
     int opApply(int delegate(string, ref DProperty) dg)
     {
         foreach(k, v; props)
@@ -175,7 +175,7 @@ class Properties: Owner
 
         return 0;
     }
-    
+
     ~this()
     {
         foreach(k, v; props)
@@ -198,7 +198,7 @@ bool isWhiteStr(string s)
             if (c == w)
                 res = true;
         }
-        
+
         if (c == '\n' || c == '\r')
             res = true;
     }
@@ -233,18 +233,18 @@ bool parseProperties(string input, Properties props)
 
     bool res = true;
     auto lexer = New!Lexer(input, [":", ";", "\"", "[", "]", ","]);
-    
+
     lexer.ignoreNewlines = true;
-    
+
     Expect expect = Expect.PropName;
     string propName;
-    DynamicArray!char propValue;
+    Array!char propValue;
     DPropType propType;
-    
+
     while(true)
     {
         auto lexeme = lexer.getLexeme();
-        if (lexeme.length == 0) 
+        if (lexeme.length == 0)
         {
             if (expect != Expect.PropName)
             {
@@ -253,10 +253,10 @@ bool parseProperties(string input, Properties props)
             }
             break;
         }
-        
+
         if (isWhiteStr(lexeme) && expect != Expect.String)
             continue;
-        
+
         if (expect == Expect.PropName)
         {
             if (!isValidIdentifier(lexeme))
@@ -265,7 +265,7 @@ bool parseProperties(string input, Properties props)
                 res = false;
                 break;
             }
-            
+
             propName = lexeme;
             expect = Expect.Colon;
         }
@@ -277,7 +277,7 @@ bool parseProperties(string input, Properties props)
                 res = false;
                 break;
             }
-            
+
             expect = Expect.Value;
         }
         else if (expect == Expect.Semicolon)
@@ -288,9 +288,9 @@ bool parseProperties(string input, Properties props)
                 res = false;
                 break;
             }
-            
+
             props.set(propType, propName, cast(string)propValue.data);
-            
+
             expect = Expect.PropName;
             propName = "";
             propValue.free();
@@ -330,7 +330,7 @@ bool parseProperties(string input, Properties props)
             propValue.append(lexeme);
         }
     }
-    
+
     propValue.free();
     Delete(lexer);
 

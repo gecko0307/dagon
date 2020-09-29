@@ -40,7 +40,7 @@ import dagon.render.pass;
 
 class RenderPipeline: EventListener
 {
-    DynamicArray!RenderPass passes;
+    Array!RenderPass passes;
 
     this(EventManager eventManager, Owner owner)
     {

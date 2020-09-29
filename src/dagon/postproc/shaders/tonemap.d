@@ -36,7 +36,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
 import dlib.image.color;
-import dlib.text.unmanagedstring;
+import dlib.text.str;
 
 import dagon.core.bindings;
 import dagon.graphics.shader;
@@ -63,11 +63,11 @@ class TonemapShader: Shader
     {
         vs = Shader.load("data/__internal/shaders/Tonemap/Tonemap.vert.glsl");
         fs = Shader.load("data/__internal/shaders/Tonemap/Tonemap.frag.glsl");
-        
+
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
     }
-    
+
     ~this()
     {
         vs.free();

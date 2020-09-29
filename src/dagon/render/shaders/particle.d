@@ -37,7 +37,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
 import dlib.image.color;
-import dlib.text.unmanagedstring;
+import dlib.text.str;
 
 import dagon.core.bindings;
 import dagon.graphics.material;
@@ -53,11 +53,11 @@ class ParticleShader: Shader
     {
         vs = Shader.load("data/__internal/shaders/Particle/Particle.vert.glsl");
         fs = Shader.load("data/__internal/shaders/Particle/Particle.frag.glsl");
-        
+
         auto prog = New!ShaderProgram(vs, fs, this);
         super(prog, owner);
     }
-    
+
     ~this()
     {
         vs.free();
@@ -74,16 +74,16 @@ class ParticleShader: Shader
         auto ishadeless = "shadeless" in state.material.inputs;
         auto ialphaCutout = "alphaCutout" in state.material.inputs;
         auto ialphaCutoutThreshold = "alphaCutoutThreshold" in state.material.inputs;
-        
+
         setParameter("modelViewMatrix", state.modelViewMatrix);
         setParameter("projectionMatrix", state.projectionMatrix);
         setParameter("invProjectionMatrix", state.invProjectionMatrix);
         setParameter("viewMatrix", state.viewMatrix);
         setParameter("invViewMatrix", state.invViewMatrix);
         setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
-        
+
         setParameter("viewSize", state.resolution);
-        
+
         Color4f particleColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
         if (iparticleColor)
             particleColor = Color4f(iparticleColor.asVector4f);
@@ -91,7 +91,7 @@ class ParticleShader: Shader
         float particleAlpha = 1.0f;
         if (itransparency)
             particleAlpha = itransparency.asFloat;
-        
+
         setParameter("particleColor", particleColor);
         setParameter("particleAlpha", particleAlpha);
         if (ialphaCutout)
@@ -103,7 +103,7 @@ class ParticleShader: Shader
         else
             setParameter("alphaCutoutThreshold", 0.5f);
         setParameter("particlePosition", state.modelViewMatrix.translation);
-        
+
         // Sun
         Vector3f sunDirection = Vector3f(0.0f, 0.0f, 1.0f);
         Color4f sunColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -132,7 +132,7 @@ class ParticleShader: Shader
         setParameter("sunScatteringDensity", sunScatteringDensity);
         setParameter("sunScattering", scatteringEnabled);
         setParameter("shaded", shaded);
-        
+
         // Texture 0 - diffuse texture
         if (idiffuse.texture is null)
         {
@@ -146,12 +146,12 @@ class ParticleShader: Shader
             setParameter("diffuseTexture", 0);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
         }
-        
+
         // Texture 1 - depth texture (for soft particles)
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, state.depthTexture);
         setParameter("depthTexture", 1);
-        
+
         // Texture 2 - normal map
         if (inormal.texture is null)
         {
@@ -176,7 +176,7 @@ class ParticleShader: Shader
             setParameter("normalTexture", 2);
             setParameterSubroutine("normal", ShaderType.Fragment, "normalMap");
         }
-        
+
         // Texture 4 - environment
         if (state.environment)
         {
@@ -222,20 +222,20 @@ class ParticleShader: Shader
     override void unbindParameters(GraphicsState* state)
     {
         super.unbindParameters(state);
-        
+
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, 0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-        
+
         glActiveTexture(GL_TEXTURE0);
     }
 }

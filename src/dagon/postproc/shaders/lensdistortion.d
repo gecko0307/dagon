@@ -36,7 +36,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
 import dlib.image.color;
-import dlib.text.unmanagedstring;
+import dlib.text.str;
 
 import dagon.core.bindings;
 import dagon.graphics.shader;
@@ -46,7 +46,7 @@ import dagon.render.framebuffer;
 class LensDistortionShader: Shader
 {
     String vs, fs;
-    
+
     float scale = 1.0f;
     float dispersion = 0.1f;
 
@@ -54,11 +54,11 @@ class LensDistortionShader: Shader
     {
         vs = Shader.load("data/__internal/shaders/LensDistortion/LensDistortion.vert.glsl");
         fs = Shader.load("data/__internal/shaders/LensDistortion/LensDistortion.frag.glsl");
-        
+
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
     }
-    
+
     ~this()
     {
         vs.free();
@@ -73,7 +73,7 @@ class LensDistortionShader: Shader
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
         setParameter("colorBuffer", 0);
-        
+
         setParameter("scale", scale);
         setParameter("dispersion", dispersion);
 

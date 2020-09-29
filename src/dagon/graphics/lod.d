@@ -48,25 +48,25 @@ struct LODLevel
 
 class LODDrawable: Owner, Drawable
 {
-    DynamicArray!LODLevel levels;
-    
+    Array!LODLevel levels;
+
     public:
 
     this(Owner owner)
     {
         super(owner);
     }
-    
+
     ~this()
     {
         levels.free();
     }
-    
+
     void addLevel(Drawable drawable, Material material, float startDist, float endDist, float fadeDist)
     {
         levels.append(LODLevel(drawable, material, startDist, endDist, fadeDist));
     }
-    
+
     void renderLevel(LODLevel* level, float dist, GraphicsState* state)
     {
         if (level.drawable)
@@ -79,15 +79,15 @@ class LODDrawable: Owner, Drawable
             else
                 state.opacity = 1.0f;
             */
-            
+
             if (level.material)
             {
                 level.material.bind(state);
                 state.shader.bindParameters(state);
             }
-              
+
             level.drawable.render(state);
-               
+
             if (level.material)
             {
                 state.shader.unbindParameters(state);
@@ -95,11 +95,11 @@ class LODDrawable: Owner, Drawable
             }
         }
     }
-    
+
     void render(GraphicsState* state)
     {
         float distanceToCam = distance(state.cameraPosition, state.modelMatrix.translation);
-        
+
         for(size_t i = 0; i < levels.length; i++)
         {
             LODLevel* level = &levels.data[i];

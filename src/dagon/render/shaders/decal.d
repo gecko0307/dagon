@@ -37,7 +37,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
 import dlib.image.color;
-import dlib.text.unmanagedstring;
+import dlib.text.str;
 
 import dagon.core.bindings;
 import dagon.graphics.material;
@@ -48,20 +48,20 @@ import dagon.render.gbuffer;
 class DecalShader: Shader
 {
     String vs, fs;
-    
+
     GBuffer gbuffer;
 
     this(GBuffer gbuffer, Owner owner)
     {
         vs = Shader.load("data/__internal/shaders/Decal/Decal.vert.glsl");
         fs = Shader.load("data/__internal/shaders/Decal/Decal.frag.glsl");
-        
+
         auto prog = New!ShaderProgram(vs, fs, this);
         super(prog, owner);
-        
+
         this.gbuffer = gbuffer;
     }
-    
+
     ~this()
     {
         vs.free();
@@ -85,7 +85,7 @@ class DecalShader: Shader
         auto ioutputNormal = "outputNormal" in state.material.inputs;
         auto ioutputPBR = "outputPBR" in state.material.inputs;
         auto ioutputEmission = "outputEmission" in state.material.inputs;
-        
+
         int parallaxMethod = iparallax.asInteger;
         if (parallaxMethod > ParallaxOcclusionMapping)
             parallaxMethod = ParallaxOcclusionMapping;
@@ -103,7 +103,7 @@ class DecalShader: Shader
 
         setParameter("opacity", state.opacity);
         setParameter("textureScale", itextureScale.asVector2f);
-        
+
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, gbuffer.depthTexture);
         setParameter("depthTexture", cast(int)0);
@@ -121,7 +121,7 @@ class DecalShader: Shader
             setParameter("diffuseVector", idiffuse.asVector4f);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
         }
-        
+
         if (!ioutputColor.asBool)
         {
             glColorMaski(0, 0, 0, 0, 0);
@@ -166,7 +166,7 @@ class DecalShader: Shader
             setParameter("normalVector", state.material.normal.asVector3f);
             setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
         }
-        
+
         if (!ioutputNormal.asBool)
         {
             glColorMaski(1, 0, 0, 0, 0);
@@ -255,7 +255,7 @@ class DecalShader: Shader
         {
             setParameterSubroutine("metallic", ShaderType.Fragment, "metallicMap");
         }
-        
+
         if (ispecularity.texture is null)
         {
             setParameterSubroutine("specularity", ShaderType.Fragment, "specularityValue");
@@ -277,7 +277,7 @@ class DecalShader: Shader
         {
             setParameterSubroutine("specularity", ShaderType.Fragment, "specularityMap");
         }
-        
+
         if (!ioutputPBR.asBool)
         {
             glColorMaski(2, 0, 0, 0, 0);
@@ -297,7 +297,7 @@ class DecalShader: Shader
             setParameterSubroutine("emission", ShaderType.Fragment, "emissionValue");
         }
         setParameter("energy", ienergy.asFloat);
-        
+
         if (!ioutputEmission.asBool)
         {
             glColorMaski(3, 0, 0, 0, 0);
@@ -322,13 +322,13 @@ class DecalShader: Shader
 
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, 0);
 

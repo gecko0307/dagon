@@ -36,7 +36,7 @@ import dlib.core.ownership;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.image.color;
-import dlib.text.unmanagedstring;
+import dlib.text.str;
 
 import dagon.core.bindings;
 import dagon.graphics.state;
@@ -53,11 +53,11 @@ class RayleighShader: Shader
     {
         vs = Shader.load("data/__internal/shaders/Rayleigh/Rayleigh.vert.glsl");
         fs = Shader.load("data/__internal/shaders/Rayleigh/Rayleigh.frag.glsl");
-        
+
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
     }
-    
+
     ~this()
     {
         vs.free();

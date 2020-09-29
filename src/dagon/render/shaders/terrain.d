@@ -37,7 +37,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
 import dlib.image.color;
-import dlib.text.unmanagedstring;
+import dlib.text.str;
 
 import dagon.core.bindings;
 import dagon.graphics.material;
@@ -52,13 +52,13 @@ class TerrainShader: Shader
     {
         vs = Shader.load("data/__internal/shaders/Terrain/Terrain.vert.glsl");
         fs = Shader.load("data/__internal/shaders/Terrain/Terrain.frag.glsl");
-        
+
         auto prog = New!ShaderProgram(vs, fs, this);
         super(prog, owner);
 
         debug writeln("TerrainShader: program ", program.program);
     }
-    
+
     ~this()
     {
         vs.free();
@@ -71,29 +71,29 @@ class TerrainShader: Shader
         auto idiffuse2 = "diffuse2" in state.material.inputs;
         auto idiffuse3 = "diffuse3" in state.material.inputs;
         auto idiffuse4 = "diffuse4" in state.material.inputs;
-        
+
         auto inormal1 = "normal" in state.material.inputs;
         auto inormal2 = "normal2" in state.material.inputs;
         auto inormal3 = "normal3" in state.material.inputs;
         auto inormal4 = "normal4" in state.material.inputs;
-        
+
         auto iheight1 = "height" in state.material.inputs;
         auto iheight2 = "height2" in state.material.inputs;
         auto iheight3 = "height3" in state.material.inputs;
         auto iheight4 = "height4" in state.material.inputs;
-        
+
         auto itextureScale1 = "textureScale" in state.material.inputs;
         auto itextureScale2 = "textureScale2" in state.material.inputs;
         auto itextureScale3 = "textureScale3" in state.material.inputs;
         auto itextureScale4 = "textureScale4" in state.material.inputs;
-        
+
         auto isplat = "splat" in state.material.inputs;
-        
+
         auto isplatmap1 = "splatmap1" in state.material.inputs;
         auto isplatmap2 = "splatmap2" in state.material.inputs;
         auto isplatmap3 = "splatmap3" in state.material.inputs;
         auto isplatmap4 = "splatmap4" in state.material.inputs;
-        
+
         setParameter("modelViewMatrix", state.modelViewMatrix);
         setParameter("projectionMatrix", state.projectionMatrix);
         setParameter("normalMatrix", state.normalMatrix);
@@ -103,7 +103,7 @@ class TerrainShader: Shader
 
         setParameter("layer", cast(float)(state.layer));
         setParameter("opacity", state.opacity);
-        
+
         setParameter("textureScale1", itextureScale1.asVector2f);
         setParameter("textureScale2", itextureScale2.asVector2f);
         setParameter("textureScale3", itextureScale3.asVector2f);
@@ -130,7 +130,7 @@ class TerrainShader: Shader
             setParameter("diffuse1Vector", idiffuse1.asVector4f);
             setParameterSubroutine("diffuse1", ShaderType.Fragment, "diffuse1ColorValue");
         }
-        
+
         // Normal/height 1
         bool haveHeightMap1 = inormal1.texture !is null;
         if (haveHeightMap1)
@@ -168,7 +168,7 @@ class TerrainShader: Shader
             setParameter("normal1Vector", inormal1.asVector3f);
             setParameterSubroutine("normal1", ShaderType.Fragment, "normal1Value");
         }
-        
+
         // Diffuse 2
         if (idiffuse2.texture)
         {
@@ -182,7 +182,7 @@ class TerrainShader: Shader
             setParameter("diffuse2Vector", idiffuse2.asVector4f);
             setParameterSubroutine("diffuse2", ShaderType.Fragment, "diffuse2ColorValue");
         }
-        
+
         // Normal/height 2
         bool haveHeightMap2 = inormal2.texture !is null;
         if (haveHeightMap2)
@@ -220,7 +220,7 @@ class TerrainShader: Shader
             setParameter("normal2Vector", inormal2.asVector3f);
             setParameterSubroutine("normal2", ShaderType.Fragment, "normal2Value");
         }
-        
+
         // Diffuse 3
         if (idiffuse3.texture)
         {
@@ -234,7 +234,7 @@ class TerrainShader: Shader
             setParameter("diffuse3Vector", idiffuse3.asVector4f);
             setParameterSubroutine("diffuse3", ShaderType.Fragment, "diffuse3ColorValue");
         }
-        
+
         // Normal/height 3
         bool haveHeightMap3 = inormal3.texture !is null;
         if (haveHeightMap3)
@@ -272,7 +272,7 @@ class TerrainShader: Shader
             setParameter("normal3Vector", inormal3.asVector3f);
             setParameterSubroutine("normal3", ShaderType.Fragment, "normal3Value");
         }
-        
+
         // Diffuse 4
         if (idiffuse4.texture)
         {
@@ -286,7 +286,7 @@ class TerrainShader: Shader
             setParameter("diffuse4Vector", idiffuse4.asVector4f);
             setParameterSubroutine("diffuse4", ShaderType.Fragment, "diffuse4ColorValue");
         }
-        
+
         // Normal/height 4
         bool haveHeightMap4 = inormal4.texture !is null;
         if (haveHeightMap4)
@@ -324,31 +324,31 @@ class TerrainShader: Shader
             setParameter("normal4Vector", inormal4.asVector3f);
             setParameterSubroutine("normal4", ShaderType.Fragment, "normal4Value");
         }
-        
+
         // Splatmap
         if (isplat is null)
         {
             state.material.setInput("splat", 0.0f);
             isplat = "splat" in state.material.inputs;
         }
-        
+
         // PBR
         Vector4f rms1 = Vector4f(state.material.roughness.asFloat, state.material.metallic.asFloat, 0.0f, 1.0f);
         Vector4f rms2 = Vector4f(state.material.roughness2.asFloat, state.material.metallic2.asFloat, 0.0f, 1.0f);
         Vector4f rms3 = Vector4f(state.material.roughness3.asFloat, state.material.metallic3.asFloat, 0.0f, 1.0f);
         Vector4f rms4 = Vector4f(state.material.roughness4.asFloat, state.material.metallic4.asFloat, 0.0f, 1.0f);
-        
+
         setParameter("rms1", rms1);
         setParameter("rms2", rms2);
         setParameter("rms3", rms3);
         setParameter("rms4", rms4);
-        
+
         if (isplat.texture is null)
             isplat.texture = state.material.makeTexture(*isplatmap1, *isplatmap2, *isplatmap3, *isplatmap4);
         glActiveTexture(GL_TEXTURE8);
         isplat.texture.bind();
         setParameter("splatmap", cast(int)8);
-        
+
         glActiveTexture(GL_TEXTURE0);
 
         super.bindParameters(state);
@@ -360,31 +360,31 @@ class TerrainShader: Shader
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE5);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE6);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE7);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE8);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE0);
     }
 }

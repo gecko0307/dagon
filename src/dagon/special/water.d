@@ -37,7 +37,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
 import dlib.image.color;
-import dlib.text.unmanagedstring;
+import dlib.text.str;
 
 import dagon.core.bindings;
 import dagon.graphics.material;
@@ -65,10 +65,10 @@ class WaterShader: Shader
     Texture rippleTexture;
     Texture normalTexture1;
     Texture normalTexture2;
-    
+
     Matrix4x4f defaultShadowMatrix;
     GLuint defaultShadowTexture;
-    
+
     Color4f waterColor = Color4f(0.02f, 0.02f, 0.08f, 0.9f);
     float rainIntensity = 0.1f;
     float flowSpeed = 0.08f;
@@ -78,21 +78,21 @@ class WaterShader: Shader
     {
         vs = Shader.load("data/__internal/shaders/Water/Water.vert.glsl");
         fs = Shader.load("data/__internal/shaders/Water/Water.frag.glsl");
-        
+
         auto prog = New!ShaderProgram(vs, fs, this);
         super(prog, owner);
-        
+
         this.gbuffer = gbuffer;
 
         TextureAsset rippleTextureAsset = textureAsset(assetManager, "data/__internal/textures/ripples.png");
         rippleTexture = rippleTextureAsset.texture;
-        
+
         TextureAsset normalTexture1Asset = textureAsset(assetManager, "data/__internal/textures/water_normal1.png");
         normalTexture1 = normalTexture1Asset.texture;
-        
+
         TextureAsset normalTexture2Asset = textureAsset(assetManager, "data/__internal/textures/water_normal2.png");
         normalTexture2 = normalTexture2Asset.texture;
-        
+
         defaultShadowMatrix = Matrix4x4f.identity;
 
         glGenTextures(1, &defaultShadowTexture);
@@ -103,12 +103,12 @@ class WaterShader: Shader
 	    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
     }
-    
+
     ~this()
     {
         if (glIsFramebuffer(defaultShadowTexture))
             glDeleteFramebuffers(1, &defaultShadowTexture);
-        
+
         vs.free();
         fs.free();
     }
@@ -117,7 +117,7 @@ class WaterShader: Shader
     {
         auto itextureScale = "textureScale" in state.material.inputs;
         auto ishadeless = "shadeless" in state.material.inputs;
-        
+
         setParameter("modelViewMatrix", state.modelViewMatrix);
         setParameter("projectionMatrix", state.projectionMatrix);
         setParameter("invProjectionMatrix", state.invProjectionMatrix);
@@ -127,15 +127,15 @@ class WaterShader: Shader
         setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
 
         setParameter("textureScale", itextureScale.asVector2f);
-        
+
         setParameter("viewSize", state.resolution);
-        
+
         // Water props
         setParameter("waterColor", waterColor);
         setParameter("rainIntensity", rainIntensity);
         setParameter("flowSpeed", flowSpeed);
         setParameter("waveAmplitude", waveAmplitude);
-        
+
         // Sun
         Vector3f sunDirection = Vector3f(0.0f, 0.0f, 1.0f);
         Color4f sunColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -167,12 +167,12 @@ class WaterShader: Shader
         setParameter("sunScatteringSamples", sunScatteringSamples);
         setParameter("sunScatteringMaxRandomStepOffset", sunScatteringMaxRandomStepOffset);
         setParameter("shaded", shaded);
-        
+
         // Texture 0 - depth texture (for smooth coast transparency)
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, gbuffer.depthTexture);
         setParameter("depthBuffer", 0);
-        
+
         // Ripple parameters
         glActiveTexture(GL_TEXTURE1);
         rippleTexture.bind();
@@ -183,7 +183,7 @@ class WaterShader: Shader
         float rippleTimesZ = frac((state.time.elapsed * 0.93 + 0.45) * 1.6);
         float rippleTimesW = frac((state.time.elapsed * 1.13 + 0.7) * 1.6);
         setParameter("rippleTimes", Vector4f(rippleTimesX, rippleTimesY, rippleTimesZ, rippleTimesW));
-        
+
         // Environment
         if (state.environment)
         {
@@ -222,7 +222,7 @@ class WaterShader: Shader
             setParameter("ambientVector", Color4f(0.5f, 0.5f, 0.5f, 1.0f));
             setParameterSubroutine("ambient", ShaderType.Fragment, "ambientColor");
         }
-        
+
         // Shadow map
         if (state.material.sun)
         {
@@ -260,16 +260,16 @@ class WaterShader: Shader
             setParameter("shadowMatrix3", defaultShadowMatrix);
             setParameterSubroutine("shadowMap", ShaderType.Fragment, "shadowMapNone");
         }
-        
+
         // Normal maps
         glActiveTexture(GL_TEXTURE4);
         normalTexture1.bind();
         setParameter("normalTexture1", 4);
-        
+
         glActiveTexture(GL_TEXTURE5);
         normalTexture2.bind();
         setParameter("normalTexture2", 5);
-        
+
         setParameter("time", cast(float)state.time.elapsed);
 
         super.bindParameters(state);
@@ -278,26 +278,26 @@ class WaterShader: Shader
     override void unbindParameters(GraphicsState* state)
     {
         super.unbindParameters(state);
-        
+
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, 0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-        
+
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE5);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE0);
     }
 }

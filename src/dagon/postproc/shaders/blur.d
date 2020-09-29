@@ -36,7 +36,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
 import dlib.image.color;
-import dlib.text.unmanagedstring;
+import dlib.text.str;
 
 import dagon.core.bindings;
 import dagon.graphics.shader;
@@ -55,13 +55,13 @@ class BlurShader: Shader
     {
         vs = Shader.load("data/__internal/shaders/Blur/Blur.vert.glsl");
         fs = Shader.load("data/__internal/shaders/Blur/Blur.frag.glsl");
-        
+
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
 
         direction = Vector2f(1.0f, 0.0f);
     }
-    
+
     ~this()
     {
         vs.free();

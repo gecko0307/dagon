@@ -43,17 +43,17 @@ class ShapePlane: Mesh
     this(float sx, float sz, uint numTiles, Owner owner)
     {
         super(owner);
-        
+
         float px = -sx * 0.5f;
         float py = -sz * 0.5f;
-        
+
         float tileWidth = sx / numTiles;
         float tileHeight = sz / numTiles;
-        
+
         Vector3f start = Vector3f(px, 0.0f, py);
-        
+
         uint gridSize = numTiles + 1;
-        
+
         vertices = New!(Vector3f[])(gridSize * gridSize);
         normals = New!(Vector3f[])(gridSize * gridSize);
         texcoords = New!(Vector2f[])(gridSize * gridSize);
@@ -64,10 +64,10 @@ class ShapePlane: Mesh
             vertices[i] = start + Vector3f(x * tileWidth, 0, y * tileHeight);
             normals[i] = Vector3f(0, 1, 0);
             texcoords[i] = Vector2f(x, y);
-        }     
-        
+        }
+
         indices = New!(uint[3][])(gridSize * gridSize * 2);
-        
+
         uint index = 0;
         for (uint y = 0; y < gridSize - 1; y++)
         for (uint x = 0; x < gridSize - 1; x++)
@@ -76,11 +76,11 @@ class ShapePlane: Mesh
             indices[index][2] = (offset + 0);
             indices[index][1] = (offset + 1);
             indices[index][0] = (offset + gridSize);
-            
+
             indices[index+1][2] = (offset + 1);
             indices[index+1][1] = (offset + gridSize + 1);
             indices[index+1][0] = (offset + gridSize);
-            
+
             index += 2;
         }
 
@@ -94,12 +94,12 @@ class ShapeQuad: Owner, Drawable
     Vector2f[4] vertices;
     Vector2f[4] texcoords;
     uint[3][2] indices;
-    
+
     GLuint vao = 0;
     GLuint vbo = 0;
     GLuint tbo = 0;
     GLuint eao = 0;
-    
+
     this(Owner owner)
     {
         super(owner);
@@ -108,23 +108,23 @@ class ShapeQuad: Owner, Drawable
         vertices[1] = Vector2f(0, 0);
         vertices[2] = Vector2f(1, 0);
         vertices[3] = Vector2f(1, 1);
-        
+
         texcoords[0] = Vector2f(0, 1);
         texcoords[1] = Vector2f(0, 0);
         texcoords[2] = Vector2f(1, 0);
         texcoords[3] = Vector2f(1, 1);
-        
+
         indices[0][0] = 0;
         indices[0][1] = 1;
         indices[0][2] = 2;
-        
+
         indices[1][0] = 0;
         indices[1][1] = 2;
         indices[1][2] = 3;
-        
+
         glGenBuffers(1, &vbo);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, vertices.length * float.sizeof * 2, vertices.ptr, GL_STATIC_DRAW); 
+        glBufferData(GL_ARRAY_BUFFER, vertices.length * float.sizeof * 2, vertices.ptr, GL_STATIC_DRAW);
 
         glGenBuffers(1, &tbo);
         glBindBuffer(GL_ARRAY_BUFFER, tbo);
@@ -137,28 +137,28 @@ class ShapeQuad: Owner, Drawable
         glGenVertexArrays(1, &vao);
         glBindVertexArray(vao);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eao);
-    
+
         glEnableVertexAttribArray(VertexAttrib.Vertices);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glVertexAttribPointer(VertexAttrib.Vertices, 2, GL_FLOAT, GL_FALSE, 0, null);
-    
+
         glEnableVertexAttribArray(VertexAttrib.Texcoords);
         glBindBuffer(GL_ARRAY_BUFFER, tbo);
         glVertexAttribPointer(VertexAttrib.Texcoords, 2, GL_FLOAT, GL_FALSE, 0, null);
 
         glBindVertexArray(0);
     }
-    
+
     ~this()
-    {            
+    {
         glDeleteVertexArrays(1, &vao);
         glDeleteBuffers(1, &vbo);
         glDeleteBuffers(1, &tbo);
         glDeleteBuffers(1, &eao);
     }
-    
+
     void render(GraphicsState* state)
-    {        
+    {
         glDepthMask(0);
         glBindVertexArray(vao);
         glDrawElements(GL_TRIANGLES, cast(uint)indices.length * 3, GL_UNSIGNED_INT, cast(void*)0);
@@ -172,57 +172,57 @@ class ShapeBox: Mesh
     this(Vector3f extents, Owner owner)
     {
         super(owner);
-        
+
         vertices = New!(Vector3f[])(24);
         normals = New!(Vector3f[])(24);
         texcoords = New!(Vector2f[])(24);
         indices = New!(uint[3][])(12);
-        
+
         Vector3f pmax = +extents;
         Vector3f pmin = -extents;
-        
+
         texcoords[0] = Vector2f(1, 0); normals[0] = Vector3f(0,0,1); vertices[0] = Vector3f(pmax.x, pmax.y, pmax.z);
         texcoords[1] = Vector2f(0, 0); normals[1] = Vector3f(0,0,1); vertices[1] = Vector3f(pmin.x, pmax.y, pmax.z);
         texcoords[2] = Vector2f(0, 1); normals[2] = Vector3f(0,0,1); vertices[2] = Vector3f(pmin.x, pmin.y, pmax.z);
         texcoords[3] = Vector2f(1, 1); normals[3] = Vector3f(0,0,1); vertices[3] = Vector3f(pmax.x, pmin.y, pmax.z);
         indices[0][0] = 0; indices[0][1] = 1; indices[0][2] = 2;
         indices[1][0] = 2; indices[1][1] = 3; indices[1][2] = 0;
-        
+
         texcoords[4] = Vector2f(0, 0); normals[4] = Vector3f(1,0,0); vertices[4] = Vector3f(pmax.x, pmax.y, pmax.z);
         texcoords[5] = Vector2f(0, 1); normals[5] = Vector3f(1,0,0); vertices[5] = Vector3f(pmax.x, pmin.y, pmax.z);
         texcoords[6] = Vector2f(1, 1); normals[6] = Vector3f(1,0,0); vertices[6] = Vector3f(pmax.x, pmin.y, pmin.z);
         texcoords[7] = Vector2f(1, 0); normals[7] = Vector3f(1,0,0); vertices[7] = Vector3f(pmax.x, pmax.y, pmin.z);
         indices[2][0] = 4; indices[2][1] = 5; indices[2][2] = 6;
         indices[3][0] = 6; indices[3][1] = 7; indices[3][2] = 4;
-        
+
         texcoords[8] = Vector2f(1, 1); normals[8] = Vector3f(0,1,0); vertices[8] = Vector3f(pmax.x, pmax.y, pmax.z);
         texcoords[9] = Vector2f(1, 0); normals[9] = Vector3f(0,1,0); vertices[9] = Vector3f(pmax.x, pmax.y, pmin.z);
         texcoords[10] = Vector2f(0, 0); normals[10] = Vector3f(0,1,0); vertices[10] = Vector3f(pmin.x, pmax.y, pmin.z);
         texcoords[11] = Vector2f(0, 1); normals[11] = Vector3f(0,1,0); vertices[11] = Vector3f(pmin.x, pmax.y, pmax.z);
         indices[4][0] = 8; indices[4][1] = 9; indices[4][2] = 10;
         indices[5][0] = 10; indices[5][1] = 11; indices[5][2] = 8;
-        
+
         texcoords[12] = Vector2f(1, 0); normals[12] = Vector3f(-1,0,0); vertices[12] = Vector3f(pmin.x, pmax.y, pmax.z);
         texcoords[13] = Vector2f(0, 0); normals[13] = Vector3f(-1,0,0); vertices[13] = Vector3f(pmin.x, pmax.y, pmin.z);
         texcoords[14] = Vector2f(0, 1); normals[14] = Vector3f(-1,0,0); vertices[14] = Vector3f(pmin.x, pmin.y, pmin.z);
         texcoords[15] = Vector2f(1, 1); normals[15] = Vector3f(-1,0,0); vertices[15] = Vector3f(pmin.x, pmin.y, pmax.z);
         indices[6][0] = 12; indices[6][1] = 13; indices[6][2] = 14;
         indices[7][0] = 14; indices[7][1] = 15; indices[7][2] = 12;
-        
+
         texcoords[16] = Vector2f(0, 1); normals[16] = Vector3f(0,-1,0); vertices[16] = Vector3f(pmin.x, pmin.y, pmin.z);
         texcoords[17] = Vector2f(1, 1); normals[17] = Vector3f(0,-1,0); vertices[17] = Vector3f(pmax.x, pmin.y, pmin.z);
         texcoords[18] = Vector2f(1, 0); normals[18] = Vector3f(0,-1,0); vertices[18] = Vector3f(pmax.x, pmin.y, pmax.z);
         texcoords[19] = Vector2f(0, 0); normals[19] = Vector3f(0,-1,0); vertices[19] = Vector3f(pmin.x, pmin.y, pmax.z);
         indices[8][0] = 16; indices[8][1] = 17; indices[8][2] = 18;
         indices[9][0] = 18; indices[9][1] = 19; indices[9][2] = 16;
-        
+
         texcoords[20] = Vector2f(0, 1); normals[20] = Vector3f(0,0,-1); vertices[20] = Vector3f(pmax.x, pmin.y, pmin.z);
         texcoords[21] = Vector2f(1, 1); normals[21] = Vector3f(0,0,-1); vertices[21] = Vector3f(pmin.x, pmin.y, pmin.z);
         texcoords[22] = Vector2f(1, 0); normals[22] = Vector3f(0,0,-1); vertices[22] = Vector3f(pmin.x, pmax.y, pmin.z);
         texcoords[23] = Vector2f(0, 0); normals[23] = Vector3f(0,0,-1); vertices[23] = Vector3f(pmax.x, pmax.y, pmin.z);
         indices[10][0] = 20; indices[10][1] = 21; indices[10][2] = 22;
         indices[11][0] = 22; indices[11][1] = 23; indices[11][2] = 20;
-        
+
         dataReady = true;
         prepareVAO();
     }
@@ -241,24 +241,24 @@ Vector2f envMapEquirect(Vector3f dir)
 
 class ShapeSphere: Mesh
 {
-    DynamicArray!Vector3f daVertices;
-    DynamicArray!Vector3f daNormals;
-    DynamicArray!Vector2f daTexcoords;
-    DynamicArray!(uint[3]) daIndices;
-    
+    Array!Vector3f daVertices;
+    Array!Vector3f daNormals;
+    Array!Vector2f daTexcoords;
+    Array!(uint[3]) daIndices;
+
     this(float radius, int slices, int stacks, bool invNormals, Owner owner)
     {
         super(owner);
-        
+
         float X1, Y1, X2, Y2, Z1, Z2;
         float inc1, inc2, inc3, inc4, inc5, radius1, radius2;
         uint[3] tri;
         uint i = 0;
-        
+
         float cuts = stacks;
         float invCuts = 1.0f / cuts;
         float heightStep = 2.0f * invCuts;
-        
+
         float invSlices = 1.0f / slices;
         float angleStep = (2.0f * PI) * invSlices;
 
@@ -268,27 +268,27 @@ class ShapeSphere: Mesh
             float h2Norm = cast(float)(h+1) * invCuts * 2.0f - 1.0f;
             float y1 = sin(HALF_PI * h1Norm);
             float y2 = sin(HALF_PI * h2Norm);
-            
+
             float circleRadius1 = cos(HALF_PI * y1);
             float circleRadius2 = cos(HALF_PI * y2);
-            
+
             for(int a = 0; a < slices; a++)
             {
                 float x1a = sin(angleStep * a) * circleRadius1;
                 float z1a = cos(angleStep * a) * circleRadius1;
                 float x2a = sin(angleStep * (a + 1)) * circleRadius1;
                 float z2a = cos(angleStep * (a + 1)) * circleRadius1;
-                
+
                 float x1b = sin(angleStep * a) * circleRadius2;
                 float z1b = cos(angleStep * a) * circleRadius2;
                 float x2b = sin(angleStep * (a + 1)) * circleRadius2;
                 float z2b = cos(angleStep * (a + 1)) * circleRadius2;
-                
+
                 Vector3f v1 = Vector3f(x1a, y1, z1a);
                 Vector3f v2 = Vector3f(x2a, y1, z2a);
                 Vector3f v3 = Vector3f(x1b, y2, z1b);
                 Vector3f v4 = Vector3f(x2b, y2, z2b);
-                                
+
                 Vector3f n1 = v1.normalized;
                 Vector3f n2 = v2.normalized;
                 Vector3f n3 = v3.normalized;
@@ -297,41 +297,41 @@ class ShapeSphere: Mesh
                 daVertices.append(n1 * radius);
                 daVertices.append(n2 * radius);
                 daVertices.append(n3 * radius);
-                
+
                 daVertices.append(n3 * radius);
                 daVertices.append(n2 * radius);
                 daVertices.append(n4 * radius);
-                
+
                 float sign = invNormals? -1.0f : 1.0f;
-                
+
                 daNormals.append(n1 * sign);
                 daNormals.append(n2 * sign);
                 daNormals.append(n3 * sign);
-                
+
                 daNormals.append(n3 * sign);
                 daNormals.append(n2 * sign);
                 daNormals.append(n4 * sign);
-                
+
                 auto uv1 = Vector2f(0, 1);
                 auto uv2 = Vector2f(1, 1);
                 auto uv3 = Vector2f(0, 0);
                 auto uv4 = Vector2f(1, 0);
-                
-                daTexcoords.append(uv1); 
-                daTexcoords.append(uv2); 
+
+                daTexcoords.append(uv1);
+                daTexcoords.append(uv2);
                 daTexcoords.append(uv3);
-                
-                daTexcoords.append(uv3); 
-                daTexcoords.append(uv2); 
+
+                daTexcoords.append(uv3);
+                daTexcoords.append(uv2);
                 daTexcoords.append(uv4);
-                
+
                 if (invNormals)
                 {
                     tri[0] = i+2;
                     tri[1] = i+1;
                     tri[2] = i;
                     daIndices.append(tri);
-                    
+
                     tri[0] = i+5;
                     tri[1] = i+4;
                     tri[2] = i+3;
@@ -343,34 +343,34 @@ class ShapeSphere: Mesh
                     tri[1] = i+1;
                     tri[2] = i+2;
                     daIndices.append(tri);
-                    
+
                     tri[0] = i+3;
                     tri[1] = i+4;
                     tri[2] = i+5;
                     daIndices.append(tri);
                 }
-                
+
                 i += 6;
             }
         }
-        
+
         vertices = New!(Vector3f[])(daVertices.length);
         vertices[] = daVertices.data[];
-        
+
         normals = New!(Vector3f[])(daNormals.length);
         normals[] = daNormals.data[];
-        
+
         texcoords = New!(Vector2f[])(daTexcoords.length);
         texcoords[] = daTexcoords.data[];
-        
+
         indices = New!(uint[3][])(daIndices.length);
         indices[] = daIndices.data[];
-        
+
         daVertices.free();
         daNormals.free();
         daTexcoords.free();
         daIndices.free();
-        
+
         dataReady = true;
         prepareVAO();
     }

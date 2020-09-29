@@ -99,7 +99,7 @@ class EventManager
     bool[255] controllerButtonUp = false;
     bool[255] controllerButtonDown = false;
 
-    DynamicArray!(bool*) toReset; // Used for resetting UP and DOWN events after end of frame
+    Array!(bool*) toReset; // Used for resetting UP and DOWN events after end of frame
 
     int mouseX = 0;
     int mouseY = 0;
@@ -113,7 +113,7 @@ class EventManager
     uint windowWidth;
     uint windowHeight;
     bool windowFocused = true;
-    
+
     SDL_GameController* controller = null;
     SDL_Joystick* joystick = null;
 
@@ -145,11 +145,11 @@ class EventManager
             }
         }
 
-        toReset = DynamicArray!(bool*)();
+        toReset = Array!(bool*)();
 
         inputManager = New!InputManager(this);
     }
-    
+
     ~this()
     {
         toReset.free();
@@ -171,7 +171,7 @@ class EventManager
         else
             writeln("Warning: event stack overflow");
     }
-    
+
     void generateFileChangeEvent(string filename)
     {
         Event e = Event(EventType.FileChange);
@@ -196,22 +196,22 @@ class EventManager
         e.userCode = code;
         addUserEvent(e);
     }
-    
+
     bool gameControllerAvailable()
     {
         return (controller !is null);
     }
-    
+
     bool joystickAvailable()
     {
         return (joystick !is null || controller !is null);
     }
-    
+
     float gameControllerAxis(int axis)
     {
         return cast(float)(SDL_GameControllerGetAxis(controller, cast(SDL_GameControllerAxis)axis)) / 32768.0f;
     }
-    
+
     float joystickAxis(int axis)
     {
         if (joystick)
@@ -229,7 +229,7 @@ class EventManager
     void update()
     {
         numEvents = 0;
-        
+
         mouseRelX = 0;
         mouseRelY = 0;
 
@@ -321,14 +321,14 @@ class EventManager
                     e.button = event.button.button;
                     addEvent(e);
                     break;
-                    
+
                 case SDL_MOUSEWHEEL:
                     e = Event(EventType.MouseWheel);
                     e.mouseWheelX = event.wheel.x;
                     e.mouseWheelY = event.wheel.y;
                     addEvent(e);
                     break;
-                    
+
                 case SDL_JOYBUTTONDOWN:
                     if(joystick is null) break;
                     if (event.jbutton.state == SDL_PRESSED)
@@ -338,8 +338,8 @@ class EventManager
                     e.joystickButton = event.jbutton.button;
                     addEvent(e);
                     break;
-                    
-                case SDL_JOYBUTTONUP: 
+
+                case SDL_JOYBUTTONUP:
                     // TODO: add state modification
                     if(joystick is null) break;
                     if (event.jbutton.state == SDL_PRESSED)
@@ -361,7 +361,7 @@ class EventManager
                     addEvent(e);
                     break;
 
-                case SDL_CONTROLLERBUTTONUP: 
+                case SDL_CONTROLLERBUTTONUP:
                     // TODO: add state modification
                     controllerButtonPressed[event.cbutton.button] = false;
                     controllerButtonUp[event.cbutton.button] = true;
@@ -377,17 +377,17 @@ class EventManager
                     e = Event(EventType.JoystickAxisMotion);
                     e.joystickAxis = event.caxis.axis;
                     e.joystickAxisValue = cast(float)event.caxis.value / 32768.0f;
-                    
+
                     if (controller)
                     {
                         if (e.joystickAxis == 0)
                             e.joystickAxisValue = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY);
                         if (e.joystickAxis == 1)
                             e.joystickAxisValue = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX);
-                            
-                        e.joystickAxisValue = e.joystickAxisValue / 32768.0f; 
+
+                        e.joystickAxisValue = e.joystickAxisValue / 32768.0f;
                     }
-                    
+
                     addEvent(e);
                     break;
 
@@ -402,7 +402,7 @@ class EventManager
                         addEvent(e);
                     }
                     break;
-                    
+
                 case SDL_DROPFILE:
                     e = Event(EventType.DropFile);
                     e.filename = to!string(event.drop.file);
@@ -449,7 +449,7 @@ class EventManager
     {
         SDL_ShowCursor(mode);
     }
-    
+
     float aspectRatio()
     {
         return cast(float)windowWidth / cast(float)windowHeight;

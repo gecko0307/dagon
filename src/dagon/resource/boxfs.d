@@ -65,11 +65,11 @@ class BoxFileSystem: ReadOnlyFileSystem
     InputStream boxStrm;
     string rootDir = "";
     Dict!(BoxEntry, string) files;
-    DynamicArray!string filenames;
+    Array!string filenames;
     bool deleteStream = false;
-    
+
     this(ReadOnlyFileSystem fs, string filename, string rootDir = "")
-    {        
+    {
         this(fs.openForInput(filename), true, rootDir);
     }
 

@@ -50,7 +50,7 @@ import dagon.graphics.tween;
 
 class EntityManager: Owner
 {
-    DynamicArray!Entity entities;
+    Array!Entity entities;
 
     this(Owner owner)
     {
@@ -89,10 +89,10 @@ class Entity: Owner, Updateable
     EntityManager manager;
 
     Entity parent = null;
-    DynamicArray!Entity children;
+    Array!Entity children;
 
-    DynamicArray!EntityComponent components;
-    DynamicArray!Tween tweens;
+    Array!EntityComponent components;
+    Array!Tween tweens;
 
     Drawable drawable;
     Material material;
@@ -109,9 +109,9 @@ class Entity: Owner, Updateable
 
     Matrix4x4f prevTransformation;
     Matrix4x4f prevAbsoluteTransformation;
-    
+
     Vector3f boundingBoxSize;
-    
+
    protected:
     AABB aabb;
 
@@ -139,9 +139,9 @@ class Entity: Owner, Updateable
 
         prevTransformation = Matrix4x4f.identity;
         prevAbsoluteTransformation = Matrix4x4f.identity;
-        
+
         tweens.reserve(10);
-        
+
         boundingBoxSize = Vector3f(1.0f, 1.0f, 1.0f);
         aabb = AABB(position, boundingBoxSize);
     }
@@ -198,10 +198,10 @@ class Entity: Owner, Updateable
             invAbsoluteTransformation = invTransformation;
             prevAbsoluteTransformation = prevTransformation;
         }
-        
+
         aabb = AABB(absoluteTransformation.translation, boundingBoxSize);
     }
-    
+
     void updateTransformationDeep()
     {
         if (parent)
@@ -215,7 +215,7 @@ class Entity: Owner, Updateable
         {
             tween.update(t.delta);
         }
-        
+
         updateTransformation();
 
         foreach(c; components)
@@ -284,24 +284,24 @@ class Entity: Owner, Updateable
     {
         position += transformation.up * speed;
     }
-    
+
     void angles(Vector3f v)
     {
-        rotation = 
+        rotation =
             rotationQuaternion!float(Axis.x, degtorad(v.x)) *
             rotationQuaternion!float(Axis.y, degtorad(v.y)) *
             rotationQuaternion!float(Axis.z, degtorad(v.z));
     }
-    
+
     void rotate(Vector3f v)
     {
-        auto r = 
+        auto r =
             rotationQuaternion!float(Axis.x, degtorad(v.x)) *
             rotationQuaternion!float(Axis.y, degtorad(v.y)) *
             rotationQuaternion!float(Axis.z, degtorad(v.z));
         rotation *= r;
     }
-    
+
     void rotate(float x, float y, float z)
     {
         rotate(Vector3f(x, y, z));
@@ -376,7 +376,7 @@ class Entity: Owner, Updateable
     {
         return absoluteTransformation.up;
     }
-    
+
     Tween* getInactiveTween()
     {
         Tween* inactiveTween = null;
@@ -407,7 +407,7 @@ class Entity: Owner, Updateable
             return &tweens.data[$-1];
         }
     }
-    
+
     Tween* rotateFromTo(Vector3f anglesFrom, Vector3f anglesTo, double duration, Easing easing = Easing.Linear)
     {
         Tween* existingTween = getInactiveTween();
@@ -424,7 +424,7 @@ class Entity: Owner, Updateable
             return &tweens.data[$-1];
         }
     }
-    
+
     Tween* scaleFromTo(Vector3f sFrom, Vector3f sTo, double duration, Easing easing = Easing.Linear)
     {
         Tween* existingTween = getInactiveTween();
@@ -441,19 +441,19 @@ class Entity: Owner, Updateable
             return &tweens.data[$-1];
         }
     }
-    
+
     AABB boundingBox() @property
     {
         if (drawable)
         {
             Mesh mesh = cast(Mesh)drawable;
             Terrain terrain = cast(Terrain)drawable;
-            
+
             if (terrain)
             {
                 mesh = terrain.mesh;
             }
-            
+
             if (mesh)
             {
                 auto bb = mesh.boundingBox;

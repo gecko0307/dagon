@@ -193,7 +193,7 @@ class Emitter: EntityComponent
     float minSize = 0.25f;
     float maxSize = 1.0f;
     Vector3f scaleStep = Vector3f(0, 0, 0);
-    
+
     float rotationStep = 0.0f;
 
     float initialPositionRandomRadius = 0.0f;
@@ -236,7 +236,7 @@ class Emitter: EntityComponent
     void resetParticle(ref Particle p)
     {
         Vector3f posAbsolute = entity.positionAbsolute;
-        
+
         if (initialPositionRandomRadius > 0.0f)
         {
             float randomDist = uniform(0.0f, initialPositionRandomRadius);
@@ -281,9 +281,9 @@ class Emitter: EntityComponent
 class ParticleSystem: EntityComponent
 {
     EventManager eventManager;
-    
-    DynamicArray!Emitter emitters;
-    DynamicArray!ForceField forceFields;
+
+    Array!Emitter emitters;
+    Array!ForceField forceFields;
 
     Vector3f[4] vertices;
     Vector2f[4] texcoords;
@@ -491,7 +491,7 @@ class ParticleSystem: EntityComponent
             state.invViewRotationMatrix *
             rotationMatrix(Axis.z, p.rotation) *
             scaleMatrix(Vector3f(p.scale.x, p.scale.y, 1.0f));
-        
+
         GraphicsState stateLocal = *state;
         stateLocal.modelViewMatrix = modelViewMatrix;
 
@@ -505,7 +505,7 @@ class ParticleSystem: EntityComponent
             e.material.particleColor = p.color;
             e.material.bind(&stateLocal);
         }
-        
+
         if (stateLocal.shader)
         {
             stateLocal.shader.bindParameters(&stateLocal);
@@ -514,7 +514,7 @@ class ParticleSystem: EntityComponent
         glBindVertexArray(vao);
         glDrawElements(GL_TRIANGLES, cast(uint)indices.length * 3, GL_UNSIGNED_INT, cast(void*)0);
         glBindVertexArray(0);
-        
+
         if (stateLocal.shader)
         {
             stateLocal.shader.unbindParameters(&stateLocal);

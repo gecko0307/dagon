@@ -37,7 +37,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
 import dlib.image.color;
-import dlib.text.unmanagedstring;
+import dlib.text.str;
 
 import dagon.core.bindings;
 import dagon.graphics.shader;
@@ -55,7 +55,7 @@ class SunLightShader: Shader
     {
         vs = Shader.load("data/__internal/shaders/SunLight/SunLight.vert.glsl");
         fs = Shader.load("data/__internal/shaders/SunLight/SunLight.frag.glsl");
-        
+
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
 
@@ -74,7 +74,7 @@ class SunLightShader: Shader
     {
         if (glIsFramebuffer(defaultShadowTexture))
             glDeleteFramebuffers(1, &defaultShadowTexture);
-        
+
         vs.free();
         fs.free();
     }
@@ -142,7 +142,7 @@ class SunLightShader: Shader
         setParameter("lightScatteringSamples", lightScatteringSamples);
         setParameter("lightScatteringMaxRandomStepOffset", lightScatteringMaxRandomStepOffset);
         setParameter("lightScatteringShadow", lightScatteringShadow);
-        
+
         setParameter("time", state.localTime);
 
         // Texture 0 - color buffer

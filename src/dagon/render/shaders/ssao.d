@@ -37,7 +37,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
 import dlib.image.color;
-import dlib.text.unmanagedstring;
+import dlib.text.str;
 
 import dagon.core.bindings;
 import dagon.graphics.shader;
@@ -55,11 +55,11 @@ class SSAOShader: Shader
     {
         vs = Shader.load("data/__internal/shaders/SSAO/SSAO.vert.glsl");
         fs = Shader.load("data/__internal/shaders/SSAO/SSAO.frag.glsl");
-        
+
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
     }
-    
+
     ~this()
     {
         vs.free();

@@ -42,7 +42,7 @@ import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.image.color;
 import dlib.filesystem.stdfs;
-import dlib.text.unmanagedstring;
+import dlib.text.str;
 
 import dagon.core.bindings;
 import dagon.graphics.shaderloader;
@@ -52,7 +52,7 @@ import dagon.graphics.state;
 // TODO: move to separate module
 class MappedList(T): Owner
 {
-    DynamicArray!T data;
+    Array!T data;
     Dict!(size_t, string) indices;
 
     this(Owner o)
@@ -284,14 +284,14 @@ class Shader: Owner
         this.program = program;
         this.parameters = New!(MappedList!BaseShaderParameter)(this);
     }
-    
+
     static String load(string filename)
     {
         auto fs = New!StdFileSystem();
         auto istrm = fs.openForInput(filename);
         string inputText = readText(istrm);
         Delete(istrm);
-        
+
         string includePath = "data/__internal/shaders/include/";
         String outputText;
         foreach(line; lineSplitter(inputText))
@@ -328,10 +328,10 @@ class Shader: Owner
                 outputText ~= "\n";
             }
         }
-        
+
         Delete(fs);
         Delete(inputText);
-        
+
         return outputText;
     }
 
