@@ -26,7 +26,8 @@
     "stringImportPaths": ["data/__internal"],
 
     "dependencies": {
-        "dlib": "~master"
+        "dlib": "~master",
+        ":init-exec": "*"
     },
 
     "versions": [
@@ -108,6 +109,10 @@
                 "dagon": "*",
                 "dlib": "~master"
             }
+		},
+        {
+			"name": "init-exec",
+            "path": "./init-exec"
 		}
 	]
 }
