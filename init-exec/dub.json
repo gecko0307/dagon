@@ -1,0 +1,26 @@
+{
+    "name": "app",
+    "description": "Dagon application",
+    "homepage": "",
+    "license": "",
+    "authors": [],
+
+    "dependencies": {
+        "dagon": "~>0.11.0-alpha2"
+    },
+
+    "buildRequirements":[
+        "allowWarnings"
+    ],
+
+    "sourcePaths": ["src"],
+    "importPaths": ["src"],
+    "mainSourceFile": "src/main.d",
+
+    "configurations": [
+        {
+            "name": "application",
+            "targetType": "executable"
+        }
+    ]
+}
