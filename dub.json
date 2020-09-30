@@ -51,8 +51,8 @@
     "copyFiles-windows-x86_64": ["lib/x64/*.dll"],
     
     "subPackages": [
-		{
-			"name": "ftfont",
+        {
+            "name": "ftfont",
             "importPaths": [
                 "extensions/ftfont/src",
                 "thirdparty/bindbc-freetype-0.9.1/source"
@@ -72,9 +72,9 @@
             
             "copyFiles-windows-x86": ["extensions/ftfont/lib/x86/*.dll"],
             "copyFiles-windows-x86_64": ["extensions/ftfont/lib/x64/*.dll"]
-		},
+        },
         {
-			"name": "nuklear",
+            "name": "nuklear",
             "importPaths": [
                 "extensions/nuklear/src",
                 "thirdparty/bindbc-nuklear-0.4.3/source"
@@ -95,9 +95,9 @@
             
             "copyFiles-windows-x86": ["thirdparty/bindbc-nuklear-0.4.3/lib/win32/*.dll"],
             "copyFiles-windows-x86_64": ["thirdparty/bindbc-nuklear-0.4.3/lib/win64/*.dll"]
-		},
+        },
         {
-			"name": "physics",
+            "name": "physics",
             "importPaths": [
                 "extensions/physics/src"
             ],
@@ -108,7 +108,7 @@
                 "dagon": "*",
                 "dlib": "~master"
             }
-		},
+        },
         "init-exec"
-	]
+    ]
 }
