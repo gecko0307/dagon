@@ -111,8 +111,7 @@
             }
 		},
         {
-			"name": "init-exec",
-            "path": "./init-exec"
+			"name": "init-exec"
 		}
 	]
 }
