@@ -112,7 +112,24 @@
 		},
         {
             "name": "init-exec",
-            "path": "./init-exec"
+            
+            "dependencies": {
+                "dagon": "*"
+            },
+            
+            "sourcePaths": ["init-exec/src"],
+            "importPaths": ["init-exec/src"],
+            "mainSourceFile": "init-exec/src/main.d",
+            "buildRequirements": [
+                "allowWarnings"
+            ],
+            
+            "configurations": [
+                {
+                    "name": "application",
+                    "targetType": "executable"
+                }
+            ]
         }
 	]
 }
