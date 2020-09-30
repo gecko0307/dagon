@@ -7,11 +7,17 @@
         }
     },
     
-    "targetType": "executable",
     "sourcePaths": ["src"],
     "importPaths": ["src"],
     "mainSourceFile": "src/main.d",
     "buildRequirements": [
         "allowWarnings"
+    ]
+    
+    "configurations": [
+        {
+            "name": "application",
+            "targetType": "executable",
+        }
     ]
 }

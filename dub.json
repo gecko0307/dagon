@@ -110,13 +110,6 @@
                 "dlib": "~master"
             }
 		},
-        {
-            "name": "./init-exec",
-            "configurations": [
-                {
-                    "name": "application"
-                }
-            ]
-        }
+        "./init-exec"
 	]
 }
