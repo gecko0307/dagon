@@ -17,10 +17,5 @@
     "importPaths": ["src"],
     "mainSourceFile": "src/main.d",
 
-    "configurations": [
-        {
-            "name": "application",
-            "targetType": "executable"
-        }
-    ]
+    "targetType": "executable"
 }
