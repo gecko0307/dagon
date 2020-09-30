@@ -1,5 +1,5 @@
 {
-    "name": "init-exec"
+    "name": "init-exec",
     
     "dependencies": {
         "dagon": "~>0.11.0-alpha2"
@@ -12,7 +12,7 @@
             "sourcePaths": ["src"],
             "importPaths": ["src"],
             "mainSourceFile": "src/main.d",
-            "buildRequirements":[
+            "buildRequirements": [
                 "allowWarnings"
             ]
         }
