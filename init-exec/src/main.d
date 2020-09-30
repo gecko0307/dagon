@@ -1,9 +1,7 @@
 module main;
 
 import std.path: buildPath;
-import std.file: getcwd, mkdir, read, write;
-import std.algorithm: map;
-import std.array: join;
+import std.file: getcwd, mkdir, write;
 
 string appD = import("app.d");
 string sceneD = import("scene.d");
