@@ -110,6 +110,9 @@
                 "dlib": "~master"
             }
 		},
-        "./init-exec"
+        {
+            "name": "init-exec",
+            "path": "./init-exec"
+        }
 	]
 }
