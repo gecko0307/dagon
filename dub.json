@@ -111,7 +111,7 @@
             }
 		},
         {
-            name: "./init-exec",
+            "name": "./init-exec",
             "configurations": [
                 {
                     "name": "application"
