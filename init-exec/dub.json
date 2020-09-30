@@ -2,19 +2,16 @@
     "name": "init-exec",
     
     "dependencies": {
-        "dagon": "~>0.11.0-alpha2"
+        "dagon": {
+            "path": "../"
+        }
     },
     
-    "configurations": [
-        {
-            "name": "application",
-            "targetType": "executable",
-            "sourcePaths": ["src"],
-            "importPaths": ["src"],
-            "mainSourceFile": "src/main.d",
-            "buildRequirements": [
-                "allowWarnings"
-            ]
-        }
+    "targetType": "executable",
+    "sourcePaths": ["src"],
+    "importPaths": ["src"],
+    "mainSourceFile": "src/main.d",
+    "buildRequirements": [
+        "allowWarnings"
     ]
 }
