@@ -109,6 +109,6 @@
                 "dlib": "~master"
             }
 		},
-        "./init-exec"
+        "init-exec"
 	]
 }

@@ -1,20 +1,21 @@
 module main;
 
-import dagon;
-import scene;
+import std.path: buildPath;
+import std.file: getcwd, mkdir, read, write;
+import std.algorithm: map;
+import std.array: join;
 
-class MyGame: Game
-{
-    this(uint windowWidth, uint windowHeight, bool fullscreen, string title, string[] args)
-    {
-        super(windowWidth, windowHeight, fullscreen, title, args);
-        currentScene = New!MyScene(this);
-    }
-}
+string appD = import("app.d");
+string sceneD = import("scene.d");
 
 void main(string[] args)
 {
-    MyGame game = New!MyGame(1280, 720, false, "Dagon application", args);
-    game.run();
-    Delete(game);
+	string sourceFolder = buildPath(getcwd(), "source");
+	mkdir(sourceFolder);
+	
+	string appDPath = buildPath(sourceFolder, "app.d");
+	write(appDPath, appD);
+    
+    string sceneDPath = buildPath(sourceFolder, "scene.d");
+    write(sceneDPath, sceneD);
 }

@@ -1,23 +1,10 @@
 {
-    "name": "init-exec",
-    
-    "dependencies": {
-        "dagon": {
-            "path": "../"
-        }
-    },
-    
+    "name": "init-exec",   
     "sourcePaths": ["src"],
     "importPaths": ["src"],
     "mainSourceFile": "src/main.d",
     "buildRequirements": [
         "allowWarnings"
     ],
-    
-    "configurations": [
-        {
-            "name": "application",
-            "targetType": "executable"
-        }
-    ]
+    "stringImportPaths": ["data"]
 }
