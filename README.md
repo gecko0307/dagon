@@ -70,7 +70,7 @@ Runtime Dependencies
 --------------------
 * [SDL](https://www.libsdl.org) 2.0.5
 * [Freetype](https://www.freetype.org) 2.8.1
-* [Nuklear](https://github.com/vurtun/nuklear)
+* [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear)
 
 On Windows runtime dependencies are automatically deployed if you are building with Dub. On other platforms you have to install them manually. 
 
