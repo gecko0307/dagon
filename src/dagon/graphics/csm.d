@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2019 Timur Gafarov
+Copyright (c) 2017-2020 Timur Gafarov, tg
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -26,6 +26,8 @@ DEALINGS IN THE SOFTWARE.
 */
 
 module dagon.graphics.csm;
+
+import std.math;
 
 import dlib.core.memory;
 import dlib.core.ownership;
@@ -83,9 +85,8 @@ class ShadowArea: Owner
         this.projectionMatrix = orthoMatrix(-hSize, hSize, -hSize, hSize, zStart, zEnd);
     }
     
-    void updateTransformation(Light light, Camera camera)
+    void update(Light light, Camera camera)
     {
-        position = camera.positionAbsolute - camera.directionAbsolute * projectionSize * 0.5f;
         invViewMatrix = translationMatrix(position) * light.rotationAbsolute.toMatrix4x4;
         viewMatrix = invViewMatrix.inverse;
         shadowMatrix = biasMatrix * projectionMatrix * viewMatrix * camera.invViewMatrix;
@@ -95,29 +96,26 @@ class ShadowArea: Owner
 class CascadedShadowMap: ShadowMap
 {
     Camera camera;
-    ShadowArea area1;
-    ShadowArea area2;
-    ShadowArea area3;
+    ShadowArea[3] area;
     
     GLuint depthTexture;
     GLuint framebuffer1;
     GLuint framebuffer2;
     GLuint framebuffer3;
     
-    float projectionSize1 = 10.0f;
-    float projectionSize2 = 30.0f;
-    float projectionSize3 = 200.0f;
-    float zStart = -300.0f;
-    float zEnd = 300.0f;
+    uint shadowMapResolution = 2048;
+    float[3] projectionSize = [20, 60, 400];
+    float zStart = -10000.0f;
+    float zEnd = 10000.0f;
     
     this(Light light, Owner owner)
     {
         super(owner);
         this.light = light;
-        resize(1024);
-        area1 = New!ShadowArea(projectionSize1, zStart, zEnd, this);
-        area2 = New!ShadowArea(projectionSize2, zStart, zEnd, this);
-        area3 = New!ShadowArea(projectionSize3, zStart, zEnd, this);
+        resize(shadowMapResolution);
+        area[0] = New!ShadowArea(projectionSize[0], zStart, zEnd, this);
+        area[1] = New!ShadowArea(projectionSize[1], zStart, zEnd, this);
+        area[2] = New!ShadowArea(projectionSize[2], zStart, zEnd, this);
     }
     
     ~this()
@@ -193,9 +191,22 @@ class CascadedShadowMap: ShadowMap
     {
         if (camera)
         {
-            area1.updateTransformation(light, camera);
-            area2.updateTransformation(light, camera);
-            area3.updateTransformation(light, camera);
+            Vector3f cameraDirection = -camera.directionAbsolute;
+            Vector3f round(Vector3f a, float resolution)
+            {
+                return Vector3f(a.x - fmod(a.x, resolution), a.y - fmod(a.y, resolution), a.z - fmod(a.z, resolution));
+            }
+            
+            float res1 = projectionSize[0] / shadowMapResolution * 5;
+            area[0].position = round(camera.positionAbsolute + cameraDirection * (projectionSize[0]  * 0.48f - 1.0f), res1);
+            area[0].update(light, camera);
+            
+            foreach(i; 1..projectionSize.length)
+            {
+                auto res = projectionSize[i] / shadowMapResolution * (i == 1? 10 : 100);
+                area[i].position = round(camera.positionAbsolute + cameraDirection * projectionSize[i] * 0.5f, res);
+                area[i].update(light, camera);
+            }
         }
     }
 }

@@ -234,9 +234,9 @@ class WaterShader: Shader
                 glBindTexture(GL_TEXTURE_2D_ARRAY, csm.depthTexture);
                 setParameter("shadowTextureArray", 3);
                 setParameter("shadowResolution", cast(float)csm.resolution);
-                setParameter("shadowMatrix1", csm.area1.shadowMatrix);
-                setParameter("shadowMatrix2", csm.area2.shadowMatrix);
-                setParameter("shadowMatrix3", csm.area3.shadowMatrix);
+                setParameter("shadowMatrix1", csm.area[0].shadowMatrix);
+                setParameter("shadowMatrix2", csm.area[1].shadowMatrix);
+                setParameter("shadowMatrix3", csm.area[2].shadowMatrix);
                 setParameterSubroutine("shadowMap", ShaderType.Fragment, "shadowMapCascaded");
             }
             else

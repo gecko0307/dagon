@@ -141,10 +141,10 @@ class ShadowPass: RenderPass
     void renderCSM(CascadedShadowMap csm)
     {
         state.resolution = Vector2f(csm.resolution, csm.resolution);
-        state.zNear = csm.area1.zStart;
-        state.zFar = csm.area1.zEnd;
+        state.zNear = csm.area[0].zStart;
+        state.zFar = csm.area[0].zEnd;
 
-        state.cameraPosition = csm.area1.position;
+        state.cameraPosition = csm.area[0].position;
 
         glScissor(0, 0, csm.resolution, csm.resolution);
         glViewport(0, 0, csm.resolution, csm.resolution);
@@ -154,28 +154,28 @@ class ShadowPass: RenderPass
         glPolygonOffset(3.0, 0.0);
         glDisable(GL_CULL_FACE);
 
-        state.viewMatrix = csm.area1.viewMatrix;
-        state.invViewMatrix = csm.area1.invViewMatrix;
-        state.projectionMatrix = csm.area1.projectionMatrix;
-        state.invProjectionMatrix = csm.area1.projectionMatrix.inverse;
+        state.viewMatrix = csm.area[0].viewMatrix;
+        state.invViewMatrix = csm.area[0].invViewMatrix;
+        state.projectionMatrix = csm.area[0].projectionMatrix;
+        state.invProjectionMatrix = csm.area[0].projectionMatrix.inverse;
         glBindFramebuffer(GL_FRAMEBUFFER, csm.framebuffer1);
         glClear(GL_DEPTH_BUFFER_BIT);
         renderEntities(csmShader);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        state.viewMatrix = csm.area2.viewMatrix;
-        state.invViewMatrix = csm.area2.invViewMatrix;
-        state.projectionMatrix = csm.area2.projectionMatrix;
-        state.invProjectionMatrix = csm.area2.projectionMatrix.inverse;
+        state.viewMatrix = csm.area[1].viewMatrix;
+        state.invViewMatrix = csm.area[1].invViewMatrix;
+        state.projectionMatrix = csm.area[1].projectionMatrix;
+        state.invProjectionMatrix = csm.area[1].projectionMatrix.inverse;
         glBindFramebuffer(GL_FRAMEBUFFER, csm.framebuffer2);
         glClear(GL_DEPTH_BUFFER_BIT);
         renderEntities(csmShader);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        state.viewMatrix = csm.area3.viewMatrix;
-        state.invViewMatrix = csm.area3.invViewMatrix;
-        state.projectionMatrix = csm.area3.projectionMatrix;
-        state.invProjectionMatrix = csm.area3.projectionMatrix.inverse;
+        state.viewMatrix = csm.area[2].viewMatrix;
+        state.invViewMatrix = csm.area[2].invViewMatrix;
+        state.projectionMatrix = csm.area[2].projectionMatrix;
+        state.invProjectionMatrix = csm.area[2].projectionMatrix.inverse;
         glBindFramebuffer(GL_FRAMEBUFFER, csm.framebuffer3);
         glClear(GL_DEPTH_BUFFER_BIT);
         renderEntities(csmShader);
