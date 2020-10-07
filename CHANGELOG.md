@@ -5,7 +5,7 @@ Dagon 0.11.0 - TBD
 Changes:
 - **Overall**
   - Source tree structure was changed to reduce coupling. Now all modules strictly depend only on modules in the same or lower-level package. See #54 for details. `dagon.logics` is gone, its modules were moved to `dagon.graphics`
-  - New extension infrastructure based on DUB subpackages to keep core Dagon more lightweight and easier to install. Currently there are two extensions - Nuklear integration and Freetype font loader, which are no more available from `dagon` package. You should explicitly add them to your DUB dependencies as `dagon:nuklear` and `dagon:ftfont`. They are importable as `dagon.ext.nuklear` and `dagon.ext.ftfont`. To create font assets, use `addFontAsset` which is now a free function, not a scene method
+  - New extension infrastructure based on DUB subpackages to keep core Dagon more lightweight and easier to install. Currently there are four extensions - Nuklear integration, Freetype font loader, IQM model loader, and a physics engine, which are no more available from `dagon` package. You should explicitly add them to your DUB dependencies as `dagon:nuklear`, `dagon:ftfont`, `dagon:iqm`, `dagon:physics`. They are importable as `dagon.ext.nuklear`, `dagon.ext.ftfont`, `dagon.ext.iqm`, `dagon.ext.physics`. To create font assets, use `addFontAsset` which is now a free function, not a scene method. The same is for IQM assets (`addIQMAsset`)
   - Added new package `dagon.game` - a template application with typical game-oriented rendering setup and a fixed-step update timer
 - **Core**
   - New module `dagon.core.time` which contains `Time` helper structure and `Cadencer` class
@@ -24,14 +24,14 @@ Changes:
 - **Assets**
   - DDS format support for textures. Supported compression types are S3TC (DXT1/BC1, DXT3/BC2, DXT5/BC3), RGTC (BC4, BC5), BPTC (BC6H, BC7)
 - **Environment**
-  - `Environment` object was simplified. Now there's no default procedural environment map, only `environment.ambientColor` and `environment.ambientMap`. To use procedural sky, render it into a cube map
+  - `Environment` object was simplified. Now there's no default environment map, only `environment.ambientColor` and `environment.ambientMap`.
 - **Post-processing**
   - Post-processing engine was also reimplemented and now exists as a separate render pipeline. See `dagon.postproc` and `dagon.game.postprocrenderer`
   - Denoise filter for SSAO. A lot less samples are now needed to achieve smooth ambient occlusion. Also SSAO is now rendered into a separate buffer, so that its resolution can be lowered for better performance, and occlusion data can be used at several stages of the pipeline
 - **UI**
   - File drag-and-drop event
 - **Misc**
-  - Dagon (`dagon:ftfont` extension, to be precise) now uses [official BindBC Freetype binding](https://github.com/BindBC/bindbc-freetype) instead of custom one.
+  - `dagon:ftfont` uses [official BindBC Freetype binding](https://github.com/BindBC/bindbc-freetype) instead of custom one.
 
 Dagon 0.10.2 - 24 Dec, 2019
 ---------------------------
