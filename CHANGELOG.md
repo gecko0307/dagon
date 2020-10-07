@@ -1,5 +1,5 @@
-Dagon 0.11.0 - TBD
-------------------
+Dagon 0.11.0-beta1 - 7 Oct, 2020
+--------------------------------
 **Important:** This release features major redesign of almost every component in the engine and **breaks compatibility with old code**.
 
 Changes:
