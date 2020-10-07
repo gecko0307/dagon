@@ -259,6 +259,6 @@ void main()
         metallic(shiftedTexCoord), 
         specularity(shiftedTexCoord), 
         translucency(shiftedTexCoord));
-    fragRadiance = vec4(emission(shiftedTexCoord), 1.0);
+    fragRadiance = vec4(toLinear(emission(shiftedTexCoord)), 1.0);
     fragVelocity = vec4(velocity, blurMask, 0.0);
 }
