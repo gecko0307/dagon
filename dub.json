@@ -109,6 +109,19 @@
                 "dlib": "~master"
             }
         },
+        {
+            "name": "iqm",
+            "importPaths": [
+                "extensions/iqm/src"
+            ],
+            "sourcePaths": [
+                "extensions/iqm/src"
+            ],
+            "dependencies": {
+                "dagon": "*",
+                "dlib": "~master"
+            }
+        },
         "init-exec"
     ]
 }
