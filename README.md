@@ -14,13 +14,11 @@ If you like Dagon, please support its development on [Patreon](https://www.patre
 
 Screenshots
 -----------
-[![Screenshot1](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/snow2.jpg)](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/snow2.jpg)
-
-[![Screenshot2](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/02/water7.jpg)](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/02/water7.jpg)
+[![Screenshot4](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/10/dagon-filmic.jpg)](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/10/dagon-filmic.jpg)
 
 [![Screenshot3](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/cerberus.jpg)](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/cerberus.jpg)
 
-[![Screenshot4](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/car.jpg)](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/car.jpg)
+[![Screenshot1](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/snow2.jpg)](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/snow2.jpg)
 
 Features
 --------
