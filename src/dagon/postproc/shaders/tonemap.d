@@ -48,7 +48,8 @@ enum Tonemapper
     None = 0,
     Reinhard = 1,
     Hable = 2,
-    ACES = 3
+    ACES = 3,
+    Filmic = 4
 }
 
 class TonemapShader: Shader
