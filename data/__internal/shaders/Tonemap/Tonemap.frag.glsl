@@ -66,7 +66,7 @@ void main()
     if (tonemapper == 4)
         res = tonemapFilmic(res);
     else if (tonemapper == 3)
-        res = tonemapACES(res);
+        res = tonemapACES(res * 0.6);
     else if (tonemapper == 2)
         res = tonemapHable(res);
     else if (tonemapper == 1)
