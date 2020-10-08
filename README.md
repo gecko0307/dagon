@@ -16,9 +16,9 @@ Screenshots
 -----------
 [![Screenshot4](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/10/dagon-filmic.jpg)](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/10/dagon-filmic.jpg)
 
-[![Screenshot3](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/cerberus.jpg)](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/cerberus.jpg)
+[![Screenshot3](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/01/cerberus.jpg)](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/01/cerberus.jpg)
 
-[![Screenshot1](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/snow2.jpg)](https://dlanggamedev.xtreme3d.ru/wp-content/uploads/2020/01/snow2.jpg)
+[![Screenshot1](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/01/snow2.jpg)](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/01/snow2.jpg)
 
 Features
 --------
