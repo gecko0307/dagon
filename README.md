@@ -25,36 +25,34 @@ Features
 * Static and animated meshes, OBJ and [IQM](https://github.com/lsalzman/iqm) formats support
 * Textures in PNG, JPG, TGA, BMP, HDR formats
 * Own asset format with Blender exporter
-* Flexible material system with simple user-defined data model (interface) and shaders (backend). You can implement custom materials, with your own shaders and parameters
 * Deferred pipeline for opaque materials, forward pipeline for transparent materials and materials with custom shaders
 * Physically based rendering (PBR)
-* HDR rendering with auto-exposure (eye adaptation), Reinhard, Hable/Uncharted and ACES tonemapping operators
-* Cube and equirectangular HDRI environment maps
-* Cubemap baking
-* Directional lights with cascaded shadow mapping
+* HDR rendering with Reinhard, Hable/Uncharted, ACES and Filmic tonemapping operators
+* HDRI environment maps
+* Directional lights with cascaded shadow mapping and volumetric scattering
 * Spherical and tube area lights
 * Spot lights
 * Normal/parallax mapping, parallax occlusion mapping
 * Deferred decals with normal mapping and PBR material properties
-* Dynamic skydome with sun and day/night cycle. Simple and Rayleigh sky models
+* Dynamic skydome with sun and day/night cycle
 * Particle system with force fields. Blended particles, soft particles, shaded particles with normal map support, particle shadows
 * Terrain rendering. Procedural terrain using OpenSimplex noise or any custom height field
 * Water rendering
 * Post-processing (FXAA, SSAO, lens distortion, motion blur, glow, LUT color grading)
 * UTF-8 text rendering using TTF fonts via Freetype
-* GUI based on [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear)
-* 2D canvas framework that renders vector shapes - lines, Bézier curves, rectangles, circles, arcs, triangles, and polygons
-* Keyboard, mouse, joystick input, Unicode text input
-* Ownership memory model - every object belongs to some object (owner), and deleting the owner will delete all of its owned objects. This allows semi-automatic memory management - you have to manually delete only root owners
-* Entity-component model that allows game objects behave differently and combine many behaviours
-* Scene management. Any scene has its own assets, entities and logical context
-* Live asset reloading - asset can be automatically reloaded when the file is modified with external application
+* GUI and 2D graphics based on [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear). Canvas framework that renders vector shapes
+* Keyboard, mouse, joystick input
+* Unicode text input
+* Ownership memory model
+* Entity-component model
+* Live asset reloading
 * Built-in camera logics for quick and easy navigation (freeview and first person style view)
 * [Box](https://github.com/gecko0307/box) container support for assets
 * Built-in physics engine.
 
 Planned in future:
 * Screen-space reflections
+* Newton Game Dynamics integration.
 
 Usage
 -----
