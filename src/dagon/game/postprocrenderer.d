@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019 Timur Gafarov
+Copyright (c) 2019-2020 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -61,7 +61,6 @@ class DoubleBuffer: Framebuffer
     this(Framebuffer writeBuffer, Framebuffer readBuffer, Owner owner)
     {
         super(owner);
-        //super(writeBuffer.width, writeBuffer.height, true, owner);
         this.writeBuffer = writeBuffer;
         this.readBuffer = readBuffer;
     }

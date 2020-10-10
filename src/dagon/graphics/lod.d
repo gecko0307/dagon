@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019 Timur Gafarov
+Copyright (c) 2019-2020 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -71,15 +71,6 @@ class LODDrawable: Owner, Drawable
     {
         if (level.drawable)
         {
-            /*
-            if (dist < level.startDistance + level.fadeDistance)
-                state.opacity = (dist - level.startDistance) / level.fadeDistance;
-            else if (dist > level.endDistance - level.fadeDistance)
-                state.opacity = (level.endDistance - dist) / level.fadeDistance;
-            else
-                state.opacity = 1.0f;
-            */
-
             if (level.material)
             {
                 level.material.bind(state);

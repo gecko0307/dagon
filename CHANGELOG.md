@@ -1,5 +1,5 @@
-Dagon 0.11.0-beta2 - TBD
-------------------------
+Dagon 0.11.0-beta2 - 10 Oct, 2020
+---------------------------------
 Changes since 0.11.0-beta1:
 - **Rendering**
   - Filmic tonemapper support
