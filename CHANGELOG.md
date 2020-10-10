@@ -3,7 +3,9 @@ Dagon 0.11.0-beta2 - TBD
 Changes since 0.11.0-beta1:
 - **Rendering**
   - Filmic tonemapper support
-  - Emission texture is now sampled correctly, with gamma to linear conversion. 
+  - Emission texture is now sampled correctly, with gamma to linear conversion
+- **Misc**
+  - Dagon now uses dlib 0.20.0-beta1.
 
 Dagon 0.11.0-beta1 - 7 Oct, 2020
 --------------------------------
