@@ -6,10 +6,10 @@ os:
 language: d
 
 d:
- - dmd-2.085.1
- - dmd-2.084.1
- - ldc-1.15.0
- - ldc-1.14.0
+ - dmd-2.094.0
+ - dmd-2.093.1
+ - ldc-1.23.0
+ - ldc-1.22.0
 
 matrix:
   fast_finish: true
