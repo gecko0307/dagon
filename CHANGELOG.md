@@ -1,3 +1,9 @@
+Dagon 0.11.0 - 21 Oct, 2020
+---------------------------
+Changes since 0.11.0-beta2:
+- **Misc**
+  - Dagon now uses dlib 0.20.0.
+
 Dagon 0.11.0-beta2 - 10 Oct, 2020
 ---------------------------------
 Changes since 0.11.0-beta1:
