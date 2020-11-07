@@ -70,14 +70,12 @@
       <p>
       <ul>
       <li>Static and animated meshes, OBJ and <a href="https://github.com/lsalzman/iqm" target="_blank">IQM</a> formats support</li>
-      <li>Textures in PNG, JPG, TGA, BMP, HDR formats</li>
+      <li>Textures in PNG, JPG, TGA, BMP, HDR, DDS formats</li>
       <li>Own asset format with Blender exporter</li>
-      <li>Flexible material system with simple user-defined data model (interface) and shaders (backend). You can implement custom materials, with your own shaders and parameters</li>
       <li>Deferred pipeline for opaque materials, forward pipeline for transparent materials and materials with custom shaders</li>
       <li>Physically based rendering (PBR)</li>
-      <li>HDR rendering with auto-exposure (eye adaptation), Reinhard, Hable/Uncharted and ACES tonemapping operators</li>
-      <li>Cube and equirectangular HDRI environment maps</li>
-      <li>Cubemap baking</li>
+      <li>HDR rendering with auto-exposure (eye adaptation), Reinhard, Hable/Uncharted, Filmic and ACES tonemapping operators</li>
+      <li>HDR environment maps</li>
       <li>Directional lights with cascaded shadow mapping</li>
       <li>Spherical and tube area lights</li>
       <li>Spot lights</li>
@@ -94,7 +92,6 @@
       <li>Keyboard, mouse, joystick input, Unicode text input</li>
       <li>Ownership memory model - every object belongs to some object (owner), and deleting the owner will delete all of its owned objects. This allows semi-automatic memory management - you have to manually delete only root owners</li>
       <li>Entity-component model that allows game objects behave differently and combine many behaviours</li>
-      <li>Scene management. Any scene has its own assets, entities and logical context</li>
       <li>Live asset reloading - asset can be automatically reloaded when the file is modified with external application</li>
       <li>Built-in camera logics for quick and easy navigation (freeview and first person style view)</li>
       <li><a href="https://github.com/gecko0307/box" target="_blank">Box</a> container support for assets</li>
