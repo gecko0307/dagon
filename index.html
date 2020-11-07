@@ -107,7 +107,7 @@
       </p>
       <p>
 <pre><code class="nohighlight">
-"dagon": "~>0.10.3"
+"dagon": "~>0.11.0"
 </code></pre>
       </p>
       <p>
@@ -118,52 +118,48 @@
       <p>Loading and rendering an OBJ model:</p>
       <p>
 <pre><code>
+module main;
+
 import dagon;
 
 class TestScene: Scene
 {
+    Game game;
     OBJAsset aOBJSuzanne;
 
-    this(SceneManager smngr)
+    this(Game game)
     {
-        super(smngr);
+        super(game);
+        this.game = game;
     }
 
-    override void onAssetsRequest()
+    override void beforeLoad()
     {    
         aOBJSuzanne = addOBJAsset("data/suzanne.obj");
     }
 
-    override void onAllocate()
+    override void afterLoad()
     {
-        super.onAllocate();
-        view = New!Freeview(eventManager, assetManager);
+        auto camera = addCamera();
+        auto freeview = New!FreeviewComponent(eventManager, camera);
+        freeview.zoom(-20);
+        freeview.pitch(-30.0f);
+        freeview.turn(10.0f);
+        game.renderer.activeCamera = camera;
+
+        auto sun = addLight(LightType.Sun);
+        sun.shadowEnabled = true;
+        sun.energy = 10.0f;
+        sun.pitch(-45.0f);
         
-        mainSun = createLightSun(Quaternionf.identity, environment.sunColor, environment.sunEnergy);
-        mainSun.shadow = true;
-        environment.setDayTime(9, 00, 00);
-        
-        auto eSuzanne = createEntity3D();
+        auto matSuzanne = addMaterial();
+        matSuzanne.diffuse = Color4f(1.0, 0.2, 0.2, 1.0);
+
+        auto eSuzanne = addEntity();
         eSuzanne.drawable = aOBJSuzanne.mesh;
+        eSuzanne.material = matSuzanne;
+        eSuzanne.position = Vector3f(0, 1, 0);
     }
-}
-
-class MyApplication: SceneApplication
-{
-    this(string[] args)
-    {
-        super(1280, 720, false, "Dagon Application", args);
-        TestScene test = New!TestScene(sceneManager);
-        sceneManager.addScene(test, "TestScene");
-        sceneManager.goToScene("TestScene");
-    }
-}
-
-void main(string[] args)
-{
-    MyApplication app = New!MyApplication(args);
-    app.run();
-    Delete(app);
 }
 </code></pre>
       </p>
@@ -194,7 +190,7 @@ void main(string[] args)
       </form>
 	  
 	  <h2>Sponsors and Contributors</h2>
-      <p>Big thanks to these awesome people for supporting Dagon: <b>Rafał Ziemniewski</b>, <b>Kumar Sookram</b>, <b>Aleksandr Kovalev</b>, <b>Robert Georges</b>, <b>Jan Jurzitza (WebFreak)</b>, <b>Rais Safiullin (SARFEX)</b>.</p>
+      <p>Big thanks to these awesome people for supporting Dagon and dlib: <b>Rafał Ziemniewski</b>, <b>Kumar Sookram</b>, <b>Aleksandr Kovalev</b>, <b>Robert Georges</b>, <b>Jan Jurzitza (WebFreak)</b>, <b>Rais Safiullin (SARFEX)</b>, <b>Benas Cernevicius</b>, <b>Koichi Takio</b>.</p>
       
       <p>Dagon was created by <b>Timur Gafarov</b> and contributors: <b>Rafał Ziemniewski</b>, <b>Mateusz Muszyński</b>, <b>Björn Roberg</b>, <b>dayllenger</b>, <b>my-ijet</b>.</p>
       
