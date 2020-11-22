@@ -74,6 +74,8 @@ class Light: Entity
     float scatteringMaxRandomStepOffset;
     bool scatteringUseShadow;
     ShadowMap _shadowMap;
+    float diffuse;
+    float specular;
 
     this(EntityManager manager)
     {
@@ -96,6 +98,8 @@ class Light: Entity
         scatteringSamples = 20;
         scatteringMaxRandomStepOffset = 0.2f;
         scatteringUseShadow = false;
+        diffuse = 1.0f;
+        specular = 1.0f;
     }
     
     ShadowMap shadowMap()

@@ -131,6 +131,9 @@ class AreaLightShader: Shader
             setParameter("lightEnergy", lightEnergy);
             setParameter("lightRadius", light.volumeRadius);
             setParameter("lightAreaRadius", light.radius);
+            
+            setParameter("lightDiffuse", light.diffuse);
+            setParameter("lightSpecular", light.specular);
         }
         else
         {

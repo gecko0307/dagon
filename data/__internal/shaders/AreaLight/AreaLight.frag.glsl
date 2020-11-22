@@ -30,6 +30,8 @@ uniform float lightSpotCosCutoff;
 uniform float lightSpotCosInnerCutoff;
 uniform float lightSpotExponent;
 uniform vec3 lightSpotDirection;
+uniform float lightSpecular;
+uniform float lightDiffuse;
 
 layout(location = 0) out vec4 fragColor;
 
@@ -104,7 +106,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceAreaSphere(
     float denominator = 4.0 * max(dot(N, E), 0.0) * NL;
     vec3 specular = numerator / max(denominator, 0.001);
 
-    vec3 radiance = (kD * albedo / PI * occlusion + specular * specularity) * toLinear(lightColor.rgb) * attenuation * NL;
+    vec3 radiance = (kD * albedo / PI * occlusion * lightDiffuse + specular * specularity * lightSpecular) * toLinear(lightColor.rgb) * attenuation * NL;
 
     return radiance;
 }
@@ -156,7 +158,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceAreaTube(
     float denominator = 4.0 * max(dot(N, E), 0.0) * NL;
     vec3 specular = numerator / max(denominator, 0.001);
 
-    vec3 radiance = (kD * albedo / PI * occlusion + specular * specularity) * toLinear(lightColor.rgb) * attenuation * NL;
+    vec3 radiance = (kD * albedo / PI * occlusion * lightDiffuse + specular * specularity * lightSpecular) * toLinear(lightColor.rgb) * attenuation * NL;
 
     return radiance;
 }
@@ -199,13 +201,12 @@ subroutine(srtLightRadiance) vec3 lightRadianceSpot(
     float denominator = 4.0 * max(dot(N, E), 0.0) * NL;
     vec3 specular = numerator / max(denominator, 0.001);
 
-    vec3 radiance = (kD * albedo / PI * occlusion + specular * specularity) * toLinear(lightColor.rgb) * attenuation * NL;
+    vec3 radiance = (kD * albedo / PI * occlusion * lightDiffuse + specular * specularity * lightSpecular) * toLinear(lightColor.rgb) * attenuation * NL;
 
     return radiance;
 }
 
 subroutine uniform srtLightRadiance lightRadiance;
-
 
 void main()
 {
