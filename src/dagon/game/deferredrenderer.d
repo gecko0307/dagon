@@ -74,12 +74,14 @@ class DeferredRenderer: Renderer
     float ssaoRadius = 0.2f;
     float ssaoPower = 7.0f;
     float ssaoDenoise = 1.0f;
+    
+    float occlusionBufferDetail = 0.75f;
 
     this(EventManager eventManager, Owner owner)
     {
         super(eventManager, owner);
 
-        occlusionView = New!RenderView(0, 0, view.width / 2, view.height / 2, this);
+        occlusionView = New!RenderView(0, 0, cast(uint)(view.width * occlusionBufferDetail), cast(uint)(view.height * occlusionBufferDetail), this);
         occlusionNoisyBuffer = New!Framebuffer(occlusionView.width, occlusionView.height, FrameBufferFormat.R8, false, this);
         occlusionBuffer = New!Framebuffer(occlusionView.width, occlusionView.height, FrameBufferFormat.R8, false, this);
 
@@ -208,7 +210,7 @@ class DeferredRenderer: Renderer
         outputBuffer.resize(view.width, view.height);
         gbuffer.resize(view.width, view.height);
 
-        occlusionView.resize(view.width / 2, view.height / 2);
+        occlusionView.resize(cast(uint)(view.width * occlusionBufferDetail), cast(uint)(view.height * occlusionBufferDetail));
         occlusionNoisyBuffer.resize(occlusionView.width, occlusionView.height);
         occlusionBuffer.resize(occlusionView.width, occlusionView.height);
     }
