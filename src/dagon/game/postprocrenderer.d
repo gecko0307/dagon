@@ -162,6 +162,9 @@ class PostProcRenderer: Renderer
 
     uint motionBlurSamples = 16;
     uint motionBlurFramerate = 24;
+    float motionBlurRandomness = 0.2f;
+    float motionBlurMinDistance = 0.01f;
+    float motionBlurMaxDistance = 1.0f;
 
     Texture colorLookupTable;
 
@@ -298,8 +301,11 @@ class PostProcRenderer: Renderer
         tonemapShader.tonemapper = tonemapper;
         tonemapShader.exposure = exposure;
         motionBlurShader.samples = motionBlurSamples;
-        motionBlurShader.currentFramerate = 1.0 / t.delta;
+        motionBlurShader.currentFramerate = 60.0f; //1.0 / t.delta;
         motionBlurShader.shutterFramerate = motionBlurFramerate;
+        motionBlurShader.offsetRandomCoefficient = motionBlurRandomness;
+        motionBlurShader.minDistance = motionBlurMinDistance;
+        motionBlurShader.maxDistance = motionBlurMaxDistance;
         lutShader.colorLookupTable = colorLookupTable;
         if (lutShader.colorLookupTable)
         {

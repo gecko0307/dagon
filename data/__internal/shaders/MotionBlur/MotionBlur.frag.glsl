@@ -18,6 +18,8 @@ uniform float blurScale;
 uniform int samples;
 uniform float offsetRandomCoef;
 uniform float time;
+uniform float minDistance;
+uniform float maxDistance;
 
 uniform mat4 invProjectionMatrix;
 
@@ -34,17 +36,18 @@ void main()
         vec2 blurVec = velocity.xy;
         float len = length(blurVec);
         
-        blurVec = normalize(blurVec) * clamp(len, 0.0, 100.0) * blurScale;
+        float blurVecLen = clamp(len - minDistance, 0.0, maxDistance) / (maxDistance - minDistance) * blurScale;
+        blurVec = normalize(blurVec) * blurVecLen;
         
         float speed = length(blurVec * viewSize);
         int nSamples = clamp(int(speed), 1, samples);
 
-        float invSamplesMinusOne = 1.0 / float(nSamples - 1);
+        float invSamplesMinusOne = 1.0 / max(float(nSamples) - 1.0, 1.0);
         float usedSamples = 1.0;
         
         float zCenter = unproject(invProjectionMatrix, vec3(texCoord, texture(depthBuffer, texCoord).x)).z;
         
-        float rnd = hash(texCoord * 467.759 + time) * offsetRandomCoef;
+        float rnd = mix(0.5, hash(texCoord * 467.759 + time), offsetRandomCoef);
 
         for (int i = 1; i < nSamples; i++)
         {
@@ -57,7 +60,7 @@ void main()
         }
 
         res = max(res, vec3(0.0));
-        res = res / usedSamples;
+        res = res / max(usedSamples, 1.0);
     }
 
     fragColor = vec4(res, 1.0);

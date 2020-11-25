@@ -50,8 +50,10 @@ class MotionBlurShader: Shader
     bool enabled = true;
     int samples = 16;
     float currentFramerate = 60.0;
-    float shutterFramerate = 30.0;
-    float offsetRandomCoefficient = 1.0;
+    float shutterFramerate = 24.0;
+    float offsetRandomCoefficient = 0.2;
+    float minDistance = 0.01;
+    float maxDistance = 1.0;
 
     GBuffer gbuffer;
 
@@ -83,6 +85,8 @@ class MotionBlurShader: Shader
         setParameter("samples", samples);
         setParameter("offsetRandomCoef", offsetRandomCoefficient);
         setParameter("time", state.localTime);
+        setParameter("minDistance", minDistance);
+        setParameter("maxDistance", maxDistance);
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
