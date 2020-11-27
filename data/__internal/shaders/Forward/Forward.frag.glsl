@@ -375,9 +375,10 @@ void main()
         vec3 kD = (1.0 - F) * (1.0 - m);
         vec3 specular = (NDF * G * F) / max(4.0 * max(dot(N, E), 0.0) * NL, 0.001);
         
-        vec3 incomingLight = toLinear(sunColor.rgb) * sunEnergy * shadow;
+        vec3 incomingLight = toLinear(sunColor.rgb) * sunEnergy;
+        vec3 diffuse = albedo * invPI;
         
-        radiance += (kD * albedo * invPI + specular * s) * NL * incomingLight;
+        radiance += (kD * diffuse + specular * s) * NL * incomingLight * shadow;
     }
     
     // TODO: fixed number of area lights
