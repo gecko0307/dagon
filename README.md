@@ -60,7 +60,7 @@ To use latest stable Dagon, add the following dependency to your `dub.json`:
 ```
 "dagon": "~>0.11.0"
 ```
-Instead of manually configuring a new Dagon project, you can use a template with `dub init`:
+Instead of manually configuring a new Dagon project, you can use a template with `dub init`. Create an empty directory for the project, cd to it and run the following:
 ```
 dub init --type=dagon
 dub build
