@@ -58,7 +58,12 @@ Usage
 -----
 To use latest stable Dagon, add the following dependency to your `dub.json`:
 ```
-"dagon": "0.11.0"
+"dagon": "~>0.11.0"
+```
+Instead of manually configuring a new Dagon project, you can use a template with `dub init`:
+```
+dub init --type=dagon
+dub build
 ```
 
 Runtime Dependencies
