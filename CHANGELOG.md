@@ -1,3 +1,12 @@
+Dagon 0.12.0-beta1 - TBD
+------------------------
+- **Rendering**
+  - `Light.diffuse` and `Light.specular` parameters that control brightness of diffuse and specular portions of a light
+- **Post-processing**
+  - `DeferredRenderer.occlusionBufferDetail` parameter that controls resolution coefficient of SSAO buffer
+- **Misc**
+  - Dagon now uses dlib 0.21.0.
+
 Dagon 0.11.0 - 21 Oct, 2020
 ---------------------------
 Changes since 0.11.0-beta2:

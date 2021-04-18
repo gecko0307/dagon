@@ -132,7 +132,7 @@ class Cubemap: Texture
         GLint intFormat;
         GLenum type;
 
-        if (!pixelFormatToTextureFormat(cast(PixelFormat)img.pixelFormat, format, intFormat, type))
+        if (!pixelFormatToTextureFormat(cast(IntegerPixelFormat)img.pixelFormat, format, intFormat, type))
             writefln("Unsupported pixel format %s", img.pixelFormat);
 
         glBindTexture(GL_TEXTURE_CUBE_MAP, tex);

@@ -107,7 +107,7 @@ class CompressedImage: SuperImage
 
     @property uint pixelFormat()
     {
-        return PixelFormat.RGBA8;
+        return IntegerPixelFormat.RGBA8;
     }
 
     @property CompressedImageFormat compressedFormat()
