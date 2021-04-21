@@ -376,4 +376,55 @@ class ShapeSphere: Mesh
     }
 }
 
+class ShapeDisk: Mesh
+{
+    this(float radius, uint slices, Owner owner)
+    {
+        super(owner);
+        
+        vertices = New!(Vector3f[])(slices + 1);
+        normals = New!(Vector3f[])(slices + 1);
+        texcoords = New!(Vector2f[])(slices + 1);
+        indices = New!(uint[3][])(slices);
+        
+        float angleStep = (2.0f * PI) / slices;
+        float angle = 0.0f;
+        uint vi = 0;
+        uint i = 0;
+        
+        vertices[vi] = Vector3f(0.0f, 0.0f, 0.0f);
+        normals[vi] = Vector3f(0.0f, 1.0f, 0.0f);
+        texcoords[vi] = Vector2f(0.5f, 0.5f);
+        vi++;
+        
+        for(uint s = 0; s < slices; s++)
+        {
+            float x = cos(angle);
+            float z = sin(angle);
+            
+            vertices[vi] = Vector3f(x, 0.0f, z) * radius;
+            normals[vi] = Vector3f(0.0f, 1.0f, 0.0f);
+            texcoords[vi] = Vector2f(x * 0.5f + 0.5f, z * 0.5f + 0.5f);
+            
+            indices[i][0] = 0;
+            if (s < slices - 1)
+                indices[i][1] = vi + 1;
+            else
+                indices[i][1] = indices[0][2];
+            indices[i][2] = vi;
+            
+            vi++;
+            i++;
+            
+            angle += angleStep;
+        }
+        
+        import std.stdio;
+        writeln(vertices);
+        
+        dataReady = true;
+        prepareVAO();
+    }
+}
+
 // TODO: other shapes from original Dagon
