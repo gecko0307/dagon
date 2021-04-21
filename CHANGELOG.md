@@ -2,6 +2,8 @@ Dagon 0.12.0-beta1 - TBD
 ------------------------
 - **Rendering**
   - `Light.diffuse` and `Light.specular` parameters that control brightness of diffuse and specular portions of a light
+- **Assets**
+  - Built-in disk shape (`dagon.graphics.shapes.ShapeDisk`)
 - **Post-processing**
   - `DeferredRenderer.occlusionBufferDetail` parameter that controls resolution coefficient of SSAO buffer
 - **Misc**

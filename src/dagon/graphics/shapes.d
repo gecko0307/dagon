@@ -419,9 +419,6 @@ class ShapeDisk: Mesh
             angle += angleStep;
         }
         
-        import std.stdio;
-        writeln(vertices);
-        
         dataReady = true;
         prepareVAO();
     }
