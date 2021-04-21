@@ -88,7 +88,7 @@ Rafał Ziemniewski, Kumar Sookram, Aleksandr Kovalev, Robert Georges, Jan Jurzit
 
 Made with Dagon
 ---------------
-* [dagon-demo](https://github.com/gecko0307/dagon-demo) - a test application that demonstrates most of Dagon's features
-* [dagon-sandbox](https://github.com/gecko0307/dagon-sandbox) - a test application for unstable version of Dagon
+* [dagon-sandbox](https://github.com/gecko0307/dagon-sandbox) - a test application that demonstrates some of Dagon's features
+* [dagon-newton](https://github.com/gecko0307/dagon-newton) - Newton Dynamics integration for Dagon
 * [Dagoban](https://github.com/Timu5/dagoban) - a Sokoban clone
 * [dagon-shooter](https://github.com/aferust/dagon-shooter) - a shooter game
