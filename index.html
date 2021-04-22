@@ -1,203 +1,203 @@
+<!DOCTYPE html>
 <html lang="ru">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <meta name="Keywords" content="dagon,dlang,library,engine,3D,OpenGL,game"/>
-    <meta name="Description" content="Dagon, 3D game engine for D"/>
-    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
+    <head>
+        <meta charset="UTF-8">
+        <title>Dagon</title>
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <style>
+            body { font-family: "Lato", sans-serif; }
+            .mySlides { display: none; }
+            
+            .video-container {
+                overflow: hidden;
+                position: relative;
+                left: 50%;
+            transform: translateX(-50%);
+                width: 100%;
+                max-width: 1024px;
+            }
 
-    <title>Dagon</title>
+            .video-container::after {
+                padding-top: 56.25%;
+                display: block;
+                content: '';
+            }
 
-    <link rel="stylesheet" href="style.css" Type="text/css"/>
-
-    <link rel="stylesheet" href="styles/default.css">
-    <link rel="stylesheet" href="styles/atelier-cave-dark.css">
-    <script src="scripts/highlight.pack.js"></script>
-    <script>hljs.initHighlightingOnLoad();</script>
-
-  </head>
-  <body>
-    <table class="center">
-       
-    <tr>
-    <td>
-      <div align="center">
-      <a href="https://code.dlang.org/packages/dagon" target="_blank"><img class="clickable" src="images/dagon-logo.png"/></a>
-      </div>
-    </td>
-    </tr>
-
-    <tr>
-    <td colspan="2">
-      <center>
-      <span style="color: #fe6f6f;">
-      Join the D[ark] side of game dev!
-      </span>
-      </center>
-    </td>
-    </tr>
-    
-    <tr>
-    <td>
-      <div align="center" style="margin-top: 10px;">
-        <a href="https://code.dlang.org/packages/dagon" target="_blank"><img class="clickable" src="images/dub.png" title="Dub package"/></a>
-        <a href="https://github.com/gecko0307/dagon" target="_blank"><img class="clickable" src="images/github.png" title="GitHub repository"/></a>
-      </div>
-    </td>
-    </tr>
-
-    <tr>
-    <td colspan="2">
-      <p></p>
-      <p align="center"><a href="https://github.com/gecko0307/dagon" target="_blank">Dagon</a> is a 3D game development framework for <a href="https://dlang.org" target="_blank">D language</a> based on OpenGL 4.0 core profile, SDL2 and Freetype 2.8.1.
-      <br/><br/>The goal of this project is creating a modern, easy to use, extendable game engine for D due to the lack of such.
-      
-      <br/><br/>Please keep in mind that Dagon is still under development and not production-ready. Follow Dagon development on <a href="https://trello.com/b/4sDgRjZI/dagon" target="_blank">Trello</a> to see priority tasks.
-      
-      <br/><br/>To see what Dagon is capable to at the moment, check out the <a href="https://github.com/gecko0307/dagon-sandbox" target="_blank">demo application</a> or watch the video:</p>
-      
-      <p align="center">
-      <iframe width="560" height="315" src="https://www.youtube.com/embed/bvTX9kqtH08" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-      </p>  
-    
-      <p align="center">
-      <a href="images/car.jpg" target="_blank"><img src="images/car-thumb.jpg"/></a>
-      <a href="images/lights.jpg" target="_blank"><img src="images/lights-thumb.jpg"/></a>
-      <a href="images/exporter.jpg" target="_blank"><img src="images/exporter-thumb.jpg"/></a>
-      </p>
-      
-      <h2>Features</h2>
-      <p>Note: the following list includes features from current development branch</p>
-      <p>
-      <ul>
-      <li>Static and animated meshes, OBJ and <a href="https://github.com/lsalzman/iqm" target="_blank">IQM</a> formats support</li>
-      <li>Textures in PNG, JPG, TGA, BMP, HDR, DDS formats</li>
-      <li>Own asset format with Blender exporter</li>
-      <li>Deferred pipeline for opaque materials, forward pipeline for transparent materials and materials with custom shaders</li>
-      <li>Physically based rendering (PBR)</li>
-      <li>HDR rendering with auto-exposure (eye adaptation), Reinhard, Hable/Uncharted, Filmic and ACES tonemapping operators</li>
-      <li>HDR environment maps</li>
-      <li>Directional lights with cascaded shadow mapping</li>
-      <li>Spherical and tube area lights</li>
-      <li>Spot lights</li>
-      <li>Normal/parallax mapping, parallax occlusion mapping</li>
-      <li>Deferred decals with normal mapping and PBR material properties</li>
-      <li>Dynamic skydome with sun and day/night cycle. Simple and Rayleigh sky models</li>
-      <li>Particle system with force fields. Blended particles, soft particles, shaded particles with normal map support, particle shadows</li>
-      <li>Terrain rendering. Procedural terrain using OpenSimplex noise or any custom height field</li>
-      <li>Water rendering</li>
-      <li>Post-processing (FXAA, SSAO, lens distortion, motion blur, glow, LUT color grading)</li>
-      <li>UTF-8 text rendering using TTF fonts via Freetype</li>
-      <li>GUI based on <a href="https://github.com/vurtun/nuklear" target="_blank">Nuklear</a></li>
-      <li>2D canvas framework that renders vector shapes - lines, Bézier curves, rectangles, circles, arcs, triangles, and polygons</li>
-      <li>Keyboard, mouse, joystick input, Unicode text input</li>
-      <li>Ownership memory model - every object belongs to some object (owner), and deleting the owner will delete all of its owned objects. This allows semi-automatic memory management - you have to manually delete only root owners</li>
-      <li>Entity-component model that allows game objects behave differently and combine many behaviours</li>
-      <li>Live asset reloading - asset can be automatically reloaded when the file is modified with external application</li>
-      <li>Built-in camera logics for quick and easy navigation (freeview and first person style view)</li>
-      <li><a href="https://github.com/gecko0307/box" target="_blank">Box</a> container support for assets</li>
-      <li>Built-in physics engine.</li>
-      </ul>
-      </p>
-      
-      <h2>Download</h2>
-      <p>Head on to <a href="https://github.com/gecko0307/dagon/releases" target="_blank">releases page</a> and grab the latest source tarball. You may also use dub package instead - add the following dependency to your dub.json: 
-      </p>
-      <p>
-<pre><code class="nohighlight">
-"dagon": "~>0.11.0"
-</code></pre>
-      </p>
-      <p>
-      If you want to test new features, use master branch: <i>"dagon": "~master"</i>.
-      </p>
-      
-      <h2>Basic Application</h2>
-      <p>Loading and rendering an OBJ model:</p>
-      <p>
-<pre><code>
-module main;
-
-import dagon;
-
-class TestScene: Scene
-{
-    Game game;
-    OBJAsset aOBJSuzanne;
-
-    this(Game game)
-    {
-        super(game);
-        this.game = game;
-    }
-
-    override void beforeLoad()
-    {    
-        aOBJSuzanne = addOBJAsset("data/suzanne.obj");
-    }
-
-    override void afterLoad()
-    {
-        auto camera = addCamera();
-        auto freeview = New!FreeviewComponent(eventManager, camera);
-        freeview.zoom(-20);
-        freeview.pitch(-30.0f);
-        freeview.turn(10.0f);
-        game.renderer.activeCamera = camera;
-
-        auto sun = addLight(LightType.Sun);
-        sun.shadowEnabled = true;
-        sun.energy = 10.0f;
-        sun.pitch(-45.0f);
+            .video-container iframe {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+            }
+            
+            .ribbon {
+              /* positioning */
+              position: fixed;
+              padding: 5px 45px;
+              width: 256px;
+              /* top right of the page */
+              top: 60px;
+              right: -80px;
+              -webkit-transform: rotate(45deg);
+              -moz-transform: rotate(45deg);
+              -ms-transform: rotate(45deg);
+              transform: rotate(45deg);
+              /* effects with some shadow */
+              box-shadow: 0 0 0 3px #000000, 0 0 20px -3px rgba(0, 0, 0, 0.5);
+              text-shadow: 0 0 0 #ffffff, 0 0 5px rgba(0, 0, 0, 0.3);
+              /* looks */
+              background-color: #000000;
+              color: #ffffff;
+              font-size: 13px;
+              font-family: sans-serif;
+              text-decoration: none;
+              font-weight: bold;
+              /* ribbon effects */
+              border: 2px dotted #ffffff;
+              /* webkit antialias fix */
+              -webkit-backface-visibility: hidden;
+              letter-spacing: .5px;
+              z-index: 1000;
+            }
+            @media screen and (max-width: 850px) {
+                .ribbon {
+                    display: none;
+                }
+            }
+            
+            .content {
+                max-width: 1024px;
+                margin-top: 64px;
+            }
+            @media screen and (max-width: 715px) {
+                .content { margin-top: 128px; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="w3-top w3-bar w3-black">
+            <a href="#home" class="w3-bar-item w3-button">Home</a>
+            <a href="#features" class="w3-bar-item w3-button">Features</a>
+            <a href="#download" class="w3-bar-item w3-button">Download</a>
+            <a href="#gettingstarted" class="w3-bar-item w3-button">Getting Started</a>
+            <a href="#tutorials" class="w3-bar-item w3-button">Tutorials</a>
+            <a href="#contributing" class="w3-bar-item w3-button">Contributing</a>
+            <a href="#sponsorship" class="w3-bar-item w3-button">Sponsorship</a>
+        </div>
+        <div class="w3-content content">
+            <div id="home" class="w3-container">
+                <h1 class="w3-center">Dagon Engine</h1>
+                <p>Dagon is an Open Source 3D game development framework for D language based on OpenGL 4.0 core profile and SDL2. The goal of this project is creating a modern, easy to use, extendable game engine for D due to the lack of such.</p>
+                <p>Please keep in mind that Dagon is still under development and not production-ready. Follow Dagon development on Trello to see priority tasks.</p>
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/gTZ8QT4yOOo" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+            </div>
+            <div id="features" class="w3-container w3-padding-32">
+                <h1 class="w3-center">Features</h1>
+                <p>
+                    <ul>
+                        <li>Static and animated meshes, OBJ and IQM formats support</li>
+                        <li>Textures in PNG, JPG, TGA, BMP, HDR formats</li>
+                        <li>Own asset format with Blender exporter</li>
+                        <li>Deferred pipeline for opaque materials, forward pipeline for transparent materials and materials with custom shaders</li>
+                        <li>Physically based rendering (PBR)</li>
+                        <li>HDR rendering with Reinhard, Hable/Uncharted, ACES and Filmic tonemapping operators</li>
+                        <li>HDRI environment maps</li>
+                        <li>Directional lights with cascaded shadow mapping and volumetric scattering</li>
+                        <li>Spherical and tube area lights</li>
+                        <li>Spot lights</li>
+                        <li>Normal/parallax mapping, parallax occlusion mapping</li>
+                        <li>Deferred decals with normal mapping and PBR material properties</li>
+                        <li>Dynamic skydome with sun and day/night cycle</li>
+                        <li>Particle system with force fields. Blended particles, soft particles, shaded particles with normal map support, particle shadows</li>
+                        <li>Terrain rendering. Procedural terrain using OpenSimplex noise or any custom height field</li>
+                        <li>Water rendering</li>
+                        <li>Post-processing (FXAA, SSAO, lens distortion, motion blur, glow, LUT color grading)</li>
+                        <li>UTF-8 text rendering using TTF fonts via Freetype</li>
+                        <li>GUI and 2D graphics based on Nuklear. Canvas framework that renders vector shapes</li>
+                        <li>Keyboard, mouse, joystick input</li>
+                        <li>Unicode text input</li>
+                        <li>Ownership memory model</li>
+                        <li>Entity-component model</li>
+                        <li>Live asset reloading</li>
+                        <li>Built-in camera logics for quick and easy navigation (freeview and first person style view)</li>
+                        <li>Box container support for assets</li>
+                        <li>Built-in physics engine.</li>
+                    </ul>
+                </p>
+                <img src="/images/eevee_vs_dagon.jpg" alt="Eevee VS Dagon" style="width:100%">
+            </div>
+            
+            <div id="download" class="w3-container w3-padding-32">
+                <h1 class="w3-center">Download</h1>
+                <p>Latest source tarball can be downloaded from <a href="https://github.com/gecko0307/dagon/releases" target="_blank">GitHub releases page</a>. But it is easier use Dub package instead. Add the following dependency to your dub.json:</p>
+                <code>"dagon": "~>0.11.0"</code>
+                <p>If you want to test new features, use master branch:</p>
+                <code>"dagon": "~master"</code>
+                <p>Dagon is distributed under the <a href="http://www.boost.org/LICENSE_1_0.txt" target="_blank">Boost Software License, Version 1.0</a></p>
+                <img src="/images/lights.jpg" alt="Lights" style="width:100%">
+            </div>
+            
+            <div id="gettingstarted" class="w3-container w3-padding-32">
+                <h1 class="w3-center">Getting Started</h1>
+                <p>Creating a template project using Dagon is as easy as typing two commands in an empty directory:</p>
+                <code>dub init --type=dagon</code><br>
+                <code>dub build</code>
+                <p>The engine has only one mandatory runtime dependency, SDL 2.0.5. On Windows it is automatically deployed if you are building with Dub. On other platforms you have to install it manually.</p>
+                <p>By running a template application you should see a sample scene with a plane and a cube.</p>
+            </div>
+            
+            <div id="tutorials" class="w3-container w3-padding-32">
+                <h1 class="w3-center">Tutorials</h1>
+                <p></p>
+                <p>Dagon has a number of tutorials on <a href="https://github.com/gecko0307/dagon/wiki" target="_blank">GitHub wiki</a> (not all are complete):</p>
+                <p>
+                    <ol>
+                        <li><a href="https://github.com/gecko0307/dagon/wiki/Tutorial-1.-Simple-Application" target="_blank">Simple Application</a></li>
+                        <li><a href="https://github.com/gecko0307/dagon/wiki/Tutorial-2.-Textures" target="_blank">Textures</a></li>
+                        <li><a href="https://github.com/gecko0307/dagon/wiki/Tutorial-3.-Normal-Maps" target="_blank">Normal maps</a></li>
+                        <li><a href="https://github.com/gecko0307/dagon/wiki/Tutorial-4.-Light-Sources" target="_blank">Light Sources</a></li>
+                        <li><a href="https://github.com/gecko0307/dagon/wiki/Tutorial-5.-Environment-Maps" target="_blank">Environment Maps</a></li>
+                        <li><a href="https://github.com/gecko0307/dagon/wiki/Tutorial-6.-PBR" target="_blank">PBR</a></li>
+                        <li><a href="https://github.com/gecko0307/dagon/wiki/Tutorial-7.-First-Person-Camera" target="_blank">First Person Camera</a></li>
+                        <li>Procedural Sky</li>
+                        <li>Post-processing</li>
+                        <li><a href="https://github.com/gecko0307/dagon/wiki/Tutorial-10.-Physics-Integration" target="_blank">Physics Integration</a></li>
+                        <li><a href="https://github.com/gecko0307/dagon/wiki/Tutorial-11.-Exporting-Assets-from-Blender" target="_blank">Exporting Assets from Blender</a></li>
+                        <li><a href="https://github.com/gecko0307/dagon/wiki/Tutorial-12.-Particles" target="_blank">Particles</a></li>
+                        <li><a href="https://github.com/gecko0307/dagon/wiki/Tutorial-13.-Custom-Shaders" target="_blank">Custom Shaders</a></li>
+                    </ol>
+                </p>
+                <p>Corresponding examples can be found <a href="https://github.com/gecko0307/dagon-tutorials" target="_blank">here</a>.</p>
+            </div>
+            
+            <div id="contributing" class="w3-container w3-padding-32">
+                <h1 class="w3-center">Contributing</h1>
+                <p>If you want to contribute code to Dagon, send pull requests to <a href="https://github.com/gecko0307/dagon" target="_blank">the project repository</a>. Please, read <a href="https://github.com/gecko0307/dagon/blob/master/CONTRIBUTING.md" target="_blank">Contributing Guidelines</a> first.</p>
+                <p>Found a bug? Please, create an issue <a href="https://github.com/gecko0307/dagon/issues" target="_blank">here</a>.</p>
+                <p>Dagon was created by <b>Timur Gafarov</b>, <b>Rafał Ziemniewski</b>, <b>Mateusz Muszyński</b>, <b>Björn Roberg</b>, <b>dayllenger</b>, <b>my-ijet</b>.</p>
+                <p>Also thanks to <b>Lawrence Aberba</b>, <b>Andrey Penechko</b>, <b>Robert Schadek</b>, <b>RUSshy</b>, <b>isaacs-dev</b> for PRs and bug reports.</p>
+            </div>
+            
+            <div id="sponsorship" class="w3-container w3-padding-32">
+                <h1 class="w3-center">Sponsorship</h1>
+                <p>If you like Dagon, please support its development on Patreon and get a reward depending on your donation amount. Supporters who donate $10 and more will be listed on this page as Sponsors. You can also make donation via PayPal.</p>
+                <p>Big thanks to these awesome people for supporting Dagon: <b>Rafał Ziemniewski</b>, <b>Kumar Sookram</b>, <b>Aleksandr Kovalev</b>, <b>Robert Georges</b>, <b>Jan Jurzitza (WebFreak)</b>, <b>Rais Safiullin (SARFEX)</b>, <b>Benas Cernevicius</b>, <b>Koichi Takio</b>.</p>
+                <p><a href="https://www.patreon.com/gecko0307"><img src="images/patron.png"></a></p>
+                <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+                    <input type="hidden" name="cmd" value="_s-xclick" />
+                    <input type="hidden" name="hosted_button_id" value="FJHGS46446EH4" />
+                    <input type="image" src="https://www.paypalobjects.com/en_US/RU/i/btn/btn_donateCC_LG.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
+                    <img alt="" border="0" src="https://www.paypal.com/en_RU/i/scr/pixel.gif" width="1" height="1" />
+                </form>
+            </div>
+        </div>
         
-        auto matSuzanne = addMaterial();
-        matSuzanne.diffuse = Color4f(1.0, 0.2, 0.2, 1.0);
-
-        auto eSuzanne = addEntity();
-        eSuzanne.drawable = aOBJSuzanne.mesh;
-        eSuzanne.material = matSuzanne;
-        eSuzanne.position = Vector3f(0, 1, 0);
-    }
-}
-</code></pre>
-      </p>
-
-      <h2>Documentation</h2>
-      <p>We have some documentation <a href="doc" target="_blank">here</a>.
-      </p>
-      <h2>License</h2>
-      <p>Dagon is distributed under the <a href="http://www.boost.org/LICENSE_1_0.txt" target="_blank">Boost Software License, Version 1.0</a>. You are free to use, copy, modify and redistribute Dagon, even in closed-source products. The only requirement is to keep the license and copyright notice in all source code copies.
-      </p>
-      <h2>Found a bug?</h2>
-      <p>Please, create an issue <a href="https://github.com/gecko0307/dagon/issues" target="_blank">here</a>. PRs are welcome.
-      </p>
-      
-      <h2>Become a Patron!</h2>
-      <p>If you like Dagon, please support its development on <a href="https://www.patreon.com/gecko0307" target="_blank">Patreon</a> and get a reward depending on your donation amount. 
-      Supporters who donate $10 and more will be listed on this page as Sponsors.
-      You can also make one-time donation via <a href="https://www.paypal.me/tgafarov" target="_blank">PayPal</a>. Thanks in advance!
-      </p>
-      
-      <a href="https://www.patreon.com/gecko0307"><img src="images/patron.png"></a>
-      <br><br>
-      <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-      <input type="hidden" name="cmd" value="_s-xclick" />
-      <input type="hidden" name="hosted_button_id" value="FJHGS46446EH4" />
-      <input type="image" src="https://www.paypalobjects.com/en_US/RU/i/btn/btn_donateCC_LG.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
-      <img alt="" border="0" src="https://www.paypal.com/en_RU/i/scr/pixel.gif" width="1" height="1" />
-      </form>
-	  
-	  <h2>Sponsors and Contributors</h2>
-      <p>Big thanks to these awesome people for supporting Dagon and dlib: <b>Rafał Ziemniewski</b>, <b>Kumar Sookram</b>, <b>Aleksandr Kovalev</b>, <b>Robert Georges</b>, <b>Jan Jurzitza (WebFreak)</b>, <b>Rais Safiullin (SARFEX)</b>, <b>Benas Cernevicius</b>, <b>Koichi Takio</b>.</p>
-      
-      <p>Dagon was created by <b>Timur Gafarov</b> and contributors: <b>Rafał Ziemniewski</b>, <b>Mateusz Muszyński</b>, <b>Björn Roberg</b>, <b>dayllenger</b>, <b>my-ijet</b>.</p>
-      
-	  <p>Also thanks to <b>Lawrence Aberba</b>, <b>Andrey Penechko</b>, <b>Robert Schadek</b>, <b>RUSshy</b>, <b>isaacs-dev</b> for PRs and bug reports.</p>
-	  
-	  <p><br/>
-      </p>
-      
-    </td>
-    </tr>
-    </table>
-  </body>
+        <a href="https://github.com/gecko0307/dagon" class="ribbon" target="_blank">Fork me on GitHub</a>
+    </body>
 </html>
