@@ -85,6 +85,7 @@ class Entity: Owner, Updateable
     bool dynamic = true;
     bool decal = false;
     float opacity = 1.0f;
+    float blurMask = 1.0f;
 
     EntityManager manager;
 

@@ -10,6 +10,7 @@ in vec4 prevPosition;
 uniform float layer;
 uniform float energy;
 uniform float opacity;
+uniform float blurMask;
 
 #include <gamma.glsl>
 #include <cotangentFrame.glsl>
@@ -250,7 +251,6 @@ void main()
     vec2 posScreen = (currPosition.xy / currPosition.w) * 0.5 + 0.5;
     vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;
     vec2 velocity = posScreen - prevPosScreen;
-    const float blurMask = 1.0; 
     
     fragColor = vec4(fragDiffuse.rgb, layer);
     fragNormal = vec4(N, 0.0);

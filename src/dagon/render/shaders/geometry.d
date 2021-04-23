@@ -89,6 +89,7 @@ class GeometryShader: Shader
         setParameter("layer", cast(float)(state.layer));
         setParameter("opacity", state.opacity);
         setParameter("textureScale", itextureScale.asVector2f);
+        setParameter("blurMask", state.blurMask);
 
         int parallaxMethod = iparallax.asInteger;
         if (parallaxMethod > ParallaxOcclusionMapping)

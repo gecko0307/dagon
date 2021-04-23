@@ -41,6 +41,7 @@ import dagon.graphics.light;
 struct GraphicsState
 {
     int layer;
+    float blurMask;
 
     Vector2f resolution;
     float zNear;
@@ -91,6 +92,7 @@ struct GraphicsState
     void reset()
     {
         layer = 1;
+        blurMask = 1.0f;
 
         resolution = Vector2f(0.0f, 0.0f);
         zNear = 0.0f;
