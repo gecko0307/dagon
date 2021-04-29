@@ -71,6 +71,8 @@ struct Particle
 
 abstract class ForceField: EntityComponent
 {
+    bool active = true;
+
     this(Entity e, ParticleSystem psys)
     {
         super(psys.eventManager, e);
@@ -130,6 +132,8 @@ class Vortex: ForceField
 
     override void affect(ref Particle p)
     {
+        if (!active) return;
+
         Vector3f direction = entity.transformation.forward;
         float proj = dot(p.position, direction);
         Vector3f pos = entity.position + direction * proj;
@@ -143,6 +147,7 @@ class Vortex: ForceField
 class BlackHole: ForceField
 {
     float g;
+    float threshold = 0.01f;
 
     this(Entity e, ParticleSystem psys, float magnitude)
     {
@@ -152,10 +157,17 @@ class BlackHole: ForceField
 
     override void affect(ref Particle p)
     {
+        if (!active) return;
+
         Vector3f r = p.position - entity.position;
         float d = r.length;
-        if (d <= 0.001f)
+        if (d <= threshold)
+        {
+            p.acceleration = Vector3f(0, 0, 0);
+            p.velocity = Vector3f(0, 0, 0);
             p.time = p.lifetime;
+            p.active = false;
+        }
         else
             p.acceleration += r * -g / (d * d);
     }
@@ -177,6 +189,8 @@ class ColorChanger: ForceField
 
     override void affect(ref Particle p)
     {
+        if (!active) return;
+        
         Vector3f r = p.position - entity.position;
         float t = clamp((r.length - innerRadius) / outerRadius, 0.0f, 1.0f);
         p.color = lerp(color, p.color, t);

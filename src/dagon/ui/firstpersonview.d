@@ -52,6 +52,9 @@ class FirstPersonViewComponent: EntityComponent
     
     bool active = true;
     
+    float pitchLimitMax = 60.0f;
+    float pitchLimitMin = -60.0f;
+    
     this(EventManager em, Entity e)
     {
         super(em, e);
@@ -75,12 +78,10 @@ class FirstPersonViewComponent: EntityComponent
         {
             float turn_m =  (eventManager.mouseX - prevMouseX) * mouseSensibility;
             float pitch_m = (eventManager.mouseY - prevMouseY) * mouseSensibility;
-
+            
             pitch -= pitch_m;
             turn -= turn_m;
-
-            float pitchLimitMax = 60.0f;
-            float pitchLimitMin = -60.0f;
+            
             if (pitch > pitchLimitMax)
             {
                 pitch = pitchLimitMax;
@@ -95,16 +96,16 @@ class FirstPersonViewComponent: EntityComponent
         
         auto rotPitch = rotationQuaternion(Vector3f(1.0f,0.0f,0.0f), degtorad(pitch));
         auto rotTurn = rotationQuaternion(Vector3f(0.0f,1.0f,0.0f), degtorad(turn));
-
+        
         Quaternionf q = rotTurn * rotPitch;
         
         entity.transformation =
             translationMatrix(entity.position) *
             q.toMatrix4x4 *
             scaleMatrix(entity.scaling);
-
+        
         entity.invTransformation = entity.transformation.inverse;
-
+        
         if (entity.parent)
         {
             entity.absoluteTransformation = entity.parent.absoluteTransformation * entity.transformation;
