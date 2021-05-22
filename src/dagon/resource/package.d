@@ -34,6 +34,7 @@ public
     import dagon.resource.boxfs;
     import dagon.resource.dds;
     import dagon.resource.entity;
+    import dagon.resource.gltf;
     import dagon.resource.image;
     import dagon.resource.material;
     import dagon.resource.obj;
