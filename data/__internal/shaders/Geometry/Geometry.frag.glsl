@@ -58,6 +58,8 @@ subroutine(srtNormal) vec3 normalMap(in vec2 uv, in float ysign, in mat3 tangent
 
 subroutine uniform srtNormal normal;
 
+uniform float normalYSign;
+
 
 /*
  * Height mapping
@@ -224,7 +226,6 @@ subroutine(srtEmission) vec3 emissionColorTexture(in vec2 uv)
 
 subroutine uniform srtEmission emission;
 
-
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec4 fragNormal;
 layout(location = 2) out vec4 fragPBR;
@@ -241,7 +242,7 @@ void main()
     
     vec2 shiftedTexCoord = parallax(tE, texCoord, height(texCoord));
 
-    N = normal(shiftedTexCoord, -1.0, tangentToEye);
+    N = normal(shiftedTexCoord, normalYSign, tangentToEye);
     
     vec4 fragDiffuse = diffuse(shiftedTexCoord);
     

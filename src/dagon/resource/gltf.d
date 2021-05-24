@@ -39,8 +39,11 @@ import dlib.math.vector;
 
 import dagon.core.bindings;
 import dagon.resource.asset;
-import dagon.graphics.mesh;
+import dagon.resource.texture;
 import dagon.graphics.drawable;
+import dagon.graphics.mesh;
+import dagon.graphics.texture;
+import dagon.graphics.material;
 
 class GLTFBuffer: Owner
 {
@@ -49,6 +52,10 @@ class GLTFBuffer: Owner
     this(InputStream istrm, Owner o)
     {
         super(o);
+        
+        if (istrm is null)
+            return;
+        
         array = New!(ubyte[])(istrm.size);
         if (!istrm.fillArray(array))
         {
@@ -75,11 +82,15 @@ class GLTFBufferView: Owner
     this(GLTFBuffer buffer, uint offset, uint len, GLenum target, Owner o)
     {
         super(o);
+        
+        if (buffer is null)
+            return;
+        
         this.buffer = buffer;
         this.offset = offset;
         this.len = len;
         this.target = target;
-        // TODO: validate offset and len
+        
         if (offset < buffer.array.length && offset+len <= buffer.array.length)
         {
             this.slice = buffer.array[offset..offset+len];
@@ -117,6 +128,10 @@ class GLTFAccessor: Owner
     this(GLTFBufferView bufferView, GLTFDataType dataType, GLenum componentType, uint count, Owner o)
     {
         super(o);
+        
+        if (bufferView is null)
+            return;
+        
         this.bufferView = bufferView;
         this.dataType = dataType;
         this.componentType = componentType;
@@ -134,6 +149,7 @@ class GLTFMesh: Owner, Drawable
     GLTFAccessor normalAccessor;
     GLTFAccessor texCoord0Accessor;
     GLTFAccessor indexAccessor;
+    Material material;
     
     GLuint vao = 0;
     GLuint vbo = 0;
@@ -143,17 +159,33 @@ class GLTFMesh: Owner, Drawable
     
     bool canRender = false;
     
-    this(GLTFAccessor positionAccessor, GLTFAccessor normalAccessor, GLTFAccessor texCoord0Accessor, GLTFAccessor indexAccessor, Owner o)
+    this(GLTFAccessor positionAccessor, GLTFAccessor normalAccessor, GLTFAccessor texCoord0Accessor, GLTFAccessor indexAccessor, Material material, Owner o)
     {
         super(o);
         this.positionAccessor = positionAccessor;
         this.normalAccessor = normalAccessor;
         this.texCoord0Accessor = texCoord0Accessor;
         this.indexAccessor = indexAccessor;
+        this.material = material;
     }
     
     void prepareVAO()
     {
+        if (positionAccessor is null || 
+            normalAccessor is null || 
+            texCoord0Accessor is null || 
+            indexAccessor is null)
+            return;
+        
+        if (positionAccessor.bufferView.slice.length == 0)
+            return;
+        if (normalAccessor.bufferView.slice.length == 0)
+            return;
+        if (texCoord0Accessor.bufferView.slice.length == 0)
+            return;
+        if (indexAccessor.bufferView.slice.length == 0)
+            return;
+        
         glGenBuffers(1, &vbo);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, positionAccessor.bufferView.slice.length, positionAccessor.bufferView.slice.ptr, GL_STATIC_DRAW); 
@@ -217,11 +249,16 @@ class GLTFMesh: Owner, Drawable
 
 class GLTFAsset: Asset
 {
+    AssetManager assetManager;
+    String str;
     JSONDocument doc;
     Array!GLTFBuffer buffers;
     Array!GLTFBufferView bufferViews;
     Array!GLTFAccessor accessors;
     Array!GLTFMesh meshes;
+    Array!TextureAsset images;
+    Array!Texture textures;
+    Array!Material materials;
     
     this(Owner o)
     {
@@ -235,14 +272,17 @@ class GLTFAsset: Asset
     
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
     {
+        assetManager = mngr;
         string rootDir = dirName(filename);
-        String str = String(istrm);
+        str = String(istrm);
         doc = New!JSONDocument(str.toString);
         loadBuffers(doc.root, fs, rootDir);
         loadBufferViews(doc.root);
         loadAccessors(doc.root);
+        loadImages(doc.root, fs, rootDir);
+        loadTextures(doc.root);
+        loadMaterials(doc.root);
         loadMeshes(doc.root);
-        str.free();
         return true;
     }
     
@@ -270,6 +310,8 @@ class GLTFAsset: Asset
                     else
                     {
                         writeln("Warning: buffer file \"", bufFilename, "\" not found");
+                        GLTFBuffer b = New!GLTFBuffer(null, this);
+                        buffers.insertBack(b);
                     }
                     
                     bufFilename.free();
@@ -307,6 +349,8 @@ class GLTFAsset: Asset
                 else
                 {
                     writeln("Warning: can't create buffer view for nonexistent buffer ", bufferIndex);
+                    GLTFBufferView bufv = New!GLTFBufferView(null, 0, 0, 0, this);
+                    bufferViews.insertBack(bufv);
                 }
             }
         }
@@ -359,7 +403,120 @@ class GLTFAsset: Asset
                 else
                 {
                     writeln("Warning: can't create accessor for nonexistent buffer view ", bufferViewIndex);
+                    GLTFAccessor ac = New!GLTFAccessor(null, dataType, componentType, count, this);
+                    accessors.insertBack(ac);
                 }
+            }
+        }
+    }
+    
+    void loadImages(JSONValue root, ReadOnlyFileSystem fs, string rootDir)
+    {
+        if ("images" in root.asObject)
+        {
+            foreach(i, img; root.asObject["images"].asArray)
+            {
+                auto im = img.asObject;
+                
+                if ("uri" in im)
+                {
+                    String imgFilename = String(rootDir);
+                    imgFilename ~= "/";
+                    imgFilename ~= im["uri"].asString;
+                    
+                    auto ta = New!TextureAsset(assetManager.imageFactory, assetManager.hdrImageFactory, this);
+                    
+                    FileStat fstat;
+                    if (fs.stat(imgFilename.toString, fstat))
+                    {
+                        bool res = assetManager.loadAssetThreadSafePart(ta, imgFilename.toString);
+                        if (!res)
+                            writeln("Warning: failed to load \"", imgFilename, "\" not found");
+                    }
+                    else
+                    {
+                        writeln("Warning: image file \"", imgFilename, "\" not found");
+                    }
+                    
+                    images.insertBack(ta);
+                    
+                    imgFilename.free();
+                }
+            }
+        }
+    }
+    
+    void loadTextures(JSONValue root)
+    {
+        if ("textures" in root.asObject)
+        {
+            foreach(i, tex; root.asObject["textures"].asArray)
+            {
+                auto te = tex.asObject;
+                
+                if ("source" in te)
+                {
+                    uint imageIndex = cast(uint)te["source"].asNumber;
+                    TextureAsset img;
+                    if (imageIndex < images.length)
+                        img = images[imageIndex];
+                    else
+                        writeln("Warning: can't create texture for nonexistent image ", imageIndex);
+                    
+                    if (img !is null)
+                    {
+                        Texture texture = img.texture;
+                        textures.insertBack(texture);
+                    }
+                    else
+                    {
+                        Texture texture;
+                        textures.insertBack(texture);
+                    }
+                }
+            }
+        }
+    }
+    
+    void loadMaterials(JSONValue root)
+    {
+        if ("materials" in root.asObject)
+        {
+            foreach(i, mat; root.asObject["materials"].asArray)
+            {
+                auto ma = mat.asObject;
+                
+                Material material = New!Material(this);
+                
+                if ("pbrMetallicRoughness" in ma)
+                {
+                    auto pbr = ma["pbrMetallicRoughness"].asObject;
+                    
+                    if ("baseColorTexture" in pbr)
+                    {
+                        uint baseColorTexIndex = cast(uint)pbr["baseColorTexture"].asObject["index"].asNumber;
+                        if (baseColorTexIndex < textures.length)
+                        {
+                            Texture baseColorTex = textures[baseColorTexIndex];
+                            if (baseColorTex)
+                                material.diffuse = baseColorTex;
+                        }
+                    }
+                }
+                
+                if ("normalTexture" in ma)
+                {
+                    uint normalTexIndex = cast(uint)ma["normalTexture"].asObject["index"].asNumber;
+                    if (normalTexIndex < textures.length)
+                    {
+                        Texture normalTex = textures[normalTexIndex];
+                        if (normalTex)
+                            material.normal = normalTex;
+                    }
+                }
+                
+                material.invertNormalY = false;
+                materials.insertBack(material);
             }
         }
     }
@@ -424,34 +581,38 @@ class GLTFAsset: Asset
                                 writeln("Warning: can't create indices for nonexistent accessor ", indicesAccessorIndex);
                         }
                         
+                        Material material;
                         if ("material" in p)
                         {
                             uint materialIndex = cast(uint)p["material"].asNumber;
-                            // TODO: load materials
+                            if (materialIndex < materials.length)
+                                material = materials[materialIndex];
+                            else
+                                writeln("Warning: nonexistent material ", materialIndex);
                         }
                         
                         if (positionAccessor is null)
                         {
                             writeln("Warning: mesh ", i, " lacks vertex position attributes");
-                            continue;
+                            //continue;
                         }
                         if (normalAccessor is null)
                         {
                             writeln("Warning: mesh ", i, " lacks vertex normal attributes");
-                            continue;
+                            //continue;
                         }
                         if (texCoord0Accessor is null)
                         {
                             writeln("Warning: mesh ", i, " lacks vertex texCoord0 attributes");
-                            continue;
+                            //continue;
                         }
                         if (indexAccessor is null)
                         {
                             writeln("Warning: mesh ", i, " lacks indices");
-                            continue;
+                            //continue;
                         }
                         
-                        GLTFMesh me = New!GLTFMesh(positionAccessor, normalAccessor, texCoord0Accessor, indexAccessor, this);
+                        GLTFMesh me = New!GLTFMesh(positionAccessor, normalAccessor, texCoord0Accessor, indexAccessor, material, this);
                         meshes.insertBack(me);
                     }
                 }
@@ -465,7 +626,12 @@ class GLTFAsset: Asset
         {
             me.prepareVAO();
         }
-    
+        
+        foreach(img; images)
+        {
+            img.loadThreadUnsafePart();
+        }
+        
         return true;
     }
     
@@ -487,6 +653,15 @@ class GLTFAsset: Asset
             deleteOwnedObject(me);
         meshes.free();
         
+        foreach(im; images)
+            deleteOwnedObject(im);
+        images.free();
+        
+        textures.free();
+        
+        materials.free();
+        
         Delete(doc);
+        str.free();
     }
 }

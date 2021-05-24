@@ -157,6 +157,11 @@ class GeometryShader: Shader
             setParameter("normalVector", state.material.normal.asVector3f);
             setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
         }
+        
+        if (state.material.invertNormalY)
+            setParameter("normalYSign", -1.0f);
+        else
+            setParameter("normalYSign", 1.0f);
 
         // Height and parallax
         // TODO: make these material properties
