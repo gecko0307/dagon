@@ -170,6 +170,7 @@ class Material: Owner
         setInput("transparency", 1.0f);
         setInput("roughness", 0.5f);
         setInput("metallic", 0.0f);
+        setInput("roughnessMetallic", 0.0f);
         setInput("specularity", 1.0f);
         setInput("translucency", 0.0f);
         setInput("normal", Vector3f(0.0f, 0.0f, 1.0f));
@@ -438,7 +439,54 @@ class Material: Owner
         auto tex = New!Texture(img, this);
         return tex;
     }
+    
+    /*
+    final Texture makeTexture(MaterialInput rg, MaterialInput b, MaterialInput a)
+    {
+        uint width = 8;
+        uint height = 8;
 
+        if (rg.texture !is null)
+        {
+            width = max(width, rg.texture.width);
+            height = max(height, rg.texture.height);
+        }
+
+        if (b.texture !is null)
+        {
+            width = max(width, b.texture.width);
+            height = max(height, b.texture.height);
+        }
+
+        if (a.texture !is null)
+        {
+            width = max(width, a.texture.width);
+            height = max(height, a.texture.height);
+        }
+
+        SuperImage img = New!UnmanagedImageRGBA8(width, height);
+
+        foreach(y; 0..img.height)
+        foreach(x; 0..img.width)
+        {
+            Color4f col = Color4f(0, 0, 0, 0);
+
+            float u = cast(float)x / cast(float)img.width;
+            float v = cast(float)y / cast(float)img.height;
+
+            col.r = rg.sample(u, v).r;
+            col.g = rg.sample(u, v).g;
+            col.b = b.sample(u, v).r;
+            col.a = a.sample(u, v).r;
+
+            img[x, y] = col;
+        }
+
+        auto tex = New!Texture(img, this);
+        return tex;
+    }
+    */
+    
     bool isTransparent()
     {
         auto iblending = "blending" in inputs;

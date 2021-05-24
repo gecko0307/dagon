@@ -128,12 +128,11 @@ subroutine(srtParallax) vec2 parallaxOcclusionMapping(in vec3 E, in vec2 uv, in 
 
 subroutine uniform srtParallax parallax;
 
+uniform sampler2D pbrTexture;
 
 /*
  * Roughness
  */
-uniform sampler2D pbrTexture;
-
 subroutine float srtRoughness(in vec2 uv);
 
 uniform float roughnessScalar;
@@ -144,7 +143,7 @@ subroutine(srtRoughness) float roughnessValue(in vec2 uv)
 
 subroutine(srtRoughness) float roughnessMap(in vec2 uv)
 {
-    return texture(pbrTexture, uv).r;
+    return texture(pbrTexture, uv).g;
 }
 
 subroutine uniform srtRoughness roughness;
@@ -163,7 +162,7 @@ subroutine(srtMetallic) float metallicValue(in vec2 uv)
 
 subroutine(srtMetallic) float metallicMap(in vec2 uv)
 {
-    return texture(pbrTexture, uv).g;
+    return texture(pbrTexture, uv).b;
 }
 
 subroutine uniform srtMetallic metallic;
@@ -182,7 +181,7 @@ subroutine(srtSpecularity) float specularityValue(in vec2 uv)
 
 subroutine(srtSpecularity) float specularityMap(in vec2 uv)
 {
-    return texture(pbrTexture, uv).b;
+    return texture(pbrTexture, uv).r;
 }
 
 subroutine uniform srtSpecularity specularity;
@@ -256,10 +255,10 @@ void main()
     fragColor = vec4(fragDiffuse.rgb, layer);
     fragNormal = vec4(N, 0.0);
     fragPBR = vec4(
-        roughness(shiftedTexCoord), 
-        metallic(shiftedTexCoord), 
-        specularity(shiftedTexCoord), 
-        translucency(shiftedTexCoord));
+        roughness(shiftedTexCoord),
+        metallic(shiftedTexCoord),
+        1.0, // TODO: specularity from uniform parameter
+        0.0); // TODO: translucency from uniform parameter
     fragRadiance = vec4(toLinear(emission(shiftedTexCoord)), 1.0);
     fragVelocity = vec4(velocity, blurMask, 0.0);
 }

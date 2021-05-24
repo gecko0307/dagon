@@ -502,6 +502,17 @@ class GLTFAsset: Asset
                                 material.diffuse = baseColorTex;
                         }
                     }
+                    
+                    if ("metallicRoughnessTexture" in pbr)
+                    {
+                        uint metallicRoughnessTexIndex = cast(uint)pbr["metallicRoughnessTexture"].asObject["index"].asNumber;
+                        if (metallicRoughnessTexIndex < textures.length)
+                        {
+                            Texture metallicRoughnessTex = textures[metallicRoughnessTexIndex];
+                            if (metallicRoughnessTex)
+                                material.roughnessMetallic = metallicRoughnessTex;
+                        }
+                    }
                 }
                 
                 if ("normalTexture" in ma)
