@@ -75,7 +75,7 @@ class DeferredRenderer: Renderer
     float ssaoPower = 7.0f;
     float ssaoDenoise = 1.0f;
     
-    float occlusionBufferDetail = 0.75f;
+    float occlusionBufferDetail = 1.0f;
 
     this(EventManager eventManager, Owner owner)
     {

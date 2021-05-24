@@ -51,6 +51,7 @@ class DeferredGeometryPass: RenderPass
     GeometryShader geometryShader;
     TerrainShader terrainShader;
     uint renderedEntities = 0;
+    bool frustumCulling = false;
 
     this(RenderPipeline pipeline, GBuffer gbuffer, EntityGroup group = null)
     {
@@ -78,7 +79,7 @@ class DeferredGeometryPass: RenderPass
                     if (!entityIsTerrain(entity) && !entityIsParticleSystem(entity))
                     {
                         auto bb = entity.boundingBox();
-                        if (state.frustum.intersectsAABB(bb))
+                        if (state.frustum.intersectsAABB(bb) || !frustumCulling)
                         {
                             renderEntity(entity, geometryShader);
                             renderedEntities++;
@@ -96,7 +97,7 @@ class DeferredGeometryPass: RenderPass
                     if (entityIsTerrain(entity))
                     {
                         auto bb = entity.boundingBox();
-                        if (state.frustum.intersectsAABB(bb))
+                        if (state.frustum.intersectsAABB(bb) || !frustumCulling)
                         {
                             renderEntity(entity, terrainShader);
                             renderedEntities++;
