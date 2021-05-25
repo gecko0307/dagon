@@ -14,7 +14,7 @@ If you like Dagon, please support its development on [Patreon](https://www.patre
 
 Screenshots
 -----------
-[![Screenshot4](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/05/sponza1.jpg)](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/05/sponza1.jpg)
+[![Screenshot4](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/05/sponza6.jpg)](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/05/sponza6.jpg)
 
 [![Screenshot3](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/10/eevee_vs_dagon.jpg)](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/10/eevee_vs_dagon.jpg)
 
