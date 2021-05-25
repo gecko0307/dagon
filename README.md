@@ -52,7 +52,8 @@ Features
 
 Planned in future:
 * Screen-space reflections
-* Newton Game Dynamics integration.
+* [Newton Dynamics](http://newtondynamics.com) integration
+* [glTF](https://en.wikipedia.org/wiki/GlTF) support.
 
 Usage
 -----
