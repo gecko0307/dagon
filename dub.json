@@ -30,7 +30,7 @@
     "stringImportPaths": ["data/__internal"],
 
     "dependencies": {
-        "dlib": "~>0.21.0"
+        "dlib": "~>0.22.0-beta1"
     },
 
     "versions": [
@@ -65,7 +65,7 @@
             ],
             "dependencies": {
                 "dagon": "*",
-                "dlib": "~>0.21.0"
+                "dlib": "~>0.22.0-beta1"
             },
             
             "versions": [
@@ -86,7 +86,7 @@
             "dependencies": {
                 "dagon": "*",
                 "dagon:ftfont": "*",
-                "dlib": "~>0.21.0"
+                "dlib": "~>0.22.0-beta1"
             },
             
             "versions": [
@@ -106,7 +106,7 @@
             ],
             "dependencies": {
                 "dagon": "*",
-                "dlib": "~>0.21.0"
+                "dlib": "~>0.22.0-beta1"
             }
         },
         {
@@ -119,7 +119,7 @@
             ],
             "dependencies": {
                 "dagon": "*",
-                "dlib": "~>0.21.0"
+                "dlib": "~>0.22.0-beta1"
             }
         },
         "init-exec"
