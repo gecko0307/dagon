@@ -155,7 +155,7 @@ void main()
         
         if (lightScatteringShadow)
         {
-            vec3 startPosition = vec3(0.0);    
+            vec3 startPosition = vec3(0.0);
             vec3 rayVector = eyePos;
             float rayLength = length(rayVector);
             vec3 rayDirection = rayVector / rayLength;

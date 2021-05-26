@@ -66,7 +66,7 @@ class SunLightShader: Shader
         glBindTexture(GL_TEXTURE_2D_ARRAY, defaultShadowTexture);
         glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT24, 1, 1, 3, 0, GL_DEPTH_COMPONENT, GL_FLOAT, null);
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-	    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
     }
 

@@ -99,7 +99,6 @@ class DeferredLightPass: RenderPass
                     if (light.shining)
                     {
                         state.light = light;
-
                         sunLightShader.bindParameters(&state);
                         screenSurface.render(&state);
                         sunLightShader.unbindParameters(&state);
