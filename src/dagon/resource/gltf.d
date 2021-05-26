@@ -492,18 +492,22 @@ class GLTFAsset: Asset
                 {
                     auto pbr = ma["pbrMetallicRoughness"].asObject;
                     
-                    if ("baseColorTexture" in pbr)
+                    if (pbr && "baseColorTexture" in pbr)
                     {
-                        uint baseColorTexIndex = cast(uint)pbr["baseColorTexture"].asObject["index"].asNumber;
-                        if (baseColorTexIndex < textures.length)
+                        auto bct = pbr["baseColorTexture"].asObject;
+                        if ("index" in bct)
                         {
-                            Texture baseColorTex = textures[baseColorTexIndex];
-                            if (baseColorTex)
-                                material.diffuse = baseColorTex;
+                            uint baseColorTexIndex = cast(uint)bct["index"].asNumber;
+                            if (baseColorTexIndex < textures.length)
+                            {
+                                Texture baseColorTex = textures[baseColorTexIndex];
+                                if (baseColorTex)
+                                    material.diffuse = baseColorTex;
+                            }
                         }
                     }
                     
-                    if ("metallicRoughnessTexture" in pbr)
+                    if (pbr && "metallicRoughnessTexture" in pbr)
                     {
                         uint metallicRoughnessTexIndex = cast(uint)pbr["metallicRoughnessTexture"].asObject["index"].asNumber;
                         if (metallicRoughnessTexIndex < textures.length)
@@ -512,6 +516,16 @@ class GLTFAsset: Asset
                             if (metallicRoughnessTex)
                                 material.roughnessMetallic = metallicRoughnessTex;
                         }
+                    }
+                    
+                    if (pbr && "metallicFactor" in pbr)
+                    {
+                        material.metallic = pbr["metallicFactor"];
+                    }
+                    
+                    if (pbr && "roughnessFactor" in pbr)
+                    {
+                        material.roughness = pbr["roughnessFactor"];
                     }
                 }
                 
@@ -526,7 +540,6 @@ class GLTFAsset: Asset
                     }
                 }
                 
-                material.invertNormalY = false;
                 materials.insertBack(material);
             }
         }
