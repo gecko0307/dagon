@@ -51,7 +51,7 @@ class HUDShader: Shader
     {
         vs = Shader.load("data/__internal/shaders/HUD/HUD.vert.glsl");
         fs = Shader.load("data/__internal/shaders/HUD/HUD.frag.glsl");
-
+        
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
     }

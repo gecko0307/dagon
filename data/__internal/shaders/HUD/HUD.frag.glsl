@@ -17,7 +17,7 @@ subroutine(srtColor) vec4 diffuseColorValue(in vec2 uv)
 uniform sampler2D diffuseTexture;
 subroutine(srtColor) vec4 diffuseColorTexture(in vec2 uv)
 {
-    return texture(diffuseTexture, uv);
+    return textureLod(diffuseTexture, uv, 0.0);
 }
 
 subroutine uniform srtColor diffuse;
