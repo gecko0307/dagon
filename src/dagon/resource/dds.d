@@ -39,7 +39,7 @@ import dlib.image.io.utils;
 
 import dagon.graphics.compressedimage;
 
-//version = DDSPDebug;
+//version = DDSDebug;
 
 struct DDSPixelFormat
 {
@@ -246,6 +246,45 @@ enum FOURCC_DXT3 = makeFourCC('D', 'X', 'T', '3');
 enum FOURCC_DXT5 = makeFourCC('D', 'X', 'T', '5');
 enum FOURCC_DX10 = makeFourCC('D', 'X', '1', '0');
 
+enum FOURCC_BC4U = makeFourCC('B', 'C', '4', 'U');
+enum FOURCC_BC4S = makeFourCC('B', 'C', '4', 'S');
+enum FOURCC_ATI2 = makeFourCC('A', 'T', 'I', '2');
+enum FOURCC_BC5S = makeFourCC('B', 'C', '5', 'S');
+enum FOURCC_RGBG = makeFourCC('R', 'G', 'B', 'G');
+enum FOURCC_GRGB = makeFourCC('G', 'R', 'G', 'B');
+
+enum FOURCC_DXT2 = makeFourCC('D', 'X', 'T', '2');
+
+DXGIFormat resourceFormatFromFourCC(uint fourCC)
+{
+    DXGIFormat format;
+    
+    switch(fourCC)
+    {
+        case FOURCC_DXT1: format = DXGIFormat.BC1_UNORM; break;
+        case FOURCC_DXT3: format = DXGIFormat.BC2_UNORM; break;
+        case FOURCC_DXT5: format = DXGIFormat.BC3_UNORM; break;
+        case FOURCC_BC4U: format = DXGIFormat.BC4_UNORM; break;
+        case FOURCC_BC4S: format = DXGIFormat.BC4_SNORM; break;
+        case FOURCC_ATI2: format = DXGIFormat.BC5_UNORM; break;
+        case FOURCC_BC5S: format = DXGIFormat.BC5_SNORM; break;
+        case FOURCC_RGBG: format = DXGIFormat.R8G8_B8G8_UNORM; break;
+        case FOURCC_GRGB: format = DXGIFormat.G8R8_G8B8_UNORM; break;
+        case 36:          format = DXGIFormat.R16G16B16A16_UNORM; break;
+        case 110:         format = DXGIFormat.R16G16B16A16_SNORM; break;
+        case 111:         format = DXGIFormat.R16_FLOAT; break;
+        case 112:         format = DXGIFormat.R16G16_FLOAT; break;
+        case 113:         format = DXGIFormat.R16G16B16A16_FLOAT; break;
+        case 114:         format = DXGIFormat.R32_FLOAT; break;
+        case 115:         format = DXGIFormat.R32G32_FLOAT; break;
+        case 116:         format = DXGIFormat.R32G32B32A32_FLOAT; break;
+        default:          format = DXGIFormat.UNKNOWN; break;
+        // TODO: FOURCC_DXT2 and other obsolete formats?
+    }
+    
+    return format;
+}
+
 Compound!(CompressedImage, string) loadDDS(InputStream istrm)
 {
     CompressedImage img = null;
@@ -325,62 +364,59 @@ Compound!(CompressedImage, string) loadDDS(InputStream istrm)
 
     CompressedImageFormat format;
 
+    DXGIFormat fmt;
     if (hdr.format.fourCC == FOURCC_DX10)
     {
         DDSHeaderDXT10 dx10 = readStruct!DDSHeaderDXT10(istrm);
-
-        DXGIFormat fmt = cast(DXGIFormat)dx10.dxgiFormat;
-        version(DDSDebug) writeln(fmt);
-
-        switch(fmt)
-        {
-            case DXGIFormat.BC4_UNORM:
-                format = CompressedImageFormat.RGTC1_R;
-                break;
-            case DXGIFormat.BC4_SNORM:
-                format = CompressedImageFormat.RGTC1_R_S;
-                break;
-            case DXGIFormat.BC5_UNORM:
-                format = CompressedImageFormat.RGTC2_RG;
-                break;
-            case DXGIFormat.BC5_SNORM:
-                format = CompressedImageFormat.RGTC2_RG_S;
-                break;
-            case DXGIFormat.BC7_UNORM:
-                format = CompressedImageFormat.BPTC_RGBA_UNORM;
-                break;
-            case DXGIFormat.BC7_UNORM_SRGB:
-                format = CompressedImageFormat.BPTC_SRGBA_UNORM;
-                break;
-            case DXGIFormat.BC6H_SF16:
-                format = CompressedImageFormat.BPTC_RGB_SF;
-                break;
-            case DXGIFormat.BC6H_UF16:
-                format = CompressedImageFormat.BPTC_RGB_UF;
-                break;
-            default:
-                return error("loadDDS error: unsupported compression type");
-        }
+        fmt = cast(DXGIFormat)dx10.dxgiFormat;
     }
     else
     {
-        switch(hdr.format.fourCC)
-        {
-            case FOURCC_DXT1:
-                version(DDSDebug) writeln("FOURCC_DXT1");
-                format = CompressedImageFormat.S3TC_RGB_DXT1;
-                break;
-            case FOURCC_DXT3:
-                version(DDSDebug) writeln("FOURCC_DXT3");
-                format = CompressedImageFormat.S3TC_RGBA_DXT3;
-                break;
-            case FOURCC_DXT5:
-                version(DDSDebug) writeln("FOURCC_DXT5");
-                format = CompressedImageFormat.S3TC_RGBA_DXT5;
-                break;
-            default:
-                return error("loadDDS error: unsupported compression type");
-        }
+        fmt = resourceFormatFromFourCC(hdr.format.fourCC);
+    }
+    
+    version(DDSDebug) writeln("format: ", fmt);
+
+    switch(fmt)
+    {
+        case DXGIFormat.BC1_UNORM:
+            format = CompressedImageFormat.S3TC_RGB_DXT1;
+            break;
+        case DXGIFormat.BC2_UNORM:
+            format = CompressedImageFormat.S3TC_RGBA_DXT3;
+            break;
+        case DXGIFormat.BC3_UNORM:
+            format = CompressedImageFormat.S3TC_RGBA_DXT5;
+            break;
+        case DXGIFormat.BC4_UNORM:
+            format = CompressedImageFormat.RGTC1_R;
+            break;
+        case DXGIFormat.BC4_SNORM:
+            format = CompressedImageFormat.RGTC1_R_S;
+            break;
+        case DXGIFormat.BC5_UNORM:
+            format = CompressedImageFormat.RGTC2_RG;
+            break;
+        case DXGIFormat.BC5_SNORM:
+            format = CompressedImageFormat.RGTC2_RG_S;
+            break;
+        case DXGIFormat.BC7_UNORM:
+            format = CompressedImageFormat.BPTC_RGBA_UNORM;
+            break;
+        case DXGIFormat.BC7_UNORM_SRGB:
+            format = CompressedImageFormat.BPTC_SRGBA_UNORM;
+            break;
+        case DXGIFormat.BC6H_SF16:
+            format = CompressedImageFormat.BPTC_RGB_SF;
+            break;
+        case DXGIFormat.BC6H_UF16:
+            format = CompressedImageFormat.BPTC_RGB_UF;
+            break;
+        case DXGIFormat.R32G32B32A32_FLOAT:
+            format = CompressedImageFormat.RGBAF32;
+            break;
+        default:
+            return error("loadDDS error: unsupported resource format");
     }
 
     size_t bufferSize = cast(size_t)(istrm.size - istrm.getPosition);

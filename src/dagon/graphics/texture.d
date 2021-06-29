@@ -105,6 +105,7 @@ class Texture: Owner
         image = img;
         width = img.width;
         height = img.height;
+        useMipmapFiltering = genMipmaps;
 
         glGenTextures(1, &tex);
         glActiveTexture(GL_TEXTURE0);
@@ -123,28 +124,22 @@ class Texture: Owner
 
             if (!compressedFormatToTextureFormat(compressedImg.compressedFormat, intFormat, blockSize))
             {
-                writeln("Unsupported compressed texture format ", compressedImg.compressedFormat);
-                fallback();
+                if (compressedImg.compressedFormat == CompressedImageFormat.RGBAF32)
+                {
+                    intFormat = GL_RGBA32F;
+                    format = GL_RGBA;
+                    type = GL_FLOAT;
+                    createUncompressedTexture(img.data.ptr, genMipmaps);
+                }
+                else
+                {
+                    writeln("Unsupported compressed texture format ", compressedImg.compressedFormat);
+                    createFallbackTexture();
+                }
             }
             else
             {
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, numMipMaps - 1);
-
-                uint w = width;
-                uint h = height;
-                uint offset = 0;
-                for (uint i = 0; i < numMipMaps; i++)
-                {
-                    uint size = ((w + 3) / 4) * ((h + 3) / 4) * blockSize;
-                    glCompressedTexImage2D(GL_TEXTURE_2D, i, intFormat, w, h, 0, size, cast(void*)(img.data.ptr + offset));
-                    offset += size;
-                    w /= 2;
-                    h /= 2;
-                }
-
-                useMipmapFiltering = genMipmaps;
-                mipmapGenerated = true;
+                createCompressedTexture(img.data.ptr, blockSize, numMipMaps);
             }
         }
         else
@@ -152,25 +147,48 @@ class Texture: Owner
             if (!pixelFormatToTextureFormat(img.pixelFormat, format, intFormat, type))
             {
                 writeln("Unsupported pixel format ", img.pixelFormat);
-                fallback();
+                createFallbackTexture();
             }
             else
             {
-                glTexImage2D(GL_TEXTURE_2D, 0, intFormat, width, height, 0, format, type, cast(void*)img.data.ptr);
-
-                useMipmapFiltering = genMipmaps;
-                if (useMipmapFiltering)
-                {
-                    glGenerateMipmap(GL_TEXTURE_2D);
-                    mipmapGenerated = true;
-                }
+                createUncompressedTexture(img.data.ptr, genMipmaps);
             }
         }
 
         glBindTexture(GL_TEXTURE_2D, 0);
     }
+    
+    protected void createUncompressedTexture(ubyte* data, bool genMipmaps)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, intFormat, width, height, 0, format, type, cast(void*)data);
+        if (genMipmaps)
+        {
+            glGenerateMipmap(GL_TEXTURE_2D);
+            mipmapGenerated = true;
+        }
+    }
+    
+    protected void createCompressedTexture(ubyte* data, uint blockSize, uint numMipMaps)
+    {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, numMipMaps - 1);
 
-    protected void fallback()
+        uint w = width;
+        uint h = height;
+        uint offset = 0;
+        for (uint i = 0; i < numMipMaps; i++)
+        {
+            uint size = ((w + 3) / 4) * ((h + 3) / 4) * blockSize;
+            glCompressedTexImage2D(GL_TEXTURE_2D, i, intFormat, w, h, 0, size, cast(void*)(data + offset));
+            offset += size;
+            w /= 2;
+            h /= 2;
+        }
+        
+        mipmapGenerated = true;
+    }
+
+    protected void createFallbackTexture()
     {
         // TODO: make fallback texture
     }
