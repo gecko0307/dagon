@@ -58,7 +58,6 @@ class Cubemap: Texture
     this(Owner o)
     {
         super(o);
-        initialize();
     }
 
     this(uint resolution, Owner o)
@@ -212,6 +211,20 @@ class Cubemap: Texture
         }
         
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    }
+    
+    void fromImage(SuperImage img, uint resolution = 512)
+    {
+        CompressedImage compImage = cast(CompressedImage)img;
+        if (compImage)
+        {
+            fromCompressedImage(compImage);
+        }
+        else
+        {
+            initialize(resolution);
+            fromEquirectangularMap(img);
+        }
     }
 
     override void bind()
