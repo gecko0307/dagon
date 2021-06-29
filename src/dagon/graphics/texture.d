@@ -122,7 +122,11 @@ class Texture: Owner
             uint blockSize;
             uint numMipMaps = compressedImg.mipMapLevels;
 
-            if (!compressedFormatToTextureFormat(compressedImg.compressedFormat, intFormat, blockSize))
+            if (compressedFormatToTextureFormat(compressedImg.compressedFormat, intFormat, blockSize))
+            {
+                createCompressedTexture(img.data.ptr, blockSize, numMipMaps);
+            }
+            else
             {
                 if (compressedImg.compressedFormat == CompressedImageFormat.RGBAF32)
                 {
@@ -131,15 +135,12 @@ class Texture: Owner
                     type = GL_FLOAT;
                     createUncompressedTexture(img.data.ptr, genMipmaps);
                 }
+                // TODO: CompressedImageFormat.RGBAF16
                 else
                 {
                     writeln("Unsupported compressed texture format ", compressedImg.compressedFormat);
                     createFallbackTexture();
                 }
-            }
-            else
-            {
-                createCompressedTexture(img.data.ptr, blockSize, numMipMaps);
             }
         }
         else

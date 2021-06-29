@@ -415,6 +415,7 @@ Compound!(CompressedImage, string) loadDDS(InputStream istrm)
         case DXGIFormat.R32G32B32A32_FLOAT:
             format = CompressedImageFormat.RGBAF32;
             break;
+        // TODO: support DXGIFormat.R16G16B16A16_FLOAT
         default:
             return error("loadDDS error: unsupported resource format");
     }
