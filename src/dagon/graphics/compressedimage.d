@@ -49,8 +49,8 @@ enum CompressedImageFormat
     BPTC_RGB_SF,
     BPTC_RGB_UF,
     
-    RGBAF32
-    // TODO: RGBAF16
+    RGBAF32,
+    RGBAF16
 }
 
 class CompressedImage: SuperImage

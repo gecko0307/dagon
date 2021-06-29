@@ -174,7 +174,8 @@ class Cubemap: Texture
     {
         initialize();
         
-        if (img.compressedFormat != CompressedImageFormat.RGBAF32)
+        if (img.compressedFormat != CompressedImageFormat.RGBAF32 &&
+            img.compressedFormat != CompressedImageFormat.RGBAF16)
         {
             writefln("Unsupported compressed format %s", img.compressedFormat);
             return;
@@ -188,6 +189,16 @@ class Cubemap: Texture
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, numMipMaps - 1);
         
+        GLint intFormat = GL_RGBA32F;
+        GLenum type = GL_FLOAT;
+        uint pixelSize = 16;
+        if (img.compressedFormat == CompressedImageFormat.RGBAF16)
+        {
+            intFormat = GL_RGBA16F;
+            pixelSize = 8;
+            type = GL_HALF_FLOAT;
+        }
+        
         ubyte* data = img.data.ptr;
         uint offset = 0;
         
@@ -197,8 +208,8 @@ class Cubemap: Texture
             uint h = height;
             for (uint i = 0; i < numMipMaps; i++)
             {
-                uint size = w * h * 16;
-                glTexImage2D(face, i, GL_RGBA32F, w, h, 0, GL_RGBA, GL_FLOAT, cast(void*)(data + offset));
+                uint size = w * h * pixelSize;
+                glTexImage2D(face, i, intFormat, w, h, 0, GL_RGBA, type, cast(void*)(data + offset));
                 offset += size;
                 w /= 2;
                 h /= 2;

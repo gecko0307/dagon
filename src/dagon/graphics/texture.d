@@ -135,7 +135,13 @@ class Texture: Owner
                     type = GL_FLOAT;
                     createUncompressedTexture(img.data.ptr, genMipmaps);
                 }
-                // TODO: CompressedImageFormat.RGBAF16
+                else if (compressedImg.compressedFormat == CompressedImageFormat.RGBAF16)
+                {
+                    intFormat = GL_RGBA16F;
+                    format = GL_RGBA;
+                    type = GL_FLOAT;
+                    createUncompressedTexture(img.data.ptr, genMipmaps);
+                }
                 else
                 {
                     writeln("Unsupported compressed texture format ", compressedImg.compressedFormat);

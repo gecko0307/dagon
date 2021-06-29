@@ -279,7 +279,6 @@ DXGIFormat resourceFormatFromFourCC(uint fourCC)
         case 115:         format = DXGIFormat.R32G32_FLOAT; break;
         case 116:         format = DXGIFormat.R32G32B32A32_FLOAT; break;
         default:          format = DXGIFormat.UNKNOWN; break;
-        // TODO: FOURCC_DXT2 and other obsolete formats?
     }
     
     return format;
@@ -369,6 +368,8 @@ Compound!(CompressedImage, string) loadDDS(InputStream istrm)
     {
         DDSHeaderDXT10 dx10 = readStruct!DDSHeaderDXT10(istrm);
         fmt = cast(DXGIFormat)dx10.dxgiFormat;
+        
+        // TODO: caps
     }
     else
     {
@@ -415,7 +416,9 @@ Compound!(CompressedImage, string) loadDDS(InputStream istrm)
         case DXGIFormat.R32G32B32A32_FLOAT:
             format = CompressedImageFormat.RGBAF32;
             break;
-        // TODO: support DXGIFormat.R16G16B16A16_FLOAT
+        case DXGIFormat.R16G16B16A16_FLOAT:
+            format = CompressedImageFormat.RGBAF16;
+            break;
         default:
             return error("loadDDS error: unsupported resource format");
     }
