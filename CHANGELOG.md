@@ -2,12 +2,17 @@ Dagon 0.12.0-beta1 - TBD
 ------------------------
 - **Rendering**
   - `Light.diffuse` and `Light.specular` parameters that control brightness of diffuse and specular portions of a light
+  - New parameters for particle system objects: `ForceField.active`, `BlackHole.threshold`
+  - Ability to limit camera pitch angle in`FirstPersonViewComponent` (`pitchLimitMax` and `pitchLimitMin` parameters)
 - **Assets**
+  - Initial [glTF](https://www.khronos.org/gltf/) format support. Currently only glTF+bin variant is supported
+  - `Material` now supports `roughnessMetallic` parameter to pass combined PBR texture. Following glTF convention, G channel stores roughness and B stores metallic
   - Built-in disk shape (`dagon.graphics.shapes.ShapeDisk`)
 - **Post-processing**
   - `DeferredRenderer.occlusionBufferDetail` parameter that controls resolution coefficient of SSAO buffer
+  - Fixed a bug in HUD shader with invalid `va_Texcoord` uniform location
 - **Misc**
-  - Dagon now uses dlib 0.21.0.
+  - Dagon now uses dlib 0.22.0.
 
 Dagon 0.11.0 - 21 Oct, 2020
 ---------------------------
