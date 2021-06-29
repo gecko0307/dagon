@@ -41,13 +41,14 @@ import dlib.math.utils;
 
 import dagon.core.bindings;
 import dagon.graphics.texture;
+import dagon.graphics.compressedimage;
 
 enum CubeFace
 {
-    NegativeX = GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
     PositiveX = GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-    NegativeY = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+    NegativeX = GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
     PositiveY = GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+    NegativeY = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
     PositiveZ = GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
     NegativeZ = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
 }
@@ -168,6 +169,49 @@ class Cubemap: Texture
         }
 
         faceImage.free();
+    }
+    
+    void fromCompressedImage(CompressedImage img)
+    {
+        initialize();
+        
+        if (img.compressedFormat != CompressedImageFormat.RGBAF32)
+        {
+            writefln("Unsupported compressed format %s", img.compressedFormat);
+            return;
+        }
+        
+        uint width = img.width;
+        uint height = img.height;
+        uint numMipMaps = img.mipMapLevels;
+        
+        glBindTexture(GL_TEXTURE_CUBE_MAP, tex);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, numMipMaps - 1);
+        
+        ubyte* data = img.data.ptr;
+        uint offset = 0;
+        
+        foreach(face; EnumMembers!CubeFace)
+        {
+            uint w = width;
+            uint h = height;
+            for (uint i = 0; i < numMipMaps; i++)
+            {
+                uint size = w * h * 16;
+                glTexImage2D(face, i, GL_RGBA32F, w, h, 0, GL_RGBA, GL_FLOAT, cast(void*)(data + offset));
+                offset += size;
+                w /= 2;
+                h /= 2;
+                if (offset >= img.data.length)
+                {
+                    writeln("Incomplete data");
+                    break;
+                }
+            }
+        }
+        
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     }
 
     override void bind()

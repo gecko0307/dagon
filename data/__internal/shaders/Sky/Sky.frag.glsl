@@ -39,8 +39,7 @@ subroutine(srtEnv) vec3 environmentCubemap(in vec3 dir)
 subroutine uniform srtEnv environment;
 
 
-//layout(location = 0) out vec4 fragColor;
-
+layout(location = 0) out vec4 fragColor;
 layout(location = 3) out vec4 fragRadiance;
 layout(location = 4) out vec4 fragVelocity;
 
@@ -53,6 +52,7 @@ void main()
     vec2 velocity = posScreen - prevPosScreen;
     const float blurMask = 1.0; 
     
+    fragColor = vec4(fragDiffuse, 0.0);
     fragRadiance = vec4(fragDiffuse, 0.0);
     fragVelocity = vec4(velocity, blurMask, 0.0);
 }
