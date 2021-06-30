@@ -86,18 +86,20 @@ void main()
     vec4 pbr = texture(pbrBuffer, texCoord);
     float roughness = pbr.r;
     float metallic = pbr.g;
-    float specularity = pbr.b;
+    float reflectivity = pbr.b;
     
     float occlusion = haveOcclusionBuffer? texture(occlusionBuffer, texCoord).r : 1.0;
     
     vec3 f0 = mix(vec3(0.04), albedo, metallic);
 
     // Ambient light
-    vec3 ambientDiffuse = ambient(worldN, 0.99);
-    vec3 ambientSpecular = ambient(worldR, roughness) * specularity;
+    vec3 irradiance = ambient(worldN, 0.99); // TODO: support separate irradiance map
+    vec3 reflection = ambient(worldR, roughness) * reflectivity;
     vec3 F = fresnelRoughness(max(dot(N, E), 0.0), f0, roughness);
     vec3 kD = (1.0 - F) * (1.0 - metallic);
-    vec3 radiance = kD * ambientDiffuse * albedo * occlusion + F * ambientSpecular; // TODO: support BRDF LUT (F * brdf.x + brdf.y)
+    // vec2 brdf = texture(brdfLUT, vec2(max(dot(N, E), 0.0), roughness)).rg;
+    vec3 specular = F * reflection; // TODO: support BRDF LUT (F * brdf.x + brdf.y)
+    vec3 radiance = (kD * irradiance * albedo + specular) * occlusion;
     
     // Fog
     float linearDepth = abs(eyePos.z);
