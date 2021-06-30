@@ -80,7 +80,7 @@ void main()
     
     vec3 worldCamPos = (invViewMatrix[3]).xyz;
     vec3 worldE = normalize(worldPos - worldCamPos);
-    vec3 worldN = normalize(N * mat3(viewMatrix));
+    vec3 worldN = normalize((vec4(N, 0.0) * viewMatrix).xyz);
     vec3 worldR = reflect(worldE, worldN);
     
     vec4 pbr = texture(pbrBuffer, texCoord);
@@ -97,7 +97,7 @@ void main()
     vec3 ambientSpecular = ambient(worldR, roughness) * specularity;
     vec3 F = fresnelRoughness(max(dot(N, E), 0.0), f0, roughness);
     vec3 kD = (1.0 - F) * (1.0 - metallic);
-    vec3 radiance = kD * ambientDiffuse * albedo * occlusion + F * ambientSpecular;
+    vec3 radiance = kD * ambientDiffuse * albedo * occlusion + F * ambientSpecular; // TODO: support BRDF LUT (F * brdf.x + brdf.y)
     
     // Fog
     float linearDepth = abs(eyePos.z);
