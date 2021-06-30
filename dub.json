@@ -30,7 +30,7 @@
     "stringImportPaths": ["data/__internal"],
 
     "dependencies": {
-        "dlib": "~>0.22.0-beta1"
+        "dlib": "~>0.22.0"
     },
 
     "versions": [

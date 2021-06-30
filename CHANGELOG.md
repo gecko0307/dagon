@@ -6,7 +6,9 @@ Dagon 0.12.0-beta1 - TBD
   - Ability to limit camera pitch angle in`FirstPersonViewComponent` (`pitchLimitMax` and `pitchLimitMin` parameters)
 - **Assets**
   - Initial [glTF](https://www.khronos.org/gltf/) format support. Currently only glTF+bin variant is supported
+  - DDS cubemaps support, in 32 and 16-bit RGBA floating-point formats and with pre-baked mipmaps
   - `Material` now supports `roughnessMetallic` parameter to pass combined PBR texture. Following glTF convention, G channel stores roughness and B stores metallic
+  - Cubemaps now can be created from any image (equirectangular HDR or DDS with mipmaps) using `fromImage` method
   - Built-in disk shape (`dagon.graphics.shapes.ShapeDisk`)
 - **Post-processing**
   - `DeferredRenderer.occlusionBufferDetail` parameter that controls resolution coefficient of SSAO buffer
