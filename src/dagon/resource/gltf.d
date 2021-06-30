@@ -540,6 +540,17 @@ class GLTFAsset: Asset
                     }
                 }
                 
+                if ("emissiveTexture" in ma)
+                {
+                    uint emissiveTexIndex = cast(uint)ma["emissiveTexture"].asObject["index"].asNumber;
+                    if (emissiveTexIndex < textures.length)
+                    {
+                        Texture emissiveTex = textures[emissiveTexIndex];
+                        if (emissiveTex)
+                            material.emission = emissiveTex;
+                    }
+                }
+                
                 materials.insertBack(material);
             }
         }
