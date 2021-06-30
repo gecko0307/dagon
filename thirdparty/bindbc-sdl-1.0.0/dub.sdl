@@ -1,0 +1,29 @@
+name "bindbc-sdl"
+description "Dynamic and static bindings to SDL2 and its satellite libraries, compatible with -betterC, @nogc, and nothrow."
+homepage ""
+authors "Mike Parker"
+license "Boost"
+
+targetType "staticLibrary"
+targetPath "lib"
+targetName "BindBC_SDL"
+
+configuration "dynamic" {
+    dependency "bindbc-loader" version="~>1.0.0"
+}
+
+configuration "dynamicBC" {
+    dependency "bindbc-loader" version="~>1.0.0"
+    subConfiguration "bindbc-loader" "yesBC"
+    dflags "-betterC"
+}
+
+configuration "static" {
+    versions "BindSDL_Static"
+}
+
+configuration "staticBC" {
+    dflags "-betterC"
+    versions "BindSDL_Static"
+    excludedSourceFiles "source/bindbc/sdl/dynload.d"
+}

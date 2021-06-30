@@ -13,17 +13,17 @@
 
     "importPaths": [
         "src",
-        "thirdparty/bindbc-loader-0.3.1/source",
-        "thirdparty/bindbc-opengl-0.13.0/source",
-        "thirdparty/bindbc-sdl-0.19.0/source",
+        "thirdparty/bindbc-loader-1.0.0/source",
+        "thirdparty/bindbc-opengl-1.0.0/source",
+        "thirdparty/bindbc-sdl-1.0.0/source",
         "thirdparty/bindbc-freetype-0.9.1/source",
         "thirdparty/bindbc-nuklear-0.4.3/source"
     ],
     "sourcePaths": [
         "src",
-        "thirdparty/bindbc-loader-0.3.1/source",
-        "thirdparty/bindbc-opengl-0.13.0/source",
-        "thirdparty/bindbc-sdl-0.19.0/source",
+        "thirdparty/bindbc-loader-1.0.0/source",
+        "thirdparty/bindbc-opengl-1.0.0/source",
+        "thirdparty/bindbc-sdl-1.0.0/source",
         "thirdparty/bindbc-freetype-0.9.1/source",
         "thirdparty/bindbc-nuklear-0.4.3/source"
     ],
@@ -34,7 +34,7 @@
     },
 
     "versions": [
-        "SDL_205",
+        "SDL_2014",
         "GL_40",
         "GL_KHR_debug"
     ],

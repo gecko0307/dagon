@@ -1,0 +1,19 @@
+name "bindbc-opengl"
+description "Dynamic bindings to OpenGL, compatible with -betterC, @nogc, and nothrow."
+homepage ""
+authors "Mike Parker"
+license "Boost"
+
+targetType "staticLibrary"
+targetPath "lib"
+targetName "BindBC_OpenGL"
+
+dependency "bindbc-loader" version="~>1.0.0"
+
+configuration "dynamic" {
+}
+
+configuration "dynamicBC" {
+    subConfiguration "bindbc-loader" "yesBC"
+    dflags "-betterC"
+}
