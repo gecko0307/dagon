@@ -37,6 +37,6 @@ Materials in Dagon are heterogeneous, meaning that their properties (`MaterialIn
 
 `culling` - enable backface culling.
 
-`colorWrite`, `depthWrite` - enable write to color (GBuffer) and depth buffers.
+`colorWrite`, `depthWrite` - enable write to color buffer (or GBuffer) and depth buffers.
 
 `textureScale` - when using textures, this `Vector2f` define the scale of UV coordinates. This is useful to repeat a texture on surface.
