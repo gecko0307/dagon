@@ -1,18 +1,18 @@
-<img align="left" alt="dagon logo" src="https://github.com/gecko0307/dagon/raw/master/logo/dagon-logo-320.png" width="160" />
+<img align="left" alt="dagon logo" src="https://github.com/gecko0307/dagon/raw/master/logo/dagon-logo-320.png" width="100" />
 
 Dagon
 =====
 The goal of this project is creating a modern, easy to use, extendable 3D game engine for D language. Dagon is based on OpenGL 4.0 core profile. It works on Windows and Linux, both 32 and 64-bit.
+
+> Dagon is still under development and lacks a lot of important functionality. Currently it is not recommended to use Dagon in production due to unstable API. Follow Dagon development on [Trello](https://trello.com/b/4sDgRjZI/dagon-0110) to see priority tasks. 
+
+If you like Dagon, please support its development on [Patreon](https://www.patreon.com/gecko0307) or [Liberapay](https://liberapay.com/gecko0307). You can also make one-time donation via [PayPal](https://www.paypal.me/tgafarov). I appreciate any support. Thanks in advance!
 
 [![GitHub Actions CI Status](https://github.com/gecko0307/dagon/workflows/CI/badge.svg)](https://github.com/gecko0307/dagon/actions?query=workflow%3ACI)
 [![DUB Package](https://img.shields.io/dub/v/dagon.svg)](https://code.dlang.org/packages/dagon)
 [![DUB Downloads](https://img.shields.io/dub/dt/dagon.svg)](https://code.dlang.org/packages/dagon)
 [![License](http://img.shields.io/badge/license-boost-blue.svg)](http://www.boost.org/LICENSE_1_0.txt)
 [![Patreon button](https://img.shields.io/badge/patreon-donate-yellow.svg)](http://patreon.com/gecko0307 "Become a Patron!")
-
-> Dagon is still under development and lacks a lot of important functionality. Currently it is not recommended to use Dagon in production due to unstable API. Follow Dagon development on [Trello](https://trello.com/b/4sDgRjZI/dagon-0110) to see priority tasks. 
-
-If you like Dagon, please support its development on [Patreon](https://www.patreon.com/gecko0307) or [Liberapay](https://liberapay.com/gecko0307). You can also make one-time donation via [PayPal](https://www.paypal.me/tgafarov). I appreciate any support. Thanks in advance!
 
 Screenshots
 -----------
