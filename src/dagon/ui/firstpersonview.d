@@ -49,6 +49,7 @@ class FirstPersonViewComponent: EntityComponent
     float turn = 0.0f;
 
     float mouseSensibility = 0.1f;
+    float axisSensibility = 20.0f;
     
     bool active = true;
     
@@ -78,9 +79,10 @@ class FirstPersonViewComponent: EntityComponent
         {
             float turn_m =  (eventManager.mouseX - prevMouseX) * mouseSensibility;
             float pitch_m = (eventManager.mouseY - prevMouseY) * mouseSensibility;
-            
-            pitch -= pitch_m;
-            turn -= turn_m;
+            float axis_v = inputManager.getAxis("vertical") * axisSensibility * mouseSensibility;
+            float axis_h = inputManager.getAxis("horizontal") * axisSensibility * mouseSensibility;
+            pitch -= pitch_m + axis_v;
+            turn -= turn_m + axis_h;
             
             if (pitch > pitchLimitMax)
             {
@@ -118,5 +120,29 @@ class FirstPersonViewComponent: EntityComponent
             entity.invAbsoluteTransformation = entity.invTransformation;
             entity.prevAbsoluteTransformation = entity.prevTransformation;
         }
+    }
+    
+    void moveForward(float speed)
+    {
+        Vector3f forward = entity.transformation.forward;
+        entity.position -= forward.normalized * speed;
+    }
+    
+    void moveBack(float speed)
+    {
+        Vector3f forward = entity.transformation.forward;
+        entity.position += forward.normalized * speed;
+    }
+    
+    void strafeRight(float speed)
+    {
+        Vector3f right = entity.transformation.right;
+        entity.position += right.normalized * speed;
+    }
+    
+    void strafeLeft(float speed)
+    {
+        Vector3f right = entity.transformation.right;
+        entity.position -= right.normalized * speed;
     }
 }
