@@ -15,7 +15,9 @@ Dagon 0.12.0-beta1 - TBD
 - **Post-processing**
   - `DeferredRenderer.occlusionBufferDetail` parameter that controls resolution coefficient of SSAO buffer
 - **Misc**
-  - Dagon now uses SDL 2.0.14, dlib 0.22.0, bindbc-loader 1.0.0, bindbc-sdl 1.0.0, bindbc-opengl 1.0.0.
+  - Dagon now uses SDL 2.0.14, dlib 0.22.0, bindbc-loader 1.0.0, bindbc-sdl 1.0.0, bindbc-opengl 1.0.0
+  - Dagon now recognizes a configuration file (`settings.conf`) in project folder. Configuration overrides some of the hardcoded application settings, such as window width and height, fullscreen and window title
+  - Now it is possible to hide console window by specifying `hideConsole: 1;` in `settings.conf`.
 
 Dagon 0.11.0 - 21 Oct, 2020
 ---------------------------
