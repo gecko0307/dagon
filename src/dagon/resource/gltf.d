@@ -38,6 +38,7 @@ import dlib.container.array;
 import dlib.serialization.json;
 import dlib.text.str;
 import dlib.math.vector;
+import dlib.image.image;
 
 import dagon.core.bindings;
 import dagon.resource.asset;
@@ -107,10 +108,11 @@ class GLTFBufferView: Owner
     GLTFBuffer buffer;
     uint offset;
     uint len;
+    uint stride;
     ubyte[] slice;
     GLenum target;
     
-    this(GLTFBuffer buffer, uint offset, uint len, GLenum target, Owner o)
+    this(GLTFBuffer buffer, uint offset, uint len, uint stride, GLenum target, Owner o)
     {
         super(o);
         
@@ -120,6 +122,7 @@ class GLTFBufferView: Owner
         this.buffer = buffer;
         this.offset = offset;
         this.len = len;
+        this.stride = stride;
         this.target = target;
         
         if (offset < buffer.array.length && offset+len <= buffer.array.length)
@@ -153,10 +156,12 @@ class GLTFAccessor: Owner
 {
     GLTFBufferView bufferView;
     GLTFDataType dataType;
+    uint numComponents;
     GLenum componentType;
     uint count;
+    uint byteOffset;
     
-    this(GLTFBufferView bufferView, GLTFDataType dataType, GLenum componentType, uint count, Owner o)
+    this(GLTFBufferView bufferView, GLTFDataType dataType, GLenum componentType, uint count, uint byteOffset, Owner o)
     {
         super(o);
         
@@ -167,6 +172,19 @@ class GLTFAccessor: Owner
         this.dataType = dataType;
         this.componentType = componentType;
         this.count = count;
+        this.byteOffset = byteOffset;
+        
+        switch(dataType)
+        {
+            case GLTFDataType.Scalar: numComponents = 1; break;
+            case GLTFDataType.Vec2:   numComponents = 2; break;
+            case GLTFDataType.Vec3:   numComponents = 3; break;
+            case GLTFDataType.Vec4:   numComponents = 4; break;
+            case GLTFDataType.Mat2:   numComponents = 2 * 2; break;
+            case GLTFDataType.Mat3:   numComponents = 3 * 3; break;
+            case GLTFDataType.Mat4:   numComponents = 4 * 4; break;
+            default: numComponents = 1; break;
+        }
     }
     
     ~this()
@@ -238,15 +256,15 @@ class GLTFMesh: Owner, Drawable
         
         glEnableVertexAttribArray(VertexAttrib.Vertices);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glVertexAttribPointer(VertexAttrib.Vertices, 3, GL_FLOAT, GL_FALSE, 0, null);
+        glVertexAttribPointer(VertexAttrib.Vertices, positionAccessor.numComponents, positionAccessor.componentType, GL_FALSE, positionAccessor.bufferView.stride, cast(void*)positionAccessor.byteOffset);
         
         glEnableVertexAttribArray(VertexAttrib.Normals);
         glBindBuffer(GL_ARRAY_BUFFER, nbo);
-        glVertexAttribPointer(VertexAttrib.Normals, 3, GL_FLOAT, GL_FALSE, 0, null);
+        glVertexAttribPointer(VertexAttrib.Normals, normalAccessor.numComponents, normalAccessor.componentType, GL_FALSE, normalAccessor.bufferView.stride, cast(void*)normalAccessor.byteOffset);
         
         glEnableVertexAttribArray(VertexAttrib.Texcoords);
         glBindBuffer(GL_ARRAY_BUFFER, tbo);
-        glVertexAttribPointer(VertexAttrib.Texcoords, 2, GL_FLOAT, GL_FALSE, 0, null);
+        glVertexAttribPointer(VertexAttrib.Texcoords, texCoord0Accessor.numComponents, texCoord0Accessor.componentType, GL_FALSE, texCoord0Accessor.bufferView.stride, cast(void*)texCoord0Accessor.byteOffset);
         
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eao);
         
@@ -260,7 +278,7 @@ class GLTFMesh: Owner, Drawable
         if (canRender)
         {
             glBindVertexArray(vao);
-            glDrawElements(GL_TRIANGLES, indexAccessor.count, indexAccessor.componentType, cast(void*)0);
+            glDrawElements(GL_TRIANGLES, indexAccessor.count, indexAccessor.componentType, cast(void*)indexAccessor.byteOffset);
             glBindVertexArray(0);
         }
     }
@@ -361,6 +379,7 @@ class GLTFAsset: Asset
                 uint bufferIndex = 0;
                 uint byteOffset = 0;
                 uint byteLength = 0;
+                uint byteStride = 0;
                 GLenum target = GL_ARRAY_BUFFER;
                 
                 if ("buffer" in bv)
@@ -369,18 +388,20 @@ class GLTFAsset: Asset
                     byteOffset = cast(uint)bv["byteOffset"].asNumber;
                 if ("byteLength" in bv)
                     byteLength = cast(uint)bv["byteLength"].asNumber;
+                if ("byteStride" in bv)
+                    byteStride = cast(uint)bv["byteStride"].asNumber;
                 if ("target" in bv)
                     target = cast(GLenum)bv["target"].asNumber;
                 
                 if (bufferIndex < buffers.length)
                 {
-                    GLTFBufferView bufv = New!GLTFBufferView(buffers[bufferIndex], byteOffset, byteLength, target, this);
+                    GLTFBufferView bufv = New!GLTFBufferView(buffers[bufferIndex], byteOffset, byteLength, byteStride, target, this);
                     bufferViews.insertBack(bufv);
                 }
                 else
                 {
                     writeln("Warning: can't create buffer view for nonexistent buffer ", bufferIndex);
-                    GLTFBufferView bufv = New!GLTFBufferView(null, 0, 0, 0, this);
+                    GLTFBufferView bufv = New!GLTFBufferView(null, 0, 0, 0, 0, this);
                     bufferViews.insertBack(bufv);
                 }
             }
@@ -395,9 +416,10 @@ class GLTFAsset: Asset
             {
                 auto acc = accessor.asObject;
                 uint bufferViewIndex = 0;
-                GLenum componentType;
+                GLenum componentType = GL_FLOAT;
                 string type;
                 uint count = 0;
+                uint byteOffset = 0;
                 
                 if ("bufferView" in acc)
                     bufferViewIndex = cast(uint)acc["bufferView"].asNumber;
@@ -407,6 +429,8 @@ class GLTFAsset: Asset
                     type = acc["type"].asString;
                 if ("count" in acc)
                     count = cast(uint)acc["count"].asNumber;
+                if ("byteOffset" in acc)
+                    byteOffset = cast(uint)acc["byteOffset"].asNumber;
                 
                 GLTFDataType dataType = GLTFDataType.Undefined;
                 if (type == "SCALAR")
@@ -428,13 +452,13 @@ class GLTFAsset: Asset
                 
                 if (bufferViewIndex < bufferViews.length)
                 {
-                    GLTFAccessor ac = New!GLTFAccessor(bufferViews[bufferViewIndex], dataType, componentType, count, this);
+                    GLTFAccessor ac = New!GLTFAccessor(bufferViews[bufferViewIndex], dataType, componentType, count, byteOffset, this);
                     accessors.insertBack(ac);
                 }
                 else
                 {
                     writeln("Warning: can't create accessor for nonexistent buffer view ", bufferViewIndex);
-                    GLTFAccessor ac = New!GLTFAccessor(null, dataType, componentType, count, this);
+                    GLTFAccessor ac = New!GLTFAccessor(null, dataType, componentType, count, byteOffset, this);
                     accessors.insertBack(ac);
                 }
             }
@@ -574,7 +598,11 @@ class GLTFAsset: Asset
                             {
                                 Texture baseColorTex = textures[baseColorTexIndex];
                                 if (baseColorTex)
+                                {
                                     material.diffuse = baseColorTex;
+                                    if (baseColorTex.image.pixelFormat == IntegerPixelFormat.RGBA8)
+                                        material.blending = Transparent;
+                                }
                             }
                         }
                     }
@@ -598,6 +626,34 @@ class GLTFAsset: Asset
                     if (pbr && "roughnessFactor" in pbr)
                     {
                         material.roughness = pbr["roughnessFactor"].asNumber;
+                    }
+                }
+                else if ("extensions" in ma)
+                {
+                    auto extensions = ma["extensions"].asObject;
+                    
+                    if ("KHR_materials_pbrSpecularGlossiness" in extensions)
+                    {
+                        auto pbr = extensions["KHR_materials_pbrSpecularGlossiness"].asObject;
+                        
+                        if (pbr && "diffuseTexture" in pbr)
+                        {
+                            auto dt = pbr["diffuseTexture"].asObject;
+                            if ("index" in dt)
+                            {
+                                uint diffuseTexIndex = cast(uint)dt["index"].asNumber;
+                                if (diffuseTexIndex < textures.length)
+                                {
+                                    Texture diffuseTex = textures[diffuseTexIndex];
+                                    if (diffuseTex)
+                                    {
+                                        material.diffuse = diffuseTex;
+                                        if (diffuseTex.image.pixelFormat == IntegerPixelFormat.RGBA8)
+                                            material.blending = Transparent;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 
