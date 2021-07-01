@@ -781,9 +781,11 @@ string nameFromMimeType(string mime)
         case "image/jpeg": name = "undefined.jpg"; break;
         case "image/png": name = "undefined.png"; break;
         case "image/tga": name = "undefined.tga"; break;
+        case "image/targa": name = "undefined.tga"; break;
         case "image/bmp": name = "undefined.bmp"; break;
-        case "image/hdr": name = "undefined.hdr"; break;
-        case "image/dds": name = "undefined.dds"; break;
+        case "image/vnd.radiance": name = "undefined.hdr"; break;
+        case "image/x-hdr": name = "undefined.hdr"; break;
+        case "image/x-dds": name = "undefined.dds"; break;
         default: name = ""; break;
     }
     return name;
