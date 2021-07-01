@@ -28,6 +28,8 @@ module dagon.resource.gltf;
 
 import std.stdio;
 import std.path;
+import std.algorithm;
+import std.base64;
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.core.stream;
@@ -295,26 +297,36 @@ class GLTFAsset: Asset
                 auto buf = buffer.asObject;
                 if ("uri" in buf)
                 {
-                    String bufFilename = String(rootDir);
-                    bufFilename ~= "/";
-                    bufFilename ~= buf["uri"].asString;
+                    string uri = buf["uri"].asString;
                     
-                    FileStat fstat;
-                    if (fs.stat(bufFilename.toString, fstat))
+                    if (uri.startsWith("data:application/octet-stream;base64,"))
                     {
-                        auto bufStream = fs.openForInput(bufFilename.toString);
-                        GLTFBuffer b = New!GLTFBuffer(bufStream, this);
-                        buffers.insertBack(b);
-                        Delete(bufStream);
+                        // TODO
+                        writeln("Warning: base64-encoded buffers are not supported yet");
                     }
                     else
                     {
-                        writeln("Warning: buffer file \"", bufFilename, "\" not found");
-                        GLTFBuffer b = New!GLTFBuffer(null, this);
-                        buffers.insertBack(b);
+                        String bufFilename = String(rootDir);
+                        bufFilename ~= "/";
+                        bufFilename ~= buf["uri"].asString;
+                        
+                        FileStat fstat;
+                        if (fs.stat(bufFilename.toString, fstat))
+                        {
+                            auto bufStream = fs.openForInput(bufFilename.toString);
+                            GLTFBuffer b = New!GLTFBuffer(bufStream, this);
+                            buffers.insertBack(b);
+                            Delete(bufStream);
+                        }
+                        else
+                        {
+                            writeln("Warning: buffer file \"", bufFilename, "\" not found");
+                            GLTFBuffer b = New!GLTFBuffer(null, this);
+                            buffers.insertBack(b);
+                        }
+                        
+                        bufFilename.free();
                     }
-                    
-                    bufFilename.free();
                 }
             }
         }
