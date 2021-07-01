@@ -111,7 +111,7 @@ bool compressedTextureFormatSupported(GLenum format)
 
 /++
     Base class to inherit Dagon applications from.
-    `Application` wraps SDL2 window, loads dynamic link libraries using Derelict,
+    `Application` wraps SDL2 window, loads dynamic link libraries using BindBC,
     is responsible for initializing OpenGL context and doing main game loop.
 +/
 class Application: EventListener

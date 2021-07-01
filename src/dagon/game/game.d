@@ -27,6 +27,8 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.game.game;
 
+import std.stdio;
+
 import dlib.core.memory;
 import dlib.core.ownership;
 
@@ -34,6 +36,7 @@ import dagon.core.bindings;
 import dagon.core.event;
 import dagon.core.time;
 import dagon.core.application;
+import dagon.core.config;
 import dagon.graphics.state;
 import dagon.graphics.entity;
 import dagon.resource.scene;
@@ -45,7 +48,6 @@ import dagon.game.hudrenderer;
 
 class Game: Application
 {
-    // TODO: scene manager
     Scene currentScene;
 
     Renderer renderer;
@@ -58,9 +60,28 @@ class Game: Application
     alias postProc = postProcessingRenderer;
     alias present = presentRenderer;
     alias hud = hudRenderer;
+    
+    Configuration config;
 
     this(uint w, uint h, bool fullscreen, string title, string[] args)
     {
+        config = New!Configuration(this);
+        if (config.fromFile("settings.conf"))
+        {
+            if ("windowWidth" in config.props)
+                w = config.props["windowWidth"].toUInt;
+            if ("windowHeight" in config.props)
+                h = config.props["windowHeight"].toUInt;
+            if ("fullscreen" in config.props)
+                fullscreen = cast(bool)(config.props["fullscreen"].toUInt);
+            if ("windowTitle" in config.props)
+                title = config.props["windowTitle"].toString;
+        }
+        else
+        {
+            writeln("Warning: no \"settings.conf\" found");
+        }
+        
         super(w, h, fullscreen, title, args);
 
         deferredRenderer = New!DeferredRenderer(eventManager, this);
