@@ -51,10 +51,19 @@ class GLTFBuffer: Owner
 {
     ubyte[] array;
     
-    this(InputStream istrm, Owner o)
+    this(Owner o)
     {
         super(o);
-        
+    }
+    
+    void fromArray(ubyte[] arr)
+    {
+        array = New!(ubyte[])(arr.length);
+        array[] = arr[];
+    }
+    
+    void fromStream(InputStream istrm)
+    {
         if (istrm is null)
             return;
         
@@ -64,6 +73,26 @@ class GLTFBuffer: Owner
             writeln("Warning: failed to read buffer");
             Delete(array);
         }
+    }
+    
+    void fromFile(ReadOnlyFileSystem fs, string filename)
+    {
+        FileStat fstat;
+        if (fs.stat(filename, fstat))
+        {
+            auto bufStream = fs.openForInput(filename);
+            fromStream(bufStream);
+            Delete(bufStream);
+        }
+        else
+            writeln("Warning: buffer file \"", filename, "\" not found");
+    }
+    
+    void fromBase64(string encoded)
+    {
+        auto decodedLength = Base64.decodeLength(encoded.length);
+        array = New!(ubyte[])(decodedLength);
+        auto decoded = Base64.decode(encoded, array);
     }
     
     ~this()
@@ -298,35 +327,25 @@ class GLTFAsset: Asset
                 if ("uri" in buf)
                 {
                     string uri = buf["uri"].asString;
+                    string base64Prefix = "data:application/octet-stream;base64,";
                     
-                    if (uri.startsWith("data:application/octet-stream;base64,"))
+                    GLTFBuffer b = New!GLTFBuffer(this);
+                    
+                    if (uri.startsWith(base64Prefix))
                     {
-                        // TODO
-                        writeln("Warning: base64-encoded buffers are not supported yet");
+                        auto encoded = uri[base64Prefix.length..$];
+                        b.fromBase64(encoded);
                     }
                     else
                     {
                         String bufFilename = String(rootDir);
                         bufFilename ~= "/";
                         bufFilename ~= buf["uri"].asString;
-                        
-                        FileStat fstat;
-                        if (fs.stat(bufFilename.toString, fstat))
-                        {
-                            auto bufStream = fs.openForInput(bufFilename.toString);
-                            GLTFBuffer b = New!GLTFBuffer(bufStream, this);
-                            buffers.insertBack(b);
-                            Delete(bufStream);
-                        }
-                        else
-                        {
-                            writeln("Warning: buffer file \"", bufFilename, "\" not found");
-                            GLTFBuffer b = New!GLTFBuffer(null, this);
-                            buffers.insertBack(b);
-                        }
-                        
+                        b.fromFile(fs, bufFilename.toString);
                         bufFilename.free();
                     }
+                    
+                    buffers.insertBack(b);
                 }
             }
         }
@@ -432,6 +451,8 @@ class GLTFAsset: Asset
                 
                 if ("uri" in im)
                 {
+                    // TODO: load base64-encoded image
+                    
                     String imgFilename = String(rootDir);
                     imgFilename ~= "/";
                     imgFilename ~= im["uri"].asString;
