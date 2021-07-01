@@ -1,8 +1,8 @@
 # Material
-Material in Dagon is a description of entity's surface properties. Dagon implements physically based rendering (PBR) and follows roughness/metallic workflow for materials. 
+Material in Dagon is a description of entity's surface properties. Dagon implements physically based rendering (PBR) and follows roughness/metallic workflow for materials.
 
 ## PBR
-PBR a combination of rendering techniques that bring real-time graphics closer to real world by following laws of optics. PBR operates on a unified set of inputs that are completely independent from lighting, so PBR materials look consistent in any environment and are usually portable between different graphics software and game engines. 
+PBR a combination of rendering techniques that bring real-time graphics closer to real world by following laws of optics. PBR operates on a unified set of inputs that are completely independent from lighting, so PBR materials look consistent in any environment and are usually portable between different graphics software and game engines.
 
 ## Properties
 Materials in Dagon are heterogeneous, meaning that their properties (`MaterialInput` structs) have dynamic typing and can handle both numeric values and textures.
@@ -26,12 +26,12 @@ Materials in Dagon are heterogeneous, meaning that their properties (`MaterialIn
 `parallax` - parallax mapping method: 
 * `ParallaxNone` (0) - parallax mapping turned off
 * `ParallaxSimple` (1) - simple parallax mapping based on eye vector
-* `ParallaxOcclusionMapping` (2) - parallax occlusion mapping
+* `ParallaxOcclusionMapping` (2) - parallax occlusion mapping.
 
 `blending` - blending mode of a surface:
 * `Opaque` (0) - opaque surface. This is set by default
 * `Transparent` (1) - alpha channel of diffuse color (or texture) defines transparency. Note that transparent materials are not supported by deferred pipeline, so such objects will be rendered in forward mode with fallback shading model
-* `Additive` (2) - surface is additively blended with the background. Note that additive blending is not supported by deferred pipeline, so such objects will be rendered in forward mode with fallback shading model
+* `Additive` (2) - surface is additively blended with the background. Note that additive blending is not supported by deferred pipeline, so such objects will be rendered in forward mode with fallback shading model.
 
 `fogEnabled` - if set to `true`, surface will be mixed with fog color based on distance from camera.
 
