@@ -451,8 +451,6 @@ class GLTFAsset: Asset
                 
                 if ("uri" in im)
                 {
-                    // TODO: load base64-encoded image
-                    
                     String imgFilename = String(rootDir);
                     imgFilename ~= "/";
                     imgFilename ~= im["uri"].asString;
@@ -475,9 +473,48 @@ class GLTFAsset: Asset
                     
                     imgFilename.free();
                 }
+                else if ("bufferView" in im)
+                {
+                    uint bufferViewIndex = cast(uint)im["bufferView"].asNumber;
+                    
+                    auto ta = New!TextureAsset(assetManager.imageFactory, assetManager.hdrImageFactory, this);
+                    
+                    if (bufferViewIndex < bufferViews.length)
+                    {
+                        auto bv = bufferViews[bufferViewIndex];
+                        string mimeType = "";
+                        if ("mimeType" in im)
+                            mimeType = im["mimeType"].asString;
+                        if (mimeType == "")
+                            writeln("Warning: image MIME type missing");
+                        else
+                        {
+                            string name = nameFromMimeType(mimeType);
+                            if (name == "")
+                            {
+                                writeln("Warning: unsupported image MIME type ", mimeType);
+                            }
+                            else
+                            {
+                                
+                                bool res = assetManager.loadAssetThreadSafePart(ta, bv.slice, name);
+                                if (!res)
+                                    writeln("Warning: failed to load image");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        writeln("Warning: can't create image from nonexistent buffer view ", bufferViewIndex);
+                    }
+                    
+                    images.insertBack(ta);
+                }
             }
         }
     }
+    
+    // TODO: loadSamplers
     
     void loadTextures(JSONValue root)
     {
@@ -507,6 +544,8 @@ class GLTFAsset: Asset
                         textures.insertBack(texture);
                     }
                 }
+                
+                // TODO: sampler
             }
         }
     }
@@ -553,12 +592,12 @@ class GLTFAsset: Asset
                     
                     if (pbr && "metallicFactor" in pbr)
                     {
-                        material.metallic = pbr["metallicFactor"];
+                        material.metallic = pbr["metallicFactor"].asNumber;
                     }
                     
                     if (pbr && "roughnessFactor" in pbr)
                     {
-                        material.roughness = pbr["roughnessFactor"];
+                        material.roughness = pbr["roughnessFactor"].asNumber;
                     }
                 }
                 
@@ -732,4 +771,20 @@ class GLTFAsset: Asset
         Delete(doc);
         str.free();
     }
+}
+
+string nameFromMimeType(string mime)
+{
+    string name;
+    switch(mime)
+    {
+        case "image/jpeg": name = "undefined.jpg"; break;
+        case "image/png": name = "undefined.png"; break;
+        case "image/tga": name = "undefined.tga"; break;
+        case "image/bmp": name = "undefined.bmp"; break;
+        case "image/hdr": name = "undefined.hdr"; break;
+        case "image/dds": name = "undefined.dds"; break;
+        default: name = ""; break;
+    }
+    return name;
 }

@@ -211,6 +211,24 @@ class AssetManager: Owner
         Delete(loadingThread);
         loadingThread = New!Thread(&threadFunc);
     }
+    
+    bool loadAssetThreadSafePart(Asset asset, ubyte[] buffer, string filename)
+    {
+        ArrayStream arrStrm = New!ArrayStream(buffer);
+        bool res = loadAssetThreadSafePart(asset, arrStrm, filename);
+        Delete(arrStrm);
+        return res;
+    }
+    
+    bool loadAssetThreadSafePart(Asset asset, InputStream istrm, string filename)
+    {
+        bool res = asset.loadThreadSafePart(filename, istrm, fs, this);
+        if (!res)
+        {
+            writefln("Error: failed to load asset \"%s\"", filename);
+        }
+        return res;
+    }
 
     bool loadAssetThreadSafePart(Asset asset, string filename)
     {
@@ -221,13 +239,7 @@ class AssetManager: Owner
         }
 
         auto fstrm = fs.openForInput(filename);
-
-        bool res = asset.loadThreadSafePart(filename, fstrm, fs, this);
-        if (!res)
-        {
-            writefln("Error: failed to load asset \"%s\"", filename);
-        }
-
+        bool res = loadAssetThreadSafePart(asset, fstrm, filename);
         Delete(fstrm);
         return res;
     }
