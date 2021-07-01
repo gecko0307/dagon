@@ -77,12 +77,12 @@ class FirstPersonViewComponent: EntityComponent
         
         if (active)
         {
-            float turn_m =  (eventManager.mouseX - prevMouseX) * mouseSensibility;
-            float pitch_m = (eventManager.mouseY - prevMouseY) * mouseSensibility;
-            float axis_v = inputManager.getAxis("vertical") * axisSensibility * mouseSensibility;
-            float axis_h = inputManager.getAxis("horizontal") * axisSensibility * mouseSensibility;
-            pitch -= pitch_m + axis_v;
-            turn -= turn_m + axis_h;
+            float mouseRelH =  (eventManager.mouseX - prevMouseX) * mouseSensibility;
+            float mouseRelV = (eventManager.mouseY - prevMouseY) * mouseSensibility;
+            float axisV = inputManager.getAxis("vertical") * axisSensibility * mouseSensibility;
+            float axisH = inputManager.getAxis("horizontal") * axisSensibility * mouseSensibility;
+            pitch -= mouseRelV + axisV;
+            turn -= mouseRelH + axisH;
             
             if (pitch > pitchLimitMax)
             {
