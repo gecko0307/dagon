@@ -27,7 +27,7 @@ Screenshots
 Features
 --------
 * Static and animated meshes, OBJ and [IQM](https://github.com/lsalzman/iqm) formats support
-* Textures in PNG, JPG, TGA, BMP, HDR formats
+* Textures in PNG, JPG, TGA, BMP, HDR, DDS formats
 * Own asset format with Blender exporter
 * Deferred pipeline for opaque materials, forward pipeline for transparent materials and materials with custom shaders
 * Physically based rendering (PBR)
@@ -59,13 +59,9 @@ Planned in future:
 * [Newton Dynamics](http://newtondynamics.com) integration
 * [glTF](https://en.wikipedia.org/wiki/GlTF) support.
 
-Usage
------
-To use latest stable Dagon, add the following dependency to your `dub.json`:
-```
-"dagon": "~>0.11.0"
-```
-Instead of manually configuring a new Dagon project, you can use a template with `dub init`. Create an empty directory for the project, cd to it and run the following:
+Getting Started
+---------------
+The recommended way to start using Dagon is creating a game template with `dub init`. Create an empty directory for the project, cd to it and run the following:
 ```
 dub init --type=dagon
 dub build
