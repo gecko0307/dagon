@@ -15,8 +15,8 @@ class MyScene: Scene
     override void beforeLoad()
     {
         // Create assets
-        // aModel = addOBJAsset("assets/model.obj");
-        // aTexture = addTextureAsset("assets/texture.png");
+        // aModel = addOBJAsset("data/model.obj");
+        // aTexture = addTextureAsset("data/texture.png");
     }
     
     override void onLoad(Time t, float progress)
