@@ -4,7 +4,7 @@ Dagon
 =====
 The goal of this project is creating a modern, easy to use, extendable 3D game engine for D language. Dagon is based on OpenGL 4.0 core profile. It works on Windows and Linux, both 32 and 64-bit.
 
-> Dagon is still under development and lacks a lot of important functionality. Currently it is not recommended to use Dagon in production due to unstable API. Follow Dagon development on [Trello](https://trello.com/b/4sDgRjZI/dagon-0110) to see priority tasks. 
+The engine is still under development and lacks a lot of important functionality. Currently it is not recommended to use Dagon in production due to unstable API. Follow development on [Trello](https://trello.com/b/4sDgRjZI/dagon-0110) to see priority tasks.
 
 If you like Dagon, please support its development on [Patreon](https://www.patreon.com/gecko0307) or [Liberapay](https://liberapay.com/gecko0307). You can also make one-time donation via [PayPal](https://www.paypal.me/tgafarov). I appreciate any support. Thanks in advance!
 
