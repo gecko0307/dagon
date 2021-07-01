@@ -46,6 +46,8 @@ import dagon.game.postprocrenderer;
 import dagon.game.presentrenderer;
 import dagon.game.hudrenderer;
 
+version(Windows) import core.sys.windows.windows;
+
 class Game: Application
 {
     Scene currentScene;
@@ -76,6 +78,9 @@ class Game: Application
                 fullscreen = cast(bool)(config.props["fullscreen"].toUInt);
             if ("windowTitle" in config.props)
                 title = config.props["windowTitle"].toString;
+            version(Windows) if ("hideConsole" in config.props)
+                if (config.props["hideConsole"].toUInt)
+                    ShowWindow(GetConsoleWindow(), SW_HIDE);
         }
         else
         {

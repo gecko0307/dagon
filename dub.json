@@ -43,6 +43,8 @@
         "allowWarnings"
     ],
     
+    "libs-windows-x86_64": ["user32"],
+    
     "configurations": [
         {
             "name": "library",
