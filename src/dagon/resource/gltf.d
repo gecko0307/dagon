@@ -651,33 +651,6 @@ class GLTFAsset: Asset
                 {
                     auto pbr = ma["pbrMetallicRoughness"].asObject;
                     
-                    if (pbr && "baseColorFactor" in pbr)
-                    {
-                        material.diffuse = pbr["baseColorFactor"].asColor;
-                    }
-                    else
-                    {
-                        material.diffuse = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
-                    }
-                    
-                    if (pbr && "metallicFactor" in pbr)
-                    {
-                        material.metallic = pbr["metallicFactor"].asNumber;
-                    }
-                    else
-                    {
-                        material.metallic = 1.0f;
-                    }
-                    
-                    if (pbr && "roughnessFactor" in pbr)
-                    {
-                        material.roughness = pbr["roughnessFactor"].asNumber;
-                    }
-                    else
-                    {
-                        material.roughness = 1.0f;
-                    }
-                    
                     if (pbr && "baseColorTexture" in pbr)
                     {
                         auto bct = pbr["baseColorTexture"].asObject;
@@ -696,6 +669,14 @@ class GLTFAsset: Asset
                             }
                         }
                     }
+                    else if (pbr && "baseColorFactor" in pbr)
+                    {
+                        material.diffuse = pbr["baseColorFactor"].asColor;
+                    }
+                    else
+                    {
+                        material.diffuse = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+                    }
                     
                     if (pbr && "metallicRoughnessTexture" in pbr)
                     {
@@ -705,6 +686,26 @@ class GLTFAsset: Asset
                             Texture metallicRoughnessTex = textures[metallicRoughnessTexIndex];
                             if (metallicRoughnessTex)
                                 material.roughnessMetallic = metallicRoughnessTex;
+                        }
+                    }
+                    else
+                    {
+                        if (pbr && "metallicFactor" in pbr)
+                        {
+                            material.metallic = pbr["metallicFactor"].asNumber;
+                        }
+                        else
+                        {
+                            material.metallic = 1.0f;
+                        }
+                        
+                        if (pbr && "roughnessFactor" in pbr)
+                        {
+                            material.roughness = pbr["roughnessFactor"].asNumber;
+                        }
+                        else
+                        {
+                            material.roughness = 1.0f;
                         }
                     }
                 }
