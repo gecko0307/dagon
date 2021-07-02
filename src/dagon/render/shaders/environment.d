@@ -144,6 +144,26 @@ class EnvironmentShader: Shader
         {
             setParameter("haveOcclusionBuffer", false);
         }
+        
+        // Texture 6 - environment BRDF LUT
+        if (state.environment)
+        {
+            if (state.environment.ambientBRDF)
+            {
+                glActiveTexture(GL_TEXTURE6);
+                state.environment.ambientBRDF.bind();
+                setParameter("ambientBRDF", 6);
+                setParameter("haveAmbientBRDF", true);
+            }
+            else
+            {
+                setParameter("haveAmbientBRDF", false);
+            }
+        }
+        else
+        {
+            setParameter("haveAmbientBRDF", false);
+        }
 
         glActiveTexture(GL_TEXTURE0);
 
@@ -171,6 +191,9 @@ class EnvironmentShader: Shader
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
         glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE6);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE0);

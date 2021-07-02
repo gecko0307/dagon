@@ -199,6 +199,25 @@ class Texture: Owner
     {
         // TODO: make fallback texture
     }
+    
+    void enableRepeat(bool mode)
+    {
+        if (glIsTexture(tex))
+        {
+            glBindTexture(GL_TEXTURE_2D, tex);
+            
+            if (mode)
+            {
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            }
+            else
+            {
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            }
+        }
+    }
 
     void bind()
     {

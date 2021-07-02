@@ -63,6 +63,9 @@ subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float roughness)
 subroutine uniform srtAmbient ambient;
 
 
+uniform sampler2D ambientBRDF;
+uniform bool haveAmbientBRDF;
+
 void main()
 {
     vec4 col = texture(colorBuffer, texCoord);
@@ -77,6 +80,7 @@ void main()
     vec3 N = normalize(texture(normalBuffer, texCoord).rgb);
     vec3 E = normalize(-eyePos);
     vec3 R = reflect(E, N);
+    float NE = max(dot(N, E), 0.0);
     
     vec3 worldCamPos = (invViewMatrix[3]).xyz;
     vec3 worldE = normalize(worldPos - worldCamPos);
@@ -95,10 +99,10 @@ void main()
     // Ambient light
     vec3 irradiance = ambient(worldN, 0.99); // TODO: support separate irradiance map
     vec3 reflection = ambient(worldR, roughness) * reflectivity;
-    vec3 F = fresnelRoughness(max(dot(N, E), 0.0), f0, roughness);
+    vec3 F = fresnelRoughness(NE, f0, roughness);
     vec3 kD = (1.0 - F) * (1.0 - metallic);
-    // vec2 brdf = texture(brdfLUT, vec2(max(dot(N, E), 0.0), roughness)).rg;
-    vec3 specular = F * reflection; // TODO: support BRDF LUT (F * brdf.x + brdf.y)
+    vec2 brdf = haveAmbientBRDF? texture(ambientBRDF, vec2(NE, roughness)).rg : vec2(1.0, 0.0);
+    vec3 specular = reflection * (F * brdf.x + brdf.y);
     vec3 radiance = (kD * irradiance * albedo + specular) * occlusion;
     
     // Fog
