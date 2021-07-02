@@ -230,7 +230,7 @@ class GLTFAccessor: Owner
     }
 }
 
-class GLTFMesh: Owner, Drawable
+class GLTFMeshPrimitive: Owner, Drawable
 {
     GLTFAccessor positionAccessor;
     GLTFAccessor normalAccessor;
@@ -331,6 +331,39 @@ class GLTFMesh: Owner, Drawable
             glDeleteBuffers(1, &tbo);
             glDeleteBuffers(1, &eao);
         }
+    }
+}
+
+class GLTFMesh: Owner, Drawable
+{
+    Array!GLTFMeshPrimitive primitives;
+
+    this(Owner o)
+    {
+        super(o);
+    }
+    
+    void render(GraphicsState* state)
+    {
+        GraphicsState newState = *state;
+        foreach(primitive; primitives)
+        {
+            if (primitive.material)
+                primitive.material.bind(&newState);
+
+            newState.shader.bindParameters(&newState);
+
+            primitive.render(&newState);
+
+            newState.shader.unbindParameters(&newState);
+
+            if (primitive.material)
+                primitive.material.unbind(&newState);
+        }
+    }
+    
+    ~this()
+    {
     }
 }
 
@@ -786,6 +819,8 @@ class GLTFAsset: Asset
             {
                 auto m = mesh.asObject;
                 
+                GLTFMesh me = New!GLTFMesh(this);
+                
                 if ("primitives" in m)
                 {
                     foreach(prim; m["primitives"].asArray)
@@ -865,10 +900,12 @@ class GLTFAsset: Asset
                             writeln("Warning: mesh ", i, " lacks indices");
                         }
                         
-                        GLTFMesh me = New!GLTFMesh(positionAccessor, normalAccessor, texCoord0Accessor, indexAccessor, material, this);
-                        meshes.insertBack(me);
+                        GLTFMeshPrimitive pr = New!GLTFMeshPrimitive(positionAccessor, normalAccessor, texCoord0Accessor, indexAccessor, material, this);
+                        me.primitives.insertBack(pr);
                     }
                 }
+                
+                meshes.insertBack(me);
             }
         }
     }
@@ -892,10 +929,6 @@ class GLTFAsset: Asset
                         GLTFMesh mesh = meshes[meshIndex];
                         nodeObj.mesh = mesh;
                         nodeObj.entity.drawable = mesh;
-                        if (mesh.material)
-                        {
-                            nodeObj.entity.material = mesh.material;
-                        }
                     }
                     else
                         writeln("Warning: mesh ", meshIndex, " doesn't exist");
@@ -962,7 +995,8 @@ class GLTFAsset: Asset
     {
         foreach(me; meshes)
         {
-            me.prepareVAO();
+            foreach(p; me.primitives)
+                p.prepareVAO();
         }
         
         foreach(img; images)
