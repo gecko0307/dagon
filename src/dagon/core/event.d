@@ -401,6 +401,16 @@ class EventManager
                         e.height = windowHeight;
                         addEvent(e);
                     }
+                    else if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
+                    {
+                        e = Event(EventType.FocusGain);
+                        addEvent(e);
+                    }
+                    else if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
+                    {
+                        e = Event(EventType.FocusLoss);
+                        addEvent(e);
+                    }
                     break;
 
                 case SDL_DROPFILE:

@@ -52,6 +52,7 @@ class FirstPersonViewComponent: EntityComponent
     float axisSensibility = 20.0f;
     
     bool active = true;
+    bool mouseActive = true;
     
     float pitchLimitMax = 60.0f;
     float pitchLimitMin = -60.0f;
@@ -75,7 +76,7 @@ class FirstPersonViewComponent: EntityComponent
     {
         processEvents();
         
-        if (active)
+        if (active & mouseActive)
         {
             float mouseRelH =  (eventManager.mouseX - prevMouseX) * mouseSensibility;
             float mouseRelV = (eventManager.mouseY - prevMouseY) * mouseSensibility;
@@ -120,6 +121,16 @@ class FirstPersonViewComponent: EntityComponent
             entity.invAbsoluteTransformation = entity.invTransformation;
             entity.prevAbsoluteTransformation = entity.prevTransformation;
         }
+    }
+    
+    override void onFocusGain()
+    {
+        mouseActive = true;
+    }
+    
+    override void onFocusLoss()
+    {
+        mouseActive = false;
     }
     
     void moveForward(float speed)

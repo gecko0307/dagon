@@ -158,7 +158,10 @@ class Entity: Owner, Updateable
 
     void addChild(Entity e)
     {
+        if (e.parent)
+            e.parent.removeChild(e);
         children.append(e);
+        e.parent = this;
     }
 
     void removeChild(Entity e)

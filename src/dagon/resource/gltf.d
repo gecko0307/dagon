@@ -38,15 +38,43 @@ import dlib.container.array;
 import dlib.serialization.json;
 import dlib.text.str;
 import dlib.math.vector;
+import dlib.math.matrix;
+import dlib.math.transformation;
+import dlib.math.quaternion;
 import dlib.image.image;
 
 import dagon.core.bindings;
 import dagon.resource.asset;
 import dagon.resource.texture;
 import dagon.graphics.drawable;
-import dagon.graphics.mesh;
 import dagon.graphics.texture;
 import dagon.graphics.material;
+import dagon.graphics.mesh;
+import dagon.graphics.entity;
+
+Vector3f asVector(JSONValue value)
+{
+    Vector3f vec = Vector3f(0.0f, 0.0f, 0.0f);
+    foreach(i, v; value.asArray)
+        vec[i] = v.asNumber;
+    return vec;
+}
+
+Matrix4x4f asMatrix(JSONValue value)
+{
+    Matrix4x4f mat = Matrix4x4f.identity;
+    foreach(i, v; value.asArray)
+        mat[i] = v.asNumber;
+    return mat;
+}
+
+Quaternionf asQuaternion(JSONValue value)
+{
+    Quaternionf q = Quaternionf.identity;
+    foreach(i, v; value.asArray)
+        q[i] = v.asNumber;
+    return q;
+}
 
 class GLTFBuffer: Owner
 {
@@ -296,6 +324,29 @@ class GLTFMesh: Owner, Drawable
     }
 }
 
+class GLTFNode: Owner
+{
+    Entity entity;
+    GLTFMesh mesh;
+    Matrix4x4f transformation;
+    size_t[] children;
+    
+    this(Owner o)
+    {
+        super(o);
+        transformation = Matrix4x4f.identity;
+        entity = New!Entity(this);
+        //if (parent)
+        //    e.setParent(parent);
+    }
+    
+    ~this()
+    {
+        if (children.length)
+            Delete(children);
+    }
+}
+
 class GLTFAsset: Asset
 {
     AssetManager assetManager;
@@ -308,6 +359,8 @@ class GLTFAsset: Asset
     Array!TextureAsset images;
     Array!Texture textures;
     Array!Material materials;
+    Array!GLTFNode nodes;
+    Entity rootEntity;
     
     this(Owner o)
     {
@@ -322,6 +375,7 @@ class GLTFAsset: Asset
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
     {
         assetManager = mngr;
+        rootEntity = New!Entity(this);
         string rootDir = dirName(filename);
         str = String(istrm);
         doc = New!JSONDocument(str.toString);
@@ -332,6 +386,7 @@ class GLTFAsset: Asset
         loadTextures(doc.root);
         loadMaterials(doc.root);
         loadMeshes(doc.root);
+        loadNodes(doc.root);
         return true;
     }
     
@@ -783,6 +838,91 @@ class GLTFAsset: Asset
         }
     }
     
+    void loadNodes(JSONValue root)
+    {
+        if ("nodes" in root.asObject)
+        {
+            foreach(i, n; root.asObject["nodes"].asArray)
+            {
+                auto node = n.asObject;
+                
+                GLTFNode nodeObj = New!GLTFNode(this);
+                nodeObj.entity.setParent(rootEntity);
+                
+                if ("mesh" in node)
+                {
+                    uint meshIndex = cast(uint)node["mesh"].asNumber;
+                    if (meshIndex < meshes.length)
+                    {
+                        GLTFMesh mesh = meshes[meshIndex];
+                        nodeObj.mesh = mesh;
+                        nodeObj.entity.drawable = mesh;
+                        if (mesh.material)
+                        {
+                            //node.mesh.material.culling = false;
+                            nodeObj.entity.material = mesh.material;
+                        }
+                    }
+                    else
+                        writeln("Warning: mesh ", meshIndex, " doesn't exist");
+                }
+                
+                if ("translation" in node)
+                {
+                    nodeObj.entity.position = node["translation"].asVector;
+                }
+                if ("rotation" in node)
+                {
+                    nodeObj.entity.rotation = node["rotation"].asQuaternion;
+                }
+                if ("scale" in node)
+                {
+                    nodeObj.entity.scaling = node["scale"].asVector;
+                }
+                
+                if ("matrix" in node)
+                {
+                    nodeObj.transformation = node["matrix"].asMatrix;
+                    nodeObj.entity.position = nodeObj.transformation.translation;
+                    nodeObj.entity.scaling = nodeObj.transformation.scaling;
+                    nodeObj.entity.rotation = Quaternionf.fromMatrix(nodeObj.transformation);
+                }
+                else
+                {
+                    nodeObj.transformation =
+                        translationMatrix(nodeObj.entity.position) *
+                        nodeObj.entity.rotation.toMatrix4x4 *
+                        scaleMatrix(nodeObj.entity.scaling);
+                }
+                
+                if ("children" in node)
+                {
+                    auto children = node["children"].asArray;
+                    nodeObj.children = New!(size_t[])(children.length);
+                    
+                    foreach(i, c; children)
+                    {
+                        uint childIndex = cast(uint)c.asNumber;
+                        nodeObj.children[i] = childIndex;
+                    }
+                }
+                
+                nodes.insertBack(nodeObj);
+            }
+        }
+        
+        foreach(node; nodes)
+        {
+            foreach(i; node.children)
+            {
+                GLTFNode child = nodes[i];
+                node.entity.addChild(child.entity);
+            }
+        }
+    }
+    
+    // TODO: load scenes
+    
     override bool loadThreadUnsafePart()
     {
         foreach(me; meshes)
@@ -820,8 +960,11 @@ class GLTFAsset: Asset
             deleteOwnedObject(im);
         images.free();
         
-        textures.free();
+        foreach(no; nodes)
+            deleteOwnedObject(no);
+        nodes.free();
         
+        textures.free();
         materials.free();
         
         Delete(doc);
