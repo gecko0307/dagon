@@ -46,6 +46,8 @@ import dlib.image.color;
 import dlib.image.image;
 
 import dagon.core.bindings;
+import dagon.core.event;
+import dagon.core.time;
 import dagon.resource.asset;
 import dagon.resource.texture;
 import dagon.graphics.drawable;
@@ -385,6 +387,23 @@ class GLTFNode: Owner
     {
         if (children.length)
             Delete(children);
+    }
+}
+
+class GLTFNodeComponent: EntityComponent
+{
+    GLTFNode node;
+    
+    this(EventManager em, Entity e, GLTFNode node)
+    {
+        super(em, e);
+        this.node = node;
+    }
+    
+    override void update(Time t)
+    {
+        entity.transformation = node.transformation;
+        entity.updateAbsoluteTransformation();
     }
 }
 
@@ -920,6 +939,7 @@ class GLTFAsset: Asset
                 
                 GLTFNode nodeObj = New!GLTFNode(this);
                 nodeObj.entity.setParent(rootEntity);
+                auto nodeComponent = New!GLTFNodeComponent(assetManager.eventManager, nodeObj.entity, nodeObj);
                 
                 if ("mesh" in node)
                 {
@@ -934,18 +954,6 @@ class GLTFAsset: Asset
                         writeln("Warning: mesh ", meshIndex, " doesn't exist");
                 }
                 
-                if ("translation" in node)
-                {
-                    nodeObj.entity.position = node["translation"].asVector;
-                }
-                if ("rotation" in node)
-                {
-                    nodeObj.entity.rotation = node["rotation"].asQuaternion;
-                }
-                if ("scale" in node)
-                {
-                    nodeObj.entity.scaling = node["scale"].asVector;
-                }
                 
                 if ("matrix" in node)
                 {
@@ -959,6 +967,34 @@ class GLTFAsset: Asset
                     nodeObj.entity.position = position;
                     nodeObj.entity.rotation = rotation;
                     nodeObj.entity.scaling = scale;
+                }
+                else
+                {
+                    Vector3f position = Vector3f(0.0f, 0.0f, 0.0f);
+                    Quaternionf rotation = Quaternionf.identity;
+                    Vector3f scale = Vector3f(1.0f, 1.0f, 1.0f);
+                    
+                    if ("translation" in node)
+                    {
+                        position = node["translation"].asVector;
+                    }
+                    if ("rotation" in node)
+                    {
+                        rotation = node["rotation"].asQuaternion;
+                    }
+                    if ("scale" in node)
+                    {
+                        scale = node["scale"].asVector;
+                    }
+                    
+                    nodeObj.entity.position = position;
+                    nodeObj.entity.rotation = rotation;
+                    nodeObj.entity.scaling = scale;
+                    
+                    nodeObj.transformation =
+                        translationMatrix(position) *
+                        rotation.toMatrix4x4 *
+                        scaleMatrix(scale);
                 }
                 
                 if ("children" in node)

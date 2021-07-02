@@ -179,18 +179,11 @@ class Entity: Owner, Updateable
     {
         components.removeFirst(ec);
     }
-
-    void updateTransformation()
+    
+    void updateAbsoluteTransformation()
     {
-        prevTransformation = transformation;
-
-        transformation =
-            translationMatrix(position) *
-            rotation.toMatrix4x4 *
-            scaleMatrix(scaling);
-
         invTransformation = transformation.inverse;
-
+        
         if (parent)
         {
             absoluteTransformation = parent.absoluteTransformation * transformation;
@@ -205,6 +198,18 @@ class Entity: Owner, Updateable
         }
 
         aabb = AABB(absoluteTransformation.translation, boundingBoxSize);
+    }
+
+    void updateTransformation()
+    {
+        prevTransformation = transformation;
+
+        transformation =
+            translationMatrix(position) *
+            rotation.toMatrix4x4 *
+            scaleMatrix(scaling);
+        
+        updateAbsoluteTransformation();
     }
 
     void updateTransformationDeep()
