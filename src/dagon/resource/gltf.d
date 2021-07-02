@@ -41,6 +41,7 @@ import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.quaternion;
+import dlib.image.color;
 import dlib.image.image;
 
 import dagon.core.bindings;
@@ -74,6 +75,14 @@ Quaternionf asQuaternion(JSONValue value)
     foreach(i, v; value.asArray)
         q[i] = v.asNumber;
     return q;
+}
+
+Color4f asColor(JSONValue value)
+{
+    Color4f col = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+    foreach(i, v; value.asArray)
+        col[i] = v.asNumber;
+    return col;
 }
 
 class GLTFBuffer: Owner
@@ -643,6 +652,34 @@ class GLTFAsset: Asset
                 {
                     auto pbr = ma["pbrMetallicRoughness"].asObject;
                     
+                    if (pbr && "baseColorFactor" in pbr)
+                    {
+                        writeln(pbr["baseColorFactor"].asColor);
+                        material.diffuse = pbr["baseColorFactor"].asColor;
+                    }
+                    else
+                    {
+                        material.diffuse = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+                    }
+                    
+                    if (pbr && "metallicFactor" in pbr)
+                    {
+                        material.metallic = pbr["metallicFactor"].asNumber;
+                    }
+                    else
+                    {
+                        material.metallic = 1.0f;
+                    }
+                    
+                    if (pbr && "roughnessFactor" in pbr)
+                    {
+                        material.roughness = pbr["roughnessFactor"].asNumber;
+                    }
+                    else
+                    {
+                        material.roughness = 1.0f;
+                    }
+                    
                     if (pbr && "baseColorTexture" in pbr)
                     {
                         auto bct = pbr["baseColorTexture"].asObject;
@@ -671,16 +708,6 @@ class GLTFAsset: Asset
                             if (metallicRoughnessTex)
                                 material.roughnessMetallic = metallicRoughnessTex;
                         }
-                    }
-                    
-                    if (pbr && "metallicFactor" in pbr)
-                    {
-                        material.metallic = pbr["metallicFactor"].asNumber;
-                    }
-                    
-                    if (pbr && "roughnessFactor" in pbr)
-                    {
-                        material.roughness = pbr["roughnessFactor"].asNumber;
                     }
                 }
                 else if ("extensions" in ma)
