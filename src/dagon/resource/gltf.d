@@ -390,19 +390,19 @@ class GLTFNode: Owner
     }
 }
 
-class GLTFNodeComponent: EntityComponent
+class StaticTransformComponent: EntityComponent
 {
-    GLTFNode node;
+    Matrix4x4f transformation;
     
-    this(EventManager em, Entity e, GLTFNode node)
+    this(EventManager em, Entity e, Matrix4x4f transformation)
     {
         super(em, e);
-        this.node = node;
+        this.transformation = transformation;
     }
     
     override void update(Time t)
     {
-        entity.transformation = node.transformation;
+        entity.transformation = transformation;
         entity.updateAbsoluteTransformation();
     }
 }
@@ -939,7 +939,6 @@ class GLTFAsset: Asset
                 
                 GLTFNode nodeObj = New!GLTFNode(this);
                 nodeObj.entity.setParent(rootEntity);
-                auto nodeComponent = New!GLTFNodeComponent(assetManager.eventManager, nodeObj.entity, nodeObj);
                 
                 if ("mesh" in node)
                 {
@@ -959,6 +958,7 @@ class GLTFAsset: Asset
                 {
                     nodeObj.transformation = node["matrix"].asMatrix;
                     
+                    /*
                     Vector3f position;
                     Quaternionf rotation;
                     Vector3f scale;
@@ -967,6 +967,9 @@ class GLTFAsset: Asset
                     nodeObj.entity.position = position;
                     nodeObj.entity.rotation = rotation;
                     nodeObj.entity.scaling = scale;
+                    */
+                    
+                    auto nodeComponent = New!StaticTransformComponent(assetManager.eventManager, nodeObj.entity, nodeObj.transformation);
                 }
                 else
                 {
