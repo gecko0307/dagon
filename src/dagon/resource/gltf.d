@@ -953,22 +953,9 @@ class GLTFAsset: Asset
                         writeln("Warning: mesh ", meshIndex, " doesn't exist");
                 }
                 
-                
                 if ("matrix" in node)
                 {
                     nodeObj.transformation = node["matrix"].asMatrix;
-                    
-                    /*
-                    Vector3f position;
-                    Quaternionf rotation;
-                    Vector3f scale;
-                    decomposeMatrix(nodeObj.transformation, position, rotation, scale);
-                    
-                    nodeObj.entity.position = position;
-                    nodeObj.entity.rotation = rotation;
-                    nodeObj.entity.scaling = scale;
-                    */
-                    
                     auto nodeComponent = New!StaticTransformComponent(assetManager.eventManager, nodeObj.entity, nodeObj.transformation);
                 }
                 else
