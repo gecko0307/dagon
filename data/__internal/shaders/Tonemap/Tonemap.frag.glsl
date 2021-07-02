@@ -20,17 +20,26 @@ out vec4 fragColor;
  * tonemapFilmic is based on a function by Jim Hejl and Richard Burgess-Dawson
  * http://filmicworlds.com/blog/filmic-tonemapping-operators
  */
- 
+
 vec3 hableFunc(vec3 x)
 {
-    return ((x * (0.15 * x + 0.1 * 0.5) + 0.2 * 0.02) / (x * (0.15 * x + 0.5) + 0.2 * 0.3)) - 0.02 / 0.3;
+    const float A = 0.15;
+    const float B = 0.50;
+    const float C = 0.10;
+    const float D = 0.20;
+    const float E = 0.02;
+    const float F = 0.30;
+    const float W = 11.2;
+    return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
 }
 
 vec3 tonemapHable(vec3 x)
 {
-    const float whiteScale = 1.0748724675633854;
-    vec3 c = x;
-    c = hableFunc(c * 2.0) * whiteScale;
+    const float exposureBias = 2.0;
+    vec3 curr = hableFunc(exposureBias * x);
+    const float W = 11.2;
+    vec3 whiteScale = vec3(1.0) / hableFunc(vec3(W));
+    vec3 c = curr * whiteScale;
     return pow(c, vec3(1.0 / 2.2));
 }
 
@@ -54,8 +63,8 @@ vec3 tonemapACES(vec3 x)
 
 vec3 tonemapFilmic(vec3 x)
 {
-	x = max(vec3(0.0), x - 0.004);
-	x = (x * (6.2 * x + 0.5)) / (x * (6.2 * x + 1.7) + 0.06);
+    x = max(vec3(0.0), x - 0.004);
+    x = (x * (6.2 * x + 0.5)) / (x * (6.2 * x + 1.7) + 0.06);
     return x;
 }
 
