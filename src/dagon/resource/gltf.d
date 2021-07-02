@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 module dagon.resource.gltf;
 
 import std.stdio;
+import std.math;
 import std.path;
 import std.algorithm;
 import std.base64;
@@ -345,8 +346,6 @@ class GLTFNode: Owner
         super(o);
         transformation = Matrix4x4f.identity;
         entity = New!Entity(this);
-        //if (parent)
-        //    e.setParent(parent);
     }
     
     ~this()
@@ -654,7 +653,6 @@ class GLTFAsset: Asset
                     
                     if (pbr && "baseColorFactor" in pbr)
                     {
-                        writeln(pbr["baseColorFactor"].asColor);
                         material.diffuse = pbr["baseColorFactor"].asColor;
                     }
                     else
@@ -761,6 +759,19 @@ class GLTFAsset: Asset
                     }
                 }
                 
+                if ("doubleSided" in ma)
+                {
+                    uint doubleSided = cast(uint)ma["doubleSided"].asNumber;
+                    if (doubleSided)
+                        material.culling = false;
+                    else
+                        material.culling = true;
+                }
+                else
+                {
+                    material.culling = true;
+                }
+                
                 materials.insertBack(material);
             }
         }
@@ -839,22 +850,18 @@ class GLTFAsset: Asset
                         if (positionAccessor is null)
                         {
                             writeln("Warning: mesh ", i, " lacks vertex position attributes");
-                            //continue;
                         }
                         if (normalAccessor is null)
                         {
                             writeln("Warning: mesh ", i, " lacks vertex normal attributes");
-                            //continue;
                         }
                         if (texCoord0Accessor is null)
                         {
                             writeln("Warning: mesh ", i, " lacks vertex texCoord0 attributes");
-                            //continue;
                         }
                         if (indexAccessor is null)
                         {
                             writeln("Warning: mesh ", i, " lacks indices");
-                            //continue;
                         }
                         
                         GLTFMesh me = New!GLTFMesh(positionAccessor, normalAccessor, texCoord0Accessor, indexAccessor, material, this);
@@ -886,7 +893,6 @@ class GLTFAsset: Asset
                         nodeObj.entity.drawable = mesh;
                         if (mesh.material)
                         {
-                            //node.mesh.material.culling = false;
                             nodeObj.entity.material = mesh.material;
                         }
                     }
@@ -910,16 +916,15 @@ class GLTFAsset: Asset
                 if ("matrix" in node)
                 {
                     nodeObj.transformation = node["matrix"].asMatrix;
-                    nodeObj.entity.position = nodeObj.transformation.translation;
-                    nodeObj.entity.scaling = nodeObj.transformation.scaling;
-                    nodeObj.entity.rotation = Quaternionf.fromMatrix(nodeObj.transformation);
-                }
-                else
-                {
-                    nodeObj.transformation =
-                        translationMatrix(nodeObj.entity.position) *
-                        nodeObj.entity.rotation.toMatrix4x4 *
-                        scaleMatrix(nodeObj.entity.scaling);
+                    
+                    Vector3f position;
+                    Quaternionf rotation;
+                    Vector3f scale;
+                    decomposeMatrix(nodeObj.transformation, position, rotation, scale);
+                    
+                    nodeObj.entity.position = position;
+                    nodeObj.entity.rotation = rotation;
+                    nodeObj.entity.scaling = scale;
                 }
                 
                 if ("children" in node)
@@ -927,10 +932,10 @@ class GLTFAsset: Asset
                     auto children = node["children"].asArray;
                     nodeObj.children = New!(size_t[])(children.length);
                     
-                    foreach(i, c; children)
+                    foreach(ci, c; children)
                     {
                         uint childIndex = cast(uint)c.asNumber;
-                        nodeObj.children[i] = childIndex;
+                        nodeObj.children[ci] = childIndex;
                     }
                 }
                 
@@ -946,6 +951,8 @@ class GLTFAsset: Asset
                 node.entity.addChild(child.entity);
             }
         }
+        
+        rootEntity.updateTransformationTopDown();
     }
     
     // TODO: load scenes
@@ -1015,4 +1022,34 @@ string nameFromMimeType(string mime)
         default: name = ""; break;
     }
     return name;
+}
+
+void decomposeMatrix(
+    Matrix4x4f m,
+    out Vector3f position,
+    out Quaternionf rotation,
+    out Vector3f scale)
+{
+    position = Vector3f(m[12], m[13], m[14]);
+    
+    float sx = sqrt(m[0] * m[0] + m[1] * m[1] + m[2] * m[2]);
+    float sy = sqrt(m[4] * m[4] + m[5] * m[5] + m[6] * m[6]);
+    float sz = sqrt(m[8] * m[8] + m[9] * m[9] + m[10] * m[10]);
+
+    if (m.determinant < 0)
+        sx = -sx;
+    
+    scale = Vector3f(sx, sy, sz);
+    
+    float invSx = 1.0f / sx;
+    float invSy = 1.0f / sy;
+    float invSz = 1.0f / sz;
+    
+    Matrix3x3f rotationMatrix = matrixf(
+        m[0] * invSx, m[4] * invSy, m[8] * invSz,
+        m[1] * invSx, m[5] * invSy, m[9] * invSz,
+        m[2] * invSx, m[6] * invSy, m[10] * invSz
+    );
+    
+    rotation = Quaternionf.fromMatrix(matrix3x3to4x4(rotationMatrix));
 }

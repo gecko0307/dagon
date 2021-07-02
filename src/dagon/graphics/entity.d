@@ -167,6 +167,7 @@ class Entity: Owner, Updateable
     void removeChild(Entity e)
     {
         children.removeFirst(e);
+        e.parent = null;
     }
 
     void addComponent(EntityComponent ec)
@@ -211,6 +212,16 @@ class Entity: Owner, Updateable
         if (parent)
             parent.updateTransformationDeep();
         updateTransformation();
+    }
+    
+    void updateTransformationTopDown()
+    {
+        updateTransformation();
+        
+        foreach(child; children)
+        {
+            child.updateTransformationTopDown();
+        }
     }
 
     void update(Time t)
