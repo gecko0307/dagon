@@ -728,8 +728,8 @@ class GLTFAsset: Asset
                                     if (diffuseTex)
                                     {
                                         material.diffuse = diffuseTex;
-                                        if (diffuseTex.image.pixelFormat == IntegerPixelFormat.RGBA8)
-                                            material.blending = Transparent;
+                                        //if (diffuseTex.image.pixelFormat == IntegerPixelFormat.RGBA8)
+                                        //    material.blending = Transparent;
                                     }
                                 }
                             }
