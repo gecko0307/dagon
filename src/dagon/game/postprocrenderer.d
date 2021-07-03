@@ -42,6 +42,7 @@ import dagon.render.gbuffer;
 import dagon.postproc.filterpass;
 import dagon.postproc.blurpass;
 import dagon.postproc.presentpass;
+import dagon.postproc.shaders.dof;
 import dagon.postproc.shaders.brightpass;
 import dagon.postproc.shaders.glow;
 import dagon.postproc.shaders.motionblur;
@@ -130,6 +131,7 @@ class PostProcRenderer: Renderer
     RenderView viewHalf;
     BlurPass passBlur;
 
+    DepthOfFieldShader dofShader;
     BrightPassShader brightPassShader;
     GlowShader glowShader;
     MotionBlurShader motionBlurShader;
@@ -138,6 +140,7 @@ class PostProcRenderer: Renderer
     LensDistortionShader lensDistortionShader;
     LUTShader lutShader;
 
+    FilterPass passDoF;
     FilterPass passMotionBlur;
     FilterPass passBrightPass;
     FilterPass passGlow;
@@ -147,6 +150,7 @@ class PostProcRenderer: Renderer
     FilterPass passLUT;
     PresentPass passPresent;
 
+    bool _dofEnabled = false;
     bool _motionBlurEnabled = false;
     bool _glowEnabled = false;
 
@@ -186,11 +190,18 @@ class PostProcRenderer: Renderer
         hdrBuffer3 = New!Framebuffer(view.width, view.height, FrameBufferFormat.RGBA16F, true, this);
         hdrBuffer4 = New!Framebuffer(view.width, view.height, FrameBufferFormat.RGBA16F, true, this);
 
+        dofShader = New!DepthOfFieldShader(this);
+        dofShader.gbuffer = gbuffer;
+        passDoF = New!FilterPass(pipeline, dofShader);
+        passDoF.view = view;
+        passDoF.inputBuffer = inputBuffer;
+        passDoF.outputBuffer = hdrBuffer3;
+
         motionBlurShader = New!MotionBlurShader(this);
         motionBlurShader.gbuffer = gbuffer;
         passMotionBlur = New!FilterPass(pipeline, motionBlurShader);
         passMotionBlur.view = view;
-        passMotionBlur.inputBuffer = inputBuffer;
+        passMotionBlur.inputBuffer = passDoF.outputBuffer;
         passMotionBlur.outputBuffer = hdrBuffer4;
 
         brightPassShader = New!BrightPassShader(this);
@@ -240,6 +251,16 @@ class PostProcRenderer: Renderer
         passLUT.outputBuffer = ldrDoubleBuffer;
 
         outputBuffer = ldrDoubleBuffer;
+    }
+
+    void depthOfFieldEnabled(bool mode) @property
+    {
+        _dofEnabled = mode;
+        passDoF.active = mode;
+    }
+    bool depthOfFieldEnabled() @property
+    {
+        return _dofEnabled;
     }
 
     void motionBlurEnabled(bool mode) @property
@@ -317,11 +338,28 @@ class PostProcRenderer: Renderer
     {
         if (outputBuffer)
             outputBuffer.bind();
-            
+        
+        if (!_dofEnabled)
+        {
+            passMotionBlur.inputBuffer = inputBuffer;
+        }
+        else
+        {
+            passMotionBlur.inputBuffer = passDoF.outputBuffer;
+        }
+        
         if (!_motionBlurEnabled)
         {
-            passBrightPass.inputBuffer = inputBuffer;
-            passGlow.inputBuffer = inputBuffer;
+            if (_dofEnabled)
+            {
+                passBrightPass.inputBuffer = passDoF.outputBuffer;
+                passGlow.inputBuffer = passDoF.outputBuffer;
+            }
+            else
+            {
+                passBrightPass.inputBuffer = inputBuffer;
+                passGlow.inputBuffer = inputBuffer;
+            }
         }
         else
         {
@@ -333,6 +371,8 @@ class PostProcRenderer: Renderer
         {
             if (_motionBlurEnabled)
                 passTonemap.inputBuffer = passMotionBlur.outputBuffer;
+            else if (_dofEnabled)
+                passTonemap.inputBuffer = passDoF.outputBuffer;
             else
                 passTonemap.inputBuffer = inputBuffer;
         }
