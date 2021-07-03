@@ -1049,7 +1049,7 @@ class GLTFAsset: Asset
                         {
                             if (diffuseTex.image.pixelFormat == IntegerPixelFormat.RGBA8)
                             {
-                                //material.blending = Transparent;
+                                material.blending = Transparent;
                                 node.entity.transparent = true;
                             }
                         }
