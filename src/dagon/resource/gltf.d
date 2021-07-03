@@ -1033,6 +1033,32 @@ class GLTFAsset: Asset
         return true;
     }
     
+    void markTransparentEntities()
+    {
+        foreach(node; nodes)
+        {
+            if (node.mesh)
+            {
+                foreach(primitive; node.mesh.primitives)
+                {
+                    Material material = primitive.material;
+                    if (material)
+                    {
+                        Texture diffuseTex = material.diffuse.texture;
+                        if (diffuseTex)
+                        {
+                            if (diffuseTex.image.pixelFormat == IntegerPixelFormat.RGBA8)
+                            {
+                                //material.blending = Transparent;
+                                node.entity.transparent = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     override void release()
     {
         foreach(b; buffers)

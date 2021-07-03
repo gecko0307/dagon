@@ -84,6 +84,7 @@ class Entity: Owner, Updateable
     bool solid = false;
     bool dynamic = true;
     bool decal = false;
+    bool transparent = false;
     float opacity = 1.0f;
     float blurMask = 1.0f;
 

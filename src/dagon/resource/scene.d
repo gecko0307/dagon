@@ -391,11 +391,14 @@ class EntityGroupSpatialOpaque: Owner, EntityGroup
             auto e = entities[i];
             if (e.layer == EntityLayer.Spatial && !e.decal)
             {
-                bool opaque = true;
+                bool transparent = false;
+                
                 if (e.material)
-                    opaque = !e.material.isTransparent;
-
-                if (opaque && e.dynamic == dynamic)
+                    transparent = e.material.isTransparent;
+                
+                transparent = transparent || e.transparent || e.opacity < 1.0f;
+                
+                if (!transparent && e.dynamic == dynamic)
                 {
                     res = dg(e);
                     if (res)
@@ -427,9 +430,12 @@ class EntityGroupSpatialTransparent: Owner, EntityGroup
             if (e.layer == EntityLayer.Spatial && !e.decal)
             {
                 bool transparent = false;
+                
                 if (e.material)
                     transparent = e.material.isTransparent;
-
+                
+                transparent = transparent || e.transparent || e.opacity < 1.0f;
+                
                 if (transparent)
                 {
                     res = dg(e);
