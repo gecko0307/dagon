@@ -27,7 +27,7 @@ const float focalLength = 5.0; //12.0; // focal length in mm
 const float fstop = 2.0; // f-stop value
 const bool showFocus = false; //show debug focus point and focal range (red = focal point, green = focal range)
 
-const int samples = 3; // samples on the first ring
+const int samples = 4; // samples on the first ring
 const int rings = 5; // ring count
 
 const bool manualdof = false; //manual dof calculation
@@ -42,8 +42,10 @@ const bool autofocus = true; //use autofocus in shader?
 const vec2 focus = vec2(0.5, 0.5); // autofocus point on screen (0.0, 0.0 - left lower corner, 1.0, 1.0 - upper right)
 const float maxblur = 2.0; //clamp value of max blur (0.0 = no blur, 1.0 default)
 
+/*
 const float threshold = 100.0; // highlight threshold;
 const float gain = 100.0; // highlight gain;
+*/
 
 const float bias = 0.5; // bokeh edge bias
 const float fringe = 0.7; // bokeh chromatic aberration/fringing
@@ -60,7 +62,7 @@ not looking good with small sample and ring count
 looks okay starting from samples = 4, rings = 4
 */
 
-const bool pentagon = false; // use pentagon as bokeh shape?
+const bool pentagon = true; // use pentagon as bokeh shape?
 const float feather = 0.4; // pentagon shape feather
 
 in vec2 texCoord;
@@ -143,9 +145,9 @@ vec3 color(vec2 coords, float blur) // processing the sample
     col.g = texture(colorBuffer, coords + vec2(-0.866, -0.5) * texel * fringe * blur).g;
     col.b = texture(colorBuffer, coords + vec2(0.866, -0.5) * texel * fringe * blur).b;
     
-    vec3 lumcoeff = vec3(0.299, 0.587, 0.114);
-    float lum = dot(col.rgb, lumcoeff);
-    float thresh = max((lum - threshold) * gain, 0.0);
+    //vec3 lumcoeff = vec3(0.299, 0.587, 0.114);
+    //float lum = dot(col.rgb, lumcoeff);
+    //float thresh = max((lum - threshold) * gain, 0.0);
     return col; // + mix(vec3(0.0), col, thresh * blur);
 }
 
