@@ -48,6 +48,11 @@ class DepthOfFieldShader: Shader
     String vs, fs;
 
     bool enabled = true;
+    
+    bool autofocus = true;
+    float focalDepth = 1.5;
+    float focalLength = 5.0;
+    float fStop = 2.0;
 
     GBuffer gbuffer;
 
@@ -74,6 +79,11 @@ class DepthOfFieldShader: Shader
         setParameter("zFar", state.zFar);
 
         setParameter("invProjectionMatrix", state.invProjectionMatrix);
+        
+        setParameter("autofocus", autofocus);
+        setParameter("focalDepth", focalDepth);
+        setParameter("focalLength", focalLength);
+        setParameter("fstop", fStop);
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);

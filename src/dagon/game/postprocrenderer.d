@@ -169,6 +169,11 @@ class PostProcRenderer: Renderer
     float motionBlurRandomness = 0.2f;
     float motionBlurMinDistance = 0.01f;
     float motionBlurMaxDistance = 1.0f;
+    
+    bool autofocus = true;
+    float focalDepth = 1.5;
+    float focalLength = 5.0;
+    float fStop = 2.0;
 
     Texture colorLookupTable;
 
@@ -321,6 +326,10 @@ class PostProcRenderer: Renderer
         passBlur.radius = glowRadius;
         tonemapShader.tonemapper = tonemapper;
         tonemapShader.exposure = exposure;
+        dofShader.autofocus = autofocus;
+        dofShader.focalDepth = focalDepth;
+        dofShader.focalLength = focalLength;
+        dofShader.fStop = fStop;
         motionBlurShader.samples = motionBlurSamples;
         motionBlurShader.currentFramerate = 60.0f; //1.0 / t.delta;
         motionBlurShader.shutterFramerate = motionBlurFramerate;

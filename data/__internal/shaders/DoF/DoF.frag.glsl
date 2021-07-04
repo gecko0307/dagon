@@ -22,9 +22,11 @@ uniform float zNear;
 uniform float zFar;
 uniform mat4 invProjectionMatrix;
 
-const float focalDepth = 1.5; // focal distance value in meters, but you may use autofocus option below
-const float focalLength = 5.0; //12.0; // focal length in mm
-const float fstop = 2.0; // f-stop value
+uniform bool autofocus; // use autofocus in shader?
+uniform float focalDepth; // focal distance value in meters, but you may use autofocus option
+uniform float focalLength; // focal length in mm
+uniform float fstop; // f-stop value
+
 const bool showFocus = false; //show debug focus point and focal range (red = focal point, green = focal range)
 
 const int samples = 4; // samples on the first ring
@@ -38,7 +40,6 @@ const float fdofdist = 3.0; // far dof blur falloff distance
 
 const float CoC = 0.03; // circle of confusion size in mm (35mm film = 0.03mm)
 
-const bool autofocus = true; //use autofocus in shader?
 const vec2 focus = vec2(0.5, 0.5); // autofocus point on screen (0.0, 0.0 - left lower corner, 1.0, 1.0 - upper right)
 const float maxblur = 2.0; //clamp value of max blur (0.0 = no blur, 1.0 default)
 
@@ -127,7 +128,6 @@ float bdepth(vec2 coords) // blurring depth
     kernel[3] = 2.0/16.0;   kernel[4] = 4.0/16.0;   kernel[5] = 2.0/16.0;
     kernel[6] = 1.0/16.0;   kernel[7] = 2.0/16.0;   kernel[8] = 1.0/16.0;
     
-    
     for( int i=0; i<9; i++ )
     {
         float tmp = texture(depthBuffer, coords + offset[i]).r;
@@ -140,15 +140,10 @@ float bdepth(vec2 coords) // blurring depth
 vec3 color(vec2 coords, float blur) // processing the sample
 {
     vec3 col = vec3(0.0);
-    
     col.r = texture(colorBuffer, coords + vec2(0.0, 1.0) * texel * fringe * blur).r;
     col.g = texture(colorBuffer, coords + vec2(-0.866, -0.5) * texel * fringe * blur).g;
     col.b = texture(colorBuffer, coords + vec2(0.866, -0.5) * texel * fringe * blur).b;
-    
-    //vec3 lumcoeff = vec3(0.299, 0.587, 0.114);
-    //float lum = dot(col.rgb, lumcoeff);
-    //float thresh = max((lum - threshold) * gain, 0.0);
-    return col; // + mix(vec3(0.0), col, thresh * blur);
+    return col;
 }
 
 vec2 rand(vec2 coord) // generating noise/pattern texture for dithering
@@ -184,64 +179,53 @@ float linearize(float depth)
 void main() 
 {
     //scene depth calculation
-    
     vec3 col = texture(colorBuffer, texCoord).rgb;
     
     if (enabled)
     {
         float depth = linearize(texture(depthBuffer, texCoord.xy).x);
-        
         if (depthblur)
         {
             depth = linearize(bdepth(texCoord.xy));
         }
         
-        //focal plane calculation
-        
+        // focal plane calculation
         float fDepth = focalDepth;
-        
         if (autofocus)
         {
             fDepth = linearize(texture(depthBuffer, focus).x);
         }
         
-        //dof blur factor calculation
-        
+        // dof blur factor calculation
         float blur = 0.0;
-        
         if (manualdof)
         {    
-            float a = depth-fDepth; //focal plane
-            float b = (a-fdofstart)/fdofdist; //far DoF
-            float c = (-a-ndofstart)/ndofdist; //near Dof
+            float a = depth-fDepth; // focal plane
+            float b = (a-fdofstart)/fdofdist; // far DoF
+            float c = (-a-ndofstart)/ndofdist; // near Dof
             blur = (a>0.0)?b:c;
         }
         else
         {
-            float f = focalLength; //focal length in mm
-            float d = fDepth*1000.0; //focal plane in mm
-            float o = depth*1000.0; //depth in mm
-            
+            float f = focalLength; // focal length in mm
+            float d = fDepth*1000.0; // focal plane in mm
+            float o = depth*1000.0; // depth in mm
             float a = (o*f)/(o-f); 
             float b = (d*f)/(d-f); 
             float c = (d-f)/(d*fstop*CoC); 
-            
             blur = abs(a-b)*c;
         }
         
-        blur = clamp(blur,0.0,1.0);
+        blur = clamp(blur, 0.0, 1.0);
         
         // calculation of pattern for ditering
-        
         vec2 noise = rand(texCoord.xy)*namount*blur;
         
         // getting blur x and y step factor
-        
         float w = (1.0/width)*blur*maxblur+noise.x;
         float h = (1.0/height)*blur*maxblur+noise.y;
         
         // calculation of final color
-        
         if (blur >= 0.05)
         {
             col = texture(colorBuffer, texCoord.xy).rgb;
