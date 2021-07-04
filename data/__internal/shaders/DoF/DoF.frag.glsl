@@ -60,8 +60,8 @@ not looking good with small sample and ring count
 looks okay starting from samples = 4, rings = 4
 */
 
-const bool pentagon = true; //use pentagon as bokeh shape?
-const float feather = 0.4; //pentagon shape feather
+const bool pentagon = false; // use pentagon as bokeh shape?
+const float feather = 0.4; // pentagon shape feather
 
 in vec2 texCoord;
 out vec4 fragColor;
@@ -146,7 +146,7 @@ vec3 color(vec2 coords, float blur) // processing the sample
     vec3 lumcoeff = vec3(0.299, 0.587, 0.114);
     float lum = dot(col.rgb, lumcoeff);
     float thresh = max((lum - threshold) * gain, 0.0);
-    return col + mix(vec3(0.0), col, thresh * blur);
+    return col; // + mix(vec3(0.0), col, thresh * blur);
 }
 
 vec2 rand(vec2 coord) // generating noise/pattern texture for dithering
