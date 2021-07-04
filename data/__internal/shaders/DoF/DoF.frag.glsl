@@ -43,11 +43,6 @@ const float CoC = 0.03; // circle of confusion size in mm (35mm film = 0.03mm)
 const vec2 focus = vec2(0.5, 0.5); // autofocus point on screen (0.0, 0.0 - left lower corner, 1.0, 1.0 - upper right)
 const float maxblur = 2.0; //clamp value of max blur (0.0 = no blur, 1.0 default)
 
-/*
-const float threshold = 100.0; // highlight threshold;
-const float gain = 100.0; // highlight gain;
-*/
-
 const float bias = 0.5; // bokeh edge bias
 const float fringe = 0.7; // bokeh chromatic aberration/fringing
 
@@ -161,7 +156,7 @@ vec2 rand(vec2 coord) // generating noise/pattern texture for dithering
 
 vec3 debugFocus(vec3 col, float blur, float depth)
 {
-    float edge = 0.002*depth; //distance based edge smoothing
+    float edge = 0.002*depth; // distance based edge smoothing
     float m = clamp(smoothstep(0.0,edge,blur),0.0,1.0);
     float e = clamp(smoothstep(1.0-edge,1.0,blur),0.0,1.0);
     
