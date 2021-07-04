@@ -13,6 +13,7 @@ Dagon 0.12.0-beta1 - TBD
   - Cubemaps now can be created from any image (equirectangular HDR or DDS with mipmaps) using `fromImage` method
   - Built-in disk shape (`dagon.graphics.shapes.ShapeDisk`)
 - **Post-processing**
+  - Depth of Field effect (`dagon.postproc.shader.dof`)
   - `DeferredRenderer.occlusionBufferDetail` parameter that controls resolution coefficient of SSAO buffer
 - **Misc**
   - Dagon now uses SDL 2.0.14, dlib 0.22.0, bindbc-loader 1.0.0, bindbc-sdl 1.0.0, bindbc-opengl 1.0.0
