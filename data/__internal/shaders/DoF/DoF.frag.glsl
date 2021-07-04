@@ -62,7 +62,7 @@ not looking good with small sample and ring count
 looks okay starting from samples = 4, rings = 4
 */
 
-const bool pentagon = true; // use pentagon as bokeh shape?
+const bool pentagon = false; // use pentagon as bokeh shape?
 const float feather = 0.4; // pentagon shape feather
 
 in vec2 texCoord;
