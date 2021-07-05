@@ -17,7 +17,7 @@ float geometrySchlickGGX(float NdotV, float roughness)
     float k = (r*r) / 8.0;
     float num = NdotV;
     float denom = NdotV * (1.0 - k) + k;
-    return num / denom;
+    return num / max(denom, 0.001);
 }
 
 float geometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
