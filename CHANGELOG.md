@@ -6,6 +6,7 @@ Dagon 0.12.0-beta1 - TBD
   - Ability to limit camera pitch angle in`FirstPersonViewComponent` (`pitchLimitMax` and `pitchLimitMin` parameters)
   - Fixed a bug in Sky shader that didn't write proper data to albedo buffer
   - Fixed a bug in HUD shader with invalid `va_Texcoord` uniform location
+  - Fixed "black dots" bug with area lights
 - **Assets**
   - Initial [glTF](https://www.khronos.org/gltf/) format support. Currently only glTF+bin variant is supported
   - DDS cubemaps support, in 32 and 16-bit RGBA floating-point formats and with pre-baked mipmaps
