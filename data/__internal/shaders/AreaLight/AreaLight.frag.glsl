@@ -147,7 +147,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceAreaTube(
     vec3 H = normalize(E + L);
 
     float NDF = distributionGGX(N, H, roughness);
-    float G = geometrySmith(N, E, L, roughness);      
+    float G = geometrySmith(N, E, L, roughness);
     vec3 F = fresnel(max(dot(H, E), 0.0), f0);
 
     vec3 kS = F;
