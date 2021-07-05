@@ -83,7 +83,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceAreaSphere(
 
     vec3 positionToLightSource = lightPosition - pos;
     float distanceToLight = length(positionToLightSource);
-    float attenuation = pow(clamp(1.0 - (distanceToLight / lightRadius), 0.0, 1.0), 2.0) * lightEnergy;
+    float attenuation = pow(clamp(1.0 - (distanceToLight / max(lightRadius, 0.001)), 0.0, 1.0), 2.0) * lightEnergy;
 
     vec3 Lpt = normalize(positionToLightSource);
 
@@ -95,7 +95,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceAreaSphere(
     vec3 H = normalize(E + L);
 
     float NDF = distributionGGX(N, H, roughness);
-    float G = geometrySmith(N, E, L, roughness);      
+    float G = geometrySmith(N, E, L, roughness);
     vec3 F = fresnel(max(dot(H, E), 0.0), f0);
 
     vec3 kS = F;

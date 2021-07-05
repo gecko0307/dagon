@@ -255,7 +255,7 @@ void main()
     fragColor = vec4(fragDiffuse.rgb, layer);
     fragNormal = vec4(N, 0.0);
     fragPBR = vec4(
-        roughness(shiftedTexCoord),
+        max(roughness(shiftedTexCoord), 0.0001),
         metallic(shiftedTexCoord),
         1.0, // TODO: specularity from uniform parameter
         0.0); // TODO: translucency from uniform parameter
