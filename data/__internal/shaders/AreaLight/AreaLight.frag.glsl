@@ -88,7 +88,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceAreaSphere(
     vec3 Lpt = normalize(positionToLightSource);
 
     vec3 centerToRay = dot(positionToLightSource, R) * R - positionToLightSource;
-    vec3 closestPoint = positionToLightSource + centerToRay * clamp(lightAreaRadius / length(centerToRay), 0.0, 1.0);
+    vec3 closestPoint = positionToLightSource + centerToRay * clamp(lightAreaRadius / max(length(centerToRay), 0.001), 0.0, 1.0);
     vec3 L = normalize(closestPoint);  
 
     float NL = max(dot(N, Lpt), 0.0); 
@@ -106,7 +106,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceAreaSphere(
     float denominator = 4.0 * max(dot(N, E), 0.0) * NL;
     vec3 specular = numerator / max(denominator, 0.001);
 
-    vec3 radiance = (kD * albedo / PI * occlusion * lightDiffuse + specular * specularity * lightSpecular) * toLinear(lightColor.rgb) * attenuation * NL;
+    vec3 radiance = ((kD * albedo / PI) * occlusion * lightDiffuse + specular * specularity * lightSpecular) * toLinear(lightColor.rgb) * attenuation * NL;
 
     return radiance;
 }
