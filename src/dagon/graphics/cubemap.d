@@ -290,22 +290,22 @@ Matrix4x4f cubeFaceCameraMatrix(CubeFace cf, Vector3f pos)
     switch(cf)
     {
         case CubeFace.PositiveX:
-            m = translationMatrix(pos) * rotationMatrix(1, degtorad(90.0f)) * rotationMatrix(2, degtorad(180.0f));
+            m = rotationMatrix(1, degtorad(90.0f)) * translationMatrix(pos) * rotationMatrix(1, degtorad(90.0f)) * rotationMatrix(2, degtorad(180.0f));
             break;
         case CubeFace.NegativeX:
-            m = translationMatrix(pos) * rotationMatrix(1, degtorad(-90.0f)) * rotationMatrix(2, degtorad(180.0f));
+            m = rotationMatrix(1, degtorad(90.0f)) * translationMatrix(pos) * rotationMatrix(1, degtorad(-90.0f)) * rotationMatrix(2, degtorad(180.0f));
             break;
         case CubeFace.PositiveY:
-            m = translationMatrix(pos) * rotationMatrix(1, degtorad(0.0f)) * rotationMatrix(0, degtorad(-90.0f));
+            m = rotationMatrix(1, degtorad(90.0f)) * translationMatrix(pos) * rotationMatrix(1, degtorad(0.0f)) * rotationMatrix(0, degtorad(-90.0f));
             break;
         case CubeFace.NegativeY:
-            m = translationMatrix(pos) * rotationMatrix(1, degtorad(0.0f)) * rotationMatrix(0, degtorad(90.0f));
+            m = rotationMatrix(1, degtorad(90.0f)) * translationMatrix(pos) * rotationMatrix(1, degtorad(0.0f)) * rotationMatrix(0, degtorad(90.0f));
             break;
         case CubeFace.PositiveZ:
-            m = translationMatrix(pos) * rotationMatrix(1, degtorad(180.0f)) * rotationMatrix(2, degtorad(180.0f));
+            m = rotationMatrix(1, degtorad(90.0f)) * translationMatrix(pos) * rotationMatrix(1, degtorad(180.0f)) * rotationMatrix(2, degtorad(180.0f));
             break;
         case CubeFace.NegativeZ:
-            m = translationMatrix(pos) * rotationMatrix(1, degtorad(0.0f)) * rotationMatrix(2, degtorad(180.0f));
+            m = rotationMatrix(1, degtorad(90.0f)) * translationMatrix(pos) * rotationMatrix(1, degtorad(0.0f)) * rotationMatrix(2, degtorad(180.0f));
             break;
         default:
             m = Matrix4x4f.identity; break;
