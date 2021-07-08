@@ -67,7 +67,7 @@
             ],
             "dependencies": {
                 "dagon": "*",
-                "dlib": "~>0.22.0-beta1"
+                "dlib": "~>0.22.0"
             },
             
             "versions": [
@@ -88,7 +88,7 @@
             "dependencies": {
                 "dagon": "*",
                 "dagon:ftfont": "*",
-                "dlib": "~>0.22.0-beta1"
+                "dlib": "~>0.22.0"
             },
             
             "versions": [
@@ -97,6 +97,23 @@
             
             "copyFiles-windows-x86": ["thirdparty/bindbc-nuklear-0.4.3/lib/win32/*.dll"],
             "copyFiles-windows-x86_64": ["thirdparty/bindbc-nuklear-0.4.3/lib/win64/*.dll"]
+        },
+        {
+            "name": "newton",
+            "importPaths": [
+                "extensions/newton/src"
+            ],
+            "sourcePaths": [
+                "extensions/newton/src"
+            ],
+            "dependencies": {
+                "dagon": "*",
+                "dagon:newton": "*",
+                "dlib": "~>0.22.0"
+            },
+            
+            "copyFiles-windows-x86": ["thirdparty/bindbc-newton-0.0.2/lib/x86/*.dll", "thirdparty/bindbc-newton-0.0.2/plugins/x86/*.dll"],
+            "copyFiles-windows-x86_64": ["thirdparty/bindbc-newton-0.0.2/lib/x86/*.dll", "thirdparty/bindbc-newton-0.0.2/plugins/x86/*.dll"]
         },
         {
             "name": "physics",
@@ -108,7 +125,7 @@
             ],
             "dependencies": {
                 "dagon": "*",
-                "dlib": "~>0.22.0-beta1"
+                "dlib": "~>0.22.0"
             }
         },
         {
@@ -121,7 +138,7 @@
             ],
             "dependencies": {
                 "dagon": "*",
-                "dlib": "~>0.22.0-beta1"
+                "dlib": "~>0.22.0"
             }
         },
         "init-exec"
