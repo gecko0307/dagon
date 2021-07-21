@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Timur Gafarov
+Copyright (c) 2021 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,22 +25,55 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.resource;
+module dagon.resource.stbi;
 
-public
+import dlib.core.memory;
+import dlib.core.stream;
+import dlib.core.compound;
+import dlib.filesystem.local;
+import dlib.image.image;
+import stb.image.binding;
+
+SuperImage loadImageSTB(string filename)
 {
-    import dagon.resource.asset;
-    import dagon.resource.binary;
-    import dagon.resource.boxfs;
-    import dagon.resource.dds;
-    import dagon.resource.entity;
-    import dagon.resource.gltf;
-    import dagon.resource.image;
-    import dagon.resource.material;
-    import dagon.resource.obj;
-    import dagon.resource.packageasset;
-    import dagon.resource.scene;
-    import dagon.resource.stbi;
-    import dagon.resource.text;
-    import dagon.resource.texture;
+    InputStream input = openForInput(filename);
+    auto img = loadImageSTB(input);
+    input.close();
+    return img;
 }
+
+SuperImage loadImageSTB(InputStream istrm)
+{
+    Compound!(SuperImage, string) res =
+        loadImageSTB(istrm, defaultImageFactory);
+    if (res[0] is null)
+        throw new Exception(res[1]);
+    else
+        return res[0];
+}
+
+Compound!(SuperImage, string) loadImageSTB(
+    InputStream istrm,
+    SuperImageFactory imgFac)
+{
+    ubyte[] compressed = New!(ubyte[])(istrm.size);
+    istrm.fillArray(compressed);
+    int width, height, channels;
+    ubyte* data = stbi_load_from_memory(compressed.ptr, cast(uint)compressed.length, &width, &height, &channels, 0);
+    SuperImage img = null;
+    Compound!(SuperImage, string) res;
+    if (data)
+    {
+        img = imgFac.createImage(width, height, channels, 8);
+        img.data[] = data[0..width*height*channels];
+        stbi_image_free(data);
+        res = compound(img, "");
+    }
+    else
+    {
+        res = compound(img, "unknown/corrupted image");
+    }
+    Delete(compressed);
+    return res;
+}
+

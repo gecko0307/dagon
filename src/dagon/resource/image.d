@@ -35,10 +35,12 @@ import dlib.core.ownership;
 import dlib.core.stream;
 import dlib.core.compound;
 import dlib.image.image;
+/*
 import dlib.image.io.bmp;
 import dlib.image.io.png;
 import dlib.image.io.tga;
 import dlib.image.io.jpeg;
+*/
 import dlib.image.io.hdr;
 import dlib.image.unmanaged;
 import dlib.image.hdri;
@@ -46,6 +48,7 @@ import dlib.filesystem.filesystem;
 
 import dagon.graphics.compressedimage;
 import dagon.resource.asset;
+import dagon.resource.stbi;
 import dagon.resource.dds;
 
 class ImageAsset: Asset
@@ -92,17 +95,11 @@ class ImageAsset: Asset
 
             switch(filename.extension)
             {
-                case ".bmp", ".BMP":
-                    res = loadBMP(istrm, imageFactory);
-                    break;
-                case ".jpg", ".JPG", ".jpeg", ".JPEG":
-                    res = loadJPEG(istrm, imageFactory);
-                    break;
-                case ".png", ".PNG":
-                    res = loadPNG(istrm, imageFactory);
-                    break;
-                case ".tga", ".TGA":
-                    res = loadTGA(istrm, imageFactory);
+                case ".bmp", ".BMP",
+                     ".jpg", ".JPG", ".jpeg", ".JPEG",
+                     ".png", ".PNG",
+                     ".tga", ".TGA":
+                    res = loadImageSTB(istrm, imageFactory);
                     break;
                 default:
                     return false;
