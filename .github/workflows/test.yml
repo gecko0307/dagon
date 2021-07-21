@@ -27,6 +27,10 @@ jobs:
         dc: [dmd-latest, ldc-latest]
         include:
           - os: ubuntu-latest
+            dc: dmd-latest
+            experimental: true
+          - os: ubuntu-latest
+            dc: ldc-latest
             experimental: true
     runs-on: ${{ matrix.os }}
     steps:
