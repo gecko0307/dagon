@@ -24,13 +24,13 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        dc: [dmd-latest, ldc-latest]
+        dc: [dmd-2.094.2, ldc-1.24.0]
         include:
           - os: ubuntu-latest
-            dc: dmd-latest
+            dc: dmd-2.094.2
             experimental: true
           - os: ubuntu-latest
-            dc: ldc-latest
+            dc: ldc-1.24.0
             experimental: true
     runs-on: ${{ matrix.os }}
     steps:
