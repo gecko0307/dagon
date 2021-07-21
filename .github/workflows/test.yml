@@ -23,15 +23,8 @@ jobs:
     name: Dub Tests
     strategy:
       matrix:
-        os: [windows-latest]
-        dc: [dmd-2.094.2, ldc-1.24.0]
-        include:
-          - os: ubuntu-latest
-            dc: dmd-2.094.2
-            experimental: true
-          - os: ubuntu-latest
-            dc: ldc-1.24.0
-            experimental: true
+        os: [windows-latest, ubuntu-latest]
+        dc: [dmd-latest, ldc-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
