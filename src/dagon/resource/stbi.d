@@ -24,7 +24,6 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-
 module dagon.resource.stbi;
 
 import dlib.core.memory;
@@ -70,10 +69,7 @@ Compound!(SuperImage, string) loadImageSTB(
         res = compound(img, "");
     }
     else
-    {
         res = compound(img, "unknown/corrupted image");
-    }
     Delete(compressed);
     return res;
 }
-
