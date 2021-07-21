@@ -1,0 +1,17 @@
+﻿{
+	"name": "stb",
+	"license": "MIT",
+	"authors": [
+		"Temtaime"
+	],
+	"description": "stb bindings for D",
+	"libs-windows-x86": [
+		"$PACKAGE_DIR/bin/stb_x86"
+	],
+	"libs-windows-x86_64": [
+		"$PACKAGE_DIR/bin/stb_x64"
+	],
+	"lflags-linux": [
+		"$PACKAGE_DIR/bin/libstb.a"
+	]
+}
