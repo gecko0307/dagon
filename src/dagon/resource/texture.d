@@ -100,7 +100,9 @@ class TextureAsset: Asset
                 case ".bmp", ".BMP",
                      ".jpg", ".JPG", ".jpeg", ".JPEG",
                      ".png", ".PNG",
-                     ".tga", ".TGA":
+                     ".tga", ".TGA",
+                     ".gif", ".GIF",
+                     ".psd", ".PSD":
                     res = loadImageSTB(istrm, imageFactory);
                     break;
                 default:
