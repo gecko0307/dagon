@@ -48,9 +48,9 @@ import dagon.graphics.cubemap;
 
 import dagon.resource.asset;
 import dagon.resource.obj;
+import dagon.resource.gltf;
 import dagon.resource.image;
 import dagon.resource.texture;
-//import dagon.resource.font;
 import dagon.resource.text;
 import dagon.resource.binary;
 import dagon.resource.packageasset;
@@ -149,6 +149,19 @@ class Scene: EventListener
             addAsset(obj, filename, preload);
         }
         return obj;
+    }
+    
+    GLTFAsset addGLTFAsset(string filename, bool preload = false)
+    {
+        GLTFAsset gltf;
+        if (assetManager.assetExists(filename))
+            gltf = cast(GLTFAsset)assetManager.getAsset(filename);
+        else
+        {
+            gltf = New!GLTFAsset(assetManager);
+            addAsset(gltf, filename, preload);
+        }
+        return gltf;
     }
 
     TextAsset addTextAsset(string filename, bool preload = false)
