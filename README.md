@@ -53,15 +53,14 @@ Features
 * Unicode text input
 * Ownership memory model
 * Entity-component model
-* Live asset reloading
 * Built-in camera logics for quick and easy navigation (freeview and first person style view)
 * [Box](https://github.com/gecko0307/box) container support for assets
 * Built-in physics engine.
 
 Planned in future:
-* Screen-space reflections
 * [Newton Dynamics](http://newtondynamics.com) integration
-* [glTF](https://en.wikipedia.org/wiki/GlTF) support.
+* [glTF](https://en.wikipedia.org/wiki/GlTF) support
+* Screen-space reflections.
 
 Getting Started
 ---------------
@@ -94,6 +93,8 @@ Daniel Laburthe, Rafał Ziemniewski, Kumar Sookram, Aleksandr Kovalev, Robert Ge
 Made with Dagon
 ---------------
 * [dagon-sandbox](https://github.com/gecko0307/dagon-sandbox) - a test application that demonstrates some of Dagon's features
-* [dagon-newton](https://github.com/gecko0307/dagon-newton) - Newton Dynamics integration for Dagon
+* [dagon-newton](https://github.com/gecko0307/dagon-newton) - Newton physics demo
 * [Dagoban](https://github.com/Timu5/dagoban) - a Sokoban clone
 * [dagon-shooter](https://github.com/aferust/dagon-shooter) - a shooter game
+
+Patreon subscribers get more! Become a patron to get access to the Patreon Sponsor Folder that is regularly updated with new examples and demos. All code is BSL-licensed and can be shared freely.
