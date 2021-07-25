@@ -103,6 +103,53 @@ class NewtonCylinderShape: NewtonCollisionShape
     }
 }
 
+class NewtonChamferCylinderShape: NewtonCollisionShape
+{
+    float radius;
+    float height;
+
+    this(float radius, float height, NewtonPhysicsWorld world)
+    {
+        super(world);
+        this.radius = radius;
+        this.height = height;
+        newtonCollision = NewtonCreateChamferCylinder(world.newtonWorld, radius, height, 0, null);
+        NewtonCollisionSetUserData(newtonCollision, cast(void*)this);
+    }
+}
+
+class NewtonCapsuleShape: NewtonCollisionShape
+{
+    float radius1;
+    float radius2;
+    float height;
+
+    this(float radius, float height, NewtonPhysicsWorld world)
+    {
+        super(world);
+        this.radius1 = radius1;
+        this.radius2 = radius2;
+        this.height = height;
+        newtonCollision = NewtonCreateCapsule(world.newtonWorld, radius1, radius2, height, 0, null);
+        NewtonCollisionSetUserData(newtonCollision, cast(void*)this);
+    }
+}
+
+class NewtonConeShape: NewtonCollisionShape
+{
+    float radius;
+    float height;
+
+    this(float radius, float height, NewtonPhysicsWorld world)
+    {
+        super(world);
+        this.radius = radius;
+        this.height = height;
+        newtonCollision = NewtonCreateCone(world.newtonWorld, radius, height, 0, null);
+        NewtonCollisionSetUserData(newtonCollision, cast(void*)this);
+    }
+}
+
 class NewtonMeshShape: NewtonCollisionShape
 {
     this(Mesh mesh, NewtonPhysicsWorld world)
@@ -121,6 +168,30 @@ class NewtonMeshShape: NewtonCollisionShape
         NewtonMeshEndBuild(nmesh);
         
         newtonCollision = NewtonCreateTreeCollisionFromMesh(world.newtonWorld, nmesh, 0);
+        NewtonCollisionSetUserData(newtonCollision, cast(void*)this);
+        
+        NewtonMeshDestroy(nmesh);
+    }
+}
+
+class NewtonConvexHullShape: NewtonCollisionShape
+{
+    this(Mesh mesh, float tolerance, NewtonPhysicsWorld world)
+    {
+        super(world);
+        NewtonMesh* nmesh = NewtonMeshCreate(world.newtonWorld);
+        NewtonMeshBeginBuild(nmesh);
+        foreach(face; mesh.indices)
+        foreach(i; face)
+        {
+            Vector3f p = mesh.vertices[i];
+            Vector3f n = mesh.normals[i];
+            NewtonMeshAddPoint(nmesh, p.x, p.y, p.z);
+            NewtonMeshAddNormal(nmesh, n.x, n.y, n.z);
+        }
+        NewtonMeshEndBuild(nmesh);
+        
+        newtonCollision = NewtonCreateConvexHullFromMesh(world.newtonWorld, nmesh, tolerance, 0);
         NewtonCollisionSetUserData(newtonCollision, cast(void*)this);
         
         NewtonMeshDestroy(nmesh);
