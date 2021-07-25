@@ -8,7 +8,7 @@ Dagon 0.12.0-beta1 - TBD
   - Fixed a bug in HUD shader with invalid `va_Texcoord` uniform location
   - Fixed "black dots" bug with area lights
 - **Assets**
-  - Initial [glTF](https://www.khronos.org/gltf/) format support. Currently only glTF+bin variant is supported
+  - Initial [glTF](https://www.khronos.org/gltf/) format support (without animation)
   - DDS cubemaps support, in 32 and 16-bit RGBA floating-point formats and with pre-baked mipmaps
   - Decoding of generic image formats such as PNG and JPEG now relies on [stb_image](https://github.com/nothings/stb), resulting in substantial loading speedup for large images. Also PSD and GIF formats are now supported
   - `Material` now supports `roughnessMetallic` parameter to pass combined PBR texture. Following glTF convention, G channel stores roughness and B stores metallic
