@@ -34,6 +34,7 @@ import dlib.core.ownership;
 import dlib.core.memory;
 import dlib.math.vector;
 import bindbc.newton;
+import dagon.core.event;
 import dagon.ext.newton.shape;
 import dagon.ext.newton.rigidbody;
 
@@ -127,14 +128,16 @@ interface NewtonRaycaster
 
 class NewtonPhysicsWorld: Owner
 {
+    EventManager eventManager;
     NewtonWorld* newtonWorld;
     int defaultGroupId;
     int kinematicGroupId;
     int sensorGroupId;
 
-    this(Owner o)
+    this(EventManager eventManager, Owner o)
     {
         super(o);
+        eventManager = eventManager;
         newtonWorld = NewtonCreate();
         defaultGroupId = NewtonMaterialGetDefaultGroupID(newtonWorld);
         kinematicGroupId = createGroupId();

@@ -59,9 +59,9 @@ class NewtonCharacterComponent: EntityComponent
     float shapeRadius;
     float eyeHeight;
     
-    this(EventManager em, Entity e, float height, float mass, NewtonPhysicsWorld world)
+    this(NewtonPhysicsWorld world, Entity e, float height, float mass)
     {
-        super(em, e);
+        super(world.eventManager, e);
         this.height = height;
         this.mass = mass;
         radius = height * 0.5f;
@@ -171,4 +171,9 @@ class NewtonCharacterComponent: EntityComponent
     {
         return rbody.position.xyz + Vector3f(0.0f, eyeHeight, 0.0f);
     }
+}
+
+NewtonCharacterComponent makeCharacter(Entity entity, NewtonPhysicsWorld world, float height, float mass)
+{
+    return New!NewtonCharacterComponent(world, entity, height, mass);
 }

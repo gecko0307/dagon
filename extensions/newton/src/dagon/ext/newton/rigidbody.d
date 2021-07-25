@@ -184,34 +184,34 @@ class NewtonRigidBody: Owner
 
 class NewtonBodyComponent: EntityComponent
 {
-    NewtonRigidBody rbody;
+    NewtonRigidBody rigidBody;
     Matrix4x4f prevTransformation;
 
     this(EventManager em, Entity e, NewtonRigidBody b)
     {
         super(em, e);
-        rbody = b;
+        rigidBody = b;
 
         Quaternionf rot = e.rotation;
-        rbody.transformation =
+        rigidBody.transformation =
             translationMatrix(e.position) *
             rot.toMatrix4x4;
 
-        NewtonBodySetMatrix(rbody.newtonBody, rbody.transformation.arrayof.ptr);
+        NewtonBodySetMatrix(rigidBody.newtonBody, rigidBody.transformation.arrayof.ptr);
 
         prevTransformation = Matrix4x4f.identity;
     }
 
     override void update(Time t)
     {
-        rbody.update(t.delta);
+        rigidBody.update(t.delta);
 
         entity.prevTransformation = prevTransformation;
 
-        entity.position = rbody.position.xyz;
-        entity.transformation = rbody.transformation * scaleMatrix(entity.scaling);
+        entity.position = rigidBody.position.xyz;
+        entity.transformation = rigidBody.transformation * scaleMatrix(entity.scaling);
         entity.invTransformation = entity.transformation.inverse;
-        entity.rotation = rbody.rotation;
+        entity.rotation = rigidBody.rotation;
 
         entity.absoluteTransformation = entity.transformation;
         entity.invAbsoluteTransformation = entity.invTransformation;
@@ -219,4 +219,16 @@ class NewtonBodyComponent: EntityComponent
 
         prevTransformation = entity.transformation;
     }
+}
+
+NewtonBodyComponent makeStaticBody(Entity entity, NewtonPhysicsWorld world, NewtonCollisionShape collisionShape)
+{
+    auto rigidBody = world.createStaticBody(collisionShape);
+    return New!NewtonBodyComponent(world.eventManager, entity, rigidBody);
+}
+
+NewtonBodyComponent makeDynamicBody(Entity entity, NewtonPhysicsWorld world, NewtonCollisionShape collisionShape, float mass)
+{
+    auto rigidBody = world.createDynamicBody(collisionShape, mass);
+    return New!NewtonBodyComponent(world.eventManager, entity, rigidBody);
 }
