@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Timur Gafarov
+Copyright (c) 2019-2021 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -127,17 +127,18 @@ class Cubemap: Texture
 
         width = img.width;
         height = img.height;
-
-        GLenum format;
-        GLint intFormat;
-        GLenum type;
-
-        if (!pixelFormatToTextureFormat(cast(IntegerPixelFormat)img.pixelFormat, format, intFormat, type))
+        
+        TextureFormat tf;
+        if (detectTextureFormat(img, tf))
+        {
+            glBindTexture(GL_TEXTURE_CUBE_MAP, tex);
+            glTexImage2D(face, 0, tf.internalFormat, width, height, 0, tf.format, tf.pixelType, cast(void*)img.data.ptr);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+        }
+        else
+        {
             writefln("Unsupported pixel format %s", img.pixelFormat);
-
-        glBindTexture(GL_TEXTURE_CUBE_MAP, tex);
-        glTexImage2D(face, 0, intFormat, width, height, 0, format, type, cast(void*)img.data.ptr);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+        }
     }
     
     void fromEquirectangularMap(Texture tex)
