@@ -16,17 +16,17 @@ If you like Dagon, please support its development on [Patreon](https://www.patre
 
 Screenshots
 -----------
-[![Screenshot4](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/05/sponza11.jpg)](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/05/sponza11.jpg)
+[![Screenshot1](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/08/dev_5nmhxA9u4n.jpg)](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/08/dev_5nmhxA9u4n.jpg)
 
-[![Screenshot3](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/05/sponza10.jpg)](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/05/sponza10.jpg)
+[![Screenshot2](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/05/sponza10.jpg)](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/05/sponza10.jpg)
 
-[![Screenshot5](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/07/sponza_IsFlRP6IRH.jpg)](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/07/sponza_IsFlRP6IRH.jpg)
+[![Screenshot3](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/07/sponza_IsFlRP6IRH.jpg)](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/07/sponza_IsFlRP6IRH.jpg)
 
-[![Screenshot2](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/10/eevee_vs_dagon.jpg)](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/10/eevee_vs_dagon.jpg)
+[![Screenshot4](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/10/eevee_vs_dagon.jpg)](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/10/eevee_vs_dagon.jpg)
 
-[![Screenshot6](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/07/fiat.jpg)](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/07/fiat.jpg)
+[![Screenshot5](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/07/fiat.jpg)](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/07/fiat.jpg)
 
-[![Screenshot1](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/01/cerberus.jpg)](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/01/cerberus.jpg)
+[![Screenshot6](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/01/cerberus.jpg)](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/01/cerberus.jpg)
 
 Features
 --------
