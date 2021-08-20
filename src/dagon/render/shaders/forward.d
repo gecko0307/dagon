@@ -68,7 +68,7 @@ class ForwardShader: Shader
         glBindTexture(GL_TEXTURE_2D_ARRAY, defaultShadowTexture);
         glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT24, 1, 1, 3, 0, GL_DEPTH_COMPONENT, GL_FLOAT, null);
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-	    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
     }
 
@@ -90,6 +90,7 @@ class ForwardShader: Shader
         auto iroughness = "roughness" in state.material.inputs;
         auto imetallic = "metallic" in state.material.inputs;
         auto ispecularity = "specularity" in state.material.inputs;
+        auto itransparency = "transparency" in state.material.inputs;
         auto itranslucency = "translucency" in state.material.inputs;
         auto itextureScale = "textureScale" in state.material.inputs;
         auto iparallax = "parallax" in state.material.inputs;
@@ -106,7 +107,12 @@ class ForwardShader: Shader
         setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
 
         setParameter("layer", cast(float)(state.layer));
-        setParameter("opacity", state.opacity);
+        
+        float materialOpacity = 1.0f;
+        if (itransparency)
+            materialOpacity = itransparency.asFloat;
+        setParameter("opacity", state.opacity * materialOpacity);
+        
         setParameter("textureScale", itextureScale.asVector2f);
 
         setParameter("viewSize", state.resolution);

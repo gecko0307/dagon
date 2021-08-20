@@ -703,6 +703,15 @@ class GLTFAsset: Asset
                 {
                     auto pbr = ma["pbrMetallicRoughness"].asObject;
                     
+                    Color4f baseColorFactor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+                    if (pbr && "baseColorFactor" in pbr)
+                    {
+                        baseColorFactor = pbr["baseColorFactor"].asColor;
+                        
+                        if (baseColorFactor.a < 1.0f)
+                            material.blending = Transparent;
+                    }
+                    
                     if (pbr && "baseColorTexture" in pbr)
                     {
                         auto bct = pbr["baseColorTexture"].asObject;
@@ -715,19 +724,15 @@ class GLTFAsset: Asset
                                 if (baseColorTex)
                                 {
                                     material.diffuse = baseColorTex;
-                                    //if (baseColorTex.image.pixelFormat == IntegerPixelFormat.RGBA8)
-                                    //    material.blending = Transparent;
                                 }
                             }
                         }
-                    }
-                    else if (pbr && "baseColorFactor" in pbr)
-                    {
-                        material.diffuse = pbr["baseColorFactor"].asColor;
+                        
+                        material.transparency = baseColorFactor.a;
                     }
                     else
                     {
-                        material.diffuse = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+                        material.diffuse = baseColorFactor;
                     }
                     
                     if (pbr && "metallicRoughnessTexture" in pbr)
@@ -781,8 +786,6 @@ class GLTFAsset: Asset
                                     if (diffuseTex)
                                     {
                                         material.diffuse = diffuseTex;
-                                        //if (diffuseTex.image.pixelFormat == IntegerPixelFormat.RGBA8)
-                                        //    material.blending = Transparent;
                                     }
                                 }
                             }
@@ -1052,6 +1055,20 @@ class GLTFAsset: Asset
                                 material.blending = Transparent;
                                 node.entity.transparent = true;
                             }
+                        }
+                        else
+                        {
+                            if (material.diffuse.asVector4f.a < 1.0f)
+                            {
+                                material.blending = Transparent;
+                                node.entity.transparent = true;
+                            }
+                        }
+                        
+                        if (material.transparency.asFloat < 1.0f)
+                        {
+                            material.blending = Transparent;
+                            node.entity.transparent = true;
                         }
                     }
                 }
