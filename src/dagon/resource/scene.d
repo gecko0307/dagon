@@ -308,12 +308,9 @@ class Scene: EventListener
             if (!loaded)
             {
                 assetManager.loadThreadUnsafePart();
-                debug writeln("Scene loaded");
                 loaded = true;
                 afterLoad();
-
                 onLoad(t, 1.0f);
-
                 canRender = true;
             }
 

@@ -56,8 +56,6 @@ class FXAAShader: Shader
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
-
-        debug writeln("FXAAShader: program ", program.program);
     }
 
     ~this()

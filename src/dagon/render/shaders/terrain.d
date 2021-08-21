@@ -55,8 +55,6 @@ class TerrainShader: Shader
 
         auto prog = New!ShaderProgram(vs, fs, this);
         super(prog, owner);
-
-        debug writeln("TerrainShader: program ", program.program);
     }
 
     ~this()
