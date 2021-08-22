@@ -31,6 +31,7 @@ import dlib.core.ownership;
 import dlib.core.memory;
 import dlib.math.vector;
 import dlib.math.matrix;
+import dlib.geometry.triangle;
 import bindbc.newton;
 import dagon.graphics.mesh;
 import dagon.graphics.heightmap;
@@ -152,16 +153,15 @@ class NewtonConeShape: NewtonCollisionShape
 
 class NewtonMeshShape: NewtonCollisionShape
 {
-    this(Mesh mesh, NewtonPhysicsWorld world)
+    this(TriangleSet triangleSet, NewtonPhysicsWorld world)
     {
         super(world);
         NewtonMesh* nmesh = NewtonMeshCreate(world.newtonWorld);
         NewtonMeshBeginBuild(nmesh);
-        foreach(face; mesh.indices)
-        foreach(i; face)
+        foreach(triangle; triangleSet)
+        foreach(i, p; triangle.v)
         {
-            Vector3f p = mesh.vertices[i];
-            Vector3f n = mesh.normals[i];
+            Vector3f n = triangle.n[i];
             NewtonMeshAddPoint(nmesh, p.x, p.y, p.z);
             NewtonMeshAddNormal(nmesh, n.x, n.y, n.z);
         }

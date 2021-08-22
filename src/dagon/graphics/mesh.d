@@ -46,7 +46,12 @@ enum VertexAttrib
     Texcoords = 2
 }
 
-class Mesh: Owner, Drawable
+interface TriangleSet
+{
+    int opApply(scope int delegate(Triangle t) dg);
+}
+
+class Mesh: Owner, Drawable, TriangleSet
 {
     bool dataReady = false;
     bool canRender = false;

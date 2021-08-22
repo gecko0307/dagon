@@ -42,6 +42,7 @@ import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.quaternion;
+import dlib.geometry.triangle;
 import dlib.image.color;
 import dlib.image.image;
 
@@ -407,7 +408,7 @@ class StaticTransformComponent: EntityComponent
     }
 }
 
-class GLTFAsset: Asset
+class GLTFAsset: Asset, TriangleSet
 {
     AssetManager assetManager;
     String str;
@@ -1107,6 +1108,83 @@ class GLTFAsset: Asset
         
         Delete(doc);
         str.free();
+    }
+    
+    int opApply(scope int delegate(Triangle t) dg)
+    {
+        int result = 0;
+        
+        foreach(node; nodes)
+        {
+            auto mat = node.entity.absoluteTransformation;
+            
+            if (node.mesh)
+            {
+                foreach(primitive; node.mesh.primitives)
+                {
+                    GLTFAccessor pa = primitive.positionAccessor;
+                    GLTFAccessor na = primitive.normalAccessor;
+                    GLTFAccessor ia = primitive.indexAccessor;
+                    
+                    Vector3f* positions = cast(Vector3f*)(pa.bufferView.slice.ptr + pa.byteOffset);
+                    size_t numPositions = pa.count;
+                    
+                    Vector3f* normals = cast(Vector3f*)(na.bufferView.slice.ptr + na.byteOffset);
+                    size_t numNormals = na.count;
+                    
+                    ubyte* indicesStart = ia.bufferView.slice.ptr + ia.byteOffset;
+                    size_t numTriangles = ia.count / 3;
+                    
+                    size_t indexStride;
+                    if (ia.componentType == GL_UNSIGNED_BYTE)
+                        indexStride = 1;
+                    else if (ia.componentType == GL_UNSIGNED_SHORT)
+                        indexStride = 2;
+                    else if (ia.componentType == GL_UNSIGNED_INT)
+                        indexStride = 4;
+                    
+                    foreach(i; 0..numTriangles)
+                    {
+                        ubyte* ptr = indicesStart + i * 3 * indexStride;
+                        
+                        size_t[3] indices;
+                        if (ia.componentType == GL_UNSIGNED_BYTE)
+                        {
+                            indices[0] = ptr[0];
+                            indices[1] = ptr[1];
+                            indices[2] = ptr[2];
+                        }
+                        else if (ia.componentType == GL_UNSIGNED_SHORT)
+                        {
+                            indices[0] = *cast(ushort*)ptr;
+                            indices[1] = *cast(ushort*)(ptr+2);
+                            indices[2] = *cast(ushort*)(ptr+4);
+                        }
+                        else if (ia.componentType == GL_UNSIGNED_INT)
+                        {
+                            indices[0] = *cast(uint*)ptr;
+                            indices[1] = *cast(uint*)(ptr+4);
+                            indices[2] = *cast(uint*)(ptr+8);
+                        }
+                        
+                        Triangle tri;
+                        tri.v[0] = positions[indices[0]] * mat;
+                        tri.v[1] = positions[indices[1]] * mat;
+                        tri.v[2] = positions[indices[2]] * mat;
+                        tri.n[0] = mat.rotate(normals[indices[0]]);
+                        tri.n[1] = mat.rotate(normals[indices[1]]);
+                        tri.n[2] = mat.rotate(normals[indices[2]]);
+                        tri.normal = (tri.n[0] + tri.n[1] + tri.n[2]) / 3.0f;
+                        
+                        result = dg(tri);
+                        if (result)
+                            return result;
+                    }
+                }
+            }
+        }
+        
+        return result;
     }
 }
 
