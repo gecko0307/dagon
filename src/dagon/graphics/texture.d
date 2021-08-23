@@ -40,7 +40,7 @@ import dlib.math.vector;
 
 import dagon.core.bindings;
 import dagon.core.application;
-import dagon.graphics.compressedimage;
+import dagon.graphics.containerimage;
 
 // S3TC formats
 enum GL_COMPRESSED_RGB_S3TC_DXT1_EXT = 0x83F0;  // DXT1/BC1_UNORM
@@ -272,19 +272,23 @@ struct TextureFormat
 
 bool detectTextureFormat(SuperImage img, out TextureFormat tf)
 {
-    CompressedImage compressedImg = cast(CompressedImage)img;
+    ContainerImage compressedImg = cast(ContainerImage)img;
     if (compressedImg)
     {
-        CompressedImageFormat compFormat = compressedImg.compressedFormat;
+        uint compFormat = compressedImg.pixelFormat;
         switch(compFormat)
         {
-            case CompressedImageFormat.S3TC_RGB_DXT1:    tf.internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;         tf.blockSize = 8;  tf.compressed = true; break;
-            case CompressedImageFormat.S3TC_RGBA_DXT3:   tf.internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;        tf.blockSize = 16; tf.compressed = true; break;
-            case CompressedImageFormat.S3TC_RGBA_DXT5:   tf.internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;        tf.blockSize = 16; tf.compressed = true; break;
-            case CompressedImageFormat.BPTC_RGBA_UNORM:  tf.internalFormat = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;       tf.blockSize = 16; tf.compressed = true; break;
-            case CompressedImageFormat.BPTC_SRGBA_UNORM: tf.internalFormat = GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_ARB; tf.blockSize = 16; tf.compressed = true; break;
-            case CompressedImageFormat.RGBAF32:          tf.internalFormat = GL_RGBA32F; tf.format = GL_RGBA; tf.pixelType = GL_FLOAT; tf.blockSize = 0; tf.compressed = false; break;
-            case CompressedImageFormat.RGBAF16:          tf.internalFormat = GL_RGBA16F; tf.format = GL_RGBA; tf.pixelType = GL_FLOAT; tf.blockSize = 0; tf.compressed = false; break;
+            case ContainerImageFormat.R8:               tf.internalFormat = GL_R8;      tf.format = GL_RED;  tf.pixelType = GL_UNSIGNED_BYTE; tf.blockSize = 0; tf.compressed = false; break;
+            case ContainerImageFormat.RG8:              tf.internalFormat = GL_RG8;     tf.format = GL_RG;   tf.pixelType = GL_UNSIGNED_BYTE; tf.blockSize = 0; tf.compressed = false; break;
+            case ContainerImageFormat.RGB8:             tf.internalFormat = GL_RGB8;    tf.format = GL_RGB;  tf.pixelType = GL_UNSIGNED_BYTE; tf.blockSize = 0; tf.compressed = false; break;
+            case ContainerImageFormat.RGBA8:            tf.internalFormat = GL_RGBA8;   tf.format = GL_RGBA; tf.pixelType = GL_UNSIGNED_BYTE; tf.blockSize = 0; tf.compressed = false; break;
+            case ContainerImageFormat.RGBAF32:          tf.internalFormat = GL_RGBA32F; tf.format = GL_RGBA; tf.pixelType = GL_FLOAT;         tf.blockSize = 0; tf.compressed = false; break;
+            case ContainerImageFormat.RGBAF16:          tf.internalFormat = GL_RGBA16F; tf.format = GL_RGBA; tf.pixelType = GL_FLOAT;         tf.blockSize = 0; tf.compressed = false; break;
+            case ContainerImageFormat.S3TC_RGB_DXT1:    tf.internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;         tf.blockSize = 8;  tf.compressed = true; break;
+            case ContainerImageFormat.S3TC_RGBA_DXT3:   tf.internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;        tf.blockSize = 16; tf.compressed = true; break;
+            case ContainerImageFormat.S3TC_RGBA_DXT5:   tf.internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;        tf.blockSize = 16; tf.compressed = true; break;
+            case ContainerImageFormat.BPTC_RGBA_UNORM:  tf.internalFormat = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;       tf.blockSize = 16; tf.compressed = true; break;
+            case ContainerImageFormat.BPTC_SRGBA_UNORM: tf.internalFormat = GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_ARB; tf.blockSize = 16; tf.compressed = true; break;
             default:
                 return false;
         }

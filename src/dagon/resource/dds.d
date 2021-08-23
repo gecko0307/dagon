@@ -37,7 +37,7 @@ import dlib.image.color;
 import dlib.image.image;
 import dlib.image.io.utils;
 
-import dagon.graphics.compressedimage;
+import dagon.graphics.containerimage;
 
 //version = DDSDebug;
 
@@ -284,15 +284,15 @@ DXGIFormat resourceFormatFromFourCC(uint fourCC)
     return format;
 }
 
-Compound!(CompressedImage, string) loadDDS(InputStream istrm)
+Compound!(ContainerImage, string) loadDDS(InputStream istrm)
 {
-    CompressedImage img = null;
+    ContainerImage img = null;
 
     void finalize()
     {
     }
 
-    Compound!(CompressedImage, string) error(string errorMsg)
+    Compound!(ContainerImage, string) error(string errorMsg)
     {
         finalize();
         if (img)
@@ -361,7 +361,7 @@ Compound!(CompressedImage, string) loadDDS(InputStream istrm)
         writeln("hdr.textureStage: ", hdr.textureStage);
     }
 
-    CompressedImageFormat format;
+    ContainerImageFormat format;
 
     DXGIFormat fmt;
     if (hdr.format.fourCC == FOURCC_DX10)
@@ -381,43 +381,43 @@ Compound!(CompressedImage, string) loadDDS(InputStream istrm)
     switch(fmt)
     {
         case DXGIFormat.BC1_UNORM:
-            format = CompressedImageFormat.S3TC_RGB_DXT1;
+            format = ContainerImageFormat.S3TC_RGB_DXT1;
             break;
         case DXGIFormat.BC2_UNORM:
-            format = CompressedImageFormat.S3TC_RGBA_DXT3;
+            format = ContainerImageFormat.S3TC_RGBA_DXT3;
             break;
         case DXGIFormat.BC3_UNORM:
-            format = CompressedImageFormat.S3TC_RGBA_DXT5;
+            format = ContainerImageFormat.S3TC_RGBA_DXT5;
             break;
         case DXGIFormat.BC4_UNORM:
-            format = CompressedImageFormat.RGTC1_R;
+            format = ContainerImageFormat.RGTC1_R;
             break;
         case DXGIFormat.BC4_SNORM:
-            format = CompressedImageFormat.RGTC1_R_S;
+            format = ContainerImageFormat.RGTC1_R_S;
             break;
         case DXGIFormat.BC5_UNORM:
-            format = CompressedImageFormat.RGTC2_RG;
+            format = ContainerImageFormat.RGTC2_RG;
             break;
         case DXGIFormat.BC5_SNORM:
-            format = CompressedImageFormat.RGTC2_RG_S;
+            format = ContainerImageFormat.RGTC2_RG_S;
             break;
         case DXGIFormat.BC7_UNORM:
-            format = CompressedImageFormat.BPTC_RGBA_UNORM;
+            format = ContainerImageFormat.BPTC_RGBA_UNORM;
             break;
         case DXGIFormat.BC7_UNORM_SRGB:
-            format = CompressedImageFormat.BPTC_SRGBA_UNORM;
+            format = ContainerImageFormat.BPTC_SRGBA_UNORM;
             break;
         case DXGIFormat.BC6H_SF16:
-            format = CompressedImageFormat.BPTC_RGB_SF;
+            format = ContainerImageFormat.BPTC_RGB_SF;
             break;
         case DXGIFormat.BC6H_UF16:
-            format = CompressedImageFormat.BPTC_RGB_UF;
+            format = ContainerImageFormat.BPTC_RGB_UF;
             break;
         case DXGIFormat.R32G32B32A32_FLOAT:
-            format = CompressedImageFormat.RGBAF32;
+            format = ContainerImageFormat.RGBAF32;
             break;
         case DXGIFormat.R16G16B16A16_FLOAT:
-            format = CompressedImageFormat.RGBAF16;
+            format = ContainerImageFormat.RGBAF16;
             break;
         default:
             return error("loadDDS error: unsupported resource format");
@@ -426,7 +426,7 @@ Compound!(CompressedImage, string) loadDDS(InputStream istrm)
     size_t bufferSize = cast(size_t)(istrm.size - istrm.getPosition);
     version(DDSDebug) writeln("bufferSize: ", bufferSize);
 
-    img = New!CompressedImage(hdr.width, hdr.height, format, hdr.mipMapLevels, bufferSize);
+    img = New!ContainerImage(hdr.width, hdr.height, format, hdr.mipMapLevels, bufferSize);
     istrm.readBytes(img.data.ptr, bufferSize);
 
     return compound(img, "");

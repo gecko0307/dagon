@@ -41,7 +41,7 @@ import dlib.math.utils;
 
 import dagon.core.bindings;
 import dagon.graphics.texture;
-import dagon.graphics.compressedimage;
+import dagon.graphics.containerimage;
 
 enum CubeFace
 {
@@ -171,14 +171,14 @@ class Cubemap: Texture
         faceImage.free();
     }
     
-    void fromCompressedImage(CompressedImage img)
+    void fromContainerImage(ContainerImage img)
     {
         initialize();
         
-        if (img.compressedFormat != CompressedImageFormat.RGBAF32 &&
-            img.compressedFormat != CompressedImageFormat.RGBAF16)
+        if (img.pixelFormat != ContainerImageFormat.RGBAF32 &&
+            img.pixelFormat != ContainerImageFormat.RGBAF16)
         {
-            writefln("Unsupported compressed format %s", img.compressedFormat);
+            writefln("Unsupported pixel format %s for a cubemap", img.pixelFormat);
             return;
         }
         
@@ -193,7 +193,7 @@ class Cubemap: Texture
         GLint intFormat = GL_RGBA32F;
         GLenum type = GL_FLOAT;
         uint pixelSize = 16;
-        if (img.compressedFormat == CompressedImageFormat.RGBAF16)
+        if (img.pixelFormat == ContainerImageFormat.RGBAF16)
         {
             intFormat = GL_RGBA16F;
             pixelSize = 8;
@@ -227,10 +227,10 @@ class Cubemap: Texture
     
     void fromImage(SuperImage img, uint resolution = 512)
     {
-        CompressedImage compImage = cast(CompressedImage)img;
-        if (compImage)
+        ContainerImage cImage = cast(ContainerImage)img;
+        if (cImage)
         {
-            fromCompressedImage(compImage);
+            fromContainerImage(cImage);
         }
         else
         {

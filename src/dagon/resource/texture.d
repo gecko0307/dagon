@@ -47,7 +47,7 @@ import dlib.image.hdri;
 import dlib.filesystem.filesystem;
 
 import dagon.graphics.texture;
-import dagon.graphics.compressedimage;
+import dagon.graphics.containerimage;
 import dagon.resource.asset;
 import dagon.resource.stbi;
 import dagon.resource.dds;
@@ -86,7 +86,7 @@ class TextureAsset: Asset
         else if (filename.extension == ".dds" ||
                  filename.extension == ".DDS")
         {
-            Compound!(CompressedImage, string) res;
+            Compound!(ContainerImage, string) res;
             res = loadDDS(istrm);
             texture.image = res[0];
             errMsg = res[1];

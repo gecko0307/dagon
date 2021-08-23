@@ -25,48 +25,53 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.graphics.compressedimage;
+module dagon.graphics.containerimage;
 
 import std.stdio;
 
 import dlib.core.memory;
 import dlib.image.color;
 import dlib.image.image;
+import dlib.image.hdri;
 
-enum CompressedImageFormat
+enum ContainerImageFormat: uint
 {
-    S3TC_RGB_DXT1,
-    S3TC_RGBA_DXT3,
-    S3TC_RGBA_DXT5,
-
-    RGTC1_R,
-    RGTC1_R_S,
-    RGTC2_RG,
-    RGTC2_RG_S,
-
-    BPTC_RGBA_UNORM,
-    BPTC_SRGBA_UNORM,
-    BPTC_RGB_SF,
-    BPTC_RGB_UF,
+    R8 = IntegerPixelFormat.L8,
+    RG8 = IntegerPixelFormat.LA8,
+    RGB8 = IntegerPixelFormat.RGB8,
+    RGBA8 = IntegerPixelFormat.RGBA8,
+    RGBAF32 = FloatPixelFormat.RGBAF32,
+    RGBAF16 = 9, //FloatPixelFormat.RGBAF16
     
-    RGBAF32,
-    RGBAF16
+    S3TC_RGB_DXT1 = 256,
+    S3TC_RGBA_DXT3 = 257,
+    S3TC_RGBA_DXT5 = 258,
+
+    RGTC1_R = 259,
+    RGTC1_R_S = 260,
+    RGTC2_RG = 261,
+    RGTC2_RG_S = 262,
+
+    BPTC_RGBA_UNORM = 263,
+    BPTC_SRGBA_UNORM = 264,
+    BPTC_RGB_SF = 265,
+    BPTC_RGB_UF = 266
 }
 
-class CompressedImage: SuperImage
+class ContainerImage: SuperImage
 {
     uint _width;
     uint _height;
-    CompressedImageFormat _compressedImageFormat;
+    ContainerImageFormat _containerImageFormat;
     uint _mipMapLevels;
     size_t _bufferSize;
     ubyte[] _data;
 
-    this(uint w, uint h, CompressedImageFormat format, uint mipmaps, size_t bufferSize)
+    this(uint w, uint h, ContainerImageFormat format, uint mipmaps, size_t bufferSize)
     {
         _width = w;
         _height = h;
-        _compressedImageFormat = format;
+        _containerImageFormat = format;
         _mipMapLevels = mipmaps;
         _bufferSize = bufferSize;
         _data = New!(ubyte[])(_bufferSize);
@@ -110,12 +115,7 @@ class CompressedImage: SuperImage
 
     @property uint pixelFormat()
     {
-        return IntegerPixelFormat.RGBA8;
-    }
-
-    @property CompressedImageFormat compressedFormat()
-    {
-        return _compressedImageFormat;
+        return _containerImageFormat;
     }
 
     @property uint mipMapLevels()
@@ -130,7 +130,7 @@ class CompressedImage: SuperImage
 
     @property SuperImage dup()
     {
-        auto res = New!CompressedImage(_width, _height, _compressedImageFormat, _mipMapLevels, _bufferSize);
+        auto res = New!ContainerImage(_width, _height, _containerImageFormat, _mipMapLevels, _bufferSize);
         res.data[] = data[];
         return res;
     }
