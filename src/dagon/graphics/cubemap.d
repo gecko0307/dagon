@@ -91,21 +91,12 @@ class Cubemap: Texture
 
     void initialize(uint resolution)
     {
-        releaseGLTexture();
+        initialize();
 
         width = resolution;
         height = resolution;
-
-        glActiveTexture(GL_TEXTURE0);
-
-        glGenTextures(1, &tex);
+        
         glBindTexture(GL_TEXTURE_CUBE_MAP, tex);
-
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
         glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA16F, resolution, resolution, 0, GL_RGBA, GL_FLOAT, null);
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA16F, resolution, resolution, 0, GL_RGBA, GL_FLOAT, null);
@@ -131,8 +122,20 @@ class Cubemap: Texture
         TextureFormat tf;
         if (detectTextureFormat(img, tf))
         {
+            format = tf.format;
+            intFormat = tf.internalFormat;
+            type = tf.pixelType;
+            
             glBindTexture(GL_TEXTURE_CUBE_MAP, tex);
-            glTexImage2D(face, 0, tf.internalFormat, width, height, 0, tf.format, tf.pixelType, cast(void*)img.data.ptr);
+            if (tf.compressed)
+            {
+                uint size = ((width + 3) / 4) * ((height + 3) / 4) * tf.blockSize;
+                glCompressedTexImage2D(face, 0, intFormat, width, height, 0, size, cast(void*)img.data.ptr);
+            }
+            else
+            {
+                glTexImage2D(face, 0, intFormat, width, height, 0, format, type, cast(void*)img.data.ptr);
+            }
             glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
         }
         else
@@ -181,30 +184,31 @@ class Cubemap: Texture
             return;
         }
         
-        if (img.pixelFormat != ContainerImageFormat.RGBAF32 &&
-            img.pixelFormat != ContainerImageFormat.RGBAF16)
+        TextureFormat tf;
+        if (!detectTextureFormat(img, tf))
+        {
+            writefln("Unsupported pixel format %s for a cubemap", img.pixelFormat);
+            return;
+        }
+        else if (tf.compressed)
         {
             writefln("Unsupported pixel format %s for a cubemap", img.pixelFormat);
             return;
         }
         
-        uint width = img.width;
-        uint height = img.height;
-        uint numMipMaps = img.mipLevels;
+        width = img.width;
+        height = img.height;
+        numMipmapLevels = img.mipLevels;
+        
+        format = tf.format;
+        intFormat = tf.internalFormat;
+        type = tf.pixelType;
+        
+        uint pSize = pixelSize(img.pixelFormat);
         
         glBindTexture(GL_TEXTURE_CUBE_MAP, tex);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, numMipMaps - 1);
-        
-        GLint intFormat = GL_RGBA32F;
-        GLenum type = GL_FLOAT;
-        uint pixelSize = 16;
-        if (img.pixelFormat == ContainerImageFormat.RGBAF16)
-        {
-            intFormat = GL_RGBA16F;
-            pixelSize = 8;
-            type = GL_HALF_FLOAT;
-        }
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, numMipmapLevels - 1);
         
         ubyte* data = img.data.ptr;
         uint offset = 0;
@@ -213,10 +217,10 @@ class Cubemap: Texture
         {
             uint w = width;
             uint h = height;
-            for (uint i = 0; i < numMipMaps; i++)
+            for (uint i = 0; i < numMipmapLevels; i++)
             {
-                uint size = w * h * pixelSize;
-                glTexImage2D(face, i, intFormat, w, h, 0, GL_RGBA, type, cast(void*)(data + offset));
+                uint size = w * h * pSize;
+                glTexImage2D(face, i, intFormat, w, h, 0, format, type, cast(void*)(data + offset));
                 offset += size;
                 w /= 2;
                 h /= 2;
@@ -268,6 +272,22 @@ class Cubemap: Texture
     {
         mipmapGenerated = false;
     }
+}
+
+uint pixelSize(uint pixelFormat)
+{
+    uint s = 0;
+    switch(pixelFormat)
+    {
+        case ContainerImageFormat.R8:      s = 1; break;
+        case ContainerImageFormat.RG8:     s = 2; break;
+        case ContainerImageFormat.RGB8:    s = 3; break;
+        case ContainerImageFormat.RGBA8:   s = 4; break;
+        case ContainerImageFormat.RGBAF32: s = 16; break;
+        case ContainerImageFormat.RGBAF16: s = 8; break;
+        default: break;
+    }
+    return s;
 }
 
 Matrix4x4f cubeFaceMatrix(CubeFace cf)

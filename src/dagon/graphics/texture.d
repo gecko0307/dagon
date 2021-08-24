@@ -283,7 +283,7 @@ bool detectTextureFormat(SuperImage img, out TextureFormat tf)
             case ContainerImageFormat.RGB8:             tf.internalFormat = GL_RGB8;    tf.format = GL_RGB;  tf.pixelType = GL_UNSIGNED_BYTE; tf.blockSize = 0; tf.compressed = false; break;
             case ContainerImageFormat.RGBA8:            tf.internalFormat = GL_RGBA8;   tf.format = GL_RGBA; tf.pixelType = GL_UNSIGNED_BYTE; tf.blockSize = 0; tf.compressed = false; break;
             case ContainerImageFormat.RGBAF32:          tf.internalFormat = GL_RGBA32F; tf.format = GL_RGBA; tf.pixelType = GL_FLOAT;         tf.blockSize = 0; tf.compressed = false; break;
-            case ContainerImageFormat.RGBAF16:          tf.internalFormat = GL_RGBA16F; tf.format = GL_RGBA; tf.pixelType = GL_FLOAT;         tf.blockSize = 0; tf.compressed = false; break;
+            case ContainerImageFormat.RGBAF16:          tf.internalFormat = GL_RGBA16F; tf.format = GL_RGBA; tf.pixelType = GL_HALF_FLOAT;    tf.blockSize = 0; tf.compressed = false; break;
             case ContainerImageFormat.S3TC_RGB_DXT1:    tf.internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;         tf.blockSize = 8;  tf.compressed = true; break;
             case ContainerImageFormat.S3TC_RGBA_DXT3:   tf.internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;        tf.blockSize = 16; tf.compressed = true; break;
             case ContainerImageFormat.S3TC_RGBA_DXT5:   tf.internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;        tf.blockSize = 16; tf.compressed = true; break;
