@@ -380,45 +380,22 @@ Compound!(ContainerImage, string) loadDDS(InputStream istrm)
 
     switch(fmt)
     {
-        case DXGIFormat.BC1_UNORM:
-            format = ContainerImageFormat.S3TC_RGB_DXT1;
-            break;
-        case DXGIFormat.BC2_UNORM:
-            format = ContainerImageFormat.S3TC_RGBA_DXT3;
-            break;
-        case DXGIFormat.BC3_UNORM:
-            format = ContainerImageFormat.S3TC_RGBA_DXT5;
-            break;
-        case DXGIFormat.BC4_UNORM:
-            format = ContainerImageFormat.RGTC1_R;
-            break;
-        case DXGIFormat.BC4_SNORM:
-            format = ContainerImageFormat.RGTC1_R_S;
-            break;
-        case DXGIFormat.BC5_UNORM:
-            format = ContainerImageFormat.RGTC2_RG;
-            break;
-        case DXGIFormat.BC5_SNORM:
-            format = ContainerImageFormat.RGTC2_RG_S;
-            break;
-        case DXGIFormat.BC7_UNORM:
-            format = ContainerImageFormat.BPTC_RGBA_UNORM;
-            break;
-        case DXGIFormat.BC7_UNORM_SRGB:
-            format = ContainerImageFormat.BPTC_SRGBA_UNORM;
-            break;
-        case DXGIFormat.BC6H_SF16:
-            format = ContainerImageFormat.BPTC_RGB_SF;
-            break;
-        case DXGIFormat.BC6H_UF16:
-            format = ContainerImageFormat.BPTC_RGB_UF;
-            break;
-        case DXGIFormat.R32G32B32A32_FLOAT:
-            format = ContainerImageFormat.RGBAF32;
-            break;
-        case DXGIFormat.R16G16B16A16_FLOAT:
-            format = ContainerImageFormat.RGBAF16;
-            break;
+        case DXGIFormat.R8_UNORM: format = ContainerImageFormat.R8; break;
+        case DXGIFormat.R8G8_UNORM: format = ContainerImageFormat.RG8; break;
+        case DXGIFormat.R8G8B8A8_UNORM: format = ContainerImageFormat.RGBA8; break;
+        case DXGIFormat.R32G32B32A32_FLOAT: format = ContainerImageFormat.RGBAF32; break;
+        case DXGIFormat.R16G16B16A16_FLOAT: format = ContainerImageFormat.RGBAF16; break;
+        case DXGIFormat.BC1_UNORM: format = ContainerImageFormat.S3TC_RGB_DXT1; break;
+        case DXGIFormat.BC2_UNORM: format = ContainerImageFormat.S3TC_RGBA_DXT3; break;
+        case DXGIFormat.BC3_UNORM: format = ContainerImageFormat.S3TC_RGBA_DXT5; break;
+        case DXGIFormat.BC4_UNORM: format = ContainerImageFormat.RGTC1_R; break;
+        case DXGIFormat.BC4_SNORM: format = ContainerImageFormat.RGTC1_R_S; break;
+        case DXGIFormat.BC5_UNORM: format = ContainerImageFormat.RGTC2_RG; break;
+        case DXGIFormat.BC5_SNORM: format = ContainerImageFormat.RGTC2_RG_S; break;
+        case DXGIFormat.BC7_UNORM: format = ContainerImageFormat.BPTC_RGBA_UNORM; break;
+        case DXGIFormat.BC7_UNORM_SRGB: format = ContainerImageFormat.BPTC_SRGBA_UNORM; break;
+        case DXGIFormat.BC6H_SF16: format = ContainerImageFormat.BPTC_RGB_SF; break;
+        case DXGIFormat.BC6H_UF16: format = ContainerImageFormat.BPTC_RGB_UF; break;
         default:
             return error("loadDDS error: unsupported resource format");
     }
