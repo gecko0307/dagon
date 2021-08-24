@@ -175,6 +175,12 @@ class Cubemap: Texture
     {
         initialize();
         
+        if (!img.isCubemap)
+        {
+            writefln("Image is not a cubemap");
+            return;
+        }
+        
         if (img.pixelFormat != ContainerImageFormat.RGBAF32 &&
             img.pixelFormat != ContainerImageFormat.RGBAF16)
         {
@@ -184,7 +190,7 @@ class Cubemap: Texture
         
         uint width = img.width;
         uint height = img.height;
-        uint numMipMaps = img.mipMapLevels;
+        uint numMipMaps = img.mipLevels;
         
         glBindTexture(GL_TEXTURE_CUBE_MAP, tex);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);

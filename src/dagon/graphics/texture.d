@@ -59,6 +59,16 @@ enum GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_ARB = 0x8E8D;   // BC7_UNORM_SRGB
 enum GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_ARB = 0x8E8E;   // BC6H_SF16
 enum GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_ARB = 0x8E8F; // BC6H_UF16
 
+struct TextureFormat
+{
+    GLenum format;
+    GLint internalFormat;
+    GLenum pixelType;
+    bool compressed;
+    uint blockSize;
+    uint mipLevels;
+}
+
 class Texture: Owner
 {
     SuperImage image;
@@ -124,7 +134,7 @@ class Texture: Owner
             type = tf.pixelType;
             
             if (tf.compressed)
-                createCompressedTexture(img.data.ptr, tf.blockSize, tf.mipMapLevels);
+                createCompressedTexture(img.data.ptr, tf.blockSize, tf.mipLevels);
             else
                 createUncompressedTexture(img.data.ptr, genMipmaps);
         }
@@ -260,16 +270,6 @@ class Texture: Owner
     }
 }
 
-struct TextureFormat
-{
-    GLenum format;
-    GLint internalFormat;
-    GLenum pixelType;
-    bool compressed;
-    uint blockSize;
-    uint mipMapLevels;
-}
-
 bool detectTextureFormat(SuperImage img, out TextureFormat tf)
 {
     ContainerImage compressedImg = cast(ContainerImage)img;
@@ -292,7 +292,7 @@ bool detectTextureFormat(SuperImage img, out TextureFormat tf)
             default:
                 return false;
         }
-        tf.mipMapLevels = compressedImg.mipMapLevels;
+        tf.mipLevels = compressedImg.mipLevels;
     }
     else
     {
@@ -309,7 +309,7 @@ bool detectTextureFormat(SuperImage img, out TextureFormat tf)
         }
         tf.compressed = false;
         tf.blockSize = 0;
-        tf.mipMapLevels = 1;
+        tf.mipLevels = 1;
     }
     
     return true;

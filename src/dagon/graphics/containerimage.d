@@ -63,17 +63,19 @@ class ContainerImage: SuperImage
     uint _width;
     uint _height;
     ContainerImageFormat _containerImageFormat;
-    uint _mipMapLevels;
+    uint _mipLevels;
+    bool _isCubemap;
     size_t _bufferSize;
     ubyte[] _data;
 
-    this(uint w, uint h, ContainerImageFormat format, uint mipmaps, size_t bufferSize)
+    this(uint w, uint h, ContainerImageFormat format, uint mipmaps, size_t bufferSize, bool cubemap = false)
     {
         _width = w;
         _height = h;
         _containerImageFormat = format;
-        _mipMapLevels = mipmaps;
+        _mipLevels = mipmaps;
         _bufferSize = bufferSize;
+        _isCubemap = cubemap;
         _data = New!(ubyte[])(_bufferSize);
     }
 
@@ -118,9 +120,14 @@ class ContainerImage: SuperImage
         return _containerImageFormat;
     }
 
-    @property uint mipMapLevels()
+    @property uint mipLevels()
     {
-        return _mipMapLevels;
+        return _mipLevels;
+    }
+    
+    @property bool isCubemap()
+    {
+        return _isCubemap;
     }
 
     @property ubyte[] data()
@@ -130,7 +137,7 @@ class ContainerImage: SuperImage
 
     @property SuperImage dup()
     {
-        auto res = New!ContainerImage(_width, _height, _containerImageFormat, _mipMapLevels, _bufferSize);
+        auto res = New!ContainerImage(_width, _height, _containerImageFormat, _mipLevels, _bufferSize, _isCubemap);
         res.data[] = data[];
         return res;
     }

@@ -39,7 +39,7 @@ import dlib.image.io.utils;
 
 import dagon.graphics.containerimage;
 
-//version = DDSDebug;
+// version = DDSDebug;
 
 struct DDSPixelFormat
 {
@@ -214,6 +214,19 @@ enum DXGIFormat
     V408 = 132
 }
 
+enum DDSCAPS_COMPLEX = 0x8;
+enum DDSCAPS_MIPMAP = 0x400000;
+enum DDSCAPS_TEXTURE = 0x1000;
+
+enum DDSCAPS2_CUBEMAP = 0x200;
+enum DDSCAPS2_CUBEMAP_POSITIVEX = 0x400;
+enum DDSCAPS2_CUBEMAP_NEGATIVEX = 0x800;
+enum DDSCAPS2_CUBEMAP_POSITIVEY = 0x1000;
+enum DDSCAPS2_CUBEMAP_NEGATIVEY = 0x2000;
+enum DDSCAPS2_CUBEMAP_POSITIVEZ = 0x4000;
+enum DDSCAPS2_CUBEMAP_NEGATIVEZ = 0x8000;
+enum DDSCAPS2_CUBEMAP_ALLFACES = 0xFC00;
+
 enum D3D10ResourceDimension
 {
     Unknown,
@@ -368,8 +381,6 @@ Compound!(ContainerImage, string) loadDDS(InputStream istrm)
     {
         DDSHeaderDXT10 dx10 = readStruct!DDSHeaderDXT10(istrm);
         fmt = cast(DXGIFormat)dx10.dxgiFormat;
-        
-        // TODO: caps
     }
     else
     {
@@ -399,11 +410,20 @@ Compound!(ContainerImage, string) loadDDS(InputStream istrm)
         default:
             return error("loadDDS error: unsupported resource format");
     }
+    
+    bool isCubemap = false;
+    if (hdr.caps.caps2 & DDSCAPS2_CUBEMAP)
+    {
+        if (hdr.caps.caps2 & DDSCAPS2_CUBEMAP_ALLFACES)
+            isCubemap = true;
+        else
+            return error("loadDDS error: incomplete cubemap");
+    }
 
     size_t bufferSize = cast(size_t)(istrm.size - istrm.getPosition);
     version(DDSDebug) writeln("bufferSize: ", bufferSize);
 
-    img = New!ContainerImage(hdr.width, hdr.height, format, hdr.mipMapLevels, bufferSize);
+    img = New!ContainerImage(hdr.width, hdr.height, format, hdr.mipMapLevels, bufferSize, isCubemap);
     istrm.readBytes(img.data.ptr, bufferSize);
 
     return compound(img, "");
