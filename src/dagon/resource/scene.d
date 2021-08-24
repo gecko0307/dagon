@@ -112,96 +112,39 @@ class Scene: EventListener
         return asset;
     }
 
-    ImageAsset addImageAsset(string filename, bool preload = false)
+    T addAssetAs(T)(string filename, bool preload = false)
     {
-        ImageAsset img;
+        T newAsset;
         if (assetManager.assetExists(filename))
-            img = cast(ImageAsset)assetManager.getAsset(filename);
+            newAsset = cast(T)assetManager.getAsset(filename);
         else
         {
-            img = New!ImageAsset(assetManager.imageFactory, assetManager.hdrImageFactory, assetManager);
-            addAsset(img, filename, preload);
+            static if (is(T: ImageAsset) || is(T: TextureAsset))
+            {
+                newAsset = New!T(assetManager.imageFactory, assetManager.hdrImageFactory, assetManager);
+            }
+            else
+            {
+                newAsset = New!T(assetManager);
+            }
+            addAsset(newAsset, filename, preload);
         }
-        return img;
+        return newAsset;
     }
 
-    TextureAsset addTextureAsset(string filename, bool preload = false)
-    {
-        TextureAsset tex;
-        if (assetManager.assetExists(filename))
-            tex = cast(TextureAsset)assetManager.getAsset(filename);
-        else
-        {
-            tex = New!TextureAsset(assetManager.imageFactory, assetManager.hdrImageFactory, assetManager);
-            addAsset(tex, filename, preload);
-        }
-        return tex;
-    }
-
-    OBJAsset addOBJAsset(string filename, bool preload = false)
-    {
-        OBJAsset obj;
-        if (assetManager.assetExists(filename))
-            obj = cast(OBJAsset)assetManager.getAsset(filename);
-        else
-        {
-            obj = New!OBJAsset(assetManager);
-            addAsset(obj, filename, preload);
-        }
-        return obj;
-    }
+    alias addImageAsset = addAssetAs!ImageAsset;
     
-    GLTFAsset addGLTFAsset(string filename, bool preload = false)
-    {
-        GLTFAsset gltf;
-        if (assetManager.assetExists(filename))
-            gltf = cast(GLTFAsset)assetManager.getAsset(filename);
-        else
-        {
-            gltf = New!GLTFAsset(assetManager);
-            addAsset(gltf, filename, preload);
-        }
-        return gltf;
-    }
+    alias addTextureAsset = addAssetAs!TextureAsset;
+    
+    alias addOBJAsset = addAssetAs!OBJAsset;
+    
+    alias addGLTFAsset = addAssetAs!GLTFAsset;
+    
+    alias addTextAsset = addAssetAs!TextAsset;
+    
+    alias addBinaryAsset = addAssetAs!BinaryAsset;
 
-    TextAsset addTextAsset(string filename, bool preload = false)
-    {
-        TextAsset text;
-        if (assetManager.assetExists(filename))
-            text = cast(TextAsset)assetManager.getAsset(filename);
-        else
-        {
-            text = New!TextAsset(assetManager);
-            addAsset(text, filename, preload);
-        }
-        return text;
-    }
-
-    BinaryAsset addBinaryAsset(string filename, bool preload = false)
-    {
-        BinaryAsset bin;
-        if (assetManager.assetExists(filename))
-            bin = cast(BinaryAsset)assetManager.getAsset(filename);
-        else
-        {
-            bin = New!BinaryAsset(assetManager);
-            addAsset(bin, filename, preload);
-        }
-        return bin;
-    }
-
-    PackageAsset addPackageAsset(string filename, bool preload = false)
-    {
-        PackageAsset pa;
-        if (assetManager.assetExists(filename))
-            pa = cast(PackageAsset)assetManager.getAsset(filename);
-        else
-        {
-            pa = New!PackageAsset(this, assetManager);
-            addAsset(pa, filename, preload);
-        }
-        return pa;
-    }
+    alias addPackageAsset = addAssetAs!PackageAsset;
 
     Material addMaterial()
     {
