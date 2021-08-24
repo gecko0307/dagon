@@ -123,6 +123,10 @@ class Scene: EventListener
             {
                 newAsset = New!T(assetManager.imageFactory, assetManager.hdrImageFactory, assetManager);
             }
+            else static if (is(T: PackageAsset))
+            {
+                newAsset = New!T(this, assetManager);
+            }
             else
             {
                 newAsset = New!T(assetManager);
