@@ -72,6 +72,8 @@ class GeometryShader: Shader
         auto iroughness = "roughness" in state.material.inputs;
         auto imetallic = "metallic" in state.material.inputs;
         auto ispecularity = "specularity" in state.material.inputs;
+        auto itransparency = "transparency" in state.material.inputs;
+        auto iclipThreshold = "clipThreshold" in state.material.inputs;
         auto itranslucency = "translucency" in state.material.inputs;
         auto itextureScale = "textureScale" in state.material.inputs;
         auto iparallax = "parallax" in state.material.inputs;
@@ -87,7 +89,6 @@ class GeometryShader: Shader
         setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
 
         setParameter("layer", cast(float)(state.layer));
-        setParameter("opacity", state.opacity);
         setParameter("textureScale", itextureScale.asVector2f);
         setParameter("blurMask", state.blurMask);
 
@@ -98,6 +99,17 @@ class GeometryShader: Shader
             parallaxMethod = 0;
 
         setParameter("sphericalNormal", cast(int)isphericalNormal.asBool);
+
+        // Transparency
+        float materialOpacity = 1.0f;
+        if (itransparency)
+            materialOpacity = itransparency.asFloat;
+        setParameter("opacity", state.opacity * materialOpacity);
+        
+        float clipThreshold = 0.5f;
+        if (iclipThreshold)
+            clipThreshold = iclipThreshold.asFloat;
+        setParameter("clipThreshold", clipThreshold);
 
         // Diffuse
         if (idiffuse.texture)

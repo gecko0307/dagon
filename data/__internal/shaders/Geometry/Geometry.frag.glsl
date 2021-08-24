@@ -10,6 +10,7 @@ in vec4 prevPosition;
 uniform float layer;
 uniform float energy;
 uniform float opacity;
+uniform float clipThreshold;
 uniform float blurMask;
 
 #include <gamma.glsl>
@@ -245,7 +246,7 @@ void main()
     
     vec4 fragDiffuse = diffuse(shiftedTexCoord);
     
-    if ((fragDiffuse.a * opacity) < 0.5)
+    if ((fragDiffuse.a * opacity) < clipThreshold)
         discard;
     
     vec2 posScreen = (currPosition.xy / currPosition.w) * 0.5 + 0.5;
@@ -257,8 +258,8 @@ void main()
     fragPBR = vec4(
         max(roughness(shiftedTexCoord), 0.0001),
         metallic(shiftedTexCoord),
-        1.0, // TODO: specularity from uniform parameter
-        0.0); // TODO: translucency from uniform parameter
+        1.0,
+        0.0);
     fragRadiance = vec4(toLinear(emission(shiftedTexCoord)), 1.0);
     fragVelocity = vec4(velocity, blurMask, 0.0);
 }

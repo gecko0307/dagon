@@ -168,6 +168,7 @@ class Material: Owner
         setInput("emission", Color4f(0.0f, 0.0f, 0.0f, 1.0f));
         setInput("energy", 1.0f);
         setInput("transparency", 1.0f);
+        setInput("clipThreshold", 0.5f);
         setInput("roughness", 0.5f);
         setInput("metallic", 0.0f);
         setInput("roughnessMetallic", 0.0f);
