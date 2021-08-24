@@ -829,6 +829,11 @@ class GLTFAsset: Asset, TriangleSet
                     material.culling = true;
                 }
                 
+                if ("alphaCutoff" in ma)
+                {
+                    material.clipThreshold = ma["alphaCutoff"].asNumber;
+                }
+                
                 materials.insertBack(material);
             }
         }
