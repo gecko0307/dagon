@@ -142,7 +142,7 @@ subroutine(srtRoughness) float roughnessValue(in vec2 uv)
 
 subroutine(srtRoughness) float roughnessMap(in vec2 uv)
 {
-    return texture(pbrTexture, uv).r;
+    return texture(pbrTexture, uv).g;
 }
 
 subroutine uniform srtRoughness roughness;
@@ -161,7 +161,7 @@ subroutine(srtMetallic) float metallicValue(in vec2 uv)
 
 subroutine(srtMetallic) float metallicMap(in vec2 uv)
 {
-    return texture(pbrTexture, uv).g;
+    return texture(pbrTexture, uv).b;
 }
 
 subroutine uniform srtMetallic metallic;
@@ -180,7 +180,7 @@ subroutine(srtSpecularity) float specularityValue(in vec2 uv)
 
 subroutine(srtSpecularity) float specularityMap(in vec2 uv)
 {
-    return texture(pbrTexture, uv).b;
+    return texture(pbrTexture, uv).r;
 }
 
 subroutine uniform srtSpecularity specularity;
@@ -232,7 +232,7 @@ void main()
     
     // Normal
     vec3 fdx = dFdx(eyePos);
-    vec3 fdy = dFdy(eyePos);    
+    vec3 fdy = dFdy(eyePos);
     vec3 N = normalize(cross(fdx, fdy));
     
     // Texcoord (go from -1..1 to 0..1)
