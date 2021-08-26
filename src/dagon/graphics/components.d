@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Timur Gafarov
+Copyright (c) 2019-2021 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.graphics.components;
 
+import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;
 
@@ -49,10 +50,10 @@ class PositionSync: EntityComponent
 
     override void update(Time time)
     {
-        entity.position = parent.positionAbsolute;
+        Vector3f pos = parent.positionAbsolute + entity.position;
 
         entity.transformation =
-            translationMatrix(entity.position) *
+            translationMatrix(pos) *
             entity.rotation.toMatrix4x4 *
             scaleMatrix(entity.scaling);
         entity.invTransformation = entity.transformation.inverse;
