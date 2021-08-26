@@ -31,6 +31,7 @@ import dlib.core.ownership;
 import dlib.image.color;
 
 import dagon.graphics.texture;
+import dagon.graphics.light;
 
 class Environment: Owner
 {
@@ -44,6 +45,8 @@ class Environment: Owner
     Color4f fogColor = Color4f(0.125f, 0.3f, 0.443f, 1.0f);
     float fogStart = 0.0f;
     float fogEnd = 100.0f;
+    
+    Light sun;
     
     this(Owner o)
     {

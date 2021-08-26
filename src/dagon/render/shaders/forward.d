@@ -41,6 +41,7 @@ import dlib.text.str;
 
 import dagon.core.bindings;
 import dagon.graphics.material;
+import dagon.graphics.light;
 import dagon.graphics.shader;
 import dagon.graphics.state;
 import dagon.graphics.cubemap;
@@ -119,6 +120,10 @@ class ForwardShader: Shader
         setParameter("viewSize", state.resolution);
 
         // Sun
+        Light sun = state.material.sun;
+        if (sun is null)
+            sun = state.environment.sun;
+        
         Vector3f sunDirection = Vector3f(0.0f, 0.0f, 1.0f);
         Color4f sunColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
         float sunEnergy = 1.0f;
@@ -129,9 +134,8 @@ class ForwardShader: Shader
         float sunScatteringMaxRandomStepOffset = 0.0f;
         bool sunScatteringShadow = false;
         bool shaded = !ishadeless.asBool;
-        if (state.material.sun)
+        if (sun)
         {
-            auto sun = state.material.sun;
             sunDirection = sun.directionAbsolute;
             sunColor = sun.color;
             sunEnergy = sun.energy;
@@ -195,11 +199,6 @@ class ForwardShader: Shader
                     inormal.texture = state.material.makeTexture(color, iheight.texture);
                     haveHeightMap = true;
                 }
-                else
-                {
-                    Color4f color = Color4f(0.5f, 0.5f, 1.0f, 0.0f); // default normal pointing upwards
-                    inormal.texture = state.material.makeTexture(color);
-                }
             }
             else
             {
@@ -213,6 +212,7 @@ class ForwardShader: Shader
 
         if (inormal.texture)
         {
+            setParameter("generateTBN", 1);
             setParameter("normalTexture", 1);
             setParameterSubroutine("normal", ShaderType.Fragment, "normalMap");
 
@@ -221,9 +221,15 @@ class ForwardShader: Shader
         }
         else
         {
+            setParameter("generateTBN", 0);
             setParameter("normalVector", state.material.normal.asVector3f);
             setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
         }
+        
+        if (state.material.invertNormalY)
+            setParameter("normalYSign", -1.0f);
+        else
+            setParameter("normalYSign", 1.0f);
 
         // Height and parallax
         // TODO: make these material properties
@@ -346,11 +352,11 @@ class ForwardShader: Shader
         }
 
         // Shadow map
-        if (state.material.sun)
+        if (sun)
         {
-            if (state.material.sun.shadowEnabled)
+            if (sun.shadowEnabled)
             {
-                CascadedShadowMap csm = cast(CascadedShadowMap)state.material.sun.shadowMap;
+                CascadedShadowMap csm = cast(CascadedShadowMap)sun.shadowMap;
 
                 glActiveTexture(GL_TEXTURE5);
                 glBindTexture(GL_TEXTURE_2D_ARRAY, csm.depthTexture);

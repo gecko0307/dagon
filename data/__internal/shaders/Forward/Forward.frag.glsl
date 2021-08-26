@@ -88,6 +88,9 @@ subroutine(srtNormal) vec3 normalMap(in vec2 uv, in float ysign, in mat3 tangent
 
 subroutine uniform srtNormal normal;
 
+uniform bool generateTBN;
+uniform float normalYSign;
+
 
 /*
  * Height mapping
@@ -324,14 +327,18 @@ layout(location = 1) out vec4 fragVelocity;
 
 void main()
 {
+    vec2 uv = texCoord;
     vec3 E = normalize(-eyePosition);
     vec3 N = normalize(eyeNormal);
     
-    mat3 tangentToEye = cotangentFrame(N, eyePosition, texCoord);
-    vec3 tE = normalize(E * tangentToEye);
-    vec2 shiftedTexCoord = parallax(tE, texCoord, height(texCoord));
-
-    N = normal(shiftedTexCoord, -1.0, tangentToEye);
+    if (generateTBN)
+    {
+        mat3 tangentToEye = cotangentFrame(N, eyePosition, texCoord);
+        vec3 tE = normalize(E * tangentToEye);
+        uv = parallax(tE, texCoord, height(texCoord));
+        N = normal(uv, normalYSign, tangentToEye);
+    }
+    
     vec3 R = reflect(E, N);
     
     vec3 worldPos = (invViewMatrix * vec4(eyePosition, 1.0)).xyz;
@@ -342,12 +349,12 @@ void main()
     
     vec3 L = sunDirection;
 
-    vec4 diff = diffuse(shiftedTexCoord);
+    vec4 diff = diffuse(uv);
     vec3 albedo = toLinear(diff.rgb);
     float alpha = diff.a * opacity;
-    float r = roughness(shiftedTexCoord);
-    float m = metallic(shiftedTexCoord);
-    float s = specularity(shiftedTexCoord);
+    float r = roughness(uv);
+    float m = metallic(uv);
+    float s = specularity(uv);
     vec3 f0 = mix(vec3(0.04), albedo, m);
     
     float shadow = shadowMap(eyePosition, N);
