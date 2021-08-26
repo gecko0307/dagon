@@ -172,8 +172,8 @@ void main()
             accumScatter *= invSamples;
         }
         
-        scattFactor = accumScatter * scattering(dot(-L, E)) * lightScatteringDensity;
-        radiance += toLinear(lightColor.rgb) * lightEnergy * scattFactor;
+        scattFactor = clamp(accumScatter * scattering(dot(-L, E)) * lightScatteringDensity, 0.0, 1.0);
+        radiance = mix(radiance, toLinear(lightColor.rgb) * lightEnergy, scattFactor);
     }
     
     fragColor = vec4(radiance, 1.0);

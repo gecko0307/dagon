@@ -46,8 +46,7 @@ uniform mat4 shadowMatrix3;
 #include <hash.glsl>
 
 /*
- * Diffuse color subroutines.
- * Used to switch color/texture.
+ * Diffuse
  */
 subroutine vec4 srtColor(in vec2 uv);
 
@@ -66,7 +65,7 @@ subroutine(srtColor) vec4 diffuseColorTexture(in vec2 uv)
 subroutine uniform srtColor diffuse;
 
 /*
- * Normal mapping subroutines.
+ * Normal mapping
  */
 subroutine vec3 srtNormal(in vec2 uv, in float ysign, in mat3 tangentToEye);
 
@@ -275,6 +274,9 @@ subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float roughness)
 subroutine uniform srtAmbient ambient;
 
 
+/*
+ * Shadow
+ */
 subroutine float srtShadow(in vec3 pos, in vec3 N);
 
 subroutine(srtShadow) float shadowMapNone(in vec3 pos, in vec3 N)
@@ -419,8 +421,8 @@ void main()
             accumScatter *= invSamples;
         }
         
-        float scattFactor = accumScatter * scattering(dot(-L, E)) * sunScatteringDensity;
-        radiance += toLinear(sunColor.rgb) * sunEnergy * scattFactor;
+        float scattFactor = clamp(accumScatter * scattering(dot(-L, E)) * sunScatteringDensity, 0.0, 1.0);
+        radiance = mix(radiance, toLinear(sunColor.rgb) * sunEnergy, scattFactor);
     }
     
     // Velocity
