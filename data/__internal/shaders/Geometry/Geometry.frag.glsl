@@ -59,6 +59,7 @@ subroutine(srtNormal) vec3 normalMap(in vec2 uv, in float ysign, in mat3 tangent
 
 subroutine uniform srtNormal normal;
 
+uniform bool generateTBN;
 uniform float normalYSign;
 
 
@@ -234,17 +235,19 @@ layout(location = 4) out vec4 fragVelocity;
 
 void main()
 {
+    vec2 uv = texCoord;
     vec3 E = normalize(-eyePosition);
     vec3 N = normalize(eyeNormal);
     
-    mat3 tangentToEye = cotangentFrame(N, eyePosition, texCoord);
-    vec3 tE = normalize(E * tangentToEye);
+    if (generateTBN)
+    {
+        mat3 tangentToEye = cotangentFrame(N, eyePosition, texCoord);
+        vec3 tE = normalize(E * tangentToEye);
+        uv = parallax(tE, texCoord, height(texCoord));
+        N = normal(uv, normalYSign, tangentToEye);
+    }
     
-    vec2 shiftedTexCoord = parallax(tE, texCoord, height(texCoord));
-
-    N = normal(shiftedTexCoord, normalYSign, tangentToEye);
-    
-    vec4 fragDiffuse = diffuse(shiftedTexCoord);
+    vec4 fragDiffuse = diffuse(uv);
     
     if ((fragDiffuse.a * opacity) < clipThreshold)
         discard;
@@ -256,10 +259,10 @@ void main()
     fragColor = vec4(fragDiffuse.rgb, layer);
     fragNormal = vec4(N, 0.0);
     fragPBR = vec4(
-        max(roughness(shiftedTexCoord), 0.0001),
-        metallic(shiftedTexCoord),
+        max(roughness(uv), 0.0001),
+        metallic(uv),
         1.0,
         0.0);
-    fragRadiance = vec4(toLinear(emission(shiftedTexCoord)), 1.0);
+    fragRadiance = vec4(toLinear(emission(uv)), 1.0);
     fragVelocity = vec4(velocity, blurMask, 0.0);
 }

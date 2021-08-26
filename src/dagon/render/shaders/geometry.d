@@ -140,11 +140,6 @@ class GeometryShader: Shader
                     inormal.texture = state.material.makeTexture(color, iheight.texture);
                     haveHeightMap = true;
                 }
-                else
-                {
-                    Color4f color = Color4f(0.5f, 0.5f, 1.0f, 0.0f); // default normal pointing upwards
-                    inormal.texture = state.material.makeTexture(color);
-                }
             }
             else
             {
@@ -158,6 +153,7 @@ class GeometryShader: Shader
 
         if (inormal.texture)
         {
+            setParameter("generateTBN", 1);
             setParameter("normalTexture", 1);
             setParameterSubroutine("normal", ShaderType.Fragment, "normalMap");
 
@@ -166,6 +162,7 @@ class GeometryShader: Shader
         }
         else
         {
+            setParameter("generateTBN", 0);
             setParameter("normalVector", state.material.normal.asVector3f);
             setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
         }
