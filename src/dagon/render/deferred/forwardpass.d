@@ -48,7 +48,7 @@ class DeferredForwardPass: RenderPass
     ForwardShader forwardShader;
     Framebuffer outputBuffer;
     GBuffer gbuffer;
-    GLuint framebuffer;
+    GLuint framebuffer = 0;
 
     this(RenderPipeline pipeline, GBuffer gbuffer, EntityGroup group = null)
     {
@@ -82,6 +82,15 @@ class DeferredForwardPass: RenderPass
             writeln(status);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+    
+    void resize(uint w, uint h)
+    {
+        if (glIsFramebuffer(framebuffer))
+        {
+            glDeleteFramebuffers(1, &framebuffer);
+            framebuffer = 0;
+        }
     }
 
     override void render()
