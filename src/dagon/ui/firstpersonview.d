@@ -123,6 +123,12 @@ class FirstPersonViewComponent: EntityComponent
         }
     }
     
+    override void onResize(int width, int height)
+    {
+        prevMouseX = width / 2;
+        prevMouseY = height / 2;
+    }
+    
     override void onFocusGain()
     {
         mouseActive = true;
