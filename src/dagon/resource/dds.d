@@ -214,26 +214,23 @@ enum DXGIFormat
     V408 = 132
 }
 
-enum DDSCAPS_COMPLEX = 0x8;
-enum DDSCAPS_MIPMAP = 0x400000;
-enum DDSCAPS_TEXTURE = 0x1000;
-
-enum DDSCAPS2_CUBEMAP = 0x200;
-enum DDSCAPS2_CUBEMAP_POSITIVEX = 0x400;
-enum DDSCAPS2_CUBEMAP_NEGATIVEX = 0x800;
-enum DDSCAPS2_CUBEMAP_POSITIVEY = 0x1000;
-enum DDSCAPS2_CUBEMAP_NEGATIVEY = 0x2000;
-enum DDSCAPS2_CUBEMAP_POSITIVEZ = 0x4000;
-enum DDSCAPS2_CUBEMAP_NEGATIVEZ = 0x8000;
-enum DDSCAPS2_CUBEMAP_ALLFACES = 0xFC00;
-
-enum D3D10ResourceDimension
+enum Caps
 {
-    Unknown,
-    Buffer,
-    Texture1D,
-    Texture2D,
-    Texture3D
+    Complex = 0x8,
+    Mipmap = 0x400000,
+    Texture = 0x1000
+}
+
+enum Caps2
+{
+    Cubemap = 0x200,
+    CubemapPositiveX = 0x400,
+    CubemapNegativeX = 0x800,
+    CubemapPositiveY = 0x1000,
+    CubemapNegativeY = 0x2000,
+    CubemapPositiveZ = 0x4000,
+    CubemapNegativeZ = 0x8000,
+    CubemapAllFaces = 0xFC00
 }
 
 struct DDSHeaderDXT10
@@ -243,6 +240,24 @@ struct DDSHeaderDXT10
     uint miscFlag;
     uint arraySize;
     uint miscFlags2;
+}
+
+enum D3D10ResourceDimension
+{
+    Unknown = 0,
+    Buffer = 1,
+    Texture1D = 2,
+    Texture2D = 3,
+    Texture3D = 4
+}
+
+enum D3D10ResourceMisc
+{
+    GenerateMips = 0x01,
+    MiscShared = 0x02,
+    TextureCube = 0x04,
+    SharedKeyedMutex = 0x10,
+    GDICompatible = 0x20
 }
 
 uint makeFourCC(char ch0, char ch1, char ch2, char ch3)
@@ -412,9 +427,9 @@ Compound!(ContainerImage, string) loadDDS(InputStream istrm)
     }
     
     bool isCubemap = false;
-    if (hdr.caps.caps2 & DDSCAPS2_CUBEMAP)
+    if (hdr.caps.caps2 & Caps2.Cubemap)
     {
-        if (hdr.caps.caps2 & DDSCAPS2_CUBEMAP_ALLFACES)
+        if (hdr.caps.caps2 & Caps2.CubemapAllFaces)
             isCubemap = true;
         else
             return error("loadDDS error: incomplete cubemap");
