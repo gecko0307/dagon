@@ -20,7 +20,7 @@ Screenshots
 
 [![Screenshot2](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/05/sponza10.jpg)](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/05/sponza10.jpg)
 
-[![Screenshot3](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/08/001.jpg)](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/08/001.jpg)
+[![Screenshot3](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/08/003.jpg)](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/08/003.jpg)
 
 [![Screenshot4](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/10/eevee_vs_dagon.jpg)](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/10/eevee_vs_dagon.jpg)
 
