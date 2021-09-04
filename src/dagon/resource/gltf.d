@@ -408,6 +408,22 @@ class StaticTransformComponent: EntityComponent
     }
 }
 
+class GLTFScene: Owner
+{
+    string name;
+    Array!GLTFNode nodes;
+    
+    this(Owner o)
+    {
+        super(o);
+    }
+    
+    ~this()
+    {
+        nodes.free();
+    }
+}
+
 class GLTFAsset: Asset, TriangleSet
 {
     AssetManager assetManager;
@@ -421,6 +437,7 @@ class GLTFAsset: Asset, TriangleSet
     Array!Texture textures;
     Array!Material materials;
     Array!GLTFNode nodes;
+    Array!GLTFScene scenes;
     Entity rootEntity;
     
     this(Owner o)
@@ -448,6 +465,7 @@ class GLTFAsset: Asset, TriangleSet
         loadMaterials(doc.root);
         loadMeshes(doc.root);
         loadNodes(doc.root);
+        loadScenes(doc.root);
         return true;
     }
     
@@ -1024,7 +1042,35 @@ class GLTFAsset: Asset, TriangleSet
         rootEntity.updateTransformationTopDown();
     }
     
-    // TODO: load scenes
+    void loadScenes(JSONValue root)
+    {
+        if ("scenes" in root.asObject)
+        {
+            foreach(i, s; root.asObject["scenes"].asArray)
+            {
+                auto scene = s.asObject;
+                
+                GLTFScene sceneObj = New!GLTFScene(this);
+                
+                if ("name" in scene)
+                {
+                    sceneObj.name = scene["name"].asString;
+                }
+                
+                if ("nodes" in scene)
+                {
+                    foreach(ni, n; scene["nodes"].asArray)
+                    {
+                        uint nodeIndex = cast(uint)n.asNumber;
+                        if (nodeIndex < nodes.length)
+                            sceneObj.nodes.insertBack(nodes[nodeIndex]);
+                    }
+                }
+                
+                scenes.insertBack(sceneObj);
+            }
+        }
+    }
     
     override bool loadThreadUnsafePart()
     {
@@ -1107,6 +1153,10 @@ class GLTFAsset: Asset, TriangleSet
         foreach(no; nodes)
             deleteOwnedObject(no);
         nodes.free();
+        
+        foreach(sc; scenes)
+            deleteOwnedObject(sc);
+        scenes.free();
         
         textures.free();
         materials.free();
