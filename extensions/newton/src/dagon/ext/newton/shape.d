@@ -50,8 +50,8 @@ abstract class NewtonCollisionShape: Owner
 
     ~this()
     {
-        if (newtonCollision)
-            NewtonDestroyCollision(newtonCollision);
+        //if (newtonCollision)
+        //    NewtonDestroyCollision(newtonCollision);
     }
     
     void setTransformation(Matrix4x4f m)
