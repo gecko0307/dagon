@@ -33,5 +33,6 @@ public
     import dagon.ext.newton.world;
     import dagon.ext.newton.shape;
     import dagon.ext.newton.rigidbody;
+    import dagon.ext.newton.constraint;
     import dagon.ext.newton.character;
 }
