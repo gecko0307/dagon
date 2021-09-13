@@ -1,5 +1,5 @@
-Dagon 0.12.0-beta1 - TBD
-------------------------
+Dagon 0.12.0-beta1 - 13 Sep, 2021
+---------------------------------
 - **Rendering**
   - `Light.diffuse` and `Light.specular` parameters that control brightness of diffuse and specular portions of a light
   - New parameters for particle system objects: `ForceField.active`, `BlackHole.threshold`
@@ -18,7 +18,7 @@ Dagon 0.12.0-beta1 - TBD
   - Depth of Field effect (`dagon.postproc.shader.dof`)
   - `DeferredRenderer.occlusionBufferDetail` parameter that controls resolution coefficient of SSAO buffer
 - **Extensions**
-  - `dagon:newton` extension that integrates [Newton Dynamics](https://github.com/MADEAPPS/newton-dynamics) real-time physics engine. Newton provides better performance and stability compared to dmech, as well as new features such as convex hulls for dynamic bodies and heightmap collision shapes for terrains.
+  - `dagon:newton` extension that integrates [Newton Dynamics](https://github.com/MADEAPPS/newton-dynamics) real-time physics engine. Newton provides better performance and stability compared to dmech, as well as new features such as convex hulls for dynamic bodies and heightmap collision shapes for terrains
 - **Misc**
   - Dagon now uses SDL 2.0.14, dlib 0.22.0, bindbc-loader 1.0.0, bindbc-sdl 1.0.0, bindbc-opengl 1.0.0
   - Dagon now recognizes a configuration file (`settings.conf`) in project folder. Configuration overrides some of the hardcoded application settings, such as window width and height, fullscreen and window title
