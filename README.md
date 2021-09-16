@@ -2,7 +2,7 @@
 
 Dagon
 =====
-The goal of this project is creating a modern, easy to use, extendable 3D game engine for D language. Dagon is based on OpenGL 4.0 core profile. It works on Windows and Linux, both 32 and 64-bit.
+The goal of this project is creating a modern, easy to use, extendable 3D game engine for [D language](https://dlang.org/). Dagon is based on OpenGL 4.0 core profile. It works on Windows and Linux, both 32 and 64-bit.
 
 The engine is still under development and lacks a lot of important functionality. Currently it is not recommended to use Dagon in production due to unstable API. Follow development on [Trello](https://trello.com/b/4sDgRjZI/dagon-0110) to see priority tasks.
 
@@ -28,7 +28,7 @@ Screenshots
 
 Features
 --------
-* Static and animated meshes, [glTF](https://www.khronos.org/gltf/), OBJ and [IQM](https://github.com/lsalzman/iqm) formats support
+* Static and animated meshes, [glTF](https://www.khronos.org/gltf/), [OBJ](https://en.wikipedia.org/wiki/Wavefront_.obj_file) and [IQM](https://github.com/lsalzman/iqm) formats support
 * Textures in PNG, JPG, DDS, HDR, TGA, BMP, GIF, PSD formats
 * Deferred pipeline for opaque materials, forward pipeline for transparent materials and materials with custom shaders
 * Physically based rendering (PBR)
@@ -51,7 +51,7 @@ Features
 * Entity-component model
 * Built-in camera logics for easy navigation: freeview and first person views
 * [Box](https://github.com/gecko0307/box) container support for assets
-* Optional physics extension - [Newton Dynamics](http://newtondynamics.com).
+* Physics using [Newton Dynamics](http://newtondynamics.com).
 
 Planned in future:
 * Screen-space reflections.
