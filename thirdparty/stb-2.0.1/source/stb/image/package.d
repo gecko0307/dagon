@@ -516,6 +516,12 @@ private:
 			_h;
 }
 
+static this()
+{
+    // To prevent linker from stripping the symbol
+    auto f = &compress_for_stb_image_write;
+}
+
 private extern(C):
 
 ubyte* compress_for_stb_image_write(in ubyte* data, uint len, uint* resLen, int level)
@@ -534,3 +540,4 @@ ubyte* compress_for_stb_image_write(in ubyte* data, uint len, uint* resLen, int 
 	free(res);
 	return null;
 }
+

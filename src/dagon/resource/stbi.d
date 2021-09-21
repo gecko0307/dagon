@@ -32,6 +32,7 @@ import dlib.core.compound;
 import dlib.filesystem.local;
 import dlib.image.image;
 import stb.image.binding;
+import stb.image;
 
 SuperImage loadImageSTB(string filename)
 {
