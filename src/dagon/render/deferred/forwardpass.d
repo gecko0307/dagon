@@ -97,6 +97,8 @@ class DeferredForwardPass: RenderPass
     {
         if (group && outputBuffer)
         {
+            state.environment = pipeline.environment;
+            
             prepareFramebuffer();
             
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);

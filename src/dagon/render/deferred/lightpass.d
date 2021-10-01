@@ -83,7 +83,8 @@ class DeferredLightPass: RenderPass
                 state.occlusionTexture = occlusionBuffer.colorTexture;
             else
                 state.occlusionTexture = 0;
-
+            state.environment = pipeline.environment;
+            
             glScissor(0, 0, outputBuffer.width, outputBuffer.height);
             glViewport(0, 0, outputBuffer.width, outputBuffer.height);
 

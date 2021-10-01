@@ -118,7 +118,9 @@ class Game: Application
             deferredRenderer.update(t);
             postProcessingRenderer.activeCamera = deferredRenderer.activeCamera;
             postProcessingRenderer.update(t);
+            presentRenderer.scene = currentScene;
             presentRenderer.update(t);
+            hudRenderer.scene = currentScene;
             hudRenderer.update(t);
         }
     }

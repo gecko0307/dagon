@@ -60,7 +60,7 @@ class HUDPass: RenderPass
                 Color4f backgroundColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
                 if (state.environment)
                     backgroundColor = state.environment.backgroundColor;
-
+                
                 glClearColor(
                     backgroundColor.r,
                     backgroundColor.g,
@@ -76,8 +76,6 @@ class HUDPass: RenderPass
 
                 state.modelViewMatrix = state.viewMatrix * entity.absoluteTransformation;
                 state.normalMatrix = state.modelViewMatrix.inverse.transposed;
-
-                //TODO:
 
                 if (entity.material)
                 {

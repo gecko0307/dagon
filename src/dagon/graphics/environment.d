@@ -35,14 +35,13 @@ import dagon.graphics.light;
 
 class Environment: Owner
 {
-    Color4f backgroundColor = Color4f(0.8f, 0.8f, 1.0f, 1.0f);
-    
-    Color4f ambientColor = Color4f(0.8f, 0.8f, 1.0f, 1.0f);
+    Color4f backgroundColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
+    Color4f ambientColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
     Texture ambientMap;
     Texture ambientBRDF;
     float ambientEnergy = 1.0f;
     
-    Color4f fogColor = Color4f(0.125f, 0.3f, 0.443f, 1.0f);
+    Color4f fogColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
     float fogStart = 0.0f;
     float fogEnd = 100.0f;
     

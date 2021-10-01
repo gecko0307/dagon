@@ -121,10 +121,10 @@ class GBuffer: Owner
         
         GLenum[5] drawBuffers = 
         [
-            GL_COLOR_ATTACHMENT0, 
-            GL_COLOR_ATTACHMENT1, 
-            GL_COLOR_ATTACHMENT2, 
-            GL_COLOR_ATTACHMENT3, 
+            GL_COLOR_ATTACHMENT0,
+            GL_COLOR_ATTACHMENT1,
+            GL_COLOR_ATTACHMENT2,
+            GL_COLOR_ATTACHMENT3,
             GL_COLOR_ATTACHMENT4
         ];
         
@@ -182,10 +182,12 @@ class GBuffer: Owner
 
         glClear(GL_DEPTH_BUFFER_BIT);
         
-        Color4f zero = Color4f(0, 0, 0, 0);
+        Color4f zero = Color4f(0.0f, 0.0f, 0.0f, 0.0f);
         glClearBufferfv(GL_COLOR, 0, zero.arrayof.ptr);
         glClearBufferfv(GL_COLOR, 1, zero.arrayof.ptr);
         glClearBufferfv(GL_COLOR, 2, zero.arrayof.ptr);
+        glClearBufferfv(GL_COLOR, 3, zero.arrayof.ptr);
+        glClearBufferfv(GL_COLOR, 4, zero.arrayof.ptr);
         
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     }

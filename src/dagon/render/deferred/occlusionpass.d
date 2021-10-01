@@ -67,6 +67,7 @@ class DeferredOcclusionPass: RenderPass
             state.depthTexture = gbuffer.depthTexture;
             state.normalTexture = gbuffer.normalTexture;
             state.pbrTexture = gbuffer.pbrTexture;
+            state.environment = pipeline.environment;
 
             glScissor(view.x, view.y, view.width, view.height);
             glViewport(view.x, view.y, view.width, view.height);

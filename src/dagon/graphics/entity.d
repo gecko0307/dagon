@@ -75,10 +75,18 @@ enum EntityLayer: int
     Foreground = 2
 }
 
+enum EntityType: int
+{
+    General = 0,
+    Terrain = 1
+}
+
 class Entity: Owner, Updateable
 {
    public:
     EntityLayer layer = EntityLayer.Spatial;
+    EntityType type = EntityType.General;
+    
     bool visible = true;
     bool castShadow = true;
     bool solid = false;

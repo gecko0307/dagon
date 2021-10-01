@@ -132,6 +132,7 @@ class RenderPass: EventListener
 
     void render()
     {
+        /*
         if (view && group)
         {
             glScissor(view.x, view.y, view.width, view.height);
@@ -140,14 +141,15 @@ class RenderPass: EventListener
             if (clear)
             {
                 Color4f backgroundColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
+                state.environment = pipeline.environment;
                 if (state.environment)
                     backgroundColor = state.environment.backgroundColor;
-
+                
                 glClearColor(
                     backgroundColor.r,
                     backgroundColor.g,
                     backgroundColor.b,
-                    backgroundColor.a);
+                    1.0f);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             }
 
@@ -159,5 +161,6 @@ class RenderPass: EventListener
             }
             defaultShader.unbind();
         }
+        */
     }
 }

@@ -174,6 +174,9 @@ struct TerrainSphereTraverseAggregate
 
 bool entityIsTerrain(Entity e)
 {
+    if (e.type == EntityType.Terrain)
+        return true;
+    
     Drawable d = e.drawable;
     if (d)
     {

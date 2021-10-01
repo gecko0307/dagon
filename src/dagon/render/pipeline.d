@@ -36,11 +36,13 @@ import dagon.core.bindings;
 import dagon.core.event;
 import dagon.core.time;
 import dagon.graphics.entity;
+import dagon.graphics.environment;
 import dagon.render.pass;
 
 class RenderPipeline: EventListener
 {
     Array!RenderPass passes;
+    Environment environment;
 
     this(EventManager eventManager, Owner owner)
     {

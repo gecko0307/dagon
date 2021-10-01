@@ -71,6 +71,7 @@ class DeferredParticlesPass: RenderPass
             outputBuffer.bind();
 
             state.depthTexture = gbuffer.depthTexture;
+            state.environment = pipeline.environment;
 
             glScissor(0, 0, outputBuffer.width, outputBuffer.height);
             glViewport(0, 0, outputBuffer.width, outputBuffer.height);

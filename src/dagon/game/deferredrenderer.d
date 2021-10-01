@@ -105,7 +105,7 @@ class DeferredRenderer: Renderer
 
         passShadow = New!ShadowPass(pipeline);
 
-        passClear = New!DeferredClearPass(pipeline, gbuffer);
+        //passClear = New!DeferredClearPass(pipeline, gbuffer);
 
         passBackground = New!DeferredBackgroundPass(pipeline, gbuffer);
         passBackground.view = view;
@@ -190,15 +190,7 @@ class DeferredRenderer: Renderer
         passForward.group = s.spatialTransparent;
         passParticles.group = s.spatial;
         
-        passBackground.state.environment = s.environment;
-        passStaticGeometry.state.environment = s.environment;
-        passDecals.state.environment = s.environment;
-        passDynamicGeometry.state.environment = s.environment;
-        passEnvironment.state.environment = s.environment;
-        passLight.state.environment = s.environment;
-        passForward.state.environment = s.environment;
-        passParticles.state.environment = s.environment;
-        passDebug.state.environment = s.environment;
+        pipeline.environment = s.environment;
     }
 
     override void update(Time t)

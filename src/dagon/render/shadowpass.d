@@ -74,9 +74,7 @@ class ShadowPass: RenderPass
                         CascadedShadowMap csm = cast(CascadedShadowMap)light.shadowMap;
                         if (csm)
                             csm.camera = camera;
-
-                        // TODO: other shadow types
-
+                        
                         light.shadowMap.update(t);
                     }
                 }
@@ -97,11 +95,9 @@ class ShadowPass: RenderPass
                     {
                         state.light = light;
                         CascadedShadowMap csm = cast(CascadedShadowMap)light.shadowMap;
-
+                        
                         if (light.type == LightType.Sun && csm)
                             renderCSM(csm);
-
-                        // TODO: other shadow types
                     }
                 }
             }
@@ -118,6 +114,7 @@ class ShadowPass: RenderPass
             state.normalMatrix = state.modelViewMatrix.inverse.transposed;
             state.shader = shader;
             state.opacity = 1.0f;
+            state.environment = pipeline.environment;
 
             if (entity.material)
                 entity.material.bind(&state);

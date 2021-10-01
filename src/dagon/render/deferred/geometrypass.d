@@ -70,6 +70,8 @@ class DeferredGeometryPass: RenderPass
 
             glScissor(0, 0, gbuffer.width, gbuffer.height);
             glViewport(0, 0, gbuffer.width, gbuffer.height);
+            
+            state.environment = pipeline.environment;
 
             geometryShader.bind();
             foreach(entity; group)

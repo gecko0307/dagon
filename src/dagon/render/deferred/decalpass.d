@@ -63,6 +63,7 @@ class DeferredDecalPass: RenderPass
             glViewport(0, 0, gbuffer.width, gbuffer.height);
 
             state.depthMask = false;
+            state.environment = pipeline.environment;
 
             glDisable(GL_DEPTH_TEST);
 
