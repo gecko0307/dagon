@@ -40,6 +40,7 @@ import dlib.image.color;
 import dlib.text.str;
 
 import dagon.core.bindings;
+import dagon.graphics.entity;
 import dagon.graphics.material;
 import dagon.graphics.shader;
 import dagon.graphics.state;
@@ -88,7 +89,7 @@ class GeometryShader: Shader
         setParameter("invViewMatrix", state.invViewMatrix);
         setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
 
-        setParameter("layer", cast(float)(state.layer));
+        setParameter("gbufferMask", state.gbufferMask);
         setParameter("textureScale", itextureScale.asVector2f);
         setParameter("blurMask", state.blurMask);
 

@@ -81,7 +81,7 @@ class DeferredGeometryPass: RenderPass
                     if (!entityIsTerrain(entity) && !entityIsParticleSystem(entity))
                     {
                         auto bb = entity.boundingBox();
-                        if (state.frustum.intersectsAABB(bb) || !frustumCulling)
+                        if (!frustumCulling || state.frustum.intersectsAABB(bb))
                         {
                             renderEntity(entity, geometryShader);
                             renderedEntities++;
@@ -99,7 +99,7 @@ class DeferredGeometryPass: RenderPass
                     if (entityIsTerrain(entity))
                     {
                         auto bb = entity.boundingBox();
-                        if (state.frustum.intersectsAABB(bb) || !frustumCulling)
+                        if (!frustumCulling || state.frustum.intersectsAABB(bb))
                         {
                             renderEntity(entity, terrainShader);
                             renderedEntities++;

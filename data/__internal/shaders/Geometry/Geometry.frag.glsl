@@ -7,10 +7,10 @@ in vec2 texCoord;
 in vec4 currPosition;
 in vec4 prevPosition;
 
-uniform float layer;
 uniform float energy;
 uniform float opacity;
 uniform float clipThreshold;
+uniform float gbufferMask;
 uniform float blurMask;
 
 #include <gamma.glsl>
@@ -256,7 +256,7 @@ void main()
     vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;
     vec2 velocity = posScreen - prevPosScreen;
     
-    fragColor = vec4(fragDiffuse.rgb, layer);
+    fragColor = vec4(fragDiffuse.rgb, gbufferMask);
     fragNormal = vec4(N, 0.0);
     fragPBR = vec4(
         max(roughness(uv), 0.0001),

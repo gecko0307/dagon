@@ -94,6 +94,7 @@ class Entity: Owner, Updateable
     bool decal = false;
     bool transparent = false;
     float opacity = 1.0f;
+    float gbufferMask = 1.0f;
     float blurMask = 1.0f;
 
     EntityManager manager;

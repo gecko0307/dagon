@@ -82,7 +82,10 @@ class DeferredBackgroundPass: RenderPass
             if (entity.visible && entity.drawable)
             {
                 state.layer = entity.layer;
+                state.blurMask = entity.blurMask;
+                state.gbufferMask = entity.gbufferMask;
                 state.modelMatrix = entity.absoluteTransformation;
+                state.invModelMatrix = entity.invAbsoluteTransformation;
                 state.modelViewMatrix = state.viewMatrix * state.modelMatrix;
                 state.normalMatrix = state.modelViewMatrix.inverse.transposed;
                 state.prevModelViewMatrix = state.prevViewMatrix * entity.prevAbsoluteTransformation;

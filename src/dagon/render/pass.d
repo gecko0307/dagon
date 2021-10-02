@@ -105,6 +105,7 @@ class RenderPass: EventListener
     {
         state.layer = entity.layer;
         state.blurMask = entity.blurMask;
+        state.gbufferMask = entity.gbufferMask;
         state.modelMatrix = entity.absoluteTransformation;
         state.invModelMatrix = entity.invAbsoluteTransformation;
         state.modelViewMatrix = state.viewMatrix * state.modelMatrix;

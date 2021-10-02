@@ -42,6 +42,7 @@ struct GraphicsState
 {
     int layer;
     float blurMask;
+    float gbufferMask;
 
     Vector2f resolution;
     float zNear;
@@ -93,6 +94,7 @@ struct GraphicsState
     {
         layer = 1;
         blurMask = 1.0f;
+        gbufferMask = 1.0f;
 
         resolution = Vector2f(0.0f, 0.0f);
         zNear = 0.0f;
