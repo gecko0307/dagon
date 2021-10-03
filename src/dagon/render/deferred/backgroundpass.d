@@ -116,6 +116,8 @@ class DeferredBackgroundPass: RenderPass
                     defaultMaterial.unbind(&state);
             }
 
+            glClear(GL_DEPTH_BUFFER_BIT);
+
             gbuffer.unbind();
         }
     }

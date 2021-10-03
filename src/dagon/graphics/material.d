@@ -441,53 +441,6 @@ class Material: Owner
         return tex;
     }
     
-    /*
-    final Texture makeTexture(MaterialInput rg, MaterialInput b, MaterialInput a)
-    {
-        uint width = 8;
-        uint height = 8;
-
-        if (rg.texture !is null)
-        {
-            width = max(width, rg.texture.width);
-            height = max(height, rg.texture.height);
-        }
-
-        if (b.texture !is null)
-        {
-            width = max(width, b.texture.width);
-            height = max(height, b.texture.height);
-        }
-
-        if (a.texture !is null)
-        {
-            width = max(width, a.texture.width);
-            height = max(height, a.texture.height);
-        }
-
-        SuperImage img = New!UnmanagedImageRGBA8(width, height);
-
-        foreach(y; 0..img.height)
-        foreach(x; 0..img.width)
-        {
-            Color4f col = Color4f(0, 0, 0, 0);
-
-            float u = cast(float)x / cast(float)img.width;
-            float v = cast(float)y / cast(float)img.height;
-
-            col.r = rg.sample(u, v).r;
-            col.g = rg.sample(u, v).g;
-            col.b = b.sample(u, v).r;
-            col.a = a.sample(u, v).r;
-
-            img[x, y] = col;
-        }
-
-        auto tex = New!Texture(img, this);
-        return tex;
-    }
-    */
-    
     bool isTransparent()
     {
         auto iblending = "blending" in inputs;
@@ -507,18 +460,26 @@ class Material: Owner
             glEnablei(GL_BLEND, 0);
             glEnablei(GL_BLEND, 1);
             glEnablei(GL_BLEND, 2);
+            glEnablei(GL_BLEND, 3);
+            glEnablei(GL_BLEND, 4);
             glBlendFuncSeparatei(0, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
             glBlendFuncSeparatei(1, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
             glBlendFuncSeparatei(2, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+            glBlendFuncSeparatei(3, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+            glBlendFuncSeparatei(4, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
         }
         else if (iblending.asInteger == Additive)
         {
             glEnablei(GL_BLEND, 0);
             glEnablei(GL_BLEND, 1);
             glEnablei(GL_BLEND, 2);
+            glEnablei(GL_BLEND, 3);
+            glEnablei(GL_BLEND, 4);
             glBlendFunci(0, GL_SRC_ALPHA, GL_ONE);
             glBlendFunci(1, GL_SRC_ALPHA, GL_ONE);
             glBlendFunci(2, GL_SRC_ALPHA, GL_ONE);
+            glBlendFunci(3, GL_SRC_ALPHA, GL_ONE);
+            glBlendFunci(4, GL_SRC_ALPHA, GL_ONE);
         }
 
         if (iculling.asBool && state.culling)
