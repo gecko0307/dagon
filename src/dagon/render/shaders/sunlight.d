@@ -113,6 +113,8 @@ class SunLightShader: Shader
         int lightScatteringSamples = 1;
         float lightScatteringMaxRandomStepOffset = 0.0f;
         bool lightScatteringShadow = false;
+        float lightDiffuse = 1.0f;
+        float lightSpecular = 1.0f;
         if (state.light)
         {
             auto light = state.light;
@@ -126,6 +128,8 @@ class SunLightShader: Shader
             lightScatteringSamples = light.scatteringSamples;
             lightScatteringMaxRandomStepOffset = light.scatteringMaxRandomStepOffset;
             lightScatteringShadow = light.scatteringUseShadow;
+            lightDiffuse = light.diffuse;
+            lightSpecular = light.specular;
         }
         else
         {
@@ -142,6 +146,9 @@ class SunLightShader: Shader
         setParameter("lightScatteringSamples", lightScatteringSamples);
         setParameter("lightScatteringMaxRandomStepOffset", lightScatteringMaxRandomStepOffset);
         setParameter("lightScatteringShadow", lightScatteringShadow);
+        
+        setParameter("lightDiffuse", lightDiffuse);
+        setParameter("lightSpecular", lightSpecular);
 
         setParameter("time", state.localTime);
 

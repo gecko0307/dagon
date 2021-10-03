@@ -31,6 +31,8 @@ uniform float lightScatteringDensity;
 uniform int lightScatteringSamples;
 uniform float lightScatteringMaxRandomStepOffset;
 uniform bool lightScatteringShadow;
+uniform float lightSpecular;
+uniform float lightDiffuse;
 
 uniform float time;
 
@@ -136,7 +138,7 @@ void main()
         vec3 incomingLight = toLinear(lightColor.rgb) * lightEnergy;
         vec3 diffuse = albedo * invPI * occlusion;
 
-        radiance += (kD * diffuse + specular * specularity) * NL * incomingLight * shadow;
+        radiance += (kD * diffuse * lightDiffuse + specular * specularity * lightSpecular) * NL * incomingLight * shadow;
         
         // Fake SSS
         float rim = pow(1.0 - abs(min(dot(N, L), 0.0)), 10.0);
