@@ -57,6 +57,8 @@ class FirstPersonViewComponent: EntityComponent
     float pitchLimitMax = 60.0f;
     float pitchLimitMin = -60.0f;
     
+    Quaternionf baseOrientation = Quaternionf.identity;
+    
     this(EventManager em, Entity e)
     {
         super(em, e);
@@ -100,12 +102,12 @@ class FirstPersonViewComponent: EntityComponent
         auto rotPitch = rotationQuaternion(Vector3f(1.0f,0.0f,0.0f), degtorad(pitch));
         auto rotTurn = rotationQuaternion(Vector3f(0.0f,1.0f,0.0f), degtorad(turn));
         
-        Quaternionf q = rotTurn * rotPitch;
+        Quaternionf orientation = baseOrientation * rotTurn * rotPitch;
         
         entity.transformation =
-            translationMatrix(entity.position) *
-            q.toMatrix4x4 *
-            scaleMatrix(entity.scaling);
+            (translationMatrix(entity.position) *
+            orientation.toMatrix4x4 *
+            scaleMatrix(entity.scaling));
         
         entity.invTransformation = entity.transformation.inverse;
         
