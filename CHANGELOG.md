@@ -1,3 +1,18 @@
+Dagon 0.12.0-beta2 - 11 Oct, 2021
+---------------------------------
+Changes since 0.12.0-beta1:
+- **Rendering**
+  - Background color is now used correctly
+  - Any entity can use terrain shader
+  - `Entity.gbufferMask` to store the value that should be written to alpha channel of color buffer in G-buffer
+  - Support `light.diffuse`, `light.specular` in sun light shader
+- **Newton extension**
+  - `FirstPersonViewComponent.baseOrientation`
+  - `NewtonRigidBody.addImpulse`
+  - `NewtonRigidBody.createUpVectorConstraint` now returns `NewtonJoint` pointer.
+- **Misc**
+  - Dagon now uses dlib 0.23.0.
+
 Dagon 0.12.0-beta1 - 13 Sep, 2021
 ---------------------------------
 - **Rendering**
