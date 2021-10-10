@@ -83,7 +83,7 @@ Copyright (c) 2016-2021 Timur Gafarov, Rafał Ziemniewski, Mateusz Muszyński, B
 
 Sponsors
 --------
-Daniel Laburthe, Rafał Ziemniewski, Kumar Sookram, Aleksandr Kovalev, Robert Georges, Jan Jurzitza (WebFreak), Rais Safiullin (SARFEX), Benas Cernevicius, Koichi Takio.
+Jan Jurzitza (WebFreak), Daniel Laburthe, Rafał Ziemniewski, Kumar Sookram, Aleksandr Kovalev, Robert Georges, Rais Safiullin (SARFEX), Benas Cernevicius, Koichi Takio, Konstantin Menshikov.
 
 Made with Dagon
 ---------------
