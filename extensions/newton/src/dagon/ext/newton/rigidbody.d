@@ -159,9 +159,9 @@ class NewtonRigidBody: Owner
         torque += t;
     }
 
-    void createUpVectorConstraint(Vector3f up)
+    NewtonJoint* createUpVectorConstraint(Vector3f up)
     {
-        NewtonJoint* joint = NewtonConstraintCreateUpVector(world.newtonWorld, up.arrayof.ptr, newtonBody);
+        return NewtonConstraintCreateUpVector(world.newtonWorld, up.arrayof.ptr, newtonBody);
     }
 
     void velocity(Vector3f v) @property
@@ -174,6 +174,11 @@ class NewtonRigidBody: Owner
         Vector3f v;
         NewtonBodyGetVelocity(newtonBody, v.arrayof.ptr);
         return v;
+    }
+    
+    void addImpulse(Vector3f deltaVelocity, Vector3f impulsePoint, double dt)
+    {
+        NewtonBodyAddImpulse(newtonBody, deltaVelocity.arrayof.ptr, impulsePoint.arrayof.ptr, dt);
     }
     
     void onCollision(NewtonRigidBody otherBody)
