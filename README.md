@@ -6,6 +6,8 @@ The goal of this project is creating a modern, easy to use, extendable 3D game e
 
 The engine is still under development and lacks a lot of important functionality. Currently it is not recommended to use Dagon in production due to unstable API. Follow development on [Trello](https://trello.com/b/4sDgRjZI/dagon-0110) to see priority tasks.
 
+Dagon uses modern graphics techniques and so requires quite powerful graphics card. At least Turing-based NVIDIA cards are recommended (raytracing support is not required though). Main development and testing is done on GeForce GTX 1650.
+
 If you like Dagon, please support its development on [Patreon](https://www.patreon.com/gecko0307) or [Liberapay](https://liberapay.com/gecko0307). You can also make one-time donation via [PayPal](https://www.paypal.me/tgafarov). I appreciate any support. Thanks in advance!
 
 [![GitHub Actions CI Status](https://github.com/gecko0307/dagon/workflows/CI/badge.svg)](https://github.com/gecko0307/dagon/actions?query=workflow%3ACI)
