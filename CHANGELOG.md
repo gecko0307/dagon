@@ -1,3 +1,7 @@
+Dagon 0.12.0 - 26 Oct, 2021
+---------------------------
+No changes since 0.12.0-beta2.
+
 Dagon 0.12.0-beta2 - 11 Oct, 2021
 ---------------------------------
 Changes since 0.12.0-beta1:
