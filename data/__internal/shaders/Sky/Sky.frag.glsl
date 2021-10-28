@@ -53,6 +53,6 @@ void main()
     const float blurMask = 1.0; 
     
     fragColor = vec4(fragDiffuse, 0.0);
-    fragRadiance = vec4(fragDiffuse, 0.0);
+    fragRadiance = vec4(fragDiffuse, 1.0);
     fragVelocity = vec4(velocity, blurMask, 0.0);
 }

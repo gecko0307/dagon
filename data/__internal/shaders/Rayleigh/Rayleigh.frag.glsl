@@ -80,7 +80,7 @@ void main()
     vec2 velocity = posScreen - prevPosScreen;
     const float blurMask = 1.0; 
 
-    //fragColor = vec4(env, 1.0);
-    fragRadiance = vec4(env, 0.0);
+    //fragColor = vec4(env, 0.0);
+    fragRadiance = vec4(env, 1.0);
     fragVelocity = vec4(velocity, blurMask, 0.0);
 }
