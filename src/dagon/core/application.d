@@ -43,10 +43,10 @@ import dagon.core.bindings;
 import dagon.core.event;
 import dagon.core.time;
 
-void exitWithError(string message = "") nothrow
+void exitWithError(string message = "")
 {
     if (message.length)
-        printf("%s\n", message.ptr);
+        writeln(message);
     core.stdc.stdlib.exit(1);
 }
 
@@ -111,7 +111,7 @@ extern(System) void messageCallback(
         string severityStr = GLDebugSeverityStrings[severity];
         printf(msg.ptr, (type == GL_DEBUG_TYPE_ERROR ? err.ptr : empty.ptr), sourceStr.ptr, typeStr.ptr, severityStr.ptr, message);
         if (severity == GL_DEBUG_SEVERITY_HIGH)
-            exitWithError();
+            core.stdc.stdlib.exit(1);
     }
 }
 
