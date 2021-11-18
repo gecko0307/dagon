@@ -40,6 +40,7 @@ import dlib.container.array;
 import dlib.container.dict;
 import dlib.math.vector;
 import dlib.math.matrix;
+import dlib.math.utils: min2;
 import dlib.image.color;
 import dlib.filesystem.stdfs;
 import dlib.text.str;
@@ -493,6 +494,8 @@ class Shader: Owner
 
         if (fragmentSubroutineIndices.length)
             glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, cast(uint)fragmentSubroutineIndices.length, fragmentSubroutineIndices.ptr);
+        
+        debug validate();
     }
 
     void unbindParameters(GraphicsState* state)
@@ -507,8 +510,24 @@ class Shader: Owner
     void validate()
     {
         glValidateProgram(program.program);
+        
+        GLint status;
+        glGetProgramiv(program.program, GL_VALIDATE_STATUS, &status);
+        
+        GLint infolen;
+        glGetProgramiv(program.program, GL_INFO_LOG_LENGTH, &infolen);
+        if (infolen > 0)
+        {
+            char[logMaxLen + 1] infobuffer = 0;
+            glGetProgramInfoLog(program.program, logMaxLen, null, infobuffer.ptr);
+            infolen = min2(infolen - 1, logMaxLen);
+            char[] s = stripRight(infobuffer[0..infolen]);
+            writeln(s);
+        }
+        
+        assert(status == GL_TRUE, "Shader program validation failed");
     }
-
+    
     ~this()
     {
         if (vertexSubroutineIndices.length)

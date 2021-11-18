@@ -107,7 +107,7 @@ GLuint linkShaders(const GLuint[] shaderIDs...)
     return programID;
 }
 
-private enum logMaxLen = 1023;
+enum logMaxLen = 1023;
 
 private bool checkCompilation(const GLuint shaderID, const ShaderStage stage)
 {
