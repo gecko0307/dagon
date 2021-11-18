@@ -43,9 +43,10 @@ import dagon.core.bindings;
 import dagon.core.event;
 import dagon.core.time;
 
-void exitWithError(string message)
+void exitWithError(string message = "") nothrow
 {
-    writeln(message);
+    if (message.length)
+        printf("%s\n", message.ptr);
     core.stdc.stdlib.exit(1);
 }
 
@@ -63,20 +64,55 @@ enum string[GLenum] GLErrorStrings = [
     GL_OUT_OF_MEMORY: "GL_OUT_OF_MEMORY"
 ];
 
-extern(System) nothrow void messageCallback(
+enum string[GLenum] GLDebugSourceStrings = [
+    GL_DEBUG_SOURCE_API: "GL_DEBUG_SOURCE_API",
+    GL_DEBUG_SOURCE_WINDOW_SYSTEM: "GL_DEBUG_SOURCE_WINDOW_SYSTEM",
+    GL_DEBUG_SOURCE_SHADER_COMPILER: "GL_DEBUG_SOURCE_SHADER_COMPILER",
+    GL_DEBUG_SOURCE_THIRD_PARTY: "GL_DEBUG_SOURCE_THIRD_PARTY",
+    GL_DEBUG_SOURCE_APPLICATION: "GL_DEBUG_SOURCE_APPLICATION",
+    GL_DEBUG_SOURCE_OTHER: "GL_DEBUG_SOURCE_OTHER"
+];
+
+enum string[GLenum] GLDebugTypeStrings = [
+    GL_DEBUG_TYPE_ERROR: "GL_DEBUG_TYPE_ERROR",
+    GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: "GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR",
+    GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: "GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR",
+    GL_DEBUG_TYPE_PORTABILITY: "GL_DEBUG_TYPE_PORTABILITY",
+    GL_DEBUG_TYPE_PERFORMANCE: "GL_DEBUG_TYPE_PERFORMANCE",
+    GL_DEBUG_TYPE_MARKER: "GL_DEBUG_TYPE_MARKER",
+    GL_DEBUG_TYPE_PUSH_GROUP: "GL_DEBUG_TYPE_PUSH_GROUP",
+    GL_DEBUG_TYPE_POP_GROUP: "GL_DEBUG_TYPE_POP_GROUP",
+    GL_DEBUG_TYPE_OTHER: "GL_DEBUG_TYPE_OTHER"
+];
+
+enum string[GLenum] GLDebugSeverityStrings = [
+    GL_DEBUG_SEVERITY_HIGH: "GL_DEBUG_SEVERITY_HIGH",
+    GL_DEBUG_SEVERITY_MEDIUM: "GL_DEBUG_SEVERITY_MEDIUM",
+    GL_DEBUG_SEVERITY_LOW: "GL_DEBUG_SEVERITY_LOW",
+    GL_DEBUG_SEVERITY_NOTIFICATION: "GL_DEBUG_SEVERITY_NOTIFICATION"
+];
+
+extern(System) void messageCallback(
     GLenum source,
     GLenum type,
     GLuint id,
     GLenum severity,
     GLsizei length,
     const GLchar* message,
-    const GLvoid* userParam)
+    const GLvoid* userParam) nothrow
 {
-    string msg = "%stype = 0x%x, severity = 0x%x, message = %s\n";
+    string msg = "%ssource = %s, type = %s, severity = %s, message = %s\n";
     string err = "OpenGL error: ";
     string empty = "";
     if (severity != GL_DEBUG_SEVERITY_NOTIFICATION)
-        printf(msg.ptr, (type == GL_DEBUG_TYPE_ERROR ? err.ptr : empty.ptr), type, severity, message);
+    {
+        string sourceStr = GLDebugSourceStrings[source];
+        string typeStr = GLDebugTypeStrings[type];
+        string severityStr = GLDebugSeverityStrings[severity];
+        printf(msg.ptr, (type == GL_DEBUG_TYPE_ERROR ? err.ptr : empty.ptr), sourceStr.ptr, typeStr.ptr, severityStr.ptr, message);
+        if (severity == GL_DEBUG_SEVERITY_HIGH)
+            exitWithError();
+    }
 }
 
 private
