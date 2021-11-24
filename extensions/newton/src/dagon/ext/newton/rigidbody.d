@@ -151,7 +151,7 @@ class NewtonRigidBody: Owner
     void addForceAtPos(Vector3f f, Vector3f pos)
     {
         force += f;
-        torque += cross(position.xyz - worldCenterOfMass(), force);
+        torque += cross(pos - worldCenterOfMass(), f);
     }
 
     void addTorque(Vector3f t)
@@ -173,6 +173,13 @@ class NewtonRigidBody: Owner
     {
         Vector3f v;
         NewtonBodyGetVelocity(newtonBody, v.arrayof.ptr);
+        return v;
+    }
+    
+    Vector3f pointVelocity(Vector3f worldPoint)
+    {
+        Vector3f v;
+        NewtonBodyGetPointVelocity(newtonBody, worldPoint.arrayof.ptr, v.arrayof.ptr);
         return v;
     }
     
