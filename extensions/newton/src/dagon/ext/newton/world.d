@@ -61,7 +61,7 @@ extern(C)
             }
         }
         
-        return 1.0f;
+        return intersectParam;
     }
 
     uint newtonWorldRayPrefilterCallback(
