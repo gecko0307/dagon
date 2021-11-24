@@ -136,11 +136,16 @@ class NewtonRigidBody: Owner
         return materialGroupId;
     }
     
-    Vector3f worldCenterOfMass()
+    Vector3f worldCenterOfMass() @property
     {
         Vector3f centerOfMass;
         NewtonBodyGetCentreOfMass(newtonBody, centerOfMass.arrayof.ptr);
         return position.xyz + rotation.rotate(centerOfMass);
+    }
+    
+    void centerOfMass(Vector3f center) @property
+    {
+        NewtonBodySetCentreOfMass(newtonBody, center.arrayof.ptr);
     }
     
     void addForce(Vector3f f)
