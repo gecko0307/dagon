@@ -28,8 +28,10 @@ uniform mat4 invProjectionMatrix;
 
 void main()
 {
-    vec3 res = texture(colorBuffer, texCoord).rgb;
+    vec3 original = texture(colorBuffer, texCoord).rgb;
     vec3 velocity = texture(velocityBuffer, texCoord).rgb;
+    float writeMask = velocity.z;
+    vec3 res = original;
     
     if (enabled)
     {
@@ -63,5 +65,5 @@ void main()
         res = res / max(usedSamples, 1.0);
     }
 
-    fragColor = vec4(res, 1.0);
+    fragColor = vec4(mix(original, res, writeMask), 1.0);
 }
