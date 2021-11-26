@@ -116,6 +116,8 @@ class ForwardShader: Shader
         setParameter("opacity", state.opacity * materialOpacity);
         
         setParameter("textureScale", itextureScale.asVector2f);
+        
+        setParameter("blurMask", state.blurMask);
 
         setParameter("viewSize", state.resolution);
 

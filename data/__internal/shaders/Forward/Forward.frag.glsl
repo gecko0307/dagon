@@ -17,6 +17,7 @@ uniform mat4 invViewMatrix;
 uniform float layer;
 uniform float energy;
 uniform float opacity;
+uniform float blurMask;
 
 uniform bool shaded;
 uniform vec3 sunDirection;
@@ -431,5 +432,5 @@ void main()
     vec2 screenVelocity = posScreen - prevPosScreen;
     
     fragColor = vec4(radiance, alpha);
-    fragVelocity = vec4(screenVelocity, 0.0, 1.0);
+    fragVelocity = vec4(screenVelocity, blurMask, 1.0);
 }
