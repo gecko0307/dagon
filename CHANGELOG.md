@@ -1,3 +1,21 @@
+Dagon 0.13.0 - TBD
+------------------
+- **Assets**
+  - `emissiveFactor` support for glTF materials
+- **Post-processing**
+  - Motion blur shader now supports static radial blur - enable it with `PostProcRenderer.radialBlurAmount`. Fixed `Entity.blurMask` for objects rendered via forward pipeline. Mask is now used to smoothly decrease motion blur in a processed fragment, which allows to fully avoid undesirable blur leaks inside entities with `blurMask` property set to `0`
+  - New properties to control lens distortion effect: `PostProcRenderer.lensDistortionDispersion`, `PostProcRenderer.lensDistortionScale`
+- **Extensions**
+  - `dagon.ext.physics` was removed in favour of `dagon.ext.newton`
+  - `NewtonRigidBody.addForceAtPos` now works correctly. Added `NewtonRigidBody.centerOfMass`
+- **Debugging tools**
+  - Shader programs are now validated against current OpenGL state in debug mode. Invalid shader causes application exit
+  - Debug output messages are now more informative, they include textual definitions of message source, type and severity instead of numeric constants. Issues with high severity cause application exit.
+
+Dagon 0.12.1 - 29 Oct, 2021
+---------------------------
+- Fixed a bug with wrong rendering in `SkyShader`.
+
 Dagon 0.12.0 - 26 Oct, 2021
 ---------------------------
 No changes since 0.12.0-beta2.
