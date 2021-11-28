@@ -169,6 +169,10 @@ class PostProcRenderer: Renderer
     float motionBlurRandomness = 0.2f;
     float motionBlurMinDistance = 0.01f;
     float motionBlurMaxDistance = 1.0f;
+    float radialBlurAmount = 0.0f;
+    
+    float lensDistortionScale = 1.0f;
+    float lensDistortionDispersion = 0.1f;
     
     bool autofocus = true;
     float focalDepth = 1.5;
@@ -336,6 +340,9 @@ class PostProcRenderer: Renderer
         motionBlurShader.offsetRandomCoefficient = motionBlurRandomness;
         motionBlurShader.minDistance = motionBlurMinDistance;
         motionBlurShader.maxDistance = motionBlurMaxDistance;
+        motionBlurShader.radialBlur = radialBlurAmount;
+        lensDistortionShader.scale = lensDistortionScale;
+        lensDistortionShader.dispersion = lensDistortionDispersion;
         lutShader.colorLookupTable = colorLookupTable;
         if (lutShader.colorLookupTable)
         {

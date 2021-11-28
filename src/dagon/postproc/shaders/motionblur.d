@@ -54,6 +54,7 @@ class MotionBlurShader: Shader
     float offsetRandomCoefficient = 0.2;
     float minDistance = 0.01;
     float maxDistance = 1.0;
+    float radialBlur = 0.0f;
 
     GBuffer gbuffer;
 
@@ -87,6 +88,8 @@ class MotionBlurShader: Shader
         setParameter("time", state.localTime);
         setParameter("minDistance", minDistance);
         setParameter("maxDistance", maxDistance);
+        
+        setParameter("radialBlur", radialBlur);
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
