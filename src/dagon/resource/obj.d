@@ -184,7 +184,7 @@ class OBJAsset: Asset
                     
                     warnAboutQuads = true;
                 }
-                if (sscanf(tmpStr.ptr, "f %u/%u/%u %u/%u/%u %u/%u/%u", &v1, &t1, &n1, &v2, &t2, &n2, &v3, &t3, &n3) == 9)
+                else if (sscanf(tmpStr.ptr, "f %u/%u/%u %u/%u/%u %u/%u/%u", &v1, &t1, &n1, &v2, &t2, &n2, &v3, &t3, &n3) == 9)
                 {
                     tmpFaces[fi].v[0] = v1-1;
                     tmpFaces[fi].v[1] = v2-1;
