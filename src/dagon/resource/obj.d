@@ -49,6 +49,23 @@ struct ObjFace
     uint[3] v;
     uint[3] t;
     uint[3] n;
+    
+    this(uint v1, uint v2, uint v3,
+         uint t1, uint t2, uint t3,
+         uint n1, uint n2, uint n3)
+    {
+        v[0] = v1;
+        v[1] = v2;
+        v[2] = v3;
+        
+        t[0] = t1;
+        t[1] = t2;
+        t[2] = t3;
+        
+        n[0] = n1;
+        n[1] = n2;
+        n[2] = n3;
+    }
 }
 
 class OBJAsset: Asset
@@ -89,7 +106,7 @@ class OBJAsset: Asset
         Vector3f[] tmpVertices;
         Vector3f[] tmpNormals;
         Vector2f[] tmpTexcoords;
-        ObjFace[] tmpFaces;
+        Array!ObjFace tmpFaces;
         
         bool needGenNormals = false;
         
@@ -114,7 +131,7 @@ class OBJAsset: Asset
         if (numTexcoords)
             tmpTexcoords = New!(Vector2f[])(numTexcoords);
         if (numFaces)
-            tmpFaces = New!(ObjFace[])(numFaces);
+            tmpFaces.reserve(numFaces);
             
         tmpVertices[] = Vector3f(0, 0, 0);
         tmpNormals[] = Vector3f(0, 0, 0);
@@ -127,7 +144,6 @@ class OBJAsset: Asset
         uint vi = 0;
         uint ni = 0;
         uint ti = 0;
-        uint fi = 0;
         
         bool warnAboutQuads = false;
 
@@ -165,96 +181,52 @@ class OBJAsset: Asset
                 char[256] tmpStr;
                 tmpStr[0..line.length] = line[];
                 tmpStr[line.length] = 0;
-            
+                
+                ObjFace face;
+                
                 if (sscanf(tmpStr.ptr, "f %u/%u/%u %u/%u/%u %u/%u/%u %u/%u/%u", &v1, &t1, &n1, &v2, &t2, &n2, &v3, &t3, &n3, &v4, &t4, &n4) == 12)
                 {
-                    tmpFaces[fi].v[0] = v1-1;
-                    tmpFaces[fi].v[1] = v2-1;
-                    tmpFaces[fi].v[2] = v3-1;
+                    face = ObjFace(v1-1, v2-1, v3-1, t1-1, t2-1, t3-1, n1-1, n2-1, n3-1);
+                    tmpFaces.insertBack(face);
                     
-                    tmpFaces[fi].t[0] = t1-1;
-                    tmpFaces[fi].t[1] = t2-1;
-                    tmpFaces[fi].t[2] = t3-1;
-                    
-                    tmpFaces[fi].n[0] = n1-1;
-                    tmpFaces[fi].n[1] = n2-1;
-                    tmpFaces[fi].n[2] = n3-1;
-                    
-                    fi++;
-                    
-                    warnAboutQuads = true;
+                    face = ObjFace(v1-1, v3-1, v4-1, t1-1, t3-1, t4-1, n1-1, n3-1, n4-1);
+                    tmpFaces.insertBack(face);
                 }
                 else if (sscanf(tmpStr.ptr, "f %u/%u/%u %u/%u/%u %u/%u/%u", &v1, &t1, &n1, &v2, &t2, &n2, &v3, &t3, &n3) == 9)
                 {
-                    tmpFaces[fi].v[0] = v1-1;
-                    tmpFaces[fi].v[1] = v2-1;
-                    tmpFaces[fi].v[2] = v3-1;
-                    
-                    tmpFaces[fi].t[0] = t1-1;
-                    tmpFaces[fi].t[1] = t2-1;
-                    tmpFaces[fi].t[2] = t3-1;
-                    
-                    tmpFaces[fi].n[0] = n1-1;
-                    tmpFaces[fi].n[1] = n2-1;
-                    tmpFaces[fi].n[2] = n3-1;
-                    
-                    fi++;
+                    face = ObjFace(v1-1, v2-1, v3-1, t1-1, t2-1, t3-1, n1-1, n2-1, n3-1);
+                    tmpFaces.insertBack(face);
                 }
                 else if (sscanf(tmpStr.ptr, "f %u//%u %u//%u %u//%u %u//%u", &v1, &n1, &v2, &n2, &v3, &n3, &v4, &n4) == 8)
                 {
-                    tmpFaces[fi].v[0] = v1-1;
-                    tmpFaces[fi].v[1] = v2-1;
-                    tmpFaces[fi].v[2] = v3-1;
+                    face = ObjFace(v1-1, v2-1, v3-1, 0, 0, 0, n1-1, n2-1, n3-1);
+                    tmpFaces.insertBack(face);
                     
-                    tmpFaces[fi].n[0] = n1-1;
-                    tmpFaces[fi].n[1] = n2-1;
-                    tmpFaces[fi].n[2] = n3-1;
-                    
-                    fi++;
-                    
-                    warnAboutQuads = true;
+                    face = ObjFace(v1-1, v3-1, v4-1, 0, 0, 0, n1-1, n3-1, n4-1);
+                    tmpFaces.insertBack(face);
                 } 
                 else if (sscanf(tmpStr.ptr, "f %u/%u %u/%u %u/%u", &v1, &t1, &v2, &t2, &v3, &t3) == 6)
                 {
-                    tmpFaces[fi].v[0] = v1-1;
-                    tmpFaces[fi].v[1] = v2-1;
-                    tmpFaces[fi].v[2] = v3-1;
-                    
-                    tmpFaces[fi].t[0] = t1-1;
-                    tmpFaces[fi].t[1] = t2-1;
-                    tmpFaces[fi].t[2] = t3-1;
-                    
-                    fi++;
+                    face = ObjFace(v1-1, v2-1, v3-1, t1-1, t2-1, t3-1, 0, 0, 0);
+                    tmpFaces.insertBack(face);
                 }
                 else if (sscanf(tmpStr.ptr, "f %u//%u %u//%u %u//%u", &v1, &n1, &v2, &n2, &v3, &n3) == 6)
                 {
-                    tmpFaces[fi].v[0] = v1-1;
-                    tmpFaces[fi].v[1] = v2-1;
-                    tmpFaces[fi].v[2] = v3-1;
-                    
-                    tmpFaces[fi].n[0] = n1-1;
-                    tmpFaces[fi].n[1] = n2-1;
-                    tmpFaces[fi].n[2] = n3-1;
-                    
-                    fi++;
+                    face = ObjFace(v1-1, v2-1, v3-1, 0, 0, 0, n1-1, n2-1, n3-1);
+                    tmpFaces.insertBack(face);
                 }
                 else if (sscanf(tmpStr.ptr, "f %u %u %u %u", &v1, &v2, &v3, &v4) == 4)
                 {
-                    tmpFaces[fi].v[0] = v1-1;
-                    tmpFaces[fi].v[1] = v2-1;
-                    tmpFaces[fi].v[2] = v3-1;
+                    face = ObjFace(v1-1, v2-1, v3-1, 0, 0, 0, 0, 0, 0);
+                    tmpFaces.insertBack(face);
                     
-                    fi++;
-                    
-                    warnAboutQuads = true;
+                    face = ObjFace(v1-1, v3-1, v4-1, 0, 0, 0, 0, 0, 0);
+                    tmpFaces.insertBack(face);
                 }
                 else if (sscanf(tmpStr.ptr, "f %u %u %u", &v1, &v2, &v3) == 3)
                 {
-                    tmpFaces[fi].v[0] = v1-1;
-                    tmpFaces[fi].v[1] = v2-1;
-                    tmpFaces[fi].v[2] = v3-1;
-                    
-                    fi++;
+                    face = ObjFace(v1-1, v2-1, v3-1, 0, 0, 0, 0, 0, 0);
+                    tmpFaces.insertBack(face);
                 }
                 else
                     assert(0);
@@ -331,8 +303,7 @@ class OBJAsset: Asset
             Delete(tmpNormals);
         if (tmpTexcoords.length)
             Delete(tmpTexcoords);
-        if (tmpFaces.length)
-            Delete(tmpFaces);
+        tmpFaces.free();
         
         mesh.calcBoundingBox();
         
