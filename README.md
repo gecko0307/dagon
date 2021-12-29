@@ -91,7 +91,6 @@ Made with Dagon
 ---------------
 * [Electronvolt](https://github.com/gecko0307/electronvolt) - work-in-progress first person puzzle based on Dagon
 * [dagon-sandbox](https://github.com/gecko0307/dagon-sandbox) - a test application that demonstrates some of Dagon's features
-* [dagon-newton](https://github.com/gecko0307/dagon-newton) - Newton physics demo
 * [Dagoban](https://github.com/Timu5/dagoban) - a Sokoban clone
 * [dagon-shooter](https://github.com/aferust/dagon-shooter) - a shooter game
 
