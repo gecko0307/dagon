@@ -176,16 +176,15 @@ class NewtonMeshShape: NewtonCollisionShape
 
 class NewtonConvexHullShape: NewtonCollisionShape
 {
-    this(Mesh mesh, float tolerance, NewtonPhysicsWorld world)
+    this(TriangleSet triangleSet, float tolerance, NewtonPhysicsWorld world)
     {
         super(world);
         NewtonMesh* nmesh = NewtonMeshCreate(world.newtonWorld);
         NewtonMeshBeginBuild(nmesh);
-        foreach(face; mesh.indices)
-        foreach(i; face)
+        foreach(triangle; triangleSet)
+        foreach(i, p; triangle.v)
         {
-            Vector3f p = mesh.vertices[i];
-            Vector3f n = mesh.normals[i];
+            Vector3f n = triangle.n[i];
             NewtonMeshAddPoint(nmesh, p.x, p.y, p.z);
             NewtonMeshAddNormal(nmesh, n.x, n.y, n.z);
         }
