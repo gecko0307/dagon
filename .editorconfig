@@ -1,6 +1,6 @@
 root = true
 
-[*.{d,di,dd,vs,fs,py,json,yml}]
+[*.{d,di,dd,glsl,py,json,yml}]
 end_of_line = crlf
 insert_final_newline = true
 indent_style = space
