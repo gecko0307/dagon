@@ -414,24 +414,23 @@ struct IQMAnim
     uint flags;
 }
 
-version = IQMDebug;
+//version = IQMDebug;
 
 class IQMModel: AnimatedModel
 {
-    DynamicArray!Vector3f vertices;
-    DynamicArray!Vector3f normals;
-    DynamicArray!Vector2f texcoords;
-    // TODO: tangents
+    Array!Vector3f vertices;
+    Array!Vector3f normals;
+    Array!Vector2f texcoords;
 
-    DynamicArray!IQMBlendIndex blendIndices;
-    DynamicArray!IQMBlendWeight blendWeights;
+    Array!IQMBlendIndex blendIndices;
+    Array!IQMBlendWeight blendWeights;
 
     IQMTriangle[] tris;
     IQMVertexArray[] vas;
     IQMMesh[] meshes;
     AnimationFacegroup[] facegroups;
 
-    DynamicArray!IQMJoint joints;
+    Array!IQMJoint joints;
 
     Matrix4x4f[] baseFrame;
     Matrix4x4f[] invBaseFrame;
@@ -504,9 +503,6 @@ class IQMModel: AnimatedModel
         istrm.fillArray(textBuffer);
         version(IQMDebug)
             writefln("text:\n%s", cast(string)textBuffer);
-
-        // FIXME: 
-        //Delete(buf);
 
         // Vertex data part
         version(IQMDebug)
