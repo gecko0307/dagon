@@ -8,6 +8,7 @@ Dagon 0.13.0 - TBD
 - **Extensions**
   - `dagon.ext.physics` was removed in favour of `dagon.ext.newton`
   - `NewtonRigidBody.addForceAtPos` now works correctly. Added `NewtonRigidBody.centerOfMass`
+  - Fixed compilation of `dagon.ext.iqm`
 - **Debugging tools**
   - Shader programs are now validated against current OpenGL state in debug mode. Invalid shader causes application exit
   - Debug output messages are now more informative, they include textual definitions of message source, type and severity instead of numeric constants. Issues with high severity cause application exit.
