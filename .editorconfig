@@ -7,3 +7,16 @@ indent_style = space
 indent_size = 4
 trim_trailing_whitespace = true
 charset = utf-8
+
+[*.{d,di,dd}]
+dfmt_brace_style = allman
+dfmt_soft_max_line_length = 120
+dfmt_align_switch_statements = true
+dfmt_outdent_attributes = true
+dfmt_outdent_labels = true
+dfmt_split_operator_at_line_end = true
+dfmt_space_after_cast = false
+dfmt_space_after_keywords = true
+dfmt_space_before_function_parameters = false
+dfmt_selective_import_space = false
+dfmt_keep_line_breaks = true
