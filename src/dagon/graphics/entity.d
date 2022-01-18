@@ -323,6 +323,11 @@ class Entity: Owner, Updateable
             rotationQuaternion!float(Axis.z, degtorad(v.z));
     }
 
+    void setRotation(float x, float y, float z)
+    {
+        angles = Vector3f(x, y, z);
+    }
+
     void rotate(Vector3f v)
     {
         auto r =
