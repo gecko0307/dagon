@@ -112,6 +112,7 @@ class Actor: Owner, Drawable
     bool playing = false;
     float defaultFramerate = 24.0f;
     float speed = 1.0f;
+    float blendSpeed = 8.0f;
     
     GLuint vao = 0;
     GLuint vbo = 0;
@@ -211,27 +212,35 @@ class Actor: Owner, Drawable
         nextState.currentFrame = nextAnimation.firstFrame;
         nextState.nextFrame = nextState.currentFrame + 1;
         nextState.t = 0.0f;
+        blendSpeed = smooth;
     }
 
     void switchToSequence(uint startFrame, uint endFrame)
     {
-        //model.getAnimation(name, &nextAnimation);
-        animation.firstFrame = startFrame;
-        animation.numFrames = endFrame - startFrame;
-        state.currentFrame = animation.firstFrame;
-        state.nextFrame = state.currentFrame + 1;
-        state.t = 0.0f;
+        uint numFrames = endFrame - startFrame;
+        if (animation.firstFrame != startFrame && animation.numFrames != numFrames)
+        {
+            animation.firstFrame = startFrame;
+            animation.numFrames = numFrames;
+            state.currentFrame = animation.firstFrame;
+            state.nextFrame = state.currentFrame + 1;
+            state.t = 0.0f;
+        }
     }
 
     void switchToSequenceSmooth(uint startFrame, uint endFrame, float smooth)
     {
-        //model.getAnimation(name, &nextAnimation);
-        nextAnimation.firstFrame = startFrame;
-        nextAnimation.numFrames = endFrame - startFrame;
-        hasNextAnimation = true;
-        nextState.currentFrame = nextAnimation.firstFrame;
-        nextState.nextFrame = nextState.currentFrame + 1;
-        nextState.t = 0.0f;
+        uint numFrames = endFrame - startFrame;
+        if (animation.firstFrame != startFrame && animation.numFrames != numFrames)
+        {
+            nextAnimation.firstFrame = startFrame;
+            nextAnimation.numFrames = numFrames;
+            hasNextAnimation = true;
+            nextState.currentFrame = nextAnimation.firstFrame;
+            nextState.nextFrame = nextState.currentFrame + 1;
+            nextState.t = 0.0f;
+            blendSpeed = smooth;
+        }
     }
 
     void switchToFullSequence()
@@ -283,7 +292,7 @@ class Actor: Owner, Drawable
         {
             model.blendFrame(nextState.currentFrame, nextState.nextFrame, nextState.t, &frameData, blendFactor);
             nextState.t += defaultFramerate * dt * speed; //nextAnimation.framerate
-            blendFactor += dt; // TODO: time multiplier
+            blendFactor += blendSpeed * dt;
 
             if (nextState.t >= 1.0f)
             {
