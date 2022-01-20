@@ -98,6 +98,10 @@ class EventManager
     bool[255] controllerButtonPressed = false;
     bool[255] controllerButtonUp = false;
     bool[255] controllerButtonDown = false;
+    
+    bool[255] joystickButtonPressed = false;
+    bool[255] joystickButtonUp = false;
+    bool[255] joystickButtonDown = false;
 
     Array!(bool*) toReset; // Used for resetting UP and DOWN events after end of frame
 
@@ -332,26 +336,44 @@ class EventManager
                 case SDL_JOYBUTTONDOWN:
                     if(joystick is null) break;
                     if (event.jbutton.state == SDL_PRESSED)
+                    {
                         e = Event(EventType.JoystickButtonDown);
+                        joystickButtonPressed[event.jbutton.button] = true;
+                        joystickButtonDown[event.jbutton.button] = true;
+                        toReset.insertBack(&joystickButtonDown[event.jbutton.button]);
+                    }
                     else if (event.jbutton.state == SDL_RELEASED)
+                    {
                         e = Event(EventType.JoystickButtonUp);
+                        joystickButtonPressed[event.jbutton.button] = false;
+                        joystickButtonUp[event.jbutton.button] = true;
+                        toReset.insertBack(&joystickButtonUp[event.jbutton.button]);
+                    }
                     e.joystickButton = event.jbutton.button;
                     addEvent(e);
                     break;
 
                 case SDL_JOYBUTTONUP:
-                    // TODO: add state modification
                     if(joystick is null) break;
                     if (event.jbutton.state == SDL_PRESSED)
+                    {
                         e = Event(EventType.JoystickButtonDown);
+                        joystickButtonPressed[event.jbutton.button] = true;
+                        joystickButtonDown[event.jbutton.button] = true;
+                        toReset.insertBack(&joystickButtonDown[event.jbutton.button]);
+                    }
                     else if (event.jbutton.state == SDL_RELEASED)
+                    {
                         e = Event(EventType.JoystickButtonUp);
+                        joystickButtonPressed[event.jbutton.button] = false;
+                        joystickButtonUp[event.jbutton.button] = true;
+                        toReset.insertBack(&joystickButtonUp[event.jbutton.button]);
+                    }
                     e.joystickButton = event.jbutton.button;
                     addEvent(e);
                     break;
 
                 case SDL_CONTROLLERBUTTONDOWN:
-                    // TODO: add state modification
                     controllerButtonPressed[event.cbutton.button] = true;
                     controllerButtonDown[event.cbutton.button] = true;
                     toReset.insertBack(&controllerButtonDown[event.cbutton.button]);
@@ -362,7 +384,6 @@ class EventManager
                     break;
 
                 case SDL_CONTROLLERBUTTONUP:
-                    // TODO: add state modification
                     controllerButtonPressed[event.cbutton.button] = false;
                     controllerButtonUp[event.cbutton.button] = true;
                     toReset.insertBack(&controllerButtonUp[event.cbutton.button]);
@@ -377,17 +398,14 @@ class EventManager
                     e = Event(EventType.JoystickAxisMotion);
                     e.joystickAxis = event.caxis.axis;
                     e.joystickAxisValue = cast(float)event.caxis.value / 32768.0f;
-
                     if (controller)
                     {
                         if (e.joystickAxis == 0)
                             e.joystickAxisValue = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY);
                         if (e.joystickAxis == 1)
                             e.joystickAxisValue = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX);
-
                         e.joystickAxisValue = e.joystickAxisValue / 32768.0f;
                     }
-
                     addEvent(e);
                     break;
 
