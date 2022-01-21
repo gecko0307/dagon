@@ -1,17 +1,24 @@
 Dagon 0.13.0 - TBD
 ------------------
+- **Core**
+  - State for joystick buttons in `EventManager` (`joystickButtonPressed`, `joystickButtonUp`, `joystickButtonDown`)
 - **Assets**
+  - OBJ loader now supports quads
   - `emissiveFactor` support for glTF materials
+  - `Entity.setRotation`
 - **Post-processing**
   - Motion blur shader now supports static radial blur - enable it with `PostProcRenderer.radialBlurAmount`. Fixed `Entity.blurMask` for objects rendered via forward pipeline. Mask is now used to smoothly decrease motion blur in a processed fragment, which allows to fully avoid undesirable blur leaks inside entities with `blurMask` property set to `0`
   - New properties to control lens distortion effect: `PostProcRenderer.lensDistortionDispersion`, `PostProcRenderer.lensDistortionScale`
 - **Extensions**
   - `dagon.ext.physics` was removed in favour of `dagon.ext.newton`
   - `NewtonRigidBody.addForceAtPos` now works correctly. Added `NewtonRigidBody.centerOfMass`
-  - Fixed compilation of `dagon.ext.iqm`
+  - `NewtonConvexHullShape` is now created from `TriangleSet` instead of `Mesh`
+  - Fixed compilation of `dagon.ext.iqm`. Added `Actor.blendSpeed` property. Switching `Actor` animation to the same frame range as the current one now doesn't cause loop reset
 - **Debugging tools**
   - Shader programs are now validated against current OpenGL state in debug mode. Invalid shader causes application exit
   - Debug output messages are now more informative, they include textual definitions of message source, type and severity instead of numeric constants. Issues with high severity cause application exit.
+- **Misc**
+  - Dagon now uses dlib 1.0.0.
 
 Dagon 0.12.1 - 29 Oct, 2021
 ---------------------------
