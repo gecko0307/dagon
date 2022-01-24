@@ -729,6 +729,8 @@ class GLTFAsset: Asset, TriangleSet
                         
                         if (baseColorFactor.a < 1.0f)
                             material.blending = Transparent;
+                        
+                        material.diffuse = baseColorFactor;
                     }
                     
                     if (pbr && "baseColorTexture" in pbr)
@@ -748,10 +750,6 @@ class GLTFAsset: Asset, TriangleSet
                         }
                         
                         material.transparency = baseColorFactor.a;
-                    }
-                    else
-                    {
-                        material.diffuse = baseColorFactor;
                     }
                     
                     if (pbr && "metallicRoughnessTexture" in pbr)
@@ -1113,16 +1111,7 @@ class GLTFAsset: Asset, TriangleSet
                                 node.entity.transparent = true;
                             }
                         }
-                        else
-                        {
-                            if (material.diffuse.asVector4f.a < 1.0f)
-                            {
-                                material.blending = Transparent;
-                                node.entity.transparent = true;
-                            }
-                        }
-                        
-                        if (material.transparency.asFloat < 1.0f)
+                        else if (material.diffuse.asVector4f.a < 1.0f || material.transparency.asFloat < 1.0f)
                         {
                             material.blending = Transparent;
                             node.entity.transparent = true;
