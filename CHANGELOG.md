@@ -1,17 +1,24 @@
 Dagon 0.13.0 - TBD
 ------------------
+- **Core**
+  - State for joystick buttons in `EventManager` (`joystickButtonPressed`, `joystickButtonUp`, `joystickButtonDown`)
 - **Assets**
+  - OBJ loader now supports quads
   - `emissiveFactor` support for glTF materials
+  - `Entity.setRotation`
 - **Post-processing**
   - Motion blur shader now supports static radial blur - enable it with `PostProcRenderer.radialBlurAmount`. Fixed `Entity.blurMask` for objects rendered via forward pipeline. Mask is now used to smoothly decrease motion blur in a processed fragment, which allows to fully avoid undesirable blur leaks inside entities with `blurMask` property set to `0`
   - New properties to control lens distortion effect: `PostProcRenderer.lensDistortionDispersion`, `PostProcRenderer.lensDistortionScale`
 - **Extensions**
   - `dagon.ext.physics` was removed in favour of `dagon.ext.newton`
   - `NewtonRigidBody.addForceAtPos` now works correctly. Added `NewtonRigidBody.centerOfMass`
-  - Fixed compilation of `dagon.ext.iqm`
+  - `NewtonConvexHullShape` is now created from `TriangleSet` instead of `Mesh`
+  - Fixed compilation of `dagon.ext.iqm`. Added `Actor.blendSpeed` property. Switching `Actor` animation to the same frame range as the current one now doesn't cause loop reset
 - **Debugging tools**
   - Shader programs are now validated against current OpenGL state in debug mode. Invalid shader causes application exit
   - Debug output messages are now more informative, they include textual definitions of message source, type and severity instead of numeric constants. Issues with high severity cause application exit.
+- **Misc**
+  - Dagon now uses dlib 1.0.0.
 
 Dagon 0.12.1 - 29 Oct, 2021
 ---------------------------
@@ -125,7 +132,7 @@ Dagon 0.10.1 - 14 Jun, 2019
 Dagon 0.10.0 - 31 Mar, 2019
 ---------------------------
 - **Rendering**
-  - Terrain renderer with image-based and procedural (OpenSimplex noise) heightmaps. Thanks to Rafal Ziemniewski for the implementation
+  - Terrain renderer with image-based and procedural (OpenSimplex noise) heightmaps. Thanks to Rafał Ziemniewski for the implementation
   - Decals support in deferred renderer. Decals are special `Entities` that project a texture/material to geometry in the G-buffer. They can be used to place details over static geometry, such as bullet holes, graffiti, blood, dirt, footprints, clutter, etc. By default they project along -Y axis (towards the ground), but they can be transformed like any other `Entity` to project on non-horizontal surfaces as well. Decal is created using `Scene.createDecal`. Decals are visible only on Entities with `dynamic` property turned off. To create a decal material, use `Scene.createDecalMaterial`. Decal material properties are the same as for standard materials - they can have diffuse, normal, roughness, metallic and emission maps
   - Tube area lights support in deferred renderer. These are capsule-like lights that have length and radius. `Scene.createLight` is now deprecated, use `Scene.createLightSphere` and `Scene.createLightTube` instead
   - Spot lights support. They can be created using `Scene.createLightSpot` method
@@ -139,7 +146,7 @@ Dagon 0.10.0 - 31 Mar, 2019
   - `textureScale` property for materials - bidirectional scale factor for texture coordinates
   - Built-in terrain shader (`dagon.graphics.shaders.terrain`) with 4 texture layers and splatting. Each layer supports diffuse and normal maps. To create terrain material, use `Scene.createTerrainMaterial`. Textures are passed via material properties, `diffuse` and `normal` being the first layer, `diffuse2` and `normal2` the second, and so on. There are also `textureScale`, `roughness` and `metallic` for each layer (`textureScale2`, etc). Roughness and metallic properties are limited to numeric values. Splatting textures (that is, bw textures that define blending between layers) are passed using `splatmap1`, `splatmap2`, etc.
 - **UI**
-  - [Nuklear](https://github.com/vurtun/nuklear) integration (`dagon.ui.nuklear`). It is a lightweight immediate mode GUI toolkit which can be used to render windows and widgets over the rendered scene. To use Nuklear, create `NuklearGUI` object and attach is to 2D entity's drawable, then use its methods to 'draw' widgets in `onLogicsUpdate` (API is very close to original Nuklear functions). Nuklear also provides a canvas windget to draw 2D vector shapes - lines, Bezier curves, rectangles, circles, arcs, triangles, and polygons. Thanks to [Mateusz Muszynski](https://github.com/Timu5) for the implementation and [bindbc-nuklear](https://github.com/Timu5/bindbc-nuklear) binding
+  - [Nuklear](https://github.com/vurtun/nuklear) integration (`dagon.ui.nuklear`). It is a lightweight immediate mode GUI toolkit which can be used to render windows and widgets over the rendered scene. To use Nuklear, create `NuklearGUI` object and attach is to 2D entity's drawable, then use its methods to 'draw' widgets in `onLogicsUpdate` (API is very close to original Nuklear functions). Nuklear also provides a canvas windget to draw 2D vector shapes - lines, Bezier curves, rectangles, circles, arcs, triangles, and polygons. Thanks to [Mateusz Muszyński](https://github.com/Timu5) for the implementation and [bindbc-nuklear](https://github.com/Timu5/bindbc-nuklear) binding
 - **Environment**
   - Breaking change: now there is no default sun for deferred renderer, it should be created explicitly. Forward mode shaders still use sun settings from `Environment` (as well as sky shaders), so these settings should be synced with a custom `LightSource` by specifying `Scene.mainSun`:
 ```d
@@ -165,7 +172,7 @@ Dagon 0.10.0 - 31 Mar, 2019
   - Update timer was fixed, so that the application runs with a consistent speed at varying framerates. Dagon games are now playable on low-end hardware
 - **Misc**
   - A simple configuration system. Dagon applications now support optional [settings.conf](https://github.com/gecko0307/dagon/blob/master/settings.conf) file in the working directory or in user's home directory (`%APPDATA%/.dagon` under Windows, `$HOME/.dagon` under Posix). You can access loaded configuration via `SceneApplication.config` property
-  - `dagon.core.input.InputManager` - an abstraction layer for mapping between logical commands and input events (Thanks to [Mateusz Muszynski](https://github.com/Timu5) for the implementation). It allows to remap inputs without changing code. It supports keyboard, mouse and game controller devices. Mapping are stored in `input.conf` file, which has the same syntax as `settings.conf`:
+  - `dagon.core.input.InputManager` - an abstraction layer for mapping between logical commands and input events (thanks to [Mateusz Muszyński](https://github.com/Timu5) for the implementation). It allows to remap inputs without changing code. It supports keyboard, mouse and game controller devices. Mapping are stored in `input.conf` file, which has the same syntax as `settings.conf`:
 ```
     upDownAxis: "ga_lefty, va(kb_down, kb_up)";
     myButton: "kb_p, gb_leftshoulder";
