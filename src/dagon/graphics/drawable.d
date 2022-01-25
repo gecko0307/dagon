@@ -27,9 +27,50 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.graphics.drawable;
 
+import dlib.core.ownership;
+import dlib.container.array;
 public import dagon.graphics.state;
 
 interface Drawable
 {
     void render(GraphicsState* state);
+}
+
+class DrawableGroup: Owner, Drawable
+{
+    Array!Drawable drawables;
+    
+    this(Owner owner)
+    {
+        super(owner);
+    }
+    
+    ~this()
+    {
+        drawables.free();
+    }
+    
+    this(Drawable drawable, Owner owner)
+    {
+        super(owner);
+        add(drawable);
+    }
+    
+    this(Drawable[] drawablesArr, Owner owner)
+    {
+        super(owner);
+        foreach(d; drawablesArr)
+            add(d);
+    }
+    
+    void add(Drawable d)
+    {
+        drawables.append(d);
+    }
+    
+    void render(GraphicsState* state)
+    {
+        foreach(d; drawables)
+            d.render(state);
+    }
 }
