@@ -514,17 +514,19 @@ class Shader: Owner
         GLint status;
         glGetProgramiv(program.program, GL_VALIDATE_STATUS, &status);
         
-        GLint infolen;
-        glGetProgramiv(program.program, GL_INFO_LOG_LENGTH, &infolen);
-        if (infolen > 0)
+        if (status != GL_TRUE)
         {
-            char[logMaxLen + 1] infobuffer = 0;
-            glGetProgramInfoLog(program.program, logMaxLen, null, infobuffer.ptr);
-            infolen = min2(infolen - 1, logMaxLen);
-            char[] s = stripRight(infobuffer[0..infolen]);
-            writeln(s);
+            GLint infolen;
+            glGetProgramiv(program.program, GL_INFO_LOG_LENGTH, &infolen);
+            if (infolen > 0)
+            {
+                char[logMaxLen + 1] infobuffer = 0;
+                glGetProgramInfoLog(program.program, logMaxLen, null, infobuffer.ptr);
+                infolen = min2(infolen - 1, logMaxLen);
+                char[] s = stripRight(infobuffer[0..infolen]);
+                writeln(s);
+            }
         }
-        
         assert(status == GL_TRUE, "Shader program validation failed");
     }
     

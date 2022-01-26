@@ -314,7 +314,7 @@ class ForwardShader: Shader
         }
         setParameter("energy", ienergy.asFloat);
 
-        // Environment
+        // Environment map
         if (state.environment)
         {
             setParameter("fogColor", state.environment.fogColor);
@@ -324,15 +324,17 @@ class ForwardShader: Shader
 
             if (state.environment.ambientMap)
             {
-                glActiveTexture(GL_TEXTURE4);
-                state.environment.ambientMap.bind();
                 if (cast(Cubemap)state.environment.ambientMap)
                 {
-                    setParameter("ambientTextureCube", 4);
+                    glActiveTexture(GL_TEXTURE5);
+                    state.environment.ambientMap.bind();
+                    setParameter("ambientTextureCube", 5);
                     setParameterSubroutine("ambient", ShaderType.Fragment, "ambientCubemap");
                 }
                 else
                 {
+                    glActiveTexture(GL_TEXTURE4);
+                    state.environment.ambientMap.bind();
                     setParameter("ambientTexture", 4);
                     setParameterSubroutine("ambient", ShaderType.Fragment, "ambientEquirectangularMap");
                 }
@@ -360,9 +362,9 @@ class ForwardShader: Shader
             {
                 CascadedShadowMap csm = cast(CascadedShadowMap)sun.shadowMap;
 
-                glActiveTexture(GL_TEXTURE5);
+                glActiveTexture(GL_TEXTURE6);
                 glBindTexture(GL_TEXTURE_2D_ARRAY, csm.depthTexture);
-                setParameter("shadowTextureArray", 5);
+                setParameter("shadowTextureArray", 6);
                 setParameter("shadowResolution", cast(float)csm.resolution);
                 setParameter("shadowMatrix1", csm.area[0].shadowMatrix);
                 setParameter("shadowMatrix2", csm.area[1].shadowMatrix);
@@ -371,9 +373,9 @@ class ForwardShader: Shader
             }
             else
             {
-                glActiveTexture(GL_TEXTURE5);
+                glActiveTexture(GL_TEXTURE6);
                 glBindTexture(GL_TEXTURE_2D_ARRAY, defaultShadowTexture);
-                setParameter("shadowTextureArray", 5);
+                setParameter("shadowTextureArray", 6);
                 setParameter("shadowMatrix1", defaultShadowMatrix);
                 setParameter("shadowMatrix2", defaultShadowMatrix);
                 setParameter("shadowMatrix3", defaultShadowMatrix);
@@ -382,9 +384,9 @@ class ForwardShader: Shader
         }
         else
         {
-            glActiveTexture(GL_TEXTURE5);
+            glActiveTexture(GL_TEXTURE6);
             glBindTexture(GL_TEXTURE_2D_ARRAY, defaultShadowTexture);
-            setParameter("shadowTextureArray", 5);
+            setParameter("shadowTextureArray", 6);
             setParameter("shadowMatrix1", defaultShadowMatrix);
             setParameter("shadowMatrix2", defaultShadowMatrix);
             setParameter("shadowMatrix3", defaultShadowMatrix);
@@ -412,10 +414,12 @@ class ForwardShader: Shader
 
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, 0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
         glActiveTexture(GL_TEXTURE5);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+        glActiveTexture(GL_TEXTURE6);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 
         glActiveTexture(GL_TEXTURE0);
     }
