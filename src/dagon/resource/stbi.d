@@ -26,51 +26,54 @@ DEALINGS IN THE SOFTWARE.
 */
 module dagon.resource.stbi;
 
-import dlib.core.memory;
-import dlib.core.stream;
-import dlib.core.compound;
-import dlib.filesystem.local;
-import dlib.image.image;
-import stb.image.binding;
-import stb.image;
-
-SuperImage loadImageSTB(string filename)
+version(USE_STBI)
 {
-    InputStream input = openForInput(filename);
-    auto img = loadImageSTB(input);
-    input.close();
-    return img;
-}
+    import dlib.core.memory;
+    import dlib.core.stream;
+    import dlib.core.compound;
+    import dlib.filesystem.local;
+    import dlib.image.image;
+    import stb.image.binding;
+    import stb.image;
 
-SuperImage loadImageSTB(InputStream istrm)
-{
-    Compound!(SuperImage, string) res =
-        loadImageSTB(istrm, defaultImageFactory);
-    if (res[0] is null)
-        throw new Exception(res[1]);
-    else
-        return res[0];
-}
-
-Compound!(SuperImage, string) loadImageSTB(
-    InputStream istrm,
-    SuperImageFactory imgFac)
-{
-    ubyte[] compressed = New!(ubyte[])(istrm.size);
-    istrm.fillArray(compressed);
-    int width, height, channels;
-    ubyte* data = stbi_load_from_memory(compressed.ptr, cast(uint)compressed.length, &width, &height, &channels, 0);
-    SuperImage img = null;
-    Compound!(SuperImage, string) res;
-    if (data)
+    SuperImage loadImageSTB(string filename)
     {
-        img = imgFac.createImage(width, height, channels, 8);
-        img.data[] = data[0..width*height*channels];
-        stbi_image_free(data);
-        res = compound(img, "");
+        InputStream input = openForInput(filename);
+        auto img = loadImageSTB(input);
+        input.close();
+        return img;
     }
-    else
-        res = compound(img, "unknown/corrupted image");
-    Delete(compressed);
-    return res;
+
+    SuperImage loadImageSTB(InputStream istrm)
+    {
+        Compound!(SuperImage, string) res =
+            loadImageSTB(istrm, defaultImageFactory);
+        if (res[0] is null)
+            throw new Exception(res[1]);
+        else
+            return res[0];
+    }
+
+    Compound!(SuperImage, string) loadImageSTB(
+        InputStream istrm,
+        SuperImageFactory imgFac)
+    {
+        ubyte[] compressed = New!(ubyte[])(istrm.size);
+        istrm.fillArray(compressed);
+        int width, height, channels;
+        ubyte* data = stbi_load_from_memory(compressed.ptr, cast(uint)compressed.length, &width, &height, &channels, 0);
+        SuperImage img = null;
+        Compound!(SuperImage, string) res;
+        if (data)
+        {
+            img = imgFac.createImage(width, height, channels, 8);
+            img.data[] = data[0..width*height*channels];
+            stbi_image_free(data);
+            res = compound(img, "");
+        }
+        else
+            res = compound(img, "unknown/corrupted image");
+        Delete(compressed);
+        return res;
+    }
 }

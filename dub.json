@@ -18,8 +18,7 @@
         "thirdparty/bindbc-sdl-1.0.0/source",
         "thirdparty/bindbc-freetype-0.9.1/source",
         "thirdparty/bindbc-nuklear-0.4.3/source",
-        "thirdparty/bindbc-newton-0.2.0/src",
-        "thirdparty/stb-2.0.1/source"
+        "thirdparty/bindbc-newton-0.2.0/src"
     ],
     "sourcePaths": [
         "src",
@@ -28,8 +27,7 @@
         "thirdparty/bindbc-sdl-1.0.0/source",
         "thirdparty/bindbc-freetype-0.9.1/source",
         "thirdparty/bindbc-nuklear-0.4.3/source",
-        "thirdparty/bindbc-newton-0.2.0/src",
-        "thirdparty/stb-2.0.1/source"
+        "thirdparty/bindbc-newton-0.2.0/src"
     ],
     "stringImportPaths": ["data/__internal"],
 
@@ -47,21 +45,31 @@
         "allowWarnings"
     ],
     
-    "libs-windows-x86": [
-        "$PACKAGE_DIR/thirdparty/stb-2.0.1/bin/stb_x86"
-    ],
-    "libs-windows-x86_64": [
-        "user32",
-        "$PACKAGE_DIR/thirdparty/stb-2.0.1/bin/stb_x64"
-    ],
-    "lflags-linux": [
-        "$PACKAGE_DIR/thirdparty/stb-2.0.1/bin/libstb.a"
-    ],
-    
     "configurations": [
         {
             "name": "library",
             "targetType": "library"
+        },
+        {
+            "name": "use_stbi",
+            "targetType": "library",
+            "versions": ["USE_STBI"],
+            "importPaths": [
+                "thirdparty/stb-2.0.1/source"
+            ],
+            "sourcePaths": [
+                "thirdparty/stb-2.0.1/source"
+            ],
+            "libs-windows-x86": [
+                "$PACKAGE_DIR/thirdparty/stb-2.0.1/bin/stb_x86"
+            ],
+            "libs-windows-x86_64": [
+                "user32",
+                "$PACKAGE_DIR/thirdparty/stb-2.0.1/bin/stb_x64"
+            ],
+            "lflags-linux": [
+                "$PACKAGE_DIR/thirdparty/stb-2.0.1/bin/libstb.a"
+            ]
         }
     ],
     
