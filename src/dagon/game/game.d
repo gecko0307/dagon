@@ -46,7 +46,11 @@ import dagon.game.postprocrenderer;
 import dagon.game.presentrenderer;
 import dagon.game.hudrenderer;
 
-version(Windows) import core.sys.windows.windows;
+version(Windows)
+{
+    pragma(lib, "user32");
+    import core.sys.windows.windows;
+}
 
 class Game: Application
 {
