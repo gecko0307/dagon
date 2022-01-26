@@ -620,7 +620,7 @@ class GLTFAsset: Asset, TriangleSet
                     {
                         bool res = assetManager.loadAssetThreadSafePart(ta, imgFilename.toString);
                         if (!res)
-                            writeln("Warning: failed to load \"", imgFilename, "\" not found");
+                            writeln("Warning: failed to load \"", imgFilename, "\"");
                     }
                     else
                     {
