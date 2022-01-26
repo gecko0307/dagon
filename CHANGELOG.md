@@ -3,6 +3,12 @@ Dagon 0.13.0 - TBD
 - **Core**
   - State for joystick buttons in `EventManager` (`joystickButtonPressed`, `joystickButtonUp`, `joystickButtonDown`)
 - **Assets**
+  - Texture loader is now based on dlib.image by default. To use stb_image, `use_stbi` subconfiguration must be specified for Dagon in `dub.json`:
+    ```json
+    "subConfigurations": {
+        "dagon": "use_stbi"
+    }
+    ```
   - OBJ loader now supports quads
   - `emissiveFactor` support for glTF materials
   - `Entity.setRotation`
