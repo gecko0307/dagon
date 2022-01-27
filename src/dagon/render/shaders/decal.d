@@ -109,15 +109,17 @@ class DecalShader: Shader
         setParameter("depthTexture", cast(int)0);
 
         // Diffuse
+        glActiveTexture(GL_TEXTURE1);
         if (idiffuse.texture)
         {
-            glActiveTexture(GL_TEXTURE1);
             idiffuse.texture.bind();
             setParameter("diffuseTexture", cast(int)1);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
         }
         else
         {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameter("diffuseTexture", cast(int)1);
             setParameter("diffuseVector", idiffuse.asVector4f);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
         }
@@ -153,16 +155,17 @@ class DecalShader: Shader
             }
         }
 
+        glActiveTexture(GL_TEXTURE2);
         if (inormal.texture)
         {
-            setParameter("normalTexture", 2);
-            setParameterSubroutine("normal", ShaderType.Fragment, "normalMap");
-
-            glActiveTexture(GL_TEXTURE2);
             inormal.texture.bind();
+            setParameter("normalTexture", cast(int)2);
+            setParameterSubroutine("normal", ShaderType.Fragment, "normalMap");
         }
         else
         {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameter("normalTexture", cast(int)2);
             setParameter("normalVector", state.material.normal.asVector3f);
             setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
         }
@@ -222,15 +225,17 @@ class DecalShader: Shader
         }
 
         // Emission
+        glActiveTexture(GL_TEXTURE4);
         if (iemission.texture)
         {
-            glActiveTexture(GL_TEXTURE4);
             iemission.texture.bind();
             setParameter("emissionTexture", cast(int)4);
             setParameterSubroutine("emission", ShaderType.Fragment, "emissionMap");
         }
         else
         {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameter("emissionTexture", cast(int)4);
             setParameter("emissionVector", iemission.asVector4f);
             setParameterSubroutine("emission", ShaderType.Fragment, "emissionValue");
         }

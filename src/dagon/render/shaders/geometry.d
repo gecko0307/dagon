@@ -113,20 +113,24 @@ class GeometryShader: Shader
         setParameter("clipThreshold", clipThreshold);
 
         // Diffuse
+        glActiveTexture(GL_TEXTURE0);
         if (idiffuse.texture)
         {
-            glActiveTexture(GL_TEXTURE0);
             idiffuse.texture.bind();
             setParameter("diffuseTexture", cast(int)0);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
         }
         else
         {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameter("diffuseTexture", cast(int)0);
             setParameter("diffuseVector", idiffuse.asVector4f);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
         }
 
         // Normal/height
+        glActiveTexture(GL_TEXTURE1);
+        
         bool haveHeightMap = inormal.texture !is null;
         if (haveHeightMap)
             haveHeightMap = inormal.texture.image.channels == 4;
@@ -154,15 +158,15 @@ class GeometryShader: Shader
 
         if (inormal.texture)
         {
-            setParameter("generateTBN", 1);
-            setParameter("normalTexture", 1);
-            setParameterSubroutine("normal", ShaderType.Fragment, "normalMap");
-
-            glActiveTexture(GL_TEXTURE1);
             inormal.texture.bind();
+            setParameter("normalTexture", cast(int)1);
+            setParameter("generateTBN", 1);
+            setParameterSubroutine("normal", ShaderType.Fragment, "normalMap");
         }
         else
         {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameter("normalTexture", cast(int)1);
             setParameter("generateTBN", 0);
             setParameter("normalVector", state.material.normal.asVector3f);
             setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
@@ -221,15 +225,17 @@ class GeometryShader: Shader
         // TODO: specularity, translucensy
 
         // Emission
+        glActiveTexture(GL_TEXTURE3);
         if (iemission.texture)
         {
-            glActiveTexture(GL_TEXTURE3);
             iemission.texture.bind();
             setParameter("emissionTexture", cast(int)3);
             setParameterSubroutine("emission", ShaderType.Fragment, "emissionColorTexture");
         }
         else
         {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameter("emissionTexture", cast(int)3);
             setParameter("emissionVector", iemission.asVector4f);
             setParameterSubroutine("emission", ShaderType.Fragment, "emissionColorValue");
         }

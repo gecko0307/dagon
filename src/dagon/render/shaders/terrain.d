@@ -106,30 +106,25 @@ class TerrainShader: Shader
         setParameter("textureScale2", itextureScale2.asVector2f);
         setParameter("textureScale3", itextureScale3.asVector2f);
         setParameter("textureScale4", itextureScale4.asVector2f);
-        /*
-        int parallaxMethod = iparallax.asInteger;
-        if (parallaxMethod > ParallaxOcclusionMapping)
-            parallaxMethod = ParallaxOcclusionMapping;
-        if (parallaxMethod < 0)
-            parallaxMethod = 0;
-        */
-        //setParameter("sphericalNormal", cast(int)isphericalNormal.asBool);
 
         // Diffuse 1
+        glActiveTexture(GL_TEXTURE0);
         if (idiffuse1.texture)
         {
-            glActiveTexture(GL_TEXTURE0);
             idiffuse1.texture.bind();
             setParameter("diffuse1Texture", cast(int)0);
             setParameterSubroutine("diffuse1", ShaderType.Fragment, "diffuse1ColorTexture");
         }
         else
         {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameter("diffuse1Texture", cast(int)0);
             setParameter("diffuse1Vector", idiffuse1.asVector4f);
             setParameterSubroutine("diffuse1", ShaderType.Fragment, "diffuse1ColorValue");
         }
 
         // Normal/height 1
+        glActiveTexture(GL_TEXTURE1);
         bool haveHeightMap1 = inormal1.texture !is null;
         if (haveHeightMap1)
             haveHeightMap1 = inormal1.texture.image.channels == 4;
@@ -155,33 +150,36 @@ class TerrainShader: Shader
         }
         if (inormal1.texture)
         {
-            setParameter("normal1Texture", 1);
-            setParameterSubroutine("normal1", ShaderType.Fragment, "normal1Map");
-
-            glActiveTexture(GL_TEXTURE1);
             inormal1.texture.bind();
+            setParameter("normal1Texture", cast(int)1);
+            setParameterSubroutine("normal1", ShaderType.Fragment, "normal1Map");
         }
         else
         {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameter("normal1Texture", cast(int)1);
             setParameter("normal1Vector", inormal1.asVector3f);
             setParameterSubroutine("normal1", ShaderType.Fragment, "normal1Value");
         }
 
         // Diffuse 2
+        glActiveTexture(GL_TEXTURE2);
         if (idiffuse2.texture)
         {
-            glActiveTexture(GL_TEXTURE2);
             idiffuse2.texture.bind();
             setParameter("diffuse2Texture", cast(int)2);
             setParameterSubroutine("diffuse2", ShaderType.Fragment, "diffuse2ColorTexture");
         }
         else
         {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameter("diffuse2Texture", cast(int)2);
             setParameter("diffuse2Vector", idiffuse2.asVector4f);
             setParameterSubroutine("diffuse2", ShaderType.Fragment, "diffuse2ColorValue");
         }
 
         // Normal/height 2
+        glActiveTexture(GL_TEXTURE3);
         bool haveHeightMap2 = inormal2.texture !is null;
         if (haveHeightMap2)
             haveHeightMap2 = inormal2.texture.image.channels == 4;
@@ -207,33 +205,36 @@ class TerrainShader: Shader
         }
         if (inormal2.texture)
         {
-            setParameter("normal2Texture", 3);
-            setParameterSubroutine("normal2", ShaderType.Fragment, "normal2Map");
-
-            glActiveTexture(GL_TEXTURE3);
             inormal2.texture.bind();
+            setParameter("normal2Texture", cast(int)3);
+            setParameterSubroutine("normal2", ShaderType.Fragment, "normal2Map");
         }
         else
         {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameter("normal2Texture", cast(int)3);
             setParameter("normal2Vector", inormal2.asVector3f);
             setParameterSubroutine("normal2", ShaderType.Fragment, "normal2Value");
         }
 
         // Diffuse 3
+        glActiveTexture(GL_TEXTURE4);
         if (idiffuse3.texture)
         {
-            glActiveTexture(GL_TEXTURE4);
             idiffuse3.texture.bind();
             setParameter("diffuse3Texture", cast(int)4);
             setParameterSubroutine("diffuse3", ShaderType.Fragment, "diffuse3ColorTexture");
         }
         else
         {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameter("diffuse3Texture", cast(int)4);
             setParameter("diffuse3Vector", idiffuse3.asVector4f);
             setParameterSubroutine("diffuse3", ShaderType.Fragment, "diffuse3ColorValue");
         }
 
         // Normal/height 3
+        glActiveTexture(GL_TEXTURE5);
         bool haveHeightMap3 = inormal3.texture !is null;
         if (haveHeightMap3)
             haveHeightMap3 = inormal3.texture.image.channels == 4;
@@ -259,33 +260,36 @@ class TerrainShader: Shader
         }
         if (inormal3.texture)
         {
-            setParameter("normal3Texture", 5);
+            setParameter("normal3Texture", cast(int)5);
             setParameterSubroutine("normal3", ShaderType.Fragment, "normal3Map");
-
-            glActiveTexture(GL_TEXTURE5);
             inormal3.texture.bind();
         }
         else
         {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameter("normal3Texture", cast(int)5);
             setParameter("normal3Vector", inormal3.asVector3f);
             setParameterSubroutine("normal3", ShaderType.Fragment, "normal3Value");
         }
 
         // Diffuse 4
+        glActiveTexture(GL_TEXTURE6);
         if (idiffuse4.texture)
         {
-            glActiveTexture(GL_TEXTURE6);
             idiffuse4.texture.bind();
             setParameter("diffuse4Texture", cast(int)6);
             setParameterSubroutine("diffuse4", ShaderType.Fragment, "diffuse4ColorTexture");
         }
         else
         {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameter("diffuse4Texture", cast(int)6);
             setParameter("diffuse4Vector", idiffuse4.asVector4f);
             setParameterSubroutine("diffuse4", ShaderType.Fragment, "diffuse4ColorValue");
         }
 
         // Normal/height 4
+        glActiveTexture(GL_TEXTURE7);
         bool haveHeightMap4 = inormal4.texture !is null;
         if (haveHeightMap4)
             haveHeightMap4 = inormal4.texture.image.channels == 4;
@@ -311,14 +315,14 @@ class TerrainShader: Shader
         }
         if (inormal4.texture)
         {
-            setParameter("normal4Texture", 7);
-            setParameterSubroutine("normal4", ShaderType.Fragment, "normal4Map");
-
-            glActiveTexture(GL_TEXTURE7);
             inormal4.texture.bind();
+            setParameter("normal4Texture", cast(int)7);
+            setParameterSubroutine("normal4", ShaderType.Fragment, "normal4Map");
         }
         else
         {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameter("normal4Texture", cast(int)7);
             setParameter("normal4Vector", inormal4.asVector3f);
             setParameterSubroutine("normal4", ShaderType.Fragment, "normal4Value");
         }
