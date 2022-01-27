@@ -130,7 +130,16 @@ class EnvironmentShader: Shader
             }
             else
             {
+                glActiveTexture(GL_TEXTURE4);
+                glBindTexture(GL_TEXTURE_2D, 0);
+                setParameter("ambientTexture", cast(int)4);
+                
+                glActiveTexture(GL_TEXTURE5);
+                glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+                setParameter("ambientTextureCube", cast(int)5);
+                
                 setParameter("ambientVector", state.environment.ambientColor);
+                
                 setParameterSubroutine("ambient", ShaderType.Fragment, "ambientColor");
             }
         }
@@ -141,6 +150,15 @@ class EnvironmentShader: Shader
             setParameter("fogEnd", 1000.0f);
             setParameter("ambientEnergy", 1.0f);
             setParameter("ambientVector", Color4f(0.5f, 0.5f, 0.5f, 1.0f));
+            
+            glActiveTexture(GL_TEXTURE4);
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameter("ambientTexture", cast(int)4);
+            
+            glActiveTexture(GL_TEXTURE5);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+            setParameter("ambientTextureCube", cast(int)5);
+            
             setParameterSubroutine("ambient", ShaderType.Fragment, "ambientColor");
         }
 
