@@ -201,9 +201,6 @@ final class FreeTypeFont: Font
         glBindBuffer(GL_ARRAY_BUFFER, tbo);
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, null);
 
-        //glBindBuffer(GL_ARRAY_BUFFER, 0);
-        //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
         glBindVertexArray(0);
 
         vs = Shader.load("data/__internal/shaders/Glyph/Glyph.vert.glsl");
@@ -213,8 +210,6 @@ final class FreeTypeFont: Font
         GLuint frag = compileShader(fs, ShaderStage.fragment);
         if (vert != 0 && frag != 0)
             shaderProgram = linkShaders(vert, frag);
-
-        debug writeln("GlyphShader: program ", shaderProgram);
 
         if (shaderProgram != 0)
         {
@@ -331,9 +326,6 @@ final class FreeTypeFont: Font
             glyph = glyphs[code];
         else
             glyph = glyphs[loadChar(code)];
-
-        //if (!glyph.valid)
-        //    return 0.0f;
 
         FT_BitmapGlyph bitmapGlyph = cast(FT_BitmapGlyph)(glyph.ftGlyph);
         FT_Bitmap bitmap = bitmapGlyph.bitmap;
