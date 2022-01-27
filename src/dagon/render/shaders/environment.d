@@ -76,22 +76,22 @@ class EnvironmentShader: Shader
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
-        setParameter("colorBuffer", 0);
+        setParameter("colorBuffer", cast(int)0);
 
         // Texture 1 - depth buffer
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, state.depthTexture);
-        setParameter("depthBuffer", 1);
+        setParameter("depthBuffer", cast(int)1);
 
         // Texture 2 - normal buffer
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, state.normalTexture);
-        setParameter("normalBuffer", 2);
+        setParameter("normalBuffer", cast(int)2);
 
         // Texture 3 - pbr buffer
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, state.pbrTexture);
-        setParameter("pbrBuffer", 3);
+        setParameter("pbrBuffer", cast(int)3);
 
         // Textures 4, 5 - environment (equirectangular map, cube map)
         if (state.environment)
@@ -105,16 +105,26 @@ class EnvironmentShader: Shader
             {
                 if (cast(Cubemap)state.environment.ambientMap)
                 {
+                    glActiveTexture(GL_TEXTURE4);
+                    glBindTexture(GL_TEXTURE_2D, 0);
+                    setParameter("ambientTexture", cast(int)4);
+                    
                     glActiveTexture(GL_TEXTURE5);
                     state.environment.ambientMap.bind();
-                    setParameter("ambientTextureCube", 5);
+                    setParameter("ambientTextureCube", cast(int)5);
+                    
                     setParameterSubroutine("ambient", ShaderType.Fragment, "ambientCubemap");
                 }
                 else
                 {
                     glActiveTexture(GL_TEXTURE4);
                     state.environment.ambientMap.bind();
-                    setParameter("ambientTexture", 4);
+                    setParameter("ambientTexture", cast(int)4);
+                    
+                    glActiveTexture(GL_TEXTURE5);
+                    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+                    setParameter("ambientTextureCube", cast(int)5);
+                    
                     setParameterSubroutine("ambient", ShaderType.Fragment, "ambientEquirectangularMap");
                 }
             }
@@ -135,30 +145,34 @@ class EnvironmentShader: Shader
         }
 
         // Texture 6 - occlusion buffer
+        glActiveTexture(GL_TEXTURE6);
         if (glIsTexture(state.occlusionTexture))
         {
-            glActiveTexture(GL_TEXTURE6);
             glBindTexture(GL_TEXTURE_2D, state.occlusionTexture);
-            setParameter("occlusionBuffer", 6);
+            setParameter("occlusionBuffer", cast(int)6);
             setParameter("haveOcclusionBuffer", true);
         }
         else
         {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameter("occlusionBuffer", cast(int)6);
             setParameter("haveOcclusionBuffer", false);
         }
         
         // Texture 7 - environment BRDF LUT
+        glActiveTexture(GL_TEXTURE7);
         if (state.environment)
         {
             if (state.environment.ambientBRDF)
             {
-                glActiveTexture(GL_TEXTURE7);
                 state.environment.ambientBRDF.bind();
-                setParameter("ambientBRDF", 7);
+                setParameter("ambientBRDF", cast(int)7);
                 setParameter("haveAmbientBRDF", true);
             }
             else
             {
+                glBindTexture(GL_TEXTURE_2D, 0);
+                setParameter("ambientBRDF", cast(int)7);
                 setParameter("haveAmbientBRDF", false);
             }
         }
@@ -166,7 +180,7 @@ class EnvironmentShader: Shader
         {
             setParameter("haveAmbientBRDF", false);
         }
-
+        
         glActiveTexture(GL_TEXTURE0);
 
         super.bindParameters(state);

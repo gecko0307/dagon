@@ -134,27 +134,33 @@ class ParticleShader: Shader
         setParameter("shaded", shaded);
 
         // Texture 0 - diffuse texture
+        glActiveTexture(GL_TEXTURE0);
         if (idiffuse.texture is null)
         {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameter("diffuseTexture", cast(int)0);
             setParameter("diffuseVector", idiffuse.asVector4f);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
         }
         else
         {
-            glActiveTexture(GL_TEXTURE0);
             idiffuse.texture.bind();
-            setParameter("diffuseTexture", 0);
+            setParameter("diffuseTexture", cast(int)0);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
         }
 
         // Texture 1 - depth texture (for soft particles)
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, state.depthTexture);
-        setParameter("depthTexture", 1);
+        setParameter("depthTexture", cast(int)1);
 
         // Texture 2 - normal map
+        glActiveTexture(GL_TEXTURE2);
         if (inormal.texture is null)
         {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameter("normalTexture", cast(int)2);
+            
             bool sphericalNormal = false;
             if (iparticleSphericalNormal)
                 sphericalNormal = iparticleSphericalNormal.asBool;
@@ -171,9 +177,8 @@ class ParticleShader: Shader
         }
         else
         {
-            glActiveTexture(GL_TEXTURE2);
             inormal.texture.bind();
-            setParameter("normalTexture", 2);
+            setParameter("normalTexture", cast(int)2);
             setParameterSubroutine("normal", ShaderType.Fragment, "normalMap");
         }
 
@@ -189,16 +194,26 @@ class ParticleShader: Shader
             {
                 if (cast(Cubemap)state.environment.ambientMap)
                 {
+                    glActiveTexture(GL_TEXTURE4);
+                    glBindTexture(GL_TEXTURE_2D, 0);
+                    setParameter("ambientTexture", cast(int)4);
+                    
                     glActiveTexture(GL_TEXTURE5);
                     state.environment.ambientMap.bind();
-                    setParameter("ambientTextureCube", 5);
+                    setParameter("ambientTextureCube", cast(int)5);
+                    
                     setParameterSubroutine("ambient", ShaderType.Fragment, "ambientCubemap");
                 }
                 else
                 {
                     glActiveTexture(GL_TEXTURE4);
                     state.environment.ambientMap.bind();
-                    setParameter("ambientTexture", 4);
+                    setParameter("ambientTexture", cast(int)4);
+                    
+                    glActiveTexture(GL_TEXTURE5);
+                    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+                    setParameter("ambientTextureCube", cast(int)5);
+                    
                     setParameterSubroutine("ambient", ShaderType.Fragment, "ambientEquirectangularMap");
                 }
             }
