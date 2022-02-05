@@ -2,6 +2,8 @@ Dagon 0.13.0 - TBD
 ------------------
 - **Core**
   - State for joystick buttons in `EventManager` (`joystickButtonPressed`, `joystickButtonUp`, `joystickButtonDown`)
+- **Rendering**
+  - Fixed state validation failure on AMD (different sampler types for same sample texture unit). Cubemap and equirectangular environment map now use different texture units
 - **Assets**
   - Texture loader is now based on dlib.image by default. To use stb_image, `use_stbi` subconfiguration must be specified for Dagon in `dub.json`:
     ```json
