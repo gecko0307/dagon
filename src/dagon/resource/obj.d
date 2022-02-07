@@ -89,8 +89,9 @@ class OBJAsset: Asset
         uint numNormals = 0;
         uint numTexcoords = 0;
         uint numFaces = 0;
-
+        
         string fileStr = readText(istrm);
+        
         foreach(line; lineSplitter(fileStr))
         {
             if (line.startsWith("v "))
@@ -101,6 +102,14 @@ class OBJAsset: Asset
                 numTexcoords++;
             else if (line.startsWith("f "))
                 numFaces++;
+            else if (line.startsWith("g "))
+            {
+                writeln("Warning: OBJ file \"", filename, "\" contains groups, Dagon currently can't handle such files");
+                Delete(fileStr);
+                return false;
+            }
+            else if (line.startsWith("mtllib "))
+                writeln("Warning: OBJ file \"", filename, "\" contains materials, but Dagon currently doesn't support them");
         }
         
         Vector3f[] tmpVertices;
@@ -132,11 +141,11 @@ class OBJAsset: Asset
             tmpTexcoords = New!(Vector2f[])(numTexcoords);
         if (numFaces)
             tmpFaces.reserve(numFaces);
-            
+        
         tmpVertices[] = Vector3f(0, 0, 0);
         tmpNormals[] = Vector3f(0, 0, 0);
         tmpTexcoords[] = Vector2f(0, 0);
-
+        
         float x, y, z;
         uint v1, v2, v3, v4;
         uint t1, t2, t3, t4;
@@ -232,7 +241,7 @@ class OBJAsset: Asset
                     assert(0);
             }
         }
-
+        
         Delete(fileStr);
         
         if (warnAboutQuads)
@@ -243,7 +252,7 @@ class OBJAsset: Asset
         mesh.vertices = New!(Vector3f[])(numUniqueVerts);
         mesh.normals = New!(Vector3f[])(numUniqueVerts);
         mesh.texcoords = New!(Vector2f[])(numUniqueVerts);
-                
+        
         uint index = 0;
         
         foreach(i, ref ObjFace f; tmpFaces)
@@ -260,7 +269,7 @@ class OBJAsset: Asset
                 mesh.vertices[index+1] = Vector3f(0, 0, 0);
                 mesh.vertices[index+2] = Vector3f(0, 0, 0);
             }
-
+            
             if (numNormals)
             {
                 mesh.normals[index] = tmpNormals[f.n[0]];
@@ -293,7 +302,8 @@ class OBJAsset: Asset
             
             index += 3;
         }
-
+        
+        
         if (needGenNormals)
             mesh.generateNormals();
         
@@ -308,7 +318,7 @@ class OBJAsset: Asset
         mesh.calcBoundingBox();
         
         mesh.dataReady = true;
-
+        
         return true;
     }
 
@@ -323,4 +333,3 @@ class OBJAsset: Asset
         clearOwnedObjects();
     }
 }
-
