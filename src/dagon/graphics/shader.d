@@ -45,6 +45,7 @@ import dlib.image.color;
 import dlib.filesystem.stdfs;
 import dlib.text.str;
 
+import dagon.core.application;
 import dagon.core.bindings;
 import dagon.graphics.shaderloader;
 import dagon.graphics.texture;
@@ -288,6 +289,11 @@ class Shader: Owner
 
     static String load(string filename)
     {
+        if (!exists(filename))
+        {
+            exitWithError("Error: shader \"" ~ filename ~ "\" not found!");
+        }
+        
         auto fs = New!StdFileSystem();
         auto istrm = fs.openForInput(filename);
         string inputText = readText(istrm);
