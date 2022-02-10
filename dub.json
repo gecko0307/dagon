@@ -88,7 +88,7 @@
             ],
             "dependencies": {
                 "dagon": "*",
-                "dlib": "~>1.0.0-beta1"
+                "dlib": "~>1.0.0-beta2"
             },
             
             "versions": [
@@ -109,7 +109,7 @@
             "dependencies": {
                 "dagon": "*",
                 "dagon:ftfont": "*",
-                "dlib": "~>1.0.0-beta1"
+                "dlib": "~>1.0.0-beta2"
             },
             
             "versions": [
@@ -129,7 +129,7 @@
             ],
             "dependencies": {
                 "dagon": "*",
-                "dlib": "~>1.0.0-beta1"
+                "dlib": "~>1.0.0-beta2"
             },
             
             "copyFiles-windows-x86": ["thirdparty/bindbc-newton-0.2.0/lib/x86/*.dll", "thirdparty/bindbc-newton-0.2.0/plugins/x86/*.dll"],
@@ -145,7 +145,7 @@
             ],
             "dependencies": {
                 "dagon": "*",
-                "dlib": "~>1.0.0-beta1"
+                "dlib": "~>1.0.0-beta2"
             }
         },
         "init-exec"
