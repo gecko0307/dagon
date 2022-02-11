@@ -42,21 +42,16 @@ import dlib.filesystem.filesystem;
 
 import dagon.graphics.containerimage;
 import dagon.resource.asset;
-version(USE_STBI) import dagon.resource.stbi;
 import dagon.resource.dds;
 import dagon.resource.texture;
 
 class ImageAsset: Asset
 {
-    UnmanagedImageFactory imageFactory;
-    UnmanagedHDRImageFactory hdrImageFactory;
     SuperImage image;
 
-    this(UnmanagedImageFactory imgfac, UnmanagedHDRImageFactory hdrImgFac, Owner o)
+    this(Owner o)
     {
         super(o);
-        imageFactory = imgfac;
-        hdrImageFactory = hdrImgFac;
     }
 
     ~this()
@@ -64,80 +59,11 @@ class ImageAsset: Asset
         release();
     }
 
-    override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
+    override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager assetManager)
     {
-        string errMsg;
-
-        if (filename.extension == ".hdr" ||
-            filename.extension == ".HDR")
-        {
-            Compound!(SuperHDRImage, string) res;
-            ubyte[] data = New!(ubyte[])(istrm.size);
-            istrm.fillArray(data);
-            ArrayStream arrStrm = New!ArrayStream(data);
-            res = loadHDR(arrStrm, hdrImageFactory);
-            image = res[0];
-            errMsg = res[1];
-            Delete(arrStrm);
-            Delete(data);
-        }
-        else if (filename.extension == ".dds" ||
-                 filename.extension == ".DDS")
-        {
-            Compound!(ContainerImage, string) res;
-            ubyte[] data = New!(ubyte[])(istrm.size);
-            istrm.fillArray(data);
-            ArrayStream arrStrm = New!ArrayStream(data);
-            res = loadDDS(arrStrm);
-            image = res[0];
-            errMsg = res[1];
-            Delete(arrStrm);
-            Delete(data);
-        }
-        else
-        {
-            Compound!(SuperImage, string) res;
-            
-            version(USE_STBI)
-            {
-                switch(filename.extension)
-                {
-                    case ".bmp", ".BMP",
-                         ".jpg", ".JPG", ".jpeg", ".JPEG",
-                         ".png", ".PNG",
-                         ".tga", ".TGA",
-                         ".gif", ".GIF",
-                         ".psd", ".PSD":
-                        res = loadImageSTB(istrm, imageFactory);
-                        break;
-                    default:
-                        return false;
-                }
-            }
-            else
-            {
-                switch(filename.extension)
-                {
-                    case ".bmp", ".BMP":
-                        res = loadImageDlib!loadBMP(istrm, imageFactory);
-                        break;
-                    case ".jpg", ".JPG", ".jpeg", ".JPEG":
-                        res = loadImageDlib!loadJPEG(istrm, imageFactory);
-                        break;
-                    case ".png", ".PNG":
-                        res = loadImageDlib!loadPNG(istrm, imageFactory);
-                        break;
-                    case ".tga", ".TGA":
-                        res = loadImageDlib!loadTGA(istrm, imageFactory);
-                        break;
-                    default:
-                        return false;
-                }
-            }
-
-            image = res[0];
-            errMsg = res[1];
-        }
+        auto res = assetManager.loadImage(filename.extension, istrm);
+        image = res[0];
+        string errMsg = res[1];
 
         if (image !is null)
         {
@@ -174,7 +100,7 @@ ImageAsset imageAsset(AssetManager assetManager, string filename)
     }
     else
     {
-        asset = New!ImageAsset(assetManager.imageFactory, assetManager.hdrImageFactory, assetManager);
+        asset = New!ImageAsset(assetManager);
         assetManager.preloadAsset(asset, filename);
     }
     return asset;

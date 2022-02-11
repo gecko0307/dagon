@@ -121,7 +121,7 @@ class Scene: EventListener
         {
             static if (is(T: ImageAsset) || is(T: TextureAsset))
             {
-                newAsset = New!T(assetManager.imageFactory, assetManager.hdrImageFactory, assetManager);
+                newAsset = New!T(assetManager);
             }
             else static if (is(T: PackageAsset))
             {
@@ -137,17 +137,11 @@ class Scene: EventListener
     }
 
     alias addImageAsset = addAssetAs!ImageAsset;
-    
     alias addTextureAsset = addAssetAs!TextureAsset;
-    
     alias addOBJAsset = addAssetAs!OBJAsset;
-    
     alias addGLTFAsset = addAssetAs!GLTFAsset;
-    
     alias addTextAsset = addAssetAs!TextAsset;
-    
     alias addBinaryAsset = addAssetAs!BinaryAsset;
-
     alias addPackageAsset = addAssetAs!PackageAsset;
 
     Material addMaterial()

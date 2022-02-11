@@ -285,7 +285,7 @@ class PackageAsset: Asset
     {
         if (!(filename in textures))
         {
-            TextureAsset texAsset = New!TextureAsset(assetManager.imageFactory, assetManager.hdrImageFactory, assetOwner);
+            TextureAsset texAsset = New!TextureAsset(assetOwner);
             if (loadAsset(texAsset, filename))
             {
                 textures[filename] = texAsset;

@@ -169,11 +169,6 @@ class Application: EventListener
     +/
     this(uint winWidth, uint winHeight, bool fullscreen, string windowTitle, string[] args)
     {
-        string imageLoader = "dlib.image";
-        version(USE_STBI)
-            imageLoader = "stb_image";
-        writeln("Image loader: ", imageLoader);
-        
         SDLSupport sdlsup = loadSDL();
         if (sdlsup != sdlSupport)
         {

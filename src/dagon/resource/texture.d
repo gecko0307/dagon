@@ -37,39 +37,18 @@ import dlib.core.compound;
 import dlib.image.image;
 import dlib.image.io;
 import dlib.image.unmanaged;
-import dlib.image.hdri;
 import dlib.filesystem.filesystem;
 
 import dagon.graphics.texture;
-import dagon.graphics.containerimage;
 import dagon.resource.asset;
-version(USE_STBI) import dagon.resource.stbi;
-import dagon.resource.dds;
-
-Compound!(SuperImage, string) loadImageDlib(alias loadFunc)(
-    InputStream istrm,
-    SuperImageFactory imgFac)
-{
-    ubyte[] data = New!(ubyte[])(istrm.size);
-    istrm.fillArray(data);
-    ArrayStream arrStrm = New!ArrayStream(data);
-    auto res = loadFunc(arrStrm, imgFac);
-    Delete(arrStrm);
-    Delete(data);
-    return res;
-}
 
 class TextureAsset: Asset
 {
-    UnmanagedImageFactory imageFactory;
-    UnmanagedHDRImageFactory hdrImageFactory;
     Texture texture;
 
-    this(UnmanagedImageFactory imgfac, UnmanagedHDRImageFactory hdrImgFac, Owner o)
+    this(Owner o)
     {
         super(o);
-        imageFactory = imgfac;
-        hdrImageFactory = hdrImgFac;
         texture = New!Texture(this);
     }
 
@@ -78,80 +57,11 @@ class TextureAsset: Asset
         release();
     }
 
-    override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
+    override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager assetManager)
     {
-        string errMsg;
-
-        if (filename.extension == ".hdr" ||
-            filename.extension == ".HDR")
-        {
-            Compound!(SuperHDRImage, string) res;
-            ubyte[] data = New!(ubyte[])(istrm.size);
-            istrm.fillArray(data);
-            ArrayStream arrStrm = New!ArrayStream(data);
-            res = loadHDR(arrStrm, hdrImageFactory);
-            texture.image = res[0];
-            errMsg = res[1];
-            Delete(arrStrm);
-            Delete(data);
-        }
-        else if (filename.extension == ".dds" ||
-                 filename.extension == ".DDS")
-        {
-            Compound!(ContainerImage, string) res;
-            ubyte[] data = New!(ubyte[])(istrm.size);
-            istrm.fillArray(data);
-            ArrayStream arrStrm = New!ArrayStream(data);
-            res = loadDDS(arrStrm);
-            texture.image = res[0];
-            errMsg = res[1];
-            Delete(arrStrm);
-            Delete(data);
-        }
-        else
-        {
-            Compound!(SuperImage, string) res;
-
-            version(USE_STBI)
-            {
-                switch(filename.extension)
-                {
-                    case ".bmp", ".BMP",
-                         ".jpg", ".JPG", ".jpeg", ".JPEG",
-                         ".png", ".PNG",
-                         ".tga", ".TGA",
-                         ".gif", ".GIF",
-                         ".psd", ".PSD":
-                        res = loadImageSTB(istrm, imageFactory);
-                        break;
-                    default:
-                        return false;
-                }
-            }
-            else
-            {
-                switch(filename.extension)
-                {
-                    case ".bmp", ".BMP":
-                        res = loadImageDlib!loadBMP(istrm, imageFactory);
-                        break;
-                    case ".jpg", ".JPG", ".jpeg", ".JPEG":
-                        res = loadImageDlib!loadJPEG(istrm, imageFactory);
-                        break;
-                    case ".png", ".PNG":
-                        res = loadImageDlib!loadPNG(istrm, imageFactory);
-                        break;
-                    case ".tga", ".TGA":
-                        res = loadImageDlib!loadTGA(istrm, imageFactory);
-                        break;
-                    default:
-                        return false;
-                }
-            }
-
-            texture.image = res[0];
-            errMsg = res[1];
-        }
+        auto res = assetManager.loadImage(filename.extension, istrm);
+        texture.image = res[0];
+        string errMsg = res[1];
 
         if (texture.image !is null)
         {
@@ -170,9 +80,7 @@ class TextureAsset: Asset
         {
             texture.createFromImage(texture.image);
             if (texture.valid)
-            {
                 return true;
-            }
             else
                 return false;
         }
@@ -198,7 +106,7 @@ TextureAsset textureAsset(AssetManager assetManager, string filename)
     }
     else
     {
-        asset = New!TextureAsset(assetManager.imageFactory, assetManager.hdrImageFactory, assetManager);
+        asset = New!TextureAsset(assetManager);
         assetManager.preloadAsset(asset, filename);
     }
     return asset;

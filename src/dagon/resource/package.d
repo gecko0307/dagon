@@ -40,7 +40,6 @@ public
     import dagon.resource.obj;
     import dagon.resource.packageasset;
     import dagon.resource.scene;
-    import dagon.resource.stbi;
     import dagon.resource.text;
     import dagon.resource.texture;
 }

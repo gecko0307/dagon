@@ -613,7 +613,7 @@ class GLTFAsset: Asset, TriangleSet
                     imgFilename ~= "/";
                     imgFilename ~= im["uri"].asString;
                     
-                    auto ta = New!TextureAsset(assetManager.imageFactory, assetManager.hdrImageFactory, this);
+                    auto ta = New!TextureAsset(this);
                     
                     FileStat fstat;
                     if (fs.stat(imgFilename.toString, fstat))
@@ -635,7 +635,7 @@ class GLTFAsset: Asset, TriangleSet
                 {
                     uint bufferViewIndex = cast(uint)im["bufferView"].asNumber;
                     
-                    auto ta = New!TextureAsset(assetManager.imageFactory, assetManager.hdrImageFactory, this);
+                    auto ta = New!TextureAsset(this);
                     
                     if (bufferViewIndex < bufferViews.length)
                     {

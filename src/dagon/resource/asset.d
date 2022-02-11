@@ -31,16 +31,21 @@ import std.stdio;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.core.compound;
 import dlib.core.stream;
 import dlib.core.thread;
 import dlib.container.dict;
 import dlib.filesystem.filesystem;
 import dlib.filesystem.stdfs;
+import dlib.image.image;
 import dlib.image.unmanaged;
 import dlib.image.hdri;
+import dlib.image.io;
 
 import dagon.core.event;
 import dagon.core.vfs;
+import dagon.graphics.containerimage;
+import dagon.resource.dds;
 import dagon.resource.boxfs;
 
 struct MonitorInfo
@@ -64,8 +69,22 @@ abstract class Asset: Owner
     void release();
 }
 
+Compound!(SuperImage, string) dlibImageLoader(alias loadFunc)(InputStream istrm, SuperImageFactory imgFac)
+{
+    ubyte[] data = New!(ubyte[])(istrm.size);
+    istrm.fillArray(data);
+    ArrayStream arrStrm = New!ArrayStream(data);
+    auto res = loadFunc(arrStrm, imgFac);
+    Delete(arrStrm);
+    Delete(data);
+    return res;
+}
+
+alias ImageLoaderCallback = Compound!(SuperImage, string) function(InputStream, SuperImageFactory);
+
 class AssetManager: Owner
 {
+    Dict!(ImageLoaderCallback, string) imageLoaderCallbacks;
     Dict!(Asset, string) assetsByFilename;
     VirtualFileSystem fs;
     StdFileSystem stdfs;
@@ -86,6 +105,12 @@ class AssetManager: Owner
     {
         super(o);
 
+        imageLoaderCallbacks = New!(Dict!(ImageLoaderCallback, string));
+        registerImageLoader([".bmp", ".BMP"], &dlibImageLoader!loadBMP);
+        registerImageLoader([".jpg", ".JPG", ".jpeg", ".JPEG"], &dlibImageLoader!loadJPEG);
+        registerImageLoader([".png", ".PNG"], &dlibImageLoader!loadPNG);
+        registerImageLoader([".tga", ".TGA"], &dlibImageLoader!loadTGA);
+        
         assetsByFilename = New!(Dict!(Asset, string));
         fs = New!VirtualFileSystem();
         stdfs = New!StdFileSystem();
@@ -101,6 +126,7 @@ class AssetManager: Owner
 
     ~this()
     {
+        Delete(imageLoaderCallbacks);
         Delete(assetsByFilename);
         Delete(fs);
         Delete(imageFactory);
@@ -123,6 +149,60 @@ class AssetManager: Owner
     {
         BoxFileSystem boxfs = New!BoxFileSystem(fs.openForInput(filename), true, dir);
         fs.mount(boxfs);
+    }
+    
+    void registerImageLoader(string extension, ImageLoaderCallback callback)
+    {
+        imageLoaderCallbacks[extension] = callback;
+    }
+    
+    void registerImageLoader(string[] extensions, ImageLoaderCallback callback)
+    {
+        foreach(extension; extensions)
+        {
+            registerImageLoader(extension, callback);
+        }
+    }
+    
+    Compound!(SuperImage, string) loadImage(string extension, InputStream istrm)
+    {
+        if (extension == ".hdr" ||
+            extension == ".HDR")
+        {
+            Compound!(SuperHDRImage, string) res;
+            ubyte[] data = New!(ubyte[])(istrm.size);
+            istrm.fillArray(data);
+            ArrayStream arrStrm = New!ArrayStream(data);
+            res = loadHDR(arrStrm, hdrImageFactory);
+            SuperImage img = res[0];
+            string errMsg = res[1];
+            Delete(arrStrm);
+            Delete(data);
+            return compound(img, errMsg);
+        }
+        else if (extension == ".dds" ||
+                 extension == ".DDS")
+        {
+            Compound!(ContainerImage, string) res;
+            ubyte[] data = New!(ubyte[])(istrm.size);
+            istrm.fillArray(data);
+            ArrayStream arrStrm = New!ArrayStream(data);
+            res = loadDDS(arrStrm);
+            SuperImage img = res[0];
+            string errMsg = res[1];
+            Delete(arrStrm);
+            Delete(data);
+            return compound(img, errMsg);
+        }
+        else if (extension in imageLoaderCallbacks)
+        {
+            return imageLoaderCallbacks[extension](istrm, imageFactory);
+        }
+        else
+        {
+            SuperImage img = null;
+            return compound(img, "No loader registered for " ~ extension);
+        }
     }
 
     bool assetExists(string name)

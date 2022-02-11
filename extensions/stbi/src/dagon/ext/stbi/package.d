@@ -33,24 +33,7 @@ import dlib.filesystem.local;
 import dlib.image.image;
 import stb.image.binding;
 import stb.image;
-
-SuperImage loadImageSTB(string filename)
-{
-    InputStream input = openForInput(filename);
-    auto img = loadImageSTB(input);
-    input.close();
-    return img;
-}
-
-SuperImage loadImageSTB(InputStream istrm)
-{
-    Compound!(SuperImage, string) res =
-        loadImageSTB(istrm, defaultImageFactory);
-    if (res[0] is null)
-        throw new Exception(res[1]);
-    else
-        return res[0];
-}
+import dagon.resource.asset;
 
 Compound!(SuperImage, string) loadImageSTB(
     InputStream istrm,
@@ -70,7 +53,18 @@ Compound!(SuperImage, string) loadImageSTB(
         res = compound(img, "");
     }
     else
-        res = compound(img, "unknown/corrupted image");
+        res = compound(img, "unknown/corrupt image");
     Delete(compressed);
     return res;
+}
+
+void stbiRegister(AssetManager assetManager)
+{
+    assetManager.registerImageLoader([
+        ".bmp", ".BMP",
+        ".jpg", ".JPG", ".jpeg", ".JPEG",
+        ".png", ".PNG",
+        ".tga", ".TGA",
+        ".gif", ".GIF",
+        ".psd", ".PSD"], &loadImageSTB);
 }
