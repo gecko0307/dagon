@@ -5,11 +5,10 @@ Dagon 0.13.0 - TBD
 - **Rendering**
   - Fixed state validation failure on AMD (different sampler types for same sample texture unit). Cubemap and equirectangular environment map now use different texture units
 - **Assets**
-  - Texture loader is now based on dlib.image by default. To use stb_image, `use_stbi` subconfiguration must be specified for Dagon in `dub.json`:
+  - Images are now loaded using callback mechanism in `AssetManager`. You can register your own loader function with `AssetManager.registerImageLoader` method
+  - Dagon now uses dlib.image to load images by default. stb_image is available through `dagon:stbi` extension. Import `dagon.ext.stbi` module and register the loader with `stbiRegister` function in your scene constructor:
     ```json
-    "subConfigurations": {
-        "dagon": "use_stbi"
-    }
+    stbiRegister(assetManager);
     ```
   - OBJ loader now supports quads
   - `emissiveFactor` support for glTF materials
