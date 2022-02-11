@@ -154,8 +154,6 @@ class OBJAsset: Asset
         uint ni = 0;
         uint ti = 0;
         
-        bool warnAboutQuads = false;
-
         foreach(line; lineSplitter(fileStr))
         {
             if (line.startsWith("v "))
@@ -243,9 +241,6 @@ class OBJAsset: Asset
         }
         
         Delete(fileStr);
-        
-        if (warnAboutQuads)
-            writeln("Warning: OBJ file \"", filename, "\" includes quads, but Dagon supports only triangles");
         
         mesh.indices = New!(uint[3][])(tmpFaces.length);
         uint numUniqueVerts = cast(uint)mesh.indices.length * 3;
