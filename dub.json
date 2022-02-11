@@ -20,6 +20,7 @@
         "thirdparty/bindbc-nuklear-0.4.3/source",
         "thirdparty/bindbc-newton-0.2.0/src"
     ],
+    
     "sourcePaths": [
         "src",
         "thirdparty/bindbc-loader-1.0.0/source",
@@ -29,6 +30,7 @@
         "thirdparty/bindbc-nuklear-0.4.3/source",
         "thirdparty/bindbc-newton-0.2.0/src"
     ],
+    
     "stringImportPaths": ["data/__internal"],
 
     "dependencies": {
@@ -78,6 +80,31 @@
     "copyFiles-windows-x86_64": ["lib/x64/*.dll"],
     
     "subPackages": [
+        {
+            "name": "stbi",
+            "importPaths": [
+                "extensions/stbi/src",
+                "extensions/stbi/thirdparty/stb-2.0.1/source"
+            ],
+            "sourcePaths": [
+                "extensions/stbi/src",
+                "extensions/stbi/thirdparty/stb-2.0.1/source"
+            ],
+            "dependencies": {
+                "dagon": "*",
+                "dlib": "~>1.0.0-beta2"
+            },
+            "libs-windows-x86": [
+                "$PACKAGE_DIR/extensions/stbi/thirdparty/stb-2.0.1/bin/stb_x86"
+            ],
+            "libs-windows-x86_64": [
+                "user32",
+                "$PACKAGE_DIR/extensions/stbi/thirdparty/stb-2.0.1/bin/stb_x64"
+            ],
+            "lflags-linux": [
+                "$PACKAGE_DIR/extensions/stbi/thirdparty/stb-2.0.1/bin/libstb.a"
+            ]
+        },
         {
             "name": "ftfont",
             "importPaths": [
