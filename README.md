@@ -16,6 +16,12 @@ If you like Dagon, please support its development on [Patreon](https://www.patre
 [![License](http://img.shields.io/badge/license-boost-blue.svg)](http://www.boost.org/LICENSE_1_0.txt)
 [![Patreon button](https://img.shields.io/badge/patreon-donate-yellow.svg)](http://patreon.com/gecko0307 "Become a Patron!")
 
+Important message to users of Dagon due to the 2022 Ukraine crisis
+------------------------------------------------------------------
+I, Timur Gafarov, creator and maintainer of Dagon, live in Russia. The current political situation can lead to catastrophic consequences, up to the disconnection of all Russian developers from the world community for undefined period, which will seriously affect the projects in which they are actively involved. I hope these fears don't come true, but in case of the worst scenario, I will not be able to participate in the development of Dagon and manage its package in Dub registry. It is also not clear yet whether I will be able to receive funding through Patreon, PayPal and other financial platforms.
+
+**Therefore, I strongly discourage using Dagon as a critical dependency in important software products until the situation improves and there is confidence in the future for Russian developers.**
+
 Screenshots
 -----------
 [![Screenshot1](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/08/dev_5nmhxA9u4n.jpg)](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/08/dev_5nmhxA9u4n.jpg)
