@@ -1,5 +1,5 @@
-Dagon 0.13.0 - TBD
-------------------
+Dagon 0.13.0 - 2 Mar, 2022
+--------------------------
 - **Core**
   - State for joystick buttons in `EventManager` (`joystickButtonPressed`, `joystickButtonUp`, `joystickButtonDown`)
 - **Rendering**
