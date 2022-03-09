@@ -8,7 +8,7 @@ The engine is still under development and lacks a lot of important functionality
 
 Dagon uses modern graphics techniques and so requires quite powerful graphics card. At least Turing-based NVIDIA cards are recommended (raytracing support is not required though). Main development and testing is done on GeForce GTX 1650.
 
-If you like Dagon, please support its development on [Patreon](https://www.patreon.com/gecko0307) or [Liberapay](https://liberapay.com/gecko0307). You can also make one-time donation via [PayPal](https://www.paypal.me/tgafarov) or [NOWPayments](https://nowpayments.io/donation/gecko0307). I appreciate any support. Thanks in advance!
+If you like Dagon, please support its development via [NOWPayments](https://nowpayments.io/donation/gecko0307). Unfortunately, due to the sanctions imposed on Russia, donations through Patreon and Paypal are currently not accepted. Thanks in advance!
 
 [![GitHub Actions CI Status](https://github.com/gecko0307/dagon/workflows/CI/badge.svg)](https://github.com/gecko0307/dagon/actions?query=workflow%3ACI)
 [![DUB Package](https://img.shields.io/dub/v/dagon.svg)](https://code.dlang.org/packages/dagon)
@@ -18,7 +18,7 @@ If you like Dagon, please support its development on [Patreon](https://www.patre
 
 Important message to users of Dagon due to the 2022 Ukraine crisis
 ------------------------------------------------------------------
-I, Timur Gafarov, creator and maintainer of Dagon, live in Russia. The current political situation can lead to catastrophic consequences, up to the disconnection of all Russian developers from the world community for undefined period, which will seriously affect the projects in which they are actively involved. I hope these fears don't come true, but in case of the worst scenario, I will not be able to participate in the development of Dagon and manage its package in Dub registry. It is also not clear yet whether I will be able to receive funding through Patreon, PayPal and other financial platforms.
+I, Timur Gafarov, creator and maintainer of Dagon, live in Russia. The current political situation can lead to catastrophic consequences, up to the disconnection of all Russian developers from the world community for undefined period, which will seriously affect the projects in which they are actively involved. I hope these fears don't come true, but in case of the worst scenario, I will not be able to participate in the development of Dagon and manage its package in Dub registry.
 
 **Therefore, I strongly discourage using Dagon as a critical dependency in important software products until the situation improves and there is confidence in the future for Russian developers.**
 
