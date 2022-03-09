@@ -18,7 +18,9 @@ If you like Dagon, please support its development via [NOWPayments](https://nowp
 
 Important message to users of Dagon due to the 2022 Ukraine crisis
 ------------------------------------------------------------------
-I, Timur Gafarov, creator and maintainer of Dagon, live in Russia. The current political situation can lead to catastrophic consequences, up to the disconnection of all Russian developers from the world community for undefined period, which will seriously affect the projects in which they are actively involved. I hope these fears don't come true, but in case of the worst scenario, I will not be able to participate in the development of Dagon and manage its package in Dub registry.
+I, Timur Gafarov, creator and maintainer of Dagon, live in Russia and I condemn this invasion. Nothing can justify loss of life of innocent people and destruction of cities. I deeply sympathize with the people of Ukraine and everyone whose life have been affected by this terrible tragedy.
+
+We, reasonable citizens of Russia who stand for peace, are now hostages of this situation. It can lead to catastrophic consequences, up to the disconnection of all Russian developers from the world community for undefined period, which will seriously affect the projects in which they are actively involved. I hope these fears don't come true, but in case of the worst scenario, I will not be able to participate in the development of Dagon and manage its package in Dub registry.
 
 **Therefore, I strongly discourage using Dagon as a critical dependency in important software products until the situation improves and there is confidence in the future for Russian developers.**
 
