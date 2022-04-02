@@ -8,7 +8,7 @@ The engine is still under development and lacks a lot of important functionality
 
 Dagon uses modern graphics techniques and so requires quite powerful graphics card. At least Turing-based NVIDIA cards are recommended (raytracing support is not required though). Main development and testing is done on GeForce GTX 1650.
 
-If you like Dagon, please support its development via [NOWPayments](https://nowpayments.io/donation/gecko0307). Unfortunately, due to the sanctions imposed on Russia, donations through Patreon and Paypal are currently not accepted. Thanks in advance!
+If you like Dagon, please support its development on [Patreon](https://www.patreon.com/gecko0307) or [Liberapay](https://liberapay.com/gecko0307). You can also make one-time donation via [PayPal](https://www.paypal.me/tgafarov) or [NOWPayments](https://nowpayments.io/donation/gecko0307). I appreciate any support. Thanks in advance!
 
 [![GitHub Actions CI Status](https://github.com/gecko0307/dagon/workflows/CI/badge.svg)](https://github.com/gecko0307/dagon/actions?query=workflow%3ACI)
 [![DUB Package](https://img.shields.io/dub/v/dagon.svg)](https://code.dlang.org/packages/dagon)
