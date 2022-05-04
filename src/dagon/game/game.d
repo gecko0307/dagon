@@ -41,10 +41,11 @@ import dagon.graphics.state;
 import dagon.graphics.entity;
 import dagon.resource.scene;
 import dagon.game.renderer;
-import dagon.game.deferredrenderer;
+//import dagon.game.deferredrenderer;
 import dagon.game.postprocrenderer;
+import dagon.game.forwardrenderer;
 import dagon.game.presentrenderer;
-import dagon.game.hudrenderer;
+//import dagon.game.hudrenderer;
 
 version(Windows)
 {
@@ -57,15 +58,13 @@ class Game: Application
     Scene currentScene;
 
     Renderer renderer;
-    DeferredRenderer deferredRenderer;
+    ForwardRenderer forwardRenderer;
     PostProcRenderer postProcessingRenderer;
     PresentRenderer presentRenderer;
-    HUDRenderer hudRenderer;
     
-    alias deferred = deferredRenderer;
+    alias forward = forwardRenderer;
     alias postProc = postProcessingRenderer;
     alias present = presentRenderer;
-    alias hud = hudRenderer;
     
     Configuration config;
 
@@ -92,24 +91,17 @@ class Game: Application
         }
         
         super(w, h, fullscreen, title, args);
-
-        deferredRenderer = New!DeferredRenderer(eventManager, this);
-        renderer = deferredRenderer;
-        postProcessingRenderer = New!PostProcRenderer(eventManager, deferredRenderer.outputBuffer, deferredRenderer.gbuffer, this);
-        presentRenderer = New!PresentRenderer(eventManager, postProcessingRenderer.outputBuffer, this);
-        hudRenderer = New!HUDRenderer(eventManager, this);
         
-        deferredRenderer.setViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
+        forwardRenderer = New!ForwardRenderer(eventManager, this);
+        renderer = forwardRenderer;
+        
+        postProcessingRenderer = New!PostProcRenderer(eventManager, forwardRenderer.outputBuffer, forwardRenderer.gbuffer, this);
+        
+        presentRenderer = New!PresentRenderer(eventManager, postProcessingRenderer.outputBuffer, this);
+        
+        renderer.setViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
         postProcessingRenderer.setViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
         presentRenderer.setViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
-        hudRenderer.setViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
-        
-        deferredRenderer.ssaoEnabled = false;
-        postProcessingRenderer.motionBlurEnabled = false;
-        postProcessingRenderer.glowEnabled = false;
-        postProcessingRenderer.fxaaEnabled = false;
-        postProcessingRenderer.lutEnabled = false;
-        postProcessingRenderer.lensDistortionEnabled = false;
     }
 
     override void onUpdate(Time t)
@@ -117,15 +109,12 @@ class Game: Application
         if (currentScene)
         {
             currentScene.update(t);
-            deferredRenderer.scene = currentScene;
-            hudRenderer.scene = currentScene;
-            deferredRenderer.update(t);
-            postProcessingRenderer.activeCamera = deferredRenderer.activeCamera;
+            renderer.scene = currentScene;
+            renderer.update(t);
+            postProcessingRenderer.activeCamera = renderer.activeCamera;
             postProcessingRenderer.update(t);
             presentRenderer.scene = currentScene;
             presentRenderer.update(t);
-            hudRenderer.scene = currentScene;
-            hudRenderer.update(t);
         }
     }
 
@@ -135,20 +124,18 @@ class Game: Application
         {
             if (currentScene.canRender)
             {
-                deferredRenderer.render();
+                renderer.render();
                 postProcessingRenderer.render();
                 presentRenderer.inputBuffer = postProcessingRenderer.outputBuffer;
                 presentRenderer.render();
-                hudRenderer.render();
             }
         }
     }
     
     override void onResize(int width, int height)
     {
-        deferredRenderer.setViewport(0, 0, width, height);
+        forwardRenderer.setViewport(0, 0, width, height);
         postProcessingRenderer.setViewport(0, 0, width, height);
         presentRenderer.setViewport(0, 0, width, height);
-        hudRenderer.setViewport(0, 0, width, height);
     }
 }

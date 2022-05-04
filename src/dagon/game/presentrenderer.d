@@ -32,6 +32,7 @@ import dlib.core.ownership;
 
 import dagon.core.event;
 import dagon.core.time;
+import dagon.core.bindings;
 import dagon.resource.scene;
 import dagon.render.pass;
 import dagon.render.deferred;
@@ -63,5 +64,10 @@ class PresentRenderer: Renderer
     Framebuffer inputBuffer()
     {
         return _inputBuffer;
+    }
+    
+    override void render()
+    {
+        super.render();
     }
 }

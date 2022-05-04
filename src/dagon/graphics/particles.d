@@ -516,7 +516,7 @@ class ParticleSystem: EntityComponent
 
         if (e.material)
         {
-            e.material.particleColor = p.color;
+            e.material.baseColorFactor = p.color;
             e.material.bind(&stateLocal);
         }
 

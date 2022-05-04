@@ -73,74 +73,126 @@ enum int Opaque = 0;
 enum int Transparent = 1;
 enum int Additive = 2;
 
-enum MaterialInputType
+class Material: Owner
 {
-    Undefined,
-    Bool,
-    Integer,
-    Float,
-    Vec2,
-    Vec3,
-    Vec4
-}
-
-struct MaterialInput
-{
-    MaterialInputType type;
-    union
+    Shader shader;
+    Light sun;
+    Texture baseColorTexture;
+    Texture roughnessMetallicTexture;
+    Texture emissionTexture;
+    Texture normalTexture;
+    Texture heightTexture;
+    Color4f baseColorFactor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+    Color4f emissionFactor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
+    Vector3f normalFactor = Vector3f(0.0f, 0.0f, 1.0f);
+    Vector2f textureScale = Vector2f(1.0f, 1.0f); // TODO: use matrix instead
+    float heightFactor = 0.0f;
+    float emissionEnergy = 1.0f;
+    float opacity = 1.0f;
+    float alphaTestThreshold = 0.5f;
+    float roughnessFactor = 0.5f;
+    float metallicFactor = 0.0f;
+    float specularity = 1.0f;
+    float translucency = 0.0f;
+    float parallaxScale = 0.03f;
+    float parallaxBias = -0.01f;
+    int parallaxMode = ParallaxNone;
+    int shadowFilter = ShadowFilterPCF;
+    int blendMode = Opaque;
+    bool shadeless = false;
+    bool invertNormalY = true;
+    bool useShadows = true;
+    bool useFog = true;
+    bool useCulling = true;
+    bool sphericalNormal = false;
+    bool colorWrite = true;
+    bool depthWrite = true;
+    bool outputColor = true;
+    bool outputNormal = true;
+    bool outputPBR = true;
+    bool outputEmission = true;
+    
+    this(Owner o)
     {
-        bool asBool;
-        int asInteger;
-        float asFloat;
-        Vector2f asVector2f;
-        Vector3f asVector3f;
-        Vector4f asVector4f;
+        super(o);
     }
-    Texture texture;
-
-    float getNumericValue()
+    
+    ~this()
     {
-        float res;
-        if (type == MaterialInputType.Bool ||
-            type == MaterialInputType.Integer)
-        {
-            res = asInteger;
-        }
-        else if (type == MaterialInputType.Float)
-        {
-            res = asFloat;
-        }
-        return res;
     }
-
-    Color4f sample(float u, float v)
+    
+    bool isTransparent()
     {
-        if (texture !is null)
-            return texture.sample(u, v);
-        else if (type == MaterialInputType.Vec4)
-            return Color4f(asVector4f);
-        else if (type == MaterialInputType.Vec3)
-            return Color4f(asVector3f.x, asVector3f.y, asVector3f.z, 1.0f);
-        else if (type == MaterialInputType.Vec2)
-            return Color4f(asVector2f.x, asVector2f.y, 1.0f, 1.0f);
-        else if (type == MaterialInputType.Float)
-            return Color4f(asFloat, 1.0f, 1.0f, 1.0f);
-        else if (type == MaterialInputType.Bool ||
-                 type == MaterialInputType.Integer)
-            return Color4f(cast(float)asInteger, 1.0f, 1.0f, 1.0f);
+        return (blendMode != Opaque);
+    }
+    
+    void bind(GraphicsState* state)
+    {
+        if (blendMode == Transparent)
+        {
+            glEnablei(GL_BLEND, 0);
+            glEnablei(GL_BLEND, 1);
+            glEnablei(GL_BLEND, 2);
+            glEnablei(GL_BLEND, 3);
+            glEnablei(GL_BLEND, 4);
+            glBlendFuncSeparatei(0, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+            glBlendFuncSeparatei(1, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+            glBlendFuncSeparatei(2, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+            glBlendFuncSeparatei(3, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+            glBlendFuncSeparatei(4, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        }
+        else if (blendMode == Additive)
+        {
+            glEnablei(GL_BLEND, 0);
+            glEnablei(GL_BLEND, 1);
+            glEnablei(GL_BLEND, 2);
+            glEnablei(GL_BLEND, 3);
+            glEnablei(GL_BLEND, 4);
+            glBlendFunci(0, GL_SRC_ALPHA, GL_ONE);
+            glBlendFunci(1, GL_SRC_ALPHA, GL_ONE);
+            glBlendFunci(2, GL_SRC_ALPHA, GL_ONE);
+            glBlendFunci(3, GL_SRC_ALPHA, GL_ONE);
+            glBlendFunci(4, GL_SRC_ALPHA, GL_ONE);
+        }
+
+        if (useCulling && state.culling)
+        {
+            glEnable(GL_CULL_FACE);
+        }
         else
-            return Color4f(0.0f, 0.0f, 0.0f, 0.0f);
+        {
+            glDisable(GL_CULL_FACE);
+        }
+
+        if (!colorWrite || !state.colorMask)
+        {
+            glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+        }
+
+        if (!depthWrite || !state.depthMask)
+        {
+            glDepthMask(GL_FALSE);
+        }
+
+        state.material = this;
+    }
+
+    void unbind(GraphicsState* state)
+    {
+        state.material = null;
+
+        glDepthMask(GL_TRUE);
+        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+        glDisable(GL_CULL_FACE);
+
+        glDisablei(GL_BLEND, 0);
+        glDisablei(GL_BLEND, 1);
+        glDisablei(GL_BLEND, 2);
     }
 }
 
-MaterialInput materialInput(float v)
-{
-    MaterialInput mi;
-    mi.asFloat = v;
-    mi.type = MaterialInputType.Float;
-    return mi;
-}
-
+/+++
 class Material: Owner
 {
     Dict!(MaterialInput, string) inputs;
@@ -518,3 +570,4 @@ class Material: Owner
         glDisablei(GL_BLEND, 2);
     }
 }
++++/

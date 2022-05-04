@@ -45,6 +45,7 @@ import dagon.resource.asset;
 class TextureAsset: Asset
 {
     Texture texture;
+    SuperImage image;
 
     this(Owner o)
     {
@@ -59,11 +60,12 @@ class TextureAsset: Asset
 
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager assetManager)
     {
+        // TODO: load texture directly from buffer if SuperImage is not needed
         auto res = assetManager.loadImage(filename.extension, istrm);
-        texture.image = res[0];
+        image = res[0];
         string errMsg = res[1];
 
-        if (texture.image !is null)
+        if (image !is null)
         {
             return true;
         }
@@ -76,9 +78,12 @@ class TextureAsset: Asset
 
     override bool loadThreadUnsafePart()
     {
-        if (texture.image !is null)
+        if (texture.valid)
+            return true;
+        
+        if (image !is null)
         {
-            texture.createFromImage(texture.image);
+            texture.createFromImage(image, true);
             if (texture.valid)
                 return true;
             else
@@ -94,6 +99,8 @@ class TextureAsset: Asset
     {
         if (texture)
             texture.release();
+        if (image)
+            Delete(image);
     }
 }
 

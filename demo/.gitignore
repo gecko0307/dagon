@@ -1,0 +1,33 @@
+# Compiled Object files
+*.o
+*.obj
+
+# Compiled Static libraries
+*.a
+*.lib
+
+# Executables
+*.exe
+
+# Shared libraries
+*.dll
+*.so
+*.dylib
+
+# DUB
+.dub
+docs.json
+dub.selections.json
+__dummy.html
+__test__library__
+tests
+docs/
+
+# Code coverage
+*.lst
+
+# Backup files
+*~
+
+# Dagon files
+data/__internal/

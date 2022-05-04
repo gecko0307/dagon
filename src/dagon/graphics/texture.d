@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2021 Timur Gafarov
+Copyright (c) 2017-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -24,23 +24,19 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-
 module dagon.graphics.texture;
 
 import std.stdio;
 import std.math;
 import std.algorithm;
+import std.traits;
 
-import dlib.core.memory;
 import dlib.core.ownership;
-import dlib.image.color;
+import dlib.container.array;
 import dlib.image.image;
 import dlib.image.hdri;
-import dlib.math.vector;
 
 import dagon.core.bindings;
-import dagon.core.application;
-import dagon.graphics.containerimage;
 
 // S3TC formats
 enum GL_COMPRESSED_RGB_S3TC_DXT1_EXT = 0x83F0;  // DXT1/BC1_UNORM
@@ -59,258 +55,444 @@ enum GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_ARB = 0x8E8D;   // BC7_UNORM_SRGB
 enum GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_ARB = 0x8E8E;   // BC6H_SF16
 enum GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_ARB = 0x8E8F; // BC6H_UF16
 
+enum TextureDimension
+{
+    Undefined,
+    D1,
+    D2,
+    D3
+}
+
+struct TextureSize
+{
+    uint width;
+    uint height;
+    uint depth;
+}
+
+enum CubeFace: GLenum
+{
+    PositiveX = GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+    NegativeX = GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+    PositiveY = GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+    NegativeY = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+    PositiveZ = GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+    NegativeZ = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
+}
+
+enum CubeFaceBit
+{
+    None = 0,
+    PositiveX = 1,
+    NegativeX = 2,
+    PositiveY = 4,
+    NegativeY = 8,
+    PositiveZ = 16,
+    NegativeZ = 32,
+    All = 0xffffffff
+}
+
 struct TextureFormat
 {
+    GLenum target;
     GLenum format;
     GLint internalFormat;
     GLenum pixelType;
-    bool compressed;
     uint blockSize;
-    uint mipLevels;
+    uint cubeFaces; // bitwise combination of CubeFaceBit members
 }
+
+enum uint[GLenum] numChannelsFormat = [
+    GL_RED: 1,
+    GL_RG: 2,
+    GL_RGB: 3,
+    GL_BGR: 3,
+    GL_RGBA: 4,
+    GL_BGRA: 4,
+    GL_RED_INTEGER: 1,
+    GL_RG_INTEGER: 2,
+    GL_RGB_INTEGER: 3,
+    GL_BGR_INTEGER: 3,
+    GL_RGBA_INTEGER: 4,
+    GL_BGRA_INTEGER: 4,
+    GL_STENCIL_INDEX: 1,
+    GL_DEPTH_COMPONENT: 1,
+    GL_DEPTH_STENCIL: 1
+];
+
+enum GLint[] compressedFormats = [
+    GL_COMPRESSED_RED,
+    GL_COMPRESSED_RG,
+    GL_COMPRESSED_RGB,
+    GL_COMPRESSED_RGBA,
+    GL_COMPRESSED_SRGB,
+    GL_COMPRESSED_SRGB_ALPHA,
+    GL_COMPRESSED_RED_RGTC1,
+    GL_COMPRESSED_SIGNED_RED_RGTC1,
+    GL_COMPRESSED_RG_RGTC2,
+    GL_COMPRESSED_SIGNED_RG_RGTC2,
+    GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
+    GL_COMPRESSED_RGBA_S3TC_DXT3_EXT,
+    GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
+    GL_COMPRESSED_RGBA_BPTC_UNORM_ARB,
+    GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_ARB,
+    GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_ARB,
+    GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_ARB
+];
 
 class Texture: Owner
 {
-    SuperImage image;
-
-    GLuint tex;
-    GLenum format;
-    GLint intFormat;
-    GLenum type;
-
-    int width;
-    int height;
-    int numMipmapLevels;
-
-    Vector2f translation;
-    Vector2f scale;
-    float rotation;
-
-    bool useMipmapFiltering = true;
-    bool useLinearFiltering = true;
-
-    protected bool mipmapGenerated = false;
-
+    GLuint texture;
+    TextureFormat format;
+    TextureSize size;
+    bool generateMipmaps;
+    uint mipLevels;
+    GLint minFilter;
+    GLint magFilter;
+    
     this(Owner owner)
     {
         super(owner);
-        translation = Vector2f(0.0f, 0.0f);
-        scale = Vector2f(1.0f, 1.0f);
-        rotation = 0.0f;
     }
-
-    this(SuperImage img, Owner owner, bool genMipmaps = false)
+    
+    ~this()
     {
-        super(owner);
-        translation = Vector2f(0.0f, 0.0f);
-        scale = Vector2f(1.0f, 1.0f);
-        rotation = 0.0f;
-        createFromImage(img, genMipmaps);
+        release();
     }
-
-    void createFromImage(SuperImage img, bool genMipmaps = true)
+    
+    void createFromImage(SuperImage img, bool genMipmaps)
     {
-        releaseGLTexture();
-
-        image = img;
-        width = img.width;
-        height = img.height;
-        useMipmapFiltering = genMipmaps;
-
-        glGenTextures(1, &tex);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, tex);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        release();
         
-        TextureFormat tf;
-        if (detectTextureFormat(img, tf))
+        this.generateMipmaps = genMipmaps;
+        
+        if (detectTextureFormat(img, this.format))
         {
-            format = tf.format;
-            intFormat = tf.internalFormat;
-            type = tf.pixelType;
-            
-            if (tf.compressed)
-                createCompressedTexture(img.data.ptr, tf.blockSize, tf.mipLevels);
-            else
-                createUncompressedTexture(img.data.ptr, genMipmaps);
+            this.size = TextureSize(img.width, img.height, 1);
+            this.mipLevels = 1;
+            createTexture2D(img.data);
         }
         else
         {
-            writeln("Unsupported texture format");
+            writeln("Unsupported image format ", img.pixelFormat);
             createFallbackTexture();
         }
-
-        glBindTexture(GL_TEXTURE_2D, 0);
     }
     
-    protected void createUncompressedTexture(ubyte* data, bool genMipmaps)
+    void createFromBuffer(TextureFormat format, TextureSize size, uint mipLevels, bool genMipmaps, ubyte[] buffer)
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, intFormat, width, height, 0, format, type, cast(void*)data);
-        if (genMipmaps)
+        release();
+        
+        this.generateMipmaps = genMipmaps;
+        
+        this.format = format;
+        this.size = size;
+        this.mipLevels = mipLevels;
+        
+        // TODO: 1D, 3D images
+        // TODO: cubemaps
+        
+        if (isCubemap)
+            createCubemap(buffer);
+        else if (format.target == GL_TEXTURE_2D)
+            createTexture2D(buffer);
+        else
+            writeln("Texture creation failed: unsupported target ", format.target);
+    }
+    
+    protected void createCubemap(ubyte[] buffer)
+    {
+        glGenTextures(1, &texture);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+        
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        
+        if (isCompressed)
         {
-            glGenerateMipmap(GL_TEXTURE_2D);
-            mipmapGenerated = true;
+            if (mipLevels > 1)
+            {
+                glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
+                glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, mipLevels - 1);
+            }
+            
+            uint offset = 0;
+            
+            foreach(cubeFace; EnumMembers!CubeFace)
+            {
+                uint w = size.width;
+                uint h = size.height;
+                
+                if (mipLevels == 1)
+                {
+                    uint size = ((w + 3) / 4) * ((h + 3) / 4) * format.blockSize;
+                    glCompressedTexImage2D(cubeFace, 0, format.internalFormat, w, h, 0, cast(uint)buffer.length, cast(void*)buffer.ptr);
+                    offset += size;
+                }
+                else
+                {
+                    for (uint mipLevel = 0; mipLevel < mipLevels; mipLevel++)
+                    {
+                        uint imageSize = ((w + 3) / 4) * ((h + 3) / 4) * format.blockSize;
+                        glCompressedTexImage2D(cubeFace, mipLevel, format.internalFormat, w, h, 0, imageSize, cast(void*)(buffer.ptr + offset));
+                        offset += imageSize;
+                        w /= 2;
+                        h /= 2;
+                    }
+                }
+            }
         }
-    }
-    
-    protected void createCompressedTexture(ubyte* data, uint blockSize, uint numMipMaps)
-    {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, numMipMaps - 1);
-
-        uint w = width;
-        uint h = height;
-        uint offset = 0;
-        for (uint i = 0; i < numMipMaps; i++)
+        else
         {
-            uint size = ((w + 3) / 4) * ((h + 3) / 4) * blockSize;
-            glCompressedTexImage2D(GL_TEXTURE_2D, i, intFormat, w, h, 0, size, cast(void*)(data + offset));
-            offset += size;
-            w /= 2;
-            h /= 2;
+            uint pSize = pixelSize;
+            uint offset = 0;
+            
+            foreach(cubeFace; EnumMembers!CubeFace)
+            {
+                uint w = size.width;
+                uint h = size.height;
+                
+                for (uint mipLevel = 0; mipLevel < mipLevels; mipLevel++)
+                {
+                    uint size = w * h * pSize;
+                    glTexImage2D(cubeFace, mipLevel, format.internalFormat, w, h, 0, format.format, format.pixelType, cast(void*)(buffer.ptr + offset));
+                    offset += size;
+                    w /= 2;
+                    h /= 2;
+                    if (offset >= buffer.length)
+                    {
+                        writeln("Error: incomplete texture buffer");
+                        break;
+                    }
+                }
+            }
         }
         
-        mipmapGenerated = true;
-    }
-
-    protected void createFallbackTexture()
-    {
-        // TODO: make fallback texture
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     }
     
-    void enableRepeat(bool mode)
+    protected void createTexture2D(ubyte[] buffer)
     {
-        if (glIsTexture(tex))
+        glGenTextures(1, &texture);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        
+        uint w = size.width;
+        uint h = size.height;
+        
+        if (isCompressed)
         {
-            glBindTexture(GL_TEXTURE_2D, tex);
-            
-            if (mode)
+            if (mipLevels == 1)
             {
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+                glCompressedTexImage2D(GL_TEXTURE_2D, 0, format.internalFormat, w, h, 0, cast(uint)buffer.length, cast(void*)buffer.ptr);
             }
             else
             {
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipLevels - 1);
+                
+                uint offset = 0;
+                
+                for (uint mipLevel = 0; mipLevel < mipLevels; mipLevel++)
+                {
+                    uint imageSize = ((w + 3) / 4) * ((h + 3) / 4) * format.blockSize;
+                    glCompressedTexImage2D(GL_TEXTURE_2D, mipLevel, format.internalFormat, w, h, 0, imageSize, cast(void*)(buffer.ptr + offset));
+                    offset += imageSize;
+                    w /= 2;
+                    h /= 2;
+                }
             }
         }
+        else
+        {
+            if (mipLevels == 1)
+            {
+                glTexImage2D(GL_TEXTURE_2D, 0, format.internalFormat, w, h, 0, format.format, format.pixelType, cast(void*)buffer.ptr);
+                if (generateMipmaps)
+                {
+                    glGenerateMipmap(GL_TEXTURE_2D);
+                    mipLevels = 1 + cast(uint)floor(log2(max(w, h)));
+                }
+                else
+                    mipLevels = 1;
+            }
+            else if (channelSize > 0)
+            {
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipLevels - 1);
+                
+                uint pSize = pixelSize;
+                uint offset = 0;
+                
+                for (uint mipLevel = 0; mipLevel < mipLevels; mipLevel++)
+                {
+                    uint imageSize = w * h * pSize;
+                    glTexImage2D(GL_TEXTURE_2D, mipLevel, format.internalFormat, w, h, 0, format.format, format.pixelType, cast(void*)(buffer.ptr + offset));
+                    offset += imageSize;
+                    w /= 2;
+                    h /= 2;
+                    if (offset >= buffer.length)
+                    {
+                        writeln("Error: incomplete texture buffer");
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if (mipLevels > 1)
+        {
+            minFilter = GL_LINEAR_MIPMAP_LINEAR;
+            magFilter = GL_LINEAR;
+        }
+        else
+        {
+            minFilter = GL_LINEAR;
+            magFilter = GL_LINEAR;
+        }
     }
-
+    
+    void createFallbackTexture()
+    {
+        // TODO
+    }
+    
+    void release()
+    {
+        if (valid)
+            glDeleteTextures(1, &texture);
+    }
+    
+    deprecated("use Texture.release instead") alias releaseGLTexture = release;
+    
+    bool valid()
+    {
+        return cast(bool)glIsTexture(texture);
+    }
+    
     void bind()
     {
-        if (glIsTexture(tex))
+        if (valid)
         {
-            glBindTexture(GL_TEXTURE_2D, tex);
-
-            if (!mipmapGenerated && useMipmapFiltering)
-            {
-                glGenerateMipmap(GL_TEXTURE_2D);
-                mipmapGenerated = true;
-            }
-
-            if (useMipmapFiltering)
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-            else if (useLinearFiltering)
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            else
-            {
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            }
+            if (isCubemap)
+                glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+            else if (dimension == TextureDimension.D1)
+                glBindTexture(GL_TEXTURE_1D, texture);
+            else if (dimension == TextureDimension.D2)
+                glBindTexture(GL_TEXTURE_2D, texture);
+            else if (dimension == TextureDimension.D3)
+                glBindTexture(GL_TEXTURE_3D, texture);
+            
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
         }
     }
 
     void unbind()
     {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        if (isCubemap)
+            glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+        else if (dimension == TextureDimension.D1)
+            glBindTexture(GL_TEXTURE_1D, 0);
+        else if (dimension == TextureDimension.D2)
+            glBindTexture(GL_TEXTURE_2D, 0);
+        else if (dimension == TextureDimension.D3)
+            glBindTexture(GL_TEXTURE_3D, 0);
     }
-
-    bool valid()
+    
+    uint numChannels() @property
     {
-        return cast(bool)glIsTexture(tex);
-    }
-
-    Color4f sample(float u, float v)
-    {
-        if (image)
-        {
-            int x = cast(int)floor(u * width);
-            int y = cast(int)floor(v * height);
-            return image[x, y];
-        }
+        if (format.format in numChannelsFormat)
+            return numChannelsFormat[format.format];
         else
-            return Color4f(0, 0, 0, 0);
+            return 0;
     }
-
-    void release()
+    
+    bool isCompressed() @property
     {
-        releaseGLTexture();
-        if (image)
+        return compressedFormats.canFind(format.internalFormat);
+    }
+    
+    bool isCubemap() @property
+    {
+        return format.cubeFaces != CubeFaceBit.None;
+    }
+    
+    TextureDimension dimension() @property
+    {
+        if (format.target == GL_TEXTURE_1D)
+            return TextureDimension.D1;
+        else if (format.target == GL_TEXTURE_2D)
+            return TextureDimension.D2;
+        else if (format.target == GL_TEXTURE_3D)
+            return TextureDimension.D3;
+        else
+            return TextureDimension.Undefined;
+    }
+    
+    uint channelSize() @property
+    {
+        uint s = 0;
+        switch(format.pixelType)
         {
-            Delete(image);
-            image = null;
+            case GL_UNSIGNED_BYTE:  s = 1; break;
+            case GL_BYTE:           s = 1; break;
+            case GL_UNSIGNED_SHORT: s = 2; break;
+            case GL_SHORT:          s = 2; break;
+            case GL_UNSIGNED_INT:   s = 4; break;
+            case GL_INT:            s = 4; break;
+            case GL_HALF_FLOAT:     s = 2; break;
+            case GL_FLOAT:          s = 4; break;
+            default:                s = 0; break;
         }
+        return s;
     }
-
-    void releaseGLTexture()
+    
+    uint pixelSize() @property
     {
-        if (glIsTexture(tex))
-            glDeleteTextures(1, &tex);
+        return numChannels * channelSize;
     }
-
-    ~this()
+    
+    bool useMipmapFiltering() @property
     {
-        release();
+        return minFilter == GL_LINEAR_MIPMAP_LINEAR;
+    }
+    
+    void useMipmapFiltering(bool mode) @property
+    {
+        if (mode)
+            minFilter = GL_LINEAR_MIPMAP_LINEAR;
+        else
+            minFilter = GL_LINEAR;
     }
 }
 
 bool detectTextureFormat(SuperImage img, out TextureFormat tf)
 {
-    ContainerImage compressedImg = cast(ContainerImage)img;
-    if (compressedImg)
+    uint pixelFormat = img.pixelFormat;
+    switch(pixelFormat)
     {
-        uint compFormat = compressedImg.pixelFormat;
-        switch(compFormat)
-        {
-            case ContainerImageFormat.R8:               tf.internalFormat = GL_R8;      tf.format = GL_RED;  tf.pixelType = GL_UNSIGNED_BYTE; tf.blockSize = 0; tf.compressed = false; break;
-            case ContainerImageFormat.RG8:              tf.internalFormat = GL_RG8;     tf.format = GL_RG;   tf.pixelType = GL_UNSIGNED_BYTE; tf.blockSize = 0; tf.compressed = false; break;
-            case ContainerImageFormat.RGB8:             tf.internalFormat = GL_RGB8;    tf.format = GL_RGB;  tf.pixelType = GL_UNSIGNED_BYTE; tf.blockSize = 0; tf.compressed = false; break;
-            case ContainerImageFormat.RGBA8:            tf.internalFormat = GL_RGBA8;   tf.format = GL_RGBA; tf.pixelType = GL_UNSIGNED_BYTE; tf.blockSize = 0; tf.compressed = false; break;
-            case ContainerImageFormat.RGBAF32:          tf.internalFormat = GL_RGBA32F; tf.format = GL_RGBA; tf.pixelType = GL_FLOAT;         tf.blockSize = 0; tf.compressed = false; break;
-            case ContainerImageFormat.RGBAF16:          tf.internalFormat = GL_RGBA16F; tf.format = GL_RGBA; tf.pixelType = GL_HALF_FLOAT;    tf.blockSize = 0; tf.compressed = false; break;
-            case ContainerImageFormat.S3TC_RGB_DXT1:    tf.internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;         tf.blockSize = 8;  tf.compressed = true; break;
-            case ContainerImageFormat.S3TC_RGBA_DXT3:   tf.internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;        tf.blockSize = 16; tf.compressed = true; break;
-            case ContainerImageFormat.S3TC_RGBA_DXT5:   tf.internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;        tf.blockSize = 16; tf.compressed = true; break;
-            case ContainerImageFormat.BPTC_RGBA_UNORM:  tf.internalFormat = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;       tf.blockSize = 16; tf.compressed = true; break;
-            case ContainerImageFormat.BPTC_SRGBA_UNORM: tf.internalFormat = GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_ARB; tf.blockSize = 16; tf.compressed = true; break;
-            default:
-                return false;
-        }
-        tf.mipLevels = compressedImg.mipLevels;
+        case IntegerPixelFormat.L8:    tf.internalFormat = GL_R8;      tf.format = GL_RED;  tf.pixelType = GL_UNSIGNED_BYTE; break;
+        case IntegerPixelFormat.LA8:   tf.internalFormat = GL_RG8;     tf.format = GL_RG;   tf.pixelType = GL_UNSIGNED_BYTE; break;
+        case IntegerPixelFormat.RGB8:  tf.internalFormat = GL_RGB8;    tf.format = GL_RGB;  tf.pixelType = GL_UNSIGNED_BYTE; break;
+        case IntegerPixelFormat.RGBA8: tf.internalFormat = GL_RGBA8;   tf.format = GL_RGBA; tf.pixelType = GL_UNSIGNED_BYTE; break;
+        case FloatPixelFormat.RGBAF32: tf.internalFormat = GL_RGBA32F; tf.format = GL_RGBA; tf.pixelType = GL_FLOAT; break;
+        default:
+            return false;
     }
-    else
-    {
-        uint pixelFormat = img.pixelFormat;
-        switch(pixelFormat)
-        {
-            case IntegerPixelFormat.L8:    tf.internalFormat = GL_R8;      tf.format = GL_RED;  tf.pixelType = GL_UNSIGNED_BYTE; break;
-            case IntegerPixelFormat.LA8:   tf.internalFormat = GL_RG8;     tf.format = GL_RG;   tf.pixelType = GL_UNSIGNED_BYTE; break;
-            case IntegerPixelFormat.RGB8:  tf.internalFormat = GL_RGB8;    tf.format = GL_RGB;  tf.pixelType = GL_UNSIGNED_BYTE; break;
-            case IntegerPixelFormat.RGBA8: tf.internalFormat = GL_RGBA8;   tf.format = GL_RGBA; tf.pixelType = GL_UNSIGNED_BYTE; break;
-            case FloatPixelFormat.RGBAF32: tf.internalFormat = GL_RGBA32F; tf.format = GL_RGBA; tf.pixelType = GL_FLOAT; break;
-            default:
-                return false;
-        }
-        tf.compressed = false;
-        tf.blockSize = 0;
-        tf.mipLevels = 1;
-    }
+    
+    tf.target = GL_TEXTURE_2D;
+    tf.blockSize = 0;
+    tf.cubeFaces = CubeFaceBit.None;
     
     return true;
 }

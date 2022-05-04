@@ -29,10 +29,10 @@ module dagon.game;
 
 public
 {
-    import dagon.game.deferredrenderer;
+    import dagon.game.forwardrenderer;
     import dagon.game.game;
-    import dagon.game.hudrenderer;
-    import dagon.game.loadingscreen;
+    //import dagon.game.hudrenderer;
+    //import dagon.game.loadingscreen;
     import dagon.game.postprocrenderer;
     import dagon.game.presentrenderer;
     import dagon.game.renderer;

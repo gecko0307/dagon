@@ -110,6 +110,8 @@ class DeferredForwardPass: RenderPass
 
             glScissor(0, 0, outputBuffer.width, outputBuffer.height);
             glViewport(0, 0, outputBuffer.width, outputBuffer.height);
+            
+            //glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
             glEnablei(GL_BLEND, 0);
             glDisablei(GL_BLEND, 1);

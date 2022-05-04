@@ -1,0 +1,27 @@
+{
+    "name": "demo",
+    "description": "3D game engine for D",
+    "copyright": "Copyright © 2022, Timur Gafarov",
+    "license": "BSL-1.0",
+    "authors": [
+        "Timur Gafarov",
+    ],
+    
+    "importPaths": [
+        "src"
+    ],
+    
+    "sourcePaths": [
+        "src"
+    ],
+    
+    "dependencies": {
+        "dagon": {
+            "path": ".."
+        }
+    },
+    
+    "buildRequirements":[
+        "allowWarnings"
+    ]
+}

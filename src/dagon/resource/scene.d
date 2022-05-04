@@ -44,7 +44,7 @@ import dagon.graphics.light;
 import dagon.graphics.environment;
 import dagon.graphics.shapes;
 import dagon.graphics.material;
-import dagon.graphics.cubemap;
+//import dagon.graphics.cubemap;
 
 import dagon.resource.asset;
 import dagon.resource.obj;
@@ -53,7 +53,6 @@ import dagon.resource.image;
 import dagon.resource.texture;
 import dagon.resource.text;
 import dagon.resource.binary;
-import dagon.resource.packageasset;
 
 class Scene: EventListener
 {
@@ -123,10 +122,12 @@ class Scene: EventListener
             {
                 newAsset = New!T(assetManager);
             }
+            /*
             else static if (is(T: PackageAsset))
             {
                 newAsset = New!T(this, assetManager);
             }
+            */
             else
             {
                 newAsset = New!T(assetManager);
@@ -142,7 +143,7 @@ class Scene: EventListener
     alias addGLTFAsset = addAssetAs!GLTFAsset;
     alias addTextAsset = addAssetAs!TextAsset;
     alias addBinaryAsset = addAssetAs!BinaryAsset;
-    alias addPackageAsset = addAssetAs!PackageAsset;
+    //alias addPackageAsset = addAssetAs!PackageAsset;
 
     Material addMaterial()
     {
@@ -152,16 +153,18 @@ class Scene: EventListener
     Material addDecalMaterial()
     {
         auto mat = addMaterial();
-        mat.blending = Transparent;
+        mat.blendMode = Transparent;
         mat.depthWrite = false;
-        mat.culling = false;
+        mat.useCulling = false;
         return mat;
     }
 
+    /*
     Cubemap addCubemap(uint size)
     {
         return New!Cubemap(size, assetManager);
     }
+    */
 
     Entity addEntity(Entity parent = null)
     {

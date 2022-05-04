@@ -43,6 +43,7 @@ import dagon.core.bindings;
 import dagon.graphics.texture;
 import dagon.graphics.containerimage;
 
+/*
 enum CubeFace
 {
     PositiveX = GL_TEXTURE_CUBE_MAP_POSITIVE_X,
@@ -289,6 +290,7 @@ uint pixelSize(uint pixelFormat)
     }
     return s;
 }
+*/
 
 Matrix4x4f cubeFaceMatrix(CubeFace cf)
 {

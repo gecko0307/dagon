@@ -226,6 +226,11 @@ class ShapeBox: Mesh
         dataReady = true;
         prepareVAO();
     }
+    
+    this(float hw, float hh, float hd, Owner owner)
+    {
+        this(Vector3f(hw, hh, hd), owner);
+    }
 }
 
 enum PI2 = PI * 2.0f;

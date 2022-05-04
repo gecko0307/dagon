@@ -728,9 +728,9 @@ class GLTFAsset: Asset, TriangleSet
                         baseColorFactor = pbr["baseColorFactor"].asColor;
                         
                         if (baseColorFactor.a < 1.0f)
-                            material.blending = Transparent;
+                            material.blendMode = Transparent;
                         
-                        material.diffuse = baseColorFactor;
+                        material.baseColorFactor = baseColorFactor;
                     }
                     
                     if (pbr && "baseColorTexture" in pbr)
@@ -744,12 +744,12 @@ class GLTFAsset: Asset, TriangleSet
                                 Texture baseColorTex = textures[baseColorTexIndex];
                                 if (baseColorTex)
                                 {
-                                    material.diffuse = baseColorTex;
+                                    material.baseColorTexture = baseColorTex;
                                 }
                             }
                         }
                         
-                        material.transparency = baseColorFactor.a;
+                        material.opacity = baseColorFactor.a;
                     }
                     
                     if (pbr && "metallicRoughnessTexture" in pbr)
@@ -759,27 +759,27 @@ class GLTFAsset: Asset, TriangleSet
                         {
                             Texture metallicRoughnessTex = textures[metallicRoughnessTexIndex];
                             if (metallicRoughnessTex)
-                                material.roughnessMetallic = metallicRoughnessTex;
+                                material.roughnessMetallicTexture = metallicRoughnessTex;
                         }
                     }
                     else
                     {
                         if (pbr && "metallicFactor" in pbr)
                         {
-                            material.metallic = pbr["metallicFactor"].asNumber;
+                            material.metallicFactor = pbr["metallicFactor"].asNumber;
                         }
                         else
                         {
-                            material.metallic = 1.0f;
+                            material.metallicFactor = 1.0f;
                         }
                         
                         if (pbr && "roughnessFactor" in pbr)
                         {
-                            material.roughness = pbr["roughnessFactor"].asNumber;
+                            material.roughnessFactor = pbr["roughnessFactor"].asNumber;
                         }
                         else
                         {
-                            material.roughness = 1.0f;
+                            material.roughnessFactor = 1.0f;
                         }
                     }
                 }
@@ -802,7 +802,7 @@ class GLTFAsset: Asset, TriangleSet
                                     Texture diffuseTex = textures[diffuseTexIndex];
                                     if (diffuseTex)
                                     {
-                                        material.diffuse = diffuseTex;
+                                        material.baseColorTexture = diffuseTex;
                                     }
                                 }
                             }
@@ -817,7 +817,7 @@ class GLTFAsset: Asset, TriangleSet
                     {
                         Texture normalTex = textures[normalTexIndex];
                         if (normalTex)
-                            material.normal = normalTex;
+                            material.normalTexture = normalTex;
                     }
                 }
                 
@@ -828,31 +828,31 @@ class GLTFAsset: Asset, TriangleSet
                     {
                         Texture emissiveTex = textures[emissiveTexIndex];
                         if (emissiveTex)
-                            material.emission = emissiveTex;
+                            material.emissionTexture = emissiveTex;
                     }
                 }
                 else if ("emissiveFactor" in ma)
                 {
                     Color4f emissiveFactor = ma["emissiveFactor"].asColor;
-                    material.emission = emissiveFactor;
+                    material.emissionFactor = emissiveFactor;
                 }
                 
                 if ("doubleSided" in ma)
                 {
                     uint doubleSided = cast(uint)ma["doubleSided"].asNumber;
                     if (doubleSided)
-                        material.culling = false;
+                        material.useCulling = false;
                     else
-                        material.culling = true;
+                        material.useCulling = true;
                 }
                 else
                 {
-                    material.culling = true;
+                    material.useCulling = true;
                 }
                 
                 if ("alphaCutoff" in ma)
                 {
-                    material.clipThreshold = ma["alphaCutoff"].asNumber;
+                    material.alphaTestThreshold = ma["alphaCutoff"].asNumber;
                 }
                 
                 materials.insertBack(material);
@@ -1102,18 +1102,21 @@ class GLTFAsset: Asset, TriangleSet
                     Material material = primitive.material;
                     if (material)
                     {
-                        Texture diffuseTex = material.diffuse.texture;
+                        Texture diffuseTex = material.baseColorTexture;
                         if (diffuseTex)
                         {
+                            // TODO: Texture.hasAlpha
+                            /*
                             if (diffuseTex.image.pixelFormat == IntegerPixelFormat.RGBA8)
                             {
                                 material.blending = Transparent;
                                 node.entity.transparent = true;
                             }
+                            */
                         }
-                        else if (material.diffuse.asVector4f.a < 1.0f || material.transparency.asFloat < 1.0f)
+                        else if (material.baseColorFactor.a < 1.0f || material.opacity < 1.0f)
                         {
-                            material.blending = Transparent;
+                            material.blendMode = Transparent;
                             node.entity.transparent = true;
                         }
                     }

@@ -30,13 +30,6 @@ module dagon.render.deferred;
 public
 {
     import dagon.render.deferred.backgroundpass;
-    import dagon.render.deferred.clearpass;
     import dagon.render.deferred.debugoutputpass;
-    import dagon.render.deferred.decalpass;
-    import dagon.render.deferred.environmentpass;
-    import dagon.render.deferred.geometrypass;
-    import dagon.render.deferred.lightpass;
-    import dagon.render.deferred.occlusionpass;
-    import dagon.render.deferred.particlespass;
     import dagon.render.deferred.forwardpass;
 }

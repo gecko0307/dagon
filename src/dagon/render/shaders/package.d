@@ -29,19 +29,8 @@ module dagon.render.shaders;
 
 public
 {
-    import dagon.render.shaders.arealight;
     import dagon.render.shaders.debugoutput;
-    import dagon.render.shaders.decal;
-    import dagon.render.shaders.environment;
     import dagon.render.shaders.fallback;
     import dagon.render.shaders.forward;
-    import dagon.render.shaders.geometry;
-    import dagon.render.shaders.hud;
-    import dagon.render.shaders.rayleigh;
-    import dagon.render.shaders.particle;
     import dagon.render.shaders.shadow;
-    import dagon.render.shaders.sky;
-    import dagon.render.shaders.ssao;
-    import dagon.render.shaders.sunlight;
-    import dagon.render.shaders.terrain;
 }

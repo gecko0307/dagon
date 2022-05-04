@@ -39,18 +39,18 @@ import dagon.graphics.shader;
 import dagon.render.pipeline;
 import dagon.render.pass;
 import dagon.render.gbuffer;
-import dagon.render.shaders.sky;
+//import dagon.render.shaders.sky;
 
 class DeferredBackgroundPass: RenderPass
 {
     GBuffer gbuffer;
-    SkyShader skyShader;
+    //SkyShader skyShader;
 
     this(RenderPipeline pipeline, GBuffer gbuffer, EntityGroup group = null)
     {
         super(pipeline, group);
         this.gbuffer = gbuffer;
-        skyShader = New!SkyShader(this);
+        //skyShader = New!SkyShader(this);
     }
 
     override void render()
@@ -69,7 +69,7 @@ class DeferredBackgroundPass: RenderPass
                 backgroundColor = state.environment.backgroundColor.toLinear();
             backgroundColor.a = 0.0f;
             
-            glClear(GL_DEPTH_BUFFER_BIT);
+            //glClear(GL_DEPTH_BUFFER_BIT);
             
             Color4f zero = Color4f(0, 0, 0, 0);
             glClearBufferfv(GL_COLOR, 0, zero.arrayof.ptr);
@@ -78,6 +78,7 @@ class DeferredBackgroundPass: RenderPass
             glClearBufferfv(GL_COLOR, 3, backgroundColor.arrayof.ptr);
             glClearBufferfv(GL_COLOR, 4, zero.arrayof.ptr);
 
+            /*
             foreach(entity; group)
             if (entity.visible && entity.drawable)
             {
@@ -115,6 +116,7 @@ class DeferredBackgroundPass: RenderPass
                 else
                     defaultMaterial.unbind(&state);
             }
+            */
 
             glClear(GL_DEPTH_BUFFER_BIT);
 

@@ -36,6 +36,5 @@ public
     import dagon.postproc;
     import dagon.render;
     import dagon.resource;
-    import dagon.special;
     import dagon.ui;
 }
