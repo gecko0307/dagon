@@ -91,8 +91,8 @@ class ForwardRenderer: Renderer
     override void setViewport(uint x, uint y, uint w, uint h)
     {
         super.setViewport(x, y, w, h);
-        gbuffer.resize(view.width, view.height);
         outputBuffer.resize(view.width, view.height);
+        gbuffer.resize(view.width, view.height);
         passForward.resize(w, h);
     }
 }

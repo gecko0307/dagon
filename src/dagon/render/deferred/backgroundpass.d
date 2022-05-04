@@ -69,8 +69,6 @@ class DeferredBackgroundPass: RenderPass
                 backgroundColor = state.environment.backgroundColor.toLinear();
             backgroundColor.a = 0.0f;
             
-            //glClear(GL_DEPTH_BUFFER_BIT);
-            
             Color4f zero = Color4f(0, 0, 0, 0);
             glClearBufferfv(GL_COLOR, 0, zero.arrayof.ptr);
             glClearBufferfv(GL_COLOR, 1, zero.arrayof.ptr);

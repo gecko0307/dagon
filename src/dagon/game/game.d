@@ -134,7 +134,7 @@ class Game: Application
     
     override void onResize(int width, int height)
     {
-        forwardRenderer.setViewport(0, 0, width, height);
+        renderer.setViewport(0, 0, width, height);
         postProcessingRenderer.setViewport(0, 0, width, height);
         presentRenderer.setViewport(0, 0, width, height);
     }
