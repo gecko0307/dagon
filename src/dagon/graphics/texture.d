@@ -147,8 +147,11 @@ class Texture: Owner
     TextureSize size;
     bool generateMipmaps;
     uint mipLevels;
-    GLint minFilter;
-    GLint magFilter;
+    GLint minFilter = GL_LINEAR;
+    GLint magFilter = GL_LINEAR;
+    GLint wrapS = GL_REPEAT;
+    GLint wrapT = GL_REPEAT;
+    GLint wrapR = GL_REPEAT;
     
     this(Owner owner)
     {
@@ -190,8 +193,6 @@ class Texture: Owner
         this.mipLevels = mipLevels;
         
         // TODO: 1D, 3D images
-        // TODO: cubemaps
-        
         if (isCubemap)
             createCubemap(buffer);
         else if (format.target == GL_TEXTURE_2D)
@@ -206,11 +207,11 @@ class Texture: Owner
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
         
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        minFilter = GL_LINEAR;
+        magFilter = GL_LINEAR;
+        wrapS = GL_CLAMP_TO_EDGE;
+        wrapT = GL_CLAMP_TO_EDGE;
+        wrapR = GL_CLAMP_TO_EDGE;
         
         if (isCompressed)
         {
@@ -281,10 +282,11 @@ class Texture: Owner
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
         
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        minFilter = GL_LINEAR;
+        magFilter = GL_LINEAR;
+        wrapS = GL_REPEAT;
+        wrapT = GL_REPEAT;
+        wrapR = GL_REPEAT;
         
         uint w = size.width;
         uint h = size.height;
@@ -384,16 +386,31 @@ class Texture: Owner
         if (valid)
         {
             if (isCubemap)
+            {
                 glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+                glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, minFilter);
+                glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, magFilter);
+                glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, wrapS);
+                glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, wrapT);
+                glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, wrapR);
+            }
             else if (dimension == TextureDimension.D1)
+            {
                 glBindTexture(GL_TEXTURE_1D, texture);
+            }
             else if (dimension == TextureDimension.D2)
+            {
                 glBindTexture(GL_TEXTURE_2D, texture);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, wrapR);
+            }
             else if (dimension == TextureDimension.D3)
+            {
                 glBindTexture(GL_TEXTURE_3D, texture);
-            
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
+            }
         }
     }
 
@@ -473,6 +490,22 @@ class Texture: Owner
             minFilter = GL_LINEAR_MIPMAP_LINEAR;
         else
             minFilter = GL_LINEAR;
+    }
+    
+    void enableRepeat(bool mode) @property
+    {
+        if (mode)
+        {
+            wrapS = GL_REPEAT;
+            wrapT = GL_REPEAT;
+            wrapR = GL_REPEAT;
+        }
+        else
+        {
+            wrapS = GL_CLAMP_TO_EDGE;
+            wrapT = GL_CLAMP_TO_EDGE;
+            wrapR = GL_CLAMP_TO_EDGE;
+        }
     }
 }
 

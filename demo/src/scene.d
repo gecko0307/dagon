@@ -57,7 +57,7 @@ class MyScene: Scene
         environment.ambientEnergy = 1.0f;
         environment.ambientBRDF = aBRDF.texture;
         aBRDF.texture.useMipmapFiltering = false;
-        //aBRDF.texture.enableRepeat(false); // TODO
+        aBRDF.texture.enableRepeat = false;
         
         Entity modelRoot = aModel.rootEntity;
         useEntity(modelRoot);
