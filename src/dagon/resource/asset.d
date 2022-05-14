@@ -180,20 +180,6 @@ class AssetManager: Owner
             Delete(data);
             return compound(img, errMsg);
         }
-        else if (extension == ".dds" ||
-                 extension == ".DDS")
-        {
-            Compound!(ContainerImage, string) res;
-            ubyte[] data = New!(ubyte[])(istrm.size);
-            istrm.fillArray(data);
-            ArrayStream arrStrm = New!ArrayStream(data);
-            res = loadDDS(arrStrm);
-            SuperImage img = res[0];
-            string errMsg = res[1];
-            Delete(arrStrm);
-            Delete(data);
-            return compound(img, errMsg);
-        }
         else if (extension in imageLoaderCallbacks)
         {
             return imageLoaderCallbacks[extension](istrm, imageFactory);

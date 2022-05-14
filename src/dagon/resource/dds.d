@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Timur Gafarov
+Copyright (c) 2019-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -32,14 +32,12 @@ import std.file;
 
 import dlib.core.memory;
 import dlib.core.stream;
-import dlib.core.compound;
-import dlib.image.color;
-import dlib.image.image;
 import dlib.image.io.utils;
 
-import dagon.graphics.containerimage;
+import dagon.core.bindings;
+import dagon.graphics.texture;
 
-// version = DDSDebug;
+version = DDSDebug;
 
 struct DDSPixelFormat
 {
@@ -312,44 +310,33 @@ DXGIFormat resourceFormatFromFourCC(uint fourCC)
     return format;
 }
 
-Compound!(ContainerImage, string) loadDDS(InputStream istrm)
+bool loadDDS(InputStream istrm, TextureBuffer* buffer)
 {
-    ContainerImage img = null;
-
-    void finalize()
+    bool error(string errorMsg)
     {
+        writeln(errorMsg);
+        return false;
     }
-
-    Compound!(ContainerImage, string) error(string errorMsg)
-    {
-        finalize();
-        if (img)
-        {
-            Delete(img);
-            img = null;
-        }
-        return compound(img, errorMsg);
-    }
-
+    
     char[4] magic;
-
+    
     if (!istrm.fillArray(magic))
     {
         return error("loadDDS error: not a DDS file or corrupt data");
     }
-
+    
     version(DDSDebug)
     {
         writeln("Signature: ", magic);
     }
-
+    
     if (magic != "DDS ")
     {
         return error("loadDDS error: not a DDS file");
     }
-
+    
     DDSHeader hdr = readStruct!DDSHeader(istrm);
-
+    
     version(DDSDebug)
     {
         writeln("hdr.size: ", hdr.size);
@@ -362,7 +349,7 @@ Compound!(ContainerImage, string) loadDDS(InputStream istrm)
         writeln("hdr.alphaBitDepth: ", hdr.alphaBitDepth);
         writeln("hdr.reserved: ", hdr.reserved);
         writeln("hdr.surface: ", hdr.surface);
-
+        
         writeln("hdr.ckDestOverlay.lowVal: ", hdr.ckDestOverlay.lowVal);
         writeln("hdr.ckDestOverlay.highVal: ", hdr.ckDestOverlay.highVal);
         writeln("hdr.ckDestBlt.lowVal: ", hdr.ckDestBlt.lowVal);
@@ -371,7 +358,7 @@ Compound!(ContainerImage, string) loadDDS(InputStream istrm)
         writeln("hdr.ckSrcOverlay.highVal: ", hdr.ckSrcOverlay.highVal);
         writeln("hdr.ckSrcBlt.lowVal: ", hdr.ckSrcBlt.lowVal);
         writeln("hdr.ckSrcBlt.highVal: ", hdr.ckSrcBlt.highVal);
-
+        
         writeln("hdr.format.size: ", hdr.format.size);
         writeln("hdr.format.flags: ", hdr.format.flags);
         writeln("hdr.format.fourCC: ", hdr.format.fourCC);
@@ -380,17 +367,17 @@ Compound!(ContainerImage, string) loadDDS(InputStream istrm)
         writeln("hdr.format.greenMask: ", hdr.format.greenMask);
         writeln("hdr.format.blueMask: ", hdr.format.blueMask);
         writeln("hdr.format.alphaMask: ", hdr.format.alphaMask);
-
+        
         writeln("hdr.caps.caps: ", hdr.caps.caps);
         writeln("hdr.caps.caps2: ", hdr.caps.caps2);
         writeln("hdr.caps.caps3: ", hdr.caps.caps3);
         writeln("hdr.caps.caps4: ", hdr.caps.caps4);
-
+        
         writeln("hdr.textureStage: ", hdr.textureStage);
     }
-
-    ContainerImageFormat format;
-
+    
+    TextureFormat format;
+    
     DXGIFormat fmt;
     if (hdr.format.fourCC == FOURCC_DX10)
     {
@@ -403,25 +390,78 @@ Compound!(ContainerImage, string) loadDDS(InputStream istrm)
     }
     
     version(DDSDebug) writeln("format: ", fmt);
-
+    
     switch(fmt)
     {
-        case DXGIFormat.R8_UNORM: format = ContainerImageFormat.R8; break;
-        case DXGIFormat.R8G8_UNORM: format = ContainerImageFormat.RG8; break;
-        case DXGIFormat.R8G8B8A8_UNORM: format = ContainerImageFormat.RGBA8; break;
-        case DXGIFormat.R32G32B32A32_FLOAT: format = ContainerImageFormat.RGBAF32; break;
-        case DXGIFormat.R16G16B16A16_FLOAT: format = ContainerImageFormat.RGBAF16; break;
-        case DXGIFormat.BC1_UNORM: format = ContainerImageFormat.S3TC_RGB_DXT1; break;
-        case DXGIFormat.BC2_UNORM: format = ContainerImageFormat.S3TC_RGBA_DXT3; break;
-        case DXGIFormat.BC3_UNORM: format = ContainerImageFormat.S3TC_RGBA_DXT5; break;
-        case DXGIFormat.BC4_UNORM: format = ContainerImageFormat.RGTC1_R; break;
-        case DXGIFormat.BC4_SNORM: format = ContainerImageFormat.RGTC1_R_S; break;
-        case DXGIFormat.BC5_UNORM: format = ContainerImageFormat.RGTC2_RG; break;
-        case DXGIFormat.BC5_SNORM: format = ContainerImageFormat.RGTC2_RG_S; break;
-        case DXGIFormat.BC7_UNORM: format = ContainerImageFormat.BPTC_RGBA_UNORM; break;
-        case DXGIFormat.BC7_UNORM_SRGB: format = ContainerImageFormat.BPTC_SRGBA_UNORM; break;
-        case DXGIFormat.BC6H_SF16: format = ContainerImageFormat.BPTC_RGB_SF; break;
-        case DXGIFormat.BC6H_UF16: format = ContainerImageFormat.BPTC_RGB_UF; break;
+        case DXGIFormat.R8_UNORM:
+            format.format = GL_RED;
+            format.internalFormat = GL_R8;
+            format.pixelType = GL_UNSIGNED_BYTE;
+            break;
+        case DXGIFormat.R8G8_UNORM:
+            format.format = GL_RG;
+            format.internalFormat = GL_RG8;
+            format.pixelType = GL_UNSIGNED_BYTE;
+            break;
+        case DXGIFormat.R8G8B8A8_UNORM:
+            format.format = GL_RGBA;
+            format.internalFormat = GL_RGBA8;
+            format.pixelType = GL_UNSIGNED_BYTE;
+            break;
+        case DXGIFormat.R32G32B32A32_FLOAT:
+            format.format = GL_RGBA;
+            format.internalFormat = GL_RGBA32F;
+            format.pixelType = GL_FLOAT;
+            break;
+        case DXGIFormat.R16G16B16A16_FLOAT:
+            format.format = GL_RGBA;
+            format.internalFormat = GL_RGBA16F;
+            format.pixelType = GL_HALF_FLOAT;
+            break;
+        case DXGIFormat.BC1_UNORM:
+            format.internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+            format.blockSize = 8;
+            break;
+        case DXGIFormat.BC2_UNORM:
+            format.internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+            format.blockSize = 16;
+            break;
+        case DXGIFormat.BC3_UNORM:
+            format.internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+            format.blockSize = 16;
+            break;
+        case DXGIFormat.BC4_UNORM:
+            format.internalFormat = GL_COMPRESSED_RED_RGTC1;
+            format.blockSize = 16;
+            break;
+        case DXGIFormat.BC4_SNORM:
+            format.internalFormat = GL_COMPRESSED_SIGNED_RED_RGTC1;
+            format.blockSize = 16;
+            break;
+        case DXGIFormat.BC5_UNORM:
+            format.internalFormat = GL_COMPRESSED_RG_RGTC2;
+            format.blockSize = 16;
+            break;
+        case DXGIFormat.BC5_SNORM:
+            format.internalFormat = GL_COMPRESSED_SIGNED_RG_RGTC2;
+            format.blockSize = 16;
+            break;
+        case DXGIFormat.BC6H_SF16:
+            format.internalFormat = GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_ARB;
+            format.blockSize = 16;
+            break;
+        case DXGIFormat.BC6H_UF16:
+            format.internalFormat = GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_ARB;
+            format.blockSize = 16;
+            break;
+        case DXGIFormat.BC7_UNORM:
+            format.internalFormat = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
+            format.blockSize = 16;
+            break;
+        case DXGIFormat.BC7_UNORM_SRGB:
+            format.internalFormat = GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_ARB;
+            format.blockSize = 16;
+            break;
         default:
             return error("loadDDS error: unsupported resource format");
     }
@@ -434,12 +474,32 @@ Compound!(ContainerImage, string) loadDDS(InputStream istrm)
         else
             return error("loadDDS error: incomplete cubemap");
     }
-
+    
     size_t bufferSize = cast(size_t)(istrm.size - istrm.getPosition);
     version(DDSDebug) writeln("bufferSize: ", bufferSize);
+    
+    buffer.data = New!(ubyte[])(bufferSize);
+    istrm.readBytes(buffer.data.ptr, bufferSize);
+    
+    TextureSize size;
+    size.width = hdr.width;
+    size.height = hdr.height;
+    size.depth = 1; // TODO
+    
+    if (isCubemap)
+    {
+        format.target = GL_TEXTURE_CUBE_MAP;
+        format.cubeFaces = CubeFaceBit.All;
+    }
+    else
+    {
+        // TODO: 1D and 3D textures
+        format.target = GL_TEXTURE_2D;
+    }
+    
+    buffer.format = format;
+    buffer.size = size;
+    buffer.mipLevels = hdr.mipMapLevels;
 
-    img = New!ContainerImage(hdr.width, hdr.height, format, hdr.mipMapLevels, bufferSize, isCubemap);
-    istrm.readBytes(img.data.ptr, bufferSize);
-
-    return compound(img, "");
+    return true;
 }

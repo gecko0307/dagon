@@ -1,5 +1,6 @@
 module scene;
 
+import std.stdio;
 import dagon;
 import dagon.ext.stbi;
 
@@ -24,7 +25,7 @@ class MyScene: Scene
         aModel = addGLTFAsset("data/suzanne.gltf");
         stoneBaseColor = addTextureAsset("data/stone-basecolor.png");
         stoneNormal = addTextureAsset("data/stone-normal.png");
-        aEnvmap = addTextureAsset("data/envmap.hdr");
+        aEnvmap = addTextureAsset("data/envmap.hdr"); //addTextureAsset("data/envmap.dds");
         aBRDF = addTextureAsset("data/brdf.dds");
     }
     
@@ -49,6 +50,9 @@ class MyScene: Scene
         sun.energy = 10.0f;
         sun.turn(-90.0f);
         sun.pitch(-24.0f);
+        
+        writeln(aEnvmap.texture.isCubemap);
+        writeln(aEnvmap.texture.mipLevels);
         
         environment.sun = sun;
         environment.backgroundColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);

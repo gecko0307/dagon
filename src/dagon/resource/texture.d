@@ -41,11 +41,13 @@ import dlib.filesystem.filesystem;
 
 import dagon.graphics.texture;
 import dagon.resource.asset;
+import dagon.resource.dds;
 
 class TextureAsset: Asset
 {
     Texture texture;
     SuperImage image;
+    protected TextureBuffer buffer;
 
     this(Owner o)
     {
@@ -60,19 +62,29 @@ class TextureAsset: Asset
 
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager assetManager)
     {
-        // TODO: load texture directly from buffer if SuperImage is not needed
-        auto res = assetManager.loadImage(filename.extension, istrm);
-        image = res[0];
-        string errMsg = res[1];
-
-        if (image !is null)
+        string format = filename.extension;
+        if (format == ".dds" || format == ".DDS")
         {
+            // Load to TextureData
+            loadDDS(istrm, &buffer);
             return true;
         }
+        // TODO: KTX support
         else
         {
-            writeln(errMsg);
-            return false;
+            // Load to SuperImage
+            auto res = assetManager.loadImage(filename.extension, istrm);
+            image = res[0];
+            string errMsg = res[1];
+            if (image !is null)
+            {
+                return true;
+            }
+            else
+            {
+                writeln(errMsg);
+                return false;
+            }
         }
     }
 
@@ -89,10 +101,14 @@ class TextureAsset: Asset
             else
                 return false;
         }
-        else
+        else if (buffer.data.length)
         {
-            return false;
+            texture.createFromBuffer(buffer, true);
+            Delete(buffer.data);
+            return true;
         }
+        else
+            return false;
     }
 
     override void release()
@@ -101,6 +117,8 @@ class TextureAsset: Asset
             texture.release();
         if (image)
             Delete(image);
+        if (buffer.data.length)
+            Delete(buffer.data);
     }
 }
 

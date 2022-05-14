@@ -44,10 +44,12 @@ enum GL_COMPRESSED_RGBA_S3TC_DXT3_EXT = 0x83F2; // DXT3/BC2_UNORM
 enum GL_COMPRESSED_RGBA_S3TC_DXT5_EXT = 0x83F3; // DXT5/BC3_UNORM
 
 // RGTC formats
+/*
 enum GL_COMPRESSED_RED_RGTC1 = 0x8DBB;        // BC4_UNORM
 enum GL_COMPRESSED_SIGNED_RED_RGTC1 = 0x8DBC; // BC4_SNORM
 enum GL_COMPRESSED_RG_RGTC2 = 0x8DBD;         // BC5_UNORM
 enum GL_COMPRESSED_SIGNED_RG_RGTC2 = 0x8DBE;  // BC5_SNORM
+*/
 
 // BPTC formats
 enum GL_COMPRESSED_RGBA_BPTC_UNORM_ARB = 0x8E8C;         // BC7_UNORM
@@ -140,6 +142,14 @@ enum GLint[] compressedFormats = [
     GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_ARB
 ];
 
+struct TextureBuffer
+{
+    TextureFormat format;
+    TextureSize size;
+    uint mipLevels;
+    ubyte[] data;
+}
+
 class Texture: Owner
 {
     GLuint texture;
@@ -182,21 +192,21 @@ class Texture: Owner
         }
     }
     
-    void createFromBuffer(TextureFormat format, TextureSize size, uint mipLevels, bool genMipmaps, ubyte[] buffer)
+    void createFromBuffer(TextureBuffer buff, bool genMipmaps)
     {
         release();
         
         this.generateMipmaps = genMipmaps;
         
-        this.format = format;
-        this.size = size;
-        this.mipLevels = mipLevels;
+        this.format = buff.format;
+        this.size = buff.size;
+        this.mipLevels = buff.mipLevels;
         
         // TODO: 1D, 3D images
         if (isCubemap)
-            createCubemap(buffer);
+            createCubemap(buff.data);
         else if (format.target == GL_TEXTURE_2D)
-            createTexture2D(buffer);
+            createTexture2D(buff.data);
         else
             writeln("Texture creation failed: unsupported target ", format.target);
     }
@@ -274,6 +284,17 @@ class Texture: Owner
         }
         
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+        
+        if (mipLevels > 1)
+        {
+            minFilter = GL_LINEAR_MIPMAP_LINEAR;
+            magFilter = GL_LINEAR;
+        }
+        else
+        {
+            minFilter = GL_LINEAR;
+            magFilter = GL_LINEAR;
+        }
     }
     
     protected void createTexture2D(ubyte[] buffer)
@@ -397,6 +418,11 @@ class Texture: Owner
             else if (dimension == TextureDimension.D1)
             {
                 glBindTexture(GL_TEXTURE_1D, texture);
+                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, minFilter);
+                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, magFilter);
+                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, wrapS);
+                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, wrapT);
+                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_R, wrapR);
             }
             else if (dimension == TextureDimension.D2)
             {
@@ -410,6 +436,11 @@ class Texture: Owner
             else if (dimension == TextureDimension.D3)
             {
                 glBindTexture(GL_TEXTURE_3D, texture);
+                glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, minFilter);
+                glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, magFilter);
+                glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, wrapS);
+                glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, wrapT);
+                glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, wrapR);
             }
         }
     }
