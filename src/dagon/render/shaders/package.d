@@ -33,4 +33,5 @@ public
     import dagon.render.shaders.fallback;
     import dagon.render.shaders.forward;
     import dagon.render.shaders.shadow;
+    import dagon.render.shaders.sky;
 }

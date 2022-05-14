@@ -112,6 +112,7 @@ class DeferredForwardPass: RenderPass
             glScissor(0, 0, outputBuffer.width, outputBuffer.height);
             glViewport(0, 0, outputBuffer.width, outputBuffer.height);
             
+            /*
             Color4f backgroundColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
             if (state.environment)
                 backgroundColor = state.environment.backgroundColor.toLinear();
@@ -123,7 +124,8 @@ class DeferredForwardPass: RenderPass
                 backgroundColor.b,
                 backgroundColor.a);
             glClear(GL_COLOR_BUFFER_BIT);
-
+            */
+            
             glEnablei(GL_BLEND, 0);
             glDisablei(GL_BLEND, 1);
             glBlendFunci(0, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

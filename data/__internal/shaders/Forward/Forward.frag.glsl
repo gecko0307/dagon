@@ -158,23 +158,25 @@ subroutine(srtParallax) vec2 parallaxOcclusionMapping(in vec3 E, in vec2 uv, in 
 
 subroutine uniform srtParallax parallax;
 
+/*
+ * PBR
+ */
+uniform sampler2D roughnessMetallicTexture;
+uniform vec4 roughnessMetallicFactor;
 
 /*
  * Roughness
  */
-uniform sampler2D pbrTexture;
-
 subroutine float srtRoughness(in vec2 uv);
 
-uniform float roughnessScalar;
 subroutine(srtRoughness) float roughnessValue(in vec2 uv)
 {
-    return roughnessScalar;
+    return roughnessMetallicFactor.g;
 }
 
 subroutine(srtRoughness) float roughnessMap(in vec2 uv)
 {
-    return texture(pbrTexture, uv).g;
+    return texture(roughnessMetallicTexture, uv).g;
 }
 
 subroutine uniform srtRoughness roughness;
@@ -185,15 +187,14 @@ subroutine uniform srtRoughness roughness;
  */
 subroutine float srtMetallic(in vec2 uv);
 
-uniform float metallicScalar;
 subroutine(srtMetallic) float metallicValue(in vec2 uv)
 {
-    return metallicScalar;
+    return roughnessMetallicFactor.b;
 }
 
 subroutine(srtMetallic) float metallicMap(in vec2 uv)
 {
-    return texture(pbrTexture, uv).b;
+    return texture(roughnessMetallicTexture, uv).b;
 }
 
 subroutine uniform srtMetallic metallic;
@@ -207,12 +208,12 @@ subroutine float srtSpecularity(in vec2 uv);
 uniform float specularityScalar;
 subroutine(srtSpecularity) float specularityValue(in vec2 uv)
 {
-    return specularityScalar;
+    return roughnessMetallicFactor.r;
 }
 
 subroutine(srtSpecularity) float specularityMap(in vec2 uv)
 {
-    return texture(pbrTexture, uv).r;
+    return texture(roughnessMetallicTexture, uv).r;
 }
 
 subroutine uniform srtSpecularity specularity;
@@ -223,10 +224,10 @@ subroutine uniform srtSpecularity specularity;
  */
 subroutine vec3 srtEmission(in vec2 uv);
 
-uniform vec4 emissionVector;
+uniform vec4 emissionFactor;
 subroutine(srtEmission) vec3 emissionColorValue(in vec2 uv)
 {
-    return emissionVector.rgb * energy;
+    return emissionFactor.rgb * energy;
 }
 
 uniform sampler2D emissionTexture;
@@ -248,7 +249,7 @@ subroutine vec3 srtAmbient(in vec3 wN, in float roughness);
 uniform vec4 ambientVector;
 subroutine(srtAmbient) vec3 ambientColor(in vec3 wN, in float roughness)
 {
-    return toLinear(ambientVector.rgb) * ambientEnergy;
+    return ambientVector.rgb * ambientEnergy;
 }
 
 uniform sampler2D ambientTexture;
@@ -309,6 +310,10 @@ subroutine(srtShadow) float shadowMapCascaded(in vec3 pos, in vec3 N)
 subroutine uniform srtShadow shadowMap;
 
 
+uniform sampler2D ambientBRDF;
+uniform bool haveAmbientBRDF;
+
+
 // Mie scaterring approximated with Henyey-Greenstein phase function.
 float scattering(float lightDotView)
 {
@@ -356,7 +361,7 @@ void main()
     float alpha = diff.a * opacity;
     float r = roughness(uv);
     float m = metallic(uv);
-    float s = specularity(uv);
+    float s = 1.0; //specularity(uv);
     vec3 f0 = mix(vec3(0.04), albedo, m);
     
     float shadow = shadowMap(eyePosition, N);
@@ -365,11 +370,13 @@ void main()
     
     // Ambient light
     {
-        vec3 ambientDiffuse = ambient(worldN, 0.99);
-        vec3 ambientSpecular = ambient(worldR, r) * s;
-        vec3 F = fresnelRoughness(max(dot(N, E), 0.0), f0, r);
+        vec3 irradiance = ambient(worldN, 0.99);
+        vec3 reflection = ambient(worldR, r) * s;
+        vec3 F = clamp(fresnelRoughness(dot(N, E), f0, r), 0.0, 1.0);
         vec3 kD = (1.0 - F) * (1.0 - m);
-        radiance += kD * ambientDiffuse * albedo + F * ambientSpecular;
+        vec2 brdf = haveAmbientBRDF? texture(ambientBRDF, vec2(dot(N, E), r)).rg : vec2(1.0, 0.0);
+        vec3 specular = reflection * clamp(F * brdf.x + brdf.y, 0.0, 1.0);
+        radiance += kD * irradiance * albedo + specular;
     }
     
     // Sun light
@@ -404,7 +411,7 @@ void main()
         
         if (sunScatteringShadow)
         {
-            vec3 startPosition = vec3(0.0);    
+            vec3 startPosition = vec3(0.0);
             vec3 rayVector = eyePosition;
             float rayLength = length(rayVector);
             vec3 rayDirection = rayVector / rayLength;

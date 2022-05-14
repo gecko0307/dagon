@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Timur Gafarov
+Copyright (c) 2017-2020 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,48 +25,32 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.postproc.shaders.tonemap;
+module dagon.render.shaders.sky;
 
 import std.stdio;
+import std.math;
+import std.conv;
 
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.math.vector;
 import dlib.math.matrix;
-import dlib.math.transformation;
-import dlib.math.interpolation;
 import dlib.image.color;
 import dlib.text.str;
 
 import dagon.core.bindings;
-import dagon.graphics.shader;
 import dagon.graphics.state;
-import dagon.render.deferred;
+import dagon.graphics.shader;
+import dagon.graphics.material;
 
-enum Tonemapper
-{
-    None = 0,
-    Reinhard = 1,
-    Hable = 2,
-    Uncharted = 2,
-    ACES = 3,
-    Filmic = 4,
-    Reinhard2 = 5,
-    Unreal = 6
-}
-
-class TonemapShader: Shader
+class SkyShader: Shader
 {
     String vs, fs;
 
-    bool enabled = true;
-    Tonemapper tonemapper = Tonemapper.ACES;
-    float exposure = 1.0f;
-
     this(Owner owner)
     {
-        vs = Shader.load("data/__internal/shaders/Tonemap/Tonemap.vert.glsl");
-        fs = Shader.load("data/__internal/shaders/Tonemap/Tonemap.frag.glsl");
+        vs = Shader.load("data/__internal/shaders/Sky/Sky.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/Sky/Sky.frag.glsl");
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
@@ -80,21 +64,38 @@ class TonemapShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        setParameter("viewSize", state.resolution);
-        setParameter("enabled", enabled);
+        Material mat = state.material;
 
-        setParameter("tonemapper", cast(int)tonemapper);
-        setParameter("exposure", exposure);
+        setParameter("modelViewMatrix", state.modelViewMatrix);
+        setParameter("projectionMatrix", state.projectionMatrix);
+        setParameter("normalMatrix", state.normalMatrix);
+        setParameter("viewMatrix", state.viewMatrix);
+        setParameter("invViewMatrix", state.invViewMatrix);
+        setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
 
-        // Texture 0 - color buffer
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, state.colorTexture);
-        setParameter("colorBuffer", 0);
-
-        // Texture 1 - depth buffer
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, state.depthTexture);
-        setParameter("depthBuffer", 1);
+        // Diffuse
+        glActiveTexture(GL_TEXTURE4);
+        
+        if (mat.baseColorTexture)
+        {
+            if (mat.baseColorTexture.isCubemap)
+            {
+                mat.baseColorTexture.bind();
+                setParameter("envTextureCube", cast(int)4);
+                setParameterSubroutine("environment", ShaderType.Fragment, "environmentCubemap");
+            }
+            else
+            {
+                mat.baseColorTexture.bind();
+                setParameter("envTexture", cast(int)4);
+                setParameterSubroutine("environment", ShaderType.Fragment, "environmentTexture");
+            }
+        }
+        else
+        {
+            setParameter("envColor", mat.baseColorFactor);
+            setParameterSubroutine("environment", ShaderType.Fragment, "environmentColor");
+        }
 
         glActiveTexture(GL_TEXTURE0);
 
@@ -105,11 +106,9 @@ class TonemapShader: Shader
     {
         super.unbindParameters(state);
 
-        glActiveTexture(GL_TEXTURE0);
+        glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, 0);
-
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
         glActiveTexture(GL_TEXTURE0);
     }

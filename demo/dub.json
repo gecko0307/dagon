@@ -16,9 +16,8 @@
     ],
     
     "dependencies": {
-        "dagon": {
-            "path": ".."
-        }
+        "dagon": { "path": ".." },
+        "dagon:stbi": { "path": ".." }
     },
     
     "buildRequirements":[

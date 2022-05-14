@@ -1,0 +1,114 @@
+{
+    "asset" : {
+        "generator" : "Khronos glTF Blender I/O v1.8.19",
+        "version" : "2.0"
+    },
+    "scene" : 0,
+    "scenes" : [
+        {
+            "name" : "Scene",
+            "nodes" : [
+                0
+            ]
+        }
+    ],
+    "nodes" : [
+        {
+            "mesh" : 0,
+            "name" : "Suzanne"
+        }
+    ],
+    "materials" : [
+        {
+            "doubleSided" : true,
+            "name" : "mRed",
+            "pbrMetallicRoughness" : {
+                "baseColorFactor" : [
+                    1.0, 0.2, 0.2, 1.0
+                ],
+                "metallicFactor" : 0,
+                "roughnessFactor" : 0.8
+            }
+        }
+    ],
+    "meshes" : [
+        {
+            "name" : "Mesh",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 0,
+                        "NORMAL" : 1,
+                        "TEXCOORD_0" : 2
+                    },
+                    "indices" : 3,
+                    "material" : 0
+                }
+            ]
+        }
+    ],
+    "accessors" : [
+        {
+            "bufferView" : 0,
+            "componentType" : 5126,
+            "count" : 2919,
+            "max" : [
+                1.325934886932373,
+                0.9392361640930176,
+                0.8223199844360352
+            ],
+            "min" : [
+                -1.3259347677230835,
+                -0.9704862236976624,
+                -0.7782661318778992
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 1,
+            "componentType" : 5126,
+            "count" : 2919,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 2,
+            "componentType" : 5126,
+            "count" : 2919,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 3,
+            "componentType" : 5123,
+            "count" : 11808,
+            "type" : "SCALAR"
+        }
+    ],
+    "bufferViews" : [
+        {
+            "buffer" : 0,
+            "byteLength" : 35028,
+            "byteOffset" : 0
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 35028,
+            "byteOffset" : 35028
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 23352,
+            "byteOffset" : 70056
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 23616,
+            "byteOffset" : 93408
+        }
+    ],
+    "buffers" : [
+        {
+            "byteLength" : 117024,
+            "uri" : "suzanne.bin"
+        }
+    ]
+}

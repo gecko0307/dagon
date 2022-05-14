@@ -55,6 +55,8 @@ enum DagonEvent
     Exit = -1
 }
 
+enum GL_FRAMEBUFFER_SRGB = 0x8DB9;
+
 enum string[GLenum] GLErrorStrings = [
     GL_NO_ERROR: "GL_NO_ERROR",
     GL_INVALID_ENUM: "GL_INVALID_ENUM",
@@ -192,12 +194,12 @@ class Application: EventListener
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+        //SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
 
         window = SDL_CreateWindow(toStringz(windowTitle),
             SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
         if (window is null)
             exitWithError("Error: failed to create window: " ~ to!string(SDL_GetError()));
-
 
         glcontext = SDL_GL_CreateContext(window);
         if (glcontext is null)
@@ -227,6 +229,7 @@ class Application: EventListener
         super(_eventManager, null);
 
         // Initialize OpenGL
+        //glEnable(GL_FRAMEBUFFER_SRGB);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClearDepth(1.0);
         glEnable(GL_SCISSOR_TEST);
