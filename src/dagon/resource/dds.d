@@ -37,7 +37,7 @@ import dlib.image.io.utils;
 import dagon.core.bindings;
 import dagon.graphics.texture;
 
-version = DDSDebug;
+//version = DDSDebug;
 
 struct DDSPixelFormat
 {
