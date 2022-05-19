@@ -37,7 +37,7 @@ import dlib.image.io.utils;
 import dagon.core.bindings;
 import dagon.graphics.texture;
 
-//version = DDSDebug;
+version = DDSDebug;
 
 struct DDSPixelFormat
 {
@@ -209,7 +209,48 @@ enum DXGIFormat
     B4G4R4A4_UNORM = 115,
     P208 = 130,
     V208 = 131,
-    V408 = 132
+    V408 = 132,
+    ASTC_4X4_UNORM = 134,
+    ASTC_4X4_UNORM_SRGB = 135,
+    ASTC_5X4_TYPELESS = 137,
+    ASTC_5X4_UNORM = 138,
+    ASTC_5X4_UNORM_SRGB = 139,
+    ASTC_5X5_TYPELESS = 141,
+    ASTC_5X5_UNORM = 142,
+    ASTC_5X5_UNORM_SRGB = 143,
+    ASTC_6X5_TYPELESS = 145,
+    ASTC_6X5_UNORM = 146,
+    ASTC_6X5_UNORM_SRGB = 147,
+    ASTC_6X6_TYPELESS = 149,
+    ASTC_6X6_UNORM = 150,
+    ASTC_6X6_UNORM_SRGB = 151,
+    ASTC_8X5_TYPELESS = 153,
+    ASTC_8X5_UNORM = 154,
+    ASTC_8X5_UNORM_SRGB = 155,
+    ASTC_8X6_TYPELESS = 157,
+    ASTC_8X6_UNORM = 158,
+    ASTC_8X6_UNORM_SRGB = 159,
+    ASTC_8X8_TYPELESS = 161,
+    ASTC_8X8_UNORM = 162,
+    ASTC_8X8_UNORM_SRGB = 163,
+    ASTC_10X5_TYPELESS = 165,
+    ASTC_10X5_UNORM = 166,
+    ASTC_10X5_UNORM_SRGB = 167,
+    ASTC_10X6_TYPELESS = 169,
+    ASTC_10X6_UNORM = 170,
+    ASTC_10X6_UNORM_SRGB = 171,
+    ASTC_10X8_TYPELESS = 173,
+    ASTC_10X8_UNORM = 174,
+    ASTC_10X8_UNORM_SRGB = 175,
+    ASTC_10X10_TYPELESS = 177,
+    ASTC_10X10_UNORM = 178,
+    ASTC_10X10_UNORM_SRGB = 179,
+    ASTC_12X10_TYPELESS = 181,
+    ASTC_12X10_UNORM = 182,
+    ASTC_12X10_UNORM_SRGB = 183,
+    ASTC_12X12_TYPELESS = 185,
+    ASTC_12X12_UNORM = 186,
+    ASTC_12X12_UNORM_SRGB = 187
 }
 
 enum Caps
@@ -462,6 +503,15 @@ bool loadDDS(InputStream istrm, TextureBuffer* buffer)
             format.internalFormat = GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_ARB;
             format.blockSize = 16;
             break;
+        case DXGIFormat.ASTC_4X4_UNORM:
+            format.internalFormat = GL_COMPRESSED_RGBA_ASTC_4x4_KHR;
+            format.blockSize = 16;
+            break;
+        case DXGIFormat.ASTC_4X4_UNORM_SRGB:
+            format.internalFormat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR;
+            format.blockSize = 16;
+            break;
+        // TODO: other ASTC formats
         default:
             return error("loadDDS error: unsupported resource format");
     }
