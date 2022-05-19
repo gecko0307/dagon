@@ -102,9 +102,10 @@ subroutine(srtHeight) float heightValue(in vec2 uv)
     return heightScalar;
 }
 
+uniform sampler2D heightTexture;
 subroutine(srtHeight) float heightMap(in vec2 uv)
 {
-    return texture(normalTexture, uv).a;
+    return texture(heightTexture, uv).r;
 }
 
 subroutine uniform srtHeight height;
