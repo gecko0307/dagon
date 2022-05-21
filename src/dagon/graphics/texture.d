@@ -523,6 +523,12 @@ class Texture: Owner
             return 0;
     }
     
+    bool hasAlpha() @property
+    {
+        // TODO
+        return true;
+    }
+    
     bool isCompressed() @property
     {
         return compressedFormats.canFind(format.internalFormat);

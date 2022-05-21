@@ -1106,14 +1106,11 @@ class GLTFAsset: Asset, TriangleSet
                         Texture diffuseTex = material.baseColorTexture;
                         if (diffuseTex)
                         {
-                            // TODO: Texture.hasAlpha
-                            /*
-                            if (diffuseTex.image.pixelFormat == IntegerPixelFormat.RGBA8)
+                            if (diffuseTex.hasAlpha)
                             {
-                                material.blending = Transparent;
+                                material.blendMode = Transparent;
                                 node.entity.transparent = true;
                             }
-                            */
                         }
                         else if (material.baseColorFactor.a < 1.0f || material.opacity < 1.0f)
                         {

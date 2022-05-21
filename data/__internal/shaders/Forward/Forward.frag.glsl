@@ -245,33 +245,33 @@ subroutine uniform srtEmission emission;
  */
 uniform float ambientEnergy;
 
-subroutine vec3 srtAmbient(in vec3 wN, in float roughness);
+subroutine vec3 srtAmbient(in vec3 wN, in float perceptualRoughness);
 
 uniform vec4 ambientVector;
-subroutine(srtAmbient) vec3 ambientColor(in vec3 wN, in float roughness)
+subroutine(srtAmbient) vec3 ambientColor(in vec3 wN, in float perceptualRoughness)
 {
     return ambientVector.rgb * ambientEnergy;
 }
 
 uniform sampler2D ambientTexture;
-subroutine(srtAmbient) vec3 ambientEquirectangularMap(in vec3 wN, in float roughness)
+subroutine(srtAmbient) vec3 ambientEquirectangularMap(in vec3 wN, in float perceptualRoughness)
 {
     ivec2 envMapSize = textureSize(ambientTexture, 0);
     float resolution = float(max(envMapSize.x, envMapSize.y));
-    //float glossyExponent = 2.0 / pow(roughness, 4.0) - 2.0;
+    //float glossyExponent = 2.0 / pow(perceptualRoughness, 4.0) - 2.0;
     //float lod = log2(resolution * sqrt(3.0)) - 0.5 * log2(glossyExponent + 1.0);
-    float lod = log2(resolution) * roughness;
+    float lod = log2(resolution) * perceptualRoughness;
     return textureLod(ambientTexture, envMapEquirect(wN), lod).rgb * ambientEnergy;
 }
 
 uniform samplerCube ambientTextureCube;
-subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float roughness)
+subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float perceptualRoughness)
 {
     ivec2 envMapSize = textureSize(ambientTextureCube, 0);
     float resolution = float(max(envMapSize.x, envMapSize.y));
-    //float glossyExponent = 2.0 / pow(roughness, 4.0) - 2.0;
+    //float glossyExponent = 2.0 / pow(perceptualRoughness, 4.0) - 2.0;
     //float lod = log2(resolution * sqrt(3.0)) - 0.5 * log2(glossyExponent + 1.0);
-    float lod = log2(resolution) * roughness;
+    float lod = log2(resolution) * perceptualRoughness;
     return textureLod(ambientTextureCube, wN, lod).rgb * ambientEnergy;
 }
 
@@ -374,7 +374,7 @@ void main()
     // Ambient light
     {
         vec3 irradiance = ambient(worldN, 0.99);
-        vec3 reflection = ambient(worldR, r) * s;
+        vec3 reflection = ambient(worldR, sqrt(r)) * s;
         vec3 F = clamp(fresnelRoughness(dot(N, E), f0, r), 0.0, 1.0);
         vec3 kD = (1.0 - F) * (1.0 - m);
         vec2 brdf = haveAmbientBRDF? texture(ambientBRDF, vec2(dot(N, E), r)).rg : vec2(1.0, 0.0);
