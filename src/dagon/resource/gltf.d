@@ -831,7 +831,8 @@ class GLTFAsset: Asset, TriangleSet
                             material.emissionTexture = emissiveTex;
                     }
                 }
-                else if ("emissiveFactor" in ma)
+                
+                if ("emissiveFactor" in ma)
                 {
                     Color4f emissiveFactor = ma["emissiveFactor"].asColor;
                     material.emissionFactor = emissiveFactor;

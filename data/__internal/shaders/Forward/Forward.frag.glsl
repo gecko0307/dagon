@@ -226,15 +226,15 @@ subroutine uniform srtSpecularity specularity;
 subroutine vec3 srtEmission(in vec2 uv);
 
 uniform vec4 emissionFactor;
-subroutine(srtEmission) vec3 emissionColorValue(in vec2 uv)
+subroutine(srtEmission) vec3 emissionValue(in vec2 uv)
 {
     return emissionFactor.rgb * energy;
 }
 
 uniform sampler2D emissionTexture;
-subroutine(srtEmission) vec3 emissionColorTexture(in vec2 uv)
+subroutine(srtEmission) vec3 emissionMap(in vec2 uv)
 {
-    return texture(emissionTexture, uv).rgb * energy;
+    return texture(emissionTexture, uv).rgb * emissionFactor.rgb * energy;
 }
 
 subroutine uniform srtEmission emission;
@@ -257,9 +257,10 @@ uniform sampler2D ambientTexture;
 subroutine(srtAmbient) vec3 ambientEquirectangularMap(in vec3 wN, in float roughness)
 {
     ivec2 envMapSize = textureSize(ambientTexture, 0);
-    float size = float(max(envMapSize.x, envMapSize.y));
-    float glossyExponent = 2.0 / pow(roughness, 4.0) - 2.0;
-    float lod = log2(size * sqrt(3.0)) - 0.5 * log2(glossyExponent + 1.0);
+    float resolution = float(max(envMapSize.x, envMapSize.y));
+    //float glossyExponent = 2.0 / pow(roughness, 4.0) - 2.0;
+    //float lod = log2(resolution * sqrt(3.0)) - 0.5 * log2(glossyExponent + 1.0);
+    float lod = log2(resolution) * roughness;
     return textureLod(ambientTexture, envMapEquirect(wN), lod).rgb * ambientEnergy;
 }
 
@@ -267,9 +268,10 @@ uniform samplerCube ambientTextureCube;
 subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float roughness)
 {
     ivec2 envMapSize = textureSize(ambientTextureCube, 0);
-    float size = float(max(envMapSize.x, envMapSize.y));
-    float glossyExponent = 2.0 / pow(roughness, 4.0) - 2.0;
-    float lod = log2(size * sqrt(3.0)) - 0.5 * log2(glossyExponent + 1.0);
+    float resolution = float(max(envMapSize.x, envMapSize.y));
+    //float glossyExponent = 2.0 / pow(roughness, 4.0) - 2.0;
+    //float lod = log2(resolution * sqrt(3.0)) - 0.5 * log2(glossyExponent + 1.0);
+    float lod = log2(resolution) * roughness;
     return textureLod(ambientTextureCube, wN, lod).rgb * ambientEnergy;
 }
 
@@ -367,7 +369,7 @@ void main()
     
     float shadow = shadowMap(eyePosition, N);
     
-    vec3 radiance = vec3(0.0);
+    vec3 radiance = toLinear(emission(uv));
     
     // Ambient light
     {
