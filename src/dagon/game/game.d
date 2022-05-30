@@ -146,4 +146,9 @@ class Game: Application
         if (dynamicViewport)
             resize(width, height);
     }
+    
+    GLuint frameTexture() @property
+    {
+        return presentRenderer.inputBuffer.colorTexture;
+    }
 }
