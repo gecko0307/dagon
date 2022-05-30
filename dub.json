@@ -15,20 +15,14 @@
         "src",
         "thirdparty/bindbc-loader-1.0.0/source",
         "thirdparty/bindbc-opengl-1.0.0/source",
-        "thirdparty/bindbc-sdl-1.1.2/source",
-        "thirdparty/bindbc-freetype-0.9.1/source",
-        "thirdparty/bindbc-nuklear-0.4.3/source",
-        "thirdparty/bindbc-newton-0.2.0/src"
+        "thirdparty/bindbc-sdl-1.1.2/source"
     ],
     
     "sourcePaths": [
         "src",
         "thirdparty/bindbc-loader-1.0.0/source",
         "thirdparty/bindbc-opengl-1.0.0/source",
-        "thirdparty/bindbc-sdl-1.1.2/source",
-        "thirdparty/bindbc-freetype-0.9.1/source",
-        "thirdparty/bindbc-nuklear-0.4.3/source",
-        "thirdparty/bindbc-newton-0.2.0/src"
+        "thirdparty/bindbc-sdl-1.1.2/source"
     ],
     
     "stringImportPaths": ["data/__internal"],
@@ -87,9 +81,11 @@
         {
             "name": "ftfont",
             "importPaths": [
+                "thirdparty/bindbc-freetype-0.9.1/source",
                 "extensions/ftfont/src"
             ],
             "sourcePaths": [
+                "thirdparty/bindbc-freetype-0.9.1/source",
                 "extensions/ftfont/src"
             ],
             "dependencies": {
@@ -107,9 +103,11 @@
         {
             "name": "nuklear",
             "importPaths": [
+                "thirdparty/bindbc-nuklear-0.4.3/source",
                 "extensions/nuklear/src"
             ],
             "sourcePaths": [
+                "thirdparty/bindbc-nuklear-0.4.3/source",
                 "extensions/nuklear/src"
             ],
             "dependencies": {
@@ -126,11 +124,36 @@
             "copyFiles-windows-x86_64": ["thirdparty/bindbc-nuklear-0.4.3/lib/win64/*.dll"]
         },
         {
+            "name": "imgui",
+            "importPaths": [
+                "thirdparty/bindbc-imgui-0.6.1/source",
+                "extensions/imgui/src"
+            ],
+            "sourcePaths": [
+                "thirdparty/bindbc-imgui-0.6.1/source",
+                "extensions/imgui/src"
+            ],
+            "dependencies": {
+                "dagon": "*",
+                "dagon:ftfont": "*",
+                "dlib": "~>1.0.0"
+            },
+            
+            "versions": [
+                "USE_SDL2"
+            ],
+            
+            "copyFiles-windows-x86": ["thirdparty/bindbc-imgui-0.6.1/lib/x86/*.dll"],
+            "copyFiles-windows-x86_64": ["thirdparty/bindbc-imgui-0.6.1/lib/x86_64/*.dll"]
+        },
+        {
             "name": "newton",
             "importPaths": [
+                "thirdparty/bindbc-newton-0.2.0/src",
                 "extensions/newton/src"
             ],
             "sourcePaths": [
+                "thirdparty/bindbc-newton-0.2.0/src",
                 "extensions/newton/src"
             ],
             "dependencies": {
