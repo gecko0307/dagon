@@ -1,5 +1,5 @@
 
-//          Copyright 2018 - 2021 Michael D. Parker
+//          Copyright 2018 - 2022 Michael D. Parker
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
@@ -48,6 +48,9 @@ static if(staticBinding) {
             static if(sdlSupport >= SDLSupport.sdl2014) {
                 SDL_bool SDL_AndroidRequestPermission(const(char)* permission);
             }
+            static if(sdlSupport >= SDLSupport.sdl2016) {
+                int SDL_AndroidShowToast(const(char)* message, int duration, int gravity, int xoffset, int yoffset);
+            }
         }
         else version(Windows) {
             static if(sdlSupport >= SDLSupport.sdl201) {
@@ -60,10 +63,16 @@ static if(staticBinding) {
             static if(sdlSupport >= SDLSupport.sdl204) {
                 void SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void* userdata);
             }
+            static if(sdlSupport >= SDLSupport.sdl2016) {
+                void SDL_RenderGetD3D11Device(SDL_Renderer* renderer);
+            }
         }
         else version(linux) {
             static if(sdlSupport >= SDLSupport.sdl209) {
                 int SDL_LinuxSetThreadPriority(long threadID, int priority);
+            }
+            static if(sdlSupport >= SDLSupport.sdl2018) {
+                int SDL_LinuxSetThreadPriorityAndPolicy(long threadID, int sdlPriority, int schedPolicy);
             }
         }
     }
@@ -125,6 +134,14 @@ else {
                 pSDL_AndroidRequestPermission SDL_AndroidRequestPermission;
             }
         }
+        static if(sdlSupport >= SDLSupport.sdl2016) {
+            extern(C) @nogc nothrow {
+                alias pSDL_AndroidShowToast = int function(const(char)* message, int duration, int gravity, int xoffset, int yoffset);
+            }
+            __gshared {
+                pSDL_AndroidShowToast SDL_AndroidShowToast;
+            }
+        }
     }
     else version(Windows) {
         static if(sdlSupport >= SDLSupport.sdl201) {
@@ -158,6 +175,16 @@ else {
                 pSDL_SetWindowsMessageHook SDL_SetWindowsMessageHook;
             }
         }
+
+        static if(sdlSupport >= SDLSupport.sdl2016) {
+            extern(C) @nogc nothrow {
+                alias pSDL_RenderGetD3D11Device = void function(SDL_Renderer* renderer);
+            }
+
+            __gshared {
+                pSDL_RenderGetD3D11Device SDL_RenderGetD3D11Device;
+            }
+        }
     }
     else version(linux) {
         static if(sdlSupport >= SDLSupport.sdl209) {
@@ -167,6 +194,16 @@ else {
 
             __gshared {
                 pSDL_LinuxSetThreadPriority SDL_LinuxSetThreadPriority;
+            }
+        }
+
+        static if(sdlSupport >= SDLSupport.sdl2018) {
+            extern(C) @nogc nothrow {
+                alias pSDL_LinuxSetThreadPriorityAndPolicy = int function(long threadID, int sdlPriority, int schedPolicy);
+            }
+
+            __gshared {
+                pSDL_LinuxSetThreadPriorityAndPolicy SDL_LinuxSetThreadPriorityAndPolicy;
             }
         }
     }

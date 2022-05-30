@@ -122,6 +122,8 @@ class EventManager
     SDL_Joystick* joystick = null;
 
     InputManager inputManager;
+    
+    void delegate(SDL_Event* event) onProcessEvent;
 
     this(SDL_Window* win, uint winWidth, uint winHeight)
     {
@@ -249,6 +251,7 @@ class EventManager
 
         while(SDL_PollEvent(&event))
         {
+            if (onProcessEvent) onProcessEvent(&event);
             Event e;
             switch (event.type)
             {

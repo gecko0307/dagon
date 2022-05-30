@@ -1,5 +1,5 @@
 
-//          Copyright 2018 - 2021 Michael D. Parker
+//          Copyright 2018 - 2022 Michael D. Parker
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
@@ -15,6 +15,7 @@ import bindbc.sdl.bind.sdlpixels : SDL_Color;
 import bindbc.sdl.bind.sdlrwops : SDL_RWops;
 import bindbc.sdl.bind.sdlsurface : SDL_Surface;
 import bindbc.sdl.bind.sdlversion : SDL_version;
+import bindbc.sdl.bind.sdlstdinc : SDL_bool;
 
 alias TTF_SetError = SDL_SetError;
 alias TTF_GetError = SDL_GetError;
@@ -25,12 +26,22 @@ enum SDLTTFSupport {
     sdlTTF2012 = 2012,
     sdlTTF2013 = 2013,
     sdlTTF2014 = 2014,
+    sdlTTF2015 = 2015,
+    sdlTTF2018 = 2018,
 }
 
 enum ubyte SDL_TTF_MAJOR_VERSION = 2;
 enum ubyte SDL_TTF_MINOR_VERSION = 0;
 
-version(SDL_TTF_2014) {
+version(SDL_TTF_2018) {
+    enum sdlTTFSupport = SDLTTFSupport.sdlTTF2018;
+    enum ubyte SDL_TTF_PATCHLEVEL = 18;
+}
+else version(SDL_TTF_2015) {
+    enum sdlTTFSupport = SDLTTFSupport.sdlTTF2015;
+    enum ubyte SDL_TTF_PATCHLEVEL = 15;
+}
+else version(SDL_TTF_2014) {
     enum sdlTTFSupport = SDLTTFSupport.sdlTTF2014;
     enum ubyte SDL_TTF_PATCHLEVEL = 14;
 }
@@ -65,12 +76,14 @@ enum {
     TTF_STYLE_STRIKETHROUGH = 0x08,
 }
 
-enum {
-    TTF_HINTING_NORMAL = 0,
-    TTF_HINTING_LIGHT = 1,
-    TTF_HINTING_MONO = 2,
-    TTF_HINTING_NONE = 3,
+enum TTF_HINTING_NORMAL = 0;
+enum TTF_HINTING_LIGHT = 1;
+enum TTF_HINTING_MONO = 2;
+enum TTF_HINTING_NONE = 3;
+static if(sdlTTFSupport >= SDLTTFSupport.sdlTTF2018){
+    enum TTF_HINTING_LIGHT_SUBPIXEL = 4;
 }
+
 
 struct TTF_Font;
 
@@ -79,10 +92,10 @@ static if(staticBinding) {
         SDL_version* TTF_Linked_Version();
         void TTF_ByteSwappedUNICODE(int swapped);
         int TTF_Init();
-        TTF_Font * TTF_OpenFont(const(char)* file, int ptsize);
-        TTF_Font * TTF_OpenFontIndex(const(char)* file, int ptsize, c_long index);
-        TTF_Font * TTF_OpenFontRW(SDL_RWops* src, int freesrc, int ptsize);
-        TTF_Font * TTF_OpenFontIndexRW(SDL_RWops* src, int freesrc, int ptsize, c_long index);
+        TTF_Font* TTF_OpenFont(const(char)* file, int ptsize);
+        TTF_Font* TTF_OpenFontIndex(const(char)* file, int ptsize, c_long index);
+        TTF_Font* TTF_OpenFontRW(SDL_RWops* src, int freesrc, int ptsize);
+        TTF_Font* TTF_OpenFontIndexRW(SDL_RWops* src, int freesrc, int ptsize, c_long index);
         int TTF_GetFontStyle(const(TTF_Font)* font);
         void TTF_SetFontStyle(const(TTF_Font)* font ,int style);
         int TTF_GetFontOutline(const(TTF_Font)* font);
@@ -124,8 +137,38 @@ static if(staticBinding) {
         int TTF_WasInit();
         int TTF_GetFontKerningSize(TTF_Font* font, int prev_index, int index);
 
-        static if(sdlTTFSupport >= SDLTTFSupport.sdlTTF2014)  {
+        static if(sdlTTFSupport >= SDLTTFSupport.sdlTTF2014) {
             int TTF_GetFontKerningSizeGlyph(TTF_Font* font, ushort previous_ch, ushort ch);
+        }
+
+        static if(sdlTTFSupport >= SDLTTFSupport.sdlTTF2018) {
+            void TTF_GetFreeTypeVersion(int* major, int* minor, int* patch);
+            void TTF_GetHarfBuzzVersion(int* major, int* minor, int* patch);
+            int TTF_SetFontSDF(TTF_Font* font, SDL_bool on_off);
+            SDL_bool TTF_GetFontSDF(const(TTF_Font)* font);
+            TTF_Font* TTF_OpenFontDPI(const(char)* file, int ptsize, uint hdpi, uint vdpi);
+            TTF_Font* TTF_OpenFontIndexDPI(const(char)*file, int ptsize, long index, uint hdpi, uint vdpi);
+            TTF_Font* TTF_OpenFontDPIRW(SDL_RWops* src, int freesrc, int ptsize, uint hdpi, uint vdpi);
+            TTF_Font* TTF_OpenFontIndexDPIRW(SDL_RWops* src, int freesrc, int ptsize, long index, uint hdpi, uint vdpi);
+            int TTF_SetFontSizeDPI(TTF_Font* font, int ptsize, uint hdpi, uint vdpi);
+            int TTF_GlyphIsProvided32(TTF_Font* font, uint ch);
+            int TTF_GlyphMetrics32(TTF_Font* font, uint ch, int* minx, int* maxx, int* miny, int* maxy, int* advance);
+            SDL_Surface* TTF_RenderGlyph32_Solid(TTF_Font* font, uint ch, SDL_Color fg);
+            SDL_Surface* TTF_RenderGlyph32_Shaded(TTF_Font* font, uint ch, SDL_Color fg, SDL_Color bg);
+            SDL_Surface* TTF_RenderGlyph32_Blended(TTF_Font* font, uint ch, SDL_Color fg);
+            int TTF_GetFontKerningSizeGlyphs32(TTF_Font* font, uint previous_ch, uint ch);
+            int TTF_SetDirection(int direction);
+            int TTF_SetScript(int script);
+            int TTF_MeasureText(TTF_Font* font, const(char)* text, int measure_width, int* extent, int* count);
+            int TTF_MeasureUTF8(TTF_Font* font, const(char)* text, int measure_width, int* extent, int* count);
+            int TTF_MeasureUNICODE(TTF_Font* font, const(ushort)* text, int measure_width, int *extent, int *count);
+            int TTF_SetFontSize(TTF_Font* font, int ptsize);
+            SDL_Surface* TTF_RenderText_Solid_Wrapped(TTF_Font* font, const(char)* text, SDL_Color fg, uint wrapLength);
+            SDL_Surface* TTF_RenderUTF8_Solid_Wrapped(TTF_Font* font, const(char)* text, SDL_Color fg, uint wrapLength);
+            SDL_Surface* TTF_RenderUNICODE_Solid_Wrapped(TTF_Font* font, const(ushort)* text, SDL_Color fg, uint wrapLength);
+            SDL_Surface* TTF_RenderText_Shaded_Wrapped(TTF_Font* font, const(char)* text, SDL_Color fg, SDL_Color bg, uint wrapLength);
+            SDL_Surface* TTF_RenderUTF8_Shaded_Wrapped(TTF_Font* font, const(char)* text, SDL_Color fg, SDL_Color bg, uint wrapLength);
+            SDL_Surface* TTF_RenderUNICODE_Shaded_Wrapped(TTF_Font* font, const(ushort)* text, SDL_Color fg, SDL_Color bg, uint wrapLength);
         }
     }
 }
@@ -238,6 +281,68 @@ else {
 
         __gshared {
             pTTF_GetFontKerningSizeGlyphs TTF_GetFontKerningSizeGlyphs;
+        }
+    }
+
+    static if(sdlTTFSupport >= SDLTTFSupport.sdlTTF2018) {
+        extern(C) @nogc nothrow {
+            alias pTTF_GetFreeTypeVersion = void function(int* major, int* minor, int* patch);
+            alias pTTF_GetHarfBuzzVersion = void function(int* major, int* minor, int* patch);
+            alias pTTF_SetFontSDF = int function(TTF_Font* font, SDL_bool on_off);
+            alias pTTF_GetFontSDF = SDL_bool function(const(TTF_Font)* font);
+            alias pTTF_OpenFontDPI = TTF_Font* function(const(char)* file, int ptsize, uint hdpi, uint vdpi);
+            alias pTTF_OpenFontIndexDPI = TTF_Font* function(const(char)*file, int ptsize, long index, uint hdpi, uint vdpi);
+            alias pTTF_OpenFontDPIRW = TTF_Font* function(SDL_RWops* src, int freesrc, int ptsize, uint hdpi, uint vdpi);
+            alias pTTF_OpenFontIndexDPIRW = TTF_Font* function(SDL_RWops* src, int freesrc, int ptsize, long index, uint hdpi, uint vdpi);
+            alias pTTF_SetFontSizeDPI = int function(TTF_Font* font, int ptsize, uint hdpi, uint vdpi);
+            alias pTTF_GlyphIsProvided32 = int function(TTF_Font* font, uint ch);
+            alias pTTF_GlyphMetrics32 = int function(TTF_Font* font, uint ch, int* minx, int* maxx, int* miny, int* maxy, int* advance);
+            alias pTTF_RenderGlyph32_Solid = SDL_Surface* function(TTF_Font* font, uint ch, SDL_Color fg);
+            alias pTTF_RenderGlyph32_Shaded = SDL_Surface* function(TTF_Font* font, uint ch, SDL_Color fg, SDL_Color bg);
+            alias pTTF_RenderGlyph32_Blended = SDL_Surface* function(TTF_Font* font, uint ch, SDL_Color fg);
+            alias pTTF_GetFontKerningSizeGlyphs32 = int function(TTF_Font* font, uint previous_ch, uint ch);
+            alias pTTF_SetDirection = int function(int direction);
+            alias pTTF_SetScript = int function(int script);
+            alias pTTF_MeasureText = int function(TTF_Font* font, const(char)* text, int measure_width, int* extent, int* count);
+            alias pTTF_MeasureUTF8 = int function(TTF_Font* font, const(char)* text, int measure_width, int* extent, int* count);
+            alias pTTF_MeasureUNICODE = int function(TTF_Font* font, const(ushort)* text, int measure_width, int *extent, int *count);
+            alias pTTF_SetFontSize = int function(TTF_Font* font, int ptsize);
+            alias pTTF_RenderText_Solid_Wrapped = SDL_Surface* function(TTF_Font* font, const(char)* text, SDL_Color fg, uint wrapLength);
+            alias pTTF_RenderUTF8_Solid_Wrapped = SDL_Surface* function(TTF_Font* font, const(char)* text, SDL_Color fg, uint wrapLength);
+            alias pTTF_RenderUNICODE_Solid_Wrapped = SDL_Surface* function(TTF_Font* font, const(ushort)* text, SDL_Color fg, uint wrapLength);
+            alias pTTF_RenderText_Shaded_Wrapped = SDL_Surface* function(TTF_Font* font, const(char)* text, SDL_Color fg, SDL_Color bg, uint wrapLength);
+            alias pTTF_RenderUTF8_Shaded_Wrapped = SDL_Surface* function(TTF_Font* font, const(char)* text, SDL_Color fg, SDL_Color bg, uint wrapLength);
+            alias pTTF_RenderUNICODE_Shaded_Wrapped = SDL_Surface* function(TTF_Font* font, const(ushort)* text, SDL_Color fg, SDL_Color bg, uint wrapLength);
+        }
+
+        __gshared {
+            pTTF_GetFreeTypeVersion TTF_GetFreeTypeVersion;
+            pTTF_GetHarfBuzzVersion TTF_GetHarfBuzzVersion;
+            pTTF_SetFontSDF TTF_SetFontSDF;
+            pTTF_GetFontSDF TTF_GetFontSDF;
+            pTTF_OpenFontDPI TTF_OpenFontDPI;
+            pTTF_OpenFontIndexDPI TTF_OpenFontIndexDPI;
+            pTTF_OpenFontDPIRW TTF_OpenFontDPIRW;
+            pTTF_OpenFontIndexDPIRW TTF_OpenFontIndexDPIRW;
+            pTTF_SetFontSizeDPI TTF_SetFontSizeDPI;
+            pTTF_GlyphIsProvided32 TTF_GlyphIsProvided32;
+            pTTF_GlyphMetrics32 TTF_GlyphMetrics32;
+            pTTF_RenderGlyph32_Solid TTF_RenderGlyph32_Solid;
+            pTTF_RenderGlyph32_Shaded TTF_RenderGlyph32_Shaded;
+            pTTF_RenderGlyph32_Blended TTF_RenderGlyph32_Blended;
+            pTTF_GetFontKerningSizeGlyphs32 TTF_GetFontKerningSizeGlyphs32;
+            pTTF_SetDirection TTF_SetDirection;
+            pTTF_SetScript TTF_SetScript;
+            pTTF_MeasureText TTF_MeasureText;
+            pTTF_MeasureUTF8 TTF_MeasureUTF8;
+            pTTF_MeasureUNICODE TTF_MeasureUNICODE;
+            pTTF_SetFontSize TTF_SetFontSize;
+            pTTF_RenderText_Solid_Wrapped TTF_RenderText_Solid_Wrapped;
+            pTTF_RenderUTF8_Solid_Wrapped TTF_RenderUTF8_Solid_Wrapped;
+            pTTF_RenderUNICODE_Solid_Wrapped TTF_RenderUNICODE_Solid_Wrapped;
+            pTTF_RenderText_Shaded_Wrapped TTF_RenderText_Shaded_Wrapped;
+            pTTF_RenderUTF8_Shaded_Wrapped TTF_RenderUTF8_Shaded_Wrapped;
+            pTTF_RenderUNICODE_Shaded_Wrapped TTF_RenderUNICODE_Shaded_Wrapped;
         }
     }
 
@@ -362,6 +467,39 @@ else {
 
             if(errorCount() != errCount) return SDLTTFSupport.badLibrary;
             else loadedVersion = SDLTTFSupport.sdlTTF2014;
+        }
+
+        static if(sdlTTFSupport >= SDLTTFSupport.sdlTTF2018) {
+            lib.bindSymbol(cast(void**)&TTF_GetFreeTypeVersion,"TTF_GetFreeTypeVersion");
+            lib.bindSymbol(cast(void**)&TTF_GetHarfBuzzVersion,"TTF_GetHarfBuzzVersion");
+            lib.bindSymbol(cast(void**)&TTF_SetFontSDF,"TTF_SetFontSDF");
+            lib.bindSymbol(cast(void**)&TTF_GetFontSDF,"TTF_GetFontSDF");
+            lib.bindSymbol(cast(void**)&TTF_OpenFontDPI,"TTF_OpenFontDPI");
+            lib.bindSymbol(cast(void**)&TTF_OpenFontIndexDPI,"TTF_OpenFontIndexDPI");
+            lib.bindSymbol(cast(void**)&TTF_OpenFontDPIRW,"TTF_OpenFontDPIRW");
+            lib.bindSymbol(cast(void**)&TTF_OpenFontIndexDPIRW,"TTF_OpenFontIndexDPIRW");
+            lib.bindSymbol(cast(void**)&TTF_SetFontSizeDPI,"TTF_SetFontSizeDPI");
+            lib.bindSymbol(cast(void**)&TTF_GlyphIsProvided32,"TTF_GlyphIsProvided32");
+            lib.bindSymbol(cast(void**)&TTF_GlyphMetrics32,"TTF_GlyphMetrics32");
+            lib.bindSymbol(cast(void**)&TTF_RenderGlyph32_Solid,"TTF_RenderGlyph32_Solid");
+            lib.bindSymbol(cast(void**)&TTF_RenderGlyph32_Shaded,"TTF_RenderGlyph32_Shaded");
+            lib.bindSymbol(cast(void**)&TTF_RenderGlyph32_Blended,"TTF_RenderGlyph32_Blended");
+            lib.bindSymbol(cast(void**)&TTF_GetFontKerningSizeGlyphs32,"TTF_GetFontKerningSizeGlyphs32");
+            lib.bindSymbol(cast(void**)&TTF_SetDirection,"TTF_SetDirection");
+            lib.bindSymbol(cast(void**)&TTF_SetScript,"TTF_SetScript");
+            lib.bindSymbol(cast(void**)&TTF_MeasureText,"TTF_MeasureText");
+            lib.bindSymbol(cast(void**)&TTF_MeasureUTF8,"TTF_MeasureUTF8");
+            lib.bindSymbol(cast(void**)&TTF_MeasureUNICODE,"TTF_MeasureUNICODE");
+            lib.bindSymbol(cast(void**)&TTF_SetFontSize,"TTF_SetFontSize");
+            lib.bindSymbol(cast(void**)&TTF_RenderText_Solid_Wrapped,"TTF_RenderText_Solid_Wrapped");
+            lib.bindSymbol(cast(void**)&TTF_RenderUTF8_Solid_Wrapped,"TTF_RenderUTF8_Solid_Wrapped");
+            lib.bindSymbol(cast(void**)&TTF_RenderUNICODE_Solid_Wrapped,"TTF_RenderUNICODE_Solid_Wrapped");
+            lib.bindSymbol(cast(void**)&TTF_RenderText_Shaded_Wrapped,"TTF_RenderText_Shaded_Wrapped");
+            lib.bindSymbol(cast(void**)&TTF_RenderUTF8_Shaded_Wrapped,"TTF_RenderUTF8_Shaded_Wrapped");
+            lib.bindSymbol(cast(void**)&TTF_RenderUNICODE_Shaded_Wrapped,"TTF_RenderUNICODE_Shaded_Wrapped");
+
+            if(errorCount() != errCount) return SDLTTFSupport.badLibrary;
+            else loadedVersion = SDLTTFSupport.sdlTTF2018;
         }
 
         return loadedVersion;

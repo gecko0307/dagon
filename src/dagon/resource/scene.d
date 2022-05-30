@@ -74,6 +74,7 @@ class Scene: EventListener
     bool isLoading = false;
     bool loaded = false;
     bool canRender = false;
+    bool focused = true;
 
     this(Application application)
     {
@@ -240,7 +241,8 @@ class Scene: EventListener
 
     void update(Time t)
     {
-        processEvents();
+        if (focused)
+            processEvents();
 
         if (isLoading)
         {

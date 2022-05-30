@@ -32,4 +32,5 @@ public
     import dagon.render.deferred.backgroundpass;
     import dagon.render.deferred.debugoutputpass;
     import dagon.render.deferred.forwardpass;
+    import dagon.render.deferred.geometrypass;
 }

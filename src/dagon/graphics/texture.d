@@ -150,6 +150,7 @@ enum uint[GLenum] numChannelsFormat = [
     GL_STENCIL_INDEX: 1,
     GL_DEPTH_COMPONENT: 1,
     GL_DEPTH_STENCIL: 1
+    // TODO: compressed formats
 ];
 
 enum GLint[] compressedFormats = [
@@ -525,8 +526,7 @@ class Texture: Owner
     
     bool hasAlpha() @property
     {
-        // TODO
-        return true;
+        return (numChannels == 4);
     }
     
     bool isCompressed() @property

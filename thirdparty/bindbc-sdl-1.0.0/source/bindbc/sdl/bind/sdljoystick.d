@@ -1,5 +1,5 @@
 
-//          Copyright 2018 - 2021 Michael D. Parker
+//          Copyright 2018 - 2022 Michael D. Parker
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
@@ -120,7 +120,7 @@ static if(staticBinding) {
             SDL_Joystick* SDL_JoystickFromPlayerIndex(int);
             void SDL_JoystickSetPlayerIndex(SDL_Joystick* joystick,int);
         }
-        static if(sdlSupport >= SDLSupport.sdl2012) {
+        static if(sdlSupport >= SDLSupport.sdl2014) {
             int SDL_JoystickAttachVirtual(SDL_JoystickType type, int naxes, int nbuttons, int nhats);
             int SDL_JoystickDetachVirtual(int device_index);
             SDL_bool SDL_JoystickIsVirtual(int device_index);
@@ -131,6 +131,13 @@ static if(staticBinding) {
             int SDL_JoystickRumbleTriggers(SDL_Joystick* joystick, ushort left_rumble, ushort right_rumble, uint duration_ms);
             SDL_bool SDL_JoystickHasLED(SDL_Joystick* joystick);
             int SDL_JoystickSetLED(SDL_Joystick* joystick, ubyte red, ubyte green, ubyte blue);
+        }
+        static if(sdlSupport >= SDLSupport.sdl2016) {
+            int SDL_JoystickSendEffect(SDL_Joystick* joystick, const(void)*data, int size);
+        }
+        static if(sdlSupport >= SDLSupport.sdl2018) {
+            SDL_bool SDL_JoystickHasRumble(SDL_Joystick* joystick);
+            SDL_bool SDL_JoystickHasRumbleTriggers(SDL_Joystick* joystick);
         }
     }
 }
@@ -279,6 +286,24 @@ else {
             pSDL_JoystickRumbleTriggers SDL_JoystickRumbleTriggers;
             pSDL_JoystickHasLED SDL_JoystickHasLED;
             pSDL_JoystickSetLED SDL_JoystickSetLED;
+        }
+    }
+    static if(sdlSupport >= SDLSupport.sdl2016) {
+        extern(C) @nogc nothrow {
+            alias pSDL_JoystickSendEffect = int function(SDL_Joystick* joystick, const(void)*data, int size);
+        }
+        __gshared {
+            pSDL_JoystickSendEffect SDL_JoystickSendEffect;
+        }
+    }
+    static if(sdlSupport >= SDLSupport.sdl2018) {
+        extern(C) @nogc nothrow {
+            alias pSDL_JoystickHasRumble = SDL_bool function(SDL_Joystick* joystick);
+            alias pSDL_JoystickHasRumbleTriggers = SDL_bool function(SDL_Joystick* joystick);
+        }
+        __gshared {
+            pSDL_JoystickHasRumble SDL_JoystickHasRumble;
+            pSDL_JoystickHasRumbleTriggers SDL_JoystickHasRumbleTriggers;
         }
     }
 }

@@ -1,5 +1,5 @@
 
-//          Copyright 2018 - 2021 Michael D. Parker
+//          Copyright 2018 - 2022 Michael D. Parker
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
@@ -17,7 +17,16 @@ struct SDL_version {
 enum SDL_MAJOR_VERSION = 2;
 enum SDL_MINOR_VERSION = 0;
 
-version(SDL_2014) {
+version(SDL_2020) {
+    enum ubyte SDL_PATCHLEVEL = 20;
+}
+else version(SDL_2018) {
+    enum ubyte SDL_PATCHLEVEL = 18;
+}
+else version(SDL_2016) {
+    enum ubyte SDL_PATCHLEVEL = 16;
+}
+else version(SDL_2014) {
     enum ubyte SDL_PATCHLEVEL = 14;
 }
 else version(SDL_2012) {

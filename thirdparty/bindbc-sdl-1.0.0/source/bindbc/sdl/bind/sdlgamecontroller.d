@@ -1,5 +1,5 @@
 
-//          Copyright 2018 - 2021 Michael D. Parker
+//          Copyright 2018 - 2022 Michael D. Parker
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
@@ -15,7 +15,22 @@ import bindbc.sdl.bind.sdlstdinc : SDL_bool;
 
 struct SDL_GameController;
 
-static if(sdlSupport >= SDLSupport.sdl2014) {
+static if(sdlSupport >= SDLSupport.sdl2016) {
+    enum SDL_GameControllerType {
+        SDL_CONTROLLER_TYPE_UNKNOWN = 0,
+        SDL_CONTROLLER_TYPE_XBOX360,
+        SDL_CONTROLLER_TYPE_XBOXONE,
+        SDL_CONTROLLER_TYPE_PS3,
+        SDL_CONTROLLER_TYPE_PS4,
+        SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO,
+        SDL_CONTROLLER_TYPE_VIRTUAL,
+        SDL_CONTROLLER_TYPE_PS5,
+        SDL_CONTROLLER_TYPE_AMAZON_LUNA,
+        SDL_CONTROLLER_TYPE_GOOGLE_STADIA
+    }
+    mixin(expandEnum!SDL_GameControllerType);
+}
+else static if(sdlSupport >= SDLSupport.sdl2014) {
     enum SDL_GameControllerType {
         SDL_CONTROLLER_TYPE_UNKNOWN = 0,
         SDL_CONTROLLER_TYPE_XBOX360,
@@ -196,6 +211,16 @@ static if(staticBinding) {
             SDL_bool SDL_GameControllerHasLED(SDL_GameController* gamecontroller);
             int SDL_GameControllerSetLED(SDL_GameController* gamecontroller, ubyte red, ubyte green, ubyte blue);
         }
+        static if(sdlSupport >= SDLSupport.sdl2016) {
+            int SDL_GameControllerSendEffect(SDL_GameController* gamecontroller, const(void)* data, int size);
+            float SDL_GameControllerGetSensorDataRate(SDL_GameController* gamecontroller, SDL_SensorType type);
+        }
+        static if(sdlSupport >= SDLSupport.sdl2018) {
+            SDL_bool SDL_GameControllerHasRumble(SDL_GameController* gamecontroller);
+            SDL_bool SDL_GameControllerHasRumbleTriggers(SDL_GameController* gamecontroller);
+            const(char)* SDL_GameControllerGetAppleSFSymbolsNameForButton(SDL_GameController* gamecontroller, SDL_GameControllerButton button);
+            const(char)* SDL_GameControllerGetAppleSFSymbolsNameForAxis(SDL_GameController* gamecontroller, SDL_GameControllerAxis axis);
+        }
     }
 }
 else {
@@ -340,6 +365,30 @@ else {
             pSDL_GameControllerRumbleTriggers SDL_GameControllerRumbleTriggers;
             pSDL_GameControllerHasLED SDL_GameControllerHasLED;
             pSDL_GameControllerSetLED SDL_GameControllerSetLED;
+        }
+    }
+    static if(sdlSupport >= SDLSupport.sdl2016) {
+        extern(C) @nogc nothrow {
+            alias pSDL_GameControllerSendEffect = int function(SDL_GameController* gamecontroller, const(void)* data, int size);
+            alias pSDL_GameControllerGetSensorDataRate = int function(SDL_GameController* gamecontroller, SDL_SensorType type);
+        }
+        __gshared {
+            pSDL_GameControllerSendEffect SDL_GameControllerSendEffect;
+            pSDL_GameControllerGetSensorDataRate SDL_GameControllerGetSensorDataRate;
+        }
+    }
+    static if(sdlSupport >= SDLSupport.sdl2018){
+        extern(C) @nogc nothrow {
+            alias pSDL_GameControllerHasRumble = SDL_bool function(SDL_GameController* gamecontroller);
+            alias pSDL_GameControllerHasRumbleTriggers = SDL_bool function(SDL_GameController* gamecontroller);
+            alias pSDL_GameControllerGetAppleSFSymbolsNameForButton = const(char)* function(SDL_GameController* gamecontroller, SDL_GameControllerButton button);
+            alias pSDL_GameControllerGetAppleSFSymbolsNameForAxis = const(char)* function(SDL_GameController* gamecontroller, SDL_GameControllerAxis axis);
+        }
+        __gshared {
+            pSDL_GameControllerHasRumble SDL_GameControllerHasRumble;
+            pSDL_GameControllerHasRumbleTriggers SDL_GameControllerHasRumbleTriggers;
+            pSDL_GameControllerGetAppleSFSymbolsNameForButton SDL_GameControllerGetAppleSFSymbolsNameForButton;
+            pSDL_GameControllerGetAppleSFSymbolsNameForAxis SDL_GameControllerGetAppleSFSymbolsNameForAxis;
         }
     }
 }

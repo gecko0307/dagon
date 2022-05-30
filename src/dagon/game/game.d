@@ -67,6 +67,8 @@ class Game: Application
     alias present = presentRenderer;
     
     Configuration config;
+    
+    bool dynamicViewport = true;
 
     this(uint w, uint h, bool fullscreen, string title, string[] args)
     {
@@ -132,10 +134,16 @@ class Game: Application
         }
     }
     
-    override void onResize(int width, int height)
+    void resize(int width, int height)
     {
         renderer.setViewport(0, 0, width, height);
         postProcessingRenderer.setViewport(0, 0, width, height);
         presentRenderer.setViewport(0, 0, width, height);
+    }
+    
+    override void onResize(int width, int height)
+    {
+        if (dynamicViewport)
+            resize(width, height);
     }
 }

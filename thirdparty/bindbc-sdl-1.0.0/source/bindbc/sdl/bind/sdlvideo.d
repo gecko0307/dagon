@@ -1,5 +1,5 @@
 
-//          Copyright 2018 - 2021 Michael D. Parker
+//          Copyright 2018 - 2022 Michael D. Parker
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
@@ -54,6 +54,10 @@ static if(sdlSupport >= SDLSupport.sdl206) {
 static if(sdlSupport >= SDLSupport.sdl206) {
     enum uint SDL_WINDOW_METAL = 0x20000000;
 }
+static if(sdlSupport >= SDLSupport.sdl2016) {
+    enum uint SDL_WINDOW_MOUSE_GRABBED = SDL_WINDOW_INPUT_GRABBED;
+    enum uint SDL_WINDOW_KEYBOARD_GRABBED = 0x00100000;
+}
 alias SDL_WindowFlags = uint;
 
 enum uint SDL_WINDOWPOS_UNDEFINED_MASK = 0x1FFF0000;
@@ -69,7 +73,31 @@ enum uint SDL_WINDOWPOS_CENTERED = SDL_WINDOWPOS_CENTERED_DISPLAY(0);
     uint SDL_WINDOWPOS_ISCENTERED(uint x) { return (x & 0xFFFF0000) == SDL_WINDOWPOS_CENTERED_MASK; }
 }
 
-static if(sdlSupport >= SDLSupport.sdl205) {
+static if(sdlSupport >= SDLSupport.sdl2018) {
+    enum SDL_WindowEventID : ubyte {
+        SDL_WINDOWEVENT_NONE,
+        SDL_WINDOWEVENT_SHOWN,
+        SDL_WINDOWEVENT_HIDDEN,
+        SDL_WINDOWEVENT_EXPOSED,
+        SDL_WINDOWEVENT_MOVED,
+        SDL_WINDOWEVENT_RESIZED,
+        SDL_WINDOWEVENT_SIZE_CHANGED,
+        SDL_WINDOWEVENT_MINIMIZED,
+        SDL_WINDOWEVENT_MAXIMIZED,
+        SDL_WINDOWEVENT_RESTORED,
+        SDL_WINDOWEVENT_ENTER,
+        SDL_WINDOWEVENT_LEAVE,
+        SDL_WINDOWEVENT_FOCUS_GAINED,
+        SDL_WINDOWEVENT_FOCUS_LOST,
+        SDL_WINDOWEVENT_CLOSE,
+        SDL_WINDOWEVENT_TAKE_FOCUS,
+        SDL_WINDOWEVENT_HIT_TEST,
+        SDL_WINDOWEVENT_ICCPROF_CHANGED,
+        SDL_WINDOWEVENT_DISPLAY_CHANGED,
+    }
+
+}
+else static if(sdlSupport >= SDLSupport.sdl205) {
     enum SDL_WindowEventID : ubyte {
         SDL_WINDOWEVENT_NONE,
         SDL_WINDOWEVENT_SHOWN,
@@ -138,6 +166,15 @@ static if(sdlSupport >= SDLSupport.sdl209) {
         SDL_ORIENTATION_PORTRAIT_FLIPPED,
     }
     mixin(expandEnum!SDL_DisplayOrientation);
+}
+
+static if(sdlSupport >= SDLSupport.sdl2016) {
+    enum SDL_FlashOperation {
+        SDL_FLASH_CANCEL,
+        SDL_FLASH_BRIEFLY,
+        SDL_FLASH_UNTIL_FOCUSED
+    }
+    mixin(expandEnum!SDL_FlashOperation);
 }
 
 alias SDL_GLContext = void*;
@@ -299,13 +336,15 @@ static if(sdlSupport >= SDLSupport.sdl204) {
     extern(C) nothrow alias SDL_HitTest = SDL_HitTestResult function(SDL_Window*,const(SDL_Point)*,void*);
 }
 
- static if(sdlSupport >= SDLSupport.sdl206) {
+static if(sdlSupport >= SDLSupport.sdl206) {
     enum SDL_GLContextResetNotification {
         SDL_GL_CONTEXT_RESET_NO_NOTIFICATION = 0x0000,
         SDL_GL_CONTEXT_RESET_LOSE_CONTEXT    = 0x0001,
     }
     mixin(expandEnum!SDL_GLContextResetNotification);
 }
+
+ 
 
 static if(staticBinding) {
     extern(C) @nogc nothrow {
@@ -402,6 +441,20 @@ static if(staticBinding) {
         }
         static if(sdlSupport >= SDLSupport.sdl209) {
             SDL_DisplayOrientation SDL_GetDisplayOrientation(int displayIndex);
+        }
+        static if(sdlSupport >= SDLSupport.sdl2016) {
+            int SDL_FlashWindow(SDL_Window* window, SDL_FlashOperation operation);
+            void SDL_SetWindowAlwaysOnTop(SDL_Window* window, SDL_bool on_top);
+            void SDL_SetWindowKeyboardGrab(SDL_Window* window, SDL_bool grabbed);
+            SDL_bool SDL_GetWindowKeyboardGrab(SDL_Window * window);
+            void SDL_SetWindowMouseGrab(SDL_Window* window, SDL_bool grabbed);
+            SDL_bool SDL_GetWindowMouseGrab(SDL_Window* window);
+        }
+        static if(sdlSupport >= SDLSupport.sdl2018) {
+            void* SDL_GetWindowICCProfile(SDL_Window* window, size_t* size);
+            int SDL_SetWindowMouseRect(SDL_Window* window, const(SDL_Rect)* rect);
+            const(SDL_Rect)* SDL_GetWindowMouseRect(SDL_Window* window);
+            
         }
     }
 }
@@ -615,6 +668,40 @@ else {
 
         __gshared {
             pSDL_GetDisplayOrientation SDL_GetDisplayOrientation;
+        }
+    }
+
+    static if(sdlSupport >= SDLSupport.sdl2016) {
+        extern(C) @nogc nothrow {
+            alias pSDL_FlashWindow = int function(SDL_Window* window, SDL_FlashOperation operation);
+            alias pSDL_SetWindowAlwaysOnTop = void function(SDL_Window* window, SDL_bool on_top);
+            alias pSDL_SetWindowKeyboardGrab = void function(SDL_Window* window, SDL_bool grabbed);
+            alias pSDL_GetWindowKeyboardGrab = SDL_bool function(SDL_Window* window);
+            alias pSDL_SetWindowMouseGrab = void function(SDL_Window* window, SDL_bool grabbed);
+            alias pSDL_GetWindowMouseGrab = SDL_bool function(SDL_Window* window);
+        }
+
+        __gshared {
+            pSDL_FlashWindow SDL_FlashWindow;
+            pSDL_SetWindowAlwaysOnTop SDL_SetWindowAlwaysOnTop;
+            pSDL_SetWindowKeyboardGrab SDL_SetWindowKeyboardGrab;
+            pSDL_GetWindowKeyboardGrab SDL_GetWindowKeyboardGrab;
+            pSDL_SetWindowMouseGrab SDL_SetWindowMouseGrab;
+            pSDL_GetWindowMouseGrab SDL_GetWindowMouseGrab;
+        }
+    }
+
+    static if(sdlSupport >= SDLSupport.sdl2018) {
+        extern(C) @nogc nothrow {
+            alias pSDL_GetWindowICCProfile = void* function(SDL_Window* window, size_t* size);
+            alias pSDL_SetWindowMouseRect = int function(SDL_Window* window, const(SDL_Rect)* rect);
+            alias pSDL_GetWindowMouseRect = const(SDL_Rect)* function(SDL_Window* window);
+        }
+
+        __gshared {
+            pSDL_GetWindowICCProfile SDL_GetWindowICCProfile;
+            pSDL_SetWindowMouseRect SDL_SetWindowMouseRect;
+            pSDL_GetWindowMouseRect SDL_GetWindowMouseRect;
         }
     }
 }

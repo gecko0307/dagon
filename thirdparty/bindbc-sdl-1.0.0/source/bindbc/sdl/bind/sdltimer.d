@@ -1,5 +1,5 @@
 
-//          Copyright 2018 - 2021 Michael D. Parker
+//          Copyright 2018 - 2022 Michael D. Parker
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
@@ -29,6 +29,10 @@ static if(staticBinding) {
         void SDL_Delay(uint ms);
         SDL_TimerID SDL_AddTimer(uint interval, SDL_TimerCallback callback, void* param);
         SDL_bool SDL_RemoveTimer(SDL_TimerID id);
+        
+        static if(sdlSupport >= SDLSupport.sdl2018) {
+            ulong SDL_GetTicks64();
+        }
     }
 }
 else {
@@ -48,5 +52,14 @@ else {
         pSDL_Delay SDL_Delay;
         pSDL_AddTimer SDL_AddTimer;
         pSDL_RemoveTimer SDL_RemoveTimer;
+    }
+    
+    static if(sdlSupport >= SDLSupport.sdl2018) {
+        extern(C) @nogc nothrow {
+            alias pSDL_GetTicks64 = ulong function();
+        }
+        __gshared {
+            pSDL_GetTicks64 SDL_GetTicks64;
+        }
     }
 }

@@ -1,5 +1,5 @@
 
-//          Copyright 2018 - 2021 Michael D. Parker
+//          Copyright 2018 - 2022 Michael D. Parker
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
@@ -22,7 +22,7 @@ enum {
     SDL_PRESSED = 1,
 }
 
-static if(sdlSupport >= SDLSupport.sdl209) {
+static if(sdlSupport >= SDLSupport.sdl2014) {
     enum SDL_EventType {
         SDL_FIRSTEVENT = 0,
         SDL_QUIT = 0x100,
@@ -432,6 +432,10 @@ struct SDL_MouseWheelEvent {
     int y;
     static if(sdlSupport >= SDLSupport.sdl204) {
         uint direction;
+    }
+    static if(sdlSupport >= SDLSupport.sdl2018) {
+        float preciseX;
+        float preciseY;
     }
 }
 

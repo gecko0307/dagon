@@ -1,5 +1,5 @@
 
-//          Copyright 2018 - 2021 Michael D. Parker
+//          Copyright 2018 - 2022 Michael D. Parker
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
@@ -22,13 +22,19 @@ enum SDLSupport {
     sdl2010     = 2010,
     sdl2012     = 2012,
     sdl2014     = 2014,
+    sdl2016     = 2016,
+    sdl2018     = 2018,
+    sdl2020     = 2020,
 }
 
 version(BindBC_Static) version = BindSDL_Static;
 version(BindSDL_Static) enum staticBinding = true;
 else enum staticBinding = false;
 
-version(SDL_2014) enum sdlSupport = SDLSupport.sdl2014;
+version(SDL_2020) enum sdlSupport = SDLSupport.sdl2020;
+else version(SDL_2018) enum sdlSupport = SDLSupport.sdl2018;
+else version(SDL_2016) enum sdlSupport = SDLSupport.sdl2016;
+else version(SDL_2014) enum sdlSupport = SDLSupport.sdl2014;
 else version(SDL_2012) enum sdlSupport = SDLSupport.sdl2012;
 else version(SDL_2010) enum sdlSupport = SDLSupport.sdl2010;
 else version(SDL_209) enum sdlSupport = SDLSupport.sdl209;
@@ -70,14 +76,15 @@ version(SDL_TTF) version = BindSDL_TTF;
 else version(SDL_TTF_2012) version = BindSDL_TTF;
 else version(SDL_TTF_2013) version = BindSDL_TTF;
 else version(SDL_TTF_2014) version = BindSDL_TTF;
+else version(SDL_TTF_2015) version = BindSDL_TTF;
+else version(SDL_TTF_2018) version = BindSDL_TTF;
 version(BindSDL_TTF) enum bindSDLTTF = true;
 else enum bindSDLTTF = false;
 
 enum expandEnum(EnumType, string fqnEnumType = EnumType.stringof) = (){
-    string expandEnum = "enum {";
+    string expandEnum;
     foreach(m;__traits(allMembers, EnumType)) {
-        expandEnum ~= m ~ " = " ~ fqnEnumType ~ "." ~ m ~ ",";
+        expandEnum ~= "alias " ~ m ~ " = " ~ fqnEnumType ~ "." ~ m ~ ";";
     }
-    expandEnum  ~= "}";
     return expandEnum;
 }();

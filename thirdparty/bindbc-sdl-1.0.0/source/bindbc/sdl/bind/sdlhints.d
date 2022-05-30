@@ -1,5 +1,5 @@
 
-//          Copyright 2018 - 2021 Michael D. Parker
+//          Copyright 2018 - 2022 Michael D. Parker
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
@@ -158,6 +158,26 @@ static if(sdlSupport >= SDLSupport.sdl2014) {
     enum SDL_HINT_AUDIO_DEVICE_APP_NAME = "SDL_AUDIO_DEVICE_APP_NAME";
     enum SDL_HINT_AUDIO_DEVICE_STREAM_NAME = "SDL_AUDIO_DEVICE_STREAM_NAME";
     enum SDL_HINT_PREFERRED_LOCALES = "SDL_PREFERRED_LOCALES";
+}
+
+static if(sdlSupport >= SDLSupport.sdl2016) {
+    enum SDL_HINT_AUDIO_INCLUDE_MONITORS = "SDL_AUDIO_INCLUDE_MONITORS";
+    enum SDL_HINT_AUDIO_DEVICE_STREAM_ROLE = "SDL_AUDIO_DEVICE_STREAM_ROLE";
+}
+
+static if(sdlSupport >= SDLSupport.sdl2018) {
+    enum SDL_HINT_APP_NAME = "SDL_APP_NAME";
+    enum SDL_HINT_IME_SHOW_UI = "SDL_IME_SHOW_UI";
+    enum SDL_HINT_JOYSTICK_DEVICE = "SDL_JOYSTICK_DEVICE";
+    enum SDL_HINT_LINUX_JOYSTICK_CLASSIC = "SDL_LINUX_JOYSTICK_CLASSIC";
+    enum SDL_HINT_POLL_SENTINEL = "SDL_HINT_POLL_SENTINEL";
+    enum SDL_HINT_SCREENSAVER_INHIBIT_ACTIVITY_NAME = "SDL_SCREENSAVER_INHIBIT_ACTIVITY_NAME";
+    enum SDL_HINT_VIDEO_EGL_ALLOW_TRANSPARENCY = "SDL_VIDEO_EGL_ALLOW_TRANSPARENCY";
+    enum SDL_HINT_WINDOW_NO_ACTIVATION_WHEN_SHOWN = "SDL_HINT_WINDOW_NO_ACTIVATION_WHEN_SHOWN";
+}
+
+static if(sdlSupport >= SDLSupport.sdl2020) {
+    enum SDL_HINT_RENDER_LINE_METHOD = "SDL_RENDER_LINE_METHOD";
 }
 
 enum SDL_HintPriority {

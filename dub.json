@@ -38,7 +38,7 @@
     },
 
     "versions": [
-        "SDL_2014",
+        "SDL_2020",
         "GL_40",
         "GL_KHR_debug"
     ],

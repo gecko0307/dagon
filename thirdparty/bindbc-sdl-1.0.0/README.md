@@ -13,7 +13,7 @@ To use any of the supported SDL libraries, add bindbc-sdl as a dependency to you
 __dub.json__
 ```
 dependencies {
-    "bindbc-sdl": "~>1.0.0",
+    "bindbc-sdl": "~>1.1.0",
 }
 "versions": [
     "SDL_Image",
@@ -23,7 +23,7 @@ dependencies {
 
 __dub.sdl__
 ```
-dependency "bindbc-sdl" version="~>1.0.0"
+dependency "bindbc-sdl" version="~>1.1.0"
 versions "SDL_Image" "SDL_TTF"
 ```
 
@@ -122,14 +122,14 @@ By default, each bindbc-sdl binding is configured to compile bindings for the lo
 __dub.json__
 ```
 "dependencies": {
-    "bindbc-sdl": "~>1.0.0"
+    "bindbc-sdl": "~>1.1.0"
 },
 "versions": ["SDL_204"]
 ```
 
 __dub.sdl__
 ```
-dependency "bindbc-sdl" version="~>1.0.0"
+dependency "bindbc-sdl" version="~>1.1.0"
 versions "SDL_204"
 ```
 
@@ -192,6 +192,9 @@ Following are the supported versions of each SDL library and the corresponding v
 |SDL 2.0.10          | SDL_2010         |
 |SDL 2.0.12          | SDL_2012         |
 |SDL 2.0.14          | SDL_2014         |
+|SDL 2.0.16          | SDL_2016         |
+|SDL 2.0.18          | SDL_2018         |
+|SDL 2.0.20          | SDL_2020         |
 |--                  | --               |
 |SDL_image 2.0.0     | SDL_Image, SDL_Image_200|
 |SDL_image 2.0.1     | SDL_Image_201    |
@@ -211,12 +214,16 @@ Following are the supported versions of each SDL library and the corresponding v
 |SDL_ttf 2.0.12      | SDL_TTF, SDL_TTF_2012|
 |SDL_ttf 2.0.13      | SDL_TTF_2013     |
 |SDL_ttf 2.0.14      | SDL_TTF_2014     |
+|SDL_ttf 2.0.15      | SDL_TTF_2015     |
+|SDL_ttf 2.0.18      | SDL_TTF_2018     |
 
 __Note__: Beginning with SDL 2.0.10, all releases are even numbered (2.0.12, 2.0.14, etc.). Odd numbered versions, beginning with 2.0.11, are development versions, which are not supported by bindbc-sdl. The same is true for SDL_mixer beginning with version 2.0.4 (there is no public release of SDL_mixer 2.0.3).
 
 __Note__: There are no differences in the public API between SDL_image versions 2.0.0 and 2.0.1, and then between versions 2.0.2, 2.0.3, 2.0.4, and 2.0.5, other than the value of `SDL_IMAGE_PATCHLEVEL`.
 
 __Note__: There are no differences in the public API between SDL_net versions 2.0.0 and 2.0.1 other than the value of `SDL_NET_PATCHLEVEL`.
+
+__Note__: There are no differences in the public API between SDL_ttf versions 2.0.14 and 2.0.15 other than the value of `SDL_TTF_PATCHLEVEL`.
 
 __Note__: [SDL's Filesystem](https://wiki.libsdl.org/CategoryFilesystem) API was added in SDL 2.0.1. However, there was a bug on Windows that prevented `SDL_GetPrefPath` from creating the path when it doesn't exist. When using this API on Windows, it's fine to compile with `SDL_201`&mdash;just make sure to ship SDL 2.0.2 or later with your app on Windows and _verify_ that [the loaded SDL version](https://wiki.libsdl.org/CategoryVersion) is 2.0.2 or later via the `SDL_GetVersion` function. Alternatively, you can compile your app with version `SDL_202` on Windows and `SDL_201` on other platforms, thereby guaranteeing errors if the user does not have at least SDL 2.0.2 or higher on Windows.
 
@@ -245,7 +252,7 @@ For example, when using the static bindings for SDL and SDL_image with DUB:
 __dub.json__
 ```
 "dependencies": {
-    "bindbc-sdl": "~>1.0.0"
+    "bindbc-sdl": "~>1.1.0"
 },
 "versions": ["BindSDL_Static", "SDL_Image"],
 "libs": ["SDL2", "SDL2_image"]
@@ -253,7 +260,7 @@ __dub.json__
 
 __dub.sdl__
 ```
-dependency "bindbc-sdl" version="~>1.0.0"
+dependency "bindbc-sdl" version="~>1.1.0"
 versions "BindSDL_Static" "SDL_Image"
 libs "SDL2" "SDL2_image"
 ```
@@ -264,7 +271,7 @@ Instead of using DUB's `versions` directive, a `subConfiguration` can be used. E
 __dub.json__
 ```
 "dependencies": {
-    "bindbc-sdl": "~>1.0.0"
+    "bindbc-sdl": "~>1.1.0"
 },
 "subConfigurations": {
     "bindbc-sdl": "static"
@@ -277,7 +284,7 @@ __dub.json__
 
 __dub.sdl__
 ```
-dependency "bindbc-sdl" version="~>1.0.0"
+dependency "bindbc-sdl" version="~>1.1.0"
 subConfiguration "bindbc-sdl" "static"
 versions "SDL_Image"
 libs "SDL2" "SDL2_image"
@@ -291,7 +298,7 @@ This has the benefit of completely excluding from the build any source modules r
 __dub.json__
 ```
 "dependencies": {
-    "bindbc-sdl": "~>1.0.0"
+    "bindbc-sdl": "~>1.1.0"
 },
 "subConfigurations": {
     "bindbc-sdl": "staticBC"
@@ -304,7 +311,7 @@ __dub.json__
 
 __dub.sdl__
 ```
-dependency "bindbc-sdl" version="~>1.0.0"
+dependency "bindbc-sdl" version="~>1.1.0"
 subConfiguration "bindbc-sdl" "staticBC"
 versions "SDL_Image"
 libs "SDL2" "SDL2_image"

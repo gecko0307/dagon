@@ -74,9 +74,10 @@ subroutine(srtHeight) float heightValue(in vec2 uv)
     return heightScalar;
 }
 
+uniform sampler2D heightTexture;
 subroutine(srtHeight) float heightMap(in vec2 uv)
 {
-    return texture(normalTexture, uv).a;
+    return texture(heightTexture, uv).r;
 }
 
 subroutine uniform srtHeight height;
@@ -130,22 +131,25 @@ subroutine(srtParallax) vec2 parallaxOcclusionMapping(in vec3 E, in vec2 uv, in 
 
 subroutine uniform srtParallax parallax;
 
-uniform sampler2D pbrTexture;
+/*
+ * PBR
+ */
+uniform sampler2D roughnessMetallicTexture;
+uniform vec4 roughnessMetallicFactor;
 
 /*
  * Roughness
  */
 subroutine float srtRoughness(in vec2 uv);
 
-uniform float roughnessScalar;
 subroutine(srtRoughness) float roughnessValue(in vec2 uv)
 {
-    return roughnessScalar;
+    return roughnessMetallicFactor.g;
 }
 
 subroutine(srtRoughness) float roughnessMap(in vec2 uv)
 {
-    return texture(pbrTexture, uv).g;
+    return texture(roughnessMetallicTexture, uv).g;
 }
 
 subroutine uniform srtRoughness roughness;
@@ -156,67 +160,27 @@ subroutine uniform srtRoughness roughness;
  */
 subroutine float srtMetallic(in vec2 uv);
 
-uniform float metallicScalar;
 subroutine(srtMetallic) float metallicValue(in vec2 uv)
 {
-    return metallicScalar;
+    return roughnessMetallicFactor.b;
 }
 
 subroutine(srtMetallic) float metallicMap(in vec2 uv)
 {
-    return texture(pbrTexture, uv).b;
+    return texture(roughnessMetallicTexture, uv).b;
 }
 
 subroutine uniform srtMetallic metallic;
-
-
-/*
- * Specularity
- */
-subroutine float srtSpecularity(in vec2 uv);
-
-uniform float specularityScalar;
-subroutine(srtSpecularity) float specularityValue(in vec2 uv)
-{
-    return specularityScalar;
-}
-
-subroutine(srtSpecularity) float specularityMap(in vec2 uv)
-{
-    return texture(pbrTexture, uv).r;
-}
-
-subroutine uniform srtSpecularity specularity;
-
-
-/*
- * Translucensy
- */
-subroutine float srtTranslucency(in vec2 uv);
-
-uniform float translucencyScalar;
-subroutine(srtTranslucency) float translucencyValue(in vec2 uv)
-{
-    return translucencyScalar;
-}
-
-subroutine(srtTranslucency) float translucencyMap(in vec2 uv)
-{
-    return texture(pbrTexture, uv).a;
-}
-
-subroutine uniform srtTranslucency translucency;
-
 
 /*
  * Emission
  */
 subroutine vec3 srtEmission(in vec2 uv);
 
-uniform vec4 emissionVector;
+uniform vec4 emissionFactor;
 subroutine(srtEmission) vec3 emissionColorValue(in vec2 uv)
 {
-    return emissionVector.rgb * energy;
+    return emissionFactor.rgb * energy;
 }
 
 uniform sampler2D emissionTexture;

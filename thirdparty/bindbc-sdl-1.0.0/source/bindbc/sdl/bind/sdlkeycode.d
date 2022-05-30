@@ -1,5 +1,5 @@
 
-//          Copyright 2018 - 2021 Michael D. Parker
+//          Copyright 2018 - 2022 Michael D. Parker
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
@@ -279,6 +279,7 @@ enum SDL_Keymod {
     KMOD_CAPS = 0x2000,
     KMOD_MODE = 0x4000,
     KMOD_RESERVED = 0x8000,
+    KMOD_SCROLL = KMOD_RESERVED,  // SDL 2.0.16
 
     KMOD_CTRL = (KMOD_LCTRL|KMOD_RCTRL),
     KMOD_SHIFT = (KMOD_LSHIFT|KMOD_RSHIFT),

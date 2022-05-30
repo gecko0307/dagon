@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Timur Gafarov
+Copyright (c) 2019-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -43,25 +43,36 @@ import dagon.game.renderer;
 class ForwardRenderer: Renderer
 {
     GBuffer gbuffer;
-    DeferredBackgroundPass passBackground;
     ShadowPass passShadow;
+    DeferredGeometryPass passStaticGeometry;
+    DeferredGeometryPass passDynamicGeometry;
+    DeferredBackgroundPass passBackground;
     DeferredForwardPass passForward;
 
     this(EventManager eventManager, Owner owner)
     {
         super(eventManager, owner);
-
-        // HDR buffer
+        
         auto radianceBuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, FrameBufferFormat.RGBA16F, true, this);
         outputBuffer = radianceBuffer;
         
         gbuffer = New!GBuffer(view.width, view.height, radianceBuffer, this);
-
+        
         passShadow = New!ShadowPass(pipeline);
-
+        
         passBackground = New!DeferredBackgroundPass(pipeline, gbuffer);
         passBackground.view = view;
-
+        
+        passStaticGeometry = New!DeferredGeometryPass(pipeline, gbuffer);
+        passStaticGeometry.view = view;
+        
+        // TODO: passDecals
+        
+        passDynamicGeometry = New!DeferredGeometryPass(pipeline, gbuffer);
+        passDynamicGeometry.view = view;
+        
+        // TODO: passOcclusion
+        
         passForward = New!DeferredForwardPass(pipeline, gbuffer);
         passForward.view = view;
         passForward.outputBuffer = radianceBuffer;
@@ -69,10 +80,12 @@ class ForwardRenderer: Renderer
 
     override void scene(Scene s)
     {
+        passStaticGeometry.group = s.spatialOpaqueStatic;
+        passDynamicGeometry.group = s.spatialOpaqueDynamic;
         passBackground.group = s.background;
         passShadow.group = s.spatial;
         passShadow.lightGroup = s.lights;
-        passForward.group = s.spatial; //s.spatialTransparent;
+        passForward.group = s.spatialTransparent;
         
         pipeline.environment = s.environment;
     }

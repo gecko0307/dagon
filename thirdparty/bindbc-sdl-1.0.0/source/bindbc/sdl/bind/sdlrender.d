@@ -1,5 +1,5 @@
 
-//          Copyright 2018 - 2021 Michael D. Parker
+//          Copyright 2018 - 2022 Michael D. Parker
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
@@ -12,6 +12,7 @@ import bindbc.sdl.bind.sdlrect;
 import bindbc.sdl.bind.sdlstdinc : SDL_bool;
 import bindbc.sdl.bind.sdlsurface : SDL_Surface;
 import bindbc.sdl.bind.sdlvideo : SDL_Window;
+import bindbc.sdl.bind.sdlpixels : SDL_Color;
 
 enum : uint {
     SDL_RENDERER_SOFTWARE = 0x00000001,
@@ -37,6 +38,14 @@ static if(sdlSupport >= SDLSupport.sdl2012) {
         SDL_ScaleModeBest,
     }
     mixin(expandEnum!SDL_ScaleMode);
+}
+
+static if(sdlSupport >= SDLSupport.sdl2018) {
+    struct SDL_Vertex {
+        SDL_FPoint position;
+        SDL_Color color;
+        SDL_FPoint tex_coord;
+    }
 }
 
 enum SDL_TextureAccess {
@@ -149,6 +158,19 @@ static if(staticBinding) {
             int SDL_SetTextureScaleMode(SDL_Texture* texture, SDL_ScaleMode scaleMode);
             int SDL_GetTextureScaleMode(SDL_Texture* texture, SDL_ScaleMode* scaleMode);
             int SDL_LockTextureToSurface(SDL_Texture* texture, const(SDL_Rect)* rect,SDL_Surface** surface);
+        }
+        static if(sdlSupport >= SDLSupport.sdl2016) {
+            int SDL_UpdateNVTexture(SDL_Texture* texture, const(SDL_Rect)* rect, const(ubyte)* Yplane, int Ypitch, const(ubyte)* UVplane, int UVpitch);
+        }
+        static if(sdlSupport >= SDLSupport.sdl2018) {
+            int SDL_SetTextureUserData(SDL_Texture* texture, void* userdata);
+            void* SDL_GetTextureUserData(SDL_Texture* texture);
+            void SDL_RenderWindowToLogical(SDL_Renderer* renderer, int windowX, int windowY, float* logicalX, float* logicalY);
+            void SDL_RenderLogicalToWindow(SDL_Renderer* renderer, float logicalX, float logicalY, int* windowX, int* windowY);
+            int SDL_RenderGeometry(SDL_Renderer* renderer, SDL_Texture* texture, const(SDL_Vertex)* vertices, int num_vertices, const(int)* indices, int num_indices);
+            static if(sdlSupport >= SDLSupport.sdl2020) int SDL_RenderGeometryRaw(SDL_Renderer* renderer, SDL_Texture* texture, const(float)* xy, int xy_stride, const(SDL_Color)* color, int color_stride, const(float)* uv, int uv_stride, int num_vertices, const(void)* indices, int num_indices, int size_indices);
+            else int SDL_RenderGeometryRaw(SDL_Renderer* renderer, SDL_Texture* texture, const(float)* xy, int xy_stride, const(int)* color, int color_stride, const(float)* uv, int uv_stride, int num_vertices, const(void)* indices, int num_indices, int size_indices);
+            int SDL_RenderSetVSync(SDL_Renderer* renderer, int vsync);
         }
     }
 }
@@ -336,6 +358,35 @@ else {
             pSDL_SetTextureScaleMode SDL_SetTextureScaleMode;
             pSDL_GetTextureScaleMode SDL_GetTextureScaleMode;
             pSDL_LockTextureToSurface SDL_LockTextureToSurface;
+        }
+    }
+    static if(sdlSupport >= SDLSupport.sdl2016) {
+        extern(C) @nogc nothrow {
+            alias pSDL_UpdateNVTexture = int function(SDL_Texture* texture, const(SDL_Rect)* rect, const(ubyte)* Yplane, int Ypitch, const(ubyte)* UVplane, int UVpitch);
+        }
+        __gshared {
+            pSDL_UpdateNVTexture SDL_UpdateNVTexture;
+        }
+    }
+    static if(sdlSupport >= SDLSupport.sdl2018) {
+        extern(C) @nogc nothrow {
+            alias pSDL_SetTextureUserData = int function(SDL_Texture* texture, void* userdata);
+            alias pSDL_GetTextureUserData = void* function(SDL_Texture* texture);
+            alias pSDL_RenderWindowToLogical = void function(SDL_Renderer* renderer, int windowX, int windowY, float* logicalX, float* logicalY);
+            alias pSDL_RenderLogicalToWindow = void function(SDL_Renderer* renderer, float logicalX, float logicalY, int* windowX, int* windowY);
+            alias pSDL_RenderGeometry = int function(SDL_Renderer* renderer, SDL_Texture* texture, const(SDL_Vertex)* vertices, int num_vertices, const(int)* indices, int num_indices);
+            static if(sdlSupport >= SDLSupport.sdl2020) alias pSDL_RenderGeometryRaw = int function(SDL_Renderer* renderer, SDL_Texture* texture, const(float)* xy, int xy_stride, const(SDL_Color)* color, int color_stride, const(float)* uv, int uv_stride, int num_vertices, const(void)* indices, int num_indices, int size_indices);
+            else alias pSDL_RenderGeometryRaw = int function(SDL_Renderer* renderer, SDL_Texture* texture, const(float)* xy, int xy_stride, const(int)* color, int color_stride, const(float)* uv, int uv_stride, int num_vertices, const(void)* indices, int num_indices, int size_indices);
+            alias pSDL_RenderSetVSync = int function(SDL_Renderer* renderer, int vsync);
+        }
+        __gshared {
+            pSDL_SetTextureUserData SDL_SetTextureUserData;
+            pSDL_GetTextureUserData SDL_GetTextureUserData;
+            pSDL_RenderWindowToLogical SDL_RenderWindowToLogical;
+            pSDL_RenderLogicalToWindow SDL_RenderLogicalToWindow;
+            pSDL_RenderGeometry SDL_RenderGeometry;
+            pSDL_RenderGeometryRaw SDL_RenderGeometryRaw;
+            pSDL_RenderSetVSync SDL_RenderSetVSync;
         }
     }
 }
