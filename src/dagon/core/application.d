@@ -175,9 +175,9 @@ class Application: EventListener
         if (sdlsup != sdlSupport)
         {
             if (sdlsup == SDLSupport.badLibrary)
-                writeln("Warning: failed to load some SDL functions. It seems that you have an old version of SDL. Dagon will try to use it, but it is recommended to install SDL 2.0.14 or higher");
+                writeln("Warning: failed to load some SDL functions. It seems that you have an old version of SDL. Dagon will try to use it, but it is recommended to install SDL 2.0.20 or higher");
             else
-                exitWithError("Error: SDL library is not found. Please, install SDL 2.0.14");
+                exitWithError("Error: SDL library is not found. Please, install SDL 2.0.20");
         }
 
         if (SDL_Init(SDL_INIT_EVERYTHING) == -1)
