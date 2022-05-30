@@ -1,0 +1,23 @@
+{
+    "name": "newton",
+    "importPaths": [
+        "thirdparty/bindbc-newton-0.2.0/src",
+        "src"
+    ],
+    "sourcePaths": [
+        "thirdparty/bindbc-newton-0.2.0/src",
+        "src"
+    ],
+    "dependencies": {
+        "dagon": "*"
+    },
+    
+    "copyFiles-windows-x86": [
+        "thirdparty/bindbc-newton-0.2.0/lib/x86/*.dll",
+        "thirdparty/bindbc-newton-0.2.0/plugins/x86/*.dll"
+    ],
+    "copyFiles-windows-x86_64": [
+        "thirdparty/bindbc-newton-0.2.0/lib/x64/*.dll",
+        "thirdparty/bindbc-newton-0.2.0/plugins/x64/*.dll"
+    ]
+}

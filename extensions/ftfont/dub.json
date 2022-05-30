@@ -1,0 +1,20 @@
+{
+    "name": "ftfont",
+    "importPaths": [
+        "thirdparty/bindbc-freetype-0.9.1/source",
+        "src"
+    ],
+    "sourcePaths": [
+        "thirdparty/bindbc-freetype-0.9.1/source",
+        "src"
+    ],
+    "dependencies": {
+        "dagon": "*"
+    },
+    "versions": [
+        "FT_28"
+    ],
+    
+    "copyFiles-windows-x86": ["lib/x86/*.dll"],
+    "copyFiles-windows-x86_64": ["lib/x64/*.dll"]
+}
