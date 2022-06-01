@@ -1,6 +1,10 @@
 Dagon 0.14.0 - TBD
 ------------------
 - **Core**
+  - Custom event dispatcher delegate (`EventManager.onProcessEvent`)
+  - `Game.resize` method
+- **Rendering**
+  - Unreal and Reinhard2 tonemapping operators (`Tonemapper.Unreal` and `Tonemapper.Reinhard2`, respectively)
 - **Assets**
   - `Material` now provides a new set of explicit properties for direct compatibility with glTF (texture properties always take precedence over factor properties):
     - `diffuse` is now `baseColorTexture` and `baseColorFactor`
@@ -22,6 +26,8 @@ Dagon 0.14.0 - TBD
   - Added support for ASTC texture compression format
 - **Extensions**
   - Experimental [Dear ImGui](https://github.com/ocornut/imgui) extension, `dagon.ext.imgui`. It is based on [bindbc-imgui](https://github.com/Inochi2D/bindbc-imgui) binding. It will not replace Nuklear, both toolkits will coexist in future.
+- **Misc**
+  - Dagon now uses SDL 2.0.22.
 
 Dagon 0.13.0 - 2 Mar, 2022
 --------------------------

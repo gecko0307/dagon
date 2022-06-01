@@ -45,7 +45,8 @@ Features
 * Water rendering
 * Post-processing (FXAA, SSAO, DoF, lens distortion, motion blur, glow, color grading)
 * UTF-8 text rendering using TTF fonts via Freetype
-* GUI and 2D graphics based on [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear). 2D canvas framework that renders vector shapes
+* GUI and 2D graphics extension based on [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear). 2D canvas framework that renders vector shapes
+* GUI extension based on [Dear ImGui](https://github.com/ocornut/imgui)
 * Keyboard, mouse and joystick input. Input manager with abstract bindings and file-based configuration
 * Unicode text input
 * Ownership memory model
