@@ -53,10 +53,9 @@ class ForwardRenderer: Renderer
     {
         super(eventManager, owner);
         
-        auto radianceBuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, FrameBufferFormat.RGBA16F, true, this);
-        outputBuffer = radianceBuffer;
+        outputBuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, FrameBufferFormat.RGBA16F, true, this);
         
-        gbuffer = New!GBuffer(view.width, view.height, radianceBuffer, this);
+        gbuffer = New!GBuffer(view.width, view.height, outputBuffer, this);
         
         passShadow = New!ShadowPass(pipeline);
         
@@ -75,7 +74,7 @@ class ForwardRenderer: Renderer
         
         passForward = New!DeferredForwardPass(pipeline, gbuffer);
         passForward.view = view;
-        passForward.outputBuffer = radianceBuffer;
+        passForward.outputBuffer = outputBuffer;
     }
 
     override void scene(Scene s)
