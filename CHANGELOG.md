@@ -1,3 +1,28 @@
+Dagon 0.14.0 - TBD
+------------------
+- **Core**
+- **Assets**
+  - `Material` now provides a new set of explicit properties for direct compatibility with glTF (texture properties always take precedence over factor properties):
+    - `diffuse` is now `baseColorTexture` and `baseColorFactor`
+    - `roughnessMetallic` is now `roughnessMetallicTexture`
+    - `roughness` is now `roughnessFactor`
+    - `metallic` is now `metallicFactor`
+    - `emission` is now `emissionTexture` and `emissionFactor`
+    - `energy` is now `emissionEnergy`
+    - `normal` is now `normalTexture` and `normalFactor`
+    - `height` is now `heightTexture` and `heightFactor`
+    - `transparency` is now `opacity`
+    - `clipThreshold` is now `alphaTestThreshold`
+    - `blending` is now `blendMode`
+    - `parallax` is now `parallaxMode`
+    - `shadowsEnabled` is now `useShadows`
+    - `fogEnabled` is now `useFog`
+    - `culling` is now `useCulling`
+  - Texture system redesign. `Texture` class now can be created from raw pixel data without intermediate `SuperImage`, hense DDS textures are now loaded directly to `Texture` object without additional layers of abstraction. Also `Texture` now supports cubemaps in addition to 2D textures
+  - Added support for ASTC texture compression format
+- **Extensions**
+  - Experimental [Dear ImGui](https://github.com/ocornut/imgui) extension, `dagon.ext.imgui`. It is based on [bindbc-imgui](https://github.com/Inochi2D/bindbc-imgui) binding. It will not replace Nuklear, both toolkits will coexist in future.
+
 Dagon 0.13.0 - 2 Mar, 2022
 --------------------------
 - **Core**
