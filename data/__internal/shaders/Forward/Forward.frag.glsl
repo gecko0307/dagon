@@ -439,7 +439,8 @@ void main()
     vec2 posScreen = (currPosition.xy / currPosition.w) * 0.5 + 0.5;
     vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;
     vec2 screenVelocity = posScreen - prevPosScreen;
+    const float blurMask = 1.0;
     
     fragColor = vec4(radiance, alpha);
-    fragVelocity = vec4(screenVelocity, 0.0, 1.0);
+    fragVelocity = vec4(screenVelocity, blurMask, 1.0);
 }

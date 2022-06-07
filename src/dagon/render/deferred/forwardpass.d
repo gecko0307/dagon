@@ -113,7 +113,8 @@ class DeferredForwardPass: RenderPass
             glViewport(0, 0, outputBuffer.width, outputBuffer.height);
             
             glEnablei(GL_BLEND, 0);
-            glDisablei(GL_BLEND, 1);
+            glEnablei(GL_BLEND, 1);
+            //glDisablei(GL_BLEND, 1);
             glBlendFunci(0, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
             foreach(entity; group)
@@ -138,6 +139,7 @@ class DeferredForwardPass: RenderPass
             }
 
             glDisablei(GL_BLEND, 0);
+            glDisablei(GL_BLEND, 1);
 
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
         }

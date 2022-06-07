@@ -53,7 +53,7 @@ void main()
         {
             vec2 offset = blurVec * (float(i) * invSamplesMinusOne - rnd);
             float mask = texture(velocityBuffer, texCoord + offset).z;
-            float z = unproject(invProjectionMatrix, vec3(texCoord, texture(depthBuffer, texCoord + offset).x)).z; 
+            //float z = unproject(invProjectionMatrix, vec3(texCoord, texture(depthBuffer, texCoord + offset).x)).z; 
             //mask *= 1.0 - clamp(abs(zCenter - z), 0.0, 1.0) / 1.0;
             res += texture(colorBuffer, texCoord + offset).rgb * mask;
             usedSamples += mask;
