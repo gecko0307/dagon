@@ -852,6 +852,15 @@ class GLTFAsset: Asset, TriangleSet
                     material.useCulling = true;
                 }
                 
+                if ("alphaMode" in ma)
+                {
+                    auto alphaMode = ma["alphaMode"].asString;
+                    if (alphaMode == "BLEND")
+                    {
+                        material.blendMode = Transparent;
+                    }
+                }
+                
                 if ("alphaCutoff" in ma)
                 {
                     material.alphaTestThreshold = ma["alphaCutoff"].asNumber;
@@ -1104,6 +1113,12 @@ class GLTFAsset: Asset, TriangleSet
                     Material material = primitive.material;
                     if (material)
                     {
+                        if (material.blendMode == Transparent)
+                        {
+                            node.entity.transparent = true;
+                        }
+                        
+                        /*
                         Texture diffuseTex = material.baseColorTexture;
                         if (diffuseTex)
                         {
@@ -1118,6 +1133,7 @@ class GLTFAsset: Asset, TriangleSet
                             material.blendMode = Transparent;
                             node.entity.transparent = true;
                         }
+                        */
                     }
                 }
             }
