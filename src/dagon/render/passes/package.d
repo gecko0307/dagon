@@ -31,7 +31,9 @@ public
 {
     import dagon.render.passes.background;
     import dagon.render.passes.debugoutput;
+    import dagon.render.passes.environment;
     import dagon.render.passes.forward;
     import dagon.render.passes.geometry;
+    import dagon.render.passes.occlusion;
     import dagon.render.passes.shadow;
 }

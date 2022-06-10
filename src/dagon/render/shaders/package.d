@@ -30,8 +30,10 @@ module dagon.render.shaders;
 public
 {
     import dagon.render.shaders.debugoutput;
+    import dagon.render.shaders.environment;
     import dagon.render.shaders.fallback;
     import dagon.render.shaders.forward;
     import dagon.render.shaders.shadow;
     import dagon.render.shaders.sky;
+    import dagon.render.shaders.ssao;
 }
