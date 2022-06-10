@@ -44,16 +44,6 @@ import dagon.graphics.texture;
 import dagon.graphics.containerimage;
 
 /*
-enum CubeFace
-{
-    PositiveX = GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-    NegativeX = GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
-    PositiveY = GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
-    NegativeY = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-    PositiveZ = GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
-    NegativeZ = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
-}
-
 class Cubemap: Texture
 {
     this(Owner o)

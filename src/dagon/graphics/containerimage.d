@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.graphics.containerimage;
 
+/*
 import std.stdio;
 
 import dlib.core.memory;
@@ -157,3 +158,4 @@ class ContainerImage: SuperImage
         return Color4f(0.0f, 0.0f, 0.0f, 0.0f);
     }
 }
+*/

@@ -78,8 +78,10 @@ void main()
     vec3 eyePos = unproject(invProjectionMatrix, vec3(texCoord, depth));
     vec3 N = normalize(texture(normalBuffer, texCoord).rgb);
 
-    float occlusion = spiralSSAO(texCoord, eyePos, N, ssaoRadius / eyePos.z);
+    float occlusion = spiralSSAO(texCoord, eyePos, N, ssaoRadius / -eyePos.z);
     occlusion = pow(clamp(1.0 - occlusion, 0.0, 1.0), ssaoPower);
+    
+    occlusion = mix(occlusion, 1.0, clamp(-eyePos.z / 100.0, 0.0, 1.0));
     
     fragColor = vec4(vec3(occlusion), 1.0);
 }

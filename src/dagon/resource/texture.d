@@ -65,7 +65,7 @@ class TextureAsset: Asset
         string format = filename.extension;
         if (format == ".dds" || format == ".DDS")
         {
-            // Load to TextureData
+            // Load to TextureBuffer
             loadDDS(istrm, &buffer);
             return true;
         }

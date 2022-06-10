@@ -21,6 +21,8 @@ uniform float time;
 uniform float minDistance;
 uniform float maxDistance;
 
+uniform float radialBlur;
+
 uniform mat4 invProjectionMatrix;
 
 #include <unproject.glsl>
@@ -28,16 +30,21 @@ uniform mat4 invProjectionMatrix;
 
 void main()
 {
-    vec3 res = texture(colorBuffer, texCoord).rgb;
+    vec3 original = texture(colorBuffer, texCoord).rgb;
     vec3 velocity = texture(velocityBuffer, texCoord).rgb;
+    float writeMask = velocity.z;
+    vec3 res = original;
     
+    float blurred = 0.0;
     if (enabled)
     {
+        vec2 radialBlurVec = (texCoord - vec2(0.5, 0.5));
+        
         vec2 blurVec = velocity.xy;
         float len = length(blurVec);
         
         float blurVecLen = clamp(len - minDistance, 0.0, maxDistance) / (maxDistance - minDistance) * blurScale;
-        blurVec = normalize(blurVec) * blurVecLen;
+        blurVec = normalize(blurVec) * blurVecLen + radialBlurVec * radialBlur;
         
         float speed = length(blurVec * viewSize);
         int nSamples = clamp(int(speed), 1, samples);
@@ -53,7 +60,7 @@ void main()
         {
             vec2 offset = blurVec * (float(i) * invSamplesMinusOne - rnd);
             float mask = texture(velocityBuffer, texCoord + offset).z;
-            //float z = unproject(invProjectionMatrix, vec3(texCoord, texture(depthBuffer, texCoord + offset).x)).z; 
+            //float z = unproject(invProjectionMatrix, vec3(texCoord, texture(depthBuffer, texCoord + offset).x)).z;
             //mask *= 1.0 - clamp(abs(zCenter - z), 0.0, 1.0) / 1.0;
             res += texture(colorBuffer, texCoord + offset).rgb * mask;
             usedSamples += mask;
@@ -61,7 +68,8 @@ void main()
 
         res = max(res, vec3(0.0));
         res = res / max(usedSamples, 1.0);
+        blurred = 1.0;
     }
 
-    fragColor = vec4(res, 1.0);
+    fragColor = vec4(mix(original, res, blurred * writeMask), 1.0);
 }
