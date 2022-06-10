@@ -54,6 +54,7 @@ class DeferredRenderer: Renderer
     PassEnvironment passEnvironment;
     PassLight passLight;
     PassForward passForward;
+    PassParticles passParticles;
     
     DenoiseShader denoiseShader;
     
@@ -150,7 +151,10 @@ class DeferredRenderer: Renderer
         passForward.view = view;
         passForward.outputBuffer = outputBuffer;
         
-        // TODO: PassParticles
+        passParticles = New!PassParticles(pipeline, gbuffer);
+        passParticles.view = view;
+        passParticles.outputBuffer = outputBuffer;
+        passParticles.gbuffer = gbuffer;
     }
 
     override void scene(Scene s)
@@ -164,6 +168,7 @@ class DeferredRenderer: Renderer
         passLight.groupSunLights = s.sunLights;
         passLight.groupAreaLights = s.areaLights;
         passForward.group = s.spatialTransparent;
+        passParticles.group = s.spatial;
         
         pipeline.environment = s.environment;
     }

@@ -130,6 +130,7 @@ uniform sampler2D depthTexture;
 
 uniform vec4 particleColor;
 uniform float particleAlpha;
+uniform float particleEnergy;
 uniform bool alphaCutout;
 uniform float alphaCutoutThreshold;
 uniform vec3 particlePosition;
@@ -174,7 +175,7 @@ void main()
     float soft = alphaCutout? 1.0 : clamp((eyePosition.z - referenceEyePos.z) / softDistance, 0.0, 1.0);
         
     vec4 diff = diffuse(texCoord);
-    vec3 outColor = radiance * toLinear(diff.rgb) * toLinear(particleColor.rgb) + scatteringRadiance;
+    vec3 outColor = radiance * toLinear(diff.rgb) * toLinear(particleColor.rgb) * particleEnergy + scatteringRadiance;
     float outAlpha = diff.a * particleColor.a * particleAlpha * soft;
     
     if (alphaCutout && outAlpha <= alphaCutoutThreshold)
