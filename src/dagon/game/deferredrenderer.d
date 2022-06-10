@@ -37,17 +37,16 @@ import dagon.render.passes;
 import dagon.render.gbuffer;
 import dagon.render.view;
 import dagon.render.framebuffer;
-import dagon.render.shadowpass;
 import dagon.game.renderer;
 
 class DeferredRenderer: Renderer
 {
     GBuffer gbuffer;
-    ShadowPass passShadow;
-    DeferredGeometryPass passStaticGeometry;
-    DeferredGeometryPass passDynamicGeometry;
-    DeferredBackgroundPass passBackground;
-    DeferredForwardPass passForward;
+    PassShadow passShadow;
+    PassGeometry passStaticGeometry;
+    PassGeometry passDynamicGeometry;
+    PassBackground passBackground;
+    PassForward passForward;
 
     this(EventManager eventManager, Owner owner)
     {
@@ -57,22 +56,22 @@ class DeferredRenderer: Renderer
         
         gbuffer = New!GBuffer(view.width, view.height, outputBuffer, this);
         
-        passShadow = New!ShadowPass(pipeline);
+        passShadow = New!PassShadow(pipeline);
         
-        passBackground = New!DeferredBackgroundPass(pipeline, gbuffer);
+        passBackground = New!PassBackground(pipeline, gbuffer);
         passBackground.view = view;
         
-        passStaticGeometry = New!DeferredGeometryPass(pipeline, gbuffer);
+        passStaticGeometry = New!PassGeometry(pipeline, gbuffer);
         passStaticGeometry.view = view;
         
         // TODO: passDecals
         
-        passDynamicGeometry = New!DeferredGeometryPass(pipeline, gbuffer);
+        passDynamicGeometry = New!PassGeometry(pipeline, gbuffer);
         passDynamicGeometry.view = view;
         
         // TODO: passOcclusion
         
-        passForward = New!DeferredForwardPass(pipeline, gbuffer);
+        passForward = New!PassForward(pipeline, gbuffer);
         passForward.view = view;
         passForward.outputBuffer = outputBuffer;
     }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Timur Gafarov
+Copyright (c) 2019-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -66,9 +66,6 @@ class ShadowShader: Shader
     override void bindParameters(GraphicsState* state)
     {
         Material mat = state.material;
-        
-        //auto idiffuse = "diffuse" in state.material.inputs;
-        //auto itextureScale = "textureScale" in state.material.inputs;
 
         setParameter("modelViewMatrix", state.modelViewMatrix);
         setParameter("projectionMatrix", state.projectionMatrix);

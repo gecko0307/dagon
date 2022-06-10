@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Timur Gafarov
+Copyright (c) 2019-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -29,8 +29,9 @@ module dagon.render.passes;
 
 public
 {
-    import dagon.render.passes.backgroundpass;
-    import dagon.render.passes.debugoutputpass;
-    import dagon.render.passes.forwardpass;
-    import dagon.render.passes.geometrypass;
+    import dagon.render.passes.background;
+    import dagon.render.passes.debugoutput;
+    import dagon.render.passes.forward;
+    import dagon.render.passes.geometry;
+    import dagon.render.passes.shadow;
 }

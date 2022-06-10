@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2020 Timur Gafarov, tg
+Copyright (c) 2017-2022 Timur Gafarov, tg
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -141,7 +141,7 @@ class CascadedShadowMap: ShadowMap
 
         glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, borderColor.arrayof.ptr);
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-	    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
         
         glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT24, resolution, resolution, 3, 0, GL_DEPTH_COMPONENT, GL_FLOAT, null);
         
@@ -151,23 +151,23 @@ class CascadedShadowMap: ShadowMap
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
         
         glGenFramebuffers(1, &framebuffer1);
-	    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer1);
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer1);
         glDrawBuffer(GL_NONE);
-	    glReadBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
         glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0, 0);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         
         glGenFramebuffers(1, &framebuffer2);
-	    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer2);
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer2);
         glDrawBuffer(GL_NONE);
-	    glReadBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
         glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0, 1);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         
         glGenFramebuffers(1, &framebuffer3);
-	    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer3);
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer3);
         glDrawBuffer(GL_NONE);
-	    glReadBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
         glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0, 2);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }

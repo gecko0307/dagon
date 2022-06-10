@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.passes.geometrypass;
+module dagon.render.passes.geometry;
 
 import std.stdio;
 
@@ -45,7 +45,7 @@ import dagon.render.gbuffer;
 import dagon.render.shaders.geometry;
 //import dagon.render.shaders.terrain;
 
-class DeferredGeometryPass: RenderPass
+class PassGeometry: RenderPass
 {
     GBuffer gbuffer;
     GeometryShader geometryShader;

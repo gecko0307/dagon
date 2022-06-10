@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Timur Gafarov
+Copyright (c) 2019-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.passes.debugoutputpass;
+module dagon.render.passes.debugoutput;
 
 import std.stdio;
 
@@ -52,7 +52,7 @@ enum DebugOutputMode: int
     Occlusion = 6
 }
 
-class DeferredDebugOutputPass: RenderPass
+class PassDebugOutput: RenderPass
 {
     GBuffer gbuffer;
     Framebuffer occlusionBuffer;

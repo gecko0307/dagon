@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020 Timur Gafarov
+Copyright (c) 2020-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.passes.forwardpass;
+module dagon.render.passes.forward;
 
 import std.stdio;
 
@@ -44,7 +44,7 @@ import dagon.render.framebuffer;
 import dagon.render.gbuffer;
 import dagon.render.shaders.forward;
 
-class DeferredForwardPass: RenderPass
+class PassForward: RenderPass
 {
     ForwardShader forwardShader;
     Framebuffer outputBuffer;

@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2019-2020 dayllenger
+Copyright (c) 2019-2022 dayllenger
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization

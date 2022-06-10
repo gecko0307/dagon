@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Timur Gafarov
+Copyright (c) 2019-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.shadowpass;
+module dagon.render.passes.shadow;
 
 import std.stdio;
 
@@ -44,7 +44,7 @@ import dagon.render.pipeline;
 import dagon.render.pass;
 import dagon.render.shaders.shadow;
 
-class ShadowPass: RenderPass
+class PassShadow: RenderPass
 {
     EntityGroup lightGroup;
     ShadowShader csmShader;
