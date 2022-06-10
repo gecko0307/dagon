@@ -43,7 +43,7 @@ import dagon.resource.scene;
 import dagon.game.renderer;
 //import dagon.game.deferredrenderer;
 import dagon.game.postprocrenderer;
-import dagon.game.forwardrenderer;
+import dagon.game.deferredrenderer;
 import dagon.game.presentrenderer;
 //import dagon.game.hudrenderer;
 
@@ -58,11 +58,11 @@ class Game: Application
     Scene currentScene;
 
     Renderer renderer;
-    ForwardRenderer forwardRenderer;
+    DeferredRenderer deferredRenderer;
     PostProcRenderer postProcessingRenderer;
     PresentRenderer presentRenderer;
     
-    alias forward = forwardRenderer;
+    alias deferred = deferredRenderer;
     alias postProc = postProcessingRenderer;
     alias present = presentRenderer;
     
@@ -94,10 +94,10 @@ class Game: Application
         
         super(w, h, fullscreen, title, args);
         
-        forwardRenderer = New!ForwardRenderer(eventManager, this);
-        renderer = forwardRenderer;
+        deferredRenderer = New!DeferredRenderer(eventManager, this);
+        renderer = deferredRenderer;
         
-        postProcessingRenderer = New!PostProcRenderer(eventManager, forwardRenderer.outputBuffer, forwardRenderer.gbuffer, this);
+        postProcessingRenderer = New!PostProcRenderer(eventManager, deferredRenderer.outputBuffer, deferredRenderer.gbuffer, this);
         
         presentRenderer = New!PresentRenderer(eventManager, postProcessingRenderer.outputBuffer, this);
         

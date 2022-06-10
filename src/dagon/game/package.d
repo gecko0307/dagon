@@ -29,7 +29,7 @@ module dagon.game;
 
 public
 {
-    import dagon.game.forwardrenderer;
+    import dagon.game.deferredrenderer;
     import dagon.game.game;
     //import dagon.game.hudrenderer;
     //import dagon.game.loadingscreen;

@@ -25,12 +25,12 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.deferred;
+module dagon.render.passes;
 
 public
 {
-    import dagon.render.deferred.backgroundpass;
-    import dagon.render.deferred.debugoutputpass;
-    import dagon.render.deferred.forwardpass;
-    import dagon.render.deferred.geometrypass;
+    import dagon.render.passes.backgroundpass;
+    import dagon.render.passes.debugoutputpass;
+    import dagon.render.passes.forwardpass;
+    import dagon.render.passes.geometrypass;
 }

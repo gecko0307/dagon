@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.game.forwardrenderer;
+module dagon.game.deferredrenderer;
 
 import dlib.core.memory;
 import dlib.core.ownership;
@@ -33,14 +33,14 @@ import dlib.core.ownership;
 import dagon.core.event;
 import dagon.core.time;
 import dagon.resource.scene;
-import dagon.render.deferred;
+import dagon.render.passes;
 import dagon.render.gbuffer;
 import dagon.render.view;
 import dagon.render.framebuffer;
 import dagon.render.shadowpass;
 import dagon.game.renderer;
 
-class ForwardRenderer: Renderer
+class DeferredRenderer: Renderer
 {
     GBuffer gbuffer;
     ShadowPass passShadow;

@@ -29,7 +29,7 @@ module dagon.render;
 
 public
 {
-    import dagon.render.deferred;
+    import dagon.render.passes;
     import dagon.render.framebuffer;
     //import dagon.render.framebuffer_r8;
     //import dagon.render.framebuffer_rgba8;

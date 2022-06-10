@@ -35,7 +35,7 @@ import dagon.core.time;
 import dagon.core.bindings;
 import dagon.resource.scene;
 import dagon.render.pass;
-import dagon.render.deferred;
+import dagon.render.passes;
 import dagon.render.framebuffer;
 import dagon.postproc.presentpass;
 import dagon.game.renderer;

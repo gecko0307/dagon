@@ -41,7 +41,7 @@ import dlib.text.str;
 import dagon.core.bindings;
 import dagon.graphics.shader;
 import dagon.graphics.state;
-import dagon.render.deferred;
+//import dagon.render.deferred;
 
 class FXAAShader: Shader
 {

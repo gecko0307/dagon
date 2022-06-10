@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.deferred.backgroundpass;
+module dagon.render.passes.backgroundpass;
 
 import std.stdio;
 
