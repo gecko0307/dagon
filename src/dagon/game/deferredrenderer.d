@@ -51,6 +51,7 @@ class DeferredRenderer: Renderer
     PassOcclusion passOcclusion;
     FilterPass passOcclusionDenoise;
     PassEnvironment passEnvironment;
+    PassLight passLight;
     PassForward passForward;
     
     DenoiseShader denoiseShader;
@@ -73,12 +74,12 @@ class DeferredRenderer: Renderer
         if (_ssaoEnabled)
         {
             passEnvironment.occlusionBuffer = occlusionBuffer;
-            //passLight.occlusionBuffer = occlusionBuffer;
+            passLight.occlusionBuffer = occlusionBuffer;
         }
         else
         {
             passEnvironment.occlusionBuffer = null;
-            //passLight.occlusionBuffer = null;
+            passLight.occlusionBuffer = null;
         }
     }
 
@@ -138,7 +139,10 @@ class DeferredRenderer: Renderer
         passEnvironment.outputBuffer = outputBuffer;
         passEnvironment.occlusionBuffer = occlusionBuffer;
         
-        // TODO: PassLight
+        passLight = New!PassLight(pipeline, gbuffer);
+        passLight.view = view;
+        passLight.outputBuffer = outputBuffer;
+        passLight.occlusionBuffer = occlusionBuffer;
         
         passForward = New!PassForward(pipeline, gbuffer);
         passForward.view = view;
@@ -154,6 +158,8 @@ class DeferredRenderer: Renderer
         passBackground.group = s.background;
         passStaticGeometry.group = s.spatialOpaqueStatic;
         passDynamicGeometry.group = s.spatialOpaqueDynamic;
+        passLight.groupSunLights = s.sunLights;
+        passLight.groupAreaLights = s.areaLights;
         passForward.group = s.spatialTransparent;
         
         pipeline.environment = s.environment;
