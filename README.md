@@ -81,7 +81,7 @@ See [tutorials](https://github.com/gecko0307/dagon/wiki/Tutorials) and correspon
 
 License
 -------
-Copyright (c) 2016-2021 Timur Gafarov, Rafał Ziemniewski, Mateusz Muszyński, Björn Roberg, dayllenger. Distributed under the Boost Software License, Version 1.0 (see accompanying file COPYING or at http://www.boost.org/LICENSE_1_0.txt).
+Copyright (c) 2016-2022 Timur Gafarov, Rafał Ziemniewski, Mateusz Muszyński, dayllenger, Konstantin Menshikov, Björn Roberg, Isaac S., ijet. Distributed under the Boost Software License, Version 1.0 (see accompanying file COPYING or at http://www.boost.org/LICENSE_1_0.txt).
 
 Sponsors
 --------
