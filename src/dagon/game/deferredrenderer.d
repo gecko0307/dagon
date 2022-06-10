@@ -47,6 +47,7 @@ class DeferredRenderer: Renderer
     PassShadow passShadow;
     PassBackground passBackground;
     PassGeometry passStaticGeometry;
+    PassDecal passDecal;
     PassGeometry passDynamicGeometry;
     PassOcclusion passOcclusion;
     FilterPass passOcclusionDenoise;
@@ -116,7 +117,8 @@ class DeferredRenderer: Renderer
         passStaticGeometry = New!PassGeometry(pipeline, gbuffer);
         passStaticGeometry.view = view;
         
-        // TODO: PassDecals
+        passDecal = New!PassDecal(pipeline, gbuffer);
+        passDecal.view = view;
         
         passDynamicGeometry = New!PassGeometry(pipeline, gbuffer);
         passDynamicGeometry.view = view;
@@ -157,6 +159,7 @@ class DeferredRenderer: Renderer
         passShadow.lightGroup = s.lights;
         passBackground.group = s.background;
         passStaticGeometry.group = s.spatialOpaqueStatic;
+        passDecal.group = s.decals;
         passDynamicGeometry.group = s.spatialOpaqueDynamic;
         passLight.groupSunLights = s.sunLights;
         passLight.groupAreaLights = s.areaLights;

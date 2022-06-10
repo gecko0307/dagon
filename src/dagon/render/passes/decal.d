@@ -25,18 +25,61 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.shaders;
+module dagon.render.passes.decal;
 
-public
+import std.stdio;
+
+import dlib.core.memory;
+import dlib.core.ownership;
+import dlib.image.color;
+
+import dagon.core.bindings;
+import dagon.graphics.entity;
+import dagon.graphics.shader;
+import dagon.render.pipeline;
+import dagon.render.pass;
+import dagon.render.gbuffer;
+import dagon.render.shaders.decal;
+
+class PassDecal: RenderPass
 {
-    import dagon.render.shaders.arealight;
-    import dagon.render.shaders.debugoutput;
-    import dagon.render.shaders.decal;
-    import dagon.render.shaders.environment;
-    import dagon.render.shaders.fallback;
-    import dagon.render.shaders.forward;
-    import dagon.render.shaders.shadow;
-    import dagon.render.shaders.sky;
-    import dagon.render.shaders.ssao;
-    import dagon.render.shaders.sunlight;
+    GBuffer gbuffer;
+    DecalShader decalShader;
+
+    this(RenderPipeline pipeline, GBuffer gbuffer, EntityGroup group = null)
+    {
+        super(pipeline, group);
+        this.gbuffer = gbuffer;
+        decalShader = New!DecalShader(gbuffer, this);
+    }
+
+    override void render()
+    {
+        if (group)
+        {
+            gbuffer.bind();
+
+            glScissor(0, 0, gbuffer.width, gbuffer.height);
+            glViewport(0, 0, gbuffer.width, gbuffer.height);
+
+            state.depthMask = false;
+            state.environment = pipeline.environment;
+
+            glDisable(GL_DEPTH_TEST);
+
+            decalShader.bind();
+            foreach(entity; group)
+            {
+                if (entity.visible && entity.drawable)
+                {
+                    renderEntity(entity, decalShader);
+                }
+            }
+            decalShader.unbind();
+
+            glEnable(GL_DEPTH_TEST);
+
+            gbuffer.unbind();
+        }
+    }
 }
