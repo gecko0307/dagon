@@ -93,7 +93,9 @@ class ForwardShader: Shader
         setParameter("invViewMatrix", state.invViewMatrix);
         setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
         
-        setParameter("opacity", state.opacity * mat.opacity);
+        setParameter("materialOpacity", mat.opacity);
+        setParameter("stateOpacity", state.opacity);
+        
         setParameter("textureScale", mat.textureScale);
         
         setParameter("layer", cast(float)(state.layer));
