@@ -35,7 +35,7 @@ class Camera: Entity
     float fov = 60.0f;
     float zNear = 0.01f;
     float zFar = 1000.0f;
-        
+    
     this(EntityManager manager)
     {
         super(manager);

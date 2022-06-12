@@ -33,17 +33,10 @@ import std.path;
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.core.stream;
-import dlib.core.compound;
 import dlib.image.image;
-import dlib.image.io;
-import dlib.image.unmanaged;
-import dlib.image.hdri;
 import dlib.filesystem.filesystem;
 
-import dagon.graphics.containerimage;
 import dagon.resource.asset;
-import dagon.resource.dds;
-import dagon.resource.texture;
 
 class ImageAsset: Asset
 {

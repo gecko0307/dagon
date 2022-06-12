@@ -31,7 +31,6 @@ public
 {
     import dagon.graphics.camera;
     import dagon.graphics.components;
-    //import dagon.graphics.containerimage;
     import dagon.graphics.csm;
     import dagon.graphics.cubemap;
     import dagon.graphics.drawable;

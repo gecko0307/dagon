@@ -429,4 +429,4 @@ class ShapeDisk: Mesh
     }
 }
 
-// TODO: other shapes from original Dagon
+// TODO: ShapeCylinder, ShapeCone, ShapeCapsule

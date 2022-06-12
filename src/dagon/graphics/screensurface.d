@@ -45,12 +45,12 @@ class ScreenSurface: Owner, Drawable
     GLuint vbo = 0;
     GLuint tbo = 0;
     GLuint eao = 0;
-	
-	this(Owner o)
+    
+    this(Owner o)
     {
-		super(o);
-		
-		vertices[0] = Vector2f(0, 0);
+        super(o);
+        
+        vertices[0] = Vector2f(0, 0);
         vertices[1] = Vector2f(0, 1);
         vertices[2] = Vector2f(1, 0);
         vertices[3] = Vector2f(1, 1);
@@ -93,8 +93,8 @@ class ScreenSurface: Owner, Drawable
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, null);
 
         glBindVertexArray(0);
-	}
-	
+    }
+    
     ~this()
     {
         glDeleteVertexArrays(1, &vao);
@@ -102,13 +102,13 @@ class ScreenSurface: Owner, Drawable
         glDeleteBuffers(1, &tbo);
         glDeleteBuffers(1, &eao);
     }
-	
-	void update(double dt)
-	{
-	}
-	
+    
+    void update(double dt)
+    {
+    }
+    
     void render(GraphicsState* state)
-	{
+    {
         glDisable(GL_DEPTH_TEST);
         glDepthMask(GL_FALSE);
         glBindVertexArray(vao);
@@ -116,5 +116,5 @@ class ScreenSurface: Owner, Drawable
         glBindVertexArray(0);
         glDepthMask(GL_TRUE);
         glEnable(GL_DEPTH_TEST);
-	}
+    }
 }

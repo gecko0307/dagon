@@ -35,6 +35,10 @@ import dlib.core.ownership;
 import dlib.container.array;
 import dlib.image.image;
 import dlib.image.hdri;
+import dlib.math.utils;
+import dlib.math.vector;
+import dlib.math.matrix;
+import dlib.math.transformation;
 
 import dagon.core.bindings;
 
@@ -317,6 +321,34 @@ class Texture: Owner
             writeln("Texture creation failed: unsupported target ", format.target);
     }
     
+    void createFromEquirectangularMap(SuperImage img, uint resolution)
+    {
+        /*
+        // TODO
+        SuperImage faceImage = img.createSameFormat(resolution, resolution);
+        
+        foreach(i, face; EnumMembers!CubeFace)
+        {
+            Matrix4x4f dirTransform = cubeFaceMatrix(face);
+            
+            foreach(x; 0..resolution)
+            foreach(y; 0..resolution)
+            {
+                float cubex = (cast(float)x / cast(float)resolution) * 2.0f - 1.0f;
+                float cubey = (1.0f - cast(float)y / cast(float)resolution) * 2.0f - 1.0f;
+                Vector3f dir = Vector3f(cubex, cubey, 1.0f).normalized * dirTransform;
+                Vector2f uv = equirectProj(dir);
+                Color4f c = bilinearPixel(envmap, uv.x * envmap.width, uv.y * envmap.height);
+                faceImage[x, y] = c;
+            }
+            
+            setFaceImage(face, faceImage);
+        }
+        
+        Delete(faceImage);
+        */
+    }
+    
     protected void createCubemap(ubyte[] buffer)
     {
         glGenTextures(1, &texture);
@@ -489,6 +521,9 @@ class Texture: Owner
             magFilter = GL_LINEAR;
         }
     }
+    
+    // TODO
+    //void setCubemapFace(CubeFace face, SuperImage img)
     
     void createFallbackTexture()
     {
@@ -670,4 +705,61 @@ bool detectTextureFormat(SuperImage img, out TextureFormat tf)
     tf.cubeFaces = CubeFaceBit.None;
     
     return true;
+}
+
+Matrix4x4f cubeFaceMatrix(CubeFace cf)
+{
+    switch(cf)
+    {
+        case CubeFace.PositiveX:
+            return rotationMatrix(1, degtorad(-90.0f));
+        case CubeFace.NegativeX:
+            return rotationMatrix(1, degtorad(90.0f));
+        case CubeFace.PositiveY:
+            return rotationMatrix(0, degtorad(90.0f));
+        case CubeFace.NegativeY:
+            return rotationMatrix(0, degtorad(-90.0f));
+        case CubeFace.PositiveZ:
+            return rotationMatrix(1, degtorad(0.0f));
+        case CubeFace.NegativeZ:
+            return rotationMatrix(1, degtorad(180.0f));
+        default:
+            return Matrix4x4f.identity;
+    }
+}
+
+Matrix4x4f cubeFaceCameraMatrix(CubeFace cf, Vector3f pos)
+{
+    Matrix4x4f m;
+    switch(cf)
+    {
+        case CubeFace.PositiveX:
+            m = rotationMatrix(1, degtorad(90.0f)) * translationMatrix(pos) * rotationMatrix(1, degtorad(90.0f)) * rotationMatrix(2, degtorad(180.0f));
+            break;
+        case CubeFace.NegativeX:
+            m = rotationMatrix(1, degtorad(90.0f)) * translationMatrix(pos) * rotationMatrix(1, degtorad(-90.0f)) * rotationMatrix(2, degtorad(180.0f));
+            break;
+        case CubeFace.PositiveY:
+            m = rotationMatrix(1, degtorad(90.0f)) * translationMatrix(pos) * rotationMatrix(1, degtorad(0.0f)) * rotationMatrix(0, degtorad(-90.0f));
+            break;
+        case CubeFace.NegativeY:
+            m = rotationMatrix(1, degtorad(90.0f)) * translationMatrix(pos) * rotationMatrix(1, degtorad(0.0f)) * rotationMatrix(0, degtorad(90.0f));
+            break;
+        case CubeFace.PositiveZ:
+            m = rotationMatrix(1, degtorad(90.0f)) * translationMatrix(pos) * rotationMatrix(1, degtorad(180.0f)) * rotationMatrix(2, degtorad(180.0f));
+            break;
+        case CubeFace.NegativeZ:
+            m = rotationMatrix(1, degtorad(90.0f)) * translationMatrix(pos) * rotationMatrix(1, degtorad(0.0f)) * rotationMatrix(2, degtorad(180.0f));
+            break;
+        default:
+            m = Matrix4x4f.identity; break;
+    }
+    return m;
+}
+
+Vector2f equirectProj(Vector3f dir)
+{
+    float phi = acos(dir.y);
+    float theta = atan2(dir.x, dir.z) + PI;
+    return Vector2f(theta / (PI * 2.0f), phi / PI);
 }

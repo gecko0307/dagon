@@ -44,7 +44,6 @@ import dlib.image.io;
 
 import dagon.core.event;
 import dagon.core.vfs;
-import dagon.graphics.containerimage;
 import dagon.resource.dds;
 import dagon.resource.boxfs;
 

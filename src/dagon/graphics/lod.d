@@ -76,9 +76,9 @@ class LODDrawable: Owner, Drawable
                 level.material.bind(state);
                 state.shader.bindParameters(state);
             }
-
+            
             level.drawable.render(state);
-
+            
             if (level.material)
             {
                 state.shader.unbindParameters(state);
@@ -90,7 +90,7 @@ class LODDrawable: Owner, Drawable
     void render(GraphicsState* state)
     {
         float distanceToCam = distance(state.cameraPosition, state.modelMatrix.translation);
-
+        
         for(size_t i = 0; i < levels.length; i++)
         {
             LODLevel* level = &levels.data[i];
