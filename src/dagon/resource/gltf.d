@@ -613,30 +613,27 @@ class GLTFAsset: Asset, TriangleSet
                     imgFilename ~= "/";
                     imgFilename ~= im["uri"].asString;
                     
-                    auto ta = New!TextureAsset(this);
+                    string assetFilename = imgFilename.toString;
+                    TextureAsset textureAsset = New!TextureAsset(assetManager);
                     
-                    // TODO: check if imgFilename was already loaded
                     FileStat fstat;
-                    if (fs.stat(imgFilename.toString, fstat))
+                    if (fs.stat(assetFilename, fstat))
                     {
-                        bool res = assetManager.loadAssetThreadSafePart(ta, imgFilename.toString);
+                        bool res = assetManager.loadAssetThreadSafePart(textureAsset, assetFilename);
                         if (!res)
                             writeln("Warning: failed to load \"", imgFilename, "\"");
                     }
                     else
-                    {
                         writeln("Warning: image file \"", imgFilename, "\" not found");
-                    }
                     
-                    images.insertBack(ta);
-                    
+                    images.insertBack(textureAsset);
                     imgFilename.free();
                 }
                 else if ("bufferView" in im)
                 {
                     uint bufferViewIndex = cast(uint)im["bufferView"].asNumber;
                     
-                    auto ta = New!TextureAsset(this);
+                    auto textureAsset = New!TextureAsset(this);
                     
                     if (bufferViewIndex < bufferViews.length)
                     {
@@ -656,7 +653,7 @@ class GLTFAsset: Asset, TriangleSet
                             else
                             {
                                 
-                                bool res = assetManager.loadAssetThreadSafePart(ta, bv.slice, name);
+                                bool res = assetManager.loadAssetThreadSafePart(textureAsset, bv.slice, name);
                                 if (!res)
                                     writeln("Warning: failed to load image");
                             }
@@ -667,7 +664,7 @@ class GLTFAsset: Asset, TriangleSet
                         writeln("Warning: can't create image from nonexistent buffer view ", bufferViewIndex);
                     }
                     
-                    images.insertBack(ta);
+                    images.insertBack(textureAsset);
                 }
             }
         }
