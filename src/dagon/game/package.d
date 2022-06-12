@@ -31,7 +31,7 @@ public
 {
     import dagon.game.deferredrenderer;
     import dagon.game.game;
-    //import dagon.game.hudrenderer;
+    import dagon.game.hudrenderer;
     //import dagon.game.loadingscreen;
     import dagon.game.postprocrenderer;
     import dagon.game.presentrenderer;
