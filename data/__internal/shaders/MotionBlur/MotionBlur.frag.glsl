@@ -52,16 +52,13 @@ void main()
         float invSamplesMinusOne = 1.0 / max(float(nSamples) - 1.0, 1.0);
         float usedSamples = 1.0;
         
-        //float zCenter = unproject(invProjectionMatrix, vec3(texCoord, texture(depthBuffer, texCoord).x)).z;
-        
         float rnd = mix(0.5, hash(texCoord * 467.759 + time), offsetRandomCoef);
 
         for (int i = 1; i < nSamples; i++)
         {
             vec2 offset = blurVec * (float(i) * invSamplesMinusOne - rnd);
-            float mask = texture(velocityBuffer, texCoord + offset).z;
-            //float z = unproject(invProjectionMatrix, vec3(texCoord, texture(depthBuffer, texCoord + offset).x)).z;
-            //mask *= 1.0 - clamp(abs(zCenter - z), 0.0, 1.0) / 1.0;
+            vec4 velocitySample = texture(velocityBuffer, texCoord + offset);
+            float mask = velocitySample.z;
             res += texture(colorBuffer, texCoord + offset).rgb * mask;
             usedSamples += mask;
         }
