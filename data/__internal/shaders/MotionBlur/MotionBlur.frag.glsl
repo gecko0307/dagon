@@ -52,7 +52,7 @@ void main()
         float invSamplesMinusOne = 1.0 / max(float(nSamples) - 1.0, 1.0);
         float usedSamples = 1.0;
         
-        float zCenter = unproject(invProjectionMatrix, vec3(texCoord, texture(depthBuffer, texCoord).x)).z;
+        //float zCenter = unproject(invProjectionMatrix, vec3(texCoord, texture(depthBuffer, texCoord).x)).z;
         
         float rnd = mix(0.5, hash(texCoord * 467.759 + time), offsetRandomCoef);
 

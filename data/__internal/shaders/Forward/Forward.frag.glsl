@@ -452,5 +452,5 @@ void main()
     const float blurMask = 1.0;
     
     fragColor = vec4(radiance, alpha);
-    fragVelocity = vec4(screenVelocity, blurMask, 1.0);
+    fragVelocity = vec4(screenVelocity, blurMask, alpha);
 }

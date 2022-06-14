@@ -228,5 +228,5 @@ void main()
         1.0,
         0.0);
     fragRadiance = vec4(toLinear(emission(uv)), 1.0);
-    fragVelocity = vec4(velocity, blurMask, 0.0);
+    fragVelocity = vec4(velocity, blurMask, 1.0);
 }
