@@ -72,6 +72,9 @@ class SkyShader: Shader
         setParameter("viewMatrix", state.viewMatrix);
         setParameter("invViewMatrix", state.invViewMatrix);
         setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
+        
+        setParameter("gbufferMask", state.gbufferMask);
+        setParameter("blurMask", state.blurMask);
 
         // Diffuse
         glActiveTexture(GL_TEXTURE4);

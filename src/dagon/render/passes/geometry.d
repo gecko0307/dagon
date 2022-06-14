@@ -43,13 +43,13 @@ import dagon.render.pipeline;
 import dagon.render.pass;
 import dagon.render.gbuffer;
 import dagon.render.shaders.geometry;
-//import dagon.render.shaders.terrain;
+import dagon.render.shaders.terrain;
 
 class PassGeometry: RenderPass
 {
     GBuffer gbuffer;
     GeometryShader geometryShader;
-    //TerrainShader terrainShader;
+    TerrainShader terrainShader;
     uint renderedEntities = 0;
     bool frustumCulling = false;
 
@@ -58,7 +58,7 @@ class PassGeometry: RenderPass
         super(pipeline, group);
         this.gbuffer = gbuffer;
         geometryShader = New!GeometryShader(this);
-        //terrainShader = New!TerrainShader(this);
+        terrainShader = New!TerrainShader(this);
     }
     
     override void render()
@@ -72,7 +72,7 @@ class PassGeometry: RenderPass
             glViewport(0, 0, gbuffer.width, gbuffer.height);
             
             state.environment = pipeline.environment;
-
+            
             geometryShader.bind();
             foreach(entity; group)
             {
@@ -90,8 +90,7 @@ class PassGeometry: RenderPass
                 }
             }
             geometryShader.unbind();
-
-            /*
+            
             terrainShader.bind();
             foreach(entity; group)
             {
@@ -109,8 +108,7 @@ class PassGeometry: RenderPass
                 }
             }
             terrainShader.unbind();
-            */
-
+            
             gbuffer.unbind();
         }
     }

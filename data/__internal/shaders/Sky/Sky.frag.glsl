@@ -4,6 +4,8 @@
 const float PI2 = PI * 2.0;
 
 uniform mat4 invViewMatrix;
+uniform float gbufferMask;
+uniform float blurMask;
 
 in vec3 eyePosition;
 in vec3 worldNormal;
@@ -50,9 +52,8 @@ void main()
     vec2 posScreen = (currPosition.xy / currPosition.w) * 0.5 + 0.5;
     vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;
     vec2 velocity = posScreen - prevPosScreen;
-    const float blurMask = 1.0;
     
-    fragColor = vec4(fragDiffuse, 1.0);
+    fragColor = vec4(fragDiffuse, gbufferMask);
     fragRadiance = vec4(fragDiffuse, 1.0);
     fragVelocity = vec4(velocity, blurMask, 1.0);
 }

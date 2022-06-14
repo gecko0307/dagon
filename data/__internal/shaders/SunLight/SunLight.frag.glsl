@@ -96,6 +96,8 @@ float scattering(float lightDotView)
 void main()
 {
     vec4 col = texture(colorBuffer, texCoord);
+    if (col.a < 1.0)
+        discard;
 
     vec3 albedo = toLinear(col.rgb);
     

@@ -18,8 +18,6 @@ uniform vec2 textureScale4;
 #include <gamma.glsl>
 #include <cotangentFrame.glsl>
 
-uniform sampler2D splatmap;
-
 /*
  * Diffuse color subroutines.
  * Used to switch color/texture.
@@ -171,6 +169,25 @@ uniform vec4 rms2;
 uniform vec4 rms3;
 uniform vec4 rms4;
 
+/*
+ * Splat map
+ */
+subroutine vec4 srtSplat(in vec2 uv);
+
+uniform vec4 splatVector;
+subroutine(srtSplat) vec4 splatValue(in vec2 uv)
+{
+    return splatVector;
+}
+
+uniform sampler2D splatTexture;
+subroutine(srtSplat) vec4 splatMap(in vec2 uv)
+{
+    return texture(splatTexture, uv);
+}
+
+subroutine uniform srtSplat splat;
+
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec4 fragNormal;
 layout(location = 2) out vec4 fragPBR;
@@ -192,7 +209,7 @@ void main()
 
     vec2 shiftedTexCoord = texCoord; //parallax(tE, texCoord, height(texCoord));
     
-    vec4 splat = texture(splatmap, splatTexCoord);
+    vec4 splat = splat(splatTexCoord);
 
     vec3 N1 = normal1(shiftedTexCoord * textureScale1, -1.0, tangentToEye);
     vec3 N2 = normal2(shiftedTexCoord * textureScale2, -1.0, tangentToEye);

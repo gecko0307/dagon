@@ -32,11 +32,74 @@ import dlib.core.ownership;
 import dlib.math.vector;
 import dlib.geometry.sphere;
 import dlib.geometry.triangle;
+import dlib.image.color;
 
 import dagon.graphics.drawable;
 import dagon.graphics.mesh;
 import dagon.graphics.heightmap;
 import dagon.graphics.entity;
+import dagon.graphics.material;
+import dagon.graphics.texture;
+
+class TerrainMaterial: Material
+{
+    Texture[4] baseColorTextures;
+    Color4f[4] baseColorFactors;
+    Texture[4] normalTextures;
+    Vector3f[4] normalFactors;
+    float[4] roughnessFactors;
+    float[4] metallicFactors;
+    Texture splatTexture;
+    Color4f splatFactor;
+    Vector2f[4] textureScales;
+    
+    this(Owner o)
+    {
+        super(o);
+        
+        baseColorTextures[0] = null;
+        baseColorTextures[1] = null;
+        baseColorTextures[2] = null;
+        baseColorTextures[3] = null;
+        
+        baseColorFactors[0] = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+        baseColorFactors[1] = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+        baseColorFactors[2] = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+        baseColorFactors[3] = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+        
+        normalTextures[0] = null;
+        normalTextures[1] = null;
+        normalTextures[2] = null;
+        normalTextures[3] = null;
+        
+        normalFactors[0] = Vector3f(0.0f, 0.0f, 1.0f);
+        normalFactors[1] = Vector3f(0.0f, 0.0f, 1.0f);
+        normalFactors[2] = Vector3f(0.0f, 0.0f, 1.0f);
+        normalFactors[3] = Vector3f(0.0f, 0.0f, 1.0f);
+        
+        roughnessFactors[0] = 0.5f;
+        roughnessFactors[1] = 0.5f;
+        roughnessFactors[2] = 0.5f;
+        roughnessFactors[3] = 0.5f;
+        
+        metallicFactors[0] = 0.0f;
+        metallicFactors[1] = 0.0f;
+        metallicFactors[2] = 0.0f;
+        metallicFactors[3] = 0.0f;
+        
+        splatTexture = null;
+        splatFactor = Color4f(1.0f, 0.0f, 0.0f, 0.0f);
+        
+        textureScales[0] = Vector2f(1.0f, 1.0f);
+        textureScales[1] = Vector2f(1.0f, 1.0f);
+        textureScales[2] = Vector2f(1.0f, 1.0f);
+        textureScales[3] = Vector2f(1.0f, 1.0f);
+    }
+    
+    ~this()
+    {
+    }
+}
 
 class Terrain: Owner, Drawable
 {
