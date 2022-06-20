@@ -82,10 +82,11 @@ class Material: Owner
     Texture emissionTexture;
     Texture normalTexture;
     Texture heightTexture;
+    Texture maskTexture;
     Color4f baseColorFactor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
     Color4f emissionFactor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
     Vector3f normalFactor = Vector3f(0.0f, 0.0f, 1.0f);
-    Vector2f textureScale = Vector2f(1.0f, 1.0f); // TODO: use matrix instead
+    Vector2f textureScale = Vector2f(1.0f, 1.0f); // TODO: textureTransformation matrix instead
     float heightFactor = 0.0f;
     float emissionEnergy = 1.0f;
     float opacity = 1.0f;
@@ -96,6 +97,7 @@ class Material: Owner
     float translucency = 0.0f;
     float parallaxScale = 0.03f;
     float parallaxBias = -0.01f;
+    float maskFactor = 1.0f;
     int parallaxMode = ParallaxNone;
     int shadowFilter = ShadowFilterPCF;
     int blendMode = Opaque;

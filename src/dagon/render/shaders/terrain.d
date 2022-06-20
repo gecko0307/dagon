@@ -45,14 +45,14 @@ import dagon.graphics.state;
 import dagon.graphics.texture;
 import dagon.graphics.terrain;
 
-class TerrainShader: Shader
+class TerrainGeometryShader: Shader
 {
     String vs, fs;
 
     this(Owner owner)
     {
-        vs = Shader.load("data/__internal/shaders/Terrain/Terrain.vert.glsl");
-        fs = Shader.load("data/__internal/shaders/Terrain/Terrain.frag.glsl");
+        vs = Shader.load("data/__internal/shaders/Terrain/TerrainGeometry.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/Terrain/TerrainGeometry.frag.glsl");
 
         auto prog = New!ShaderProgram(vs, fs, this);
         super(prog, owner);
@@ -66,196 +66,15 @@ class TerrainShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        Vector2f[4] textureScales;
-        Texture[4] baseColorTextures;
-        Texture[4] normalTextures;
-        Color4f[4] baseColorFactors;
-        Vector3f[4] normalFactors;
-        float[4] roughnessFactors;
-        float[4] metallicFactors;
-        Texture splatTexture;
-        Color4f splatFactor;
-        
-        TerrainMaterial mat = cast(TerrainMaterial)state.material;
-        if (mat)
-        {
-            textureScales[] = mat.textureScales[];
-            baseColorTextures[] = mat.baseColorTextures[];
-            normalTextures[] = mat.normalTextures[];
-            baseColorFactors[] = mat.baseColorFactors[];
-            normalFactors[] = mat.normalFactors[];
-            roughnessFactors[] = mat.roughnessFactors[];
-            metallicFactors[] = mat.metallicFactors[];
-            splatTexture = mat.splatTexture;
-            splatFactor = mat.splatFactor;
-        }
-        else
-        {
-            baseColorFactors[] = state.material.baseColorFactor;
-            normalFactors[] = state.material.normalFactor;
-            roughnessFactors[] = state.material.roughnessFactor;
-            metallicFactors[] = state.material.metallicFactor;
-            splatTexture = state.material.baseColorTexture;
-            splatFactor = Color4f(1.0f, 0.0f, 0.0f, 0.0f);
-        }
-        
         setParameter("modelViewMatrix", state.modelViewMatrix);
         setParameter("projectionMatrix", state.projectionMatrix);
         setParameter("normalMatrix", state.normalMatrix);
         setParameter("viewMatrix", state.viewMatrix);
         setParameter("invViewMatrix", state.invViewMatrix);
         setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
-
-        setParameter("layer", cast(float)(state.layer));
-        setParameter("opacity", state.opacity);
-
-        setParameter("textureScale1", textureScales[0]);
-        setParameter("textureScale2", textureScales[1]);
-        setParameter("textureScale3", textureScales[2]);
-        setParameter("textureScale4", textureScales[3]);
-
-        // Diffuse 1
-        glActiveTexture(GL_TEXTURE0);
-        setParameter("diffuse1Texture", cast(int)0);
-        setParameter("diffuse1Vector", baseColorFactors[0]);
-        if (baseColorTextures[0])
-        {
-            baseColorTextures[0].bind();
-            setParameterSubroutine("diffuse1", ShaderType.Fragment, "diffuse1ColorTexture");
-        }
-        else
-        {
-            glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("diffuse1", ShaderType.Fragment, "diffuse1ColorValue");
-        }
         
-        // Diffuse 2
-        glActiveTexture(GL_TEXTURE1);
-        setParameter("diffuse2Texture", cast(int)1);
-        setParameter("diffuse2Vector", baseColorFactors[1]);
-        if (baseColorTextures[1])
-        {
-            baseColorTextures[1].bind();
-            setParameterSubroutine("diffuse2", ShaderType.Fragment, "diffuse2ColorTexture");
-        }
-        else
-        {
-            glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("diffuse2", ShaderType.Fragment, "diffuse2ColorValue");
-        }
-        
-        // Diffuse 3
-        glActiveTexture(GL_TEXTURE2);
-        setParameter("diffuse3Texture", cast(int)2);
-        setParameter("diffuse3Vector", baseColorFactors[2]);
-        if (baseColorTextures[2])
-        {
-            baseColorTextures[2].bind();
-            setParameterSubroutine("diffuse3", ShaderType.Fragment, "diffuse3ColorTexture");
-        }
-        else
-        {
-            glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("diffuse3", ShaderType.Fragment, "diffuse3ColorValue");
-        }
-        
-        // Diffuse 4
-        glActiveTexture(GL_TEXTURE3);
-        setParameter("diffuse4Texture", cast(int)3);
-        setParameter("diffuse4Vector", baseColorFactors[3]);
-        if (baseColorTextures[3])
-        {
-            baseColorTextures[3].bind();
-            setParameterSubroutine("diffuse4", ShaderType.Fragment, "diffuse4ColorTexture");
-        }
-        else
-        {
-            glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("diffuse4", ShaderType.Fragment, "diffuse4ColorValue");
-        }
-        
-        // Normal/height 1
-        glActiveTexture(GL_TEXTURE4);
-        setParameter("normal1Texture", cast(int)4);
-        setParameter("normal1Vector", normalFactors[0]);
-        if (normalTextures[0])
-        {
-            normalTextures[0].bind();
-            setParameterSubroutine("normal1", ShaderType.Fragment, "normal1Map");
-        }
-        else
-        {
-            glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("normal1", ShaderType.Fragment, "normal1Value");
-        }
-        
-        // Normal/height 2
-        glActiveTexture(GL_TEXTURE5);
-        setParameter("normal2Texture", cast(int)5);
-        setParameter("normal2Vector", normalFactors[1]);
-        if (normalTextures[1])
-        {
-            normalTextures[1].bind();
-            setParameterSubroutine("normal2", ShaderType.Fragment, "normal2Map");
-        }
-        else
-        {
-            glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("normal2", ShaderType.Fragment, "normal2Value");
-        }
-        
-        // Normal/height 3
-        glActiveTexture(GL_TEXTURE6);
-        setParameter("normal3Texture", cast(int)6);
-        setParameter("normal3Vector", normalFactors[2]);
-        if (normalTextures[2])
-        {
-            normalTextures[2].bind();
-            setParameterSubroutine("normal3", ShaderType.Fragment, "normal3Map");
-        }
-        else
-        {
-            glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("normal3", ShaderType.Fragment, "normal3Value");
-        }
-        
-        // Normal/height 4
-        glActiveTexture(GL_TEXTURE7);
-        setParameter("normal4Texture", cast(int)7);
-        setParameter("normal4Vector", normalFactors[3]);
-        if (normalTextures[3])
-        {
-            normalTextures[3].bind();
-            setParameterSubroutine("normal4", ShaderType.Fragment, "normal4Map");
-        }
-        else
-        {
-            glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("normal4", ShaderType.Fragment, "normal4Value");
-        }
-        
-        // PBR
-        setParameter("rms1", Vector4f(roughnessFactors[0], metallicFactors[0], 0.0f, 1.0f));
-        setParameter("rms2", Vector4f(roughnessFactors[1], metallicFactors[1], 0.0f, 1.0f));
-        setParameter("rms3", Vector4f(roughnessFactors[2], metallicFactors[2], 0.0f, 1.0f));
-        setParameter("rms4", Vector4f(roughnessFactors[3], metallicFactors[3], 0.0f, 1.0f));
-
-        // Splatmap
-        glActiveTexture(GL_TEXTURE8);
-        setParameter("splatTexture", cast(int)8);
-        setParameter("splatVector", splatFactor);
-        if (splatTexture)
-        {
-            splatTexture.bind();
-            setParameterSubroutine("splat", ShaderType.Fragment, "splatMap");
-        }
-        else
-        {
-            glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("splat", ShaderType.Fragment, "splatValue");
-        }
-
-        glActiveTexture(GL_TEXTURE0);
+        setParameter("gbufferMask", 1.0f);
+        setParameter("blurMask", state.blurMask);
 
         super.bindParameters(state);
     }
@@ -263,34 +82,5 @@ class TerrainShader: Shader
     override void unbindParameters(GraphicsState* state)
     {
         super.unbindParameters(state);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        glActiveTexture(GL_TEXTURE4);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        glActiveTexture(GL_TEXTURE5);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        glActiveTexture(GL_TEXTURE6);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        glActiveTexture(GL_TEXTURE7);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        glActiveTexture(GL_TEXTURE8);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        glActiveTexture(GL_TEXTURE0);
     }
 }

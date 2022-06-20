@@ -12,7 +12,6 @@ uniform mat4 prevModelViewMatrix;
 out vec3 eyePosition;
 out vec3 eyeNormal;
 out vec2 texCoord;
-out vec2 splatTexCoord;
 out vec4 currPosition;
 out vec4 prevPosition;
 
@@ -22,7 +21,6 @@ void main()
     eyePosition = pos.xyz;
     eyeNormal = (normalMatrix * vec4(va_Normal, 0.0)).xyz;
     texCoord = va_Texcoord;
-    splatTexCoord = va_Texcoord;
     
     currPosition = projectionMatrix * pos;
     prevPosition = projectionMatrix * prevModelViewMatrix * vec4(va_Vertex, 1.0);

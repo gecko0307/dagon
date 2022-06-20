@@ -6,7 +6,7 @@ The goal of this project is creating a modern, easy to use, extendable 3D game e
 
 The engine is still under development and lacks a lot of important functionality. Currently it is not recommended to use Dagon in production due to unstable API. Follow development on [Trello](https://trello.com/b/4sDgRjZI/dagon-0110) to see priority tasks.
 
-Dagon uses modern graphics techniques and so requires quite powerful graphics card. At least Turing-based NVIDIA cards are recommended (raytracing support is not required though). Main development and testing is done on GeForce GTX 1650.
+Dagon uses modern graphics techniques and so requires quite powerful graphics card. At least Turing-based NVIDIA cards are recommended (raytracing support is not required though).
 
 If you like Dagon, please support its development on [Patreon](https://www.patreon.com/gecko0307) or [Liberapay](https://liberapay.com/gecko0307). You can also make one-time donation via [PayPal](https://www.paypal.me/tgafarov) or [NOWPayments](https://nowpayments.io/donation/gecko0307). I appreciate any support. Thanks in advance!
 
@@ -33,7 +33,7 @@ Features
 * Textures in PNG, JPG, DDS, HDR, TGA, BMP, GIF, PSD formats
 * Deferred pipeline for opaque materials, forward pipeline for transparent materials and materials with custom shaders
 * Physically based rendering (PBR)
-* HDR rendering with Reinhard, Hable/Uncharted, ACES and Filmic tonemapping operators
+* HDR rendering with Reinhard, Hable/Uncharted, Unreal, ACES and Filmic tonemapping operators
 * HDRI environment maps. Preconvolved DDS cubemaps
 * Directional lights with cascaded shadow mapping and volumetric scattering
 * Spherical and tube area lights, spot lights

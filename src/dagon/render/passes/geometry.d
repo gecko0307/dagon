@@ -42,6 +42,7 @@ import dagon.graphics.shader;
 import dagon.render.pipeline;
 import dagon.render.pass;
 import dagon.render.gbuffer;
+import dagon.render.framebuffer;
 import dagon.render.shaders.geometry;
 import dagon.render.shaders.terrain;
 
@@ -49,25 +50,24 @@ class PassGeometry: RenderPass
 {
     GBuffer gbuffer;
     GeometryShader geometryShader;
-    TerrainShader terrainShader;
     uint renderedEntities = 0;
     bool frustumCulling = false;
-
+    
     this(RenderPipeline pipeline, GBuffer gbuffer, EntityGroup group = null)
     {
         super(pipeline, group);
         this.gbuffer = gbuffer;
         geometryShader = New!GeometryShader(this);
-        terrainShader = New!TerrainShader(this);
     }
     
     override void render()
     {
         renderedEntities = 0;
+        
         if (group && gbuffer)
         {
             gbuffer.bind();
-
+            
             glScissor(0, 0, gbuffer.width, gbuffer.height);
             glViewport(0, 0, gbuffer.width, gbuffer.height);
             
@@ -91,25 +91,88 @@ class PassGeometry: RenderPass
             }
             geometryShader.unbind();
             
+            gbuffer.unbind();
+        }
+    }
+}
+
+class PassGeometryTerrain: RenderPass
+{
+    GBuffer gbuffer;
+    TerrainGeometryShader terrainShader;
+    Framebuffer normalBuffer;
+    Framebuffer texcoordBuffer;
+    GLuint framebuffer = 0;
+    
+    this(RenderPipeline pipeline, GBuffer gbuffer, Framebuffer normalBuffer, Framebuffer texcoordBuffer, EntityGroup group = null)
+    {
+        super(pipeline, group);
+        this.gbuffer = gbuffer;
+        terrainShader = New!TerrainGeometryShader(this);
+        this.normalBuffer = normalBuffer;
+        this.texcoordBuffer = texcoordBuffer;
+    }
+    
+    void prepareFramebuffer()
+    {
+        if (framebuffer)
+            return;
+        
+        glGenFramebuffers(1, &framebuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, normalBuffer.colorTexture, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, texcoordBuffer.colorTexture, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gbuffer.velocityTexture, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, gbuffer.depthTexture, 0);
+        
+        GLenum[3] drawBuffers =
+        [
+            GL_COLOR_ATTACHMENT0, 
+            GL_COLOR_ATTACHMENT1,
+            GL_COLOR_ATTACHMENT2
+        ];
+        glDrawBuffers(drawBuffers.length, drawBuffers.ptr);
+        
+        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        if (status != GL_FRAMEBUFFER_COMPLETE)
+            writeln(status);
+        
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+    
+    void resize(uint w, uint h)
+    {
+        if (glIsFramebuffer(framebuffer))
+        {
+            glDeleteFramebuffers(1, &framebuffer);
+            framebuffer = 0;
+        }
+    }
+    
+    override void render()
+    {
+        if (group && gbuffer)
+        {
+            prepareFramebuffer();
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
+            
+            glScissor(0, 0, gbuffer.width, gbuffer.height);
+            glViewport(0, 0, gbuffer.width, gbuffer.height);
+            
+            state.environment = pipeline.environment;
+            
             terrainShader.bind();
             foreach(entity; group)
             {
                 if (entity.visible && entity.drawable)
                 {
                     if (entityIsTerrain(entity))
-                    {
-                        auto bb = entity.boundingBox();
-                        if (!frustumCulling || state.frustum.intersectsAABB(bb))
-                        {
-                            renderEntity(entity, terrainShader);
-                            renderedEntities++;
-                        }
-                    }
+                        renderEntity(entity, terrainShader);
                 }
             }
             terrainShader.unbind();
             
-            gbuffer.unbind();
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
         }
     }
 }

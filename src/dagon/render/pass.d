@@ -45,7 +45,7 @@ import dagon.render.pipeline;
 import dagon.render.view;
 import dagon.render.shaders.fallback;
 
-class RenderPass: EventListener
+abstract class RenderPass: EventListener
 {
     RenderPipeline pipeline;
     RenderView view;
@@ -133,35 +133,6 @@ class RenderPass: EventListener
 
     void render()
     {
-        /*
-        if (view && group)
-        {
-            glScissor(view.x, view.y, view.width, view.height);
-            glViewport(view.x, view.y, view.width, view.height);
-
-            if (clear)
-            {
-                Color4f backgroundColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
-                state.environment = pipeline.environment;
-                if (state.environment)
-                    backgroundColor = state.environment.backgroundColor;
-                
-                glClearColor(
-                    backgroundColor.r,
-                    backgroundColor.g,
-                    backgroundColor.b,
-                    1.0f);
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            }
-
-            defaultShader.bind();
-            foreach(entity; group)
-            if (entity.visible && entity.drawable)
-            {
-                renderEntity(entity, defaultShader);
-            }
-            defaultShader.unbind();
-        }
-        */
+        //
     }
 }

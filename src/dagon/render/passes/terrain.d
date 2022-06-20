@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,19 +25,6 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.passes;
+module dagon.render.passes.terrain;
 
-public
-{
-    import dagon.render.passes.background;
-    import dagon.render.passes.debugoutput;
-    import dagon.render.passes.decal;
-    import dagon.render.passes.environment;
-    import dagon.render.passes.forward;
-    import dagon.render.passes.geometry;
-    import dagon.render.passes.light;
-    import dagon.render.passes.occlusion;
-    import dagon.render.passes.particles;
-    import dagon.render.passes.shadow;
-    import dagon.render.passes.terrain;
-}
+// TODO: PassTerrainTexture

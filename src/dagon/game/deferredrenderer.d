@@ -46,6 +46,7 @@ class DeferredRenderer: Renderer
     GBuffer gbuffer;
     PassShadow passShadow;
     PassBackground passBackground;
+    PassGeometryTerrain passGeometryTerrain;
     PassGeometry passStaticGeometry;
     PassDecal passDecal;
     PassGeometry passDynamicGeometry;
@@ -56,8 +57,10 @@ class DeferredRenderer: Renderer
     PassForward passForward;
     PassParticles passParticles;
     
-    DenoiseShader denoiseShader;
+    Framebuffer terrainNormalBuffer;
+    Framebuffer terrainTexcoordBuffer;
     
+    DenoiseShader denoiseShader;
     RenderView occlusionView;
     Framebuffer occlusionNoisyBuffer;
     Framebuffer occlusionBuffer;
@@ -115,6 +118,12 @@ class DeferredRenderer: Renderer
         passBackground = New!PassBackground(pipeline, gbuffer);
         passBackground.view = view;
         
+        terrainNormalBuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, FrameBufferFormat.RGBA16F, false, this);
+        terrainTexcoordBuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, FrameBufferFormat.RGBA16F, false, this);
+        passGeometryTerrain = New!PassGeometryTerrain(pipeline, gbuffer, terrainNormalBuffer, terrainTexcoordBuffer);
+        
+        // TODO: terrain texturing pass
+        
         passStaticGeometry = New!PassGeometry(pipeline, gbuffer);
         passStaticGeometry.view = view;
         
@@ -162,6 +171,7 @@ class DeferredRenderer: Renderer
         passShadow.group = s.spatial;
         passShadow.lightGroup = s.lights;
         passBackground.group = s.background;
+        passGeometryTerrain.group = s.spatial;
         passStaticGeometry.group = s.spatialOpaqueStatic;
         passDecal.group = s.decals;
         passDynamicGeometry.group = s.spatialOpaqueDynamic;
@@ -198,6 +208,7 @@ class DeferredRenderer: Renderer
         occlusionView.resize(cast(uint)(view.width * _occlusionBufferDetail), cast(uint)(view.height * _occlusionBufferDetail));
         occlusionNoisyBuffer.resize(occlusionView.width, occlusionView.height);
         occlusionBuffer.resize(occlusionView.width, occlusionView.height);
+        passGeometryTerrain.resize(w, h);
         passForward.resize(w, h);
     }
 }

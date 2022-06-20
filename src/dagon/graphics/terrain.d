@@ -29,6 +29,7 @@ module dagon.graphics.terrain;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.container.array;
 import dlib.math.vector;
 import dlib.geometry.sphere;
 import dlib.geometry.triangle;
@@ -43,6 +44,8 @@ import dagon.graphics.texture;
 
 class TerrainMaterial: Material
 {
+    Array!Material layers;
+    /*
     Texture[4] baseColorTextures;
     Color4f[4] baseColorFactors;
     Texture[4] normalTextures;
@@ -52,11 +55,13 @@ class TerrainMaterial: Material
     Texture splatTexture;
     Color4f splatFactor;
     Vector2f[4] textureScales;
+    */
     
     this(Owner o)
     {
         super(o);
         
+        /*
         baseColorTextures[0] = null;
         baseColorTextures[1] = null;
         baseColorTextures[2] = null;
@@ -94,10 +99,21 @@ class TerrainMaterial: Material
         textureScales[1] = Vector2f(1.0f, 1.0f);
         textureScales[2] = Vector2f(1.0f, 1.0f);
         textureScales[3] = Vector2f(1.0f, 1.0f);
+        */
     }
+    
+    Material addLayer()
+    {
+        Material layerMaterial = New!Material(this);
+        layers.append(layerMaterial);
+        return layerMaterial;
+    }
+    
+    // TODO: remove layer
     
     ~this()
     {
+        layers.free();
     }
 }
 
