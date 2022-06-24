@@ -25,12 +25,17 @@ void main()
     if (nor.a < 1.0)
         discard;
     
+    vec3 N = normalize(nor.rgb);
+    vec2 terrTexCoord = texture(terrainTexcoordBuffer, texCoord).xy;
     //float depth = texture(depthBuffer, texCoord).x;
     //vec3 eyePos = unproject(invProjectionMatrix, vec3(texCoord, depth));
-    vec3 N = normalize(nor.rgb);
     
-    fragColor = vec4(0.5, 0.5, 0.5, gbufferMask); // TODO
-    fragNormal = vec4(N, 0.0);
-    fragPBR = vec4(0.5, 0.0, 1.0, 0.0); // TODO
-    fragRadiance = vec4(0.0, 0.0, 0.0, 1.0); // TODO
+    float mask = 1.0;
+    // TODO: sample mask and material textures
+    // TODO: opacity
+    
+    fragColor = vec4(0.5, 0.5, 0.5, mask); // TODO
+    fragNormal = vec4(N, mask);
+    fragPBR = vec4(0.5, 0.0, 1.0, mask); // TODO
+    fragRadiance = vec4(0.0, 0.0, 0.0, mask); // TODO
 }
