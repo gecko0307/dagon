@@ -66,6 +66,8 @@ class TerrainGeometryShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
+        Material mat = state.material;
+        
         setParameter("modelViewMatrix", state.modelViewMatrix);
         setParameter("projectionMatrix", state.projectionMatrix);
         setParameter("normalMatrix", state.normalMatrix);
@@ -75,7 +77,7 @@ class TerrainGeometryShader: Shader
         
         setParameter("gbufferMask", 1.0f);
         setParameter("blurMask", state.blurMask);
-
+        
         super.bindParameters(state);
     }
 
@@ -116,8 +118,9 @@ class TerrainTextureLayerShader: Shader
         setParameter("zNear", state.zNear);
         setParameter("zFar", state.zFar);
         
-        //setParameter("gbufferMask", 1.0f);
-        //setParameter("blurMask", state.blurMask);
+        setParameter("opacity", mat.opacity);
+        setParameter("textureScale", mat.textureScale);
+        setParameter("clipThreshold", mat.alphaTestThreshold);
         
         // Texture 0 - normal buffer
         glActiveTexture(GL_TEXTURE0);
@@ -129,9 +132,24 @@ class TerrainTextureLayerShader: Shader
         glBindTexture(GL_TEXTURE_2D, state.texcoordTexture);
         setParameter("terrainTexcoordBuffer", cast(int)1);
         
-        // Diffuse
+        // Texture 2 - mask
         glActiveTexture(GL_TEXTURE2);
-        setParameter("diffuseTexture", cast(int)2);
+        setParameter("maskTexture", cast(int)2);
+        setParameter("maskFactor", mat.maskFactor);
+        if (mat.maskTexture)
+        {
+            mat.maskTexture.bind();
+            setParameterSubroutine("layerMask", ShaderType.Fragment, "layerMaskTexture");
+        }
+        else
+        {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameterSubroutine("layerMask", ShaderType.Fragment, "layerMaskValue");
+        }
+        
+        // Diffuse
+        glActiveTexture(GL_TEXTURE3);
+        setParameter("diffuseTexture", cast(int)3);
         setParameter("diffuseVector", mat.baseColorFactor);
         if (mat.baseColorTexture)
         {
@@ -150,5 +168,19 @@ class TerrainTextureLayerShader: Shader
     override void unbindParameters(GraphicsState* state)
     {
         super.unbindParameters(state);
+        
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        glActiveTexture(GL_TEXTURE0);
     }
 }

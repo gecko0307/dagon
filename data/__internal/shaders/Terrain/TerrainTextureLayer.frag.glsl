@@ -10,9 +10,33 @@ uniform mat4 invProjectionMatrix;
 uniform float zNear;
 uniform float zFar;
 
+uniform vec2 textureScale;
+
+uniform float opacity;
+uniform float clipThreshold;
+
 in vec2 texCoord;
 
 #include <unproject.glsl>
+
+/*
+ * Layer mask
+ */
+subroutine float srtLayerMask(in vec2 uv);
+
+uniform float maskFactor;
+subroutine(srtLayerMask) float layerMaskValue(in vec2 uv)
+{
+    return maskFactor;
+}
+
+uniform sampler2D maskTexture;
+subroutine(srtLayerMask) float layerMaskTexture(in vec2 uv)
+{
+    return texture(maskTexture, uv).r;
+}
+
+subroutine uniform srtLayerMask layerMask;
 
 /*
  * Diffuse
@@ -41,27 +65,26 @@ layout(location = 3) out vec4 fragRadiance;
 void main()
 {
     vec4 terrTexCoordSample = texture(terrainTexcoordBuffer, texCoord);
-    vec2 terrTexCoord = terrTexCoordSample.xy * 30.0; // TODO: uniform textureScale
+    vec2 terrTexCoord = terrTexCoordSample.xy;
+    vec2 layerTexCoord = terrTexCoord * textureScale;
     float depth = terrTexCoordSample.z;
     
-    vec4 diff = diffuse(terrTexCoord);
+    vec4 diff = diffuse(layerTexCoord);
+    vec3 albedo = diff.rgb;
     
     vec4 normalSample = texture(terrainNormalBuffer, texCoord);
     vec3 N = normalize(normalSample.xyz);
+    float gbufferMask = normalSample.a;
     
-    float mask = normalSample.a;
+    float mask = layerMask(terrTexCoord) * opacity * gbufferMask;
+    //if (mask < clipThreshold)
+    //    discard;
     
-    vec3 albedo = diff.rgb;
-    
+    // TODO: sample material textures
     vec4 pbr = vec4(0.0, 0.9, 0.0, 1.0);
     float roughness = pbr.g;
     float metallic = pbr.b;
     vec4 emission = vec4(0.0, 0.0, 0.0, 1.0);
-    float opacity = 1.0;
-    
-    // TODO: sample mask and material textures
-    
-    mask *= opacity;
     
     fragColor = vec4(albedo, mask);
     fragNormal = vec4(N, mask);
