@@ -22,6 +22,7 @@ Dagon 0.14.0 - TBD
     - `shadowsEnabled` is now `useShadows`
     - `fogEnabled` is now `useFog`
     - `culling` is now `useCulling`
+  - Old material properties are still supported, but deprecated and write-only. `Material.roughness` and `Material.metallic` now don't support textures
   - Texture system redesign. `Texture` class now can be created from raw pixel data without intermediate `SuperImage`, hense DDS textures are now loaded directly to `Texture` object without additional layers of abstraction. Also `Texture` now supports cubemaps in addition to 2D textures
   - Added support for ASTC texture compression format
   - `alphaMode` support for glTF materials
