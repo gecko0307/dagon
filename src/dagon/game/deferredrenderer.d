@@ -207,7 +207,9 @@ class DeferredRenderer: Renderer
         occlusionView.resize(cast(uint)(view.width * _occlusionBufferDetail), cast(uint)(view.height * _occlusionBufferDetail));
         occlusionNoisyBuffer.resize(occlusionView.width, occlusionView.height);
         occlusionBuffer.resize(occlusionView.width, occlusionView.height);
-        passTerrain.resize(w, h);
-        passForward.resize(w, h);
+        terrainNormalBuffer.resize(view.width, view.height);
+        terrainTexcoordBuffer.resize(view.width, view.height);
+        passTerrain.resize(view.width, view.height);
+        passForward.resize(view.width, view.height);
     }
 }
