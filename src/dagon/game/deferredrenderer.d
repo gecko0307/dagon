@@ -64,7 +64,7 @@ class DeferredRenderer: Renderer
     RenderView occlusionView;
     Framebuffer occlusionNoisyBuffer;
     Framebuffer occlusionBuffer;
-    bool _ssaoEnabled = false;
+    bool _ssaoEnabled = true;
     float _occlusionBufferDetail = 1.0f;
     int ssaoSamples = 20;
     float ssaoRadius = 0.2f;

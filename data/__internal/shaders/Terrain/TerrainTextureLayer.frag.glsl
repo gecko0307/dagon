@@ -121,7 +121,7 @@ void main()
     //    discard;
     
     // TODO: sample material textures
-    vec4 pbr = vec4(0.0, 0.7, 0.0, 1.0);
+    vec4 pbr = vec4(0.0, 0.9, 0.0, 1.0);
     float roughness = pbr.g;
     float metallic = pbr.b;
     vec4 emission = vec4(0.0, 0.0, 0.0, 1.0);
