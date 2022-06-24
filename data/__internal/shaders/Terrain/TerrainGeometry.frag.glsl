@@ -13,6 +13,7 @@ uniform float blurMask;
 layout(location = 0) out vec4 fragNormal;
 layout(location = 1) out vec4 fragTexcoord;
 layout(location = 2) out vec4 fragVelocity;
+layout(location = 3) out vec4 fragRadiance;
 
 void main()
 {
@@ -24,7 +25,8 @@ void main()
     
     float depth = eyePosition.z;
     
-    fragNormal = vec4(N, depth);
-    fragTexcoord = vec4(texCoord, gbufferMask, 1.0);
+    fragNormal = vec4(N, gbufferMask);
+    fragTexcoord = vec4(texCoord, depth, 1.0);
     fragVelocity = vec4(velocity, blurMask, 1.0);
+    fragRadiance = vec4(0.0, 0.0, 0.0, 1.0);
 }

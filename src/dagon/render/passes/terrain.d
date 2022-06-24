@@ -74,13 +74,15 @@ class PassTerrain: RenderPass
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, normalBuffer.colorTexture, 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, texcoordBuffer.colorTexture, 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gbuffer.velocityTexture, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, gbuffer.radiance.colorTexture, 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, gbuffer.depthTexture, 0);
         
-        GLenum[3] drawBuffers =
+        GLenum[4] drawBuffers =
         [
             GL_COLOR_ATTACHMENT0, 
             GL_COLOR_ATTACHMENT1,
-            GL_COLOR_ATTACHMENT2
+            GL_COLOR_ATTACHMENT2,
+            GL_COLOR_ATTACHMENT3
         ];
         glDrawBuffers(drawBuffers.length, drawBuffers.ptr);
         
@@ -148,8 +150,14 @@ class PassTerrain: RenderPass
             glScissor(0, 0, gbuffer.width, gbuffer.height);
             glViewport(0, 0, gbuffer.width, gbuffer.height);
             
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glEnablei(GL_BLEND, 0);
+            glEnablei(GL_BLEND, 1);
+            glEnablei(GL_BLEND, 2);
+            glEnablei(GL_BLEND, 3);
+            glBlendFuncSeparatei(0, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+            glBlendFuncSeparatei(1, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+            glBlendFuncSeparatei(2, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+            glBlendFuncSeparatei(3, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
             
             glDisable(GL_DEPTH_TEST);
             terrainTextureLayerShader.bind();
@@ -168,7 +176,10 @@ class PassTerrain: RenderPass
             terrainTextureLayerShader.unbind();
             glEnable(GL_DEPTH_TEST);
             
-            glDisable(GL_BLEND);
+            glDisablei(GL_BLEND, 0);
+            glDisablei(GL_BLEND, 1);
+            glDisablei(GL_BLEND, 2);
+            glDisablei(GL_BLEND, 3);
             
             gbuffer.unbind();
         }

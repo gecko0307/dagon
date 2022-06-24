@@ -47,7 +47,6 @@ class DeferredRenderer: Renderer
     PassShadow passShadow;
     PassBackground passBackground;
     PassTerrain passTerrain;
-    //PassTerrainTexture passTerrainTexture;
     PassGeometry passStaticGeometry;
     PassDecal passDecal;
     PassGeometry passDynamicGeometry;
@@ -65,7 +64,7 @@ class DeferredRenderer: Renderer
     RenderView occlusionView;
     Framebuffer occlusionNoisyBuffer;
     Framebuffer occlusionBuffer;
-    bool _ssaoEnabled = true;
+    bool _ssaoEnabled = false;
     float _occlusionBufferDetail = 1.0f;
     int ssaoSamples = 20;
     float ssaoRadius = 0.2f;

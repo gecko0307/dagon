@@ -41,14 +41,15 @@ layout(location = 3) out vec4 fragRadiance;
 void main()
 {
     vec4 terrTexCoordSample = texture(terrainTexcoordBuffer, texCoord);
-    vec2 terrTexCoord = terrTexCoordSample.xy * 20.0; // TODO: uniform textureScale
-    float mask = terrTexCoordSample.z;
+    vec2 terrTexCoord = terrTexCoordSample.xy * 30.0; // TODO: uniform textureScale
+    float depth = terrTexCoordSample.z;
     
     vec4 diff = diffuse(terrTexCoord);
     
     vec4 normalSample = texture(terrainNormalBuffer, texCoord);
     vec3 N = normalize(normalSample.xyz);
-    float depth = normalSample.z;
+    
+    float mask = normalSample.a;
     
     vec3 albedo = diff.rgb;
     

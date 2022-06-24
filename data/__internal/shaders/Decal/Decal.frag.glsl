@@ -225,7 +225,7 @@ void main()
     N = normal(shiftedTexCoord, -1.0, tangentToEye);
     
     vec4 diffuseColor = diffuse(shiftedTexCoord);
-    vec3 albedo = toLinear(diffuseColor.rgb);
+    vec3 albedo = diffuseColor.rgb; //toLinear(diffuseColor.rgb);
     
     vec3 emiss = toLinear(emission(shiftedTexCoord).rgb) * emissionEnergy;
     

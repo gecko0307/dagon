@@ -191,6 +191,8 @@ class Material: Owner
         glDisablei(GL_BLEND, 0);
         glDisablei(GL_BLEND, 1);
         glDisablei(GL_BLEND, 2);
+        glDisablei(GL_BLEND, 3);
+        glDisablei(GL_BLEND, 4);
     }
     
     // Old properties for compatibility
