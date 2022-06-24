@@ -76,6 +76,7 @@ class PassEnvironment: RenderPass
             glScissor(0, 0, outputBuffer.width, outputBuffer.height);
             glViewport(0, 0, outputBuffer.width, outputBuffer.height);
 
+            // Additive blending
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 

@@ -27,11 +27,13 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.graphics.environment;
 
+import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.image.color;
 
-import dagon.graphics.texture;
 import dagon.graphics.light;
+import dagon.graphics.texture;
+import dagon.graphics.terrain;
 
 class Environment: Owner
 {
@@ -47,8 +49,11 @@ class Environment: Owner
     
     Light sun;
     
+    TerrainMaterial terrainMaterial;
+    
     this(Owner o)
     {
         super(o);
+        terrainMaterial = New!TerrainMaterial(this);
     }
 }

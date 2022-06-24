@@ -31,10 +31,12 @@ import std.stdio;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.image.color;
 
 import dagon.core.bindings;
 import dagon.graphics.entity;
 import dagon.graphics.terrain;
+import dagon.graphics.screensurface;
 import dagon.render.pipeline;
 import dagon.render.pass;
 import dagon.render.gbuffer;
@@ -104,6 +106,10 @@ class PassTerrainGeometry: RenderPass
             glScissor(0, 0, gbuffer.width, gbuffer.height);
             glViewport(0, 0, gbuffer.width, gbuffer.height);
             
+            Color4f zero = Color4f(0, 0, 0, 0);
+            glClearBufferfv(GL_COLOR, 0, zero.arrayof.ptr);
+            glClearBufferfv(GL_COLOR, 1, zero.arrayof.ptr);
+            
             state.environment = pipeline.environment;
             
             terrainShader.bind();
@@ -122,4 +128,63 @@ class PassTerrainGeometry: RenderPass
     }
 }
 
-// TODO: PassTerrainTexture
+class PassTerrainTexture: RenderPass
+{
+    GBuffer gbuffer;
+    ScreenSurface screenSurface;
+    TerrainTextureLayerShader terrainTextureLayerShader;
+    Framebuffer normalBuffer;
+    Framebuffer texcoordBuffer;
+    
+    this(RenderPipeline pipeline, GBuffer gbuffer, Framebuffer normalBuffer, Framebuffer texcoordBuffer, EntityGroup group = null)
+    {
+        super(pipeline, group);
+        this.gbuffer = gbuffer;
+        screenSurface = New!ScreenSurface(this);
+        terrainTextureLayerShader = New!TerrainTextureLayerShader(this);
+        this.normalBuffer = normalBuffer;
+        this.texcoordBuffer = texcoordBuffer;
+    }
+    
+    override void render()
+    {
+        if (gbuffer)
+        {
+            gbuffer.bind();
+            
+            state.normalTexture = normalBuffer.colorTexture;
+            state.texcoordTexture = texcoordBuffer.colorTexture;
+            state.depthMask = false;
+            state.environment = pipeline.environment;
+            
+            glScissor(0, 0, gbuffer.width, gbuffer.height);
+            glViewport(0, 0, gbuffer.width, gbuffer.height);
+            
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            
+            glDisable(GL_DEPTH_TEST);
+            terrainTextureLayerShader.bind();
+            
+            TerrainMaterial terrainMaterial = pipeline.environment.terrainMaterial;
+            
+            if (terrainMaterial)
+            {
+                foreach(layer; terrainMaterial.layers)
+                {
+                    state.material = layer;
+                    terrainTextureLayerShader.bindParameters(&state);
+                    screenSurface.render(&state);
+                    terrainTextureLayerShader.unbindParameters(&state);
+                }
+            }
+            
+            terrainTextureLayerShader.unbind();
+            glEnable(GL_DEPTH_TEST);
+            
+            glDisable(GL_BLEND);
+            
+            gbuffer.unbind();
+        }
+    }
+}

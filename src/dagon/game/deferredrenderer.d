@@ -47,6 +47,7 @@ class DeferredRenderer: Renderer
     PassShadow passShadow;
     PassBackground passBackground;
     PassTerrainGeometry passTerrainGeometry;
+    PassTerrainTexture passTerrainTexture;
     PassGeometry passStaticGeometry;
     PassDecal passDecal;
     PassGeometry passDynamicGeometry;
@@ -121,8 +122,10 @@ class DeferredRenderer: Renderer
         terrainNormalBuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, FrameBufferFormat.RGBA16F, false, this);
         terrainTexcoordBuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, FrameBufferFormat.RGBA16F, false, this);
         passTerrainGeometry = New!PassTerrainGeometry(pipeline, gbuffer, terrainNormalBuffer, terrainTexcoordBuffer);
+        passTerrainGeometry.view = view;
         
-        // TODO: terrain texturing pass
+        passTerrainTexture = New!PassTerrainTexture(pipeline, gbuffer, terrainNormalBuffer, terrainTexcoordBuffer);
+        passTerrainTexture.view = view;
         
         passStaticGeometry = New!PassGeometry(pipeline, gbuffer);
         passStaticGeometry.view = view;

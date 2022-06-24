@@ -85,6 +85,7 @@ struct GraphicsState
     GLuint normalTexture;
     GLuint pbrTexture;
     GLuint occlusionTexture;
+    GLuint texcoordTexture; // used only for terrains
     
     Time time;
     
@@ -135,6 +136,7 @@ struct GraphicsState
         normalTexture = 0;
         pbrTexture = 0;
         occlusionTexture = 0;
+        texcoordTexture = 0;
         
         time = Time(0.0, 0.0);
         localTime = 0.0f;

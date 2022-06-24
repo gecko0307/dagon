@@ -84,3 +84,54 @@ class TerrainGeometryShader: Shader
         super.unbindParameters(state);
     }
 }
+
+class TerrainTextureLayerShader: Shader
+{
+    String vs, fs;
+
+    this(Owner owner)
+    {
+        vs = Shader.load("data/__internal/shaders/Terrain/TerrainTextureLayer.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/Terrain/TerrainTextureLayer.frag.glsl");
+
+        auto prog = New!ShaderProgram(vs, fs, this);
+        super(prog, owner);
+    }
+
+    ~this()
+    {
+        vs.free();
+        fs.free();
+    }
+
+    override void bindParameters(GraphicsState* state)
+    {
+        setParameter("viewMatrix", state.viewMatrix);
+        setParameter("invViewMatrix", state.invViewMatrix);
+        setParameter("projectionMatrix", state.projectionMatrix);
+        setParameter("invProjectionMatrix", state.invProjectionMatrix);
+        setParameter("resolution", state.resolution);
+        setParameter("zNear", state.zNear);
+        setParameter("zFar", state.zFar);
+        
+        //setParameter("gbufferMask", 1.0f);
+        //setParameter("blurMask", state.blurMask);
+        
+        // Texture 0 - normal buffer
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, state.normalTexture);
+        setParameter("terrainNormalBuffer", cast(int)0);
+
+        // Texture 1 - texcoord buffer
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, state.texcoordTexture);
+        setParameter("terrainTexcoordBuffer", cast(int)1);
+
+        super.bindParameters(state);
+    }
+
+    override void unbindParameters(GraphicsState* state)
+    {
+        super.unbindParameters(state);
+    }
+}
