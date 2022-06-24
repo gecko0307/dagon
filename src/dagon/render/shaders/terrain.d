@@ -161,6 +161,28 @@ class TerrainTextureLayerShader: Shader
             glBindTexture(GL_TEXTURE_2D, 0);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
         }
+        
+        // Normal
+        glActiveTexture(GL_TEXTURE4);
+        setParameter("normalTexture", cast(int)4);
+        setParameter("normalVector", mat.normalFactor);
+        if (mat.normalTexture)
+        {
+            mat.normalTexture.bind();
+            setParameterSubroutine("normal", ShaderType.Fragment, "normalMap");
+            setParameter("generateTBN", cast(int)1);
+        }
+        else
+        {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
+            setParameter("generateTBN", cast(int)0);
+        }
+        
+        if (state.material.invertNormalY)
+            setParameter("normalYSign", -1.0f);
+        else
+            setParameter("normalYSign", 1.0f);
 
         super.bindParameters(state);
     }
@@ -179,6 +201,9 @@ class TerrainTextureLayerShader: Shader
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE0);

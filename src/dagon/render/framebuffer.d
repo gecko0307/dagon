@@ -100,22 +100,22 @@ class Framebuffer: Owner
         {
             // R
             case FrameBufferFormat.R8:      intFormat = GL_R8;      textureFormat = GL_RED;  pixelType = GL_UNSIGNED_BYTE; break;
-            case FrameBufferFormat.R16F:    intFormat = GL_R16F;    textureFormat = GL_RED;  pixelType = GL_HALF_FLOAT; break;
+            case FrameBufferFormat.R16F:    intFormat = GL_R16F;    textureFormat = GL_RED;  pixelType = GL_FLOAT; break;
             case FrameBufferFormat.R32F:    intFormat = GL_R32F;    textureFormat = GL_RED;  pixelType = GL_FLOAT; break;
             
             // RG
             case FrameBufferFormat.RG8:     intFormat = GL_RG8;     textureFormat = GL_RG;   pixelType = GL_UNSIGNED_BYTE; break;
-            case FrameBufferFormat.RG16F:   intFormat = GL_RG16F;   textureFormat = GL_RG;   pixelType = GL_HALF_FLOAT; break;
+            case FrameBufferFormat.RG16F:   intFormat = GL_RG16F;   textureFormat = GL_RG;   pixelType = GL_FLOAT; break;
             case FrameBufferFormat.RG32F:   intFormat = GL_RG32F;   textureFormat = GL_RG;   pixelType = GL_FLOAT; break;
             
             // RGB
             case FrameBufferFormat.RGB8:    intFormat = GL_RGB8;    textureFormat = GL_RGB;  pixelType = GL_UNSIGNED_BYTE; break;
-            case FrameBufferFormat.RGB16F:  intFormat = GL_RGB16F;  textureFormat = GL_RGB;  pixelType = GL_HALF_FLOAT; break;
+            case FrameBufferFormat.RGB16F:  intFormat = GL_RGB16F;  textureFormat = GL_RGB;  pixelType = GL_FLOAT; break;
             case FrameBufferFormat.RGB32F:  intFormat = GL_RGB32F;  textureFormat = GL_RGB;  pixelType = GL_FLOAT; break;
             
             // RGBA
             case FrameBufferFormat.RGBA8:   intFormat = GL_RGBA8;   textureFormat = GL_RGBA; pixelType = GL_UNSIGNED_BYTE; break;
-            case FrameBufferFormat.RGBA16F: intFormat = GL_RGBA16F; textureFormat = GL_RGBA; pixelType = GL_HALF_FLOAT; break;
+            case FrameBufferFormat.RGBA16F: intFormat = GL_RGBA16F; textureFormat = GL_RGBA; pixelType = GL_FLOAT; break;
             case FrameBufferFormat.RGBA32F: intFormat = GL_RGBA32F; textureFormat = GL_RGBA; pixelType = GL_FLOAT; break;
             default: break;
         }
