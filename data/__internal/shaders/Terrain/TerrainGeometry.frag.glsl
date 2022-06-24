@@ -22,7 +22,9 @@ void main()
     vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;
     vec2 velocity = posScreen - prevPosScreen;
     
-    fragNormal = vec4(N, gbufferMask);
-    fragTexcoord = vec4(texCoord, 0.0, 1.0);
+    float depth = eyePosition.z;
+    
+    fragNormal = vec4(N, depth);
+    fragTexcoord = vec4(texCoord, gbufferMask, 1.0);
     fragVelocity = vec4(velocity, blurMask, 1.0);
 }

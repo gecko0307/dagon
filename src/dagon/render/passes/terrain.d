@@ -43,10 +43,12 @@ import dagon.render.gbuffer;
 import dagon.render.framebuffer;
 import dagon.render.shaders.terrain;
 
-class PassTerrainGeometry: RenderPass
+class PassTerrain: RenderPass
 {
     GBuffer gbuffer;
+    ScreenSurface screenSurface;
     TerrainGeometryShader terrainShader;
+    TerrainTextureLayerShader terrainTextureLayerShader;
     Framebuffer normalBuffer;
     Framebuffer texcoordBuffer;
     GLuint framebuffer = 0;
@@ -55,7 +57,9 @@ class PassTerrainGeometry: RenderPass
     {
         super(pipeline, group);
         this.gbuffer = gbuffer;
-        terrainShader = New!TerrainGeometryShader(this);
+        this.screenSurface = New!ScreenSurface(this);
+        this.terrainShader = New!TerrainGeometryShader(this);
+        this.terrainTextureLayerShader = New!TerrainTextureLayerShader(this);
         this.normalBuffer = normalBuffer;
         this.texcoordBuffer = texcoordBuffer;
     }
@@ -98,64 +102,48 @@ class PassTerrainGeometry: RenderPass
     
     override void render()
     {
-        if (group && gbuffer)
+        if (gbuffer is null || group is null)
+            return;
+        
+        prepareFramebuffer();
+        
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
+        
+        glScissor(0, 0, gbuffer.width, gbuffer.height);
+        glViewport(0, 0, gbuffer.width, gbuffer.height);
+        
+        Color4f zero = Color4f(0, 0, 0, 0);
+        glClearBufferfv(GL_COLOR, 0, zero.arrayof.ptr);
+        glClearBufferfv(GL_COLOR, 1, zero.arrayof.ptr);
+        
+        state.depthMask = true;
+        state.environment = pipeline.environment;
+        
+        terrainShader.bind();
+        foreach(entity; group)
         {
-            prepareFramebuffer();
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
-            
-            glScissor(0, 0, gbuffer.width, gbuffer.height);
-            glViewport(0, 0, gbuffer.width, gbuffer.height);
-            
-            Color4f zero = Color4f(0, 0, 0, 0);
-            glClearBufferfv(GL_COLOR, 0, zero.arrayof.ptr);
-            glClearBufferfv(GL_COLOR, 1, zero.arrayof.ptr);
-            
-            state.environment = pipeline.environment;
-            
-            terrainShader.bind();
-            foreach(entity; group)
+            if (entity.visible && entity.drawable)
             {
-                if (entity.visible && entity.drawable)
-                {
-                    if (entityIsTerrain(entity))
-                        renderEntity(entity, terrainShader);
-                }
+                if (entityIsTerrain(entity))
+                    renderEntity(entity, terrainShader);
             }
-            terrainShader.unbind();
-            
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
         }
-    }
-}
-
-class PassTerrainTexture: RenderPass
-{
-    GBuffer gbuffer;
-    ScreenSurface screenSurface;
-    TerrainTextureLayerShader terrainTextureLayerShader;
-    Framebuffer normalBuffer;
-    Framebuffer texcoordBuffer;
-    
-    this(RenderPipeline pipeline, GBuffer gbuffer, Framebuffer normalBuffer, Framebuffer texcoordBuffer, EntityGroup group = null)
-    {
-        super(pipeline, group);
-        this.gbuffer = gbuffer;
-        screenSurface = New!ScreenSurface(this);
-        terrainTextureLayerShader = New!TerrainTextureLayerShader(this);
-        this.normalBuffer = normalBuffer;
-        this.texcoordBuffer = texcoordBuffer;
-    }
-    
-    override void render()
-    {
-        if (gbuffer)
+        terrainShader.unbind();
+        
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        
+        // Texturing passes
+        // TODO: do it for each terrain entity (need to manage state properly)
+        TerrainMaterial terrainMaterial = pipeline.environment.terrainMaterial;
+        if (terrainMaterial)
         {
+            updateState();
+            
             gbuffer.bind();
             
             state.normalTexture = normalBuffer.colorTexture;
             state.texcoordTexture = texcoordBuffer.colorTexture;
             state.depthMask = false;
-            state.environment = pipeline.environment;
             
             glScissor(0, 0, gbuffer.width, gbuffer.height);
             glViewport(0, 0, gbuffer.width, gbuffer.height);
@@ -165,8 +153,6 @@ class PassTerrainTexture: RenderPass
             
             glDisable(GL_DEPTH_TEST);
             terrainTextureLayerShader.bind();
-            
-            TerrainMaterial terrainMaterial = pipeline.environment.terrainMaterial;
             
             if (terrainMaterial)
             {

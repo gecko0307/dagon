@@ -106,6 +106,8 @@ class TerrainTextureLayerShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
+        Material mat = state.material;
+        
         setParameter("viewMatrix", state.viewMatrix);
         setParameter("invViewMatrix", state.invViewMatrix);
         setParameter("projectionMatrix", state.projectionMatrix);
@@ -126,6 +128,21 @@ class TerrainTextureLayerShader: Shader
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, state.texcoordTexture);
         setParameter("terrainTexcoordBuffer", cast(int)1);
+        
+        // Diffuse
+        glActiveTexture(GL_TEXTURE2);
+        setParameter("diffuseTexture", cast(int)2);
+        setParameter("diffuseVector", mat.baseColorFactor);
+        if (mat.baseColorTexture)
+        {
+            mat.baseColorTexture.bind();
+            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
+        }
+        else
+        {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
+        }
 
         super.bindParameters(state);
     }

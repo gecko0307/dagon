@@ -77,7 +77,12 @@ abstract class RenderPass: EventListener
         state.localTime += t.delta;
         if (state.localTime >= 1.0f)
             state.localTime = 0.0f;
-
+        
+        updateState();
+    }
+    
+    void updateState()
+    {
         if (view)
         {
             state.viewMatrix = view.viewMatrix();

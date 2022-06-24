@@ -14,6 +14,25 @@ in vec2 texCoord;
 
 #include <unproject.glsl>
 
+/*
+ * Diffuse
+ */
+subroutine vec4 srtColor(in vec2 uv);
+
+uniform vec4 diffuseVector;
+subroutine(srtColor) vec4 diffuseColorValue(in vec2 uv)
+{
+    return diffuseVector;
+}
+
+uniform sampler2D diffuseTexture;
+subroutine(srtColor) vec4 diffuseColorTexture(in vec2 uv)
+{
+    return texture(diffuseTexture, uv);
+}
+
+subroutine uniform srtColor diffuse;
+
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec4 fragNormal;
 layout(location = 2) out vec4 fragPBR;
@@ -21,17 +40,19 @@ layout(location = 3) out vec4 fragRadiance;
 
 void main()
 {
-    vec4 nor = texture(terrainNormalBuffer, texCoord);
-    if (nor.a < 1.0)
-        discard;
+    vec4 terrTexCoordSample = texture(terrainTexcoordBuffer, texCoord);
+    vec2 terrTexCoord = terrTexCoordSample.xy * 20.0; // TODO: uniform textureScale
+    float mask = terrTexCoordSample.z;
     
-    vec3 N = normalize(nor.rgb);
-    vec2 terrTexCoord = texture(terrainTexcoordBuffer, texCoord).xy;
+    vec4 diff = diffuse(terrTexCoord);
     
-    float mask = 1.0;
-    vec4 diff = vec4(0.5, 0.25, 0.0, 1.0);
+    vec4 normalSample = texture(terrainNormalBuffer, texCoord);
+    vec3 N = normalize(normalSample.xyz);
+    float depth = normalSample.z;
+    
     vec3 albedo = diff.rgb;
-    vec4 pbr = vec4(0.0, 0.5, 0.0, 1.0);
+    
+    vec4 pbr = vec4(0.0, 0.9, 0.0, 1.0);
     float roughness = pbr.g;
     float metallic = pbr.b;
     vec4 emission = vec4(0.0, 0.0, 0.0, 1.0);
