@@ -1,9 +1,9 @@
 Dagon 0.14.0 - TBD
 ------------------
 - **Core**
-  - Custom event dispatcher delegate (`EventManager.onProcessEvent`)
-  - `Game.resize` method
+  - Custom event dispatcher (`EventManager.onProcessEvent`) that provides access to raw SDL events
 - **Rendering**
+  - `dagon.render.deferred` package is now `dagon.render.passes`
   - Unreal and Reinhard2 tonemapping operators (`Tonemapper.Unreal` and `Tonemapper.Reinhard2`, respectively)
 - **Assets**
   - `Material` now provides a new set of explicit properties for direct compatibility with glTF (texture properties always take precedence over factor properties):
@@ -24,6 +24,9 @@ Dagon 0.14.0 - TBD
     - `culling` is now `useCulling`
   - Texture system redesign. `Texture` class now can be created from raw pixel data without intermediate `SuperImage`, hense DDS textures are now loaded directly to `Texture` object without additional layers of abstraction. Also `Texture` now supports cubemaps in addition to 2D textures
   - Added support for ASTC texture compression format
+  - `alphaMode` support for glTF materials
+- **Game**
+  - New methods: `Game.resize`, `Game.frameTexture`
 - **Extensions**
   - Experimental [Dear ImGui](https://github.com/ocornut/imgui) extension, `dagon.ext.imgui`. It is based on [bindbc-imgui](https://github.com/Inochi2D/bindbc-imgui) binding. It will not replace Nuklear, both toolkits will coexist in future.
 - **Misc**
