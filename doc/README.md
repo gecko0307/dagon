@@ -19,10 +19,10 @@ Dagon heavily relies on [dlib](https://github.com/gecko0307/dlib). It is used ev
 Dagon doesn't use D's garbage collector and manages all of its data manually with `New` and `Delete` functions. You are also expected to do so. You still can use garbage collected data in Dagon, but this may result in weird bugs, so you are strongly recommended to do things our way. Most part of the engine is built around dlib's ownership model - every object belongs to some other object (owner), and deleting the owner will delete all of its owned objects. This allows semi-automatic memory management - you have to manually delete only root owner, which usually is an `Application` object. When creating objects, it is recommended to make scene's `assetManager` their owner.
 
 ## Creating Assets
-Dagon is a framework-style engine, meaning that it is controlled programmatically and doesn't provide you with an editor. How you will build your scenes is up to you. You can build them manually by loading models one by one in your code, create your own scene format, or export asset packages from Blender. 
+Dagon is a framework-style engine, meaning that it is controlled programmatically and doesn't provide you with an editor. How you will build your scenes is up to you. You can build them manually by loading models one by one in your code, create your own scene format, or export glTF scenes from Blender. 
 
 ## Extending
-Dagon is written with extendability in mind, so you can easily add your own drawable objects, entity behaviours, shaders and asset loaders. Drawable can be anything you want - you can manually create meshes and animate them. With behaviours you can dynamically attach custom data and functionality to game entities. Materials can use custom GLSL shaders and parameters, and your asset loaders help Dagon understand files that you want to load from disk - these can be 3D models, levels, save files, etc.
+Dagon is written with extendability in mind, so you can easily add your own drawable objects, entity components, shaders and asset loaders. Drawable can be anything you want - you can manually create meshes and animate them. With components you can dynamically attach custom data and functionality to game entities. Materials can use custom GLSL shaders and parameters, and your asset loaders help Dagon understand files that you want to load from disk - these can be 3D models, levels, save files, etc.
 
 ## Further reading
 [Application Architecture](https://github.com/gecko0307/dagon/blob/master/doc/Architecture.md)
