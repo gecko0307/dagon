@@ -1,0 +1,15 @@
+{
+    "name": "demo",
+    "description": "Dagon engine demo",
+    "homepage": "https://gecko0307.github.io/dagon",
+    "license": "BSL-1.0",
+    "authors": [
+        "Timur Gafarov"
+    ],
+    "dependencies": {
+        "dagon": { "path": ".." }
+    },
+    "buildRequirements": [
+        "allowWarnings"
+    ]
+}

@@ -30,3 +30,12 @@ __dummy.html
 
 # Backup files
 *~
+
+# Shared libraries
+*.dll
+*.so
+*.dylib
+
+# Standard assets
+data/__internal/
+gamecontrollerdb.txt
