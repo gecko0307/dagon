@@ -155,6 +155,48 @@ subroutine(srtParallax) vec2 parallaxOcclusionMapping(in vec3 E, in vec2 uv, in 
 
 subroutine uniform srtParallax parallax;
 
+
+/*
+ * PBR
+ */
+uniform sampler2D roughnessMetallicTexture;
+uniform vec4 roughnessMetallicFactor;
+
+/*
+ * Roughness
+ */
+subroutine float srtRoughness(in vec2 uv);
+
+subroutine(srtRoughness) float roughnessValue(in vec2 uv)
+{
+    return roughnessMetallicFactor.g;
+}
+
+subroutine(srtRoughness) float roughnessMap(in vec2 uv)
+{
+    return texture(roughnessMetallicTexture, uv).g;
+}
+
+subroutine uniform srtRoughness roughness;
+
+
+/*
+ * Metallic
+ */
+subroutine float srtMetallic(in vec2 uv);
+
+subroutine(srtMetallic) float metallicValue(in vec2 uv)
+{
+    return roughnessMetallicFactor.b;
+}
+
+subroutine(srtMetallic) float metallicMap(in vec2 uv)
+{
+    return texture(roughnessMetallicTexture, uv).b;
+}
+
+subroutine uniform srtMetallic metallic;
+
 //
 
 layout(location = 0) out vec4 fragColor;
@@ -166,11 +208,11 @@ void main()
 {
     vec4 terrTexCoordSample = texture(terrainTexcoordBuffer, texCoord);
     vec2 terrTexCoord = terrTexCoordSample.xy;
-    vec2 layerTexCoord = terrTexCoord * textureScale;
+    vec2 uv = terrTexCoord * textureScale;
     float depth = terrTexCoordSample.z;
     vec3 eyePos = unproject(invProjectionMatrix, vec3(texCoord, depth));
     
-    vec4 diff = diffuse(layerTexCoord);
+    vec4 diff = diffuse(uv);
     vec3 albedo = diff.rgb;
     
     vec4 normalSample = texture(terrainNormalBuffer, texCoord);
@@ -181,8 +223,8 @@ void main()
     {
         mat3 tangentToEye = cotangentFrame(N, eyePos, terrTexCoord);
         vec3 tE = normalize(E * tangentToEye);
-        layerTexCoord = parallax(tE, layerTexCoord, height(layerTexCoord));
-        N = normal(layerTexCoord, normalYSign, tangentToEye);
+        uv = parallax(tE, uv, height(uv));
+        N = normal(uv, normalYSign, tangentToEye);
     }
     
     float gbufferMask = normalSample.a;
@@ -192,13 +234,17 @@ void main()
         discard;
     
     // TODO: sample material textures
-    vec4 pbr = vec4(0.0, 0.5, 0.0, 1.0);
-    float roughness = pbr.g;
-    float metallic = pbr.b;
+    //vec4 pbr = vec4(0.0, 0.5, 0.0, 1.0);
+    //float roughness = pbr.g;
+    //float metallic = pbr.b;
     vec4 emission = vec4(0.0, 0.0, 0.0, 1.0);
     
     fragColor = vec4(albedo, mask);
     fragNormal = vec4(N, mask);
-    fragPBR = vec4(roughness, metallic, 1.0, mask);
+    fragPBR = vec4(
+        max(roughness(uv), 0.0001),
+        metallic(uv),
+        1.0,
+        mask);
     fragRadiance = vec4(emission.rgb, mask);
 }

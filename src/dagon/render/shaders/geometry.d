@@ -129,14 +129,12 @@ class GeometryShader: Shader
         if (mat.roughnessMetallicTexture)
         {
             mat.roughnessMetallicTexture.bind();
-            setParameterSubroutine("specularity", ShaderType.Fragment, "specularityMap");
             setParameterSubroutine("roughness", ShaderType.Fragment, "roughnessMap");
             setParameterSubroutine("metallic", ShaderType.Fragment, "metallicMap");
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("specularity", ShaderType.Fragment, "specularityValue");
             setParameterSubroutine("roughness", ShaderType.Fragment, "roughnessValue");
             setParameterSubroutine("metallic", ShaderType.Fragment, "metallicValue");
         }

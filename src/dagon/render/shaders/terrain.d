@@ -215,8 +215,27 @@ class TerrainTextureLayerShader: Shader
         
         setParameter("parallaxScale", mat.parallaxScale);
         setParameter("parallaxBias", mat.parallaxBias);
+        
+        // PBR
+        glActiveTexture(GL_TEXTURE6);
+        setParameter("roughnessMetallicTexture", cast(int)6);
+        setParameter("roughnessMetallicFactor", Vector4f(1.0f, mat.roughnessFactor, mat.metallicFactor, 0.0f));
+        if (mat.roughnessMetallicTexture)
+        {
+            mat.roughnessMetallicTexture.bind();
+            setParameterSubroutine("roughness", ShaderType.Fragment, "roughnessMap");
+            setParameterSubroutine("metallic", ShaderType.Fragment, "metallicMap");
+        }
+        else
+        {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameterSubroutine("roughness", ShaderType.Fragment, "roughnessValue");
+            setParameterSubroutine("metallic", ShaderType.Fragment, "metallicValue");
+        }
 
         super.bindParameters(state);
+        
+        glActiveTexture(GL_TEXTURE0);
     }
 
     override void unbindParameters(GraphicsState* state)
@@ -236,6 +255,12 @@ class TerrainTextureLayerShader: Shader
         glBindTexture(GL_TEXTURE_2D, 0);
         
         glActiveTexture(GL_TEXTURE4);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE6);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE0);
