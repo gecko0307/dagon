@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018-2020 Rafał Ziemniewski, Timur Gafarov
+Copyright (c) 2018-2022 Rafał Ziemniewski, Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -29,14 +29,44 @@ module dagon.graphics.terrain;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.container.array;
 import dlib.math.vector;
 import dlib.geometry.sphere;
 import dlib.geometry.triangle;
+import dlib.image.color;
 
 import dagon.graphics.drawable;
 import dagon.graphics.mesh;
 import dagon.graphics.heightmap;
 import dagon.graphics.entity;
+import dagon.graphics.material;
+import dagon.graphics.texture;
+
+class TerrainMaterial: Material
+{
+    Array!Material layers;
+    
+    this(Owner o)
+    {
+        super(o);
+        alphaTestThreshold = 0.0f;
+    }
+    
+    Material addLayer()
+    {
+        Material layerMaterial = New!Material(this);
+        layerMaterial.alphaTestThreshold = alphaTestThreshold;
+        layers.append(layerMaterial);
+        return layerMaterial;
+    }
+    
+    // TODO: remove layer
+    
+    ~this()
+    {
+        layers.free();
+    }
+}
 
 class Terrain: Owner, Drawable
 {

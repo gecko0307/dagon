@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2021 Timur Gafarov
+Copyright (c) 2019-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -41,18 +41,8 @@ import dlib.math.utils;
 
 import dagon.core.bindings;
 import dagon.graphics.texture;
-import dagon.graphics.containerimage;
 
-enum CubeFace
-{
-    PositiveX = GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-    NegativeX = GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
-    PositiveY = GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
-    NegativeY = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-    PositiveZ = GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
-    NegativeZ = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
-}
-
+/*
 class Cubemap: Texture
 {
     this(Owner o)
@@ -289,60 +279,5 @@ uint pixelSize(uint pixelFormat)
     }
     return s;
 }
+*/
 
-Matrix4x4f cubeFaceMatrix(CubeFace cf)
-{
-    switch(cf)
-    {
-        case CubeFace.PositiveX:
-            return rotationMatrix(1, degtorad(-90.0f));
-        case CubeFace.NegativeX:
-            return rotationMatrix(1, degtorad(90.0f));
-        case CubeFace.PositiveY:
-            return rotationMatrix(0, degtorad(90.0f));
-        case CubeFace.NegativeY:
-            return rotationMatrix(0, degtorad(-90.0f));
-        case CubeFace.PositiveZ:
-            return rotationMatrix(1, degtorad(0.0f));
-        case CubeFace.NegativeZ:
-            return rotationMatrix(1, degtorad(180.0f));
-        default:
-            return Matrix4x4f.identity;
-    }
-}
-
-Matrix4x4f cubeFaceCameraMatrix(CubeFace cf, Vector3f pos)
-{
-    Matrix4x4f m;
-    switch(cf)
-    {
-        case CubeFace.PositiveX:
-            m = rotationMatrix(1, degtorad(90.0f)) * translationMatrix(pos) * rotationMatrix(1, degtorad(90.0f)) * rotationMatrix(2, degtorad(180.0f));
-            break;
-        case CubeFace.NegativeX:
-            m = rotationMatrix(1, degtorad(90.0f)) * translationMatrix(pos) * rotationMatrix(1, degtorad(-90.0f)) * rotationMatrix(2, degtorad(180.0f));
-            break;
-        case CubeFace.PositiveY:
-            m = rotationMatrix(1, degtorad(90.0f)) * translationMatrix(pos) * rotationMatrix(1, degtorad(0.0f)) * rotationMatrix(0, degtorad(-90.0f));
-            break;
-        case CubeFace.NegativeY:
-            m = rotationMatrix(1, degtorad(90.0f)) * translationMatrix(pos) * rotationMatrix(1, degtorad(0.0f)) * rotationMatrix(0, degtorad(90.0f));
-            break;
-        case CubeFace.PositiveZ:
-            m = rotationMatrix(1, degtorad(90.0f)) * translationMatrix(pos) * rotationMatrix(1, degtorad(180.0f)) * rotationMatrix(2, degtorad(180.0f));
-            break;
-        case CubeFace.NegativeZ:
-            m = rotationMatrix(1, degtorad(90.0f)) * translationMatrix(pos) * rotationMatrix(1, degtorad(0.0f)) * rotationMatrix(2, degtorad(180.0f));
-            break;
-        default:
-            m = Matrix4x4f.identity; break;
-    }
-    return m;
-}
-
-Vector2f equirectProj(Vector3f dir)
-{
-    float phi = acos(dir.y);
-    float theta = atan2(dir.x, dir.z) + PI;
-    return Vector2f(theta / (PI * 2.0f), phi / PI);
-}

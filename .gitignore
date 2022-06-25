@@ -9,17 +9,27 @@
 # Executables
 *.exe
 
-# DUB
+# Dub files
 .dub
-docs.json
 dub.selections.json
-__dummy.html
-__test__library__
-tests
-docs/
 
-# Code coverage
+# Dub test files
+__test__library__
+tests/
+
+# Documentation
+docs/
+docs.json
+__dummy.html
+
+# Coverage files
 *.lst
+
+# Debug info
+*.pdb
 
 # Backup files
 *~
+
+# Demo folder
+demo/

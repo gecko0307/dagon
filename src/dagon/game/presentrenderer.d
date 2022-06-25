@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Timur Gafarov
+Copyright (c) 2019-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -32,9 +32,10 @@ import dlib.core.ownership;
 
 import dagon.core.event;
 import dagon.core.time;
+import dagon.core.bindings;
 import dagon.resource.scene;
 import dagon.render.pass;
-import dagon.render.deferred;
+import dagon.render.passes;
 import dagon.render.framebuffer;
 import dagon.postproc.presentpass;
 import dagon.game.renderer;
@@ -63,5 +64,10 @@ class PresentRenderer: Renderer
     Framebuffer inputBuffer()
     {
         return _inputBuffer;
+    }
+    
+    override void render()
+    {
+        super.render();
     }
 }

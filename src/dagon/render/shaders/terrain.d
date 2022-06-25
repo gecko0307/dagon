@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Timur Gafarov
+Copyright (c) 2019-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -24,7 +24,6 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-
 module dagon.render.shaders.terrain;
 
 import std.stdio;
@@ -43,15 +42,17 @@ import dagon.core.bindings;
 import dagon.graphics.material;
 import dagon.graphics.shader;
 import dagon.graphics.state;
+import dagon.graphics.texture;
+import dagon.graphics.terrain;
 
-class TerrainShader: Shader
+class TerrainGeometryShader: Shader
 {
     String vs, fs;
 
     this(Owner owner)
     {
-        vs = Shader.load("data/__internal/shaders/Terrain/Terrain.vert.glsl");
-        fs = Shader.load("data/__internal/shaders/Terrain/Terrain.frag.glsl");
+        vs = Shader.load("data/__internal/shaders/Terrain/TerrainGeometry.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/Terrain/TerrainGeometry.frag.glsl");
 
         auto prog = New!ShaderProgram(vs, fs, this);
         super(prog, owner);
@@ -65,328 +66,222 @@ class TerrainShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        auto idiffuse1 = "diffuse" in state.material.inputs;
-        auto idiffuse2 = "diffuse2" in state.material.inputs;
-        auto idiffuse3 = "diffuse3" in state.material.inputs;
-        auto idiffuse4 = "diffuse4" in state.material.inputs;
-
-        auto inormal1 = "normal" in state.material.inputs;
-        auto inormal2 = "normal2" in state.material.inputs;
-        auto inormal3 = "normal3" in state.material.inputs;
-        auto inormal4 = "normal4" in state.material.inputs;
-
-        auto iheight1 = "height" in state.material.inputs;
-        auto iheight2 = "height2" in state.material.inputs;
-        auto iheight3 = "height3" in state.material.inputs;
-        auto iheight4 = "height4" in state.material.inputs;
-
-        auto itextureScale1 = "textureScale" in state.material.inputs;
-        auto itextureScale2 = "textureScale2" in state.material.inputs;
-        auto itextureScale3 = "textureScale3" in state.material.inputs;
-        auto itextureScale4 = "textureScale4" in state.material.inputs;
-
-        auto isplat = "splat" in state.material.inputs;
-
-        auto isplatmap1 = "splatmap1" in state.material.inputs;
-        auto isplatmap2 = "splatmap2" in state.material.inputs;
-        auto isplatmap3 = "splatmap3" in state.material.inputs;
-        auto isplatmap4 = "splatmap4" in state.material.inputs;
-
+        Material mat = state.material;
+        
         setParameter("modelViewMatrix", state.modelViewMatrix);
         setParameter("projectionMatrix", state.projectionMatrix);
         setParameter("normalMatrix", state.normalMatrix);
         setParameter("viewMatrix", state.viewMatrix);
         setParameter("invViewMatrix", state.invViewMatrix);
         setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
-
-        setParameter("layer", cast(float)(state.layer));
-        setParameter("opacity", state.opacity);
-
-        setParameter("textureScale1", itextureScale1.asVector2f);
-        setParameter("textureScale2", itextureScale2.asVector2f);
-        setParameter("textureScale3", itextureScale3.asVector2f);
-        setParameter("textureScale4", itextureScale4.asVector2f);
-
-        // Diffuse 1
-        glActiveTexture(GL_TEXTURE0);
-        if (idiffuse1.texture)
-        {
-            idiffuse1.texture.bind();
-            setParameter("diffuse1Texture", cast(int)0);
-            setParameterSubroutine("diffuse1", ShaderType.Fragment, "diffuse1ColorTexture");
-        }
-        else
-        {
-            glBindTexture(GL_TEXTURE_2D, 0);
-            setParameter("diffuse1Texture", cast(int)0);
-            setParameter("diffuse1Vector", idiffuse1.asVector4f);
-            setParameterSubroutine("diffuse1", ShaderType.Fragment, "diffuse1ColorValue");
-        }
-
-        // Normal/height 1
-        glActiveTexture(GL_TEXTURE1);
-        bool haveHeightMap1 = inormal1.texture !is null;
-        if (haveHeightMap1)
-            haveHeightMap1 = inormal1.texture.image.channels == 4;
-        if (!haveHeightMap1)
-        {
-            if (inormal1.texture is null)
-            {
-                if (iheight1.texture !is null) // we have height map, but no normal map
-                {
-                    Color4f color = Color4f(0.5f, 0.5f, 1.0f, 0.0f); // default normal pointing upwards
-                    inormal1.texture = state.material.makeTexture(color, iheight1.texture);
-                    haveHeightMap1 = true;
-                }
-            }
-            else
-            {
-                if (iheight1.texture !is null) // we have both normal and height maps
-                {
-                    inormal1.texture = state.material.makeTexture(inormal1.texture, iheight1.texture);
-                    haveHeightMap1 = true;
-                }
-            }
-        }
-        if (inormal1.texture)
-        {
-            inormal1.texture.bind();
-            setParameter("normal1Texture", cast(int)1);
-            setParameterSubroutine("normal1", ShaderType.Fragment, "normal1Map");
-        }
-        else
-        {
-            glBindTexture(GL_TEXTURE_2D, 0);
-            setParameter("normal1Texture", cast(int)1);
-            setParameter("normal1Vector", inormal1.asVector3f);
-            setParameterSubroutine("normal1", ShaderType.Fragment, "normal1Value");
-        }
-
-        // Diffuse 2
-        glActiveTexture(GL_TEXTURE2);
-        if (idiffuse2.texture)
-        {
-            idiffuse2.texture.bind();
-            setParameter("diffuse2Texture", cast(int)2);
-            setParameterSubroutine("diffuse2", ShaderType.Fragment, "diffuse2ColorTexture");
-        }
-        else
-        {
-            glBindTexture(GL_TEXTURE_2D, 0);
-            setParameter("diffuse2Texture", cast(int)2);
-            setParameter("diffuse2Vector", idiffuse2.asVector4f);
-            setParameterSubroutine("diffuse2", ShaderType.Fragment, "diffuse2ColorValue");
-        }
-
-        // Normal/height 2
-        glActiveTexture(GL_TEXTURE3);
-        bool haveHeightMap2 = inormal2.texture !is null;
-        if (haveHeightMap2)
-            haveHeightMap2 = inormal2.texture.image.channels == 4;
-        if (!haveHeightMap2)
-        {
-            if (inormal2.texture is null)
-            {
-                if (iheight2.texture !is null) // we have height map, but no normal map
-                {
-                    Color4f color = Color4f(0.5f, 0.5f, 1.0f, 0.0f); // default normal pointing upwards
-                    inormal2.texture = state.material.makeTexture(color, iheight2.texture);
-                    haveHeightMap2 = true;
-                }
-            }
-            else
-            {
-                if (iheight2.texture !is null) // we have both normal and height maps
-                {
-                    inormal2.texture = state.material.makeTexture(inormal2.texture, iheight2.texture);
-                    haveHeightMap2 = true;
-                }
-            }
-        }
-        if (inormal2.texture)
-        {
-            inormal2.texture.bind();
-            setParameter("normal2Texture", cast(int)3);
-            setParameterSubroutine("normal2", ShaderType.Fragment, "normal2Map");
-        }
-        else
-        {
-            glBindTexture(GL_TEXTURE_2D, 0);
-            setParameter("normal2Texture", cast(int)3);
-            setParameter("normal2Vector", inormal2.asVector3f);
-            setParameterSubroutine("normal2", ShaderType.Fragment, "normal2Value");
-        }
-
-        // Diffuse 3
-        glActiveTexture(GL_TEXTURE4);
-        if (idiffuse3.texture)
-        {
-            idiffuse3.texture.bind();
-            setParameter("diffuse3Texture", cast(int)4);
-            setParameterSubroutine("diffuse3", ShaderType.Fragment, "diffuse3ColorTexture");
-        }
-        else
-        {
-            glBindTexture(GL_TEXTURE_2D, 0);
-            setParameter("diffuse3Texture", cast(int)4);
-            setParameter("diffuse3Vector", idiffuse3.asVector4f);
-            setParameterSubroutine("diffuse3", ShaderType.Fragment, "diffuse3ColorValue");
-        }
-
-        // Normal/height 3
-        glActiveTexture(GL_TEXTURE5);
-        bool haveHeightMap3 = inormal3.texture !is null;
-        if (haveHeightMap3)
-            haveHeightMap3 = inormal3.texture.image.channels == 4;
-        if (!haveHeightMap3)
-        {
-            if (inormal3.texture is null)
-            {
-                if (iheight3.texture !is null) // we have height map, but no normal map
-                {
-                    Color4f color = Color4f(0.5f, 0.5f, 1.0f, 0.0f); // default normal pointing upwards
-                    inormal3.texture = state.material.makeTexture(color, iheight3.texture);
-                    haveHeightMap3 = true;
-                }
-            }
-            else
-            {
-                if (iheight3.texture !is null) // we have both normal and height maps
-                {
-                    inormal3.texture = state.material.makeTexture(inormal3.texture, iheight3.texture);
-                    haveHeightMap3 = true;
-                }
-            }
-        }
-        if (inormal3.texture)
-        {
-            setParameter("normal3Texture", cast(int)5);
-            setParameterSubroutine("normal3", ShaderType.Fragment, "normal3Map");
-            inormal3.texture.bind();
-        }
-        else
-        {
-            glBindTexture(GL_TEXTURE_2D, 0);
-            setParameter("normal3Texture", cast(int)5);
-            setParameter("normal3Vector", inormal3.asVector3f);
-            setParameterSubroutine("normal3", ShaderType.Fragment, "normal3Value");
-        }
-
-        // Diffuse 4
-        glActiveTexture(GL_TEXTURE6);
-        if (idiffuse4.texture)
-        {
-            idiffuse4.texture.bind();
-            setParameter("diffuse4Texture", cast(int)6);
-            setParameterSubroutine("diffuse4", ShaderType.Fragment, "diffuse4ColorTexture");
-        }
-        else
-        {
-            glBindTexture(GL_TEXTURE_2D, 0);
-            setParameter("diffuse4Texture", cast(int)6);
-            setParameter("diffuse4Vector", idiffuse4.asVector4f);
-            setParameterSubroutine("diffuse4", ShaderType.Fragment, "diffuse4ColorValue");
-        }
-
-        // Normal/height 4
-        glActiveTexture(GL_TEXTURE7);
-        bool haveHeightMap4 = inormal4.texture !is null;
-        if (haveHeightMap4)
-            haveHeightMap4 = inormal4.texture.image.channels == 4;
-        if (!haveHeightMap4)
-        {
-            if (inormal4.texture is null)
-            {
-                if (iheight4.texture !is null) // we have height map, but no normal map
-                {
-                    Color4f color = Color4f(0.5f, 0.5f, 1.0f, 0.0f); // default normal pointing upwards
-                    inormal4.texture = state.material.makeTexture(color, iheight4.texture);
-                    haveHeightMap4 = true;
-                }
-            }
-            else
-            {
-                if (iheight4.texture !is null) // we have both normal and height maps
-                {
-                    inormal4.texture = state.material.makeTexture(inormal4.texture, iheight4.texture);
-                    haveHeightMap4 = true;
-                }
-            }
-        }
-        if (inormal4.texture)
-        {
-            inormal4.texture.bind();
-            setParameter("normal4Texture", cast(int)7);
-            setParameterSubroutine("normal4", ShaderType.Fragment, "normal4Map");
-        }
-        else
-        {
-            glBindTexture(GL_TEXTURE_2D, 0);
-            setParameter("normal4Texture", cast(int)7);
-            setParameter("normal4Vector", inormal4.asVector3f);
-            setParameterSubroutine("normal4", ShaderType.Fragment, "normal4Value");
-        }
-
-        // Splatmap
-        if (isplat is null)
-        {
-            state.material.setInput("splat", 0.0f);
-            isplat = "splat" in state.material.inputs;
-        }
-
-        // PBR
-        Vector4f rms1 = Vector4f(state.material.roughness.asFloat, state.material.metallic.asFloat, 0.0f, 1.0f);
-        Vector4f rms2 = Vector4f(state.material.roughness2.asFloat, state.material.metallic2.asFloat, 0.0f, 1.0f);
-        Vector4f rms3 = Vector4f(state.material.roughness3.asFloat, state.material.metallic3.asFloat, 0.0f, 1.0f);
-        Vector4f rms4 = Vector4f(state.material.roughness4.asFloat, state.material.metallic4.asFloat, 0.0f, 1.0f);
-
-        setParameter("rms1", rms1);
-        setParameter("rms2", rms2);
-        setParameter("rms3", rms3);
-        setParameter("rms4", rms4);
-
-        if (isplat.texture is null)
-            isplat.texture = state.material.makeTexture(*isplatmap1, *isplatmap2, *isplatmap3, *isplatmap4);
-        glActiveTexture(GL_TEXTURE8);
-        isplat.texture.bind();
-        setParameter("splatmap", cast(int)8);
-
-        glActiveTexture(GL_TEXTURE0);
-
+        
+        setParameter("gbufferMask", 1.0f);
+        setParameter("blurMask", state.blurMask);
+        
         super.bindParameters(state);
     }
 
     override void unbindParameters(GraphicsState* state)
     {
         super.unbindParameters(state);
+    }
+}
 
+class TerrainTextureLayerShader: Shader
+{
+    String vs, fs;
+
+    this(Owner owner)
+    {
+        vs = Shader.load("data/__internal/shaders/Terrain/TerrainTextureLayer.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/Terrain/TerrainTextureLayer.frag.glsl");
+
+        auto prog = New!ShaderProgram(vs, fs, this);
+        super(prog, owner);
+    }
+
+    ~this()
+    {
+        vs.free();
+        fs.free();
+    }
+
+    override void bindParameters(GraphicsState* state)
+    {
+        Material mat = state.material;
+        
+        setParameter("viewMatrix", state.viewMatrix);
+        setParameter("invViewMatrix", state.invViewMatrix);
+        setParameter("projectionMatrix", state.projectionMatrix);
+        setParameter("invProjectionMatrix", state.invProjectionMatrix);
+        setParameter("resolution", state.resolution);
+        setParameter("zNear", state.zNear);
+        setParameter("zFar", state.zFar);
+        
+        setParameter("opacity", mat.opacity);
+        setParameter("textureScale", mat.textureScale);
+        setParameter("clipThreshold", mat.alphaTestThreshold);
+        
+        // Texture 0 - normal buffer
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, state.normalTexture);
+        setParameter("terrainNormalBuffer", cast(int)0);
+
+        // Texture 1 - texcoord buffer
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, state.texcoordTexture);
+        setParameter("terrainTexcoordBuffer", cast(int)1);
+        
+        // Texture 2 - mask
+        glActiveTexture(GL_TEXTURE2);
+        setParameter("maskTexture", cast(int)2);
+        setParameter("maskFactor", mat.maskFactor);
+        if (mat.maskTexture)
+        {
+            mat.maskTexture.bind();
+            setParameterSubroutine("layerMask", ShaderType.Fragment, "layerMaskTexture");
+        }
+        else
+        {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameterSubroutine("layerMask", ShaderType.Fragment, "layerMaskValue");
+        }
+        
+        // Diffuse
+        glActiveTexture(GL_TEXTURE3);
+        setParameter("diffuseTexture", cast(int)3);
+        setParameter("diffuseVector", mat.baseColorFactor);
+        if (mat.baseColorTexture)
+        {
+            mat.baseColorTexture.bind();
+            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
+        }
+        else
+        {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
+        }
+        
+        // Normal
+        glActiveTexture(GL_TEXTURE4);
+        setParameter("normalTexture", cast(int)4);
+        setParameter("normalVector", mat.normalFactor);
+        if (mat.normalTexture)
+        {
+            mat.normalTexture.bind();
+            setParameterSubroutine("normal", ShaderType.Fragment, "normalMap");
+            setParameter("generateTBN", cast(int)1);
+        }
+        else
+        {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
+            setParameter("generateTBN", cast(int)0);
+        }
+        
+        if (state.material.invertNormalY)
+            setParameter("normalYSign", -1.0f);
+        else
+            setParameter("normalYSign", 1.0f);
+
+        // Height and parallax
+        int parallaxMethod = mat.parallaxMode;
+        if (parallaxMethod > ParallaxOcclusionMapping)
+            parallaxMethod = ParallaxOcclusionMapping;
+        if (parallaxMethod < 0)
+            parallaxMethod = 0;
+        
+        glActiveTexture(GL_TEXTURE5);
+        setParameter("heightTexture", cast(int)5);
+        setParameter("heightScalar", mat.heightFactor);
+        if (mat.heightTexture)
+        {
+            mat.heightTexture.bind();
+            setParameterSubroutine("height", ShaderType.Fragment, "heightMap");
+        }
+        else
+        {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameterSubroutine("height", ShaderType.Fragment, "heightValue");
+            parallaxMethod = ParallaxNone;
+        }
+        
+        if (parallaxMethod == ParallaxSimple)
+            setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxSimple");
+        else if (parallaxMethod == ParallaxOcclusionMapping)
+            setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxOcclusionMapping");
+        else
+            setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxNone");
+        
+        setParameter("parallaxScale", mat.parallaxScale);
+        setParameter("parallaxBias", mat.parallaxBias);
+        
+        // PBR
+        glActiveTexture(GL_TEXTURE6);
+        setParameter("roughnessMetallicTexture", cast(int)6);
+        setParameter("roughnessMetallicFactor", Vector4f(1.0f, mat.roughnessFactor, mat.metallicFactor, 0.0f));
+        if (mat.roughnessMetallicTexture)
+        {
+            mat.roughnessMetallicTexture.bind();
+            setParameterSubroutine("roughness", ShaderType.Fragment, "roughnessMap");
+            setParameterSubroutine("metallic", ShaderType.Fragment, "metallicMap");
+        }
+        else
+        {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameterSubroutine("roughness", ShaderType.Fragment, "roughnessValue");
+            setParameterSubroutine("metallic", ShaderType.Fragment, "metallicValue");
+        }
+        
+        // Emission
+        glActiveTexture(GL_TEXTURE7);
+        setParameter("emissionTexture", cast(int)7);
+        setParameter("emissionFactor", mat.emissionFactor);
+        if (mat.emissionTexture)
+        {
+            mat.emissionTexture.bind();
+            setParameterSubroutine("emission", ShaderType.Fragment, "emissionColorTexture");
+        }
+        else
+        {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameterSubroutine("emission", ShaderType.Fragment, "emissionColorValue");
+        }
+        setParameter("energy", mat.emissionEnergy);
+
+        super.bindParameters(state);
+        
+        glActiveTexture(GL_TEXTURE0);
+    }
+
+    override void unbindParameters(GraphicsState* state)
+    {
+        super.unbindParameters(state);
+        
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, 0);
-
+        
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, 0);
-
+        
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, 0);
-
+        
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, 0);
-
+        
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, 0);
-
+        
         glActiveTexture(GL_TEXTURE5);
         glBindTexture(GL_TEXTURE_2D, 0);
-
+        
         glActiveTexture(GL_TEXTURE6);
         glBindTexture(GL_TEXTURE_2D, 0);
-
+        
         glActiveTexture(GL_TEXTURE7);
         glBindTexture(GL_TEXTURE_2D, 0);
-
-        glActiveTexture(GL_TEXTURE8);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
+        
         glActiveTexture(GL_TEXTURE0);
     }
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Timur Gafarov
+Copyright (c) 2019-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -40,6 +40,7 @@ import dlib.image.color;
 import dlib.text.str;
 
 import dagon.core.bindings;
+import dagon.graphics.material;
 import dagon.graphics.shader;
 import dagon.graphics.state;
 
@@ -64,28 +65,30 @@ class ShadowShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        auto idiffuse = "diffuse" in state.material.inputs;
-        auto itextureScale = "textureScale" in state.material.inputs;
+        Material mat = state.material;
 
         setParameter("modelViewMatrix", state.modelViewMatrix);
         setParameter("projectionMatrix", state.projectionMatrix);
         setParameter("normalMatrix", state.normalMatrix);
         setParameter("viewMatrix", state.viewMatrix);
         setParameter("invViewMatrix", state.invViewMatrix);
-        setParameter("opacity", state.opacity);
-        setParameter("textureScale", itextureScale.asVector2f);
-
+        
+        setParameter("opacity", state.opacity * mat.opacity);
+        setParameter("textureScale", mat.textureScale);
+        
         // Diffuse
-        if (idiffuse.texture)
+        glActiveTexture(GL_TEXTURE0);
+        if (mat.baseColorTexture)
         {
-            glActiveTexture(GL_TEXTURE0);
-            idiffuse.texture.bind();
+            mat.baseColorTexture.bind();
             setParameter("diffuseTexture", cast(int)0);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
         }
         else
         {
-            setParameter("diffuseVector", idiffuse.asVector4f);
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameter("diffuseTexture", cast(int)0);
+            setParameter("diffuseVector", mat.baseColorFactor);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
         }
 

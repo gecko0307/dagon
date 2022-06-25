@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2020 Timur Gafarov
+Copyright (c) 2017-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -44,7 +44,6 @@ import dlib.image.io;
 
 import dagon.core.event;
 import dagon.core.vfs;
-import dagon.graphics.containerimage;
 import dagon.resource.dds;
 import dagon.resource.boxfs;
 
@@ -174,20 +173,6 @@ class AssetManager: Owner
             istrm.fillArray(data);
             ArrayStream arrStrm = New!ArrayStream(data);
             res = loadHDR(arrStrm, hdrImageFactory);
-            SuperImage img = res[0];
-            string errMsg = res[1];
-            Delete(arrStrm);
-            Delete(data);
-            return compound(img, errMsg);
-        }
-        else if (extension == ".dds" ||
-                 extension == ".DDS")
-        {
-            Compound!(ContainerImage, string) res;
-            ubyte[] data = New!(ubyte[])(istrm.size);
-            istrm.fillArray(data);
-            ArrayStream arrStrm = New!ArrayStream(data);
-            res = loadDDS(arrStrm);
             SuperImage img = res[0];
             string errMsg = res[1];
             Delete(arrStrm);

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Timur Gafarov
+Copyright (c) 2019-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -66,6 +66,7 @@ class ParticleShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
+        /*
         auto idiffuse = "diffuse" in state.material.inputs;
         auto inormal = "normal" in state.material.inputs;
         auto itransparency = "transparency" in state.material.inputs;
@@ -74,6 +75,9 @@ class ParticleShader: Shader
         auto ishadeless = "shadeless" in state.material.inputs;
         auto ialphaCutout = "alphaCutout" in state.material.inputs;
         auto ialphaCutoutThreshold = "alphaCutoutThreshold" in state.material.inputs;
+        */
+        
+        Material mat = state.material;
 
         setParameter("modelViewMatrix", state.modelViewMatrix);
         setParameter("projectionMatrix", state.projectionMatrix);
@@ -84,24 +88,17 @@ class ParticleShader: Shader
 
         setParameter("viewSize", state.resolution);
 
-        Color4f particleColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
-        if (iparticleColor)
-            particleColor = Color4f(iparticleColor.asVector4f);
-
-        float particleAlpha = 1.0f;
-        if (itransparency)
-            particleAlpha = itransparency.asFloat;
-
-        setParameter("particleColor", particleColor);
-        setParameter("particleAlpha", particleAlpha);
+        setParameter("particleColor", mat.baseColorFactor);
+        setParameter("particleAlpha", state.opacity * mat.opacity);
+        setParameter("particleEnergy", mat.emissionEnergy);
+        
+        /*
         if (ialphaCutout)
             setParameter("alphaCutout", ialphaCutout.asBool);
         else
             setParameter("alphaCutout", false);
-        if (ialphaCutoutThreshold)
-            setParameter("alphaCutoutThreshold", ialphaCutoutThreshold.asFloat);
-        else
-            setParameter("alphaCutoutThreshold", 0.5f);
+        */
+        setParameter("alphaCutoutThreshold", mat.alphaTestThreshold);
         setParameter("particlePosition", state.modelViewMatrix.translation);
 
         // Sun
@@ -112,15 +109,15 @@ class ParticleShader: Shader
         float sunScatteringDensity = 1.0f;
         bool shaded = false;
         bool scatteringEnabled = false;
-        if (state.material.sun)
+        if (mat.sun)
         {
-            auto sun = state.material.sun;
+            auto sun = mat.sun;
             sunDirection = sun.directionAbsolute;
             sunColor = sun.color;
             sunEnergy = sun.energy;
             sunScatteringG = 1.0f - sun.scattering;
             sunScatteringDensity = sun.mediumDensity;
-            shaded = !ishadeless.asBool;
+            shaded = !mat.shadeless;
             scatteringEnabled = sun.scatteringEnabled;
         }
         Vector4f sunDirHg = Vector4f(sunDirection);
@@ -132,55 +129,51 @@ class ParticleShader: Shader
         setParameter("sunScatteringDensity", sunScatteringDensity);
         setParameter("sunScattering", scatteringEnabled);
         setParameter("shaded", shaded);
-
-        // Texture 0 - diffuse texture
+        
+        // Texture 0 - Diffuse
         glActiveTexture(GL_TEXTURE0);
-        if (idiffuse.texture is null)
+        setParameter("diffuseTexture", cast(int)0);
+        setParameter("diffuseVector", mat.baseColorFactor);
+        if (mat.baseColorTexture)
         {
-            glBindTexture(GL_TEXTURE_2D, 0);
-            setParameter("diffuseTexture", cast(int)0);
-            setParameter("diffuseVector", idiffuse.asVector4f);
-            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
+            mat.baseColorTexture.bind();
+            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
         }
         else
         {
-            idiffuse.texture.bind();
-            setParameter("diffuseTexture", cast(int)0);
-            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
         }
 
         // Texture 1 - depth texture (for soft particles)
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, state.depthTexture);
         setParameter("depthTexture", cast(int)1);
-
+        
         // Texture 2 - normal map
         glActiveTexture(GL_TEXTURE2);
-        if (inormal.texture is null)
+        setParameter("normalTexture", cast(int)2);
+        setParameter("normalVector", mat.normalFactor);
+        if (mat.normalTexture)
         {
-            glBindTexture(GL_TEXTURE_2D, 0);
-            setParameter("normalTexture", cast(int)2);
-            
-            bool sphericalNormal = false;
-            if (iparticleSphericalNormal)
-                sphericalNormal = iparticleSphericalNormal.asBool;
-            if (sphericalNormal)
-            {
-                setParameterSubroutine("normal", ShaderType.Fragment, "normalFunctionHemisphere");
-            }
-            else
-            {
-                Vector3f nVec = inormal.asVector3f;
-                setParameter("normalVector", nVec);
-                setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
-            }
+            mat.normalTexture.bind();
+            setParameterSubroutine("normal", ShaderType.Fragment, "normalMap");
+            setParameter("generateTBN", cast(int)1);
         }
         else
         {
-            inormal.texture.bind();
-            setParameter("normalTexture", cast(int)2);
-            setParameterSubroutine("normal", ShaderType.Fragment, "normalMap");
+            glBindTexture(GL_TEXTURE_2D, 0);
+            if (mat.sphericalNormal)
+                setParameterSubroutine("normal", ShaderType.Fragment, "normalFunctionHemisphere");
+            else
+                setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
+            setParameter("generateTBN", cast(int)0);
         }
+        
+        if (state.material.invertNormalY)
+            setParameter("normalYSign", -1.0f);
+        else
+            setParameter("normalYSign", 1.0f);
 
         // Textures 4, 5 - environment (equirectangular map, cube map)
         if (state.environment)
@@ -192,14 +185,16 @@ class ParticleShader: Shader
 
             if (state.environment.ambientMap)
             {
-                if (cast(Cubemap)state.environment.ambientMap)
+                auto ambientMap = state.environment.ambientMap;
+                
+                if (ambientMap.isCubemap)
                 {
                     glActiveTexture(GL_TEXTURE4);
                     glBindTexture(GL_TEXTURE_2D, 0);
                     setParameter("ambientTexture", cast(int)4);
                     
                     glActiveTexture(GL_TEXTURE5);
-                    state.environment.ambientMap.bind();
+                    ambientMap.bind();
                     setParameter("ambientTextureCube", cast(int)5);
                     
                     setParameterSubroutine("ambient", ShaderType.Fragment, "ambientCubemap");
@@ -207,7 +202,7 @@ class ParticleShader: Shader
                 else
                 {
                     glActiveTexture(GL_TEXTURE4);
-                    state.environment.ambientMap.bind();
+                    ambientMap.bind();
                     setParameter("ambientTexture", cast(int)4);
                     
                     glActiveTexture(GL_TEXTURE5);

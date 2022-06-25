@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2020 Timur Gafarov
+Copyright (c) 2017-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -685,7 +685,7 @@ class IQMModel: AnimatedModel
 
                 if (!mngr.assetExists(texFilename))
                 {
-                    auto texAsset = New!TextureAsset(mngr.imageFactory, mngr.hdrImageFactory, mngr);
+                    auto texAsset = New!TextureAsset(mngr);
                     mngr.addAsset(texAsset, texFilename);
                     texAsset.threadSafePartLoaded = mngr.loadAssetThreadSafePart(texAsset, texFilename);
                     facegroups[i].texture = texAsset.texture;

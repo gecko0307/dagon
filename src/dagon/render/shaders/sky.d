@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2020 Timur Gafarov
+Copyright (c) 2017-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -41,7 +41,7 @@ import dlib.text.str;
 import dagon.core.bindings;
 import dagon.graphics.state;
 import dagon.graphics.shader;
-import dagon.graphics.cubemap;
+import dagon.graphics.material;
 
 class SkyShader: Shader
 {
@@ -64,39 +64,39 @@ class SkyShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        auto idiffuse = "diffuse" in state.material.inputs;
+        Material mat = state.material;
 
-        // Matrices
         setParameter("modelViewMatrix", state.modelViewMatrix);
         setParameter("projectionMatrix", state.projectionMatrix);
         setParameter("normalMatrix", state.normalMatrix);
         setParameter("viewMatrix", state.viewMatrix);
         setParameter("invViewMatrix", state.invViewMatrix);
         setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
+        
+        setParameter("gbufferMask", state.gbufferMask);
+        setParameter("blurMask", state.blurMask);
 
         // Diffuse
-        if (idiffuse.texture)
+        glActiveTexture(GL_TEXTURE4);
+        
+        if (mat.baseColorTexture)
         {
-            glActiveTexture(GL_TEXTURE4);
-
-            auto cubemap = cast(Cubemap)idiffuse.texture;
-
-            if (cubemap)
+            if (mat.baseColorTexture.isCubemap)
             {
-                cubemap.bind();
+                mat.baseColorTexture.bind();
                 setParameter("envTextureCube", cast(int)4);
                 setParameterSubroutine("environment", ShaderType.Fragment, "environmentCubemap");
             }
             else
             {
-                idiffuse.texture.bind();
+                mat.baseColorTexture.bind();
                 setParameter("envTexture", cast(int)4);
                 setParameterSubroutine("environment", ShaderType.Fragment, "environmentTexture");
             }
         }
         else
         {
-            setParameter("envColor", idiffuse.asVector4f);
+            setParameter("envColor", mat.baseColorFactor);
             setParameterSubroutine("environment", ShaderType.Fragment, "environmentColor");
         }
 

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Timur Gafarov
+Copyright (c) 2019-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -38,10 +38,10 @@ import dagon.graphics.entity;
 import dagon.resource.scene;
 import dagon.render.pipeline;
 import dagon.render.pass;
-import dagon.render.deferred;
+//import dagon.render.passes;
 import dagon.game.renderer;
 
-class HUDPass: RenderPass
+class PassHUD: RenderPass
 {
     this(RenderPipeline pipeline, EntityGroup group = null)
     {
@@ -106,7 +106,7 @@ class HUDPass: RenderPass
 
 class HUDRenderer: Renderer
 {
-    HUDPass passHUD;
+    PassHUD passHUD;
 
     this(EventManager eventManager, Owner owner)
     {
@@ -115,10 +115,10 @@ class HUDRenderer: Renderer
         setViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
         view.ortho = true;
 
-        passHUD = New!HUDPass(pipeline);
+        passHUD = New!PassHUD(pipeline);
         passHUD.clear = false;
         passHUD.defaultMaterial.depthWrite = false;
-        passHUD.defaultMaterial.culling = false;
+        passHUD.defaultMaterial.useCulling = false;
         passHUD.view = view;
     }
 

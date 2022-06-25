@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Mateusz Muszyński
+Copyright (c) 2019-2022 Mateusz Muszyński
 
 Boost Software License - Version 1.0 - August 17th, 2003
 

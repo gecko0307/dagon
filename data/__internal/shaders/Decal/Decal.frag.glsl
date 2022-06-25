@@ -69,9 +69,10 @@ subroutine(srtHeight) float heightValue(in vec2 uv)
     return heightScalar;
 }
 
+uniform sampler2D heightTexture;
 subroutine(srtHeight) float heightMap(in vec2 uv)
 {
-    return texture(normalTexture, uv).a;
+    return texture(heightTexture, uv).r;
 }
 
 subroutine uniform srtHeight height;
@@ -96,8 +97,6 @@ subroutine(srtParallax) vec2 parallaxSimple(in vec3 E, in vec2 uv, in float h)
     return uv + (currentHeight * E.xy);
 }
 
-// Based on code written by Igor Dykhta (Sun and Black Cat)
-// http://sunandblackcat.com/tipFullView.php?topicid=28
 subroutine(srtParallax) vec2 parallaxOcclusionMapping(in vec3 E, in vec2 uv, in float h)
 {
     const float minLayers = 10.0;
@@ -126,23 +125,23 @@ subroutine(srtParallax) vec2 parallaxOcclusionMapping(in vec3 E, in vec2 uv, in 
 subroutine uniform srtParallax parallax;
 
 
-
 /*
  * Roughness
  */
-uniform sampler2D pbrTexture;
+uniform sampler2D roughnessMetallicTexture;
+uniform vec4 roughnessMetallicFactor;
 
 subroutine float srtRoughness(in vec2 uv);
 
 uniform float roughnessScalar;
 subroutine(srtRoughness) float roughnessValue(in vec2 uv)
 {
-    return roughnessScalar;
+    return roughnessMetallicFactor.g;
 }
 
 subroutine(srtRoughness) float roughnessMap(in vec2 uv)
 {
-    return texture(pbrTexture, uv).g;
+    return texture(roughnessMetallicTexture, uv).g;
 }
 
 subroutine uniform srtRoughness roughness;
@@ -156,34 +155,15 @@ subroutine float srtMetallic(in vec2 uv);
 uniform float metallicScalar;
 subroutine(srtMetallic) float metallicValue(in vec2 uv)
 {
-    return metallicScalar;
+    return roughnessMetallicFactor.b;
 }
 
 subroutine(srtMetallic) float metallicMap(in vec2 uv)
 {
-    return texture(pbrTexture, uv).b;
+    return texture(roughnessMetallicTexture, uv).b;
 }
 
 subroutine uniform srtMetallic metallic;
-
-
-/*
- * Specularity
- */
-subroutine float srtSpecularity(in vec2 uv);
-
-uniform float specularityScalar;
-subroutine(srtSpecularity) float specularityValue(in vec2 uv)
-{
-    return specularityScalar;
-}
-
-subroutine(srtSpecularity) float specularityMap(in vec2 uv)
-{
-    return texture(pbrTexture, uv).r;
-}
-
-subroutine uniform srtSpecularity specularity;
 
 
 /*
@@ -191,14 +171,14 @@ subroutine uniform srtSpecularity specularity;
  */
 subroutine vec4 srtEmission(in vec2 uv);
 
-uniform vec4 emissionVector;
-subroutine(srtEmission) vec4 emissionValue(in vec2 uv)
+uniform vec4 emissionFactor;
+subroutine(srtEmission) vec4 emissionColorValue(in vec2 uv)
 {
-    return emissionVector;
+    return emissionFactor;
 }
 
 uniform sampler2D emissionTexture;
-subroutine(srtEmission) vec4 emissionMap(in vec2 uv)
+subroutine(srtEmission) vec4 emissionColorTexture(in vec2 uv)
 {
     return texture(emissionTexture, uv);
 }
@@ -244,13 +224,15 @@ void main()
     vec2 shiftedTexCoord = parallax(tE, texCoord, height(texCoord));
     N = normal(shiftedTexCoord, -1.0, tangentToEye);
     
-    vec4 d = diffuse(shiftedTexCoord);
-    vec3 color = toLinear(d.rgb);
+    vec4 diffuseColor = diffuse(shiftedTexCoord);
+    vec3 albedo = diffuseColor.rgb; //toLinear(diffuseColor.rgb);
     
     vec3 emiss = toLinear(emission(shiftedTexCoord).rgb) * emissionEnergy;
     
-    fragColor = vec4(color, d.a);
-    fragNormal = vec4(N, d.a);
-    fragPBR = vec4(roughness(shiftedTexCoord), metallic(shiftedTexCoord), specularity(shiftedTexCoord), d.a);
-    fragEmission = vec4(emiss, d.a);
+    const float specularity = 1.0;
+    
+    fragColor = vec4(albedo, diffuseColor.a);
+    fragNormal = vec4(N, diffuseColor.a);
+    fragPBR = vec4(roughness(shiftedTexCoord), metallic(shiftedTexCoord), specularity, diffuseColor.a);
+    fragEmission = vec4(emiss, diffuseColor.a);
 }

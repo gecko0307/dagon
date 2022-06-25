@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Timur Gafarov
+Copyright (c) 2019-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -68,6 +68,8 @@ class Game: Application
     alias hud = hudRenderer;
     
     Configuration config;
+    
+    bool dynamicViewport = true;
 
     this(uint w, uint h, bool fullscreen, string title, string[] args)
     {
@@ -92,14 +94,14 @@ class Game: Application
         }
         
         super(w, h, fullscreen, title, args);
-
+        
         deferredRenderer = New!DeferredRenderer(eventManager, this);
         renderer = deferredRenderer;
         postProcessingRenderer = New!PostProcRenderer(eventManager, deferredRenderer.outputBuffer, deferredRenderer.gbuffer, this);
         presentRenderer = New!PresentRenderer(eventManager, postProcessingRenderer.outputBuffer, this);
         hudRenderer = New!HUDRenderer(eventManager, this);
         
-        deferredRenderer.setViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
+        renderer.setViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
         postProcessingRenderer.setViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
         presentRenderer.setViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
         hudRenderer.setViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
@@ -117,13 +119,16 @@ class Game: Application
         if (currentScene)
         {
             currentScene.update(t);
-            deferredRenderer.scene = currentScene;
-            hudRenderer.scene = currentScene;
-            deferredRenderer.update(t);
-            postProcessingRenderer.activeCamera = deferredRenderer.activeCamera;
+            
+            renderer.scene = currentScene;
+            renderer.update(t);
+            
+            postProcessingRenderer.activeCamera = renderer.activeCamera;
             postProcessingRenderer.update(t);
+            
             presentRenderer.scene = currentScene;
             presentRenderer.update(t);
+            
             hudRenderer.scene = currentScene;
             hudRenderer.update(t);
         }
@@ -135,7 +140,7 @@ class Game: Application
         {
             if (currentScene.canRender)
             {
-                deferredRenderer.render();
+                renderer.render();
                 postProcessingRenderer.render();
                 presentRenderer.inputBuffer = postProcessingRenderer.outputBuffer;
                 presentRenderer.render();
@@ -144,11 +149,22 @@ class Game: Application
         }
     }
     
-    override void onResize(int width, int height)
+    void resize(int width, int height)
     {
-        deferredRenderer.setViewport(0, 0, width, height);
+        renderer.setViewport(0, 0, width, height);
         postProcessingRenderer.setViewport(0, 0, width, height);
         presentRenderer.setViewport(0, 0, width, height);
         hudRenderer.setViewport(0, 0, width, height);
+    }
+    
+    override void onResize(int width, int height)
+    {
+        if (dynamicViewport)
+            resize(width, height);
+    }
+    
+    GLuint frameTexture() @property
+    {
+        return presentRenderer.inputBuffer.colorTexture;
     }
 }

@@ -23,8 +23,6 @@ uniform float fogEnd;
 
 in vec2 texCoord;
 
-layout(location = 0) out vec4 fragColor;
-
 #include <unproject.glsl>
 #include <gamma.glsl>
 #include <fresnel.glsl>
@@ -62,9 +60,10 @@ subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float roughness)
 
 subroutine uniform srtAmbient ambient;
 
-
 uniform sampler2D ambientBRDF;
 uniform bool haveAmbientBRDF;
+
+layout(location = 0) out vec4 fragColor;
 
 void main()
 {

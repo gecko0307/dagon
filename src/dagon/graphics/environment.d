@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2020 Timur Gafarov
+Copyright (c) 2017-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -27,11 +27,13 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.graphics.environment;
 
+import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.image.color;
 
-import dagon.graphics.texture;
 import dagon.graphics.light;
+import dagon.graphics.texture;
+import dagon.graphics.terrain;
 
 class Environment: Owner
 {
@@ -47,8 +49,11 @@ class Environment: Owner
     
     Light sun;
     
+    TerrainMaterial terrainMaterial;
+    
     this(Owner o)
     {
         super(o);
+        terrainMaterial = New!TerrainMaterial(this);
     }
 }

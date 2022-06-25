@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Timur Gafarov
+Copyright (c) 2019-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -66,22 +66,8 @@ class GeometryShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        auto idiffuse = "diffuse" in state.material.inputs;
-        auto inormal = "normal" in state.material.inputs;
-        auto iheight = "height" in state.material.inputs;
-        auto iroughnessMetallic = "roughnessMetallic" in state.material.inputs;
-        auto iroughness = "roughness" in state.material.inputs;
-        auto imetallic = "metallic" in state.material.inputs;
-        auto ispecularity = "specularity" in state.material.inputs;
-        auto itransparency = "transparency" in state.material.inputs;
-        auto iclipThreshold = "clipThreshold" in state.material.inputs;
-        auto itranslucency = "translucency" in state.material.inputs;
-        auto itextureScale = "textureScale" in state.material.inputs;
-        auto iparallax = "parallax" in state.material.inputs;
-        auto iemission = "emission" in state.material.inputs;
-        auto ienergy = "energy" in state.material.inputs;
-        auto isphericalNormal = "sphericalNormal" in state.material.inputs;
-
+        Material mat = state.material;
+        
         setParameter("modelViewMatrix", state.modelViewMatrix);
         setParameter("projectionMatrix", state.projectionMatrix);
         setParameter("normalMatrix", state.normalMatrix);
@@ -89,158 +75,119 @@ class GeometryShader: Shader
         setParameter("invViewMatrix", state.invViewMatrix);
         setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
 
-        setParameter("gbufferMask", state.gbufferMask);
-        setParameter("textureScale", itextureScale.asVector2f);
-        setParameter("blurMask", state.blurMask);
-
-        int parallaxMethod = iparallax.asInteger;
-        if (parallaxMethod > ParallaxOcclusionMapping)
-            parallaxMethod = ParallaxOcclusionMapping;
-        if (parallaxMethod < 0)
-            parallaxMethod = 0;
-
-        setParameter("sphericalNormal", cast(int)isphericalNormal.asBool);
-
-        // Transparency
-        float materialOpacity = 1.0f;
-        if (itransparency)
-            materialOpacity = itransparency.asFloat;
-        setParameter("opacity", state.opacity * materialOpacity);
+        setParameter("opacity", state.opacity * mat.opacity);
+        setParameter("textureScale", mat.textureScale);
         
-        float clipThreshold = 0.5f;
-        if (iclipThreshold)
-            clipThreshold = iclipThreshold.asFloat;
-        setParameter("clipThreshold", clipThreshold);
+        setParameter("gbufferMask", state.gbufferMask);
+        setParameter("blurMask", state.blurMask);
+        
+        setParameter("sphericalNormal", cast(int)mat.sphericalNormal);
+        
+        setParameter("clipThreshold", mat.alphaTestThreshold);
 
         // Diffuse
         glActiveTexture(GL_TEXTURE0);
-        if (idiffuse.texture)
+        setParameter("diffuseTexture", cast(int)0);
+        setParameter("diffuseVector", mat.baseColorFactor);
+        if (mat.baseColorTexture)
         {
-            idiffuse.texture.bind();
-            setParameter("diffuseTexture", cast(int)0);
+            mat.baseColorTexture.bind();
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameter("diffuseTexture", cast(int)0);
-            setParameter("diffuseVector", idiffuse.asVector4f);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
         }
-
-        // Normal/height
-        glActiveTexture(GL_TEXTURE1);
         
-        bool haveHeightMap = inormal.texture !is null;
-        if (haveHeightMap)
-            haveHeightMap = inormal.texture.image.channels == 4;
-
-        if (!haveHeightMap)
+        // Normal
+        glActiveTexture(GL_TEXTURE1);
+        setParameter("normalTexture", cast(int)1);
+        setParameter("normalVector", mat.normalFactor);
+        if (mat.normalTexture)
         {
-            if (inormal.texture is null)
-            {
-                if (iheight.texture !is null) // we have height map, but no normal map
-                {
-                    Color4f color = Color4f(0.5f, 0.5f, 1.0f, 0.0f); // default normal pointing upwards
-                    inormal.texture = state.material.makeTexture(color, iheight.texture);
-                    haveHeightMap = true;
-                }
-            }
-            else
-            {
-                if (iheight.texture !is null) // we have both normal and height maps
-                {
-                    inormal.texture = state.material.makeTexture(inormal.texture, iheight.texture);
-                    haveHeightMap = true;
-                }
-            }
-        }
-
-        if (inormal.texture)
-        {
-            inormal.texture.bind();
-            setParameter("normalTexture", cast(int)1);
-            setParameter("generateTBN", 1);
+            mat.normalTexture.bind();
             setParameterSubroutine("normal", ShaderType.Fragment, "normalMap");
+            setParameter("generateTBN", cast(int)1);
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameter("normalTexture", cast(int)1);
-            setParameter("generateTBN", 0);
-            setParameter("normalVector", state.material.normal.asVector3f);
             setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
+            setParameter("generateTBN", cast(int)0);
         }
         
         if (state.material.invertNormalY)
             setParameter("normalYSign", -1.0f);
         else
             setParameter("normalYSign", 1.0f);
-
-        // Height and parallax
-        // TODO: make these material properties
-        float parallaxScale = 0.03f;
-        float parallaxBias = -0.01f;
-        setParameter("parallaxScale", parallaxScale);
-        setParameter("parallaxBias", parallaxBias);
-
-        if (haveHeightMap)
+        
+        // PBR
+        glActiveTexture(GL_TEXTURE2);
+        setParameter("roughnessMetallicTexture", cast(int)2);
+        setParameter("roughnessMetallicFactor", Vector4f(1.0f, mat.roughnessFactor, mat.metallicFactor, 0.0f));
+        if (mat.roughnessMetallicTexture)
         {
+            mat.roughnessMetallicTexture.bind();
+            setParameterSubroutine("roughness", ShaderType.Fragment, "roughnessMap");
+            setParameterSubroutine("metallic", ShaderType.Fragment, "metallicMap");
+        }
+        else
+        {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameterSubroutine("roughness", ShaderType.Fragment, "roughnessValue");
+            setParameterSubroutine("metallic", ShaderType.Fragment, "metallicValue");
+        }
+        
+        // Emission
+        glActiveTexture(GL_TEXTURE3);
+        setParameter("emissionTexture", cast(int)3);
+        setParameter("emissionFactor", mat.emissionFactor);
+        if (mat.emissionTexture)
+        {
+            mat.emissionTexture.bind();
+            setParameterSubroutine("emission", ShaderType.Fragment, "emissionColorTexture");
+        }
+        else
+        {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameterSubroutine("emission", ShaderType.Fragment, "emissionColorValue");
+        }
+        setParameter("energy", mat.emissionEnergy);
+        
+        // Height and parallax
+        int parallaxMethod = mat.parallaxMode;
+        if (parallaxMethod > ParallaxOcclusionMapping)
+            parallaxMethod = ParallaxOcclusionMapping;
+        if (parallaxMethod < 0)
+            parallaxMethod = 0;
+        
+        glActiveTexture(GL_TEXTURE4);
+        if (mat.heightTexture)
+        {
+            mat.heightTexture.bind();
+            setParameter("heightTexture", cast(int)4);
             setParameterSubroutine("height", ShaderType.Fragment, "heightMap");
         }
         else
         {
-            float h = 0.0f; //-parallaxBias / parallaxScale;
-            setParameter("heightScalar", h);
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameter("heightTexture", cast(int)4);
+            setParameter("heightScalar", mat.heightFactor);
             setParameterSubroutine("height", ShaderType.Fragment, "heightValue");
             parallaxMethod = ParallaxNone;
         }
-
+        
         if (parallaxMethod == ParallaxSimple)
             setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxSimple");
         else if (parallaxMethod == ParallaxOcclusionMapping)
             setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxOcclusionMapping");
         else
             setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxNone");
-
-        // PBR
-        if (iroughnessMetallic is null)
-        {
-            state.material.setInput("roughnessMetallic", 0.0f);
-            iroughnessMetallic = "roughnessMetallic" in state.material.inputs;
-        }
-        if (iroughnessMetallic.texture is null)
-        {
-            iroughnessMetallic.texture = state.material.makeTexture(*ispecularity, *iroughness, *imetallic, *itranslucency);
-        }
-        glActiveTexture(GL_TEXTURE2);
-        iroughnessMetallic.texture.bind();
-        setParameter("pbrTexture", 2);
         
-        setParameterSubroutine("specularity", ShaderType.Fragment, "specularityMap");
-        setParameterSubroutine("metallic", ShaderType.Fragment, "metallicMap");
-        setParameterSubroutine("roughness", ShaderType.Fragment, "roughnessMap");
-        setParameterSubroutine("translucency", ShaderType.Fragment, "translucencyMap");
+        setParameter("parallaxScale", mat.parallaxScale);
+        setParameter("parallaxBias", mat.parallaxBias);
         
-        // TODO: specularity, translucensy
-
-        // Emission
-        glActiveTexture(GL_TEXTURE3);
-        if (iemission.texture)
-        {
-            iemission.texture.bind();
-            setParameter("emissionTexture", cast(int)3);
-            setParameterSubroutine("emission", ShaderType.Fragment, "emissionColorTexture");
-        }
-        else
-        {
-            glBindTexture(GL_TEXTURE_2D, 0);
-            setParameter("emissionTexture", cast(int)3);
-            setParameter("emissionVector", iemission.asVector4f);
-            setParameterSubroutine("emission", ShaderType.Fragment, "emissionColorValue");
-        }
-        setParameter("energy", ienergy.asFloat);
-
         glActiveTexture(GL_TEXTURE0);
 
         super.bindParameters(state);
@@ -260,6 +207,9 @@ class GeometryShader: Shader
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE0);

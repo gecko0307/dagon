@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2019-2020 dayllenger
+Copyright (c) 2019-2022 dayllenger
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -115,6 +115,7 @@ private bool checkCompilation(const GLuint shaderID, const ShaderStage stage)
     GLint status = GL_FALSE;
     glGetShaderiv(shaderID, GL_COMPILE_STATUS, &status);
     const bool ok = status != GL_FALSE;
+    
     // get log
     GLint infolen;
     glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &infolen); // includes \0
@@ -124,6 +125,7 @@ private bool checkCompilation(const GLuint shaderID, const ShaderStage stage)
         glGetShaderInfoLog(shaderID, logMaxLen, null, infobuffer.ptr);
         infolen = min2(infolen - 1, logMaxLen);
         char[] s = stripRight(infobuffer[0..infolen]);
+        
         // it can be some warning
         if (!ok)
             writefln("Failed to compile %s shader:", stage);
@@ -138,6 +140,7 @@ private bool checkLinking(const GLuint programID)
     GLint status = GL_FALSE;
     glGetProgramiv(programID, GL_LINK_STATUS, &status);
     const bool ok = status != GL_FALSE;
+    
     // get log
     GLint infolen;
     glGetProgramiv(programID, GL_INFO_LOG_LENGTH, &infolen); // includes \0
@@ -147,6 +150,7 @@ private bool checkLinking(const GLuint programID)
         glGetProgramInfoLog(programID, logMaxLen, null, infobuffer.ptr);
         infolen = min2(infolen - 1, logMaxLen);
         char[] s = stripRight(infobuffer[0..infolen]);
+        
         // it can be some warning
         if (!ok)
             writeln("Failed to link shaders:");

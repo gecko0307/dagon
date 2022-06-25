@@ -40,6 +40,7 @@ import dlib.image.color;
 import dlib.text.str;
 
 import dagon.core.bindings;
+import dagon.graphics.material;
 import dagon.graphics.shader;
 import dagon.graphics.state;
 
@@ -64,7 +65,7 @@ class HUDShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        auto idiffuse = "diffuse" in state.material.inputs;
+        Material mat = state.material;
 
         setParameter("modelViewMatrix", state.modelViewMatrix);
         setParameter("projectionMatrix", state.projectionMatrix);
@@ -73,16 +74,17 @@ class HUDShader: Shader
         setParameter("invViewMatrix", state.invViewMatrix);
 
         // Diffuse
-        if (idiffuse.texture)
+        glActiveTexture(GL_TEXTURE0);
+        setParameter("diffuseTexture", cast(int)0);
+        setParameter("diffuseVector", mat.baseColorFactor);
+        if (mat.baseColorTexture)
         {
-            glActiveTexture(GL_TEXTURE0);
-            idiffuse.texture.bind();
-            setParameter("diffuseTexture", cast(int)0);
+            mat.baseColorTexture.bind();
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
         }
         else
         {
-            setParameter("diffuseVector", idiffuse.asVector4f);
+            glBindTexture(GL_TEXTURE_2D, 0);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
         }
 

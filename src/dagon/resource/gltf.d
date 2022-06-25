@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021 Timur Gafarov
+Copyright (c) 2021-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -613,29 +613,27 @@ class GLTFAsset: Asset, TriangleSet
                     imgFilename ~= "/";
                     imgFilename ~= im["uri"].asString;
                     
-                    auto ta = New!TextureAsset(this);
+                    string assetFilename = imgFilename.toString;
+                    TextureAsset textureAsset = New!TextureAsset(assetManager);
                     
                     FileStat fstat;
-                    if (fs.stat(imgFilename.toString, fstat))
+                    if (fs.stat(assetFilename, fstat))
                     {
-                        bool res = assetManager.loadAssetThreadSafePart(ta, imgFilename.toString);
+                        bool res = assetManager.loadAssetThreadSafePart(textureAsset, assetFilename);
                         if (!res)
                             writeln("Warning: failed to load \"", imgFilename, "\"");
                     }
                     else
-                    {
                         writeln("Warning: image file \"", imgFilename, "\" not found");
-                    }
                     
-                    images.insertBack(ta);
-                    
+                    images.insertBack(textureAsset);
                     imgFilename.free();
                 }
                 else if ("bufferView" in im)
                 {
                     uint bufferViewIndex = cast(uint)im["bufferView"].asNumber;
                     
-                    auto ta = New!TextureAsset(this);
+                    auto textureAsset = New!TextureAsset(this);
                     
                     if (bufferViewIndex < bufferViews.length)
                     {
@@ -655,7 +653,7 @@ class GLTFAsset: Asset, TriangleSet
                             else
                             {
                                 
-                                bool res = assetManager.loadAssetThreadSafePart(ta, bv.slice, name);
+                                bool res = assetManager.loadAssetThreadSafePart(textureAsset, bv.slice, name);
                                 if (!res)
                                     writeln("Warning: failed to load image");
                             }
@@ -666,7 +664,7 @@ class GLTFAsset: Asset, TriangleSet
                         writeln("Warning: can't create image from nonexistent buffer view ", bufferViewIndex);
                     }
                     
-                    images.insertBack(ta);
+                    images.insertBack(textureAsset);
                 }
             }
         }
@@ -728,9 +726,9 @@ class GLTFAsset: Asset, TriangleSet
                         baseColorFactor = pbr["baseColorFactor"].asColor;
                         
                         if (baseColorFactor.a < 1.0f)
-                            material.blending = Transparent;
+                            material.blendMode = Transparent;
                         
-                        material.diffuse = baseColorFactor;
+                        material.baseColorFactor = baseColorFactor;
                     }
                     
                     if (pbr && "baseColorTexture" in pbr)
@@ -744,12 +742,12 @@ class GLTFAsset: Asset, TriangleSet
                                 Texture baseColorTex = textures[baseColorTexIndex];
                                 if (baseColorTex)
                                 {
-                                    material.diffuse = baseColorTex;
+                                    material.baseColorTexture = baseColorTex;
                                 }
                             }
                         }
                         
-                        material.transparency = baseColorFactor.a;
+                        material.opacity = baseColorFactor.a;
                     }
                     
                     if (pbr && "metallicRoughnessTexture" in pbr)
@@ -759,27 +757,27 @@ class GLTFAsset: Asset, TriangleSet
                         {
                             Texture metallicRoughnessTex = textures[metallicRoughnessTexIndex];
                             if (metallicRoughnessTex)
-                                material.roughnessMetallic = metallicRoughnessTex;
+                                material.roughnessMetallicTexture = metallicRoughnessTex;
                         }
                     }
                     else
                     {
                         if (pbr && "metallicFactor" in pbr)
                         {
-                            material.metallic = pbr["metallicFactor"].asNumber;
+                            material.metallicFactor = pbr["metallicFactor"].asNumber;
                         }
                         else
                         {
-                            material.metallic = 1.0f;
+                            material.metallicFactor = 1.0f;
                         }
                         
                         if (pbr && "roughnessFactor" in pbr)
                         {
-                            material.roughness = pbr["roughnessFactor"].asNumber;
+                            material.roughnessFactor = pbr["roughnessFactor"].asNumber;
                         }
                         else
                         {
-                            material.roughness = 1.0f;
+                            material.roughnessFactor = 1.0f;
                         }
                     }
                 }
@@ -802,7 +800,7 @@ class GLTFAsset: Asset, TriangleSet
                                     Texture diffuseTex = textures[diffuseTexIndex];
                                     if (diffuseTex)
                                     {
-                                        material.diffuse = diffuseTex;
+                                        material.baseColorTexture = diffuseTex;
                                     }
                                 }
                             }
@@ -817,7 +815,7 @@ class GLTFAsset: Asset, TriangleSet
                     {
                         Texture normalTex = textures[normalTexIndex];
                         if (normalTex)
-                            material.normal = normalTex;
+                            material.normalTexture = normalTex;
                     }
                 }
                 
@@ -828,31 +826,41 @@ class GLTFAsset: Asset, TriangleSet
                     {
                         Texture emissiveTex = textures[emissiveTexIndex];
                         if (emissiveTex)
-                            material.emission = emissiveTex;
+                            material.emissionTexture = emissiveTex;
                     }
                 }
-                else if ("emissiveFactor" in ma)
+                
+                if ("emissiveFactor" in ma)
                 {
                     Color4f emissiveFactor = ma["emissiveFactor"].asColor;
-                    material.emission = emissiveFactor;
+                    material.emissionFactor = emissiveFactor;
                 }
                 
                 if ("doubleSided" in ma)
                 {
                     uint doubleSided = cast(uint)ma["doubleSided"].asNumber;
-                    if (doubleSided)
-                        material.culling = false;
+                    if (doubleSided > 0)
+                        material.useCulling = false;
                     else
-                        material.culling = true;
+                        material.useCulling = true;
                 }
                 else
                 {
-                    material.culling = true;
+                    material.useCulling = true;
+                }
+                
+                if ("alphaMode" in ma)
+                {
+                    auto alphaMode = ma["alphaMode"].asString;
+                    if (alphaMode == "BLEND")
+                    {
+                        material.blendMode = Transparent;
+                    }
                 }
                 
                 if ("alphaCutoff" in ma)
                 {
-                    material.clipThreshold = ma["alphaCutoff"].asNumber;
+                    material.alphaTestThreshold = ma["alphaCutoff"].asNumber;
                 }
                 
                 materials.insertBack(material);
@@ -1102,20 +1110,27 @@ class GLTFAsset: Asset, TriangleSet
                     Material material = primitive.material;
                     if (material)
                     {
-                        Texture diffuseTex = material.diffuse.texture;
+                        if (material.blendMode == Transparent)
+                        {
+                            node.entity.transparent = true;
+                        }
+                        
+                        /*
+                        Texture diffuseTex = material.baseColorTexture;
                         if (diffuseTex)
                         {
-                            if (diffuseTex.image.pixelFormat == IntegerPixelFormat.RGBA8)
+                            if (diffuseTex.hasAlpha)
                             {
-                                material.blending = Transparent;
+                                material.blendMode = Transparent;
                                 node.entity.transparent = true;
                             }
                         }
-                        else if (material.diffuse.asVector4f.a < 1.0f || material.transparency.asFloat < 1.0f)
+                        else if (material.baseColorFactor.a < 1.0f || material.opacity < 1.0f)
                         {
-                            material.blending = Transparent;
+                            material.blendMode = Transparent;
                             node.entity.transparent = true;
                         }
+                        */
                     }
                 }
             }
@@ -1237,6 +1252,7 @@ class GLTFAsset: Asset, TriangleSet
     }
 }
 
+// TODO: generate random name instead of "undefined"
 string nameFromMimeType(string mime)
 {
     string name;

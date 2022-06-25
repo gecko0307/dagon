@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2020 Timur Gafarov
+Copyright (c) 2017-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -54,6 +54,8 @@ enum DagonEvent
 {
     Exit = -1
 }
+
+enum GL_FRAMEBUFFER_SRGB = 0x8DB9;
 
 enum string[GLenum] GLErrorStrings = [
     GL_NO_ERROR: "GL_NO_ERROR",
@@ -173,9 +175,9 @@ class Application: EventListener
         if (sdlsup != sdlSupport)
         {
             if (sdlsup == SDLSupport.badLibrary)
-                writeln("Warning: failed to load some SDL functions. It seems that you have an old version of SDL. Dagon will try to use it, but it is recommended to install SDL 2.0.14 or higher");
+                writeln("Warning: failed to load some SDL functions. It seems that you have an old version of SDL. Dagon will try to use it, but it is recommended to install SDL 2.0.20 or higher");
             else
-                exitWithError("Error: SDL library is not found. Please, install SDL 2.0.14");
+                exitWithError("Error: SDL library is not found. Please, install SDL 2.0.20");
         }
 
         if (SDL_Init(SDL_INIT_EVERYTHING) == -1)
@@ -185,6 +187,7 @@ class Application: EventListener
         height = winHeight;
 
         SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
@@ -192,21 +195,19 @@ class Application: EventListener
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+        //SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
 
         window = SDL_CreateWindow(toStringz(windowTitle),
             SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
         if (window is null)
             exitWithError("Error: failed to create window: " ~ to!string(SDL_GetError()));
 
-
         glcontext = SDL_GL_CreateContext(window);
         if (glcontext is null)
             exitWithError("Error: failed to create OpenGL context: " ~ to!string(SDL_GetError()));
-
+        SDL_GL_MakeCurrent(window, glcontext);
         SDL_GL_SetSwapInterval(1);
         
-        SDL_GL_MakeCurrent(window, glcontext);
-
         GLSupport glsup = loadOpenGL();
         if (isOpenGLLoaded())
         {
@@ -227,6 +228,7 @@ class Application: EventListener
         super(_eventManager, null);
 
         // Initialize OpenGL
+        //glEnable(GL_FRAMEBUFFER_SRGB);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClearDepth(1.0);
         glEnable(GL_SCISSOR_TEST);

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Timur Gafarov
+Copyright (c) 2019-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -44,7 +44,7 @@ import dagon.graphics.light;
 import dagon.graphics.environment;
 import dagon.graphics.shapes;
 import dagon.graphics.material;
-import dagon.graphics.cubemap;
+//import dagon.graphics.cubemap;
 
 import dagon.resource.asset;
 import dagon.resource.obj;
@@ -53,7 +53,6 @@ import dagon.resource.image;
 import dagon.resource.texture;
 import dagon.resource.text;
 import dagon.resource.binary;
-import dagon.resource.packageasset;
 
 class Scene: EventListener
 {
@@ -75,6 +74,7 @@ class Scene: EventListener
     bool isLoading = false;
     bool loaded = false;
     bool canRender = false;
+    bool focused = true;
 
     this(Application application)
     {
@@ -123,10 +123,12 @@ class Scene: EventListener
             {
                 newAsset = New!T(assetManager);
             }
+            /*
             else static if (is(T: PackageAsset))
             {
                 newAsset = New!T(this, assetManager);
             }
+            */
             else
             {
                 newAsset = New!T(assetManager);
@@ -142,7 +144,7 @@ class Scene: EventListener
     alias addGLTFAsset = addAssetAs!GLTFAsset;
     alias addTextAsset = addAssetAs!TextAsset;
     alias addBinaryAsset = addAssetAs!BinaryAsset;
-    alias addPackageAsset = addAssetAs!PackageAsset;
+    //alias addPackageAsset = addAssetAs!PackageAsset;
 
     Material addMaterial()
     {
@@ -152,16 +154,18 @@ class Scene: EventListener
     Material addDecalMaterial()
     {
         auto mat = addMaterial();
-        mat.blending = Transparent;
+        mat.blendMode = Transparent;
         mat.depthWrite = false;
-        mat.culling = false;
+        mat.useCulling = false;
         return mat;
     }
 
+    /*
     Cubemap addCubemap(uint size)
     {
         return New!Cubemap(size, assetManager);
     }
+    */
 
     Entity addEntity(Entity parent = null)
     {
@@ -237,7 +241,8 @@ class Scene: EventListener
 
     void update(Time t)
     {
-        processEvents();
+        if (focused)
+            processEvents();
 
         if (isLoading)
         {

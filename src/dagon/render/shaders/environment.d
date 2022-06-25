@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Timur Gafarov
+Copyright (c) 2019-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -103,7 +103,7 @@ class EnvironmentShader: Shader
 
             if (state.environment.ambientMap)
             {
-                if (cast(Cubemap)state.environment.ambientMap)
+                if (state.environment.ambientMap.isCubemap)
                 {
                     glActiveTexture(GL_TEXTURE4);
                     glBindTexture(GL_TEXTURE_2D, 0);

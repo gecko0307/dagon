@@ -16,8 +16,8 @@ uniform mat4 invViewMatrix;
 
 uniform float layer;
 uniform float energy;
-uniform float opacity;
-uniform float blurMask;
+uniform float materialOpacity;
+uniform float stateOpacity;
 
 uniform bool shaded;
 uniform vec3 sunDirection;
@@ -103,9 +103,10 @@ subroutine(srtHeight) float heightValue(in vec2 uv)
     return heightScalar;
 }
 
+uniform sampler2D heightTexture;
 subroutine(srtHeight) float heightMap(in vec2 uv)
 {
-    return texture(normalTexture, uv).a;
+    return texture(heightTexture, uv).r;
 }
 
 subroutine uniform srtHeight height;
@@ -159,23 +160,25 @@ subroutine(srtParallax) vec2 parallaxOcclusionMapping(in vec3 E, in vec2 uv, in 
 
 subroutine uniform srtParallax parallax;
 
+/*
+ * PBR
+ */
+uniform sampler2D roughnessMetallicTexture;
+uniform vec4 roughnessMetallicFactor;
 
 /*
  * Roughness
  */
-uniform sampler2D pbrTexture;
-
 subroutine float srtRoughness(in vec2 uv);
 
-uniform float roughnessScalar;
 subroutine(srtRoughness) float roughnessValue(in vec2 uv)
 {
-    return roughnessScalar;
+    return roughnessMetallicFactor.g;
 }
 
 subroutine(srtRoughness) float roughnessMap(in vec2 uv)
 {
-    return texture(pbrTexture, uv).g;
+    return texture(roughnessMetallicTexture, uv).g;
 }
 
 subroutine uniform srtRoughness roughness;
@@ -186,15 +189,14 @@ subroutine uniform srtRoughness roughness;
  */
 subroutine float srtMetallic(in vec2 uv);
 
-uniform float metallicScalar;
 subroutine(srtMetallic) float metallicValue(in vec2 uv)
 {
-    return metallicScalar;
+    return roughnessMetallicFactor.b;
 }
 
 subroutine(srtMetallic) float metallicMap(in vec2 uv)
 {
-    return texture(pbrTexture, uv).b;
+    return texture(roughnessMetallicTexture, uv).b;
 }
 
 subroutine uniform srtMetallic metallic;
@@ -208,12 +210,12 @@ subroutine float srtSpecularity(in vec2 uv);
 uniform float specularityScalar;
 subroutine(srtSpecularity) float specularityValue(in vec2 uv)
 {
-    return specularityScalar;
+    return roughnessMetallicFactor.r;
 }
 
 subroutine(srtSpecularity) float specularityMap(in vec2 uv)
 {
-    return texture(pbrTexture, uv).r;
+    return texture(roughnessMetallicTexture, uv).r;
 }
 
 subroutine uniform srtSpecularity specularity;
@@ -224,16 +226,16 @@ subroutine uniform srtSpecularity specularity;
  */
 subroutine vec3 srtEmission(in vec2 uv);
 
-uniform vec4 emissionVector;
-subroutine(srtEmission) vec3 emissionColorValue(in vec2 uv)
+uniform vec4 emissionFactor;
+subroutine(srtEmission) vec3 emissionValue(in vec2 uv)
 {
-    return emissionVector.rgb * energy;
+    return emissionFactor.rgb * energy;
 }
 
 uniform sampler2D emissionTexture;
-subroutine(srtEmission) vec3 emissionColorTexture(in vec2 uv)
+subroutine(srtEmission) vec3 emissionMap(in vec2 uv)
 {
-    return texture(emissionTexture, uv).rgb * energy;
+    return texture(emissionTexture, uv).rgb * emissionFactor.rgb * energy;
 }
 
 subroutine uniform srtEmission emission;
@@ -244,31 +246,33 @@ subroutine uniform srtEmission emission;
  */
 uniform float ambientEnergy;
 
-subroutine vec3 srtAmbient(in vec3 wN, in float roughness);
+subroutine vec3 srtAmbient(in vec3 wN, in float perceptualRoughness);
 
 uniform vec4 ambientVector;
-subroutine(srtAmbient) vec3 ambientColor(in vec3 wN, in float roughness)
+subroutine(srtAmbient) vec3 ambientColor(in vec3 wN, in float perceptualRoughness)
 {
-    return toLinear(ambientVector.rgb) * ambientEnergy;
+    return ambientVector.rgb * ambientEnergy;
 }
 
 uniform sampler2D ambientTexture;
-subroutine(srtAmbient) vec3 ambientEquirectangularMap(in vec3 wN, in float roughness)
+subroutine(srtAmbient) vec3 ambientEquirectangularMap(in vec3 wN, in float perceptualRoughness)
 {
     ivec2 envMapSize = textureSize(ambientTexture, 0);
-    float size = float(max(envMapSize.x, envMapSize.y));
-    float glossyExponent = 2.0 / pow(roughness, 4.0) - 2.0;
-    float lod = log2(size * sqrt(3.0)) - 0.5 * log2(glossyExponent + 1.0);
+    float resolution = float(max(envMapSize.x, envMapSize.y));
+    //float glossyExponent = 2.0 / pow(perceptualRoughness, 4.0) - 2.0;
+    //float lod = log2(resolution * sqrt(3.0)) - 0.5 * log2(glossyExponent + 1.0);
+    float lod = log2(resolution) * perceptualRoughness;
     return textureLod(ambientTexture, envMapEquirect(wN), lod).rgb * ambientEnergy;
 }
 
 uniform samplerCube ambientTextureCube;
-subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float roughness)
+subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float perceptualRoughness)
 {
     ivec2 envMapSize = textureSize(ambientTextureCube, 0);
-    float size = float(max(envMapSize.x, envMapSize.y));
-    float glossyExponent = 2.0 / pow(roughness, 4.0) - 2.0;
-    float lod = log2(size * sqrt(3.0)) - 0.5 * log2(glossyExponent + 1.0);
+    float resolution = float(max(envMapSize.x, envMapSize.y));
+    //float glossyExponent = 2.0 / pow(perceptualRoughness, 4.0) - 2.0;
+    //float lod = log2(resolution * sqrt(3.0)) - 0.5 * log2(glossyExponent + 1.0);
+    float lod = log2(resolution) * perceptualRoughness;
     return textureLod(ambientTextureCube, wN, lod).rgb * ambientEnergy;
 }
 
@@ -308,6 +312,10 @@ subroutine(srtShadow) float shadowMapCascaded(in vec3 pos, in vec3 N)
 }
 
 subroutine uniform srtShadow shadowMap;
+
+
+uniform sampler2D ambientBRDF;
+uniform bool haveAmbientBRDF;
 
 
 // Mie scaterring approximated with Henyey-Greenstein phase function.
@@ -354,23 +362,27 @@ void main()
 
     vec4 diff = diffuse(uv);
     vec3 albedo = toLinear(diff.rgb);
-    float alpha = diff.a * opacity;
     float r = roughness(uv);
     float m = metallic(uv);
-    float s = specularity(uv);
+    float s = 1.0; //specularity(uv);
     vec3 f0 = mix(vec3(0.04), albedo, m);
     
     float shadow = shadowMap(eyePosition, N);
     
-    vec3 radiance = vec3(0.0);
+    vec3 radiance = toLinear(emission(uv));
+    
+    vec3 reflected = radiance;
     
     // Ambient light
     {
-        vec3 ambientDiffuse = ambient(worldN, 0.99);
-        vec3 ambientSpecular = ambient(worldR, r) * s;
-        vec3 F = fresnelRoughness(max(dot(N, E), 0.0), f0, r);
+        vec3 irradiance = ambient(worldN, 0.99);
+        vec3 reflection = ambient(worldR, sqrt(r)) * s;
+        vec3 F = clamp(fresnelRoughness(dot(N, E), f0, r), 0.0, 1.0);
         vec3 kD = (1.0 - F) * (1.0 - m);
-        radiance += kD * ambientDiffuse * albedo + F * ambientSpecular;
+        vec2 brdf = haveAmbientBRDF? texture(ambientBRDF, vec2(dot(N, E), r)).rg : vec2(1.0, 0.0);
+        vec3 specular = reflection * clamp(F * brdf.x + brdf.y, 0.0, 1.0);
+        radiance += kD * irradiance * albedo + specular;
+        reflected += specular;
     }
     
     // Sun light
@@ -383,12 +395,13 @@ void main()
         vec3 F = fresnelRoughness(max(dot(H, E), 0.0), f0, r);
         
         vec3 kD = (1.0 - F) * (1.0 - m);
-        vec3 specular = (NDF * G * F) / max(4.0 * max(dot(N, E), 0.0) * NL, 0.001);
+        vec3 specular = (NDF * G *  F) / max(4.0 * max(dot(N, E), 0.0) * NL, 0.001);
         
         vec3 incomingLight = toLinear(sunColor.rgb) * sunEnergy;
         vec3 diffuse = albedo * invPI;
         
         radiance += (kD * diffuse + specular * s) * NL * incomingLight * shadow;
+        reflected += specular * s * NL * incomingLight * shadow;
     }
     
     // TODO: fixed number of area lights
@@ -397,6 +410,7 @@ void main()
     float linearDepth = abs(eyePosition.z);
     float fogFactor = clamp((fogEnd - linearDepth) / (fogEnd - fogStart), 0.0, 1.0);
     radiance = mix(toLinear(fogColor.rgb), radiance, fogFactor);
+    reflected = mix(toLinear(fogColor.rgb), reflected, fogFactor);
     
     // Sun light scattering
     if (sunScattering)
@@ -405,7 +419,7 @@ void main()
         
         if (sunScatteringShadow)
         {
-            vec3 startPosition = vec3(0.0);    
+            vec3 startPosition = vec3(0.0);
             vec3 rayVector = eyePosition;
             float rayLength = length(rayVector);
             vec3 rayDirection = rayVector / rayLength;
@@ -424,13 +438,19 @@ void main()
         
         float scattFactor = clamp(accumScatter * scattering(dot(-L, E)) * sunScatteringDensity, 0.0, 1.0);
         radiance = mix(radiance, toLinear(sunColor.rgb) * sunEnergy, scattFactor);
+        reflected = mix(reflected, toLinear(sunColor.rgb) * sunEnergy, scattFactor);
     }
+    
+    float reflectedLuminance = clamp(dot(reflected, vec3(0.2125, 0.7154, 0.0721)), 0.0, 1.0);
+    float fr = clamp(fresnel(dot(N, E), 0.04), 0.0, 1.0);
+    float alpha = stateOpacity * mix(mix(diff.a * materialOpacity, 1.0, fr), 1.0, reflectedLuminance);
     
     // Velocity
     vec2 posScreen = (currPosition.xy / currPosition.w) * 0.5 + 0.5;
     vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;
     vec2 screenVelocity = posScreen - prevPosScreen;
+    const float blurMask = 1.0;
     
     fragColor = vec4(radiance, alpha);
-    fragVelocity = vec4(screenVelocity, blurMask, 1.0);
+    fragVelocity = vec4(screenVelocity, blurMask, 0.0);
 }

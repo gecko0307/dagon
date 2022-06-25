@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Timur Gafarov
+Copyright (c) 2019-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -33,11 +33,10 @@ import dlib.core.ownership;
 import dagon.core.event;
 import dagon.core.time;
 import dagon.resource.scene;
-import dagon.render.deferred;
+import dagon.render.passes;
 import dagon.render.gbuffer;
 import dagon.render.view;
 import dagon.render.framebuffer;
-import dagon.render.shadowpass;
 import dagon.postproc.filterpass;
 import dagon.postproc.shaders.denoise;
 import dagon.game.renderer;
@@ -45,116 +44,33 @@ import dagon.game.renderer;
 class DeferredRenderer: Renderer
 {
     GBuffer gbuffer;
-
-    DenoiseShader denoiseShader;
-
-    ShadowPass passShadow;
-    DeferredClearPass passClear;
-    DeferredBackgroundPass passBackground;
-    DeferredGeometryPass passStaticGeometry;
-    DeferredDecalPass passDecals;
-    DeferredGeometryPass passDynamicGeometry;
-    DeferredOcclusionPass passOcclusion;
+    PassShadow passShadow;
+    PassBackground passBackground;
+    PassTerrain passTerrain;
+    PassGeometry passStaticGeometry;
+    PassDecal passDecal;
+    PassGeometry passDynamicGeometry;
+    PassOcclusion passOcclusion;
     FilterPass passOcclusionDenoise;
-    DeferredEnvironmentPass passEnvironment;
-    DeferredLightPass passLight;
-    DeferredParticlesPass passParticles;
-    DeferredForwardPass passForward;
-    DeferredDebugOutputPass passDebug;
-
+    PassEnvironment passEnvironment;
+    PassLight passLight;
+    PassForward passForward;
+    PassParticles passParticles;
+    
+    Framebuffer terrainNormalBuffer;
+    Framebuffer terrainTexcoordBuffer;
+    
+    DenoiseShader denoiseShader;
     RenderView occlusionView;
     Framebuffer occlusionNoisyBuffer;
     Framebuffer occlusionBuffer;
-
-    DebugOutputMode outputMode = DebugOutputMode.Radiance;
-
     bool _ssaoEnabled = true;
-
-    int ssaoSamples = 10;
+    float _occlusionBufferDetail = 1.0f;
+    int ssaoSamples = 20;
     float ssaoRadius = 0.2f;
-    float ssaoPower = 7.0f;
+    float ssaoPower = 5.0f;
     float ssaoDenoise = 1.0f;
     
-    float _occlusionBufferDetail = 1.0;
-    
-    void occlusionBufferDetail(float value) @property
-    {
-        _occlusionBufferDetail = value;
-        occlusionView.resize(cast(uint)(view.width * _occlusionBufferDetail), cast(uint)(view.height * _occlusionBufferDetail));
-        occlusionNoisyBuffer.resize(occlusionView.width, occlusionView.height);
-        occlusionBuffer.resize(occlusionView.width, occlusionView.height);
-    }
-    float occlusionBufferDetail() @property
-    {
-        return _occlusionBufferDetail;
-    }
-
-    this(EventManager eventManager, Owner owner)
-    {
-        super(eventManager, owner);
-
-        occlusionView = New!RenderView(0, 0, cast(uint)(view.width * _occlusionBufferDetail), cast(uint)(view.height * _occlusionBufferDetail), this);
-        occlusionNoisyBuffer = New!Framebuffer(occlusionView.width, occlusionView.height, FrameBufferFormat.R8, false, this);
-        occlusionBuffer = New!Framebuffer(occlusionView.width, occlusionView.height, FrameBufferFormat.R8, false, this);
-
-        // HDR buffer
-        auto radianceBuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, FrameBufferFormat.RGBA16F, true, this);
-        outputBuffer = radianceBuffer;
-
-        gbuffer = New!GBuffer(view.width, view.height, radianceBuffer, this);
-
-        passShadow = New!ShadowPass(pipeline);
-
-        //passClear = New!DeferredClearPass(pipeline, gbuffer);
-
-        passBackground = New!DeferredBackgroundPass(pipeline, gbuffer);
-        passBackground.view = view;
-
-        passStaticGeometry = New!DeferredGeometryPass(pipeline, gbuffer);
-        passStaticGeometry.view = view;
-
-        passDecals = New!DeferredDecalPass(pipeline, gbuffer);
-        passDecals.view = view;
-
-        passDynamicGeometry = New!DeferredGeometryPass(pipeline, gbuffer);
-        passDynamicGeometry.view = view;
-
-        passOcclusion = New!DeferredOcclusionPass(pipeline, gbuffer);
-        passOcclusion.view = occlusionView;
-        passOcclusion.outputBuffer = occlusionNoisyBuffer;
-
-        denoiseShader = New!DenoiseShader(this);
-        passOcclusionDenoise = New!FilterPass(pipeline, denoiseShader);
-        passOcclusionDenoise.view = occlusionView;
-        passOcclusionDenoise.inputBuffer = occlusionNoisyBuffer;
-        passOcclusionDenoise.outputBuffer = occlusionBuffer;
-
-        passEnvironment = New!DeferredEnvironmentPass(pipeline, gbuffer);
-        passEnvironment.view = view;
-        passEnvironment.outputBuffer = radianceBuffer;
-        passEnvironment.occlusionBuffer = occlusionBuffer;
-
-        passLight = New!DeferredLightPass(pipeline, gbuffer);
-        passLight.view = view;
-        passLight.outputBuffer = radianceBuffer;
-        passLight.occlusionBuffer = occlusionBuffer;
-
-        passForward = New!DeferredForwardPass(pipeline, gbuffer);
-        passForward.view = view;
-        passForward.outputBuffer = radianceBuffer;
-
-        passParticles = New!DeferredParticlesPass(pipeline, gbuffer);
-        passParticles.view = view;
-        passParticles.outputBuffer = radianceBuffer;
-        passParticles.gbuffer = gbuffer;
-
-        passDebug = New!DeferredDebugOutputPass(pipeline, gbuffer);
-        passDebug.view = view;
-        passDebug.active = false;
-        passDebug.outputBuffer = radianceBuffer;
-        passDebug.occlusionBuffer = occlusionBuffer;
-    }
-
     void ssaoEnabled(bool mode) @property
     {
         _ssaoEnabled = mode;
@@ -176,14 +92,87 @@ class DeferredRenderer: Renderer
     {
         return _ssaoEnabled;
     }
+    
+    void occlusionBufferDetail(float value) @property
+    {
+        _occlusionBufferDetail = value;
+        occlusionView.resize(cast(uint)(view.width * _occlusionBufferDetail), cast(uint)(view.height * _occlusionBufferDetail));
+        occlusionNoisyBuffer.resize(occlusionView.width, occlusionView.height);
+        occlusionBuffer.resize(occlusionView.width, occlusionView.height);
+    }
+    float occlusionBufferDetail() @property
+    {
+        return _occlusionBufferDetail;
+    }
+    
+    this(EventManager eventManager, Owner owner)
+    {
+        super(eventManager, owner);
+        
+        outputBuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, FrameBufferFormat.RGBA16F, true, this);
+        
+        gbuffer = New!GBuffer(view.width, view.height, outputBuffer, this);
+        
+        passShadow = New!PassShadow(pipeline);
+        
+        passBackground = New!PassBackground(pipeline, gbuffer);
+        passBackground.view = view;
+        
+        terrainNormalBuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, FrameBufferFormat.RGBA16F, false, this);
+        terrainTexcoordBuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, FrameBufferFormat.RGB32F, false, this);
+        passTerrain = New!PassTerrain(pipeline, gbuffer, terrainNormalBuffer, terrainTexcoordBuffer);
+        passTerrain.view = view;
+        
+        passStaticGeometry = New!PassGeometry(pipeline, gbuffer);
+        passStaticGeometry.view = view;
+        
+        passDecal = New!PassDecal(pipeline, gbuffer);
+        passDecal.view = view;
+        
+        passDynamicGeometry = New!PassGeometry(pipeline, gbuffer);
+        passDynamicGeometry.view = view;
+        
+        occlusionView = New!RenderView(0, 0, cast(uint)(view.width * _occlusionBufferDetail), cast(uint)(view.height * _occlusionBufferDetail), this);
+        passOcclusion = New!PassOcclusion(pipeline, gbuffer);
+        passOcclusion.view = occlusionView;
+        occlusionNoisyBuffer = New!Framebuffer(occlusionView.width, occlusionView.height, FrameBufferFormat.R8, false, this);
+        passOcclusion.outputBuffer = occlusionNoisyBuffer;
+        
+        denoiseShader = New!DenoiseShader(this);
+        passOcclusionDenoise = New!FilterPass(pipeline, denoiseShader);
+        passOcclusionDenoise.view = occlusionView;
+        passOcclusionDenoise.inputBuffer = occlusionNoisyBuffer;
+        occlusionBuffer = New!Framebuffer(occlusionView.width, occlusionView.height, FrameBufferFormat.R8, false, this);
+        passOcclusionDenoise.outputBuffer = occlusionBuffer;
+        
+        passEnvironment = New!PassEnvironment(pipeline, gbuffer);
+        passEnvironment.view = view;
+        passEnvironment.outputBuffer = outputBuffer;
+        passEnvironment.occlusionBuffer = occlusionBuffer;
+        
+        passLight = New!PassLight(pipeline, gbuffer);
+        passLight.view = view;
+        passLight.outputBuffer = outputBuffer;
+        passLight.occlusionBuffer = occlusionBuffer;
+        
+        passForward = New!PassForward(pipeline, gbuffer);
+        passForward.view = view;
+        passForward.outputBuffer = outputBuffer;
+        
+        passParticles = New!PassParticles(pipeline, gbuffer);
+        passParticles.view = view;
+        passParticles.outputBuffer = outputBuffer;
+        passParticles.gbuffer = gbuffer;
+    }
 
     override void scene(Scene s)
     {
         passShadow.group = s.spatial;
         passShadow.lightGroup = s.lights;
         passBackground.group = s.background;
+        passTerrain.group = s.spatial;
         passStaticGeometry.group = s.spatialOpaqueStatic;
-        passDecals.group = s.decals;
+        passDecal.group = s.decals;
         passDynamicGeometry.group = s.spatialOpaqueDynamic;
         passLight.groupSunLights = s.sunLights;
         passLight.groupAreaLights = s.areaLights;
@@ -196,28 +185,31 @@ class DeferredRenderer: Renderer
     override void update(Time t)
     {
         passShadow.camera = activeCamera;
-        passDebug.active = (outputMode != DebugOutputMode.Radiance);
-        passDebug.outputMode = outputMode;
-
+        
         passOcclusion.ssaoShader.samples = ssaoSamples;
         passOcclusion.ssaoShader.radius = ssaoRadius;
         passOcclusion.ssaoShader.power = ssaoPower;
         denoiseShader.factor = ssaoDenoise;
-
+        
         super.update(t);
+    }
+    
+    override void render()
+    {
+        super.render();
     }
 
     override void setViewport(uint x, uint y, uint w, uint h)
     {
         super.setViewport(x, y, w, h);
-
         outputBuffer.resize(view.width, view.height);
         gbuffer.resize(view.width, view.height);
-
         occlusionView.resize(cast(uint)(view.width * _occlusionBufferDetail), cast(uint)(view.height * _occlusionBufferDetail));
         occlusionNoisyBuffer.resize(occlusionView.width, occlusionView.height);
         occlusionBuffer.resize(occlusionView.width, occlusionView.height);
-        
-        passForward.resize(w, h);
+        terrainNormalBuffer.resize(view.width, view.height);
+        terrainTexcoordBuffer.resize(view.width, view.height);
+        passTerrain.resize(view.width, view.height);
+        passForward.resize(view.width, view.height);
     }
 }

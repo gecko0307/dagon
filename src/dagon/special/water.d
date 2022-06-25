@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018-2020 Timur Gafarov
+Copyright (c) 2018-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -44,7 +44,6 @@ import dagon.graphics.material;
 import dagon.graphics.texture;
 import dagon.graphics.shader;
 import dagon.graphics.state;
-import dagon.graphics.cubemap;
 import dagon.graphics.csm;
 import dagon.render.gbuffer;
 import dagon.resource.asset;
@@ -115,8 +114,7 @@ class WaterShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        auto itextureScale = "textureScale" in state.material.inputs;
-        auto ishadeless = "shadeless" in state.material.inputs;
+        auto mat = state.material;
 
         setParameter("modelViewMatrix", state.modelViewMatrix);
         setParameter("projectionMatrix", state.projectionMatrix);
@@ -126,7 +124,7 @@ class WaterShader: Shader
         setParameter("invViewMatrix", state.invViewMatrix);
         setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
 
-        setParameter("textureScale", itextureScale.asVector2f);
+        setParameter("textureScale", mat.textureScale);
 
         setParameter("viewSize", state.resolution);
 
@@ -145,7 +143,7 @@ class WaterShader: Shader
         float sunScatteringDensity = 1.0f;
         int sunScatteringSamples = 1;
         float sunScatteringMaxRandomStepOffset = 0.0f;
-        bool shaded = !ishadeless.asBool;
+        bool shaded = !mat.shadeless;
         if (state.material.sun)
         {
             auto sun = state.material.sun;
@@ -196,7 +194,7 @@ class WaterShader: Shader
             {
                 glActiveTexture(GL_TEXTURE2);
                 state.environment.ambientMap.bind();
-                if (cast(Cubemap)state.environment.ambientMap)
+                if (state.environment.ambientMap.isCubemap)
                 {
                     setParameter("ambientTextureCube", 2);
                     setParameterSubroutine("ambient", ShaderType.Fragment, "ambientCubemap");

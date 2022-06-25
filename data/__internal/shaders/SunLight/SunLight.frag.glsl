@@ -96,6 +96,8 @@ float scattering(float lightDotView)
 void main()
 {
     vec4 col = texture(colorBuffer, texCoord);
+    if (col.a < 1.0)
+        discard;
 
     vec3 albedo = toLinear(col.rgb);
     
@@ -123,32 +125,25 @@ void main()
     // Sun light
     vec3 L = lightDirection;
     
-    if (col.a == 1.0)
-    {
-        float NL = max(dot(N, L), 0.0);
-        vec3 H = normalize(E + L);
+    float NL = max(dot(N, L), 0.0);
+    vec3 H = normalize(E + L);
 
-        float NDF = distributionGGX(N, H, roughness);
-        float G = geometrySmith(N, E, L, roughness);
-        vec3 F = fresnelRoughness(max(dot(H, E), 0.0), f0, roughness);
+    float NDF = distributionGGX(N, H, roughness);
+    float G = geometrySmith(N, E, L, roughness);
+    vec3 F = fresnelRoughness(max(dot(H, E), 0.0), f0, roughness);
 
-        vec3 kD = (1.0 - F) * (1.0 - metallic);
-        vec3 specular = (NDF * G * F) / max(4.0 * max(dot(N, E), 0.0) * NL, 0.001);
-        
-        vec3 incomingLight = toLinear(lightColor.rgb) * lightEnergy;
-        vec3 diffuse = albedo * invPI * occlusion;
+    vec3 kD = (1.0 - F) * (1.0 - metallic);
+    vec3 specular = (NDF * G * F) / max(4.0 * max(dot(N, E), 0.0) * NL, 0.001);
+    
+    vec3 incomingLight = toLinear(lightColor.rgb) * lightEnergy;
+    vec3 diffuse = albedo * invPI * occlusion;
 
-        radiance += (kD * diffuse * lightDiffuse + specular * specularity * lightSpecular) * NL * incomingLight * shadow;
-        
-        // Fake SSS
-        float rim = pow(1.0 - abs(min(dot(N, L), 0.0)), 10.0);
-        radiance += (rim * kD * diffuse) * incomingLight * translucency;
-        
-        // Fog
-        float linearDepth = abs(eyePos.z);
-        float fogFactor = clamp((fogEnd - linearDepth) / (fogEnd - fogStart), 0.0, 1.0);
-        radiance *= fogFactor;
-    }
+    radiance += (kD * diffuse * lightDiffuse + specular * specularity * lightSpecular) * NL * incomingLight * shadow;
+    
+    // Fog
+    float linearDepth = abs(eyePos.z);
+    float fogFactor = clamp((fogEnd - linearDepth) / (fogEnd - fogStart), 0.0, 1.0);
+    radiance *= fogFactor;
     
     float scattFactor = 0.0;
     if (lightScattering)

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2020 Timur Gafarov
+Copyright (c) 2017-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -226,6 +226,11 @@ class ShapeBox: Mesh
         dataReady = true;
         prepareVAO();
     }
+    
+    this(float hw, float hh, float hd, Owner owner)
+    {
+        this(Vector3f(hw, hh, hd), owner);
+    }
 }
 
 enum PI2 = PI * 2.0f;
@@ -424,4 +429,4 @@ class ShapeDisk: Mesh
     }
 }
 
-// TODO: other shapes from original Dagon
+// TODO: ShapeCylinder, ShapeCone, ShapeCapsule

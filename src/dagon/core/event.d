@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2020 Timur Gafarov, Mateusz Muszyński
+Copyright (c) 2014-2022 Timur Gafarov, Mateusz Muszyński
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -122,6 +122,8 @@ class EventManager
     SDL_Joystick* joystick = null;
 
     InputManager inputManager;
+    
+    void delegate(SDL_Event* event) onProcessEvent;
 
     this(SDL_Window* win, uint winWidth, uint winHeight)
     {
@@ -249,6 +251,7 @@ class EventManager
 
         while(SDL_PollEvent(&event))
         {
+            if (onProcessEvent) onProcessEvent(&event);
             Event e;
             switch (event.type)
             {

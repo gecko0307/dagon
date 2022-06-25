@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2020 Timur Gafarov
+Copyright (c) 2017-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -41,10 +41,13 @@ import dlib.filesystem.filesystem;
 
 import dagon.graphics.texture;
 import dagon.resource.asset;
+import dagon.resource.dds;
 
 class TextureAsset: Asset
 {
     Texture texture;
+    SuperImage image;
+    protected TextureBuffer buffer;
 
     this(Owner o)
     {
@@ -59,41 +62,63 @@ class TextureAsset: Asset
 
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager assetManager)
     {
-        auto res = assetManager.loadImage(filename.extension, istrm);
-        texture.image = res[0];
-        string errMsg = res[1];
-
-        if (texture.image !is null)
+        string format = filename.extension;
+        if (format == ".dds" || format == ".DDS")
         {
+            // Load to TextureBuffer
+            loadDDS(istrm, &buffer);
             return true;
         }
+        // TODO: KTX support
         else
         {
-            writeln(errMsg);
-            return false;
+            // Load to SuperImage
+            auto res = assetManager.loadImage(filename.extension, istrm);
+            image = res[0];
+            string errMsg = res[1];
+            if (image !is null)
+            {
+                return true;
+            }
+            else
+            {
+                writeln(errMsg);
+                return false;
+            }
         }
     }
 
     override bool loadThreadUnsafePart()
     {
-        if (texture.image !is null)
+        if (texture.valid)
+            return true;
+        
+        if (image !is null)
         {
-            texture.createFromImage(texture.image);
+            texture.createFromImage(image, true);
             if (texture.valid)
                 return true;
             else
                 return false;
         }
-        else
+        else if (buffer.data.length)
         {
-            return false;
+            texture.createFromBuffer(buffer, true);
+            Delete(buffer.data);
+            return true;
         }
+        else
+            return false;
     }
 
     override void release()
     {
         if (texture)
             texture.release();
+        if (image)
+            Delete(image);
+        if (buffer.data.length)
+            Delete(buffer.data);
     }
 }
 

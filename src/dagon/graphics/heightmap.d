@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018-2020 Timur Gafarov
+Copyright (c) 2018-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -82,7 +82,7 @@ class OpenSimplexHeightmap: Owner, Heightmap
     float getHeight(float s, float t)
     {
         float multiplier = 1.0f / (2.0f * PI);
-
+        
         float y = 0;
         foreach(psl; scaleLayers)
         {
@@ -92,7 +92,7 @@ class OpenSimplexHeightmap: Owner, Heightmap
                 float ny = cos(t * 2.0f * PI) * multiplier;
                 float nz = sin(s * 2.0f * PI) * multiplier;
                 float nw = sin(t * 2.0f * PI) * multiplier;
-
+                
                 y += noise.eval(nx * psl[0], ny * psl[0], nz * psl[0], nw * psl[0]) * psl[1];
             }
             else

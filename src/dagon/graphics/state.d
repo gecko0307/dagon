@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Timur Gafarov
+Copyright (c) 2019-2022 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -85,6 +85,7 @@ struct GraphicsState
     GLuint normalTexture;
     GLuint pbrTexture;
     GLuint occlusionTexture;
+    GLuint texcoordTexture; // used only for terrains
     
     Time time;
     
@@ -135,6 +136,7 @@ struct GraphicsState
         normalTexture = 0;
         pbrTexture = 0;
         occlusionTexture = 0;
+        texcoordTexture = 0;
         
         time = Time(0.0, 0.0);
         localTime = 0.0f;
