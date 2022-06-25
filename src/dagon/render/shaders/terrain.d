@@ -184,6 +184,38 @@ class TerrainTextureLayerShader: Shader
         else
             setParameter("normalYSign", 1.0f);
 
+        // Height and parallax
+        int parallaxMethod = mat.parallaxMode;
+        if (parallaxMethod > ParallaxOcclusionMapping)
+            parallaxMethod = ParallaxOcclusionMapping;
+        if (parallaxMethod < 0)
+            parallaxMethod = 0;
+        
+        glActiveTexture(GL_TEXTURE5);
+        setParameter("heightTexture", cast(int)5);
+        setParameter("heightScalar", mat.heightFactor);
+        if (mat.heightTexture)
+        {
+            mat.heightTexture.bind();
+            setParameterSubroutine("height", ShaderType.Fragment, "heightMap");
+        }
+        else
+        {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameterSubroutine("height", ShaderType.Fragment, "heightValue");
+            parallaxMethod = ParallaxNone;
+        }
+        
+        if (parallaxMethod == ParallaxSimple)
+            setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxSimple");
+        else if (parallaxMethod == ParallaxOcclusionMapping)
+            setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxOcclusionMapping");
+        else
+            setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxNone");
+        
+        setParameter("parallaxScale", mat.parallaxScale);
+        setParameter("parallaxBias", mat.parallaxBias);
+
         super.bindParameters(state);
     }
 

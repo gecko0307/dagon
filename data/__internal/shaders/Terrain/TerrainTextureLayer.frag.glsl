@@ -39,6 +39,7 @@ subroutine(srtLayerMask) float layerMaskTexture(in vec2 uv)
 
 subroutine uniform srtLayerMask layerMask;
 
+
 /*
  * Diffuse
  */
@@ -57,6 +58,7 @@ subroutine(srtColor) vec4 diffuseColorTexture(in vec2 uv)
 }
 
 subroutine uniform srtColor diffuse;
+
 
 /*
  * Normal mapping
@@ -84,6 +86,75 @@ subroutine uniform srtNormal normal;
 uniform bool generateTBN;
 uniform float normalYSign;
 
+
+/*
+ * Height mapping
+ */
+subroutine float srtHeight(in vec2 uv);
+
+uniform float heightScalar;
+subroutine(srtHeight) float heightValue(in vec2 uv)
+{
+    return heightScalar;
+}
+
+uniform sampler2D heightTexture;
+subroutine(srtHeight) float heightMap(in vec2 uv)
+{
+    return texture(heightTexture, uv).r;
+}
+
+subroutine uniform srtHeight height;
+
+
+/*
+ * Parallax mapping
+ */
+subroutine vec2 srtParallax(in vec3 E, in vec2 uv, in float h);
+
+uniform float parallaxScale;
+uniform float parallaxBias;
+
+subroutine(srtParallax) vec2 parallaxNone(in vec3 E, in vec2 uv, in float h)
+{
+    return uv;
+}
+
+subroutine(srtParallax) vec2 parallaxSimple(in vec3 E, in vec2 uv, in float h)
+{
+    float currentHeight = h * parallaxScale + parallaxBias;
+    return uv + (currentHeight * E.xy);
+}
+
+// Based on code written by Igor Dykhta (Sun and Black Cat)
+// http://sunandblackcat.com/tipFullView.php?topicid=28
+subroutine(srtParallax) vec2 parallaxOcclusionMapping(in vec3 E, in vec2 uv, in float h)
+{
+    const float minLayers = 10.0;
+    const float maxLayers = 15.0;
+    float numLayers = mix(maxLayers, minLayers, abs(dot(vec3(0.0, 0.0, 1.0), E)));
+    float layerHeight = 1.0 / numLayers;
+    float curLayerHeight = 0.0;
+    vec2 dtex = parallaxScale * E.xy / E.z / numLayers;
+    vec2 currentTextureCoords = uv;
+
+    float currentHeight = h;
+    while(currentHeight > curLayerHeight)
+    {
+        curLayerHeight += layerHeight;
+        currentTextureCoords += dtex;
+        currentHeight = height(currentTextureCoords);
+    }
+
+    vec2 prevTCoords = currentTextureCoords - dtex;
+    float nextH = currentHeight - curLayerHeight;
+    float prevH = height(prevTCoords) - curLayerHeight + layerHeight;
+    float weight = nextH / (nextH - prevH);
+    return prevTCoords * weight + currentTextureCoords * (1.0 - weight);
+}
+
+subroutine uniform srtParallax parallax;
+
 //
 
 layout(location = 0) out vec4 fragColor;
@@ -109,19 +180,19 @@ void main()
     if (generateTBN)
     {
         mat3 tangentToEye = cotangentFrame(N, eyePos, terrTexCoord);
-        // TODO:
-        //vec3 tE = normalize(E * tangentToEye);
-        //uv = parallax(tE, texCoord, height(texCoord));
+        vec3 tE = normalize(E * tangentToEye);
+        layerTexCoord = parallax(tE, layerTexCoord, height(layerTexCoord));
         N = normal(layerTexCoord, normalYSign, tangentToEye);
     }
     
     float gbufferMask = normalSample.a;
     float mask = layerMask(terrTexCoord) * opacity * gbufferMask;
-    //if (mask < clipThreshold)
-    //    discard;
+    
+    if (mask < clipThreshold)
+        discard;
     
     // TODO: sample material textures
-    vec4 pbr = vec4(0.0, 0.9, 0.0, 1.0);
+    vec4 pbr = vec4(0.0, 0.5, 0.0, 1.0);
     float roughness = pbr.g;
     float metallic = pbr.b;
     vec4 emission = vec4(0.0, 0.0, 0.0, 1.0);

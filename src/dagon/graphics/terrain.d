@@ -55,6 +55,7 @@ class TerrainMaterial: Material
     Material addLayer()
     {
         Material layerMaterial = New!Material(this);
+        layerMaterial.alphaTestThreshold = alphaTestThreshold;
         layers.append(layerMaterial);
         return layerMaterial;
     }
