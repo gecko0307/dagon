@@ -251,7 +251,7 @@ subroutine vec3 srtAmbient(in vec3 wN, in float perceptualRoughness);
 uniform vec4 ambientVector;
 subroutine(srtAmbient) vec3 ambientColor(in vec3 wN, in float perceptualRoughness)
 {
-    return ambientVector.rgb * ambientEnergy;
+    return ambientVector.rgb;
 }
 
 uniform sampler2D ambientTexture;
@@ -262,7 +262,7 @@ subroutine(srtAmbient) vec3 ambientEquirectangularMap(in vec3 wN, in float perce
     //float glossyExponent = 2.0 / pow(perceptualRoughness, 4.0) - 2.0;
     //float lod = log2(resolution * sqrt(3.0)) - 0.5 * log2(glossyExponent + 1.0);
     float lod = log2(resolution) * perceptualRoughness;
-    return textureLod(ambientTexture, envMapEquirect(wN), lod).rgb * ambientEnergy;
+    return textureLod(ambientTexture, envMapEquirect(wN), lod).rgb;
 }
 
 uniform samplerCube ambientTextureCube;
@@ -273,7 +273,7 @@ subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float perceptualRoughn
     //float glossyExponent = 2.0 / pow(perceptualRoughness, 4.0) - 2.0;
     //float lod = log2(resolution * sqrt(3.0)) - 0.5 * log2(glossyExponent + 1.0);
     float lod = log2(resolution) * perceptualRoughness;
-    return textureLod(ambientTextureCube, wN, lod).rgb * ambientEnergy;
+    return textureLod(ambientTextureCube, wN, lod).rgb;
 }
 
 subroutine uniform srtAmbient ambient;
@@ -380,8 +380,8 @@ void main()
         vec3 F = clamp(fresnelRoughness(dot(N, E), f0, r), 0.0, 1.0);
         vec3 kD = (1.0 - F) * (1.0 - m);
         vec2 brdf = haveAmbientBRDF? texture(ambientBRDF, vec2(dot(N, E), r)).rg : vec2(1.0, 0.0);
-        vec3 specular = reflection * clamp(F * brdf.x + brdf.y, 0.0, 1.0);
-        radiance += kD * irradiance * albedo + specular;
+        vec3 specular = reflection * clamp(F * brdf.x + brdf.y, 0.0, 1.0) * ambientEnergy;
+        radiance += kD * irradiance * ambientEnergy * albedo + specular;
         reflected += specular;
     }
     

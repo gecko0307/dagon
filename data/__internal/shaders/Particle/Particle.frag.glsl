@@ -90,7 +90,7 @@ subroutine vec3 srtAmbient(in vec3 wN, in float roughness);
 uniform vec4 ambientVector;
 subroutine(srtAmbient) vec3 ambientColor(in vec3 wN, in float roughness)
 {
-    return toLinear(ambientVector.rgb) * ambientEnergy;
+    return toLinear(ambientVector.rgb);
 }
 
 uniform sampler2D ambientTexture;
@@ -100,7 +100,7 @@ subroutine(srtAmbient) vec3 ambientEquirectangularMap(in vec3 wN, in float rough
     float size = float(max(envMapSize.x, envMapSize.y));
     float glossyExponent = 2.0 / pow(roughness, 4.0) - 2.0;
     float lod = log2(size * sqrt(3.0)) - 0.5 * log2(glossyExponent + 1.0);
-    return textureLod(ambientTexture, envMapEquirect(wN), lod).rgb * ambientEnergy;
+    return textureLod(ambientTexture, envMapEquirect(wN), lod).rgb;
 }
 
 uniform samplerCube ambientTextureCube;
@@ -110,7 +110,7 @@ subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float roughness)
     float size = float(max(envMapSize.x, envMapSize.y));
     float glossyExponent = 2.0 / pow(roughness, 4.0) - 2.0;
     float lod = log2(size * sqrt(3.0)) - 0.5 * log2(glossyExponent + 1.0);
-    return textureLod(ambientTextureCube, wN, lod).rgb * ambientEnergy;
+    return textureLod(ambientTextureCube, wN, lod).rgb;
 }
 
 subroutine uniform srtAmbient ambient;
@@ -158,7 +158,7 @@ void main()
     // Shading
     const float wrapFactor = 0.5;
     vec3 radiance = shaded? 
-        ambient(worldN, 0.9) + 
+        ambient(worldN, 0.9) * ambientEnergy + 
         toLinear(sunColor.rgb) * max(dot(N, sunDirection) + wrapFactor, 0.0) / (1.0 + wrapFactor) * sunEnergy :
         vec3(1.0);
     

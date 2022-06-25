@@ -54,7 +54,7 @@ subroutine vec3 srtAmbient(in vec3 wN, in float roughness);
 uniform vec4 ambientVector;
 subroutine(srtAmbient) vec3 ambientColor(in vec3 wN, in float roughness)
 {
-    return toLinear(ambientVector.rgb) * ambientEnergy;
+    return toLinear(ambientVector.rgb);
 }
 
 uniform sampler2D ambientTexture;
@@ -64,7 +64,7 @@ subroutine(srtAmbient) vec3 ambientEquirectangularMap(in vec3 wN, in float rough
     float size = float(max(envMapSize.x, envMapSize.y));
     float glossyExponent = 2.0 / pow(roughness, 4.0) - 2.0;
     float lod = log2(size * sqrt(3.0)) - 0.5 * log2(glossyExponent + 1.0);
-    return textureLod(ambientTexture, envMapEquirect(wN), lod).rgb * ambientEnergy;
+    return textureLod(ambientTexture, envMapEquirect(wN), lod).rgb;
 }
 
 uniform samplerCube ambientTextureCube;
@@ -74,7 +74,7 @@ subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float roughness)
     float size = float(max(envMapSize.x, envMapSize.y));
     float glossyExponent = 2.0 / pow(roughness, 4.0) - 2.0;
     float lod = log2(size * sqrt(3.0)) - 0.5 * log2(glossyExponent + 1.0);
-    return textureLod(ambientTextureCube, wN, lod).rgb * ambientEnergy;
+    return textureLod(ambientTextureCube, wN, lod).rgb;
 }
 
 subroutine uniform srtAmbient ambient;
@@ -211,7 +211,7 @@ void main()
     
     // Light
     {
-        vec3 reflection = ambient(worldR, pow(fresnel, 2.0));
+        vec3 reflection = ambient(worldR, pow(fresnel, 2.0)) * ambientEnergy;
         
         float shadow = shadowMap(eyePosition, N);
         float light = max(dot(N, L), 0.0);
