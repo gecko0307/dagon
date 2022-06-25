@@ -12,6 +12,7 @@ uniform float zFar;
 
 uniform vec2 textureScale;
 
+uniform float energy;
 uniform float opacity;
 uniform float clipThreshold;
 
@@ -19,6 +20,7 @@ in vec2 texCoord;
 
 #include <unproject.glsl>
 #include <cotangentFrame.glsl>
+#include <gamma.glsl>
 
 /*
  * Layer mask
@@ -197,6 +199,26 @@ subroutine(srtMetallic) float metallicMap(in vec2 uv)
 
 subroutine uniform srtMetallic metallic;
 
+
+/*
+ * Emission
+ */
+subroutine vec3 srtEmission(in vec2 uv);
+
+uniform vec4 emissionFactor;
+subroutine(srtEmission) vec3 emissionColorValue(in vec2 uv)
+{
+    return emissionFactor.rgb * energy;
+}
+
+uniform sampler2D emissionTexture;
+subroutine(srtEmission) vec3 emissionColorTexture(in vec2 uv)
+{
+    return texture(emissionTexture, uv).rgb * energy;
+}
+
+subroutine uniform srtEmission emission;
+
 //
 
 layout(location = 0) out vec4 fragColor;
@@ -233,12 +255,6 @@ void main()
     if (mask < clipThreshold)
         discard;
     
-    // TODO: sample material textures
-    //vec4 pbr = vec4(0.0, 0.5, 0.0, 1.0);
-    //float roughness = pbr.g;
-    //float metallic = pbr.b;
-    vec4 emission = vec4(0.0, 0.0, 0.0, 1.0);
-    
     fragColor = vec4(albedo, mask);
     fragNormal = vec4(N, mask);
     fragPBR = vec4(
@@ -246,5 +262,5 @@ void main()
         metallic(uv),
         1.0,
         mask);
-    fragRadiance = vec4(emission.rgb, mask);
+    fragRadiance = vec4(toLinear(emission(uv)), mask);
 }

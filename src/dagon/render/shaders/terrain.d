@@ -232,6 +232,22 @@ class TerrainTextureLayerShader: Shader
             setParameterSubroutine("roughness", ShaderType.Fragment, "roughnessValue");
             setParameterSubroutine("metallic", ShaderType.Fragment, "metallicValue");
         }
+        
+        // Emission
+        glActiveTexture(GL_TEXTURE7);
+        setParameter("emissionTexture", cast(int)7);
+        setParameter("emissionFactor", mat.emissionFactor);
+        if (mat.emissionTexture)
+        {
+            mat.emissionTexture.bind();
+            setParameterSubroutine("emission", ShaderType.Fragment, "emissionColorTexture");
+        }
+        else
+        {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameterSubroutine("emission", ShaderType.Fragment, "emissionColorValue");
+        }
+        setParameter("energy", mat.emissionEnergy);
 
         super.bindParameters(state);
         
@@ -244,13 +260,13 @@ class TerrainTextureLayerShader: Shader
         
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, 0);
-
+        
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, 0);
-
+        
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, 0);
-
+        
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, 0);
         
@@ -262,7 +278,10 @@ class TerrainTextureLayerShader: Shader
         
         glActiveTexture(GL_TEXTURE6);
         glBindTexture(GL_TEXTURE_2D, 0);
-
+        
+        glActiveTexture(GL_TEXTURE7);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
         glActiveTexture(GL_TEXTURE0);
     }
 }
