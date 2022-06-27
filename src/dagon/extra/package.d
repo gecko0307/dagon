@@ -25,9 +25,10 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.special;
+module dagon.extra;
 
 public
 {
-    import dagon.special.water;
+    import dagon.extra.rayleigh;
+    import dagon.extra.water;
 }
