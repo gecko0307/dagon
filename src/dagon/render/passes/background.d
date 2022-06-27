@@ -97,8 +97,8 @@ class PassBackground: RenderPass
                     defaultMaterial.bind(&state);
 
                 Shader shader = skyShader;
-                //if (entity.material.shader)
-                //    shader = entity.material.shader;
+                if (entity.material.shader)
+                    shader = entity.material.shader;
 
                 state.shader = shader;
 
