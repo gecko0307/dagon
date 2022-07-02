@@ -96,7 +96,9 @@ class FirstPersonViewComponent: EntityComponent
                 pitch = pitchLimitMin;
             }
             
-            eventManager.setMouse(prevMouseX, prevMouseY);
+            eventManager.setMouseToCenter();
+            prevMouseX = eventManager.mouseX;
+            prevMouseY = eventManager.mouseY;
         }
         
         auto rotPitch = rotationQuaternion(Vector3f(1.0f,0.0f,0.0f), degtorad(pitch));
@@ -123,12 +125,6 @@ class FirstPersonViewComponent: EntityComponent
             entity.invAbsoluteTransformation = entity.invTransformation;
             entity.prevAbsoluteTransformation = entity.prevTransformation;
         }
-    }
-    
-    override void onResize(int width, int height)
-    {
-        prevMouseX = width / 2;
-        prevMouseY = height / 2;
     }
     
     override void onFocusGain()
