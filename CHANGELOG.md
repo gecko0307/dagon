@@ -30,8 +30,6 @@ Dagon 0.14.0 - TBD
   - New methods: `Game.resize`, `Game.frameTexture`
 - **Extensions**
   - Experimental [Dear ImGui](https://github.com/ocornut/imgui) extension, `dagon.ext.imgui`. It is based on [bindbc-imgui](https://github.com/Inochi2D/bindbc-imgui) binding. It will not replace Nuklear, both toolkits will coexist in future.
-- **Misc**
-  - Dagon now uses SDL 2.0.22.
 
 Dagon 0.13.0 - 2 Mar, 2022
 --------------------------
