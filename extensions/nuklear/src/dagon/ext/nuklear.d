@@ -100,11 +100,11 @@ NKColor toNKColor(Color4f col)
 NKImage toNKImage(Texture texture)
 {
     NKImage img;
-    img.handle.id = cast(int)texture.tex;
-    img.w = cast(short)texture.width;
-    img.h = cast(short)texture.height;
-    img.region[2] = cast(short)texture.width;
-    img.region[3] = cast(short)texture.height;
+    img.handle.id = cast(int)texture.texture;
+    img.w = cast(short)texture.size.width;
+    img.h = cast(short)texture.size.height;
+    img.region[2] = cast(short)texture.size.width;
+    img.region[3] = cast(short)texture.size.height;
     return img;
 }
 
