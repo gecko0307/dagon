@@ -31,9 +31,11 @@ import std.math;
 import std.algorithm;
 import std.traits;
 
+import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.container.array;
 import dlib.image.image;
+import dlib.image.color;
 import dlib.image.hdri;
 import dlib.math.utils;
 import dlib.math.vector;
@@ -321,34 +323,6 @@ class Texture: Owner
             writeln("Texture creation failed: unsupported target ", format.target);
     }
     
-    void createFromEquirectangularMap(SuperImage img, uint resolution)
-    {
-        /*
-        // TODO
-        SuperImage faceImage = img.createSameFormat(resolution, resolution);
-        
-        foreach(i, face; EnumMembers!CubeFace)
-        {
-            Matrix4x4f dirTransform = cubeFaceMatrix(face);
-            
-            foreach(x; 0..resolution)
-            foreach(y; 0..resolution)
-            {
-                float cubex = (cast(float)x / cast(float)resolution) * 2.0f - 1.0f;
-                float cubey = (1.0f - cast(float)y / cast(float)resolution) * 2.0f - 1.0f;
-                Vector3f dir = Vector3f(cubex, cubey, 1.0f).normalized * dirTransform;
-                Vector2f uv = equirectProj(dir);
-                Color4f c = bilinearPixel(envmap, uv.x * envmap.width, uv.y * envmap.height);
-                faceImage[x, y] = c;
-            }
-            
-            setFaceImage(face, faceImage);
-        }
-        
-        Delete(faceImage);
-        */
-    }
-    
     protected void createCubemap(ubyte[] buffer)
     {
         glGenTextures(1, &texture);
@@ -520,6 +494,54 @@ class Texture: Owner
             minFilter = GL_LINEAR;
             magFilter = GL_LINEAR;
         }
+    }
+    
+    void createFromEquirectangularMap(SuperImage envmap, uint resolution)
+    {
+        glGenTextures(1, &texture);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+        
+        minFilter = GL_LINEAR;
+        magFilter = GL_LINEAR;
+        wrapS = GL_CLAMP_TO_EDGE;
+        wrapT = GL_CLAMP_TO_EDGE;
+        wrapR = GL_CLAMP_TO_EDGE;
+        
+        TextureFormat tf;
+        if (detectTextureFormat(envmap, tf))
+        {
+            format.cubeFaces = CubeFaceBit.All;
+            SuperImage faceImage = envmap.createSameFormat(resolution, resolution);
+            
+            foreach(i, face; EnumMembers!CubeFace)
+            {
+                Matrix4x4f dirTransform = cubeFaceMatrix(face);
+                
+                foreach(x; 0..resolution)
+                foreach(y; 0..resolution)
+                {
+                    float cubex = (cast(float)x / cast(float)resolution) * 2.0f - 1.0f;
+                    float cubey = (1.0f - cast(float)y / cast(float)resolution) * 2.0f - 1.0f;
+                    Vector3f dir = Vector3f(cubex, cubey, 1.0f).normalized * dirTransform;
+                    Vector2f uv = equirectProj(dir);
+                    Color4f c = bilinearPixel(envmap, uv.x * envmap.width, uv.y * envmap.height);
+                    faceImage[x, y] = c;
+                }
+                
+                glTexImage2D(face, 0, tf.internalFormat, resolution, resolution, 0, tf.format, tf.pixelType, cast(void*)faceImage.data.ptr);
+            }
+            
+            Delete(faceImage);
+        }
+        else
+        {
+            writefln("Unsupported pixel format %s", envmap.pixelFormat);
+        }
+        
+        // TODO: mipmaps
+        
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     }
     
     // TODO
@@ -762,4 +784,10 @@ Vector2f equirectProj(Vector3f dir)
     float phi = acos(dir.y);
     float theta = atan2(dir.x, dir.z) + PI;
     return Vector2f(theta / (PI * 2.0f), phi / PI);
+}
+
+/// Combine up to 4 textures to one
+void combineTextures(Texture[4] channels, Texture output)
+{
+    // TODO
 }
