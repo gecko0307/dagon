@@ -496,7 +496,7 @@ class Texture: Owner
         }
     }
     
-    void createFromEquirectangularMap(SuperImage envmap, uint resolution)
+    void createFromEquirectangularMap(SuperImage envmap, uint resolution, bool generateMipmaps = true)
     {
         glGenTextures(1, &texture);
         glActiveTexture(GL_TEXTURE0);
@@ -533,13 +533,19 @@ class Texture: Owner
             }
             
             Delete(faceImage);
+            
+            if (generateMipmaps)
+            {
+                glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+                mipLevels = 1 + cast(uint)floor(log2(resolution));
+            }
+            else
+                mipLevels = 1;
         }
         else
         {
             writefln("Unsupported pixel format %s", envmap.pixelFormat);
         }
-        
-        // TODO: mipmaps
         
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     }
