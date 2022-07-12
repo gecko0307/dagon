@@ -107,6 +107,8 @@ class PassTerrain: RenderPass
         if (gbuffer is null || group is null)
             return;
         
+        uint terrains = 0;
+        
         prepareFramebuffer();
         
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
@@ -127,7 +129,10 @@ class PassTerrain: RenderPass
             if (entity.visible && entity.drawable)
             {
                 if (entityIsTerrain(entity))
+                {
                     renderEntity(entity, terrainShader);
+                    terrains++;
+                }
             }
         }
         terrainShader.unbind();
@@ -137,7 +142,7 @@ class PassTerrain: RenderPass
         // Texturing passes
         // TODO: do it for each terrain entity (need to manage state properly)
         TerrainMaterial terrainMaterial = pipeline.environment.terrainMaterial;
-        if (terrainMaterial)
+        if (terrainMaterial && terrains > 0)
         {
             updateState();
             

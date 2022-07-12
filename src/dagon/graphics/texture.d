@@ -550,9 +550,6 @@ class Texture: Owner
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     }
     
-    // TODO
-    //void setCubemapFace(CubeFace face, SuperImage img)
-    
     void createFallbackTexture()
     {
         // TODO
