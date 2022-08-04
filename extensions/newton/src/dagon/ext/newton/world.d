@@ -51,17 +51,21 @@ extern(C)
     {
         NewtonRaycaster raycaster = cast(NewtonRaycaster)userData;
         NewtonRigidBody b = cast(NewtonRigidBody)NewtonBodyGetUserData(nbody);
-        if (raycaster && b)
+        if (raycaster)
         {
-            if (b.raycastable)
+            if (b && b.raycastable)
             {
                 Vector3f p = Vector3f(hitContact[0], hitContact[1], hitContact[2]);
                 Vector3f n = Vector3f(hitNormal[0], hitNormal[1], hitNormal[2]);
                 return raycaster.onRayHit(b, p, n, intersectParam);
             }
+            else
+            {
+                return 1.0f;
+            }
         }
         
-        return intersectParam;
+        return 0.0f;
     }
 
     uint newtonWorldRayPrefilterCallback(
