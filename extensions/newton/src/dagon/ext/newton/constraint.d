@@ -150,3 +150,47 @@ class NewtonUpVectorConstraint: NewtonConstraint
         this.joint = NewtonConstraintCreateUpVector(world.newtonWorld, pivotAxis.arrayof.ptr, body1.newtonBody);
     }
 }
+
+class NewtonUserJointConstraint: NewtonConstraint
+{
+    NewtonRigidBody body1;
+    NewtonRigidBody body2;
+    
+    this(NewtonPhysicsWorld world, NewtonRigidBody body1, NewtonRigidBody body2, uint maxDOF)
+    {
+        super(world);
+        this.body1 = body1;
+        this.body2 = body2;
+        NewtonBody* parentBody = null;
+        if (body2)
+            parentBody = body2.newtonBody;
+        this.joint = NewtonConstraintCreateUserJoint(world.newtonWorld, maxDOF, &getInfo, body1.newtonBody, parentBody);
+        NewtonJointSetUserData(this.joint, cast(void*)this);
+    }
+    
+    void addLinearRow(Vector3f pivot0, Vector3f pivot1, Vector3f dir)
+    {
+        NewtonUserJointAddLinearRow(joint, pivot0.arrayof.ptr, pivot1.arrayof.ptr, dir.arrayof.ptr);
+    }
+    
+    void setMaximumFriction(float maxFriction)
+    {
+        NewtonUserJointSetRowMaximumFriction(joint, maxFriction);
+    }
+    
+    void setMinimumFriction(float minFriction)
+    {
+        NewtonUserJointSetRowMinimumFriction(joint, minFriction);
+    }
+    
+    void submit(float timestep, int threadIndex)
+    {
+        //
+    }
+    
+    static extern(C) void getInfo(const NewtonJoint* joint, float timestep, int threadIndex)
+    {
+        NewtonUserJointConstraint ujc = cast(NewtonUserJointConstraint)NewtonJointGetUserData(joint);
+        ujc.submit(timestep, threadIndex);
+    }
+}
