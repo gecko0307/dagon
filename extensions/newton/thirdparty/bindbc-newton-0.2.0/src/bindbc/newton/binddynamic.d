@@ -72,6 +72,7 @@ NewtonSupport loadNewton()
     {
         const(char)[][1] libNames =
         [
+            "/usr/local/lib/libnewton.so",
             "libnewton.so"
         ];
     }
