@@ -31,7 +31,9 @@ Dagon 0.14.0 - TBD
 - **Extensions**
   - Experimental [Dear ImGui](https://github.com/ocornut/imgui) extension, `dagon.ext.imgui`. It is based on [bindbc-imgui](https://github.com/Inochi2D/bindbc-imgui) binding. It will not replace Nuklear, both toolkits will coexist in future
   - New constraint `NewtonUserJointConstraint` in Newton extension
-  - Fix raycast in Newton extension.
+  - Fix raycast in Newton extension
+  - `libnewton.so` and `libnuklear.so` are now loaded from `/usr/local/lib` under Posix
+  - Fix CMake configuraiton for installing Nuklear in `/usr/local/lib` under Posix.
 
 Dagon 0.13.0 - 2 Mar, 2022
 --------------------------
