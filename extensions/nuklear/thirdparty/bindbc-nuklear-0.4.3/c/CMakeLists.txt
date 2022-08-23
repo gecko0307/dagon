@@ -13,7 +13,4 @@ set_target_properties(nuklear        PROPERTIES PUBLIC_HEADER nuklear.h)
 # shared and static version have the same header file so do not install it twice
 # set_target_properties(nuklear_static PROPERTIES PUBLIC_HEADER nuklear.h1)
 
-install(TARGETS nuklear nuklear_static
-        LIBRARY DESTINATION ${CMAKE_SOURCE_DIR}/../lib
-        ARCHIVE DESTINATION ${CMAKE_SOURCE_DIR}/../lib
-        PUBLIC_HEADER DESTINATION ${CMAKE_SOURCE_DIR}/../include)
+install(TARGETS nuklear nuklear_static)

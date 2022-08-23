@@ -1188,15 +1188,23 @@ bool isNuklearLoaded() { return lib != invalidHandle; }
 NuklearSupport loadNuklear()
 {
     version(Windows) {
-        const(char)[][1] libNames = ["nuklear.dll"];
+        const(char)[][1] libNames =
+        [
+            "nuklear.dll"
+        ];
     }
     else version(OSX) {
-        const(char)[][1] libNames = ["nuklear.dylib"];
+        const(char)[][1] libNames =
+        [
+            "/usr/local/lib/nuklear.dylib",
+            "nuklear.dylib"
+        ];
     }
     else version(Posix) {
-        const(char)[][2] libNames = [
-            "nuklear.so",
-            "/usr/local/lib/nuklear.so",
+        const(char)[][2] libNames =
+        [
+            "/usr/local/lib/libnuklear.so",
+            "libnuklear.so"
         ];
     }
     else static assert(0, "bindbc-nuklear is not yet supported on this platform.");

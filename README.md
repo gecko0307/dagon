@@ -75,6 +75,14 @@ Runtime Dependencies
 
 On Windows runtime dependencies are automatically deployed if you are building with Dub. On other platforms you have to install them manually.
 
+Nuklear should be compiled as dynamic library:
+
+1. Install [CMake](https://cmake.org/)
+2. Go to `extensions/nuklear/thirdparty/bindbc-nuklear-0.4.3/c/build`
+3. Run `cmake ..`
+4. Under Linux, run `make` and `sudo make install`. `libnuklear.so` will be installed to `/usr/local/lib`
+5. Under Windows, open `nuklear.vcxproj` in Visual Studio and build `ALL_BUILD` project. Look for `nuklear.dll` in the `Release` directory.
+
 Documentation
 -------------
 See [tutorials](https://github.com/gecko0307/dagon/wiki/Tutorials) and corresponding [examples](https://github.com/gecko0307/dagon-tutorials).
