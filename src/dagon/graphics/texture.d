@@ -37,6 +37,7 @@ import dlib.container.array;
 import dlib.image.image;
 import dlib.image.color;
 import dlib.image.hdri;
+import dlib.image.unmanaged;
 import dlib.math.utils;
 import dlib.math.vector;
 import dlib.math.matrix;
@@ -283,6 +284,23 @@ class Texture: Owner
     ~this()
     {
         release();
+    }
+    
+    void createBlank(uint w, uint h, uint channels, uint bitDepth, bool genMipmaps, Color4f fillColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f))
+    {
+        release();
+        
+        SuperImage img = unmanagedImage(w, h, channels, bitDepth);
+        
+        foreach(y; 0..img.height)
+        foreach(x; 0..img.width)
+        {
+            img[x, y] = fillColor;
+        }
+        
+        createFromImage(img, genMipmaps);
+        
+        Delete(img);
     }
     
     void createFromImage(SuperImage img, bool genMipmaps)
@@ -623,6 +641,16 @@ class Texture: Owner
             glBindTexture(GL_TEXTURE_3D, 0);
     }
     
+    uint width() @property
+    {
+        return size.width;
+    }
+    
+    uint height() @property
+    {
+        return size.height;
+    }
+    
     uint numChannels() @property
     {
         if (format.format in numChannelsFormat)
@@ -787,10 +815,4 @@ Vector2f equirectProj(Vector3f dir)
     float phi = acos(dir.y);
     float theta = atan2(dir.x, dir.z) + PI;
     return Vector2f(theta / (PI * 2.0f), phi / PI);
-}
-
-/// Combine up to 4 textures to one
-void combineTextures(Texture[4] channels, Texture output)
-{
-    // TODO
 }

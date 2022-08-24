@@ -51,6 +51,7 @@ public
     import dagon.graphics.state;
     import dagon.graphics.terrain;
     import dagon.graphics.texture;
+    import dagon.graphics.texproc;
     import dagon.graphics.tween;
     import dagon.graphics.updateable;
 }
