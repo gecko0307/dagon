@@ -28,10 +28,10 @@ PBR a combination of rendering techniques that bring real-time graphics closer t
 
 `blendMode` - blending mode of a surface:
 * `Opaque` (0) - opaque surface. This is set by default
-* `Transparent` (1) - alpha channel of diffuse color (or texture) defines transparency. Note that transparent materials are not supported by deferred pipeline, so such objects will be rendered in forward mode with fallback shading model
-* `Additive` (2) - surface is additively blended with the background. Note that additive blending is not supported by deferred pipeline, so such objects will be rendered in forward mode with fallback shading model.
+* `Transparent` (1) - alpha channel of diffuse color (or texture) defines transparency. Note that transparent materials are not supported by deferred pipeline, such objects will be rendered in forward mode with fallback shading model
+* `Additive` (2) - surface is additively blended with the background. Note that additive blending is not supported by deferred pipeline, such objects will be rendered in forward mode with fallback shading model.
 
-`opacity` - transparency multiplier for base color color.
+`opacity` - transparency multiplier for base color.
 
 `alphaTestThreshold` - alpha cutout threshold. Any alpha lower than this value will be treated as 0 (fully transparent) in deferred pipeline.
 
