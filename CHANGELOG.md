@@ -1,5 +1,5 @@
-Dagon 0.14.0 - TBD
-------------------
+Dagon 0.14.0 - 27 Aug, 2022
+---------------------------
 - **Core**
   - Custom event dispatcher (`EventManager.onProcessEvent`) that provides access to raw SDL events
 - **Rendering**
