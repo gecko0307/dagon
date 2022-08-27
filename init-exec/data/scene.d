@@ -38,7 +38,7 @@ class MyScene: Scene
         sun.pitch(-45.0f);
         
         auto matRed = addMaterial();
-        matRed.diffuse = Color4f(1.0, 0.2, 0.2, 1.0);
+        matRed.baseColorFactor = Color4f(1.0, 0.2, 0.2, 1.0);
 
         auto eCube = addEntity();
         eCube.drawable = New!ShapeBox(Vector3f(1, 1, 1), assetManager);

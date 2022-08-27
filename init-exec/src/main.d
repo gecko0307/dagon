@@ -8,11 +8,11 @@ string sceneD = import("scene.d");
 
 void main(string[] args)
 {
-	string sourceFolder = buildPath(getcwd(), "source");
-	mkdir(sourceFolder);
-	
-	string appDPath = buildPath(sourceFolder, "app.d");
-	write(appDPath, appD);
+    string sourceFolder = buildPath(getcwd(), "source");
+    mkdir(sourceFolder);
+    
+    string appDPath = buildPath(sourceFolder, "app.d");
+    write(appDPath, appD);
     
     string sceneDPath = buildPath(sourceFolder, "scene.d");
     write(sceneDPath, sceneD);
