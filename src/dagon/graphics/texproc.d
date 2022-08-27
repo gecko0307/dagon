@@ -33,6 +33,7 @@ import dlib.core.ownership;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;
+import dlib.image.color;
 import dlib.text.str;
 
 import dagon.core.bindings;
@@ -190,4 +191,14 @@ void combineTextures(Texture[4] channels, Texture output)
     
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDeleteFramebuffers(1, &framebuffer);
+}
+
+/// ditto
+Texture combineTextures(uint w, uint h, Texture[4] channels, Owner owner)
+{
+    Texture output = New!Texture(owner);
+    output.createBlank(w, h, 4, 8, false, Color4f(0.0f, 0.0f, 0.0f, 1.0f));
+    combineTextures(channels, output);
+    output.generateMipmap();
+    return output;
 }

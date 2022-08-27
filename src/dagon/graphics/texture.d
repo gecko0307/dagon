@@ -568,6 +568,18 @@ class Texture: Owner
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     }
     
+    void generateMipmap()
+    {
+        if (valid)
+        {
+            bind();
+            glGenerateMipmap(format.target);
+            mipLevels = 1 + cast(uint)floor(log2(max(size.width, size.height)));
+            unbind();
+            useMipmapFiltering(true);
+        }
+    }
+    
     void createFallbackTexture()
     {
         // TODO
