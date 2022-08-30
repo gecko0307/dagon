@@ -73,9 +73,9 @@ Runtime Dependencies
 * [Newton Dynamics](https://github.com/MADEAPPS/newton-dynamics) 3.14 (optional)
 * [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear) (optional)
 
-On Windows runtime dependencies are automatically deployed if you are building with Dub. On other platforms you have to install them manually.
+Runtime dependencies are automatically deployed on Windows. On other platforms, you will have to install them manually.
 
-Nuklear should be compiled as dynamic library:
+Nuklear should be compiled as a dynamic library:
 
 1. Install [CMake](https://cmake.org/)
 2. Go to `extensions/nuklear/thirdparty/bindbc-nuklear-0.4.3/c/build`
