@@ -147,7 +147,17 @@
                 <p>The recommended way to start using Dagon is creating a game template with "dub init". Run the following in an empty directory:</p>
                 <code>dub init --type=dagon</code><br>
                 <code>dub build</code>
-                <p>The engine has only one mandatory runtime dependency, SDL 2.0.14. On Windows it is automatically deployed if you are building with Dub. On other platforms you have to install it manually.</p>
+                <p>The engine has only one mandatory runtime dependency, SDL 2.0.14. On Windows runtime dependencies are automatically deployed. On other platforms you have to install it manually.</p>
+                <p>Nuklear should be compiled as dynamic library:</p>
+                <p>
+                    <ol>
+                        <li>Install CMake</li>
+                        <li>Go to extensions/nuklear/thirdparty/bindbc-nuklear-0.4.3/c/build</li>
+                        <li>Run cmake ..</li>
+                        <li>Under Linux, run make and sudo make install. libnuklear.so will be installed to /usr/local/lib</li>
+                        <li>Under Windows, open nuklear.vcxproj in Visual Studio and build ALL_BUILD project. Look for nuklear.dll in the Release directory.</li>
+                    <ol>
+                </p>
                 <p>By running a template application you should see a sample scene with a plane and a cube.</p>
             </div>
             
