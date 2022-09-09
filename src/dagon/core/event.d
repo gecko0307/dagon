@@ -483,7 +483,7 @@ class EventManager
 
     void setRelativeMouseMode(bool mode)
     {
-        SDL_SetRelativeMouseMode(mode);
+        SDL_SetRelativeMouseMode(cast(SDL_bool)mode);
     }
 
     float aspectRatio()
