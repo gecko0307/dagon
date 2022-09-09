@@ -481,6 +481,11 @@ class EventManager
         SDL_ShowCursor(mode);
     }
 
+    void setRelativeMouseMode(bool mode)
+    {
+        SDL_SetRelativeMouseMode(mode);
+    }
+
     float aspectRatio()
     {
         return cast(float)windowWidth / cast(float)windowHeight;
