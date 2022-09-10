@@ -26,7 +26,17 @@
 #define NEWTON_MAJOR_VERSION 3 
 #define NEWTON_MINOR_VERSION 14 
 
-#include <dgTypes.h>
+//#include <dgTypes.h>
+
+#if defined(_MSC_VER)
+	#define DG_LIBRARY_EXPORT __declspec(dllexport)
+	#define DG_LIBRARY_IMPORT __declspec(dllimport)
+	#define DG_LIBRARY_STATIC
+#else
+	#define DG_LIBRARY_EXPORT __attribute__((visibility("default")))
+	#define DG_LIBRARY_IMPORT __attribute__((visibility("default")))
+	#define DG_LIBRARY_STATIC
+#endif
 
 #ifdef _NEWTON_STATIC_LIB
 	#define NEWTON_API DG_LIBRARY_STATIC
@@ -96,14 +106,14 @@ extern "C" {
 	class NewtonDeformableMeshSegment;
 	class NewtonFracturedCompoundMeshPart;
 #else
-	typedef struct NewtonMesh{} NewtonMesh;
-	typedef struct NewtonBody{} NewtonBody;
-	typedef struct NewtonWorld{} NewtonWorld;
-	typedef struct NewtonJoint{} NewtonJoint;
-	typedef struct NewtonMaterial{} NewtonMaterial;
-	typedef struct NewtonCollision{} NewtonCollision;
-	typedef struct NewtonDeformableMeshSegment{} NewtonDeformableMeshSegment;
-	typedef struct NewtonFracturedCompoundMeshPart{} NewtonFracturedCompoundMeshPart;
+	typedef struct NewtonMesh NewtonMesh;
+	typedef struct NewtonBody NewtonBody;
+	typedef struct NewtonWorld NewtonWorld;
+	typedef struct NewtonJoint NewtonJoint;
+	typedef struct NewtonMaterial NewtonMaterial;
+	typedef struct NewtonCollision NewtonCollision;
+	typedef struct NewtonDeformableMeshSegment NewtonDeformableMeshSegment;
+	typedef struct NewtonFracturedCompoundMeshPart NewtonFracturedCompoundMeshPart;
 #endif
 
 	typedef union 
@@ -1088,15 +1098,13 @@ extern "C" {
 	// Hinge joint functions
 	//
 	// **********************************************************************************************
-    /*
 	NEWTON_API NewtonJoint* NewtonConstraintCreateHinge (const NewtonWorld* const newtonWorld, const dFloat* pivotPoint, const dFloat* pinDir, const NewtonBody* const childBody, const NewtonBody* const parentBody);
 	NEWTON_API void NewtonHingeSetUserCallback (const NewtonJoint* const hinge, NewtonHingeCallback callback);
 	NEWTON_API dFloat NewtonHingeGetJointAngle (const NewtonJoint* const hinge);
 	NEWTON_API dFloat NewtonHingeGetJointOmega (const NewtonJoint* const hinge);
 	NEWTON_API void NewtonHingeGetJointForce (const NewtonJoint* const hinge, dFloat* const force);
 	NEWTON_API dFloat NewtonHingeCalculateStopAlpha (const NewtonJoint* const hinge, const NewtonHingeSliderUpdateDesc* const desc, dFloat angle);
-    */
-    
+
 	// **********************************************************************************************
 	//
 	// Slider joint functions
@@ -1172,7 +1180,8 @@ extern "C" {
 	NEWTON_API dFloat NewtonUserJointGetRowAcceleration (const NewtonJoint* const joint);
 	NEWTON_API void NewtonUserJointGetRowJacobian(const NewtonJoint* const joint, dFloat* const linear0, dFloat* const angula0, dFloat* const linear1, dFloat* const angula1);
 	NEWTON_API void NewtonUserJointSetRowAcceleration (const NewtonJoint* const joint, dFloat acceleration);
-	NEWTON_API void NewtonUserJointSetRowSpringDamperAcceleration (const NewtonJoint* const joint, dFloat rowStiffness, dFloat spring, dFloat damper);
+	NEWTON_API void NewtonUserJointSetRowMassDependentSpringDamperAcceleration(const NewtonJoint* const joint, dFloat spring, dFloat damper);
+	NEWTON_API void NewtonUserJointSetRowMassIndependentSpringDamperAcceleration (const NewtonJoint* const joint, dFloat rowStiffness, dFloat spring, dFloat damper);
 	NEWTON_API void NewtonUserJointSetRowStiffness (const NewtonJoint* const joint, dFloat stiffness);
 	NEWTON_API int NewtonUserJoinRowsCount (const NewtonJoint* const joint);
 	NEWTON_API void NewtonUserJointGetGeneralRow (const NewtonJoint* const joint, int index, dFloat* const jacobian0, dFloat* const jacobian1);
