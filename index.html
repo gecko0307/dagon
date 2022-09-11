@@ -8,16 +8,21 @@
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <style>
-            body { font-family: "Lato", sans-serif; }
-            .mySlides { display: none; }
+            body {
+                font-family: "Lato", sans-serif;
+            }
+            
+            .mySlides {
+                display: none;
+            }
             
             .video-container {
                 overflow: hidden;
                 position: relative;
-                left: 50%;
-            transform: translateX(-50%);
                 width: 100%;
                 max-width: 1024px;
+                left: 50%;
+                transform: translateX(-50%);
             }
 
             .video-container::after {
@@ -35,33 +40,33 @@
             }
             
             .ribbon {
-              /* positioning */
-              position: fixed;
-              padding: 5px 45px;
-              width: 256px;
-              /* top right of the page */
-              top: 60px;
-              right: -80px;
-              -webkit-transform: rotate(45deg);
-              -moz-transform: rotate(45deg);
-              -ms-transform: rotate(45deg);
-              transform: rotate(45deg);
-              /* effects with some shadow */
-              box-shadow: 0 0 0 3px #000000, 0 0 20px -3px rgba(0, 0, 0, 0.5);
-              text-shadow: 0 0 0 #ffffff, 0 0 5px rgba(0, 0, 0, 0.3);
-              /* looks */
-              background-color: #000000;
-              color: #ffffff;
-              font-size: 13px;
-              font-family: sans-serif;
-              text-decoration: none;
-              font-weight: bold;
-              /* ribbon effects */
-              border: 2px dotted #ffffff;
-              /* webkit antialias fix */
-              -webkit-backface-visibility: hidden;
-              letter-spacing: .5px;
-              z-index: 1000;
+                /* positioning */
+                position: fixed;
+                padding: 5px 45px;
+                width: 256px;
+                /* top right of the page */
+                top: 60px;
+                right: -80px;
+                -webkit-transform: rotate(45deg);
+                -moz-transform: rotate(45deg);
+                -ms-transform: rotate(45deg);
+                transform: rotate(45deg);
+                /* effects with some shadow */
+                box-shadow: 0 0 0 3px #000000, 0 0 20px -3px rgba(0, 0, 0, 0.5);
+                text-shadow: 0 0 0 #ffffff, 0 0 5px rgba(0, 0, 0, 0.3);
+                /* looks */
+                background-color: #000000;
+                color: #ffffff;
+                font-size: 13px;
+                font-family: sans-serif;
+                text-decoration: none;
+                font-weight: bold;
+                /* ribbon effects */
+                border: 2px dotted #ffffff;
+                /* webkit antialias fix */
+                -webkit-backface-visibility: hidden;
+                letter-spacing: .5px;
+                z-index: 1000;
             }
             @media screen and (max-width: 850px) {
                 .ribbon {
@@ -75,6 +80,10 @@
             }
             @media screen and (max-width: 715px) {
                 .content { margin-top: 128px; }
+            }
+            
+            a:hover {
+                color: #f96854;
             }
         </style>
     </head>
