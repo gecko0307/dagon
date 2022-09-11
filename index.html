@@ -91,8 +91,8 @@
         <div class="w3-content content">
             <div id="home" class="w3-container">
                 <h1 class="w3-center">Dagon Engine</h1>
-                <p>Dagon is an Open Source 3D game development framework for D language based on OpenGL 4.0 core profile and SDL2. The goal of this project is creating a modern, easy to use, extendable game engine for D due to the lack of such.</p>
-                <p>Please keep in mind that Dagon is still under development and not production-ready. Follow Dagon development on <a href="https://trello.com/b/4sDgRjZI/dagon" target="_blank">Trello</a> to see priority tasks.</p>
+                <p>Dagon is an Open Source 3D game development framework based on OpenGL 4.0 core profile and SDL2. The goal of this project is to create a modern, easy to use, extensible 3D game engine for D language.</p>
+                <p>The engine is still under development and lacks many important features. It is currently not recommended to use Dagon in production due to API instability. Follow the development on <a href="https://trello.com/b/4sDgRjZI/dagon" target="_blank">Trello</a> to see the priority tasks.</p>
                 <div class="video-container">
                     <iframe src="https://www.youtube.com/embed/iDF4shPofgU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                 </div>
@@ -132,7 +132,7 @@
                     </ul>
                 </p>
                 <img src="images/eevee_vs_dagon.jpg" alt="Eevee VS Dagon" style="width:100%">
-                <p>Dagon uses modern graphics techniques and so requires quite powerful graphics card. At least Turing-based NVIDIA cards are recommended (raytracing support is not required though). Main development and testing is done on GeForce GTX 1650.</p>
+                <p>Dagon uses modern graphics techniques and so requires a fairly powerful graphics card to run. Turing-based NVIDIA cards are recommended (although ray tracing support is not required). The engine is only desktop, support for mobile and web platforms is not planned. Dagon works on Windows and Linux.</p>
             </div>
             
             <div id="download" class="w3-container w3-padding-32">
@@ -147,7 +147,8 @@
                 <p>The recommended way to start using Dagon is creating a game template with "dub init". Run the following in an empty directory:</p>
                 <code>dub init --type=dagon</code><br>
                 <code>dub build</code>
-                <p>The engine has only one mandatory runtime dependency, SDL 2.0.14. On Windows runtime dependencies are automatically deployed. On other platforms you have to install it manually.</p>
+                <p>By running a template application you should see a sample scene with a plane and a cube.</p>
+                <p>The engine has only one mandatory runtime dependency, SDL 2.0.14. Runtime dependencies are automatically deployed on Windows. On other platforms, you will have to install them manually.</p>
                 <p>Nuklear should be compiled as dynamic library:</p>
                 <p>
                     <ol>
@@ -158,7 +159,6 @@
                         <li>Under Windows, open nuklear.vcxproj in Visual Studio and build ALL_BUILD project. Look for nuklear.dll in the Release directory.</li>
                     <ol>
                 </p>
-                <p>By running a template application you should see a sample scene with a plane and a cube.</p>
             </div>
             
             <div id="tutorials" class="w3-container w3-padding-32">
