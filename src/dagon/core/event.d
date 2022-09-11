@@ -476,14 +476,14 @@ class EventManager
         setMouse(cast(int)x, cast(int)y);
     }
 
-    void showCursor(bool mode)
+    int showCursor(bool mode)
     {
-        SDL_ShowCursor(mode);
+        return SDL_ShowCursor(mode);
     }
 
-    void setRelativeMouseMode(bool mode)
+    int setRelativeMouseMode(bool mode)
     {
-        SDL_SetRelativeMouseMode(cast(SDL_bool)mode);
+        return SDL_SetRelativeMouseMode(cast(SDL_bool)mode);
     }
 
     float aspectRatio()
