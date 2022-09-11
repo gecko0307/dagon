@@ -156,8 +156,23 @@
                 <p>The recommended way to start using Dagon is creating a game template with "dub init". Run the following in an empty directory:</p>
                 <code>dub init --type=dagon</code><br>
                 <code>dub build</code>
-                <p>By running a template application you should see a sample scene with a plane and a cube.</p>
-                <p>The engine has only one mandatory runtime dependency, SDL 2.0.14. Runtime dependencies are automatically deployed on Windows. On other platforms, you will have to install them manually.</p>
+                <p>By running a template application you should see a sample scene with a plane and a cube. You can then modify the generated dub.json file to suit your needs.</p>
+            </div>
+            
+            <div id="gettingstarted" class="w3-container w3-padding-32">
+                <h1 class="w3-center">Installing Runtime Dependencies</h1>
+                <p>Dagon depends on the following shared libraries:</p>
+                <p>
+                    <ul>
+                        <li><a href="https://www.libsdl.org/" target="_blank">SDL</a> 2.0.14</li>
+                        <li><a href="https://www.freetype.org/" target="_blank">Freetype</a> 2.8.1 (optional)</li>
+                        <li><a href="https://github.com/MADEAPPS/newton-dynamics" target="_blank">Newton Dynamics</a> 3.14 (optional)</li>
+                        <li><a href="https://github.com/Immediate-Mode-UI/Nuklear" target="_blank">Nuklear</a> (optional)</li>
+                        <li><a href="https://github.com/ocornut/imgui" target="_blank">Dear ImGui</a> (optional)</li>
+                    </ul>
+                </p>
+                <p>The only mandatory dependency is SDL, the others belong to the corresponding extensions.</p>
+                <p>Runtime dependencies are automatically deployed on Windows. On other platforms, you will have to install them manually.</p>
                 <p>Nuklear should be compiled as dynamic library:</p>
                 <p>
                     <ol>
