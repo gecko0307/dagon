@@ -42,34 +42,75 @@ import dagon.graphics.entity;
 
 class FirstPersonViewComponent: EntityComponent
 {
+    protected bool _active = true;
+    protected bool _useRelativeMouseMode = true;
+    protected bool _hideCursorWhenActive = true;
+    
+    bool mouseActive = true;
+    
+    float mouseSensitivity = 0.2f;
+    float axisSensitivity = 20.0f;
+    
+    float pitchLimitMax = 60.0f;
+    float pitchLimitMin = -60.0f;
+    
     int prevMouseX = 0;
     int prevMouseY = 0;
     
     float pitch = 0.0f;
     float turn = 0.0f;
-
-    float mouseSensibility = 0.1f;
-    float axisSensibility = 20.0f;
-    
-    bool active = true;
-    bool mouseActive = true;
-    
-    float pitchLimitMax = 60.0f;
-    float pitchLimitMin = -60.0f;
     
     Quaternionf baseOrientation = Quaternionf.identity;
     
     this(EventManager em, Entity e)
     {
         super(em, e);
+        active = true;
+        useRelativeMouseMode = true;
         reset();
+    }
+    
+    void active(bool mode) @property
+    {
+        _active = mode;
+        prevMouseX = eventManager.mouseX;
+        prevMouseY = eventManager.mouseY;
+        eventManager.setRelativeMouseMode(_useRelativeMouseMode && _active);
+        if (!_active)
+            eventManager.setMouseToCenter();
+        if (_hideCursorWhenActive)
+            eventManager.showCursor(!_active);
+    }
+    
+    bool active() @property
+    {
+        return _active;
+    }
+    
+    void useRelativeMouseMode(bool mode) @property
+    {
+        _useRelativeMouseMode = mode;
+        eventManager.setRelativeMouseMode(_useRelativeMouseMode && _active);
+    }
+    
+    bool useRelativeMouseMode() @property
+    {
+        return _useRelativeMouseMode;
+    }
+    
+    void hideCursorWhenActive(bool mode) @property
+    {
+        _hideCursorWhenActive = true;
+        if (_active)
+            eventManager.showCursor(!_hideCursorWhenActive);
     }
     
     void reset()
     {
         pitch = 0.0f;
         turn = 0.0f;
-        eventManager.setMouseToCenter();
+        if (!useRelativeMouseMode)
+            eventManager.setMouseToCenter();
         prevMouseX = eventManager.mouseX;
         prevMouseY = eventManager.mouseY;
     }
@@ -78,12 +119,23 @@ class FirstPersonViewComponent: EntityComponent
     {
         processEvents();
         
-        if (active & mouseActive)
+        if (_active & mouseActive)
         {
-            float mouseRelH =  (eventManager.mouseX - prevMouseX) * mouseSensibility;
-            float mouseRelV = (eventManager.mouseY - prevMouseY) * mouseSensibility;
-            float axisV = inputManager.getAxis("vertical") * axisSensibility * mouseSensibility;
-            float axisH = inputManager.getAxis("horizontal") * axisSensibility * mouseSensibility;
+            float mouseRelH, mouseRelV;
+            if (useRelativeMouseMode)
+            {
+                mouseRelH = eventManager.mouseRelX * mouseSensitivity;
+                mouseRelV = eventManager.mouseRelY * mouseSensitivity;
+            }
+            else
+            {
+                mouseRelH =  (eventManager.mouseX - prevMouseX) * mouseSensitivity;
+                mouseRelV = (eventManager.mouseY - prevMouseY) * mouseSensitivity;
+            }
+            
+            float axisV = inputManager.getAxis("vertical") * axisSensitivity * mouseSensitivity;
+            float axisH = inputManager.getAxis("horizontal") * axisSensitivity * mouseSensitivity;
+            
             pitch -= mouseRelV + axisV;
             turn -= mouseRelH + axisH;
             
@@ -96,7 +148,9 @@ class FirstPersonViewComponent: EntityComponent
                 pitch = pitchLimitMin;
             }
             
-            eventManager.setMouseToCenter();
+            if (!useRelativeMouseMode)
+                eventManager.setMouseToCenter();
+            
             prevMouseX = eventManager.mouseX;
             prevMouseY = eventManager.mouseY;
         }
