@@ -2,6 +2,8 @@ Dagon 0.15.0 - TBD
 ------------------
 - **Core**
   - Relative mouse mode support (`EventManager.setRelativeMouseMode`)
+- **UI**
+  - `FirstPersonViewComponent` uses relative mode by default, and it can be switched with `useRelativeMouseMode` property.
 - **Extensions**
   - Updated Newton binding. `NewtonUserJointSetRowSpringDamperAcceleration` was removed in favor of `NewtonUserJointSetRowMassDependentSpringDamperAcceleration` and `NewtonUserJointSetRowMassIndependentSpringDamperAcceleration`.
 

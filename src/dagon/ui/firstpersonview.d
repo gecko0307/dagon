@@ -44,7 +44,6 @@ class FirstPersonViewComponent: EntityComponent
 {
     protected bool _active = true;
     protected bool _useRelativeMouseMode = true;
-    protected bool _hideCursorWhenActive = true;
     
     bool mouseActive = true;
     
@@ -77,9 +76,9 @@ class FirstPersonViewComponent: EntityComponent
         prevMouseY = eventManager.mouseY;
         eventManager.setRelativeMouseMode(_useRelativeMouseMode && _active);
         if (!_active)
+        {
             eventManager.setMouseToCenter();
-        if (_hideCursorWhenActive)
-            eventManager.showCursor(!_active);
+        }
     }
     
     bool active() @property
@@ -96,13 +95,6 @@ class FirstPersonViewComponent: EntityComponent
     bool useRelativeMouseMode() @property
     {
         return _useRelativeMouseMode;
-    }
-    
-    void hideCursorWhenActive(bool mode) @property
-    {
-        _hideCursorWhenActive = true;
-        if (_active)
-            eventManager.showCursor(!_hideCursorWhenActive);
     }
     
     void reset()
