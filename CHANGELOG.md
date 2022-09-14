@@ -1,3 +1,15 @@
+Dagon 0.15.0 - TBD
+------------------
+- **Core**
+  - Relative mouse mode support (`EventManager.setRelativeMouseMode`)
+- **Extensions**
+  - Updated Newton binding. `NewtonUserJointSetRowSpringDamperAcceleration` was removed in favor of `NewtonUserJointSetRowMassDependentSpringDamperAcceleration` and `NewtonUserJointSetRowMassIndependentSpringDamperAcceleration`.
+
+Dagon 0.14.1 - 9 Sep, 2022
+--------------------------
+- **Misc**
+  - Update init-exec template code
+
 Dagon 0.14.0 - 27 Aug, 2022
 ---------------------------
 - **Core**
