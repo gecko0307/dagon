@@ -65,35 +65,27 @@ enum SERIALIZE_ID_USERMESH = 13;
 enum SERIALIZE_ID_SCENE = 14;
 enum SERIALIZE_ID_FRACTURED_COMPOUND = 15;
 
-struct NewtonMesh{}
-struct NewtonBody{}
-struct NewtonWorld{}
-struct NewtonJoint{}
-struct NewtonMaterial{}
-struct NewtonCollision{}
-// struct NewtonInverseDynamics{}
-struct NewtonDeformableMeshSegment{}
-// struct NewtonInverseDynamicsEffector{}
-struct NewtonFracturedCompoundMeshPart{}
+struct NewtonMesh {}
+struct NewtonBody {}
+struct NewtonWorld {}
+struct NewtonJoint {}
+struct NewtonMaterial {}
+struct NewtonCollision {}
+struct NewtonDeformableMeshSegment {}
+struct NewtonFracturedCompoundMeshPart {}
 
 union NewtonMaterialData
 {
-	void* m_ptr;
-	dLong m_int;
-	dFloat m_float;
-} 
+    void* m_ptr;
+    dLong m_int;
+    dFloat m_float;
+}
 
 struct NewtonCollisionMaterial
 {
-    /*
-    void* m_userData;
-    int m_userId;
-    int m_userFlags;
-    dFloat[8] m_userParam;
-    */
     dLong m_userId;
-	NewtonMaterialData m_userData;
-	NewtonMaterialData[6] m_userParam;
+    NewtonMaterialData m_userData;
+    NewtonMaterialData[6] m_userParam;
 }
 
 struct NewtonBoxParam
@@ -171,10 +163,7 @@ struct NewtonHeightFieldCollisionParam
     dFloat m_verticalScale;
     dFloat m_horizonalScale_x;
     dFloat m_horizonalScale_z;
-    //dFloat m_horizonalDisplacementScale_x;
-    //dFloat m_horizonalDisplacementScale_z;
     void* m_vertialElevation;
-    //short* m_horizotalDisplacement;
     char* m_atributes;
 }
 
@@ -402,8 +391,6 @@ alias NewtonWorldRayFilterCallback = dFloat function (const NewtonBody* body_, c
 
 alias NewtonOnAABBOverlap = int function (const NewtonJoint* contact, dFloat timestep, int threadIndex);
 alias NewtonContactsProcess = void function (const NewtonJoint* contact, dFloat timestep, int threadIndex);
-//    typedef int  (*NewtonOnAABBOverlap) (const NewtonMaterial* const material, const NewtonBody* const body0, const NewtonBody* const body1, int threadIndex);
-//    typedef int  (*NewtonOnCompoundSubCollisionAABBOverlap) (const NewtonMaterial* const material, const NewtonBody* const body0, const void* const collisionNode0, const NewtonBody* const body1, const void* const collisionNode1, int threadIndex);
 alias NewtonOnCompoundSubCollisionAABBOverlap = int function (const NewtonJoint* contact, dFloat timestep, const NewtonBody* body0, const void* collisionNode0, const NewtonBody* body1, const void* collisionNode1, int threadIndex);
 alias NewtonOnContactGeneration = int function (const NewtonMaterial* material, const NewtonBody* body0, const NewtonCollision* collision0, const NewtonBody* body1, const NewtonCollision* collision1, NewtonUserContactPoint* contactBuffer, int maxCount, int threadIndex);
 
