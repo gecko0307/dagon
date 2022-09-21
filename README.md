@@ -8,7 +8,7 @@ The engine is still under development and lacks many important features. It is c
 
 Dagon uses modern graphics techniques and so requires a fairly powerful graphics card to run. Turing-based NVIDIA cards are recommended (although ray tracing support is not required). The engine is only desktop, support for mobile and web platforms is not planned.
 
-If you like Dagon, support its development on [Patreon](https://www.patreon.com/gecko0307) or [Liberapay](https://liberapay.com/gecko0307). You can also make a one-time donation via [PayPal](https://www.paypal.me/tgafarov) or [NOWPayments](https://nowpayments.io/donation/gecko0307). I appreciate any support. Thanks in advance!
+If you like Dagon, support its development on [Patreon](https://www.patreon.com/gecko0307) or [Liberapay](https://liberapay.com/gecko0307). You can also make a one-time donation via [NOWPayments](https://nowpayments.io/donation/gecko0307). I appreciate any support. Thanks in advance!
 
 [![GitHub Actions CI Status](https://github.com/gecko0307/dagon/workflows/CI/badge.svg)](https://github.com/gecko0307/dagon/actions?query=workflow%3ACI)
 [![DUB Package](https://img.shields.io/dub/v/dagon.svg)](https://code.dlang.org/packages/dagon)
