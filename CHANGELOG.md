@@ -5,7 +5,8 @@ Dagon 0.15.0 - TBD
 - **UI**
   - `FirstPersonViewComponent` uses relative mode by default, and it can be switched with `useRelativeMouseMode` property.
 - **Extensions**
-  - Updated Newton binding. `NewtonUserJointSetRowSpringDamperAcceleration` was removed in favor of `NewtonUserJointSetRowMassDependentSpringDamperAcceleration` and `NewtonUserJointSetRowMassIndependentSpringDamperAcceleration`.
+  - Updated Newton binding. `NewtonUserJointSetRowSpringDamperAcceleration` was removed in favor of `NewtonUserJointSetRowMassDependentSpringDamperAcceleration` and `NewtonUserJointSetRowMassIndependentSpringDamperAcceleration`
+  - New method `NewtonRigidBody.localPointVelocity`.
 
 Dagon 0.14.1 - 9 Sep, 2022
 --------------------------
