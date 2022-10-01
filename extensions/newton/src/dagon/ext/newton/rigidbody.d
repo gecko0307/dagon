@@ -188,6 +188,12 @@ class NewtonRigidBody: Owner
         return v;
     }
     
+    Vector3f localPointVelocity(Vector3f point)
+    {
+        Vector3f worldPoint = point * transformation;
+        return pointVelocity(worldPoint);
+    }
+    
     void addImpulse(Vector3f deltaVelocity, Vector3f impulsePoint, double dt)
     {
         NewtonBodyAddImpulse(newtonBody, deltaVelocity.arrayof.ptr, impulsePoint.arrayof.ptr, dt);
