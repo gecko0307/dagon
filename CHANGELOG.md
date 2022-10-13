@@ -7,6 +7,8 @@ Dagon 0.15.0 - TBD
 - **Extensions**
   - Updated Newton binding. `NewtonUserJointSetRowSpringDamperAcceleration` was removed in favor of `NewtonUserJointSetRowMassDependentSpringDamperAcceleration` and `NewtonUserJointSetRowMassIndependentSpringDamperAcceleration`
   - New method `NewtonRigidBody.localPointVelocity`.
+- **Misc**
+  - Dagon now uses dlib 1.1.0.
 
 Dagon 0.14.1 - 9 Sep, 2022
 --------------------------
