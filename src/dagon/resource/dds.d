@@ -520,7 +520,12 @@ bool loadDDS(InputStream istrm, TextureBuffer* buffer)
     }
     else if (hdr.flags & DDSHeaderFlags.DEPTH)
     {
-        fmt = DXGIFormat.R8_UNORM;
+        if (hdr.format.bpp == 32)
+            fmt = DXGIFormat.R8G8B8A8_UNORM;
+        else if (hdr.format.bpp == 16)
+            fmt = DXGIFormat.R8G8_UNORM;
+        else if (hdr.format.bpp == 8)
+            fmt = DXGIFormat.R8_UNORM;
     }
     
     version(DDSDebug) writeln("format: ", fmt);
