@@ -332,11 +332,13 @@ class Texture: Owner
         this.size = buff.size;
         this.mipLevels = buff.mipLevels;
         
-        // TODO: 1D, 3D images
+        // TODO: 1D images
         if (isCubemap)
             createCubemap(buff.data);
         else if (format.target == GL_TEXTURE_2D)
             createTexture2D(buff.data);
+        else if (format.target == GL_TEXTURE_3D)
+            createTexture3D(buff.data);
         else
             writeln("Texture creation failed: unsupported target ", format.target);
     }
@@ -470,6 +472,7 @@ class Texture: Owner
             if (mipLevels == 1)
             {
                 glTexImage2D(GL_TEXTURE_2D, 0, format.internalFormat, w, h, 0, format.format, format.pixelType, cast(void*)buffer.ptr);
+                
                 if (generateMipmaps)
                 {
                     glGenerateMipmap(GL_TEXTURE_2D);
@@ -511,6 +514,66 @@ class Texture: Owner
         {
             minFilter = GL_LINEAR;
             magFilter = GL_LINEAR;
+        }
+    }
+    
+    protected void createTexture3D(ubyte[] buffer)
+    {
+        glGenTextures(1, &texture);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_3D, texture);
+        
+        minFilter = GL_LINEAR;
+        magFilter = GL_LINEAR;
+        wrapS = GL_REPEAT;
+        wrapT = GL_REPEAT;
+        wrapR = GL_REPEAT;
+        
+        uint w = size.width;
+        uint h = size.height;
+        uint d = size.depth;
+        
+        if (isCompressed)
+        {
+            writeln("Compressed 3D textures are not supported");
+        }
+        else
+        {
+            if (mipLevels == 1)
+            {
+                glTexImage3D(GL_TEXTURE_3D, 0, format.internalFormat, w, h, d, 0, format.format, format.pixelType, cast(void*)buffer.ptr);
+                
+                if (generateMipmaps)
+                {
+                    glGenerateMipmap(GL_TEXTURE_3D);
+                    mipLevels = 1 + cast(uint)floor(log2(max3(w, h, d)));
+                }
+                else
+                    mipLevels = 1;
+            }
+            else if (channelSize > 0)
+            {
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipLevels - 1);
+                
+                uint pSize = pixelSize;
+                uint offset = 0;
+                
+                for (uint mipLevel = 0; mipLevel < mipLevels; mipLevel++)
+                {
+                    uint imageSize = w * h * d * pSize;
+                    glTexImage3D(GL_TEXTURE_3D, mipLevel, format.internalFormat, w, h, d, 0, format.format, format.pixelType, cast(void*)(buffer.ptr + offset));
+                    offset += imageSize;
+                    w /= 2;
+                    h /= 2;
+                    d /= 2;
+                    if (offset >= buffer.length)
+                    {
+                        writeln("Error: incomplete texture buffer");
+                        break;
+                    }
+                }
+            }
         }
     }
     

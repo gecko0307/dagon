@@ -29,6 +29,7 @@ module dagon.resource.dds;
 
 import std.stdio;
 import std.file;
+import std.algorithm;
 
 import dlib.core.memory;
 import dlib.core.stream;
@@ -51,12 +52,113 @@ struct DDSPixelFormat
     uint alphaMask;
 }
 
-struct DDSCaps
+enum DDSHeaderFlags
 {
-    uint caps;
-    uint caps2;
-    uint caps3;
-    uint caps4;
+    TEXTURE = 0x00001007,
+    MIPMAPS = 0x00020000,
+    LINEARSIZE  = 0x00080000,
+    DEPTH = 0x00800000,
+    PITCH = 0x00000008
+}
+
+enum DDPF
+{
+    ALPHAPIXELS = 0x1,
+    ALPHA = 0x2,
+    FOURCC = 0x4,
+    RGB = 0x40,
+    YUV = 0x200,
+    LUMINANCE = 0x20000
+}
+
+enum DDSCaps
+{
+    RESERVED1 = 0x00000001,
+    RESERVED2 = 0x00800000,
+    RESERVED3 = 0x00000400,
+    _3DDEVICE = 0x00002000,
+    ALLOCONLOAD = 0x04000000,
+    ALPHA = 0x00000002,
+    BACKBUFFER = 0x00000004,
+    COMPLEX = 0x00000008,
+    EXECUTEBUFFER = 0x00800000,
+    FLIP = 0x00000010,
+    FRONTBUFFER = 0x00000020,
+    HWCODEC = 0x00100000,
+    LIVEVIDEO = 0x00080000,
+    LOCALVIDMEM = 0x10000000,
+    MIPMAP = 0x00400000,
+    MODEX = 0x00200000,
+    NONLOCALVIDMEM = 0x20000000,
+    OFFSCREENPLAIN = 0x00000040,
+    OVERLAY = 0x00000080,
+    OPTIMIZED = 0x80000000,
+    OWNDC = 0x00040000,
+    PALETTE = 0x00000100,
+    PRIMARYSURFACE = 0x00000200,
+    PRIMARYSURFACELEFT = 0x00000000,
+    STANDARDVGAMODE = 0x40000000,
+    SYSTEMMEMORY = 0x00000800,
+    TEXTURE = 0x00001000,
+    VIDEOMEMORY = 0x00004000,
+    VIDEOPORT = 0x08000000,
+    VISIBLE = 0x00008000,
+    WRITEONLY = 0x00010000,
+    ZBUFFER = 0x00020000
+}
+
+enum DDSCaps2
+{
+    RESERVED1 = 0x00000020,
+    RESERVED2 = 0x00000040,
+    RESERVED3 = 0x04000000,
+    RESERVED4 = 0x00000002,
+    ADDITIONALPRIMARY = 0x80000000,
+    CUBEMAP = 0x00000200,
+    CUBEMAP_POSITIVEX = 0x00000400,
+    CUBEMAP_NEGATIVEX = 0x00000800,
+    CUBEMAP_POSITIVEY = 0x00001000,
+    CUBEMAP_NEGATIVEY = 0x00002000,
+    CUBEMAP_POSITIVEZ = 0x00004000,
+    CUBEMAP_NEGATIVEZ = 0x00008000,
+    CUBEMAP_ALLFACES = 0x00000400 | 0x00000800 | 0x00001000 | 0x00002000 | 0x00004000 | 0x00008000,
+    D3DTEXTUREMANAGE = 0x00020000,
+    DISCARDBACKBUFFER = 0x10000000,
+    DONOTPERSIST = 0x00040000,
+    ENABLEALPHACHANNEL = 0x20000000,
+    VERTEXBUFFER = 0x00000020,
+    COMMANDBUFFER = 0x00000040,
+    INDEXBUFFER = 0x04000000,
+    EXTENDEDFORMATPRIMARY = 0x40000000,
+    HARDWAREDEINTERLACE = 0x00000000,
+    HINTANTIALIASING = 0x00000100,
+    HINTDYNAMIC = 0x00000004,
+    HINTSTATIC = 0x00000008,
+    MIPMAPSUBLEVEL = 0x00010000,
+    NOTUSERLOCKABLE = 0x00400000,
+    NPATCHES = 0x02000000,
+    POINTS = 0x00800000,
+    RTPATCHES = 0x01000000,
+    OPAQUE = 0x00000080,
+    STEREOSURFACELEFT = 0x00080000,
+    TEXTUREMANAGE = 0x00000010,
+    VOLUME = 0x00200000
+}
+
+enum DDSCaps3
+{
+    RESERVED1 = 0x00000100,
+    RESERVED2 = 0x00000200,
+    AUTOGENMIPMAP = 0x00000800,
+    CREATESHAREDRESOURCE = 0x00002000,
+    DMAP = 0x00001000,
+    LIGHTWEIGHTMIPMAP = 0x00000400,
+    MULTISAMPLE_MASK = 0x0000001F,
+    MULTISAMPLE_QUALITY_MASK = 0x000000E0,
+    MULTISAMPLE_QUALITY_SHIFT = 5,
+    OPENSHAREDRESOURCE = 0x00008000,
+    READONLYRESOURCE = 0x00004000,
+    VIDEO = 0x00000200
 }
 
 struct DDSColorKey
@@ -84,7 +186,10 @@ struct DDSHeader
     DDSColorKey ckSrcBlt;
 
     DDSPixelFormat format;
-    DDSCaps caps;
+    uint caps;
+    uint caps2;
+    uint caps3;
+    uint caps4;
 
     uint textureStage;
 }
@@ -253,25 +358,6 @@ enum DXGIFormat
     ASTC_12X12_UNORM_SRGB = 187
 }
 
-enum Caps
-{
-    Complex = 0x8,
-    Mipmap = 0x400000,
-    Texture = 0x1000
-}
-
-enum Caps2
-{
-    Cubemap = 0x200,
-    CubemapPositiveX = 0x400,
-    CubemapNegativeX = 0x800,
-    CubemapPositiveY = 0x1000,
-    CubemapNegativeY = 0x2000,
-    CubemapPositiveZ = 0x4000,
-    CubemapNegativeZ = 0x8000,
-    CubemapAllFaces = 0xFC00
-}
-
 struct DDSHeaderDXT10
 {
     uint dxgiFormat;
@@ -409,10 +495,10 @@ bool loadDDS(InputStream istrm, TextureBuffer* buffer)
         writeln("hdr.format.blueMask: ", hdr.format.blueMask);
         writeln("hdr.format.alphaMask: ", hdr.format.alphaMask);
         
-        writeln("hdr.caps.caps: ", hdr.caps.caps);
-        writeln("hdr.caps.caps2: ", hdr.caps.caps2);
-        writeln("hdr.caps.caps3: ", hdr.caps.caps3);
-        writeln("hdr.caps.caps4: ", hdr.caps.caps4);
+        writeln("hdr.caps: ", hdr.caps);
+        writeln("hdr.caps2: ", hdr.caps2);
+        writeln("hdr.caps3: ", hdr.caps3);
+        writeln("hdr.caps4: ", hdr.caps4);
         
         writeln("hdr.textureStage: ", hdr.textureStage);
     }
@@ -420,14 +506,21 @@ bool loadDDS(InputStream istrm, TextureBuffer* buffer)
     TextureFormat format;
     
     DXGIFormat fmt;
-    if (hdr.format.fourCC == FOURCC_DX10)
+    if (hdr.format.flags & DDPF.FOURCC)
     {
-        DDSHeaderDXT10 dx10 = readStruct!DDSHeaderDXT10(istrm);
-        fmt = cast(DXGIFormat)dx10.dxgiFormat;
+        if (hdr.format.fourCC == FOURCC_DX10)
+        {
+            DDSHeaderDXT10 dx10 = readStruct!DDSHeaderDXT10(istrm);
+            fmt = cast(DXGIFormat)dx10.dxgiFormat;
+        }
+        else
+        {
+            fmt = resourceFormatFromFourCC(hdr.format.fourCC);
+        }
     }
-    else
+    else if (hdr.flags & DDSHeaderFlags.DEPTH)
     {
-        fmt = resourceFormatFromFourCC(hdr.format.fourCC);
+        fmt = DXGIFormat.R8_UNORM;
     }
     
     version(DDSDebug) writeln("format: ", fmt);
@@ -516,14 +609,24 @@ bool loadDDS(InputStream istrm, TextureBuffer* buffer)
             return error("loadDDS error: unsupported resource format");
     }
     
+    bool hasMipmaps = cast(bool)(hdr.flags & DDSHeaderFlags.MIPMAPS);
+    
+    bool isComplex = cast(bool)(hdr.caps & DDSCaps.COMPLEX);
+    bool isVolume = cast(bool)(hdr.caps2 & DDSCaps2.VOLUME);
+    
     bool isCubemap = false;
-    if (hdr.caps.caps2 & Caps2.Cubemap)
+    if (hdr.caps2 & DDSCaps2.CUBEMAP)
     {
-        if (hdr.caps.caps2 & Caps2.CubemapAllFaces)
+        if (hdr.caps2 & DDSCaps2.CUBEMAP_ALLFACES)
             isCubemap = true;
         else
             return error("loadDDS error: incomplete cubemap");
     }
+    
+    version(DDSDebug) writeln("hasMipmaps: ", hasMipmaps);
+    version(DDSDebug) writeln("isComplex: ", isComplex);
+    version(DDSDebug) writeln("isVolume: ", isVolume);
+    version(DDSDebug) writeln("isCubemap: ", isCubemap);
     
     size_t bufferSize = cast(size_t)(istrm.size - istrm.getPosition);
     version(DDSDebug) writeln("bufferSize: ", bufferSize);
@@ -534,22 +637,33 @@ bool loadDDS(InputStream istrm, TextureBuffer* buffer)
     TextureSize size;
     size.width = hdr.width;
     size.height = hdr.height;
-    size.depth = 1; // TODO
+    
+    if (isVolume)
+        size.depth = hdr.depth;
+    else
+        size.depth = 0;
     
     if (isCubemap)
     {
         format.target = GL_TEXTURE_CUBE_MAP;
         format.cubeFaces = CubeFaceBit.All;
     }
+    else if (isVolume)
+    {
+        format.target = GL_TEXTURE_3D;
+    }
     else
     {
-        // TODO: 1D and 3D textures
         format.target = GL_TEXTURE_2D;
     }
     
     buffer.format = format;
     buffer.size = size;
-    buffer.mipLevels = hdr.mipMapLevels;
+    
+    if (hasMipmaps)
+        buffer.mipLevels = hdr.mipMapLevels;
+    else
+        buffer.mipLevels = 1;
 
     return true;
 }
