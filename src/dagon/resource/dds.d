@@ -57,8 +57,7 @@ enum DDSHeaderFlags
     TEXTURE = 0x00001007,
     MIPMAPS = 0x00020000,
     LINEARSIZE  = 0x00080000,
-    DEPTH = 0x00800000,
-    PITCH = 0x00000008
+    VOLUME = 0x00800000
 }
 
 enum DDPF
@@ -518,7 +517,7 @@ bool loadDDS(InputStream istrm, TextureBuffer* buffer)
             fmt = resourceFormatFromFourCC(hdr.format.fourCC);
         }
     }
-    else if (hdr.flags & DDSHeaderFlags.DEPTH)
+    else if (hdr.flags & DDSHeaderFlags.VOLUME)
     {
         if (hdr.format.bpp == 32)
             fmt = DXGIFormat.R8G8B8A8_UNORM;
