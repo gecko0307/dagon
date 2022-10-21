@@ -2,11 +2,13 @@ Dagon 0.15.0 - TBD
 ------------------
 - **Core**
   - Relative mouse mode support (`EventManager.setRelativeMouseMode`)
+- **Assets**
+  - Embedded images support in glTF loader
 - **UI**
   - `FirstPersonViewComponent` uses relative mode by default, and it can be switched with `useRelativeMouseMode` property.
 - **Extensions**
   - Updated Newton binding. `NewtonUserJointSetRowSpringDamperAcceleration` was removed in favor of `NewtonUserJointSetRowMassDependentSpringDamperAcceleration` and `NewtonUserJointSetRowMassIndependentSpringDamperAcceleration`
-  - New method `NewtonRigidBody.localPointVelocity`.
+  - New method `NewtonRigidBody.localPointVelocity`
 - **Misc**
   - Dagon now uses dlib 1.1.0.
 
