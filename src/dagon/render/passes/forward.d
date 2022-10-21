@@ -114,7 +114,6 @@ class PassForward: RenderPass
             
             glEnablei(GL_BLEND, 0);
             glEnablei(GL_BLEND, 1);
-            //glDisablei(GL_BLEND, 1);
             glBlendFunci(0, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
             foreach(entity; group)

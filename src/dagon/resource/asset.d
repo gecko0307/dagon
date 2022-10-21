@@ -28,6 +28,8 @@ DEALINGS IN THE SOFTWARE.
 module dagon.resource.asset;
 
 import std.stdio;
+import std.algorithm;
+import std.path;
 
 import dlib.core.memory;
 import dlib.core.ownership;
@@ -81,6 +83,13 @@ Compound!(SuperImage, string) dlibImageLoader(alias loadFunc)(InputStream istrm,
 
 alias ImageLoaderCallback = Compound!(SuperImage, string) function(InputStream, SuperImageFactory);
 
+struct ImageFormatInfo
+{
+    string format;
+    string dummyFilename;
+    string prefix;
+}
+
 class AssetManager: Owner
 {
     Dict!(ImageLoaderCallback, string) imageLoaderCallbacks;
@@ -99,6 +108,8 @@ class AssetManager: Owner
     float nextLoadingPercentage = 0.0f;
 
     EventManager eventManager;
+    
+    Dict!(string, string) base64ImagePrefixes;
 
     this(EventManager emngr, Owner o = null)
     {
@@ -121,6 +132,44 @@ class AssetManager: Owner
         loadingThread = New!Thread(&threadFunc);
 
         eventManager = emngr;
+        
+        base64ImagePrefixes = New!(Dict!(string, string))();
+        
+        // Reference: https://www.digipres.org/formats/mime-types/
+        base64ImagePrefixes["data:image/png;base64,"] = "image.png";
+        base64ImagePrefixes["data:image/apng;base64,"] = "image.png";
+        base64ImagePrefixes["data:image/jpeg;base64,"] = "image.jpg";
+        base64ImagePrefixes["data:image/gif;base64,"] = "image.gif";
+        base64ImagePrefixes["data:image/webp;base64,"] = "image.webp";
+        base64ImagePrefixes["data:image/ktx;base64,"] = "image.ktx";
+        base64ImagePrefixes["data:image/svg+xml;base64,"] = "image.svg";
+        base64ImagePrefixes["data:image/vnd-ms.dds;base64,"] = "image.dds";
+        base64ImagePrefixes["data:image/image/vnd.radiance;base64,"] = "image.hdr";
+        base64ImagePrefixes["data:image/x-targa;base64,"] = "image.tga";
+        base64ImagePrefixes["data:image/x-tga;base64,"] = "image.tga";
+        base64ImagePrefixes["data:image/x-ms-bmp;base64,"] = "image.bmp";
+        base64ImagePrefixes["data:image/x-psd;base64,"] = "image.psd";
+    }
+    
+    ImageFormatInfo detectBase64Image(string uri)
+    {
+        ImageFormatInfo result;
+        result.format = "";
+        result.dummyFilename = "";
+        result.prefix = "";
+        
+        foreach(string prefix, string dummyFilename; base64ImagePrefixes)
+        {
+            if (uri.startsWith(prefix))
+            {
+                result.format = extension(dummyFilename);
+                result.dummyFilename = dummyFilename;
+                result.prefix = prefix;
+                break;
+            }
+        }
+        
+        return result;
     }
 
     ~this()
@@ -131,6 +180,7 @@ class AssetManager: Owner
         Delete(imageFactory);
         Delete(hdrImageFactory);
         Delete(loadingThread);
+        Delete(base64ImagePrefixes);
     }
 
     void mountDirectory(string dir)

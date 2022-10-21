@@ -9,8 +9,7 @@
         "src"
     ],
     "dependencies": {
-        "dagon": "*",
-        "dlib": "~>1.0.0"
+        "dagon": "*"
     },
     "libs-windows-x86": [
         "$PACKAGE_DIR/thirdparty/stb-2.0.1/bin/stb_x86"

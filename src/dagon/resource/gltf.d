@@ -609,25 +609,42 @@ class GLTFAsset: Asset, TriangleSet
                 
                 if ("uri" in im)
                 {
-                    String imgFilename = String(rootDir);
-                    imgFilename ~= "/";
-                    imgFilename ~= im["uri"].asString;
-                    
-                    string assetFilename = imgFilename.toString;
+                    string uri = im["uri"].asString;
                     TextureAsset textureAsset = New!TextureAsset(assetManager);
                     
-                    FileStat fstat;
-                    if (fs.stat(assetFilename, fstat))
+                    ImageFormatInfo info = assetManager.detectBase64Image(uri);
+                    if (info.format.length)
                     {
-                        bool res = assetManager.loadAssetThreadSafePart(textureAsset, assetFilename);
+                        auto encoded = uri[info.prefix.length..$];
+                        auto decodedLength = Base64.decodeLength(encoded.length);
+                        auto array = New!(ubyte[])(decodedLength);
+                        auto decoded = Base64.decode(encoded, array);
+                        bool res = assetManager.loadAssetThreadSafePart(textureAsset, decoded, info.dummyFilename);
                         if (!res)
-                            writeln("Warning: failed to load \"", imgFilename, "\"");
+                            writeln("Warning: failed to load Base64-encoded image");
+                        Delete(array);
                     }
                     else
-                        writeln("Warning: image file \"", imgFilename, "\" not found");
+                    {
+                        String imgFilename = String(rootDir);
+                        imgFilename ~= "/";
+                        imgFilename ~= uri;
+                        string assetFilename = imgFilename.toString;
+                        
+                        FileStat fstat;
+                        if (fs.stat(assetFilename, fstat))
+                        {
+                            bool res = assetManager.loadAssetThreadSafePart(textureAsset, assetFilename);
+                            if (!res)
+                                writeln("Warning: failed to load \"", imgFilename, "\"");
+                        }
+                        else
+                            writeln("Warning: image file \"", imgFilename, "\" not found");
+                        
+                        imgFilename.free();
+                    }
                     
                     images.insertBack(textureAsset);
-                    imgFilename.free();
                 }
                 else if ("bufferView" in im)
                 {
