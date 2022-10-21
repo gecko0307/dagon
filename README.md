@@ -72,6 +72,7 @@ Runtime Dependencies
 * [Freetype](https://www.freetype.org) 2.8.1 (optional)
 * [Newton Dynamics](https://github.com/MADEAPPS/newton-dynamics) 3.14 (optional)
 * [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear) (optional)
+* [ImGui](https://github.com/ocornut/imgui) (optional)
 
 Runtime dependencies are automatically deployed on Windows. On other platforms, you will have to install them manually.
 
