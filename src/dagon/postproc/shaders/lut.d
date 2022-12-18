@@ -79,8 +79,17 @@ class LUTShader: Shader
         {
             glActiveTexture(GL_TEXTURE1);
             colorLookupTable.bind();
-            setParameter("colorTable", 1);
             setParameter("enabled", 1);
+            if (colorLookupTable.format.target == GL_TEXTURE_3D)
+            {
+                setParameter("lookupMode", 1);
+                setParameter("colorTableHald", 1);
+            }
+            else
+            {
+                setParameter("lookupMode", 0);
+                setParameter("colorTableSimple", 1);
+            }
         }
         else
         {

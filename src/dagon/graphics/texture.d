@@ -322,6 +322,24 @@ class Texture: Owner
         }
     }
     
+    void createHaldCLUT(SuperImage img, uint size)
+    {
+        TextureFormat format;
+        detectTextureFormat(img, format);
+        TextureBuffer buff;
+        buff.format = format;
+        buff.format.target = GL_TEXTURE_3D;
+        buff.size = TextureSize(size, size, size);
+        buff.mipLevels = 1;
+        buff.data = img.data;
+        createFromBuffer(buff, false);
+        minFilter = GL_LINEAR;
+        magFilter = GL_LINEAR;
+        wrapS = GL_CLAMP_TO_EDGE;
+        wrapT = GL_CLAMP_TO_EDGE;
+        wrapR = GL_CLAMP_TO_EDGE;
+    }
+    
     void createFromBuffer(TextureBuffer buff, bool genMipmaps)
     {
         release();

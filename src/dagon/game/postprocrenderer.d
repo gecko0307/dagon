@@ -343,6 +343,7 @@ class PostProcRenderer: Renderer
         motionBlurShader.radialBlur = radialBlurAmount;
         lensDistortionShader.scale = lensDistortionScale;
         lensDistortionShader.dispersion = lensDistortionDispersion;
+        
         lutShader.colorLookupTable = colorLookupTable;
         if (lutShader.colorLookupTable)
         {

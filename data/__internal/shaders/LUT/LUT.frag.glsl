@@ -3,7 +3,12 @@
 uniform bool enabled;
 
 uniform sampler2D colorBuffer;
-uniform sampler2D colorTable;
+
+uniform sampler2D colorTableSimple;
+uniform sampler3D colorTableHald;
+
+// 0 = simple, 1 = Hald
+uniform int lookupMode;
 
 in vec2 texCoord;
 out vec4 fragColor;
@@ -37,10 +42,20 @@ vec3 lookupColor(sampler2D lookupTable, vec3 textureColor)
     return newColor;
 }
 
+vec3 lookupHald(sampler3D lookupTable, vec3 textureColor)
+{
+    return texture(lookupTable, textureColor).rgb;
+}
+
 void main()
 {
     vec3 res = texture(colorBuffer, texCoord).rgb;
     if (enabled)
-        res = lookupColor(colorTable, res);
+    {
+        if (lookupMode == 1)
+            res = lookupHald(colorTableHald, res);
+        else
+            res = lookupColor(colorTableSimple, res);
+    }
     fragColor = vec4(res, 1.0);
 }
