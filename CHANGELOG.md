@@ -6,7 +6,7 @@ Dagon 0.15.0 - TBD
   - 3D textures support
   - Embedded images support in glTF loader
 - **Post-processing**
-  - [Hald CLUT](http://www.quelsolaar.com/technology/clut.html) support in LUT shader. When you use a 3D texture as a lookup table, the shader will automatically switch to the Hald mode
+  - [Hald CLUT](http://www.quelsolaar.com/technology/clut.html) support in LUT shader + `Texture.createHaldCLUT` method. When you use a 3D texture as a lookup table, the shader will automatically switch to the Hald mode
 - **UI**
   - `FirstPersonViewComponent` uses relative mode by default, and it can be switched with `useRelativeMouseMode` property.
 - **Extensions**
