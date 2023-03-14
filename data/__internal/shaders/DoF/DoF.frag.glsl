@@ -32,11 +32,11 @@ const bool showFocus = false; //show debug focus point and focal range (red = fo
 const int samples = 4; // samples on the first ring
 const int rings = 5; // ring count
 
-const bool manualdof = false; //manual dof calculation
-const float ndofstart = 1.0; // near dof blur start
-const float ndofdist = 2.0; // near dof blur falloff distance
-const float fdofstart = 1.0; // far dof blur start
-const float fdofdist = 3.0; // far dof blur falloff distance
+uniform bool manual; //manual dof calculation
+uniform float nearStart; // near dof blur start
+uniform float nearDistance; // near dof blur falloff distance
+uniform float farStart; // far dof blur start
+uniform float farDistance; // far dof blur falloff distance
 
 const float CoC = 0.03; // circle of confusion size in mm (35mm film = 0.03mm)
 
@@ -193,32 +193,32 @@ void main()
         
         // dof blur factor calculation
         float blur = 0.0;
-        if (manualdof)
+        if (manual)
         {    
             float a = depth-fDepth; // focal plane
-            float b = (a-fdofstart)/fdofdist; // far DoF
-            float c = (-a-ndofstart)/ndofdist; // near Dof
-            blur = (a>0.0)?b:c;
+            float b = (a - farStart) / farDistance; // far DoF
+            float c = (-a - nearStart) / nearDistance; // near Dof
+            blur = (a > 0.0)? b : c;
         }
         else
         {
             float f = focalLength; // focal length in mm
-            float d = fDepth*1000.0; // focal plane in mm
-            float o = depth*1000.0; // depth in mm
-            float a = (o*f)/(o-f); 
-            float b = (d*f)/(d-f); 
-            float c = (d-f)/(d*fstop*CoC); 
-            blur = abs(a-b)*c;
+            float d = fDepth * 1000.0; // focal plane in mm
+            float o = depth * 1000.0; // depth in mm
+            float a = (o * f) / (o - f); 
+            float b = (d * f) / (d - f); 
+            float c = (d - f) / (d * fstop * CoC); 
+            blur = abs(a - b) * c;
         }
         
         blur = clamp(blur, 0.0, 1.0);
         
         // calculation of pattern for ditering
-        vec2 noise = rand(texCoord.xy)*namount*blur;
+        vec2 noise = rand(texCoord.xy) * namount * blur;
         
         // getting blur x and y step factor
-        float w = (1.0/width)*blur*maxblur+noise.x;
-        float h = (1.0/height)*blur*maxblur+noise.y;
+        float w = (1.0 / width) * blur * maxblur + noise.x;
+        float h = (1.0 / height) * blur * maxblur + noise.y;
         
         // calculation of final color
         if (blur >= 0.05)
@@ -231,18 +231,19 @@ void main()
             {   
                 ringsamples = i * samples;
                 
-                for (int j = 0 ; j < ringsamples ; j += 1)   
+                for (int j = 0 ; j < ringsamples ; j += 1)
                 {
-                    float step = PI*2.0 / float(ringsamples);
-                    float pw = (cos(float(j)*step)*float(i));
-                    float ph = (sin(float(j)*step)*float(i));
+                    float step = PI * 2.0 / float(ringsamples);
+                    float pw = (cos(float(j) * step) * float(i));
+                    float ph = (sin(float(j) * step) * float(i));
                     float p = 1.0;
                     if (pentagon)
                     { 
-                        p = penta(vec2(pw,ph));
+                        p = penta(vec2(pw, ph));
                     }
-                    col += color(texCoord.xy + vec2(pw*w,ph*h),blur)*mix(1.0,(float(i))/(float(rings)),bias)*p;  
-                    s += 1.0*mix(1.0,(float(i))/(float(rings)),bias)*p;   
+                    col += color(texCoord.xy + vec2(pw * w, ph * h), blur) * 
+                           mix(1.0, (float(i)) / (float(rings)), bias) * p;
+                    s += 1.0*mix(1.0, (float(i)) / (float(rings)), bias) * p;
                 }
             }
             col /= s; //divide by sample count

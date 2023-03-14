@@ -35,7 +35,6 @@ import dagon.core.time;
 import dagon.graphics.texture;
 import dagon.resource.scene;
 import dagon.render.pass;
-//import dagon.render.passes;
 import dagon.render.view;
 import dagon.render.framebuffer;
 import dagon.render.gbuffer;
@@ -178,6 +177,12 @@ class PostProcRenderer: Renderer
     float focalDepth = 1.5;
     float focalLength = 5.0;
     float fStop = 2.0;
+    
+    bool dofManual = false;
+    float dofNearStart = 1.0;
+    float dofNearDistance = 2.0;
+    float dofFarStart = 1.0;
+    float dofFarDistance = 3.0;
 
     Texture colorLookupTable;
 
@@ -328,12 +333,20 @@ class PostProcRenderer: Renderer
         brightPassShader.luminanceThreshold = glowThreshold;
         glowShader.intensity = glowIntensity;
         passBlur.radius = glowRadius;
+        
         tonemapShader.tonemapper = tonemapper;
         tonemapShader.exposure = exposure;
+        
         dofShader.autofocus = autofocus;
         dofShader.focalDepth = focalDepth;
         dofShader.focalLength = focalLength;
         dofShader.fStop = fStop;
+        dofShader.manual = dofManual;
+        dofShader.nearStart = dofNearStart;
+        dofShader.nearDistance = dofNearDistance;
+        dofShader.farStart = dofFarStart;
+        dofShader.farDistance = dofFarDistance;
+        
         motionBlurShader.samples = motionBlurSamples;
         motionBlurShader.currentFramerate = 60.0f; //1.0 / t.delta;
         motionBlurShader.shutterFramerate = motionBlurFramerate;
@@ -341,6 +354,7 @@ class PostProcRenderer: Renderer
         motionBlurShader.minDistance = motionBlurMinDistance;
         motionBlurShader.maxDistance = motionBlurMaxDistance;
         motionBlurShader.radialBlur = radialBlurAmount;
+        
         lensDistortionShader.scale = lensDistortionScale;
         lensDistortionShader.dispersion = lensDistortionDispersion;
         

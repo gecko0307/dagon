@@ -49,10 +49,16 @@ class DepthOfFieldShader: Shader
 
     bool enabled = true;
     
-    bool autofocus = true;
-    float focalDepth = 1.5;
-    float focalLength = 5.0;
-    float fStop = 2.0;
+    bool autofocus = true; // Focus to screen center
+    float focalDepth = 1.5; // Focal distance value in meters when autofocus is false
+    float focalLength = 5.0; // Focal length in mm
+    float fStop = 2.0; // F-stop value
+    
+    bool manual = false; // Manual DoF calculation
+    float nearStart = 1.0; // Near DoF blur start
+    float nearDistance = 2.0; // Near DoF blur falloff distance
+    float farStart = 1.0; // Far DoF blur start
+    float farDistance = 3.0; // Far DoF blur falloff distance
 
     GBuffer gbuffer;
 
@@ -84,6 +90,12 @@ class DepthOfFieldShader: Shader
         setParameter("focalDepth", focalDepth);
         setParameter("focalLength", focalLength);
         setParameter("fstop", fStop);
+        
+        setParameter("manual", manual);
+        setParameter("nearStart", nearStart);
+        setParameter("nearDistance", nearDistance);
+        setParameter("farStart", farStart);
+        setParameter("farDistance", farDistance);
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
