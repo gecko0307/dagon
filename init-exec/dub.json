@@ -1,5 +1,5 @@
 {
-    "name": "init-exec",   
+    "name": "init-exec",
     "sourcePaths": ["src"],
     "importPaths": ["src"],
     "mainSourceFile": "src/main.d",

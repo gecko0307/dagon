@@ -322,8 +322,9 @@ class Texture: Owner
         }
     }
     
-    void createHaldCLUT(SuperImage img, uint size)
+    void createFromHaldCLUT(SuperImage img, uint size)
     {
+        // TODO: size validation for img.width and img.height
         TextureFormat format;
         detectTextureFormat(img, format);
         TextureBuffer buff;
@@ -350,9 +351,9 @@ class Texture: Owner
         this.size = buff.size;
         this.mipLevels = buff.mipLevels;
         
-        // TODO: 1D images
         if (isCubemap)
             createCubemap(buff.data);
+        // TODO: GL_TEXTURE_1D
         else if (format.target == GL_TEXTURE_2D)
             createTexture2D(buff.data);
         else if (format.target == GL_TEXTURE_3D)

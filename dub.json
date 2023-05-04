@@ -28,7 +28,7 @@
     "stringImportPaths": ["data/__internal"],
 
     "dependencies": {
-        "dlib": "~>1.1.0"
+        "dlib": "~>1.2.0"
     },
 
     "versions": [
