@@ -27,21 +27,6 @@ DEALINGS IN THE SOFTWARE.
 
 deprecated("import dagon.graphics.texture instead") module dagon.graphics.cubemap;
 
-import std.stdio;
-import std.math;
-import std.traits;
-
-import dlib.core.ownership;
-import dlib.image.color;
-import dlib.image.image;
-import dlib.math.vector;
-import dlib.math.matrix;
-import dlib.math.transformation;
-import dlib.math.utils;
-
-import dagon.core.bindings;
-import dagon.graphics.texture;
-
 /*
 class Cubemap: Texture
 {

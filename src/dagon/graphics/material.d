@@ -41,7 +41,6 @@ import dlib.container.dict;
 
 import dagon.core.bindings;
 import dagon.graphics.texture;
-import dagon.graphics.cubemap;
 import dagon.graphics.state;
 import dagon.graphics.shader;
 import dagon.graphics.light;

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2023 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -43,7 +43,6 @@ import dagon.core.bindings;
 import dagon.graphics.material;
 import dagon.graphics.shader;
 import dagon.graphics.state;
-import dagon.graphics.cubemap;
 
 class ParticleShader: Shader
 {
@@ -66,17 +65,6 @@ class ParticleShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        /*
-        auto idiffuse = "diffuse" in state.material.inputs;
-        auto inormal = "normal" in state.material.inputs;
-        auto itransparency = "transparency" in state.material.inputs;
-        auto iparticleColor = "particleColor" in state.material.inputs;
-        auto iparticleSphericalNormal = "particleSphericalNormal" in state.material.inputs;
-        auto ishadeless = "shadeless" in state.material.inputs;
-        auto ialphaCutout = "alphaCutout" in state.material.inputs;
-        auto ialphaCutoutThreshold = "alphaCutoutThreshold" in state.material.inputs;
-        */
-        
         Material mat = state.material;
 
         setParameter("modelViewMatrix", state.modelViewMatrix);
@@ -92,12 +80,6 @@ class ParticleShader: Shader
         setParameter("particleAlpha", state.opacity * mat.opacity);
         setParameter("particleEnergy", mat.emissionEnergy);
         
-        /*
-        if (ialphaCutout)
-            setParameter("alphaCutout", ialphaCutout.asBool);
-        else
-            setParameter("alphaCutout", false);
-        */
         setParameter("alphaCutoutThreshold", mat.alphaTestThreshold);
         setParameter("particlePosition", state.modelViewMatrix.translation);
 

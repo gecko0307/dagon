@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2022 Timur Gafarov
+Copyright (c) 2017-2023 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -129,6 +129,22 @@ enum CubeFaceBit
     PositiveZ = 16,
     NegativeZ = 32,
     All = 0xffffffff
+}
+
+CubeFaceBit cubeFaceBit(CubeFace face)
+{
+    CubeFaceBit cfb = CubeFaceBit.None;
+    switch(face)
+    {
+        case CubeFace.PositiveX: cfb = CubeFaceBit.PositiveX; break;
+        case CubeFace.NegativeX: cfb = CubeFaceBit.NegativeX; break;
+        case CubeFace.PositiveY: cfb = CubeFaceBit.PositiveY; break;
+        case CubeFace.NegativeY: cfb = CubeFaceBit.NegativeY; break;
+        case CubeFace.PositiveZ: cfb = CubeFaceBit.PositiveZ; break;
+        case CubeFace.NegativeZ: cfb = CubeFaceBit.NegativeZ; break;
+        default: break;
+    }
+    return cfb;
 }
 
 struct TextureFormat
@@ -899,6 +915,65 @@ class Texture: Owner
             wrapT = GL_CLAMP_TO_EDGE;
             wrapR = GL_CLAMP_TO_EDGE;
         }
+    }
+    
+    void setFaceBit(CubeFace face)
+    {
+        format.cubeFaces = format.cubeFaces | cubeFaceBit(face);
+    }
+    
+    void setFaceImage(CubeFace face, SuperImage img)
+    {
+        if (img.width != img.height)
+        {
+            writeln("Cubemap face image must be square");
+            return;
+        }
+        
+        TextureFormat tf;
+        if (!detectTextureFormat(img, tf))
+        {
+            writeln("Unsupported image format ", img.pixelFormat);
+            return;
+        }
+        
+        if (!valid)
+        {
+            format.target = GL_TEXTURE_CUBE_MAP;
+            
+            // TODO: store individual size and format for each face
+            
+            size.width = img.width;
+            size.height = img.height;
+            
+            format.format = tf.format;
+            format.internalFormat = tf.internalFormat;
+            format.pixelType = tf.pixelType;
+            format.blockSize = tf.blockSize;
+            
+            glGenTextures(1, &texture);
+            
+            minFilter = GL_LINEAR;
+            magFilter = GL_LINEAR;
+            wrapS = GL_CLAMP_TO_EDGE;
+            wrapT = GL_CLAMP_TO_EDGE;
+            wrapR = GL_CLAMP_TO_EDGE;
+        }
+        
+        setFaceBit(face);
+        
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+        if (isCompressed)
+        {
+            uint size = ((img.width + 3) / 4) * ((img.height + 3) / 4) * tf.blockSize;
+            glCompressedTexImage2D(face, 0, tf.internalFormat, img.width, img.height, 0, size, cast(void*)img.data.ptr);
+        }
+        else
+        {
+            glTexImage2D(face, 0, tf.internalFormat, img.width, img.height, 0, tf.format, tf.pixelType, cast(void*)img.data.ptr);
+        }
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     }
 }
 

@@ -137,8 +137,6 @@ class AreaLightShader: Shader
         }
         else
         {
-            //lightPos = Vector3f(0.0f, 0.0f, 0.0f);
-            //lightColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
             setParameterSubroutine("lightRadiance", ShaderType.Fragment, "lightRadianceFallback");
         }
 
