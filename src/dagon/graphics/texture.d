@@ -366,7 +366,8 @@ class Texture: Owner
         
         if (isCubemap)
             createCubemap(buff.data);
-        // TODO: GL_TEXTURE_1D
+        else if (format.target == GL_TEXTURE_1D)
+            createTexture1D(buff.data);
         else if (format.target == GL_TEXTURE_2D)
             createTexture2D(buff.data);
         else if (format.target == GL_TEXTURE_3D)
@@ -458,6 +459,61 @@ class Texture: Owner
         {
             minFilter = GL_LINEAR;
             magFilter = GL_LINEAR;
+        }
+    }
+    
+    protected void createTexture1D(ubyte[] buffer)
+    {
+        glGenTextures(1, &texture);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_1D, texture);
+        
+        minFilter = GL_LINEAR;
+        magFilter = GL_LINEAR;
+        wrapS = GL_REPEAT;
+        wrapT = GL_REPEAT;
+        wrapR = GL_REPEAT;
+        
+        uint w = size.width;
+        
+        if (isCompressed)
+        {
+            if (mipLevels == 1)
+            {
+                glCompressedTexImage1D(GL_TEXTURE_1D, 0, format.internalFormat, w, 0, cast(uint)buffer.length, cast(void*)buffer.ptr);
+            }
+            else
+            {
+                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_BASE_LEVEL, 0);
+                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAX_LEVEL, mipLevels - 1);
+                
+                uint offset = 0;
+                
+                for (uint mipLevel = 0; mipLevel < mipLevels; mipLevel++)
+                {
+                    uint imageSize = ((w + 3) / 4) * format.blockSize;
+                    
+                    glCompressedTexImage1D(GL_TEXTURE_1D, mipLevel, format.internalFormat, w, 0, imageSize, cast(void*)(buffer.ptr + offset));
+                    
+                    offset += imageSize;
+                    w /= 2;
+                }
+            }
+        }
+        else
+        {
+            if (mipLevels == 1)
+            {
+                glTexImage1D(GL_TEXTURE_1D, 0, format.internalFormat, w, 0, format.format, format.pixelType, cast(void*)buffer.ptr);
+                
+                if (generateMipmaps)
+                {
+                    glGenerateMipmap(GL_TEXTURE_1D);
+                    mipLevels = 1 + cast(uint)floor(log2(w));
+                }
+                else
+                    mipLevels = 1;
+            }
         }
     }
     
