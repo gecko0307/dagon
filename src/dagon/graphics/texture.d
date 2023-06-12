@@ -322,9 +322,22 @@ class Texture: Owner
         }
     }
     
-    void createFromHaldCLUT(SuperImage img, uint size)
+    void createFromImage3D(SuperImage img, uint size = 0)
     {
-        // TODO: size validation for img.width and img.height
+        if (size == 0)
+        {
+            size = cast(uint)cbrt(img.width * img.height);
+        }
+        else
+        {
+            if (img.width != img.height || img.width * img.height != size * size * size)
+            {
+                uint s = cast(uint)sqrt(cast(real)size * size * size);
+                writeln("Wrong image resolution for 3D texture size ", size, ": should be ", s, "x", s);
+                return;
+            }
+        }
+        
         TextureFormat format;
         detectTextureFormat(img, format);
         TextureBuffer buff;
