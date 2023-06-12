@@ -3,17 +3,19 @@ Dagon 0.15.0 - TBD
 - **Core**
   - Relative mouse mode support (`EventManager.setRelativeMouseMode`)
 - **Assets**
-  - 3D textures support
+  - 1D and 3D textures support
   - Embedded images support in glTF loader
+  - Deprecated material properties have been removed
 - **Post-processing**
-  - [Hald CLUT](http://www.quelsolaar.com/technology/clut.html) support in LUT shader + `Texture.createHaldCLUT` method. When you use a 3D texture as a lookup table, the shader will automatically switch to the Hald mode
+  - [Hald CLUT](http://www.quelsolaar.com/technology/clut.html) support in LUT shader + `Texture.createFromImage3D` method. When you use a 3D texture as a lookup table, the shader will automatically switch to the Hald mode
 - **UI**
-  - `FirstPersonViewComponent` uses relative mode by default, and it can be switched with `useRelativeMouseMode` property.
+  - `FirstPersonViewComponent` uses relative mode by default, and it can be switched with `useRelativeMouseMode` property
 - **Extensions**
-  - Updated Newton binding. `NewtonUserJointSetRowSpringDamperAcceleration` was removed in favor of `NewtonUserJointSetRowMassDependentSpringDamperAcceleration` and `NewtonUserJointSetRowMassIndependentSpringDamperAcceleration`
+  - Updated Newton binding
+  - `NewtonUserJointSetRowSpringDamperAcceleration` was removed in favor of `NewtonUserJointSetRowMassDependentSpringDamperAcceleration` and `NewtonUserJointSetRowMassIndependentSpringDamperAcceleration`
   - New method `NewtonRigidBody.localPointVelocity`
 - **Misc**
-  - Dagon now uses dlib 1.1.0.
+  - Dagon now uses dlib 1.2.0.
 
 Dagon 0.14.1 - 9 Sep, 2022
 --------------------------
@@ -46,6 +48,7 @@ Dagon 0.14.0 - 27 Aug, 2022
     - `culling` is now `useCulling`
   - Old material properties are still supported, but deprecated and write-only. `Material.roughness` and `Material.metallic` now don't support textures
   - Texture system redesign. `Texture` class now can be created from raw pixel data without intermediate `SuperImage`, hense DDS textures are now loaded directly to `Texture` object without additional layers of abstraction. Also `Texture` now supports cubemaps in addition to 2D textures
+  - New texturing system for terrains
   - Added support for ASTC texture compression format
   - New module `dagon.graphics.texproc` with `combineTextures` function
   - `alphaMode` support for glTF materials
