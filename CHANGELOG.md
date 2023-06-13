@@ -6,8 +6,10 @@ Dagon 0.15.0 - TBD
   - 1D and 3D textures support
   - Embedded images support in glTF loader
   - Deprecated material properties have been removed
+  - `dagon.graphics.cubemap` module is deprecated, use `dagon.graphics.texture` instead
 - **Post-processing**
   - [Hald CLUT](http://www.quelsolaar.com/technology/clut.html) support in LUT shader + `Texture.createFromImage3D` method. When you use a 3D texture as a lookup table, the shader will automatically switch to the Hald mode
+  - Manual mode parameters for DoF filter: `dofManual`, `dofNearStart`, `dofNearDistance`, `dofFarStart`, `dofFarDistance`
 - **UI**
   - `FirstPersonViewComponent` uses relative mode by default, and it can be switched with `useRelativeMouseMode` property
 - **Extensions**
