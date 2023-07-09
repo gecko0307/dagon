@@ -66,6 +66,8 @@ dub init --type=dagon
 dub build
 ```
 
+Do not delete `data/__internal` folder! It is used to store engine's internal data such as shaders and textures.
+
 Runtime Dependencies
 --------------------
 * [SDL](https://www.libsdl.org) 2.0.14

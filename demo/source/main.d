@@ -32,6 +32,7 @@ class TestScene: Scene
 {
     MyGame game;
     OBJAsset aOBJSuzanne;
+    ImageAsset aCLUT;
 
     this(MyGame game)
     {
@@ -40,16 +41,22 @@ class TestScene: Scene
     }
 
     override void beforeLoad()
-    {    
+    {
         aOBJSuzanne = addOBJAsset("data/suzanne.obj");
+        aCLUT = addImageAsset("data/sangria.png");
     }
 
     override void afterLoad()
     {
+        Texture clut = New!Texture(assetManager);
+        clut.createFromImage3D(aCLUT.image);
+        
         game.deferredRenderer.ssaoEnabled = true;
         game.deferredRenderer.ssaoPower = 6.0;
         game.postProcessingRenderer.tonemapper = Tonemapper.Filmic;
         game.postProcessingRenderer.fxaaEnabled = true;
+        game.postProcessingRenderer.colorLookupTable = clut;
+        game.postProcessingRenderer.lutEnabled = true;
         
         auto camera = addCamera();
         auto freeview = New!FreeviewComponent(eventManager, camera);
