@@ -34,17 +34,17 @@ import std.process;
 version(Windows)
 {
     extern(Windows) int GetLocaleInfoW(
-        in uint Locale,
-        in uint LCType,
+        uint Locale,
+        uint LCType,
         wchar* lpLCData,
-        in int cchData
+        int cchData
     );
     
     extern(Windows) int GetLocaleInfoA(
-        in uint Locale,
-        in uint LCType,
+        uint Locale,
+        uint LCType,
         char* lpLCData,
-        in int cchData
+        int cchData
     );
     
     enum uint LOCALE_USER_DEFAULT = 0x0400;
