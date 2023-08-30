@@ -2,6 +2,7 @@ Dagon 0.15.0 - TBD
 ------------------
 - **Core**
   - Relative mouse mode support (`EventManager.setRelativeMouseMode`)
+  - `dagon.core.locale`: fix deprecations in Windows locale API signatures
 - **Assets**
   - 1D and 3D textures support
   - Embedded images support in glTF loader
@@ -17,7 +18,7 @@ Dagon 0.15.0 - TBD
   - `NewtonUserJointSetRowSpringDamperAcceleration` was removed in favor of `NewtonUserJointSetRowMassDependentSpringDamperAcceleration` and `NewtonUserJointSetRowMassIndependentSpringDamperAcceleration`
   - New method `NewtonRigidBody.localPointVelocity`
 - **Misc**
-  - Dagon now uses dlib 1.2.0.
+  - Dagon now uses dlib 1.2.1.
 
 Dagon 0.14.1 - 9 Sep, 2022
 --------------------------
