@@ -103,4 +103,5 @@ Made with Dagon
 * [Electronvolt](https://github.com/gecko0307/electronvolt) - work-in-progress first person puzzle based on Dagon
 * [dagon-sandbox](https://github.com/gecko0307/dagon-sandbox) - a test application that demonstrates some of Dagon's features
 * [Dagoban](https://github.com/Timu5/dagoban) - a Sokoban clone
+* [sacengine](https://github.com/tg-2/sacengine) - [Sacrifice](https://en.wikipedia.org/wiki/Sacrifice_(video_game)) engine reimplementation
 * [dagon-shooter](https://github.com/aferust/dagon-shooter) - a shooter game
