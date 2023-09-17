@@ -30,6 +30,7 @@ module dagon.graphics.entity;
 import std.math;
 
 import dlib.core.ownership;
+import dlib.core.memory;
 import dlib.container.array;
 import dlib.math.vector;
 import dlib.math.matrix;
@@ -48,23 +49,54 @@ import dagon.graphics.terrain;
 import dagon.graphics.material;
 import dagon.graphics.tween;
 
+class ArrayCollection(T)
+{
+    Array!T array;
+    
+    this()
+    {
+    }
+    
+    int opApply(scope int delegate(size_t i, ref T) dg)
+    {
+        return array.opApply(dg);
+    }
+    
+    int opApply(scope int delegate(ref T) dg)
+    {
+        return array.opApply(dg);
+    }
+    
+    int opApplyReverse(scope int delegate(size_t i, ref T) dg)
+    {
+        return array.opApplyReverse(dg);
+    }
+    
+    int opApplyReverse(scope int delegate(ref T) dg)
+    {
+        return array.opApplyReverse(dg);
+    }
+}
+
 class EntityManager: Owner
 {
-    Array!Entity entities;
+    ArrayCollection!Entity entities;
 
     this(Owner owner)
     {
         super(owner);
+        entities = New!(ArrayCollection!Entity)();
     }
 
     void addEntity(Entity e)
     {
-        entities.append(e);
+        entities.array.append(e);
     }
 
     ~this()
     {
-        entities.free();
+        entities.array.free();
+        Delete(entities);
     }
 }
 

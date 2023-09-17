@@ -283,10 +283,8 @@ class EntityGroupSpatial: Owner, EntityGroup
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
-        auto entities = entityManager.entities.data;
-        for(size_t i = 0; i < entities.length; i++)
+        foreach(size_t i, Entity e; entityManager.entities)
         {
-            auto e = entities[i];
             if (e.layer == EntityLayer.Spatial && !e.decal)
             {
                 res = dg(e);
@@ -311,10 +309,8 @@ class EntityGroupDecals: Owner, EntityGroup
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
-        auto entities = entityManager.entities.data;
-        for(size_t i = 0; i < entities.length; i++)
+        foreach(size_t i, Entity e; entityManager.entities)
         {
-            auto e = entities[i];
             if (e.decal)
             {
                 res = dg(e);
@@ -341,10 +337,8 @@ class EntityGroupSpatialOpaque: Owner, EntityGroup
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
-        auto entities = entityManager.entities.data;
-        for(size_t i = 0; i < entities.length; i++)
+        foreach(size_t i, Entity e; entityManager.entities)
         {
-            auto e = entities[i];
             if (e.layer == EntityLayer.Spatial && !e.decal)
             {
                 bool transparent = false;
@@ -379,10 +373,8 @@ class EntityGroupSpatialTransparent: Owner, EntityGroup
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
-        auto entities = entityManager.entities.data;
-        for(size_t i = 0; i < entities.length; i++)
+        foreach(size_t i, Entity e; entityManager.entities)
         {
-            auto e = entities[i];
             if (e.layer == EntityLayer.Spatial && !e.decal)
             {
                 bool transparent = false;
@@ -417,10 +409,8 @@ class EntityGroupBackground: Owner, EntityGroup
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
-        auto entities = entityManager.entities.data;
-        for(size_t i = 0; i < entities.length; i++)
+        foreach(size_t i, Entity e; entityManager.entities)
         {
-            auto e = entities[i];
             if (e.layer == EntityLayer.Background)
             {
                 res = dg(e);
@@ -445,10 +435,8 @@ class EntityGroupForeground: Owner, EntityGroup
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
-        auto entities = entityManager.entities.data;
-        for(size_t i = 0; i < entities.length; i++)
+        foreach(size_t i, Entity e; entityManager.entities)
         {
-            auto e = entities[i];
             if (e.layer == EntityLayer.Foreground)
             {
                 res = dg(e);
@@ -473,10 +461,8 @@ class EntityGroupLights: Owner, EntityGroup
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
-        auto entities = entityManager.entities.data;
-        for(size_t i = 0; i < entities.length; i++)
+        foreach(size_t i, Entity e; entityManager.entities)
         {
-            auto e = entities[i];
             Light light = cast(Light)e;
             if (light)
             {
@@ -502,10 +488,8 @@ class EntityGroupSunLights: Owner, EntityGroup
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
-        auto entities = entityManager.entities.data;
-        for(size_t i = 0; i < entities.length; i++)
+        foreach(size_t i, Entity e; entityManager.entities)
         {
-            auto e = entities[i];
             Light light = cast(Light)e;
             if (light)
             {
@@ -534,10 +518,8 @@ class EntityGroupAreaLights: Owner, EntityGroup
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
-        auto entities = entityManager.entities.data;
-        for(size_t i = 0; i < entities.length; i++)
+        foreach(size_t i, Entity e; entityManager.entities)
         {
-            auto e = entities[i];
             Light light = cast(Light)e;
             if (light)
             {
