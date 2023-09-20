@@ -49,54 +49,48 @@ import dagon.graphics.terrain;
 import dagon.graphics.material;
 import dagon.graphics.tween;
 
-class ArrayCollection(T)
-{
-    Array!T array;
-    
-    this()
-    {
-    }
-    
-    int opApply(scope int delegate(size_t i, ref T) dg)
-    {
-        return array.opApply(dg);
-    }
-    
-    int opApply(scope int delegate(ref T) dg)
-    {
-        return array.opApply(dg);
-    }
-    
-    int opApplyReverse(scope int delegate(size_t i, ref T) dg)
-    {
-        return array.opApplyReverse(dg);
-    }
-    
-    int opApplyReverse(scope int delegate(ref T) dg)
-    {
-        return array.opApplyReverse(dg);
-    }
-}
-
 class EntityManager: Owner
 {
-    ArrayCollection!Entity entities;
+    protected Array!Entity array;
 
     this(Owner owner)
     {
         super(owner);
-        entities = New!(ArrayCollection!Entity)();
     }
 
     void addEntity(Entity e)
     {
-        entities.array.append(e);
+        array.append(e);
+    }
+    
+    int opApply(scope int delegate(size_t, ref Entity) dg)
+    {
+        return array.opApply(dg);
+    }
+    
+    int opApply(scope int delegate(ref Entity) dg)
+    {
+        return array.opApply(dg);
+    }
+    
+    int opApplyReverse(scope int delegate(size_t, ref Entity) dg)
+    {
+        return array.opApplyReverse(dg);
+    }
+    
+    int opApplyReverse(scope int delegate(ref Entity) dg)
+    {
+        return array.opApplyReverse(dg);
+    }
+    
+    size_t length()
+    {
+        return array.length;
     }
 
     ~this()
     {
-        entities.array.free();
-        Delete(entities);
+        array.free();
     }
 }
 

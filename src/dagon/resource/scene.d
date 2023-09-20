@@ -262,7 +262,7 @@ class Scene: EventListener
 
             onUpdate(t);
 
-            foreach(e; entityManager.entities)
+            foreach(e; entityManager)
             {
                 e.update(t);
             }
@@ -283,7 +283,7 @@ class EntityGroupSpatial: Owner, EntityGroup
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
-        foreach(size_t i, Entity e; entityManager.entities)
+        foreach(size_t i, Entity e; entityManager)
         {
             if (e.layer == EntityLayer.Spatial && !e.decal)
             {
@@ -309,7 +309,7 @@ class EntityGroupDecals: Owner, EntityGroup
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
-        foreach(size_t i, Entity e; entityManager.entities)
+        foreach(size_t i, Entity e; entityManager)
         {
             if (e.decal)
             {
@@ -337,7 +337,7 @@ class EntityGroupSpatialOpaque: Owner, EntityGroup
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
-        foreach(size_t i, Entity e; entityManager.entities)
+        foreach(size_t i, Entity e; entityManager)
         {
             if (e.layer == EntityLayer.Spatial && !e.decal)
             {
@@ -373,7 +373,7 @@ class EntityGroupSpatialTransparent: Owner, EntityGroup
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
-        foreach(size_t i, Entity e; entityManager.entities)
+        foreach(size_t i, Entity e; entityManager)
         {
             if (e.layer == EntityLayer.Spatial && !e.decal)
             {
@@ -409,7 +409,7 @@ class EntityGroupBackground: Owner, EntityGroup
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
-        foreach(size_t i, Entity e; entityManager.entities)
+        foreach(size_t i, Entity e; entityManager)
         {
             if (e.layer == EntityLayer.Background)
             {
@@ -435,7 +435,7 @@ class EntityGroupForeground: Owner, EntityGroup
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
-        foreach(size_t i, Entity e; entityManager.entities)
+        foreach(size_t i, Entity e; entityManager)
         {
             if (e.layer == EntityLayer.Foreground)
             {
@@ -461,7 +461,7 @@ class EntityGroupLights: Owner, EntityGroup
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
-        foreach(size_t i, Entity e; entityManager.entities)
+        foreach(size_t i, Entity e; entityManager)
         {
             Light light = cast(Light)e;
             if (light)
@@ -488,7 +488,7 @@ class EntityGroupSunLights: Owner, EntityGroup
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
-        foreach(size_t i, Entity e; entityManager.entities)
+        foreach(size_t i, Entity e; entityManager)
         {
             Light light = cast(Light)e;
             if (light)
@@ -518,7 +518,7 @@ class EntityGroupAreaLights: Owner, EntityGroup
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
-        foreach(size_t i, Entity e; entityManager.entities)
+        foreach(size_t i, Entity e; entityManager)
         {
             Light light = cast(Light)e;
             if (light)
