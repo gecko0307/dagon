@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.graphics.camera;
 
+import dlib.core.ownership;
 import dlib.math.matrix;
 import dagon.graphics.entity;
 
@@ -36,9 +37,9 @@ class Camera: Entity
     float zNear = 0.01f;
     float zFar = 1000.0f;
     
-    this(EntityManager manager)
+    this(Owner owner)
     {
-        super(manager);
+        super(owner);
         
         visible = false;
         castShadow = false;

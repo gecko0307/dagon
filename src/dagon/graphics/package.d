@@ -53,4 +53,5 @@ public
     import dagon.graphics.texproc;
     import dagon.graphics.tween;
     import dagon.graphics.updateable;
+    import dagon.graphics.world;
 }

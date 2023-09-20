@@ -167,17 +167,17 @@ class DeferredRenderer: Renderer
 
     override void scene(Scene s)
     {
-        passShadow.group = s.spatial;
-        passShadow.lightGroup = s.lights;
-        passBackground.group = s.background;
-        passTerrain.group = s.spatial;
-        passStaticGeometry.group = s.spatialOpaqueStatic;
-        passDecal.group = s.decals;
-        passDynamicGeometry.group = s.spatialOpaqueDynamic;
-        passLight.groupSunLights = s.sunLights;
-        passLight.groupAreaLights = s.areaLights;
-        passForward.group = s.spatialTransparent;
-        passParticles.group = s.spatial;
+        passShadow.group = s.world.spatial;
+        passShadow.lightGroup = s.world.lights;
+        passBackground.group = s.world.background;
+        passTerrain.group = s.world.spatial;
+        passStaticGeometry.group = s.world.spatialOpaqueStatic;
+        passDecal.group = s.world.decals;
+        passDynamicGeometry.group = s.world.spatialOpaqueDynamic;
+        passLight.groupSunLights = s.world.sunLights;
+        passLight.groupAreaLights = s.world.areaLights;
+        passForward.group = s.world.spatialTransparent;
+        passParticles.group = s.world.spatial;
         
         pipeline.environment = s.environment;
     }

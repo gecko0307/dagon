@@ -124,6 +124,6 @@ class HUDRenderer: Renderer
 
     override void scene(Scene s)
     {
-        passHUD.group = s.foreground;
+        passHUD.group = s.world.foreground;
     }
 }

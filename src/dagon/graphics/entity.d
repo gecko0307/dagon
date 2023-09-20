@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2023 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -48,51 +48,7 @@ import dagon.graphics.mesh;
 import dagon.graphics.terrain;
 import dagon.graphics.material;
 import dagon.graphics.tween;
-
-class EntityManager: Owner
-{
-    protected Array!Entity array;
-
-    this(Owner owner)
-    {
-        super(owner);
-    }
-
-    void addEntity(Entity e)
-    {
-        array.append(e);
-    }
-    
-    int opApply(scope int delegate(size_t, ref Entity) dg)
-    {
-        return array.opApply(dg);
-    }
-    
-    int opApply(scope int delegate(ref Entity) dg)
-    {
-        return array.opApply(dg);
-    }
-    
-    int opApplyReverse(scope int delegate(size_t, ref Entity) dg)
-    {
-        return array.opApplyReverse(dg);
-    }
-    
-    int opApplyReverse(scope int delegate(ref Entity) dg)
-    {
-        return array.opApplyReverse(dg);
-    }
-    
-    size_t length()
-    {
-        return array.length;
-    }
-
-    ~this()
-    {
-        array.free();
-    }
-}
+import dagon.graphics.world;
 
 enum EntityLayer: int
 {
@@ -123,7 +79,7 @@ class Entity: Owner, Updateable
     float gbufferMask = 1.0f;
     float blurMask = 1.0f;
 
-    EntityManager manager;
+    World world;
 
     Entity parent = null;
     Array!Entity children;
@@ -157,11 +113,11 @@ class Entity: Owner, Updateable
     {
         super(owner);
 
-        EntityManager mngr = cast(EntityManager)owner;
-        if (mngr)
+        World w = cast(World)owner;
+        if (w)
         {
-            manager = mngr;
-            manager.addEntity(this);
+            world = w;
+            world.addEntity(this);
         }
 
         position = Vector3f(0, 0, 0);

@@ -77,9 +77,9 @@ class Light: Entity
     float diffuse;
     float specular;
 
-    this(EntityManager manager)
+    this(Owner owner)
     {
-        super(manager);
+        super(owner);
         visible = false;
         castShadow = false;
         shining = true;

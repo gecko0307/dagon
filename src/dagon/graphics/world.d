@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2023 Timur Gafarov
+Copyright (c) 2023 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,41 +25,19 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.resource.scene;
-
-import std.path;
+module dagon.graphics.world;
 
 import dlib.core.memory;
 import dlib.core.ownership;
-import dlib.math.vector;
-
-import dagon.core.application;
-import dagon.core.bindings;
-import dagon.core.event;
-import dagon.core.time;
+import dlib.container.array;
 
 import dagon.graphics.entity;
-import dagon.graphics.camera;
 import dagon.graphics.light;
-import dagon.graphics.environment;
-import dagon.graphics.shapes;
-import dagon.graphics.material;
-import dagon.graphics.world;
 
-import dagon.resource.asset;
-import dagon.resource.obj;
-import dagon.resource.gltf;
-import dagon.resource.image;
-import dagon.resource.texture;
-import dagon.resource.text;
-import dagon.resource.binary;
-
-class Scene: EventListener
+class World: Owner
 {
-    Application application;
-    AssetManager assetManager;
-    World world;
-    /*
+    protected Array!Entity array;
+    
     EntityGroupSpatial spatial;
     EntityGroupSpatialOpaque spatialOpaqueStatic;
     EntityGroupSpatialOpaque spatialOpaqueDynamic;
@@ -70,211 +48,59 @@ class Scene: EventListener
     EntityGroupSunLights sunLights;
     EntityGroupAreaLights areaLights;
     EntityGroupDecals decals;
-    */
-    Environment environment;
-    ShapeBox decalShape;
-    bool isLoading = false;
-    bool loaded = false;
-    bool canRender = false;
-    bool focused = true;
 
-    this(Application application)
+    this(Owner owner)
     {
-        super(application.eventManager, application);
-        this.application = application;
-        world = New!World(this);
-        /*
-        spatial = New!EntityGroupSpatial(world, this);
-        spatialOpaqueStatic = New!EntityGroupSpatialOpaque(world, false, this);
-        spatialOpaqueDynamic = New!EntityGroupSpatialOpaque(world, true, this);
-        spatialTransparent = New!EntityGroupSpatialTransparent(world, this);
-        background = New!EntityGroupBackground(world, this);
-        foreground = New!EntityGroupForeground(world, this);
-        lights = New!EntityGroupLights(world, this);
-        sunLights = New!EntityGroupSunLights(world, this);
-        areaLights = New!EntityGroupAreaLights(world, this);
-        decals = New!EntityGroupDecals(world, this);
-        */
-
-        environment = New!Environment(this);
-        decalShape = New!ShapeBox(Vector3f(1, 1, 1), this);
-
-        assetManager = New!AssetManager(eventManager, this);
-        beforeLoad();
-        isLoading = true;
-        assetManager.loadThreadSafePart();
+        super(owner);
+        
+        spatial = New!EntityGroupSpatial(this, this);
+        spatialOpaqueStatic = New!EntityGroupSpatialOpaque(this, false, this);
+        spatialOpaqueDynamic = New!EntityGroupSpatialOpaque(this, true, this);
+        spatialTransparent = New!EntityGroupSpatialTransparent(this, this);
+        background = New!EntityGroupBackground(this, this);
+        foreground = New!EntityGroupForeground(this, this);
+        lights = New!EntityGroupLights(this, this);
+        sunLights = New!EntityGroupSunLights(this, this);
+        areaLights = New!EntityGroupAreaLights(this, this);
+        decals = New!EntityGroupDecals(this, this);
     }
 
-    // Set preload to true if you want to load the asset immediately
-    // before actual loading (e.g., to render a loading screen)
-    Asset addAsset(Asset asset, string filename, bool preload = false)
+    void addEntity(Entity e)
     {
-        if (preload)
-            assetManager.preloadAsset(asset, filename);
-        else
-            assetManager.addAsset(asset, filename);
-        return asset;
+        array.append(e);
+    }
+    
+    int opApply(scope int delegate(size_t, ref Entity) dg)
+    {
+        return array.opApply(dg);
+    }
+    
+    int opApply(scope int delegate(ref Entity) dg)
+    {
+        return array.opApply(dg);
+    }
+    
+    int opApplyReverse(scope int delegate(size_t, ref Entity) dg)
+    {
+        return array.opApplyReverse(dg);
+    }
+    
+    int opApplyReverse(scope int delegate(ref Entity) dg)
+    {
+        return array.opApplyReverse(dg);
+    }
+    
+    size_t length()
+    {
+        return array.length;
     }
 
-    T addAssetAs(T)(string filename, bool preload = false)
+    ~this()
     {
-        T newAsset;
-        if (assetManager.assetExists(filename))
-            newAsset = cast(T)assetManager.getAsset(filename);
-        else
-        {
-            static if (is(T: ImageAsset) || is(T: TextureAsset))
-            {
-                newAsset = New!T(assetManager);
-            }
-            /*
-            else static if (is(T: PackageAsset))
-            {
-                newAsset = New!T(this, assetManager);
-            }
-            */
-            else
-            {
-                newAsset = New!T(assetManager);
-            }
-            addAsset(newAsset, filename, preload);
-        }
-        return newAsset;
-    }
-
-    alias addImageAsset = addAssetAs!ImageAsset;
-    alias addTextureAsset = addAssetAs!TextureAsset;
-    alias addOBJAsset = addAssetAs!OBJAsset;
-    alias addGLTFAsset = addAssetAs!GLTFAsset;
-    alias addTextAsset = addAssetAs!TextAsset;
-    alias addBinaryAsset = addAssetAs!BinaryAsset;
-    //alias addPackageAsset = addAssetAs!PackageAsset;
-
-    Material addMaterial()
-    {
-        return New!Material(assetManager);
-    }
-
-    Material addDecalMaterial()
-    {
-        auto mat = addMaterial();
-        mat.blendMode = Transparent;
-        mat.depthWrite = false;
-        mat.useCulling = false;
-        return mat;
-    }
-
-    /*
-    Cubemap addCubemap(uint size)
-    {
-        return New!Cubemap(size, assetManager);
-    }
-    */
-
-    Entity addEntity(Entity parent = null)
-    {
-        Entity e = New!Entity(world);
-        if (parent)
-            e.setParent(parent);
-        return e;
-    }
-
-    Entity useEntity(Entity e)
-    {
-        world.addEntity(e);
-        return e;
-    }
-
-    Entity addEntityHUD(Entity parent = null)
-    {
-        Entity e = New!Entity(world);
-        e.layer = EntityLayer.Foreground;
-        if (parent)
-            e.setParent(parent);
-        return e;
-    }
-
-    Camera addCamera(Entity parent = null)
-    {
-        Camera c = New!Camera(world);
-        if (parent)
-            c.setParent(parent);
-        return c;
-    }
-
-    Light addLight(LightType type, Entity parent = null)
-    {
-        Light light = New!Light(world);
-        if (parent)
-            light.setParent(parent);
-        light.type = type;
-        return light;
-    }
-
-    Entity addDecal(Entity parent = null)
-    {
-        Entity e = New!Entity(world);
-        e.decal = true;
-        e.drawable = decalShape;
-        if (parent)
-            e.setParent(parent);
-        return e;
-    }
-
-    // Override me
-    void beforeLoad()
-    {
-    }
-
-    // Override me
-    void onLoad(Time t, float progress)
-    {
-    }
-
-    // Override me
-    void afterLoad()
-    {
-    }
-
-    // Override me
-    void onUpdate(Time t)
-    {
-    }
-
-    import std.stdio;
-
-    void update(Time t)
-    {
-        if (focused)
-            processEvents();
-
-        if (isLoading)
-        {
-            onLoad(t, assetManager.nextLoadingPercentage);
-            isLoading = assetManager.isLoading;
-        }
-        else
-        {
-            if (!loaded)
-            {
-                assetManager.loadThreadUnsafePart();
-                loaded = true;
-                afterLoad();
-                onLoad(t, 1.0f);
-                canRender = true;
-            }
-
-            onUpdate(t);
-
-            foreach(e; world)
-            {
-                e.update(t);
-            }
-        }
+        array.free();
     }
 }
 
-/*
 class EntityGroupSpatial: Owner, EntityGroup
 {
     World world;
@@ -541,4 +367,3 @@ class EntityGroupAreaLights: Owner, EntityGroup
         return res;
     }
 }
-*/
