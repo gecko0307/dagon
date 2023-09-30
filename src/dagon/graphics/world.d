@@ -30,12 +30,17 @@ module dagon.graphics.world;
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.container.array;
+import dlib.math.matrix;
 
 import dagon.graphics.entity;
 import dagon.graphics.light;
 
 class World: Owner
 {
+    Matrix4x4f rootTransformation;
+    Matrix4x4f rootInvTransformation;
+    Matrix4x4f prevRootTransformation;
+    
     protected Array!Entity array;
     
     EntityGroupSpatial spatial;
@@ -52,6 +57,10 @@ class World: Owner
     this(Owner owner)
     {
         super(owner);
+        
+        rootTransformation = Matrix4x4f.identity;
+        rootInvTransformation = Matrix4x4f.identity;
+        prevRootTransformation = Matrix4x4f.identity;
         
         spatial = New!EntityGroupSpatial(this, this);
         spatialOpaqueStatic = New!EntityGroupSpatialOpaque(this, false, this);

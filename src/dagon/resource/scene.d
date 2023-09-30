@@ -59,18 +59,6 @@ class Scene: EventListener
     Application application;
     AssetManager assetManager;
     World world;
-    /*
-    EntityGroupSpatial spatial;
-    EntityGroupSpatialOpaque spatialOpaqueStatic;
-    EntityGroupSpatialOpaque spatialOpaqueDynamic;
-    EntityGroupSpatialTransparent spatialTransparent;
-    EntityGroupBackground background;
-    EntityGroupForeground foreground;
-    EntityGroupLights lights;
-    EntityGroupSunLights sunLights;
-    EntityGroupAreaLights areaLights;
-    EntityGroupDecals decals;
-    */
     Environment environment;
     ShapeBox decalShape;
     bool isLoading = false;
@@ -83,18 +71,6 @@ class Scene: EventListener
         super(application.eventManager, application);
         this.application = application;
         world = New!World(this);
-        /*
-        spatial = New!EntityGroupSpatial(world, this);
-        spatialOpaqueStatic = New!EntityGroupSpatialOpaque(world, false, this);
-        spatialOpaqueDynamic = New!EntityGroupSpatialOpaque(world, true, this);
-        spatialTransparent = New!EntityGroupSpatialTransparent(world, this);
-        background = New!EntityGroupBackground(world, this);
-        foreground = New!EntityGroupForeground(world, this);
-        lights = New!EntityGroupLights(world, this);
-        sunLights = New!EntityGroupSunLights(world, this);
-        areaLights = New!EntityGroupAreaLights(world, this);
-        decals = New!EntityGroupDecals(world, this);
-        */
 
         environment = New!Environment(this);
         decalShape = New!ShapeBox(Vector3f(1, 1, 1), this);
@@ -127,12 +103,6 @@ class Scene: EventListener
             {
                 newAsset = New!T(assetManager);
             }
-            /*
-            else static if (is(T: PackageAsset))
-            {
-                newAsset = New!T(this, assetManager);
-            }
-            */
             else
             {
                 newAsset = New!T(assetManager);
@@ -148,7 +118,6 @@ class Scene: EventListener
     alias addGLTFAsset = addAssetAs!GLTFAsset;
     alias addTextAsset = addAssetAs!TextAsset;
     alias addBinaryAsset = addAssetAs!BinaryAsset;
-    //alias addPackageAsset = addAssetAs!PackageAsset;
 
     Material addMaterial()
     {
@@ -163,13 +132,6 @@ class Scene: EventListener
         mat.useCulling = false;
         return mat;
     }
-
-    /*
-    Cubemap addCubemap(uint size)
-    {
-        return New!Cubemap(size, assetManager);
-    }
-    */
 
     Entity addEntity(Entity parent = null)
     {
@@ -273,272 +235,3 @@ class Scene: EventListener
         }
     }
 }
-
-/*
-class EntityGroupSpatial: Owner, EntityGroup
-{
-    World world;
-
-    this(World world, Owner owner)
-    {
-        super(owner);
-        this.world = world;
-    }
-
-    int opApply(scope int delegate(Entity) dg)
-    {
-        int res = 0;
-        foreach(size_t i, Entity e; world)
-        {
-            if (e.layer == EntityLayer.Spatial && !e.decal)
-            {
-                res = dg(e);
-                if (res)
-                    break;
-            }
-        }
-        return res;
-    }
-}
-
-class EntityGroupDecals: Owner, EntityGroup
-{
-    World world;
-
-    this(World world, Owner owner)
-    {
-        super(owner);
-        this.world = world;
-    }
-
-    int opApply(scope int delegate(Entity) dg)
-    {
-        int res = 0;
-        foreach(size_t i, Entity e; world)
-        {
-            if (e.decal)
-            {
-                res = dg(e);
-                if (res)
-                    break;
-            }
-        }
-        return res;
-    }
-}
-
-class EntityGroupSpatialOpaque: Owner, EntityGroup
-{
-    World world;
-    bool dynamic = true;
-
-    this(World world, bool dynamic, Owner owner)
-    {
-        super(owner);
-        this.world = world;
-        this.dynamic = dynamic;
-    }
-
-    int opApply(scope int delegate(Entity) dg)
-    {
-        int res = 0;
-        foreach(size_t i, Entity e; world)
-        {
-            if (e.layer == EntityLayer.Spatial && !e.decal)
-            {
-                bool transparent = false;
-                
-                if (e.material)
-                    transparent = e.material.isTransparent;
-                
-                transparent = transparent || e.transparent || e.opacity < 1.0f;
-                
-                if (!transparent && e.dynamic == dynamic)
-                {
-                    res = dg(e);
-                    if (res)
-                        break;
-                }
-            }
-        }
-        return res;
-    }
-}
-
-class EntityGroupSpatialTransparent: Owner, EntityGroup
-{
-    World world;
-
-    this(World world, Owner owner)
-    {
-        super(owner);
-        this.world = world;
-    }
-
-    int opApply(scope int delegate(Entity) dg)
-    {
-        int res = 0;
-        foreach(size_t i, Entity e; world)
-        {
-            if (e.layer == EntityLayer.Spatial && !e.decal)
-            {
-                bool transparent = false;
-                
-                if (e.material)
-                    transparent = e.material.isTransparent;
-                
-                transparent = transparent || e.transparent || e.opacity < 1.0f;
-                
-                if (transparent)
-                {
-                    res = dg(e);
-                    if (res)
-                        break;
-                }
-            }
-        }
-        return res;
-    }
-}
-
-class EntityGroupBackground: Owner, EntityGroup
-{
-    World world;
-
-    this(World world, Owner owner)
-    {
-        super(owner);
-        this.world = world;
-    }
-
-    int opApply(scope int delegate(Entity) dg)
-    {
-        int res = 0;
-        foreach(size_t i, Entity e; world)
-        {
-            if (e.layer == EntityLayer.Background)
-            {
-                res = dg(e);
-                if (res)
-                    break;
-            }
-        }
-        return res;
-    }
-}
-
-class EntityGroupForeground: Owner, EntityGroup
-{
-    World world;
-
-    this(World world, Owner owner)
-    {
-        super(owner);
-        this.world = world;
-    }
-
-    int opApply(scope int delegate(Entity) dg)
-    {
-        int res = 0;
-        foreach(size_t i, Entity e; world)
-        {
-            if (e.layer == EntityLayer.Foreground)
-            {
-                res = dg(e);
-                if (res)
-                    break;
-            }
-        }
-        return res;
-    }
-}
-
-class EntityGroupLights: Owner, EntityGroup
-{
-    World world;
-
-    this(World world, Owner owner)
-    {
-        super(owner);
-        this.world = world;
-    }
-
-    int opApply(scope int delegate(Entity) dg)
-    {
-        int res = 0;
-        foreach(size_t i, Entity e; world)
-        {
-            Light light = cast(Light)e;
-            if (light)
-            {
-                res = dg(e);
-                if (res)
-                    break;
-            }
-        }
-        return res;
-    }
-}
-
-class EntityGroupSunLights: Owner, EntityGroup
-{
-    World world;
-
-    this(World world, Owner owner)
-    {
-        super(owner);
-        this.world = world;
-    }
-
-    int opApply(scope int delegate(Entity) dg)
-    {
-        int res = 0;
-        foreach(size_t i, Entity e; world)
-        {
-            Light light = cast(Light)e;
-            if (light)
-            {
-                if (light.type == LightType.Sun)
-                {
-                    res = dg(e);
-                    if (res)
-                        break;
-                }
-            }
-        }
-        return res;
-    }
-}
-
-class EntityGroupAreaLights: Owner, EntityGroup
-{
-    World world;
-
-    this(World world, Owner owner)
-    {
-        super(owner);
-        this.world = world;
-    }
-
-    int opApply(scope int delegate(Entity) dg)
-    {
-        int res = 0;
-        foreach(size_t i, Entity e; world)
-        {
-            Light light = cast(Light)e;
-            if (light)
-            {
-                if (light.type == LightType.AreaSphere ||
-                    light.type == LightType.AreaTube ||
-                    light.type == LightType.Spot)
-                {
-                    res = dg(e);
-                    if (res)
-                        break;
-                }
-            }
-        }
-        return res;
-    }
-}
-*/

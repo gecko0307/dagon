@@ -182,6 +182,12 @@ class Entity: Owner, Updateable
             invAbsoluteTransformation = invTransformation * parent.invAbsoluteTransformation;
             prevAbsoluteTransformation = parent.prevAbsoluteTransformation * prevTransformation;
         }
+        else if (world !is null)
+        {
+            absoluteTransformation = world.rootTransformation * transformation;
+            invAbsoluteTransformation = invTransformation * world.rootInvTransformation;
+            prevAbsoluteTransformation = world.prevRootTransformation * prevTransformation;
+        }
         else
         {
             absoluteTransformation = transformation;
