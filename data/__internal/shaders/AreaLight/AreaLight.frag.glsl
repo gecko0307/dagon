@@ -1,6 +1,7 @@
 #version 400 core
 
 #define PI 3.14159265359
+const float invPI = 1.0 / PI;
 
 uniform sampler2D colorBuffer;
 uniform sampler2D depthBuffer;
@@ -40,6 +41,13 @@ layout(location = 0) out vec4 fragColor;
 #include <fresnel.glsl>
 #include <ggx.glsl>
 
+float schlickFresnel(float u)
+{
+    float m = clamp(1.0 - u, 0.0, 1.0);
+    float m2 = m * m;
+    return m2 * m2 * m;
+}
+
 /*
  * Light radiance subroutines
  */
@@ -50,7 +58,7 @@ subroutine vec3 srtLightRadiance(
     in vec3 albedo, 
     in float roughness, 
     in float metallic, 
-    in float specularity, 
+    in float subsurface,
     in float occlusion);
 
 subroutine(srtLightRadiance) vec3 lightRadianceFallback(
@@ -60,7 +68,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceFallback(
     in vec3 albedo, 
     in float roughness, 
     in float metallic, 
-    in float specularity, 
+    in float subsurface,
     in float occlusion)
 {
     return vec3(0.0);
@@ -73,7 +81,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceAreaSphere(
     in vec3 albedo, 
     in float roughness, 
     in float metallic, 
-    in float specularity, 
+    in float subsurface,
     in float occlusion)
 {
     vec3 R = reflect(E, N);
@@ -83,7 +91,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceAreaSphere(
 
     vec3 positionToLightSource = lightPosition - pos;
     float distanceToLight = length(positionToLightSource);
-    float attenuation = pow(clamp(1.0 - (distanceToLight / max(lightRadius, 0.001)), 0.0, 1.0), 2.0) * lightEnergy;
+    float attenuation = pow(clamp(1.0 - (distanceToLight / max(lightRadius, 0.001)), 0.0, 1.0), 4.0) * lightEnergy;
 
     vec3 Lpt = normalize(positionToLightSource);
 
@@ -91,22 +99,34 @@ subroutine(srtLightRadiance) vec3 lightRadianceAreaSphere(
     vec3 closestPoint = positionToLightSource + centerToRay * clamp(lightAreaRadius / max(length(centerToRay), 0.001), 0.0, 1.0);
     vec3 L = normalize(closestPoint);  
 
-    float NL = max(dot(N, Lpt), 0.0); 
+    float NL = max(dot(N, Lpt), 0.0);
+    float NE = max(dot(N, E), 0.0);
     vec3 H = normalize(E + L);
+    float LH = max(dot(L, H), 0.0);
 
     float NDF = distributionGGX(N, H, roughness);
     float G = geometrySmith(N, E, L, roughness);
     vec3 F = fresnel(max(dot(H, E), 0.0), f0);
-
-    vec3 kS = F;
-    vec3 kD = vec3(1.0) - kS;
-    kD *= 1.0 - metallic;
+    
+    vec3 kD = vec3(1.0) - F;
+    
+    // Based on Hanrahan-Krueger BRDF approximation of isotropic BSSRDF
+    // 1.25 scale is used to (roughly) preserve albedo
+    // fss90 used to "flatten" retroreflection based on roughness
+    float FL = schlickFresnel(NL);
+    float FV = schlickFresnel(NE);
+    float fss90 = LH * LH * max(roughness, 0.001);
+    float fss = mix(1.0, fss90, FL) * mix(1.0, fss90, FV);
+    float ss = 1.25 * (fss * (1.0 / max(NL + NE, 0.1) - 0.5) + 0.5);
+    
+    vec3 diffuse = invPI * albedo * mix(kD * NL * occlusion, vec3(ss), subsurface) * (1.0 - metallic);
 
     vec3 numerator = NDF * G * F;
     float denominator = 4.0 * max(dot(N, E), 0.0) * NL;
     vec3 specular = numerator / max(denominator, 0.001);
-
-    vec3 radiance = ((kD * albedo / PI) * occlusion * lightDiffuse + specular * specularity * lightSpecular) * toLinear(lightColor.rgb) * attenuation * NL;
+    
+    vec3 incomingLight = toLinear(lightColor.rgb) * attenuation;
+    vec3 radiance = (diffuse * lightDiffuse + specular * lightSpecular * NL) * incomingLight;
 
     return radiance;
 }
@@ -118,7 +138,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceAreaTube(
     in vec3 albedo, 
     in float roughness, 
     in float metallic, 
-    in float specularity, 
+    in float subsurface, 
     in float occlusion)
 {
     vec3 R = reflect(E, N);
@@ -158,7 +178,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceAreaTube(
     float denominator = 4.0 * max(dot(N, E), 0.0) * NL;
     vec3 specular = numerator / max(denominator, 0.001);
 
-    vec3 radiance = (kD * albedo / PI * occlusion * lightDiffuse + specular * specularity * lightSpecular) * toLinear(lightColor.rgb) * attenuation * NL;
+    vec3 radiance = (kD * albedo / PI * occlusion * lightDiffuse + specular * lightSpecular) * toLinear(lightColor.rgb) * attenuation * NL;
 
     return radiance;
 }
@@ -170,7 +190,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceSpot(
     in vec3 albedo, 
     in float roughness, 
     in float metallic, 
-    in float specularity, 
+    in float subsurface,
     in float occlusion)
 {
     vec3 R = reflect(E, N);
@@ -201,7 +221,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceSpot(
     float denominator = 4.0 * max(dot(N, E), 0.0) * NL;
     vec3 specular = numerator / max(denominator, 0.001);
 
-    vec3 radiance = (kD * albedo / PI * occlusion * lightDiffuse + specular * specularity * lightSpecular) * toLinear(lightColor.rgb) * attenuation * NL;
+    vec3 radiance = (kD * albedo / PI * occlusion * lightDiffuse + specular * lightSpecular) * toLinear(lightColor.rgb) * attenuation * NL;
 
     return radiance;
 }
@@ -216,7 +236,7 @@ void main()
     
     if (col.a < 1.0)
         discard;
-
+    
     vec3 albedo = toLinear(col.rgb);
     
     float depth = texture(depthBuffer, texCoord).x;
@@ -228,16 +248,16 @@ void main()
     vec4 pbr = texture(pbrBuffer, texCoord);
     float roughness = pbr.r;
     float metallic = pbr.g;
-    float specularity = pbr.b;
+    float subsurface = pbr.b;
     
     float occlusion = haveOcclusionBuffer? texture(occlusionBuffer, texCoord).r : 1.0;
-
-    vec3 radiance = lightRadiance(eyePos, N, E, albedo, roughness, metallic, specularity, occlusion);
+    
+    vec3 radiance = lightRadiance(eyePos, N, E, albedo, roughness, metallic, subsurface, occlusion);
     
     // Fog
     float linearDepth = abs(eyePos.z);
     float fogFactor = clamp((fogEnd - linearDepth) / (fogEnd - fogStart), 0.0, 1.0);
     radiance *= fogFactor;
-
+    
     fragColor = vec4(radiance, 1.0);
 }
