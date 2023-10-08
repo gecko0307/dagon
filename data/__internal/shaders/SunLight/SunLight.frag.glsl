@@ -151,7 +151,7 @@ void main()
     float FV = schlickFresnel(NE);
     float fss90 = LH * LH * max(roughness, 0.001);
     float fss = mix(1.0, fss90, FL) * mix(1.0, fss90, FV);
-    float ss = 1.25 * (fss * (1.0 / max(NL + NE, 0.001) - 0.5) + 0.5);
+    float ss = 1.25 * (fss * (1.0 / max(NL + NE, 0.1) - 0.5) + 0.5);
     
     vec3 diffuse = invPI * albedo * mix(kD * shadow * NL * occlusion, vec3(ss), subsurface) * (1.0 - metallic);
     

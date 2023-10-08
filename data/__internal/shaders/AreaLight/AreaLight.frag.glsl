@@ -159,26 +159,38 @@ subroutine(srtLightRadiance) vec3 lightRadianceAreaTube(
 
     vec3 positionToLightSource = (lightPosition + lightPosition2) * 0.5 - pos;
     float distanceToLight = length(positionToLightSource);
-    float attenuation = pow(clamp(1.0 - (distanceToLight / lightRadius), 0.0, 1.0), 2.0) * lightEnergy;
+    float attenuation = pow(clamp(1.0 - (distanceToLight / lightRadius), 0.0, 1.0), 4.0) * lightEnergy;
 
     vec3 Lpt = normalize(positionToLightSource);
 
-    float NL = max(dot(N, Lpt), 0.0); 
+    float NL = max(dot(N, Lpt), 0.0);
+    float NE = max(dot(N, E), 0.0);
     vec3 H = normalize(E + L);
+    float LH = max(dot(L, H), 0.0);
 
     float NDF = distributionGGX(N, H, roughness);
     float G = geometrySmith(N, E, L, roughness);
     vec3 F = fresnel(max(dot(H, E), 0.0), f0);
-
-    vec3 kS = F;
-    vec3 kD = vec3(1.0) - kS;
-    kD *= 1.0 - metallic;
-
+    
+    vec3 kD = vec3(1.0) - F;
+    
+    // Based on Hanrahan-Krueger BRDF approximation of isotropic BSSRDF
+    // 1.25 scale is used to (roughly) preserve albedo
+    // fss90 used to "flatten" retroreflection based on roughness
+    float FL = schlickFresnel(NL);
+    float FV = schlickFresnel(NE);
+    float fss90 = LH * LH * max(roughness, 0.001);
+    float fss = mix(1.0, fss90, FL) * mix(1.0, fss90, FV);
+    float ss = 1.25 * (fss * (1.0 / max(NL + NE, 0.1) - 0.5) + 0.5);
+    
+    vec3 diffuse = invPI * albedo * mix(kD * NL * occlusion, vec3(ss), subsurface) * (1.0 - metallic);
+    
     vec3 numerator = NDF * G * F;
     float denominator = 4.0 * max(dot(N, E), 0.0) * NL;
     vec3 specular = numerator / max(denominator, 0.001);
-
-    vec3 radiance = (kD * albedo / PI * occlusion * lightDiffuse + specular * lightSpecular) * toLinear(lightColor.rgb) * attenuation * NL;
+    
+    vec3 incomingLight = toLinear(lightColor.rgb) * attenuation;
+    vec3 radiance = (diffuse * lightDiffuse + specular * lightSpecular * NL) * incomingLight;
 
     return radiance;
 }
