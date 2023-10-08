@@ -53,6 +53,13 @@ layout(location = 0) out vec4 fragColor;
 #include <shadow.glsl>
 #include <hash.glsl>
 
+float schlickFresnel(float u)
+{
+    float m = clamp(1.0 - u, 0.0, 1.0);
+    float m2 = m * m;
+    return m2 * m2 * m;
+}
+
 subroutine float srtShadow(in vec3 pos, in vec3 N);
 
 subroutine(srtShadow) float shadowMapNone(in vec3 pos, in vec3 N)
@@ -84,7 +91,6 @@ subroutine(srtShadow) float shadowMapCascaded(in vec3 pos, in vec3 N)
 
 subroutine uniform srtShadow shadowMap;
 
-
 // Mie scaterring approximated with Henyey-Greenstein phase function.
 float scattering(float lightDotView)
 {
@@ -111,8 +117,7 @@ void main()
     vec4 pbr = texture(pbrBuffer, texCoord);
     float roughness = pbr.r;
     float metallic = pbr.g;
-    float specularity = pbr.b;
-    float translucency = pbr.a;
+    float subsurface = pbr.b;
     
     float occlusion = haveOcclusionBuffer? texture(occlusionBuffer, texCoord).r : 1.0;
     
@@ -126,19 +131,31 @@ void main()
     vec3 L = lightDirection;
     
     float NL = max(dot(N, L), 0.0);
+    float NE = max(dot(N, E), 0.0);
     vec3 H = normalize(E + L);
+    float LH = max(dot(L, H), 0.0);
 
     float NDF = distributionGGX(N, H, roughness);
     float G = geometrySmith(N, E, L, roughness);
     vec3 F = fresnelRoughness(max(dot(H, E), 0.0), f0, roughness);
 
-    vec3 kD = (1.0 - F) * (1.0 - metallic);
+    vec3 kD = (1.0 - F);
     vec3 specular = (NDF * G * F) / max(4.0 * max(dot(N, E), 0.0) * NL, 0.001);
     
     vec3 incomingLight = toLinear(lightColor.rgb) * lightEnergy;
-    vec3 diffuse = albedo * invPI * occlusion;
-
-    radiance += (kD * diffuse * lightDiffuse + specular * specularity * lightSpecular) * NL * incomingLight * shadow;
+    
+    // Based on Hanrahan-Krueger BRDF approximation of isotropic BSSRDF
+    // 1.25 scale is used to (roughly) preserve albedo
+    // fss90 used to "flatten" retroreflection based on roughness
+    float FL = schlickFresnel(NL);
+    float FV = schlickFresnel(NE);
+    float fss90 = LH * LH * max(roughness, 0.001);
+    float fss = mix(1.0, fss90, FL) * mix(1.0, fss90, FV);
+    float ss = 1.25 * (fss * (1.0 / max(NL + NE, 0.001) - 0.5) + 0.5);
+    
+    vec3 diffuse = invPI * albedo * mix(kD * shadow * NL * occlusion, vec3(ss), subsurface) * (1.0 - metallic);
+    
+    radiance += (diffuse * lightDiffuse + (specular * lightSpecular * shadow * NL)) * incomingLight;
     
     // Fog
     float linearDepth = abs(eyePos.z);

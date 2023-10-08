@@ -139,6 +139,8 @@ class GeometryShader: Shader
             setParameterSubroutine("metallic", ShaderType.Fragment, "metallicValue");
         }
         
+        setParameter("subsurfaceFactor", mat.subsurfaceScattering);
+        
         // Emission
         glActiveTexture(GL_TEXTURE3);
         setParameter("emissionTexture", cast(int)3);

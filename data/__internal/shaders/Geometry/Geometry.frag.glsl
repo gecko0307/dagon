@@ -173,6 +173,16 @@ subroutine(srtMetallic) float metallicMap(in vec2 uv)
 subroutine uniform srtMetallic metallic;
 
 /*
+ * Subsurface
+ */
+uniform float subsurfaceFactor;
+ 
+float subsurface(in vec2 uv)
+{
+    return subsurfaceFactor;
+}
+
+/*
  * Emission
  */
 subroutine vec3 srtEmission(in vec2 uv);
@@ -225,7 +235,7 @@ void main()
     fragPBR = vec4(
         max(roughness(uv), 0.0001),
         metallic(uv),
-        1.0,
+        subsurface(uv),
         0.0);
     fragRadiance = vec4(toLinear(emission(uv)), 1.0);
     fragVelocity = vec4(velocity, blurMask, 1.0);

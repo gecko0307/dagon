@@ -93,7 +93,7 @@ class Material: Owner
     float roughnessFactor = 0.5f;
     float metallicFactor = 0.0f;
     float specularity = 1.0f;
-    float translucency = 0.0f;
+    float subsurfaceScattering = 0.0f;
     float parallaxScale = 0.03f;
     float parallaxBias = -0.01f;
     float maskFactor = 1.0f;
