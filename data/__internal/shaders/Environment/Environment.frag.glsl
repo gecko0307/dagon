@@ -91,7 +91,7 @@ void main()
     vec4 pbr = texture(pbrBuffer, texCoord);
     float roughness = pbr.r;
     float metallic = pbr.g;
-    float reflectivity = pbr.b;
+    float reflectivity = 1.0;
     
     float occlusion = haveOcclusionBuffer? texture(occlusionBuffer, texCoord).r : 1.0;
     
