@@ -364,7 +364,7 @@ void main()
     vec3 albedo = toLinear(diff.rgb);
     float r = roughness(uv);
     float m = metallic(uv);
-    float s = 1.0; //specularity(uv);
+    float s = 1.0;
     vec3 f0 = mix(vec3(0.04), albedo, m);
     
     float shadow = shadowMap(eyePosition, N);

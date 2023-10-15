@@ -38,6 +38,7 @@ public
     import dagon.render.passes.light;
     import dagon.render.passes.occlusion;
     import dagon.render.passes.particles;
+    import dagon.render.passes.probe;
     import dagon.render.passes.shadow;
     import dagon.render.passes.terrain;
 }

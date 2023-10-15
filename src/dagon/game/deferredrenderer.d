@@ -53,6 +53,7 @@ class DeferredRenderer: Renderer
     PassOcclusion passOcclusion;
     FilterPass passOcclusionDenoise;
     PassEnvironment passEnvironment;
+    PassEnvironmentProbe passEnvironmentProbe;
     PassLight passLight;
     PassForward passForward;
     PassParticles passParticles;
@@ -150,6 +151,11 @@ class DeferredRenderer: Renderer
         passEnvironment.outputBuffer = outputBuffer;
         passEnvironment.occlusionBuffer = occlusionBuffer;
         
+        passEnvironmentProbe = New!PassEnvironmentProbe(pipeline, gbuffer);
+        passEnvironmentProbe.view = view;
+        passEnvironmentProbe.outputBuffer = outputBuffer;
+        passEnvironmentProbe.occlusionBuffer = occlusionBuffer;
+        
         passLight = New!PassLight(pipeline, gbuffer);
         passLight.view = view;
         passLight.outputBuffer = outputBuffer;
@@ -174,6 +180,7 @@ class DeferredRenderer: Renderer
         passStaticGeometry.group = s.world.spatialOpaqueStatic;
         passDecal.group = s.world.decals;
         passDynamicGeometry.group = s.world.spatialOpaqueDynamic;
+        passEnvironmentProbe.group = s.world.probes;
         passLight.groupSunLights = s.world.sunLights;
         passLight.groupAreaLights = s.world.areaLights;
         passForward.group = s.world.spatialTransparent;

@@ -53,6 +53,7 @@ class World: Owner
     EntityGroupSunLights sunLights;
     EntityGroupAreaLights areaLights;
     EntityGroupDecals decals;
+    EntityGroupProbes probes;
 
     this(Owner owner)
     {
@@ -72,6 +73,7 @@ class World: Owner
         sunLights = New!EntityGroupSunLights(this, this);
         areaLights = New!EntityGroupAreaLights(this, this);
         decals = New!EntityGroupDecals(this, this);
+        probes = New!EntityGroupProbes(this, this);
     }
 
     void addEntity(Entity e)
@@ -125,7 +127,7 @@ class EntityGroupSpatial: Owner, EntityGroup
         int res = 0;
         foreach(size_t i, Entity e; world)
         {
-            if (e.layer == EntityLayer.Spatial && !e.decal)
+            if (e.layer == EntityLayer.Spatial && !e.decal && !e.probe)
             {
                 res = dg(e);
                 if (res)
@@ -162,6 +164,32 @@ class EntityGroupDecals: Owner, EntityGroup
     }
 }
 
+class EntityGroupProbes: Owner, EntityGroup
+{
+    World world;
+
+    this(World world, Owner owner)
+    {
+        super(owner);
+        this.world = world;
+    }
+
+    int opApply(scope int delegate(Entity) dg)
+    {
+        int res = 0;
+        foreach(size_t i, Entity e; world)
+        {
+            if (e.probe)
+            {
+                res = dg(e);
+                if (res)
+                    break;
+            }
+        }
+        return res;
+    }
+}
+
 class EntityGroupSpatialOpaque: Owner, EntityGroup
 {
     World world;
@@ -179,7 +207,7 @@ class EntityGroupSpatialOpaque: Owner, EntityGroup
         int res = 0;
         foreach(size_t i, Entity e; world)
         {
-            if (e.layer == EntityLayer.Spatial && !e.decal)
+            if (e.layer == EntityLayer.Spatial && !e.decal && !e.probe)
             {
                 bool transparent = false;
                 
@@ -215,7 +243,7 @@ class EntityGroupSpatialTransparent: Owner, EntityGroup
         int res = 0;
         foreach(size_t i, Entity e; world)
         {
-            if (e.layer == EntityLayer.Spatial && !e.decal)
+            if (e.layer == EntityLayer.Spatial && !e.decal && !e.probe)
             {
                 bool transparent = false;
                 
