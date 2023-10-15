@@ -2,6 +2,7 @@ Dagon 0.16.0 - TBD
 ------------------
 - **Rendering**
   - Approximated subsurface scattering support
+  - Environment light probes support
 - **Assets**
   - `EntityManager` is now `World`
   - `EntityGroup*` accessor classes moved to `dagon.graphics.world`
