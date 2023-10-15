@@ -84,6 +84,7 @@ void main()
     if (abs(objPos.y) > 1.0) discard;
     if (abs(objPos.z) > 1.0) discard;
     
+    // TODO: make uniform
     float alpha = 1.0;
     
     vec3 albedo = toLinear(col.rgb);

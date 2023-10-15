@@ -174,6 +174,7 @@ class EnvironmentProbeShader: Shader
         glActiveTexture(GL_TEXTURE7);
         if (state.environment)
         {
+            /*
             if (state.environment.ambientBRDF)
             {
                 state.environment.ambientBRDF.bind();
@@ -181,6 +182,7 @@ class EnvironmentProbeShader: Shader
                 setParameter("haveAmbientBRDF", true);
             }
             else
+            */
             {
                 glBindTexture(GL_TEXTURE_2D, 0);
                 setParameter("ambientBRDF", cast(int)7);
@@ -189,6 +191,8 @@ class EnvironmentProbeShader: Shader
         }
         else
         {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            setParameter("ambientBRDF", cast(int)7);
             setParameter("haveAmbientBRDF", false);
         }
         
