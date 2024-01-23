@@ -26,5 +26,5 @@ void main()
     fragNormal = vec4(N, gbufferMask);
     fragTexcoord = vec4(texCoord, gl_FragCoord.z, 1.0);
     fragVelocity = vec4(velocity, blurMask, 1.0);
-    fragEmission = vec4(0.0, 0.0, 0.0, 1.0);
+    fragEmission = vec4(0.0, 0.0, 0.0, 0.0);
 }
