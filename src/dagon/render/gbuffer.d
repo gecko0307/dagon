@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2024 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -46,6 +46,7 @@ class GBuffer: Owner
     GLuint depthTexture = 0;
     GLuint normalTexture = 0;
     GLuint pbrTexture = 0;
+    GLuint emissionTexture = 0;
     GLuint velocityTexture = 0;
     Framebuffer radiance;
     
@@ -101,6 +102,15 @@ class GBuffer: Owner
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, null);
         glBindTexture(GL_TEXTURE_2D, 0);
         
+        glGenTextures(1, &emissionTexture);
+        glBindTexture(GL_TEXTURE_2D, emissionTexture);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGBA, GL_FLOAT, null);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
         glGenTextures(1, &velocityTexture);
         glBindTexture(GL_TEXTURE_2D, velocityTexture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -115,17 +125,19 @@ class GBuffer: Owner
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture, 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, normalTexture, 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, pbrTexture, 0);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, radiance.colorTexture(), 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, emissionTexture, 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, velocityTexture, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT5, GL_TEXTURE_2D, radiance.colorTexture(), 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
         
-        GLenum[5] drawBuffers = 
+        GLenum[6] drawBuffers = 
         [
             GL_COLOR_ATTACHMENT0,
             GL_COLOR_ATTACHMENT1,
             GL_COLOR_ATTACHMENT2,
             GL_COLOR_ATTACHMENT3,
-            GL_COLOR_ATTACHMENT4
+            GL_COLOR_ATTACHMENT4,
+            GL_COLOR_ATTACHMENT5
         ];
         
         glDrawBuffers(drawBuffers.length, drawBuffers.ptr);
@@ -153,7 +165,10 @@ class GBuffer: Owner
             
         if (glIsTexture(pbrTexture))
             glDeleteTextures(1, &pbrTexture);
-            
+        
+        if (glIsTexture(emissionTexture))
+            glDeleteTextures(1, &emissionTexture);
+        
         if (glIsTexture(velocityTexture))
             glDeleteTextures(1, &velocityTexture);
     }
@@ -188,6 +203,7 @@ class GBuffer: Owner
         glClearBufferfv(GL_COLOR, 2, zero.arrayof.ptr);
         glClearBufferfv(GL_COLOR, 3, zero.arrayof.ptr);
         glClearBufferfv(GL_COLOR, 4, zero.arrayof.ptr);
+        glClearBufferfv(GL_COLOR, 5, zero.arrayof.ptr);
         
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     }

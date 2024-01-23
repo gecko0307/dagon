@@ -85,6 +85,7 @@ struct GraphicsState
     GLuint normalTexture;
     GLuint pbrTexture;
     GLuint occlusionTexture;
+    GLuint emissionTexture;
     GLuint texcoordTexture; // used only for terrains
     
     Time time;

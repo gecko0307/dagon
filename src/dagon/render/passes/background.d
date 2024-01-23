@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2024 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -75,8 +75,10 @@ class PassBackground: RenderPass
             glClearBufferfv(GL_COLOR, 0, zero.arrayof.ptr);
             glClearBufferfv(GL_COLOR, 1, zero.arrayof.ptr);
             glClearBufferfv(GL_COLOR, 2, zero.arrayof.ptr);
-            glClearBufferfv(GL_COLOR, 3, backgroundColor.arrayof.ptr);
+            //glClearBufferfv(GL_COLOR, 3, backgroundColor.arrayof.ptr);
+            glClearBufferfv(GL_COLOR, 3, zero.arrayof.ptr);
             glClearBufferfv(GL_COLOR, 4, zero.arrayof.ptr);
+            glClearBufferfv(GL_COLOR, 5, backgroundColor.arrayof.ptr);
 
             foreach(entity; group)
             if (entity.visible && entity.drawable)

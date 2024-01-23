@@ -204,8 +204,9 @@ subroutine uniform srtEmission emission;
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec4 fragNormal;
 layout(location = 2) out vec4 fragPBR;
-layout(location = 3) out vec4 fragRadiance;
+layout(location = 3) out vec4 fragEmission;
 layout(location = 4) out vec4 fragVelocity;
+//layout(location = 5) out vec4 fragRadiance;
 
 void main()
 {
@@ -237,6 +238,6 @@ void main()
         metallic(uv),
         subsurface(uv),
         0.0);
-    fragRadiance = vec4(toLinear(emission(uv)), 1.0);
+    fragEmission = vec4(toLinear(emission(uv)), 1.0);
     fragVelocity = vec4(velocity, blurMask, 1.0);
 }

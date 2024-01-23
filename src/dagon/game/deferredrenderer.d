@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2024 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -55,6 +55,7 @@ class DeferredRenderer: Renderer
     PassEnvironment passEnvironment;
     PassEnvironmentProbe passEnvironmentProbe;
     PassLight passLight;
+    PassEmission passEmission;
     PassForward passForward;
     PassParticles passParticles;
     
@@ -160,6 +161,11 @@ class DeferredRenderer: Renderer
         passLight.view = view;
         passLight.outputBuffer = outputBuffer;
         passLight.occlusionBuffer = occlusionBuffer;
+        
+        passEmission = New!PassEmission(pipeline, gbuffer);
+        passEmission.view = view;
+        passEmission.outputBuffer = outputBuffer;
+        passEmission.occlusionBuffer = occlusionBuffer;
         
         passForward = New!PassForward(pipeline, gbuffer);
         passForward.view = view;

@@ -42,8 +42,9 @@ subroutine uniform srtEnv environment;
 
 
 layout(location = 0) out vec4 fragColor;
-layout(location = 3) out vec4 fragRadiance;
+layout(location = 3) out vec4 fragEmission;
 layout(location = 4) out vec4 fragVelocity;
+layout(location = 5) out vec4 fragRadiance;
 
 void main()
 {
@@ -54,6 +55,7 @@ void main()
     vec2 velocity = posScreen - prevPosScreen;
     
     fragColor = vec4(fragDiffuse, gbufferMask);
-    fragRadiance = vec4(fragDiffuse, 1.0);
+    fragEmission = vec4(0.0, 0.0, 0.0, 1.0);
     fragVelocity = vec4(velocity, blurMask, 1.0);
+    fragRadiance = vec4(fragDiffuse, 1.0);
 }

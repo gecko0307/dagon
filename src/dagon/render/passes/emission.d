@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2024 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.passes.environment;
+module dagon.render.passes.emission;
 
 import std.stdio;
 
@@ -39,13 +39,13 @@ import dagon.render.pipeline;
 import dagon.render.pass;
 import dagon.render.framebuffer;
 import dagon.render.gbuffer;
-import dagon.render.shaders.environment;
+import dagon.render.shaders.emission;
 
-class PassEnvironment: RenderPass
+class PassEmission: RenderPass
 {
     GBuffer gbuffer;
     ScreenSurface screenSurface;
-    EnvironmentShader environmentShader;
+    EmissionShader emissionShader;
     Framebuffer outputBuffer;
     Framebuffer occlusionBuffer;
 
@@ -54,7 +54,7 @@ class PassEnvironment: RenderPass
         super(pipeline);
         this.gbuffer = gbuffer;
         screenSurface = New!ScreenSurface(this);
-        environmentShader = New!EnvironmentShader(this);
+        emissionShader = New!EmissionShader(this);
     }
 
     override void render()
@@ -78,16 +78,16 @@ class PassEnvironment: RenderPass
             glViewport(0, 0, outputBuffer.width, outputBuffer.height);
 
             // Additive blending
-            //glEnable(GL_BLEND);
-            //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-            environmentShader.bind();
-            environmentShader.bindParameters(&state);
+            emissionShader.bind();
+            emissionShader.bindParameters(&state);
             screenSurface.render(&state);
-            environmentShader.unbindParameters(&state);
-            environmentShader.unbind();
+            emissionShader.unbindParameters(&state);
+            emissionShader.unbind();
 
-            //glDisable(GL_BLEND);
+            glDisable(GL_BLEND);
 
             outputBuffer.unbind();
         }
