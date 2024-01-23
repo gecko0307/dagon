@@ -260,7 +260,7 @@ void main()
     fragPBR = vec4(
         max(roughness(uv), 0.0001),
         metallic(uv),
-        1.0,
+        0.0,
         mask);
     fragRadiance = vec4(toLinear(emission(uv)), mask);
 }
