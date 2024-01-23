@@ -30,7 +30,7 @@ Screenshots
 Features
 --------
 * Static and animated meshes, [glTF](https://www.khronos.org/gltf/), [OBJ](https://en.wikipedia.org/wiki/Wavefront_.obj_file) and [IQM](https://github.com/lsalzman/iqm) formats support
-* Textures in PNG, JPG, DDS, HDR, TGA, BMP, GIF, PSD formats
+* Textures in PNG, JPG, DDS, HDR, TGA, BMP formats + GIF and PSD via extension
 * Deferred pipeline for opaque materials, forward pipeline for transparent materials and materials with custom shaders
 * Physically based rendering (PBR)
 * HDR rendering with Reinhard, Hable/Uncharted, Unreal, ACES and Filmic tonemapping operators
@@ -52,7 +52,6 @@ Features
 * Ownership memory model
 * Entity-component model
 * Built-in camera logics for easy navigation: freeview and first person views
-* [Box](https://github.com/gecko0307/box) container support for assets
 * Physics using [Newton Dynamics](http://newtondynamics.com).
 
 Planned in future:
@@ -92,7 +91,7 @@ See [tutorials](https://github.com/gecko0307/dagon/wiki/Tutorials) and correspon
 
 License
 -------
-Copyright (c) 2016-2023 Timur Gafarov, Rafał Ziemniewski, Mateusz Muszyński, dayllenger, Konstantin Menshikov, Björn Roberg, Isaac S., ijet. Distributed under the Boost Software License, Version 1.0 (see accompanying file COPYING or at http://www.boost.org/LICENSE_1_0.txt).
+Copyright (c) 2016-2024 Timur Gafarov, Rafał Ziemniewski, Mateusz Muszyński, dayllenger, Konstantin Menshikov, Björn Roberg, Isaac S., ijet. Distributed under the Boost Software License, Version 1.0 (see accompanying file COPYING or at http://www.boost.org/LICENSE_1_0.txt).
 
 Sponsors
 --------
