@@ -1,11 +1,11 @@
 {
     "name": "imgui",
     "importPaths": [
-        "thirdparty/bindbc-imgui-0.6.1/source",
+        "thirdparty/bindbc-imgui-0.7.0/source",
         "src"
     ],
     "sourcePaths": [
-        "thirdparty/bindbc-imgui-0.6.1/source",
+        "thirdparty/bindbc-imgui-0.7.0/source",
         "src"
     ],
     "dependencies": {
@@ -17,10 +17,7 @@
         "USE_SDL2"
     ],
     
-    "copyFiles-windows-x86": [
-        "thirdparty/bindbc-imgui-0.6.1/lib/x86/*.dll"
-    ],
     "copyFiles-windows-x86_64": [
-        "thirdparty/bindbc-imgui-0.6.1/lib/x86_64/*.dll"
+        "lib/x86_64/*.dll"
     ]
 }

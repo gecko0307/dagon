@@ -1,0 +1,2 @@
+GenerateCImGuiBindings.bat
+GenerateDBindings.bat

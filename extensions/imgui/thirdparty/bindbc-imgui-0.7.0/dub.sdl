@@ -1,0 +1,192 @@
+name "bindbc-imgui"
+description "Dynamic and static bindings to imgui, compatible with -betterC, @nogc, and nothrow."
+homepage ""
+authors "Joshua T. Fisher" "Luna Nielsen"
+license "Boost"
+
+dependency "bindbc-sdl" version="~>0.21.4"
+dependency "bindbc-opengl" version="~>0.13.0"
+versions "GL_33"
+
+configuration "static_dynamicCRT" {
+    versions "BindImGui_Static_DynamicCRT" "BindImGui_Static"
+    excludedSourceFiles "source/bindbc/imgui/binddynamic.d"
+    dflags "-mscrtlib=msvcrt" platform="windows-ldc"
+    dflags "-flto=full" platform="windows-ldc"
+    dflags "-defaultlib=phobos2-ldc-lto,druntime-ldc-lto" platform="windows-ldc"
+
+    // Windows x86_64
+    preBuildCommands \
+        "cmake -G \"Visual Studio 17 2022\" -Ax64 -DSTATIC_CIMGUI= -S deps -B deps/build_windows_x64_cimguiStatic_DynamicCRT" \
+        "cmake --build deps/build_windows_x64_cimguiStatic_DynamicCRT --config Release"  platform="windows-x86_64"
+
+    libs \
+        "$PACKAGE_DIR/libs/x86_64/win32/Static/DynamicCRT/cimgui.lib" \
+        "$PACKAGE_DIR/libs/x86_64/win32/Static/DynamicCRT/SDL2.lib"   \
+        "$PACKAGE_DIR/libs/x86_64/win32/Static/DynamicCRT/freetype.lib" platform="windows-x86_64"
+
+    copyFiles "libs/x86_64/win32/Static/DynamicCRT/SDL2.dll" platform="windows-x86_64"
+    copyFiles "libs/x86_64/win32/Static/DynamicCRT/freetype.dll" platform="windows-x86_64"
+    
+    // Windows x86
+    preBuildCommands \
+        "cmake -G \"Visual Studio 17 2022\" -AWin32 -DSTATIC_CIMGUI= -S deps -B deps/build_windows_x86_cimguiStatic_DynamicCRT" \
+        "cmake --build deps/build_windows_x86_cimguiStatic_DynamicCRT --config Release" platform="windows-x86"
+
+    libs \
+        "$PACKAGE_DIR/libs/x86/win32/Static/DynamicCRT/cimgui.lib" \
+        "$PACKAGE_DIR/libs/x86/win32/Static/DynamicCRT/SDL2.lib"   \
+        "$PACKAGE_DIR/libs/x86/win32/Static/DynamicCRT/freetype.lib" platform="windows-x86"
+    
+    copyFiles "libs/x86/win32/Static/DynamicCRT/SDL2.dll" platform="windows-x86"
+    copyFiles "libs/x86/win32/Static/DynamicCRT/freetype.dll" platform="windows-x86"
+    
+    
+    // MacOS Arm64
+    copyFiles "libs/arm64/cimgui.dylib" platform="osx-aarch64"
+
+    // Linux
+    preBuildCommands \
+        "cmake -DSTATIC_CIMGUI= -S deps -B deps/build_linux_x64_cimguiStatic" \
+        "cmake --build deps/build_linux_x64_cimguiStatic --config Release" platform="linux-x86_64"
+
+    sourceFiles "$PACKAGE_DIR/libs/x86_64/linux/Static/cimgui.a" platform="linux-x86_64"
+    libs "sdl2" "freetype" ":libstdc++.a" platform="linux-x86_64"
+}
+
+configuration "static_staticCRT" {
+    versions "BindImGui_Static_StaticCRT" "BindImGui_Static"
+    excludedSourceFiles "source/bindbc/imgui/binddynamic.d"
+    dflags "-mscrtlib=msvcrt" platform="windows-ldc"
+    dflags "-flto=full" platform="windows-ldc"
+    dflags "-defaultlib=phobos2-ldc-lto,druntime-ldc-lto" platform="windows-ldc"
+
+    // Windows x86_64
+    preBuildCommands \
+        "cmake -G \"Visual Studio 17 2022\" -Ax64 -DSTATIC_CIMGUI= -DWINDOWS_STATIC_CRT= .. -S deps -B deps/build_windows_x64_cimguiStatic_StaticCRT" \
+        "cmake --build deps/build_windows_x64_cimguiStatic_StaticCRT --config Release" platform="windows-x86_64"
+
+    libs \
+        "$PACKAGE_DIR/libs/x86_64/win32/Static/StaticCRT/cimgui" \
+        "$PACKAGE_DIR/libs/x86_64/win32/Static/StaticCRT/SDL2"   \
+        "$PACKAGE_DIR/libs/x86_64/win32/Static/StaticCRT/freetype" platform="windows-x86_64"
+
+    copyFiles "libs/x86_64/win32/Static/StaticCRT/SDL2.dll" platform="windows-x86_64"
+    copyFiles "libs/x86_64/win32/Static/StaticCRT/freetype.dll" platform="windows-x86_64"
+
+    // Windows x86
+    preBuildCommands \
+        "cmake -G \"Visual Studio 17 2022\" -AWin32 -DSTATIC_CIMGUI= -DWINDOWS_STATIC_CRT= -S deps -B deps/build_windows_x86_cimguiStatic_StaticCRT" \
+        "cmake --build deps/build_windows_x86_cimguiStatic_StaticCRT --config Release" platform="windows-x86"
+
+    libs \
+        "$PACKAGE_DIR/libs/x86/win32/Static/StaticCRT/cimgui" \
+        "$PACKAGE_DIR/libs/x86/win32/Static/StaticCRT/SDL2"   \
+        "$PACKAGE_DIR/libs/x86/win32/Static/StaticCRT/freetype" platform="windows-x86"
+    
+    copyFiles "libs/x86/win32/Static/StaticCRT/SDL2.dll" platform="windows-x86"
+    copyFiles "libs/x86/win32/Static/StaticCRT/freetype.dll" platform="windows-x86"
+
+    // MacOS Arm64
+    copyFiles "libs/arm64/cimgui.dylib" platform="osx-aarch64"
+
+    // Linux
+    preBuildCommands \
+        "cmake -DSTATIC_CIMGUI= -S deps -B deps/build_linux_x64_cimguiStatic" \
+        "cmake --build deps/build_linux_x64_cimguiStatic --config Release" platform="linux-x86_64"
+
+    sourceFiles "$PACKAGE_DIR/libs/x86_64/linux/Static/cimgui.a" platform="linux-x86_64"
+    libs "sdl2" "freetype" ":libstdc++.a" platform="linux-x86_64"
+}
+
+configuration "dynamic_dynamicCRT" {
+    versions "BindImGui_Dynamic_DynamicCRT" "BindImGui_Dynamic"
+    dflags "-mscrtlib=msvcrt" platform="windows-ldc"
+    dflags "-flto=full" platform="windows-ldc"
+    dflags "-defaultlib=phobos2-ldc-lto,druntime-ldc-lto" platform="windows-ldc"
+
+    // Windows x86_64
+    preBuildCommands \
+        "cmake -G \"Visual Studio 17 2022\" -Ax64 -S deps -B deps/build_windows_x64_cimguiDynamic_DynamicCRT" \
+        "cmake --build deps/build_windows_x64_cimguiDynamic_DynamicCRT --config Release" platform="windows-x86_64"
+
+    libs \
+        "$PACKAGE_DIR/libs/x86_64/win32/Dynamic/DynamicCRT/cimgui.lib" \
+        "$PACKAGE_DIR/libs/x86_64/win32/Dynamic/DynamicCRT/SDL2.lib" \
+        "$PACKAGE_DIR/libs/x86_64/win32/Dynamic/DynamicCRT/freetype.lib" platform="windows-x86_64"
+
+    copyFiles "libs/x86_64/win32/Dynamic/DynamicCRT/cimgui.dll" platform="windows-x86_64"
+    copyFiles "libs/x86_64/win32/Dynamic/DynamicCRT/SDL2.dll" platform="windows-x86_64"
+    copyFiles "libs/x86_64/win32/Dynamic/DynamicCRT/freetype.dll" platform="windows-x86_64"
+
+    // Windows x86
+    preBuildCommands \
+        "cmake -G \"Visual Studio 17 2022\" -AWin32 -S deps -B deps/build_windows_x86_cimguiDynamic_DynamicCRT" \
+        "cmake --build deps/build_windows_x86_cimguiDynamic_DynamicCRT --config Release" platform="windows-x86"
+
+    libs \
+        "$PACKAGE_DIR/libs/x86/win32/Dynamic/DynamicCRT/cimgui.lib" \
+        "$PACKAGE_DIR/libs/x86/win32/Dynamic/DynamicCRT/SDL2.lib" \
+        "$PACKAGE_DIR/libs/x86/win32/Dynamic/DynamicCRT/freetype.lib" platform="windows-x86"
+
+    copyFiles "libs/x86/win32/Dynamic/DynamicCRT/cimgui.dll" platform="windows-x86"
+    copyFiles "libs/x86/win32/Dynamic/DynamicCRT/SDL2.dll" platform="windows-x86"
+    copyFiles "libs/x86/win32/Dynamic/DynamicCRT/freetype.dll" platform="windows-x86"
+
+    // MacOS Arm64
+    copyFiles "libs/arm64/cimgui.dylib" platform="osx-aarch64"
+
+    // Linux
+    preBuildCommands \
+        "cmake -S deps -B deps/build_linux_x64_cimguiDynamic" \
+        "cmake --build deps/build_linux_x64_cimguiDynamic --config Release" platform="linux-x86_64"
+
+    sourceFiles "$PACKAGE_DIR/libs/x86_64/linux/Dynamic/cimgui.a" platform="linux-x86_64"
+    copyFiles "libs/x86_64/linux/Dynamic/cimgui.so" platform="linux-x86_64"
+}
+
+configuration "dynamic_staticCRT" {
+    versions "BindImGui_Dynamic_StaticCRT" "BindImGui_Dynamic"
+    dflags "-mscrtlib=msvcrt" platform="windows-ldc"
+    dflags "-flto=full" platform="windows-ldc"
+    dflags "-defaultlib=phobos2-ldc-lto,druntime-ldc-lto" platform="windows-ldc"
+
+    // Windows x86_64
+    preBuildCommands \
+        "cmake -G \"Visual Studio 17 2022\" -Ax64 -DWINDOWS_STATIC_CRT= -S deps -B deps/build_windows_x64_cimguiDynamic_StaticCRT" \
+        "cmake --build deps/build_windows_x64_cimguiDynamic_StaticCRT --config Release" platform="windows-x86_64"
+
+    libs \
+        "$PACKAGE_DIR/libs/x86_64/win32/Dynamic/StaticCRT/cimgui.lib" \
+        "$PACKAGE_DIR/libs/x86_64/win32/Dynamic/StaticCRT/SDL2.lib" \
+        "$PACKAGE_DIR/libs/x86_64/win32/Dynamic/StaticCRT/freetype.lib" platform="windows-x86_64"
+
+    copyFiles "libs/x86_64/win32/Dynamic/StaticCRT/cimgui.dll" platform="windows-x86_64"
+    copyFiles "libs/x86_64/win32/Dynamic/StaticCRT/SDL2.dll" platform="windows-x86_64"
+    copyFiles "libs/x86_64/win32/Dynamic/StaticCRT/freetype.dll" platform="windows-x86_64"
+
+    // Windows x86
+    preBuildCommands \
+        "cmake -G \"Visual Studio 17 2022\" -AWin32 -DWINDOWS_STATIC_CRT= -S deps -B deps/build_windows_x86_cimguiDynamic_StaticCRT" \
+        "cmake --build deps/build_windows_x86_cimguiDynamic_StaticCRT --config Release" platform="windows-x86"
+
+    libs \
+        "$PACKAGE_DIR/libs/x86/win32/Dynamic/StaticCRT/cimgui.lib" \
+        "$PACKAGE_DIR/libs/x86/win32/Dynamic/StaticCRT/SDL2.lib" \
+        "$PACKAGE_DIR/libs/x86/win32/Dynamic/StaticCRT/freetype.lib" platform="windows-x86"
+
+    copyFiles "libs/x86/win32/Dynamic/StaticCRT/cimgui.dll" platform="windows-x86"
+    copyFiles "libs/x86/win32/Dynamic/StaticCRT/SDL2.dll" platform="windows-x86"
+    copyFiles "libs/x86/win32/Dynamic/StaticCRT/freetype.dll" platform="windows-x86"
+
+    // MacOS Arm64
+    copyFiles "libs/arm64/cimgui.dylib" platform="osx-aarch64"
+
+    // Linux
+    preBuildCommands \
+        "cmake -S deps -B deps/build_linux_x64_cimguiDynamic" \
+        "cmake --build deps/build_linux_x64_cimguiDynamic --config Release" platform="linux-x86_64"
+        
+    sourceFiles "$PACKAGE_DIR/libs/x86_64/linux/Dynamic/cimgui.a" platform="linux-x86_64"
+    copyFiles "libs/x86_64/linux/Dynamic/cimgui.so" platform="linux-x86_64"
+}

@@ -1,0 +1,1 @@
+rdmd ./generator/generator.d

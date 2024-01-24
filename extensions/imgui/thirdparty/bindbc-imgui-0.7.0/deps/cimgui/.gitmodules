@@ -1,0 +1,4 @@
+[submodule "imgui"]
+	path = imgui
+	url = https://github.com/Inochi2D/imgui.git
+	branch = master

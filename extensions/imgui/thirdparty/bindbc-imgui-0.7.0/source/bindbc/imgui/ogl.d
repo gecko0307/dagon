@@ -1,13 +1,12 @@
 // This is essentially a straight port of the ImGui OpenGL3 backend, removing most code that optimized for version for non-3_3.
 // Certainly willing to revisit adding that code back in the future. It's just slimmed down for the Inochi needs for right now.
 
-module dagon.ext.imgui;
+module bindbc.imgui.ogl;
 
 import core.stdc.stdio;
 
-import bindbc.opengl;
-public import bindbc.imgui;
-public import bindbc.imgui.bind.imgui;
+import bindbc.imgui.bind.imgui,
+       bindbc.opengl;
 
 // OpenGL Data
 static GLuint       g_GlVersion = 0;                // Extracted at runtime using GL_MAJOR_VERSION, GL_MINOR_VERSION queries (e.g. 320 for GL 3.2)
