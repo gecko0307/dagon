@@ -72,8 +72,8 @@ NewtonSupport loadNewton()
     {
         const(char)[][2] libNames =
         [
-            "/usr/local/lib/libnewton.so",
-            "libnewton.so"
+            "/usr/local/lib/libNewton.so",
+            "libNewton.so"
         ];
     }
     else static assert(0, "bindbc-newton is not yet supported on this platform.");
