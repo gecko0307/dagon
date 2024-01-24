@@ -45,7 +45,6 @@ Features
 * Water rendering
 * Post-processing (FXAA, SSAO, DoF, lens distortion, motion blur, glow, color grading)
 * UTF-8 text rendering using TTF fonts via Freetype
-* GUI and 2D graphics extension based on [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear). 2D canvas framework that renders vector shapes
 * GUI extension based on [Dear ImGui](https://github.com/ocornut/imgui)
 * Keyboard, mouse and joystick input. Input manager with abstract bindings and file-based configuration
 * Unicode text input
@@ -72,18 +71,10 @@ Runtime Dependencies
 * [SDL](https://www.libsdl.org) 2.0.14
 * [Freetype](https://www.freetype.org) 2.8.1 (optional)
 * [Newton Dynamics](https://github.com/MADEAPPS/newton-dynamics) 3.14 (optional)
-* [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear) (optional)
 * [ImGui](https://github.com/ocornut/imgui) (optional)
+* [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear) (optional, deprecated)
 
-Runtime dependencies are automatically deployed on Windows. On other platforms, you will have to install them manually.
-
-Nuklear should be compiled as a dynamic library:
-
-1. Install [CMake](https://cmake.org/)
-2. Go to `extensions/nuklear/thirdparty/bindbc-nuklear-0.4.3/c/build`
-3. Run `cmake ..`
-4. Under Linux, run `make` and `sudo make install`. `libnuklear.so` will be installed to `/usr/local/lib`
-5. Under Windows, open `nuklear.vcxproj` in Visual Studio and build `ALL_BUILD` project. Look for `nuklear.dll` in the `Release` directory.
+Runtime dependencies are automatically deployed on Windows and Linux. On other platforms, you will have to install them manually.
 
 Documentation
 -------------
