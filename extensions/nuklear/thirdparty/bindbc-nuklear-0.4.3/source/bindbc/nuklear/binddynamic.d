@@ -1204,7 +1204,7 @@ NuklearSupport loadNuklear()
         const(char)[][2] libNames =
         [
             "/usr/local/lib/libnuklear.so",
-            "libnuklear.so"
+            "./libnuklear.so"
         ];
     }
     else static assert(0, "bindbc-nuklear is not yet supported on this platform.");
