@@ -70,7 +70,7 @@ NewtonSupport loadNewton()
     }
     else version(Posix)
     {
-        const(char)[][1] libNames =
+        const(char)[][2] libNames =
         [
             "/usr/local/lib/libnewton.so",
             "libnewton.so"
