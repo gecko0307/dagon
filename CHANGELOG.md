@@ -7,7 +7,11 @@ Dagon 0.16.0 - TBD
 - **Assets**
   - `EntityManager` is now `World`
   - `EntityGroup*` accessor classes moved to `dagon.graphics.world`
-  - New material property, `subsurfaceScattering`.
+  - New material property, `subsurfaceScattering`
+- **Misc**
+  - `dagon:imgui` extension now uses [bindbc-imgui](https://github.com/BindBC/bindbc-imgui) 0.7.0
+  - `dagon:newton` and `dagon:imgui` extensions now include prebuilt libraries for Linux
+  - Extensions now don't provide x86 libraries.
 
 Dagon 0.15.0 - 31 Aug, 2023
 ---------------------------

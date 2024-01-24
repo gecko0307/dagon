@@ -15,6 +15,5 @@
         "FT_28"
     ],
     
-    "copyFiles-windows-x86": ["lib/x86/*.dll"],
-    "copyFiles-windows-x86_64": ["lib/x64/*.dll"]
+    "copyFiles-windows-x86_64": ["lib/windows-x64/*.dll"]
 }
