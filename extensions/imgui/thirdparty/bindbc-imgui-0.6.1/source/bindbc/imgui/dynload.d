@@ -43,8 +43,9 @@ ImGuiSupport loadImGui()
         ];
     }
     else version(Posix) {
-        const(char)[][1] libNames = [
-            "cimgui.so"
+        const(char)[][2] libNames = [
+            "cimgui.so",
+            "./cimgui.so"
         ];
     }
     else static assert(0, "bindbc-ImGui is not yet supported on this platform.");

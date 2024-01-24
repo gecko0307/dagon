@@ -70,10 +70,10 @@ NewtonSupport loadNewton()
     }
     else version(Posix)
     {
-        const(char)[][1] libNames =
+        const(char)[][2] libNames =
         [
             "/usr/local/lib/libnewton.so",
-            "libnewton.so"
+            "./libnewton.so"
         ];
     }
     else static assert(0, "bindbc-newton is not yet supported on this platform.");
