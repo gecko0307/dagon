@@ -15,7 +15,6 @@ dub.selections.json
 
 # Dub test files
 __test__library__
-tests/
 
 # Documentation
 docs/
@@ -30,3 +29,6 @@ __dummy.html
 
 # Backup files
 *~
+
+# Test applications
+tests/
