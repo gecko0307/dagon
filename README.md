@@ -76,6 +76,12 @@ Runtime Dependencies
 
 Runtime dependencies are automatically deployed on Windows and Linux. On other platforms, you will have to install them manually.
 
+Known Bugs and Limitations
+--------------------------
+* The engine doesn't support macOS
+* `dagon:nuklear` extension has [problems](https://github.com/gecko0307/dagon/issues/89) under Linux
+* `dagon:newton` crashes under Linux when loading Newton plugins (`NewtonPhysicsWorld.loadPlugins`)
+
 Documentation
 -------------
 See [tutorials](https://github.com/gecko0307/dagon/wiki/Tutorials) and corresponding [examples](https://github.com/gecko0307/dagon-tutorials).
