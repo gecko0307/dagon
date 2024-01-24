@@ -17,7 +17,7 @@ configuration "dynamic" {
     dependency "bindbc-loader" version="~>0.3.0"
     dependency "bindbc-opengl" version="~>0.13.0"
     dependency "bindbc-sdl" version="~>0.21.4"
-    versions "GL_33"
+    versions "GL_33" "USE_SDL2"
 }
 
 configuration "dynamicBC" {
@@ -25,7 +25,7 @@ configuration "dynamicBC" {
     subConfiguration "bindbc-loader" "yesBC"
     dependency "bindbc-opengl" version="~>0.13.0"
     dependency "bindbc-sdl" version="~>0.21.4"
-    versions "GL_33"
+    versions "GL_33" "USE_SDL2"
     dflags "-betterC"
 }
 
