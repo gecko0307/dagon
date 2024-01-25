@@ -25,6 +25,8 @@ Dagon is a framework-style engine, meaning that it is controlled programmaticall
 Dagon is written with extendability in mind, so you can easily add your own drawable objects, entity components, shaders and asset loaders. Drawable can be anything you want - you can manually create meshes and animate them. With components you can dynamically attach custom data and functionality to game entities. Materials can use custom GLSL shaders and parameters, and your asset loaders help Dagon understand files that you want to load from disk - these can be 3D models, levels, save files, etc.
 
 ## Further reading
+[Installing Runtime Dependencies](https://github.com/gecko0307/dagon/blob/master/doc/Runtime Dependencies.md)
+
 [Application Architecture](https://github.com/gecko0307/dagon/blob/master/doc/Architecture.md)
 
 [Materials](https://github.com/gecko0307/dagon/blob/master/doc/Material.md)

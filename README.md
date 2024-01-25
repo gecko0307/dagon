@@ -74,7 +74,7 @@ Runtime Dependencies
 * [ImGui](https://github.com/ocornut/imgui) (optional)
 * [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear) (optional, deprecated)
 
-Runtime dependencies are automatically deployed on 64-bit Windows and Linux. On other platforms, you will have to install them manually.
+Runtime dependencies are automatically deployed on 64-bit Windows and Linux. On other platforms, you will have to [install them manually](https://github.com/gecko0307/dagon/blob/master/doc/Runtime Dependencies.md).
 
 Known Bugs and Limitations
 --------------------------
