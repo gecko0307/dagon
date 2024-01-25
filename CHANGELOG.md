@@ -89,7 +89,7 @@ Dagon 0.13.0 - 2 Mar, 2022
 - **Assets**
   - Images are now loaded using callback mechanism in `AssetManager`. You can register your own loader function with `AssetManager.registerImageLoader` method
   - Dagon now uses dlib.image to load images by default. stb_image is available through `dagon:stbi` extension. Import `dagon.ext.stbi` module and register the loader with `stbiRegister` function in your scene constructor:
-    ```json
+    ```d
     stbiRegister(assetManager);
     ```
   - OBJ loader now supports quads
