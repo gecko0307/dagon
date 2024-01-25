@@ -2,7 +2,7 @@
 
 Dagon
 =====
-The goal of this project is to create a modern, easy to use, extensible 3D game engine for [D language](https://dlang.org/). Dagon is based on OpenGL 4.0 core profile. It works on Windows and Linux.
+The goal of this project is to create a modern, easy to use, extensible 3D game engine for [D language](https://dlang.org/). Dagon is based on OpenGL 4.0 core profile. It currently works on Windows and Linux.
 
 The engine is still under development and lacks many important features. It is currently not recommended to use Dagon in production due to API instability. Follow the development on [Trello](https://trello.com/b/4sDgRjZI/dagon-development-board) to see the priority tasks.
 
@@ -79,8 +79,8 @@ Runtime dependencies are automatically deployed on 64-bit Windows and Linux. On 
 Known Bugs and Limitations
 --------------------------
 * The engine doesn't support macOS
-* `dagon:nuklear` extension has [problems](https://github.com/gecko0307/dagon/issues/89) under Linux
-* `dagon:newton` crashes under Linux when loading Newton plugins (`NewtonPhysicsWorld.loadPlugins`)
+* dagon:nuklear extension has [problems](https://github.com/gecko0307/dagon/issues/89) under Linux
+* dagon:newton crashes under Linux when loading Newton plugins (`NewtonPhysicsWorld.loadPlugins`)
 
 Documentation
 -------------
