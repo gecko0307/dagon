@@ -76,9 +76,17 @@ class World: Owner
         probes = New!EntityGroupProbes(this, this);
     }
 
-    void addEntity(Entity e)
+    void add(Entity e)
     {
         array.append(e);
+    }
+    
+    Entity addEntity(Entity parent = null)
+    {
+        Entity e = New!Entity(this);
+        if (parent)
+            e.setParent(parent);
+        return e;
     }
     
     int opApply(scope int delegate(size_t, ref Entity) dg)

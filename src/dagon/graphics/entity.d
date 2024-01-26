@@ -118,7 +118,7 @@ class Entity: Owner, Updateable
         if (w)
         {
             world = w;
-            world.addEntity(this);
+            world.add(this);
         }
 
         position = Vector3f(0, 0, 0);

@@ -203,8 +203,6 @@ class Scene: EventListener
     {
     }
 
-    import std.stdio;
-
     void update(Time t)
     {
         if (focused)
