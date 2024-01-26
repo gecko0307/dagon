@@ -6,7 +6,7 @@ Dagon requires at least OpenGL 4.0 and SDL 2.0.14. OpenGL library is usually pro
 
 dagon:newton
 ------------
-dagon:newton extension requires [Newton Dynamics](https://newtondynamics.com/) 3.14 shared library - `newton.dll` for Windows and `libnewton.so` for Linux. It can be installed system-wide or placed to the project's folder. Dagon provides a prebuilt newton library, which is automatically copied to your project after compilation (if you are building with DUB).
+dagon:newton extension requires [Newton Dynamics](https://newtondynamics.com/) 3.14 shared library - `newton.dll` for Windows and `libnewton.so` for Linux. It can be installed system-wide or placed to the project's folder. On 64-bit platforms, Dagon provides a prebuilt newton library, which is automatically copied to your project after compilation (if you are building with DUB).
 
 Newton 4.0 is not supported.
 
@@ -18,7 +18,7 @@ Compiling from source:
 
 dagon:imgui
 -----------
-dagon:imgui extension requires [ImGui C wrapper library](https://github.com/Inochi2D/cimgui/tree/49bb5ce65f7d5eeab7861d8ffd5aa2a58ca8f08c) - `cimgui.dll` for Windows and `cimgui.so` for Linux. The library should be compiled with SDL2 backend. It can be installed system-wide or placed to the project's folder. Dagon provides a prebuilt cimgui library, which is automatically copied to your project after compilation (if you are building with DUB).
+dagon:imgui extension requires [ImGui C wrapper library](https://github.com/Inochi2D/cimgui/tree/49bb5ce65f7d5eeab7861d8ffd5aa2a58ca8f08c) - `cimgui.dll` for Windows and `cimgui.so` for Linux. The library should be compiled with SDL2 backend. It can be installed system-wide or placed to the project's folder. On 64-bit platforms, Dagon provides a prebuilt cimgui library, which is automatically copied to your project after compilation (if you are building with DUB).
 
 Compiling from source:
 1. Make sure CMake and SDL2 are installed
