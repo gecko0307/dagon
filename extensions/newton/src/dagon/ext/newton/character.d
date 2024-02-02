@@ -53,11 +53,13 @@ class NewtonCharacterComponent: EntityComponent
     float height;
     float mass;
     bool onGround = false;
+    bool jumped = false;
     Vector3f targetVelocity = Vector3f(0.0f, 0.0f, 0.0f);
     Matrix4x4f prevTransformation;
     float radius;
     float shapeRadius;
     float eyeHeight;
+    Vector3f sensorSize;
     
     this(NewtonPhysicsWorld world, Entity e, float height, float mass)
     {
@@ -88,18 +90,22 @@ class NewtonCharacterComponent: EntityComponent
         
         rbody.createUpVectorConstraint(Vector3f(0.0f, 1.0f, 0.0f));
         rbody.gravity = Vector3f(0.0f, -20.0f, 0.0f);
+        NewtonBodySetAutoSleep(rbody.newtonBody, false);
         
-        Vector3f sensorSize = Vector3f(radius, radius * 0.5f, radius);
+        sensorSize = Vector3f(radius, radius * 0.5f, radius);
         auto sensorShape = New!NewtonBoxShape(sensorSize, world);
+        sensorShape.setTransformation(translationMatrix(Vector3f(0.0f, -radius * 0.5f, 0.0f)));
         sensorBody = world.createDynamicBody(sensorShape, 1.0f);
         sensorBody.groupId = world.sensorGroupId;
         sensorBody.sensor = true;
+        sensorBody.raycastable = false;
         sensorBody.collisionCallback = &onSensorCollision;
     }
     
     void onSensorCollision(NewtonRigidBody sensorBody, NewtonRigidBody otherBody)
     {
         onGround = true;
+        if (onGround) jumped = false;
     }
     
     void updateVelocity()
@@ -107,10 +113,9 @@ class NewtonCharacterComponent: EntityComponent
         Vector3f velocityChange = targetVelocity - rbody.velocity;
         velocityChange.y = 0.0f;
         rbody.velocity = rbody.velocity + velocityChange;
-
-        onGround = false;
-        auto m = rbody.transformation * translationMatrix(Vector3f(0.0f, -radius, 0.0f));
-        NewtonBodySetMatrix(sensorBody.newtonBody, m.arrayof.ptr);
+        
+        auto m = rbody.transformation;
+        NewtonBodySetMatrixNoSleep(sensorBody.newtonBody, m.arrayof.ptr);
 
         targetVelocity = Vector3f(0.0f, 0.0f, 0.0f);
     }
@@ -140,8 +145,9 @@ class NewtonCharacterComponent: EntityComponent
     
     void jump(float height)
     {
-        if (onGround)
+        if (onGround && !jumped)
         {
+            jumped = true;
             float jumpSpeed = sqrt(2.0f * height * -rbody.gravity.y);
             Vector3f v = rbody.velocity;
             v.y = jumpSpeed;
