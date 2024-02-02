@@ -79,8 +79,8 @@ vec3 tonemapUnreal(vec3 color)
     return pow(result, vec3(2.2));
 }
 
-// Matrices for rec 2020 <> rec 709 color space conversion
-// matrix provided in row-major order so it has been transposed
+// Matrices for Rec. 2020 <> R.ec 709 color space conversion.
+// Matrix provided in row-major order so it has been transposed.
 // https://www.itu.int/pub/R-REP-BT.2407-2017
 const mat3 LINEAR_REC2020_TO_LINEAR_SRGB = mat3(
     vec3(1.6605, -0.1246, -0.0182),
@@ -95,7 +95,7 @@ const mat3 LINEAR_SRGB_TO_LINEAR_REC2020 = mat3(
 );
 
 // AgX Tone Mapping implementation based on Filament, which in turn is based
-// on Blender's implementation using rec 2020 primaries
+// on Blender's implementation using Rec. 2020 primaries
 // https://github.com/google/filament/pull/7236
 // Inputs and outputs are encoded as Linear-sRGB.
 
@@ -122,7 +122,9 @@ vec3 agxLook(vec3 color, int look)
     if (look == AGX_LOOK_BASE)
         return color;
 
-    const vec3 lw = vec3(0.2126, 0.7152, 0.0722);
+    // Rec. 2020 luminance coefficients
+    const vec3 lw = vec3(0.2626983, 0.6780088, 0.0592929);
+    //const vec3 lw = vec3(0.2126, 0.7152, 0.0722);
 
     float luma = dot(color, lw);
 
@@ -209,12 +211,13 @@ void main()
     else if (tonemapper == 4)
         res = tonemapFilmic(res);
     else if (tonemapper == 3)
-        res = tonemapACES(res); // * 0.6
+        res = tonemapACES(res);
     else if (tonemapper == 2)
         res = tonemapHable(res);
     else if (tonemapper == 1)
         res = tonemapReinhard(res);
     
+    // Gamma-correction
     res = pow(res, vec3(1.0 / 2.2));
     
     fragColor = vec4(res, 1.0);
