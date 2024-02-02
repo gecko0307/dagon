@@ -3,6 +3,7 @@ Dagon 0.16.0 - TBD
 - **Rendering**
   - Approximated subsurface scattering support
   - Environment light probes support
+  - AgX tonemapping support: `Tonemapper.AgX_Base` and `Tonemapper.AgX_Punchy`
   - For background objects such as a skybox it is now necessary to manually disable G-buffer writes: `skyEntity.gbufferMask = 0.0f;`
 - **Assets**
   - `EntityManager` is now `World`
