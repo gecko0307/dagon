@@ -143,7 +143,7 @@ class Scene: EventListener
 
     Entity useEntity(Entity e)
     {
-        world.addEntity(e);
+        world.add(e);
         return e;
     }
 

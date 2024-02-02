@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2024 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -51,7 +51,9 @@ enum Tonemapper
     ACES = 3,
     Filmic = 4,
     Reinhard2 = 5,
-    Unreal = 6
+    Unreal = 6,
+    AgX_Base = 7,
+    AgX_Punchy = 8
 }
 
 class TonemapShader: Shader
