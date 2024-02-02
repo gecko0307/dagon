@@ -33,7 +33,7 @@ Features
 * Textures in PNG, JPG, DDS, HDR, TGA, BMP formats + GIF and PSD via extension
 * Deferred pipeline for opaque materials, forward pipeline for transparent materials and materials with custom shaders
 * Physically based rendering (PBR)
-* HDR rendering with Reinhard, Hable/Uncharted, Unreal, ACES and Filmic tonemapping operators
+* HDR rendering with Reinhard, Hable/Uncharted, Unreal, ACES, Filmic and AgX tonemappers
 * HDRI environment maps. Preconvolved DDS cubemaps
 * Directional lights with cascaded shadow mapping and volumetric scattering
 * Spherical and tube area lights, spot lights
