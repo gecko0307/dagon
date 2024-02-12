@@ -11,7 +11,7 @@ import bindbc.sdl.bind.sdlblendmode : SDL_BlendMode;
 import bindbc.sdl.bind.sdlrect;
 import bindbc.sdl.bind.sdlstdinc : SDL_bool;
 import bindbc.sdl.bind.sdlsurface : SDL_Surface;
-import bindbc.sdl.bind.sdlvideo : SDL_Window;
+import bindbc.sdl.bind.sdlvideo;
 import bindbc.sdl.bind.sdlpixels : SDL_Color;
 
 enum : uint {

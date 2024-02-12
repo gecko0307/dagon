@@ -7,7 +7,7 @@
 module bindbc.sdl.bind.sdlsystem;
 
 import bindbc.sdl.config;
-import bindbc.sdl.bind.sdlrender : SDL_Renderer;
+import bindbc.sdl.bind.sdlrender;
 import bindbc.sdl.bind.sdlstdinc : SDL_bool;
 
 version(Android) {
