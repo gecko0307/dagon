@@ -7,7 +7,7 @@
 module bindbc.sdl.bind.sdlmessagebox;
 
 import bindbc.sdl.config;
-import bindbc.sdl.bind.sdlvideo : SDL_Window;
+import bindbc.sdl.bind.sdlvideo;
 
 // SDL_MessageBoxFlags
 enum SDL_MESSAGEBOX_ERROR = 0x00000010;

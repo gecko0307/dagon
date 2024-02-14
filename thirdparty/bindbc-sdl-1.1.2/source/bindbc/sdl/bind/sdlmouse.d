@@ -9,7 +9,7 @@ module bindbc.sdl.bind.sdlmouse;
 import bindbc.sdl.config;
 import bindbc.sdl.bind.sdlstdinc : SDL_bool;
 import bindbc.sdl.bind.sdlsurface : SDL_Surface;
-import bindbc.sdl.bind.sdlvideo : SDL_Window;
+import bindbc.sdl.bind.sdlvideo;
 
 struct SDL_Cursor;
 

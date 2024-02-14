@@ -11,7 +11,7 @@ import bindbc.sdl.bind.sdlkeycode : SDL_Keycode, SDL_Keymod;
 import bindbc.sdl.bind.sdlrect : SDL_Rect;
 import bindbc.sdl.bind.sdlscancode : SDL_Scancode;
 import bindbc.sdl.bind.sdlstdinc : SDL_bool;
-import bindbc.sdl.bind.sdlvideo : SDL_Window;
+import bindbc.sdl.bind.sdlvideo;
 
 struct SDL_Keysym {
     SDL_Scancode scancode;

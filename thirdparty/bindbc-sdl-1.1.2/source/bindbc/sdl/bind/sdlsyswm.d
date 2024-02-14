@@ -10,7 +10,7 @@ import core.stdc.config : c_long;
 import bindbc.sdl.config;
 import bindbc.sdl.bind.sdlstdinc : SDL_bool;
 import bindbc.sdl.bind.sdlversion : SDL_version;
-import bindbc.sdl.bind.sdlvideo : SDL_Window;
+import bindbc.sdl.bind.sdlvideo;
 
 
 static if(sdlSupport >= SDLSupport.sdl2012) {

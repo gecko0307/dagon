@@ -10,7 +10,7 @@ import bindbc.sdl.config;
 import bindbc.sdl.bind.sdlpixels : SDL_Color;
 import bindbc.sdl.bind.sdlstdinc : SDL_bool;
 import bindbc.sdl.bind.sdlsurface : SDL_Surface;
-import bindbc.sdl.bind.sdlvideo : SDL_Window, SDL_WindowFlags;
+import bindbc.sdl.bind.sdlvideo;
 
 enum {
     SDL_NONSHAPEABLE_WINDOW = -1,

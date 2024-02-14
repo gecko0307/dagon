@@ -8,7 +8,7 @@ module bindbc.sdl.bind.sdlvulkan;
 
 import bindbc.sdl.config;
 import bindbc.sdl.bind.sdlstdinc : SDL_bool;
-import bindbc.sdl.bind.sdlvideo : SDL_Window;
+import bindbc.sdl.bind.sdlvideo;
 
 static if(staticBinding) {
     extern(C) @nogc nothrow {
