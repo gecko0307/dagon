@@ -1,5 +1,7 @@
 Dagon 0.16.0 - TBD
 ------------------
+- **Core**
+  - New method `Application.takeScreenshot`
 - **Rendering**
   - Approximated subsurface scattering support
   - Environment light probes support
