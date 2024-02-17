@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2024 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -43,27 +43,30 @@ import dagon.ext.newton.world;
 import dagon.ext.newton.shape;
 import dagon.ext.newton.rigidbody;
 
-class NewtonCharacterComponent: EntityComponent
+class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
 {
+    NewtonPhysicsWorld world;
     NewtonSphereShape lowerShape;
     NewtonSphereShape upperShape;
     NewtonCompoundShape shape;
     NewtonRigidBody rbody;
-    NewtonRigidBody sensorBody;
     float height;
     float mass;
     bool onGround = false;
-    bool jumped = false;
     Vector3f targetVelocity = Vector3f(0.0f, 0.0f, 0.0f);
     Matrix4x4f prevTransformation;
     float radius;
     float shapeRadius;
     float eyeHeight;
-    Vector3f sensorSize;
+    Vector3f groundPosition = Vector3f(0.0f, 0.0f, 0.0f);
+    Vector3f groundNormal = Vector3f(0.0f, 1.0f, 0.0f);
+    float maxRayDistance = 100.0f;
+    protected float closestHit = 1.0f;
     
     this(NewtonPhysicsWorld world, Entity e, float height, float mass)
     {
         super(world.eventManager, e);
+        this.world = world;
         this.height = height;
         this.mass = mass;
         radius = height * 0.5f;
@@ -91,21 +94,29 @@ class NewtonCharacterComponent: EntityComponent
         rbody.createUpVectorConstraint(Vector3f(0.0f, 1.0f, 0.0f));
         rbody.gravity = Vector3f(0.0f, -20.0f, 0.0f);
         NewtonBodySetAutoSleep(rbody.newtonBody, false);
-        
-        sensorSize = Vector3f(radius, radius * 0.5f, radius);
-        auto sensorShape = New!NewtonBoxShape(sensorSize, world);
-        sensorShape.setTransformation(translationMatrix(Vector3f(0.0f, -radius * 0.5f, 0.0f)));
-        sensorBody = world.createDynamicBody(sensorShape, 1.0f);
-        sensorBody.groupId = world.sensorGroupId;
-        sensorBody.sensor = true;
-        sensorBody.raycastable = false;
-        sensorBody.collisionCallback = &onSensorCollision;
     }
     
-    void onSensorCollision(NewtonRigidBody sensorBody, NewtonRigidBody otherBody)
+    float onRayHit(NewtonRigidBody nbody, Vector3f hitPoint, Vector3f hitNormal, float t)
     {
-        onGround = true;
-        if (onGround) jumped = false;
+        if (t < closestHit)
+        {
+            groundPosition = hitPoint;
+            groundNormal = hitNormal;
+            closestHit = t;
+            return t;
+        }
+        else
+        {
+            return 1.0f;
+        }
+    }
+    
+    bool raycast(Vector3f pstart, Vector3f pend)
+    {
+        closestHit = 1.0f;
+        world.raycast(pstart, pend, this);
+        groundPosition = pstart + (pend - pstart).normalized * maxRayDistance * closestHit;
+        return (closestHit < 1.0f);
     }
     
     void updateVelocity()
@@ -113,10 +124,6 @@ class NewtonCharacterComponent: EntityComponent
         Vector3f velocityChange = targetVelocity - rbody.velocity;
         velocityChange.y = 0.0f;
         rbody.velocity = rbody.velocity + velocityChange;
-        
-        auto m = rbody.transformation;
-        NewtonBodySetMatrixNoSleep(sensorBody.newtonBody, m.arrayof.ptr);
-
         targetVelocity = Vector3f(0.0f, 0.0f, 0.0f);
     }
     
@@ -136,6 +143,11 @@ class NewtonCharacterComponent: EntityComponent
         entity.prevAbsoluteTransformation = entity.prevTransformation;
 
         prevTransformation = entity.transformation;
+        
+        if (raycast(entity.position, entity.position + Vector3f(0.0f, -maxRayDistance, 0.0f)))
+        {
+            onGround = (entity.position.y - groundPosition.y) <= radius;
+        }
     }
     
     void move(Vector3f direction, float speed)
@@ -145,27 +157,14 @@ class NewtonCharacterComponent: EntityComponent
     
     void jump(float height)
     {
-        if (onGround && !jumped)
+        if (onGround)
         {
-            jumped = true;
+            onGround = false;
             float jumpSpeed = sqrt(2.0f * height * -rbody.gravity.y);
             Vector3f v = rbody.velocity;
             v.y = jumpSpeed;
             rbody.velocity = v;
-            onGround = false;
         }
-    }
-    
-    void duck()
-    {
-        // TODO
-        //eyeHeight = 0.0f;
-    }
-    
-    void unduck()
-    {
-        // TODO
-        //eyeHeight = height * 0.5f;
     }
     
     Vector3f position()

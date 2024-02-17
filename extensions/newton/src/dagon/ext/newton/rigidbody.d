@@ -168,6 +168,11 @@ class NewtonRigidBody: Owner
     {
         return NewtonConstraintCreateUpVector(world.newtonWorld, up.arrayof.ptr, newtonBody);
     }
+    
+    void setTransformation(Matrix4x4f m)
+    {
+        NewtonBodySetMatrix(newtonBody, m.arrayof.ptr);
+    }
 
     void velocity(Vector3f v) @property
     {
