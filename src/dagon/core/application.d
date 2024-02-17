@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2022 Timur Gafarov
+Copyright (c) 2017-2024 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -37,8 +37,10 @@ import std.string;
 import std.file;
 import std.algorithm: canFind;
 import core.stdc.stdlib;
+import core.stdc.string;
 
 import dlib.core.memory;
+import dlib.image;
 import dagon.core.bindings;
 import dagon.core.event;
 import dagon.core.time;
@@ -328,5 +330,18 @@ class Application: EventListener
     void exit()
     {
         eventManager.exit();
+    }
+    
+    SuperImage takeScreenshot()
+    {
+        ubyte[] data = New!(ubyte[])(width * height * 3);
+        glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, data.ptr);
+        SuperImage img = unmanagedImage(width, height, 3, 8);
+        auto outputData = img.data;
+        for (uint y = 0; y < height; y++)
+        {
+            memcpy(&outputData[(height - 1 - y) * width * 3], &data[y * width * 3], width * 3);
+        }
+        return img;
     }
 }
