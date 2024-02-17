@@ -41,6 +41,7 @@ import core.stdc.string;
 
 import dlib.core.memory;
 import dlib.image;
+import dlib.filesystem;
 import dagon.core.bindings;
 import dagon.core.event;
 import dagon.core.time;
@@ -332,6 +333,14 @@ class Application: EventListener
         eventManager.exit();
     }
     
+    static bool fileExists(string filename)
+    {
+        FileStat fstat;
+        return stat(filename, fstat);
+    }
+    
+    uint screenNum = 0;
+    
     SuperImage takeScreenshot()
     {
         ubyte[] data = New!(ubyte[])(width * height * 3);
@@ -343,5 +352,24 @@ class Application: EventListener
             memcpy(&outputData[(height - 1 - y) * width * 3], &data[y * width * 3], width * 3);
         }
         return img;
+    }
+    
+    void takeScreenshot(string path)
+    {
+        auto img = takeScreenshot();
+        
+        bool saved = false;
+        while (!saved)
+        {
+            string filePath = path ~ screenNum.to!string ~ ".png";
+            if (!fileExists(filePath))
+            {
+                img.savePNG(filePath);
+                saved = true;
+            }
+            else screenNum++;
+        }
+        
+        Delete(img);
     }
 }
