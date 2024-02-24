@@ -1,5 +1,5 @@
-Dagon 0.16.0 - TBD
-------------------
+Dagon 0.16.0 - 25 Feb, 2023
+---------------------------
 - **Core**
   - New method `Application.takeScreenshot`
 - **Rendering**
@@ -11,10 +11,14 @@ Dagon 0.16.0 - TBD
   - `EntityManager` is now `World`
   - `EntityGroup*` accessor classes moved to `dagon.graphics.world`
   - New material property, `subsurfaceScattering`
+- **Post-processing**
+  - Fix sampler conflict in LUT shader
 - **Extensions**
   - `dagon:imgui` extension now uses [bindbc-imgui](https://github.com/BindBC/bindbc-imgui) 0.7.0
   - `dagon:newton` and `dagon:imgui` extensions now include prebuilt libraries for Linux
   - Extensions now don't provide x86 libraries.
+- **Misc**
+  - Dagon now uses dlib 1.3.0.
 
 Dagon 0.15.0 - 31 Aug, 2023
 ---------------------------
