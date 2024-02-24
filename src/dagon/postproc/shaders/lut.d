@@ -74,21 +74,32 @@ class LUTShader: Shader
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
         setParameter("colorBuffer", 0);
 
-        // Texture 1 - lookup table
+        // Textures 1, 2 - lookup table
         if (colorLookupTable)
         {
-            glActiveTexture(GL_TEXTURE1);
-            colorLookupTable.bind();
             setParameter("enabled", 1);
+            setParameter("colorTableSimple", 1);
+            setParameter("colorTableHald", 2);
+            
             if (colorLookupTable.format.target == GL_TEXTURE_3D)
             {
+                glActiveTexture(GL_TEXTURE1);
+                glBindTexture(GL_TEXTURE_2D, 0);
+                
+                glActiveTexture(GL_TEXTURE2);
+                colorLookupTable.bind();
+                
                 setParameter("lookupMode", 1);
-                setParameter("colorTableHald", 1);
             }
             else
             {
+                glActiveTexture(GL_TEXTURE1);
+                colorLookupTable.bind();
+                
+                glActiveTexture(GL_TEXTURE2);
+                glBindTexture(GL_TEXTURE_3D, 0);
+                
                 setParameter("lookupMode", 0);
-                setParameter("colorTableSimple", 1);
             }
         }
         else
@@ -108,11 +119,11 @@ class LUTShader: Shader
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, 0);
 
-        if (colorLookupTable)
-        {
-            glActiveTexture(GL_TEXTURE1);
-            colorLookupTable.unbind();
-        }
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_3D, 0);
 
         glActiveTexture(GL_TEXTURE0);
     }
