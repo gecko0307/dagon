@@ -198,7 +198,6 @@ class Application: EventListener
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-        //SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
 
         window = SDL_CreateWindow(toStringz(windowTitle),
             SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
@@ -231,7 +230,6 @@ class Application: EventListener
         super(_eventManager, null);
 
         // Initialize OpenGL
-        //glEnable(GL_FRAMEBUFFER_SRGB);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClearDepth(1.0);
         glEnable(GL_SCISSOR_TEST);
@@ -371,5 +369,24 @@ class Application: EventListener
         }
         
         Delete(img);
+    }
+    
+    int displayRefreshRate()
+    {
+        SDL_DisplayMode mode;
+        int displayIndex = SDL_GetWindowDisplayIndex(window);
+        int defaultRefreshRate = 60;
+        if (SDL_GetDesktopDisplayMode(displayIndex, &mode) != 0)
+            return defaultRefreshRate;
+        if (mode.refresh_rate == 0)
+            return defaultRefreshRate;
+        return mode.refresh_rate;
+    }
+    
+    int frequencyToRefreshRate()
+    {
+        int refreshRate = displayRefreshRate();
+        cadencer.setFrequency(refreshRate);
+        return refreshRate;
     }
 }

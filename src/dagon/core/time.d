@@ -51,6 +51,11 @@ class Cadencer: Owner
     {
         super(owner);
         this.callback = callback;
+        setFrequency(freq);
+    }
+    
+    void setFrequency(uint freq)
+    {
         timeStep = 1.0 / cast(double)freq;
     }
     
