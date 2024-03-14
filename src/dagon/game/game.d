@@ -72,6 +72,9 @@ class Game: Application
     Configuration config;
     
     bool dynamicViewport = true;
+    
+    // TODO: implement async engine instead
+    Scene sceneForDeletion = null;
 
     this(uint w, uint h, bool fullscreen, string title, string[] args)
     {
@@ -125,6 +128,12 @@ class Game: Application
 
     override void onUpdate(Time t)
     {
+        if (sceneForDeletion)
+        {
+            deleteOwnedObject(sceneForDeletion);
+            sceneForDeletion = null;
+        }
+        
         if (currentScene)
         {
             currentScene.update(t);
@@ -177,13 +186,21 @@ class Game: Application
         return presentRenderer.inputBuffer.colorTexture;
     }
     
-    void setCurrentScene(string name)
+    void setCurrentScene(Scene scene, bool releaseCurrent = false)
+    {
+        if (releaseCurrent && currentScene)
+        {
+            sceneForDeletion = currentScene;
+        }
+        
+        currentScene = scene;
+        if (currentScene.loaded)
+            currentScene.onReset();
+    }
+    
+    void setCurrentScene(string name, bool releaseCurrent = false)
     {
         if (name in scenes)
-        {
-            currentScene = scenes[name];
-            if (currentScene.loaded)
-                currentScene.onReset();
-        }
+            setCurrentScene(scenes[name], releaseCurrent);
     }
 }
