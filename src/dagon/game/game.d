@@ -151,10 +151,10 @@ class Game: Application
     
     void resize(int width, int height)
     {
-        renderer.setViewport(0, 0, width, height);
-        postProcessingRenderer.setViewport(0, 0, width, height);
-        presentRenderer.setViewport(0, 0, width, height);
-        hudRenderer.setViewport(0, 0, width, height);
+        if (renderer) renderer.setViewport(0, 0, width, height);
+        if (postProcessingRenderer) postProcessingRenderer.setViewport(0, 0, width, height);
+        if (presentRenderer) presentRenderer.setViewport(0, 0, width, height);
+        if (hudRenderer) hudRenderer.setViewport(0, 0, width, height);
     }
     
     override void onResize(int width, int height)

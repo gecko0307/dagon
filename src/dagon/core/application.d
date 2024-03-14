@@ -159,6 +159,7 @@ class Application: EventListener
 {
     uint width;
     uint height;
+    bool fullscreen = false;
     SDL_Window* window = null;
     SDL_GLContext glcontext;
     private EventManager _eventManager;
@@ -188,6 +189,7 @@ class Application: EventListener
 
         width = winWidth;
         height = winHeight;
+        this.fullscreen = fullscreen;
 
         SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
@@ -222,9 +224,8 @@ class Application: EventListener
         {
             exitWithError("Error: failed to load OpenGL functions. Please, update graphics card driver and make sure it supports OpenGL 4.0");
         }
-
-        if (fullscreen)
-            SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+        
+        setFullscreen(fullscreen);
 
         _eventManager = New!EventManager(window, width, height);
         super(_eventManager, null);
@@ -270,10 +271,24 @@ class Application: EventListener
         SDL_Quit();
         Delete(_eventManager);
     }
-
+    
+    void setWindowSize(uint w, uint h)
+    {
+        SDL_SetWindowSize(window, w, h);
+        SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+    }
+    
     void maximizeWindow()
     {
         SDL_MaximizeWindow(window);
+    }
+    
+    void setFullscreen(bool mode)
+    {
+        if (mode)
+            SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+        else
+            SDL_SetWindowFullscreen(window, 0);
     }
 
     override void onUserEvent(int code)
