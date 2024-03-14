@@ -194,6 +194,7 @@ class Game: Application
         }
         
         currentScene = scene;
+        currentScene.onResize(eventManager.windowWidth, eventManager.windowHeight);
         if (currentScene.loaded)
             currentScene.onReset();
     }

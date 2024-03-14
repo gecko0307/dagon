@@ -275,6 +275,10 @@ class Application: EventListener
     void setWindowSize(uint w, uint h)
     {
         SDL_SetWindowSize(window, w, h);
+    }
+    
+    void centerWindow()
+    {
         SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
     }
     

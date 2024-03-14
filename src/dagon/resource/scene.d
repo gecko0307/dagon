@@ -208,7 +208,7 @@ class Scene: EventListener
 
     void update(Time t)
     {
-        processEvents(focused);
+        processEvents(focused && loaded);
         
         if (!startedLoading)
         {
