@@ -4,8 +4,8 @@ homepage ""
 authors "Joshua T. Fisher" "Luna Nielsen"
 license "Boost"
 
-dependency "bindbc-sdl" version="~>0.21.4"
-dependency "bindbc-opengl" version="~>0.13.0"
+dependency "bindbc-sdl" version="~>1.4"
+dependency "bindbc-opengl" version="~>1.1"
 versions "GL_33"
 
 configuration "static_dynamicCRT" {

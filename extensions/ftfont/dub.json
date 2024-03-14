@@ -1,15 +1,14 @@
 {
     "name": "ftfont",
     "importPaths": [
-        "thirdparty/bindbc-freetype-0.9.1/source",
         "src"
     ],
     "sourcePaths": [
-        "thirdparty/bindbc-freetype-0.9.1/source",
         "src"
     ],
     "dependencies": {
-        "dagon": "*"
+        "dagon": "*",
+        "bindbc-freetype": "~>1.2"
     },
     "versions": [
         "FT_28"

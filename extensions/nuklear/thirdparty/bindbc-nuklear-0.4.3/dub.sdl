@@ -9,13 +9,13 @@ targetPath "lib"
 targetName "BindBC_nuklear"
 
 configuration "dynamic" {
-    dependency "bindbc-loader" version="~>0.2.1"
+    dependency "bindbc-loader" version="~>1.1"
     copyFiles "lib/win32/nuklear.dll" platform="windows-x86"
     copyFiles "lib/win64/nuklear.dll" platform="windows-x86_64"
 }
 
 configuration "dynamicBC" {
-    dependency "bindbc-loader" version="~>0.2.1"
+    dependency "bindbc-loader" version="~>1.1"
     subConfiguration "bindbc-loader" "yesBC"
     copyFiles "lib/win32/nuklear.dll" platform="windows-x86"
     copyFiles "lib/win64/nuklear.dll" platform="windows-x86_64"

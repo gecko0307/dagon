@@ -12,23 +12,20 @@
     ],
 
     "importPaths": [
-        "src",
-        "thirdparty/bindbc-loader-1.0.0/source",
-        "thirdparty/bindbc-opengl-1.0.0/source",
-        "thirdparty/bindbc-sdl-1.1.2/source"
+        "src"
     ],
     
     "sourcePaths": [
-        "src",
-        "thirdparty/bindbc-loader-1.0.0/source",
-        "thirdparty/bindbc-opengl-1.0.0/source",
-        "thirdparty/bindbc-sdl-1.1.2/source"
+        "src"
     ],
     
     "stringImportPaths": ["data/__internal"],
 
     "dependencies": {
-        "dlib": "~>1.3.0"
+        "dlib": "~>1.3",
+        "bindbc-loader": "~>1.1",
+        "bindbc-opengl": "~>1.1",
+        "bindbc-sdl": "~>1.4",
     },
 
     "versions": [
