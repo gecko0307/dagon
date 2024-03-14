@@ -72,6 +72,8 @@ class HUDShader: Shader
         setParameter("normalMatrix", state.normalMatrix);
         setParameter("viewMatrix", state.viewMatrix);
         setParameter("invViewMatrix", state.invViewMatrix);
+        
+        setParameter("opacity", mat.opacity);
 
         // Diffuse
         glActiveTexture(GL_TEXTURE0);

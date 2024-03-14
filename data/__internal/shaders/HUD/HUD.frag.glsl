@@ -22,9 +22,12 @@ subroutine(srtColor) vec4 diffuseColorTexture(in vec2 uv)
 
 subroutine uniform srtColor diffuse;
 
+uniform float opacity;
+
 out vec4 fragColor;
 
 void main()
 {
-    fragColor = diffuse(texCoord);
+    vec4 color = diffuse(texCoord);
+    fragColor = vec4(color.rgb, color.a * opacity);
 }
