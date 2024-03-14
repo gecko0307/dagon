@@ -367,6 +367,7 @@ class GLTFMesh: Owner, Drawable
     
     ~this()
     {
+        primitives.free();
     }
 }
 
