@@ -31,6 +31,7 @@ import std.stdio;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.container.dict;
 
 import dagon.core.bindings;
 import dagon.core.event;
@@ -54,6 +55,7 @@ version(Windows)
 
 class Game: Application
 {
+    Dict!(Scene, string) scenes;
     Scene currentScene;
 
     Renderer renderer;
@@ -73,6 +75,8 @@ class Game: Application
 
     this(uint w, uint h, bool fullscreen, string title, string[] args)
     {
+        scenes = dict!(Scene, string);
+        
         config = New!Configuration(this);
         if (config.fromFile("settings.conf"))
         {
@@ -112,6 +116,11 @@ class Game: Application
         postProcessingRenderer.fxaaEnabled = false;
         postProcessingRenderer.lutEnabled = false;
         postProcessingRenderer.lensDistortionEnabled = false;
+    }
+    
+    ~this()
+    {
+        Delete(scenes);
     }
 
     override void onUpdate(Time t)
@@ -166,5 +175,15 @@ class Game: Application
     GLuint frameTexture() @property
     {
         return presentRenderer.inputBuffer.colorTexture;
+    }
+    
+    void setCurrentScene(string name)
+    {
+        if (name in scenes)
+        {
+            currentScene = scenes[name];
+            if (currentScene.loaded)
+                currentScene.onReset();
+        }
     }
 }

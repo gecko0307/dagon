@@ -89,24 +89,14 @@ class FreeviewComponent: EntityComponent
     {
         super(em, e);
         
-        center = Vector3f(0.0f, 0.0f, 0.0f);
-        rotPitch = rotationQuaternion(Vector3f(1.0f,0.0f,0.0f), 0.0f);
-        rotTurn = rotationQuaternion(Vector3f(0.0f,1.0f,0.0f), 0.0f);
-        rotRoll = rotationQuaternion(Vector3f(0.0f,0.0f,1.0f), 0.0f);
-        transform = Matrix4x4f.identity;
-        invTransform = Matrix4x4f.identity;
-        distance = 10.0f;
-        
-        currentTranslate = Vector3f(0.0f, 0.0f, 0.0f);
-        targetTranslate = Vector3f(0.0f, 0.0f, 0.0f);
-        
-        pitch(45.0f);
-        turn(45.0f);
-        setZoom(20.0f);
+        reset();
     }
     
     void reset()
     {
+        prevMouseX = eventManager.mouseX;
+        prevMouseY = eventManager.mouseY;
+        
         center = Vector3f(0.0f, 0.0f, 0.0f);
         rotPitch = rotationQuaternion(Vector3f(1.0f,0.0f,0.0f), 0.0f);
         rotTurn = rotationQuaternion(Vector3f(0.0f,1.0f,0.0f), 0.0f);
@@ -141,6 +131,16 @@ class FreeviewComponent: EntityComponent
         pitch(45.0f);
         turn(45.0f);
         setZoom(20.0f);
+        
+        zoomIn = false;
+        zoomSmoothFactor = 2.0f;
+        translateSmoothFactor = 10.0f;
+        
+        movingToTarget = false;
+        
+        active = true;
+        
+        transformEntity();
     }
     
     override void update(Time time)
@@ -163,7 +163,7 @@ class FreeviewComponent: EntityComponent
                 zoom((shiftx + shifty) * 0.1f);
             }
             else if (eventManager.mouseButtonPressed[MB_LEFT])
-            {                
+            {
                 float t = (eventManager.mouseX - prevMouseX);
                 float p = (eventManager.mouseY - prevMouseY);
                 pitchSmooth(p, 4.0f);
@@ -188,7 +188,12 @@ class FreeviewComponent: EntityComponent
             currentTranslate += t;
             translateTarget(t);
         }
-
+        
+        transformEntity();
+    }
+    
+    void transformEntity()
+    {
         rotPitch = rotationQuaternion(Vector3f(1.0f,0.0f,0.0f), degtorad(rotPitchTheta));
         rotTurn = rotationQuaternion(Vector3f(0.0f,1.0f,0.0f), degtorad(rotTurnTheta));
         rotRoll = rotationQuaternion(Vector3f(0.0f,0.0f,1.0f), degtorad(rotRollTheta));

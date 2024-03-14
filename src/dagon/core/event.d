@@ -521,7 +521,7 @@ abstract class EventListener: Owner
         eventManager.generateUserEvent(code);
     }
 
-    void processEvents()
+    void processEvents(bool enableInputEvents = true)
     {
         if (!enabled)
             return;
@@ -529,40 +529,40 @@ abstract class EventListener: Owner
         for (uint i = 0; i < eventManager.numEvents; i++)
         {
             Event* e = &eventManager.eventStack[i];
-            processEvent(e);
+            processEvent(e, enableInputEvents);
         }
     }
 
-    void processEvent(Event* e)
+    void processEvent(Event* e, bool enableInputEvents = true)
     {
         switch(e.type)
         {
             case EventType.KeyDown:
-                onKeyDown(e.key);
+                if (enableInputEvents) onKeyDown(e.key);
                 break;
             case EventType.KeyUp:
-                onKeyUp(e.key);
+                if (enableInputEvents) onKeyUp(e.key);
                 break;
             case EventType.TextInput:
-                onTextInput(e.unicode);
+                if (enableInputEvents) onTextInput(e.unicode);
                 break;
             case EventType.MouseButtonDown:
-                onMouseButtonDown(e.button);
+                if (enableInputEvents) onMouseButtonDown(e.button);
                 break;
             case EventType.MouseButtonUp:
-                onMouseButtonUp(e.button);
+                if (enableInputEvents) onMouseButtonUp(e.button);
                 break;
             case EventType.MouseWheel:
-                onMouseWheel(e.mouseWheelX, e.mouseWheelY);
+                if (enableInputEvents) onMouseWheel(e.mouseWheelX, e.mouseWheelY);
                 break;
             case EventType.JoystickButtonDown:
-                onJoystickButtonDown(e.joystickButton);
+                if (enableInputEvents) onJoystickButtonDown(e.joystickButton);
                 break;
             case EventType.JoystickButtonUp:
-                onJoystickButtonUp(e.joystickButton);
+                if (enableInputEvents) onJoystickButtonUp(e.joystickButton);
                 break;
             case EventType.JoystickAxisMotion:
-                onJoystickAxisMotion(e.joystickAxis, e.joystickAxisValue);
+                if (enableInputEvents) onJoystickAxisMotion(e.joystickAxis, e.joystickAxisValue);
                 break;
             case EventType.Resize:
                 onResize(e.width, e.height);
@@ -580,7 +580,7 @@ abstract class EventListener: Owner
                 onFileChange(e.filename);
                 break;
             case EventType.DropFile:
-                onDropFile(e.filename);
+                if (enableInputEvents) onDropFile(e.filename);
                 break;
             case EventType.UserEvent:
                 onUserEvent(e.userCode);

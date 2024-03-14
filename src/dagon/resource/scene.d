@@ -61,6 +61,7 @@ class Scene: EventListener
     World world;
     Environment environment;
     ShapeBox decalShape;
+    bool startedLoading = false;
     bool isLoading = false;
     bool loaded = false;
     bool canRender = false;
@@ -76,9 +77,6 @@ class Scene: EventListener
         decalShape = New!ShapeBox(Vector3f(1, 1, 1), this);
 
         assetManager = New!AssetManager(eventManager, this);
-        beforeLoad();
-        isLoading = true;
-        assetManager.loadThreadSafePart();
     }
 
     // Set preload to true if you want to load the asset immediately
@@ -202,13 +200,24 @@ class Scene: EventListener
     void onUpdate(Time t)
     {
     }
+    
+    // Override me
+    void onReset()
+    {
+    }
 
     void update(Time t)
     {
-        if (focused)
-            processEvents();
-
-        if (isLoading)
+        processEvents(focused);
+        
+        if (!startedLoading)
+        {
+            startedLoading = true;
+            beforeLoad();
+            isLoading = true;
+            assetManager.loadThreadSafePart();
+        }
+        else if (isLoading)
         {
             onLoad(t, assetManager.nextLoadingPercentage);
             isLoading = assetManager.isLoading;
@@ -223,7 +232,7 @@ class Scene: EventListener
                 onLoad(t, 1.0f);
                 canRender = true;
             }
-
+            
             onUpdate(t);
 
             foreach(e; world)
