@@ -202,7 +202,7 @@ class Application: EventListener
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
         window = SDL_CreateWindow(toStringz(windowTitle),
-            SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+            SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
         if (window is null)
             exitWithError("Error: failed to create window: " ~ to!string(SDL_GetError()));
 
