@@ -42,6 +42,8 @@ import core.stdc.string;
 import dlib.core.memory;
 import dlib.image;
 import dlib.filesystem;
+import dlib.text.str;
+
 import dagon.core.bindings;
 import dagon.core.event;
 import dagon.core.time;
@@ -164,6 +166,8 @@ class Application: EventListener
     SDL_GLContext glcontext;
     private EventManager _eventManager;
     Cadencer cadencer;
+    String vendor;
+    String renderer;
 
     /++
         Constructor.
@@ -231,6 +235,11 @@ class Application: EventListener
         super(_eventManager, null);
 
         // Initialize OpenGL
+        vendor = String(glGetString(GL_VENDOR));
+        renderer = String(glGetString(GL_RENDERER));
+        writeln("OpenGL vendor: ", vendor);
+        writeln("OpenGL renderer: ", renderer);
+        
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClearDepth(1.0);
         glEnable(GL_SCISSOR_TEST);
