@@ -1,3 +1,18 @@
+Dagon 0.17.0 - TBD
+------------------
+- **Core**
+  - New methods `Application.setWindowSize`, `Application.setFullscreen`, `Application.centerWindow`
+  - Arbitrary cadencer frequency support (`Cadencer.setFrequency`). Now you can adapt application update frequency to display refresh rate using `Application.frequencyToRefreshRate`
+- **Game**
+  - Basic scene management in `Game` class: `Game.scenes` and `Game.setCurrentScene` that can be used to set current scene by name
+- **Rendering**
+  - Wayland support under Linux
+  - Material opacity support in HUD shader
+- **Assets**
+  - Fixed a bug with incomplete GLTF scene deletion
+- **Misc**
+  - Dagon and extensions now use bindbc-loader 1.1, bindbc-opengl 1.1, bindbc-sdl 1.4, bindbc-freetype 1.2, bindbc-newton 0.3.
+
 Dagon 0.16.0 - 25 Feb, 2023
 ---------------------------
 - **Core**
