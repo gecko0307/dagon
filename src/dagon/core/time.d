@@ -47,7 +47,7 @@ class Cadencer: Owner
     public:
     int fps = 0;
     
-    this(void delegate(Time) callback, uint freq, Owner owner)
+    this(scope void delegate(Time) callback, uint freq, Owner owner)
     {
         super(owner);
         this.callback = callback;
@@ -59,6 +59,11 @@ class Cadencer: Owner
         timeStep = 1.0 / cast(double)freq;
     }
     
+    double getTimeStep()
+    {
+        return timeStep;
+    }
+    
     void update(Time t)
     {
         elapsedTime += t.delta;
@@ -67,7 +72,7 @@ class Cadencer: Owner
         if (elapsedTime >= timeStep)
         {
             callback(Time(timeStep, t.elapsed));
-            elapsedTime -= timeStep;
+            elapsedTime = 0.0; //-= timeStep;
             fpsCounter++;
         }
         
