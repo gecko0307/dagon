@@ -608,6 +608,8 @@ class GLTFAsset: Asset, TriangleSet
                         GLTFAccessor positionAccessor;
                         GLTFAccessor normalAccessor;
                         GLTFAccessor texCoord0Accessor;
+                        GLTFAccessor joints0Accessor;
+                        GLTFAccessor weights0Accessor;
                         GLTFAccessor indexAccessor;
                         
                         if ("attributes" in p)
@@ -640,6 +642,24 @@ class GLTFAsset: Asset, TriangleSet
                                 else
                                     writeln("Warning: can't create texCoord0 attributes for nonexistent accessor ", texCoord0AccessorIndex);
                             }
+                            
+                            if ("JOINTS_0" in attributes)
+                            {
+                                uint joints0AccessorIndex = cast(uint)attributes["JOINTS_0"].asNumber;
+                                if (joints0AccessorIndex < accessors.length)
+                                    joints0Accessor = accessors[joints0AccessorIndex];
+                                else
+                                    writeln("Warning: can't create joints0 attributes for nonexistent accessor ", joints0AccessorIndex);
+                            }
+                            
+                            if ("WEIGHTS_0" in attributes)
+                            {
+                                uint weights0AccessorIndex = cast(uint)attributes["WEIGHTS_0"].asNumber;
+                                if (weights0AccessorIndex < accessors.length)
+                                    weights0Accessor = accessors[weights0AccessorIndex];
+                                else
+                                    writeln("Warning: can't create weights0 attributes for nonexistent accessor ", weights0AccessorIndex);
+                            }
                         }
                         
                         if ("indices" in p)
@@ -662,23 +682,26 @@ class GLTFAsset: Asset, TriangleSet
                         }
                         
                         if (positionAccessor is null)
-                        {
                             writeln("Warning: mesh ", i, " lacks vertex position attributes");
-                        }
-                        if (normalAccessor is null)
-                        {
-                            writeln("Warning: mesh ", i, " lacks vertex normal attributes");
-                        }
-                        if (texCoord0Accessor is null)
-                        {
-                            writeln("Warning: mesh ", i, " lacks vertex texCoord0 attributes");
-                        }
-                        if (indexAccessor is null)
-                        {
-                            writeln("Warning: mesh ", i, " lacks indices");
-                        }
                         
-                        GLTFMeshPrimitive pr = New!GLTFMeshPrimitive(positionAccessor, normalAccessor, texCoord0Accessor, indexAccessor, material, this);
+                        if (normalAccessor is null)
+                            writeln("Warning: mesh ", i, " lacks vertex normal attributes");
+                        
+                        if (texCoord0Accessor is null)
+                            writeln("Warning: mesh ", i, " lacks vertex texCoord0 attributes");
+                        
+                        if (indexAccessor is null)
+                            writeln("Warning: mesh ", i, " lacks indices");
+                        
+                        GLTFMeshPrimitive pr = New!GLTFMeshPrimitive(this);
+                        pr.positionAccessor = positionAccessor;
+                        pr.normalAccessor = normalAccessor;
+                        pr.texCoord0Accessor = texCoord0Accessor;
+                        pr.joints0Accessor = joints0Accessor;
+                        pr.weights0Accessor = weights0Accessor;
+                        pr.indexAccessor = indexAccessor;
+                        pr.material = material;
+                        
                         me.primitives.insertBack(pr);
                     }
                 }

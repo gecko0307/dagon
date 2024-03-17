@@ -43,7 +43,9 @@ enum VertexAttrib
 {
     Vertices = 0,
     Normals = 1,
-    Texcoords = 2
+    Texcoords = 2,
+    Joints = 3,
+    Weights = 4
 }
 
 interface TriangleSet

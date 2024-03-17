@@ -42,6 +42,8 @@ class GLTFMeshPrimitive: Owner, Drawable
     GLTFAccessor positionAccessor;
     GLTFAccessor normalAccessor;
     GLTFAccessor texCoord0Accessor;
+    GLTFAccessor joints0Accessor;
+    GLTFAccessor weights0Accessor;
     GLTFAccessor indexAccessor;
     Material material;
     
@@ -49,18 +51,18 @@ class GLTFMeshPrimitive: Owner, Drawable
     GLuint vbo = 0;
     GLuint nbo = 0;
     GLuint tbo = 0;
+    GLuint jbo = 0;
+    GLuint wbo = 0;
     GLuint eao = 0;
     
     bool canRender = false;
     
-    this(GLTFAccessor positionAccessor, GLTFAccessor normalAccessor, GLTFAccessor texCoord0Accessor, GLTFAccessor indexAccessor, Material material, Owner o)
+    bool hasJoints = false;
+    bool hasWeights = false;
+    
+    this(Owner o)
     {
         super(o);
-        this.positionAccessor = positionAccessor;
-        this.normalAccessor = normalAccessor;
-        this.texCoord0Accessor = texCoord0Accessor;
-        this.indexAccessor = indexAccessor;
-        this.material = material;
     }
     
     void prepareVAO()
@@ -92,6 +94,22 @@ class GLTFMeshPrimitive: Owner, Drawable
         glBindBuffer(GL_ARRAY_BUFFER, tbo);
         glBufferData(GL_ARRAY_BUFFER, texCoord0Accessor.bufferView.slice.length, texCoord0Accessor.bufferView.slice.ptr, GL_STATIC_DRAW);
         
+        if (joints0Accessor && joints0Accessor.bufferView.slice.length > 0)
+        {
+            glGenBuffers(1, &jbo);
+            glBindBuffer(GL_ARRAY_BUFFER, jbo);
+            glBufferData(GL_ARRAY_BUFFER, joints0Accessor.bufferView.slice.length, joints0Accessor.bufferView.slice.ptr, GL_STATIC_DRAW);
+            hasJoints = true;
+        }
+        
+        if (weights0Accessor && weights0Accessor.bufferView.slice.length > 0)
+        {
+            glGenBuffers(1, &wbo);
+            glBindBuffer(GL_ARRAY_BUFFER, wbo);
+            glBufferData(GL_ARRAY_BUFFER, weights0Accessor.bufferView.slice.length, weights0Accessor.bufferView.slice.ptr, GL_STATIC_DRAW);
+            hasWeights = true;
+        }
+        
         glGenBuffers(1, &eao);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eao);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexAccessor.bufferView.slice.length, indexAccessor.bufferView.slice.ptr, GL_STATIC_DRAW);
@@ -110,6 +128,20 @@ class GLTFMeshPrimitive: Owner, Drawable
         glEnableVertexAttribArray(VertexAttrib.Texcoords);
         glBindBuffer(GL_ARRAY_BUFFER, tbo);
         glVertexAttribPointer(VertexAttrib.Texcoords, texCoord0Accessor.numComponents, texCoord0Accessor.componentType, GL_FALSE, texCoord0Accessor.bufferView.stride, cast(void*)texCoord0Accessor.byteOffset);
+        
+        if (hasJoints)
+        {
+            glEnableVertexAttribArray(VertexAttrib.Joints);
+            glBindBuffer(GL_ARRAY_BUFFER, jbo);
+            glVertexAttribPointer(VertexAttrib.Joints, joints0Accessor.numComponents, joints0Accessor.componentType, GL_FALSE, joints0Accessor.bufferView.stride, cast(void*)joints0Accessor.byteOffset);
+        }
+        
+        if (hasWeights)
+        {
+            glEnableVertexAttribArray(VertexAttrib.Weights);
+            glBindBuffer(GL_ARRAY_BUFFER, wbo);
+            glVertexAttribPointer(VertexAttrib.Weights, weights0Accessor.numComponents, weights0Accessor.componentType, GL_FALSE, weights0Accessor.bufferView.stride, cast(void*)weights0Accessor.byteOffset);
+        }
         
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eao);
         
@@ -136,6 +168,10 @@ class GLTFMeshPrimitive: Owner, Drawable
             glDeleteBuffers(1, &vbo);
             glDeleteBuffers(1, &nbo);
             glDeleteBuffers(1, &tbo);
+            if (hasJoints)
+                glDeleteBuffers(1, &jbo);
+            if (hasWeights)
+                glDeleteBuffers(1, &wbo);
             glDeleteBuffers(1, &eao);
         }
     }
