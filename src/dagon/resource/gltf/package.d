@@ -170,9 +170,9 @@ class GLTFAsset: Asset, TriangleSet
         loadTextures(doc.root);
         loadMaterials(doc.root);
         loadMeshes(doc.root);
-        loadAnimations(doc.root);
         loadNodes(doc.root);
         loadSkins(doc.root);
+        loadAnimations(doc.root);
         loadScenes(doc.root);
         return true;
     }
