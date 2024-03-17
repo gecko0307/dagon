@@ -50,12 +50,13 @@
     "copyFiles-windows-x86_64": ["lib/x64/*.dll"],
     
     "subPackages": [
-        "extensions/stbi",
         "extensions/ftfont",
-        "extensions/nuklear",
         "extensions/imgui",
-        "extensions/newton",
         "extensions/iqm",
+        "extensions/lua",
+        "extensions/newton",
+        "extensions/nuklear",
+        "extensions/stbi",
         "init-exec"
     ]
 }

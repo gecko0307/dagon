@@ -1,0 +1,13 @@
+{
+    "name": "lua",
+    "importPaths": [
+        "src"
+    ],
+    "sourcePaths": [
+        "src"
+    ],
+    "dependencies": {
+        "dagon": "*",
+        "bindbc-lua": "~>0.6"
+    }
+}
