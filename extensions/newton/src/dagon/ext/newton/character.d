@@ -50,6 +50,7 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
     NewtonSphereShape upperShape;
     NewtonCompoundShape shape;
     NewtonRigidBody rbody;
+    NewtonRigidBody sensorBody;
     float height;
     float mass;
     bool onGround = false;
@@ -58,6 +59,9 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
     float radius;
     float shapeRadius;
     float eyeHeight;
+    Vector3f sensorSize;
+    bool sensorColliding = false;
+    
     Vector3f groundPosition = Vector3f(0.0f, 0.0f, 0.0f);
     Vector3f groundNormal = Vector3f(0.0f, 1.0f, 0.0f);
     float maxRayDistance = 100.0f;
@@ -94,6 +98,20 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
         rbody.createUpVectorConstraint(Vector3f(0.0f, 1.0f, 0.0f));
         rbody.gravity = Vector3f(0.0f, -20.0f, 0.0f);
         NewtonBodySetAutoSleep(rbody.newtonBody, false);
+        
+        sensorSize = Vector3f(radius * 0.8f, radius, radius * 0.8f);
+        auto sensorShape = New!NewtonBoxShape(sensorSize, world);
+        sensorShape.setTransformation(translationMatrix(Vector3f(0.0f, -radius, 0.0f)));
+        sensorBody = world.createDynamicBody(sensorShape, 1.0f);
+        sensorBody.groupId = world.sensorGroupId;
+        sensorBody.sensor = true;
+        sensorBody.raycastable = false;
+        sensorBody.collisionCallback = &onSensorCollision;
+    }
+    
+    void onSensorCollision(NewtonRigidBody sensorBody, NewtonRigidBody otherBody)
+    {
+        sensorColliding = true;
     }
     
     float onRayHit(NewtonRigidBody nbody, Vector3f hitPoint, Vector3f hitNormal, float t)
@@ -124,6 +142,10 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
         Vector3f velocityChange = targetVelocity - rbody.velocity;
         velocityChange.y = 0.0f;
         rbody.velocity = rbody.velocity + velocityChange;
+        
+        auto m = rbody.transformation;
+        NewtonBodySetMatrixNoSleep(sensorBody.newtonBody, m.arrayof.ptr);
+        
         targetVelocity = Vector3f(0.0f, 0.0f, 0.0f);
     }
     
@@ -144,9 +166,11 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
 
         prevTransformation = entity.transformation;
         
+        onGround = sensorColliding;
+        sensorColliding = false;
         if (raycast(entity.position, entity.position + Vector3f(0.0f, -maxRayDistance, 0.0f)))
         {
-            onGround = (entity.position.y - groundPosition.y) <= radius;
+            onGround = onGround || (entity.position.y - groundPosition.y) <= radius;
         }
     }
     
