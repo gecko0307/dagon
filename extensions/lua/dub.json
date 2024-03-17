@@ -9,5 +9,8 @@
     "dependencies": {
         "dagon": "*",
         "bindbc-lua": "~>0.6"
-    }
+    },
+    "versions": [
+        "LUA_54"
+    ]
 }
