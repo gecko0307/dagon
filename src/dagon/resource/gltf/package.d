@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2022 Timur Gafarov
+Copyright (c) 2021-2024 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -51,11 +51,17 @@ import dagon.core.event;
 import dagon.core.time;
 import dagon.resource.asset;
 import dagon.resource.texture;
-import dagon.graphics.drawable;
 import dagon.graphics.texture;
 import dagon.graphics.material;
 import dagon.graphics.mesh;
 import dagon.graphics.entity;
+
+import dagon.resource.gltf.buffer;
+import dagon.resource.gltf.bufferview;
+import dagon.resource.gltf.accessor;
+import dagon.resource.gltf.meshprimitive;
+import dagon.resource.gltf.mesh;
+import dagon.resource.gltf.node;
 
 Vector3f asVector(JSONValue value)
 {
@@ -87,309 +93,6 @@ Color4f asColor(JSONValue value)
     foreach(i, v; value.asArray)
         col[i] = v.asNumber;
     return col;
-}
-
-class GLTFBuffer: Owner
-{
-    ubyte[] array;
-    
-    this(Owner o)
-    {
-        super(o);
-    }
-    
-    void fromArray(ubyte[] arr)
-    {
-        array = New!(ubyte[])(arr.length);
-        array[] = arr[];
-    }
-    
-    void fromStream(InputStream istrm)
-    {
-        if (istrm is null)
-            return;
-        
-        array = New!(ubyte[])(istrm.size);
-        if (!istrm.fillArray(array))
-        {
-            writeln("Warning: failed to read buffer");
-            Delete(array);
-        }
-    }
-    
-    void fromFile(ReadOnlyFileSystem fs, string filename)
-    {
-        FileStat fstat;
-        if (fs.stat(filename, fstat))
-        {
-            auto bufStream = fs.openForInput(filename);
-            fromStream(bufStream);
-            Delete(bufStream);
-        }
-        else
-            writeln("Warning: buffer file \"", filename, "\" not found");
-    }
-    
-    void fromBase64(string encoded)
-    {
-        auto decodedLength = Base64.decodeLength(encoded.length);
-        array = New!(ubyte[])(decodedLength);
-        auto decoded = Base64.decode(encoded, array);
-    }
-    
-    ~this()
-    {
-        if (array.length)
-            Delete(array);
-    }
-}
-
-class GLTFBufferView: Owner
-{
-    GLTFBuffer buffer;
-    uint offset;
-    uint len;
-    uint stride;
-    ubyte[] slice;
-    GLenum target;
-    
-    this(GLTFBuffer buffer, uint offset, uint len, uint stride, GLenum target, Owner o)
-    {
-        super(o);
-        
-        if (buffer is null)
-            return;
-        
-        this.buffer = buffer;
-        this.offset = offset;
-        this.len = len;
-        this.stride = stride;
-        this.target = target;
-        
-        if (offset < buffer.array.length && offset+len <= buffer.array.length)
-        {
-            this.slice = buffer.array[offset..offset+len];
-        }
-        else
-        {
-            writeln("Warning: invalid buffer view bounds");
-        }
-    }
-    
-    ~this()
-    {
-    }
-}
-
-enum GLTFDataType
-{
-    Undefined,
-    Scalar,
-    Vec2,
-    Vec3,
-    Vec4,
-    Mat2,
-    Mat3,
-    Mat4
-}
-
-class GLTFAccessor: Owner
-{
-    GLTFBufferView bufferView;
-    GLTFDataType dataType;
-    uint numComponents;
-    GLenum componentType;
-    uint count;
-    uint byteOffset;
-    
-    this(GLTFBufferView bufferView, GLTFDataType dataType, GLenum componentType, uint count, uint byteOffset, Owner o)
-    {
-        super(o);
-        
-        if (bufferView is null)
-            return;
-        
-        this.bufferView = bufferView;
-        this.dataType = dataType;
-        this.componentType = componentType;
-        this.count = count;
-        this.byteOffset = byteOffset;
-        
-        switch(dataType)
-        {
-            case GLTFDataType.Scalar: numComponents = 1; break;
-            case GLTFDataType.Vec2:   numComponents = 2; break;
-            case GLTFDataType.Vec3:   numComponents = 3; break;
-            case GLTFDataType.Vec4:   numComponents = 4; break;
-            case GLTFDataType.Mat2:   numComponents = 2 * 2; break;
-            case GLTFDataType.Mat3:   numComponents = 3 * 3; break;
-            case GLTFDataType.Mat4:   numComponents = 4 * 4; break;
-            default: numComponents = 1; break;
-        }
-    }
-    
-    ~this()
-    {
-    }
-}
-
-class GLTFMeshPrimitive: Owner, Drawable
-{
-    GLTFAccessor positionAccessor;
-    GLTFAccessor normalAccessor;
-    GLTFAccessor texCoord0Accessor;
-    GLTFAccessor indexAccessor;
-    Material material;
-    
-    GLuint vao = 0;
-    GLuint vbo = 0;
-    GLuint nbo = 0;
-    GLuint tbo = 0;
-    GLuint eao = 0;
-    
-    bool canRender = false;
-    
-    this(GLTFAccessor positionAccessor, GLTFAccessor normalAccessor, GLTFAccessor texCoord0Accessor, GLTFAccessor indexAccessor, Material material, Owner o)
-    {
-        super(o);
-        this.positionAccessor = positionAccessor;
-        this.normalAccessor = normalAccessor;
-        this.texCoord0Accessor = texCoord0Accessor;
-        this.indexAccessor = indexAccessor;
-        this.material = material;
-    }
-    
-    void prepareVAO()
-    {
-        if (positionAccessor is null || 
-            normalAccessor is null || 
-            texCoord0Accessor is null || 
-            indexAccessor is null)
-            return;
-        
-        if (positionAccessor.bufferView.slice.length == 0)
-            return;
-        if (normalAccessor.bufferView.slice.length == 0)
-            return;
-        if (texCoord0Accessor.bufferView.slice.length == 0)
-            return;
-        if (indexAccessor.bufferView.slice.length == 0)
-            return;
-        
-        glGenBuffers(1, &vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, positionAccessor.bufferView.slice.length, positionAccessor.bufferView.slice.ptr, GL_STATIC_DRAW); 
-        
-        glGenBuffers(1, &nbo);
-        glBindBuffer(GL_ARRAY_BUFFER, nbo);
-        glBufferData(GL_ARRAY_BUFFER, normalAccessor.bufferView.slice.length, normalAccessor.bufferView.slice.ptr, GL_STATIC_DRAW);
-        
-        glGenBuffers(1, &tbo);
-        glBindBuffer(GL_ARRAY_BUFFER, tbo);
-        glBufferData(GL_ARRAY_BUFFER, texCoord0Accessor.bufferView.slice.length, texCoord0Accessor.bufferView.slice.ptr, GL_STATIC_DRAW);
-        
-        glGenBuffers(1, &eao);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eao);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexAccessor.bufferView.slice.length, indexAccessor.bufferView.slice.ptr, GL_STATIC_DRAW);
-        
-        glGenVertexArrays(1, &vao);
-        glBindVertexArray(vao);
-        
-        glEnableVertexAttribArray(VertexAttrib.Vertices);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glVertexAttribPointer(VertexAttrib.Vertices, positionAccessor.numComponents, positionAccessor.componentType, GL_FALSE, positionAccessor.bufferView.stride, cast(void*)positionAccessor.byteOffset);
-        
-        glEnableVertexAttribArray(VertexAttrib.Normals);
-        glBindBuffer(GL_ARRAY_BUFFER, nbo);
-        glVertexAttribPointer(VertexAttrib.Normals, normalAccessor.numComponents, normalAccessor.componentType, GL_FALSE, normalAccessor.bufferView.stride, cast(void*)normalAccessor.byteOffset);
-        
-        glEnableVertexAttribArray(VertexAttrib.Texcoords);
-        glBindBuffer(GL_ARRAY_BUFFER, tbo);
-        glVertexAttribPointer(VertexAttrib.Texcoords, texCoord0Accessor.numComponents, texCoord0Accessor.componentType, GL_FALSE, texCoord0Accessor.bufferView.stride, cast(void*)texCoord0Accessor.byteOffset);
-        
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eao);
-        
-        glBindVertexArray(0);
-        
-        canRender = true;
-    }
-    
-    void render(GraphicsState* state)
-    {
-        if (canRender)
-        {
-            glBindVertexArray(vao);
-            glDrawElements(GL_TRIANGLES, indexAccessor.count, indexAccessor.componentType, cast(void*)indexAccessor.byteOffset);
-            glBindVertexArray(0);
-        }
-    }
-    
-    ~this()
-    {
-        if (canRender)
-        {
-            glDeleteVertexArrays(1, &vao);
-            glDeleteBuffers(1, &vbo);
-            glDeleteBuffers(1, &nbo);
-            glDeleteBuffers(1, &tbo);
-            glDeleteBuffers(1, &eao);
-        }
-    }
-}
-
-class GLTFMesh: Owner, Drawable
-{
-    Array!GLTFMeshPrimitive primitives;
-
-    this(Owner o)
-    {
-        super(o);
-    }
-    
-    void render(GraphicsState* state)
-    {
-        GraphicsState newState = *state;
-        foreach(primitive; primitives)
-        {
-            if (primitive.material)
-                primitive.material.bind(&newState);
-
-            newState.shader.bindParameters(&newState);
-
-            primitive.render(&newState);
-
-            newState.shader.unbindParameters(&newState);
-
-            if (primitive.material)
-                primitive.material.unbind(&newState);
-        }
-    }
-    
-    ~this()
-    {
-        primitives.free();
-    }
-}
-
-class GLTFNode: Owner
-{
-    Entity entity;
-    GLTFMesh mesh;
-    Matrix4x4f transformation;
-    size_t[] children;
-    
-    this(Owner o)
-    {
-        super(o);
-        transformation = Matrix4x4f.identity;
-        entity = New!Entity(this);
-    }
-    
-    ~this()
-    {
-        if (children.length)
-            Delete(children);
-    }
 }
 
 class StaticTransformComponent: EntityComponent
@@ -1132,23 +835,6 @@ class GLTFAsset: Asset, TriangleSet
                         {
                             node.entity.transparent = true;
                         }
-                        
-                        /*
-                        Texture diffuseTex = material.baseColorTexture;
-                        if (diffuseTex)
-                        {
-                            if (diffuseTex.hasAlpha)
-                            {
-                                material.blendMode = Transparent;
-                                node.entity.transparent = true;
-                            }
-                        }
-                        else if (material.baseColorFactor.a < 1.0f || material.opacity < 1.0f)
-                        {
-                            material.blendMode = Transparent;
-                            node.entity.transparent = true;
-                        }
-                        */
                     }
                 }
             }
