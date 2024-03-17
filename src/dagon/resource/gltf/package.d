@@ -62,6 +62,7 @@ import dagon.resource.gltf.accessor;
 import dagon.resource.gltf.meshprimitive;
 import dagon.resource.gltf.mesh;
 import dagon.resource.gltf.node;
+import dagon.resource.gltf.skin;
 
 Vector3f asVector(JSONValue value)
 {
@@ -141,6 +142,7 @@ class GLTFAsset: Asset, TriangleSet
     Array!Texture textures;
     Array!Material materials;
     Array!GLTFNode nodes;
+    Array!GLTFSkin skins;
     Array!GLTFScene scenes;
     Entity rootEntity;
     
@@ -168,7 +170,9 @@ class GLTFAsset: Asset, TriangleSet
         loadTextures(doc.root);
         loadMaterials(doc.root);
         loadMeshes(doc.root);
+        loadAnimations(doc.root);
         loadNodes(doc.root);
+        loadSkins(doc.root);
         loadScenes(doc.root);
         return true;
     }
@@ -797,6 +801,48 @@ class GLTFAsset: Asset, TriangleSet
         rootEntity.updateTransformationTopDown();
     }
     
+    void loadSkins(JSONValue root)
+    {
+        if ("skins" in root.asObject)
+        {
+            foreach(i, s; root.asObject["skins"].asArray)
+            {
+                auto skin = s.asObject;
+                
+                GLTFSkin skinObj = New!GLTFSkin(this);
+                
+                if ("joins" in skin)
+                {
+                    foreach(ni, n; skin["joins"].asArray)
+                    {
+                        uint nodeIndex = cast(uint)n.asNumber;
+                        if (nodeIndex < nodes.length)
+                            skinObj.joints.insertBack(nodes[nodeIndex]);
+                    }
+                }
+                
+                if ("inverseBindMatrices" in skin)
+                {
+                    GLTFAccessor invBindMatricesAccessor;
+                    uint invBindMatricesAccessorIndex = cast(uint)skin["inverseBindMatrices"].asNumber;
+                    if (invBindMatricesAccessorIndex < accessors.length)
+                        invBindMatricesAccessor = accessors[invBindMatricesAccessorIndex];
+                    else
+                        writeln("Warning: nonexistent accessor ", invBindMatricesAccessorIndex);
+                    
+                    skinObj.invBindMatricesAccessor = invBindMatricesAccessor;
+                }
+                
+                skins.insertBack(skinObj);
+            }
+        }
+    }
+    
+    void loadAnimations(JSONValue root)
+    {
+        // TODO
+    }
+    
     void loadScenes(JSONValue root)
     {
         if ("scenes" in root.asObject)
@@ -889,6 +935,10 @@ class GLTFAsset: Asset, TriangleSet
         foreach(no; nodes)
             deleteOwnedObject(no);
         nodes.free();
+        
+        foreach(sko; skins)
+            deleteOwnedObject(sko);
+        skins.free();
         
         foreach(sc; scenes)
             deleteOwnedObject(sc);
