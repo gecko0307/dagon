@@ -13,7 +13,7 @@ Dagon 0.17.0 - TBD
 - **Misc**
   - Dagon and extensions now use bindbc-loader 1.1, bindbc-opengl 1.1, bindbc-sdl 1.4, bindbc-freetype 1.2, bindbc-newton 0.3.
 
-Dagon 0.16.0 - 25 Feb, 2023
+Dagon 0.16.0 - 25 Feb, 2024
 ---------------------------
 - **Core**
   - New method `Application.takeScreenshot`
