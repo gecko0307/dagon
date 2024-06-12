@@ -1,5 +1,5 @@
-Dagon 0.17.0 - TBD
-------------------
+Dagon 0.17.0 - 12 Jun, 2024
+---------------------------
 - **Core**
   - New methods `Application.setWindowSize`, `Application.setFullscreen`, `Application.centerWindow`
   - Arbitrary cadencer frequency support (`Cadencer.setFrequency`). Now you can adapt application update frequency to display refresh rate using `Application.frequencyToRefreshRate`
@@ -10,6 +10,8 @@ Dagon 0.17.0 - TBD
   - Material opacity support in HUD shader
 - **Assets**
   - Fixed a bug with incomplete GLTF scene deletion
+- **Extensions**
+  - Fix jumping for character controller in `dagon:newton`
 - **Misc**
   - Dagon and extensions now use bindbc-loader 1.1, bindbc-opengl 1.1, bindbc-sdl 1.4, bindbc-freetype 1.2, bindbc-newton 0.3.
 
