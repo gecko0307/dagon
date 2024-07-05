@@ -223,7 +223,10 @@ class Actor: Owner, Drawable
             animation.firstFrame = startFrame;
             animation.numFrames = numFrames;
             state.currentFrame = animation.firstFrame;
-            state.nextFrame = state.currentFrame + 1;
+            if (numFrames > 0)
+                state.nextFrame = state.currentFrame + 1;
+            else
+                state.nextFrame = state.currentFrame;
             state.t = 0.0f;
         }
     }
@@ -277,17 +280,20 @@ class Actor: Owner, Drawable
         if (state.t >= 1.0f)
         {
             state.t = 0.0f;
-            state.currentFrame++;
-            state.nextFrame++;
+            if (state.nextFrame != state.currentFrame)
+            {
+                state.currentFrame++;
+                state.nextFrame++;
 
-            if (state.currentFrame == animation.firstFrame + animation.numFrames - 1)
-            {
-                state.nextFrame = animation.firstFrame;
-            }
-            else if (state.currentFrame == animation.firstFrame + animation.numFrames)
-            {
-                state.currentFrame = animation.firstFrame;
-                state.nextFrame = state.currentFrame + 1;
+                if (state.currentFrame == animation.firstFrame + animation.numFrames - 1)
+                {
+                    state.nextFrame = animation.firstFrame;
+                }
+                else if (state.currentFrame == animation.firstFrame + animation.numFrames)
+                {
+                    state.currentFrame = animation.firstFrame;
+                    state.nextFrame = state.currentFrame + 1;
+                }
             }
         }
 
@@ -300,17 +306,20 @@ class Actor: Owner, Drawable
             if (nextState.t >= 1.0f)
             {
                 nextState.t = 0.0f;
-                nextState.currentFrame++;
-                nextState.nextFrame++;
+                if (nextState.nextFrame != nextState.currentFrame)
+                {
+                    nextState.currentFrame++;
+                    nextState.nextFrame++;
 
-                if (nextState.currentFrame == nextAnimation.numFrames - 1)
-                {
-                    nextState.nextFrame = nextAnimation.firstFrame;
-                }
-                else if (nextState.currentFrame == nextAnimation.numFrames)
-                {
-                    nextState.currentFrame = nextAnimation.firstFrame;
-                    nextState.nextFrame = nextState.currentFrame + 1;
+                    if (nextState.currentFrame == nextAnimation.numFrames - 1)
+                    {
+                        nextState.nextFrame = nextAnimation.firstFrame;
+                    }
+                    else if (nextState.currentFrame == nextAnimation.numFrames)
+                    {
+                        nextState.currentFrame = nextAnimation.firstFrame;
+                        nextState.nextFrame = nextState.currentFrame + 1;
+                    }
                 }
             }
 
