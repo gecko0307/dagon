@@ -1,3 +1,10 @@
+Dagon 0.18.0 - TBD
+------------------
+- **Assets**
+  - Fix mipmap setup in `Texture.createTexture3D`
+- **Extensions**
+  - Actors in `dagon:iqm` now support single frame playback.
+
 Dagon 0.17.0 - 12 Jun, 2024
 ---------------------------
 - **Core**
