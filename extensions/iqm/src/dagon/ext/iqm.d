@@ -237,7 +237,10 @@ class Actor: Owner, Drawable
             nextAnimation.numFrames = numFrames;
             hasNextAnimation = true;
             nextState.currentFrame = nextAnimation.firstFrame;
-            nextState.nextFrame = nextState.currentFrame + 1;
+            if (numFrames > 0)
+                nextState.nextFrame = nextState.currentFrame + 1;
+            else
+                nextState.nextFrame = nextState.currentFrame;
             nextState.t = 0.0f;
             blendSpeed = smooth;
         }
