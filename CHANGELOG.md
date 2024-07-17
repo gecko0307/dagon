@@ -1,5 +1,5 @@
-Dagon 0.18.0 - TBD
-------------------
+Dagon 0.17.1 - 17 Jul, 2024
+---------------------------
 - **Assets**
   - Fix mipmap setup in `Texture.createTexture3D`
 - **Extensions**
