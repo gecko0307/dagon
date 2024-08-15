@@ -113,6 +113,7 @@ class Actor: Owner, Drawable
     float defaultFramerate = 24.0f;
     float speed = 1.0f;
     float blendSpeed = 8.0f;
+    bool looping = true;
     
     GLuint vao = 0;
     GLuint vbo = 0;
@@ -279,20 +280,25 @@ class Actor: Owner, Drawable
 
         if (state.t >= 1.0f)
         {
-            state.t = 0.0f;
-            if (state.nextFrame != state.currentFrame)
+            state.t = 1.0f;
+            
+            if (looping)
             {
-                state.currentFrame++;
-                state.nextFrame++;
+                state.t = 0.0f;
+                if (state.nextFrame != state.currentFrame)
+                {
+                    state.currentFrame++;
+                    state.nextFrame++;
 
-                if (state.currentFrame == animation.firstFrame + animation.numFrames - 1)
-                {
-                    state.nextFrame = animation.firstFrame;
-                }
-                else if (state.currentFrame == animation.firstFrame + animation.numFrames)
-                {
-                    state.currentFrame = animation.firstFrame;
-                    state.nextFrame = state.currentFrame + 1;
+                    if (state.currentFrame == animation.firstFrame + animation.numFrames - 1)
+                    {
+                        state.nextFrame = animation.firstFrame;
+                    }
+                    else if (state.currentFrame == animation.firstFrame + animation.numFrames)
+                    {
+                        state.currentFrame = animation.firstFrame;
+                        state.nextFrame = state.currentFrame + 1;
+                    }
                 }
             }
         }
