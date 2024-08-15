@@ -97,6 +97,7 @@ struct ActorState
     uint currentFrame = 0;
     uint nextFrame = 1;
     float t = 0.0f;
+    bool finished = false;
 }
 
 class Actor: Owner, Drawable
@@ -114,6 +115,7 @@ class Actor: Owner, Drawable
     float speed = 1.0f;
     float blendSpeed = 8.0f;
     bool looping = true;
+    double timer = 0.0;
     
     GLuint vao = 0;
     GLuint vbo = 0;
@@ -196,6 +198,7 @@ class Actor: Owner, Drawable
     {
         model.calcBindPose(&frameData);
         playing = false;
+        state.finished = true;
     }
 
     void switchToAnimation(string name)
@@ -204,6 +207,7 @@ class Actor: Owner, Drawable
         state.currentFrame = animation.firstFrame;
         state.nextFrame = state.currentFrame + 1;
         state.t = 0.0f;
+        state.finished = false;
     }
 
     void switchToAnimationSmooth(string name, float smooth)
@@ -214,12 +218,13 @@ class Actor: Owner, Drawable
         nextState.nextFrame = nextState.currentFrame + 1;
         nextState.t = 0.0f;
         blendSpeed = smooth;
+        state.finished = false;
     }
 
     void switchToSequence(uint startFrame, uint endFrame)
     {
         uint numFrames = endFrame - startFrame;
-        if (animation.firstFrame != startFrame && animation.numFrames != numFrames)
+        if (animation.firstFrame != startFrame && animation.firstFrame + numFrames != endFrame)
         {
             animation.firstFrame = startFrame;
             animation.numFrames = numFrames;
@@ -229,13 +234,14 @@ class Actor: Owner, Drawable
             else
                 state.nextFrame = state.currentFrame;
             state.t = 0.0f;
+            state.finished = false;
         }
     }
 
     void switchToSequenceSmooth(uint startFrame, uint endFrame, float smooth)
     {
         uint numFrames = endFrame - startFrame;
-        if (animation.firstFrame != startFrame && animation.numFrames != numFrames)
+        if (animation.firstFrame != startFrame && animation.firstFrame + numFrames != endFrame)
         {
             nextAnimation.firstFrame = startFrame;
             nextAnimation.numFrames = numFrames;
@@ -247,6 +253,7 @@ class Actor: Owner, Drawable
                 nextState.nextFrame = nextState.currentFrame;
             nextState.t = 0.0f;
             blendSpeed = smooth;
+            state.finished = false;
         }
     }
 
@@ -257,6 +264,7 @@ class Actor: Owner, Drawable
         state.currentFrame = animation.firstFrame;
         state.nextFrame = state.currentFrame + 1;
         state.t = 0.0f;
+        state.finished = false;
     }
 
     void play()
@@ -275,30 +283,36 @@ class Actor: Owner, Drawable
             return;
 
         model.calcFrame(state.currentFrame, state.nextFrame, state.t, &frameData);
-
-        state.t += defaultFramerate * dt * speed; //animation.framerate
+        
+        state.t += defaultFramerate * speed * dt;
 
         if (state.t >= 1.0f)
         {
             state.t = 1.0f;
             
-            if (looping)
+            state.t = 0.0f;
+            if (state.nextFrame != state.currentFrame)
             {
-                state.t = 0.0f;
-                if (state.nextFrame != state.currentFrame)
-                {
-                    state.currentFrame++;
-                    state.nextFrame++;
+                state.currentFrame++;
+                state.nextFrame++;
 
-                    if (state.currentFrame == animation.firstFrame + animation.numFrames - 1)
+                if (state.currentFrame == animation.firstFrame + animation.numFrames - 1)
+                {
+                    if (looping)
                     {
                         state.nextFrame = animation.firstFrame;
                     }
-                    else if (state.currentFrame == animation.firstFrame + animation.numFrames)
+                    else
                     {
-                        state.currentFrame = animation.firstFrame;
-                        state.nextFrame = state.currentFrame + 1;
+                        state.currentFrame--;
+                        state.nextFrame = state.currentFrame;
+                        state.finished = true;
                     }
+                }
+                else if (state.currentFrame == animation.firstFrame + animation.numFrames)
+                {
+                    state.currentFrame = animation.firstFrame;
+                    state.nextFrame = state.currentFrame + 1;
                 }
             }
         }
@@ -306,7 +320,7 @@ class Actor: Owner, Drawable
         if (hasNextAnimation)
         {
             model.blendFrame(nextState.currentFrame, nextState.nextFrame, nextState.t, &frameData, blendFactor);
-            nextState.t += defaultFramerate * dt * speed; //nextAnimation.framerate
+            nextState.t += defaultFramerate * speed * dt;
             blendFactor += blendSpeed * dt;
 
             if (nextState.t >= 1.0f)
