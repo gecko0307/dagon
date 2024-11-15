@@ -71,6 +71,7 @@ struct ObjFace
 class OBJAsset: Asset
 {
     Mesh mesh;
+    Mesh[string] groupMesh;
 
     this(Owner o)
     {
@@ -146,6 +147,8 @@ class OBJAsset: Asset
         tmpNormals[] = Vector3f(0, 0, 0);
         tmpTexcoords[] = Vector2f(0, 0);
         
+        string currentGroup; 
+
         float x, y, z;
         uint v1, v2, v3, v4;
         uint t1, t2, t3, t4;
@@ -182,6 +185,33 @@ class OBJAsset: Asset
             }
             else if (line.startsWith("vp"))
             {
+            }
+            else if (line.startsWith("g"))
+            {
+                auto m = fillMesh(
+                    tmpFaces, 
+                    tmpTexcoords, numTexcoords,
+                    tmpNormals, numNormals, 
+                    tmpVertices, numVerts,
+                    needGenNormals
+                );
+
+                if (currentGroup != "")
+                {
+                    groupMesh[currentGroup] = m;
+                }
+                else
+                {
+                    mesh = m;
+                }
+                // TODO:
+                // nulify tmp normals, faces, vertises
+                // another solution: use slice for fill group mesh
+                if (formattedRead(line, "g %s", &currentGroup)){
+                }
+                else 
+                    assert(0);
+
             }
             else if (line.startsWith("f"))
             {
@@ -239,68 +269,14 @@ class OBJAsset: Asset
                     assert(0);
             }
         }
-        
+        mesh = fillMesh(
+                    tmpFaces, 
+                    tmpTexcoords, numTexcoords,
+                    tmpNormals, numNormals, 
+                    tmpVertices, numVerts,
+                    needGenNormals
+                );
         Delete(fileStr);
-        
-        mesh.indices = New!(uint[3][])(tmpFaces.length);
-        uint numUniqueVerts = cast(uint)mesh.indices.length * 3;
-        mesh.vertices = New!(Vector3f[])(numUniqueVerts);
-        mesh.normals = New!(Vector3f[])(numUniqueVerts);
-        mesh.texcoords = New!(Vector2f[])(numUniqueVerts);
-        
-        uint index = 0;
-        
-        foreach(i, ref ObjFace f; tmpFaces)
-        {
-            if (numVerts)
-            {
-                mesh.vertices[index] = tmpVertices[f.v[0]];
-                mesh.vertices[index+1] = tmpVertices[f.v[1]];
-                mesh.vertices[index+2] = tmpVertices[f.v[2]];
-            }
-            else
-            {
-                mesh.vertices[index] = Vector3f(0, 0, 0);
-                mesh.vertices[index+1] = Vector3f(0, 0, 0);
-                mesh.vertices[index+2] = Vector3f(0, 0, 0);
-            }
-            
-            if (numNormals)
-            {
-                mesh.normals[index] = tmpNormals[f.n[0]];
-                mesh.normals[index+1] = tmpNormals[f.n[1]];
-                mesh.normals[index+2] = tmpNormals[f.n[2]];
-            }
-            else
-            {
-                mesh.normals[index] = Vector3f(0, 0, 0);
-                mesh.normals[index+1] = Vector3f(0, 0, 0);
-                mesh.normals[index+2] = Vector3f(0, 0, 0);
-            }
-            
-            if (numTexcoords)
-            {
-                mesh.texcoords[index] = tmpTexcoords[f.t[0]];
-                mesh.texcoords[index+1] = tmpTexcoords[f.t[1]];
-                mesh.texcoords[index+2] = tmpTexcoords[f.t[2]];
-            }
-            else
-            {
-                mesh.texcoords[index] = Vector2f(0, 0);
-                mesh.texcoords[index+1] = Vector2f(0, 0);
-                mesh.texcoords[index+2] = Vector2f(0, 0);
-            }
-            
-            mesh.indices[i][0] = index;
-            mesh.indices[i][1] = index + 1;
-            mesh.indices[i][2] = index + 2;
-            
-            index += 3;
-        }
-        
-        
-        if (needGenNormals)
-            mesh.generateNormals();
         
         if (tmpVertices.length)
             Delete(tmpVertices);
@@ -316,6 +292,77 @@ class OBJAsset: Asset
         
         return true;
     }
+
+    Mesh fillMesh(
+        Array!ObjFace faces,    
+        Vector2f[] tmpTexcoords, uint numTexcoords,      
+        Vector3f[] tmpNormals, uint numNormals,
+        Vector3f[] tmpVertices, uint numVerts,
+        bool needGenNormals) {
+        auto m = New!Mesh(this);
+        m.indices = New!(uint[3][])(faces.length);
+        uint numUniqueVerts = cast(uint)m.indices.length * 3;
+        m.vertices = New!(Vector3f[])(numUniqueVerts);
+        m.normals = New!(Vector3f[])(numUniqueVerts);
+        mesh.texcoords = New!(Vector2f[])(numUniqueVerts);
+        
+        uint index = 0;
+        
+        foreach(i, ref ObjFace f; faces)
+        {
+            if (numVerts)
+            {
+                m.vertices[index] = tmpVertices[f.v[0]];
+                m.vertices[index+1] = tmpVertices[f.v[1]];
+                m.vertices[index+2] = tmpVertices[f.v[2]];
+            }
+            else
+            {
+                m.vertices[index] = Vector3f(0, 0, 0);
+                m.vertices[index+1] = Vector3f(0, 0, 0);
+                m.vertices[index+2] = Vector3f(0, 0, 0);
+            }
+            
+            if (numNormals)
+            {
+                m.normals[index] = tmpNormals[f.n[0]];
+                m.normals[index+1] = tmpNormals[f.n[1]];
+                m.normals[index+2] = tmpNormals[f.n[2]];
+            }
+            else
+            {
+                m.normals[index] = Vector3f(0, 0, 0);
+                m.normals[index+1] = Vector3f(0, 0, 0);
+                m.normals[index+2] = Vector3f(0, 0, 0);
+            }
+            
+            if (numTexcoords)
+            {
+                m.texcoords[index] = tmpTexcoords[f.t[0]];
+                m.texcoords[index+1] = tmpTexcoords[f.t[1]];
+                m.texcoords[index+2] = tmpTexcoords[f.t[2]];
+            }
+            else
+            {
+                m.texcoords[index] = Vector2f(0, 0);
+                m.texcoords[index+1] = Vector2f(0, 0);
+                m.texcoords[index+2] = Vector2f(0, 0);
+            }
+            
+            m.indices[i][0] = index;
+            m.indices[i][1] = index + 1;
+            m.indices[i][2] = index + 2;
+            
+            index += 3;
+        }
+        
+        
+        if (needGenNormals)
+            m.generateNormals();
+
+        return m;
+    }
+
 
     override bool loadThreadUnsafePart()
     {
