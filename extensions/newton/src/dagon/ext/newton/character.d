@@ -56,7 +56,7 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
     bool onGround = false;
     Vector3f targetVelocity = Vector3f(0.0f, 0.0f, 0.0f);
     Matrix4x4f prevTransformation;
-    float radius;
+    float halfHeight;
     float shapeRadius;
     float eyeHeight;
     Vector3f sensorSize;
@@ -67,17 +67,17 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
     float maxRayDistance = 100.0f;
     protected float closestHit = 1.0f;
     
-    this(NewtonPhysicsWorld world, Entity e, float height, float mass)
+    this(NewtonPhysicsWorld world, Entity e, float height, float radius, float mass)
     {
         super(world.eventManager, e);
         this.world = world;
         this.height = height;
         this.mass = mass;
-        radius = height * 0.5f;
-        shapeRadius = radius * 0.5f;
+        this.halfHeight = height * 0.5f;
+        shapeRadius = radius;
         eyeHeight = height * 0.5f;
         lowerShape = New!NewtonSphereShape(shapeRadius, world);
-        lowerShape.setTransformation(translationMatrix(Vector3f(0.0f, -shapeRadius, 0.0f)));
+        lowerShape.setTransformation(translationMatrix(Vector3f(0.0f, -this.halfHeight + shapeRadius, 0.0f)));
         upperShape = New!NewtonSphereShape(shapeRadius, world);
         upperShape.setTransformation(translationMatrix(Vector3f(0.0f, shapeRadius, 0.0f)));
         NewtonCollisionShape[2] shapes = [lowerShape, upperShape];
@@ -170,7 +170,7 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
         sensorColliding = false;
         if (raycast(entity.position, entity.position + Vector3f(0.0f, -maxRayDistance, 0.0f)))
         {
-            onGround = onGround || (entity.position.y - groundPosition.y) <= radius;
+            onGround = onGround || (entity.position.y - groundPosition.y) <= halfHeight;
         }
     }
     
@@ -202,7 +202,7 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
     }
 }
 
-NewtonCharacterComponent makeCharacter(Entity entity, NewtonPhysicsWorld world, float height, float mass)
+NewtonCharacterComponent makeCharacter(Entity entity, NewtonPhysicsWorld world, float height, float radius, float mass)
 {
-    return New!NewtonCharacterComponent(world, entity, height, mass);
+    return New!NewtonCharacterComponent(world, entity, height, radius, mass);
 }

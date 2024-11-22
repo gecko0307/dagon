@@ -698,21 +698,22 @@ class IQMModel: AnimatedModel
         foreach(i; 0..hdr.numMeshes)
         {
             meshes[i] = istrm.read!(IQMMesh, true);
-
+            
+            facegroups[i].firstTriangle = meshes[i].firstTriangle;
+            facegroups[i].numTriangles = meshes[i].numTriangles;
+            
             // Load texture
             uint matIndex = meshes[i].material;
             version(IQMDebug)
                 writefln("matIndex: %s", matIndex);
-                
+            
             if (matIndex > 0)
             {
                 char* texFilenamePtr = cast(char*)&textBuffer[matIndex];
                 string texFilename = cast(string)fromStringz(texFilenamePtr);
                 version(IQMDebug)
                     writefln("material: %s", texFilename);
-
-                facegroups[i].firstTriangle = meshes[i].firstTriangle;
-                facegroups[i].numTriangles = meshes[i].numTriangles;
+                
                 facegroups[i].textureName = texFilename;
 
                 if (!mngr.assetExists(texFilename))
