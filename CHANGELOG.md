@@ -3,7 +3,11 @@ Dagon 0.18.0 - TBD
 - **Assets**
   - OBJ groups support (#78). `OBJAsset` now provides `groupMesh` property that can be used to access individual groups
 - **Extensions**
-  - `dagon:iqm`: new properties `Actor.looping`, `Actor.state.finished`
+  - `dagon:newton`:
+    - Breaking change: new `radius` parameter for `NewtonCharacterComponent` constructor: `this(NewtonPhysicsWorld world, Entity e, float height, float radius, float mass)`
+  - `dagon:iqm`:
+    - New properties `Actor.looping`, `Actor.state.finished`
+    - Fix a bug with facegroups in IQM loader
 - **Misc**
   - Dagon and extensions now use bindbc-loader 1.1.4, bindbc-opengl 1.1.1, bindbc-sdl 1.4.8, bindbc-freetype 1.2.6, bindbc-newton 0.3.1. Patch versions are hardcoded now to avoid compatibility issues.
 
