@@ -268,8 +268,6 @@ class OBJAsset: Asset
         // Create last group mesh
         if (currentGroup != "")
         {
-            writeln(currentGroup);
-            
             groupMesh[currentGroup] = fillMesh(
                 tmpFaces.data[groupFaceSliceStart..$],
                 tmpTexcoords,
