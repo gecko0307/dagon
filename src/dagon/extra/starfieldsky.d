@@ -47,14 +47,15 @@ class StarfieldSkyShader: Shader
     Color4f spaceColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
     float starsThreshold = 0.995f;
     float starsBrightness = 8.0f;
+    float starsTwinkleSpeed = 1.0f;
     
     Vector3f sunDirection = Vector3f(-1.0f, -1.0f, -1.0f).normalized;
     Color4f sunColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
 
     this(Owner owner)
     {
-        vs = Shader.load("data/__internal/shaders/Sky/Sky.vert.glsl");
-        fs = Shader.load("data/__internal/shaders/Sky/Sky.frag.glsl");
+        vs = Shader.load("data/__internal/shaders/StarfieldSky/StarfieldSky.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/StarfieldSky/StarfieldSky.frag.glsl");
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
@@ -81,6 +82,9 @@ class StarfieldSkyShader: Shader
         setParameter("spaceColor", spaceColor.rgb);
         setParameter("starsThreshold", starsThreshold);
         setParameter("starsBrightness", starsBrightness);
+        setParameter("starsTwinkleSpeed", starsTwinkleSpeed);
+        
+        setParameter("localTime", state.localTime);
         
         if (state.material.sun)
         {

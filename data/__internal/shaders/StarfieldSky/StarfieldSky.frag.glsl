@@ -38,9 +38,12 @@ float noise3d(vec3 x)
 uniform vec3 spaceColor;
 uniform float starsThreshold;
 uniform float starsBrightness;
+uniform float starsTwinkleSpeed;
 
 uniform vec3 sunDirection;
 uniform vec3 sunColor;
+
+uniform float localTime;
 
 const float sunEnergy = 100.0;
 const float sunAngularDiameterCos = 0.9999;
@@ -49,12 +52,19 @@ void main()
 {
     vec3 radiance = toLinear(spaceColor);
     
-    float stars = noise3d(normalize(worldNormal));
-    float starsRadiance = (stars >= starsThreshold)? pow((stars - starsThreshold) / (1.0 - starsThreshold), starsBrightness) : 0.0;
-    vec3 starsColor = vec3(1.0, 1.0, 1.0); // Make uniform
-    radiance += toLinear(starsColor) * starsRadiance;
+    vec3 n = normalize(worldNormal);
     
-    float cosTheta = clamp(dot(normalize(worldNormal), sunDirection), 0.0, 1.0);
+    float randomFactor = noise3d(n);
+    float starsRadiance = (randomFactor >= starsThreshold)? pow((randomFactor - starsThreshold) / (1.0 - starsThreshold), starsBrightness) : 0.0;
+    vec3 starsColor = vec3(0.9 + 0.1 * randomFactor, 0.9, 1.0 - 0.1 * randomFactor);
+    
+    float twinkleRandomFactor = hash(dot(n, vec3(12.9898, 78.233, 45.164)));
+    float twinkle = 0.5 + 0.5 * sin((twinkleRandomFactor + localTime * starsTwinkleSpeed) * PI2);
+    twinkle = mix(0.1, 1.5, twinkle);
+    
+    radiance += toLinear(starsColor) * starsRadiance * twinkle;
+    
+    float cosTheta = clamp(dot(n, sunDirection), 0.0, 1.0);
     float sunDisk = smoothstep(sunAngularDiameterCos, sunAngularDiameterCos + 0.00002, cosTheta);
     radiance += sunColor * sunDisk * sunEnergy;
     
