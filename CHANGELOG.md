@@ -2,6 +2,8 @@ Dagon 0.18.0 - TBD
 ------------------
 - **Assets**
   - OBJ groups support (#78). `OBJAsset` now provides `groupMesh` property that can be used to access individual groups
+- **Extra**
+  - `dagon.extra.starfieldsky` - a star field shader for space/night scenes
 - **Extensions**
   - `dagon:newton`:
     - Breaking change: new `radius` parameter for `NewtonCharacterComponent` constructor: `this(NewtonPhysicsWorld world, Entity e, float height, float radius, float mass)`
