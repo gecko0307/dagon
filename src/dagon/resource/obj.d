@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2022 Timur Gafarov
+Copyright (c) 2017-2024 Timur Gafarov, Tynuk
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -39,6 +39,8 @@ import dlib.geometry.triangle;
 import dlib.filesystem.filesystem;
 import dlib.filesystem.stdfs;
 import dlib.container.array;
+import dlib.container.dict;
+import dlib.text.str;
 
 import dagon.core.bindings;
 import dagon.resource.asset;
@@ -71,17 +73,18 @@ struct ObjFace
 class OBJAsset: Asset
 {
     Mesh mesh;
-    Mesh[string] groupMesh;
+    Dict!(Mesh, string) groupMesh;
 
     this(Owner o)
     {
         super(o);
-        mesh = New!Mesh(this);
+        groupMesh = dict!(Mesh, string);
     }
 
     ~this()
     {
         release();
+        groupMesh.free();
     }
 
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
@@ -103,14 +106,8 @@ class OBJAsset: Asset
                 numTexcoords++;
             else if (line.startsWith("f "))
                 numFaces++;
-            else if (line.startsWith("g "))
-            {
-                writeln("Warning: OBJ file \"", filename, "\" contains groups, Dagon currently can't handle such files");
-                Delete(fileStr);
-                return false;
-            }
             else if (line.startsWith("mtllib "))
-                writeln("Warning: OBJ file \"", filename, "\" contains materials, but Dagon currently doesn't support them");
+                writeln("Warning: OBJ file \"", filename, "\" contains materials, but Dagon doesn't support them");
         }
         
         Vector3f[] tmpVertices;
@@ -147,8 +144,8 @@ class OBJAsset: Asset
         tmpNormals[] = Vector3f(0, 0, 0);
         tmpTexcoords[] = Vector2f(0, 0);
         
-        string currentGroup; 
-
+        string currentGroup;
+        
         float x, y, z;
         uint v1, v2, v3, v4;
         uint t1, t2, t3, t4;
@@ -156,6 +153,11 @@ class OBJAsset: Asset
         uint vi = 0;
         uint ni = 0;
         uint ti = 0;
+        
+        String tmpStr;
+        
+        size_t groupFaceSliceStart = 0;
+        size_t groupFaceSliceLength;
         
         foreach(line; lineSplitter(fileStr))
         {
@@ -186,38 +188,29 @@ class OBJAsset: Asset
             else if (line.startsWith("vp"))
             {
             }
-            else if (line.startsWith("g"))
+            else if (line.startsWith("g "))
             {
-                auto m = fillMesh(
-                    tmpFaces, 
-                    tmpTexcoords, numTexcoords,
-                    tmpNormals, numNormals, 
-                    tmpVertices, numVerts,
-                    needGenNormals
-                );
-
                 if (currentGroup != "")
                 {
-                    groupMesh[currentGroup] = m;
+                    groupMesh[currentGroup] = fillMesh(
+                        tmpFaces.data[groupFaceSliceStart..$],
+                        tmpTexcoords,
+                        tmpNormals,
+                        tmpVertices,
+                        needGenNormals
+                    );
                 }
+                
+                groupFaceSliceStart = tmpFaces.length;
+                
+                if (formattedRead(line, "g %s", &currentGroup)) { }
                 else
-                {
-                    mesh = m;
-                }
-                // TODO:
-                // nulify tmp normals, faces, vertises
-                // another solution: use slice for fill group mesh
-                if (formattedRead(line, "g %s", &currentGroup)){
-                }
-                else 
                     assert(0);
-
             }
-            else if (line.startsWith("f"))
+            else if (line.startsWith("f "))
             {
-                char[256] tmpStr;
-                tmpStr[0..line.length] = line[];
-                tmpStr[line.length] = 0;
+                tmpStr.free();
+                tmpStr = String(line);
                 
                 ObjFace face;
                 
@@ -266,17 +259,36 @@ class OBJAsset: Asset
                     tmpFaces.insertBack(face);
                 }
                 else
-                    assert(0);
+                {
+                    writeln("Warning: OBJ file \"", filename, "\" contains one or more N-gons, but Dagon doesn't support them. Please, use only triangles or quads");
+                }
             }
         }
+        
+        // Create last group mesh
+        if (currentGroup != "")
+        {
+            writeln(currentGroup);
+            
+            groupMesh[currentGroup] = fillMesh(
+                tmpFaces.data[groupFaceSliceStart..$],
+                tmpTexcoords,
+                tmpNormals,
+                tmpVertices,
+                needGenNormals
+            );
+        }
+        
+        writeln("Mesh...");
         mesh = fillMesh(
-                    tmpFaces, 
-                    tmpTexcoords, numTexcoords,
-                    tmpNormals, numNormals, 
-                    tmpVertices, numVerts,
-                    needGenNormals
-                );
+            tmpFaces.data,
+            tmpTexcoords,
+            tmpNormals,
+            tmpVertices,
+            needGenNormals);
+        
         Delete(fileStr);
+        tmpStr.free();
         
         if (tmpVertices.length)
             Delete(tmpVertices);
@@ -286,31 +298,29 @@ class OBJAsset: Asset
             Delete(tmpTexcoords);
         tmpFaces.free();
         
-        mesh.calcBoundingBox();
-        
-        mesh.dataReady = true;
-        
         return true;
     }
 
     Mesh fillMesh(
-        Array!ObjFace faces,    
-        Vector2f[] tmpTexcoords, uint numTexcoords,      
-        Vector3f[] tmpNormals, uint numNormals,
-        Vector3f[] tmpVertices, uint numVerts,
-        bool needGenNormals) {
+        ObjFace[] faces,
+        Vector2f[] tmpTexcoords,
+        Vector3f[] tmpNormals,
+        Vector3f[] tmpVertices,
+        bool needGenNormals)
+    {
         auto m = New!Mesh(this);
+        
         m.indices = New!(uint[3][])(faces.length);
         uint numUniqueVerts = cast(uint)m.indices.length * 3;
         m.vertices = New!(Vector3f[])(numUniqueVerts);
         m.normals = New!(Vector3f[])(numUniqueVerts);
-        mesh.texcoords = New!(Vector2f[])(numUniqueVerts);
+        m.texcoords = New!(Vector2f[])(numUniqueVerts);
         
         uint index = 0;
         
         foreach(i, ref ObjFace f; faces)
         {
-            if (numVerts)
+            if (tmpVertices.length)
             {
                 m.vertices[index] = tmpVertices[f.v[0]];
                 m.vertices[index+1] = tmpVertices[f.v[1]];
@@ -323,7 +333,7 @@ class OBJAsset: Asset
                 m.vertices[index+2] = Vector3f(0, 0, 0);
             }
             
-            if (numNormals)
+            if (tmpNormals.length)
             {
                 m.normals[index] = tmpNormals[f.n[0]];
                 m.normals[index+1] = tmpNormals[f.n[1]];
@@ -336,7 +346,7 @@ class OBJAsset: Asset
                 m.normals[index+2] = Vector3f(0, 0, 0);
             }
             
-            if (numTexcoords)
+            if (tmpTexcoords.length)
             {
                 m.texcoords[index] = tmpTexcoords[f.t[0]];
                 m.texcoords[index+1] = tmpTexcoords[f.t[1]];
@@ -359,14 +369,21 @@ class OBJAsset: Asset
         
         if (needGenNormals)
             m.generateNormals();
-
+        
+        m.calcBoundingBox();
+        
+        m.dataReady = true;
+        
         return m;
     }
-
 
     override bool loadThreadUnsafePart()
     {
         mesh.prepareVAO();
+        foreach(name, m; groupMesh)
+        {
+            m.prepareVAO();
+        }
         return true;
     }
 
