@@ -1,5 +1,5 @@
 Copyright (c) 2016-2024 Timur Gafarov, Rafał Ziemniewski, Mateusz Muszyński,
-dayllenger, Konstantin Menshikov, Björn Roberg, Isaac S., ijet.
+dayllenger, Konstantin Menshikov, Björn Roberg, Isaac S., ijet, Tynuk.
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
