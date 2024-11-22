@@ -277,7 +277,6 @@ class OBJAsset: Asset
             );
         }
         
-        writeln("Mesh...");
         mesh = fillMesh(
             tmpFaces.data,
             tmpTexcoords,

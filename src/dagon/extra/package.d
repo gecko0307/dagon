@@ -30,5 +30,6 @@ module dagon.extra;
 public
 {
     import dagon.extra.rayleigh;
+    import dagon.extra.starfieldsky;
     import dagon.extra.water;
 }
