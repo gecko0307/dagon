@@ -1,5 +1,5 @@
-Dagon 0.18.0 - TBD
-------------------
+Dagon 0.18.0 - 10 Dec, 2024
+---------------------------
 - **Assets**
   - OBJ groups support (#78). `OBJAsset` now provides `groupMesh` property that can be used to access individual groups
 - **Extra**
