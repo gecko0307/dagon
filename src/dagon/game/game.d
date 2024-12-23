@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2024 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -43,7 +43,7 @@ import dagon.graphics.entity;
 import dagon.resource.scene;
 import dagon.render.renderer;
 import dagon.render.deferred;
-import dagon.render.postprocrenderer;
+import dagon.render.postproc;
 import dagon.render.presentrenderer;
 import dagon.render.hudrenderer;
 

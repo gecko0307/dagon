@@ -25,13 +25,14 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.postprocrenderer;
+module dagon.render.postproc;
 
 import dlib.core.memory;
 import dlib.core.ownership;
 
 import dagon.core.event;
 import dagon.core.time;
+import dagon.core.bindings;
 import dagon.graphics.texture;
 import dagon.resource.scene;
 import dagon.render.renderer;
@@ -39,19 +40,14 @@ import dagon.render.pass;
 import dagon.render.view;
 import dagon.render.framebuffer;
 import dagon.render.deferred.gbuffer;
-import dagon.postproc.filterpass;
-import dagon.postproc.blurpass;
-import dagon.postproc.presentpass;
-import dagon.postproc.shaders.dof;
-import dagon.postproc.shaders.brightpass;
-import dagon.postproc.shaders.glow;
-import dagon.postproc.shaders.motionblur;
-import dagon.postproc.shaders.tonemap;
-import dagon.postproc.shaders.fxaa;
-import dagon.postproc.shaders.lut;
-import dagon.postproc.shaders.lensdistortion;
 
-import dagon.core.bindings;
+public
+{
+    import dagon.render.postproc.blurpass;
+    import dagon.render.postproc.filterpass;
+    import dagon.render.postproc.presentpass;
+    import dagon.render.postproc.shaders;
+}
 
 class DoubleBuffer: Framebuffer
 {

@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.postproc.shaders.tonemap;
+module dagon.render.postproc.shaders.lut;
 
 import std.stdio;
 
@@ -41,33 +41,19 @@ import dlib.text.str;
 import dagon.core.bindings;
 import dagon.graphics.shader;
 import dagon.graphics.state;
+import dagon.graphics.texture;
+import dagon.render.framebuffer;
 
-enum Tonemapper
-{
-    None = 0,
-    Reinhard = 1,
-    Hable = 2,
-    Uncharted = 2,
-    ACES = 3,
-    Filmic = 4,
-    Reinhard2 = 5,
-    Unreal = 6,
-    AgX_Base = 7,
-    AgX_Punchy = 8
-}
-
-class TonemapShader: Shader
+class LUTShader: Shader
 {
     String vs, fs;
 
-    bool enabled = true;
-    Tonemapper tonemapper = Tonemapper.ACES;
-    float exposure = 1.0f;
+    Texture colorLookupTable;
 
     this(Owner owner)
     {
-        vs = Shader.load("data/__internal/shaders/Tonemap/Tonemap.vert.glsl");
-        fs = Shader.load("data/__internal/shaders/Tonemap/Tonemap.frag.glsl");
+        vs = Shader.load("data/__internal/shaders/LUT/LUT.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/LUT/LUT.frag.glsl");
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
@@ -82,20 +68,44 @@ class TonemapShader: Shader
     override void bindParameters(GraphicsState* state)
     {
         setParameter("viewSize", state.resolution);
-        setParameter("enabled", enabled);
-
-        setParameter("tonemapper", cast(int)tonemapper);
-        setParameter("exposure", exposure);
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
         setParameter("colorBuffer", 0);
 
-        // Texture 1 - depth buffer
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, state.depthTexture);
-        setParameter("depthBuffer", 1);
+        // Textures 1, 2 - lookup table
+        if (colorLookupTable)
+        {
+            setParameter("enabled", 1);
+            setParameter("colorTableSimple", 1);
+            setParameter("colorTableHald", 2);
+            
+            if (colorLookupTable.format.target == GL_TEXTURE_3D)
+            {
+                glActiveTexture(GL_TEXTURE1);
+                glBindTexture(GL_TEXTURE_2D, 0);
+                
+                glActiveTexture(GL_TEXTURE2);
+                colorLookupTable.bind();
+                
+                setParameter("lookupMode", 1);
+            }
+            else
+            {
+                glActiveTexture(GL_TEXTURE1);
+                colorLookupTable.bind();
+                
+                glActiveTexture(GL_TEXTURE2);
+                glBindTexture(GL_TEXTURE_3D, 0);
+                
+                setParameter("lookupMode", 0);
+            }
+        }
+        else
+        {
+            setParameter("enabled", 0);
+        }
 
         glActiveTexture(GL_TEXTURE0);
 
@@ -111,6 +121,9 @@ class TonemapShader: Shader
 
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_3D, 0);
 
         glActiveTexture(GL_TEXTURE0);
     }

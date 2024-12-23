@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2017-2024 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.postproc.shaders.present;
+module dagon.render.postproc.shaders.blur;
 
 import std.stdio;
 
@@ -42,17 +42,23 @@ import dagon.core.bindings;
 import dagon.graphics.shader;
 import dagon.graphics.state;
 
-class PresentShader: Shader
+class BlurShader: Shader
 {
     String vs, fs;
 
+    bool enabled = true;
+    Vector2f direction;
+    float radius = 1.0f;
+
     this(Owner owner)
     {
-        vs = Shader.load("data/__internal/shaders/Present/Present.vert.glsl");
-        fs = Shader.load("data/__internal/shaders/Present/Present.frag.glsl");
+        vs = Shader.load("data/__internal/shaders/Blur/Blur.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/Blur/Blur.frag.glsl");
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
+
+        direction = Vector2f(1.0f, 0.0f);
     }
 
     ~this()
@@ -63,17 +69,16 @@ class PresentShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
+        setParameter("viewSize", state.resolution);
+        setParameter("enabled", enabled);
+
+        Vector2f dirScaled = direction * radius;
+        setParameter("direction", dirScaled);
+
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
         setParameter("colorBuffer", 0);
-
-        // Texture 1 - depth buffer
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, state.depthTexture);
-        setParameter("depthBuffer", 1);
-
-        glActiveTexture(GL_TEXTURE0);
 
         super.bindParameters(state);
     }
@@ -84,10 +89,5 @@ class PresentShader: Shader
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, 0);
-
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        glActiveTexture(GL_TEXTURE0);
     }
 }

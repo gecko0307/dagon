@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2024 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.postproc.shaders.brightpass;
+module dagon.render.postproc.shaders.motionblur;
 
 import std.stdio;
 
@@ -41,18 +41,27 @@ import dlib.text.str;
 import dagon.core.bindings;
 import dagon.graphics.shader;
 import dagon.graphics.state;
+import dagon.render.deferred.gbuffer;
 
-class BrightPassShader: Shader
+class MotionBlurShader: Shader
 {
     String vs, fs;
 
     bool enabled = true;
-    float luminanceThreshold = 1.0f;
+    int samples = 16;
+    float currentFramerate = 60.0;
+    float shutterFramerate = 24.0;
+    float offsetRandomCoefficient = 0.2;
+    float minDistance = 0.01;
+    float maxDistance = 1.0;
+    float radialBlur = 0.0f;
+
+    GBuffer gbuffer;
 
     this(Owner owner)
     {
-        vs = Shader.load("data/__internal/shaders/BrightPass/BrightPass.vert.glsl");
-        fs = Shader.load("data/__internal/shaders/BrightPass/BrightPass.frag.glsl");
+        vs = Shader.load("data/__internal/shaders/MotionBlur/MotionBlur.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/MotionBlur/MotionBlur.frag.glsl");
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
@@ -68,12 +77,37 @@ class BrightPassShader: Shader
     {
         setParameter("viewSize", state.resolution);
         setParameter("enabled", enabled);
-        setParameter("luminanceThreshold", luminanceThreshold);
+        setParameter("zNear", state.zNear);
+        setParameter("zFar", state.zFar);
+
+        setParameter("invProjectionMatrix", state.invProjectionMatrix);
+
+        setParameter("blurScale", currentFramerate / shutterFramerate);
+        setParameter("samples", samples);
+        setParameter("offsetRandomCoef", offsetRandomCoefficient);
+        setParameter("time", state.localTime);
+        setParameter("minDistance", minDistance);
+        setParameter("maxDistance", maxDistance);
+        
+        setParameter("radialBlur", radialBlur);
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
         setParameter("colorBuffer", 0);
+
+        if (gbuffer)
+        {
+            // Texture 1 - depth buffer
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, gbuffer.depthTexture);
+            setParameter("depthBuffer", 1);
+
+            // Texture 2 - velocity buffer
+            glActiveTexture(GL_TEXTURE2);
+            glBindTexture(GL_TEXTURE_2D, gbuffer.velocityTexture);
+            setParameter("velocityBuffer", 2);
+        }
 
         glActiveTexture(GL_TEXTURE0);
 
@@ -85,6 +119,12 @@ class BrightPassShader: Shader
         super.unbindParameters(state);
 
         glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE0);

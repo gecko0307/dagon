@@ -34,7 +34,6 @@ public
     import dagon.extra;
     import dagon.game;
     import dagon.graphics;
-    import dagon.postproc;
     import dagon.render;
     import dagon.resource;
     import dagon.ui;

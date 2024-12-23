@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2024 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.postproc.shaders.fxaa;
+module dagon.render.postproc.shaders.tonemap;
 
 import std.stdio;
 
@@ -42,16 +42,32 @@ import dagon.core.bindings;
 import dagon.graphics.shader;
 import dagon.graphics.state;
 
-class FXAAShader: Shader
+enum Tonemapper
+{
+    None = 0,
+    Reinhard = 1,
+    Hable = 2,
+    Uncharted = 2,
+    ACES = 3,
+    Filmic = 4,
+    Reinhard2 = 5,
+    Unreal = 6,
+    AgX_Base = 7,
+    AgX_Punchy = 8
+}
+
+class TonemapShader: Shader
 {
     String vs, fs;
 
     bool enabled = true;
+    Tonemapper tonemapper = Tonemapper.ACES;
+    float exposure = 1.0f;
 
     this(Owner owner)
     {
-        vs = Shader.load("data/__internal/shaders/FXAA/FXAA.vert.glsl");
-        fs = Shader.load("data/__internal/shaders/FXAA/FXAA.frag.glsl");
+        vs = Shader.load("data/__internal/shaders/Tonemap/Tonemap.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/Tonemap/Tonemap.frag.glsl");
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
@@ -67,6 +83,9 @@ class FXAAShader: Shader
     {
         setParameter("viewSize", state.resolution);
         setParameter("enabled", enabled);
+
+        setParameter("tonemapper", cast(int)tonemapper);
+        setParameter("exposure", exposure);
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);

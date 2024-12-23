@@ -37,7 +37,7 @@ import dagon.resource.scene;
 import dagon.render.renderer;
 import dagon.render.pass;
 import dagon.render.framebuffer;
-import dagon.postproc.presentpass;
+import dagon.render.postproc.presentpass;
 
 class PresentRenderer: Renderer
 {

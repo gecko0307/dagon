@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2024 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.postproc.shaders.lensdistortion;
+module dagon.render.postproc.shaders.brightpass;
 
 import std.stdio;
 
@@ -41,19 +41,18 @@ import dlib.text.str;
 import dagon.core.bindings;
 import dagon.graphics.shader;
 import dagon.graphics.state;
-import dagon.render.framebuffer;
 
-class LensDistortionShader: Shader
+class BrightPassShader: Shader
 {
     String vs, fs;
 
-    float scale = 1.0f;
-    float dispersion = 0.1f;
+    bool enabled = true;
+    float luminanceThreshold = 1.0f;
 
     this(Owner owner)
     {
-        vs = Shader.load("data/__internal/shaders/LensDistortion/LensDistortion.vert.glsl");
-        fs = Shader.load("data/__internal/shaders/LensDistortion/LensDistortion.frag.glsl");
+        vs = Shader.load("data/__internal/shaders/BrightPass/BrightPass.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/BrightPass/BrightPass.frag.glsl");
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
@@ -68,14 +67,13 @@ class LensDistortionShader: Shader
     override void bindParameters(GraphicsState* state)
     {
         setParameter("viewSize", state.resolution);
+        setParameter("enabled", enabled);
+        setParameter("luminanceThreshold", luminanceThreshold);
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
         setParameter("colorBuffer", 0);
-
-        setParameter("scale", scale);
-        setParameter("dispersion", dispersion);
 
         glActiveTexture(GL_TEXTURE0);
 

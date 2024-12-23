@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.postproc.shaders.motionblur;
+module dagon.render.postproc.shaders.present;
 
 import std.stdio;
 
@@ -41,27 +41,15 @@ import dlib.text.str;
 import dagon.core.bindings;
 import dagon.graphics.shader;
 import dagon.graphics.state;
-import dagon.render.deferred.gbuffer;
 
-class MotionBlurShader: Shader
+class PresentShader: Shader
 {
     String vs, fs;
 
-    bool enabled = true;
-    int samples = 16;
-    float currentFramerate = 60.0;
-    float shutterFramerate = 24.0;
-    float offsetRandomCoefficient = 0.2;
-    float minDistance = 0.01;
-    float maxDistance = 1.0;
-    float radialBlur = 0.0f;
-
-    GBuffer gbuffer;
-
     this(Owner owner)
     {
-        vs = Shader.load("data/__internal/shaders/MotionBlur/MotionBlur.vert.glsl");
-        fs = Shader.load("data/__internal/shaders/MotionBlur/MotionBlur.frag.glsl");
+        vs = Shader.load("data/__internal/shaders/Present/Present.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/Present/Present.frag.glsl");
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
@@ -75,39 +63,15 @@ class MotionBlurShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        setParameter("viewSize", state.resolution);
-        setParameter("enabled", enabled);
-        setParameter("zNear", state.zNear);
-        setParameter("zFar", state.zFar);
-
-        setParameter("invProjectionMatrix", state.invProjectionMatrix);
-
-        setParameter("blurScale", currentFramerate / shutterFramerate);
-        setParameter("samples", samples);
-        setParameter("offsetRandomCoef", offsetRandomCoefficient);
-        setParameter("time", state.localTime);
-        setParameter("minDistance", minDistance);
-        setParameter("maxDistance", maxDistance);
-        
-        setParameter("radialBlur", radialBlur);
-
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
         setParameter("colorBuffer", 0);
 
-        if (gbuffer)
-        {
-            // Texture 1 - depth buffer
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, gbuffer.depthTexture);
-            setParameter("depthBuffer", 1);
-
-            // Texture 2 - velocity buffer
-            glActiveTexture(GL_TEXTURE2);
-            glBindTexture(GL_TEXTURE_2D, gbuffer.velocityTexture);
-            setParameter("velocityBuffer", 2);
-        }
+        // Texture 1 - depth buffer
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, state.depthTexture);
+        setParameter("depthBuffer", 1);
 
         glActiveTexture(GL_TEXTURE0);
 
@@ -122,9 +86,6 @@ class MotionBlurShader: Shader
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE0);

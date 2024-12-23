@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2021-2024 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.postproc.shaders.glow;
+module dagon.render.postproc.shaders.dof;
 
 import std.stdio;
 
@@ -41,22 +41,31 @@ import dlib.text.str;
 import dagon.core.bindings;
 import dagon.graphics.shader;
 import dagon.graphics.state;
-import dagon.render.framebuffer;
+import dagon.render.deferred.gbuffer;
 
-class GlowShader: Shader
+class DepthOfFieldShader: Shader
 {
     String vs, fs;
 
     bool enabled = true;
+    
+    bool autofocus = true; // Focus to screen center
+    float focalDepth = 1.5; // Focal distance value in meters when autofocus is false
+    float focalLength = 5.0; // Focal length in mm
+    float fStop = 2.0; // F-stop value
+    
+    bool manual = false; // Manual DoF calculation
+    float nearStart = 1.0; // Near DoF blur start
+    float nearDistance = 2.0; // Near DoF blur falloff distance
+    float farStart = 1.0; // Far DoF blur start
+    float farDistance = 3.0; // Far DoF blur falloff distance
 
-    float intensity = 1.0f;
-
-    Framebuffer blurredBuffer;
+    GBuffer gbuffer;
 
     this(Owner owner)
     {
-        vs = Shader.load("data/__internal/shaders/Glow/Glow.vert.glsl");
-        fs = Shader.load("data/__internal/shaders/Glow/Glow.frag.glsl");
+        vs = Shader.load("data/__internal/shaders/DoF/DoF.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/DoF/DoF.frag.glsl");
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
@@ -72,19 +81,33 @@ class GlowShader: Shader
     {
         setParameter("viewSize", state.resolution);
         setParameter("enabled", enabled);
-        setParameter("intensity", intensity);
+        setParameter("zNear", state.zNear);
+        setParameter("zFar", state.zFar);
+
+        setParameter("invProjectionMatrix", state.invProjectionMatrix);
+        
+        setParameter("autofocus", autofocus);
+        setParameter("focalDepth", focalDepth);
+        setParameter("focalLength", focalLength);
+        setParameter("fstop", fStop);
+        
+        setParameter("manual", manual);
+        setParameter("nearStart", nearStart);
+        setParameter("nearDistance", nearDistance);
+        setParameter("farStart", farStart);
+        setParameter("farDistance", farDistance);
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
         setParameter("colorBuffer", 0);
 
-        // Texture 1 - blurred buffer
-        if (blurredBuffer)
+        if (gbuffer)
         {
+            // Texture 1 - depth buffer
             glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, blurredBuffer.colorTexture);
-            setParameter("blurredBuffer", 1);
+            glBindTexture(GL_TEXTURE_2D, gbuffer.depthTexture);
+            setParameter("depthBuffer", 1);
         }
 
         glActiveTexture(GL_TEXTURE0);
@@ -100,6 +123,9 @@ class GlowShader: Shader
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE0);

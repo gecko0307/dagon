@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2024 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.postproc.shaders.lut;
+module dagon.render.postproc.shaders.glow;
 
 import std.stdio;
 
@@ -41,19 +41,22 @@ import dlib.text.str;
 import dagon.core.bindings;
 import dagon.graphics.shader;
 import dagon.graphics.state;
-import dagon.graphics.texture;
 import dagon.render.framebuffer;
 
-class LUTShader: Shader
+class GlowShader: Shader
 {
     String vs, fs;
 
-    Texture colorLookupTable;
+    bool enabled = true;
+
+    float intensity = 1.0f;
+
+    Framebuffer blurredBuffer;
 
     this(Owner owner)
     {
-        vs = Shader.load("data/__internal/shaders/LUT/LUT.vert.glsl");
-        fs = Shader.load("data/__internal/shaders/LUT/LUT.frag.glsl");
+        vs = Shader.load("data/__internal/shaders/Glow/Glow.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/Glow/Glow.frag.glsl");
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
@@ -68,43 +71,20 @@ class LUTShader: Shader
     override void bindParameters(GraphicsState* state)
     {
         setParameter("viewSize", state.resolution);
+        setParameter("enabled", enabled);
+        setParameter("intensity", intensity);
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
         setParameter("colorBuffer", 0);
 
-        // Textures 1, 2 - lookup table
-        if (colorLookupTable)
+        // Texture 1 - blurred buffer
+        if (blurredBuffer)
         {
-            setParameter("enabled", 1);
-            setParameter("colorTableSimple", 1);
-            setParameter("colorTableHald", 2);
-            
-            if (colorLookupTable.format.target == GL_TEXTURE_3D)
-            {
-                glActiveTexture(GL_TEXTURE1);
-                glBindTexture(GL_TEXTURE_2D, 0);
-                
-                glActiveTexture(GL_TEXTURE2);
-                colorLookupTable.bind();
-                
-                setParameter("lookupMode", 1);
-            }
-            else
-            {
-                glActiveTexture(GL_TEXTURE1);
-                colorLookupTable.bind();
-                
-                glActiveTexture(GL_TEXTURE2);
-                glBindTexture(GL_TEXTURE_3D, 0);
-                
-                setParameter("lookupMode", 0);
-            }
-        }
-        else
-        {
-            setParameter("enabled", 0);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, blurredBuffer.colorTexture);
+            setParameter("blurredBuffer", 1);
         }
 
         glActiveTexture(GL_TEXTURE0);
@@ -121,9 +101,6 @@ class LUTShader: Shader
 
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_3D, 0);
 
         glActiveTexture(GL_TEXTURE0);
     }

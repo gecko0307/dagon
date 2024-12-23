@@ -39,8 +39,8 @@ import dagon.render.framebuffer;
 public import dagon.render.deferred.passes;
 public import dagon.render.deferred.shaders;
 public import dagon.render.deferred.gbuffer;
-import dagon.postproc.filterpass;
-import dagon.postproc.shaders.denoise;
+import dagon.render.postproc.filterpass;
+import dagon.render.postproc.shaders.denoise;
 
 class DeferredRenderer: Renderer
 {

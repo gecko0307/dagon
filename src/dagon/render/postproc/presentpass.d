@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2024 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,83 +25,48 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.postproc.blurpass;
+module dagon.render.postproc.presentpass;
 
 import std.stdio;
 
 import dlib.core.memory;
 import dlib.core.ownership;
-import dlib.math.vector;
 
 import dagon.core.bindings;
 import dagon.graphics.screensurface;
-import dagon.graphics.shader;
 import dagon.render.pipeline;
 import dagon.render.pass;
 import dagon.render.framebuffer;
-import dagon.postproc.shaders.blur;
+import dagon.render.postproc.shaders.present;
 
-class BlurPass: RenderPass
+class PresentPass: RenderPass
 {
     Framebuffer inputBuffer;
-    Framebuffer outputBuffer;
-    Framebuffer outputBuffer2;
     ScreenSurface screenSurface;
-    BlurShader blurShader;
-    uint radius = 1;
+    PresentShader presentShader;
 
     this(RenderPipeline pipeline)
     {
         super(pipeline);
         screenSurface = New!ScreenSurface(this);
-        blurShader = New!BlurShader(this);
+        presentShader = New!PresentShader(this);
     }
 
     override void render()
     {
-        if (inputBuffer && outputBuffer && outputBuffer2 && view)
+        if (inputBuffer && view)
         {
-            Framebuffer currentInputBuffer = inputBuffer;
-            Framebuffer currentOutputBuffer = outputBuffer2;
+            state.colorTexture = inputBuffer.colorTexture;
+            state.depthTexture = inputBuffer.depthTexture;
 
             glScissor(view.x, view.y, view.width, view.height);
             glViewport(view.x, view.y, view.width, view.height);
 
-            glDisable(GL_DEPTH_TEST);
-
-            blurShader.bind();
-
-            foreach(i; 1..radius+1)
-            {
-                state.colorTexture = currentInputBuffer.colorTexture;
-                currentOutputBuffer.bind();
-                blurShader.radius = i;
-                blurShader.direction = Vector2f(1.0f, 0.0f);
-
-                blurShader.bindParameters(&state);
-                screenSurface.render(&state);
-                blurShader.unbindParameters(&state);
-                currentOutputBuffer.unbind();
-
-                currentInputBuffer = currentOutputBuffer;
-                currentOutputBuffer = outputBuffer;
-
-                state.colorTexture = currentInputBuffer.colorTexture;
-                currentOutputBuffer.bind();
-                blurShader.direction = Vector2f(0.0f, 1.0f);
-                blurShader.bindParameters(&state);
-                screenSurface.render(&state);
-                blurShader.unbindParameters(&state);
-
-                currentOutputBuffer.unbind();
-
-                currentInputBuffer = currentOutputBuffer;
-                currentOutputBuffer = outputBuffer2;
-            }
-
-            blurShader.unbind();
-
-            glEnable(GL_DEPTH_TEST);
+            presentShader.bind();
+            presentShader.bindParameters(&state);
+            screenSurface.render(&state);
+            presentShader.unbindParameters(&state);
+            presentShader.unbind();
         }
     }
 }
