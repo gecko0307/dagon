@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2024 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -27,12 +27,18 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.render.pass;
 
+import std.stdio;
+import std.math;
+
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.math.vector;
 import dlib.math.matrix;
+import dlib.math.transformation;
+import dlib.math.interpolation;
 import dlib.geometry.frustum;
 import dlib.image.color;
+import dlib.text.str;
 
 import dagon.core.event;
 import dagon.core.bindings;
@@ -43,7 +49,37 @@ import dagon.graphics.shader;
 import dagon.graphics.state;
 import dagon.render.pipeline;
 import dagon.render.view;
-import dagon.render.shaders.fallback;
+
+class FallbackShader: Shader
+{
+    String vs, fs;
+
+    this(Owner owner)
+    {
+        vs = Shader.load("data/__internal/shaders/Fallback/Fallback.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/Fallback/Fallback.frag.glsl");
+
+        auto myProgram = New!ShaderProgram(vs, fs, this);
+        super(myProgram, owner);
+    }
+
+    ~this()
+    {
+        vs.free();
+        fs.free();
+    }
+
+    override void bindParameters(GraphicsState* state)
+    {
+        setParameter("modelViewMatrix", state.modelViewMatrix);
+        setParameter("projectionMatrix", state.projectionMatrix);
+        setParameter("normalMatrix", state.normalMatrix);
+        setParameter("viewMatrix", state.viewMatrix);
+        setParameter("invViewMatrix", state.invViewMatrix);
+
+        super.bindParameters(state);
+    }
+}
 
 abstract class RenderPass: EventListener
 {

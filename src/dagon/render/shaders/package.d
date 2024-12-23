@@ -29,5 +29,5 @@ module dagon.render.shaders;
 
 public
 {
-    import dagon.render.shaders.fallback;
+
 }
