@@ -25,48 +25,61 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.presentrenderer;
+module dagon.render.deferred.passes.occlusion;
+
+import std.stdio;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.image.color;
 
-import dagon.core.event;
-import dagon.core.time;
 import dagon.core.bindings;
-import dagon.resource.scene;
-import dagon.render.renderer;
+import dagon.graphics.screensurface;
+import dagon.render.pipeline;
 import dagon.render.pass;
 import dagon.render.framebuffer;
-import dagon.postproc.presentpass;
+import dagon.render.deferred.gbuffer;
+import dagon.render.deferred.shaders.ssao;
 
-class PresentRenderer: Renderer
+class PassOcclusion: RenderPass
 {
-    Framebuffer _inputBuffer;
-    PresentPass passPresent;
+    GBuffer gbuffer;
+    ScreenSurface screenSurface;
+    SSAOShader ssaoShader;
+    Framebuffer outputBuffer;
 
-    this(EventManager eventManager, Framebuffer inputBuffer, Owner owner)
+    this(RenderPipeline pipeline, GBuffer gbuffer)
     {
-        super(eventManager, owner);
-
-        this._inputBuffer = inputBuffer;
-        passPresent = New!PresentPass(pipeline);
-        passPresent.view = view;
-        passPresent.inputBuffer = inputBuffer;
-    }
-    
-    void inputBuffer(Framebuffer b)
-    {
-        _inputBuffer = b;
-        passPresent.inputBuffer = b;
+        super(pipeline);
+        this.gbuffer = gbuffer;
+        screenSurface = New!ScreenSurface(this);
+        ssaoShader = New!SSAOShader(this);
     }
 
-    Framebuffer inputBuffer()
-    {
-        return _inputBuffer;
-    }
-    
     override void render()
     {
-        super.render();
+        if (view && gbuffer)
+        {
+            if (outputBuffer)
+                outputBuffer.bind();
+
+            state.colorTexture = gbuffer.colorTexture;
+            state.depthTexture = gbuffer.depthTexture;
+            state.normalTexture = gbuffer.normalTexture;
+            state.pbrTexture = gbuffer.pbrTexture;
+            state.environment = pipeline.environment;
+
+            glScissor(view.x, view.y, view.width, view.height);
+            glViewport(view.x, view.y, view.width, view.height);
+
+            ssaoShader.bind();
+            ssaoShader.bindParameters(&state);
+            screenSurface.render(&state);
+            ssaoShader.unbindParameters(&state);
+            ssaoShader.unbind();
+
+            if (outputBuffer)
+                outputBuffer.unbind();
+        }
     }
 }

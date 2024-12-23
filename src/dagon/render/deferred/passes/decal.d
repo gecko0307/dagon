@@ -25,48 +25,61 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.presentrenderer;
+module dagon.render.deferred.passes.decal;
+
+import std.stdio;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.image.color;
 
-import dagon.core.event;
-import dagon.core.time;
 import dagon.core.bindings;
-import dagon.resource.scene;
-import dagon.render.renderer;
+import dagon.graphics.entity;
+import dagon.graphics.shader;
+import dagon.render.pipeline;
 import dagon.render.pass;
-import dagon.render.framebuffer;
-import dagon.postproc.presentpass;
+import dagon.render.deferred.gbuffer;
+import dagon.render.deferred.shaders.decal;
 
-class PresentRenderer: Renderer
+class PassDecal: RenderPass
 {
-    Framebuffer _inputBuffer;
-    PresentPass passPresent;
+    GBuffer gbuffer;
+    DecalShader decalShader;
 
-    this(EventManager eventManager, Framebuffer inputBuffer, Owner owner)
+    this(RenderPipeline pipeline, GBuffer gbuffer, EntityGroup group = null)
     {
-        super(eventManager, owner);
-
-        this._inputBuffer = inputBuffer;
-        passPresent = New!PresentPass(pipeline);
-        passPresent.view = view;
-        passPresent.inputBuffer = inputBuffer;
-    }
-    
-    void inputBuffer(Framebuffer b)
-    {
-        _inputBuffer = b;
-        passPresent.inputBuffer = b;
+        super(pipeline, group);
+        this.gbuffer = gbuffer;
+        decalShader = New!DecalShader(gbuffer, this);
     }
 
-    Framebuffer inputBuffer()
-    {
-        return _inputBuffer;
-    }
-    
     override void render()
     {
-        super.render();
+        if (group)
+        {
+            gbuffer.bind();
+
+            glScissor(0, 0, gbuffer.width, gbuffer.height);
+            glViewport(0, 0, gbuffer.width, gbuffer.height);
+
+            state.depthMask = false;
+            state.environment = pipeline.environment;
+
+            glDisable(GL_DEPTH_TEST);
+
+            decalShader.bind();
+            foreach(entity; group)
+            {
+                if (entity.visible && entity.drawable)
+                {
+                    renderEntity(entity, decalShader);
+                }
+            }
+            decalShader.unbind();
+
+            glEnable(GL_DEPTH_TEST);
+
+            gbuffer.unbind();
+        }
     }
 }

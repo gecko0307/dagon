@@ -45,7 +45,7 @@ import dagon.graphics.texture;
 import dagon.graphics.shader;
 import dagon.graphics.state;
 import dagon.graphics.csm;
-import dagon.render.gbuffer;
+import dagon.render.deferred.gbuffer;
 import dagon.resource.asset;
 import dagon.resource.texture;
 

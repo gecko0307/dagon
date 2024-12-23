@@ -25,48 +25,21 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.presentrenderer;
+module dagon.render.deferred.shaders;
 
-import dlib.core.memory;
-import dlib.core.ownership;
-
-import dagon.core.event;
-import dagon.core.time;
-import dagon.core.bindings;
-import dagon.resource.scene;
-import dagon.render.renderer;
-import dagon.render.pass;
-import dagon.render.framebuffer;
-import dagon.postproc.presentpass;
-
-class PresentRenderer: Renderer
+public
 {
-    Framebuffer _inputBuffer;
-    PresentPass passPresent;
-
-    this(EventManager eventManager, Framebuffer inputBuffer, Owner owner)
-    {
-        super(eventManager, owner);
-
-        this._inputBuffer = inputBuffer;
-        passPresent = New!PresentPass(pipeline);
-        passPresent.view = view;
-        passPresent.inputBuffer = inputBuffer;
-    }
-    
-    void inputBuffer(Framebuffer b)
-    {
-        _inputBuffer = b;
-        passPresent.inputBuffer = b;
-    }
-
-    Framebuffer inputBuffer()
-    {
-        return _inputBuffer;
-    }
-    
-    override void render()
-    {
-        super.render();
-    }
+    import dagon.render.deferred.shaders.arealight;
+    import dagon.render.deferred.shaders.debugoutput;
+    import dagon.render.deferred.shaders.decal;
+    import dagon.render.deferred.shaders.emission;
+    import dagon.render.deferred.shaders.environment;
+    import dagon.render.deferred.shaders.forward;
+    import dagon.render.deferred.shaders.particle;
+    import dagon.render.deferred.shaders.probe;
+    import dagon.render.deferred.shaders.shadow;
+    import dagon.render.deferred.shaders.sky;
+    import dagon.render.deferred.shaders.ssao;
+    import dagon.render.deferred.shaders.sunlight;
+    import dagon.render.deferred.shaders.terrain;
 }

@@ -38,7 +38,7 @@ import dagon.render.renderer;
 import dagon.render.pass;
 import dagon.render.view;
 import dagon.render.framebuffer;
-import dagon.render.gbuffer;
+import dagon.render.deferred.gbuffer;
 import dagon.postproc.filterpass;
 import dagon.postproc.blurpass;
 import dagon.postproc.presentpass;

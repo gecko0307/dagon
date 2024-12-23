@@ -42,7 +42,7 @@ import dagon.graphics.state;
 import dagon.graphics.entity;
 import dagon.resource.scene;
 import dagon.render.renderer;
-import dagon.render.deferredrenderer;
+import dagon.render.deferred;
 import dagon.render.postprocrenderer;
 import dagon.render.presentrenderer;
 import dagon.render.hudrenderer;

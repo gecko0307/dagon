@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2024 Timur Gafarov
+Copyright (c) 2019-2024 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,9 +25,10 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.postproc.shaders.dof;
+module dagon.render.deferred.shaders.ssao;
 
 import std.stdio;
+import std.math;
 
 import dlib.core.memory;
 import dlib.core.ownership;
@@ -41,31 +42,19 @@ import dlib.text.str;
 import dagon.core.bindings;
 import dagon.graphics.shader;
 import dagon.graphics.state;
-import dagon.render.deferred.gbuffer;
 
-class DepthOfFieldShader: Shader
+class SSAOShader: Shader
 {
     String vs, fs;
 
-    bool enabled = true;
-    
-    bool autofocus = true; // Focus to screen center
-    float focalDepth = 1.5; // Focal distance value in meters when autofocus is false
-    float focalLength = 5.0; // Focal length in mm
-    float fStop = 2.0; // F-stop value
-    
-    bool manual = false; // Manual DoF calculation
-    float nearStart = 1.0; // Near DoF blur start
-    float nearDistance = 2.0; // Near DoF blur falloff distance
-    float farStart = 1.0; // Far DoF blur start
-    float farDistance = 3.0; // Far DoF blur falloff distance
-
-    GBuffer gbuffer;
+    int samples = 16;
+    float radius = 0.2f;
+    float power = 4.0f;
 
     this(Owner owner)
     {
-        vs = Shader.load("data/__internal/shaders/DoF/DoF.vert.glsl");
-        fs = Shader.load("data/__internal/shaders/DoF/DoF.frag.glsl");
+        vs = Shader.load("data/__internal/shaders/SSAO/SSAO.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/SSAO/SSAO.frag.glsl");
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
@@ -79,36 +68,32 @@ class DepthOfFieldShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        setParameter("viewSize", state.resolution);
-        setParameter("enabled", enabled);
+        setParameter("viewMatrix", state.viewMatrix);
+        setParameter("invViewMatrix", state.invViewMatrix);
+        setParameter("projectionMatrix", state.projectionMatrix);
+        setParameter("invProjectionMatrix", state.invProjectionMatrix);
+        setParameter("resolution", state.resolution);
         setParameter("zNear", state.zNear);
         setParameter("zFar", state.zFar);
-
-        setParameter("invProjectionMatrix", state.invProjectionMatrix);
-        
-        setParameter("autofocus", autofocus);
-        setParameter("focalDepth", focalDepth);
-        setParameter("focalLength", focalLength);
-        setParameter("fstop", fStop);
-        
-        setParameter("manual", manual);
-        setParameter("nearStart", nearStart);
-        setParameter("nearDistance", nearDistance);
-        setParameter("farStart", farStart);
-        setParameter("farDistance", farDistance);
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
         setParameter("colorBuffer", 0);
 
-        if (gbuffer)
-        {
-            // Texture 1 - depth buffer
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, gbuffer.depthTexture);
-            setParameter("depthBuffer", 1);
-        }
+        // Texture 1 - depth buffer
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, state.depthTexture);
+        setParameter("depthBuffer", 1);
+
+        // Texture 2 - normal buffer
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, state.normalTexture);
+        setParameter("normalBuffer", 2);
+
+        setParameter("ssaoSamples", samples);
+        setParameter("ssaoRadius", radius);
+        setParameter("ssaoPower", power);
 
         glActiveTexture(GL_TEXTURE0);
 

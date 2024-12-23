@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2017-2024 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,43 +25,32 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.postproc.shaders.motionblur;
+module dagon.render.deferred.shaders.sky;
 
 import std.stdio;
+import std.math;
+import std.conv;
 
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.math.vector;
 import dlib.math.matrix;
-import dlib.math.transformation;
-import dlib.math.interpolation;
 import dlib.image.color;
 import dlib.text.str;
 
 import dagon.core.bindings;
-import dagon.graphics.shader;
 import dagon.graphics.state;
-import dagon.render.deferred.gbuffer;
+import dagon.graphics.shader;
+import dagon.graphics.material;
 
-class MotionBlurShader: Shader
+class SkyShader: Shader
 {
     String vs, fs;
 
-    bool enabled = true;
-    int samples = 16;
-    float currentFramerate = 60.0;
-    float shutterFramerate = 24.0;
-    float offsetRandomCoefficient = 0.2;
-    float minDistance = 0.01;
-    float maxDistance = 1.0;
-    float radialBlur = 0.0f;
-
-    GBuffer gbuffer;
-
     this(Owner owner)
     {
-        vs = Shader.load("data/__internal/shaders/MotionBlur/MotionBlur.vert.glsl");
-        fs = Shader.load("data/__internal/shaders/MotionBlur/MotionBlur.frag.glsl");
+        vs = Shader.load("data/__internal/shaders/Sky/Sky.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/Sky/Sky.frag.glsl");
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
@@ -75,38 +64,40 @@ class MotionBlurShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        setParameter("viewSize", state.resolution);
-        setParameter("enabled", enabled);
-        setParameter("zNear", state.zNear);
-        setParameter("zFar", state.zFar);
+        Material mat = state.material;
 
-        setParameter("invProjectionMatrix", state.invProjectionMatrix);
-
-        setParameter("blurScale", currentFramerate / shutterFramerate);
-        setParameter("samples", samples);
-        setParameter("offsetRandomCoef", offsetRandomCoefficient);
-        setParameter("time", state.localTime);
-        setParameter("minDistance", minDistance);
-        setParameter("maxDistance", maxDistance);
+        setParameter("modelViewMatrix", state.modelViewMatrix);
+        setParameter("projectionMatrix", state.projectionMatrix);
+        setParameter("normalMatrix", state.normalMatrix);
+        setParameter("viewMatrix", state.viewMatrix);
+        setParameter("invViewMatrix", state.invViewMatrix);
+        setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
         
-        setParameter("radialBlur", radialBlur);
+        setParameter("gbufferMask", state.gbufferMask);
+        setParameter("blurMask", state.blurMask);
 
-        // Texture 0 - color buffer
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, state.colorTexture);
-        setParameter("colorBuffer", 0);
-
-        if (gbuffer)
+        // Diffuse
+        glActiveTexture(GL_TEXTURE4);
+        
+        if (mat.baseColorTexture)
         {
-            // Texture 1 - depth buffer
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, gbuffer.depthTexture);
-            setParameter("depthBuffer", 1);
-
-            // Texture 2 - velocity buffer
-            glActiveTexture(GL_TEXTURE2);
-            glBindTexture(GL_TEXTURE_2D, gbuffer.velocityTexture);
-            setParameter("velocityBuffer", 2);
+            if (mat.baseColorTexture.isCubemap)
+            {
+                mat.baseColorTexture.bind();
+                setParameter("envTextureCube", cast(int)4);
+                setParameterSubroutine("environment", ShaderType.Fragment, "environmentCubemap");
+            }
+            else
+            {
+                mat.baseColorTexture.bind();
+                setParameter("envTexture", cast(int)4);
+                setParameterSubroutine("environment", ShaderType.Fragment, "environmentTexture");
+            }
+        }
+        else
+        {
+            setParameter("envColor", mat.baseColorFactor);
+            setParameterSubroutine("environment", ShaderType.Fragment, "environmentColor");
         }
 
         glActiveTexture(GL_TEXTURE0);
@@ -118,14 +109,9 @@ class MotionBlurShader: Shader
     {
         super.unbindParameters(state);
 
-        glActiveTexture(GL_TEXTURE0);
+        glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, 0);
-
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
         glActiveTexture(GL_TEXTURE0);
     }

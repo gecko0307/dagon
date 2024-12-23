@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2024 Timur Gafarov
+Copyright (c) 2019-2024 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,9 +25,10 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.postproc.shaders.dof;
+module dagon.render.deferred.shaders.debugoutput;
 
 import std.stdio;
+import std.math;
 
 import dlib.core.memory;
 import dlib.core.ownership;
@@ -41,31 +42,18 @@ import dlib.text.str;
 import dagon.core.bindings;
 import dagon.graphics.shader;
 import dagon.graphics.state;
-import dagon.render.deferred.gbuffer;
+import dagon.render.deferred.passes;
 
-class DepthOfFieldShader: Shader
+class DebugOutputShader: Shader
 {
     String vs, fs;
 
-    bool enabled = true;
-    
-    bool autofocus = true; // Focus to screen center
-    float focalDepth = 1.5; // Focal distance value in meters when autofocus is false
-    float focalLength = 5.0; // Focal length in mm
-    float fStop = 2.0; // F-stop value
-    
-    bool manual = false; // Manual DoF calculation
-    float nearStart = 1.0; // Near DoF blur start
-    float nearDistance = 2.0; // Near DoF blur falloff distance
-    float farStart = 1.0; // Far DoF blur start
-    float farDistance = 3.0; // Far DoF blur falloff distance
-
-    GBuffer gbuffer;
+    DebugOutputMode outputMode = DebugOutputMode.Radiance;
 
     this(Owner owner)
     {
-        vs = Shader.load("data/__internal/shaders/DoF/DoF.vert.glsl");
-        fs = Shader.load("data/__internal/shaders/DoF/DoF.frag.glsl");
+        vs = Shader.load("data/__internal/shaders/DebugOutput/DebugOutput.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/DebugOutput/DebugOutput.frag.glsl");
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
@@ -79,35 +67,48 @@ class DepthOfFieldShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        setParameter("viewSize", state.resolution);
-        setParameter("enabled", enabled);
+        setParameter("projectionMatrix", state.projectionMatrix);
+
+        setParameter("viewMatrix", state.viewMatrix);
+        setParameter("invViewMatrix", state.invViewMatrix);
+        setParameter("invProjectionMatrix", state.invProjectionMatrix);
+        setParameter("resolution", state.resolution);
         setParameter("zNear", state.zNear);
         setParameter("zFar", state.zFar);
 
-        setParameter("invProjectionMatrix", state.invProjectionMatrix);
-        
-        setParameter("autofocus", autofocus);
-        setParameter("focalDepth", focalDepth);
-        setParameter("focalLength", focalLength);
-        setParameter("fstop", fStop);
-        
-        setParameter("manual", manual);
-        setParameter("nearStart", nearStart);
-        setParameter("nearDistance", nearDistance);
-        setParameter("farStart", farStart);
-        setParameter("farDistance", farDistance);
+        setParameter("outputMode", cast(int)outputMode);
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
         setParameter("colorBuffer", 0);
 
-        if (gbuffer)
+        // Texture 1 - depth buffer
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, state.depthTexture);
+        setParameter("depthBuffer", 1);
+
+        // Texture 2 - normal buffer
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, state.normalTexture);
+        setParameter("normalBuffer", 2);
+
+        // Texture 3 - pbr buffer
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, state.pbrTexture);
+        setParameter("pbrBuffer", 3);
+
+        // Texture 4 - occlusion buffer
+        if (glIsTexture(state.occlusionTexture))
         {
-            // Texture 1 - depth buffer
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, gbuffer.depthTexture);
-            setParameter("depthBuffer", 1);
+            glActiveTexture(GL_TEXTURE4);
+            glBindTexture(GL_TEXTURE_2D, state.occlusionTexture);
+            setParameter("occlusionBuffer", 4);
+            setParameter("haveOcclusionBuffer", true);
+        }
+        else
+        {
+            setParameter("haveOcclusionBuffer", false);
         }
 
         glActiveTexture(GL_TEXTURE0);
@@ -126,6 +127,12 @@ class DepthOfFieldShader: Shader
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE0);
