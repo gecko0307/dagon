@@ -29,13 +29,13 @@ module dagon.render;
 
 public
 {
-    import dagon.render.shaders;
     import dagon.render.framebuffer;
     import dagon.render.pass;
     import dagon.render.pipeline;
     import dagon.render.view;
     import dagon.render.renderer;
     import dagon.render.deferred;
+    import dagon.render.simple;
     import dagon.render.postproc;
     import dagon.render.present;
     import dagon.render.hud;
