@@ -25,18 +25,48 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.postproc.shaders;
+module dagon.render.present.presentpass;
 
-public
+import std.stdio;
+
+import dlib.core.memory;
+import dlib.core.ownership;
+
+import dagon.core.bindings;
+import dagon.graphics.screensurface;
+import dagon.render.pipeline;
+import dagon.render.pass;
+import dagon.render.framebuffer;
+import dagon.render.present.shaders.present;
+
+class PresentPass: RenderPass
 {
-    import dagon.render.postproc.shaders.blur;
-    import dagon.render.postproc.shaders.brightpass;
-    import dagon.render.postproc.shaders.denoise;
-    import dagon.render.postproc.shaders.dof;
-    import dagon.render.postproc.shaders.fxaa;
-    import dagon.render.postproc.shaders.glow;
-    import dagon.render.postproc.shaders.lensdistortion;
-    import dagon.render.postproc.shaders.lut;
-    import dagon.render.postproc.shaders.motionblur;
-    import dagon.render.postproc.shaders.tonemap;
+    Framebuffer inputBuffer;
+    ScreenSurface screenSurface;
+    PresentShader presentShader;
+
+    this(RenderPipeline pipeline)
+    {
+        super(pipeline);
+        screenSurface = New!ScreenSurface(this);
+        presentShader = New!PresentShader(this);
+    }
+
+    override void render()
+    {
+        if (inputBuffer && view)
+        {
+            state.colorTexture = inputBuffer.colorTexture;
+            state.depthTexture = inputBuffer.depthTexture;
+
+            glScissor(view.x, view.y, view.width, view.height);
+            glViewport(view.x, view.y, view.width, view.height);
+
+            presentShader.bind();
+            presentShader.bindParameters(&state);
+            screenSurface.render(&state);
+            presentShader.unbindParameters(&state);
+            presentShader.unbind();
+        }
+    }
 }

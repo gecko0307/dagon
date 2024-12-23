@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.presentrenderer;
+module dagon.render.present;
 
 import dlib.core.memory;
 import dlib.core.ownership;
@@ -37,7 +37,7 @@ import dagon.resource.scene;
 import dagon.render.renderer;
 import dagon.render.pass;
 import dagon.render.framebuffer;
-import dagon.render.postproc.presentpass;
+import dagon.render.present.presentpass;
 
 class PresentRenderer: Renderer
 {

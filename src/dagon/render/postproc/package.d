@@ -45,7 +45,6 @@ public
 {
     import dagon.render.postproc.blurpass;
     import dagon.render.postproc.filterpass;
-    import dagon.render.postproc.presentpass;
     import dagon.render.postproc.shaders;
 }
 
@@ -143,7 +142,6 @@ class PostProcRenderer: Renderer
     FilterPass passFXAA;
     FilterPass passLensDistortion;
     FilterPass passLUT;
-    PresentPass passPresent;
 
     bool _dofEnabled = false;
     bool _motionBlurEnabled = false;

@@ -37,6 +37,6 @@ public
     import dagon.render.renderer;
     import dagon.render.deferred;
     import dagon.render.postproc;
-    import dagon.render.presentrenderer;
+    import dagon.render.present;
     import dagon.render.hudrenderer;
 }
