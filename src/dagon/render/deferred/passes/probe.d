@@ -84,6 +84,7 @@ class PassEnvironmentProbe: RenderPass
             {
                 if (entity.visible && entity.drawable)
                 {
+                    environmentProbeShader.useBoxProjection = entity.probeUseBoxProjection;
                     renderEntity(entity, environmentProbeShader);
                 }
             }

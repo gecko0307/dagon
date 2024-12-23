@@ -22,6 +22,10 @@ uniform vec4 fogColor;
 uniform float fogStart;
 uniform float fogEnd;
 
+uniform bool useBoxProjection;
+uniform vec3 boxSize;
+uniform vec3 boxPosition;
+
 #include <unproject.glsl>
 #include <gamma.glsl>
 #include <fresnel.glsl>
@@ -64,6 +68,20 @@ subroutine uniform srtAmbient ambient;
 uniform sampler2D ambientBRDF;
 uniform bool haveAmbientBRDF;
 
+vec3 bpcm(in vec3 pos, in vec3 v, vec3 boxMax, vec3 boxMin, vec3 boxPos)
+{
+    vec3 nrdir = v;
+    vec3 rbmax = (boxMax - pos) / nrdir;
+    vec3 rbmin = (boxMin - pos) / nrdir;
+    vec3 rbminmax;
+    rbminmax.x = (nrdir.x > 0.0)? rbmax.x : rbmin.x;
+    rbminmax.y = (nrdir.y > 0.0)? rbmax.y : rbmin.y;
+    rbminmax.z = (nrdir.z > 0.0)? rbmax.z : rbmin.z;
+    float fa = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
+    vec3 posOnBox = pos + nrdir * fa;
+    return posOnBox - boxPos;
+}
+
 layout(location = 0) out vec4 fragColor;
 
 void main()
@@ -98,6 +116,14 @@ void main()
     vec3 worldE = normalize(worldPos - worldCamPos);
     vec3 worldN = normalize((vec4(N, 0.0) * viewMatrix).xyz);
     vec3 worldR = reflect(worldE, worldN);
+    
+    if (useBoxProjection)
+    {
+        vec3 boxMin = boxPosition - boxSize;
+        vec3 boxMax = boxPosition + boxSize;
+        //worldN = normalize(bpcm(worldPos, worldN, boxMax, boxMin, boxPosition));
+        worldR = normalize(bpcm(worldPos, worldR, boxMax, boxMin, boxPosition));
+    }
     
     vec4 pbr = texture(pbrBuffer, gbufTexCoord);
     float roughness = pbr.r;
