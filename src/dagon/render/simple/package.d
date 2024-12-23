@@ -29,29 +29,81 @@ module dagon.render.simple;
 
 import dlib.core.ownership;
 import dlib.core.memory;
+import dlib.image.color;
 
 import dagon.core.event;
+import dagon.core.bindings;
 import dagon.resource.scene;
+import dagon.graphics.entity;
 import dagon.render.renderer;
 import dagon.render.framebuffer;
+import dagon.render.pipeline;
+import dagon.render.pass;
+import dagon.render.simple.shaders;
 
 class SimpleRenderer: Renderer
 {
+    SimpleRenderPass simplePass;
+    
     this(EventManager eventManager, Owner owner)
     {
         super(eventManager, owner);
         
         outputBuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, FrameBufferFormat.RGBA16F, true, this);
+        
+        simplePass = New!SimpleRenderPass(pipeline);
+        simplePass.view = view;
     }
     
     override void scene(Scene s)
     {
-        // TODO: get pass groups from the given scene
+        simplePass.group = s.world.spatial;
     }
     
     override void setViewport(uint x, uint y, uint w, uint h)
     {
         super.setViewport(x, y, w, h);
         outputBuffer.resize(view.width, view.height);
+    }
+}
+
+class SimpleRenderPass: RenderPass
+{
+    SimpleForwardShader defaultShader;
+    
+    this(RenderPipeline pipeline, EntityGroup group = null)
+    {
+        super(pipeline, group);
+        
+        defaultShader = New!SimpleForwardShader(this);
+    }
+    
+    override void render()
+    {
+        if (group)
+        {
+            glScissor(0, 0, view.width, view.height);
+            glViewport(0, 0, view.width, view.height);
+            
+            state.environment = pipeline.environment;
+            
+            Color4f backgroundColor = Color4f(0.0f, 0.0f, 0.0f, 0.0f);
+            if (state.environment)
+                backgroundColor = state.environment.backgroundColor.toLinear();
+            backgroundColor.a = 0.0f;
+            
+            glClear(GL_DEPTH_BUFFER_BIT);
+            glClearBufferfv(GL_COLOR, 0, backgroundColor.arrayof.ptr);
+            
+            defaultShader.bind();
+            foreach(entity; group)
+            {
+                if (entity.visible && entity.drawable)
+                {
+                    renderEntity(entity, defaultShader);
+                }
+            }
+            defaultShader.unbind();
+        }
     }
 }

@@ -150,6 +150,8 @@ class Game: Application
             hudRenderer.scene = currentScene;
             hudRenderer.update(t);
         }
+        
+        postProcessingRenderer.inputBuffer = renderer.outputBuffer;
     }
 
     override void onRender()
