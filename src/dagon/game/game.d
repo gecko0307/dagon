@@ -41,11 +41,11 @@ import dagon.core.config;
 import dagon.graphics.state;
 import dagon.graphics.entity;
 import dagon.resource.scene;
-import dagon.game.renderer;
-import dagon.game.deferredrenderer;
-import dagon.game.postprocrenderer;
-import dagon.game.presentrenderer;
-import dagon.game.hudrenderer;
+import dagon.render.renderer;
+import dagon.render.deferredrenderer;
+import dagon.render.postprocrenderer;
+import dagon.render.presentrenderer;
+import dagon.render.hudrenderer;
 
 version(Windows)
 {

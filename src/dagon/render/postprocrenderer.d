@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2024 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.game.postprocrenderer;
+module dagon.render.postprocrenderer;
 
 import dlib.core.memory;
 import dlib.core.ownership;
@@ -34,6 +34,7 @@ import dagon.core.event;
 import dagon.core.time;
 import dagon.graphics.texture;
 import dagon.resource.scene;
+import dagon.render.renderer;
 import dagon.render.pass;
 import dagon.render.view;
 import dagon.render.framebuffer;
@@ -49,7 +50,6 @@ import dagon.postproc.shaders.tonemap;
 import dagon.postproc.shaders.fxaa;
 import dagon.postproc.shaders.lut;
 import dagon.postproc.shaders.lensdistortion;
-import dagon.game.renderer;
 
 import dagon.core.bindings;
 

@@ -30,10 +30,17 @@ module dagon.render;
 public
 {
     import dagon.render.passes;
+    import dagon.render.shaders;
+    
     import dagon.render.framebuffer;
     import dagon.render.gbuffer;
     import dagon.render.pass;
     import dagon.render.pipeline;
-    import dagon.render.shaders;
     import dagon.render.view;
+    
+    import dagon.render.renderer;
+    import dagon.render.deferredrenderer;
+    import dagon.render.postprocrenderer;
+    import dagon.render.presentrenderer;
+    import dagon.render.hudrenderer;
 }
