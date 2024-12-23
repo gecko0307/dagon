@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.hudrenderer;
+module dagon.render.hud;
 
 import dlib.core.memory;
 import dlib.core.ownership;
@@ -39,6 +39,7 @@ import dagon.resource.scene;
 import dagon.render.renderer;
 import dagon.render.pipeline;
 import dagon.render.pass;
+public import dagon.render.hud.shaders;
 
 class PassHUD: RenderPass
 {

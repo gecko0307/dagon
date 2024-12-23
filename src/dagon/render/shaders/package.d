@@ -30,5 +30,4 @@ module dagon.render.shaders;
 public
 {
     import dagon.render.shaders.fallback;
-    import dagon.render.shaders.hud;
 }

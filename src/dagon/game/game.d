@@ -45,7 +45,7 @@ import dagon.render.renderer;
 import dagon.render.deferred;
 import dagon.render.postproc;
 import dagon.render.present;
-import dagon.render.hudrenderer;
+import dagon.render.hud;
 
 version(Windows)
 {

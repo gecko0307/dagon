@@ -43,7 +43,7 @@ import dagon.graphics.state;
 import dagon.graphics.entity;
 import dagon.graphics.shapes;
 import dagon.graphics.material;
-import dagon.render.shaders.hud;
+import dagon.render.hud;
 
 class LoadingScreen: EventListener
 {
