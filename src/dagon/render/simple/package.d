@@ -27,4 +27,31 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.render.simple;
 
-// TODO
+import dlib.core.ownership;
+import dlib.core.memory;
+
+import dagon.core.event;
+import dagon.resource.scene;
+import dagon.render.renderer;
+import dagon.render.framebuffer;
+
+class SimpleRenderer: Renderer
+{
+    this(EventManager eventManager, Owner owner)
+    {
+        super(eventManager, owner);
+        
+        outputBuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, FrameBufferFormat.RGBA16F, true, this);
+    }
+    
+    override void scene(Scene s)
+    {
+        // TODO: get pass groups from the given scene
+    }
+    
+    override void setViewport(uint x, uint y, uint w, uint h)
+    {
+        super.setViewport(x, y, w, h);
+        outputBuffer.resize(view.width, view.height);
+    }
+}

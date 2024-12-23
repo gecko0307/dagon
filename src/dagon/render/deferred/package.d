@@ -208,10 +208,12 @@ class DeferredRenderer: Renderer
         super.update(t);
     }
     
+    /*
     override void render()
     {
         super.render();
     }
+    */
 
     override void setViewport(uint x, uint y, uint w, uint h)
     {
