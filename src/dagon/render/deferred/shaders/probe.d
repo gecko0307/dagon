@@ -157,10 +157,6 @@ class EnvironmentProbeShader: Shader
         
         setParameter("ambientEnergy", mat.emissionEnergy);
         
-        Vector3f boxSize = state.modelMatrix.scaling;
-        Vector3f boxPosition = state.modelMatrix.translation;
-        setParameter("boxSize", boxSize);
-        setParameter("boxPosition", boxPosition);
         setParameter("useBoxProjection", useBoxProjection);
 
         // Texture 6 - occlusion buffer
