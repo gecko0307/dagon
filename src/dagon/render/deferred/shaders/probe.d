@@ -49,6 +49,7 @@ class EnvironmentProbeShader: Shader
     String vs, fs;
     
     bool useBoxProjection = false;
+    Vector3f boxExtents = Vector3f(1.0f, 1.0f, 1.0f);
 
     this(Owner owner)
     {
@@ -158,6 +159,7 @@ class EnvironmentProbeShader: Shader
         setParameter("ambientEnergy", mat.emissionEnergy);
         
         setParameter("useBoxProjection", useBoxProjection);
+        setParameter("boxExtents", boxExtents);
 
         // Texture 6 - occlusion buffer
         glActiveTexture(GL_TEXTURE6);

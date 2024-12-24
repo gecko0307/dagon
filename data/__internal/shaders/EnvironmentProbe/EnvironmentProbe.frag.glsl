@@ -66,14 +66,14 @@ subroutine uniform srtAmbient ambient;
 uniform sampler2D ambientBRDF;
 uniform bool haveAmbientBRDF;
 
+uniform vec3 boxExtents;
+
 // Model-space box projection
-vec3 bpcem(in vec3 pos, in vec3 v)
+vec3 bpcem(in vec3 pos, in vec3 v, in vec3 boxExtents)
 {
-    const vec3 boxMax = vec3(1.0, 1.0, 1.0);
-    const vec3 boxMin = vec3(-1.0, -1.0, -1.0);
     vec3 nrdir = v;
-    vec3 rbmax = (boxMax - pos) / nrdir;
-    vec3 rbmin = (boxMin - pos) / nrdir;
+    vec3 rbmax = (boxExtents - pos) / nrdir;
+    vec3 rbmin = (-boxExtents - pos) / nrdir;
     vec3 rbminmax;
     rbminmax.x = (nrdir.x > 0.0)? rbmax.x : rbmin.x;
     rbminmax.y = (nrdir.y > 0.0)? rbmax.y : rbmin.y;
@@ -81,6 +81,11 @@ vec3 bpcem(in vec3 pos, in vec3 v)
     float fa = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
     vec3 posOnBox = pos + nrdir * fa;
     return posOnBox;
+}
+
+float fresnelR(float cosTheta, float f0, float r)
+{
+    return f0 + (1.0 - f0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), r);
 }
 
 layout(location = 0) out vec4 fragColor;
@@ -99,9 +104,9 @@ void main()
     vec3 objPos = (invModelMatrix * vec4(worldPos, 1.0)).xyz;
 
     // Perform bounds check to discard fragments outside the probe geometry
-    if (abs(objPos.x) > 1.0) discard;
-    if (abs(objPos.y) > 1.0) discard;
-    if (abs(objPos.z) > 1.0) discard;
+    if (abs(objPos.x) > boxExtents.x) discard;
+    if (abs(objPos.y) > boxExtents.y) discard;
+    if (abs(objPos.z) > boxExtents.z) discard;
     
     // TODO: make uniform
     float alpha = 1.0;
@@ -118,27 +123,28 @@ void main()
     vec3 worldN = normalize((vec4(N, 0.0) * viewMatrix).xyz);
     vec3 worldR = reflect(worldE, worldN);
     
+    float reflectivity = 1.0;
+    
     if (useBoxProjection)
     {
         vec3 objN = (invModelMatrix * vec4(worldN, 0.0)).xyz;
-        worldN = normalize(bpcem(objPos, objN));
+        worldN = normalize(bpcem(objPos, objN, boxExtents));
         vec3 objR = (invModelMatrix * vec4(worldR, 0.0)).xyz;
-        worldR = normalize(bpcem(objPos, objR));
+        worldR = normalize(bpcem(objPos, objR, boxExtents));
     }
     
     vec4 pbr = texture(pbrBuffer, gbufTexCoord);
     float roughness = pbr.r;
     float metallic = pbr.g;
-    float reflectivity = 1.0;
     
     float occlusion = haveOcclusionBuffer? texture(occlusionBuffer, gbufTexCoord).r : 1.0;
     
     vec3 f0 = mix(vec3(0.04), albedo, metallic);
 
     // Ambient light
-    vec3 irradiance = ambient(worldN, 0.99); // TODO: support separate irradiance map
-    vec3 reflection = ambient(worldR, sqrt(roughness)) * reflectivity;
     vec3 F = clamp(fresnelRoughness(NE, f0, roughness), 0.0, 1.0);
+    vec3 irradiance = ambient(worldN, 0.9); // TODO: support separate irradiance map
+    vec3 reflection = ambient(worldR, 1.0 - fresnelR(NE, 0.04, roughness)) * reflectivity;
     vec3 kD = (1.0 - F) * (1.0 - metallic);
     vec2 brdf = haveAmbientBRDF? texture(ambientBRDF, vec2(NE, roughness)).rg : vec2(1.0, 0.0);
     vec3 specular = reflection * clamp(F * brdf.x + brdf.y, 0.0, 1.0);

@@ -75,6 +75,7 @@ class Entity: Owner, Updateable
     bool dynamic = true;
     bool decal = false;
     bool probe = false;
+    Vector3f probeExtents = Vector3f(1.0f, 1.0f, 1.0f);
     bool probeUseBoxProjection = false;
     bool transparent = false;
     float opacity = 1.0f;
