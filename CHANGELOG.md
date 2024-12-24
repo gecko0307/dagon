@@ -1,3 +1,10 @@
+Dagon 0.19.0 - TBD
+------------------
+- **Rendering**
+  - Box projection support for environment probes. It can be enabled with `Entity.probeUseBoxProjection` property
+  - `Entity.probeExtents` now sets the half-size of a probe
+  - Breaking change: all the renderer modules moved from `dagon.game` to `dagon.render`.
+
 Dagon 0.18.0 - 10 Dec, 2024
 ---------------------------
 - **Assets**
