@@ -86,6 +86,7 @@ class PassEnvironmentProbe: RenderPass
                 {
                     environmentProbeShader.useBoxProjection = entity.probeUseBoxProjection;
                     environmentProbeShader.boxExtents = entity.probeExtents;
+                    environmentProbeShader.falloffMargin = entity.probeFalloffMargin;
                     renderEntity(entity, environmentProbeShader);
                 }
             }

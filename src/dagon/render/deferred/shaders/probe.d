@@ -50,6 +50,7 @@ class EnvironmentProbeShader: Shader
     
     bool useBoxProjection = false;
     Vector3f boxExtents = Vector3f(1.0f, 1.0f, 1.0f);
+    float falloffMargin = 0.1f;
 
     this(Owner owner)
     {
@@ -160,6 +161,7 @@ class EnvironmentProbeShader: Shader
         
         setParameter("useBoxProjection", useBoxProjection);
         setParameter("boxExtents", boxExtents);
+        setParameter("falloffMargin", falloffMargin);
 
         // Texture 6 - occlusion buffer
         glActiveTexture(GL_TEXTURE6);
