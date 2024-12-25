@@ -2,6 +2,8 @@ Dagon 0.19.0 - TBD
 ------------------
 - **Rendering**
   - Box projection support for environment probes. It can be enabled with `Entity.probeUseBoxProjection` property
+  - Environment probes now use alpha falloff to smoothly blend with existing data in G-buffer. `Entity.probeFalloffMargin` is used to control the width of this effect
+  - Environment probes now calculate perceptual roughness based on the grazing angle, which results in nicer floor reflections
   - `Entity.probeExtents` now sets the half-size of a probe
   - Breaking change: all the renderer modules moved from `dagon.game` to `dagon.render`.
 
