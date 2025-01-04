@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2024 Timur Gafarov
+Copyright (c) 2024-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -58,6 +58,8 @@ class SimpleRenderer: Renderer
     override void scene(Scene s)
     {
         simplePass.group = s.world.spatial;
+        
+        pipeline.environment = s.environment;
     }
     
     override void setViewport(uint x, uint y, uint w, uint h)

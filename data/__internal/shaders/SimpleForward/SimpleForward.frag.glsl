@@ -5,6 +5,16 @@ in vec3 eyePosition;
 in vec2 texCoord;
 
 uniform float opacity;
+uniform bool shaded;
+uniform vec3 sunDirection;
+uniform vec4 sunColor;
+uniform float sunEnergy;
+uniform float gloss;
+
+#include <gamma.glsl>
+
+uniform vec4 ambientColor;
+uniform float ambientEnergy;
 
 /*
  * Diffuse
@@ -33,8 +43,30 @@ void main()
     vec3 E = normalize(-eyePosition);
     vec3 N = normalize(eyeNormal);
     
-    vec4 diffuseColor = diffuse(uv);
-    float alpha = diffuseColor.a * opacity;
+    vec3 L = sunDirection;
     
-    fragColor = vec4(diffuseColor.rgb, alpha);
+    vec4 color = diffuse(uv);
+    vec3 diffuseColor = toLinear(color.rgb);
+    
+    vec3 outputColor = diffuseColor;
+    float outputAlpha = color.a * opacity;
+    
+    // Sun light
+    if (shaded)
+    {
+        float NL = max(dot(N, L), 0.0);
+        vec3 H = normalize(E + L);
+        float NH = max(dot(N, H), 0.0);
+        
+        float diffuseEnergy = NL;
+        float specularEnergy = pow(NH, 256.0 * gloss) * gloss;
+        
+        vec3 lightColor = toLinear(sunColor.rgb);
+        
+        outputColor =
+            diffuseColor * (ambientColor.rgb * ambientEnergy + lightColor * diffuseEnergy) +
+            lightColor * specularEnergy;
+    }
+    
+    fragColor = vec4(outputColor, outputAlpha);
 }

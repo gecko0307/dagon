@@ -29,6 +29,7 @@ module dagon.render.simple.shaders.simpleforward;
 
 import std.stdio;
 import std.math;
+import std.algorithm;
 
 import dlib.core.memory;
 import dlib.core.ownership;
@@ -44,6 +45,7 @@ import dagon.graphics.entity;
 import dagon.graphics.material;
 import dagon.graphics.shader;
 import dagon.graphics.state;
+import dagon.graphics.light;
 
 class SimpleForwardShader: Shader
 {
@@ -73,8 +75,47 @@ class SimpleForwardShader: Shader
         setParameter("normalMatrix", state.normalMatrix);
         
         setParameter("opacity", mat.opacity * state.opacity);
-        setParameter("shadeless", mat.shadeless);
         setParameter("textureScale", mat.textureScale);
+        
+        Light sun = mat.sun;
+        if (sun is null && state.environment !is null)
+            sun = state.environment.sun;
+        
+        Vector3f sunDirection = Vector3f(0.0f, 0.0f, 1.0f);
+        Color4f sunColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+        float sunEnergy = 1.0f;
+        if (sun)
+        {
+            sunDirection = sun.directionAbsolute;
+            sunColor = sun.color;
+            sunEnergy = sun.energy;
+        }
+        
+        Vector4f sunDirHg = Vector4f(sunDirection);
+        sunDirHg.w = 0.0;
+        setParameter("sunDirection", (sunDirHg * state.viewMatrix).xyz);
+        setParameter("sunColor", sunColor);
+        setParameter("sunEnergy", sunEnergy);
+        setParameter("shaded", !mat.shadeless);
+        setParameter("gloss", max(0.001f, 1.0f - mat.roughnessFactor));
+        
+        // Ambient
+        if (state.environment)
+        {
+            setParameter("fogColor", state.environment.fogColor);
+            setParameter("fogStart", state.environment.fogStart);
+            setParameter("fogEnd", state.environment.fogEnd);
+            setParameter("ambientColor", state.environment.ambientColor);
+            setParameter("ambientEnergy", state.environment.ambientEnergy);
+        }
+        else
+        {
+            setParameter("fogColor", Color4f(0.5f, 0.5f, 0.5f, 1.0f));
+            setParameter("fogStart", 0.0f);
+            setParameter("fogEnd", 1000.0f);
+            setParameter("ambientColor", Color4f(0.0f, 0.0f, 0.0f, 1.0f));
+            setParameter("ambientEnergy", 1.0f);
+        }
         
         // Diffuse
         glActiveTexture(GL_TEXTURE0);
