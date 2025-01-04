@@ -39,7 +39,7 @@ Dagon follows [D style](https://dlang.org/dstyle.html). Essential rules are the 
 Each D module should start with a Boost license block prepended with a copyright notice:
 ```
 /*
-Copyright (c) 2020 <author's name here>
+Copyright (c) 2025 <author's name here>
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
