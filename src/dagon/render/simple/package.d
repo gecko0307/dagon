@@ -29,6 +29,7 @@ module dagon.render.simple;
 
 import dlib.core.ownership;
 import dlib.core.memory;
+import dlib.container.array;
 import dlib.image.color;
 
 import dagon.core.event;
@@ -43,7 +44,9 @@ import dagon.render.simple.shaders;
 
 class SimpleRenderer: Renderer
 {
-    SimpleRenderPass simplePass;
+    Array!RenderPass layerPasses;
+    SimpleClearPass clearPass;
+    RenderPass defaultLayerPass;
     
     this(EventManager eventManager, Owner owner)
     {
@@ -51,13 +54,27 @@ class SimpleRenderer: Renderer
         
         outputBuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, FrameBufferFormat.RGBA16F, true, this);
         
-        simplePass = New!SimpleRenderPass(pipeline);
-        simplePass.view = view;
+        clearPass = New!SimpleClearPass(pipeline);
+        clearPass.view = view;
+        
+        defaultLayerPass = addLayerPass(0);
+    }
+    
+    SimpleRenderPass addLayerPass(int layer)
+    {
+        auto pass = New!SimpleRenderPass(pipeline);
+        pass.layer = layer;
+        pass.view = view;
+        layerPasses.append(pass);
+        return pass;
     }
     
     override void scene(Scene s)
     {
-        simplePass.group = s.world.spatial;
+        foreach(pass; layerPasses)
+        {
+            pass.group = s.world.spatial;
+        }
         
         pipeline.environment = s.environment;
     }
@@ -69,9 +86,34 @@ class SimpleRenderer: Renderer
     }
 }
 
+class SimpleClearPass: RenderPass
+{
+    this(RenderPipeline pipeline, EntityGroup group = null)
+    {
+        super(pipeline, group);
+    }
+    
+    override void render()
+    {
+        glScissor(0, 0, view.width, view.height);
+        glViewport(0, 0, view.width, view.height);
+        
+        state.environment = pipeline.environment;
+        
+        Color4f backgroundColor = Color4f(0.0f, 0.0f, 0.0f, 0.0f);
+        if (state.environment)
+            backgroundColor = state.environment.backgroundColor.toLinear();
+        backgroundColor.a = 0.0f;
+        
+        glClear(GL_DEPTH_BUFFER_BIT);
+        glClearBufferfv(GL_COLOR, 0, backgroundColor.arrayof.ptr);
+    }
+}
+
 class SimpleRenderPass: RenderPass
 {
     SimpleForwardShader defaultShader;
+    int layer = 0;
     
     this(RenderPipeline pipeline, EntityGroup group = null)
     {
@@ -89,18 +131,10 @@ class SimpleRenderPass: RenderPass
             
             state.environment = pipeline.environment;
             
-            Color4f backgroundColor = Color4f(0.0f, 0.0f, 0.0f, 0.0f);
-            if (state.environment)
-                backgroundColor = state.environment.backgroundColor.toLinear();
-            backgroundColor.a = 0.0f;
-            
-            glClear(GL_DEPTH_BUFFER_BIT);
-            glClearBufferfv(GL_COLOR, 0, backgroundColor.arrayof.ptr);
-            
             defaultShader.bind();
             foreach(entity; group)
             {
-                if (entity.visible && entity.drawable)
+                if (entity.visible && entity.drawable && entity.renderLayer == layer)
                 {
                     renderEntity(entity, defaultShader);
                 }
