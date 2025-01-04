@@ -58,8 +58,8 @@ void main()
         vec3 H = normalize(E + L);
         float NH = max(dot(N, H), 0.0);
         
-        float diffuseEnergy = NL;
-        float specularEnergy = pow(NH, 256.0 * gloss) * gloss;
+        float diffuseEnergy = NL * sunEnergy;
+        float specularEnergy = pow(NH, 128.0 * gloss) * gloss * sunEnergy;
         
         vec3 lightColor = toLinear(sunColor.rgb);
         
