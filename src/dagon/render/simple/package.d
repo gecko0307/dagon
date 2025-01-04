@@ -112,24 +112,28 @@ class SimpleClearPass: RenderPass
 
 class SimpleRenderPass: RenderPass
 {
+    Color4f debugColor;
     SimpleForwardShader defaultShader;
     int layer = 0;
+    bool visible = true;
     
     this(RenderPipeline pipeline, EntityGroup group = null)
     {
         super(pipeline, group);
-        
+        debugColor = Color4f(1.0f, 0.0f, 0.0f, 1.0f);
         defaultShader = New!SimpleForwardShader(this);
     }
     
     override void render()
     {
-        if (group)
+        if (group && visible)
         {
             glScissor(0, 0, view.width, view.height);
             glViewport(0, 0, view.width, view.height);
             
             state.environment = pipeline.environment;
+            
+            state.debugColor = debugColor;
             
             defaultShader.bind();
             foreach(entity; group)

@@ -43,6 +43,7 @@ class RenderPipeline: EventListener
 {
     Array!RenderPass passes;
     Environment environment;
+    bool debugMode = false;
 
     this(EventManager eventManager, Owner owner)
     {

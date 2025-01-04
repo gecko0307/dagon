@@ -131,6 +131,12 @@ class SimpleForwardShader: Shader
             glBindTexture(GL_TEXTURE_2D, 0);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
         }
+        
+        setParameter("debugHighlightColor", state.debugColor);
+        
+        float debugHighlightCoef = 0.0f;
+        if (state.debugMode) debugHighlightCoef = 0.99f;
+        setParameter("debugHighlightCoef", debugHighlightCoef);
 
         super.bindParameters(state);
     }

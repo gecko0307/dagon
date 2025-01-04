@@ -139,6 +139,8 @@ abstract class RenderPass: EventListener
             state.zFar = view.zFar;
 
             state.cameraPosition = view.cameraPosition;
+            
+            state.debugMode = pipeline.debugMode;
         }
     }
 

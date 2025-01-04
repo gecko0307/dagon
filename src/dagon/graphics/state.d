@@ -30,6 +30,7 @@ module dagon.graphics.state;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.geometry.frustum;
+import dlib.image.color;
 
 import dagon.core.bindings;
 import dagon.core.time;
@@ -40,6 +41,9 @@ import dagon.graphics.light;
 
 struct GraphicsState
 {
+    Color4f debugColor;
+    bool debugMode;
+    
     int layer;
     float blurMask;
     float gbufferMask;
@@ -94,6 +98,9 @@ struct GraphicsState
 
     void reset()
     {
+        debugColor = Color4f(0.0f, 0.0f, 0.0f, 0.0f);
+        debugMode = false;
+
         layer = 1;
         blurMask = 1.0f;
         gbufferMask = 1.0f;

@@ -4,6 +4,9 @@ in vec3 eyeNormal;
 in vec3 eyePosition;
 in vec2 texCoord;
 
+uniform vec4 debugHighlightColor;
+uniform float debugHighlightCoef;
+
 uniform float opacity;
 uniform bool shaded;
 uniform vec3 sunDirection;
@@ -68,5 +71,5 @@ void main()
             lightColor * specularEnergy;
     }
     
-    fragColor = vec4(outputColor, outputAlpha);
+    fragColor = vec4(mix(outputColor, debugHighlightColor.rgb, debugHighlightCoef), outputAlpha);
 }
