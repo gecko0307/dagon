@@ -69,6 +69,8 @@ class Entity: Owner, Updateable
     EntityLayer layer = EntityLayer.Spatial;
     EntityType type = EntityType.General;
     
+    int renderLayer = 0;
+    
     bool visible = true;
     bool castShadow = true;
     bool solid = false;
