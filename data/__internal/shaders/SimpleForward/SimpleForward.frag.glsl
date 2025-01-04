@@ -4,6 +4,8 @@ in vec3 eyeNormal;
 in vec3 eyePosition;
 in vec2 texCoord;
 
+uniform float opacity;
+
 /*
  * Diffuse
  */
@@ -32,7 +34,7 @@ void main()
     vec3 N = normalize(eyeNormal);
     
     vec4 diffuseColor = diffuse(uv);
-    float alpha = diffuseColor.a;
+    float alpha = diffuseColor.a * opacity;
     
     fragColor = vec4(diffuseColor.rgb, alpha);
 }
