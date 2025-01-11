@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2023 Timur Gafarov
+Copyright (c) 2014-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -25,13 +25,37 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-
 module dagon.kinematics.jss;
 
 import dlib.math.vector;
 
 struct JohnsonSimplexSolver
 {
+    // Reduced simplex bits.
+    byte XBits = 0;
+
+    // Y = Wk + wk
+    byte YBits = 0;
+
+    // Max vertex index
+    byte maxVertexIndex = 3;
+
+    // Last vertex index
+    byte lastVertexIndex = 3;
+
+    // Support points on shape A
+    Vector3f[4] supportPointsOnA;
+
+    // Support points on shape B
+    Vector3f[4] supportPointsOnB;
+
+    // Cached edges. The diagonal does not hold a subtraction, it holds all four simplex points instead
+    Vector3f[4][4] edges;
+
+    // Cached determinants. This cache supports any combination of simplex's 4 points.
+    // The first column stores the squared length for each point
+    float[4][16] determinants;
+    
     void initialize()
     {
         foreach(ref v; supportPointsOnA)
@@ -608,29 +632,4 @@ struct JohnsonSimplexSolver
                 dot(edges[0][3], getPoint(2)) * determinants[0x7][2];
         }
     }
-
-    // Reduced simplex bits.
-    byte XBits = 0;
-
-    // Y = Wk + wk
-    byte YBits = 0;
-
-    // Max vertex index
-    byte maxVertexIndex = 3;
-
-    // Last vertex index
-    byte lastVertexIndex = 3;
-
-    // Support points on shape A
-    Vector3f[4] supportPointsOnA;
-
-    // Support points on shape B
-    Vector3f[4] supportPointsOnB;
-
-    // Cached edges. The diagonal does not hold a subtraction, it holds all four simplex points instead
-    Vector3f[4][4] edges;
-
-    // Cached determinants. This cache supports any combination of simplex's 4 points.
-    // The first column stores the squared length for each point
-    float[4][16] determinants;
 }
