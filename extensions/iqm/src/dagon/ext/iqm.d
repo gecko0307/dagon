@@ -559,9 +559,6 @@ class IQMModel: AnimatedModel
             vas[i] = istrm.read!(IQMVertexArray, true);
         }
 
-        // FIXME:
-        //Delete(vas);
-
         foreach(i, va; vas)
         {
             version(IQMDebug)
@@ -772,7 +769,7 @@ class IQMModel: AnimatedModel
             scale.y = p.channelOffset[8]; if(p.mask&0x100) scale.y += istrm.read!(ushort, true) * p.channelScale[8];
             scale.z = p.channelOffset[9]; if(p.mask&0x200) scale.z += istrm.read!(ushort, true) * p.channelScale[9];
             
-            rot.normalize();            
+            rot.normalize();
             Matrix4x4f m = transformationMatrix(rot, trans, scale);
             assert(validMatrix(m));
             
