@@ -1,7 +1,8 @@
 /*
-Copyright (c) 2017-2022 Timur Gafarov
+Copyright (c) 2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
+
 Permission is hereby granted, free of charge, to any person or organization
 obtaining a copy of the software and accompanying documentation covered by
 this license (the "Software") to use, reproduce, display, distribute,
@@ -24,18 +25,13 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-
-module dagon;
+module dagon.kinematics;
 
 public
 {
-    import dlib;
-    import dagon.core;
-    import dagon.extra;
-    import dagon.game;
-    import dagon.graphics;
-    import dagon.kinematics;
-    import dagon.render;
-    import dagon.resource;
-    import dagon.ui;
+    import dagon.kinematics.collision;
+    import dagon.kinematics.contact;
+    import dagon.kinematics.geometry;
+    import dagon.kinematics.raycast;
+    import dagon.kinematics.shape;
 }

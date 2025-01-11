@@ -1,7 +1,8 @@
 /*
-Copyright (c) 2017-2022 Timur Gafarov
+Copyright (c) 2013-2025 Timur Gafarov 
 
 Boost Software License - Version 1.0 - August 17th, 2003
+
 Permission is hereby granted, free of charge, to any person or organization
 obtaining a copy of the software and accompanying documentation covered by
 this license (the "Software") to use, reproduce, display, distribute,
@@ -24,18 +25,29 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+module dagon.kinematics.contact;
 
-module dagon;
+import dlib.math.vector;
+import dagon.kinematics.shape;
 
-public
+struct Contact
 {
-    import dlib;
-    import dagon.core;
-    import dagon.extra;
-    import dagon.game;
-    import dagon.graphics;
-    import dagon.kinematics;
-    import dagon.render;
-    import dagon.resource;
-    import dagon.ui;
+    Vector3f point;
+    Vector3f normal;
+    float penetration;
+    alias hitDistance = penetration; // convenience alias for raycasting
+    bool fact;
+
+    void calcFDir(out Vector3f fdir1, out Vector3f fdir2)
+    {
+        // Calculate tangent space for contact normal
+        if (dot(normal, Vector3f(1,0,0)) < 0.5f)
+            fdir1 = cross(normal, Vector3f(1,0,0)); 
+        else
+            fdir1 = cross(normal, Vector3f(0,0,1));
+        
+        fdir2 = cross(fdir1, normal);
+        fdir1.normalize();
+        fdir2.normalize();
+    }
 }

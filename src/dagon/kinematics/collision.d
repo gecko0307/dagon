@@ -1,7 +1,8 @@
 /*
-Copyright (c) 2017-2022 Timur Gafarov
+Copyright (c) 2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
+
 Permission is hereby granted, free of charge, to any person or organization
 obtaining a copy of the software and accompanying documentation covered by
 this license (the "Software") to use, reproduce, display, distribute,
@@ -25,17 +26,22 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon;
+module dagon.kinematics.collision;
 
-public
+import dagon.kinematics.contact;
+import dagon.kinematics.mpr;
+import dagon.kinematics.shape;
+
+bool shapeVsShape(
+    CollisionShape shape1,
+    CollisionShape shape2,
+    out Contact contact)
 {
-    import dlib;
-    import dagon.core;
-    import dagon.extra;
-    import dagon.game;
-    import dagon.graphics;
-    import dagon.kinematics;
-    import dagon.render;
-    import dagon.resource;
-    import dagon.ui;
+    if (mprTest(shape1, shape2, contact))
+    {
+        contact.fact = true;
+        return true;
+    }
+    else return false;
 }
+
