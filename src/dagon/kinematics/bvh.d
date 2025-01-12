@@ -202,7 +202,7 @@ struct RayTraverseAggregate(T)
         int result = 0;
         
         float it = 0.0f;
-        if (node.aabb.intersectsSegment(ray.p0, ray.p1, it))    
+        if (node.aabb.intersectsSegment(ray.p0, ray.p1, it))
         { 
             if (node.child[0] !is null)
             {

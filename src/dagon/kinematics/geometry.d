@@ -29,6 +29,7 @@ DEALINGS IN THE SOFTWARE.
 module dagon.kinematics.geometry;
 
 import std.math;
+import std.algorithm;
 
 import dlib.core.ownership;
 import dlib.core.memory;
@@ -46,6 +47,7 @@ enum GeomType
     Cylinder,
     Cone,
     Ellipsoid,
+    Capsule,
     Triangle,
     UserDefined
 }
@@ -225,6 +227,40 @@ class GeomEllipsoid: Geometry
     override AABB boundingBox(Vector3f position)
     {
         return AABB(position, radii);
+    }
+}
+
+class GeomCapsule: Geometry
+{
+    float radius;
+    float base;
+    float cap;
+    
+    this(float base, float cap, float r, Owner o = null)
+    {
+        super(o);
+        type = GeomType.Capsule;
+        this.base = base;
+        this.cap = cap;
+        radius = r;
+    }
+    
+    override Vector3f supportPoint(Vector3f dir)
+    {
+        dir = dir.normalized;
+        if (dir.y > 0.0f)
+        {
+            return Vector3f(0.0f, cap, 0.0f) + dir * radius;
+        }
+        else
+        {
+            return Vector3f(0.0f, base, 0.0f) + dir * radius;
+        }
+    }
+
+    override AABB boundingBox(Vector3f position)
+    {
+        return AABB(position, Vector3f(radius, max(base, cap) + radius, radius));
     }
 }
 

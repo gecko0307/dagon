@@ -34,4 +34,5 @@ public
     import dagon.kinematics.geometry;
     import dagon.kinematics.raycast;
     import dagon.kinematics.shape;
+    import dagon.kinematics.world;
 }
