@@ -99,7 +99,7 @@ bool mprTest(
 
         c.point = v11;
         c.point += v12;
-        //c.point *= 0.5f;
+        c.point *= 0.5f;
 
         c.penetration = dot(v12 - v11, c.normal);
 
@@ -235,7 +235,7 @@ bool mprTest(
                     c.point += v22 * b2;
                     c.point += v32 * b3;
 
-                    c.point *= inv; // * 0.5f;
+                    c.point *= inv * 0.5f;
                 }
 
                 return hit;

@@ -102,6 +102,10 @@ class KinematicWorld: Owner
             dynamicCollider.applyVelocity(deltaTime);
             dynamicCollider.onFloor = false;
             dynamicCollider.gravityVector = gravityVector;
+            dynamicCollider.headContact = false;
+            dynamicCollider.headContactPoint = Vector3f(0.0f, 0.0f, 0.0f);
+            
+            float minHeadContactY = float.max;
             
             // Static collisions
             for (size_t j = 0; j < staticColliders.data.length; j++)
@@ -114,7 +118,9 @@ class KinematicWorld: Owner
                     staticCollider.collisionShape,
                     contact))
                 {
-                    float onFloor = abs(dot(contact.normal, gravityVector));
+                    float verticalProj = dot(contact.normal, gravityVector);
+                    
+                    float onFloor = abs(verticalProj);
                     if (!dynamicCollider.onFloor)
                     {
                         if (onFloor > onFloorThreshold)
@@ -131,7 +137,19 @@ class KinematicWorld: Owner
                     }
                     
                     Vector3f normalResponce = contact.normal * contact.penetration;
-                    dynamicCollider.moveSmooth(normalResponce, 0.8f);
+                    
+                    bool resolveContact = true;
+                    if (verticalProj > 0.5f && contact.point.y > dynamicCollider.position.y && contact.point.y < minHeadContactY)
+                    {
+                        //minHeadContactY = contact.point.y;
+                        dynamicCollider.headContact = true;
+                        //Vector3f headContactResolved = contact.point + normalResponce;
+                        //dynamicCollider.headContactPoint = headContactResolved - dynamicCollider.position;
+                        resolveContact = dynamicCollider.resolveHeadContacts;
+                    }
+                    
+                    if (resolveContact)
+                        dynamicCollider.moveSmooth(normalResponce, 0.8f);
                 }
             }
             
@@ -149,6 +167,9 @@ class Collider: EntityComponent
     Vector3f position = Vector3f(0.0f, 0.0f, 0.0f);
     Vector3f velocity = Vector3f(0.0f, 0.0f, 0.0f);
     Vector3f gravityVector = Vector3f(0.0f, -1.0f, 0.0f);
+    Vector3f headContactPoint = Vector3f(0.0f, 0.0f, 0.0f);
+    bool headContact = false;
+    bool resolveHeadContacts = false;
     float jumpSpeedDelta = 0.0f;
     float jumpDamping = 1.0f;
     bool onFloor = false;

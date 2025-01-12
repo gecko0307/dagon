@@ -76,6 +76,22 @@ struct Binding
     }
 }
 
+size_t replaceInArray(T)(T[] arr, T srcElement, T destElement)
+{
+    size_t numReplaced = 0;
+    
+    for (size_t i = 0; i < arr.length; i++)
+    {
+        if (arr[i] == srcElement)
+        {
+            arr[i] = destElement;
+            numReplaced++;
+        }
+    }
+    
+    return numReplaced;
+}
+
 class InputManager
 {
     EventManager eventManager;
@@ -158,13 +174,13 @@ class InputManager
             else
             {
                 String svalue = String(lexeme);
+                replaceInArray(svalue.data.data, '+', ' ');
                 const(char)* cvalue = svalue.ptr;
                 switch(type)
                 {
                     case BindingType.Keyboard:      result = cast(int)SDL_GetScancodeFromName(cvalue); break;
                     case BindingType.GamepadAxis:   result = cast(int)SDL_GameControllerGetAxisFromString(cvalue); break;
                     case BindingType.GamepadButton: result = cast(int)SDL_GameControllerGetButtonFromString(cvalue); break;
-
                     default: break;
                 }
 
