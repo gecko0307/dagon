@@ -1,5 +1,7 @@
 Dagon 0.19.0 - TBD
 ------------------
+- **Core**
+  - `InputManager` now supports whitespace-separated keycode names in bindings. Instead of the whitespace, `+` sign is used, e.g. `kb_left+ctrl` for `left ctrl`
 - **Rendering**
   - `SimpleRenderer` - a lightweight renderer for casual and stylized game graphics
   - Box projection support for environment probes. It can be enabled with `Entity.probeUseBoxProjection` property
