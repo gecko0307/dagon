@@ -119,29 +119,32 @@ class KinematicWorld: Owner
                 {
                     float verticalProj = dot(contact.normal, gravityVector);
                     
-                    float onFloor = abs(verticalProj);
-                    if (!dynamicCollider.onFloor)
-                    {
-                        if (onFloor > onFloorThreshold)
-                        {
-                            dynamicCollider.onFloor = true;
-                            
-                            Vector3f grav;
-                            if (onFloor > 0.95f)
-                                grav = -contact.normal;
-                            else
-                                grav = lerp(dynamicCollider.gravityVector, -contact.normal, onFloor);
-                            dynamicCollider.gravityVector = grav;
-                        }
-                    }
-                    
                     Vector3f normalResponce = contact.normal * contact.penetration;
                     
                     bool resolveContact = true;
                     if (verticalProj > 0.5f && contact.point.y > dynamicCollider.position.y && contact.point.y < minHeadContactY)
                     {
                         dynamicCollider.headContact = true;
+                        dynamicCollider.jumpSpeedDelta = -10.0f * deltaTime;
                         resolveContact = dynamicCollider.resolveHeadContacts;
+                    }
+                    else
+                    {
+                        float onFloor = abs(verticalProj);
+                        if (!dynamicCollider.onFloor)
+                        {
+                            if (onFloor > onFloorThreshold)
+                            {
+                                dynamicCollider.onFloor = true;
+                                
+                                Vector3f grav;
+                                if (onFloor > 0.95f)
+                                    grav = -contact.normal;
+                                else
+                                    grav = lerp(dynamicCollider.gravityVector, -contact.normal, onFloor);
+                                dynamicCollider.gravityVector = grav;
+                            }
+                        }
                     }
                     
                     if (resolveContact)
@@ -164,7 +167,7 @@ class Collider: EntityComponent
     Vector3f velocity = Vector3f(0.0f, 0.0f, 0.0f);
     Vector3f gravityVector = Vector3f(0.0f, -1.0f, 0.0f);
     bool headContact = false;
-    bool resolveHeadContacts = false;
+    bool resolveHeadContacts = true;
     float jumpSpeedDelta = 0.0f;
     float jumpDamping = 1.0f;
     bool onFloor = false;
