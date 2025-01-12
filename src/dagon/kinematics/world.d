@@ -103,7 +103,6 @@ class KinematicWorld: Owner
             dynamicCollider.onFloor = false;
             dynamicCollider.gravityVector = gravityVector;
             dynamicCollider.headContact = false;
-            dynamicCollider.headContactPoint = Vector3f(0.0f, 0.0f, 0.0f);
             
             float minHeadContactY = float.max;
             
@@ -141,10 +140,7 @@ class KinematicWorld: Owner
                     bool resolveContact = true;
                     if (verticalProj > 0.5f && contact.point.y > dynamicCollider.position.y && contact.point.y < minHeadContactY)
                     {
-                        //minHeadContactY = contact.point.y;
                         dynamicCollider.headContact = true;
-                        //Vector3f headContactResolved = contact.point + normalResponce;
-                        //dynamicCollider.headContactPoint = headContactResolved - dynamicCollider.position;
                         resolveContact = dynamicCollider.resolveHeadContacts;
                     }
                     
@@ -167,7 +163,6 @@ class Collider: EntityComponent
     Vector3f position = Vector3f(0.0f, 0.0f, 0.0f);
     Vector3f velocity = Vector3f(0.0f, 0.0f, 0.0f);
     Vector3f gravityVector = Vector3f(0.0f, -1.0f, 0.0f);
-    Vector3f headContactPoint = Vector3f(0.0f, 0.0f, 0.0f);
     bool headContact = false;
     bool resolveHeadContacts = false;
     float jumpSpeedDelta = 0.0f;
@@ -198,7 +193,7 @@ class Collider: EntityComponent
     
     void jump(float deltaSpeed)
     {
-        if (onFloor && jumpSpeedDelta < 0.00001f)
+        if (onFloor && !headContact && jumpSpeedDelta < 0.00001f)
         {
             onFloor = false;
             jumpSpeedDelta += deltaSpeed;
