@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -72,7 +72,7 @@ class Cadencer: Owner
         if (elapsedTime >= timeStep)
         {
             callback(Time(timeStep, t.elapsed));
-            elapsedTime = 0.0; //-= timeStep;
+            elapsedTime = 0.0;
             fpsCounter++;
         }
         

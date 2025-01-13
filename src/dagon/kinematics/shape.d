@@ -42,7 +42,6 @@ class CollisionShape: Owner
     Geometry geometry;
     
     Matrix4x4f transformation;
-    bool locked = false;
 
     this(Geometry g, Owner owner = null)
     {

@@ -144,18 +144,58 @@ class BVHNode(T)
         Delete(this);
     }
     
-    SphereTraverseAggregate!T traverseBySphere(Sphere* sphere)
+    AABBTraverseQuery!T traverseByAABB(AABB* aabb)
     {
-        return SphereTraverseAggregate!(T)(this, sphere);
+        return AABBTraverseQuery!(T)(this, aabb);
     }
     
-    RayTraverseAggregate!T traverseByRay(Ray* ray)
+    SphereTraverseQuery!T traverseBySphere(Sphere* sphere)
     {
-        return RayTraverseAggregate!(T)(this, ray);
+        return SphereTraverseQuery!(T)(this, sphere);
+    }
+    
+    RayTraverseQuery!T traverseByRay(Ray* ray)
+    {
+        return RayTraverseQuery!(T)(this, ray);
     }
 }
 
-struct SphereTraverseAggregate(T)
+struct AABBTraverseQuery(T)
+{
+    BVHNode!T node;
+    AABB* aabb;
+    
+    int opApply(int delegate(ref T) dg)
+    {
+        int result = 0;
+        
+        if (node.aabb.intersectsAABB(*aabb))
+        {
+            if (node.child[0] !is null)
+            {
+                result = node.child[0].traverseByAABB(aabb).opApply(dg);
+                if (result)
+                    return result;
+            }
+            
+            if (node.child[1] !is null)
+            {
+                result = node.child[1].traverseByAABB(aabb).opApply(dg);
+                if (result)
+                    return result;
+            }
+            
+            foreach(ref obj; node.objects.data)
+                dg(obj);
+        }
+        else
+            return result;
+            
+        return result;
+    }
+}
+
+struct SphereTraverseQuery(T)
 {
     BVHNode!T node;
     Sphere* sphere;
@@ -192,12 +232,12 @@ struct SphereTraverseAggregate(T)
     }
 }
 
-struct RayTraverseAggregate(T)
+struct RayTraverseQuery(T)
 {
     BVHNode!T node;
     Ray* ray;
     
-    int opApply(int delegate(ref T) dg) // TODO: nearest intersection point
+    int opApply(int delegate(ref T) dg)
     {
         int result = 0;
         
@@ -227,51 +267,6 @@ struct RayTraverseAggregate(T)
         return result;
     }
 }
-
-/+
-void traverseBySphere(T)(BVHNode!T node, ref Sphere sphere /*, void delegate(ref T) func*/)
-{
-    Vector3f cn;
-    float pd;
-    if (node.aabb.intersectsSphere(sphere, cn, pd))
-    {
-        //if (node.child[0] !is null)
-        //    node.child[0].traverseBySphere(sphere, func);
-        //if (node.child[1] !is null)
-        //    node.child[1].traverseBySphere(sphere, func);
-
-        //foreach(ref obj; node.objects.data)
-        //    func(obj);
-    }
-}
-+/
-/*
-void traverse(T)(BVHNode!T node, void delegate(BVHNode!T) func)
-{
-    if (node.child[0] !is null)
-        node.child[0].traverse(func);
-    if (node.child[1] !is null)
-        node.child[1].traverse(func);
-
-    func(node);
-}
-*/
-/*
-void traverseByRay(T)(BVHNode!T node, Ray ray, void delegate(ref T) func)
-{
-    float it = 0.0f;
-    if (node.aabb.intersectsSegment(ray.p0, ray.p1, it))
-    {
-        if (node.child[0] !is null)
-            node.child[0].traverseByRay(ray, func);
-        if (node.child[1] !is null)
-            node.child[1].traverseByRay(ray, func);
-
-        foreach(ref obj; node.objects.data)
-            func(obj);
-    }
-}
-*/
 
 // TODO:
 // - support multithreading (2 children = 2 threads)
@@ -308,15 +303,13 @@ class BVHTree(T)
         root.free();
         Delete(this);
     }
-    
-    import std.stdio;
 
     BVHNode!T construct(
-         Array!T objects,
-         uint rec,
-         uint maxObjectsPerNode,
-         uint maxRecursionDepth,
-         Heuristic splitHeuristic)
+        Array!T objects,
+        uint rec,
+        uint maxObjectsPerNode,
+        uint maxRecursionDepth,
+        Heuristic splitHeuristic)
     {
         BVHNode!T node = New!(BVHNode!T)(duplicate(objects));
 
@@ -440,4 +433,3 @@ class BVHTree(T)
         return 2.0f * (width * height + width * depth + height * depth);
     }
 }
-

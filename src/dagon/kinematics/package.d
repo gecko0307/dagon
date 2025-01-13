@@ -29,6 +29,7 @@ module dagon.kinematics;
 
 public
 {
+    import dagon.kinematics.bvh;
     import dagon.kinematics.collision;
     import dagon.kinematics.contact;
     import dagon.kinematics.geometry;

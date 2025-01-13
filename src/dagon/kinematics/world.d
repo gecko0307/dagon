@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 module dagon.kinematics.world;
 
 import std.math;
+import std.algorithm;
 
 import dlib.core.memory;
 import dlib.core.ownership;
@@ -35,7 +36,9 @@ import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
+import dlib.geometry.sphere;
 import dlib.geometry.triangle;
+import dlib.geometry.intersection;
 
 import dagon.core.time;
 import dagon.core.event;
@@ -53,6 +56,8 @@ class KinematicWorld: Owner
     EventManager eventManager;
     Array!Collider staticColliders;
     Array!Collider dynamicColliders;
+    CollisionShape proxyTriangleShape;
+    GeomTriangle proxyTriangleGeom;
     
     Vector3f gravityVector = Vector3f(0.0f, -1.0f, 0.0f);
     float gravity = 9.8f;
@@ -63,6 +68,12 @@ class KinematicWorld: Owner
     {
         super(o);
         this.eventManager = eventManager;
+        
+        proxyTriangleGeom = New!GeomTriangle(
+            Vector3f(-1.0f, 0.0f, -1.0f),
+            Vector3f(+1.0f, 0.0f,  0.0f),
+            Vector3f(-1.0f, 0.0f, +1.0f), this);
+        proxyTriangleShape = New!CollisionShape(proxyTriangleGeom, this);
     }
     
     ~this()
@@ -80,6 +91,13 @@ class KinematicWorld: Owner
         }
         
         Collider collider = New!Collider(this, entity, collisionShape);
+        staticColliders.append(collider);
+        return collider;
+    }
+    
+    Collider addStaticMeshCollider(Entity entity)
+    {
+        Collider collider = New!Collider(this, entity);
         staticColliders.append(collider);
         return collider;
     }
@@ -103,72 +121,120 @@ class KinematicWorld: Owner
         {
             auto dynamicCollider = dynamicColliders.data[i];
             dynamicCollider.move(dynamicCollider.gravityVector * gravity * deltaTime);
-            dynamicCollider.applyVelocity(deltaTime);
+            dynamicCollider.integrateVelocity(deltaTime);
             dynamicCollider.onFloor = false;
             dynamicCollider.gravityVector = gravityVector;
             dynamicCollider.headContact = false;
             
-            float minHeadContactY = float.max;
-            
             // Static collisions
-            for (size_t j = 0; j < staticColliders.data.length; j++)
+            foreach(iteration; 0..40)
             {
-                auto staticCollider = staticColliders.data[j];
-                Contact contact;
+                Contact contactSum;
+                contactSum.point = Vector3f(0.0f, 0.0f, 0.0f);
+                contactSum.normal = Vector3f(0.0f, 0.0f, 0.0f);
+                contactSum.penetration = 0.0f;
                 
-                if (shapeVsShape(
-                    dynamicCollider.collisionShape,
-                    staticCollider.collisionShape,
-                    contact))
+                uint numContacts = 0;
+                
+                for (size_t j = 0; j < staticColliders.data.length; j++)
                 {
-                    float verticalProj = dot(contact.normal, gravityVector);
+                    auto staticCollider = staticColliders.data[j];
                     
-                    Vector3f normalResponce = contact.normal * contact.penetration;
-                    
-                    bool resolveContact = true;
-                    if (verticalProj > 0.5f && contact.point.y > dynamicCollider.position.y && contact.point.y < minHeadContactY)
+                    if (staticCollider.collisionShape)
                     {
-                        dynamicCollider.headContact = true;
-                        dynamicCollider.jumpSpeedDelta = -10.0f * deltaTime;
-                        resolveContact = dynamicCollider.resolveHeadContacts;
-                    }
-                    else
-                    {
-                        float onFloor = abs(verticalProj);
-                        if (!dynamicCollider.onFloor)
+                        Contact contact;
+                        if (shapeVsShape(dynamicCollider.collisionShape, staticCollider.collisionShape, contact))
                         {
-                            if (onFloor > onFloorThreshold)
+                            contactSum.normal = slerp(contactSum.normal, contact.normal, 0.5f);
+                            contactSum.point = (contactSum.point + contact.point) * 0.5f;
+                            contactSum.penetration = (contactSum.penetration + contact.penetration) * 0.5f;
+                            numContacts++;
+                        }
+                    }
+                    /*
+                    else if (staticCollider.bvh)
+                    {
+                        Sphere sphere = dynamicCollider.collisionShape.boundingSphere;
+                        
+                        foreach(tri; staticCollider.bvh.root.traverseBySphere(&sphere))
+                        {
+                            proxyTriangleShape.transformation = translationMatrix(tri.barycenter);
+                            proxyTriangleGeom.v[0] = tri.v[0] - tri.barycenter;
+                            proxyTriangleGeom.v[1] = tri.v[1] - tri.barycenter;
+                            proxyTriangleGeom.v[2] = tri.v[2] - tri.barycenter;
+                            
+                            Contact contact;
+                            if (shapeVsShape(dynamicCollider.collisionShape, proxyTriangleShape, contact))
                             {
-                                dynamicCollider.onFloor = true;
-                                
-                                Vector3f grav;
-                                if (onFloor > 0.95f)
-                                    grav = -contact.normal;
-                                else
-                                    grav = lerp(dynamicCollider.gravityVector, -contact.normal, onFloor);
-                                dynamicCollider.gravityVector = grav;
+                                contactSum.normal = slerp(contactSum.normal, tri.normal, 0.5f);
+                                contactSum.point = (contactSum.point + contact.point) * 0.5f;
+                                contactSum.penetration = (contactSum.penetration + contact.penetration) * 0.5f;
+                                numContacts++;
                             }
                         }
                     }
-                    
-                    if (resolveContact)
-                        dynamicCollider.moveSmooth(normalResponce, 0.8f);
+                    */
+                }
+                
+                if (numContacts > 0)
+                {
+                    contactSum.normal = contactSum.normal.normalized;
+                    resolveContact(this, dynamicCollider, contactSum, deltaTime, 0.2f);
+                    dynamicCollider.updateShapePosition(dynamicCollider.position + dynamicCollider.virtualVelocity);
                 }
             }
             
-            // TODO: dynamic collisions
+            dynamicCollider.integrateVirtualVelocity();
             
-            dynamicCollider.integrate();
+            // TODO: dynamic collisions
         }
     }
+}
+
+void resolveContact(KinematicWorld world, Collider collider, Contact contact, double deltaTime, float smooth = 1.0f)
+{
+    float verticalProj = dot(contact.normal, world.gravityVector);
+    
+    Vector3f normalResponce = contact.normal * contact.penetration;
+    
+    bool resolveContact = true;
+    if (verticalProj > 0.5f && contact.point.y > collider.position.y)
+    {
+        collider.headContact = true;
+        collider.jumpSpeedDelta = -10.0f * deltaTime;
+        resolveContact = collider.resolveHeadContacts;
+    }
+    else
+    {
+        float onFloor = abs(verticalProj);
+        if (!collider.onFloor)
+        {
+            if (onFloor > world.onFloorThreshold)
+            {
+                collider.onFloor = true;
+                
+                Vector3f grav;
+                if (onFloor > 0.95f)
+                    grav = -contact.normal;
+                else
+                    grav = lerp(collider.gravityVector, -contact.normal, onFloor);
+                collider.gravityVector = grav;
+            }
+        }
+    }
+    
+    if (resolveContact)
+        collider.virtualMoveSmooth(normalResponce, smooth);
 }
 
 class Collider: EntityComponent
 {
     KinematicWorld kinematicWorld;
     CollisionShape collisionShape;
+    BVHTree!Triangle bvh;
     Vector3f position = Vector3f(0.0f, 0.0f, 0.0f);
     Vector3f velocity = Vector3f(0.0f, 0.0f, 0.0f);
+    Vector3f virtualVelocity = Vector3f(0.0f, 0.0f, 0.0f);
     Vector3f gravityVector = Vector3f(0.0f, -1.0f, 0.0f);
     bool headContact = false;
     bool resolveHeadContacts = true;
@@ -188,6 +254,18 @@ class Collider: EntityComponent
         position = e.position;
     }
     
+    ~this()
+    {
+        if (bvh) bvh.free();
+    }
+    
+    this(KinematicWorld world, Entity e)
+    {
+        super(world.eventManager, e);
+        kinematicWorld = world;
+        bvh = entityToBVH(e);
+    }
+    
     void move(Vector3f deltaVelocity)
     {
         velocity += deltaVelocity;
@@ -196,6 +274,11 @@ class Collider: EntityComponent
     void moveSmooth(Vector3f deltaVelocity, float smooth)
     {
         velocity = lerp(velocity, velocity + deltaVelocity, smooth);
+    }
+    
+    void virtualMoveSmooth(Vector3f deltaVelocity, float smooth)
+    {
+        virtualVelocity += deltaVelocity * smooth;
     }
     
     void jump(float deltaSpeed)
@@ -207,37 +290,51 @@ class Collider: EntityComponent
         }
     }
     
-    void applyVelocity(double deltaTime)
+    void integrateVelocity(double deltaTime)
     {
+        if (collisionShape is null) return;
+        
         if (jumpSpeedDelta > 0.0f)
             jumpSpeedDelta -= jumpDamping * deltaTime;
         else jumpSpeedDelta = 0.0f;
         
         velocity -= kinematicWorld.gravityVector * jumpSpeedDelta;
         
+        position += velocity;
+    }
+    
+    void integrateVirtualVelocity()
+    {
+        float speed = velocity.length;
+        if (virtualVelocity.length > speed)
+        {
+            virtualVelocity = virtualVelocity.normalized * speed;
+        }
+        
+        position += virtualVelocity;
+        entity.position = position;
+        updateShapePosition(position);
+        velocity = Vector3f(0.0f, 0.0f, 0.0f);
+        virtualVelocity = Vector3f(0.0f, 0.0f, 0.0f);
+    }
+    
+    void updateShapePosition(Vector3f newPos)
+    {
         Matrix4x4f trans = collisionShape.transformation;
-        Vector3f newPos = trans.translation + velocity;
         trans.a14 = newPos.x;
         trans.a24 = newPos.y;
         trans.a34 = newPos.z;
         collisionShape.transformation = trans;
-        
-        position = newPos;
-    }
-    
-    void integrate()
-    {
-        entity.position += velocity;
-        velocity = Vector3f(0.0f, 0.0f, 0.0f);
     }
     
     override void update(Time t)
     {
+        if (collisionShape is null) return;
         collisionShape.transformation = entity.transformation;
     }
 }
 
-void collectEntityTrisRecursive(Entity e, ref Array!Triangle tris)
+void collectEntityTris(Entity e, ref Array!Triangle tris, bool recursive = true)
 {
     if (!e.dynamic && e.solid && e.drawable)
     {
@@ -261,12 +358,11 @@ void collectEntityTrisRecursive(Entity e, ref Array!Triangle tris)
                 Vector3f v1 = tri.v[0];
                 Vector3f v2 = tri.v[1];
                 Vector3f v3 = tri.v[2];
-                Vector3f n = tri.normal;
+                Vector3f n = tri.normal * normalMatrix;
 
                 v1 = v1 * e.absoluteTransformation;
                 v2 = v2 * e.absoluteTransformation;
                 v3 = v3 * e.absoluteTransformation;
-                n = n * normalMatrix;
 
                 Triangle tri2 = tri;
                 tri2.v[0] = v1;
@@ -279,20 +375,39 @@ void collectEntityTrisRecursive(Entity e, ref Array!Triangle tris)
         }
     }
 
-    foreach(c; e.children)
-        collectEntityTrisRecursive(c, tris);
+    if (recursive)
+    {
+        foreach(c; e.children)
+            collectEntityTris(c, tris, recursive);
+    }
 }
 
-BVHTree!Triangle entitiesToBVH(Entity[] entities)
+BVHTree!Triangle entityToBVH(Entity rootEntity, bool recursive = true)
+{
+    Array!Triangle tris;
+
+    collectEntityTris(rootEntity, tris);
+
+    if (tris.length)
+    {
+        BVHTree!Triangle bvh = New!(BVHTree!Triangle)(tris, 4, 10, Heuristic.HMA);
+        tris.free();
+        return bvh;
+    }
+    else
+        return null;
+}
+
+BVHTree!Triangle entitiesToBVH(T)(T entities, bool recursive = true)
 {
     Array!Triangle tris;
 
     foreach(e; entities)
-        collectEntityTrisRecursive(e, tris);
+        collectEntityTris(e, tris, recursive);
 
     if (tris.length)
     {
-        BVHTree!Triangle bvh = New!(BVHTree!Triangle)(tris, 4);
+        BVHTree!Triangle bvh = New!(BVHTree!Triangle)(tris, 8);
         tris.free();
         return bvh;
     }
