@@ -62,8 +62,11 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
     Vector3f sensorSize;
     //bool sensorColliding = false;
     bool groundContact = false;
+    bool isJumping = false;
+    bool isFalling = false;
     
     Vector3f groundPosition = Vector3f(0.0f, 0.0f, 0.0f);
+    Vector3f groundContactPosition = Vector3f(0.0f, 0.0f, 0.0f);
     Vector3f groundNormal = Vector3f(0.0f, 1.0f, 0.0f);
     float maxRayDistance = 100.0f;
     protected float closestHit = 1.0f;
@@ -126,6 +129,8 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
             if (groundProj > 0.2f)
             {
                 groundContact = true;
+                groundPosition = contactPoint;
+                groundContactPosition = contactPoint;
             }
         }
     }
@@ -192,12 +197,23 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
         onGround = groundContact; // || sensorColliding
         //sensorColliding = false;
         groundContact = false;
-        /*
+        
         if (raycast(entity.position, entity.position + Vector3f(0.0f, -maxRayDistance, 0.0f)))
         {
             onGround = onGround || (entity.position.y - groundPosition.y) <= halfHeight;
         }
-        */
+        
+        if (!onGround)
+        {
+            float verticalSpeed = rbody.velocity.y;
+            isJumping = verticalSpeed >  2.0f;
+            isFalling = verticalSpeed < -2.0f;
+        }
+        else
+        {
+            isJumping = false;
+            isFalling = false;
+        }
     }
     
     void move(Vector3f direction, float speed)
