@@ -10,7 +10,11 @@ Dagon 0.19.0 - TBD
   - `Entity.probeExtents` now sets the half-size of a probe
   - Breaking change: all the renderer modules moved from `dagon.game` to `dagon.render`
 - **Kinematics**
-  - New package `dagon.kinematics` - collision detection and responce system.
+  - New package `dagon.kinematics` - basic collision detection and responce system.
+- **Extensions**
+  - `dagon:newton`:
+    - `NewtonCharacterComponent` improvements
+    - `NewtonRigidBody.sensorCallback`, `NewtonRigidBody.contactCallback`
 
 Dagon 0.18.0 - 10 Dec, 2024
 ---------------------------
