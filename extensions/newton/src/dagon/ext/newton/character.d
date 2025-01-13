@@ -50,7 +50,7 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
     NewtonSphereShape upperShape;
     NewtonCompoundShape shape;
     NewtonRigidBody rbody;
-    NewtonRigidBody sensorBody;
+    //NewtonRigidBody sensorBody;
     float height;
     float mass;
     bool onGround = false;
@@ -60,7 +60,8 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
     float shapeRadius;
     float eyeHeight;
     Vector3f sensorSize;
-    bool sensorColliding = false;
+    //bool sensorColliding = false;
+    bool groundContact = false;
     
     Vector3f groundPosition = Vector3f(0.0f, 0.0f, 0.0f);
     Vector3f groundNormal = Vector3f(0.0f, 1.0f, 0.0f);
@@ -99,6 +100,9 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
         rbody.gravity = Vector3f(0.0f, -20.0f, 0.0f);
         NewtonBodySetAutoSleep(rbody.newtonBody, false);
         
+        rbody.contactCallback = &onContact;
+        
+        /*
         sensorSize = Vector3f(radius * 0.8f, radius, radius * 0.8f);
         auto sensorShape = New!NewtonBoxShape(sensorSize, world);
         sensorShape.setTransformation(translationMatrix(Vector3f(0.0f, -radius, 0.0f)));
@@ -106,13 +110,32 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
         sensorBody.groupId = world.sensorGroupId;
         sensorBody.sensor = true;
         sensorBody.raycastable = false;
-        sensorBody.collisionCallback = &onSensorCollision;
+        sensorBody.sensorCallback = &onSensorCollision;
+        */
     }
     
+    void onContact(NewtonRigidBody selfBody, NewtonRigidBody otherBody, const void* contact)
+    {
+        if (contact)
+        {
+            NewtonMaterial* mat = NewtonContactGetMaterial(contact);
+            Vector3f contactPoint;
+            Vector3f contactNormal;
+            NewtonMaterialGetContactPositionAndNormal(mat, selfBody.newtonBody, contactPoint.arrayof.ptr, contactNormal.arrayof.ptr);
+            float groundProj = dot(contactNormal, Vector3f(0.0f, 1.0f, 0.0f));
+            if (groundProj > 0.2f)
+            {
+                groundContact = true;
+            }
+        }
+    }
+    
+    /*
     void onSensorCollision(NewtonRigidBody sensorBody, NewtonRigidBody otherBody)
     {
         sensorColliding = true;
     }
+    */
     
     float onRayHit(NewtonRigidBody nbody, Vector3f hitPoint, Vector3f hitNormal, float t)
     {
@@ -143,8 +166,8 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
         velocityChange.y = 0.0f;
         rbody.velocity = rbody.velocity + velocityChange;
         
-        auto m = rbody.transformation;
-        NewtonBodySetMatrixNoSleep(sensorBody.newtonBody, m.arrayof.ptr);
+        //auto m = rbody.transformation;
+        //NewtonBodySetMatrixNoSleep(sensorBody.newtonBody, m.arrayof.ptr);
         
         targetVelocity = Vector3f(0.0f, 0.0f, 0.0f);
     }
@@ -166,12 +189,15 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
 
         prevTransformation = entity.transformation;
         
-        onGround = sensorColliding;
-        sensorColliding = false;
+        onGround = groundContact; // || sensorColliding
+        //sensorColliding = false;
+        groundContact = false;
+        /*
         if (raycast(entity.position, entity.position + Vector3f(0.0f, -maxRayDistance, 0.0f)))
         {
             onGround = onGround || (entity.position.y - groundPosition.y) <= halfHeight;
         }
+        */
     }
     
     void move(Vector3f direction, float speed)

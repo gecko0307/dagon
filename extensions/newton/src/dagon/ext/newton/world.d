@@ -41,10 +41,10 @@ import dagon.ext.newton.rigidbody;
 extern(C)
 {
     dFloat newtonWorldRayFilterCallback(
-        const NewtonBody* nbody,
-        const NewtonCollision* shapeHit,
-        const dFloat* hitContact,
-        const dFloat* hitNormal,
+        const(NewtonBody)* nbody,
+        const(NewtonCollision)* shapeHit,
+        const(dFloat)* hitContact,
+        const(dFloat)* hitNormal,
         dLong collisionID,
         void* userData,
         dFloat intersectParam)
@@ -69,15 +69,15 @@ extern(C)
     }
 
     uint newtonWorldRayPrefilterCallback(
-        const NewtonBody* nbody,
-        const NewtonCollision* collision,
+        const(NewtonBody)* nbody,
+        const(NewtonCollision)* collision,
         void* userData)
     {
         return 1;
     }
     
     void newtonSensorContactsProcess(
-        const NewtonJoint* contactJoint,
+        const(NewtonJoint)* contactJoint,
         dFloat timestep,
         int threadIndex)
     {
@@ -99,12 +99,36 @@ extern(C)
             
             if (body0 && body0.isSensor)
             {
-                body0.onCollision(body1);
+                body0.onSensorCollision(body1);
             }
             else if (body1 && body1.isSensor)
             {
-                body1.onCollision(body0);
+                body1.onSensorCollision(body0);
             }
+        }
+    }
+    
+    void newtonKinematicContactsProcess(
+        const(NewtonJoint)* contactJoint,
+        dFloat timestep,
+        int threadIndex)
+    {
+        NewtonBody* b0 = NewtonJointGetBody0(contactJoint);
+        NewtonBody* b1 = NewtonJointGetBody1(contactJoint);
+        NewtonRigidBody body0 = cast(NewtonRigidBody)NewtonBodyGetUserData(b0);
+        NewtonRigidBody body1 = cast(NewtonRigidBody)NewtonBodyGetUserData(b1);
+        
+        void* nextContact;
+        uint numContacts = 0;
+        for (void* contact = NewtonContactJointGetFirstContact(contactJoint); contact; contact = nextContact)
+        {
+            if (body0)
+                body0.onContact(body1, contact);
+            else if (body1)
+                body1.onContact(body0, contact);
+            
+            nextContact = NewtonContactJointGetNextContact(contactJoint, contact);
+            numContacts++;
         }
     }
     
@@ -154,6 +178,7 @@ class NewtonPhysicsWorld: Owner
         NewtonMaterialSetDefaultFriction(newtonWorld, defaultGroupId, kinematicGroupId, 0.5f, 0.0f);
         NewtonMaterialSetCollisionCallback(newtonWorld, sensorGroupId, defaultGroupId, null, &newtonSensorContactsProcess);
         NewtonMaterialSetCollisionCallback(newtonWorld, kinematicGroupId, sensorGroupId, &newtonSensorOnAABBOverlapCancelCallback, null);
+        NewtonMaterialSetCollisionCallback(newtonWorld, kinematicGroupId, defaultGroupId, null, &newtonKinematicContactsProcess);
     }
     
     int createGroupId()

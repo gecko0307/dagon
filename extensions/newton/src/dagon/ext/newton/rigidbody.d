@@ -76,7 +76,8 @@ class NewtonRigidBody: Owner
     bool enableRotation = true;
     bool raycastable = true;
     bool sensor = false;
-    void delegate(NewtonRigidBody, NewtonRigidBody) collisionCallback;
+    void delegate(NewtonRigidBody, NewtonRigidBody) sensorCallback;
+    void delegate(NewtonRigidBody, NewtonRigidBody, const void*) contactCallback;
 
     bool isRaycastable()
     {
@@ -101,10 +102,15 @@ class NewtonRigidBody: Owner
         NewtonBodySetMassProperties(newtonBody, mass, shape.newtonCollision);
         NewtonBodySetForceAndTorqueCallback(newtonBody, &newtonBodyForceCallback);
         
-        collisionCallback = &defaultCollisionCallback;
+        sensorCallback = &defaultSensorCallback;
+        contactCallback = &defaultContactCallback;
     }
     
-    void defaultCollisionCallback(NewtonRigidBody, NewtonRigidBody)
+    void defaultSensorCallback(NewtonRigidBody, NewtonRigidBody)
+    {
+    }
+    
+    void defaultContactCallback(NewtonRigidBody, NewtonRigidBody, const void*)
     {
     }
 
@@ -204,9 +210,14 @@ class NewtonRigidBody: Owner
         NewtonBodyAddImpulse(newtonBody, deltaVelocity.arrayof.ptr, impulsePoint.arrayof.ptr, dt);
     }
     
-    void onCollision(NewtonRigidBody otherBody)
+    void onSensorCollision(NewtonRigidBody otherBody)
     {
-        collisionCallback(this, otherBody);
+        sensorCallback(this, otherBody);
+    }
+    
+    void onContact(NewtonRigidBody otherBody, const void* contact)
+    {
+        contactCallback(this, otherBody, contact);
     }
 }
 
