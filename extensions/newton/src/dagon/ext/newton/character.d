@@ -107,7 +107,7 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
     
     void onContact(NewtonRigidBody selfBody, NewtonRigidBody otherBody, const void* contact)
     {
-        if (contact)
+        if (contact && !groundContact)
         {
             NewtonMaterial* mat = NewtonContactGetMaterial(contact);
             Vector3f contactPoint;
