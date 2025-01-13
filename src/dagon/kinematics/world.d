@@ -35,10 +35,14 @@ import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
+import dlib.geometry.triangle;
 
 import dagon.core.time;
 import dagon.core.event;
 import dagon.graphics.entity;
+import dagon.graphics.mesh;
+import dagon.graphics.terrain;
+import dagon.kinematics.bvh;
 import dagon.kinematics.geometry;
 import dagon.kinematics.shape;
 import dagon.kinematics.contact;
@@ -231,4 +235,67 @@ class Collider: EntityComponent
     {
         collisionShape.transformation = entity.transformation;
     }
+}
+
+void collectEntityTrisRecursive(Entity e, ref Array!Triangle tris)
+{
+    if (!e.dynamic && e.solid && e.drawable)
+    {
+        e.update(Time(0.0, 0.0));
+        Matrix4x4f normalMatrix = e.invAbsoluteTransformation.transposed;
+
+        Mesh mesh = cast(Mesh)e.drawable;
+        if (mesh is null)
+        {
+            Terrain t = cast(Terrain)e.drawable;
+            if (t)
+            {
+                mesh = t.collisionMesh;
+            }
+        }
+
+        if (mesh)
+        {
+            foreach(tri; mesh)
+            {
+                Vector3f v1 = tri.v[0];
+                Vector3f v2 = tri.v[1];
+                Vector3f v3 = tri.v[2];
+                Vector3f n = tri.normal;
+
+                v1 = v1 * e.absoluteTransformation;
+                v2 = v2 * e.absoluteTransformation;
+                v3 = v3 * e.absoluteTransformation;
+                n = n * normalMatrix;
+
+                Triangle tri2 = tri;
+                tri2.v[0] = v1;
+                tri2.v[1] = v2;
+                tri2.v[2] = v3;
+                tri2.normal = n;
+                tri2.barycenter = (tri2.v[0] + tri2.v[1] + tri2.v[2]) / 3;
+                tris.append(tri2);
+            }
+        }
+    }
+
+    foreach(c; e.children)
+        collectEntityTrisRecursive(c, tris);
+}
+
+BVHTree!Triangle entitiesToBVH(Entity[] entities)
+{
+    Array!Triangle tris;
+
+    foreach(e; entities)
+        collectEntityTrisRecursive(e, tris);
+
+    if (tris.length)
+    {
+        BVHTree!Triangle bvh = New!(BVHTree!Triangle)(tris, 4);
+        tris.free();
+        return bvh;
+    }
+    else
+        return null;
 }
