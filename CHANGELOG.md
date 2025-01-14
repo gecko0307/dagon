@@ -2,6 +2,7 @@ Dagon 0.19.0 - TBD
 ------------------
 - **Core**
   - `InputManager` now supports whitespace-separated keycode names in bindings. Instead of the whitespace, `+` sign is used, e.g. `kb_left+ctrl` for `left ctrl`
+  - `Application` now sets console encoding to UTF-8 under Windows
 - **Rendering**
   - `SimpleRenderer` - a lightweight renderer for casual and stylized game graphics
   - Box projection support for environment probes. It can be enabled with `Entity.probeUseBoxProjection` property
@@ -10,11 +11,13 @@ Dagon 0.19.0 - TBD
   - `Entity.probeExtents` now sets the half-size of a probe
   - Breaking change: all the renderer modules moved from `dagon.game` to `dagon.render`
 - **Kinematics**
-  - New package `dagon.kinematics` - basic collision detection and responce system.
+  - New package `dagon.kinematics` - basic collision detection and responce system
 - **Extensions**
   - `dagon:newton`:
     - `NewtonCharacterComponent` improvements
     - `NewtonRigidBody.sensorCallback`, `NewtonRigidBody.contactCallback`
+  - `dagon:ftfont`:
+    - Rename the Windows library to `freetype-6.dll`.
 
 Dagon 0.18.0 - 10 Dec, 2024
 ---------------------------
