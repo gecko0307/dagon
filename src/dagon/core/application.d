@@ -48,6 +48,16 @@ import dagon.core.bindings;
 import dagon.core.event;
 import dagon.core.time;
 
+version(Windows)
+{ 
+    import core.sys.windows.windows: SetConsoleCP, SetConsoleOutputCP;
+    static this()
+    { 
+        SetConsoleCP(65001);
+        SetConsoleOutputCP(65001);
+    } 
+}
+
 void exitWithError(string message = "")
 {
     if (message.length)
