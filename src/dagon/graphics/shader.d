@@ -220,7 +220,6 @@ if (is(T == bool) ||
     {
         super(shader, name);
         this.source = null;
-        this.value = value;
         this.callback = callback;
         initUniform();
     }
