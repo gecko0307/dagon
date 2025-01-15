@@ -57,7 +57,7 @@ class PassDecal: RenderPass
     {
         if (group)
         {
-            gbuffer.bind();
+            bindFramebuffer(gbuffer.framebuffer);
 
             glScissor(0, 0, gbuffer.width, gbuffer.height);
             glViewport(0, 0, gbuffer.width, gbuffer.height);
@@ -78,8 +78,6 @@ class PassDecal: RenderPass
             decalShader.unbind();
 
             glEnable(GL_DEPTH_TEST);
-
-            gbuffer.unbind();
         }
     }
 }

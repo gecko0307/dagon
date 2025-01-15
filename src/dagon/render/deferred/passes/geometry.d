@@ -66,7 +66,7 @@ class PassGeometry: RenderPass
         
         if (group && gbuffer)
         {
-            gbuffer.bind();
+            bindFramebuffer(gbuffer.framebuffer);
             
             glScissor(0, 0, gbuffer.width, gbuffer.height);
             glViewport(0, 0, gbuffer.width, gbuffer.height);
@@ -90,8 +90,6 @@ class PassGeometry: RenderPass
                 }
             }
             geometryShader.unbind();
-            
-            gbuffer.unbind();
         }
     }
 }

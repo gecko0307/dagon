@@ -61,7 +61,7 @@ class PassEmission: RenderPass
     {
         if (outputBuffer && gbuffer)
         {
-            outputBuffer.bind();
+            bindFramebuffer(outputBuffer.framebuffer);
 
             state.colorTexture = gbuffer.colorTexture;
             state.depthTexture = gbuffer.depthTexture;
@@ -88,8 +88,6 @@ class PassEmission: RenderPass
             emissionShader.unbind();
 
             glDisable(GL_BLEND);
-
-            outputBuffer.unbind();
         }
     }
 }

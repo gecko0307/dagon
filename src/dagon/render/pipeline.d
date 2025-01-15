@@ -39,6 +39,18 @@ import dagon.graphics.entity;
 import dagon.graphics.environment;
 import dagon.render.pass;
 
+__gshared GLuint currentFramebuffer = 0;
+
+// Does nothing if the buffer already bound
+void bindFramebuffer(GLuint fb)
+{
+    if (fb != currentFramebuffer)
+    {
+        currentFramebuffer = fb;
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb);
+    }
+}
+
 class RenderPipeline: EventListener
 {
     Array!RenderPass passes;

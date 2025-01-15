@@ -74,7 +74,7 @@ class PassDebugOutput: RenderPass
         if (view && gbuffer)
         {
             if (outputBuffer)
-                outputBuffer.bind();
+                bindFramebuffer(outputBuffer.framebuffer);
 
             state.colorTexture = gbuffer.colorTexture;
             state.depthTexture = gbuffer.depthTexture;
@@ -105,9 +105,6 @@ class PassDebugOutput: RenderPass
             screenSurface.render(&state);
             debugOutputShader.unbindParameters(&state);
             debugOutputShader.unbind();
-
-            if (outputBuffer)
-                outputBuffer.unbind();
         }
     }
 }

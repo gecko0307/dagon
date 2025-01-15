@@ -61,7 +61,7 @@ class PassEnvironment: RenderPass
     {
         if (outputBuffer && gbuffer)
         {
-            outputBuffer.bind();
+            bindFramebuffer(outputBuffer.framebuffer);
 
             state.colorTexture = gbuffer.colorTexture;
             state.depthTexture = gbuffer.depthTexture;
@@ -77,19 +77,11 @@ class PassEnvironment: RenderPass
             glScissor(0, 0, outputBuffer.width, outputBuffer.height);
             glViewport(0, 0, outputBuffer.width, outputBuffer.height);
 
-            // Additive blending
-            //glEnable(GL_BLEND);
-            //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
             environmentShader.bind();
             environmentShader.bindParameters(&state);
             screenSurface.render(&state);
             environmentShader.unbindParameters(&state);
             environmentShader.unbind();
-
-            //glDisable(GL_BLEND);
-
-            outputBuffer.unbind();
         }
     }
 }

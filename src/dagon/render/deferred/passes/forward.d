@@ -102,9 +102,8 @@ class PassForward: RenderPass
             
             prepareFramebuffer();
             
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
+            bindFramebuffer(framebuffer);
 
-            // TODO: move depth blit to separate stage
             glBindFramebuffer(GL_READ_FRAMEBUFFER, gbuffer.framebuffer);
             glBlitFramebuffer(0, 0, gbuffer.width, gbuffer.height, 0, 0, gbuffer.width, gbuffer.height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
             glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
@@ -139,8 +138,6 @@ class PassForward: RenderPass
 
             glDisablei(GL_BLEND, 0);
             glDisablei(GL_BLEND, 1);
-
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
         }
     }
 }

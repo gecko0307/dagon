@@ -110,8 +110,7 @@ class PassTerrain: RenderPass
         uint terrains = 0;
         
         prepareFramebuffer();
-        
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
+        bindFramebuffer(framebuffer);
         
         glScissor(0, 0, gbuffer.width, gbuffer.height);
         glViewport(0, 0, gbuffer.width, gbuffer.height);
@@ -137,8 +136,6 @@ class PassTerrain: RenderPass
         }
         terrainShader.unbind();
         
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-        
         // Texturing passes
         // TODO: do it for each terrain entity (need to manage state properly)
         TerrainMaterial terrainMaterial = pipeline.environment.terrainMaterial;
@@ -146,7 +143,7 @@ class PassTerrain: RenderPass
         {
             updateState();
             
-            gbuffer.bind();
+            bindFramebuffer(gbuffer.framebuffer);
             
             state.normalTexture = normalBuffer.colorTexture;
             state.texcoordTexture = texcoordBuffer.colorTexture;
@@ -185,8 +182,6 @@ class PassTerrain: RenderPass
             glDisablei(GL_BLEND, 1);
             glDisablei(GL_BLEND, 2);
             glDisablei(GL_BLEND, 3);
-            
-            gbuffer.unbind();
         }
     }
 }

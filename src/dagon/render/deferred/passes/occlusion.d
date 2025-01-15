@@ -58,10 +58,9 @@ class PassOcclusion: RenderPass
 
     override void render()
     {
-        if (view && gbuffer)
+        if (view && gbuffer && outputBuffer)
         {
-            if (outputBuffer)
-                outputBuffer.bind();
+            bindFramebuffer(outputBuffer.framebuffer);
 
             state.colorTexture = gbuffer.colorTexture;
             state.depthTexture = gbuffer.depthTexture;
@@ -77,9 +76,6 @@ class PassOcclusion: RenderPass
             screenSurface.render(&state);
             ssaoShader.unbindParameters(&state);
             ssaoShader.unbind();
-
-            if (outputBuffer)
-                outputBuffer.unbind();
         }
     }
 }

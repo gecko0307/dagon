@@ -59,7 +59,7 @@ class PassEnvironmentProbe: RenderPass
     {
         if (outputBuffer && gbuffer)
         {
-            outputBuffer.bind();
+            bindFramebuffer(outputBuffer.framebuffer);
             
             state.colorTexture = gbuffer.colorTexture;
             state.depthTexture = gbuffer.depthTexture;
@@ -94,8 +94,6 @@ class PassEnvironmentProbe: RenderPass
             
             glEnable(GL_DEPTH_TEST);
             glDisable(GL_BLEND);
-            
-            outputBuffer.unbind();
         }
     }
 }

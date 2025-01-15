@@ -68,7 +68,7 @@ class PassParticles: RenderPass
     {
         if (group && outputBuffer && gbuffer)
         {
-            outputBuffer.bind();
+            bindFramebuffer(outputBuffer.framebuffer);
 
             state.depthTexture = gbuffer.depthTexture;
             state.environment = pipeline.environment;
@@ -95,8 +95,6 @@ class PassParticles: RenderPass
             particleShader.unbind();
 
             glDisable(GL_BLEND);
-
-            outputBuffer.unbind();
         }
     }
 }
