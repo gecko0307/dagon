@@ -43,7 +43,12 @@ import dagon.ext.newton.world;
 import dagon.ext.newton.shape;
 import dagon.ext.newton.rigidbody;
 
-class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
+/*
+ * A simple rigidbody-based character controller.
+ * Collision model consists of two spheres, one on top of another.
+ * Supports jumping and crouching.
+ */
+class NewtonCharacterController: EntityComponent, NewtonRaycaster
 {
     NewtonPhysicsWorld world;
     NewtonSphereShape lowerShape;
@@ -60,8 +65,8 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
     float height;
     float halfHeight;
     float shapeRadius;
-    float minEyeHeight;
-    float maxEyeHeight;
+    float crouchEyeHeight;
+    float normalEyeHeight;
     float eyeHeight;
     float targetEyeHeight;
     float crouchSpeed;
@@ -77,6 +82,7 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
     Vector3f groundContactPosition = Vector3f(0.0f, 0.0f, 0.0f);
     Vector3f groundContactNormal = Vector3f(0.0f, 0.0f, 0.0f);
     Vector3f ceilingPosition = Vector3f(0.0f, 0.0f, 0.0f);
+    
     float maxRaycastDistance = 100.0f;
     protected float closestHitParam = 1.0f;
     
@@ -88,9 +94,9 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
         this.mass = mass;
         this.halfHeight = height * 0.5f;
         shapeRadius = radius;
-        minEyeHeight = height * 0.5f;
-        maxEyeHeight = height;
-        eyeHeight = maxEyeHeight;
+        crouchEyeHeight = height * 0.5f;
+        normalEyeHeight = height;
+        eyeHeight = normalEyeHeight;
         targetEyeHeight = eyeHeight;
         crouchSpeed = 6.0f;
         lowerShape = New!NewtonSphereShape(shapeRadius, world);
@@ -230,18 +236,18 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
             if (!isCrouching && !isForcefullyCrouching)
             {
                 isForcefullyCrouching = true;
-                NewtonBodySetCollision(rbody.newtonBody, lowerShape.newtonCollision);
+                rbody.setCollisionShape(lowerShape);
             }
             
-            targetEyeHeight = minEyeHeight;
+            targetEyeHeight = crouchEyeHeight;
         }
         else
         {
             if (!isCrouching && isForcefullyCrouching)
             {
                 isForcefullyCrouching = false;
-                NewtonBodySetCollision(rbody.newtonBody, shape.newtonCollision);
-                targetEyeHeight = maxEyeHeight;
+                rbody.setCollisionShape(shape);
+                targetEyeHeight = normalEyeHeight;
             }
         }
         
@@ -280,13 +286,13 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
         isCrouching = mode;
         if (isCrouching)
         {
-            NewtonBodySetCollision(rbody.newtonBody, lowerShape.newtonCollision);
-            targetEyeHeight = minEyeHeight;
+            rbody.setCollisionShape(lowerShape);
+            targetEyeHeight = crouchEyeHeight;
         }
         else
         {
-            NewtonBodySetCollision(rbody.newtonBody, shape.newtonCollision);
-            targetEyeHeight = maxEyeHeight;
+            rbody.setCollisionShape(shape);
+            targetEyeHeight = normalEyeHeight;
         }
     }
     
@@ -299,7 +305,9 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
     }
 }
 
-NewtonCharacterComponent makeCharacter(Entity entity, NewtonPhysicsWorld world, float height, float radius, float mass)
+alias NewtonCharacterComponent = NewtonCharacterController;
+
+NewtonCharacterController makeCharacter(Entity entity, NewtonPhysicsWorld world, float height, float radius, float mass)
 {
-    return New!NewtonCharacterComponent(world, entity, height, radius, mass);
+    return New!NewtonCharacterController(world, entity, height, radius, mass);
 }

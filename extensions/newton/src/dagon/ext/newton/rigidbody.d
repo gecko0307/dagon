@@ -113,6 +113,12 @@ class NewtonRigidBody: Owner
     void defaultContactCallback(NewtonRigidBody, NewtonRigidBody, const void*)
     {
     }
+    
+    void setCollisionShape(NewtonCollisionShape shape)
+    {
+        if (shape.newtonCollision)
+            NewtonBodySetCollision(newtonBody, shape.newtonCollision);
+    }
 
     void update(double dt)
     {
