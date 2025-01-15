@@ -25,15 +25,15 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-module dagon.kinematics;
+module dagon.collision;
 
 public
 {
-    import dagon.kinematics.bvh;
-    import dagon.kinematics.collision;
-    import dagon.kinematics.contact;
-    import dagon.kinematics.geometry;
-    import dagon.kinematics.raycast;
-    import dagon.kinematics.shape;
-    import dagon.kinematics.world;
+    import dagon.collision.bvh;
+    import dagon.collision.collision;
+    import dagon.collision.contact;
+    import dagon.collision.geometry;
+    import dagon.collision.raycast;
+    import dagon.collision.shape;
+    import dagon.collision.world;
 }

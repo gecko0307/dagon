@@ -24,7 +24,7 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-module dagon.kinematics.world;
+module dagon.collision.world;
 
 import std.math;
 import std.algorithm;
@@ -45,13 +45,14 @@ import dagon.core.event;
 import dagon.graphics.entity;
 import dagon.graphics.mesh;
 import dagon.graphics.terrain;
-import dagon.kinematics.bvh;
-import dagon.kinematics.geometry;
-import dagon.kinematics.shape;
-import dagon.kinematics.contact;
-import dagon.kinematics.collision;
+import dagon.collision.bvh;
+import dagon.collision.geometry;
+import dagon.collision.shape;
+import dagon.collision.contact;
+import dagon.collision.collision;
 
-class KinematicWorld: Owner
+/*
+class CollisionWorld: Owner
 {
     EventManager eventManager;
     Array!Collider staticColliders;
@@ -151,7 +152,6 @@ class KinematicWorld: Owner
                             numContacts++;
                         }
                     }
-                    /*
                     else if (staticCollider.bvh)
                     {
                         Sphere sphere = dynamicCollider.collisionShape.boundingSphere;
@@ -173,7 +173,6 @@ class KinematicWorld: Owner
                             }
                         }
                     }
-                    */
                 }
                 
                 if (numContacts > 0)
@@ -191,7 +190,7 @@ class KinematicWorld: Owner
     }
 }
 
-void resolveContact(KinematicWorld world, Collider collider, Contact contact, double deltaTime, float smooth = 1.0f)
+void resolveContact(CollisionWorld world, Collider collider, Contact contact, double deltaTime, float smooth = 1.0f)
 {
     float verticalProj = dot(contact.normal, world.gravityVector);
     
@@ -229,7 +228,7 @@ void resolveContact(KinematicWorld world, Collider collider, Contact contact, do
 
 class Collider: EntityComponent
 {
-    KinematicWorld kinematicWorld;
+    CollisionWorld collisionWorld;
     CollisionShape collisionShape;
     BVHTree!Triangle bvh;
     Vector3f position = Vector3f(0.0f, 0.0f, 0.0f);
@@ -242,10 +241,10 @@ class Collider: EntityComponent
     float jumpDamping = 1.0f;
     bool onFloor = false;
 
-    this(KinematicWorld world, Entity e, CollisionShape cs)
+    this(CollisionWorld world, Entity e, CollisionShape cs)
     {
         super(world.eventManager, e);
-        kinematicWorld = world;
+        collisionWorld = world;
         collisionShape = cs;
         collisionShape.transformation =
             translationMatrix(e.position) *
@@ -259,10 +258,10 @@ class Collider: EntityComponent
         if (bvh) bvh.free();
     }
     
-    this(KinematicWorld world, Entity e)
+    this(CollisionWorld world, Entity e)
     {
         super(world.eventManager, e);
-        kinematicWorld = world;
+        collisionWorld = world;
         bvh = entityToBVH(e);
     }
     
@@ -298,7 +297,7 @@ class Collider: EntityComponent
             jumpSpeedDelta -= jumpDamping * deltaTime;
         else jumpSpeedDelta = 0.0f;
         
-        velocity -= kinematicWorld.gravityVector * jumpSpeedDelta;
+        velocity -= collisionWorld.gravityVector * jumpSpeedDelta;
         
         position += velocity;
     }
@@ -333,10 +332,11 @@ class Collider: EntityComponent
         collisionShape.transformation = entity.transformation;
     }
 }
+*/
 
 void collectEntityTris(Entity e, ref Array!Triangle tris, bool recursive = true)
 {
-    if (!e.dynamic && e.solid && e.drawable)
+    if (e.drawable)
     {
         e.update(Time(0.0, 0.0));
         Matrix4x4f normalMatrix = e.invAbsoluteTransformation.transposed;

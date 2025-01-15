@@ -25,7 +25,7 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-module dagon.kinematics.shape;
+module dagon.collision.shape;
 
 import dlib.core.ownership;
 import dlib.core.memory;
@@ -35,7 +35,7 @@ import dlib.math.transformation;
 import dlib.geometry.aabb;
 import dlib.geometry.sphere;
 
-import dagon.kinematics.geometry;
+import dagon.collision.geometry;
 
 class CollisionShape: Owner
 {

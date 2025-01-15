@@ -26,11 +26,11 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.kinematics.collision;
+module dagon.collision.collision;
 
-import dagon.kinematics.contact;
-import dagon.kinematics.mpr;
-import dagon.kinematics.shape;
+import dagon.collision.contact;
+import dagon.collision.mpr;
+import dagon.collision.shape;
 
 bool shapeVsShape(
     CollisionShape shape1,

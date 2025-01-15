@@ -25,10 +25,10 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-module dagon.kinematics.contact;
+module dagon.collision.contact;
 
 import dlib.math.vector;
-import dagon.kinematics.shape;
+import dagon.collision.shape;
 
 struct Contact
 {

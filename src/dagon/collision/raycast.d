@@ -26,17 +26,17 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.kinematics.raycast;
+module dagon.collision.raycast;
 
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.utils;
 import dlib.geometry.ray;
 
-import dagon.kinematics.contact;
-import dagon.kinematics.geometry;
-import dagon.kinematics.shape;
-import dagon.kinematics.jss;
+import dagon.collision.contact;
+import dagon.collision.geometry;
+import dagon.collision.shape;
+import dagon.collision.jss;
 
 alias CastResult = Contact;
 

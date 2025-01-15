@@ -25,15 +25,15 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-module dagon.kinematics.mpr;
+module dagon.collision.mpr;
 
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.utils;
 
-import dagon.kinematics.shape;
-import dagon.kinematics.contact;
+import dagon.collision.shape;
+import dagon.collision.contact;
 
 /*
  * Implementation of the Minkowski Portal Refinement algorithm
