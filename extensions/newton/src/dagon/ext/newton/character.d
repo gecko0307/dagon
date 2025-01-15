@@ -50,11 +50,14 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
     NewtonSphereShape upperShape;
     NewtonCompoundShape shape;
     NewtonRigidBody rbody;
-    float height;
-    float mass;
+    
+    Vector3f gravity = Vector3f(0.0f, -20.0f, 0.0f);
+    
     Vector3f targetVelocity = Vector3f(0.0f, 0.0f, 0.0f);
     Matrix4x4f prevTransformation;
     
+    float mass;
+    float height;
     float halfHeight;
     float shapeRadius;
     float minEyeHeight;
@@ -110,7 +113,7 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
         prevTransformation = Matrix4x4f.identity;
         
         rbody.createUpVectorConstraint(Vector3f(0.0f, 1.0f, 0.0f));
-        rbody.gravity = Vector3f(0.0f, -20.0f, 0.0f);
+        rbody.gravity = gravity;
         NewtonBodySetAutoSleep(rbody.newtonBody, false);
         
         rbody.contactCallback = &onContact;
@@ -285,6 +288,14 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
             NewtonBodySetCollision(rbody.newtonBody, shape.newtonCollision);
             targetEyeHeight = maxEyeHeight;
         }
+    }
+    
+    void enableGravity(bool mode)
+    {
+        if (mode)
+            rbody.gravity = gravity;
+        else
+            rbody.gravity = Vector3f(0.0f, 0.0f, 0.0f);
     }
 }
 

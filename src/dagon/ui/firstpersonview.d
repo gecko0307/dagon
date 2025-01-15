@@ -59,7 +59,15 @@ class FirstPersonViewComponent: EntityComponent
     float pitch = 0.0f;
     float turn = 0.0f;
     
+    Quaternionf orientationV = Quaternionf.identity;
+    Quaternionf orientationH = Quaternionf.identity;
+    
     Quaternionf baseOrientation = Quaternionf.identity;
+    
+    Vector3f direction = Vector3f(0.0f, 0.0f, 1.0f);
+    Vector3f directionHorizontal = Vector3f(0.0f, 0.0f, 1.0f);
+    Vector3f right = Vector3f(1.0f, 0.0f, 0.0f);
+    Vector3f up = Vector3f(0.0f, 1.0f, 0.0f);
     
     this(EventManager em, Entity e)
     {
@@ -147,10 +155,10 @@ class FirstPersonViewComponent: EntityComponent
             prevMouseY = eventManager.mouseY;
         }
         
-        auto rotPitch = rotationQuaternion(Vector3f(1.0f,0.0f,0.0f), degtorad(pitch));
-        auto rotTurn = rotationQuaternion(Vector3f(0.0f,1.0f,0.0f), degtorad(turn));
+        orientationV = rotationQuaternion(Vector3f(1.0f, 0.0f, 0.0f), degtorad(pitch));
+        orientationH = rotationQuaternion(Vector3f(0.0f, 1.0f, 0.0f), degtorad(turn));
         
-        Quaternionf orientation = baseOrientation * rotTurn * rotPitch;
+        Quaternionf orientation = baseOrientation * orientationH * orientationV;
         
         entity.transformation =
             (translationMatrix(entity.position) *
@@ -171,6 +179,11 @@ class FirstPersonViewComponent: EntityComponent
             entity.invAbsoluteTransformation = entity.invTransformation;
             entity.prevAbsoluteTransformation = entity.prevTransformation;
         }
+        
+        direction = orientation.rotate(Vector3f(0.0f, 0.0f, 1.0f));
+        directionHorizontal = orientationH.rotate(Vector3f(0.0f, 0.0f, 1.0f));
+        right = orientationH.rotate(Vector3f(1.0f, 0.0f, 0.0f));
+        up = orientationH.rotate(Vector3f(01.0f, 1.0f, 0.0f));
     }
     
     override void onFocusGain()
