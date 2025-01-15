@@ -227,7 +227,7 @@ class NewtonRigidBody: Owner
     }
 }
 
-class NewtonBodyComponent: EntityComponent
+class NewtonBodyController: EntityComponent
 {
     NewtonRigidBody rigidBody;
     Matrix4x4f prevTransformation;
@@ -266,14 +266,16 @@ class NewtonBodyComponent: EntityComponent
     }
 }
 
-NewtonBodyComponent makeStaticBody(Entity entity, NewtonPhysicsWorld world, NewtonCollisionShape collisionShape)
+alias NewtonBodyComponent = NewtonBodyController;
+
+NewtonBodyController makeStaticBody(Entity entity, NewtonPhysicsWorld world, NewtonCollisionShape collisionShape)
 {
     auto rigidBody = world.createStaticBody(collisionShape);
-    return New!NewtonBodyComponent(world.eventManager, entity, rigidBody);
+    return New!NewtonBodyController(world.eventManager, entity, rigidBody);
 }
 
-NewtonBodyComponent makeDynamicBody(Entity entity, NewtonPhysicsWorld world, NewtonCollisionShape collisionShape, float mass)
+NewtonBodyController makeDynamicBody(Entity entity, NewtonPhysicsWorld world, NewtonCollisionShape collisionShape, float mass)
 {
     auto rigidBody = world.createDynamicBody(collisionShape, mass);
-    return New!NewtonBodyComponent(world.eventManager, entity, rigidBody);
+    return New!NewtonBodyController(world.eventManager, entity, rigidBody);
 }
