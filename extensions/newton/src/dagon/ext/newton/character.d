@@ -68,7 +68,7 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
     bool isJumping = false;
     bool isFalling = false;
     bool isCrouching = false;
-    bool forcefullyCrouching = false;
+    bool isForcefullyCrouching = false;
     
     Vector3f groundPosition = Vector3f(0.0f, 0.0f, 0.0f);
     Vector3f groundContactPosition = Vector3f(0.0f, 0.0f, 0.0f);
@@ -224,9 +224,9 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
         
         if (shouldCrouch)
         {
-            if (!isCrouching && !forcefullyCrouching)
+            if (!isCrouching && !isForcefullyCrouching)
             {
-                forcefullyCrouching = true;
+                isForcefullyCrouching = true;
                 NewtonBodySetCollision(rbody.newtonBody, lowerShape.newtonCollision);
             }
             
@@ -234,9 +234,9 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
         }
         else
         {
-            if (!isCrouching && forcefullyCrouching)
+            if (!isCrouching && isForcefullyCrouching)
             {
-                forcefullyCrouching = false;
+                isForcefullyCrouching = false;
                 NewtonBodySetCollision(rbody.newtonBody, shape.newtonCollision);
                 targetEyeHeight = maxEyeHeight;
             }
@@ -252,7 +252,7 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
     
     void jump(float height)
     {
-        if (onGround)
+        if (onGround && !isCrouching && !isForcefullyCrouching)
         {
             onGround = false;
             float jumpSpeed = sqrt(2.0f * height * -rbody.gravity.y);

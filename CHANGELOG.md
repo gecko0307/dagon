@@ -14,7 +14,7 @@ Dagon 0.19.0 - TBD
   - New package `dagon.collision` - basic collision detection system
 - **Extensions**
   - `dagon:newton`:
-    - `NewtonCharacterComponent` improvements
+    - `NewtonCharacterComponent` improvements: new method `crouch` and better ground check. The origin of the character is now its feet point instead of the barycenter
     - `NewtonRigidBody.sensorCallback`, `NewtonRigidBody.contactCallback`
   - `dagon:ftfont`:
     - Rename the Windows library to `freetype-6.dll`.
