@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -52,23 +52,30 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
     NewtonRigidBody rbody;
     float height;
     float mass;
-    bool onGround = false;
     Vector3f targetVelocity = Vector3f(0.0f, 0.0f, 0.0f);
     Matrix4x4f prevTransformation;
+    
     float halfHeight;
     float shapeRadius;
+    float minEyeHeight;
+    float maxEyeHeight;
     float eyeHeight;
-    Vector3f sensorSize;
+    float targetEyeHeight;
+    float crouchSpeed;
+    
+    bool onGround = false;
     bool groundContact = false;
     bool isJumping = false;
     bool isFalling = false;
+    bool isCrouching = false;
+    bool forcefullyCrouching = false;
     
     Vector3f groundPosition = Vector3f(0.0f, 0.0f, 0.0f);
     Vector3f groundContactPosition = Vector3f(0.0f, 0.0f, 0.0f);
-    Vector3f groundNormal = Vector3f(0.0f, 1.0f, 0.0f);
     Vector3f groundContactNormal = Vector3f(0.0f, 0.0f, 0.0f);
-    float maxRayDistance = 100.0f;
-    protected float closestHit = 1.0f;
+    Vector3f ceilingPosition = Vector3f(0.0f, 0.0f, 0.0f);
+    float maxRaycastDistance = 100.0f;
+    protected float closestHitParam = 1.0f;
     
     this(NewtonPhysicsWorld world, Entity e, float height, float radius, float mass)
     {
@@ -78,11 +85,15 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
         this.mass = mass;
         this.halfHeight = height * 0.5f;
         shapeRadius = radius;
-        eyeHeight = height * 0.5f;
+        minEyeHeight = height * 0.5f;
+        maxEyeHeight = height;
+        eyeHeight = maxEyeHeight;
+        targetEyeHeight = eyeHeight;
+        crouchSpeed = 6.0f;
         lowerShape = New!NewtonSphereShape(shapeRadius, world);
-        lowerShape.setTransformation(translationMatrix(Vector3f(0.0f, -this.halfHeight + shapeRadius, 0.0f)));
+        lowerShape.setTransformation(translationMatrix(Vector3f(0.0f, shapeRadius, 0.0f)));
         upperShape = New!NewtonSphereShape(shapeRadius, world);
-        upperShape.setTransformation(translationMatrix(Vector3f(0.0f, shapeRadius, 0.0f)));
+        upperShape.setTransformation(translationMatrix(Vector3f(0.0f, height - shapeRadius, 0.0f)));
         NewtonCollisionShape[2] shapes = [lowerShape, upperShape];
         shape = New!NewtonCompoundShape(shapes, world);
         
@@ -127,11 +138,9 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
     
     float onRayHit(NewtonRigidBody nbody, Vector3f hitPoint, Vector3f hitNormal, float t)
     {
-        if (t < closestHit)
+        if (t < closestHitParam)
         {
-            groundPosition = hitPoint;
-            groundNormal = hitNormal;
-            closestHit = t;
+            closestHitParam = t;
             return t;
         }
         else
@@ -140,12 +149,20 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
         }
     }
     
-    bool raycast(Vector3f pstart, Vector3f pend)
+    bool floorRaycast(Vector3f pstart, Vector3f pend)
     {
-        closestHit = 1.0f;
+        closestHitParam = 1.0f;
         world.raycast(pstart, pend, this);
-        groundPosition = pstart + (pend - pstart).normalized * maxRayDistance * closestHit;
-        return (closestHit < 1.0f);
+        groundPosition = pstart + (pend - pstart).normalized * maxRaycastDistance * closestHitParam;
+        return (closestHitParam < 1.0f);
+    }
+    
+    bool ceilingRaycast(Vector3f pstart, Vector3f pend)
+    {
+        closestHitParam = 1.0f;
+        world.raycast(pstart, pend, this);
+        ceilingPosition = pstart + (pend - pstart).normalized * maxRaycastDistance * closestHitParam;
+        return (closestHitParam < 1.0f);
     }
     
     void updateVelocity()
@@ -177,9 +194,13 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
         onGround = groundContact;
         groundContact = false;
         
-        if (raycast(entity.position, entity.position + Vector3f(0.0f, -maxRayDistance, 0.0f)))
+        Vector3f raycastSource = entity.position;
+        raycastSource.y += halfHeight;
+        
+        // Ground raycast
+        if (floorRaycast(raycastSource, raycastSource + Vector3f(0.0f, -maxRaycastDistance, 0.0f)))
         {
-            onGround = onGround || (entity.position.y - groundPosition.y) <= halfHeight;
+            onGround = onGround || (raycastSource.y - groundPosition.y) <= halfHeight;
         }
         
         if (!onGround)
@@ -193,6 +214,35 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
             isJumping = false;
             isFalling = false;
         }
+        
+        // Head raycast
+        bool shouldCrouch = false;
+        if (ceilingRaycast(raycastSource, raycastSource + Vector3f(0.0f, maxRaycastDistance, 0.0f)))
+        {
+            shouldCrouch = (ceilingPosition.y - raycastSource.y) <= halfHeight;
+        }
+        
+        if (shouldCrouch)
+        {
+            if (!isCrouching && !forcefullyCrouching)
+            {
+                forcefullyCrouching = true;
+                NewtonBodySetCollision(rbody.newtonBody, lowerShape.newtonCollision);
+            }
+            
+            targetEyeHeight = minEyeHeight;
+        }
+        else
+        {
+            if (!isCrouching && forcefullyCrouching)
+            {
+                forcefullyCrouching = false;
+                NewtonBodySetCollision(rbody.newtonBody, shape.newtonCollision);
+                targetEyeHeight = maxEyeHeight;
+            }
+        }
+        
+        eyeHeight += (targetEyeHeight - eyeHeight) * crouchSpeed * t.delta;
     }
     
     void move(Vector3f direction, float speed)
@@ -220,6 +270,21 @@ class NewtonCharacterComponent: EntityComponent, NewtonRaycaster
     Vector3f eyePoint()
     {
         return rbody.position.xyz + Vector3f(0.0f, eyeHeight, 0.0f);
+    }
+    
+    void crouch(bool mode)
+    {
+        isCrouching = mode;
+        if (isCrouching)
+        {
+            NewtonBodySetCollision(rbody.newtonBody, lowerShape.newtonCollision);
+            targetEyeHeight = minEyeHeight;
+        }
+        else
+        {
+            NewtonBodySetCollision(rbody.newtonBody, shape.newtonCollision);
+            targetEyeHeight = maxEyeHeight;
+        }
     }
 }
 
