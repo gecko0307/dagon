@@ -10,8 +10,8 @@ Dagon 0.19.0 - TBD
   - Environment probes now calculate perceptual roughness based on the grazing angle, which results in nicer floor reflections
   - `Entity.probeExtents` now sets the half-size of a probe
   - Breaking change: all the renderer modules moved from `dagon.game` to `dagon.render`
-- **Kinematics**
-  - New package `dagon.kinematics` - basic collision detection and responce system
+- **Collision**
+  - New package `dagon.collision` - basic collision detection system
 - **Extensions**
   - `dagon:newton`:
     - `NewtonCharacterComponent` improvements
