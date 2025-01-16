@@ -6,4 +6,4 @@
 * Shader loader - [dayllenger](https://github.com/dayllenger)
 * Asset manager improvements - [Konstantin Menshikov aka MANKEYYENAME](https://github.com/MANKEYYENAME)
 * OBJ group parser - [Tynuk](https://github.com/Tynukua)
-* Bugfixes - [Björn Roberg](https://github.com/roobie), [Isaac S.](https://github.com/isaacs-dev), [Adrien Allard](https://github.com/Tichau), [ijet](https://github.com/my-ijet)
+* Bugfixes - [Björn Roberg](https://github.com/roobie), [Isaac S.](https://github.com/isaacs-dev), [Adrien Allard](https://github.com/Tichau), [ijet](https://github.com/my-ijet), [dkorpel](https://github.com/dkorpel)
