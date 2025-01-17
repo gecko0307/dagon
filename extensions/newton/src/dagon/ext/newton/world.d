@@ -40,6 +40,8 @@ import dagon.ext.newton.rigidbody;
 
 extern(C)
 {
+    // Built-in Newton callbacks
+    
     dFloat newtonWorldRayFilterCallback(
         const(NewtonBody)* nbody,
         const(NewtonCollision)* shapeHit,
@@ -147,6 +149,16 @@ extern(C)
     {
         return 0;
     }
+    
+    int aabbBodyIterator(const NewtonBody* body_, void* userData)
+    {
+        NewtonRigidBody nbody = cast(NewtonRigidBody)NewtonBodyGetUserData(body_);
+        NewtonBodyEnumerator bodyEnumerator = cast(NewtonBodyEnumerator)userData;
+        if (nbody && bodyEnumerator)
+            return bodyEnumerator.receive(nbody);
+        else
+            return 0;
+    }
 }
 
 interface NewtonRaycaster
@@ -156,6 +168,11 @@ interface NewtonRaycaster
         for intersection points. For example, if t is returned, the engine immediately stops searching for new hits.
     */
     float onRayHit(NewtonRigidBody nbody, Vector3f hitPoint, Vector3f hitNormal, float t);
+}
+
+interface NewtonBodyEnumerator
+{
+    int receive(NewtonRigidBody nbody);
 }
 
 class NewtonPhysicsWorld: Owner
@@ -179,6 +196,13 @@ class NewtonPhysicsWorld: Owner
         NewtonMaterialSetCollisionCallback(newtonWorld, sensorGroupId, defaultGroupId, null, &newtonSensorContactsProcess);
         NewtonMaterialSetCollisionCallback(newtonWorld, kinematicGroupId, sensorGroupId, &newtonSensorOnAABBOverlapCancelCallback, null);
         NewtonMaterialSetCollisionCallback(newtonWorld, kinematicGroupId, defaultGroupId, null, &newtonKinematicContactsProcess);
+    }
+    
+    ~this()
+    {
+        NewtonDestroyAllBodies(newtonWorld);
+        NewtonMaterialDestroyAllGroupID(newtonWorld);
+        NewtonDestroy(newtonWorld);
     }
     
     int createGroupId()
@@ -217,11 +241,9 @@ class NewtonPhysicsWorld: Owner
     {
         NewtonWorldRayCast(newtonWorld, pstart.arrayof.ptr, pend.arrayof.ptr, &newtonWorldRayFilterCallback, cast(void*)raycaster, &newtonWorldRayPrefilterCallback, 0);
     }
-
-    ~this()
+    
+    void forEachBodyInAABBDo(Vector3f p0, Vector3f p1, NewtonBodyEnumerator bodyEnumerator)
     {
-        NewtonDestroyAllBodies(newtonWorld);
-        NewtonMaterialDestroyAllGroupID(newtonWorld);
-        NewtonDestroy(newtonWorld);
+        NewtonWorldForEachBodyInAABBDo(newtonWorld, p0.arrayof.ptr, p1.arrayof.ptr, &aabbBodyIterator, cast(void*)bodyEnumerator);
     }
 }
