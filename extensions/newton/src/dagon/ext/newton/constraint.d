@@ -151,7 +151,7 @@ class NewtonUpVectorConstraint: NewtonConstraint
     }
 }
 
-class NewtonUserJointConstraint: NewtonConstraint
+class NewtonUserConstraint: NewtonConstraint
 {
     NewtonRigidBody body1;
     NewtonRigidBody body2;
@@ -168,29 +168,101 @@ class NewtonUserJointConstraint: NewtonConstraint
         NewtonJointSetUserData(this.joint, cast(void*)this);
     }
     
+    void solverModel(int model)
+    {
+        NewtonUserJointSetSolverModel(joint, model);
+    }
+    
+    int solverModel()
+    {
+        return NewtonUserJointGetSolverModel(joint);
+    }
+    
+    void massScale(float scaleBody0, float scaleBody1)
+    {
+        NewtonUserJointMassScale(joint, scaleBody0, scaleBody1);
+    }
+    
     void addLinearRow(Vector3f pivot0, Vector3f pivot1, Vector3f dir)
     {
         NewtonUserJointAddLinearRow(joint, pivot0.arrayof.ptr, pivot1.arrayof.ptr, dir.arrayof.ptr);
     }
     
-    void setMaximumFriction(float maxFriction)
+    void addAngularRow(float relativeAngle, Vector3f dir)
+    {
+        NewtonUserJointAddAngularRow(joint, relativeAngle, dir.arrayof.ptr);
+    }
+    
+    void addGeneralRow(float[] jacobian0, float[] jacobian1)
+    {
+        NewtonUserJointAddGeneralRow(joint, jacobian0.ptr, jacobian1.ptr);
+    }
+    
+    void setRowMaximumFriction(float maxFriction)
     {
         NewtonUserJointSetRowMaximumFriction(joint, maxFriction);
     }
     
-    void setMinimumFriction(float minFriction)
+    void setRowMinimumFriction(float minFriction)
     {
         NewtonUserJointSetRowMinimumFriction(joint, minFriction);
     }
     
+    float calculateRowZeroAcceleration()
+    {
+        return NewtonUserJointCalculateRowZeroAcceleration(joint);
+    }
+    
+    void getRowJacobian(out Vector3f linear0, out Vector3f angular0, out Vector3f linear1, out Vector3f angular1)
+    {
+        NewtonUserJointGetRowJacobian(joint,
+            linear0.arrayof.ptr, angular0.arrayof.ptr,
+            linear1.arrayof.ptr, angular1.arrayof.ptr);
+    }
+    
+    void rowAcceleration(float acceleration)
+    {
+        NewtonUserJointSetRowAcceleration(joint, acceleration);
+    }
+    
+    float rowAcceleration()
+    {
+        return NewtonUserJointGetRowAcceleration(joint);
+    }
+    
+    void setRowMassDependentSpringDamperAcceleration(float spring, float damper)
+    {
+        NewtonUserJointSetRowMassDependentSpringDamperAcceleration(joint, spring, damper);
+    }
+    
+    void setRowMassIndependentSpringDamperAcceleration(float rowStiffness, float spring, float damper)
+    {
+        NewtonUserJointSetRowMassIndependentSpringDamperAcceleration(joint, rowStiffness, spring, damper);
+    }
+    
+    void setRowStiffness(float stiffness)
+    {
+        NewtonUserJointSetRowStiffness(joint, stiffness);
+    }
+    
+    int rowsCount()
+    {
+        return NewtonUserJoinRowsCount(joint);
+    }
+    
+    float getRowForce(int row)
+    {
+        return NewtonUserJointGetRowForce(joint, row);
+    }
+    
     void submit(float timestep, int threadIndex)
     {
-        //
+        // Override me
     }
     
     static extern(C) void getInfo(const NewtonJoint* joint, float timestep, int threadIndex)
     {
-        NewtonUserJointConstraint ujc = cast(NewtonUserJointConstraint)NewtonJointGetUserData(joint);
+        NewtonUserConstraint ujc = cast(NewtonUserConstraint)NewtonJointGetUserData(joint);
         ujc.submit(timestep, threadIndex);
     }
 }
