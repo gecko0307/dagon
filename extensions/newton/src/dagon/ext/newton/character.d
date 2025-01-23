@@ -77,6 +77,7 @@ class NewtonCharacterController: EntityComponent, NewtonRaycaster
     bool isFalling = false;
     bool isCrouching = false;
     bool isForcefullyCrouching = false;
+    bool isBlocked = false;
     
     Vector3f groundPosition = Vector3f(0.0f, 0.0f, 0.0f);
     Vector3f groundContactPosition = Vector3f(0.0f, 0.0f, 0.0f);
@@ -85,6 +86,9 @@ class NewtonCharacterController: EntityComponent, NewtonRaycaster
     
     float maxRaycastDistance = 100.0f;
     protected float closestHitParam = 1.0f;
+    
+    float jumpSpeed = 0.0f;
+    Vector3f velocityChange = Vector3f(0.0f, 0.0f, 0.0f);
     
     this(NewtonPhysicsWorld world, Entity e, float height, float radius, float mass)
     {
@@ -127,20 +131,29 @@ class NewtonCharacterController: EntityComponent, NewtonRaycaster
     
     void onContact(NewtonRigidBody selfBody, NewtonRigidBody otherBody, const void* contact)
     {
-        if (contact && !groundContact)
+        if (contact)
         {
             NewtonMaterial* mat = NewtonContactGetMaterial(contact);
             Vector3f contactPoint;
             Vector3f contactNormal;
             NewtonMaterialGetContactPositionAndNormal(mat, selfBody.newtonBody, contactPoint.arrayof.ptr, contactNormal.arrayof.ptr);
             
-            float groundProj = dot(contactNormal, Vector3f(0.0f, 1.0f, 0.0f));
-            if (groundProj > 0.2f)
+            if (!groundContact)
             {
-                groundContact = true;
-                groundPosition = contactPoint;
-                groundContactPosition = contactPoint;
-                groundContactNormal = contactNormal;
+                float groundProj = dot(contactNormal, Vector3f(0.0f, 1.0f, 0.0f));
+                if (groundProj > 0.2f)
+                {
+                    groundContact = true;
+                    groundPosition = contactPoint;
+                    groundContactPosition = contactPoint;
+                    groundContactNormal = contactNormal;
+                }
+            }
+            
+            float movementProj = dot(contactNormal, -velocityChange);
+            if (movementProj > 0.0f)
+            {
+                isBlocked = true;
             }
         }
     }
@@ -176,11 +189,14 @@ class NewtonCharacterController: EntityComponent, NewtonRaycaster
     
     void updateVelocity()
     {
-        Vector3f velocityChange = targetVelocity - rbody.velocity;
-        velocityChange.y = 0.0f;
+        velocityChange = targetVelocity - rbody.velocity;
+        velocityChange.y = jumpSpeed;
         rbody.velocity = rbody.velocity + velocityChange;
         
         targetVelocity = Vector3f(0.0f, 0.0f, 0.0f);
+        jumpSpeed = 0.0f;
+        
+        isBlocked = false;
     }
     
     override void update(Time t)
@@ -259,15 +275,12 @@ class NewtonCharacterController: EntityComponent, NewtonRaycaster
         targetVelocity += direction * speed;
     }
     
-    void jump(float height)
+    void jump(float speed)
     {
         if (onGround && !isCrouching && !isForcefullyCrouching)
         {
             onGround = false;
-            float jumpSpeed = sqrt(2.0f * height * -rbody.gravity.y);
-            Vector3f v = rbody.velocity;
-            v.y = jumpSpeed;
-            rbody.velocity = v;
+            jumpSpeed = speed;
         }
     }
     
