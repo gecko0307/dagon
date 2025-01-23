@@ -55,10 +55,9 @@ class FilterPass: RenderPass
 
     override void render()
     {
-        if (inputBuffer && view)
+        if (inputBuffer && outputBuffer && view)
         {
-            if (outputBuffer)
-                outputBuffer.bind();
+            outputBuffer.bind();
 
             state.colorTexture = inputBuffer.colorTexture;
             state.depthTexture = inputBuffer.depthTexture;
@@ -74,8 +73,7 @@ class FilterPass: RenderPass
             shader.unbind();
             glEnable(GL_DEPTH_TEST);
 
-            if (outputBuffer)
-                outputBuffer.unbind();
+            outputBuffer.unbind();
         }
     }
 }

@@ -52,6 +52,8 @@ import dagon.collision.contact;
 import dagon.collision.collision;
 
 /*
+// TODO
+
 class CollisionWorld: Owner
 {
     EventManager eventManager;

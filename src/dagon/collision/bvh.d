@@ -38,6 +38,7 @@ import dlib.math.vector;
 import dlib.geometry.aabb;
 import dlib.geometry.sphere;
 import dlib.geometry.ray;
+import dlib.geometry.intersection;
 
 /*
  * Bounding Volume Hierarchy implementation
@@ -204,9 +205,8 @@ struct SphereTraverseQuery(T)
     {
         int result = 0;
         
-        Vector3f cn;
-        float pd;
-        if (node.aabb.intersectsSphere(*sphere, cn, pd))
+        Intersection isec = intrSphereVsAABB(*sphere, node.aabb);
+        if (isec.fact)
         {
             if (node.child[0] !is null)
             {
@@ -268,14 +268,10 @@ struct RayTraverseQuery(T)
     }
 }
 
-// TODO:
-// - support multithreading (2 children = 2 threads)
-// - add ESC (Early Split Clipping)
 enum Heuristic
 {
     HMA, // Half Main Axis
-    SAH, // Surface Area Heuristic
-    //ESC  // Early Split Clipping
+    SAH  // Surface Area Heuristic
 }
 
 Array!T duplicate(T)(Array!T arr)
