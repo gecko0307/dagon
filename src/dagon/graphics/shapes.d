@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2022 Timur Gafarov
+Copyright (c) 2017-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -233,27 +233,18 @@ class ShapeBox: Mesh
     }
 }
 
-enum PI2 = PI * 2.0f;
 enum HALF_PI = PI * 0.5f;
-
-Vector2f envMapEquirect(Vector3f dir)
-{
-    Vector2f uv;
-    uv.y = acos(dir.y) / PI;
-    uv.x = (PI + atan2(dir.x, dir.z)) / PI2;
-    return uv;
-}
 
 class ShapeSphere: Mesh
 {
-    Array!Vector3f daVertices;
-    Array!Vector3f daNormals;
-    Array!Vector2f daTexcoords;
-    Array!(uint[3]) daIndices;
-
     this(float radius, int slices, int stacks, bool invNormals, Owner owner)
     {
         super(owner);
+
+        Array!Vector3f daVertices;
+        Array!Vector3f daNormals;
+        Array!Vector2f daTexcoords;
+        Array!(uint[3]) daIndices;
 
         float X1, Y1, X2, Y2, Z1, Z2;
         float inc1, inc2, inc3, inc4, inc5, radius1, radius2;
@@ -429,4 +420,134 @@ class ShapeDisk: Mesh
     }
 }
 
-// TODO: ShapeCylinder, ShapeCone, ShapeCapsule
+class ShapeCylinder: Mesh
+{
+    this(float radius, float height, uint slices, Owner owner)
+    {
+        super(owner);
+        
+        uint numVerticesCap = slices + 1;
+        uint numVerticesSide = (slices + 1) * 2;
+        
+        uint numVertices = numVerticesCap * 2 + numVerticesSide;
+        uint numTriangles = slices * 4;
+        vertices = New!(Vector3f[])(numVertices);
+        normals = New!(Vector3f[])(numVertices);
+        texcoords = New!(Vector2f[])(numVertices);
+        indices = New!(uint[3][])(numTriangles);
+        
+        for(size_t i = 0; i < numVertices; i++)
+        {
+            vertices[i] = Vector3f(0.0f, 0.0f, 0.0f);
+            normals[i] = Vector3f(0.0f, 1.0f, 0.0f);
+            texcoords[i] = Vector2f(0.0f, 0.0f);
+        }
+        
+        float angleStep = (2.0f * PI) / slices;
+        
+        float uStep = 1.0f / cast(float)slices;
+        
+        float angle = 0.0f;
+        
+        // Caps
+        uint topCapVertStart = 0;
+        uint topCapTrisStart = 0;
+        
+        vertices[topCapVertStart] = Vector3f(0.0f, height * 0.5f, 0.0f);
+        normals[topCapVertStart] = Vector3f(0.0f, 1.0f, 0.0f);
+        texcoords[topCapVertStart] = Vector2f(0.5f, 0.5f);
+        
+        uint botCapVertStart = topCapVertStart + numVerticesCap;
+        uint botCapTrisStart = topCapTrisStart + slices;
+        
+        vertices[botCapVertStart] = Vector3f(0.0f, -height * 0.5f, 0.0f);
+        normals[botCapVertStart] = Vector3f(0.0f, -1.0f, 0.0f);
+        texcoords[botCapVertStart] = Vector2f(0.5f, 0.5f);
+        
+        // Sides
+        uint sideVertStart = botCapVertStart + numVerticesCap;
+        uint sideTrisStart = botCapTrisStart + slices;
+        
+        for(uint s = 0; s < slices; s++)
+        {
+            float x = cos(angle);
+            float z = sin(angle);
+            
+            // Top and bottom caps for this slice
+            uint viTop = topCapVertStart + 1 + s;
+            uint viBot = botCapVertStart + 1 + s;
+            
+            uint tiTop = topCapTrisStart + s;
+            uint tiBot = botCapTrisStart + s;
+            
+            vertices[viTop] = Vector3f(x * radius, height * 0.5f, z * radius);
+            normals[viTop] = Vector3f(0.0f, 1.0f, 0.0f);
+            texcoords[viTop] = Vector2f(x * 0.5f + 0.5f, z * 0.5f + 0.5f);
+            
+            vertices[viBot] = Vector3f(x * radius, -height * 0.5f, z * radius);
+            normals[viBot] = Vector3f(0.0f, -1.0f, 0.0f);
+            texcoords[viBot] = Vector2f(0.5f - x * 0.5f, z * 0.5f + 0.5f);
+            
+            indices[tiTop][0] = topCapVertStart;
+            indices[tiBot][0] = botCapVertStart;
+            
+            if (s < slices - 1)
+            {
+                indices[tiTop][1] = viTop + 1;
+                indices[tiBot][2] = viBot + 1;
+            }
+            else
+            {
+                indices[tiTop][1] = indices[topCapTrisStart][2];
+                indices[tiBot][2] = indices[botCapTrisStart][1];
+            }
+            
+            indices[tiTop][2] = viTop;
+            indices[tiBot][1] = viBot;
+            
+            // Side for this slice
+            uint vi = sideVertStart + s * 2;
+            
+            float mapU = uStep * cast(float)s;
+            
+            // Loop pair
+            vertices[vi] = vertices[viTop];
+            normals[vi] = Vector3f(x, 0.0f, z);
+            texcoords[vi] = Vector2f(1.0f - mapU, 0.0f);
+            vertices[vi+1] = vertices[viBot];
+            normals[vi+1] = Vector3f(x, 0.0f, z);
+            texcoords[vi+1] = Vector2f(1.0f - mapU, 1.0f);
+            
+            if (s == slices - 1)
+            {
+                // Fill the last loop pair (same as first)
+                vertices[vi+2] = vertices[topCapVertStart + 1];
+                normals[vi+2] = Vector3f(1.0f, 0.0f, 0.0f);
+                texcoords[vi+2] = Vector2f(0.0f, 0.0f);
+                vertices[vi+3] = vertices[botCapVertStart + 1];
+                normals[vi+3] = Vector3f(1.0f, 0.0f, 0.0f);
+                texcoords[vi+3] = Vector2f(0.0f, 1.0f);
+            }
+            
+            uint t1i = sideTrisStart + s * 2;
+            uint t2i = sideTrisStart + s * 2 + 1;
+            
+            indices[t1i][0] = vi;
+            indices[t2i][0] = vi + 1;
+            
+            indices[t1i][1] = vi + 2;
+            indices[t2i][1] = vi + 2;
+            indices[t2i][2] = vi + 3;
+            
+            indices[t1i][2] = vi + 1;
+            
+            // Next slice angle
+            angle += angleStep;
+        }
+        
+        dataReady = true;
+        prepareVAO();
+    }
+}
+
+// TODO: ShapeCone, ShapeCapsule
