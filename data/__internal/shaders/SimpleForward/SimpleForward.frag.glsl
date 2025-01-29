@@ -19,6 +19,8 @@ uniform float gloss;
 uniform vec4 ambientColor;
 uniform float ambientEnergy;
 
+uniform float alphaTestThreshold;
+
 /*
  * Diffuse
  */
@@ -53,6 +55,9 @@ void main()
     
     vec3 outputColor = diffuseColor;
     float outputAlpha = color.a * opacity;
+    
+    if (outputAlpha < alphaTestThreshold)
+        discard;
     
     // Sun light
     if (shaded)

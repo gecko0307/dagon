@@ -156,18 +156,23 @@ abstract class RenderPass: EventListener
         state.prevModelViewMatrix = state.prevViewMatrix * entity.prevAbsoluteTransformation;
         state.shader = shader;
         state.opacity = entity.opacity;
-
+        
         if (entity.material)
             entity.material.bind(&state);
         else
             defaultMaterial.bind(&state);
-
-        shader.bindParameters(&state);
-
-        entity.drawable.render(&state);
-
-        shader.unbindParameters(&state);
-
+        
+        if (entity.bindShaderParameters)
+        {
+            shader.bindParameters(&state);
+            entity.drawable.render(&state);
+            shader.unbindParameters(&state);
+        }
+        else
+        {
+            entity.drawable.render(&state);
+        }
+        
         if (entity.material)
             entity.material.unbind(&state);
         else

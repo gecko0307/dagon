@@ -441,8 +441,6 @@ class ParticleSystem: EntityComponent
             if (e.entity.visible)
             {
                 bool shouldRender = true;
-                //if (state.shadowPass)
-                //    shouldRender = e.entity.castShadow;
 
                 if (shouldRender)
                 {
@@ -452,47 +450,12 @@ class ParticleSystem: EntityComponent
                     foreach(ref p; e.particles)
                     if (p.time < p.lifetime)
                     {
-                        //if (e.particleEntity)
-                        //    renderEntityParticle(e, p, state);
-                        //else
-                            renderBillboardParticle(e, p, state);
+                        renderBillboardParticle(e, p, state);
                     }
                 }
             }
         }
     }
-
-    /*
-    void renderEntityParticle(Emitter e, ref Particle p, GraphicsState* state)
-    {
-        auto stateLocal = *state;
-
-        Matrix4x4f trans =
-            translationMatrix(p.position);
-
-        Matrix4x4f prevTrans =
-            translationMatrix(p.positionPrev);
-
-        auto absTrans = e.particleEntity.absoluteTransformation;
-        auto invAbsTrans = e.particleEntity.invAbsoluteTransformation;
-        auto prevAbsTrans = e.particleEntity.prevAbsoluteTransformation;
-
-        e.particleEntity.absoluteTransformation = trans;
-        e.particleEntity.invAbsoluteTransformation = trans.inverse;
-        e.particleEntity.prevAbsoluteTransformation = prevTrans;
-
-        foreach(child; e.particleEntity.children)
-        {
-            child.updateTransformation();
-        }
-
-        e.particleEntity.render(&stateLocal);
-
-        e.particleEntity.absoluteTransformation = absTrans;
-        e.particleEntity.invAbsoluteTransformation = invAbsTrans;
-        e.particleEntity.prevAbsoluteTransformation = prevAbsTrans;
-    }
-    */
 
     void renderBillboardParticle(Emitter e, ref Particle p, GraphicsState* state)
     {

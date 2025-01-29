@@ -77,6 +77,8 @@ class SimpleForwardShader: Shader
         setParameter("opacity", mat.opacity * state.opacity);
         setParameter("textureScale", mat.textureScale);
         
+        setParameter("alphaTestThreshold", mat.alphaTestThreshold);
+        
         Light sun = mat.sun;
         if (sun is null && state.environment !is null)
             sun = state.environment.sun;

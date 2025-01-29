@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020-2024 Timur Gafarov
+Copyright (c) 2020-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -117,21 +117,32 @@ class PassForward: RenderPass
 
             foreach(entity; group)
             {
-                if (entity.visible && entity.drawable)
+                if (entity.visible)
                 {
-                    if (!entityIsTerrain(entity) && !entityIsParticleSystem(entity))
+                    if (entity.drawable)
                     {
-                        Shader shader = forwardShader;
-
-                        if (entity.material)
+                        if (!entityIsTerrain(entity) && !entityIsParticleSystem(entity))
                         {
-                            if (entity.material.shader)
-                                shader = entity.material.shader;
-                        }
+                            Shader shader = forwardShader;
 
-                        shader.bind();
-                        renderEntity(entity, shader);
-                        shader.unbind();
+                            if (entity.material)
+                            {
+                                if (entity.material.shader)
+                                    shader = entity.material.shader;
+                            }
+
+                            shader.bind();
+                            renderEntity(entity, shader);
+                            shader.unbind();
+                        }
+                    }
+                    
+                    foreach(c; entity.components)
+                    {
+                        if (c.visible)
+                        {
+                            c.render(&state);
+                        }
                     }
                 }
             }

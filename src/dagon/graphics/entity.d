@@ -84,6 +84,7 @@ class Entity: Owner, Updateable
     float opacity = 1.0f;
     float gbufferMask = 1.0f;
     float blurMask = 1.0f;
+    bool bindShaderParameters = true;
 
     World world;
 
@@ -513,6 +514,7 @@ class Entity: Owner, Updateable
 class EntityComponent: EventListener, Updateable, Drawable
 {
     Entity entity;
+    bool visible = true;
 
     this(EventManager em, Entity e)
     {
