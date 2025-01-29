@@ -200,12 +200,23 @@ class FreeviewComponent: EntityComponent
     void setTarget(Vector3f pos)
     {
         target = pos;
-        smoothTarget = pos;
+        smoothTarget = target;
     }
     
     void setTargetSmooth(Vector3f pos)
     {
         target = pos;
+    }
+    
+    void setTarget(Entity e)
+    {
+        target = e.positionAbsolute;
+        smoothTarget = target;
+    }
+    
+    void setTargetSmooth(Entity e)
+    {
+        target = e.positionAbsolute;
     }
 
     void translateTarget(Vector3f pos)
