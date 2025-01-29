@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2022 Timur Gafarov
+Copyright (c) 2017-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -44,7 +44,8 @@ class FreeviewComponent: EntityComponent
 {
     int prevMouseX;
     int prevMouseY;
-    float mouseTranslateSensibility;
+    float mouseTranslationSensibility;
+    float mouseRotationSensibility;
     float mouseZoomSensibility;
     
     Vector3f target;
@@ -53,37 +54,22 @@ class FreeviewComponent: EntityComponent
     float distanceToTagret;
     float smoothDistanceToTagret;
     
-    float zoomStiffness;
-    float translateStiffness;
+    Vector3f rotation;
+    Vector3f smoothRotation;
     
-    Quaternionf rotPitch;
-    Quaternionf rotTurn;
-    Quaternionf rotRoll;
+    float translationStiffness;
+    float rotationStiffness;
+    float zoomStiffness;
+    
+    Quaternionf orientation;
     Matrix4x4f transform;
     Matrix4x4f invTransform;
     
-    float rotPitchTheta;
-    float rotTurnTheta;
-    float rotRollTheta;
-    
-    float pitchCurrentTheta;
-    float pitchTargetTheta;
-    float turnCurrentTheta;
-    float turnTargetTheta;
-    float rollCurrentTheta;
-    float rollTargetTheta;
-    
-    float currentMove;
-    float targetMove;
-    
-    float currentStrafe;
-    float targetStrafe;
-    
     bool active;
     
-    bool enableTranslation;
-    bool enableRotation;
-    bool enableZoom;
+    bool enableMouseTranslation;
+    bool enableMouseRotation;
+    bool enableMouseZoom;
     
     this(EventManager em, Entity e)
     {
@@ -95,7 +81,9 @@ class FreeviewComponent: EntityComponent
     {
         prevMouseX = eventManager.mouseX;
         prevMouseY = eventManager.mouseY;
-        mouseTranslateSensibility = 0.1f;
+        
+        mouseTranslationSensibility = 0.1f;
+        mouseRotationSensibility = 1.0f;
         mouseZoomSensibility = 0.2f;
         
         target = Vector3f(0.0f, 0.0f, 0.0f);
@@ -104,40 +92,22 @@ class FreeviewComponent: EntityComponent
         distanceToTagret = 20.0f;
         smoothDistanceToTagret = 20.0f;
         
-        zoomStiffness = 0.5f;
-        translateStiffness = 1.0f;
+        rotation = Vector3f(45.0f, 45.0f, 0.0f);
+        smoothRotation = rotation;
         
-        rotPitch = rotationQuaternion(Vector3f(1.0f, 0.0f, 0.0f), 0.0f);
-        rotTurn = rotationQuaternion(Vector3f(0.0f, 1.0f, 0.0f), 0.0f);
-        rotRoll = rotationQuaternion(Vector3f(0.0f, 0.0f, 1.0f), 0.0f);
+        translationStiffness = 1.0f;
+        rotationStiffness = 1.0f;
+        zoomStiffness = 1.0f;
+        
+        orientation = Quaternionf.identity;
         transform = Matrix4x4f.identity;
         invTransform = Matrix4x4f.identity;
-
-        rotPitchTheta = 0.0f;
-        rotTurnTheta = 0.0f;
-        rotRollTheta = 0.0f;
-
-        pitchCurrentTheta = 0.0f;
-        pitchTargetTheta = 0.0f;
-        turnCurrentTheta = 0.0f;
-        turnTargetTheta = 0.0f;
-        rollCurrentTheta = 0.0f;
-        rollTargetTheta = 0.0f;
-
-        currentMove = 0.0f;
-        targetMove = 0.0f;
-
-        currentStrafe = 0.0f;
-        targetStrafe = 0.0f;
-        
-        pitch(45.0f);
-        turn(45.0f);
         
         active = true;
         
-        enableTranslation = true;
-        enableRotation = true;
-        enableZoom = true;
+        enableMouseTranslation = true;
+        enableMouseRotation = true;
+        enableMouseZoom = true;
         
         transformEntity();
     }
@@ -148,47 +118,52 @@ class FreeviewComponent: EntityComponent
         
         if (active)
         {
-            if (eventManager.mouseButtonPressed[MB_RIGHT] && enableTranslation)
+            if (eventManager.mouseButtonPressed[MB_RIGHT] && enableMouseTranslation)
             {
-                float shiftx = (eventManager.mouseX - prevMouseX) * mouseTranslateSensibility;
-                float shifty = -(eventManager.mouseY - prevMouseY) * mouseTranslateSensibility;
+                float shiftx = (eventManager.mouseX - prevMouseX) * mouseTranslationSensibility;
+                float shifty = -(eventManager.mouseY - prevMouseY) * mouseTranslationSensibility;
                 Vector3f trans = up * shifty + right * shiftx;
                 target += trans;
             }
-            else if (eventManager.mouseButtonPressed[MB_LEFT] && eventManager.keyPressed[KEY_LCTRL] && enableZoom)
+            else if (eventManager.mouseButtonPressed[MB_LEFT] && eventManager.keyPressed[KEY_LCTRL] && enableMouseZoom)
             {
                 float shiftx = (eventManager.mouseX - prevMouseX) * mouseZoomSensibility;
                 float shifty = (eventManager.mouseY - prevMouseY) * mouseZoomSensibility;
                 zoom(shiftx + shifty);
             }
-            else if (eventManager.mouseButtonPressed[MB_LEFT] && enableRotation)
+            else if (eventManager.mouseButtonPressed[MB_LEFT] && enableMouseRotation)
             {
-                float t = (eventManager.mouseX - prevMouseX);
-                float p = (eventManager.mouseY - prevMouseY);
-                pitchSmooth(p, 0.25f);
-                turnSmooth(t, 0.25f);
+                float turn = (eventManager.mouseX - prevMouseX) * mouseRotationSensibility;
+                float pitch = (eventManager.mouseY - prevMouseY) * mouseRotationSensibility;
+                
+                rotation.x += pitch;
+                rotation.y += turn;
             }
-
+            
             prevMouseX = eventManager.mouseX;
             prevMouseY = eventManager.mouseY;
         }
         
-        smoothTarget += (target - smoothTarget) * translateStiffness;
+        smoothTarget += (target - smoothTarget) * translationStiffness;
         smoothDistanceToTagret += (distanceToTagret - smoothDistanceToTagret) * zoomStiffness;
+        smoothRotation += (rotation - smoothRotation) * rotationStiffness;
         
         transformEntity();
     }
     
     void transformEntity()
     {
-        rotPitch = rotationQuaternion(Vector3f(1.0f, 0.0f, 0.0f), degtorad(rotPitchTheta));
-        rotTurn = rotationQuaternion(Vector3f(0.0f, 1.0f, 0.0f), degtorad(rotTurnTheta));
-        rotRoll = rotationQuaternion(Vector3f(0.0f, 0.0f, 1.0f), degtorad(rotRollTheta));
-
-        Quaternionf q = rotPitch * rotTurn * rotRoll;
-        Matrix4x4f rot = q.toMatrix4x4();
-        invTransform = translationMatrix(Vector3f(0.0f, 0.0f, -smoothDistanceToTagret)) * rot * translationMatrix(smoothTarget);
-
+        Quaternionf qPitch = rotationQuaternion(Vector3f(1.0f, 0.0f, 0.0f), degtorad(smoothRotation.x));
+        Quaternionf qTurn = rotationQuaternion(Vector3f(0.0f, 1.0f, 0.0f), degtorad(smoothRotation.y));
+        Quaternionf qRoll = rotationQuaternion(Vector3f(0.0f, 0.0f, 1.0f), degtorad(smoothRotation.z));
+        
+        orientation = qPitch * qTurn * qRoll;
+        Matrix4x4f orientationMatrix = orientation.toMatrix4x4();
+        invTransform =
+            translationMatrix(Vector3f(0.0f, 0.0f, -smoothDistanceToTagret)) *
+            orientationMatrix *
+            translationMatrix(smoothTarget);
+        
         transform = invTransform.inverse;
         
         entity.prevTransformation = entity.transformation;
@@ -202,71 +177,49 @@ class FreeviewComponent: EntityComponent
     
     void setRotation(float p, float t, float r)
     {
-        rotPitchTheta = p;
-        rotTurnTheta = t;
-        rotRollTheta = r;
+        rotation = Vector3f(p, t, r);
+        smoothRotation = rotation;
     }
     
-    void pitch(float theta)
+    // 2:1 isometry
+    void setIsometricRotation()
     {
-        rotPitchTheta += theta;
+        setRotation(30.0f, 45.0f, 0.0f);
     }
-
-    void turn(float theta)
+    
+    void setRotationSmooth(float p, float t, float r)
     {
-        rotTurnTheta += theta;
+        rotation = Vector3f(p, t, r);
     }
-
-    void roll(float theta)
+    
+    void rotate(float p, float t, float r)
     {
-        rotRollTheta += theta;
+        rotation += Vector3f(p, t, r);
     }
-
-    float pitch()
+    
+    void setTarget(Vector3f pos)
     {
-        return rotPitchTheta;
+        target = pos;
+        smoothTarget = pos;
     }
-
-    float turn()
+    
+    void setTargetSmooth(Vector3f pos)
     {
-        return rotTurnTheta;
-    }
-
-    float roll()
-    {
-        return rotRollTheta;
-    }
-
-    void pitchSmooth(float theta, float smooth)
-    {
-        pitchTargetTheta += theta;
-        float pitchTheta = (pitchTargetTheta - pitchCurrentTheta) * smooth;
-        pitchCurrentTheta += pitchTheta;
-        pitch(pitchTheta);
-    }
-
-    void turnSmooth(float theta, float smooth)
-    {
-        turnTargetTheta += theta;
-        float turnTheta = (turnTargetTheta - turnCurrentTheta) * smooth;
-        turnCurrentTheta += turnTheta;
-        turn(turnTheta);
-    }
-
-    void rollSmooth(float theta, float smooth)
-    {
-        rollTargetTheta += theta;
-        float rollTheta = (rollTargetTheta - rollCurrentTheta) * smooth;
-        rollCurrentTheta += rollTheta;
-        roll(rollTheta);
+        target = pos;
     }
 
     void translateTarget(Vector3f pos)
     {
         target += pos;
     }
-
+    
     void setZoom(float z)
+    {
+        distanceToTagret = z;
+        smoothDistanceToTagret = z;
+    }
+
+    void setZoomSmooth(float z)
     {
         distanceToTagret = z;
     }
@@ -281,6 +234,11 @@ class FreeviewComponent: EntityComponent
         return transform.translation();
     }
 
+    Vector3f direction()
+    {
+        return transform.forward();
+    }
+
     Vector3f right()
     {
         return transform.right();
@@ -289,45 +247,6 @@ class FreeviewComponent: EntityComponent
     Vector3f up()
     {
         return transform.up();
-    }
-
-    Vector3f direction()
-    {
-        return transform.forward();
-    }
-
-    void strafe(float speed)
-    {
-        Vector3f forward;
-        forward.x = cos(degtorad(rotTurnTheta));
-        forward.y = 0.0f;
-        forward.z = sin(degtorad(rotTurnTheta));
-        target += forward * speed;
-    }
-
-    void strafeSmooth(float speed, float smooth)
-    {
-        targetMove += speed;
-        float movesp = (targetMove - currentMove) / smooth;
-        currentMove += movesp;
-        strafe(movesp);
-    }
-
-    void move(float speed)
-    {
-        Vector3f dir;
-        dir.x = cos(degtorad(rotTurnTheta + 90.0f));
-        dir.y = 0.0f;
-        dir.z = sin(degtorad(rotTurnTheta + 90.0f));
-        target += dir * speed;
-    }
-
-    void moveSmooth(float speed, float smooth)
-    {
-        targetStrafe += speed;
-        float strafesp = (targetStrafe - currentStrafe) / smooth;
-        currentStrafe += strafesp;
-        move(strafesp);
     }
 
     void screenToWorld(
@@ -378,7 +297,7 @@ class FreeviewComponent: EntityComponent
     
     override void onMouseWheel(int x, int y)
     {
-        if (!active || !enableZoom)
+        if (!active || !enableMouseZoom)
             return;
         
         zoom(cast(float)y * mouseZoomSensibility);
