@@ -5,6 +5,9 @@ import dagon;
 class MyScene: Scene
 {
     Game game;
+    
+    // OBJAsset aModel;
+    // TextureAsset aTexture;
 
     this(Game game)
     {
@@ -14,22 +17,26 @@ class MyScene: Scene
 
     override void beforeLoad()
     {
-        // Create assets
+        // Create assets here, for example:
         // aModel = addOBJAsset("data/model.obj");
         // aTexture = addTextureAsset("data/texture.png");
     }
     
     override void onLoad(Time t, float progress)
     {
+        // Do something each frame while assets are loading
     }
 
     override void afterLoad()
     {
+        // Create entities, materials, initialize game logic
         auto camera = addCamera();
         auto freeview = New!FreeviewComponent(eventManager, camera);
-        freeview.zoom(10);
-        freeview.pitch(-30.0f);
-        freeview.turn(10.0f);
+        freeview.setZoom(5);
+        freeview.setRotation(30.0f, -45.0f, 0.0f);
+        freeview.translationStiffness = 0.25f;
+        freeview.rotationStiffness = 0.25f;
+        freeview.zoomStiffness = 0.25f;
         game.renderer.activeCamera = camera;
 
         auto sun = addLight(LightType.Sun);
@@ -53,9 +60,21 @@ class MyScene: Scene
         game.postProcessingRenderer.fxaaEnabled = true;
     }
     
+    // Event callbacks:
     override void onUpdate(Time t) { }
     override void onKeyDown(int key) { }
     override void onKeyUp(int key) { }
+    override void onTextInput(dchar code) { }
     override void onMouseButtonDown(int button) { }
     override void onMouseButtonUp(int button) { }
+    override void onMouseWheel(int x, int y) { }
+    override void onJoystickButtonDown(int btn) { }
+    override void onJoystickButtonUp(int btn) { }
+    override void onJoystickAxisMotion(int axis, float value) { }
+    override void onResize(int width, int height) { }
+    override void onFocusLoss() { }
+    override void onFocusGain() { }
+    override void onDropFile(string filename) { }
+    override void onUserEvent(int code) { }
+    override void onQuit() { }
 }
