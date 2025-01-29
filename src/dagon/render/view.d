@@ -42,8 +42,8 @@ import dagon.render.pipeline;
 enum: uint
 {
     Perspective = 0,
-    Orthographic = 1,
-    Orthographic2D = 2
+    Ortho = 1,
+    OrthoScreen = 2
 }
 
 class RenderView: Owner
@@ -102,9 +102,9 @@ class RenderView: Owner
         
         if (projection == Perspective)
             return perspectiveMatrix(fov, aspectRatio, zNear, zFar);
-        else if (projection == Orthographic2D)
+        else if (projection == OrthoScreen)
             return orthoMatrix(0.0f, width, height, 0.0f, 0.0f, zFar);
-        else if (projection == Orthographic)
+        else if (projection == Ortho)
             return orthoMatrix(-orthoScale * aspectRatio, orthoScale * aspectRatio, -orthoScale, orthoScale, -zFar * 0.5f, zFar * 0.5f);
         else
             return Matrix4x4f.identity;

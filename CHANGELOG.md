@@ -10,10 +10,13 @@ Dagon 0.19.0 - TBD
   - Environment probes now calculate perceptual roughness based on the grazing angle, which results in nicer floor reflections
   - `Entity.probeExtents` now sets the half-size of a probe
   - Breaking change: all the renderer modules moved from `dagon.game` to `dagon.render`
+  - Breaking change: `RenderView` now supports both screen-aligned and screen-invariant orthographic projections. `RenderView.projection` property was added which accepts `Perspective`, `Ortho` and `OrthoScreen` constants
 - **Graphics components**
   - New built-in shape: `ShapeCylinder`
 - **Collision**
   - New package `dagon.collision` - basic collision detection system
+- *UI*
+  - Breaking change: `FreeviewComponent` has been redesigned
 - **Extensions**
   - `dagon:newton`:
     - `NewtonCharacterComponent` improvements: new method `crouch` and better ground check. The origin of the character is now its feet point instead of the barycenter

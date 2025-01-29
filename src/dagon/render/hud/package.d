@@ -114,7 +114,7 @@ class HUDRenderer: Renderer
         super(eventManager, owner);
 
         setViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
-        view.projection = Orthographic2D;
+        view.projection = OrthoScreen;
 
         passHUD = New!PassHUD(pipeline);
         passHUD.clear = false;
