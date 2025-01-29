@@ -10,7 +10,7 @@ Dagon 0.19.0 - TBD
   - Environment probes now calculate perceptual roughness based on the grazing angle, which results in nicer floor reflections
   - `Entity.probeExtents` now sets the half-size of a probe
   - Breaking change: all the renderer modules moved from `dagon.game` to `dagon.render`
-  - Breaking change: `RenderView` now supports both screen-aligned and screen-invariant orthographic projections. `RenderView.projection` property was added which accepts `Perspective`, `Ortho` and `OrthoScreen` constants
+  - Breaking change: `RenderView` now supports both screen-aligned and screen-invariant orthographic projections. `RenderView.projection` property was added which accepts `Perspective`, `Ortho` and `OrthoScreen` constants. `RenderView.orthoScale` controls projection scale in `Ortho` mode
 - **Graphics components**
   - New built-in shape: `ShapeCylinder`
 - **Collision**
