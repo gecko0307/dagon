@@ -13,6 +13,7 @@ Dagon 0.19.0 - TBD
   - Breaking change: `RenderView` now supports both screen-aligned and screen-invariant orthographic projections. `RenderView.projection` property was added which accepts `Perspective`, `Ortho` and `OrthoScreen` constants. `RenderView.orthoScale` controls projection scale in `Ortho` mode
 - **Graphics components**
   - New built-in shape: `ShapeCylinder`
+  - New drawable object: `Billboard`
 - **Collision**
   - New package `dagon.collision` - basic collision detection system
 - **UI**
