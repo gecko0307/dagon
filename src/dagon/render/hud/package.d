@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -39,6 +39,7 @@ import dagon.resource.scene;
 import dagon.render.renderer;
 import dagon.render.pipeline;
 import dagon.render.pass;
+import dagon.render.view;
 public import dagon.render.hud.shaders;
 
 class PassHUD: RenderPass
@@ -113,7 +114,7 @@ class HUDRenderer: Renderer
         super(eventManager, owner);
 
         setViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
-        view.ortho = true;
+        view.projection = Orthographic2D;
 
         passHUD = New!PassHUD(pipeline);
         passHUD.clear = false;

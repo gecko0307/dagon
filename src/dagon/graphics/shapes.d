@@ -449,36 +449,36 @@ class ShapeCylinder: Mesh
         
         float angle = 0.0f;
         
-        // Caps
-        uint topCapVertStart = 0;
-        uint topCapTrisStart = 0;
+        // Caps centers
+        uint topbaseVertStart = 0;
+        uint topbaseTrisStart = 0;
         
-        vertices[topCapVertStart] = Vector3f(0.0f, height * 0.5f, 0.0f);
-        normals[topCapVertStart] = Vector3f(0.0f, 1.0f, 0.0f);
-        texcoords[topCapVertStart] = Vector2f(0.5f, 0.5f);
+        vertices[topbaseVertStart] = Vector3f(0.0f, height * 0.5f, 0.0f);
+        normals[topbaseVertStart] = Vector3f(0.0f, 1.0f, 0.0f);
+        texcoords[topbaseVertStart] = Vector2f(0.5f, 0.5f);
         
-        uint botCapVertStart = topCapVertStart + numVerticesCap;
-        uint botCapTrisStart = topCapTrisStart + slices;
+        uint botbaseVertStart = topbaseVertStart + numVerticesCap;
+        uint botbaseTrisStart = topbaseTrisStart + slices;
         
-        vertices[botCapVertStart] = Vector3f(0.0f, -height * 0.5f, 0.0f);
-        normals[botCapVertStart] = Vector3f(0.0f, -1.0f, 0.0f);
-        texcoords[botCapVertStart] = Vector2f(0.5f, 0.5f);
+        vertices[botbaseVertStart] = Vector3f(0.0f, -height * 0.5f, 0.0f);
+        normals[botbaseVertStart] = Vector3f(0.0f, -1.0f, 0.0f);
+        texcoords[botbaseVertStart] = Vector2f(0.5f, 0.5f);
         
-        // Sides
-        uint sideVertStart = botCapVertStart + numVerticesCap;
-        uint sideTrisStart = botCapTrisStart + slices;
+        // Slices
+        uint sideVertStart = botbaseVertStart + numVerticesCap;
+        uint sideTrisStart = botbaseTrisStart + slices;
         
         for(uint s = 0; s < slices; s++)
         {
             float x = cos(angle);
             float z = sin(angle);
             
-            // Top and bottom caps for this slice
-            uint viTop = topCapVertStart + 1 + s;
-            uint viBot = botCapVertStart + 1 + s;
+            // Top and bottom cap triangles for this slice
+            uint viTop = topbaseVertStart + 1 + s;
+            uint viBot = botbaseVertStart + 1 + s;
             
-            uint tiTop = topCapTrisStart + s;
-            uint tiBot = botCapTrisStart + s;
+            uint tiTop = topbaseTrisStart + s;
+            uint tiBot = botbaseTrisStart + s;
             
             vertices[viTop] = Vector3f(x * radius, height * 0.5f, z * radius);
             normals[viTop] = Vector3f(0.0f, 1.0f, 0.0f);
@@ -488,8 +488,8 @@ class ShapeCylinder: Mesh
             normals[viBot] = Vector3f(0.0f, -1.0f, 0.0f);
             texcoords[viBot] = Vector2f(0.5f - x * 0.5f, z * 0.5f + 0.5f);
             
-            indices[tiTop][0] = topCapVertStart;
-            indices[tiBot][0] = botCapVertStart;
+            indices[tiTop][0] = topbaseVertStart;
+            indices[tiBot][0] = botbaseVertStart;
             
             if (s < slices - 1)
             {
@@ -498,14 +498,14 @@ class ShapeCylinder: Mesh
             }
             else
             {
-                indices[tiTop][1] = indices[topCapTrisStart][2];
-                indices[tiBot][2] = indices[botCapTrisStart][1];
+                indices[tiTop][1] = indices[topbaseTrisStart][2];
+                indices[tiBot][2] = indices[botbaseTrisStart][1];
             }
             
             indices[tiTop][2] = viTop;
             indices[tiBot][1] = viBot;
             
-            // Side for this slice
+            // Side triangles for this slice
             uint vi = sideVertStart + s * 2;
             
             float mapU = uStep * cast(float)s;
@@ -521,10 +521,10 @@ class ShapeCylinder: Mesh
             if (s == slices - 1)
             {
                 // Fill the last loop pair (same as first)
-                vertices[vi+2] = vertices[topCapVertStart + 1];
+                vertices[vi+2] = vertices[topbaseVertStart + 1];
                 normals[vi+2] = Vector3f(1.0f, 0.0f, 0.0f);
                 texcoords[vi+2] = Vector2f(0.0f, 0.0f);
-                vertices[vi+3] = vertices[botCapVertStart + 1];
+                vertices[vi+3] = vertices[botbaseVertStart + 1];
                 normals[vi+3] = Vector3f(1.0f, 0.0f, 0.0f);
                 texcoords[vi+3] = Vector2f(0.0f, 1.0f);
             }
@@ -550,4 +550,5 @@ class ShapeCylinder: Mesh
     }
 }
 
-// TODO: ShapeCone, ShapeCapsule
+// TODO: ShapeCone
+// TODO: ShapeCapsule

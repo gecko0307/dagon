@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -39,15 +39,23 @@ import dagon.graphics.camera;
 
 import dagon.render.pipeline;
 
+enum: uint
+{
+    Perspective = 0,
+    Orthographic = 1,
+    Orthographic2D = 2
+}
+
 class RenderView: Owner
-{    
+{
     Camera camera;
     uint x;
     uint y;
     uint width;
     uint height;
     float aspectRatio;
-    bool ortho = false;
+    uint projection = Perspective;
+    float orthoScale = 1.0f;
     RenderPipeline pipeline;
     
     this(uint x, uint y, uint width, uint height, Owner owner)
@@ -91,10 +99,15 @@ class RenderView: Owner
             zNear = camera.zNear;
             zFar = camera.zFar;
         }
-        if (ortho)
-            return orthoMatrix(0.0f, width, height, 0.0f, 0.0f, zFar);
-        else
+        
+        if (projection == Perspective)
             return perspectiveMatrix(fov, aspectRatio, zNear, zFar);
+        else if (projection == Orthographic2D)
+            return orthoMatrix(0.0f, width, height, 0.0f, 0.0f, zFar);
+        else if (projection == Orthographic)
+            return orthoMatrix(-orthoScale * aspectRatio, orthoScale * aspectRatio, -orthoScale, orthoScale, -zFar * 0.5f, zFar * 0.5f);
+        else
+            return Matrix4x4f.identity;
     }
     
     float zNear()
