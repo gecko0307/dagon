@@ -31,8 +31,7 @@ class TestScene: Scene
         auto camera = addCamera();
         auto freeview = New!FreeviewComponent(eventManager, camera);
         freeview.zoom(-20);
-        freeview.pitch(-30.0f);
-        freeview.turn(10.0f);
+        freeview.setRotation(-30.0f, 10.0f, 0.0f);
         game.renderer.activeCamera = camera;
 
         auto sun = addLight(LightType.Sun);
