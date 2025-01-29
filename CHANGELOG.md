@@ -15,7 +15,7 @@ Dagon 0.19.0 - TBD
   - New built-in shape: `ShapeCylinder`
 - **Collision**
   - New package `dagon.collision` - basic collision detection system
-- *UI*
+- **UI**
   - Breaking change: `FreeviewComponent` has been redesigned
 - **Extensions**
   - `dagon:newton`:
