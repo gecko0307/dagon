@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2018-2022 Timur Gafarov
+Copyright (c) 2018-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -193,7 +193,8 @@ if (is(T == bool) ||
     is(T == Vector3f) ||
     is(T == Vector4f) ||
     is(T == Color4f) ||
-    is(T == Matrix4x4f))
+    is(T == Matrix4x4f) ||
+    is(T == Matrix3x3f))
 {
     T* source;
     T value;
@@ -263,6 +264,10 @@ if (is(T == bool) ||
         else static if (is(T == Matrix4x4f))
         {
             glUniformMatrix4fv(location, 1, GL_FALSE, value.arrayof.ptr);
+        }
+        else static if (is(T == Matrix3x3f))
+        {
+            glUniformMatrix3fv(location, 1, GL_FALSE, value.arrayof.ptr);
         }
     }
 

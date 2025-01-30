@@ -75,7 +75,7 @@ class SimpleForwardShader: Shader
         setParameter("normalMatrix", state.normalMatrix);
         
         setParameter("opacity", mat.opacity * state.opacity);
-        setParameter("textureScale", mat.textureScale);
+        setParameter("textureMatrix", mat.textureTransformation);
         
         setParameter("alphaTestThreshold", mat.alphaTestThreshold);
         

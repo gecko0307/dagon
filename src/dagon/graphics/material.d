@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2022 Timur Gafarov
+Copyright (c) 2017-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -34,6 +34,7 @@ import std.algorithm;
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.math.vector;
+import dlib.math.matrix;
 import dlib.image.color;
 import dlib.image.image;
 import dlib.image.unmanaged;
@@ -85,7 +86,7 @@ class Material: Owner
     Color4f baseColorFactor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
     Color4f emissionFactor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
     Vector3f normalFactor = Vector3f(0.0f, 0.0f, 1.0f);
-    Vector2f textureScale = Vector2f(1.0f, 1.0f); // TODO: textureTransformation matrix instead
+    Matrix3x3f textureTransformation;
     float heightFactor = 0.0f;
     float emissionEnergy = 1.0f;
     float opacity = 1.0f;
@@ -113,9 +114,13 @@ class Material: Owner
     bool outputPBR = true;
     bool outputEmission = true;
     
+    protected Vector2f textureOffsetInternal = Vector2f(0.0f, 0.0f);
+    protected Vector2f textureScalingInternal = Vector2f(1.0f, 1.0f);
+    
     this(Owner o)
     {
         super(o);
+        textureTransformation = Matrix3x3f.identity;
     }
     
     ~this()
@@ -125,6 +130,30 @@ class Material: Owner
     bool isTransparent()
     {
         return (blendMode != Opaque);
+    }
+    
+    Vector2f textureOffset()
+    {
+        return textureOffsetInternal;
+    }
+    
+    void textureOffset(Vector2f v)
+    {
+        textureOffsetInternal = v;
+        textureTransformation.a13 = v.x;
+        textureTransformation.a23 = v.y;
+    }
+    
+    Vector2f textureScale()
+    {
+        return textureScalingInternal;
+    }
+    
+    void textureScale(Vector2f s)
+    {
+        textureScalingInternal = s;
+        textureTransformation.a11 = s.x;
+        textureTransformation.a22 = s.y;
     }
     
     void bind(GraphicsState* state)

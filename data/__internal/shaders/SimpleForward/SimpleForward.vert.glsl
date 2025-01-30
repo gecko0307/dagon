@@ -7,8 +7,7 @@ layout (location = 2) in vec2 va_Texcoord;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 normalMatrix;
-
-uniform vec2 textureScale;
+uniform mat3 textureMatrix;
 
 out vec3 eyeNormal;
 out vec3 eyePosition;
@@ -22,7 +21,7 @@ void main()
     vec4 modelNormal = vec4(va_Normal, 0.0);
     eyeNormal = (normalMatrix * modelNormal).xyz;
     
-    texCoord = va_Texcoord * textureScale;
+    texCoord = (textureMatrix * vec3(va_Texcoord, 1.0)).xy;
     
     vec4 currPosition = projectionMatrix * pos;
     
