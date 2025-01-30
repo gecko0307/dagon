@@ -49,7 +49,7 @@ Features
 * Ownership memory model
 * Entity-component model
 * Built-in camera logics for easy navigation: freeview and first person views
-* Physics extension that uses [Newton Dynamics](http://newtondynamics.com). Built-in character controller
+* Rigid body physics extension that uses [Newton Dynamics](http://newtondynamics.com). Built-in character controller
 * Simplified render pipeline for retro and casual-style graphics
 * Orthographic projection support. Sprites and billboards. Create 2.5D isometric games with ease
 * Screen-aligned 2D rendering
