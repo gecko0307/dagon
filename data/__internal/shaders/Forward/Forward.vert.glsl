@@ -8,8 +8,7 @@ uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 normalMatrix;
 uniform mat4 prevModelViewMatrix;
-
-uniform vec2 textureScale;
+uniform mat3 textureMatrix;
 
 uniform bool sphericalNormal;
 
@@ -28,7 +27,7 @@ void main()
     vec4 modelNormal = (sphericalNormal)? vec4(normalize(va_Vertex), 0.0) : vec4(va_Normal, 0.0);
     eyeNormal = (normalMatrix * modelNormal).xyz;
     
-    texCoord = va_Texcoord * textureScale;
+    texCoord = (textureMatrix * vec3(va_Texcoord, 1.0)).xy;
     
     currPosition = projectionMatrix * pos;
     prevPosition = projectionMatrix * prevModelViewMatrix * vec4(va_Vertex, 1.0);

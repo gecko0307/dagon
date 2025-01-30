@@ -82,7 +82,7 @@ class DecalShader: Shader
         setParameter("resolution", state.resolution);
 
         setParameter("opacity", state.opacity * mat.opacity);
-        setParameter("textureScale", mat.textureScale);
+        setParameter("textureMatrix", mat.textureTransformation);
 
         // Depth
         glActiveTexture(GL_TEXTURE0);

@@ -6,8 +6,8 @@ uniform vec2 resolution;
 
 uniform mat4 invViewMatrix;
 uniform mat4 invModelMatrix;
-
 uniform mat4 invProjectionMatrix;
+uniform mat3 textureMatrix;
 
 #include <unproject.glsl>
 #include <gamma.glsl>
@@ -217,6 +217,7 @@ void main()
     
     // Texcoord (go from -1..1 to 0..1)
     vec2 texCoord = objPos.xz * 0.5 + 0.5;
+    texCoord = (textureMatrix * vec3(texCoord, 1.0)).xy;
     
     mat3 tangentToEye = cotangentFrame(N, eyePos, texCoord);
     vec3 tE = normalize(E * tangentToEye);

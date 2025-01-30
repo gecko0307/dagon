@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -76,7 +76,7 @@ class GeometryShader: Shader
         setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
 
         setParameter("opacity", state.opacity * mat.opacity);
-        setParameter("textureScale", mat.textureScale);
+        setParameter("textureMatrix", mat.textureTransformation);
         
         setParameter("gbufferMask", state.gbufferMask);
         setParameter("blurMask", state.blurMask);
