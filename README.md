@@ -36,6 +36,7 @@ Features
 * HDRI environment maps. Preconvolved DDS cubemaps
 * Directional lights with cascaded shadow mapping and volumetric scattering
 * Spherical and tube area lights, spot lights
+* Local environment probes with box-projected cube mapping for approximated interior GI
 * Normal/parallax mapping, parallax occlusion mapping
 * Deferred decals with normal mapping and PBR material properties
 * Dynamic skydome with sun and day/night cycle
