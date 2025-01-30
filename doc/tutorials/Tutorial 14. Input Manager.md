@@ -126,7 +126,7 @@ override void onUpdate(Time t)
 
 `getButton` is a continuous check, there are also `getButtonDown` and `getButtonUp` to check if a binding is triggered or released, respectively.
 
-There's also `getAxis` method that returns a value in -1..1 range, which is useful for analog controls, such as steering in racing games. For example, you can assign joystick axes and several virtual axes to `horizontal` and `vertical` bindings in your configuration:
+There's also `getAxis` method that returns a value in -1..1 range, which is useful for analog controls, such as steering in racing games. For example, you can assign gamepad axes and several virtual axes to `horizontal` and `vertical` bindings in your configuration:
 
 ```
 horizontal: "ga_leftx, va(kb_right, kb_left), va(gb_dpright, gb_dpleft)";
