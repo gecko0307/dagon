@@ -43,8 +43,6 @@ Features
 * Terrain rendering. Procedural terrain using OpenSimplex noise or any custom height field
 * Water rendering
 * Post-processing (FXAA, SSAO, DoF, lens distortion, motion blur, glow, color grading)
-* UTF-8 text rendering using TTF fonts via Freetype
-* GUI extension based on [Dear ImGui](https://github.com/ocornut/imgui)
 * Keyboard, mouse and joystick input. Input manager with abstract bindings and file-based configuration
 * Unicode text input
 * Ownership memory model
@@ -52,7 +50,9 @@ Features
 * Built-in camera logics for easy navigation: freeview and first person views
 * Physics extension that uses [Newton Dynamics](http://newtondynamics.com). Built-in character controller
 * Orthographic projection support. Sprites and billboards. Create 2.5D isometric games with ease
-* Screen-aligned 2D rendering.
+* Screen-aligned 2D rendering
+* UTF-8 text rendering using TTF fonts via Freetype
+* GUI extension based on [Dear ImGui](https://github.com/ocornut/imgui).
 
 Planned in future:
 * Screen-space reflections.
