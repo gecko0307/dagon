@@ -81,7 +81,7 @@ Runtime dependencies are automatically deployed on 64-bit Windows and Linux. On 
 
 Known Bugs and Limitations
 --------------------------
-* The engine doesn't support macOS
+* The engine is not tested on macOS and most likely doesn't support it. macOS support is low priority at the moment
 * dagon:nuklear extension has [problems](https://github.com/gecko0307/dagon/issues/89) under Linux
 * dagon:newton crashes under Linux when loading Newton plugins (`NewtonPhysicsWorld.loadPlugins`)
 
