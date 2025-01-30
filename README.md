@@ -29,8 +29,9 @@ Features
 --------
 * Scene graph
 * Static and animated meshes, [glTF](https://www.khronos.org/gltf/), [OBJ](https://en.wikipedia.org/wiki/Wavefront_.obj_file) and [IQM](https://github.com/lsalzman/iqm) formats support
-* Textures in PNG, JPG, DDS, HDR, TGA, BMP formats + GIF and PSD via extension
+* Textures in PNG, JPG, DDS, HDR, TGA, BMP formats
 * Deferred pipeline for opaque materials, forward pipeline for transparent materials and materials with custom shaders
+* Simplified render pipeline for retro and casual-style graphics
 * Physically based rendering (PBR)
 * HDR rendering with Reinhard, Hable/Uncharted, Unreal, ACES, Filmic and AgX tonemappers
 * HDRI environment maps. Preconvolved DDS cubemaps
@@ -50,7 +51,6 @@ Features
 * Entity-component model
 * Built-in camera logics for easy navigation: freeview and first person views
 * Rigid body physics extension that uses [Newton Dynamics](http://newtondynamics.com). Built-in character controller
-* Simplified render pipeline for retro and casual-style graphics
 * Orthographic projection support. Sprites and billboards. Create 2.5D isometric games with ease
 * Screen-aligned 2D rendering
 * UTF-8 text rendering using TTF fonts via Freetype
