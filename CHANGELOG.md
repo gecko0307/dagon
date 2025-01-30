@@ -14,6 +14,7 @@ Dagon 0.19.0 - TBD
 - **Graphics components**
   - New built-in shape: `ShapeCylinder`
   - New drawable object: `Billboard`
+  - Materials now support arbitrary texture transformations (`Material.textureTransformation` property that accepts 3x3 affine matrix). `Material.setSprite(Vector2f uvSize, Vector2f uvPosition)` can be used to map parts of the texture to surfaces - useful for rendering sprites and sheet animations
 - **Collision**
   - New package `dagon.collision` - basic collision detection system
 - **UI**
