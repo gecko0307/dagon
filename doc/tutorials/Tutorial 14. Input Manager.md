@@ -85,7 +85,7 @@ override void onUpdate(Time r)
 }
 ```
 
-All key and button codes, such as KEY_UP and MB_LEFT, are in `dagon.core.keycodes`. Here's the cheatsheet for gamepad buttons/axes:
+All key and button codes, such as KEY_UP and MB_LEFT, are in `dagon.core.keycodes`. Here's the cheatsheet for gamepad buttons/axes, using Xbox-style gamepad as a reference:
 
 ![](https://github.com/gecko0307/dagon/blob/master/doc/tutorials/images/dagon_game_controller_constants.jpg?raw=true)
 
