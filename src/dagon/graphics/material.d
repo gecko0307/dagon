@@ -156,6 +156,12 @@ class Material: Owner
         textureTransformation.a22 = s.y;
     }
     
+    void setSprite(Vector2f uvSize, Vector2f uvPosition)
+    {
+        textureScale = uvSize;
+        textureOffset = uvPosition;
+    }
+    
     void bind(GraphicsState* state)
     {
         if (blendMode == Transparent)

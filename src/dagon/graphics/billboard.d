@@ -67,10 +67,10 @@ class Billboard: Owner, Drawable
         vertices[2] = Vector2f(1, 0);
         vertices[3] = Vector2f(1, 1);
 
-        texcoords[0] = Vector2f(0, 1);
-        texcoords[1] = Vector2f(0, 0);
-        texcoords[2] = Vector2f(1, 0);
-        texcoords[3] = Vector2f(1, 1);
+        texcoords[0] = Vector2f(0, 0);
+        texcoords[1] = Vector2f(0, 1);
+        texcoords[2] = Vector2f(1, 1);
+        texcoords[3] = Vector2f(1, 0);
 
         indices[0][0] = 0;
         indices[0][1] = 1;
@@ -126,7 +126,7 @@ class Billboard: Owner, Drawable
             state.viewMatrix *
             translationMatrix(position) *
             state.invViewRotationMatrix *
-            rotationMatrix(Axis.z, cast(float)PI + rotation) *
+            rotationMatrix(Axis.z, rotation) *
             scaleMatrix(Vector3f(scaling.x, scaling.y, 1.0f));
         
         stateLocal.modelViewMatrix = modelViewMatrix;
