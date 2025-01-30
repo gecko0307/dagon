@@ -4,7 +4,7 @@ The goal of this project is to create a modern, easy to use, extensible 3D game 
 
 The engine is still under development and lacks many important features. It is currently not recommended to use Dagon in production due to API instability. Follow the development on [Trello](https://trello.com/b/4sDgRjZI/dagon-development-board) to see the priority tasks.
 
-Dagon uses modern graphics techniques and so requires a fairly powerful graphics card to run. Turing-based NVIDIA cards are recommended. The engine is only desktop, support for mobile and web platforms is not planned.
+Dagon uses modern graphics techniques and so requires a fairly powerful graphics card to run (at least Turing-based NVIDIA cards are recommended). The engine is only desktop, support for mobile and web platforms is not planned.
 
 If you like Dagon, support its development on [Patreon](https://www.patreon.com/gecko0307) or [Liberapay](https://liberapay.com/gecko0307). You can also make a one-time donation via [NOWPayments](https://nowpayments.io/donation/gecko0307). I appreciate any support. Thanks in advance!
 
