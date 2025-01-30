@@ -27,6 +27,7 @@ Screenshots
 
 Features
 --------
+* Scene graph
 * Static and animated meshes, [glTF](https://www.khronos.org/gltf/), [OBJ](https://en.wikipedia.org/wiki/Wavefront_.obj_file) and [IQM](https://github.com/lsalzman/iqm) formats support
 * Textures in PNG, JPG, DDS, HDR, TGA, BMP formats + GIF and PSD via extension
 * Deferred pipeline for opaque materials, forward pipeline for transparent materials and materials with custom shaders
@@ -49,7 +50,9 @@ Features
 * Ownership memory model
 * Entity-component model
 * Built-in camera logics for easy navigation: freeview and first person views
-* Physics extension that uses [Newton Dynamics](http://newtondynamics.com). Built-in character controller.
+* Physics extension that uses [Newton Dynamics](http://newtondynamics.com). Built-in character controller
+* Orthographic projection support. Sprites and billboards. Create 2.5D isometric games with ease
+* Screen-aligned 2D rendering.
 
 Planned in future:
 * Screen-space reflections.
