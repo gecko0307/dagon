@@ -65,6 +65,7 @@ class TestScene: Scene
 
 You can also use continuous checks via `eventManager` in `onUpdate` or any other method of your scene:
 
+```d
 override void onUpdate(Time r)
 {
     if (eventManager.keyPressed[KEY_UP])
@@ -82,6 +83,7 @@ override void onUpdate(Time r)
         // do something while button is pressed...
     }
 }
+```
 
 All key and button codes, such as KEY_UP and MB_LEFT, are in `dagon.core.keycodes`. Here's the cheatsheet for gamepad buttons/axes:
 
