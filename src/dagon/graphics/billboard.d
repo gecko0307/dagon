@@ -55,17 +55,15 @@ class Billboard: Owner, Drawable
     GLuint eao = 0;
     
     float rotation = 0.0f;
-    Matrix4x4f prevViewMatrix;
     
     this(Owner owner)
     {
         super(owner);
-        prevViewMatrix = Matrix4x4f.identity;
         
-        vertices[0] = Vector2f(0, 1);
-        vertices[1] = Vector2f(0, 0);
-        vertices[2] = Vector2f(1, 0);
-        vertices[3] = Vector2f(1, 1);
+        vertices[0] = Vector2f(-0.5f, 0.5f);
+        vertices[1] = Vector2f(-0.5f, -0.5f);
+        vertices[2] = Vector2f(0.5f, -0.5f);
+        vertices[3] = Vector2f(0.5f, 0.5f);
 
         texcoords[0] = Vector2f(0, 0);
         texcoords[1] = Vector2f(0, 1);
@@ -130,8 +128,7 @@ class Billboard: Owner, Drawable
             scaleMatrix(Vector3f(scaling.x, scaling.y, 1.0f));
         
         stateLocal.modelViewMatrix = modelViewMatrix;
-        stateLocal.prevModelViewMatrix = prevViewMatrix;
-        prevViewMatrix = modelViewMatrix;
+        stateLocal.prevModelViewMatrix = modelViewMatrix;
         
         if (stateLocal.shader)
         {
