@@ -35,13 +35,16 @@ import dlib.math.matrix;
 import dagon.graphics.entity;
 import dagon.graphics.light;
 
+/*
+ * Object that stores entities and provides entity groups
+ */
 class World: Owner
 {
     Matrix4x4f rootTransformation;
     Matrix4x4f rootInvTransformation;
     Matrix4x4f prevRootTransformation;
     
-    protected Array!Entity array;
+    protected Array!Entity entities;
     
     EntityGroupSpatial spatial;
     EntityGroupSpatialOpaque spatialOpaqueStatic;
@@ -78,7 +81,7 @@ class World: Owner
 
     void add(Entity e)
     {
-        array.append(e);
+        entities.append(e);
     }
     
     Entity addEntity(Entity parent = null)
@@ -91,32 +94,32 @@ class World: Owner
     
     int opApply(scope int delegate(size_t, ref Entity) dg)
     {
-        return array.opApply(dg);
+        return entities.opApply(dg);
     }
     
     int opApply(scope int delegate(ref Entity) dg)
     {
-        return array.opApply(dg);
+        return entities.opApply(dg);
     }
     
     int opApplyReverse(scope int delegate(size_t, ref Entity) dg)
     {
-        return array.opApplyReverse(dg);
+        return entities.opApplyReverse(dg);
     }
     
     int opApplyReverse(scope int delegate(ref Entity) dg)
     {
-        return array.opApplyReverse(dg);
+        return entities.opApplyReverse(dg);
     }
     
     size_t length()
     {
-        return array.length;
+        return entities.length;
     }
 
     ~this()
     {
-        array.free();
+        entities.free();
     }
 }
 
