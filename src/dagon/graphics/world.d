@@ -40,6 +40,8 @@ import dagon.graphics.light;
  */
 class World: Owner
 {
+    bool visible = true;
+    
     Matrix4x4f rootTransformation;
     Matrix4x4f rootInvTransformation;
     Matrix4x4f prevRootTransformation;
@@ -61,22 +63,56 @@ class World: Owner
     this(Owner owner)
     {
         super(owner);
-        
+        resetTransformation();
+        createEntityGroups();
+    }
+    
+    ~this()
+    {
+        entities.free();
+    }
+    
+    void resetTransformation()
+    {
         rootTransformation = Matrix4x4f.identity;
         rootInvTransformation = Matrix4x4f.identity;
         prevRootTransformation = Matrix4x4f.identity;
+    }
+    
+    void createEntityGroups()
+    {
+        if (spatial is null)
+            spatial = New!EntityGroupSpatial(this, this);
         
-        spatial = New!EntityGroupSpatial(this, this);
-        spatialOpaqueStatic = New!EntityGroupSpatialOpaque(this, false, this);
-        spatialOpaqueDynamic = New!EntityGroupSpatialOpaque(this, true, this);
-        spatialTransparent = New!EntityGroupSpatialTransparent(this, this);
-        background = New!EntityGroupBackground(this, this);
-        foreground = New!EntityGroupForeground(this, this);
-        lights = New!EntityGroupLights(this, this);
-        sunLights = New!EntityGroupSunLights(this, this);
-        areaLights = New!EntityGroupAreaLights(this, this);
-        decals = New!EntityGroupDecals(this, this);
-        probes = New!EntityGroupProbes(this, this);
+        if (spatialOpaqueStatic is null)
+            spatialOpaqueStatic = New!EntityGroupSpatialOpaque(this, false, this);
+        
+        if (spatialOpaqueDynamic is null)
+            spatialOpaqueDynamic = New!EntityGroupSpatialOpaque(this, true, this);
+        
+        if (spatialTransparent is null)
+            spatialTransparent = New!EntityGroupSpatialTransparent(this, this);
+        
+        if (background is null)
+            background = New!EntityGroupBackground(this, this);
+        
+        if (foreground is null)
+            foreground = New!EntityGroupForeground(this, this);
+        
+        if (lights is null)
+            lights = New!EntityGroupLights(this, this);
+        
+        if (sunLights is null)
+            sunLights = New!EntityGroupSunLights(this, this);
+        
+        if (areaLights is null)
+            areaLights = New!EntityGroupAreaLights(this, this);
+        
+        if (decals is null)
+            decals = New!EntityGroupDecals(this, this);
+        
+        if (probes is null)
+            probes = New!EntityGroupProbes(this, this);
     }
 
     void add(Entity e)
@@ -94,32 +130,136 @@ class World: Owner
     
     int opApply(scope int delegate(size_t, ref Entity) dg)
     {
-        return entities.opApply(dg);
+        if (visible)
+            return entities.opApply(dg);
+        else return 0;
     }
     
     int opApply(scope int delegate(ref Entity) dg)
     {
-        return entities.opApply(dg);
+        if (visible)
+            return entities.opApply(dg);
+        else return 0;
     }
     
     int opApplyReverse(scope int delegate(size_t, ref Entity) dg)
     {
-        return entities.opApplyReverse(dg);
+        if (visible)
+            return entities.opApplyReverse(dg);
+        else return 0;
     }
     
     int opApplyReverse(scope int delegate(ref Entity) dg)
     {
-        return entities.opApplyReverse(dg);
+        if (visible)
+            return entities.opApplyReverse(dg);
+        else return 0;
     }
     
     size_t length()
     {
         return entities.length;
     }
+}
 
+class MultiWorld: World
+{
+    Array!World subWorlds;
+    
+    this(Owner owner)
+    {
+        super(owner);
+    }
+    
     ~this()
     {
-        entities.free();
+        subWorlds.free();
+    }
+    
+    World addSubWorld(bool visible = true)
+    {
+        auto w = New!World(this);
+        w.visible = visible;
+        subWorlds.append(w);
+        return w;
+    }
+    
+    override int opApply(scope int delegate(size_t, ref Entity) dg)
+    {
+        if (visible)
+        {
+            int res = entities.opApply(dg);
+            if (res) return res;
+            foreach(World w; subWorlds.data)
+            {
+                res = w.opApply(dg);
+                if (res)
+                    break;
+            }
+            return res;
+        }
+        else return 0;
+    }
+    
+    override int opApply(scope int delegate(ref Entity) dg)
+    {
+        if (visible)
+        {
+            int res = entities.opApply(dg);
+            if (res) return res;
+            foreach(World w; subWorlds.data)
+            {
+                res = w.opApply(dg);
+                if (res)
+                    break;
+            }
+            return res;
+        }
+        else return 0;
+    }
+    
+    override int opApplyReverse(scope int delegate(size_t, ref Entity) dg)
+    {
+        if (visible)
+        {
+            int res = entities.opApplyReverse(dg);
+            if (res) return res;
+            foreach(World w; subWorlds.data)
+            {
+                res = w.opApplyReverse(dg);
+                if (res)
+                    break;
+            }
+            return res;
+        }
+        else return 0;
+    }
+    
+    override int opApplyReverse(scope int delegate(ref Entity) dg)
+    {
+        if (visible)
+        {
+            int res = entities.opApplyReverse(dg);
+            if (res) return res;
+            foreach(World w; subWorlds.data)
+            {
+                res = w.opApplyReverse(dg);
+                if (res)
+                    break;
+            }
+            return res;
+        }
+        else return 0;
+    }
+    
+    override size_t length()
+    {
+        size_t res = entities.length;
+        foreach(World w; subWorlds.data)
+        {
+            res += w.length();
+        }
+        return res;
     }
 }
 

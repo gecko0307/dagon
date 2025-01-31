@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2023 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -57,6 +57,11 @@ import dagon.resource.binary;
 class Scene: EventListener
 {
     Application application;
+    
+    protected AssetManager assetManagerInternal;
+    protected World worldInternal;
+    protected Environment environmentInternal;
+    
     AssetManager assetManager;
     World world;
     Environment environment;
@@ -72,12 +77,17 @@ class Scene: EventListener
     {
         super(application.eventManager, application);
         this.application = application;
-        world = New!World(this);
+        
+        assetManagerInternal = New!AssetManager(eventManager, this);
+        assetManager = assetManagerInternal;
+        
+        worldInternal = New!World(this);
+        world = worldInternal;
 
-        environment = New!Environment(this);
+        environmentInternal = New!Environment(this);
+        environment = environmentInternal;
+        
         decalShape = New!ShapeBox(Vector3f(1, 1, 1), this);
-
-        assetManager = New!AssetManager(eventManager, this);
     }
 
     // Set preload to true if you want to load the asset immediately
