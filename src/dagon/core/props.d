@@ -38,6 +38,7 @@ import dlib.container.dict;
 import dlib.text.utils;
 import dlib.math.vector;
 import dlib.image.color;
+import dlib.text.str;
 import dlib.text.lexer;
 
 enum DPropType
@@ -61,42 +62,66 @@ struct DProperty
 
     double toDouble()
     {
-        return to!double(data);
+        if (data.length)
+            return to!double(data);
+        else
+            return double.nan;
     }
 
     float toFloat()
     {
-        return to!float(data);
+        if (data.length)
+            return to!float(data);
+        else
+            return float.nan;
     }
 
     int toInt()
     {
-        return to!int(data);
+        if (data.length)
+            return to!int(data);
+        else
+            return 0;
     }
 
     int toUInt()
     {
-        return to!uint(data);
+        if (data.length)
+            return to!uint(data);
+        else
+            return 0;
     }
 
     bool toBool()
     {
-        return cast(bool)cast(int)(to!float(data));
+        if (data.length)
+            return cast(bool)cast(int)(to!float(data));
+        else
+            return false;
     }
 
     Vector3f toVector3f()
     {
-        return Vector3f(data);
+        if (data.length)
+            return Vector3f(data);
+        else
+            return Vector3f();
     }
 
     Vector4f toVector4f()
     {
-        return Vector4f(data);
+        if (data.length)
+            return Vector4f(data);
+        else
+            return Vector4f();
     }
 
     Color4f toColor4f()
     {
-        return Color4f(Vector4f(data));
+        if (data.length)
+            return Color4f(Vector4f(data));
+        else
+            return Color4f();
     }
 }
 
@@ -113,6 +138,19 @@ class Properties: Owner
     bool parse(string input)
     {
         return parseProperties(input, this);
+    }
+    
+    String serialize()
+    {
+        String output;
+        foreach(k, v; props)
+        {
+            output ~= k;
+            output ~= ": ";
+            output ~= v.data;
+            output ~= ";\n";
+        }
+        return output;
     }
 
     DProperty opIndex(string name)
