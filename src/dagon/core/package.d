@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -36,6 +36,7 @@ public
     import dagon.core.input;
     import dagon.core.keycodes;
     import dagon.core.locale;
+    import dagon.core.persistent;
     import dagon.core.props;
     import dagon.core.time;
     import dagon.core.vfs;

@@ -1,6 +1,7 @@
 Dagon 0.19.0 - TBD
 ------------------
 - **Core**
+  - `dagon.core.persistent` - simple file-based key-value database that can be used to manage application-specific user data, such as preferences and game saves
   - `InputManager` now supports whitespace-separated keycode names in bindings. Instead of the whitespace, `+` sign is used, e.g. `kb_left+ctrl` for `left ctrl`
   - `Application` now sets console encoding to UTF-8 under Windows
 - **Rendering**
