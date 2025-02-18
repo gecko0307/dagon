@@ -1,5 +1,5 @@
-Dagon 0.19.0 - TBD
-------------------
+Dagon 0.19.0 - 18 Feb, 2025
+---------------------------
 - **Core**
   - `dagon.core.persistent` - simple file-based key-value database that can be used to manage application-specific user data, such as preferences and game saves
   - `InputManager` now supports whitespace-separated keycode names in bindings. Instead of the whitespace, `+` sign is used, e.g. `kb_left+ctrl` for `left ctrl`
@@ -23,7 +23,7 @@ Dagon 0.19.0 - TBD
 - **Extensions**
   - `dagon:newton`:
     - `NewtonCharacterComponent` improvements: new method `crouch` and better ground check. The origin of the character is now its feet point instead of the barycenter
-    - `NewtonRigidBody.sensorCallback`, `NewtonRigidBody.contactCallback`
+    - New callbacks for `NewtonRigidBody`: `sensorCallback` and `contactCallback`
   - `dagon:ftfont`:
     - Rename the Windows library to `freetype-6.dll`
 - **Tools**
