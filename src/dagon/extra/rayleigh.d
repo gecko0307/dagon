@@ -76,7 +76,10 @@ class RayleighShader: Shader
         setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
 
         setParameter("cameraPosition", state.cameraPosition);
-        
+
+        setParameter("gbufferMask", state.gbufferMask);
+        setParameter("blurMask", state.blurMask);
+
         if (mat.sun)
             setParameter("sunDirection", mat.sun.directionAbsolute);
         else if (state.environment.sun)

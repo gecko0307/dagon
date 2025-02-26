@@ -102,8 +102,6 @@ float scattering(float lightDotView)
 void main()
 {
     vec4 col = texture(colorBuffer, texCoord);
-    if (col.a < 1.0)
-        discard;
 
     vec3 albedo = toLinear(col.rgb);
     
@@ -161,6 +159,9 @@ void main()
     float linearDepth = abs(eyePos.z);
     float fogFactor = clamp((fogEnd - linearDepth) / (fogEnd - fogStart), 0.0, 1.0);
     radiance *= fogFactor;
+    
+    // Clip background surfaces
+    radiance *= col.a;
     
     float scattFactor = 0.0;
     if (lightScattering)
