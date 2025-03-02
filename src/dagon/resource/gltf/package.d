@@ -753,6 +753,15 @@ class GLTFAsset: Asset, TriangleSet
                         writeln("Warning: mesh ", meshIndex, " doesn't exist");
                 }
                 
+                if ("extensions" in node)
+                {
+                    auto nodeExt = node["extensions"].asObject;
+                    if ("KHR_lights_punctual" in nodeExt)
+                    {
+                        // TODO
+                    }
+                }
+                
                 if ("matrix" in node)
                 {
                     nodeObj.transformation = node["matrix"].asMatrix;
