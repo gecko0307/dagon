@@ -561,6 +561,20 @@ class GLTFAsset: Asset, TriangleSet
                     material.emissionFactor = emissiveFactor;
                 }
                 
+                if ("extensions" in ma)
+                {
+                    auto extensions = ma["extensions"].asObject;
+                    
+                    if ("KHR_materials_emissive_strength" in extensions)
+                    {
+                        auto khrEmissiveStrength = extensions["KHR_materials_emissive_strength"].asObject;
+                        if (khrEmissiveStrength && "emissiveStrength" in khrEmissiveStrength)
+                        {
+                            material.emissionEnergy = khrEmissiveStrength["emissiveStrength"].asNumber;
+                        }
+                    }
+                }
+                
                 if ("doubleSided" in ma)
                 {
                     uint doubleSided = cast(uint)ma["doubleSided"].asNumber;
