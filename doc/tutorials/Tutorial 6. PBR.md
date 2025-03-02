@@ -54,6 +54,6 @@ mHelmet.normalTexture = aTexHelmetNormal.texture;
 mHelmet.emissionTexture = aTexHelmetEmission.texture;
 ```
 
-![](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/10/dagon-filmic.jpg?raw=1)
+![](https://github.com/gecko0307/dagon/blob/master/doc/tutorials/images/screenshot_tutorial6.jpg?raw=true)
 
 [Browse source code for this tutorial](https://github.com/gecko0307/dagon-tutorials/tree/master/tutorial6)

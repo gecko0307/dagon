@@ -85,6 +85,8 @@ void layout()
 
 ![menu](https://miro.medium.com/max/349/1*ipX6cxhZHQbkNqtD5eaSdQ.png)
 
+![](https://github.com/gecko0307/dagon/blob/master/doc/tutorials/images/nuklear_menu.png?raw=true)
+
 Layout can get pretty long, so it is feasible to break it into multiple methods — for example, one method per each widget.
 
 If-blocks are used to bind actions to UI events. If some widget returns true, then it is clicked. However, Nuklear doesn’t respond to user input right out of the box — this is something that you have control over. As a bare minimum, you have to notify Nuklear about mouse button events:
@@ -170,5 +172,3 @@ override void onKeyDown(int key)
 ```
 
 Copy/paste support (which is non-trivial taking UTF-8 into account) is provided by the extension, so you don't have to worry about it.
-
-![input](https://miro.medium.com/max/299/1*Ou14_AC6D6lPrA4oMfgvwg.png)
