@@ -22,7 +22,7 @@ This code seamlessly supports both equirectangular environment maps and DDS cube
 
 For this tutorial I've used an equirectangular environment map in Radiance RGBE (HDR) format:
 
-![](https://www.dropbox.com/s/i7k9mzdllyva3qh/envmap.jpg?raw=1)
+![](https://github.com/gecko0307/dagon/blob/master/doc/tutorials/images/envmap.jpg?raw=true)
 
 To actually see the map at the background, you should create a sky:
 ```d
@@ -36,6 +36,7 @@ eSky.material.depthWrite = false;
 eSky.material.culling = false;
 eSky.material.baseColorTexture = aTexEnvmap.texture;
 ```
-![](https://www.dropbox.com/s/i4366d7owda1abp/hdr.jpg?raw=1)
+
+![](https://github.com/gecko0307/dagon/blob/master/doc/tutorials/images/screenshot_tutorial5.jpg?raw=true)
 
 [Browse source code for this tutorial](https://github.com/gecko0307/dagon-tutorials/tree/master/tutorial5)

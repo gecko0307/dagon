@@ -10,7 +10,7 @@ light.radius = 0.1f;
 light.volumeRadius = 5.0f;
 ```
 
-![](https://2.bp.blogspot.com/-C_epqAkvAzY/Www9UBn1_sI/AAAAAAAADZc/8tmbq35vXkwtZ9eiyKsjTfsmv7mvo3gsQCLcBGAs/s1600/Untitled%2B5.jpg)
+![](https://github.com/gecko0307/dagon/blob/master/doc/tutorials/images/screenshot_tutorial4.jpg?raw=true)
 
 Keep in mind that point/area lights in Dagon rely on the deferred rendering system. This means that they affect only opaque (alpha-clipped) objects. Blended objects are not supported by deferred renderer, so they are drawn at a separate pipeline stage with fallback forward lighting shader that currently supports only one global sun light (`environment.sun`).
 
