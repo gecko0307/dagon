@@ -35,6 +35,7 @@ import dlib.image.color;
 
 import dagon.core.bindings;
 import dagon.graphics.entity;
+import dagon.graphics.shader;
 import dagon.graphics.terrain;
 import dagon.graphics.screensurface;
 import dagon.render.pipeline;
@@ -162,20 +163,29 @@ class PassTerrain: RenderPass
             glBlendFuncSeparatei(3, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
             
             glDisable(GL_DEPTH_TEST);
-            terrainTextureLayerShader.bind();
             
             if (terrainMaterial)
             {
                 foreach(layer; terrainMaterial.layers)
                 {
                     state.material = layer;
-                    terrainTextureLayerShader.bindParameters(&state);
+                    
+                    Shader shader;
+                    if (state.material.shader)
+                        shader = state.material.shader;
+                    else
+                        shader = terrainTextureLayerShader;
+                    
+                    shader.bind();
+                    shader.bindParameters(&state);
+                    
                     screenSurface.render(&state);
-                    terrainTextureLayerShader.unbindParameters(&state);
+                    
+                    shader.unbindParameters(&state);
+                    shader.unbind();
                 }
             }
             
-            terrainTextureLayerShader.unbind();
             glEnable(GL_DEPTH_TEST);
             
             glDisablei(GL_BLEND, 0);
