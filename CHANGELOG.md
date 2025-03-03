@@ -4,7 +4,10 @@ Dagon 0.20.0 - TBD
   - Custom shaders for terrain material layers
   - Volumetric light scattering now correctly affects background surfaces as well, even they are not directly lit by the sun light. This fixes an ugly artifact with clipped scattering when using a skybox
 - **Assets**
-  - `KHR_materials_emissive_strength` extension support for glTF materials. It is interpreted as `Material.emissionEnergy`.
+  - `KHR_materials_emissive_strength` extension support for glTF materials. It is interpreted as `Material.emissionEnergy`
+- **Extensions**
+  - `dagon:newton`:
+    - Update libnewton for Linux.
 
 Dagon 0.19.0 - 18 Feb, 2025
 ---------------------------
