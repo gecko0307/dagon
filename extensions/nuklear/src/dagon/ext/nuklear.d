@@ -1093,21 +1093,33 @@ class NuklearGUI: Owner, Updateable, Drawable
     {
         va_list args;
         va_start(args, format);
-        nk_labelf_colored(&ctx, align_, color, format, args);
+        version(GNU) {
+	        nk_labelf_colored(&ctx, align_, color, format, args.ptr);
+        } else {
+        	nk_labelf_colored(&ctx, align_, color, format, args);
+        }
     }
 
     void labelfWrap(const(char)* format, ...)
     {
         va_list args;
         va_start(args, format);
-        nk_labelf_wrap(&ctx, format, args);
+        version(GNU) {
+	        nk_labelf_wrap(&ctx, format, args.ptr);
+        } else {
+        	nk_labelf_wrap(&ctx, format, args);
+        }
     }
 
     void labelfColoredWrap(NKColor color, const(char)* format, ...)
     {
         va_list args;
         va_start(args, format);
-        nk_labelf_colored_wrap(&ctx, color, format, args);
+        version (GNU) {
+	        nk_labelf_colored_wrap(&ctx, color, format, args.ptr);
+        } else {
+        	nk_labelf_colored_wrap(&ctx, color, format, args);
+        }
     }
 
     void valueBool(const(char)* prefix, int value)
