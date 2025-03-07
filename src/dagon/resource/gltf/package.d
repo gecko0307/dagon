@@ -441,6 +441,11 @@ class GLTFAsset: Asset, TriangleSet
                 
                 Material material = New!Material(this);
                 
+                if ("name" in ma)
+                {
+                    material.name = ma["name"].asString;
+                }
+                
                 if ("pbrMetallicRoughness" in ma)
                 {
                     auto pbr = ma["pbrMetallicRoughness"].asObject;
@@ -1049,6 +1054,22 @@ class GLTFAsset: Asset, TriangleSet
         }
         
         return result;
+    }
+    
+    Material material(string name)
+    {
+        Material res;
+        
+        foreach(i, mat; materials)
+        {
+            if (mat.name == name)
+            {
+                res = mat;
+                break;
+            }
+        }
+        
+        return res;
     }
 }
 

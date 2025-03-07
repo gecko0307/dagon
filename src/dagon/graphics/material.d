@@ -75,6 +75,7 @@ enum int Additive = 2;
 
 class Material: Owner
 {
+    string name;
     Shader shader;
     Light sun;
     Texture baseColorTexture;
