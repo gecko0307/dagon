@@ -1,6 +1,7 @@
 Dagon 0.20.0 - TBD
 ------------------
 - **Rendering**
+  - Matcaps (sphere-mapped textures) support
   - Custom shaders for terrain material layers
   - Volumetric light scattering now correctly affects background surfaces as well, even they are not directly lit by the sun light. This fixes an ugly artifact with clipped scattering when using a skybox
 - **Assets**
