@@ -13,13 +13,13 @@ uniform vec3 sunDirection;
 uniform vec4 sunColor;
 uniform float sunEnergy;
 uniform float gloss;
-
-#include <gamma.glsl>
-
 uniform vec4 ambientColor;
 uniform float ambientEnergy;
-
 uniform float alphaTestThreshold;
+uniform int textureMappingMode;
+
+#include <gamma.glsl>
+#include <matcap.glsl>
 
 /*
  * Diffuse
@@ -47,6 +47,9 @@ void main()
     vec2 uv = texCoord;
     vec3 E = normalize(-eyePosition);
     vec3 N = normalize(eyeNormal);
+    
+    if (textureMappingMode == 1)
+        uv = matcap(E, N);
     
     vec3 L = sunDirection;
     

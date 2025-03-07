@@ -38,7 +38,10 @@ uniform mat4 shadowMatrix1;
 uniform mat4 shadowMatrix2;
 uniform mat4 shadowMatrix3;
 
+uniform int textureMappingMode;
+
 #include <gamma.glsl>
+#include <matcap.glsl>
 #include <cotangentFrame.glsl>
 #include <envMapEquirect.glsl>
 #include <fresnel.glsl>
@@ -341,6 +344,9 @@ void main()
     vec2 uv = texCoord;
     vec3 E = normalize(-eyePosition);
     vec3 N = normalize(eyeNormal);
+    
+    if (textureMappingMode == 1)
+        uv = matcap(E, N);
     
     if (generateTBN)
     {

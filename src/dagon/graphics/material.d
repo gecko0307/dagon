@@ -73,6 +73,9 @@ enum int Opaque = 0;
 enum int Transparent = 1;
 enum int Additive = 2;
 
+enum int VertexUV = 0;
+enum int Matcap = 1;
+
 class Material: Owner
 {
     string name;
@@ -102,6 +105,7 @@ class Material: Owner
     int parallaxMode = ParallaxNone;
     int shadowFilter = ShadowFilterPCF;
     int blendMode = Opaque;
+    int textureMappingMode = VertexUV;
     bool shadeless = false;
     bool invertNormalY = true;
     bool useShadows = true;

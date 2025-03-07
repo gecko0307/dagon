@@ -74,15 +74,12 @@ class GeometryShader: Shader
         setParameter("viewMatrix", state.viewMatrix);
         setParameter("invViewMatrix", state.invViewMatrix);
         setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
-
         setParameter("opacity", state.opacity * mat.opacity);
         setParameter("textureMatrix", mat.textureTransformation);
-        
+        setParameter("textureMappingMode", mat.textureMappingMode);
         setParameter("gbufferMask", state.gbufferMask);
         setParameter("blurMask", state.blurMask);
-        
         setParameter("sphericalNormal", cast(int)mat.sphericalNormal);
-        
         setParameter("clipThreshold", mat.alphaTestThreshold);
 
         // Diffuse

@@ -95,9 +95,8 @@ class ForwardShader: Shader
         
         setParameter("materialOpacity", mat.opacity);
         setParameter("stateOpacity", state.opacity);
-        
         setParameter("textureMatrix", mat.textureTransformation);
-        
+        setParameter("textureMappingMode", mat.textureMappingMode);
         setParameter("layer", cast(float)(state.layer));
         setParameter("blurMask", state.blurMask);
         setParameter("viewSize", state.resolution);
