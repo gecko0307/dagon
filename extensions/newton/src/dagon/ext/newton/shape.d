@@ -164,8 +164,10 @@ class NewtonMeshShape: NewtonCollisionShape
             Vector3f n = triangle.n[i];
             NewtonMeshAddPoint(nmesh, p.x, p.y, p.z);
             NewtonMeshAddNormal(nmesh, n.x, n.y, n.z);
+            //NewtonMeshAddUV0(mesh, uv.x, uv.y);
         }
         NewtonMeshEndBuild(nmesh);
+        NewtonMeshTriangulate(nmesh);
         
         newtonCollision = NewtonCreateTreeCollisionFromMesh(world.newtonWorld, nmesh, 0);
         NewtonCollisionSetUserData(newtonCollision, cast(void*)this);
