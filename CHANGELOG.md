@@ -8,7 +8,9 @@ Dagon 0.20.0 - TBD
   - `KHR_materials_emissive_strength` extension support for glTF materials. It is interpreted as `Material.emissionEnergy`
 - **Extensions**
   - `dagon:newton`:
-    - Update libnewton for Linux.
+    - Update libnewton for Linux
+  - `dagon:nuklear`:
+    - GDC support.
 
 Dagon 0.19.0 - 18 Feb, 2025
 ---------------------------
