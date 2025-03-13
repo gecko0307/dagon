@@ -48,14 +48,11 @@ import dagon.graphics.csm;
 import dagon.render.deferred.gbuffer;
 import dagon.resource.asset;
 import dagon.resource.texture;
+import dagon.extra.utils;
 
-// TODO: move to dlib.math.utils
-real frac(real v)
-{
-    real intpart;
-    return modf(v, intpart);
-}
-
+/*
+ * Animated water shader with rain ripples
+ */
 class WaterShader: Shader
 {
     String vs, fs;

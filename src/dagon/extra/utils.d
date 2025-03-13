@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020-2022 Timur Gafarov
+Copyright (c) 2018-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,12 +25,13 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.extra;
+module dagon.extra.utils;
 
-public
+import std.math;
+
+// TODO: move to dlib.math.utils
+real frac(real v)
 {
-    import dagon.extra.rayleigh;
-    import dagon.extra.starfieldsky;
-    import dagon.extra.water;
-    import dagon.extra.puddle;
+    real intpart;
+    return modf(v, intpart);
 }
