@@ -6,6 +6,8 @@ Dagon 0.20.0 - TBD
   - Volumetric light scattering now correctly affects background surfaces as well, even they are not directly lit by the sun light. This fixes an ugly artifact with clipped scattering when using a skybox
 - **Assets**
   - `KHR_materials_emissive_strength` extension support for glTF materials. It is interpreted as `Material.emissionEnergy`
+- **Extra**
+  - `dagon.extra.puddle` - puddle shader for adding a wetness effect to the terrain material
 - **Extensions**
   - `dagon:newton`:
     - Update libnewton for Linux
