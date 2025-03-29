@@ -1,5 +1,5 @@
-Dagon 0.20.0 - TBD
-------------------
+Dagon 0.20.0 - 29 Mar, 2025
+---------------------------
 - **Rendering**
   - Matcaps (sphere-mapped textures) support: `material.textureMappingMode = Matcap;` (default value is `VertexUV`)
   - Custom shaders for terrain material layers
