@@ -155,6 +155,59 @@ struct TextureFormat
     GLenum pixelType;
     uint blockSize;
     uint cubeFaces; // bitwise combination of CubeFaceBit members
+    
+    uint numChannels() @property
+    {
+        if (format in numChannelsFormat)
+            return numChannelsFormat[format];
+        else
+            return 0;
+    }
+    
+    uint channelSize() @property
+    {
+        uint s = 0;
+        switch(pixelType)
+        {
+            case GL_UNSIGNED_BYTE:  s = 1; break;
+            case GL_BYTE:           s = 1; break;
+            case GL_UNSIGNED_SHORT: s = 2; break;
+            case GL_SHORT:          s = 2; break;
+            case GL_UNSIGNED_INT:   s = 4; break;
+            case GL_INT:            s = 4; break;
+            case GL_HALF_FLOAT:     s = 2; break;
+            case GL_FLOAT:          s = 4; break;
+            default:                s = 0; break;
+        }
+        return s;
+    }
+    
+    uint pixelSize() @property
+    {
+        return numChannels * channelSize;
+    }
+    
+    bool isCompressed() @property
+    {
+        return compressedFormats.canFind(internalFormat);
+    }
+    
+    bool isCubemap() @property
+    {
+        return cubeFaces != CubeFaceBit.None;
+    }
+    
+    TextureDimension dimension() @property
+    {
+        if (target == GL_TEXTURE_1D)
+            return TextureDimension.D1;
+        else if (target == GL_TEXTURE_2D)
+            return TextureDimension.D2;
+        else if (target == GL_TEXTURE_3D)
+            return TextureDimension.D3;
+        else
+            return TextureDimension.Undefined;
+    }
 }
 
 enum uint[GLenum] numChannelsFormat = [
@@ -434,6 +487,11 @@ class Texture: Owner
                         offset += imageSize;
                         w /= 2;
                         h /= 2;
+                        if (offset > buffer.length)
+                        {
+                            writeln("Error: incomplete texture buffer");
+                            break;
+                        }
                     }
                 }
             }
@@ -455,7 +513,7 @@ class Texture: Owner
                     offset += size;
                     w /= 2;
                     h /= 2;
-                    if (offset >= buffer.length)
+                    if (offset > buffer.length)
                     {
                         writeln("Error: incomplete texture buffer");
                         break;
@@ -561,13 +619,21 @@ class Texture: Owner
                 
                 uint offset = 0;
                 
+                const uint blockWidth = 4;
+                const uint blockHeight = 4;
+                
                 for (uint mipLevel = 0; mipLevel < mipLevels; mipLevel++)
                 {
-                    uint imageSize = ((w + 3) / 4) * ((h + 3) / 4) * format.blockSize;
+                    uint imageSize = ((w + blockWidth - 1) / blockWidth) * ((h + blockHeight - 1) / blockHeight) * format.blockSize;
                     glCompressedTexImage2D(GL_TEXTURE_2D, mipLevel, format.internalFormat, w, h, 0, imageSize, cast(void*)(buffer.ptr + offset));
                     offset += imageSize;
                     w /= 2;
                     h /= 2;
+                    if (offset > buffer.length)
+                    {
+                        writeln("Error: incomplete texture buffer");
+                        break;
+                    }
                 }
             }
         }
@@ -600,7 +666,7 @@ class Texture: Owner
                     offset += imageSize;
                     w /= 2;
                     h /= 2;
-                    if (offset >= buffer.length)
+                    if (offset > buffer.length)
                     {
                         writeln("Error: incomplete texture buffer");
                         break;
@@ -671,7 +737,7 @@ class Texture: Owner
                     w /= 2;
                     h /= 2;
                     d /= 2;
-                    if (offset >= buffer.length)
+                    if (offset > buffer.length)
                     {
                         writeln("Error: incomplete texture buffer");
                         break;
@@ -832,10 +898,7 @@ class Texture: Owner
     
     uint numChannels() @property
     {
-        if (format.format in numChannelsFormat)
-            return numChannelsFormat[format.format];
-        else
-            return 0;
+        return format.numChannels;
     }
     
     bool hasAlpha() @property
@@ -845,47 +908,27 @@ class Texture: Owner
     
     bool isCompressed() @property
     {
-        return compressedFormats.canFind(format.internalFormat);
+        return format.isCompressed;
     }
     
     bool isCubemap() @property
     {
-        return format.cubeFaces != CubeFaceBit.None;
+        return format.isCubemap;
     }
     
     TextureDimension dimension() @property
     {
-        if (format.target == GL_TEXTURE_1D)
-            return TextureDimension.D1;
-        else if (format.target == GL_TEXTURE_2D)
-            return TextureDimension.D2;
-        else if (format.target == GL_TEXTURE_3D)
-            return TextureDimension.D3;
-        else
-            return TextureDimension.Undefined;
+        return format.dimension;
     }
     
     uint channelSize() @property
     {
-        uint s = 0;
-        switch(format.pixelType)
-        {
-            case GL_UNSIGNED_BYTE:  s = 1; break;
-            case GL_BYTE:           s = 1; break;
-            case GL_UNSIGNED_SHORT: s = 2; break;
-            case GL_SHORT:          s = 2; break;
-            case GL_UNSIGNED_INT:   s = 4; break;
-            case GL_INT:            s = 4; break;
-            case GL_HALF_FLOAT:     s = 2; break;
-            case GL_FLOAT:          s = 4; break;
-            default:                s = 0; break;
-        }
-        return s;
+        return format.channelSize;
     }
     
     uint pixelSize() @property
     {
-        return numChannels * channelSize;
+        return format.pixelSize;
     }
     
     bool useMipmapFiltering() @property
