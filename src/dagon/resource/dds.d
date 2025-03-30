@@ -592,20 +592,12 @@ bool loadDDS(InputStream istrm, TextureBuffer* buffer)
             format.internalFormat = GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_ARB;
             format.blockSize = 16;
             break;
-        case DXGIFormat.BC7_UNORM:
+        case DXGIFormat.BC7_UNORM, DXGIFormat.BC7_UNORM_SRGB:
             format.internalFormat = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
             format.blockSize = 16;
             break;
-        case DXGIFormat.BC7_UNORM_SRGB:
-            format.internalFormat = GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_ARB;
-            format.blockSize = 16;
-            break;
-        case DXGIFormat.ASTC_4X4_UNORM:
+        case DXGIFormat.ASTC_4X4_UNORM, DXGIFormat.ASTC_4X4_UNORM_SRGB:
             format.internalFormat = GL_COMPRESSED_RGBA_ASTC_4x4_KHR;
-            format.blockSize = 16;
-            break;
-        case DXGIFormat.ASTC_4X4_UNORM_SRGB:
-            format.internalFormat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR;
             format.blockSize = 16;
             break;
         // TODO: other ASTC formats
