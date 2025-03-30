@@ -474,9 +474,9 @@ class Texture: Owner
                 
                 if (mipLevels == 1)
                 {
-                    uint size = ((w + 3) / 4) * ((h + 3) / 4) * format.blockSize;
-                    glCompressedTexImage2D(cubeFace, 0, format.internalFormat, w, h, 0, cast(uint)buffer.length, cast(void*)buffer.ptr);
-                    offset += size;
+                    uint imageSize = ((w + 3) / 4) * ((h + 3) / 4) * format.blockSize;
+                    glCompressedTexImage2D(cubeFace, 0, format.internalFormat, w, h, 0, imageSize, cast(void*)(buffer.ptr + offset));
+                    offset += imageSize;
                 }
                 else
                 {
