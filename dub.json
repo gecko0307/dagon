@@ -53,6 +53,7 @@
         "extensions/ftfont",
         "extensions/imgui",
         "extensions/iqm",
+        "extensions/ktx",
         "extensions/lua",
         "extensions/newton",
         "extensions/nuklear",
