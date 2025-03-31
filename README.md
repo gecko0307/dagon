@@ -29,7 +29,7 @@ Features
 --------
 * Scene graph
 * Static and animated meshes, [glTF](https://www.khronos.org/gltf/), [OBJ](https://en.wikipedia.org/wiki/Wavefront_.obj_file) and [IQM](https://github.com/lsalzman/iqm) formats support
-* Textures in PNG, JPG, DDS, HDR, TGA, BMP formats
+* Textures in PNG, JPG, DDS, KTX, KTX2, HDR, TGA, BMP formats
 * Deferred pipeline for opaque materials, forward pipeline for transparent materials and materials with custom shaders
 * Simplified render pipeline for retro and casual-style graphics
 * Physically based rendering (PBR)
