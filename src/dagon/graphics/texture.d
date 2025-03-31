@@ -752,8 +752,9 @@ class Texture: Owner
                 
                 for (uint mipLevel = 0; mipLevel < mipLevels; mipLevel++)
                 {
-                    // TODO: 4 byte alignment
-                    uint imageSize = w * h * d * pSize;
+                    uint rowSize = (w * pSize + 3) & ~3;
+                    uint sliceSize = rowSize * h;
+                    uint imageSize = sliceSize * d;
                     glTexImage3D(GL_TEXTURE_3D, mipLevel, format.internalFormat, w, h, d, 0, format.format, format.pixelType, cast(void*)(buffer.ptr + offset));
                     offset += imageSize;
                     w /= 2;
