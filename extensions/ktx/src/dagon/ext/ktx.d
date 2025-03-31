@@ -671,14 +671,14 @@ bool loadKTX1(InputStream istrm, string filename, TextureBuffer* buffer, bool* g
     return true;
 }
 
-enum TranscodeFormatPriority
+enum TranscodePriority
 {
     Uncompressed,
     Quality,
     Size
 }
 
-bool loadKTX2(InputStream istrm, string filename, TextureBuffer* buffer, TranscodeFormatPriority priority, bool* generateMipmaps)
+bool loadKTX2(InputStream istrm, string filename, TextureBuffer* buffer, TranscodePriority transcodePriority, bool* generateMipmaps)
 {
     size_t dataSize = istrm.size;
     ubyte[] data = New!(ubyte[])(dataSize);
@@ -705,7 +705,7 @@ bool loadKTX2(InputStream istrm, string filename, TextureBuffer* buffer, Transco
         ktx_transcode_fmt_e targetFormat;
         string targetFormatStr;
         
-        if (priority == TranscodeFormatPriority.Uncompressed)
+        if (transcodePriority == TranscodePriority.Uncompressed)
         {
             targetFormat = ktx_transcode_fmt_e.KTX_TTF_RGBA32;
             targetFormatStr = "RGBA32";
@@ -722,7 +722,7 @@ bool loadKTX2(InputStream istrm, string filename, TextureBuffer* buffer, Transco
         }
         else if (numChannels == 3)
         {
-            if (bptcSupported && priority == TranscodeFormatPriority.Quality)
+            if (bptcSupported && transcodePriority == TranscodePriority.Quality)
             {
                 targetFormat = ktx_transcode_fmt_e.KTX_TTF_BC7_RGBA;
                 targetFormatStr = "BPTC/BC7";
@@ -735,7 +735,7 @@ bool loadKTX2(InputStream istrm, string filename, TextureBuffer* buffer, Transco
         }
         else if (numChannels == 4)
         {
-            if (bptcSupported && priority == TranscodeFormatPriority.Quality)
+            if (bptcSupported && transcodePriority == TranscodePriority.Quality)
             {
                 targetFormat = ktx_transcode_fmt_e.KTX_TTF_BC7_RGBA;
                 targetFormatStr = "BPTC/BC7";
@@ -813,12 +813,12 @@ class KTXAsset: Asset
     protected TextureBuffer buffer;
     protected bool generateMipmaps = true;
     
-    TranscodeFormatPriority transcodeFormatPriority;
+    TranscodePriority transcodePriority;
     
-    this(TranscodeFormatPriority transcodeFormatPriority, Owner o)
+    this(TranscodePriority transcodePriority, Owner o)
     {
         super(o);
-        this.transcodeFormatPriority = transcodeFormatPriority;
+        this.transcodePriority = transcodePriority;
         texture = New!Texture(this);
     }
     
@@ -833,7 +833,7 @@ class KTXAsset: Asset
         if (ext == ".ktx" || ext == ".KTX")
             return loadKTX1(istrm, filename, &buffer, &generateMipmaps);
         else if (ext == ".ktx2" || ext == ".KTX2")
-            return loadKTX2(istrm, filename, &buffer, transcodeFormatPriority, &generateMipmaps);
+            return loadKTX2(istrm, filename, &buffer, transcodePriority, &generateMipmaps);
         else
             return false;
     }
@@ -862,14 +862,14 @@ class KTXAsset: Asset
     }
 }
 
-KTXAsset addKTXAsset(Scene scene, string filename, TranscodeFormatPriority transcodeFormatPriority, bool preload = false)
+KTXAsset addKTXAsset(Scene scene, string filename, TranscodePriority transcodePriority, bool preload = false)
 {
     KTXAsset ktx;
     if (scene.assetManager.assetExists(filename))
         ktx = cast(KTXAsset)scene.assetManager.getAsset(filename);
     else
     {
-        ktx = New!KTXAsset(transcodeFormatPriority, scene.assetManager);
+        ktx = New!KTXAsset(transcodePriority, scene.assetManager);
         scene.addAsset(ktx, filename, preload);
     }
     return ktx;
