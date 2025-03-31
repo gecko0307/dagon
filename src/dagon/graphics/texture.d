@@ -498,6 +498,12 @@ class Texture: Owner
         }
         else
         {
+            if (mipLevels > 1)
+            {
+                glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
+                glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, mipLevels - 1);
+            }
+            
             uint pSize = pixelSize;
             uint offset = 0;
             
@@ -506,19 +512,34 @@ class Texture: Owner
                 uint w = size.width;
                 uint h = size.height;
                 
-                for (uint mipLevel = 0; mipLevel < mipLevels; mipLevel++)
+                if (mipLevels == 1)
                 {
-                    uint size = w * h * pSize;
-                    glTexImage2D(cubeFace, mipLevel, format.internalFormat, w, h, 0, format.format, format.pixelType, cast(void*)(buffer.ptr + offset));
-                    offset += size;
-                    w /= 2;
-                    h /= 2;
-                    if (offset > buffer.length)
+                    uint imageSize = w * h * pSize;
+                    glTexImage2D(cubeFace, 0, format.internalFormat, w, h, 0, format.format, format.pixelType, cast(void*)(buffer.ptr + offset));
+                    offset += imageSize;
+                }
+                else
+                {
+                    for (uint mipLevel = 0; mipLevel < mipLevels; mipLevel++)
                     {
-                        writeln("Error: incomplete texture buffer");
-                        break;
+                        uint alignedSize = ((w * pSize + 3) & ~3) * h;
+                        glTexImage2D(cubeFace, mipLevel, format.internalFormat, w, h, 0, format.format, format.pixelType, cast(void*)(buffer.ptr + offset));
+                        offset += alignedSize;
+                        w /= 2;
+                        h /= 2;
+                        if (offset > buffer.length)
+                        {
+                            writeln("Error: incomplete texture buffer");
+                            break;
+                        }
                     }
                 }
+            }
+            
+            if (mipLevels == 1 && generateMipmaps)
+            {
+                glGenerateMipmap(GL_TEXTURE_2D);
+                mipLevels = 1 + cast(uint)floor(log2(cast(double)max(size.width, size.height)));
             }
         }
         
@@ -661,9 +682,9 @@ class Texture: Owner
                 
                 for (uint mipLevel = 0; mipLevel < mipLevels; mipLevel++)
                 {
-                    uint imageSize = w * h * pSize;
+                    uint alignedSize = ((w * pSize + 3) & ~3) * h;
                     glTexImage2D(GL_TEXTURE_2D, mipLevel, format.internalFormat, w, h, 0, format.format, format.pixelType, cast(void*)(buffer.ptr + offset));
-                    offset += imageSize;
+                    offset += alignedSize;
                     w /= 2;
                     h /= 2;
                     if (offset > buffer.length)
@@ -731,6 +752,7 @@ class Texture: Owner
                 
                 for (uint mipLevel = 0; mipLevel < mipLevels; mipLevel++)
                 {
+                    // TODO: 4 byte alignment
                     uint imageSize = w * h * d * pSize;
                     glTexImage3D(GL_TEXTURE_3D, mipLevel, format.internalFormat, w, h, d, 0, format.format, format.pixelType, cast(void*)(buffer.ptr + offset));
                     offset += imageSize;
