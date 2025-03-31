@@ -37,6 +37,7 @@ import dlib.core.ownership;
 import dlib.filesystem.filesystem;
 
 import dagon.core.bindings;
+import dagon.core.application;
 import dagon.graphics.texture;
 import dagon.resource.asset;
 import dagon.resource.scene;
@@ -696,12 +697,13 @@ bool loadKTX2(InputStream istrm, string filename, TextureBuffer* buffer, Transco
     {
         auto numChannels = ktxTexture2_GetNumComponents(tex);
         
-        bool bptcSupported = true; // TODO: check extension
+        bool bptcSupported = isExtensionSupported("GL_ARB_texture_compression_bptc");
+        
+        // Desktop GPUs lack ASTC support
+        //bool astcSupported = isExtensionSupported("GL_KHR_texture_compression_astc_ldr");
         
         ktx_transcode_fmt_e targetFormat;
         string targetFormatStr;
-        
-        // TODO: support floating point textures
         
         if (priority == TranscodeFormatPriority.Uncompressed)
         {

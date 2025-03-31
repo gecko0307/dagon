@@ -162,6 +162,13 @@ bool compressedTextureFormatSupported(GLenum format)
         return false;
 }
 
+__gshared string[] extensions;
+
+bool isExtensionSupported(string extName)
+{
+    return extensions.canFind(extName);
+}
+
 /++
     Base class to inherit Dagon applications from.
     `Application` wraps SDL2 window, loads dynamic link libraries using BindBC,
@@ -250,6 +257,16 @@ class Application: EventListener
         writeln("OpenGL vendor: ", vendor);
         writeln("OpenGL renderer: ", renderer);
         
+        // Get extensions list
+        GLint numExtensions;
+        glGetIntegerv(GL_NUM_EXTENSIONS, &numExtensions);
+        extensions = New!(string[])(numExtensions);
+        for (GLint i = 0; i < numExtensions; i++) {
+            extensions[i] = glGetStringi(GL_EXTENSIONS, i).to!string;
+        }
+        
+        writeln("GL_ARB_texture_compression_bptc: ", isExtensionSupported("GL_ARB_texture_compression_bptc"));
+        
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClearDepth(1.0);
         glEnable(GL_SCISSOR_TEST);
@@ -289,6 +306,7 @@ class Application: EventListener
         SDL_DestroyWindow(window);
         SDL_Quit();
         Delete(_eventManager);
+        Delete(extensions);
     }
     
     void setWindowSize(uint w, uint h)
