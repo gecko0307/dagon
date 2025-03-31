@@ -1,3 +1,8 @@
+Dagon 0.21.0 - TBD
+------------------
+- **Extensions**
+  - `dagon:ktx` - KTX texture loader extension that uses [libktx](https://github.com/KhronosGroup/KTX-Software). Transcoding KTX2 + Basis Universal to S3TC, RGTC and BPTC.
+
 Dagon 0.20.0 - 29 Mar, 2025
 ---------------------------
 - **Rendering**
