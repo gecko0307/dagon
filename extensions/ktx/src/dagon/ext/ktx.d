@@ -862,7 +862,7 @@ class KTXAsset: Asset
     }
 }
 
-KTXAsset addKTXAsset(Scene scene, string filename, TranscodePriority transcodePriority, bool preload = false)
+KTXAsset addKTXAsset(Scene scene, string filename, TranscodePriority transcodePriority = TranscodePriority.Quality, bool preload = false)
 {
     KTXAsset ktx;
     if (scene.assetManager.assetExists(filename))
