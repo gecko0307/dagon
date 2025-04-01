@@ -33,6 +33,7 @@ import std.ascii;
 import std.conv;
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.math.utils;
 import dlib.container.array;
 import dagon.core.bindings;
 import dagon.core.input;
@@ -120,6 +121,8 @@ class EventManager
 
     SDL_GameController* controller = null;
     SDL_Joystick* joystick = null;
+    
+    int joystickAxisThreshold = 32639;
 
     InputManager inputManager;
     
@@ -400,15 +403,16 @@ class EventManager
                     // TODO: add state modification
                     e = Event(EventType.JoystickAxisMotion);
                     e.joystickAxis = event.caxis.axis;
-                    e.joystickAxisValue = cast(float)event.caxis.value / 32768.0f;
+                    int axisValue = event.caxis.value;
                     if (controller)
                     {
                         if (e.joystickAxis == 0)
-                            e.joystickAxisValue = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY);
+                            axisValue = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY);
                         if (e.joystickAxis == 1)
-                            e.joystickAxisValue = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX);
-                        e.joystickAxisValue = e.joystickAxisValue / 32768.0f;
+                            axisValue = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX);
                     }
+                    e.joystickAxisValue = 
+                        cast(float)clamp(axisValue, -joystickAxisThreshold, joystickAxisThreshold) / cast(float)joystickAxisThreshold;
                     addEvent(e);
                     break;
 
