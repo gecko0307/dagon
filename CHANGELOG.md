@@ -1,5 +1,7 @@
 Dagon 0.21.0 - TBD
 ------------------
+- **Rendering**
+  - Circular shadow support in `SimpleRenderer`
 - **Extensions**
   - `dagon:ktx` - KTX texture loader extension that uses [libktx](https://github.com/KhronosGroup/KTX-Software). Transcoding KTX2 + Basis Universal to S3TC, RGTC and BPTC.
 
