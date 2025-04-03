@@ -2,6 +2,8 @@ Dagon 0.21.0 - TBD
 ------------------
 - **Rendering**
   - Circular shadow support in `SimpleRenderer`
+- **Assets**
+  - Ensure 4-byte alignment when sending prebaked mipmaps to GPU. This fixes the wrong colors issue with 24-bit RGB textures
 - **Extensions**
   - `dagon:ktx` - KTX texture loader extension that uses [libktx](https://github.com/KhronosGroup/KTX-Software). Transcoding KTX2 + Basis Universal to S3TC, RGTC and BPTC.
 

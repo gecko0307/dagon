@@ -267,6 +267,7 @@ class Application: EventListener
         
         writeln("GL_ARB_texture_compression_bptc: ", isExtensionSupported("GL_ARB_texture_compression_bptc"));
         
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClearDepth(1.0);
         glEnable(GL_SCISSOR_TEST);
