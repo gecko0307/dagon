@@ -31,6 +31,7 @@ import dlib.core.ownership;
 import dlib.core.memory;
 import dlib.container.array;
 import dlib.image.color;
+import dlib.math.vector;
 
 import dagon.core.event;
 import dagon.core.bindings;
@@ -46,7 +47,7 @@ class SimpleRenderer: Renderer
 {
     Array!RenderPass layerPasses;
     SimpleClearPass clearPass;
-    RenderPass defaultLayerPass;
+    SimpleRenderPass defaultLayerPass;
     
     this(EventManager eventManager, Owner owner)
     {
@@ -112,10 +113,16 @@ class SimpleClearPass: RenderPass
 
 class SimpleRenderPass: RenderPass
 {
-    Color4f debugColor;
     SimpleForwardShader defaultShader;
     int layer = 0;
     bool visible = true;
+    Color4f debugColor;
+    
+    Vector3f shadowCenter = Vector3f(0.0f, 0.0f, 0.0f);
+    float shadowMinRadius = 0.0f;
+    float shadowMaxRadius = 1.0f;
+    float shadowOpacity = 1.0f;
+    bool shadowEnabled = false;
     
     this(RenderPipeline pipeline, EntityGroup group = null)
     {
@@ -135,6 +142,11 @@ class SimpleRenderPass: RenderPass
             
             state.debugColor = debugColor;
             
+            defaultShader.shadowCenter = shadowCenter;
+            defaultShader.shadowMinRadius = shadowMinRadius;
+            defaultShader.shadowMaxRadius = shadowMaxRadius;
+            defaultShader.shadowOpacity = shadowOpacity;
+            defaultShader.shadowEnabled = shadowEnabled;
             defaultShader.bind();
             foreach(entity; group)
             {

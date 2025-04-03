@@ -50,6 +50,11 @@ import dagon.graphics.light;
 class SimpleForwardShader: Shader
 {
     String vs, fs;
+    Vector3f shadowCenter = Vector3f(0.0f, 0.0f, 0.0f);
+    bool shadowEnabled = true;
+    float shadowMinRadius = 0.0f;
+    float shadowMaxRadius = 1.0f;
+    float shadowOpacity = 1.0f;
 
     this(Owner owner)
     {
@@ -70,6 +75,7 @@ class SimpleForwardShader: Shader
     {
         Material mat = state.material;
         
+        setParameter("modelMatrix", state.modelMatrix);
         setParameter("modelViewMatrix", state.modelViewMatrix);
         setParameter("projectionMatrix", state.projectionMatrix);
         setParameter("normalMatrix", state.normalMatrix);
@@ -133,6 +139,13 @@ class SimpleForwardShader: Shader
             glBindTexture(GL_TEXTURE_2D, 0);
             setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
         }
+        
+        // Shadow
+        setParameter("shadowCenter", shadowCenter);
+        setParameter("shadowEnabled", shadowEnabled);
+        setParameter("shadowMinRadius", shadowMinRadius);
+        setParameter("shadowMaxRadius", shadowMaxRadius);
+        setParameter("shadowOpacity", shadowOpacity);
         
         setParameter("debugHighlightColor", state.debugColor);
         

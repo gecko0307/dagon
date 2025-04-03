@@ -2,6 +2,7 @@
 
 in vec3 eyeNormal;
 in vec3 eyePosition;
+in vec3 worldPosition;
 in vec2 texCoord;
 
 uniform vec4 debugHighlightColor;
@@ -17,6 +18,11 @@ uniform vec4 ambientColor;
 uniform float ambientEnergy;
 uniform float alphaTestThreshold;
 uniform int textureMappingMode;
+uniform bool shadowEnabled;
+uniform float shadowMinRadius;
+uniform float shadowMaxRadius;
+uniform float shadowOpacity;
+uniform vec3 shadowCenter;
 
 #include <gamma.glsl>
 #include <matcap.glsl>
@@ -77,6 +83,13 @@ void main()
         outputColor =
             diffuseColor * (ambientColor.rgb * ambientEnergy + lightColor * diffuseEnergy) +
             lightColor * specularEnergy;
+        
+        // Shadow
+        if (shadowEnabled)
+        {
+            float shadow = clamp((distance(worldPosition.xz, shadowCenter.xz) - shadowMinRadius) / (shadowMaxRadius - shadowMinRadius), 0.0, 1.0);
+            outputColor *= mix(1.0 - shadowOpacity, 1.0, shadow);
+        }
     }
     
     fragColor = vec4(mix(outputColor, debugHighlightColor.rgb, debugHighlightCoef), outputAlpha);
