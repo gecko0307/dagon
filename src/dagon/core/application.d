@@ -162,11 +162,26 @@ bool compressedTextureFormatSupported(GLenum format)
         return false;
 }
 
-__gshared string[] extensions;
+__gshared private
+{
+    GLint _maxTextureUnits;
+    GLint _maxTextureSize;
+    string[] _extensions;
+}
+
+int maxTextureUnits()
+{
+    return _maxTextureUnits;
+}
+
+int maxTextureSize()
+{
+    return _maxTextureSize;
+}
 
 bool isExtensionSupported(string extName)
 {
-    return extensions.canFind(extName);
+    return _extensions.canFind(extName);
 }
 
 /++
@@ -257,12 +272,19 @@ class Application: EventListener
         writeln("OpenGL vendor: ", vendor);
         writeln("OpenGL renderer: ", renderer);
         
+        // Get limits
+        glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &_maxTextureUnits);
+        glGetIntegerv(GL_MAX_TEXTURE_SIZE, &_maxTextureSize);
+        
+        writeln("GL_MAX_TEXTURE_IMAGE_UNITS: ", _maxTextureUnits);
+        writeln("GL_MAX_TEXTURE_SIZE: ", _maxTextureSize);
+        
         // Get extensions list
         GLint numExtensions;
         glGetIntegerv(GL_NUM_EXTENSIONS, &numExtensions);
-        extensions = New!(string[])(numExtensions);
+        _extensions = New!(string[])(numExtensions);
         for (GLint i = 0; i < numExtensions; i++) {
-            extensions[i] = glGetStringi(GL_EXTENSIONS, i).to!string;
+            _extensions[i] = glGetStringi(GL_EXTENSIONS, i).to!string;
         }
         
         writeln("GL_ARB_texture_compression_bptc: ", isExtensionSupported("GL_ARB_texture_compression_bptc"));
@@ -307,7 +329,7 @@ class Application: EventListener
         SDL_DestroyWindow(window);
         SDL_Quit();
         Delete(_eventManager);
-        Delete(extensions);
+        Delete(_extensions);
     }
     
     void setWindowSize(uint w, uint h)
