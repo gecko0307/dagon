@@ -1,5 +1,7 @@
 Dagon 0.21.0 - TBD
 ------------------
+- **Core**
+  - `isExtensionSupported` function in `dagon.core.application`. The OpenGL binding now tries to load all known ARB/KHR extensions. This function can be used at runtime to test if the driver supports particular extension
 - **Rendering**
   - Circular shadow support in `SimpleRenderer`
 - **Assets**
