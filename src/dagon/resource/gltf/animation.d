@@ -1,16 +1,20 @@
 module dagon.resource.gltf.animation;
 
 import dagon.resource.gltf.accessor: GLTFAccessor;
+import dagon.resource.gltf.node: GLTFNode;
 import dlib.core.ownership: Owner;
 import dlib.container.array;
-
-//~ import dagon.graphics.drawable;
-//~ import dagon.graphics.state;
-//~ import dagon.resource.gltf.meshprimitive;
 
 enum InterpolationType : string
 {
     LINEAR = "LINEAR",
+}
+
+enum TRSType : string
+{
+    Translation = "translation",
+    Rotation = "rotation",
+    Scale = "scale",
 }
 
 class AnimationSampler: Owner
@@ -25,9 +29,22 @@ class AnimationSampler: Owner
     }
 }
 
+class AnimationChannel: Owner
+{
+    AnimationSampler sampler; // required
+    TRSType target_path; // required
+    GLTFNode target_node; // optional: When undefined, the animated object MAY be defined by an extension.
+
+    this(Owner o)
+    {
+        super(o);
+    }
+}
+
 class GLTFAnimation: Owner
 {
     Array!AnimationSampler samplers;
+    Array!AnimationChannel channels;
 
     this(Owner o)
     {
@@ -37,5 +54,6 @@ class GLTFAnimation: Owner
     ~this()
     {
         samplers.free();
+        channels.free();
     }
 }

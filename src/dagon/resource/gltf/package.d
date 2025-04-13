@@ -884,14 +884,51 @@ class GLTFAsset: Asset, TriangleSet
                 {
                     foreach(i, s; samplers.asArray)
                     {
-                        auto sampler = s.asObject;
-
                         AnimationSampler samplerObj = New!AnimationSampler(this);
                         scope(exit) animationObj.samplers.insertBack(samplerObj);
+
+                        auto sampler = s.asObject;
 
                         samplerObj.interpolation = cast(InterpolationType) sampler["interpolation"].asString;
                         checkAndGetAccessor( samplerObj.input, sampler["input"].asUint );
                         checkAndGetAccessor( samplerObj.output, sampler["output"].asUint );
+                    }
+                }
+
+                auto channels = ("channels" in animation.asObject);
+                if (channels !is null)
+                {
+                    foreach(i, ch; channels.asArray)
+                    {
+                        auto channelObj = New!AnimationChannel(this);
+                        scope(exit) animationObj.channels.insertBack(channelObj);
+
+                        auto channel = ch.asObject;
+
+                        const samplerIdx = channel["sampler"].asUint;
+                        if (samplerIdx < animationObj.samplers.length)
+                            channelObj.sampler = animationObj.samplers[samplerIdx];
+                        else
+                            writeln("Warning: nonexistent animation sampler ", samplerIdx);
+
+                        auto target = ("target" in channel);
+                        if(target is null)
+                            writeln("Warning: nonexistent animation target object");
+                        else
+                        {
+                            channelObj.target_path = cast(TRSType) target.asObject["path"].asString;
+
+                            auto node = ("node" in target.asObject);
+                            if (node !is null)
+                            {
+                                const idx = (*node).asUint;
+
+                                if (idx < nodes.length)
+                                    channelObj.target_node = nodes[idx];
+                                else
+                                    writeln("Warning: nonexistent target node");
+                            }
+                        }
                     }
                 }
             }
