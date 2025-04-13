@@ -29,7 +29,7 @@ Features
 --------
 * Scene graph
 * Static and animated meshes, [glTF](https://www.khronos.org/gltf/), [OBJ](https://en.wikipedia.org/wiki/Wavefront_.obj_file) and [IQM](https://github.com/lsalzman/iqm) formats support
-* Textures in PNG, JPG, DDS, KTX, KTX2, HDR, TGA, BMP formats
+* Textures in PNG, JPG, WebP, DDS, KTX, KTX2, HDR, TGA, BMP formats
 * Deferred pipeline for opaque materials, forward pipeline for transparent materials and materials with custom shaders
 * Simplified render pipeline for retro and casual-style graphics
 * Physically based rendering (PBR)
@@ -71,7 +71,8 @@ Do not delete `data/__internal` folder! It is used to store engine's internal da
 
 Runtime Dependencies
 --------------------
-* [SDL](https://www.libsdl.org) 2.0.14
+* [SDL](https://www.libsdl.org) 2.32.4.0
+* [SDL_Image](https://github.com/libsdl-org/SDL_image) 2.8.8.0 (optional, preferable)
 * [Freetype](https://www.freetype.org) 2.8.1 (optional)
 * [Newton Dynamics](https://github.com/MADEAPPS/newton-dynamics) 3.14 (optional)
 * [ImGui](https://github.com/ocornut/imgui) (optional)

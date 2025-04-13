@@ -51,6 +51,7 @@
     "copyFiles-windows-x86_64": ["lib/x64/*.dll"],
     
     "subPackages": [
+        "extensions/exformats",
         "extensions/ftfont",
         "extensions/imgui",
         "extensions/iqm",
