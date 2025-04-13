@@ -40,7 +40,7 @@ import dagon.graphics.texture;
 immutable string[] sdlImageFormats = [
     ".bmp", ".gif", ".jpg", ".jpeg", ".lbm", ".pcx", ".png",
     ".pnm", ".ppm", ".pgm", ".pbm", ".qoi", ".tga", ".xcf", ".xpm",
-    ".tiff", ".webp", ".avif"
+    ".tif", ".tiff", ".webp", ".avif", ".jxl"
 ];
 
 bool isSDLImageSupportedFormat(string formatExtension)
@@ -57,64 +57,56 @@ bool loadImageViaSDLImage(InputStream istrm, TextureBuffer* buffer)
     SDL_RWops* rw = SDL_RWFromMem(data.ptr, cast(int)dataSize);
     
     SDL_Surface* surface = IMG_Load_RW(rw, 1);
+    bool loaded = false;
     if (surface is null)
-    {
         writeln("IMG_Load_RW error: ", IMG_GetError().to!string);
-        return false;
+    else
+    {
+        loaded = true;
+        SDL_RWclose(rw);
     }
-    
-    SDL_RWclose(rw);
     
     Delete(data);
     
-    TextureSize size;
-    size.width = surface.w;
-    size.height = surface.h;
-    size.depth = 0;
-    
-    TextureFormat format;
-    format.target = GL_TEXTURE_2D;
-    format.pixelType = GL_UNSIGNED_BYTE;
-    format.blockSize = 0;
-    format.cubeFaces = CubeFaceBit.None;
-    
-    if (surface.format.BytesPerPixel == 4)
+    if (loaded)
     {
-        format.format = GL_RGBA;
-        format.internalFormat = GL_RGBA8;
-    }
-    else if (surface.format.BytesPerPixel == 3)
-    {
-        format.format = GL_RGB;
-        format.internalFormat = GL_RGB8;
-    }
-    else
-    {
-        // Convert from indexed format to RGBA8
-        SDL_PixelFormat* pformat = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA32);
-        SDL_Surface* convSurface = SDL_ConvertSurface(surface, pformat, 0);
-        SDL_FreeFormat(pformat);
-        if (convSurface is null) {
-            writeln("SDL_ConvertSurface error: ", SDL_GetError().to!string);
+        if (surface.format.format != SDL_PIXELFORMAT_RGBA32)
+        {
+            SDL_PixelFormat* pformat = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA32);
+            SDL_Surface* convSurface = SDL_ConvertSurface(surface, pformat, 0);
+            SDL_FreeFormat(pformat);
+            if (convSurface is null) {
+                writeln("SDL_ConvertSurface error: ", SDL_GetError().to!string);
+                SDL_FreeSurface(surface);
+                return false;
+            }
             SDL_FreeSurface(surface);
-            return false;
+            surface = convSurface;
         }
-        SDL_FreeSurface(surface);
-        surface = convSurface;
         
+        TextureSize size;
+        size.width = surface.w;
+        size.height = surface.h;
+        size.depth = 0;
+        
+        TextureFormat format;
+        format.target = GL_TEXTURE_2D;
+        format.pixelType = GL_UNSIGNED_BYTE;
+        format.blockSize = 0;
+        format.cubeFaces = CubeFaceBit.None;
         format.format = GL_RGBA;
         format.internalFormat = GL_RGBA8;
+        
+        size_t bufferSize = surface.w * surface.h * surface.format.BytesPerPixel;
+        
+        buffer.format = format;
+        buffer.size = size;
+        buffer.mipLevels = 1;
+        buffer.data = New!(ubyte[])(bufferSize);
+        memcpy(buffer.data.ptr, surface.pixels, bufferSize);
+        
+        SDL_FreeSurface(surface);
     }
     
-    size_t bufferSize = surface.w * surface.h * surface.format.BytesPerPixel;
-    
-    buffer.format = format;
-    buffer.size = size;
-    buffer.mipLevels = 1;
-    buffer.data = New!(ubyte[])(bufferSize);
-    memcpy(buffer.data.ptr, surface.pixels, bufferSize);
-    
-    SDL_FreeSurface(surface);
-    
-    return true;
+    return loaded;
 }

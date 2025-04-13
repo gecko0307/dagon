@@ -138,7 +138,7 @@ class DefaultTextureLoader: TextureLoader
                 return compound(true, "");
             }
             else
-                return compound(false, "Failed to decode image file");
+                return compound(false, "");
         }
         
         if (!isSDLImageSupportedFormat(extension))
@@ -155,7 +155,7 @@ class DefaultTextureLoader: TextureLoader
                 return compound(true, "");
             }
             else
-                return compound(false, "Failed to decode image file");
+                return compound(false, "");
         }
         
         // Use dlib.image

@@ -74,7 +74,8 @@ class TextureAsset: Asset
                 return true;
             else
             {
-                writeln(res[1]);
+                if (res[1].length)
+                    writeln(res[1]);
                 return false;
             }
         }
