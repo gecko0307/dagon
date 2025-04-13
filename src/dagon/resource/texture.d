@@ -50,6 +50,7 @@ class TextureAsset: Asset
     TextureBuffer buffer;
     bool bufferDataIsImageData = false;
     bool generateMipmaps = true;
+    uint loaderOption = 0; // for loader-specific enums
 
     this(Owner o)
     {
@@ -68,8 +69,7 @@ class TextureAsset: Asset
         auto loader = assetManager.textureLoader(ext);
         if (loader)
         {
-            int option = 0;
-            auto res = loader.load(filename, ext, istrm, this, option);
+            auto res = loader.load(filename, ext, istrm, this, loaderOption);
             if (res[0])
                 return true;
             else
