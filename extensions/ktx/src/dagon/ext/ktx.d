@@ -873,3 +873,9 @@ KTXSupport loadKTXLibrary()
     
     return ktxVersion;
 }
+
+void registerKTXLoader(AssetManager assetManager)
+{
+    auto ktxLoader = New!KTXLoader(assetManager);
+    assetManager.registerTextureLoader([".ktx", ".ktx2"], ktxLoader);
+}
