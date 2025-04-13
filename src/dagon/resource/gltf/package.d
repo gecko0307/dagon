@@ -890,14 +890,22 @@ class GLTFAsset: Asset, TriangleSet
                         scope(exit) animationObj.samples.insertBack(sampleObj);
 
                         sampleObj.interpolation = cast(InterpolationType) sample["interpolation"].asString;
-                        sampleObj.input = accessors[ sample["input"].asUint ];
-                        sampleObj.output = accessors[ sample["output"].asUint ];
+                        checkAndGetAccessor( sampleObj.input, sample["input"].asUint );
+                        checkAndGetAccessor( sampleObj.output, sample["output"].asUint );
                     }
                 }
             }
         }
     }
-    
+
+    private void checkAndGetAccessor(ref GLTFAccessor a, uint idx)
+    {
+        if (idx < accessors.length)
+            a = accessors[idx];
+        else
+            writeln("Warning: nonexistent accessor ", idx);
+    }
+
     void loadScenes(JSONValue root)
     {
         if ("scenes" in root.asObject)
