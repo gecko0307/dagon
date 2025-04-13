@@ -70,6 +70,23 @@ enum DagonEvent
     Exit = -1
 }
 
+enum ImageFileFormat
+{
+    PNG,
+    JPEG,
+    BMP,
+    TGA,
+    WebP,
+    TIFF,
+    JPEG_XL,
+    AVIF,
+    HDR,
+    DDS,
+    KTX,
+    JPG = JPEG,
+    WEBP = WebP
+}
+
 enum GL_FRAMEBUFFER_SRGB = 0x8DB9;
 
 enum string[GLenum] GLErrorStrings = [
@@ -164,9 +181,18 @@ bool compressedTextureFormatSupported(GLenum format)
 
 __gshared private
 {
+    bool[ImageFileFormat] _imageFileFormatSupported;
     GLint _maxTextureUnits;
     GLint _maxTextureSize;
     string[] _extensions;
+}
+
+bool isImageFileFormatSupported(ImageFileFormat ffmt)
+{
+    if (ffmt in _imageFileFormatSupported)
+        return _imageFileFormatSupported[ffmt];
+    else
+        return false;
 }
 
 int maxTextureUnits()
@@ -240,14 +266,27 @@ class Application: EventListener
         height = winHeight;
         this.fullscreen = fullscreen;
         
+        _imageFileFormatSupported[ImageFileFormat.PNG] = true;
+        _imageFileFormatSupported[ImageFileFormat.JPEG] = true;
+        _imageFileFormatSupported[ImageFileFormat.BMP] = true;
+        _imageFileFormatSupported[ImageFileFormat.TGA] = true;
+        _imageFileFormatSupported[ImageFileFormat.HDR] = true;
+        _imageFileFormatSupported[ImageFileFormat.DDS] = true;
+        
         if (sdlImagePresent)
         {
-            int imgFlags = IMG_INIT_PNG | IMG_INIT_JPG | IMG_INIT_WEBP | IMG_INIT_TIF;
-            if (!(IMG_Init(imgFlags) & imgFlags))
+            int desiredFormatFlags = IMG_INIT_JPG | IMG_INIT_PNG | IMG_INIT_TIF | IMG_INIT_WEBP | IMG_INIT_JXL | IMG_INIT_AVIF;
+            int supportedFormatFlags = IMG_Init(desiredFormatFlags);
+            if (supportedFormatFlags == 0)
             {
                 writeln("Warning: failed to init SDL2_Image");
                 sdlImagePresent = false;
             }
+            
+            _imageFileFormatSupported[ImageFileFormat.TIFF] = (supportedFormatFlags & IMG_INIT_TIF) > 0;
+            _imageFileFormatSupported[ImageFileFormat.WebP] = (supportedFormatFlags & IMG_INIT_WEBP) > 0;
+            _imageFileFormatSupported[ImageFileFormat.JPEG_XL] = (supportedFormatFlags & IMG_INIT_JXL) > 0;
+            _imageFileFormatSupported[ImageFileFormat.AVIF] = (supportedFormatFlags & IMG_INIT_AVIF) > 0;
         }
 
         SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
