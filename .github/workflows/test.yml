@@ -32,4 +32,4 @@ jobs:
         with:
           compiler: ${{ matrix.dc }}
       - name: Run tests
-        run: dub test
+        run: dub upgrade && dub test
