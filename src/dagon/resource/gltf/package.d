@@ -63,6 +63,7 @@ import dagon.resource.gltf.meshprimitive;
 import dagon.resource.gltf.mesh;
 import dagon.resource.gltf.node;
 import dagon.resource.gltf.skin;
+import dagon.resource.gltf.animation;
 
 Vector3f asVector(JSONValue value)
 {
@@ -143,6 +144,7 @@ class GLTFAsset: Asset, TriangleSet
     Array!Material materials;
     Array!GLTFNode nodes;
     Array!GLTFSkin skins;
+    Array!GLTFAnimation animations;
     Array!GLTFScene scenes;
     Entity rootEntity;
     
@@ -868,7 +870,32 @@ class GLTFAsset: Asset, TriangleSet
     
     void loadAnimations(JSONValue root)
     {
-        // TODO
+        auto animationsArr = ("animations" in root.asObject);
+
+        if (animationsArr !is null)
+        {
+            foreach(i, animation; animationsArr.asArray)
+            {
+                auto animationObj = New!GLTFAnimation(this);
+                scope(exit) animations.insertBack(animationObj);
+
+                auto samplers = ("samplers" in animation.asObject);
+                if (samplers !is null)
+                {
+                    foreach(i, s; samplers.asArray)
+                    {
+                        auto sample = s.asObject;
+
+                        AnimationSample sampleObj = New!AnimationSample(this);
+                        scope(exit) animationObj.samples.insertBack(sampleObj);
+
+                        sampleObj.interpolation = cast(InterpolationType) sample["interpolation"].asString;
+                        sampleObj.input = accessors[ sample["input"].asUint ];
+                        sampleObj.output = accessors[ sample["output"].asUint ];
+                    }
+                }
+            }
+        }
     }
     
     void loadScenes(JSONValue root)
@@ -1071,6 +1098,11 @@ class GLTFAsset: Asset, TriangleSet
         
         return res;
     }
+}
+
+private uint asUint(in JSONValue j)
+{
+    return cast(uint) j.asNumber;
 }
 
 // TODO: generate random name instead of "undefined"
