@@ -75,11 +75,14 @@ bool loadImageViaSDLImage(InputStream istrm, TextureBuffer* buffer)
             SDL_PixelFormat* pformat = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA32);
             SDL_Surface* convSurface = SDL_ConvertSurface(surface, pformat, 0);
             SDL_FreeFormat(pformat);
-            if (convSurface is null) {
+            
+            if (convSurface is null)
+            {
                 writeln("SDL_ConvertSurface error: ", SDL_GetError().to!string);
                 SDL_FreeSurface(surface);
                 return false;
             }
+            
             SDL_FreeSurface(surface);
             surface = convSurface;
         }
