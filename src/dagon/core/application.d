@@ -200,6 +200,7 @@ class Application: EventListener
     Cadencer cadencer;
     String vendor;
     String renderer;
+    bool sdlImagePresent = true;
 
     /++
         Constructor.
@@ -219,6 +220,18 @@ class Application: EventListener
             else
                 exitWithError("Error: SDL library is not found. Please, install SDL 2.0.14");
         }
+        
+        SDLImageSupport sdlimgsup = loadSDLImage();
+        if (sdlimgsup != sdlImageSupport)
+        {
+            if (sdlsup == SDLSupport.badLibrary)
+                writeln("Warning: failed to load some SDL2_Image functions. It seems that you have an old version of SDL2_Image. Dagon will try to use it, but it is recommended to install SDL2_Image 2.8");
+            else
+            {
+                writeln("Warning: SDL2_Image library is not found. Please, install SDL2_Image 2.8");
+                sdlImagePresent = false;
+            }
+        }
 
         if (SDL_Init(SDL_INIT_EVERYTHING) == -1)
             exitWithError("Error: failed to init SDL: " ~ to!string(SDL_GetError()));
@@ -226,6 +239,16 @@ class Application: EventListener
         width = winWidth;
         height = winHeight;
         this.fullscreen = fullscreen;
+        
+        if (sdlImagePresent)
+        {
+            int imgFlags = IMG_INIT_PNG | IMG_INIT_JPG | IMG_INIT_WEBP | IMG_INIT_TIF;
+            if (!(IMG_Init(imgFlags) & imgFlags))
+            {
+                writeln("Warning: failed to init SDL2_Image");
+                sdlImagePresent = false;
+            }
+        }
 
         SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);

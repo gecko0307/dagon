@@ -80,6 +80,7 @@ class Scene: EventListener
         
         assetManagerInternal = New!AssetManager(eventManager, this);
         assetManager = assetManagerInternal;
+        assetManager.application = application;
         
         worldInternal = New!World(this);
         world = worldInternal;

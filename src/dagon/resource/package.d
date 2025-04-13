@@ -38,6 +38,7 @@ public
     import dagon.resource.image;
     import dagon.resource.material;
     import dagon.resource.obj;
+    import dagon.resource.sdlimage;
     import dagon.resource.scene;
     import dagon.resource.text;
     import dagon.resource.texture;

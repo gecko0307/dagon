@@ -29,7 +29,8 @@
     },
 
     "versions": [
-        "SDL_2014",
+        "SDL_2_30",
+        "SDL_Image_2_8",
         "GL_40",
         "GL_ARB"
     ],

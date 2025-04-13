@@ -804,6 +804,8 @@ bool loadKTX2(InputStream istrm, string filename, TextureBuffer* buffer, Transco
     
     ktxTexture2_Destroy(tex);
     
+    Delete(data);
+    
     return true;
 }
 

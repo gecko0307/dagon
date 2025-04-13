@@ -44,6 +44,7 @@ import dlib.image.unmanaged;
 import dlib.image.hdri;
 import dlib.image.io;
 
+import dagon.core.application;
 import dagon.core.event;
 import dagon.core.vfs;
 import dagon.resource.dds;
@@ -92,6 +93,7 @@ struct ImageFormatInfo
 
 class AssetManager: Owner
 {
+    Application application; // set by the scene
     Dict!(ImageLoaderCallback, string) imageLoaderCallbacks;
     Dict!(Asset, string) assetsByFilename;
     VirtualFileSystem fs;

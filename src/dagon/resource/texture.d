@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2022 Timur Gafarov
+Copyright (c) 2017-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -28,6 +28,7 @@ DEALINGS IN THE SOFTWARE.
 module dagon.resource.texture;
 
 import std.stdio;
+import std.string;
 import std.path;
 
 import dlib.core.memory;
@@ -42,11 +43,12 @@ import dlib.filesystem.filesystem;
 import dagon.graphics.texture;
 import dagon.resource.asset;
 import dagon.resource.dds;
+import dagon.resource.sdlimage;
 
 class TextureAsset: Asset
 {
     Texture texture;
-    SuperImage image;
+    protected SuperImage image;
     protected TextureBuffer buffer;
 
     this(Owner o)
@@ -62,28 +64,41 @@ class TextureAsset: Asset
 
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager assetManager)
     {
-        string format = filename.extension;
-        if (format == ".dds" || format == ".DDS")
+        bool useSDLImage = false;
+        if (assetManager.application)
         {
-            // Load to TextureBuffer
-            loadDDS(istrm, &buffer);
-            return true;
+            useSDLImage = assetManager.application.sdlImagePresent;
         }
-        // TODO: KTX support
+        
+        string format = filename.extension.toLower;
+        if (format == ".dds")
+        {
+            return loadDDS(istrm, &buffer);
+        }
         else
         {
-            // Load to SuperImage
-            auto res = assetManager.loadImage(filename.extension, istrm);
-            image = res[0];
-            string errMsg = res[1];
-            if (image !is null)
+            if (!isSDLImageSupportedFormat(format))
+                useSDLImage = false;
+            
+            if (useSDLImage)
             {
-                return true;
+                // TODO: create SuperImage from SDL_Image surface
+                return loadImageViaSDLImage(istrm, &buffer);
             }
             else
             {
-                writeln(errMsg);
-                return false;
+                auto res = assetManager.loadImage(filename.extension, istrm);
+                image = res[0];
+                string errMsg = res[1];
+                if (image !is null)
+                {
+                    return true;
+                }
+                else
+                {
+                    writeln(errMsg);
+                    return false;
+                }
             }
         }
     }
