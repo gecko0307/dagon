@@ -884,14 +884,14 @@ class GLTFAsset: Asset, TriangleSet
                 {
                     foreach(i, s; samplers.asArray)
                     {
-                        auto sample = s.asObject;
+                        auto sampler = s.asObject;
 
-                        AnimationSample sampleObj = New!AnimationSample(this);
-                        scope(exit) animationObj.samples.insertBack(sampleObj);
+                        AnimationSampler samplerObj = New!AnimationSampler(this);
+                        scope(exit) animationObj.samplers.insertBack(samplerObj);
 
-                        sampleObj.interpolation = cast(InterpolationType) sample["interpolation"].asString;
-                        checkAndGetAccessor( sampleObj.input, sample["input"].asUint );
-                        checkAndGetAccessor( sampleObj.output, sample["output"].asUint );
+                        samplerObj.interpolation = cast(InterpolationType) sampler["interpolation"].asString;
+                        checkAndGetAccessor( samplerObj.input, sampler["input"].asUint );
+                        checkAndGetAccessor( samplerObj.output, sampler["output"].asUint );
                     }
                 }
             }

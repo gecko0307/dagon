@@ -13,7 +13,7 @@ enum InterpolationType : string
     LINEAR = "LINEAR",
 }
 
-class AnimationSample: Owner
+class AnimationSampler: Owner
 {
     InterpolationType interpolation;
     GLTFAccessor input;
@@ -27,7 +27,7 @@ class AnimationSample: Owner
 
 class GLTFAnimation: Owner
 {
-    Array!AnimationSample samples;
+    Array!AnimationSampler samplers;
 
     this(Owner o)
     {
@@ -36,6 +36,6 @@ class GLTFAnimation: Owner
 
     ~this()
     {
-        samples.free();
+        samplers.free();
     }
 }
