@@ -1,13 +1,14 @@
 Dagon 0.21.0 - TBD
 ------------------
 - **Core**
+  - Upgrade SDL to 2.32.4.0
   - `isExtensionSupported` function in `dagon.core.application`. The OpenGL binding now tries to load all known ARB/KHR extensions. This function can be used at runtime to test if the driver supports particular extension
   - `maxTextureUnits` and `maxTextureSize` functions in `dagon.core.application`
   - `EventManager.joystickAxisThreshold`. Gamepad axis values now clamped to this integer threshold before normalization
 - **Rendering**
   - Circular shadow support in `SimpleRenderer`
 - **Assets**
-  - SDL_image is now preferred to load textures, `dlib.image` is used as a fallback
+  - SDL_image 2.8 is now preferred to load textures, `dlib.image` is used as a fallback
   - Ensure 4-byte alignment when sending prebaked mipmaps to GPU. This fixes the wrong colors issue with 24-bit RGB textures
 - **Extensions**
   - `dagon:ktx` - KTX texture loader extension that uses [libktx](https://github.com/KhronosGroup/KTX-Software). Transcoding KTX2 + Basis Universal to S3TC, RGTC and BPTC.
