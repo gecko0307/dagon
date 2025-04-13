@@ -8,6 +8,7 @@ Dagon 0.21.0 - TBD
 - **Rendering**
   - Circular shadow support in `SimpleRenderer`
 - **Assets**
+  - Breaking change: the old image loader callback mechanism in `AssetManager` was replaced with `TextureLoader` objects. You can write your own loader class and register it with `AssetManager.registerTextureLoader`
   - SDL_image 2.8 is now preferred to load textures, `dlib.image` is used as a fallback
   - Ensure 4-byte alignment when sending prebaked mipmaps to GPU. This fixes the wrong colors issue with 24-bit RGB textures
 - **Extensions**
