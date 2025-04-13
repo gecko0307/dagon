@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2022 Timur Gafarov
+Copyright (c) 2017-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.resource.asset;
 
+import core.stdc.string;
 import std.stdio;
 import std.algorithm;
 import std.path;
@@ -47,8 +48,11 @@ import dlib.image.io;
 import dagon.core.application;
 import dagon.core.event;
 import dagon.core.vfs;
-import dagon.resource.dds;
+import dagon.graphics.texture;
 import dagon.resource.boxfs;
+import dagon.resource.texture;
+import dagon.resource.dds;
+import dagon.resource.sdlimage;
 
 struct MonitorInfo
 {
@@ -71,18 +75,139 @@ abstract class Asset: Owner
     void release();
 }
 
-Compound!(SuperImage, string) dlibImageLoader(alias loadFunc)(InputStream istrm, SuperImageFactory imgFac)
+abstract class TextureLoader: Owner
 {
-    ubyte[] data = New!(ubyte[])(istrm.size);
-    istrm.fillArray(data);
-    ArrayStream arrStrm = New!ArrayStream(data);
-    auto res = loadFunc(arrStrm, imgFac);
-    Delete(arrStrm);
-    Delete(data);
-    return res;
+    AssetManager assetManager;
+    
+    this(AssetManager assetManager)
+    {
+        super(assetManager);
+        this.assetManager = assetManager;
+    }
+    
+    // Override this
+    Compound!(bool, string) load(
+        string filename,
+        string extension,
+        InputStream istrm,
+        TextureAsset asset,
+        uint option = 0);
 }
 
-alias ImageLoaderCallback = Compound!(SuperImage, string) function(InputStream, SuperImageFactory);
+// Basic loader that prefers SDL2_Image if present and falls back to dlib.image otherwise
+class DefaultTextureLoader: TextureLoader
+{
+    UnmanagedImageFactory ldrImageFactory;
+    UnmanagedHDRImageFactory hdrImageFactory;
+    
+    this(AssetManager assetManager)
+    {
+        super(assetManager);
+        ldrImageFactory = New!UnmanagedImageFactory();
+        hdrImageFactory = New!UnmanagedHDRImageFactory();
+    }
+    
+    ~this()
+    {
+        Delete(ldrImageFactory);
+        Delete(hdrImageFactory);
+    }
+    
+    override Compound!(bool, string) load(
+        string filename,
+        string extension,
+        InputStream istrm,
+        TextureAsset asset,
+        uint option = 0)
+    {
+        
+        bool useSDLImage = false;
+        if (assetManager.application)
+        {
+            useSDLImage = assetManager.application.sdlImagePresent;
+        }
+        
+        // Use built-in DDS loader
+        if (extension == ".dds")
+        {
+            bool loaded = loadDDS(istrm, &asset.buffer);
+            if (loaded)
+            {
+                asset.bufferDataIsImageData = false;
+                asset.generateMipmaps = true;
+                return compound(true, "");
+            }
+            else
+                return compound(false, "Failed to decode image file");
+        }
+        
+        if (!isSDLImageSupportedFormat(extension))
+            useSDLImage = false;
+        
+        // Use SDL2_Image
+        if (useSDLImage)
+        {
+            bool loaded = loadImageViaSDLImage(istrm, &asset.buffer);
+            if (loaded)
+            {
+                asset.bufferDataIsImageData = false;
+                asset.generateMipmaps = true;
+                return compound(true, "");
+            }
+            else
+                return compound(false, "Failed to decode image file");
+        }
+        
+        // Use dlib.image
+        ubyte[] data = New!(ubyte[])(istrm.size);
+        istrm.fillArray(data);
+        ArrayStream arrStrm = New!ArrayStream(data);
+        Compound!(SuperImage, string) res;
+        if (extension == ".bmp")
+            res = loadBMP(arrStrm, ldrImageFactory);
+        else if (extension == ".png")
+            res = loadPNG(arrStrm, ldrImageFactory);
+        else if (extension == ".jpg" || extension == ".jpeg")
+            res = loadJPEG(arrStrm, ldrImageFactory);
+        else if (extension == ".tga")
+            res = loadTGA(arrStrm, ldrImageFactory);
+        else if (extension == ".hdr")
+            res = loadHDR(arrStrm, hdrImageFactory);
+        else
+            res = compound(null, "Unsupported image file format");
+        Delete(arrStrm);
+        Delete(data);
+        
+        asset.image = res[0];
+        if (asset.image is null)
+        {
+            return compound(false, res[1]);
+        }
+        else
+        {
+            Compound!(bool, string) result;
+            
+            TextureFormat textureFormat;
+            if (detectTextureFormat(asset.image, textureFormat))
+            {
+                asset.buffer.format = textureFormat;
+                asset.buffer.size = TextureSize(asset.image.width, asset.image.height, 0);
+                asset.buffer.mipLevels = 1;
+                size_t bufferSize = asset.image.data.length;
+                asset.buffer.data = asset.image.data;
+                asset.bufferDataIsImageData = true;
+                asset.generateMipmaps = true;
+                result = compound(true, "");
+            }
+            else
+            {
+                result = compound(false, "Unsupported pixel format");
+            }
+            
+            return result;
+        }
+    }
+}
 
 struct ImageFormatInfo
 {
@@ -94,7 +219,9 @@ struct ImageFormatInfo
 class AssetManager: Owner
 {
     Application application; // set by the scene
-    Dict!(ImageLoaderCallback, string) imageLoaderCallbacks;
+    Dict!(TextureLoader, string) textureLoaders;
+    DefaultTextureLoader defaultTextureLoader;
+    
     Dict!(Asset, string) assetsByFilename;
     VirtualFileSystem fs;
     StdFileSystem stdfs;
@@ -116,12 +243,25 @@ class AssetManager: Owner
     this(EventManager emngr, Owner o = null)
     {
         super(o);
-
-        imageLoaderCallbacks = New!(Dict!(ImageLoaderCallback, string));
-        registerImageLoader([".bmp", ".BMP"], &dlibImageLoader!loadBMP);
-        registerImageLoader([".jpg", ".JPG", ".jpeg", ".JPEG"], &dlibImageLoader!loadJPEG);
-        registerImageLoader([".png", ".PNG"], &dlibImageLoader!loadPNG);
-        registerImageLoader([".tga", ".TGA"], &dlibImageLoader!loadTGA);
+        
+        defaultTextureLoader = New!DefaultTextureLoader(this);
+        
+        textureLoaders = New!(Dict!(TextureLoader, string));
+        registerTextureLoader(".bmp", defaultTextureLoader);
+        registerTextureLoader([".jpg", ".jpeg"], defaultTextureLoader);
+        registerTextureLoader(".png", defaultTextureLoader);
+        registerTextureLoader(".tga", defaultTextureLoader);
+        registerTextureLoader(".hdr", defaultTextureLoader);
+        registerTextureLoader(".webp", defaultTextureLoader);
+        registerTextureLoader(".avif", defaultTextureLoader);
+        registerTextureLoader([".tif", ".tiff"], defaultTextureLoader);
+        registerTextureLoader(".dds", defaultTextureLoader);
+        registerTextureLoader(".jxl", defaultTextureLoader);
+        registerTextureLoader(".gif", defaultTextureLoader);
+        registerTextureLoader(".pcx", defaultTextureLoader);
+        registerTextureLoader([".pnm", ".ppm", ".pgm", ".pbm"], defaultTextureLoader);
+        registerTextureLoader(".qoi", defaultTextureLoader);
+        registerTextureLoader(".xpm", defaultTextureLoader);
         
         assetsByFilename = New!(Dict!(Asset, string));
         fs = New!VirtualFileSystem();
@@ -176,7 +316,7 @@ class AssetManager: Owner
 
     ~this()
     {
-        Delete(imageLoaderCallbacks);
+        Delete(textureLoaders);
         Delete(assetsByFilename);
         Delete(fs);
         Delete(imageFactory);
@@ -202,44 +342,25 @@ class AssetManager: Owner
         fs.mount(boxfs);
     }
     
-    void registerImageLoader(string extension, ImageLoaderCallback callback)
+    void registerTextureLoader(string extension, TextureLoader loader)
     {
-        imageLoaderCallbacks[extension] = callback;
+        textureLoaders[extension] = loader;
     }
     
-    void registerImageLoader(string[] extensions, ImageLoaderCallback callback)
+    void registerTextureLoader(string[] extensions, TextureLoader loader)
     {
         foreach(extension; extensions)
         {
-            registerImageLoader(extension, callback);
+            registerTextureLoader(extension, loader);
         }
     }
     
-    Compound!(SuperImage, string) loadImage(string extension, InputStream istrm)
+    TextureLoader textureLoader(string extension)
     {
-        if (extension == ".hdr" ||
-            extension == ".HDR")
-        {
-            Compound!(SuperHDRImage, string) res;
-            ubyte[] data = New!(ubyte[])(istrm.size);
-            istrm.fillArray(data);
-            ArrayStream arrStrm = New!ArrayStream(data);
-            res = loadHDR(arrStrm, hdrImageFactory);
-            SuperImage img = res[0];
-            string errMsg = res[1];
-            Delete(arrStrm);
-            Delete(data);
-            return compound(img, errMsg);
-        }
-        else if (extension in imageLoaderCallbacks)
-        {
-            return imageLoaderCallbacks[extension](istrm, imageFactory);
-        }
+        if (extension in textureLoaders)
+            return textureLoaders[extension];
         else
-        {
-            SuperImage img = null;
-            return compound(img, "No loader registered for " ~ extension);
-        }
+            return null;
     }
 
     bool assetExists(string name)
@@ -342,7 +463,7 @@ class AssetManager: Owner
         bool res = asset.loadThreadSafePart(filename, istrm, fs, this);
         if (!res)
         {
-            writefln("Error: failed to load asset \"%s\"", filename);
+            writefln("Warning: failed to load asset \"%s\"", filename);
         }
         return res;
     }
@@ -351,7 +472,7 @@ class AssetManager: Owner
     {
         if (!fileExists(filename))
         {
-            writefln("Error: cannot find file \"%s\"", filename);
+            writefln("Warning: cannot find file \"%s\"", filename);
             return false;
         }
 
@@ -366,7 +487,7 @@ class AssetManager: Owner
         foreach(filename, asset; assetsByFilename)
         {
             nextLoadingPercentage += 1.0f / cast(float)(assetsByFilename.length);
-
+            
             if (!asset.threadSafePartLoaded)
             {
                 asset.threadSafePartLoaded = loadAssetThreadSafePart(asset, filename);
@@ -387,27 +508,22 @@ class AssetManager: Owner
         return loadingThread.isRunning;
     }
 
-    bool loadThreadUnsafePart()
+    void loadThreadUnsafePart()
     {
         bool res = true;
         foreach(filename, asset; assetsByFilename)
-        //if (!asset.threadUnsafePartLoaded)
-        if (asset.threadSafePartLoaded)
         {
-            res = asset.loadThreadUnsafePart();
-            asset.threadUnsafePartLoaded = res;
-            if (!res)
+            //if (!asset.threadUnsafePartLoaded)
+            if (asset.threadSafePartLoaded)
             {
-                writefln("Error: failed to load asset \"%s\"", filename);
-                break;
+                res = asset.loadThreadUnsafePart();
+                asset.threadUnsafePartLoaded = res;
+                if (!res)
+                {
+                    writefln("Warning: failed to load asset \"%s\"", filename);
+                }
             }
         }
-        else
-        {
-            res = false;
-            break;
-        }
-        return res;
     }
 
     bool fileExists(string filename)

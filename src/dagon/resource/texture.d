@@ -42,14 +42,14 @@ import dlib.filesystem.filesystem;
 
 import dagon.graphics.texture;
 import dagon.resource.asset;
-import dagon.resource.dds;
-import dagon.resource.sdlimage;
 
 class TextureAsset: Asset
 {
     Texture texture;
-    protected SuperImage image;
-    protected TextureBuffer buffer;
+    SuperImage image;
+    TextureBuffer buffer;
+    bool bufferDataIsImageData = false;
+    bool generateMipmaps = true;
 
     this(Owner o)
     {
@@ -64,42 +64,24 @@ class TextureAsset: Asset
 
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager assetManager)
     {
-        bool useSDLImage = false;
-        if (assetManager.application)
+        string ext = filename.extension.toLower;
+        auto loader = assetManager.textureLoader(ext);
+        if (loader)
         {
-            useSDLImage = assetManager.application.sdlImagePresent;
-        }
-        
-        string format = filename.extension.toLower;
-        if (format == ".dds")
-        {
-            return loadDDS(istrm, &buffer);
+            int option = 0;
+            auto res = loader.load(filename, ext, istrm, this, option);
+            if (res[0])
+                return true;
+            else
+            {
+                writeln(res[1]);
+                return false;
+            }
         }
         else
         {
-            if (!isSDLImageSupportedFormat(format))
-                useSDLImage = false;
-            
-            if (useSDLImage)
-            {
-                // TODO: create SuperImage from SDL_Image surface
-                return loadImageViaSDLImage(istrm, &buffer);
-            }
-            else
-            {
-                auto res = assetManager.loadImage(filename.extension, istrm);
-                image = res[0];
-                string errMsg = res[1];
-                if (image !is null)
-                {
-                    return true;
-                }
-                else
-                {
-                    writeln(errMsg);
-                    return false;
-                }
-            }
+            writeln(filename, ": unsupported texture file extension \"", ext, "\"");
+            return false;
         }
     }
 
@@ -110,7 +92,7 @@ class TextureAsset: Asset
         
         if (image !is null)
         {
-            texture.createFromImage(image, true);
+            texture.createFromImage(image, generateMipmaps);
             if (texture.valid)
                 return true;
             else
@@ -118,7 +100,7 @@ class TextureAsset: Asset
         }
         else if (buffer.data.length)
         {
-            texture.createFromBuffer(buffer, true);
+            texture.createFromBuffer(buffer, generateMipmaps);
             Delete(buffer.data);
             return true;
         }
@@ -132,7 +114,7 @@ class TextureAsset: Asset
             texture.release();
         if (image)
             Delete(image);
-        if (buffer.data.length)
+        if (buffer.data.length && !bufferDataIsImageData)
             Delete(buffer.data);
     }
 }

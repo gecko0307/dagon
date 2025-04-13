@@ -34,12 +34,14 @@ import std.conv;
 import dlib.core.stream;
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.core.compound;
 import dlib.filesystem.filesystem;
 
 import dagon.core.bindings;
 import dagon.core.application;
 import dagon.graphics.texture;
 import dagon.resource.asset;
+import dagon.resource.texture;
 import dagon.resource.scene;
 
 import loader = bindbc.loader.sharedlib;
@@ -668,14 +670,16 @@ bool loadKTX1(InputStream istrm, string filename, TextureBuffer* buffer, bool* g
     
     ktxTexture1_Destroy(tex);
     
+    Delete(data);
+    
     return true;
 }
 
 enum TranscodePriority
 {
-    Uncompressed,
     Quality,
-    Size
+    Size,
+    Uncompressed
 }
 
 bool loadKTX2(InputStream istrm, string filename, TextureBuffer* buffer, TranscodePriority transcodePriority, bool* generateMipmaps)
@@ -809,72 +813,49 @@ bool loadKTX2(InputStream istrm, string filename, TextureBuffer* buffer, Transco
     return true;
 }
 
-class KTXAsset: Asset
+class KTXLoader: TextureLoader
 {
-    Texture texture;
-    protected TextureBuffer buffer;
-    protected bool generateMipmaps = true;
-    
-    TranscodePriority transcodePriority;
-    
-    this(TranscodePriority transcodePriority, Owner o)
+    this(AssetManager assetManager)
     {
-        super(o);
-        this.transcodePriority = transcodePriority;
-        texture = New!Texture(this);
+        super(assetManager);
     }
     
-    ~this()
+    override Compound!(bool, string) load(
+        string filename,
+        string extension,
+        InputStream istrm,
+        TextureAsset asset,
+        uint option = 0)
     {
-        release();
-    }
-    
-    override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager assetManager)
-    {
-        string ext = filename.extension;
-        if (ext == ".ktx" || ext == ".KTX")
-            return loadKTX1(istrm, filename, &buffer, &generateMipmaps);
-        else if (ext == ".ktx2" || ext == ".KTX2")
-            return loadKTX2(istrm, filename, &buffer, transcodePriority, &generateMipmaps);
-        else
-            return false;
-    }
-    
-    override bool loadThreadUnsafePart()
-    {
-        if (texture.valid)
-            return true;
+        TranscodePriority transcodePriority = cast(TranscodePriority)option;
         
-        if (buffer.data.length)
+        if (extension == ".ktx" || extension == ".KTX")
         {
-            texture.createFromBuffer(buffer, generateMipmaps);
-            Delete(buffer.data);
-            return true;
+            bool loaded = loadKTX1(istrm, filename, &asset.buffer, &asset.generateMipmaps);
+            if (loaded)
+            {
+                asset.bufferDataIsImageData = false;
+                return compound(true, "");
+            }
+            else
+                return compound(false, "Failed to decode image file");
+        }
+        else if (extension == ".ktx2" || extension == ".KTX2")
+        {
+            bool loaded = loadKTX2(istrm, filename, &asset.buffer, transcodePriority, &asset.generateMipmaps);
+            if (loaded)
+            {
+                asset.bufferDataIsImageData = false;
+                return compound(true, "");
+            }
+            else
+                return compound(false, "Failed to decode image file");
         }
         else
-            return false;
+        {
+            return compound(false, "Unsupported image file format");
+        }
     }
-    
-    override void release()
-    {
-        if (texture)
-            texture.release();
-        if (buffer.data.length)
-            Delete(buffer.data);
-    }
-}
-
-KTXAsset addKTXAsset(Scene scene, string filename, TranscodePriority transcodePriority = TranscodePriority.Quality, bool preload = false)
-{
-    KTXAsset ktx;
-    if (scene.assetManager.assetExists(filename))
-        ktx = cast(KTXAsset)scene.assetManager.getAsset(filename);
-    else
-    {
-        ktx = New!KTXAsset(transcodePriority, scene.assetManager);
-        scene.addAsset(ktx, filename, preload);
-    }
-    return ktx;
 }
 
 KTXSupport loadKTXLibrary()

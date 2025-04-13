@@ -72,6 +72,7 @@ enum DagonEvent
 
 enum ImageFileFormat
 {
+    Unknown,
     PNG,
     JPEG,
     BMP,

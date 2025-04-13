@@ -49,7 +49,6 @@ import dagon.graphics.world;
 import dagon.resource.asset;
 import dagon.resource.obj;
 import dagon.resource.gltf;
-import dagon.resource.image;
 import dagon.resource.texture;
 import dagon.resource.text;
 import dagon.resource.binary;
@@ -106,23 +105,17 @@ class Scene: EventListener
     {
         T newAsset;
         if (assetManager.assetExists(filename))
+        {
             newAsset = cast(T)assetManager.getAsset(filename);
+        }
         else
         {
-            static if (is(T: ImageAsset) || is(T: TextureAsset))
-            {
-                newAsset = New!T(assetManager);
-            }
-            else
-            {
-                newAsset = New!T(assetManager);
-            }
+            newAsset = New!T(assetManager);
             addAsset(newAsset, filename, preload);
         }
         return newAsset;
     }
 
-    alias addImageAsset = addAssetAs!ImageAsset;
     alias addTextureAsset = addAssetAs!TextureAsset;
     alias addOBJAsset = addAssetAs!OBJAsset;
     alias addGLTFAsset = addAssetAs!GLTFAsset;
