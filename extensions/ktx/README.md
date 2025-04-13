@@ -26,7 +26,7 @@ class MyScene: Scene
 }
 ```
 
-`TranscodePriority` is used to specify texture compression preference:
+`TranscodePriority` is used to specify texture compression preference for transcoding Basis Universal textures:
 - `TranscodePriority.Quality` (default value of `TextureAsset.loaderOption`) - prefer [BPTC](_Texture_Compression) if available, otherwise fall back to [S3TC](https://www.khronos.org/opengl/wiki/S3_Texture_Compression);
 - `TranscodePriority.Size` - always prefer [S3TC](https://www.khronos.org/opengl/wiki/S3_Texture_Compression);
 - `TranscodePriority.Uncompressed` - disables hardware compression, texture is decoded to RGBA32.
