@@ -291,6 +291,12 @@ class AssetManager: Owner
         base64ImagePrefixes["data:image/x-tga;base64,"] = "image.tga";
         base64ImagePrefixes["data:image/x-ms-bmp;base64,"] = "image.bmp";
         base64ImagePrefixes["data:image/x-psd;base64,"] = "image.psd";
+        base64ImagePrefixes["data:image/avif;base64,"] = "image.avif";
+        base64ImagePrefixes["data:image/bmp;base64,"] = "image.bmp";
+        base64ImagePrefixes["data:image/x-tiff;base64,"] = "image.tiff";
+        base64ImagePrefixes["data:image/x-tif;base64,"] = "image.tif";
+        base64ImagePrefixes["data:image/x-xcf;base64,"] = "image.xcf";
+        base64ImagePrefixes["data:image/jxl;base64,"] = "image.jxl";
     }
     
     ImageFormatInfo detectBase64Image(string uri)
