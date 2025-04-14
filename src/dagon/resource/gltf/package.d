@@ -1082,6 +1082,7 @@ class GLTFAsset: Asset, TriangleSet
 
                     if(animationIdx >= 0)
                     {
+                        writeln("animation enabled");
                         auto animation = animations[animationIdx];
 
                         foreach(ch; animation.channels)
@@ -1091,12 +1092,18 @@ class GLTFAsset: Asset, TriangleSet
                             const prevIdx = ch.sampler.getSampleByTime(currTime, prevTime, nextTime);
                             const nextIdx = prevIdx + 1;
 
-                            const float interpolationValue = (currTime - prevTime) / (nextTime - prevTime);
+                            const float interpRatio = (currTime - prevTime) / (nextTime - prevTime);
 
                             if(ch.target_path == TRSType.Rotation)
                             {
                                 const prev_rot = ch.sampler.output.getSlice!Quaternionf[prevIdx];
                                 const next_rot = ch.sampler.output.getSlice!Quaternionf[nextIdx];
+
+                                const rot = prev_rot + (next_rot - prev_rot) * interpRatio;
+
+                                writeln(prev_rot);
+                                writeln(next_rot);
+                                writeln(rot);
                             }
                             else
                             {
