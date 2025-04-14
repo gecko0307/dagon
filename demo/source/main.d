@@ -5,7 +5,7 @@ import dagon;
 class TestScene: Scene
 {
     MyGame game;
-    OBJAsset aOBJSuzanne;
+    GLTFAsset aFox;
 
     this(MyGame game)
     {
@@ -15,7 +15,10 @@ class TestScene: Scene
 
     override void beforeLoad()
     {
-        aOBJSuzanne = addOBJAsset("data/suzanne.obj");
+        aFox = addGLTFAsset("data/AnimatedCube/glTF/AnimatedCube.gltf");
+        aFox.animationIdx = 0;
+        //~ aFox = addGLTFAsset("data/Fox/glTF/Fox.gltf");
+        //~ aFox = addGLTFAsset("data/FlightHelmet/glTF/FlightHelmet.gltf");
     }
 
     override void afterLoad()
@@ -38,14 +41,13 @@ class TestScene: Scene
         sun.shadowEnabled = true;
         sun.energy = 10.0f;
         sun.pitch(-45.0f);
-        
-        auto matSuzanne = addMaterial();
-        matSuzanne.baseColorFactor = Color4f(1.0, 0.2, 0.2, 1.0);
 
-        auto eSuzanne = addEntity();
-        eSuzanne.drawable = aOBJSuzanne.mesh;
-        eSuzanne.material = matSuzanne;
-        eSuzanne.position = Vector3f(0, 1, 0);
+        auto eFox = aFox.rootEntity;
+        useEntity(eFox);
+        foreach(node; aFox.nodes)
+            useEntity(node.entity);
+
+        eFox.position = Vector3f(0, 1, 0);
         
         auto ePlane = addEntity();
         ePlane.drawable = New!ShapePlane(10, 10, 1, assetManager);
@@ -80,6 +82,12 @@ class MyGame: Game
 
 void main(string[] args)
 {
+    version (none)
+    {
+        import etc.linux.memoryerror;
+        registerMemoryAssertHandler();
+    }
+
     MyGame game = New!MyGame(1280, 720, false, "Dagon Demo", args);
     game.run();
     Delete(game);
