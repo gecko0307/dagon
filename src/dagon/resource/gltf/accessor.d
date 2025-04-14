@@ -56,6 +56,8 @@ class GLTFAccessor: Owner
     
     T[] getSlice(T)() const @nogc
     {
+        assert(bufferView.stride == T.sizeof);
+
         auto ret = cast(T*) bufferView.slice.ptr;
 
         return ret[0 .. count];

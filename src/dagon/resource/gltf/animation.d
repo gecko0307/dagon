@@ -31,7 +31,7 @@ class AnimationSampler: Owner
     }
 
     /// Returns: beginning translation sample number
-    size_t getSampleByTime(in float t)
+    size_t getSampleByTime(in float t, out float previousTime, out float nextTime)
     {
         assert(input.dataType == GLTFDataType.Scalar);
         assert(input.componentType == GL_FLOAT);
@@ -39,12 +39,18 @@ class AnimationSampler: Owner
         const timeline = input.getSlice!float;
         assert(timeline.length > 1);
 
+        //FIXME: wrong clamping before/after sampler input range
+
         foreach(i; 0 .. timeline.length - 1)
         {
             //TODO: One comparison could be removed here, but I'm too lazy
             //Or this search approach can be optimized more radically?
             if(timeline[i] >= t && t < timeline[i+1])
+            {
+                previousTime = timeline[i];
+                nextTime = timeline[i+1];
                 return i;
+            }
         }
 
         return 0; //no translation found, so using first translation

@@ -1086,8 +1086,22 @@ class GLTFAsset: Asset, TriangleSet
 
                         foreach(ch; animation.channels)
                         {
-                            const fromIdx = ch.sampler.getSampleByTime(currTime);
-                            const toIdx = fromIdx + 1;
+                            float prevTime=void, nextTime=void;
+
+                            const prevIdx = ch.sampler.getSampleByTime(currTime, prevTime, nextTime);
+                            const nextIdx = prevIdx + 1;
+
+                            const float interpolationValue = (currTime - prevTime) / (nextTime - prevTime);
+
+                            if(ch.target_path == TRSType.Rotation)
+                            {
+                                const prev_rot = ch.sampler.output.getSlice!Quaternionf[prevIdx];
+                                const next_rot = ch.sampler.output.getSlice!Quaternionf[nextIdx];
+                            }
+                            else
+                            {
+                                assert(false, "access to Vector3f slice not implemented");
+                            }
                         }
                     }
 
