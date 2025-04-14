@@ -146,6 +146,7 @@ class GLTFAsset: Asset, TriangleSet
     Array!GLTFSkin skins;
     Array!GLTFAnimation animations;
     size_t animationIdx = -1;
+    static float currTime; //FIXME: remove
     Array!GLTFScene scenes;
     Entity rootEntity;
     
@@ -1081,7 +1082,13 @@ class GLTFAsset: Asset, TriangleSet
 
                     if(animationIdx >= 0)
                     {
-                        const animation = animations[animationIdx];
+                        auto animation = animations[animationIdx];
+
+                        foreach(ch; animation.channels)
+                        {
+                            const fromIdx = ch.sampler.getSampleByTime(currTime);
+                            const toIdx = fromIdx + 1;
+                        }
                     }
 
                     size_t indexStride;

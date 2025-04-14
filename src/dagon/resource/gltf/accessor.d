@@ -54,7 +54,7 @@ class GLTFAccessor: Owner
     uint count;
     uint byteOffset;
     
-    ref T[] getSlice(T)() const @nogc
+    T[] getSlice(T)() const @nogc
     {
         auto ret = cast(T*) bufferView.slice.ptr;
 

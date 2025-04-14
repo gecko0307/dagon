@@ -1,6 +1,8 @@
 module dagon.resource.gltf.animation;
 
-import dagon.resource.gltf.accessor: GLTFAccessor;
+import bindbc.opengl.bind.gl11: GL_FLOAT;
+import dagon.core.bindings: GLenum;
+import dagon.resource.gltf.accessor: GLTFAccessor, GLTFDataType;
 import dagon.resource.gltf.node: GLTFNode;
 import dlib.core.ownership: Owner;
 import dlib.container.array;
@@ -29,10 +31,10 @@ class AnimationSampler: Owner
     }
 
     /// Returns: beginning translation sample number
-    size_t getSampleByTime(T)(in Time t)
+    size_t getSampleByTime(in float t)
     {
-        assert(input.dataType = GLTFDataType.Scalar);
-        assert(input.componentType = GLenum.GL_FLOAT);
+        assert(input.dataType == GLTFDataType.Scalar);
+        assert(input.componentType == GL_FLOAT);
 
         const timeline = input.getSlice!float;
         assert(timeline.length > 1);
