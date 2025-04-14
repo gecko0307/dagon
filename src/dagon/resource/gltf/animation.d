@@ -28,7 +28,8 @@ class AnimationSampler: Owner
         super(o);
     }
 
-    void getSampleByTime(T)(in Time t, out T from, out T to)
+    /// Returns: beginning translation sample number
+    size_t getSampleByTime(T)(in Time t)
     {
         assert(input.dataType = GLTFDataType.Scalar);
         assert(input.componentType = GLenum.GL_FLOAT);
@@ -41,15 +42,10 @@ class AnimationSampler: Owner
             //TODO: One comparison could be removed here, but I'm too lazy
             //Or this search approach can be optimized more radically?
             if(timeline[i] >= t && t < timeline[i+1])
-            {
-                from = timeline[i];
-                to = timeline[i+1];
-
-                return;
-            }
+                return i;
         }
 
-        assert(false);
+        return 0; //no translation found, so using first translation
     }
 }
 
