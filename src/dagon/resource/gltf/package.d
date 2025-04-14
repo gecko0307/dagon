@@ -1044,6 +1044,10 @@ class GLTFAsset: Asset, TriangleSet
             deleteOwnedObject(sc);
         scenes.free();
         
+        foreach(an; animations)
+            deleteOwnedObject(an);
+        animations.free();
+
         textures.free();
         materials.free();
         
