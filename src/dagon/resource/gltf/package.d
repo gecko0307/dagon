@@ -145,6 +145,7 @@ class GLTFAsset: Asset, TriangleSet
     Array!GLTFNode nodes;
     Array!GLTFSkin skins;
     Array!GLTFAnimation animations;
+    size_t animationIdx = -1;
     Array!GLTFScene scenes;
     Entity rootEntity;
     
@@ -1061,8 +1062,6 @@ class GLTFAsset: Asset, TriangleSet
         
         foreach(node; nodes)
         {
-            auto mat = node.entity.absoluteTransformation;
-            
             if (node.mesh)
             {
                 foreach(primitive; node.mesh.primitives)
@@ -1079,7 +1078,12 @@ class GLTFAsset: Asset, TriangleSet
                     
                     ubyte* indicesStart = ia.bufferView.slice.ptr + ia.byteOffset;
                     size_t numTriangles = ia.count / 3;
-                    
+
+                    if(animationIdx >= 0)
+                    {
+                        const animation = animations[animationIdx];
+                    }
+
                     size_t indexStride;
                     if (ia.componentType == GL_UNSIGNED_BYTE)
                         indexStride = 1;
@@ -1111,7 +1115,9 @@ class GLTFAsset: Asset, TriangleSet
                             indices[1] = *cast(uint*)(ptr+4);
                             indices[2] = *cast(uint*)(ptr+8);
                         }
-                        
+
+                        auto mat = node.entity.absoluteTransformation;
+
                         Triangle tri;
                         tri.v[0] = positions[indices[0]] * mat;
                         tri.v[1] = positions[indices[1]] * mat;

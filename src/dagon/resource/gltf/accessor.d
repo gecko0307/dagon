@@ -54,6 +54,13 @@ class GLTFAccessor: Owner
     uint count;
     uint byteOffset;
     
+    ref T[] getSlice(T)() const @nogc
+    {
+        auto ret = cast(T*) bufferView.slice.ptr;
+
+        return ret[0 .. count];
+    }
+
     this(GLTFBufferView bufferView, GLTFDataType dataType, GLenum componentType, uint count, uint byteOffset, Owner o)
     {
         super(o);
