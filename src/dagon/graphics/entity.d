@@ -210,6 +210,7 @@ class Entity: Owner, Updateable
         aabb = AABB(absoluteTransformation.translation, boundingBoxSize);
     }
 
+    //TODO: remove argument, animation can be called separately
     void updateTransformation(in Time t)
     {
         prevTransformation = transformation;
@@ -231,7 +232,6 @@ class Entity: Owner, Updateable
     private void applyAnimations(ref Matrix4x4f tr, in Time t)
     {
         import std.stdio;
-        writeln("animation enabled");
 
         auto animation = animations[animationIdx];
 
@@ -248,14 +248,17 @@ class Entity: Owner, Updateable
 
             if(ch.target_path == TRSType.Rotation)
             {
-                const prev_rot = ch.sampler.output.getSlice!Quaternionf[prevIdx];
-                const next_rot = ch.sampler.output.getSlice!Quaternionf[nextIdx];
+                const Quaternionf prev_rot = ch.sampler.output.getSlice!Quaternionf[prevIdx];
+                const Quaternionf next_rot = ch.sampler.output.getSlice!Quaternionf[nextIdx];
 
                 const rot = prev_rot + (next_rot - prev_rot) * interpRatio;
 
+                writeln("===");
                 writeln(prev_rot);
                 writeln(next_rot);
                 writeln(rot);
+
+                //~ tr = rotation.toMatrix4x4(rot);
             }
             else
             {
