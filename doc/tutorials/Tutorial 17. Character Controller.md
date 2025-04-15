@@ -25,16 +25,20 @@ To control the character, normal `Entity` methods should not be used. Instead, y
 ```d
 void characterControls()
 {
-    float speed = 3.0f; // speed in m/s
-    if (inputManager.getButton("left")) character.move(fpview.right, -speed);
-    if (inputManager.getButton("right")) character.move(fpview.right, speed);
-    if (inputManager.getButton("forward")) character.move(fpview.directionHorizontal, -speed);
-    if (inputManager.getButton("back")) character.move(fpview.directionHorizontal, speed);
+    float walkSpeed = 3.0f; // speed in m/s
+    float jumpSpeed = 3.0f;
     
-    if (inputManager.getButton("jump")) character.jump(1.0f);
+    if (inputManager.getButton("left")) character.move(fpview.right, -walkSpeed);
+    if (inputManager.getButton("right")) character.move(fpview.right, walkSpeed);
+    if (inputManager.getButton("forward")) character.move(fpview.directionHorizontal, -walkSpeed);
+    if (inputManager.getButton("back")) character.move(fpview.directionHorizontal, walkSpeed);
     
-    if (inputManager.getButton("crouch")) character.crouch(true);
-    else character.crouch(false);
+    if (inputManager.getButton("jump")) character.jump(jumpSpeed);
+    
+    if (inputManager.getButton("crouch"))
+        character.crouch(true);
+    else
+        character.crouch(false);
     
     character.updateVelocity();
 }
