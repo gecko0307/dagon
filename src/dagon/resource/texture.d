@@ -43,11 +43,19 @@ import dlib.filesystem.filesystem;
 import dagon.graphics.texture;
 import dagon.resource.asset;
 
+struct ConversionOptions
+{
+    uint width;
+    uint height;
+    int hint; // loader-specific
+}
+
 class TextureAsset: Asset
 {
     Texture texture;
     SuperImage image;
     TextureBuffer buffer;
+    ConversionOptions conversion;
     bool bufferDataIsImageData = false;
     bool generateMipmaps = true;
     uint loaderOption = 0; // for loader-specific enums
@@ -56,6 +64,9 @@ class TextureAsset: Asset
     {
         super(o);
         texture = New!Texture(this);
+        conversion.width = 0;
+        conversion.height = 0;
+        conversion.hint = 0;
     }
 
     ~this()

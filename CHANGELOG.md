@@ -10,6 +10,9 @@ Dagon 0.21.0 - TBD
 - **Assets**
   - Breaking change: the old image loader callback mechanism in `AssetManager` was replaced with `TextureLoader` objects. You can write your own loader class and register it with `AssetManager.registerTextureLoader`
   - SDL_image 2.8 is now preferred to load textures, `dlib.image` is used as a fallback
+  - SVG textures support
+  - `TextureAsset.convert` - format-specific image conversion options
+  - `TextureAsset.loaderOption` - loader-specific parameter
   - Ensure 4-byte alignment when sending prebaked mipmaps to GPU. This fixes the wrong colors issue with 24-bit RGB textures
 - **Extensions**
   - `dagon:ktx` - KTX texture loader extension that uses [libktx](https://github.com/KhronosGroup/KTX-Software). Transcoding KTX2 + Basis Universal to S3TC, RGTC and BPTC

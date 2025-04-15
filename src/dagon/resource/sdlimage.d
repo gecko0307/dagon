@@ -36,11 +36,12 @@ import dlib.core.stream;
 
 import dagon.core.bindings;
 import dagon.graphics.texture;
+import dagon.resource.texture;
 
 immutable string[] sdlImageFormats = [
     ".bmp", ".gif", ".jpg", ".jpeg", ".lbm", ".pcx", ".png",
     ".pnm", ".ppm", ".pgm", ".pbm", ".qoi", ".tga", ".xcf", ".xpm",
-    ".tif", ".tiff", ".webp", ".avif", ".jxl"
+    ".tif", ".tiff", ".webp", ".avif", ".jxl", ".svg"
 ];
 
 bool isSDLImageSupportedFormat(string formatExtension)
@@ -48,22 +49,39 @@ bool isSDLImageSupportedFormat(string formatExtension)
     return sdlImageFormats.canFind(formatExtension);
 }
 
-bool loadImageViaSDLImage(InputStream istrm, TextureBuffer* buffer)
+bool loadImageViaSDLImage(InputStream istrm, string extension, TextureAsset asset)
 {
     size_t dataSize = istrm.size;
     ubyte[] data = New!(ubyte[])(dataSize);
     istrm.readBytes(data.ptr, dataSize);
     
-    SDL_RWops* rw = SDL_RWFromMem(data.ptr, cast(int)dataSize);
+    SDL_RWops* rw = SDL_RWFromConstMem(data.ptr, cast(int)dataSize);
+    SDL_Surface* surface;
     
-    SDL_Surface* surface = IMG_Load_RW(rw, 1);
+    bool canResize = true;
+    if (extension == ".svg" && asset.conversion.width > 0 && asset.conversion.height > 0)
+    {
+        surface = IMG_LoadSizedSVG_RW(rw, cast(int)asset.conversion.width, cast(int)asset.conversion.height);
+        canResize = false;
+    }
+    else
+    {
+        surface = IMG_Load_RW(rw, 1);
+    }
+    
     bool loaded = false;
     if (surface is null)
-        writeln("IMG_Load_RW error: ", IMG_GetError().to!string);
+    {
+        auto err = IMG_GetError();
+        if (err)
+            writeln("IMG_Load_RW error: ", IMG_GetError().to!string);
+        else
+            writeln("IMG_Load_RW error");
+    }
     else
     {
         loaded = true;
-        SDL_RWclose(rw);
+        //SDL_RWclose(rw);
     }
     
     Delete(data);
@@ -102,11 +120,11 @@ bool loadImageViaSDLImage(InputStream istrm, TextureBuffer* buffer)
         
         size_t bufferSize = surface.w * surface.h * surface.format.BytesPerPixel;
         
-        buffer.format = format;
-        buffer.size = size;
-        buffer.mipLevels = 1;
-        buffer.data = New!(ubyte[])(bufferSize);
-        memcpy(buffer.data.ptr, surface.pixels, bufferSize);
+        asset.buffer.format = format;
+        asset.buffer.size = size;
+        asset.buffer.mipLevels = 1;
+        asset.buffer.data = New!(ubyte[])(bufferSize);
+        memcpy(asset.buffer.data.ptr, surface.pixels, bufferSize);
         
         SDL_FreeSurface(surface);
     }

@@ -675,14 +675,14 @@ bool loadKTX1(InputStream istrm, string filename, TextureBuffer* buffer, bool* g
     return true;
 }
 
-enum TranscodePriority
+enum TranscodeHint
 {
     Quality,
     Size,
     Uncompressed
 }
 
-bool loadKTX2(InputStream istrm, string filename, TextureBuffer* buffer, TranscodePriority transcodePriority, bool* generateMipmaps)
+bool loadKTX2(InputStream istrm, string filename, TextureBuffer* buffer, TranscodeHint hint, bool* generateMipmaps)
 {
     size_t dataSize = istrm.size;
     ubyte[] data = New!(ubyte[])(dataSize);
@@ -709,7 +709,7 @@ bool loadKTX2(InputStream istrm, string filename, TextureBuffer* buffer, Transco
         ktx_transcode_fmt_e targetFormat;
         string targetFormatStr;
         
-        if (transcodePriority == TranscodePriority.Uncompressed)
+        if (hint == TranscodeHint.Uncompressed)
         {
             targetFormat = ktx_transcode_fmt_e.KTX_TTF_RGBA32;
             targetFormatStr = "RGBA32";
@@ -726,7 +726,7 @@ bool loadKTX2(InputStream istrm, string filename, TextureBuffer* buffer, Transco
         }
         else if (numChannels == 3)
         {
-            if (bptcSupported && transcodePriority == TranscodePriority.Quality)
+            if (bptcSupported && hint == TranscodeHint.Quality)
             {
                 targetFormat = ktx_transcode_fmt_e.KTX_TTF_BC7_RGBA;
                 targetFormatStr = "BPTC/BC7";
@@ -739,7 +739,7 @@ bool loadKTX2(InputStream istrm, string filename, TextureBuffer* buffer, Transco
         }
         else if (numChannels == 4)
         {
-            if (bptcSupported && transcodePriority == TranscodePriority.Quality)
+            if (bptcSupported && hint == TranscodeHint.Quality)
             {
                 targetFormat = ktx_transcode_fmt_e.KTX_TTF_BC7_RGBA;
                 targetFormatStr = "BPTC/BC7";
@@ -827,7 +827,7 @@ class KTXLoader: TextureLoader
         TextureAsset asset,
         uint option = 0)
     {
-        TranscodePriority transcodePriority = cast(TranscodePriority)option;
+        TranscodeHint hint = cast(TranscodeHint)asset.conversion.hint;
         
         if (extension == ".ktx" || extension == ".KTX")
         {
@@ -842,7 +842,7 @@ class KTXLoader: TextureLoader
         }
         else if (extension == ".ktx2" || extension == ".KTX2")
         {
-            bool loaded = loadKTX2(istrm, filename, &asset.buffer, transcodePriority, &asset.generateMipmaps);
+            bool loaded = loadKTX2(istrm, filename, &asset.buffer, hint, &asset.generateMipmaps);
             if (loaded)
             {
                 asset.bufferDataIsImageData = false;

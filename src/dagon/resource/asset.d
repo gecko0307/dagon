@@ -147,7 +147,7 @@ class DefaultTextureLoader: TextureLoader
         // Use SDL2_Image
         if (useSDLImage)
         {
-            bool loaded = loadImageViaSDLImage(istrm, &asset.buffer);
+            bool loaded = loadImageViaSDLImage(istrm, extension, asset);
             if (loaded)
             {
                 asset.bufferDataIsImageData = false;
@@ -262,6 +262,7 @@ class AssetManager: Owner
         registerTextureLoader([".pnm", ".ppm", ".pgm", ".pbm"], defaultTextureLoader);
         registerTextureLoader(".qoi", defaultTextureLoader);
         registerTextureLoader(".xpm", defaultTextureLoader);
+        registerTextureLoader(".svg", defaultTextureLoader);
         
         assetsByFilename = New!(Dict!(Asset, string));
         fs = New!VirtualFileSystem();
