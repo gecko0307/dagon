@@ -87,6 +87,8 @@ class NewtonCharacterController: EntityComponent, NewtonRaycaster
     float maxRaycastDistance = 100.0f;
     protected float closestHitParam = 1.0f;
     
+    float onGroundCheckTolerance = 0.3f;
+    
     float jumpSpeed = 0.0f;
     Vector3f velocityChange = Vector3f(0.0f, 0.0f, 0.0f);
     
@@ -140,8 +142,10 @@ class NewtonCharacterController: EntityComponent, NewtonRaycaster
             
             if (!groundContact)
             {
-                float groundProj = dot(contactNormal, Vector3f(0.0f, 1.0f, 0.0f));
-                if (groundProj > 0.2f)
+                Vector3f referencePoint = rbody.position.xyz + Vector3f(0.0f, shapeRadius, 0.0f);
+                Vector3f vectorToContact = (referencePoint - contactPoint).normalized;
+                float groundProj = dot(vectorToContact, Vector3f(0.0f, 1.0f, 0.0f));
+                if (groundProj > (1.0f - onGroundCheckTolerance))
                 {
                     groundContact = true;
                     groundPosition = contactPoint;
