@@ -16,7 +16,6 @@ class TestScene: Scene
     override void beforeLoad()
     {
         aFox = addGLTFAsset("data/AnimatedCube/glTF/AnimatedCube.gltf");
-        aFox.animationIdx = 0;
         //~ aFox = addGLTFAsset("data/Fox/glTF/Fox.gltf");
         //~ aFox = addGLTFAsset("data/FlightHelmet/glTF/FlightHelmet.gltf");
     }
@@ -43,6 +42,7 @@ class TestScene: Scene
         sun.pitch(-45.0f);
 
         auto eFox = aFox.rootEntity;
+        eFox.animationIdx = 0; // enables first animation
         useEntity(eFox);
         foreach(node; aFox.nodes)
             useEntity(node.entity);

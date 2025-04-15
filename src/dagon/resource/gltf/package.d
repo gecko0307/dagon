@@ -145,8 +145,6 @@ class GLTFAsset: Asset, TriangleSet
     Array!GLTFNode nodes;
     Array!GLTFSkin skins;
     Array!GLTFAnimation animations;
-    size_t animationIdx = -1;
-    static float currTime; //FIXME: remove
     Array!GLTFScene scenes;
     Entity rootEntity;
     
@@ -830,7 +828,7 @@ class GLTFAsset: Asset, TriangleSet
             }
         }
         
-        rootEntity.updateTransformationTopDown();
+        rootEntity.updateTransformationTopDown(Time(0, 0));
     }
     
     void loadSkins(JSONValue root)
@@ -1079,38 +1077,6 @@ class GLTFAsset: Asset, TriangleSet
                     
                     ubyte* indicesStart = ia.bufferView.slice.ptr + ia.byteOffset;
                     size_t numTriangles = ia.count / 3;
-
-                    if(animationIdx >= 0)
-                    {
-                        writeln("animation enabled");
-                        auto animation = animations[animationIdx];
-
-                        foreach(ch; animation.channels)
-                        {
-                            float prevTime=void, nextTime=void;
-
-                            const prevIdx = ch.sampler.getSampleByTime(currTime, prevTime, nextTime);
-                            const nextIdx = prevIdx + 1;
-
-                            const float interpRatio = (currTime - prevTime) / (nextTime - prevTime);
-
-                            if(ch.target_path == TRSType.Rotation)
-                            {
-                                const prev_rot = ch.sampler.output.getSlice!Quaternionf[prevIdx];
-                                const next_rot = ch.sampler.output.getSlice!Quaternionf[nextIdx];
-
-                                const rot = prev_rot + (next_rot - prev_rot) * interpRatio;
-
-                                writeln(prev_rot);
-                                writeln(next_rot);
-                                writeln(rot);
-                            }
-                            else
-                            {
-                                assert(false, "access to Vector3f slice not implemented");
-                            }
-                        }
-                    }
 
                     size_t indexStride;
                     if (ia.componentType == GL_UNSIGNED_BYTE)

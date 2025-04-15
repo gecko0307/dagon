@@ -97,6 +97,11 @@ class Entity: Owner, Updateable
     Drawable drawable;
     Material material;
 
+    //FIXME: use interface instead of gltf import
+    import dagon.resource.gltf.animation;
+    Array!GLTFAnimation animations;
+    size_t animationIdx = -1;
+
     Vector3f position;
     Quaternionf rotation;
     Vector3f scaling;
@@ -205,11 +210,17 @@ class Entity: Owner, Updateable
         aabb = AABB(absoluteTransformation.translation, boundingBoxSize);
     }
 
-    void updateTransformation()
+    void updateTransformation(in Time t)
     {
         prevTransformation = transformation;
 
+        auto animApplied = Matrix4x4f.identity;
+
+        if(animations.length)
+            applyAnimations(animApplied, t);
+
         transformation =
+            animApplied *
             translationMatrix(position) *
             rotation.toMatrix4x4 *
             scaleMatrix(scaling);
@@ -217,20 +228,56 @@ class Entity: Owner, Updateable
         updateAbsoluteTransformation();
     }
 
-    void updateTransformationDeep()
+    private void applyAnimations(ref Matrix4x4f tr, in Time t)
+    {
+        import std.stdio;
+        writeln("animation enabled");
+
+        auto animation = animations[animationIdx];
+
+        foreach(ch; animation.channels)
+        {
+            float prevTime=void;
+            float nextTime=void;
+            float loopTime=void;
+
+            const prevIdx = ch.sampler.getSampleByTime(t, prevTime, nextTime, loopTime);
+            const nextIdx = prevIdx + 1;
+
+            const float interpRatio = (loopTime - prevTime) / (nextTime - prevTime);
+
+            if(ch.target_path == TRSType.Rotation)
+            {
+                const prev_rot = ch.sampler.output.getSlice!Quaternionf[prevIdx];
+                const next_rot = ch.sampler.output.getSlice!Quaternionf[nextIdx];
+
+                const rot = prev_rot + (next_rot - prev_rot) * interpRatio;
+
+                writeln(prev_rot);
+                writeln(next_rot);
+                writeln(rot);
+            }
+            else
+            {
+                assert(false, "access to Vector3f slice not implemented");
+            }
+        }
+    }
+
+    void updateTransformationDeep(in Time t)
     {
         if (parent)
-            parent.updateTransformationDeep();
-        updateTransformation();
+            parent.updateTransformationDeep(t);
+        updateTransformation(t);
     }
     
-    void updateTransformationTopDown()
+    void updateTransformationTopDown(in Time t)
     {
-        updateTransformation();
+        updateTransformation(t);
         
         foreach(child; children)
         {
-            child.updateTransformationTopDown();
+            child.updateTransformationTopDown(t);
         }
     }
 
@@ -241,7 +288,7 @@ class Entity: Owner, Updateable
             tween.update(t.delta);
         }
 
-        updateTransformation();
+        updateTransformation(t);
 
         foreach(c; components)
         {
