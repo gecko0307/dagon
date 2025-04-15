@@ -251,6 +251,10 @@ class Entity: Owner, Updateable
                 Quaternionf rot = slerp(prev_rot, next_rot, interpRatio);
 
                 writeln("===");
+                writeln("loopTime=", loopTime);
+                writeln("ratio=", interpRatio);
+                writeln("prevIdx=", prevIdx);
+                writeln("nextIdx=", nextIdx);
                 writeln(prev_rot);
                 writeln(next_rot);
                 writeln(rot);

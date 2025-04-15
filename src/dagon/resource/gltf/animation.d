@@ -48,7 +48,7 @@ class AnimationSampler: Owner
         {
             //TODO: One comparison could be removed here, but I'm too lazy
             //Or this search approach can be optimized more radically?
-            if(timeline[i] >= loopTime && loopTime < timeline[i+1])
+            if(timeline[i] <= loopTime && loopTime < timeline[i+1])
             {
                 previousTime = timeline[i];
                 nextTime = timeline[i+1];

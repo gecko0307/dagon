@@ -61,7 +61,7 @@ class TestScene: Scene
 
         if(skip == 0)
         {
-            skip = 100;
+            skip = 1;
             eFox.applyAnimations(t);
         }
 
