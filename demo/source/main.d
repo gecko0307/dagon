@@ -57,7 +57,15 @@ class TestScene: Scene
     
     override void onUpdate(Time t)
     {
-        eFox.applyAnimations(t);
+        static size_t skip;
+
+        if(skip == 0)
+        {
+            skip = 100;
+            eFox.applyAnimations(t);
+        }
+
+        skip--;
     }
 
     override void onKeyDown(int key) { }

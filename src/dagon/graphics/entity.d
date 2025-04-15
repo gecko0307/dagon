@@ -248,14 +248,14 @@ class Entity: Owner, Updateable
                 const Quaternionf prev_rot = ch.sampler.output.getSlice!Quaternionf[prevIdx];
                 const Quaternionf next_rot = ch.sampler.output.getSlice!Quaternionf[nextIdx];
 
-                const rot = prev_rot + (next_rot - prev_rot) * interpRatio;
+                Quaternionf rot = slerp(prev_rot, next_rot, interpRatio);
 
                 writeln("===");
                 writeln(prev_rot);
                 writeln(next_rot);
                 writeln(rot);
 
-                //~ animated_transformation = rotation.toMatrix4x4(rot);
+                animated_transformation = rot.toMatrix4x4;
             }
             else
             {
