@@ -146,7 +146,7 @@ class GLTFAsset: Asset, TriangleSet
     Array!GLTFSkin skins;
     Array!GLTFAnimation animations;
     Array!GLTFScene scenes;
-    Entity rootEntity;
+    AnimatedEntity rootEntity;
     
     this(Owner o)
     {
@@ -161,7 +161,7 @@ class GLTFAsset: Asset, TriangleSet
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
     {
         assetManager = mngr;
-        rootEntity = New!Entity(this);
+        rootEntity = New!AnimatedEntity(this);
         string rootDir = dirName(filename);
         str = String(istrm);
         doc = New!JSONDocument(str.toString);
@@ -1146,6 +1146,16 @@ class GLTFAsset: Asset, TriangleSet
         }
         
         return res;
+    }
+
+    import dagon.graphics.animated: AnimatedEntity;
+
+    AnimatedEntity rootAnimatedEntity()
+    {
+        auto r = rootEntity;
+        r.animations = animations;
+
+        return r;
     }
 }
 

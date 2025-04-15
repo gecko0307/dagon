@@ -6,7 +6,7 @@ class TestScene: Scene
 {
     MyGame game;
     GLTFAsset aFox;
-    Entity eFox;
+    AnimatedEntity eFox;
 
     this(MyGame game)
     {
@@ -42,8 +42,7 @@ class TestScene: Scene
         sun.energy = 10.0f;
         sun.pitch(-45.0f);
 
-        eFox = aFox.rootEntity;
-        eFox.animations = aFox.animations;
+        eFox = aFox.rootAnimatedEntity;
         eFox.animationIdx = 0; // enables first animation
         useEntity(eFox);
         foreach(node; aFox.nodes)

@@ -97,12 +97,6 @@ class Entity: Owner, Updateable
     Drawable drawable;
     Material material;
 
-    //FIXME: use interface instead of gltf import
-    import dagon.resource.gltf.animation;
-    Array!GLTFAnimation animations;
-    size_t animationIdx = -1;
-    Matrix4x4f animated_transformation;
-
     Vector3f position;
     Quaternionf rotation;
     Vector3f scaling;
@@ -139,8 +133,6 @@ class Entity: Owner, Updateable
 
         transformation = Matrix4x4f.identity;
         invTransformation = Matrix4x4f.identity;
-
-        animated_transformation = Matrix4x4f.identity;
 
         absoluteTransformation = Matrix4x4f.identity;
         invAbsoluteTransformation = Matrix4x4f.identity;
@@ -218,54 +210,11 @@ class Entity: Owner, Updateable
         prevTransformation = transformation;
 
         transformation =
-            animated_transformation *
             translationMatrix(position) *
             rotation.toMatrix4x4 *
             scaleMatrix(scaling);
         
         updateAbsoluteTransformation();
-    }
-
-    void applyAnimations(in Time t)
-    {
-        import std.stdio;
-
-        auto animation = animations[animationIdx];
-
-        foreach(ch; animation.channels)
-        {
-            float prevTime=void;
-            float nextTime=void;
-            float loopTime=void;
-
-            const prevIdx = ch.sampler.getSampleByTime(t, prevTime, nextTime, loopTime);
-            const nextIdx = prevIdx + 1;
-
-            const float interpRatio = (loopTime - prevTime) / (nextTime - prevTime);
-
-            if(ch.target_path == TRSType.Rotation)
-            {
-                const Quaternionf prev_rot = ch.sampler.output.getSlice!Quaternionf[prevIdx];
-                const Quaternionf next_rot = ch.sampler.output.getSlice!Quaternionf[nextIdx];
-
-                Quaternionf rot = slerp(prev_rot, next_rot, interpRatio);
-
-                writeln("===");
-                writeln("loopTime=", loopTime);
-                writeln("ratio=", interpRatio);
-                writeln("prevIdx=", prevIdx);
-                writeln("nextIdx=", nextIdx);
-                writeln(prev_rot);
-                writeln(next_rot);
-                writeln(rot);
-
-                animated_transformation = rot.toMatrix4x4;
-            }
-            else
-            {
-                assert(false, "access to Vector3f slice not implemented");
-            }
-        }
     }
 
     void updateTransformationDeep()
