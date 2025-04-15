@@ -14,7 +14,7 @@ NewtonCharacterController character = eCharacter.makeCharacter(world, 1.8f, 0.45
 * `float radius` - radius of the character's bounding spheres in meters;
 * `float mass` - mass of the character in kg.
 
-It is advisable to construct the world in such a way that these values closely match the real world.
+It is advisable to construct the simulation in such a way that these values closely match the real world.
 
 The character's collision shape is composed of two bounding spheres one on top of another. They are automatically placed to match given height, so it is not recommended to set the radius substantially larger than 1/4 of the height. Recommended radius is 0.4-0.5 for a normal human height 1.6-1.8.
 
