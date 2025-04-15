@@ -101,6 +101,7 @@ class Entity: Owner, Updateable
     import dagon.resource.gltf.animation;
     Array!GLTFAnimation animations;
     size_t animationIdx = -1;
+    Matrix4x4f animated_transformation;
 
     Vector3f position;
     Quaternionf rotation;
@@ -138,6 +139,8 @@ class Entity: Owner, Updateable
 
         transformation = Matrix4x4f.identity;
         invTransformation = Matrix4x4f.identity;
+
+        animated_transformation = Matrix4x4f.identity;
 
         absoluteTransformation = Matrix4x4f.identity;
         invAbsoluteTransformation = Matrix4x4f.identity;
@@ -210,18 +213,12 @@ class Entity: Owner, Updateable
         aabb = AABB(absoluteTransformation.translation, boundingBoxSize);
     }
 
-    //TODO: remove argument, animation can be called separately
-    void updateTransformation(in Time t)
+    void updateTransformation()
     {
         prevTransformation = transformation;
 
-        auto animApplied = Matrix4x4f.identity;
-
-        if(animations.length)
-            applyAnimations(animApplied, t);
-
         transformation =
-            animApplied *
+            animated_transformation *
             translationMatrix(position) *
             rotation.toMatrix4x4 *
             scaleMatrix(scaling);
@@ -229,7 +226,7 @@ class Entity: Owner, Updateable
         updateAbsoluteTransformation();
     }
 
-    private void applyAnimations(ref Matrix4x4f tr, in Time t)
+    void applyAnimations(in Time t)
     {
         import std.stdio;
 
@@ -258,7 +255,7 @@ class Entity: Owner, Updateable
                 writeln(next_rot);
                 writeln(rot);
 
-                //~ tr = rotation.toMatrix4x4(rot);
+                //~ animated_transformation = rotation.toMatrix4x4(rot);
             }
             else
             {
@@ -267,20 +264,20 @@ class Entity: Owner, Updateable
         }
     }
 
-    void updateTransformationDeep(in Time t)
+    void updateTransformationDeep()
     {
         if (parent)
-            parent.updateTransformationDeep(t);
-        updateTransformation(t);
+            parent.updateTransformationDeep();
+        updateTransformation();
     }
     
-    void updateTransformationTopDown(in Time t)
+    void updateTransformationTopDown()
     {
-        updateTransformation(t);
+        updateTransformation();
         
         foreach(child; children)
         {
-            child.updateTransformationTopDown(t);
+            child.updateTransformationTopDown();
         }
     }
 
@@ -291,7 +288,7 @@ class Entity: Owner, Updateable
             tween.update(t.delta);
         }
 
-        updateTransformation(t);
+        updateTransformation();
 
         foreach(c; components)
         {

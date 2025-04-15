@@ -828,7 +828,7 @@ class GLTFAsset: Asset, TriangleSet
             }
         }
         
-        rootEntity.updateTransformationTopDown(Time(0, 0));
+        rootEntity.updateTransformationTopDown();
     }
     
     void loadSkins(JSONValue root)

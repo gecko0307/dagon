@@ -57,7 +57,7 @@ class TestScene: Scene
     
     override void onUpdate(Time t)
     {
-        eFox.updateTransformationTopDown(t);
+        eFox.applyAnimations(t);
     }
 
     override void onKeyDown(int key) { }
