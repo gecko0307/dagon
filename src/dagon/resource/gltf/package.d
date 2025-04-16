@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2024 Timur Gafarov
+Copyright (c) 2021-2025 Timur Gafarov, Denis Feklushkin
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -56,14 +56,17 @@ import dagon.graphics.material;
 import dagon.graphics.mesh;
 import dagon.graphics.entity;
 
-import dagon.resource.gltf.buffer;
-import dagon.resource.gltf.bufferview;
-import dagon.resource.gltf.accessor;
-import dagon.resource.gltf.meshprimitive;
-import dagon.resource.gltf.mesh;
-import dagon.resource.gltf.node;
-import dagon.resource.gltf.skin;
-import dagon.resource.gltf.animation;
+public
+{
+    import dagon.resource.gltf.buffer;
+    import dagon.resource.gltf.bufferview;
+    import dagon.resource.gltf.accessor;
+    import dagon.resource.gltf.meshprimitive;
+    import dagon.resource.gltf.mesh;
+    import dagon.resource.gltf.node;
+    import dagon.resource.gltf.skin;
+    import dagon.resource.gltf.animation;
+}
 
 Vector3f asVector(JSONValue value)
 {
@@ -146,7 +149,7 @@ class GLTFAsset: Asset, TriangleSet
     Array!GLTFSkin skins;
     Array!GLTFAnimation animations;
     Array!GLTFScene scenes;
-    AnimatedEntity _rootEntity;
+    Entity _rootEntity;
     
     this(Owner o)
     {
@@ -161,7 +164,7 @@ class GLTFAsset: Asset, TriangleSet
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
     {
         assetManager = mngr;
-        _rootEntity = New!AnimatedEntity(this);
+        _rootEntity = New!Entity(this);
         string rootDir = dirName(filename);
         str = String(istrm);
         doc = New!JSONDocument(str.toString);
@@ -1148,19 +1151,9 @@ class GLTFAsset: Asset, TriangleSet
         return res;
     }
 
-    import dagon.graphics.animated: AnimatedEntity;
-
     Entity rootEntity()
     {
-        return cast(Entity) _rootEntity;
-    }
-
-    AnimatedEntity rootAnimatedEntity()
-    {
-        auto r = _rootEntity;
-        r.animations = animations;
-
-        return r;
+        return _rootEntity;
     }
 }
 

@@ -29,7 +29,6 @@ module dagon.graphics;
 
 public
 {
-    import dagon.graphics.animated;
     import dagon.graphics.billboard;
     import dagon.graphics.camera;
     import dagon.graphics.components;

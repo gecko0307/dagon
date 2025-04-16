@@ -5,8 +5,9 @@ import dagon;
 class TestScene: Scene
 {
     MyGame game;
-    GLTFAsset aFox;
-    AnimatedEntity eFox;
+    GLTFAsset aCube;
+    Entity eCube;
+    GLTFAnimationComponent cubeAnim;
 
     this(MyGame game)
     {
@@ -16,7 +17,7 @@ class TestScene: Scene
 
     override void beforeLoad()
     {
-        aFox = addGLTFAsset("data/AnimatedCube/glTF/AnimatedCube.gltf");
+        aCube = addGLTFAsset("data/AnimatedCube/glTF/AnimatedCube.gltf");
         //~ aFox = addGLTFAsset("data/Fox/glTF/Fox.gltf");
         //~ aFox = addGLTFAsset("data/FlightHelmet/glTF/FlightHelmet.gltf");
     }
@@ -42,13 +43,13 @@ class TestScene: Scene
         sun.energy = 10.0f;
         sun.pitch(-45.0f);
 
-        eFox = aFox.rootAnimatedEntity;
-        eFox.animationIdx = 0; // enables first animation
-        useEntity(eFox);
-        foreach(node; aFox.nodes)
+        eCube = aCube.rootEntity;
+        cubeAnim = New!GLTFAnimationComponent(eventManager, eCube, aCube.animations[0]);
+        useEntity(eCube);
+        foreach(node; aCube.nodes)
             useEntity(node.entity);
 
-        eFox.position = Vector3f(0, 1, 0);
+        eCube.position = Vector3f(0, 1, 0);
         
         auto ePlane = addEntity();
         ePlane.drawable = New!ShapePlane(10, 10, 1, assetManager);
@@ -58,10 +59,10 @@ class TestScene: Scene
     {
         static size_t skip;
 
-        if(skip == 0)
+        if (skip == 0)
         {
             skip = 1;
-            eFox.applyAnimations(t);
+            cubeAnim.apply(t);
         }
 
         skip--;
