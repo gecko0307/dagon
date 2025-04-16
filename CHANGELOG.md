@@ -10,6 +10,7 @@ Dagon 0.21.0 - TBD
 - **Assets**
   - Breaking change: the old image loader callback mechanism in `AssetManager` was replaced with `TextureLoader` objects. You can write your own loader class and register it with `AssetManager.registerTextureLoader`
   - SDL_image 2.8 is now used to load images (`dlib.image` is used as a fallback when SDL_image is not available). This allows loading many new image file formats as textures, including progressive JPEG, indexed PNG, WebP, AVIF and even SVG
+  - Some image formats require additional shared libraries: libwebp, libtiff, libavif. They are provided via `dagon:exformats` extension under Windows
   - `TextureAsset.convert` - format-specific image conversion options. `TextureAsset.convert.width` and `TextureAsset.convert.height` allow to specify rasterization size for SVG images; `TextureAsset.convert.hint` is a loader-specific conversion parameter - for the default texture loader, it allows to forcefully convert any format to GL_RGB8 (`ConversionHint.RGB`) or GL_RGBA8 (`ConversionHint.RGBA`)
   - `TextureAsset.loaderOption` - additional loader-specific parameter
   - Ensure 4-byte alignment when sending prebaked mipmaps to GPU. This fixes the wrong colors issue with 24-bit RGB textures

@@ -73,8 +73,9 @@ Runtime Dependencies
 --------------------
 * [SDL](https://www.libsdl.org) 2.32.4.0
 * [SDL_Image](https://github.com/libsdl-org/SDL_image) 2.8.8.0
-* [Freetype](https://www.freetype.org) 2.8.1 (optional)
-* [Newton Dynamics](https://github.com/MADEAPPS/newton-dynamics) 3.14 (optional)
+* [libwebp](https://chromium.googlesource.com/webm/libwebp) for WebP support, [libtiff](https://libtiff.gitlab.io/libtiff/) for TIFF support, [libavif](https://github.com/AOMediaCodec/libavif) for AVIF support (optional)
+* [Freetype](https://www.freetype.org) 2.8.1 for text rendering (optional)
+* [Newton Dynamics](https://github.com/MADEAPPS/newton-dynamics) 3.14 for rigid body simulation (optional)
 * [ImGui](https://github.com/ocornut/imgui) (optional)
 * [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear) (optional, deprecated)
 
