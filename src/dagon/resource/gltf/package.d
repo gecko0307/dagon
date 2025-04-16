@@ -63,6 +63,7 @@ import dagon.resource.gltf.meshprimitive;
 import dagon.resource.gltf.mesh;
 import dagon.resource.gltf.node;
 import dagon.resource.gltf.skin;
+import dagon.resource.gltf.animation;
 
 Vector3f asVector(JSONValue value)
 {
@@ -143,8 +144,9 @@ class GLTFAsset: Asset, TriangleSet
     Array!Material materials;
     Array!GLTFNode nodes;
     Array!GLTFSkin skins;
+    Array!GLTFAnimation animations;
     Array!GLTFScene scenes;
-    Entity rootEntity;
+    AnimatedEntity _rootEntity;
     
     this(Owner o)
     {
@@ -159,7 +161,7 @@ class GLTFAsset: Asset, TriangleSet
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
     {
         assetManager = mngr;
-        rootEntity = New!Entity(this);
+        _rootEntity = New!AnimatedEntity(this);
         string rootDir = dirName(filename);
         str = String(istrm);
         doc = New!JSONDocument(str.toString);
@@ -743,7 +745,7 @@ class GLTFAsset: Asset, TriangleSet
                 auto node = n.asObject;
                 
                 GLTFNode nodeObj = New!GLTFNode(this);
-                nodeObj.entity.setParent(rootEntity);
+                nodeObj.entity.setParent(_rootEntity);
                 
                 if ("mesh" in node)
                 {
@@ -826,7 +828,7 @@ class GLTFAsset: Asset, TriangleSet
             }
         }
         
-        rootEntity.updateTransformationTopDown();
+        _rootEntity.updateTransformationTopDown();
     }
     
     void loadSkins(JSONValue root)
@@ -868,9 +870,79 @@ class GLTFAsset: Asset, TriangleSet
     
     void loadAnimations(JSONValue root)
     {
-        // TODO
+        auto animationsArr = ("animations" in root.asObject);
+
+        if (animationsArr !is null)
+        {
+            foreach(i, animation; animationsArr.asArray)
+            {
+                auto animationObj = New!GLTFAnimation(this);
+                scope(exit) animations.insertBack(animationObj);
+
+                auto samplers = ("samplers" in animation.asObject);
+                if (samplers !is null)
+                {
+                    foreach(i, s; samplers.asArray)
+                    {
+                        AnimationSampler samplerObj = New!AnimationSampler(this);
+                        scope(exit) animationObj.samplers.insertBack(samplerObj);
+
+                        auto sampler = s.asObject;
+
+                        samplerObj.interpolation = cast(InterpolationType) sampler["interpolation"].asString;
+                        checkAndGetAccessor( samplerObj.input, sampler["input"].asUint );
+                        checkAndGetAccessor( samplerObj.output, sampler["output"].asUint );
+                    }
+                }
+
+                auto channels = ("channels" in animation.asObject);
+                if (channels !is null)
+                {
+                    foreach(i, ch; channels.asArray)
+                    {
+                        auto channelObj = New!AnimationChannel(this);
+                        scope(exit) animationObj.channels.insertBack(channelObj);
+
+                        auto channel = ch.asObject;
+
+                        const samplerIdx = channel["sampler"].asUint;
+                        if (samplerIdx < animationObj.samplers.length)
+                            channelObj.sampler = animationObj.samplers[samplerIdx];
+                        else
+                            writeln("Warning: nonexistent animation sampler ", samplerIdx);
+
+                        auto target = ("target" in channel);
+                        if(target is null)
+                            writeln("Warning: nonexistent animation target object");
+                        else
+                        {
+                            channelObj.target_path = cast(TRSType) target.asObject["path"].asString;
+
+                            auto node = ("node" in target.asObject);
+                            if (node !is null)
+                            {
+                                const idx = (*node).asUint;
+
+                                if (idx < nodes.length)
+                                    channelObj.target_node = nodes[idx];
+                                else
+                                    writeln("Warning: nonexistent target node");
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
-    
+
+    private void checkAndGetAccessor(ref GLTFAccessor a, uint idx)
+    {
+        if (idx < accessors.length)
+            a = accessors[idx];
+        else
+            writeln("Warning: nonexistent accessor ", idx);
+    }
+
     void loadScenes(JSONValue root)
     {
         if ("scenes" in root.asObject)
@@ -972,6 +1044,10 @@ class GLTFAsset: Asset, TriangleSet
             deleteOwnedObject(sc);
         scenes.free();
         
+        foreach(an; animations)
+            deleteOwnedObject(an);
+        animations.free();
+
         textures.free();
         materials.free();
         
@@ -985,8 +1061,6 @@ class GLTFAsset: Asset, TriangleSet
         
         foreach(node; nodes)
         {
-            auto mat = node.entity.absoluteTransformation;
-            
             if (node.mesh)
             {
                 foreach(primitive; node.mesh.primitives)
@@ -1003,7 +1077,7 @@ class GLTFAsset: Asset, TriangleSet
                     
                     ubyte* indicesStart = ia.bufferView.slice.ptr + ia.byteOffset;
                     size_t numTriangles = ia.count / 3;
-                    
+
                     size_t indexStride;
                     if (ia.componentType == GL_UNSIGNED_BYTE)
                         indexStride = 1;
@@ -1035,7 +1109,9 @@ class GLTFAsset: Asset, TriangleSet
                             indices[1] = *cast(uint*)(ptr+4);
                             indices[2] = *cast(uint*)(ptr+8);
                         }
-                        
+
+                        auto mat = node.entity.absoluteTransformation;
+
                         Triangle tri;
                         tri.v[0] = positions[indices[0]] * mat;
                         tri.v[1] = positions[indices[1]] * mat;
@@ -1071,6 +1147,26 @@ class GLTFAsset: Asset, TriangleSet
         
         return res;
     }
+
+    import dagon.graphics.animated: AnimatedEntity;
+
+    Entity rootEntity()
+    {
+        return cast(Entity) _rootEntity;
+    }
+
+    AnimatedEntity rootAnimatedEntity()
+    {
+        auto r = _rootEntity;
+        r.animations = animations;
+
+        return r;
+    }
+}
+
+private uint asUint(in JSONValue j)
+{
+    return cast(uint) j.asNumber;
 }
 
 // TODO: generate random name instead of "undefined"
