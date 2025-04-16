@@ -29,7 +29,6 @@ module dagon.ext.physfs;
 import std.datetime;
 
 import dlib.core.memory;
-import dlib.core.ownership;
 import dlib.core.stream;
 import dlib.container.array;
 import dlib.filesystem;
@@ -61,13 +60,12 @@ class ArchiveFileStream: ArrayStream
     }
 }
 
-class PhysFS: Owner, ReadOnlyFileSystem
+class PhysFS: ReadOnlyFileSystem
 {
     Array!String searchPaths;
     
-    this(Owner o)
+    this()
     {
-        super(o);
     }
     
     ~this()
@@ -134,7 +132,7 @@ PhysFSSupport sup = loadPhysFS();
 
 initPhysFS();
 
-PhysFS pfs = New!PhysFS(null);
+PhysFS pfs = New!PhysFS();
 pfs.addSearchPath("./data");
 pfs.addSearchPath("data.zip");
 

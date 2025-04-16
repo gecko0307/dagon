@@ -13,7 +13,7 @@ class TestScene: Scene
     {
         super(game);
         
-        PhysFS pfs = New!PhysFS(null);
+        PhysFS pfs = New!PhysFS();
         pfs.addSearchPath("./data");
         pfs.addSearchPath("data.zip");
         assetManager.fs.mount(pfs);
