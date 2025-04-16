@@ -19,6 +19,7 @@ Dagon 0.21.0 - TBD
     - `TranscodeHint.Quality` prefers BPTC if available
     - `TranscodeHint.Size` prefers S3TC
     - `TranscodeHint.Uncompressed` decodes the texture to RGBA8
+  - `dagon:physfs` - PhysFS-based virtual filesystem extension. Allows to use archives as asset sources in `assetManager.fs`
   - `dagon:newton`:
     - `NewtonCharacterComponent` ground test improvement.
 
