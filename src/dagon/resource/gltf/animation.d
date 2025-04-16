@@ -52,7 +52,7 @@ enum TRSType : string
     Scale = "scale",
 }
 
-class AnimationSampler: Owner
+class GLTFAnimationSampler: Owner
 {
     InterpolationType interpolation; // optional, LINEAR by default
     GLTFAccessor input; // required, contains times (in seconds) for each keyframe.
@@ -92,11 +92,11 @@ class AnimationSampler: Owner
     }
 }
 
-class AnimationChannel: Owner
+class GLTFAnimationChannel: Owner
 {
-    AnimationSampler sampler; // required
-    TRSType target_path; // required
-    GLTFNode target_node; // optional: When undefined, the animated object MAY be defined by an extension.
+    GLTFAnimationSampler sampler; // required
+    TRSType targetPath; // required
+    GLTFNode targetNode; // optional: When undefined, the animated object MAY be defined by an extension.
 
     this(Owner o)
     {
@@ -106,8 +106,8 @@ class AnimationChannel: Owner
 
 class GLTFAnimation: Owner
 {
-    Array!AnimationSampler samplers;
-    Array!AnimationChannel channels;
+    Array!GLTFAnimationSampler samplers;
+    Array!GLTFAnimationChannel channels;
 
     this(Owner o)
     {
@@ -157,12 +157,12 @@ class GLTFAnimationComponent: EntityComponent
 
             const float interpRatio = (loopTime - prevTime) / (nextTime - prevTime);
 
-            if (ch.target_path == TRSType.Rotation)
+            if (ch.targetPath == TRSType.Rotation)
             {
-                const Quaternionf prev_rot = ch.sampler.output.getSlice!Quaternionf[prevIdx];
-                const Quaternionf next_rot = ch.sampler.output.getSlice!Quaternionf[nextIdx];
+                const Quaternionf prevRot = ch.sampler.output.getSlice!Quaternionf[prevIdx];
+                const Quaternionf nextRot = ch.sampler.output.getSlice!Quaternionf[nextIdx];
 
-                Quaternionf rot = slerp(prev_rot, next_rot, interpRatio);
+                Quaternionf rot = slerp(prevRot, nextRot, interpRatio);
 
                 debug
                 {
@@ -172,8 +172,8 @@ class GLTFAnimationComponent: EntityComponent
                     writeln("ratio=", interpRatio);
                     writeln("prevIdx=", prevIdx);
                     writeln("nextIdx=", nextIdx);
-                    writeln(prev_rot);
-                    writeln(next_rot);
+                    writeln(prevRot);
+                    writeln(nextRot);
                     writeln(rot);
                 }
 

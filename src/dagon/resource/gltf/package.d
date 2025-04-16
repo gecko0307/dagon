@@ -887,7 +887,7 @@ class GLTFAsset: Asset, TriangleSet
                 {
                     foreach(i, s; samplers.asArray)
                     {
-                        AnimationSampler samplerObj = New!AnimationSampler(this);
+                        GLTFAnimationSampler samplerObj = New!GLTFAnimationSampler(this);
                         scope(exit) animationObj.samplers.insertBack(samplerObj);
 
                         auto sampler = s.asObject;
@@ -903,7 +903,7 @@ class GLTFAsset: Asset, TriangleSet
                 {
                     foreach(i, ch; channels.asArray)
                     {
-                        auto channelObj = New!AnimationChannel(this);
+                        auto channelObj = New!GLTFAnimationChannel(this);
                         scope(exit) animationObj.channels.insertBack(channelObj);
 
                         auto channel = ch.asObject;
@@ -915,11 +915,11 @@ class GLTFAsset: Asset, TriangleSet
                             writeln("Warning: nonexistent animation sampler ", samplerIdx);
 
                         auto target = ("target" in channel);
-                        if(target is null)
+                        if (target is null)
                             writeln("Warning: nonexistent animation target object");
                         else
                         {
-                            channelObj.target_path = cast(TRSType) target.asObject["path"].asString;
+                            channelObj.targetPath = cast(TRSType) target.asObject["path"].asString;
 
                             auto node = ("node" in target.asObject);
                             if (node !is null)
@@ -927,7 +927,7 @@ class GLTFAsset: Asset, TriangleSet
                                 const idx = (*node).asUint;
 
                                 if (idx < nodes.length)
-                                    channelObj.target_node = nodes[idx];
+                                    channelObj.targetNode = nodes[idx];
                                 else
                                     writeln("Warning: nonexistent target node");
                             }
