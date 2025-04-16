@@ -52,13 +52,36 @@ struct ConversionOptions
 
 class TextureAsset: Asset
 {
+    // GPU texture
     Texture texture;
+    
+    // dlib image
     SuperImage image;
+    
+    // Temporary exchange buffer
     TextureBuffer buffer;
+    
+    // Format-specifc options
     ConversionOptions conversion;
+    
+    // Set to true to keep buffer.data after sending to GPU
+    bool persistent = false;
+    
+    // Set to true in the loader if buffer.data refers to image.data
+    // (to prevent double-free)
     bool bufferDataIsImageData = false;
+    
+    // Generate mip levels if needed
     bool generateMipmaps = true;
-    uint loaderOption = 0; // for loader-specific enums
+    
+    // Loader-specific
+    uint loaderOption = 0;
+    
+    // Filename in virtual filesystem
+    string filename;
+    
+    // Filename extension
+    string extension;
 
     this(Owner o)
     {
@@ -76,11 +99,12 @@ class TextureAsset: Asset
 
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager assetManager)
     {
-        string ext = filename.extension.toLower;
-        auto loader = assetManager.textureLoader(ext);
+        this.filename = filename;
+        this.extension = filename.extension.toLower;
+        auto loader = assetManager.textureLoader(this.extension);
         if (loader)
         {
-            auto res = loader.load(filename, ext, istrm, this, loaderOption);
+            auto res = loader.load(filename, this.extension, istrm, this, loaderOption);
             if (res[0])
                 return true;
             else
@@ -92,7 +116,7 @@ class TextureAsset: Asset
         }
         else
         {
-            writeln(filename, ": unsupported texture file extension \"", ext, "\"");
+            writeln(filename, ": unsupported texture file extension \"", this.extension, "\"");
             return false;
         }
     }
@@ -105,6 +129,8 @@ class TextureAsset: Asset
         if (image !is null)
         {
             texture.createFromImage(image, generateMipmaps);
+            if (!persistent)
+                releaseBuffer();
             if (texture.valid)
                 return true;
             else
@@ -113,21 +139,32 @@ class TextureAsset: Asset
         else if (buffer.data.length)
         {
             texture.createFromBuffer(buffer, generateMipmaps);
-            Delete(buffer.data);
+            if (!persistent)
+                releaseBuffer();
             return true;
         }
         else
             return false;
+    }
+    
+    void releaseBuffer()
+    {
+        if (image)
+            Delete(image);
+        
+        if (buffer.data.length && !bufferDataIsImageData)
+        {
+            Delete(buffer.data);
+            buffer.data = [];
+        }
     }
 
     override void release()
     {
         if (texture)
             texture.release();
-        if (image)
-            Delete(image);
-        if (buffer.data.length && !bufferDataIsImageData)
-            Delete(buffer.data);
+        
+        releaseBuffer();
     }
 }
 
