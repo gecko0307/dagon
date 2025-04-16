@@ -72,7 +72,7 @@ Do not delete `data/__internal` folder! It is used to store engine's internal da
 Runtime Dependencies
 --------------------
 * [SDL](https://www.libsdl.org) 2.32.4.0
-* [SDL_Image](https://github.com/libsdl-org/SDL_image) 2.8.8.0 (optional, preferable)
+* [SDL_Image](https://github.com/libsdl-org/SDL_image) 2.8.8.0
 * [Freetype](https://www.freetype.org) 2.8.1 (optional)
 * [Newton Dynamics](https://github.com/MADEAPPS/newton-dynamics) 3.14 (optional)
 * [ImGui](https://github.com/ocornut/imgui) (optional)
