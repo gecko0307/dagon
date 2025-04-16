@@ -49,6 +49,13 @@ bool isSDLImageSupportedFormat(string formatExtension)
     return sdlImageFormats.canFind(formatExtension);
 }
 
+enum ConversionHint
+{
+    None = 0,
+    RGB = 1,
+    RGBA = 2
+}
+
 bool loadImageViaSDLImage(InputStream istrm, string extension, TextureAsset asset)
 {
     size_t dataSize = istrm.size;
@@ -88,9 +95,45 @@ bool loadImageViaSDLImage(InputStream istrm, string extension, TextureAsset asse
     
     if (loaded)
     {
-        if (surface.format.format != SDL_PIXELFORMAT_RGBA32)
+        TextureSize size;
+        size.width = surface.w;
+        size.height = surface.h;
+        size.depth = 0;
+        
+        TextureFormat format;
+        format.target = GL_TEXTURE_2D;
+        format.pixelType = GL_UNSIGNED_BYTE;
+        format.blockSize = 0;
+        format.cubeFaces = CubeFaceBit.None;
+        
+        version(SDLImageDebug)
+            writeln(SDL_GetPixelFormatName(cast(SDL_PixelFormatEnum)surface.format.format).to!string);
+        
+        bool conversionNeeded = false;
+        
+        if (surface.format.format == SDL_PIXELFORMAT_RGB24)
         {
-            SDL_PixelFormat* pformat = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA32);
+            format.format = GL_RGB;
+            format.internalFormat = GL_RGB8;
+        }
+        else if (surface.format.format == SDL_PIXELFORMAT_RGBA32)
+        {
+            format.format = GL_RGBA;
+            format.internalFormat = GL_RGBA8;
+        }
+        else conversionNeeded = true;
+        
+        if (asset.conversion.hint != ConversionHint.None)
+            conversionNeeded = true;
+        
+        if (conversionNeeded)
+        {
+            auto targetFormat = SDL_PIXELFORMAT_RGBA32;
+            
+            if (asset.conversion.hint == ConversionHint.RGB)
+                targetFormat = SDL_PIXELFORMAT_RGB24;
+            
+            SDL_PixelFormat* pformat = SDL_AllocFormat(targetFormat);
             SDL_Surface* convSurface = SDL_ConvertSurface(surface, pformat, 0);
             SDL_FreeFormat(pformat);
             
@@ -103,20 +146,10 @@ bool loadImageViaSDLImage(InputStream istrm, string extension, TextureAsset asse
             
             SDL_FreeSurface(surface);
             surface = convSurface;
+            
+            format.format = GL_RGBA;
+            format.internalFormat = GL_RGBA8;
         }
-        
-        TextureSize size;
-        size.width = surface.w;
-        size.height = surface.h;
-        size.depth = 0;
-        
-        TextureFormat format;
-        format.target = GL_TEXTURE_2D;
-        format.pixelType = GL_UNSIGNED_BYTE;
-        format.blockSize = 0;
-        format.cubeFaces = CubeFaceBit.None;
-        format.format = GL_RGBA;
-        format.internalFormat = GL_RGBA8;
         
         size_t bufferSize = surface.w * surface.h * surface.format.BytesPerPixel;
         

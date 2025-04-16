@@ -40,4 +40,5 @@ public
     import dagon.core.props;
     import dagon.core.time;
     import dagon.core.vfs;
+    import dagon.core.vkformat;
 }
