@@ -81,6 +81,8 @@ Runtime Dependencies
 
 Runtime dependencies are automatically deployed on 64-bit Windows and Linux. On other platforms, you will have to [install them manually](https://github.com/gecko0307/dagon/blob/master/doc/Runtime%20Dependencies.md).
 
+Under Linux, if you want to use locally depolyed libraries rather than system ones, add `"lflags-linux": ["-rpath=."]` to your `dub.json`.
+
 Known Bugs and Limitations
 --------------------------
 * The engine is not tested on macOS and most likely doesn't support it. macOS support is low priority at the moment

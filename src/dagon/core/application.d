@@ -243,19 +243,19 @@ class Application: EventListener
         if (sdlsup != sdlSupport)
         {
             if (sdlsup == SDLSupport.badLibrary)
-                writeln("Warning: failed to load some SDL functions. It seems that you have an old version of SDL. Dagon will try to use it, but it is recommended to install SDL 2.0.14 or higher");
+                writeln("Warning: failed to load some SDL functions. It seems that you have an old version of SDL. Dagon will try to use it, but it is recommended to install SDL 2.30 or higher");
             else
-                exitWithError("Error: SDL library is not found. Please, install SDL 2.0.14");
+                exitWithError("Error: SDL library is not found. Please, install SDL 2.30 or higher");
         }
         
         SDLImageSupport sdlimgsup = loadSDLImage();
         if (sdlimgsup != sdlImageSupport)
         {
             if (sdlsup == SDLSupport.badLibrary)
-                writeln("Warning: failed to load some SDL2_Image functions. It seems that you have an old version of SDL2_Image. Dagon will try to use it, but it is recommended to install SDL2_Image 2.8");
+                writeln("Warning: failed to load some SDL2_Image functions. It seems that you have an old version of SDL2_Image. Dagon will try to use it, but it is recommended to install SDL2_Image 2.8 or higher");
             else
             {
-                writeln("Warning: SDL2_Image library is not found. Please, install SDL2_Image 2.8");
+                writeln("Warning: SDL2_Image library is not found. Please, install SDL2_Image 2.8 or higher");
                 sdlImagePresent = false;
             }
         }
