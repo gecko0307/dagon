@@ -47,8 +47,8 @@
     ],
     
     "copyFiles": ["data", "gamecontrollerdb.txt"],
-    "copyFiles-windows-x86": ["lib/x86/*.dll"],
-    "copyFiles-windows-x86_64": ["lib/x64/*.dll"],
+    "copyFiles-linux-x86_64": ["lib/linux-x64/*.so"],
+    "copyFiles-windows-x86_64": ["lib/windows-x64/*.dll"],
     
     "subPackages": [
         "extensions/exformats",

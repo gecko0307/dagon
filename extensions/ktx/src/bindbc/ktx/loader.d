@@ -83,9 +83,7 @@ KTXSupport loadKTX()
     {
         const(char)[][4] libNames =
         [
-            "libktx.so.4.4.0",
             "libktx.so",
-            "/usr/local/lib/libktx.so.4.4.0",
             "/usr/local/lib/libktx.so"
         ];
     }
