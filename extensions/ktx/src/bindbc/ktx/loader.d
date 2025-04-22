@@ -81,7 +81,7 @@ KTXSupport loadKTX()
     }
     else version(Posix)
     {
-        const(char)[][4] libNames =
+        const(char)[][2] libNames =
         [
             "libktx.so",
             "/usr/local/lib/libktx.so"
