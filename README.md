@@ -73,10 +73,13 @@ Runtime Dependencies
 --------------------
 * [SDL](https://www.libsdl.org) 2.32.4.0
 * [SDL_Image](https://github.com/libsdl-org/SDL_image) 2.8.8.0
-* [libwebp](https://chromium.googlesource.com/webm/libwebp) for WebP support, [libtiff](https://libtiff.gitlab.io/libtiff/) for TIFF support, [libavif](https://github.com/AOMediaCodec/libavif) for AVIF support (optional)
+* [libwebp](https://chromium.googlesource.com/webm/libwebp) for WebP support (optional)
+* [libtiff](https://libtiff.gitlab.io/libtiff/) for TIFF support (optional)
+* [libavif](https://github.com/AOMediaCodec/libavif) for AVIF support (optional)
 * [Freetype](https://www.freetype.org) 2.8.1 for text rendering (optional)
 * [Newton Dynamics](https://github.com/MADEAPPS/newton-dynamics) 3.14 for rigid body simulation (optional)
 * [ImGui](https://github.com/ocornut/imgui) (optional)
+* [PhysFS](https://github.com/icculus/physfs) (optional)
 * [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear) (optional, deprecated)
 
 Runtime dependencies are automatically deployed on 64-bit Windows and Linux. On other platforms, you will have to [install them manually](https://github.com/gecko0307/dagon/blob/master/doc/Runtime%20Dependencies.md).
