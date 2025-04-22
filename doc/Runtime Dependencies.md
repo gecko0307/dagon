@@ -2,7 +2,13 @@ How to Install Runtime Dependencies
 ===================================
 Core Engine
 -----------
-Dagon requires at least OpenGL 4.0 and SDL 2.0.14. OpenGL library is usually provided by graphics card manufacturer. SDL can be obtained from the [official site](https://www.libsdl.org/) or installed with a package manager such as APT. On Windows Dagon provides a prebuilt SDL2.dll, which is automatically copied to your project after compilation (if you are building with DUB).
+Dagon requires at least OpenGL 4.0, SDL 2.30 + SDL2_Image 2.8. OpenGL library is usually provided by graphics card manufacturer. SDL can be obtained from the [official site](https://www.libsdl.org/) or installed with a package manager such as APT. On 64-bit platforms, Dagon provides prebuilt SDL and SDL2_Image libraries, which are automatically copied to your project after compilation (if you are building with DUB).
+
+Under Linux, if you want to use local libraries from application's working directory rather than from the system, add the following to your `dub.json`:
+
+```
+"lflags-linux": ["-rpath=$$ORIGIN"]
+```
 
 dagon:newton
 ------------
