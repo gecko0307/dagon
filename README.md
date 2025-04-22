@@ -84,7 +84,7 @@ Runtime dependencies are automatically deployed on 64-bit Windows and Linux. On 
 Under Linux, if you want to use locally depolyed libraries rather than system ones, add the following to your `dub.json`:
 
 ```
-"lflags-linux": ["-rpath=."]
+"lflags-linux": ["-rpath=$$ORIGIN"]
 ```
 
 Known Bugs and Limitations
