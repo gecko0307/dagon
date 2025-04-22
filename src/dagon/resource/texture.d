@@ -30,16 +30,20 @@ module dagon.resource.texture;
 import std.stdio;
 import std.string;
 import std.path;
+import std.conv;
 
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.core.stream;
 import dlib.core.compound;
+import dlib.image.color;
 import dlib.image.image;
+import dlib.image.hdri;
 import dlib.image.io;
 import dlib.image.unmanaged;
 import dlib.filesystem.filesystem;
 
+import dagon.core.bindings;
 import dagon.graphics.texture;
 import dagon.resource.asset;
 
@@ -126,7 +130,17 @@ class TextureAsset: Asset
         if (texture.valid)
             return true;
         
-        if (image !is null)
+        if (buffer.data.length)
+        {
+            texture.createFromBuffer(buffer, generateMipmaps);
+            if (!persistent)
+                releaseBuffer();
+            if (texture.valid)
+                return true;
+            else
+                return false;
+        }
+        else if (image !is null)
         {
             texture.createFromImage(image, generateMipmaps);
             if (!persistent)
@@ -136,13 +150,6 @@ class TextureAsset: Asset
             else
                 return false;
         }
-        else if (buffer.data.length)
-        {
-            texture.createFromBuffer(buffer, generateMipmaps);
-            if (!persistent)
-                releaseBuffer();
-            return true;
-        }
         else
             return false;
     }
@@ -150,7 +157,10 @@ class TextureAsset: Asset
     void releaseBuffer()
     {
         if (image)
+        {
             Delete(image);
+            image = null;
+        }
         
         if (buffer.data.length && !bufferDataIsImageData)
         {

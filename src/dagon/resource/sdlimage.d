@@ -37,11 +37,17 @@ import dlib.core.stream;
 import dagon.core.bindings;
 import dagon.graphics.texture;
 import dagon.resource.texture;
+import dagon.resource.image;
 
 immutable string[] sdlImageFormats = [
     ".bmp", ".gif", ".jpg", ".jpeg", ".lbm", ".pcx", ".png",
     ".pnm", ".ppm", ".pgm", ".pbm", ".qoi", ".tga", ".xcf", ".xpm",
     ".tif", ".tiff", ".webp", ".avif", ".jxl", ".svg"
+];
+
+immutable GLint[] dlibImageSupportedFormats = [
+    GL_R8, GL_RG8, GL_RGB8, GL_RGBA8, GL_R16,
+    GL_RG16, GL_RGB16, GL_RGBA16, GL_RGBA32F
 ];
 
 bool isSDLImageSupportedFormat(string formatExtension)
@@ -160,6 +166,9 @@ bool loadImageViaSDLImage(InputStream istrm, string extension, TextureAsset asse
         memcpy(asset.buffer.data.ptr, surface.pixels, bufferSize);
         
         SDL_FreeSurface(surface);
+        
+        if (dlibImageSupportedFormats.canFind(format.internalFormat))
+            asset.image = New!TextureImage(&asset.buffer);
     }
     
     return loaded;
