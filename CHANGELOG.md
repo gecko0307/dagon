@@ -1,7 +1,7 @@
 Dagon 0.21.0 - TBD
 ------------------
 - **Core**
-  - Upgrade to SDL 2.32.4.0
+  - Upgrade to SDL 2.32.4.0. libSDL2-2.0.so is now provided under Linux
   - `isExtensionSupported` function in `dagon.core.application`. The OpenGL binding now tries to load all known ARB/KHR extensions. This function can be used at runtime to test if the driver supports particular extension
   - `maxTextureUnits` and `maxTextureSize` functions in `dagon.core.application`
   - `EventManager.joystickAxisThreshold`. Gamepad axis values now clamped to this integer threshold before normalization
