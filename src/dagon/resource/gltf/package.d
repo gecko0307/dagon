@@ -149,7 +149,7 @@ class GLTFAsset: Asset, TriangleSet
     Array!GLTFSkin skins;
     Array!GLTFAnimation animations;
     Array!GLTFScene scenes;
-    Entity _rootEntity;
+    Entity rootEntity;
     
     this(Owner o)
     {
@@ -164,7 +164,7 @@ class GLTFAsset: Asset, TriangleSet
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
     {
         assetManager = mngr;
-        _rootEntity = New!Entity(this);
+        rootEntity = New!Entity(this);
         string rootDir = dirName(filename);
         str = String(istrm);
         doc = New!JSONDocument(str.toString);
@@ -748,7 +748,7 @@ class GLTFAsset: Asset, TriangleSet
                 auto node = n.asObject;
                 
                 GLTFNode nodeObj = New!GLTFNode(this);
-                nodeObj.entity.setParent(_rootEntity);
+                nodeObj.entity.setParent(rootEntity);
                 
                 if ("mesh" in node)
                 {
@@ -831,7 +831,7 @@ class GLTFAsset: Asset, TriangleSet
             }
         }
         
-        _rootEntity.updateTransformationTopDown();
+        rootEntity.updateTransformationTopDown();
     }
     
     void loadSkins(JSONValue root)
@@ -1149,11 +1149,6 @@ class GLTFAsset: Asset, TriangleSet
         }
         
         return res;
-    }
-
-    Entity rootEntity()
-    {
-        return _rootEntity;
     }
 }
 

@@ -140,35 +140,51 @@ class GLTFAnimation: Owner
 class GLTFAnimationComponent: EntityComponent
 {
     GLTFAnimation animation;
-    Matrix4x4f animationTransformation;
+    Time time;
+    bool playing;
     
-    this(EventManager em, Entity e, GLTFAnimation animation)
+    this(EventManager em, Entity e, GLTFAnimation animation, bool playing = false)
     {
         super(em, e);
         this.animation = animation;
-        animationTransformation = Matrix4x4f.identity;
+        this.time = Time(0.0, 0.0);
+        this.playing = playing;
     }
     
-    override void update(Time time)
+    void play()
     {
-        entity.transformation =
-            animationTransformation *
-            translationMatrix(entity.position) *
-            entity.rotation.toMatrix4x4 *
-            scaleMatrix(entity.scaling);
+        playing = true;
+    }
+    
+    void pause()
+    {
+        playing = false;
+    }
+    
+    void reset()
+    {
+        time.elapsed = 0;
+    }
+    
+    override void update(Time t)
+    {
+        Vector3f trans = entity.position;
+        Quaternionf rot = entity.rotation;
+        Vector3f scaling = entity.scaling;
         
-        entity.updateAbsoluteTransformation();
-    }
-    
-    void apply(in Time t)
-    {
+        if (playing)
+        {
+            time.elapsed += t.delta;
+            time.delta = t.delta;
+        }
+        
         foreach(ch; animation.channels)
         {
             float prevTime = 0.0f;
             float nextTime = 0.0f;
             float loopTime = 0.0f;
             
-            const prevIdx = ch.sampler.getSampleByTime(t, prevTime, nextTime, loopTime);
+            const prevIdx = ch.sampler.getSampleByTime(time, prevTime, nextTime, loopTime);
             const nextIdx = prevIdx + 1;
             
             const float interpRatio = (loopTime - prevTime) / (nextTime - prevTime);
@@ -179,23 +195,27 @@ class GLTFAnimationComponent: EntityComponent
             {
                 const Vector3f prevTrans = ch.sampler.output.getSlice!Vector3f[prevIdx];
                 const Vector3f nextTrans = ch.sampler.output.getSlice!Vector3f[nextIdx];
-                Vector3f trans = lerp(prevTrans, nextTrans, interpRatio);
-                animationTransformation = translationMatrix(trans);
+                trans = lerp(prevTrans, nextTrans, interpRatio);
             }
             else if (ch.targetPath == TRSType.Rotation)
             {
                 const Quaternionf prevRot = ch.sampler.output.getSlice!Quaternionf[prevIdx];
                 const Quaternionf nextRot = ch.sampler.output.getSlice!Quaternionf[nextIdx];
-                Quaternionf rot = slerp(prevRot, nextRot, interpRatio);
-                animationTransformation = rot.toMatrix4x4;
+                rot = slerp(prevRot, nextRot, interpRatio);
             }
             else if (ch.targetPath == TRSType.Scale)
             {
                 const Vector3f prevScale = ch.sampler.output.getSlice!Vector3f[prevIdx];
                 const Vector3f nextScale = ch.sampler.output.getSlice!Vector3f[nextIdx];
-                Vector3f scaling = lerp(prevScale, nextScale, interpRatio);
-                animationTransformation = scaleMatrix(scaling);
+                scaling = lerp(prevScale, nextScale, interpRatio);
             }
         }
+        
+        entity.transformation =
+            translationMatrix(trans) *
+            rot.toMatrix4x4 *
+            scaleMatrix(scaling);
+        
+        entity.updateAbsoluteTransformation();
     }
 }
