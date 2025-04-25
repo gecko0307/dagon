@@ -37,6 +37,7 @@ import dlib.math.matrix;
 
 import dagon.graphics.entity;
 import dagon.resource.gltf.mesh;
+import dagon.resource.gltf.skin;
 
 enum TransformMode
 {
@@ -46,6 +47,8 @@ enum TransformMode
 
 class GLTFNode: Owner
 {
+    string name;
+    GLTFNode parent;
     Entity entity;
     GLTFMesh mesh;
     Vector3f position;
@@ -53,7 +56,10 @@ class GLTFNode: Owner
     Vector3f scaling;
     Matrix4x4f localTransform;
     TransformMode transformMode;
-    size_t[] children;
+    size_t[] childrenIndices;
+    GLTFNode[] children;
+    int skinIndex = -1;
+    GLTFSkin skin;
     
     this(Owner o)
     {
@@ -65,8 +71,19 @@ class GLTFNode: Owner
         entity = New!Entity(this);
     }
     
+    Matrix4x4f globalTransform() @property
+    {
+        if (parent)
+            return parent.globalTransform * localTransform;
+        else
+            return localTransform;
+    }
+    
     ~this()
     {
+        if (childrenIndices.length)
+            Delete(childrenIndices);
+        
         if (children.length)
             Delete(children);
     }

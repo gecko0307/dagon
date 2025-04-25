@@ -750,6 +750,11 @@ class GLTFAsset: Asset, TriangleSet
                 GLTFNode nodeObj = New!GLTFNode(this);
                 nodeObj.entity.setParent(rootEntity);
                 
+                if ("name" in node)
+                {
+                    nodeObj.name = node["name"].asString;
+                }
+                
                 if ("mesh" in node)
                 {
                     uint meshIndex = cast(uint)node["mesh"].asNumber;
@@ -816,13 +821,18 @@ class GLTFAsset: Asset, TriangleSet
                 if ("children" in node)
                 {
                     auto children = node["children"].asArray;
-                    nodeObj.children = New!(size_t[])(children.length);
+                    nodeObj.childrenIndices = New!(size_t[])(children.length);
                     
                     foreach(ci, c; children)
                     {
                         uint childIndex = cast(uint)c.asNumber;
-                        nodeObj.children[ci] = childIndex;
+                        nodeObj.childrenIndices[ci] = childIndex;
                     }
+                }
+                
+                if ("skin" in node)
+                {
+                    nodeObj.skinIndex = cast(int)node["skin"].asNumber;
                 }
                 
                 nodes.insertBack(nodeObj);
@@ -831,9 +841,16 @@ class GLTFAsset: Asset, TriangleSet
         
         foreach(node; nodes)
         {
-            foreach(i; node.children)
+            if (node.childrenIndices.length)
             {
-                GLTFNode child = nodes[i];
+                node.children = New!(GLTFNode[])(node.childrenIndices.length);
+            }
+            
+            foreach(i, childIndex; node.childrenIndices)
+            {
+                GLTFNode child = nodes[childIndex];
+                child.parent = node;
+                node.children[i] = child;
                 node.entity.addChild(child.entity);
             }
         }
@@ -851,9 +868,9 @@ class GLTFAsset: Asset, TriangleSet
                 
                 GLTFSkin skinObj = New!GLTFSkin(this);
                 
-                if ("joins" in skin)
+                if ("joints" in skin)
                 {
-                    foreach(ni, n; skin["joins"].asArray)
+                    foreach(ni, n; skin["joints"].asArray)
                     {
                         uint nodeIndex = cast(uint)n.asNumber;
                         if (nodeIndex < nodes.length)
@@ -881,6 +898,12 @@ class GLTFAsset: Asset, TriangleSet
                 skins.insertBack(skinObj);
             }
         }
+        
+        foreach(node; nodes)
+        {
+            if (node.skinIndex >= 0)
+                node.skin = skins[cast(size_t)node.skinIndex];
+        }
     }
     
     void loadAnimations(JSONValue root)
@@ -893,6 +916,12 @@ class GLTFAsset: Asset, TriangleSet
             {
                 auto animationObj = New!GLTFAnimation(this);
                 scope(exit) animations.insertBack(animationObj);
+                
+                auto name = ("name" in animation.asObject);
+                if (name !is null)
+                {
+                    animationObj.name = name.asString;
+                }
 
                 auto samplers = ("samplers" in animation.asObject);
                 if (samplers !is null)
@@ -1147,6 +1176,22 @@ class GLTFAsset: Asset, TriangleSet
         return result;
     }
     
+    GLTFNode node(string name)
+    {
+        GLTFNode res;
+        
+        foreach(i, node; nodes)
+        {
+            if (node.name == name)
+            {
+                res = node;
+                break;
+            }
+        }
+        
+        return res;
+    }
+    
     Material material(string name)
     {
         Material res;
@@ -1156,6 +1201,22 @@ class GLTFAsset: Asset, TriangleSet
             if (mat.name == name)
             {
                 res = mat;
+                break;
+            }
+        }
+        
+        return res;
+    }
+    
+    GLTFAnimation animation(string name)
+    {
+        GLTFAnimation res;
+        
+        foreach(i, anim; animations)
+        {
+            if (anim.name == name)
+            {
+                res = anim;
                 break;
             }
         }

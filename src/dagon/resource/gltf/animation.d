@@ -124,6 +124,7 @@ class GLTFAnimationChannel: Owner
 
 class GLTFAnimation: Owner
 {
+    string name;
     Array!GLTFAnimationSampler samplers;
     Array!GLTFAnimationChannel channels;
     
