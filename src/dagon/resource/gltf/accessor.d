@@ -57,10 +57,8 @@ class GLTFAccessor: Owner
     T[] getSlice(T)() const @nogc
     {
         assert(bufferView.stride == T.sizeof || bufferView.stride == 0);
-
-        auto ret = cast(T*) bufferView.slice.ptr;
-
-        return ret[0 .. count];
+        auto ret = cast(T*)bufferView.slice.ptr;
+        return ret[0..count];
     }
 
     this(GLTFBufferView bufferView, GLTFDataType dataType, GLenum componentType, uint count, uint byteOffset, Owner o)

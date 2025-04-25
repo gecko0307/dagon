@@ -32,20 +32,22 @@ import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.quaternion;
-import bindbc.opengl.bind.gl11: GL_FLOAT;
-import dagon.core.bindings: GLenum;
+import dlib.math.interpolation;
+import dagon.core.bindings;
 import dagon.core.event;
-import dagon.core.time: Time;
+import dagon.core.time;
 import dagon.graphics.entity;
-import dagon.resource.gltf.accessor: GLTFAccessor, GLTFDataType;
-import dagon.resource.gltf.node: GLTFNode;
+import dagon.resource.gltf.accessor;
+import dagon.resource.gltf.node;
 
-enum InterpolationType : string
+enum InterpolationType: string
 {
-    LINEAR = "LINEAR",
+    Linear = "LINEAR",
+    Step = "STEP",
+    CubicSpline = "CUBICSPLINE"
 }
 
-enum TRSType : string
+enum TRSType: string
 {
     Translation = "translation",
     Rotation = "rotation",
@@ -72,18 +74,18 @@ class GLTFAnimationSampler: Owner
         const timeline = input.getSlice!float;
         assert(timeline.length > 1);
 
-        loopTime = t.elapsed % timeline[$-1];
+        loopTime = t.elapsed % timeline[$ - 1];
 
         //FIXME: wrong clamping before/after sampler input range
 
-        foreach(i; 0 .. timeline.length - 1)
+        foreach (i; 0..timeline.length - 1)
         {
             //TODO: One comparison could be removed here, but I'm too lazy
             //Or this search approach can be optimized more radically?
-            if(timeline[i] <= loopTime && loopTime < timeline[i+1])
+            if (timeline[i] <= loopTime && loopTime < timeline[i + 1])
             {
                 previousTime = timeline[i];
-                nextTime = timeline[i+1];
+                nextTime = timeline[i + 1];
                 return i;
             }
         }
@@ -156,32 +158,29 @@ class GLTFAnimationComponent: EntityComponent
             const nextIdx = prevIdx + 1;
 
             const float interpRatio = (loopTime - prevTime) / (nextTime - prevTime);
+            
+            // TODO: support all interpolation types
 
-            if (ch.targetPath == TRSType.Rotation)
+            if (ch.targetPath == TRSType.Translation)
+            {
+                const Vector3f prevTrans = ch.sampler.output.getSlice!Vector3f[prevIdx];
+                const Vector3f nextTrans = ch.sampler.output.getSlice!Vector3f[nextIdx];
+                Vector3f trans = lerp(prevTrans, nextTrans, interpRatio);
+                animationTransformation = translationMatrix(trans);
+            }
+            else if (ch.targetPath == TRSType.Rotation)
             {
                 const Quaternionf prevRot = ch.sampler.output.getSlice!Quaternionf[prevIdx];
                 const Quaternionf nextRot = ch.sampler.output.getSlice!Quaternionf[nextIdx];
-
                 Quaternionf rot = slerp(prevRot, nextRot, interpRatio);
-
-                debug
-                {
-                    import std.stdio;
-                    writeln("===");
-                    writeln("loopTime=", loopTime);
-                    writeln("ratio=", interpRatio);
-                    writeln("prevIdx=", prevIdx);
-                    writeln("nextIdx=", nextIdx);
-                    writeln(prevRot);
-                    writeln(nextRot);
-                    writeln(rot);
-                }
-
                 animationTransformation = rot.toMatrix4x4;
             }
-            else
+            else if (ch.targetPath == TRSType.Scale)
             {
-                assert(false, "access to Vector3f slice not implemented");
+                const Vector3f prevScale = ch.sampler.output.getSlice!Vector3f[prevIdx];
+                const Vector3f nextScale = ch.sampler.output.getSlice!Vector3f[nextIdx];
+                Vector3f scaling = lerp(prevScale, nextScale, interpRatio);
+                animationTransformation = scaleMatrix(scaling);
             }
         }
     }
