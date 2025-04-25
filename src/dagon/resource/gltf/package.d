@@ -774,14 +774,17 @@ class GLTFAsset: Asset, TriangleSet
                 
                 if ("matrix" in node)
                 {
-                    nodeObj.transformation = node["matrix"].asMatrix;
-                    auto nodeComponent = New!StaticTransformComponent(assetManager.eventManager, nodeObj.entity, nodeObj.transformation);
+                    nodeObj.transformMode = TransformMode.Matrix;
+                    nodeObj.localTransform = node["matrix"].asMatrix;
+                    auto nodeComponent = New!StaticTransformComponent(assetManager.eventManager, nodeObj.entity, nodeObj.localTransform);
                 }
                 else
                 {
+                    nodeObj.transformMode = TransformMode.TRS;
+                    
                     Vector3f position = Vector3f(0.0f, 0.0f, 0.0f);
                     Quaternionf rotation = Quaternionf.identity;
-                    Vector3f scale = Vector3f(1.0f, 1.0f, 1.0f);
+                    Vector3f scaling = Vector3f(1.0f, 1.0f, 1.0f);
                     
                     if ("translation" in node)
                     {
@@ -793,17 +796,21 @@ class GLTFAsset: Asset, TriangleSet
                     }
                     if ("scale" in node)
                     {
-                        scale = node["scale"].asVector;
+                        scaling = node["scale"].asVector;
                     }
+                    
+                    nodeObj.position = position;
+                    nodeObj.rotation = rotation;
+                    nodeObj.scaling = scaling;
+                    
+                    nodeObj.localTransform =
+                        translationMatrix(position) *
+                        rotation.toMatrix4x4 *
+                        scaleMatrix(scaling);
                     
                     nodeObj.entity.position = position;
                     nodeObj.entity.rotation = rotation;
-                    nodeObj.entity.scaling = scale;
-                    
-                    nodeObj.transformation =
-                        translationMatrix(position) *
-                        rotation.toMatrix4x4 *
-                        scaleMatrix(scale);
+                    nodeObj.entity.scaling = scaling;
                 }
                 
                 if ("children" in node)
@@ -864,6 +871,11 @@ class GLTFAsset: Asset, TriangleSet
                         writeln("Warning: nonexistent accessor ", invBindMatricesAccessorIndex);
                     
                     skinObj.invBindMatricesAccessor = invBindMatricesAccessor;
+                    
+                    if (skinObj.invBindMatricesAccessor.count > 0)
+                    {
+                        skinObj.invBindMatrices = skinObj.invBindMatricesAccessor.getSlice!Matrix4x4f;
+                    }
                 }
                 
                 skins.insertBack(skinObj);

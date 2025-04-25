@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2024 Timur Gafarov
+Copyright (c) 2021-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -31,22 +31,37 @@ import std.stdio;
 import dlib.core.ownership;
 import dlib.core.memory;
 import dlib.container.array;
+import dlib.math.vector;
+import dlib.math.quaternion;
 import dlib.math.matrix;
 
 import dagon.graphics.entity;
 import dagon.resource.gltf.mesh;
 
+enum TransformMode
+{
+    Matrix,
+    TRS
+}
+
 class GLTFNode: Owner
 {
     Entity entity;
     GLTFMesh mesh;
-    Matrix4x4f transformation;
+    Vector3f position;
+    Quaternionf rotation;
+    Vector3f scaling;
+    Matrix4x4f localTransform;
+    TransformMode transformMode;
     size_t[] children;
     
     this(Owner o)
     {
         super(o);
-        transformation = Matrix4x4f.identity;
+        position = Vector3f(0.0f, 0.0f, 0.0f);
+        rotation = Quaternionf.identity;
+        scaling = Vector3f(1.0f, 1.0f, 1.0f);
+        localTransform = Matrix4x4f.identity;
         entity = New!Entity(this);
     }
     

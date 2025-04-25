@@ -26,7 +26,8 @@ DEALINGS IN THE SOFTWARE.
 */
 module dagon.resource.gltf.animation;
 
-import dlib.core.ownership: Owner;
+import dlib.core.memory;
+import dlib.core.ownership;
 import dlib.container.array;
 import dlib.math.vector;
 import dlib.math.matrix;
@@ -39,6 +40,7 @@ import dagon.core.time;
 import dagon.graphics.entity;
 import dagon.resource.gltf.accessor;
 import dagon.resource.gltf.node;
+import dagon.resource.gltf.skin;
 
 enum InterpolationType: string
 {
@@ -168,15 +170,15 @@ class GLTFAnimationComponent: EntityComponent
     
     override void update(Time t)
     {
-        Vector3f trans = entity.position;
-        Quaternionf rot = entity.rotation;
-        Vector3f scaling = entity.scaling;
-        
         if (playing)
         {
             time.elapsed += t.delta;
             time.delta = t.delta;
         }
+        
+        Vector3f trans = entity.position;
+        Quaternionf rot = entity.rotation;
+        Vector3f scaling = entity.scaling;
         
         foreach(ch; animation.channels)
         {

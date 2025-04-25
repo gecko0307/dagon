@@ -30,6 +30,7 @@ import std.stdio;
 
 import dlib.core.ownership;
 import dlib.container.array;
+import dlib.math.matrix;
 
 import dagon.resource.gltf.node;
 import dagon.resource.gltf.accessor;
@@ -37,6 +38,7 @@ import dagon.resource.gltf.accessor;
 class GLTFSkin: Owner
 {
     Array!GLTFNode joints;
+    Matrix4x4f[] invBindMatrices; // obtained from invBindMatricesAccessor
     GLTFAccessor invBindMatricesAccessor;
     
     this(Owner o)
