@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2024 Timur Gafarov
+Copyright (c) 2021-2025 Timur Gafarov, Denis Feklushkin
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -54,6 +54,13 @@ class GLTFAccessor: Owner
     uint count;
     uint byteOffset;
     
+    T[] getSlice(T)() const @nogc
+    {
+        assert(bufferView.stride == T.sizeof || bufferView.stride == 0);
+        auto ret = cast(T*)bufferView.slice.ptr;
+        return ret[0..count];
+    }
+
     this(GLTFBufferView bufferView, GLTFDataType dataType, GLenum componentType, uint count, uint byteOffset, Owner o)
     {
         super(o);
