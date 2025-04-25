@@ -37,6 +37,7 @@ import dagon.resource.gltf.accessor;
 
 class GLTFSkin: Owner
 {
+    string name;
     Array!GLTFNode joints;
     Matrix4x4f[] invBindMatrices; // obtained from invBindMatricesAccessor
     GLTFAccessor invBindMatricesAccessor;

@@ -37,6 +37,7 @@ import dagon.resource.gltf.meshprimitive;
 
 class GLTFMesh: Owner, Drawable
 {
+    string name;
     Array!GLTFMeshPrimitive primitives;
 
     this(Owner o)

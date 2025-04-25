@@ -627,6 +627,11 @@ class GLTFAsset: Asset, TriangleSet
                 
                 GLTFMesh me = New!GLTFMesh(this);
                 
+                if ("name" in m)
+                {
+                    me.name = m["name"].asString;
+                }
+                
                 if ("primitives" in m)
                 {
                     foreach(prim; m["primitives"].asArray)
@@ -867,6 +872,11 @@ class GLTFAsset: Asset, TriangleSet
                 auto skin = s.asObject;
                 
                 GLTFSkin skinObj = New!GLTFSkin(this);
+                
+                if ("name" in skin)
+                {
+                    skinObj.name = skin["name"].asString;
+                }
                 
                 if ("joints" in skin)
                 {
@@ -1208,6 +1218,38 @@ class GLTFAsset: Asset, TriangleSet
         return res;
     }
     
+    GLTFMesh mesh(string name)
+    {
+        GLTFMesh res;
+        
+        foreach(i, mesh; meshes)
+        {
+            if (mesh.name == name)
+            {
+                res = mesh;
+                break;
+            }
+        }
+        
+        return res;
+    }
+    
+    GLTFSkin skin(string name)
+    {
+        GLTFSkin res;
+        
+        foreach(i, skin; skins)
+        {
+            if (skin.name == name)
+            {
+                res = skin;
+                break;
+            }
+        }
+        
+        return res;
+    }
+    
     GLTFAnimation animation(string name)
     {
         GLTFAnimation res;
@@ -1217,6 +1259,22 @@ class GLTFAsset: Asset, TriangleSet
             if (anim.name == name)
             {
                 res = anim;
+                break;
+            }
+        }
+        
+        return res;
+    }
+    
+    GLTFScene scene(string name)
+    {
+        GLTFScene res;
+        
+        foreach(i, scene; scenes)
+        {
+            if (scene.name == name)
+            {
+                res = scene;
                 break;
             }
         }
