@@ -59,29 +59,40 @@ class GLTFAnimationSampler: Owner
     InterpolationType interpolation; // optional, LINEAR by default
     GLTFAccessor input; // required, contains times (in seconds) for each keyframe.
     GLTFAccessor output; // required, contains values (of any Accessor.Type) for the animated property at each keyframe.
-
+    
     this(Owner o)
     {
         super(o);
     }
-
+    
     /// Returns: beginning translation sample number
     size_t getSampleByTime(in Time t, out float previousTime, out float nextTime, out float loopTime)
     {
         assert(input.dataType == GLTFDataType.Scalar);
         assert(input.componentType == GL_FLOAT);
-
+        
         const timeline = input.getSlice!float;
-        assert(timeline.length > 1);
-
-        loopTime = t.elapsed % timeline[$ - 1];
-
-        //FIXME: wrong clamping before/after sampler input range
-
+        assert(timeline.length > 1, "GLTF animation sampler input must have at least two keyframes");
+        
+        float duration = timeline[$ - 1];
+        loopTime = t.elapsed % duration;
+        
+        // Clamp to the input interval
+        if (loopTime < timeline[0])
+        {
+            previousTime = timeline[0];
+            nextTime = timeline[1];
+            return 0;
+        }
+        if (loopTime >= timeline[$ - 1])
+        {
+            previousTime = timeline[$ - 2];
+            nextTime = timeline[$ - 1];
+            return timeline.length - 2;
+        }
+        
         foreach (i; 0..timeline.length - 1)
         {
-            //TODO: One comparison could be removed here, but I'm too lazy
-            //Or this search approach can be optimized more radically?
             if (timeline[i] <= loopTime && loopTime < timeline[i + 1])
             {
                 previousTime = timeline[i];
@@ -89,8 +100,11 @@ class GLTFAnimationSampler: Owner
                 return i;
             }
         }
-
-        return 0; //no translation found, so using first translation
+        
+        // Fallback
+        previousTime = timeline[0];
+        nextTime = timeline[1];
+        return 0; // No translation found, so using first translation
     }
 }
 
@@ -99,7 +113,7 @@ class GLTFAnimationChannel: Owner
     GLTFAnimationSampler sampler; // required
     TRSType targetPath; // required
     GLTFNode targetNode; // optional: When undefined, the animated object MAY be defined by an extension.
-
+    
     this(Owner o)
     {
         super(o);
@@ -110,12 +124,12 @@ class GLTFAnimation: Owner
 {
     Array!GLTFAnimationSampler samplers;
     Array!GLTFAnimationChannel channels;
-
+    
     this(Owner o)
     {
         super(o);
     }
-
+    
     ~this()
     {
         samplers.free();
@@ -150,17 +164,17 @@ class GLTFAnimationComponent: EntityComponent
     {
         foreach(ch; animation.channels)
         {
-            float prevTime = void;
-            float nextTime = void;
-            float loopTime = void;
-
+            float prevTime = 0.0f;
+            float nextTime = 0.0f;
+            float loopTime = 0.0f;
+            
             const prevIdx = ch.sampler.getSampleByTime(t, prevTime, nextTime, loopTime);
             const nextIdx = prevIdx + 1;
-
+            
             const float interpRatio = (loopTime - prevTime) / (nextTime - prevTime);
             
             // TODO: support all interpolation types
-
+            
             if (ch.targetPath == TRSType.Translation)
             {
                 const Vector3f prevTrans = ch.sampler.output.getSlice!Vector3f[prevIdx];
