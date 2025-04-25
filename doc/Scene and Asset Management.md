@@ -24,7 +24,7 @@ class MyGame: Game
 
 ```
 
-In a more complex scenario, scene creation is deferred to the moment when it is needed, and when the user quits the scene, it is deleted. You should not directly delete the scene while it is running using `Delete` function because there will be no synchronization in thatcase - use `Game.setCurrentScene` instead. If the optional `releaseCurrent` argument is set to `true`, the current scene will be safely deleted at the next loop iteration:
+In a more complex scenario, scene creation is deferred to the moment when it is needed, and when the user quits the scene, it is deleted. You should not directly delete the scene while it is running using `Delete` function because there will be no synchronization in that case - use `Game.setCurrentScene` instead. If the optional `releaseCurrent` argument is set to `true`, the current scene will be safely deleted at the next loop iteration:
 
 ```d
 class MyScene1: Scene
