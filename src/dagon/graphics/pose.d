@@ -30,6 +30,14 @@ import dlib.core.ownership;
 import dlib.math.matrix;
 import dagon.core.time;
 
+/*
+ * Abstract interface for a skeletal animation pose.
+ * boneMatrices should be allocated and filled in the implementation.
+ * If the Pose object is set in GraphicsState, its boneMatrices will be
+ * fed to the mesh vertex shaders.
+ * A single bone matrix applies a bone's local transform to a model-space vertex.
+ * Dagon supports maximum 128 bone matrices for GPU skinning.
+ */
 abstract class Pose: Owner
 {
     Matrix4x4f[] boneMatrices;
