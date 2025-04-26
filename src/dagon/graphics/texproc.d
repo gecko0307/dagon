@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Timur Gafarov
+Copyright (c) 2022-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -37,6 +37,7 @@ import dlib.image.color;
 import dlib.text.str;
 
 import dagon.core.bindings;
+import dagon.core.logger;
 import dagon.graphics.texture;
 import dagon.graphics.shader;
 import dagon.graphics.state;
@@ -163,7 +164,10 @@ void combineTextures(Texture[4] channels, Texture output)
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if (status != GL_FRAMEBUFFER_COMPLETE)
     {
-        writeln(status);
+        logError("combineTextures failed: framebuffer status = ", status);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glDeleteFramebuffers(1, &framebuffer);
+        return;
     }
     
     ScreenSurface screenSurface = New!ScreenSurface(null);

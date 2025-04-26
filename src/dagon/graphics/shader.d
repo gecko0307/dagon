@@ -47,6 +47,7 @@ import dlib.text.str;
 
 import dagon.core.application;
 import dagon.core.bindings;
+import dagon.core.logger;
 import dagon.graphics.shaderloader;
 import dagon.graphics.texture;
 import dagon.graphics.state;
@@ -329,7 +330,7 @@ class Shader: Owner
                 }
                 else
                 {
-                    writeln("Error");
+                    logError("Illegal \"#include\" directive in shader ", filename);
                     break;
                 }
             }
@@ -353,7 +354,7 @@ class Shader: Owner
             auto sp = cast(ShaderSubroutine)parameters.get(name);
             if (sp is null)
             {
-                writefln("Warning: type mismatch for shader parameter \"%s\"", name);
+                logWarning("Type mismatch for shader parameter \"%s\"", name);
                 return null;
             }
             sp.shaderType = shaderType;
@@ -376,7 +377,7 @@ class Shader: Owner
             auto sp = cast(ShaderParameter!T)parameters.get(name);
             if (sp is null)
             {
-                writefln("Warning: type mismatch for shader parameter \"%s\"", name);
+                logWarning("Type mismatch for shader parameter \"%s\"", name);
                 return null;
             }
 
@@ -399,7 +400,7 @@ class Shader: Owner
             auto sp = cast(ShaderParameter!T)parameters.get(name);
             if (sp is null)
             {
-                writefln("Warning: type mismatch for shader parameter \"%s\"", name);
+                logWarning("Type mismatch for shader parameter \"%s\"", name);
                 return null;
             }
 
@@ -421,7 +422,7 @@ class Shader: Owner
             auto sp = cast(ShaderParameter!T)parameters.get(name);
             if (sp is null)
             {
-                writefln("Warning: type mismatch for shader parameter \"%s\"", name);
+                logWarning("Type mismatch for shader parameter \"%s\"", name);
                 return null;
             }
 
@@ -444,7 +445,7 @@ class Shader: Owner
         }
         else
         {
-            writefln("Warning: unknown shader parameter \"%s\"", name);
+            logWarning("Unknown shader parameter \"%s\"", name);
             return null;
         }
     }
@@ -456,7 +457,7 @@ class Shader: Owner
             auto sp = cast(ShaderParameter!T)parameters.get(name);
             if (sp is null)
             {
-                writefln("Warning: type mismatch for shader parameter \"%s\"", name);
+                logWarning("Type mismatch for shader parameter \"%s\"", name);
                 return T.init;
             }
 
@@ -467,7 +468,7 @@ class Shader: Owner
         }
         else
         {
-            writefln("Warning: unknown shader parameter \"%s\"", name);
+            logWarning("Unknown shader parameter \"%s\"", name);
             return T.init;
         }
     }
@@ -534,7 +535,7 @@ class Shader: Owner
                 glGetProgramInfoLog(program.program, logMaxLen, null, infobuffer.ptr);
                 infolen = min2(infolen - 1, logMaxLen);
                 char[] s = stripRight(infobuffer[0..infolen]);
-                writeln(s);
+                logError(s);
             }
         }
         assert(status == GL_TRUE, "Shader program validation failed");

@@ -27,7 +27,6 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.core.persistent;
 
-import std.stdio: writeln;
 import std.traits;
 import std.file;
 import std.process;
@@ -42,6 +41,7 @@ import dlib.filesystem.filesystem;
 import dlib.filesystem.stdfs;
 
 import dagon.core.props;
+import dagon.core.logger;
 
 /*
  * Persistent key-value data storage, uses the same format as dagon.core.config.
@@ -93,7 +93,7 @@ class PersistentStorage: Owner
         
         this.localFilename = String(filename);
         
-        writeln("Using persistent storage file: ", this.filename);
+        logInfo("Using persistent storage file: ", this.filename);
         
         props = New!Properties(this);
         load();

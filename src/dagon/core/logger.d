@@ -44,18 +44,33 @@ enum LogLevel: uint
 
 struct LogOutputOptions
 {
-    bool stdout;
-    bool file;
+    bool printToStdout;
+    bool printToFile;
+    bool printTimestamp;
+    bool printLogLevel;
     string filename;
+    string function() dateTimePrinter;
 }
 
 __gshared LogLevel logLevel = LogLevel.All;
 
 __gshared LogOutputOptions logOutputOptions = {
-    stdout: true,
-    file: false,
-    filename: ""
+    printToStdout: true,
+    printToFile: false,
+    printTimestamp: false,
+    printLogLevel: true,
+    filename: "",
+    dateTimePrinter: &defaultDateTimePrinter
 };
+
+void setLogFilename(string filename)
+{
+    if (exists(filename))
+    {
+        logOutputOptions.printToFile = true;
+        logOutputOptions.filename = filename;
+    }
+}
 
 private
 {
@@ -63,7 +78,7 @@ private
     __gshared bool _logFileInitialized = false;
 }
 
-string formattedTimestamp()
+string defaultDateTimePrinter()
 {
     auto now = Clock.currTime;
     return format("[%02d.%02d.%04d %02d:%02d:%02d]",
@@ -76,37 +91,68 @@ void log(A...)(LogLevel level, A args)
     if (level < logLevel)
         return;
     
-    auto timestamp = formattedTimestamp();
+    string timestamp;
+    if (logOutputOptions.dateTimePrinter)
+        timestamp = logOutputOptions.dateTimePrinter();
     
     string levelStr = "";
     switch(level)
     {
         case LogLevel.Debug:
-            levelStr = " [Debug] ";
+            levelStr = "[Debug] ";
             break;
         case LogLevel.Info:
-            levelStr = " [Info] ";
+            levelStr = "[Info] ";
             break;
         case LogLevel.Warning:
-            levelStr = " [Warning] ";
+            levelStr = "[Warning] ";
             break;
         case LogLevel.Error:
-            levelStr = " [Error] ";
+            levelStr = "[Error] ";
             break;
         case LogLevel.FatalError:
-            levelStr = " [Fatal error] ";
+            levelStr = "[Fatal error] ";
             break;
         default: break;
     }
     
-    if (logOutputOptions.stdout)
-        writeln(timestamp, levelStr, args);
+    if (logOutputOptions.printToStdout)
+    {
+        if (logOutputOptions.printTimestamp)
+        {
+            if (logOutputOptions.printLogLevel)
+                writeln(timestamp, levelStr, args);
+            else
+                writeln(timestamp, " ", args);
+        }
+        else
+        {
+            if (logOutputOptions.printLogLevel)
+                writeln(levelStr, args);
+            else
+                writeln(args);
+        }
+    }
     
-    if (logOutputOptions.file && logOutputOptions.filename.length)
+    if (logOutputOptions.printToFile && logOutputOptions.filename.length)
     {
         if (_logFileInitialized)
         {
-            _logFile.writeln(timestamp, levelStr, args);
+            if (logOutputOptions.printTimestamp)
+            {
+                if (logOutputOptions.printLogLevel)
+                    _logFile.writeln(timestamp, levelStr, args);
+                else
+                    _logFile.writeln(timestamp, " ", args);
+            }
+            else
+            {
+                if (logOutputOptions.printLogLevel)
+                    _logFile.writeln(levelStr, args);
+                else
+                    _logFile.writeln(args);
+            }
+            
             _logFile.flush();
         }
         else
@@ -120,17 +166,36 @@ void log(A...)(LogLevel level, A args)
             {
                 writeln("[Logger Error] Failed to open log file: ", e.msg);
                 logOutputOptions.filename = "";
-                logOutputOptions.file = false;
+                logOutputOptions.printToFile = false;
             }
         }
     }
 }
 
-void logDebug(A...)(A args) { log(LogLevel.Debug, args); }
-void logInfo(A...)(A args) { log(LogLevel.Info, args); }
-void logWarning(A...)(A args) { log(LogLevel.Warning, args); }
-void logError(A...)(A args) { log(LogLevel.Error, args); }
-void logFatalError(A...)(A args) { log(LogLevel.FatalError, args); }
+void logDebug(A...)(A args)
+{
+    log(LogLevel.Debug, args);
+}
+
+void logInfo(A...)(A args)
+{
+    log(LogLevel.Info, args);
+}
+
+void logWarning(A...)(A args)
+{
+    log(LogLevel.Warning, args);
+}
+
+void logError(A...)(A args)
+{
+    log(LogLevel.Error, args);
+}
+
+void logFatalError(A...)(A args)
+{
+    log(LogLevel.FatalError, args);
+}
 
 static ~this()
 {

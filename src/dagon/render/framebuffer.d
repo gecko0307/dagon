@@ -33,6 +33,7 @@ import dlib.core.ownership;
 import dlib.image.color;
 
 import dagon.core.bindings;
+import dagon.core.logger;
 
 enum FrameBufferFormat
 {
@@ -154,7 +155,12 @@ class Framebuffer: Owner
 
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (status != GL_FRAMEBUFFER_COMPLETE)
-            writeln(status);
+        {
+            logError("Framebuffer.createFramebuffer failed: framebuffer status = ", status);
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glDeleteFramebuffers(1, &framebuffer);
+            return;
+        }
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }

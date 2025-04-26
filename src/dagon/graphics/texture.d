@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2023 Timur Gafarov
+Copyright (c) 2017-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -44,6 +44,7 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 
 import dagon.core.bindings;
+import dagon.core.logger;
 
 // S3TC formats
 enum GL_COMPRESSED_RGB_S3TC_DXT1_EXT = 0x83F0;  // DXT1/BC1_UNORM
@@ -389,7 +390,7 @@ class Texture: Owner
         }
         else
         {
-            writeln("Unsupported image format ", img.pixelFormat);
+            logError("Unsupported image format ", img.pixelFormat);
             createFallbackTexture();
         }
     }
@@ -405,7 +406,7 @@ class Texture: Owner
             if (img.width != img.height || img.width * img.height != size * size * size)
             {
                 uint s = cast(uint)sqrt(cast(real)size * size * size);
-                writeln("Wrong image resolution for 3D texture size ", size, ": should be ", s, "x", s);
+                logError("Wrong image resolution for 3D texture size ", size, ": should be ", s, "x", s);
                 return;
             }
         }
@@ -445,7 +446,7 @@ class Texture: Owner
         else if (format.target == GL_TEXTURE_3D)
             createTexture3D(buff.data);
         else
-            writeln("Texture creation failed: unsupported target ", format.target);
+            logError("Texture creation failed: unsupported target ", format.target);
     }
     
     protected void createCubemap(ubyte[] buffer)
@@ -492,7 +493,7 @@ class Texture: Owner
                         h /= 2;
                         if (offset > buffer.length)
                         {
-                            writeln("Error: incomplete texture buffer");
+                            logError("Incomplete texture buffer");
                             break;
                         }
                     }
@@ -532,7 +533,7 @@ class Texture: Owner
                         h /= 2;
                         if (offset > buffer.length)
                         {
-                            writeln("Error: incomplete texture buffer");
+                            logError("Incomplete texture buffer");
                             break;
                         }
                     }
@@ -655,7 +656,7 @@ class Texture: Owner
                     h /= 2;
                     if (offset > buffer.length)
                     {
-                        writeln("Error: incomplete texture buffer");
+                        logError("Incomplete texture buffer");
                         break;
                     }
                 }
@@ -692,7 +693,7 @@ class Texture: Owner
                     h /= 2;
                     if (offset > buffer.length)
                     {
-                        writeln("Error: incomplete texture buffer");
+                        logError("Incomplete texture buffer");
                         break;
                     }
                 }
@@ -729,7 +730,7 @@ class Texture: Owner
         
         if (isCompressed)
         {
-            writeln("Compressed 3D textures are not supported");
+            logError("Compressed 3D textures are not supported");
         }
         else
         {
@@ -765,7 +766,7 @@ class Texture: Owner
                     d /= 2;
                     if (offset > buffer.length)
                     {
-                        writeln("Error: incomplete texture buffer");
+                        logError("Incomplete texture buffer");
                         break;
                     }
                 }
@@ -821,7 +822,7 @@ class Texture: Owner
         }
         else
         {
-            writefln("Unsupported pixel format %s", envmap.pixelFormat);
+            logError("Unsupported pixel format %s", envmap.pixelFormat);
         }
         
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
@@ -849,8 +850,6 @@ class Texture: Owner
         if (valid)
             glDeleteTextures(1, &texture);
     }
-    
-    deprecated("use Texture.release instead") alias releaseGLTexture = release;
     
     bool valid()
     {
@@ -995,14 +994,14 @@ class Texture: Owner
     {
         if (img.width != img.height)
         {
-            writeln("Cubemap face image must be square");
+            logError("Cubemap face image must be square");
             return;
         }
         
         TextureFormat tf;
         if (!detectTextureFormat(img, tf))
         {
-            writeln("Unsupported image format ", img.pixelFormat);
+            logError("Unsupported image format ", img.pixelFormat);
             return;
         }
         

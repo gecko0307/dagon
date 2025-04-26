@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2019-2022 dayllenger
+Copyright (c) 2019-2025 dayllenger
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -32,6 +32,7 @@ import std.string: stripRight;
 import dlib.math.utils: min2;
 
 import dagon.core.bindings;
+import dagon.core.logger;
 
 enum ShaderStage: ubyte
 {
@@ -128,8 +129,8 @@ private bool checkCompilation(const GLuint shaderID, const ShaderStage stage)
         
         // it can be some warning
         if (!ok)
-            writefln("Failed to compile %s shader:", stage);
-        writeln(s);
+            logError("Failed to compile %s shader:", stage);
+        logWarning(s);
     }
     return ok;
 }
@@ -153,8 +154,8 @@ private bool checkLinking(const GLuint programID)
         
         // it can be some warning
         if (!ok)
-            writeln("Failed to link shaders:");
-        writeln(s);
+            logError("Failed to link shaders:");
+        logWarning(s);
     }
     return ok;
 }

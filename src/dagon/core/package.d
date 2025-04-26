@@ -36,6 +36,7 @@ public
     import dagon.core.input;
     import dagon.core.keycodes;
     import dagon.core.locale;
+    import dagon.core.logger;
     import dagon.core.persistent;
     import dagon.core.props;
     import dagon.core.time;

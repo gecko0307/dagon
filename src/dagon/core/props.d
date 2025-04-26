@@ -41,6 +41,8 @@ import dlib.image.color;
 import dlib.text.str;
 import dlib.text.lexer;
 
+import dagon.core.logger;
+
 enum DPropType
 {
     Undefined,
@@ -286,7 +288,7 @@ bool parseProperties(string input, Properties props)
         {
             if (expect != Expect.PropName)
             {
-                writefln("Error: unexpected end of string");
+                logError("Unexpected end of string");
                 res = false;
             }
             break;
@@ -299,7 +301,7 @@ bool parseProperties(string input, Properties props)
         {
             if (!isValidIdentifier(lexeme))
             {
-                writefln("Error: illegal identifier name \"%s\"", lexeme);
+                logError("Illegal identifier name \"%s\"", lexeme);
                 res = false;
                 break;
             }
@@ -311,7 +313,7 @@ bool parseProperties(string input, Properties props)
         {
             if (lexeme != ":")
             {
-                writefln("Error: expected \":\", got \"%s\"", lexeme);
+                logError("Expected \":\", got \"%s\"", lexeme);
                 res = false;
                 break;
             }
@@ -322,7 +324,7 @@ bool parseProperties(string input, Properties props)
         {
             if (lexeme != ";")
             {
-                writefln("Error: expected \";\", got \"%s\"", lexeme);
+                logError("Expected \";\", got \"%s\"", lexeme);
                 res = false;
                 break;
             }
