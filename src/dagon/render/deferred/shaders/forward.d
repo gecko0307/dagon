@@ -46,11 +46,12 @@ import dagon.graphics.shader;
 import dagon.graphics.state;
 import dagon.graphics.texture;
 import dagon.graphics.csm;
+import dagon.graphics.pose;
 
 class ForwardShader: Shader
 {
     String vs, fs;
-
+    GLint boneMatricesLocation;
     Matrix4x4f defaultShadowMatrix;
     GLuint defaultShadowTexture;
 
@@ -61,6 +62,8 @@ class ForwardShader: Shader
 
         auto prog = New!ShaderProgram(vs, fs, this);
         super(prog, owner);
+        
+        boneMatricesLocation = glGetUniformLocation(prog.program, "boneMatrices[0]");
 
         defaultShadowMatrix = Matrix4x4f.identity;
 
@@ -100,6 +103,28 @@ class ForwardShader: Shader
         setParameter("layer", cast(float)(state.layer));
         setParameter("blurMask", state.blurMask);
         setParameter("viewSize", state.resolution);
+        
+        if (state.pose)
+        {
+            Pose pose = state.pose;
+            if (pose.boneMatrices.length)
+            {
+                int numBones = cast(int)pose.boneMatrices.length;
+                if (numBones > 128)
+                    numBones = 128;
+                glUniformMatrix4fv(boneMatricesLocation, numBones, GL_FALSE, pose.boneMatrices[0].arrayof.ptr);
+                
+                setParameter("skinned", cast(int)1);
+            }
+            else
+            {
+                setParameter("skinned", cast(int)0);
+            }
+        }
+        else
+        {
+            setParameter("skinned", cast(int)0);
+        }
 
         // Sun
         Light sun = mat.sun;

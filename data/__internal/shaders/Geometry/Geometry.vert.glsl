@@ -62,7 +62,7 @@ void main()
     texCoord = (textureMatrix * vec3(va_Texcoord, 1.0)).xy;
     
     currPosition = projectionMatrix * eyePosHmg;
-    prevPosition = projectionMatrix * prevModelViewMatrix * vec4(va_Vertex, 1.0);
+    prevPosition = projectionMatrix * prevModelViewMatrix * modelPosHmg;
 
     gl_Position = currPosition;
 }
