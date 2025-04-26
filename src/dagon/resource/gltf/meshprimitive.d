@@ -69,15 +69,16 @@ class GLTFMeshPrimitive: Owner, Drawable
     {
         if (positionAccessor is null || 
             normalAccessor is null || 
-            texCoord0Accessor is null || 
             indexAccessor is null)
             return;
+        
+        bool hasTexcoords = false;
+        if (texCoord0Accessor && texCoord0Accessor.bufferView)
+            hasTexcoords = texCoord0Accessor.bufferView.slice.length > 0;
         
         if (positionAccessor.bufferView.slice.length == 0)
             return;
         if (normalAccessor.bufferView.slice.length == 0)
-            return;
-        if (texCoord0Accessor.bufferView.slice.length == 0)
             return;
         if (indexAccessor.bufferView.slice.length == 0)
             return;
@@ -90,9 +91,12 @@ class GLTFMeshPrimitive: Owner, Drawable
         glBindBuffer(GL_ARRAY_BUFFER, nbo);
         glBufferData(GL_ARRAY_BUFFER, normalAccessor.bufferView.slice.length, normalAccessor.bufferView.slice.ptr, GL_STATIC_DRAW);
         
-        glGenBuffers(1, &tbo);
-        glBindBuffer(GL_ARRAY_BUFFER, tbo);
-        glBufferData(GL_ARRAY_BUFFER, texCoord0Accessor.bufferView.slice.length, texCoord0Accessor.bufferView.slice.ptr, GL_STATIC_DRAW);
+        if (texCoord0Accessor && texCoord0Accessor.bufferView.slice.length > 0)
+        {
+            glGenBuffers(1, &tbo);
+            glBindBuffer(GL_ARRAY_BUFFER, tbo);
+            glBufferData(GL_ARRAY_BUFFER, texCoord0Accessor.bufferView.slice.length, texCoord0Accessor.bufferView.slice.ptr, GL_STATIC_DRAW);
+        }
         
         if (joints0Accessor && joints0Accessor.bufferView.slice.length > 0)
         {
@@ -125,9 +129,16 @@ class GLTFMeshPrimitive: Owner, Drawable
         glBindBuffer(GL_ARRAY_BUFFER, nbo);
         glVertexAttribPointer(VertexAttrib.Normals, normalAccessor.numComponents, normalAccessor.componentType, GL_FALSE, normalAccessor.bufferView.stride, cast(void*)normalAccessor.byteOffset);
         
-        glEnableVertexAttribArray(VertexAttrib.Texcoords);
-        glBindBuffer(GL_ARRAY_BUFFER, tbo);
-        glVertexAttribPointer(VertexAttrib.Texcoords, texCoord0Accessor.numComponents, texCoord0Accessor.componentType, GL_FALSE, texCoord0Accessor.bufferView.stride, cast(void*)texCoord0Accessor.byteOffset);
+        if (hasTexcoords)
+        {
+            glEnableVertexAttribArray(VertexAttrib.Texcoords);
+            glBindBuffer(GL_ARRAY_BUFFER, tbo);
+            glVertexAttribPointer(VertexAttrib.Texcoords, texCoord0Accessor.numComponents, texCoord0Accessor.componentType, GL_FALSE, texCoord0Accessor.bufferView.stride, cast(void*)texCoord0Accessor.byteOffset);
+        }
+        else
+        {
+            glVertexAttrib2f(VertexAttrib.Texcoords, 0.0f, 0.0f);
+        }
         
         if (hasJoints)
         {
@@ -167,7 +178,8 @@ class GLTFMeshPrimitive: Owner, Drawable
             glDeleteVertexArrays(1, &vao);
             glDeleteBuffers(1, &vbo);
             glDeleteBuffers(1, &nbo);
-            glDeleteBuffers(1, &tbo);
+            if (tbo)
+                glDeleteBuffers(1, &tbo);
             if (hasJoints)
                 glDeleteBuffers(1, &jbo);
             if (hasWeights)

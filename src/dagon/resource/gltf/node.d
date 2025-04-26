@@ -84,6 +84,12 @@ class GLTFNode: Owner
         entity = New!Entity(this);
     }
     
+    void updateLocalTransform()
+    {
+        if (transformMode == TransformMode.TRS)
+            localTransform = trsMatrix(position, rotation, scaling);
+    }
+    
     Matrix4x4f globalTransform() @property
     {
         if (parent)

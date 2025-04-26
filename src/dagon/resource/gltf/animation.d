@@ -273,7 +273,8 @@ class GLTFPose: Pose
                 const prevIdx = sampler.getSampleByTime(time, prevTime, nextTime, loopTime);
                 const nextIdx = prevIdx + 1;
                 
-                const float interpRatio = (loopTime - prevTime) / (nextTime - prevTime);
+                const float denom = nextTime - prevTime;
+                const float interpRatio = denom != 0 ? (loopTime - prevTime) / denom : 0.0f;
                 
                 // TODO: support all interpolation types
                 
@@ -303,7 +304,7 @@ class GLTFPose: Pose
         
         foreach(i, joint; skin.joints)
         {
-            joint.localTransform = trsMatrix(joint.position, joint.rotation, joint.scaling);
+            joint.updateLocalTransform();
         }
         
         foreach(i, joint; skin.joints)
