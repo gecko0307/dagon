@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2022 Timur Gafarov, Mateusz Muszyński
+Copyright (c) 2014-2025 Timur Gafarov, Mateusz Muszyński
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -37,6 +37,7 @@ import dlib.math.utils;
 import dlib.container.array;
 import dagon.core.bindings;
 import dagon.core.input;
+import dagon.core.logger;
 
 enum EventType
 {
@@ -56,6 +57,7 @@ enum EventType
     Quit,
     FileChange,
     DropFile,
+    LogEvent,
     UserEvent
 }
 
@@ -74,6 +76,8 @@ struct Event
     int mouseWheelX;
     int mouseWheelY;
     string filename;
+    LogLevel logLevel;
+    string message;
 }
 
 class EventManager
@@ -144,7 +148,7 @@ class EventManager
                 controller = SDL_GameControllerOpen(0);
 
                 if (SDL_GameControllerMapping(controller) is null)
-                    writeln("Warning: no mapping found for controller!");
+                    logWarning("No mapping found for controller!");
 
                 SDL_GameControllerEventState(SDL_ENABLE);
             }
@@ -170,39 +174,43 @@ class EventManager
         running = false;
     }
 
-    void addEvent(Event e)
+    void addEvent(Event e) nothrow
     {
         if (numEvents < maxNumEvents)
         {
             eventStack[numEvents] = e;
             numEvents++;
         }
-        else
-            writeln("Warning: event stack overflow");
     }
 
-    void generateFileChangeEvent(string filename)
+    void generateFileChangeEvent(string filename) nothrow
     {
         Event e = Event(EventType.FileChange);
         e.filename = filename;
         addUserEvent(e);
     }
 
-    void addUserEvent(Event e)
+    void addUserEvent(Event e) nothrow
     {
         if (numUserEvents < maxNumEvents)
         {
             userEventStack[numUserEvents] = e;
             numUserEvents++;
         }
-        else
-            writeln("Warning: user event stack overflow");
     }
 
-    void generateUserEvent(int code)
+    void generateUserEvent(int code) nothrow
     {
         Event e = Event(EventType.UserEvent);
         e.userCode = code;
+        addUserEvent(e);
+    }
+    
+    void generateLogEvent(LogLevel level, string message) nothrow
+    {
+        Event e = Event(EventType.LogEvent);
+        e.logLevel = level;
+        e.message = message;
         addUserEvent(e);
     }
 
@@ -586,6 +594,9 @@ abstract class EventListener: Owner
             case EventType.DropFile:
                 if (enableInputEvents) onDropFile(e.filename);
                 break;
+            case EventType.LogEvent:
+                onLogEvent(e.logLevel, e.message);
+                break;
             case EventType.UserEvent:
                 onUserEvent(e.userCode);
                 break;
@@ -609,5 +620,6 @@ abstract class EventListener: Owner
     void onQuit() {}
     void onFileChange(string filename) {}
     void onDropFile(string filename) {}
+    void onLogEvent(LogLevel level, string message) {}
     void onUserEvent(int code) {}
 }

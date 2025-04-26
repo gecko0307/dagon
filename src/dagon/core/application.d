@@ -47,6 +47,7 @@ import dlib.text.str;
 import dagon.core.bindings;
 import dagon.core.event;
 import dagon.core.time;
+import dagon.core.logger;
 
 version(Windows)
 { 
@@ -61,7 +62,7 @@ version(Windows)
 void exitWithError(string message = "")
 {
     if (message.length)
-        writeln(message);
+        logFatalError(message);
     core.stdc.stdlib.exit(1);
 }
 
@@ -144,7 +145,17 @@ extern(System) void messageCallback(
         string sourceStr = GLDebugSourceStrings[source];
         string typeStr = GLDebugTypeStrings[type];
         string severityStr = GLDebugSeverityStrings[severity];
-        printf(msg.ptr, (type == GL_DEBUG_TYPE_ERROR ? err.ptr : empty.ptr), sourceStr.ptr, typeStr.ptr, severityStr.ptr, message);
+        
+        if (userParam)
+        {
+            Application app = cast(Application)userParam;
+            if (app)
+            {
+                // Instead of calling logDebug directly (which is not nothrow), use the event loop
+                app.eventManager.generateLogEvent(LogLevel.Debug, cast(string)message[0..length]);
+            }
+        }
+        
         if (severity == GL_DEBUG_SEVERITY_HIGH)
             core.stdc.stdlib.exit(1);
     }
@@ -243,7 +254,7 @@ class Application: EventListener
         if (sdlsup != sdlSupport)
         {
             if (sdlsup == SDLSupport.badLibrary)
-                writeln("Warning: failed to load some SDL functions. It seems that you have an old version of SDL. Dagon will try to use it, but it is recommended to install SDL 2.30 or higher");
+                logWarning("Failed to load some SDL functions. It seems that you have an old version of SDL. Dagon will try to use it, but it is recommended to install SDL 2.30 or higher");
             else
                 exitWithError("Error: SDL library is not found. Please, install SDL 2.30 or higher");
         }
@@ -252,16 +263,16 @@ class Application: EventListener
         if (sdlimgsup != sdlImageSupport)
         {
             if (sdlsup == SDLSupport.badLibrary)
-                writeln("Warning: failed to load some SDL2_Image functions. It seems that you have an old version of SDL2_Image. Dagon will try to use it, but it is recommended to install SDL2_Image 2.8 or higher");
+                logWarning("Failed to load some SDL2_Image functions. It seems that you have an old version of SDL2_Image. Dagon will try to use it, but it is recommended to install SDL2_Image 2.8 or higher");
             else
             {
-                writeln("Warning: SDL2_Image library is not found. Please, install SDL2_Image 2.8 or higher");
+                logWarning("SDL2_Image library is not found. Please, install SDL2_Image 2.8 or higher");
                 sdlImagePresent = false;
             }
         }
 
         if (SDL_Init(SDL_INIT_EVERYTHING) == -1)
-            exitWithError("Error: failed to init SDL: " ~ to!string(SDL_GetError()));
+            exitWithError("Failed to init SDL: " ~ to!string(SDL_GetError()));
 
         width = winWidth;
         height = winHeight;
@@ -280,7 +291,7 @@ class Application: EventListener
             int supportedFormatFlags = IMG_Init(desiredFormatFlags);
             if (supportedFormatFlags == 0)
             {
-                writeln("Warning: failed to init SDL2_Image");
+                logWarning("Failed to init SDL2_Image");
                 sdlImagePresent = false;
             }
             
@@ -303,11 +314,11 @@ class Application: EventListener
         window = SDL_CreateWindow(toStringz(windowTitle),
             SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
         if (window is null)
-            exitWithError("Error: failed to create window: " ~ to!string(SDL_GetError()));
+            exitWithError("Failed to create window: " ~ to!string(SDL_GetError()));
 
         glcontext = SDL_GL_CreateContext(window);
         if (glcontext is null)
-            exitWithError("Error: failed to create OpenGL context: " ~ to!string(SDL_GetError()));
+            exitWithError("Failed to create OpenGL context: " ~ to!string(SDL_GetError()));
         SDL_GL_MakeCurrent(window, glcontext);
         SDL_GL_SetSwapInterval(1);
         
@@ -316,12 +327,12 @@ class Application: EventListener
         {
             if (glsup < GLSupport.gl40)
             {
-                exitWithError("Error: Dagon requires OpenGL 4.0, but it seems that your graphics card does not support it");
+                exitWithError("Dagon requires OpenGL 4.0, but it seems that your graphics card does not support it");
             }
         }
         else
         {
-            exitWithError("Error: failed to load OpenGL functions. Please, update graphics card driver and make sure it supports OpenGL 4.0");
+            exitWithError("Failed to load OpenGL functions. Please, update graphics card driver and make sure it supports OpenGL 4.0");
         }
         
         setFullscreen(fullscreen);
@@ -332,15 +343,15 @@ class Application: EventListener
         // Initialize OpenGL
         vendor = String(glGetString(GL_VENDOR));
         renderer = String(glGetString(GL_RENDERER));
-        writeln("OpenGL vendor: ", vendor);
-        writeln("OpenGL renderer: ", renderer);
+        logInfo("OpenGL vendor: ", vendor);
+        logInfo("OpenGL renderer: ", renderer);
         
         // Get limits
         glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &_maxTextureUnits);
         glGetIntegerv(GL_MAX_TEXTURE_SIZE, &_maxTextureSize);
         
-        writeln("GL_MAX_TEXTURE_IMAGE_UNITS: ", _maxTextureUnits);
-        writeln("GL_MAX_TEXTURE_SIZE: ", _maxTextureSize);
+        logInfo("GL_MAX_TEXTURE_IMAGE_UNITS: ", _maxTextureUnits);
+        logInfo("GL_MAX_TEXTURE_SIZE: ", _maxTextureSize);
         
         // Get extensions list
         GLint numExtensions;
@@ -350,7 +361,7 @@ class Application: EventListener
             _extensions[i] = glGetStringi(GL_EXTENSIONS, i).to!string;
         }
         
-        writeln("GL_ARB_texture_compression_bptc: ", isExtensionSupported("GL_ARB_texture_compression_bptc"));
+        logInfo("GL_ARB_texture_compression_bptc: ", isExtensionSupported("GL_ARB_texture_compression_bptc"));
         
         glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -373,11 +384,11 @@ class Application: EventListener
             if (hasKHRDebug)
             {
                 glEnable(GL_DEBUG_OUTPUT);
-                glDebugMessageCallback(&messageCallback, null);
+                glDebugMessageCallback(&messageCallback, cast(void*)this);
             }
             else
             {
-                writeln("GL_KHR_debug is not supported, debug output is not available");
+                logWarning("GL_KHR_debug is not supported, debug output is not available");
             }
         }
         
@@ -417,6 +428,11 @@ class Application: EventListener
         else
             SDL_SetWindowFullscreen(window, 0);
     }
+    
+    override void onLogEvent(LogLevel level, string message)
+    {
+        log(level, message);
+    }
 
     override void onUserEvent(int code)
     {
@@ -452,7 +468,7 @@ class Application: EventListener
         error = glGetError();
         if (error != GL_NO_ERROR)
         {
-            writefln("OpenGL error %s: %s", error, GLErrorStrings[error]);
+            logDebug("OpenGL error %s: %s", error, GLErrorStrings[error]);
         }
     }
 

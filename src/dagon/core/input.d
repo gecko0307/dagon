@@ -44,6 +44,7 @@ import dagon.core.event;
 import dagon.core.bindings;
 import dagon.core.keycodes;
 import dagon.core.config;
+import dagon.core.logger;
 
 enum BindingType
 {
@@ -110,7 +111,7 @@ class InputManager
         config = New!Configuration(null);
         if (!config.fromFile("input.conf"))
         {
-            writeln("Warning: no \"input.conf\" found");
+            logWarning("Warning: no \"input.conf\" found");
         }
 
         foreach(name, value; config.props.props)

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -33,6 +33,7 @@ import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.container.dict;
 
+import dagon.core.logger;
 import dagon.core.bindings;
 import dagon.core.event;
 import dagon.core.time;
@@ -97,7 +98,7 @@ class Game: Application
         }
         else
         {
-            writeln("Warning: no \"settings.conf\" found");
+            logWarning("No \"settings.conf\" found");
         }
         
         super(w, h, fullscreen, title, args);

@@ -40,6 +40,7 @@ import dlib.filesystem.filesystem;
 import dagon.core.bindings;
 import dagon.core.vkformat;
 import dagon.core.application;
+import dagon.core.logger;
 import dagon.graphics.texture;
 import dagon.resource.asset;
 import dagon.resource.texture;
@@ -161,7 +162,7 @@ bool vkFormatToGLFormat(VkFormat vkFormat, out TextureFormat tf)
             break;
         
         default:
-            writeln("Warning: unsupported VkFormat");
+            logWarning("Unsupported VkFormat");
             return false;
     }
     
@@ -179,7 +180,7 @@ bool loadKTX1(InputStream istrm, string filename, TextureBuffer* buffer, bool* g
         ktxTextureCreateFlagBits.KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &tex);
     if (err != KTX_error_code.KTX_SUCCESS)
     {
-        writeln("Error loading ", filename, ": ", err);
+        logError("Failed to load ", filename, ": ", err);
         return false;
     }
     
@@ -260,7 +261,7 @@ bool loadKTX2(InputStream istrm, string filename, TextureBuffer* buffer, Transco
         ktxTextureCreateFlagBits.KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &tex);
     if (err != KTX_error_code.KTX_SUCCESS)
     {
-        writeln("Error loading ", filename, ": ", err);
+        logError("Failed to load ", filename, ": ", err);
         return false;
     }
     
@@ -318,11 +319,11 @@ bool loadKTX2(InputStream istrm, string filename, TextureBuffer* buffer, Transco
             }
         }
         
-        writeln("Transcoding ", filename, " to ", targetFormatStr);
+        logInfo("Transcoding ", filename, " to ", targetFormatStr);
         err = ktxTexture2_TranscodeBasis(tex, targetFormat, 0);
         if (err != KTX_error_code.KTX_SUCCESS)
         {
-            writeln("Error loading ", filename, ": ", err);
+            logError("Failed to transcode ", filename, ": ", err);
             return false;
         }
     }
@@ -431,10 +432,10 @@ KTXSupport loadKTXLibrary()
     
     if (loader.errors.length)
     {
-        writeln("Loader errors:");
+        logError("libktx loader errors:");
         foreach(info; loader.errors)
         {
-            writeln(to!string(info.error), ": ", to!string(info.message));
+            logError(to!string(info.error), ": ", to!string(info.message));
         }
     }
     
