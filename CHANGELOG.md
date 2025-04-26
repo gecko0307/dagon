@@ -1,5 +1,18 @@
-Dagon 0.21.0 - TBD
+Dagon 0.22.0 - TBD
 ------------------
+- **Core**
+  - `dagon.core.logger` - Dagon now internally uses custom global logger to print errors and debug messages
+    - Logger can print to file if the filename is given via `setLogFilename`
+    - `logOutputOptions` can be used to control the logger output. For example, set `logOutputOptions.printTimestamp = true;` to save date and time of each message
+    - Use `logOutputOptions.printLogLevel` to set the minimum verbosity level: `LogLevel.All` < `LogLevel.Debug` < `LogLevel.Info` < `LogLevel.Warning` < `LogLevel.Error` < `LogLevel.FatalError`. By default it is set to `LogLevel.All`. In the release you may prefer `LogLevel.Info`
+- **Rendering**
+  - Basic GPU skinning support
+- **Assets**
+  - Initial support for glTF animations
+  - Access glTF scenes, nodes, meshes, skins and animations by names.
+
+Dagon 0.21.0 - 24 Apr, 2025
+---------------------------
 - **Core**
   - Upgrade to SDL 2.32.4.0. libSDL2-2.0.so is now provided under Linux
   - `isExtensionSupported` function in `dagon.core.application`. The OpenGL binding now tries to load all known ARB/KHR extensions. This function can be used at runtime to test if the driver supports particular extension
