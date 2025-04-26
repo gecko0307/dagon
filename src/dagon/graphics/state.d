@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -38,6 +38,7 @@ import dagon.graphics.material;
 import dagon.graphics.shader;
 import dagon.graphics.environment;
 import dagon.graphics.light;
+import dagon.graphics.pose;
 
 struct GraphicsState
 {
@@ -76,6 +77,7 @@ struct GraphicsState
     Shader shader;
     Environment environment;
     Light light;
+    Pose pose;
 
     bool colorMask;
     bool depthMask;
@@ -131,6 +133,7 @@ struct GraphicsState
         shader = null;
         environment = null;
         light = null;
+        pose = null;
 
         colorMask = true;
         depthMask = true;

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2025 Denis Feklushkin
+Copyright (c) 2025 Denis Feklushkin, Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -38,6 +38,7 @@ import dagon.core.bindings;
 import dagon.core.event;
 import dagon.core.time;
 import dagon.graphics.entity;
+import dagon.graphics.pose;
 import dagon.resource.gltf.accessor;
 import dagon.resource.gltf.node;
 import dagon.resource.gltf.skin;
@@ -220,5 +221,94 @@ class GLTFAnimationComponent: EntityComponent
             scaleMatrix(scaling);
         
         entity.updateAbsoluteTransformation();
+    }
+}
+
+class GLTFPose: Pose
+{
+    GLTFSkin skin;
+    GLTFAnimation animation;
+    
+    this(GLTFSkin skin, Owner o)
+    {
+        super(o);
+        this.skin = skin;
+        
+        if (skin.joints.length)
+        {
+            boneMatrices = New!(Matrix4x4f[])(skin.joints.length);
+            boneMatrices[] = Matrix4x4f.identity;
+            valid = true;
+        }
+    }
+    
+    ~this()
+    {
+        if (boneMatrices.length)
+            Delete(boneMatrices);
+    }
+    
+    override void update(Time t)
+    {
+        if (playing)
+        {
+            time.elapsed += t.delta;
+            time.delta = t.delta;
+        }
+        
+        if (animation)
+        {
+            foreach(ch; animation.channels)
+            {
+                if (ch.targetNode is null || ch.sampler is null)
+                    continue;
+                
+                auto node = ch.targetNode;
+                auto sampler = ch.sampler;
+                
+                float prevTime = 0.0f;
+                float nextTime = 0.0f;
+                float loopTime = 0.0f;
+                
+                const prevIdx = sampler.getSampleByTime(time, prevTime, nextTime, loopTime);
+                const nextIdx = prevIdx + 1;
+                
+                const float interpRatio = (loopTime - prevTime) / (nextTime - prevTime);
+                
+                // TODO: support all interpolation types
+                
+                if (ch.targetPath == TRSType.Translation)
+                {
+                    const Vector3f prevTrans = sampler.output.getSlice!Vector3f[prevIdx];
+                    const Vector3f nextTrans = sampler.output.getSlice!Vector3f[nextIdx];
+                    node.position = lerp(prevTrans, nextTrans, interpRatio);
+                    node.entity.position = node.position;
+                }
+                else if (ch.targetPath == TRSType.Rotation)
+                {
+                    const Quaternionf prevRot = sampler.output.getSlice!Quaternionf[prevIdx];
+                    const Quaternionf nextRot = sampler.output.getSlice!Quaternionf[nextIdx];
+                    node.rotation = slerp(prevRot, nextRot, interpRatio);
+                    node.entity.rotation = node.rotation;
+                }
+                else if (ch.targetPath == TRSType.Scale)
+                {
+                    const Vector3f prevScale = sampler.output.getSlice!Vector3f[prevIdx];
+                    const Vector3f nextScale = sampler.output.getSlice!Vector3f[nextIdx];
+                    node.scaling = lerp(prevScale, nextScale, interpRatio);
+                    node.entity.scaling = node.scaling;
+                }
+            }
+        }
+        
+        foreach(i, joint; skin.joints)
+        {
+            joint.localTransform = trsMatrix(joint.position, joint.rotation, joint.scaling);
+        }
+        
+        foreach(i, joint; skin.joints)
+        {
+            boneMatrices[i] = joint.globalTransform * skin.invBindMatrices[i];
+        }
     }
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -24,23 +24,42 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+module dagon.graphics.pose;
 
-module dagon.render.deferred.shaders;
+import dlib.core.ownership;
+import dlib.math.matrix;
+import dagon.core.time;
 
-public
+abstract class Pose: Owner
 {
-    import dagon.render.deferred.shaders.arealight;
-    import dagon.render.deferred.shaders.debugoutput;
-    import dagon.render.deferred.shaders.decal;
-    import dagon.render.deferred.shaders.emission;
-    import dagon.render.deferred.shaders.environment;
-    import dagon.render.deferred.shaders.forward;
-    import dagon.render.deferred.shaders.geometry;
-    import dagon.render.deferred.shaders.particle;
-    import dagon.render.deferred.shaders.probe;
-    import dagon.render.deferred.shaders.shadow;
-    import dagon.render.deferred.shaders.sky;
-    import dagon.render.deferred.shaders.ssao;
-    import dagon.render.deferred.shaders.sunlight;
-    import dagon.render.deferred.shaders.terrain;
+    Matrix4x4f[] boneMatrices;
+    Time time;
+    bool valid = false;
+    bool playing = false;
+    
+    this(Owner o)
+    {
+        super(o);
+        this.time = Time(0.0, 0.0);
+    }
+    
+    void update(Time t)
+    {
+        //
+    }
+    
+    void play()
+    {
+        playing = true;
+    }
+    
+    void pause()
+    {
+        playing = false;
+    }
+    
+    void reset()
+    {
+        time.elapsed = 0;
+    }
 }

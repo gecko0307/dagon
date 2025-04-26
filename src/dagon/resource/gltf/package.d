@@ -813,10 +813,7 @@ class GLTFAsset: Asset, TriangleSet
                     nodeObj.rotation = rotation;
                     nodeObj.scaling = scaling;
                     
-                    nodeObj.localTransform =
-                        translationMatrix(position) *
-                        rotation.toMatrix4x4 *
-                        scaleMatrix(scaling);
+                    nodeObj.localTransform = trsMatrix(position, rotation, scaling);
                     
                     nodeObj.entity.position = position;
                     nodeObj.entity.rotation = rotation;
@@ -943,9 +940,9 @@ class GLTFAsset: Asset, TriangleSet
 
                         auto sampler = s.asObject;
 
-                        samplerObj.interpolation = cast(InterpolationType) sampler["interpolation"].asString;
-                        checkAndGetAccessor( samplerObj.input, sampler["input"].asUint );
-                        checkAndGetAccessor( samplerObj.output, sampler["output"].asUint );
+                        samplerObj.interpolation = cast(InterpolationType)sampler["interpolation"].asString;
+                        checkAndGetAccessor(samplerObj.input, sampler["input"].asUint);
+                        checkAndGetAccessor(samplerObj.output, sampler["output"].asUint);
                     }
                 }
 
@@ -970,7 +967,7 @@ class GLTFAsset: Asset, TriangleSet
                             writeln("Warning: nonexistent animation target object");
                         else
                         {
-                            channelObj.targetPath = cast(TRSType) target.asObject["path"].asString;
+                            channelObj.targetPath = cast(TRSType)target.asObject["path"].asString;
 
                             auto node = ("node" in target.asObject);
                             if (node !is null)

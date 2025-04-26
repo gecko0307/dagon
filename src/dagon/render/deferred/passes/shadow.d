@@ -115,6 +115,7 @@ class PassShadow: RenderPass
             state.shader = shader;
             state.opacity = 1.0f;
             state.environment = pipeline.environment;
+            state.pose = entity.pose;
 
             if (entity.material)
                 entity.material.bind(&state);

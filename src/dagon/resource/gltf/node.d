@@ -45,6 +45,19 @@ enum TransformMode
     TRS
 }
 
+Matrix4x4f trsMatrix(Vector3f t, Quaternionf r, Vector3f s)
+{
+    Matrix4x4f res = Matrix4x4f.identity;
+    Matrix3x3f rm = r.toMatrix3x3;
+    res.a11 = rm.a11 * s.x; res.a12 = rm.a12 * s.x; res.a13 = rm.a13 * s.x;
+    res.a21 = rm.a21 * s.y; res.a22 = rm.a22 * s.y; res.a23 = rm.a23 * s.y;
+    res.a31 = rm.a31 * s.z; res.a32 = rm.a32 * s.z; res.a33 = rm.a33 * s.z;
+    res.a14 = t.x;
+    res.a24 = t.y;
+    res.a34 = t.z;
+    return res;
+}
+
 class GLTFNode: Owner
 {
     string name;
@@ -74,7 +87,7 @@ class GLTFNode: Owner
     Matrix4x4f globalTransform() @property
     {
         if (parent)
-            return parent.globalTransform * localTransform;
+            return localTransform * parent.globalTransform;
         else
             return localTransform;
     }

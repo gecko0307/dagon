@@ -49,6 +49,7 @@ import dagon.graphics.terrain;
 import dagon.graphics.material;
 import dagon.graphics.tween;
 import dagon.graphics.world;
+import dagon.graphics.pose;
 
 enum EntityLayer: int
 {
@@ -111,6 +112,8 @@ class Entity: Owner, Updateable
     Matrix4x4f prevAbsoluteTransformation;
 
     Vector3f boundingBoxSize;
+    
+    Pose pose;
 
    protected:
     AABB aabb;

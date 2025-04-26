@@ -131,9 +131,9 @@ class GLTFMeshPrimitive: Owner, Drawable
         
         if (hasJoints)
         {
-            glEnableVertexAttribArray(VertexAttrib.Joints);
+            glEnableVertexAttribArray(VertexAttrib.Bones);
             glBindBuffer(GL_ARRAY_BUFFER, jbo);
-            glVertexAttribPointer(VertexAttrib.Joints, joints0Accessor.numComponents, joints0Accessor.componentType, GL_FALSE, joints0Accessor.bufferView.stride, cast(void*)joints0Accessor.byteOffset);
+            glVertexAttribIPointer(VertexAttrib.Bones, joints0Accessor.numComponents, joints0Accessor.componentType, joints0Accessor.bufferView.stride, cast(void*)joints0Accessor.byteOffset);
         }
         
         if (hasWeights)

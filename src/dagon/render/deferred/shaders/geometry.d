@@ -44,10 +44,12 @@ import dagon.graphics.entity;
 import dagon.graphics.material;
 import dagon.graphics.shader;
 import dagon.graphics.state;
+import dagon.graphics.pose;
 
 class GeometryShader: Shader
 {
     String vs, fs;
+    GLint boneMatricesLocation;
 
     this(Owner owner)
     {
@@ -56,6 +58,8 @@ class GeometryShader: Shader
 
         auto prog = New!ShaderProgram(vs, fs, this);
         super(prog, owner);
+        
+        boneMatricesLocation = glGetUniformLocation(prog.program, "boneMatrices[0]");
     }
 
     ~this()
@@ -81,6 +85,28 @@ class GeometryShader: Shader
         setParameter("blurMask", state.blurMask);
         setParameter("sphericalNormal", cast(int)mat.sphericalNormal);
         setParameter("clipThreshold", mat.alphaTestThreshold);
+        
+        if (state.pose)
+        {
+            Pose pose = state.pose;
+            if (pose.boneMatrices.length)
+            {
+                int numBones = cast(int)pose.boneMatrices.length;
+                if (numBones > 128)
+                    numBones = 128;
+                glUniformMatrix4fv(boneMatricesLocation, numBones, GL_FALSE, pose.boneMatrices[0].arrayof.ptr);
+                
+                setParameter("skinned", cast(int)1);
+            }
+            else
+            {
+                setParameter("skinned", cast(int)0);
+            }
+        }
+        else
+        {
+            setParameter("skinned", cast(int)0);
+        }
 
         // Diffuse
         glActiveTexture(GL_TEXTURE0);

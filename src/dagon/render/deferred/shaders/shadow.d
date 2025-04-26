@@ -43,18 +43,22 @@ import dagon.core.bindings;
 import dagon.graphics.material;
 import dagon.graphics.shader;
 import dagon.graphics.state;
+import dagon.graphics.pose;
 
 class ShadowShader: Shader
 {
     String vs, fs;
+    GLint boneMatricesLocation;
 
     this(Owner owner)
     {
         vs = Shader.load("data/__internal/shaders/Shadow/Shadow.vert.glsl");
         fs = Shader.load("data/__internal/shaders/Shadow/Shadow.frag.glsl");
 
-        auto myProgram = New!ShaderProgram(vs, fs, this);
-        super(myProgram, owner);
+        auto prog = New!ShaderProgram(vs, fs, this);
+        super(prog, owner);
+        
+        boneMatricesLocation = glGetUniformLocation(prog.program, "boneMatrices[0]");
     }
 
     ~this()
@@ -75,6 +79,28 @@ class ShadowShader: Shader
         
         setParameter("opacity", state.opacity * mat.opacity);
         setParameter("textureScale", mat.textureScale);
+        
+        if (state.pose)
+        {
+            Pose pose = state.pose;
+            if (pose.boneMatrices.length)
+            {
+                int numBones = cast(int)pose.boneMatrices.length;
+                if (numBones > 128)
+                    numBones = 128;
+                glUniformMatrix4fv(boneMatricesLocation, numBones, GL_FALSE, pose.boneMatrices[0].arrayof.ptr);
+                
+                setParameter("skinned", cast(int)1);
+            }
+            else
+            {
+                setParameter("skinned", cast(int)0);
+            }
+        }
+        else
+        {
+            setParameter("skinned", cast(int)0);
+        }
         
         // Diffuse
         glActiveTexture(GL_TEXTURE0);
