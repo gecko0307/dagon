@@ -46,10 +46,13 @@ import dagon.graphics.material;
 import dagon.graphics.shader;
 import dagon.graphics.state;
 import dagon.graphics.light;
+import dagon.graphics.pose;
 
 class SimpleForwardShader: Shader
 {
     String vs, fs;
+    GLint boneMatricesLocation;
+    GLuint defaultShadowTexture;
     Vector3f shadowCenter = Vector3f(0.0f, 0.0f, 0.0f);
     bool shadowEnabled = true;
     float shadowMinRadius = 0.0f;
@@ -63,6 +66,8 @@ class SimpleForwardShader: Shader
 
         auto prog = New!ShaderProgram(vs, fs, this);
         super(prog, owner);
+        
+        boneMatricesLocation = glGetUniformLocation(prog.program, "boneMatrices[0]");
     }
 
     ~this()
@@ -84,6 +89,28 @@ class SimpleForwardShader: Shader
         setParameter("textureMatrix", mat.textureTransformation);
         setParameter("textureMappingMode", mat.textureMappingMode);
         setParameter("alphaTestThreshold", mat.alphaTestThreshold);
+        
+        if (state.pose)
+        {
+            Pose pose = state.pose;
+            if (pose.boneMatrices.length)
+            {
+                int numBones = cast(int)pose.boneMatrices.length;
+                if (numBones > 128)
+                    numBones = 128;
+                glUniformMatrix4fv(boneMatricesLocation, numBones, GL_FALSE, pose.boneMatrices[0].arrayof.ptr);
+                
+                setParameter("skinned", cast(int)1);
+            }
+            else
+            {
+                setParameter("skinned", cast(int)0);
+            }
+        }
+        else
+        {
+            setParameter("skinned", cast(int)0);
+        }
         
         Light sun = mat.sun;
         if (sun is null && state.environment !is null)
