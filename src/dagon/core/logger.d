@@ -28,6 +28,8 @@ module dagon.core.logger;
 
 import std.stdio;
 import std.datetime;
+import std.format;
+import std.file: exists;
 import dlib.core.ownership;
 
 enum LogLevel: uint
@@ -43,19 +45,38 @@ enum LogLevel: uint
 struct LogOutputOptions
 {
     bool stdout;
+    bool file;
+    string filename;
 }
 
 __gshared LogLevel logLevel = LogLevel.All;
+
 __gshared LogOutputOptions logOutputOptions = {
-    stdout: true
+    stdout: true,
+    file: false,
+    filename: ""
 };
+
+private
+{
+    __gshared File _logFile;
+    __gshared bool _logFileInitialized = false;
+}
+
+string formattedTimestamp()
+{
+    auto now = Clock.currTime;
+    return format("[%02d.%02d.%04d %02d:%02d:%02d]",
+        now.day, now.month, now.year,
+        now.hour, now.minute, now.second);
+}
 
 void log(A...)(LogLevel level, A args)
 {
     if (level < logLevel)
         return;
     
-    auto timestamp = Clock.currTime.toISOExtString();
+    auto timestamp = formattedTimestamp();
     
     string levelStr = "";
     switch(level)
@@ -80,6 +101,29 @@ void log(A...)(LogLevel level, A args)
     
     if (logOutputOptions.stdout)
         writeln(timestamp, levelStr, args);
+    
+    if (logOutputOptions.file && logOutputOptions.filename.length)
+    {
+        if (_logFileInitialized)
+        {
+            _logFile.writeln(timestamp, levelStr, args);
+            _logFile.flush();
+        }
+        else
+        {
+            try
+            {
+                _logFile = File(logOutputOptions.filename, "a");
+                _logFileInitialized = true;
+            }
+            catch(Exception e)
+            {
+                writeln("[Logger Error] Failed to open log file: ", e.msg);
+                logOutputOptions.filename = "";
+                logOutputOptions.file = false;
+            }
+        }
+    }
 }
 
 void logDebug(A...)(A args) { log(LogLevel.Debug, args); }
@@ -87,3 +131,12 @@ void logInfo(A...)(A args) { log(LogLevel.Info, args); }
 void logWarning(A...)(A args) { log(LogLevel.Warning, args); }
 void logError(A...)(A args) { log(LogLevel.Error, args); }
 void logFatalError(A...)(A args) { log(LogLevel.FatalError, args); }
+
+static ~this()
+{
+    if (_logFileInitialized)
+    {
+        _logFile.close();
+        _logFileInitialized = false;
+    }
+}

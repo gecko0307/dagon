@@ -111,7 +111,7 @@ class InputManager
         config = New!Configuration(null);
         if (!config.fromFile("input.conf"))
         {
-            logWarning("Warning: no \"input.conf\" found");
+            logWarning("No \"input.conf\" found");
         }
 
         foreach(name, value; config.props.props)
