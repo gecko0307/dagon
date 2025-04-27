@@ -153,6 +153,7 @@ class GLTFAnimationComponent: EntityComponent
         this.animation = animation;
         this.time = Time(0.0, 0.0);
         this.playing = playing;
+        e.transformMode = TransformMode.Matrix;
     }
     
     void play()

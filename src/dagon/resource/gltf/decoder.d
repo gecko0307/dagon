@@ -98,23 +98,6 @@ Color4f asColor(JSONValue value)
     return col;
 }
 
-class StaticTransformComponent: EntityComponent
-{
-    Matrix4x4f transformation;
-    
-    this(EventManager em, Entity e, Matrix4x4f transformation)
-    {
-        super(em, e);
-        this.transformation = transformation;
-    }
-    
-    override void update(Time t)
-    {
-        entity.transformation = transformation;
-        entity.updateAbsoluteTransformation();
-    }
-}
-
 class GLTFScene: Owner
 {
     string name;
@@ -760,7 +743,8 @@ class GLTFAsset: Asset, TriangleSet
                 {
                     nodeObj.transformMode = TransformMode.Matrix;
                     nodeObj.localTransform = node["matrix"].asMatrix;
-                    auto nodeComponent = New!StaticTransformComponent(assetManager.eventManager, nodeObj.entity, nodeObj.localTransform);
+                    nodeObj.entity.transformMode = TransformMode.Matrix;
+                    nodeObj.entity.transformation = nodeObj.localTransform;
                 }
                 else
                 {
@@ -783,6 +767,7 @@ class GLTFAsset: Asset, TriangleSet
                     
                     nodeObj.updateLocalTransform();
                     
+                    nodeObj.entity.transformMode = TransformMode.TRS;
                     nodeObj.entity.position = position;
                     nodeObj.entity.rotation = rotation;
                     nodeObj.entity.scaling = scaling;
@@ -871,7 +856,14 @@ class GLTFAsset: Asset, TriangleSet
         foreach(node; nodes)
         {
             if (node.skinIndex >= 0)
+            {
                 node.skin = skins[cast(size_t)node.skinIndex];
+                
+                if (node.parent !is null)
+                {
+                    logWarning("A node with a skinned mesh should be a root node");
+                }
+            }
         }
     }
     

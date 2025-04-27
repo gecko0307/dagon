@@ -64,6 +64,12 @@ enum EntityType: int
     Terrain = 1
 }
 
+enum TransformMode: int
+{
+    TRS = 0,
+    Matrix = 1
+}
+
 class Entity: Owner, Updateable
 {
    public:
@@ -112,6 +118,8 @@ class Entity: Owner, Updateable
     Matrix4x4f prevAbsoluteTransformation;
 
     Vector3f boundingBoxSize;
+    
+    TransformMode transformMode = TransformMode.TRS;
     
     Pose pose;
 
@@ -211,11 +219,19 @@ class Entity: Owner, Updateable
     void updateTransformation()
     {
         prevTransformation = transformation;
-
-        transformation =
-            translationMatrix(position) *
-            rotation.toMatrix4x4 *
-            scaleMatrix(scaling);
+        
+        /*
+         * If transformMode is TransformMode.Matrix,
+         * the transformation matrix should be
+         * updated manually when needed
+         */
+        if (transformMode == TransformMode.TRS)
+        {
+            transformation =
+                translationMatrix(position) *
+                rotation.toMatrix4x4 *
+                scaleMatrix(scaling);
+        }
         
         updateAbsoluteTransformation();
     }
