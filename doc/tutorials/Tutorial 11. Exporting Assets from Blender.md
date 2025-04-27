@@ -9,9 +9,9 @@ glTF feature support in Dagon:
 * ✔️ Skins and animations
 
 To export your models to glTF, you can use [Blender](https://blender.org/). The workflow is straightforward and requires almost no specific actions. A number of compatibility issues exist:
-* Dagon currently supports only `.gltf + .bin` form, `.glb` is not supported
-* Skinned object, as well as the armature, should be at the root of the scene. Otherwise you'll get a glTF that breaks Dagon's transformation workflow, and the object will not display correctly;
-* EEVEE-next (Blender 4.2) dropped support for alpha clipping (`"alphaMode":"MASK"` in glTF). You should add it manually in your shader using nodes as shown below;
+* Dagon currently supports only `.gltf + .bin` form, `.glb` is not supported;
+* Models should be in Y-Up coordinate system, with 1 unit = 1 meter;
+* EEVEE-next (Blender 4.2) dropped support for alpha clipping (`"alphaMode":"MASK"` in glTF). You should add it manually in your shader using nodes as shown below.
 
 ![](https://github.com/gecko0307/dagon/blob/master/doc/tutorials/images/blender_alpha_clipping.jpg?raw=true)
 

@@ -6,9 +6,9 @@ Dagon 0.22.0 - TBD
     - `logOutputOptions` can be used to control the logger output. For example, set `logOutputOptions.printTimestamp = true;` to save date and time of each message
     - Use `logOutputOptions.printLogLevel` to set the minimum verbosity level: `LogLevel.All` < `LogLevel.Debug` < `LogLevel.Info` < `LogLevel.Warning` < `LogLevel.Error` < `LogLevel.FatalError`. By default it is set to `LogLevel.All`. In the release you may prefer `LogLevel.Info`
 - **Rendering**
-  - Basic GPU skinning support
+  - GPU skinning support. `Pose` abstract class to store bone matrices
 - **Assets**
-  - Initial support for glTF animations. Only root-level skinned nodes are supported because of the incompatibility between glTF and Dagon transformation workflows
+  - glTF animation support
   - Access glTF scenes, nodes, meshes, skins and animations by names.
 
 Dagon 0.21.0 - 24 Apr, 2025
