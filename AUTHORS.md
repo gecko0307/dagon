@@ -3,7 +3,7 @@
 * ImGui extension (ImGuiOpenGLBackend) - [Joshua T. Fisher aka playmer](https://github.com/playmer), [LunaTheFoxgirl](https://github.com/LunaTheFoxgirl)
 * Input manager, Nuklear extension - [Mateusz Muszyński aka Timu5](https://github.com/Timu5)
 * Terrain rendering, OpenSimplex noise generator - Rafał Ziemniewski
-* Shader loader - [Viktor aka dayllenger](https://github.com/dayllenger)
+* Shader loader - [Viktor M. aka dayllenger](https://github.com/dayllenger)
 * glTF animation - [Denis Feklushkin aka denizzzka](https://github.com/denizzzka)
 * Asset manager improvements - [Konstantin Menshikov aka MANKEYYENAME](https://github.com/MANKEYYENAME)
 * OBJ group parser - [Vlad Davydov aka Tynuk](https://github.com/Tynukua)
