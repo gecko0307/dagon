@@ -3,7 +3,8 @@
 * ImGui extension (ImGuiOpenGLBackend) - [Joshua T. Fisher aka playmer](https://github.com/playmer), [LunaTheFoxgirl](https://github.com/LunaTheFoxgirl)
 * Input manager, Nuklear extension - [Mateusz Muszyński aka Timu5](https://github.com/Timu5)
 * Terrain rendering, OpenSimplex noise generator - Rafał Ziemniewski
-* Shader loader - [dayllenger](https://github.com/dayllenger)
+* Shader loader - [Viktor aka dayllenger](https://github.com/dayllenger)
+* glTF animation - [Denis Feklushkin aka denizzzka](https://github.com/denizzzka)
 * Asset manager improvements - [Konstantin Menshikov aka MANKEYYENAME](https://github.com/MANKEYYENAME)
-* OBJ group parser - [Tynuk](https://github.com/Tynukua)
-* Bugfixes - [Björn Roberg](https://github.com/roobie), [Isaac S.](https://github.com/isaacs-dev), [Adrien Allard](https://github.com/Tichau), [ijet](https://github.com/my-ijet), [dkorpel](https://github.com/dkorpel)
+* OBJ group parser - [Vlad Davydov aka Tynuk](https://github.com/Tynukua)
+* Bugfixes - [Björn Roberg aka roobie](https://github.com/roobie), [Isaac S.](https://github.com/isaacs-dev), [Adrien Allard aka Tichau](https://github.com/Tichau), [Ilya Lemeshko aka ijet](https://github.com/my-ijet), [Dennis Korpel aka dkorpel](https://github.com/dkorpel), [Robert Schadek aka burner](https://github.com/burner)
