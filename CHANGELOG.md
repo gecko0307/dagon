@@ -8,8 +8,9 @@ Dagon 0.22.0 - TBD
 - **Rendering**
   - GPU skinning support. `Pose` abstract class to store bone matrices
 - **Assets**
-  - glTF animation support
-  - Access glTF scenes, nodes, meshes, skins and animations by names.
+  - glTF animation support. It is implemented as an optional feature - animation is not enabled by default and requires user-side setup to work
+  - `GLTFMeshPrimitive` now supports meshes without normals, texture coordinates, or indices
+  - `GLTFAsset` now provides access to scenes, nodes, meshes, skins and animations by names.
 
 Dagon 0.21.0 - 24 Apr, 2025
 ---------------------------
