@@ -257,13 +257,6 @@ class GLTFPose: Pose
             time.delta = t.delta;
         }
         
-        foreach(i, joint; skin.joints)
-        {
-            joint.position = joint.bindPosePosition;
-            joint.rotation = joint.bindPoseRotation;
-            joint.scaling = joint.bindPoseScaling;
-        }
-        
         if (animation)
         {
             foreach(ch; animation.channels)
@@ -308,11 +301,25 @@ class GLTFPose: Pose
                     node.entity.scaling = node.scaling;
                 }
             }
+            
+            foreach(i, joint; skin.joints)
+            {
+                joint.updateLocalTransform();
+            }
         }
-        
-        foreach(i, joint; skin.joints)
+        else
         {
-            joint.updateLocalTransform();
+            foreach(i, joint; skin.joints)
+            {
+                joint.position = joint.bindPosePosition;
+                joint.rotation = joint.bindPoseRotation;
+                joint.scaling = joint.bindPoseScaling;
+                joint.updateLocalTransform();
+                
+                joint.entity.position = joint.bindPosePosition;
+                joint.entity.rotation = joint.bindPoseRotation;
+                joint.entity.scaling = joint.bindPoseScaling;
+            }
         }
         
         foreach(i, joint; skin.joints)
