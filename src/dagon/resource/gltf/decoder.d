@@ -752,6 +752,8 @@ class GLTFAsset: Asset, TriangleSet
                 {
                     nodeObj.transformMode = TransformMode.Matrix;
                     nodeObj.localTransform = node["matrix"].asMatrix;
+                    nodeObj.bindPoseTransform = nodeObj.localTransform;
+                    
                     nodeObj.entity.transformMode = TransformMode.Matrix;
                     nodeObj.entity.transformation = nodeObj.localTransform;
                 }
@@ -770,10 +772,14 @@ class GLTFAsset: Asset, TriangleSet
                     if ("scale" in node)
                         scaling = node["scale"].asVector;
                     
+                    nodeObj.bindPosePosition = position;
+                    nodeObj.bindPoseRotation = rotation;
+                    nodeObj.bindPoseScaling = scaling;
+                    nodeObj.updateBindPoseTransform();
+                    
                     nodeObj.position = position;
                     nodeObj.rotation = rotation;
                     nodeObj.scaling = scaling;
-                    
                     nodeObj.updateLocalTransform();
                     
                     nodeObj.entity.transformMode = TransformMode.TRS;
@@ -806,14 +812,14 @@ class GLTFAsset: Asset, TriangleSet
             if (node.childrenIndices.length)
             {
                 node.children = New!(GLTFNode[])(node.childrenIndices.length);
-            }
-            
-            foreach(i, childIndex; node.childrenIndices)
-            {
-                GLTFNode child = nodes[childIndex];
-                child.parent = node;
-                node.children[i] = child;
-                node.entity.addChild(child.entity);
+                
+                foreach(i, childIndex; node.childrenIndices)
+                {
+                    GLTFNode child = nodes[childIndex];
+                    child.parent = node;
+                    node.children[i] = child;
+                    node.entity.addChild(child.entity);
+                }
             }
         }
         

@@ -138,7 +138,12 @@ class GLTFMeshPrimitive: Owner, Drawable
         {
             glEnableVertexAttribArray(VertexAttrib.Vertices);
             glBindBuffer(GL_ARRAY_BUFFER, vbo);
-            glVertexAttribPointer(VertexAttrib.Vertices, positionAccessor.numComponents, positionAccessor.componentType, GL_FALSE, positionAccessor.bufferView.stride, cast(void*)positionAccessor.byteOffset);
+            glVertexAttribPointer(VertexAttrib.Vertices,
+                positionAccessor.numComponents,
+                positionAccessor.componentType,
+                GL_FALSE,
+                positionAccessor.bufferView.stride,
+                cast(void*)positionAccessor.byteOffset);
         }
         else
         {
@@ -149,7 +154,12 @@ class GLTFMeshPrimitive: Owner, Drawable
         {
             glEnableVertexAttribArray(VertexAttrib.Normals);
             glBindBuffer(GL_ARRAY_BUFFER, nbo);
-            glVertexAttribPointer(VertexAttrib.Normals, normalAccessor.numComponents, normalAccessor.componentType, GL_FALSE, normalAccessor.bufferView.stride, cast(void*)normalAccessor.byteOffset);
+            glVertexAttribPointer(VertexAttrib.Normals,
+                normalAccessor.numComponents,
+                normalAccessor.componentType,
+                GL_FALSE,
+                normalAccessor.bufferView.stride,
+                cast(void*)normalAccessor.byteOffset);
         }
         else
         {
@@ -160,7 +170,12 @@ class GLTFMeshPrimitive: Owner, Drawable
         {
             glEnableVertexAttribArray(VertexAttrib.Texcoords);
             glBindBuffer(GL_ARRAY_BUFFER, tbo);
-            glVertexAttribPointer(VertexAttrib.Texcoords, texCoord0Accessor.numComponents, texCoord0Accessor.componentType, GL_FALSE, texCoord0Accessor.bufferView.stride, cast(void*)texCoord0Accessor.byteOffset);
+            glVertexAttribPointer(VertexAttrib.Texcoords,
+                texCoord0Accessor.numComponents,
+                texCoord0Accessor.componentType,
+                GL_FALSE,
+                texCoord0Accessor.bufferView.stride,
+                cast(void*)texCoord0Accessor.byteOffset);
         }
         else
         {
@@ -171,7 +186,11 @@ class GLTFMeshPrimitive: Owner, Drawable
         {
             glEnableVertexAttribArray(VertexAttrib.Bones);
             glBindBuffer(GL_ARRAY_BUFFER, jbo);
-            glVertexAttribIPointer(VertexAttrib.Bones, joints0Accessor.numComponents, joints0Accessor.componentType, joints0Accessor.bufferView.stride, cast(void*)joints0Accessor.byteOffset);
+            glVertexAttribIPointer(VertexAttrib.Bones,
+                joints0Accessor.numComponents,
+                joints0Accessor.componentType,
+                joints0Accessor.bufferView.stride,
+                cast(void*)joints0Accessor.byteOffset);
         }
         else
         {
@@ -182,7 +201,12 @@ class GLTFMeshPrimitive: Owner, Drawable
         {
             glEnableVertexAttribArray(VertexAttrib.Weights);
             glBindBuffer(GL_ARRAY_BUFFER, wbo);
-            glVertexAttribPointer(VertexAttrib.Weights, weights0Accessor.numComponents, weights0Accessor.componentType, GL_FALSE, weights0Accessor.bufferView.stride, cast(void*)weights0Accessor.byteOffset);
+            glVertexAttribPointer(VertexAttrib.Weights,
+                weights0Accessor.numComponents,
+                weights0Accessor.componentType,
+                GL_FALSE,
+                weights0Accessor.bufferView.stride,
+                cast(void*)weights0Accessor.byteOffset);
         }
         else
         {

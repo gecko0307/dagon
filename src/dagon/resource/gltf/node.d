@@ -43,18 +43,28 @@ import dagon.resource.gltf.skin;
 class GLTFNode: Owner
 {
     string name;
-    GLTFNode parent;
     Entity entity;
+    
+    GLTFNode parent;
+    GLTFNode[] children;
+    size_t[] childrenIndices;
+    
     GLTFMesh mesh;
+    
+    GLTFSkin skin;
+    int skinIndex = -1;
+    
+    TransformMode transformMode;
+    
+    Vector3f bindPosePosition;
+    Quaternionf bindPoseRotation;
+    Vector3f bindPoseScaling;
+    Matrix4x4f bindPoseTransform;
+    
     Vector3f position;
     Quaternionf rotation;
     Vector3f scaling;
     Matrix4x4f localTransform;
-    TransformMode transformMode;
-    size_t[] childrenIndices;
-    GLTFNode[] children;
-    int skinIndex = -1;
-    GLTFSkin skin;
     
     this(Owner o)
     {
@@ -62,25 +72,38 @@ class GLTFNode: Owner
         position = Vector3f(0.0f, 0.0f, 0.0f);
         rotation = Quaternionf.identity;
         scaling = Vector3f(1.0f, 1.0f, 1.0f);
+        bindPosePosition = Vector3f(0.0f, 0.0f, 0.0f);
+        bindPoseRotation = Quaternionf.identity;
+        bindPoseScaling = Vector3f(1.0f, 1.0f, 1.0f);
+        bindPoseTransform = Matrix4x4f.identity;
         localTransform = Matrix4x4f.identity;
         entity = New!Entity(this);
+    }
+    
+    void updateBindPoseTransform()
+    {
+        bindPoseTransform = trsMatrix(
+            bindPosePosition,
+            bindPoseRotation,
+            bindPoseScaling);
     }
     
     void updateLocalTransform()
     {
         if (transformMode == TransformMode.TRS)
         {
-            localTransform =
-                translationMatrix(position) *
-                rotation.toMatrix4x4 *
-                scaleMatrix(scaling);
+            localTransform = trsMatrix(position, rotation, scaling);
+        }
+        else if (transformMode == TransformMode.Matrix)
+        {
+            localTransform = bindPoseTransform;
         }
     }
     
     Matrix4x4f globalTransform() @property
     {
         if (parent)
-            return localTransform * parent.globalTransform;
+            return parent.globalTransform() * localTransform;
         else
             return localTransform;
     }
@@ -93,4 +116,17 @@ class GLTFNode: Owner
         if (children.length)
             Delete(children);
     }
+}
+
+Matrix4x4f trsMatrix(Vector3f t, Quaternionf r, Vector3f s)
+{
+    Matrix4x4f res = Matrix4x4f.identity;
+    Matrix3x3f rm = r.toMatrix3x3;
+    res.a11 = rm.a11 * s.x; res.a12 = rm.a12 * s.x; res.a13 = rm.a13 * s.x;
+    res.a21 = rm.a21 * s.y; res.a22 = rm.a22 * s.y; res.a23 = rm.a23 * s.y;
+    res.a31 = rm.a31 * s.z; res.a32 = rm.a32 * s.z; res.a33 = rm.a33 * s.z;
+    res.a14 = t.x;
+    res.a24 = t.y;
+    res.a34 = t.z;
+    return res;
 }

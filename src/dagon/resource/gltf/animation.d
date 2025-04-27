@@ -257,6 +257,13 @@ class GLTFPose: Pose
             time.delta = t.delta;
         }
         
+        foreach(i, joint; skin.joints)
+        {
+            joint.position = joint.bindPosePosition;
+            joint.rotation = joint.bindPoseRotation;
+            joint.scaling = joint.bindPoseScaling;
+        }
+        
         if (animation)
         {
             foreach(ch; animation.channels)

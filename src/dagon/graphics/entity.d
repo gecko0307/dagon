@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2023 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -235,13 +235,6 @@ class Entity: Owner, Updateable
         
         updateAbsoluteTransformation();
     }
-
-    void updateTransformationDeep()
-    {
-        if (parent)
-            parent.updateTransformationDeep();
-        updateTransformation();
-    }
     
     void updateTransformationTopDown()
     {
@@ -251,6 +244,13 @@ class Entity: Owner, Updateable
         {
             child.updateTransformationTopDown();
         }
+    }
+
+    void updateTransformationBottomUp()
+    {
+        if (parent)
+            parent.updateTransformationBottomUp();
+        updateTransformation();
     }
 
     void update(Time t)
