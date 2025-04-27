@@ -57,8 +57,12 @@ class GLTFMeshPrimitive: Owner, Drawable
     
     bool canRender = false;
     
+    bool hasPositions = false;
+    bool hasNormals = false;
+    bool hasTexcoords = false;
     bool hasJoints = false;
     bool hasWeights = false;
+    bool hasIndices = false;
     
     this(Owner o)
     {
@@ -67,67 +71,90 @@ class GLTFMeshPrimitive: Owner, Drawable
     
     void prepareVAO()
     {
-        if (positionAccessor is null || 
-            normalAccessor is null || 
-            indexAccessor is null)
-            return;
+        if (positionAccessor && positionAccessor.bufferView)
+            hasPositions = positionAccessor.bufferView.slice.length > 0;
         
-        bool hasTexcoords = false;
+        if (normalAccessor && normalAccessor.bufferView)
+            hasNormals = normalAccessor.bufferView.slice.length > 0;
+        
         if (texCoord0Accessor && texCoord0Accessor.bufferView)
             hasTexcoords = texCoord0Accessor.bufferView.slice.length > 0;
         
-        if (positionAccessor.bufferView.slice.length == 0)
-            return;
-        if (normalAccessor.bufferView.slice.length == 0)
-            return;
-        if (indexAccessor.bufferView.slice.length == 0)
-            return;
+        if (joints0Accessor && joints0Accessor.bufferView)
+            hasJoints = joints0Accessor.bufferView.slice.length > 0;
         
-        glGenBuffers(1, &vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, positionAccessor.bufferView.slice.length, positionAccessor.bufferView.slice.ptr, GL_STATIC_DRAW); 
+        if (weights0Accessor && weights0Accessor.bufferView)
+            hasWeights = weights0Accessor.bufferView.slice.length > 0;
         
-        glGenBuffers(1, &nbo);
-        glBindBuffer(GL_ARRAY_BUFFER, nbo);
-        glBufferData(GL_ARRAY_BUFFER, normalAccessor.bufferView.slice.length, normalAccessor.bufferView.slice.ptr, GL_STATIC_DRAW);
+        if (indexAccessor && indexAccessor.bufferView)
+            hasIndices = indexAccessor.bufferView.slice.length > 0;
         
-        if (texCoord0Accessor && texCoord0Accessor.bufferView.slice.length > 0)
+        if (hasPositions)
+        {
+            glGenBuffers(1, &vbo);
+            glBindBuffer(GL_ARRAY_BUFFER, vbo);
+            glBufferData(GL_ARRAY_BUFFER, positionAccessor.bufferView.slice.length, positionAccessor.bufferView.slice.ptr, GL_STATIC_DRAW); 
+        }
+        
+        if (hasNormals)
+        {
+            glGenBuffers(1, &nbo);
+            glBindBuffer(GL_ARRAY_BUFFER, nbo);
+            glBufferData(GL_ARRAY_BUFFER, normalAccessor.bufferView.slice.length, normalAccessor.bufferView.slice.ptr, GL_STATIC_DRAW);
+        }
+        
+        if (hasTexcoords)
         {
             glGenBuffers(1, &tbo);
             glBindBuffer(GL_ARRAY_BUFFER, tbo);
             glBufferData(GL_ARRAY_BUFFER, texCoord0Accessor.bufferView.slice.length, texCoord0Accessor.bufferView.slice.ptr, GL_STATIC_DRAW);
         }
         
-        if (joints0Accessor && joints0Accessor.bufferView.slice.length > 0)
+        if (hasJoints)
         {
             glGenBuffers(1, &jbo);
             glBindBuffer(GL_ARRAY_BUFFER, jbo);
             glBufferData(GL_ARRAY_BUFFER, joints0Accessor.bufferView.slice.length, joints0Accessor.bufferView.slice.ptr, GL_STATIC_DRAW);
-            hasJoints = true;
         }
         
-        if (weights0Accessor && weights0Accessor.bufferView.slice.length > 0)
+        if (hasWeights)
         {
             glGenBuffers(1, &wbo);
             glBindBuffer(GL_ARRAY_BUFFER, wbo);
             glBufferData(GL_ARRAY_BUFFER, weights0Accessor.bufferView.slice.length, weights0Accessor.bufferView.slice.ptr, GL_STATIC_DRAW);
-            hasWeights = true;
         }
         
-        glGenBuffers(1, &eao);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eao);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexAccessor.bufferView.slice.length, indexAccessor.bufferView.slice.ptr, GL_STATIC_DRAW);
+        if (hasIndices)
+        {
+            glGenBuffers(1, &eao);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eao);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexAccessor.bufferView.slice.length, indexAccessor.bufferView.slice.ptr, GL_STATIC_DRAW);
+        }
         
         glGenVertexArrays(1, &vao);
         glBindVertexArray(vao);
         
-        glEnableVertexAttribArray(VertexAttrib.Vertices);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glVertexAttribPointer(VertexAttrib.Vertices, positionAccessor.numComponents, positionAccessor.componentType, GL_FALSE, positionAccessor.bufferView.stride, cast(void*)positionAccessor.byteOffset);
+        if (hasPositions)
+        {
+            glEnableVertexAttribArray(VertexAttrib.Vertices);
+            glBindBuffer(GL_ARRAY_BUFFER, vbo);
+            glVertexAttribPointer(VertexAttrib.Vertices, positionAccessor.numComponents, positionAccessor.componentType, GL_FALSE, positionAccessor.bufferView.stride, cast(void*)positionAccessor.byteOffset);
+        }
+        else
+        {
+            glVertexAttrib3f(VertexAttrib.Vertices, 0.0f, 0.0f, 0.0f);
+        }
         
-        glEnableVertexAttribArray(VertexAttrib.Normals);
-        glBindBuffer(GL_ARRAY_BUFFER, nbo);
-        glVertexAttribPointer(VertexAttrib.Normals, normalAccessor.numComponents, normalAccessor.componentType, GL_FALSE, normalAccessor.bufferView.stride, cast(void*)normalAccessor.byteOffset);
+        if (hasNormals)
+        {
+            glEnableVertexAttribArray(VertexAttrib.Normals);
+            glBindBuffer(GL_ARRAY_BUFFER, nbo);
+            glVertexAttribPointer(VertexAttrib.Normals, normalAccessor.numComponents, normalAccessor.componentType, GL_FALSE, normalAccessor.bufferView.stride, cast(void*)normalAccessor.byteOffset);
+        }
+        else
+        {
+            glVertexAttrib3f(VertexAttrib.Normals, 0.0f, 0.0f, 1.0f);
+        }
         
         if (hasTexcoords)
         {
@@ -146,6 +173,10 @@ class GLTFMeshPrimitive: Owner, Drawable
             glBindBuffer(GL_ARRAY_BUFFER, jbo);
             glVertexAttribIPointer(VertexAttrib.Bones, joints0Accessor.numComponents, joints0Accessor.componentType, joints0Accessor.bufferView.stride, cast(void*)joints0Accessor.byteOffset);
         }
+        else
+        {
+            glVertexAttribI4ui(VertexAttrib.Bones, 0, 0, 0, 0);
+        }
         
         if (hasWeights)
         {
@@ -153,8 +184,15 @@ class GLTFMeshPrimitive: Owner, Drawable
             glBindBuffer(GL_ARRAY_BUFFER, wbo);
             glVertexAttribPointer(VertexAttrib.Weights, weights0Accessor.numComponents, weights0Accessor.componentType, GL_FALSE, weights0Accessor.bufferView.stride, cast(void*)weights0Accessor.byteOffset);
         }
+        else
+        {
+            glVertexAttrib4f(VertexAttrib.Weights, 0.0f, 0.0f, 0.0f, 0.0f);
+        }
         
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eao);
+        if (hasIndices)
+        {
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eao);
+        }
         
         glBindVertexArray(0);
         
@@ -166,7 +204,12 @@ class GLTFMeshPrimitive: Owner, Drawable
         if (canRender)
         {
             glBindVertexArray(vao);
-            glDrawElements(GL_TRIANGLES, indexAccessor.count, indexAccessor.componentType, cast(void*)indexAccessor.byteOffset);
+            
+            if (hasIndices)
+                glDrawElements(GL_TRIANGLES, indexAccessor.count, indexAccessor.componentType, cast(void*)indexAccessor.byteOffset);
+            else if (hasPositions)
+                glDrawArrays(GL_TRIANGLES, 0, positionAccessor.count);
+            
             glBindVertexArray(0);
         }
     }
@@ -176,15 +219,13 @@ class GLTFMeshPrimitive: Owner, Drawable
         if (canRender)
         {
             glDeleteVertexArrays(1, &vao);
-            glDeleteBuffers(1, &vbo);
-            glDeleteBuffers(1, &nbo);
-            if (tbo)
-                glDeleteBuffers(1, &tbo);
-            if (hasJoints)
-                glDeleteBuffers(1, &jbo);
-            if (hasWeights)
-                glDeleteBuffers(1, &wbo);
-            glDeleteBuffers(1, &eao);
+            
+            if (hasPositions) glDeleteBuffers(1, &vbo);
+            if (hasNormals) glDeleteBuffers(1, &nbo);
+            if (hasTexcoords) glDeleteBuffers(1, &tbo);
+            if (hasJoints) glDeleteBuffers(1, &jbo);
+            if (hasWeights) glDeleteBuffers(1, &wbo);
+            if (hasIndices) glDeleteBuffers(1, &eao);
         }
     }
 }

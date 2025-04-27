@@ -51,10 +51,7 @@ abstract class Pose: Owner
         this.time = Time(0.0, 0.0);
     }
     
-    void update(Time t)
-    {
-        //
-    }
+    void update(Time t);
     
     void play()
     {
