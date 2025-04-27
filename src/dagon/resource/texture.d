@@ -44,6 +44,7 @@ import dlib.image.unmanaged;
 import dlib.filesystem.filesystem;
 
 import dagon.core.bindings;
+import dagon.core.logger;
 import dagon.graphics.texture;
 import dagon.resource.asset;
 
@@ -114,13 +115,13 @@ class TextureAsset: Asset
             else
             {
                 if (res[1].length)
-                    writeln(res[1]);
+                    logError(res[1]);
                 return false;
             }
         }
         else
         {
-            writeln(filename, ": unsupported texture file extension \"", this.extension, "\"");
+            logError(filename, ": unsupported texture file extension \"", this.extension, "\"");
             return false;
         }
     }

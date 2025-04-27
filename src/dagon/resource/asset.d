@@ -48,6 +48,7 @@ import dlib.image.io;
 import dagon.core.application;
 import dagon.core.event;
 import dagon.core.vfs;
+import dagon.core.logger;
 import dagon.graphics.texture;
 import dagon.resource.boxfs;
 import dagon.resource.texture;
@@ -470,7 +471,7 @@ class AssetManager: Owner
         bool res = asset.loadThreadSafePart(filename, istrm, fs, this);
         if (!res)
         {
-            writefln("Warning: failed to load asset \"%s\"", filename);
+            logError("Failed to load asset \"%s\"", filename);
         }
         return res;
     }
@@ -479,7 +480,7 @@ class AssetManager: Owner
     {
         if (!fileExists(filename))
         {
-            writefln("Warning: cannot find file \"%s\"", filename);
+            logError("Cannot find file \"%s\"", filename);
             return false;
         }
 
@@ -520,14 +521,13 @@ class AssetManager: Owner
         bool res = true;
         foreach(filename, asset; assetsByFilename)
         {
-            //if (!asset.threadUnsafePartLoaded)
             if (asset.threadSafePartLoaded)
             {
                 res = asset.loadThreadUnsafePart();
                 asset.threadUnsafePartLoaded = res;
                 if (!res)
                 {
-                    writefln("Warning: failed to load asset \"%s\"", filename);
+                    logError("Failed to load asset \"%s\"", filename);
                 }
             }
         }

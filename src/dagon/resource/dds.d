@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -36,6 +36,7 @@ import dlib.core.stream;
 import dlib.image.io.utils;
 
 import dagon.core.bindings;
+import dagon.core.logger;
 import dagon.graphics.texture;
 
 //version = DDSDebug;
@@ -440,7 +441,7 @@ bool loadDDS(InputStream istrm, TextureBuffer* buffer)
 {
     bool error(string errorMsg)
     {
-        writeln(errorMsg);
+        logError(errorMsg);
         return false;
     }
     
@@ -453,7 +454,7 @@ bool loadDDS(InputStream istrm, TextureBuffer* buffer)
     
     version(DDSDebug)
     {
-        writeln("Signature: ", magic);
+        logDebug("Signature: ", magic);
     }
     
     if (magic != "DDS ")
@@ -465,41 +466,41 @@ bool loadDDS(InputStream istrm, TextureBuffer* buffer)
     
     version(DDSDebug)
     {
-        writeln("hdr.size: ", hdr.size);
-        writeln("hdr.flags: ", hdr.flags);
-        writeln("hdr.height: ", hdr.height);
-        writeln("hdr.width: ", hdr.width);
-        writeln("hdr.pitch: ", hdr.pitch);
-        writeln("hdr.depth: ", hdr.depth);
-        writeln("hdr.mipMapLevels: ", hdr.mipMapLevels);
-        writeln("hdr.alphaBitDepth: ", hdr.alphaBitDepth);
-        writeln("hdr.reserved: ", hdr.reserved);
-        writeln("hdr.surface: ", hdr.surface);
+        logDebug("hdr.size: ", hdr.size);
+        logDebug("hdr.flags: ", hdr.flags);
+        logDebug("hdr.height: ", hdr.height);
+        logDebug("hdr.width: ", hdr.width);
+        logDebug("hdr.pitch: ", hdr.pitch);
+        logDebug("hdr.depth: ", hdr.depth);
+        logDebug("hdr.mipMapLevels: ", hdr.mipMapLevels);
+        logDebug("hdr.alphaBitDepth: ", hdr.alphaBitDepth);
+        logDebug("hdr.reserved: ", hdr.reserved);
+        logDebug("hdr.surface: ", hdr.surface);
         
-        writeln("hdr.ckDestOverlay.lowVal: ", hdr.ckDestOverlay.lowVal);
-        writeln("hdr.ckDestOverlay.highVal: ", hdr.ckDestOverlay.highVal);
-        writeln("hdr.ckDestBlt.lowVal: ", hdr.ckDestBlt.lowVal);
-        writeln("hdr.ckDestBlt.highVal: ", hdr.ckDestBlt.highVal);
-        writeln("hdr.ckSrcOverlay.lowVal: ", hdr.ckSrcOverlay.lowVal);
-        writeln("hdr.ckSrcOverlay.highVal: ", hdr.ckSrcOverlay.highVal);
-        writeln("hdr.ckSrcBlt.lowVal: ", hdr.ckSrcBlt.lowVal);
-        writeln("hdr.ckSrcBlt.highVal: ", hdr.ckSrcBlt.highVal);
+        logDebug("hdr.ckDestOverlay.lowVal: ", hdr.ckDestOverlay.lowVal);
+        logDebug("hdr.ckDestOverlay.highVal: ", hdr.ckDestOverlay.highVal);
+        logDebug("hdr.ckDestBlt.lowVal: ", hdr.ckDestBlt.lowVal);
+        logDebug("hdr.ckDestBlt.highVal: ", hdr.ckDestBlt.highVal);
+        logDebug("hdr.ckSrcOverlay.lowVal: ", hdr.ckSrcOverlay.lowVal);
+        logDebug("hdr.ckSrcOverlay.highVal: ", hdr.ckSrcOverlay.highVal);
+        logDebug("hdr.ckSrcBlt.lowVal: ", hdr.ckSrcBlt.lowVal);
+        logDebug("hdr.ckSrcBlt.highVal: ", hdr.ckSrcBlt.highVal);
         
-        writeln("hdr.format.size: ", hdr.format.size);
-        writeln("hdr.format.flags: ", hdr.format.flags);
-        writeln("hdr.format.fourCC: ", hdr.format.fourCC);
-        writeln("hdr.format.bpp: ", hdr.format.bpp);
-        writeln("hdr.format.redMask: ", hdr.format.redMask);
-        writeln("hdr.format.greenMask: ", hdr.format.greenMask);
-        writeln("hdr.format.blueMask: ", hdr.format.blueMask);
-        writeln("hdr.format.alphaMask: ", hdr.format.alphaMask);
+        logDebug("hdr.format.size: ", hdr.format.size);
+        logDebug("hdr.format.flags: ", hdr.format.flags);
+        logDebug("hdr.format.fourCC: ", hdr.format.fourCC);
+        logDebug("hdr.format.bpp: ", hdr.format.bpp);
+        logDebug("hdr.format.redMask: ", hdr.format.redMask);
+        logDebug("hdr.format.greenMask: ", hdr.format.greenMask);
+        logDebug("hdr.format.blueMask: ", hdr.format.blueMask);
+        logDebug("hdr.format.alphaMask: ", hdr.format.alphaMask);
         
-        writeln("hdr.caps: ", hdr.caps);
-        writeln("hdr.caps2: ", hdr.caps2);
-        writeln("hdr.caps3: ", hdr.caps3);
-        writeln("hdr.caps4: ", hdr.caps4);
+        logDebug("hdr.caps: ", hdr.caps);
+        logDebug("hdr.caps2: ", hdr.caps2);
+        logDebug("hdr.caps3: ", hdr.caps3);
+        logDebug("hdr.caps4: ", hdr.caps4);
         
-        writeln("hdr.textureStage: ", hdr.textureStage);
+        logDebug("hdr.textureStage: ", hdr.textureStage);
     }
     
     TextureFormat format;
@@ -527,7 +528,7 @@ bool loadDDS(InputStream istrm, TextureBuffer* buffer)
             fmt = DXGIFormat.R8_UNORM;
     }
     
-    version(DDSDebug) writeln("format: ", fmt);
+    version(DDSDebug) logDebug("format: ", fmt);
     
     switch(fmt)
     {
@@ -619,13 +620,13 @@ bool loadDDS(InputStream istrm, TextureBuffer* buffer)
             return error("loadDDS error: incomplete cubemap");
     }
     
-    version(DDSDebug) writeln("hasMipmaps: ", hasMipmaps);
-    version(DDSDebug) writeln("isComplex: ", isComplex);
-    version(DDSDebug) writeln("isVolume: ", isVolume);
-    version(DDSDebug) writeln("isCubemap: ", isCubemap);
+    version(DDSDebug) logDebug("hasMipmaps: ", hasMipmaps);
+    version(DDSDebug) logDebug("isComplex: ", isComplex);
+    version(DDSDebug) logDebug("isVolume: ", isVolume);
+    version(DDSDebug) logDebug("isCubemap: ", isCubemap);
     
     size_t bufferSize = cast(size_t)(istrm.size - istrm.getPosition);
-    version(DDSDebug) writeln("bufferSize: ", bufferSize);
+    version(DDSDebug) logDebug("bufferSize: ", bufferSize);
     
     buffer.data = New!(ubyte[])(bufferSize);
     istrm.readBytes(buffer.data.ptr, bufferSize);

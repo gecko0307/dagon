@@ -49,6 +49,7 @@ import dlib.image.image;
 import dagon.core.bindings;
 import dagon.core.event;
 import dagon.core.time;
+import dagon.core.logger;
 import dagon.resource.asset;
 import dagon.resource.texture;
 import dagon.graphics.texture;
@@ -244,7 +245,7 @@ class GLTFAsset: Asset, TriangleSet
                 }
                 else
                 {
-                    writeln("Warning: can't create buffer view for nonexistent buffer ", bufferIndex);
+                    logError("Can't create buffer view for nonexistent buffer ", bufferIndex);
                     GLTFBufferView bufv = New!GLTFBufferView(null, 0, 0, 0, 0, this);
                     bufferViews.insertBack(bufv);
                 }
@@ -292,7 +293,7 @@ class GLTFAsset: Asset, TriangleSet
                 else if (type == "MAT4")
                     dataType = GLTFDataType.Mat4;
                 else
-                    writeln("Warning: unsupported data type for accessor ", i);
+                    logError("Unsupported data type for accessor ", i);
                 
                 if (bufferViewIndex < bufferViews.length)
                 {
@@ -301,7 +302,7 @@ class GLTFAsset: Asset, TriangleSet
                 }
                 else
                 {
-                    writeln("Warning: can't create accessor for nonexistent buffer view ", bufferViewIndex);
+                    logError("Can't create accessor for nonexistent buffer view ", bufferViewIndex);
                     GLTFAccessor ac = New!GLTFAccessor(null, dataType, componentType, count, byteOffset, this);
                     accessors.insertBack(ac);
                 }
@@ -331,7 +332,7 @@ class GLTFAsset: Asset, TriangleSet
                         auto decoded = Base64.decode(encoded, array);
                         bool res = assetManager.loadAssetThreadSafePart(textureAsset, decoded, info.dummyFilename);
                         if (!res)
-                            writeln("Warning: failed to load Base64-encoded image");
+                            logError("Failed to load Base64-encoded image");
                         Delete(array);
                     }
                     else
@@ -346,10 +347,10 @@ class GLTFAsset: Asset, TriangleSet
                         {
                             bool res = assetManager.loadAssetThreadSafePart(textureAsset, assetFilename);
                             if (!res)
-                                writeln("Warning: failed to load \"", imgFilename, "\"");
+                                logError("Failed to load \"", imgFilename, "\"");
                         }
                         else
-                            writeln("Warning: image file \"", imgFilename, "\" not found");
+                            logError("Image file \"", imgFilename, "\" not found");
                         
                         imgFilename.free();
                     }
@@ -369,24 +370,24 @@ class GLTFAsset: Asset, TriangleSet
                         if ("mimeType" in im)
                             mimeType = im["mimeType"].asString;
                         if (mimeType == "")
-                            writeln("Warning: image MIME type missing");
+                            logError("Image MIME type missing");
                         else
                         {
                             string name = nameFromMimeType(mimeType);
                             if (name == "")
-                                writeln("Warning: unsupported image MIME type ", mimeType);
+                                logError("Unsupported image MIME type ", mimeType);
                             else
                             {
                                 
                                 bool res = assetManager.loadAssetThreadSafePart(textureAsset, bv.slice, name);
                                 if (!res)
-                                    writeln("Warning: failed to load image");
+                                    logError("Failed to load image");
                             }
                         }
                     }
                     else
                     {
-                        writeln("Warning: can't create image from nonexistent buffer view ", bufferViewIndex);
+                        logError("Can't create image from nonexistent buffer view ", bufferViewIndex);
                     }
                     
                     images.insertBack(textureAsset);
@@ -412,7 +413,7 @@ class GLTFAsset: Asset, TriangleSet
                     if (imageIndex < images.length)
                         img = images[imageIndex];
                     else
-                        writeln("Warning: can't create texture for nonexistent image ", imageIndex);
+                        logError("Can't create texture for nonexistent image ", imageIndex);
                     
                     if (img !is null)
                     {
@@ -630,7 +631,7 @@ class GLTFAsset: Asset, TriangleSet
                                 if (positionsAccessorIndex < accessors.length)
                                     positionAccessor = accessors[positionsAccessorIndex];
                                 else
-                                    writeln("Warning: can't create position attributes for nonexistent accessor ", positionsAccessorIndex);
+                                    logError("Can't create position attributes for nonexistent accessor ", positionsAccessorIndex);
                             }
                             
                             if ("NORMAL" in attributes)
@@ -639,7 +640,7 @@ class GLTFAsset: Asset, TriangleSet
                                 if (normalsAccessorIndex < accessors.length)
                                     normalAccessor = accessors[normalsAccessorIndex];
                                 else
-                                    writeln("Warning: can't create normal attributes for nonexistent accessor ", normalsAccessorIndex);
+                                    logError("Can't create normal attributes for nonexistent accessor ", normalsAccessorIndex);
                             }
                             
                             if ("TEXCOORD_0" in attributes)
@@ -648,7 +649,7 @@ class GLTFAsset: Asset, TriangleSet
                                 if (texCoord0AccessorIndex < accessors.length)
                                     texCoord0Accessor = accessors[texCoord0AccessorIndex];
                                 else
-                                    writeln("Warning: can't create texCoord0 attributes for nonexistent accessor ", texCoord0AccessorIndex);
+                                    logError("Can't create texCoord0 attributes for nonexistent accessor ", texCoord0AccessorIndex);
                             }
                             
                             if ("JOINTS_0" in attributes)
@@ -657,7 +658,7 @@ class GLTFAsset: Asset, TriangleSet
                                 if (joints0AccessorIndex < accessors.length)
                                     joints0Accessor = accessors[joints0AccessorIndex];
                                 else
-                                    writeln("Warning: can't create joints0 attributes for nonexistent accessor ", joints0AccessorIndex);
+                                    logError("Can't create joints0 attributes for nonexistent accessor ", joints0AccessorIndex);
                             }
                             
                             if ("WEIGHTS_0" in attributes)
@@ -666,7 +667,7 @@ class GLTFAsset: Asset, TriangleSet
                                 if (weights0AccessorIndex < accessors.length)
                                     weights0Accessor = accessors[weights0AccessorIndex];
                                 else
-                                    writeln("Warning: can't create weights0 attributes for nonexistent accessor ", weights0AccessorIndex);
+                                    logError("Can't create weights0 attributes for nonexistent accessor ", weights0AccessorIndex);
                             }
                         }
                         
@@ -676,7 +677,7 @@ class GLTFAsset: Asset, TriangleSet
                             if (indicesAccessorIndex < accessors.length)
                                 indexAccessor = accessors[indicesAccessorIndex];
                             else
-                                writeln("Warning: can't create indices for nonexistent accessor ", indicesAccessorIndex);
+                                logError("Can't create indices for nonexistent accessor ", indicesAccessorIndex);
                         }
                         
                         Material material;
@@ -686,20 +687,20 @@ class GLTFAsset: Asset, TriangleSet
                             if (materialIndex < materials.length)
                                 material = materials[materialIndex];
                             else
-                                writeln("Warning: nonexistent material ", materialIndex);
+                                logError("Nonexistent material ", materialIndex);
                         }
                         
                         if (positionAccessor is null)
-                            writeln("Warning: mesh ", i, " lacks vertex position attributes");
+                            logWarning("Mesh ", i, " lacks vertex position attributes");
                         
                         if (normalAccessor is null)
-                            writeln("Warning: mesh ", i, " lacks vertex normal attributes");
+                            logWarning("Mesh ", i, " lacks vertex normal attributes");
                         
                         if (texCoord0Accessor is null)
-                            writeln("Warning: mesh ", i, " lacks vertex texCoord0 attributes");
+                            logWarning("Mesh ", i, " lacks vertex texCoord0 attributes");
                         
                         if (indexAccessor is null)
-                            writeln("Warning: mesh ", i, " lacks indices");
+                            logWarning("Mesh ", i, " lacks indices");
                         
                         GLTFMeshPrimitive pr = New!GLTFMeshPrimitive(this);
                         pr.positionAccessor = positionAccessor;
@@ -743,7 +744,7 @@ class GLTFAsset: Asset, TriangleSet
                         nodeObj.entity.drawable = mesh;
                     }
                     else
-                        writeln("Warning: mesh ", meshIndex, " doesn't exist");
+                        logError("Mesh ", meshIndex, " doesn't exist");
                 }
                 
                 if ("extensions" in node)
@@ -751,7 +752,7 @@ class GLTFAsset: Asset, TriangleSet
                     auto nodeExt = node["extensions"].asObject;
                     if ("KHR_lights_punctual" in nodeExt)
                     {
-                        // TODO
+                        logWarning("KHR_lights_punctual is not supported");
                     }
                 }
                 
@@ -855,7 +856,7 @@ class GLTFAsset: Asset, TriangleSet
                     if (invBindMatricesAccessorIndex < accessors.length)
                         invBindMatricesAccessor = accessors[invBindMatricesAccessorIndex];
                     else
-                        writeln("Warning: nonexistent accessor ", invBindMatricesAccessorIndex);
+                        logError("Nonexistent accessor ", invBindMatricesAccessorIndex);
                     
                     skinObj.invBindMatricesAccessor = invBindMatricesAccessor;
                     
@@ -919,11 +920,11 @@ class GLTFAsset: Asset, TriangleSet
                         if (samplerIdx < animationObj.samplers.length)
                             channelObj.sampler = animationObj.samplers[samplerIdx];
                         else
-                            writeln("Warning: nonexistent animation sampler ", samplerIdx);
+                            logError("Nonexistent animation sampler ", samplerIdx);
 
                         auto target = ("target" in channel);
                         if (target is null)
-                            writeln("Warning: nonexistent animation target object");
+                            logError("Nonexistent animation target object");
                         else
                         {
                             channelObj.targetPath = cast(TRSType)target.asObject["path"].asString;
@@ -936,7 +937,7 @@ class GLTFAsset: Asset, TriangleSet
                                 if (idx < nodes.length)
                                     channelObj.targetNode = nodes[idx];
                                 else
-                                    writeln("Warning: nonexistent target node");
+                                    logError("Nonexistent target node");
                             }
                         }
                     }
@@ -950,7 +951,7 @@ class GLTFAsset: Asset, TriangleSet
         if (idx < accessors.length)
             a = accessors[idx];
         else
-            writeln("Warning: nonexistent accessor ", idx);
+            logError("Nonexistent accessor ", idx);
     }
 
     void loadScenes(JSONValue root)

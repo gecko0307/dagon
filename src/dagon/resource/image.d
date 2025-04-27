@@ -197,7 +197,7 @@ class TextureImage: SuperImage
         }
         else
         {
-            assert (0, "Image.opIndex is not implemented for IntegerPixelFormat." ~ to!string(_pixelFormat));
+            assert(0, "Image.opIndex is not implemented for IntegerPixelFormat." ~ to!string(_pixelFormat));
         }
     }
 
@@ -266,7 +266,7 @@ class TextureImage: SuperImage
         }
         else
         {
-            assert (0, "Image.opIndexAssign is not implemented for IntegerPixelFormat." ~ to!string(_pixelFormat));
+            assert(0, "Image.opIndexAssign is not implemented for IntegerPixelFormat." ~ to!string(_pixelFormat));
         }
 
         return c;

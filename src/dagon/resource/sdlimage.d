@@ -35,6 +35,7 @@ import dlib.core.memory;
 import dlib.core.stream;
 
 import dagon.core.bindings;
+import dagon.core.logger;
 import dagon.graphics.texture;
 import dagon.resource.texture;
 import dagon.resource.image;
@@ -87,14 +88,13 @@ bool loadImageViaSDLImage(InputStream istrm, string extension, TextureAsset asse
     {
         auto err = IMG_GetError();
         if (err)
-            writeln("IMG_Load_RW error: ", IMG_GetError().to!string);
+            logError("IMG_Load_RW error: ", IMG_GetError().to!string);
         else
-            writeln("IMG_Load_RW error");
+            logError("IMG_Load_RW error");
     }
     else
     {
         loaded = true;
-        //SDL_RWclose(rw);
     }
     
     Delete(data);
@@ -113,7 +113,7 @@ bool loadImageViaSDLImage(InputStream istrm, string extension, TextureAsset asse
         format.cubeFaces = CubeFaceBit.None;
         
         version(SDLImageDebug)
-            writeln(SDL_GetPixelFormatName(cast(SDL_PixelFormatEnum)surface.format.format).to!string);
+            logDebug(SDL_GetPixelFormatName(cast(SDL_PixelFormatEnum)surface.format.format).to!string);
         
         bool conversionNeeded = false;
         
@@ -145,7 +145,7 @@ bool loadImageViaSDLImage(InputStream istrm, string extension, TextureAsset asse
             
             if (convSurface is null)
             {
-                writeln("SDL_ConvertSurface error: ", SDL_GetError().to!string);
+                logError("SDL_ConvertSurface error: ", SDL_GetError().to!string);
                 SDL_FreeSurface(surface);
                 return false;
             }

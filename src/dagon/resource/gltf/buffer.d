@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2024 Timur Gafarov
+Copyright (c) 2021-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -34,6 +34,8 @@ import dlib.core.memory;
 import dlib.core.stream;
 import dlib.filesystem.filesystem;
 
+import dagon.core.logger;
+
 class GLTFBuffer: Owner
 {
     ubyte[] array;
@@ -57,7 +59,7 @@ class GLTFBuffer: Owner
         array = New!(ubyte[])(istrm.size);
         if (!istrm.fillArray(array))
         {
-            writeln("Warning: failed to read buffer");
+            logError("Failed to read the buffer");
             Delete(array);
         }
     }
@@ -72,7 +74,7 @@ class GLTFBuffer: Owner
             Delete(bufStream);
         }
         else
-            writeln("Warning: buffer file \"", filename, "\" not found");
+            logError("Buffer file \"", filename, "\" not found");
     }
     
     void fromBase64(string encoded)

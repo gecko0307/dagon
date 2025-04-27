@@ -31,6 +31,7 @@ import std.stdio;
 import dlib.core.ownership;
 
 import dagon.core.bindings;
+import dagon.core.logger;
 import dagon.resource.gltf.buffer;
 
 class GLTFBufferView: Owner
@@ -61,7 +62,7 @@ class GLTFBufferView: Owner
         }
         else
         {
-            writeln("Warning: invalid buffer view bounds");
+            logError("Invalid buffer view bounds");
         }
     }
     

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2024 Timur Gafarov, Tynuk
+Copyright (c) 2017-2025 Timur Gafarov, Tynuk
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -43,6 +43,7 @@ import dlib.container.dict;
 import dlib.text.str;
 
 import dagon.core.bindings;
+import dagon.core.logger;
 import dagon.resource.asset;
 import dagon.graphics.mesh;
 
@@ -107,7 +108,7 @@ class OBJAsset: Asset
             else if (line.startsWith("f "))
                 numFaces++;
             else if (line.startsWith("mtllib "))
-                writeln("Warning: OBJ file \"", filename, "\" contains materials, but Dagon doesn't support them");
+                logWarning("OBJ file \"", filename, "\" contains materials, but Dagon doesn't support them");
         }
         
         Vector3f[] tmpVertices;
@@ -118,16 +119,16 @@ class OBJAsset: Asset
         bool needGenNormals = false;
         
         if (!numVerts)
-            writeln("Warning: OBJ file \"", filename, "\" has no vertices");
+            logWarning("OBJ file \"", filename, "\" has no vertices");
         if (!numNormals)
         {
-            writeln("Warning: OBJ file \"", filename, "\" has no normals (they will be generated)");
+            logWarning("OBJ file \"", filename, "\" has no normals (they will be generated)");
             numNormals = numVerts;
             needGenNormals = true;
         }
         if (!numTexcoords)
         {
-            writeln("Warning: OBJ file \"", filename, "\" has no texcoords");
+            logWarning("OBJ file \"", filename, "\" has no texcoords");
             numTexcoords = numVerts;
         }
         
@@ -260,7 +261,7 @@ class OBJAsset: Asset
                 }
                 else
                 {
-                    writeln("Warning: OBJ file \"", filename, "\" contains one or more N-gons, but Dagon doesn't support them. Please, use only triangles or quads");
+                    logWarning("OBJ file \"", filename, "\" contains one or more N-gons, but Dagon doesn't support them. Please, use only triangles or quads");
                 }
             }
         }
