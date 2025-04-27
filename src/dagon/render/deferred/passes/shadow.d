@@ -156,7 +156,6 @@ class PassShadow: RenderPass
         state.invViewMatrix = csm.area[0].invViewMatrix;
         state.projectionMatrix = csm.area[0].projectionMatrix;
         state.invProjectionMatrix = csm.area[0].projectionMatrix.inverse;
-        //glBindFramebuffer(GL_FRAMEBUFFER, csm.framebuffer1);
         bindFramebuffer(csm.framebuffer1);
         glClear(GL_DEPTH_BUFFER_BIT);
         renderEntities(csmShader);
@@ -165,7 +164,6 @@ class PassShadow: RenderPass
         state.invViewMatrix = csm.area[1].invViewMatrix;
         state.projectionMatrix = csm.area[1].projectionMatrix;
         state.invProjectionMatrix = csm.area[1].projectionMatrix.inverse;
-        //glBindFramebuffer(GL_FRAMEBUFFER, csm.framebuffer2);
         bindFramebuffer(csm.framebuffer2);
         glClear(GL_DEPTH_BUFFER_BIT);
         renderEntities(csmShader);
@@ -174,7 +172,6 @@ class PassShadow: RenderPass
         state.invViewMatrix = csm.area[2].invViewMatrix;
         state.projectionMatrix = csm.area[2].projectionMatrix;
         state.invProjectionMatrix = csm.area[2].projectionMatrix.inverse;
-        //glBindFramebuffer(GL_FRAMEBUFFER, csm.framebuffer3);
         bindFramebuffer(csm.framebuffer3);
         glClear(GL_DEPTH_BUFFER_BIT);
         renderEntities(csmShader);

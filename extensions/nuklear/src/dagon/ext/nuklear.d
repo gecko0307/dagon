@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Mateusz Muszyński
+Copyright (c) 2019-2025 Mateusz Muszyński
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -36,6 +36,7 @@ import dlib.container.array;
 import dlib.text.utf8;
 import dlib.text.str;
 
+import dagon.core.logger;
 import dagon.core.application;
 import dagon.core.time;
 import dagon.core.event;
@@ -60,9 +61,9 @@ void initNuklear()
     if (nuklearSupport != NuklearSupport.Nuklear4)
     {
         if (nuklearSupport == NuklearSupport.badLibrary)
-            writeln("Warning: failed to load some Nuklear functions. It seems that you have an old version of Nuklear. Dagon will try to use it, but it is recommended to install Nuklear 4.01");
+            logWarning("Failed to load some Nuklear functions. It seems that you have an old version of Nuklear. Dagon will try to use it, but it is recommended to install Nuklear 4.01");
         else
-            writeln("Error: Nuklear library is not found. Please, install Nuklear 4.01");
+            logError("Nuklear library is not found. Please, install Nuklear 4.01");
     }
 }
 
@@ -261,7 +262,7 @@ class NuklearGUI: Owner, Updateable, Drawable
         if (vertexShader != 0 && fragmentShader != 0)
             shaderProgram = linkShaders(vertexShader, fragmentShader);
 
-        debug writeln("NuklearShader: program ", shaderProgram);
+        debug logDebug("NuklearShader: program ", shaderProgram);
 
         if (shaderProgram != 0)
         {
@@ -1093,10 +1094,13 @@ class NuklearGUI: Owner, Updateable, Drawable
     {
         va_list args;
         va_start(args, format);
-        version(GNU) {
-	        nk_labelf_colored(&ctx, align_, color, format, args.ptr);
-        } else {
-        	nk_labelf_colored(&ctx, align_, color, format, args);
+        version(GNU)
+        {
+            nk_labelf_colored(&ctx, align_, color, format, args.ptr);
+        }
+        else
+        {
+            nk_labelf_colored(&ctx, align_, color, format, args);
         }
     }
 
@@ -1104,10 +1108,13 @@ class NuklearGUI: Owner, Updateable, Drawable
     {
         va_list args;
         va_start(args, format);
-        version(GNU) {
-	        nk_labelf_wrap(&ctx, format, args.ptr);
-        } else {
-        	nk_labelf_wrap(&ctx, format, args);
+        version(GNU)
+        {
+            nk_labelf_wrap(&ctx, format, args.ptr);
+        }
+        else
+        {
+            nk_labelf_wrap(&ctx, format, args);
         }
     }
 
@@ -1115,10 +1122,13 @@ class NuklearGUI: Owner, Updateable, Drawable
     {
         va_list args;
         va_start(args, format);
-        version (GNU) {
-	        nk_labelf_colored_wrap(&ctx, color, format, args.ptr);
-        } else {
-        	nk_labelf_colored_wrap(&ctx, color, format, args);
+        version(GNU)
+        {
+            nk_labelf_colored_wrap(&ctx, color, format, args.ptr);
+        }
+        else
+        {
+            nk_labelf_colored_wrap(&ctx, color, format, args);
         }
     }
 
@@ -1595,10 +1605,12 @@ class NuklearGUI: Owner, Updateable, Drawable
         return nk_combo_string(&ctx, items_separated_by_zeros, selected, count, item_height, size);
     }
 
-    /*int comboCallback(void func(void*, int, const(char) **) fn, void *userdata, int selected, int count, int item_height, NKVec2 size)
+    /*
+    int comboCallback(void func(void*, int, const(char) **) fn, void *userdata, int selected, int count, int item_height, NKVec2 size)
     {
     return nk_combo_callback(&ctx, fn, userdata, selected, count, item_height, size);
-    }*/
+    }
+    */
 
     void combobox(const(char)** items, int count, int* selected, int item_height, NKVec2 size)
     {
@@ -1615,10 +1627,12 @@ class NuklearGUI: Owner, Updateable, Drawable
         nk_combobox_separator(&ctx, items_separated_by_separator, separator, selected, count, item_height, size);
     }
 
-    /*void comboboxCallback(void function(void*, int, const(char) **), void*, int *selected, int count, int item_height, NKVec2 size)
+    /*
+    void comboboxCallback(void function(void*, int, const(char) **), void*, int *selected, int count, int item_height, NKVec2 size)
     {
     nk_combobox_callback(&ctx);
-    }*/
+    }
+    */
 
     int comboBeginText(const(char)* selected, int len, NKVec2 size)
     {

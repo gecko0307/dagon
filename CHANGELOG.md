@@ -8,7 +8,7 @@ Dagon 0.22.0 - TBD
 - **Rendering**
   - Basic GPU skinning support
 - **Assets**
-  - Initial support for glTF animations
+  - Initial support for glTF animations. Only root-level skinned nodes are supported because of the incompatibility between glTF and Dagon transformation workflows
   - Access glTF scenes, nodes, meshes, skins and animations by names.
 
 Dagon 0.21.0 - 24 Apr, 2025

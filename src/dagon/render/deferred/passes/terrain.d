@@ -34,6 +34,7 @@ import dlib.core.ownership;
 import dlib.image.color;
 
 import dagon.core.bindings;
+import dagon.core.logger;
 import dagon.graphics.entity;
 import dagon.graphics.shader;
 import dagon.graphics.terrain;
@@ -89,7 +90,12 @@ class PassTerrain: RenderPass
         
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (status != GL_FRAMEBUFFER_COMPLETE)
-            writeln(status);
+        {
+            logError("PassTerrain.prepareFramebuffer failed: framebuffer status = ", status);
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glDeleteFramebuffers(1, &framebuffer);
+            return;
+        }
         
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }

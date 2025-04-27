@@ -1,27 +1,68 @@
-// This is essentially a straight port of the ImGui OpenGL3 backend, removing most code that optimized for version for non-3_3.
-// Certainly willing to revisit adding that code back in the future. It's just slimmed down for the Inochi needs for right now.
+/*
+BSD 2-Clause License
+
+Copyright (c) 2020, Inochi2D Project
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 
 module dagon.ext.imgui;
 
 import core.stdc.stdio;
 
-import bindbc.opengl;
-public import bindbc.imgui;
-public import bindbc.imgui.bind.imgui;
+import dagon.core.bindings;
+import dagon.core.logger;
+
+public
+{
+    import bindbc.imgui;
+    import bindbc.imgui.bind.imgui;
+}
+
+/*
+ * This is essentially a straight port of the ImGui OpenGL3 backend,
+ * removing most code that optimized for version for non-3_3.
+ * Certainly willing to revisit adding that code back in the future.
+ * It's just slimmed down for the Inochi needs for right now.
+ */
 
 // OpenGL Data
-static GLuint       g_GlVersion = 0;                // Extracted at runtime using GL_MAJOR_VERSION, GL_MINOR_VERSION queries (e.g. 320 for GL 3.2)
+static GLuint g_GlVersion = 0; // Extracted at runtime using GL_MAJOR_VERSION, GL_MINOR_VERSION queries (e.g. 320 for GL 3.2)
 
-version(OSX) static char[32]     g_GlslVersionString = "#version 330";   // Specified by user or detected based on compile time GL settings.
-else static char[32]     g_GlslVersionString = "#version 130";   // Specified by user or detected based on compile time GL settings.
-static GLuint       g_FontTexture = 0;
-static GLuint       g_ShaderHandle = 0, g_VertHandle = 0, g_FragHandle = 0;
-static GLint        g_AttribLocationTex = 0, g_AttribLocationProjMtx = 0;                                // Uniforms location
-static GLuint       g_AttribLocationVtxPos = 0, g_AttribLocationVtxUV = 0, g_AttribLocationVtxColor = 0; // Vertex attributes location
+version(OSX)
+    static char[32] g_GlslVersionString = "#version 330"; // Specified by user or detected based on compile time GL settings.
+else
+    static char[32] g_GlslVersionString = "#version 130"; // Specified by user or detected based on compile time GL settings.
+
+static GLuint g_FontTexture = 0;
+static GLuint g_ShaderHandle = 0, g_VertHandle = 0, g_FragHandle = 0;
+static GLint g_AttribLocationTex = 0, g_AttribLocationProjMtx = 0; // Uniforms location
+static GLuint g_AttribLocationVtxPos = 0, g_AttribLocationVtxUV = 0, g_AttribLocationVtxColor = 0; // Vertex attributes location
 static uint g_VboHandle = 0, g_ElementsHandle = 0;
 
-class ImGuiOpenGLBackend {
-static: 
+class ImGuiOpenGLBackend
+{
+  static: 
     // Functions
     bool init(const (char)* glsl_version)
     {
@@ -37,10 +78,12 @@ static:
 
         if (g_GlVersion >= 320)
         {
-            io.BackendFlags |= cast(int)ImGuiBackendFlags.RendererHasVtxOffset;  // We can honor the ImDrawCmd::VtxOffset field, allowing for large meshes.
+            // We can honor the ImDrawCmd::VtxOffset field, allowing for large meshes.
+            io.BackendFlags |= cast(int)ImGuiBackendFlags.RendererHasVtxOffset;
         }
         
-        io.BackendFlags |= cast(int)ImGuiBackendFlags.RendererHasViewports;  // We can create multi-viewports on the Renderer side (optional)
+        // We can create multi-viewports on the Renderer side (optional)
+        io.BackendFlags |= cast(int)ImGuiBackendFlags.RendererHasViewports;
 
         // Make an arbitrary GL call (we don't actually need the result)
         // IF YOU GET A CRASH HERE: it probably means that you haven't initialized the OpenGL function loader used by this code.
@@ -115,8 +158,11 @@ static:
     }
 
     // OpenGL3 Render function.
-    // (this used to be set in io.RenderDrawListsFn and called by ImGui::Render(), but you can now call this directly from your main loop)
-    // Note that this implementation is little overcomplicated because we are saving/setting up/restoring every OpenGL state explicitly, in order to be able to run within any OpenGL engine that doesn't do so.
+    // (this used to be set in io.RenderDrawListsFn and called by ImGui::Render(),
+    // but you can now call this directly from your main loop)
+    // Note that this implementation is little overcomplicated because we are
+    // saving/setting up/restoring every OpenGL state explicitly, in order to be able
+    // to run within any OpenGL engine that doesn't do so.
     void render_draw_data(ImDrawData* draw_data)
     {
         // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
@@ -231,7 +277,11 @@ static:
         char* pixels;
         int width, height;
 
-        ImFontAtlas_GetTexDataAsRGBA32(io.Fonts, &pixels, &width, &height, null); // Load as RGBA 32-bit (75% of the memory is wasted, but default font is so small) because it is more likely to be compatible with user's existing shaders. If your ImTextureId represent a higher-level concept than just a GL texture id, consider calling GetTexDataAsAlpha8() instead to save on GPU memory.
+        // Load as RGBA 32-bit (75% of the memory is wasted, but default font is so small)
+        // because it is more likely to be compatible with user's existing shaders.
+        // If your ImTextureId represent a higher-level concept than just a GL texture id,
+        // consider calling GetTexDataAsAlpha8() instead to save on GPU memory.
+        ImFontAtlas_GetTexDataAsRGBA32(io.Fonts, &pixels, &width, &height, null);
 
         // Upload texture to graphics system
         GLint last_texture;
@@ -262,20 +312,21 @@ static:
         }
     }
 
-    // If you get an error please report on github. You may try different GL context version or GLSL version. See GL<>GLSL version table at the top of this file.
+    // If you get an error please report on github. You may try different GL context version or GLSL version.
+    // See GL<>GLSL version table at the top of this file.
     static bool check_shader(GLuint handle, const (char)* desc)
     {
         GLint status = 0, log_length = 0;
         glGetShaderiv(handle, GL_COMPILE_STATUS, &status);
         glGetShaderiv(handle, GL_INFO_LOG_LENGTH, &log_length);
         if (cast(GLboolean)status == GL_FALSE)
-            fprintf(stderr, "ERROR: ImGui_ImplOpenGL3_CreateDeviceObjects: failed to compile %s!\n", desc);
+            loggerError("ImGui_ImplOpenGL3_CreateDeviceObjects: failed to compile ", desc);
         if (log_length > 1)
         {
             char[] buf;
             buf.length = log_length + 1;
             glGetShaderInfoLog(handle, log_length, null, cast(GLchar*)buf.ptr);
-            fprintf(stderr, "%s\n", buf.ptr);
+            loggerError(buf);
         }
         return cast(GLboolean)status == GL_TRUE;
     }
@@ -287,13 +338,13 @@ static:
         glGetProgramiv(handle, GL_LINK_STATUS, &status);
         glGetProgramiv(handle, GL_INFO_LOG_LENGTH, &log_length);
         if (cast(GLboolean)status == GL_FALSE)
-            fprintf(stderr, "ERROR: create_device_objects: failed to link %s! (with GLSL '%s')\n", desc, g_GlslVersionString.ptr);
+            loggerError("Create_device_objects: failed to link ", desc);
         if (log_length > 1)
         {
             char[] buf;
             buf.length = log_length + 1;
             glGetProgramInfoLog(handle, log_length, null, cast(GLchar*)buf.ptr);
-            fprintf(stderr, "%s\n", buf.ptr);
+            loggerError(buf);
         }
         return cast(GLboolean)status == GL_TRUE;
     }
@@ -478,13 +529,45 @@ static:
 
     void destroy_device_objects()
     {
-        if (g_VboHandle)        { glDeleteBuffers(1, &g_VboHandle); g_VboHandle = 0; }
-        if (g_ElementsHandle)   { glDeleteBuffers(1, &g_ElementsHandle); g_ElementsHandle = 0; }
-        if (g_ShaderHandle && g_VertHandle) { glDetachShader(g_ShaderHandle, g_VertHandle); }
-        if (g_ShaderHandle && g_FragHandle) { glDetachShader(g_ShaderHandle, g_FragHandle); }
-        if (g_VertHandle)       { glDeleteShader(g_VertHandle); g_VertHandle = 0; }
-        if (g_FragHandle)       { glDeleteShader(g_FragHandle); g_FragHandle = 0; }
-        if (g_ShaderHandle)     { glDeleteProgram(g_ShaderHandle); g_ShaderHandle = 0; }
+        if (g_VboHandle)
+        {
+            glDeleteBuffers(1, &g_VboHandle);
+            g_VboHandle = 0;
+        }
+        
+        if (g_ElementsHandle)
+        {
+            glDeleteBuffers(1, &g_ElementsHandle);
+            g_ElementsHandle = 0;
+        }
+        
+        if (g_ShaderHandle && g_VertHandle)
+        {
+            glDetachShader(g_ShaderHandle, g_VertHandle);
+        }
+        
+        if (g_ShaderHandle && g_FragHandle)
+        {
+            glDetachShader(g_ShaderHandle, g_FragHandle);
+        }
+        
+        if (g_VertHandle)
+        {
+            glDeleteShader(g_VertHandle);
+            g_VertHandle = 0;
+        }
+        
+        if (g_FragHandle)
+        {
+            glDeleteShader(g_FragHandle);
+            g_FragHandle = 0;
+        }
+        
+        if (g_ShaderHandle)
+        {
+            glDeleteProgram(g_ShaderHandle);
+            g_ShaderHandle = 0;
+        }
 
         destroy_fonts_texture();
     }

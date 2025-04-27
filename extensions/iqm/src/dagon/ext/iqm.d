@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2022 Timur Gafarov
+Copyright (c) 2017-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -45,6 +45,7 @@ import dlib.math.quaternion;
 import dlib.math.interpolation;
 
 import dagon.core.bindings;
+import dagon.core.logger;
 import dagon.graphics.drawable;
 import dagon.graphics.texture;
 import dagon.graphics.mesh;
@@ -527,16 +528,16 @@ class IQMModel: AnimatedModel
 
         version(IQMDebug)
         {
-            writefln("hdr.magic: %s", cast(string)hdr.magic);
-            writefln("hdr.ver: %s", hdr.ver);
+            logDebug("hdr.magic: ", cast(string)hdr.magic);
+            logDebug("hdr.ver: ", hdr.ver);
         }
         assert(cast(string)hdr.magic == "INTERQUAKEMODEL\0");
         assert(hdr.ver == IQM_VERSION);
 
         version(IQMDebug)
         {
-            writefln("hdr.numText: %s", hdr.numText);
-            writefln("hdr.ofsText: %s", hdr.ofsText);
+            logDebug("hdr.numText: ", hdr.numText);
+            logDebug("hdr.ofsText: ", hdr.ofsText);
         }
        
         istrm.setPosition(hdr.ofsText);
@@ -548,8 +549,8 @@ class IQMModel: AnimatedModel
         // Vertex data part
         version(IQMDebug)
         {
-            writefln("hdr.numVertexArrays: %s", hdr.numVertexArrays);
-            writefln("hdr.ofsVertexArrays: %s", hdr.ofsVertexArrays);
+            logDebug("hdr.numVertexArrays: ", hdr.numVertexArrays);
+            logDebug("hdr.ofsVertexArrays: ", hdr.ofsVertexArrays);
         }
 
         vas = New!(IQMVertexArray[])(hdr.numVertexArrays);
@@ -563,13 +564,13 @@ class IQMModel: AnimatedModel
         {
             version(IQMDebug)
             {
-                writefln("Vertex array %s:", i);
-                writefln("va.type: %s", va.type);
-                writefln("va.flags: %s", va.flags);
-                writefln("va.format: %s", va.format);
-                writefln("va.size: %s", va.size);
-                writefln("va.offset: %s", va.offset);
-                writeln("---------------");
+                logDebug("Vertex array ", i, ":");
+                logDebug("va.type: ", va.type);
+                logDebug("va.flags: ", va.flags);
+                logDebug("va.format: ", va.format);
+                logDebug("va.size: ", va.size);
+                logDebug("va.offset: ", va.offset);
+                logDebug("---------------");
             }
 
             if (va.type == IQM_POSITION)
@@ -627,12 +628,11 @@ class IQMModel: AnimatedModel
 
         version(IQMDebug)
         {
-            writefln("numVertices: %s", vertices.length);
-            writefln("numNormals: %s", normals.length);
-            writefln("numTexcoords: %s", texcoords.length);
-
-            writefln("hdr.numTriangles: %s", hdr.numTriangles);
-            writefln("hdr.ofsTriangles: %s", hdr.ofsTriangles);
+            logDebug("numVertices: ", vertices.length);
+            logDebug("numNormals: ", normals.length);
+            logDebug("numTexcoords: ", texcoords.length);
+            logDebug("hdr.numTriangles: ", hdr.numTriangles);
+            logDebug("hdr.ofsTriangles: ", hdr.ofsTriangles);
         }
 
         tris = New!(IQMTriangle[])(hdr.numTriangles);
@@ -646,13 +646,13 @@ class IQMModel: AnimatedModel
         }
 
         version(IQMDebug)
-            writefln("hdr.ofsAdjacency: %s", hdr.ofsAdjacency);
+            logDebug("hdr.ofsAdjacency: ", hdr.ofsAdjacency);
 
         // Skeleton part
         version(IQMDebug)
         {
-            writefln("hdr.numJoints: %s", hdr.numJoints);
-            writefln("hdr.ofsJoints: %s", hdr.ofsJoints);
+            logDebug("hdr.numJoints: ", hdr.numJoints);
+            logDebug("hdr.ofsJoints: ", hdr.ofsJoints);
         }
 
         baseFrame = New!(Matrix4x4f[])(hdr.numJoints);
@@ -684,8 +684,8 @@ class IQMModel: AnimatedModel
         // Meshes part
         version(IQMDebug)
         {
-            writefln("hdr.numMeshes: %s", hdr.numMeshes);
-            writefln("hdr.ofsMeshes: %s", hdr.ofsMeshes);
+            logDebug("hdr.numMeshes: ", hdr.numMeshes);
+            logDebug("hdr.ofsMeshes: ", hdr.ofsMeshes);
         }
         meshes = New!(IQMMesh[])(hdr.numMeshes);
 
@@ -702,14 +702,14 @@ class IQMModel: AnimatedModel
             // Load texture
             uint matIndex = meshes[i].material;
             version(IQMDebug)
-                writefln("matIndex: %s", matIndex);
+                logDebug("matIndex: ", matIndex);
             
             if (matIndex > 0)
             {
                 char* texFilenamePtr = cast(char*)&textBuffer[matIndex];
                 string texFilename = cast(string)fromStringz(texFilenamePtr);
                 version(IQMDebug)
-                    writefln("material: %s", texFilename);
+                    logDebug("material: ", texFilename);
                 
                 facegroups[i].textureName = texFilename;
 
@@ -729,13 +729,13 @@ class IQMModel: AnimatedModel
     
         // Number of poses should be the same as bindpose joints
         version(IQMDebug)
-            writefln("hdr.numPoses: %s", hdr.numPoses);
+            logDebug("hdr.numPoses: ", hdr.numPoses);
         assert(hdr.numPoses == hdr.numJoints);
 
         version(IQMDebug)
         {
-            writefln("hdr.numFrames: %s", hdr.numFrames);
-            writefln("hdr.numFrameChannels: %s", hdr.numFrameChannels);
+            logDebug("hdr.numFrames: ", hdr.numFrames);
+            logDebug("hdr.numFrameChannels: ", hdr.numFrameChannels);
         }
         
         // Read poses
@@ -793,15 +793,15 @@ class IQMModel: AnimatedModel
             string name = cast(string)fromStringz(namePtr);
             version(IQMDebug)
             {
-                writefln("anim.name: %s", name);
+                logDebug("anim.name: ", name);
             }
         
             animations[name] = anim;
             
             version(IQMDebug)
             {
-                writefln("anim.firstFrame: %s", anim.firstFrame);
-                writefln("anim.numFrames: %s", anim.numFrames);
+                logDebug("anim.firstFrame: ", anim.firstFrame);
+                logDebug("anim.numFrames: ", anim.numFrames);
             }
         }
 
@@ -875,11 +875,11 @@ class IQMModel: AnimatedModel
     }
 
     void calcFrame(
-        uint f1, 
-        uint f2, 
-        float t, 
+        uint f1,
+        uint f2,
+        float t,
         AnimationFrameData* data)
-    {            
+    {
         Matrix4x4f* mat1 = &frames[f1 * joints.length];
         Matrix4x4f* mat2 = &frames[f2 * joints.length];
         
@@ -919,9 +919,9 @@ class IQMModel: AnimatedModel
     }
 
     void blendFrame(
-        uint f1, 
-        uint f2, 
-        float t, 
+        uint f1,
+        uint f2,
+        float t,
         AnimationFrameData* data,
         float blendFactor)
     {

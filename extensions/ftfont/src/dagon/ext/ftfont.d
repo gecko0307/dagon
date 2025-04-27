@@ -33,6 +33,7 @@ import std.string;
 import std.ascii;
 import std.utf;
 import std.file;
+import std.conv;
 
 import dlib.core.memory;
 import dlib.core.ownership;
@@ -45,6 +46,7 @@ import dlib.math.vector;
 import dlib.image.color;
 import dlib.text.str;
 
+import dagon.core.logger;
 import dagon.core.application;
 import dagon.ui.font;
 import dagon.graphics.shaderloader;
@@ -64,9 +66,9 @@ void initFreetype()
     if (freetypeSupport != ftSupport)
     {
         if (freetypeSupport == FTSupport.badLibrary)
-            writeln("Warning: failed to load some Freetype functions. It seems that you have an old version of Freetype. Dagon will try to use it, but it is recommended to install Freetype 2.8.1 or higher");
+            logWarning("Failed to load some Freetype functions. It seems that you have an old version of Freetype. Dagon will try to use it, but it is recommended to install Freetype 2.8.1 or higher");
         else
-            writeln("Error: Freetype library is not found. Please, install Freetype 2.8.1");
+            logError("Freetype library is not found. Please, install Freetype 2.8.1");
     }
 }
 
@@ -130,7 +132,7 @@ final class FreeTypeFont: Font
         this.height = height;
 
         if (FT_Init_FreeType(&ftLibrary))
-            throw new Exception("FT_Init_FreeType failed");
+            exitWithError("FT_Init_FreeType failed");
 
         vertices[0] = Vector2f(0, 1);
         vertices[1] = Vector2f(0, 0);
@@ -154,10 +156,10 @@ final class FreeTypeFont: Font
     void createFromFile(string filename)
     {
         if (!exists(filename))
-            throw new Exception("Cannot find font file " ~ filename);
+            exitWithError("Cannot find font file " ~ filename);
 
         if (FT_New_Face(ftLibrary, toStringz(filename), 0, &ftFace))
-            throw new Exception("FT_New_Face failed (there is probably a problem with your font file)");
+            exitWithError("FT_New_Face failed (there is probably a problem with your font file)");
 
         FT_Set_Char_Size(ftFace, cast(int)height << 6, cast(int)height << 6, 96, 96);
         glyphs = New!(Dict!(Glyph, dchar));
@@ -166,7 +168,7 @@ final class FreeTypeFont: Font
     void createFromMemory(ubyte[] buffer)
     {
         if (FT_New_Memory_Face(ftLibrary, buffer.ptr, cast(uint)buffer.length, 0, &ftFace))
-            throw new Exception("FT_New_Face failed (there is probably a problem with your font file)");
+            exitWithError("FT_New_Face failed (there is probably a problem with your font file)");
 
         FT_Set_Char_Size(ftFace, cast(int)height << 6, cast(int)height << 6, 96, 96);
         glyphs = New!(Dict!(Glyph, dchar));
@@ -269,10 +271,10 @@ final class FreeTypeFont: Font
         auto res = FT_Load_Glyph(ftFace, charIndex, FT_LOAD_DEFAULT);
 
         if (res)
-            throw new Exception(format("FT_Load_Glyph failed with code %s", res));
+            exitWithError("FT_Load_Glyph failed with code " ~ res.to!string);
 
         if (FT_Get_Glyph(ftFace.glyph, &glyph))
-            throw new Exception("FT_Get_Glyph failed");
+            exitWithError("FT_Get_Glyph failed");
 
         FT_Glyph_To_Bitmap(&glyph, FT_RENDER_MODE_NORMAL, null, 1);
         FT_BitmapGlyph bitmapGlyph = cast(FT_BitmapGlyph)glyph;
@@ -418,7 +420,8 @@ final class FreeTypeFont: Font
             }
             else
                 width += glyphAdvance(code);
-        } while(ch != UTF8_END && ch != UTF8_ERROR);
+        }
+        while(ch != UTF8_END && ch != UTF8_ERROR);
 
         return width;
     }

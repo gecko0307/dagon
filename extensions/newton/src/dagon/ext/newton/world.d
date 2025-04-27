@@ -35,6 +35,7 @@ import dlib.core.memory;
 import dlib.math.vector;
 import bindbc.newton;
 import dagon.core.event;
+import dagon.core.logger;
 import dagon.ext.newton.shape;
 import dagon.ext.newton.rigidbody;
 
@@ -164,9 +165,9 @@ extern(C)
 interface NewtonRaycaster
 {
     /*
-        Callback should return parametric distance (0.0 to 1.0) above which Newton won't search anymore 
-        for intersection points. For example, if t is returned, the engine immediately stops searching for new hits.
-    */
+     * Callback should return parametric distance (0.0 to 1.0) above which Newton won't search anymore 
+     * for intersection points. For example, if t is returned, the engine immediately stops searching for new hits.
+     */
     float onRayHit(NewtonRigidBody nbody, Vector3f hitPoint, Vector3f hitNormal, float t);
 }
 
@@ -214,7 +215,7 @@ class NewtonPhysicsWorld: Owner
     {
         NewtonLoadPlugins(newtonWorld, dir.toStringz);
         void* p = NewtonGetPreferedPlugin(newtonWorld);
-        writeln("Selected plugin: ", NewtonGetPluginString(newtonWorld, p).to!string);
+        logInfo("Selected Newton plugin: ", NewtonGetPluginString(newtonWorld, p).to!string);
     }
 
     void update(double dt)
