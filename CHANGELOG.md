@@ -18,6 +18,11 @@ Dagon 0.22.0 - TBD
   - `GLTFMeshPrimitive` now supports meshes without normals, texture coordinates, or indices
   - `GLTFAsset` now provides access to scenes, nodes, meshes, skins and animations by names.
 
+Dagon 0.21.1 - 28 Apr, 2025
+---------------------------
+- **Misc**
+  - Upgrade `dub.selections.json` to fetch correct versions of the dependencies.
+
 Dagon 0.21.0 - 24 Apr, 2025
 ---------------------------
 - **Core**
