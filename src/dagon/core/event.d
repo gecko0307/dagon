@@ -31,6 +31,7 @@ module dagon.core.event;
 import std.stdio;
 import std.ascii;
 import std.conv;
+import std.file;
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.math.utils;
@@ -48,6 +49,8 @@ enum EventType
     MouseButtonDown,
     MouseButtonUp,
     MouseWheel,
+    JoystickButtonDown,
+    JoystickButtonUp,
     ControllerButtonDown,
     ControllerButtonUp,
     ControllerAxisMotion,
@@ -60,22 +63,7 @@ enum EventType
     FileChange,
     DropFile,
     LogEvent,
-    UserEvent,
-    
-    deprecated("use ControllerButtonDown instead")
-    JoystickButtonDown = ControllerButtonDown,
-    
-    deprecated("use ControllerButtonUp instead")
-    JoystickButtonUp = ControllerButtonUp,
-    
-    deprecated("use ControllerAxisMotion instead")
-    JoystickAxisMotion = ControllerAxisMotion,
-    
-    deprecated("use ControllerAdd instead")
-    JoystickAdd = ControllerAdd,
-    
-    deprecated("use ControllerRemove instead")
-    JoystickRemove = ControllerRemove
+    UserEvent
 }
 
 struct Event
@@ -84,6 +72,7 @@ struct Event
     int key;
     dchar unicode;
     int button;
+    int joystickButton;
     int controllerButton;
     int controllerAxis;
     float controllerAxisValue;
@@ -96,18 +85,6 @@ struct Event
     string filename;
     LogLevel logLevel;
     string message;
-    
-    deprecated("use controllerButton instead")
-    alias joystickButton = controllerButton;
-    
-    deprecated("use controllerAxis instead")
-    alias joystickAxis = controllerAxis;
-    
-    deprecated("use controllerAxisValue instead")
-    alias joystickAxisValue = controllerAxisValue;
-    
-    deprecated("use controllerDeviceIndex instead")
-    alias joystickDeviceIndex = controllerDeviceIndex;
 }
 
 enum MAX_CONTROLLERS = 1;
@@ -131,15 +108,15 @@ class EventManager
     bool[255] mouseButtonPressed = false;
     bool[255] mouseButtonUp = false;
     bool[255] mouseButtonDown = false;
-
-    bool[255] controllerButtonPressed = false;
-    bool[255] controllerButtonUp = false;
-    bool[255] controllerButtonDown = false;
     
     bool[255] joystickButtonPressed = false;
     bool[255] joystickButtonUp = false;
     bool[255] joystickButtonDown = false;
 
+    bool[255] controllerButtonPressed = false;
+    bool[255] controllerButtonUp = false;
+    bool[255] controllerButtonDown = false;
+    
     Array!(bool*) toReset; // Used for resetting UP and DOWN events after end of frame
 
     int mouseX = 0;
@@ -177,7 +154,8 @@ class EventManager
         windowWidth = winWidth;
         windowHeight = winHeight;
         
-        SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
+        if (exists("gamecontrollerdb.txt"))
+            SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
 
         if (SDL_NumJoysticks() > 0)
         {
@@ -428,19 +406,19 @@ class EventManager
                     if(joystick is null) break;
                     if (event.jbutton.state == SDL_PRESSED)
                     {
-                        e = Event(EventType.ControllerButtonDown);
+                        e = Event(EventType.JoystickButtonDown);
                         joystickButtonPressed[event.jbutton.button] = true;
                         joystickButtonDown[event.jbutton.button] = true;
                         toReset.insertBack(&joystickButtonDown[event.jbutton.button]);
                     }
                     else if (event.jbutton.state == SDL_RELEASED)
                     {
-                        e = Event(EventType.ControllerButtonUp);
+                        e = Event(EventType.JoystickButtonUp);
                         joystickButtonPressed[event.jbutton.button] = false;
                         joystickButtonUp[event.jbutton.button] = true;
                         toReset.insertBack(&joystickButtonUp[event.jbutton.button]);
                     }
-                    e.controllerButton = event.jbutton.button;
+                    e.joystickButton = event.jbutton.button;
                     addEvent(e);
                     break;
 
@@ -448,19 +426,19 @@ class EventManager
                     if(joystick is null) break;
                     if (event.jbutton.state == SDL_PRESSED)
                     {
-                        e = Event(EventType.ControllerButtonDown);
+                        e = Event(EventType.JoystickButtonDown);
                         joystickButtonPressed[event.jbutton.button] = true;
                         joystickButtonDown[event.jbutton.button] = true;
                         toReset.insertBack(&joystickButtonDown[event.jbutton.button]);
                     }
                     else if (event.jbutton.state == SDL_RELEASED)
                     {
-                        e = Event(EventType.ControllerButtonUp);
+                        e = Event(EventType.JoystickButtonUp);
                         joystickButtonPressed[event.jbutton.button] = false;
                         joystickButtonUp[event.jbutton.button] = true;
                         toReset.insertBack(&joystickButtonUp[event.jbutton.button]);
                     }
-                    e.controllerButton = event.jbutton.button;
+                    e.joystickButton = event.jbutton.button;
                     addEvent(e);
                     break;
 
@@ -661,6 +639,12 @@ abstract class EventListener: Owner
             case EventType.MouseWheel:
                 if (enableInputEvents) onMouseWheel(e.mouseWheelX, e.mouseWheelY);
                 break;
+            case EventType.JoystickButtonDown:
+                if (enableInputEvents) onJoystickButtonDown(e.joystickButton);
+                break;
+            case EventType.JoystickButtonUp:
+                if (enableInputEvents) onJoystickButtonUp(e.joystickButton);
+                break;
             case EventType.ControllerButtonDown:
                 if (enableInputEvents) onControllerButtonDown(e.controllerButton);
                 break;
@@ -711,13 +695,13 @@ abstract class EventListener: Owner
     void onMouseButtonDown(int button) {}
     void onMouseButtonUp(int button) {}
     void onMouseWheel(int x, int y) {}
-    
+    void onJoystickButtonDown(int button) {}
+    void onJoystickButtonUp(int button) {}
     void onControllerButtonDown(int button) {}
     void onControllerButtonUp(int button) {}
     void onControllerAxisMotion(int axis, float value) {}
     void onControllerAdd(uint deviceIndex) {}
     void onControllerRemove(uint deviceIndex) {}
-    
     void onResize(int width, int height) {}
     void onFocusLoss() {}
     void onFocusGain() {}
