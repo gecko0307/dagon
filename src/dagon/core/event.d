@@ -51,6 +51,8 @@ enum EventType
     JoystickButtonDown,
     JoystickButtonUp,
     JoystickAxisMotion,
+    JoystickAdd,
+    JoystickRemove,
     Resize,
     FocusLoss,
     FocusGain,
@@ -70,6 +72,7 @@ struct Event
     int joystickButton;
     int joystickAxis;
     float joystickAxisValue;
+    uint joystickDeviceIndex;
     int width;
     int height;
     int userCode;
@@ -79,6 +82,8 @@ struct Event
     LogLevel logLevel;
     string message;
 }
+
+enum MAX_CONTROLLERS = 4;
 
 class EventManager
 {
@@ -123,6 +128,7 @@ class EventManager
     uint windowHeight;
     bool windowFocused = true;
 
+    // TODO: support multiple controllers up to MAX_CONTROLLERS
     SDL_GameController* controller = null;
     SDL_Joystick* joystick = null;
     
@@ -138,24 +144,12 @@ class EventManager
 
         windowWidth = winWidth;
         windowHeight = winHeight;
+        
+        SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
 
-        if(SDL_NumJoysticks() > 0)
+        if (SDL_NumJoysticks() > 0)
         {
-            SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
-
-            if (SDL_IsGameController(0))
-            {
-                controller = SDL_GameControllerOpen(0);
-
-                if (SDL_GameControllerMapping(controller) is null)
-                    logWarning("No mapping found for controller!");
-
-                SDL_GameControllerEventState(SDL_ENABLE);
-            }
-            else
-            {
-                joystick = SDL_JoystickOpen(0);
-            }
+            openJoystick(0);
         }
 
         toReset = Array!(bool*)();
@@ -167,6 +161,46 @@ class EventManager
     {
         toReset.free();
         Delete(inputManager);
+    }
+    
+    void openJoystick(uint deviceIndex)
+    {
+        // TODO: support multiple controllers up to MAX_CONTROLLERS
+        
+        if (SDL_IsGameController(deviceIndex))
+        {
+            if (joystick)
+                SDL_JoystickClose(joystick);
+            
+            if (controller)
+                SDL_GameControllerClose(controller);
+            
+            controller = SDL_GameControllerOpen(deviceIndex);
+
+            if (SDL_GameControllerMapping(controller) is null)
+                logWarning("No mapping found for controller!");
+
+            SDL_GameControllerEventState(SDL_ENABLE);
+            
+            joystick = SDL_GameControllerGetJoystick(controller);
+        }
+        else
+        {
+            if (joystick)
+                SDL_JoystickClose(joystick);
+            
+            joystick = SDL_JoystickOpen(deviceIndex);
+        }
+    }
+    
+    void closeJoystick(uint deviceIndex)
+    {
+        // TODO: support multiple controllers up to MAX_CONTROLLERS
+        
+        if (joystick)
+            SDL_JoystickClose(joystick);
+        if (controller)
+            SDL_GameControllerClose(controller);
     }
 
     void exit()
@@ -424,6 +458,24 @@ class EventManager
                     addEvent(e);
                     break;
 
+                case SDL_CONTROLLERDEVICEADDED:
+                    e = Event(EventType.JoystickAdd);
+                    e.joystickDeviceIndex = event.cdevice.which;
+                    logDebug("SDL_CONTROLLERDEVICEADDED, event.cdevice.which: ", event.cdevice.which);
+                    if (event.cdevice.which < MAX_CONTROLLERS)
+                        openJoystick(event.cdevice.which);
+                    addEvent(e);
+                    break;
+
+                case SDL_CONTROLLERDEVICEREMOVED:
+                    e = Event(EventType.JoystickRemove);
+                    e.joystickDeviceIndex = event.cdevice.which;
+                    logDebug("SDL_CONTROLLERDEVICEREMOVED, event.cdevice.which: ", event.cdevice.which);
+                    if (event.cdevice.which < MAX_CONTROLLERS)
+                        closeJoystick(event.cdevice.which);
+                    addEvent(e);
+                    break;
+
                 case SDL_WINDOWEVENT:
                     if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
                     {
@@ -576,6 +628,12 @@ abstract class EventListener: Owner
             case EventType.JoystickAxisMotion:
                 if (enableInputEvents) onJoystickAxisMotion(e.joystickAxis, e.joystickAxisValue);
                 break;
+            case EventType.JoystickAdd:
+                if (enableInputEvents) onJoystickAdd(e.joystickDeviceIndex);
+                break;
+            case EventType.JoystickRemove:
+                if (enableInputEvents) onJoystickRemove(e.joystickDeviceIndex);
+                break;
             case EventType.Resize:
                 onResize(e.width, e.height);
                 break;
@@ -614,6 +672,8 @@ abstract class EventListener: Owner
     void onJoystickButtonDown(int button) {}
     void onJoystickButtonUp(int button) {}
     void onJoystickAxisMotion(int axis, float value) {}
+    void onJoystickAdd(uint deviceIndex) {}
+    void onJoystickRemove(uint deviceIndex) {}
     void onResize(int width, int height) {}
     void onFocusLoss() {}
     void onFocusGain() {}
