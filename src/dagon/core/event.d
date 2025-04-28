@@ -136,13 +136,12 @@ class EventManager
     SDL_GameController* controller = null;
     SDL_Joystick* joystick = null;
     int controllerAxisThreshold = 32639;
-    
     deprecated("use controllerAxisThreshold instead")
     alias joystickAxisThreshold = controllerAxisThreshold;
-    
+    bool controllerHasRumble = false;
     string controllerName;
     string joystickName;
-
+    
     InputManager inputManager;
     
     void delegate(SDL_Event* event) onProcessEvent;
@@ -243,6 +242,8 @@ class EventManager
             SDL_GameControllerEventState(SDL_ENABLE);
             
             joystick = SDL_GameControllerGetJoystick(controller);
+            
+            controllerHasRumble = cast(bool)SDL_GameControllerHasRumble(controller);
         }
         else
         {
@@ -272,6 +273,7 @@ class EventManager
         {
             SDL_GameControllerClose(controller);
             controllerName = "";
+            controllerHasRumble = false;
         }
     }
 
@@ -304,6 +306,15 @@ class EventManager
         
         return cast(float)clamp(axisVal, -controllerAxisThreshold, controllerAxisThreshold) / 
                cast(float)controllerAxisThreshold;
+    }
+    
+    void gameControllerRumble(uint lowFreq, uint hiFreg, float duration)
+    {
+        if (controllerHasRumble)
+            SDL_GameControllerRumble(controller,
+                cast(ushort)clamp(lowFreq, 0, ushort.max),
+                cast(ushort)clamp(hiFreg, 0, ushort.max),
+                cast(uint)(duration * 1000.0f));
     }
 
     void update()

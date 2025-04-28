@@ -2,9 +2,9 @@ Dagon 0.22.0 - TBD
 ------------------
 - **Core**
   - `dagon.core.event`:
-    - Breaking change: 'joystick' was renamed to 'controller' in event handler methods. E.g. `EventListener.onControllerButtonDown` instead of `EventListener.onJoystickButtonDown`
+    - Breaking change: separate joystick and controller events. E.g. `EventListener.onControllerButtonDown` and `EventListener.onJoystickButtonDown` are now different event handlers
     - Controller hot-plugging support. New event types in `EventManager`: `EventType.ControllerAdd`, `EventType.ControllerRemove`, `EventType.LogEvent`
-    - Joystick events are now deprecated, use Controller events instead: `EventType.ControllerButtonDown` instead of  `EventType.JoystickButtonDown`, etc.
+    - Controller rumble support (`EventManager.gameControllerRumble(lowFreq, hiFreg, duration)`)
   - `dagon.core.logger` - Dagon now internally uses custom global logger to print errors and debug messages
     - Logger can print to file if the filename is given via `setLogFilename`
     - `logOutputOptions` can be used to control the logger output. For example, set `logOutputOptions.printTimestamp = true;` to save date and time of each message
