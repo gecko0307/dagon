@@ -162,6 +162,9 @@ class EventManager
     
     deprecated("use controllerAxisThreshold instead")
     alias joystickAxisThreshold = controllerAxisThreshold;
+    
+    string controllerName;
+    string joystickName;
 
     InputManager inputManager;
     
@@ -248,7 +251,14 @@ class EventManager
                 SDL_GameControllerClose(controller);
             
             controller = SDL_GameControllerOpen(deviceIndex);
-
+            
+            auto name = SDL_GameControllerName(controller);
+            if (name)
+            {
+                controllerName = name.to!string;
+                logInfo("Game controller: ", controllerName);
+            }
+            
             if (SDL_GameControllerMapping(controller) is null)
                 logWarning("No mapping found for controller!");
 
@@ -262,15 +272,29 @@ class EventManager
                 SDL_JoystickClose(joystick);
             
             joystick = SDL_JoystickOpen(deviceIndex);
+            
+            auto name = SDL_JoystickName(joystick);
+            if (name)
+            {
+                joystickName = name.to!string;
+                logInfo("Joystick: ", joystickName);
+            }
         }
     }
     
     void gameControllerClose(uint deviceIndex)
     {
         if (joystick)
+        {
             SDL_JoystickClose(joystick);
+            joystickName = "";
+        }
+        
         if (controller)
+        {
             SDL_GameControllerClose(controller);
+            controllerName = "";
+        }
     }
 
     bool gameControllerAvailable()
