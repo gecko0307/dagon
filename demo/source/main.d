@@ -83,4 +83,5 @@ void main(string[] args)
     MyGame game = New!MyGame(1280, 720, false, "Dagon Demo", args);
     game.run();
     Delete(game);
+    debug logDebug("Leaked memory: ", allocatedMemory, " byte(s)");
 }
