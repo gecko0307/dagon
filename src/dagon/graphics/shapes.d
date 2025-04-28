@@ -237,6 +237,11 @@ enum HALF_PI = PI * 0.5f;
 
 class ShapeSphere: Mesh
 {
+    this(float radius, Owner owner)
+    {
+        this(radius, 16, 16, false, owner);
+    }
+    
     this(float radius, int slices, int stacks, bool invNormals, Owner owner)
     {
         super(owner);
