@@ -12,6 +12,7 @@ Dagon 0.22.0 - TBD
 - **Rendering**
   - GPU skinning support. `Pose` abstract class to store bone matrices. If the `Pose` object is set in `GraphicsState`, its `boneMatrices` will be fed to built-in mesh vertex shaders. Maximum 128 bone matrices are supported
 - **Graphics components**
+  - New built-in shape: `ShapeCone`. `ShapeCylinder` now supports separate bottom and top radii (thus becoming a truncated cone in the general case)
   - `Entity.updateTransformationDeep` is now `Entity.updateTransformationBottomUp`
 - **Assets**
   - glTF animation support. It is implemented as an optional feature - animation is not enabled by default and requires user-side setup to work
