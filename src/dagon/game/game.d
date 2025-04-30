@@ -180,6 +180,7 @@ class Game: Application
     
     override void onResize(int width, int height)
     {
+        super.onResize(width, height)
         if (dynamicViewport)
             resize(width, height);
     }

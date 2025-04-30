@@ -441,6 +441,12 @@ class Application: EventListener
             exit();
         }
     }
+    
+    override void onResize(int width, int height)
+    {
+        this.width = width;
+        this.height = height;
+    }
 
     void onUpdate(Time t)
     {
