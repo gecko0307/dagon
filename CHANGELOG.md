@@ -9,6 +9,7 @@ Dagon 0.22.0 - TBD
     - Logger can print to file if the filename is given via `setLogFilename`
     - `logOutputOptions` can be used to control the logger output. For example, set `logOutputOptions.printTimestamp = true;` to save date and time of each message
     - Use `logOutputOptions.printLogLevel` to set the minimum verbosity level: `LogLevel.All` < `LogLevel.Debug` < `LogLevel.Info` < `LogLevel.Warning` < `LogLevel.Error` < `LogLevel.FatalError`. By default it is set to `LogLevel.All`. In the release you may prefer `LogLevel.Info`
+  - `Application` now updates `width` and `height` on window resize
 - **Rendering**
   - GPU skinning support. `Pose` abstract class to store bone matrices. If the `Pose` object is set in `GraphicsState`, its `boneMatrices` will be fed to built-in mesh vertex shaders. Maximum 128 bone matrices are supported
 - **Graphics components**
