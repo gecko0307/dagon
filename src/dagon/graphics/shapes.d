@@ -38,6 +38,11 @@ import dagon.core.bindings;
 import dagon.graphics.drawable;
 import dagon.graphics.mesh;
 
+/*
+ * Basic geometric shapes: grid plane, quad, box, sphere,
+ * cylinder, cone
+ */
+
 class ShapePlane: Mesh
 {
     this(float sx, float sz, uint numTiles, Owner owner)
@@ -233,7 +238,7 @@ class ShapeBox: Mesh
     }
 }
 
-enum HALF_PI = PI * 0.5f;
+private enum HALF_PI = PI * 0.5f;
 
 class ShapeSphere: Mesh
 {
@@ -429,6 +434,11 @@ class ShapeCylinder: Mesh
 {
     this(float radius, float height, uint slices, Owner owner)
     {
+        this(radius, radius, height, slices, owner);
+    }
+    
+    this(float bottomRadius, float topRadius, float height, uint slices, Owner owner)
+    {
         super(owner);
         
         uint numVerticesCap = slices + 1;
@@ -485,11 +495,11 @@ class ShapeCylinder: Mesh
             uint tiTop = topbaseTrisStart + s;
             uint tiBot = botbaseTrisStart + s;
             
-            vertices[viTop] = Vector3f(x * radius, height * 0.5f, z * radius);
+            vertices[viTop] = Vector3f(x * topRadius, height * 0.5f, z * topRadius);
             normals[viTop] = Vector3f(0.0f, 1.0f, 0.0f);
             texcoords[viTop] = Vector2f(x * 0.5f + 0.5f, z * 0.5f + 0.5f);
             
-            vertices[viBot] = Vector3f(x * radius, -height * 0.5f, z * radius);
+            vertices[viBot] = Vector3f(x * bottomRadius, -height * 0.5f, z * bottomRadius);
             normals[viBot] = Vector3f(0.0f, -1.0f, 0.0f);
             texcoords[viBot] = Vector2f(0.5f - x * 0.5f, z * 0.5f + 0.5f);
             
@@ -555,5 +565,92 @@ class ShapeCylinder: Mesh
     }
 }
 
-// TODO: ShapeCone
+class ShapeCone: Mesh
+{
+    this(float radius, float height, uint slices, Owner owner)
+    {
+        super(owner);
+        
+        uint numVertices = slices * 2 + 2;
+        uint numTriangles = slices * 2;
+        vertices = New!(Vector3f[])(numVertices);
+        normals = New!(Vector3f[])(numVertices);
+        texcoords = New!(Vector2f[])(numVertices);
+        indices = New!(uint[3][])(numTriangles);
+        
+        for(size_t i = 0; i < numVertices; i++)
+        {
+            vertices[i] = Vector3f(0.0f, 0.0f, 0.0f);
+            normals[i] = Vector3f(0.0f, 0.0f, 1.0f);
+            texcoords[i] = Vector2f(0.0f, 0.0f);
+        }
+        
+        float angle = 0.0f;
+        float angleStep = (2.0f * PI) / cast(float)slices;
+        
+        uint baseVertStart = 0;
+        uint baseTrisStart = 0;
+        
+        // Base center vertex
+        vertices[baseVertStart] = Vector3f(0.0f, -height * 0.5f, 0.0f);
+        normals[baseVertStart] = Vector3f(0.0f, -1.0f, 0.0f);
+        texcoords[baseVertStart] = Vector2f(0.5f, 0.5f);
+        
+        uint sideVertStart = baseVertStart + 1 + slices;
+        uint sideTrisStart = baseTrisStart + slices;
+        
+        // Apex vertex
+        vertices[sideVertStart] = Vector3f(0.0f, height * 0.5f, 0.0f);
+        normals[sideVertStart] = Vector3f(0.0f, 1.0f, 0.0f);
+        texcoords[sideVertStart] = Vector2f(0.5f, 0.5f);
+        
+        for(uint s = 0; s < slices; s++)
+        {
+            float x = cos(angle);
+            float z = sin(angle);
+            
+            // Base triangle for this slice
+            uint viBase = baseVertStart + 1 + s;
+            uint tiBase = baseTrisStart + s;
+            
+            vertices[viBase] = Vector3f(x * radius, -height * 0.5f, z * radius);
+            normals[viBase] = Vector3f(0.0f, -1.0f, 0.0f);
+            texcoords[viBase] = Vector2f(0.5f - x * 0.5f, z * 0.5f + 0.5f);
+            
+            indices[tiBase][0] = baseVertStart;
+            
+            if (s < slices - 1)
+                indices[tiBase][2] = viBase + 1;
+            else
+                indices[tiBase][2] = indices[baseTrisStart][1];
+            
+            indices[tiBase][1] = viBase;
+            
+            // Side triangle for this slice
+            uint viSide = sideVertStart + 1 + s;
+            uint tiSide = sideTrisStart + s;
+            
+            vertices[viSide] = vertices[viBase];
+            normals[viSide] = Vector3f(x, radius / height, z).normalized;
+            texcoords[viSide] = Vector2f(0.5f - x * 0.5f, 1.0f - (z * 0.5f + 0.5f));
+            
+            indices[tiSide][0] = sideVertStart;
+            
+            if (s < slices - 1)
+                indices[tiSide][1] = viSide + 1;
+            else
+                indices[tiSide][1] = indices[sideTrisStart][2];
+            
+            indices[tiSide][2] = viSide;
+            
+            // Next slice angle
+            angle += angleStep;
+        }
+        
+        dataReady = true;
+        prepareVAO();
+    }
+}
+
 // TODO: ShapeCapsule
+// TODO: ShapeTorus
