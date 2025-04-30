@@ -320,13 +320,13 @@ class ImGuiOpenGLBackend
         glGetShaderiv(handle, GL_COMPILE_STATUS, &status);
         glGetShaderiv(handle, GL_INFO_LOG_LENGTH, &log_length);
         if (cast(GLboolean)status == GL_FALSE)
-            loggerError("ImGui_ImplOpenGL3_CreateDeviceObjects: failed to compile ", desc);
+            logError("ImGui_ImplOpenGL3_CreateDeviceObjects: failed to compile ", desc);
         if (log_length > 1)
         {
             char[] buf;
             buf.length = log_length + 1;
             glGetShaderInfoLog(handle, log_length, null, cast(GLchar*)buf.ptr);
-            loggerError(buf);
+            logError(buf);
         }
         return cast(GLboolean)status == GL_TRUE;
     }
@@ -338,13 +338,13 @@ class ImGuiOpenGLBackend
         glGetProgramiv(handle, GL_LINK_STATUS, &status);
         glGetProgramiv(handle, GL_INFO_LOG_LENGTH, &log_length);
         if (cast(GLboolean)status == GL_FALSE)
-            loggerError("Create_device_objects: failed to link ", desc);
+            logError("Create_device_objects: failed to link ", desc);
         if (log_length > 1)
         {
             char[] buf;
             buf.length = log_length + 1;
             glGetProgramInfoLog(handle, log_length, null, cast(GLchar*)buf.ptr);
-            loggerError(buf);
+            logError(buf);
         }
         return cast(GLboolean)status == GL_TRUE;
     }
