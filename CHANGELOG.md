@@ -12,6 +12,7 @@ Dagon 0.22.0 - TBD
   - `Application` now updates `width` and `height` on window resize
 - **Rendering**
   - GPU skinning support. `Pose` abstract class to store bone matrices. If the `Pose` object is set in `GraphicsState`, its `boneMatrices` will be fed to built-in mesh vertex shaders. Maximum 128 bone matrices are supported
+  - Circular shadow is now supported for shadeless surfaces in `SimpleRenderer`
 - **Graphics components**
   - New built-in shape: `ShapeCone`. `ShapeCylinder` now supports separate bottom and top radii (thus becoming a truncated cone in the general case)
   - `Entity.updateTransformationDeep` is now `Entity.updateTransformationBottomUp`
@@ -19,6 +20,8 @@ Dagon 0.22.0 - TBD
   - glTF animation support. It is implemented as an optional feature - animation is not enabled by default and requires user-side setup to work
   - `GLTFMeshPrimitive` now supports meshes without normals, texture coordinates, or indices
   - `GLTFAsset` now provides access to scenes, nodes, meshes, skins and animations by names.
+- **Misc**
+  - Dagon now uses dlib 1.3.2.
 
 Dagon 0.21.1 - 28 Apr, 2025
 ---------------------------
