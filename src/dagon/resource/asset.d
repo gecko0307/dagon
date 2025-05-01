@@ -471,7 +471,7 @@ class AssetManager: Owner
         bool res = asset.loadThreadSafePart(filename, istrm, fs, this);
         if (!res)
         {
-            logError("Failed to load asset \"%s\"", filename);
+            logError("Failed to load asset \"", filename, "\"");
         }
         return res;
     }
@@ -480,7 +480,7 @@ class AssetManager: Owner
     {
         if (!fileExists(filename))
         {
-            logError("Cannot find file \"%s\"", filename);
+            logError("Cannot find file \"", filename, "\"");
             return false;
         }
 
@@ -527,7 +527,7 @@ class AssetManager: Owner
                 asset.threadUnsafePartLoaded = res;
                 if (!res)
                 {
-                    logError("Failed to load asset \"%s\"", filename);
+                    logError("Failed to load asset \"", filename, "\"");
                 }
             }
         }
