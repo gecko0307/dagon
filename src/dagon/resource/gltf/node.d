@@ -42,6 +42,7 @@ import dagon.resource.gltf.skin;
 
 class GLTFNode: Owner
 {
+    size_t index;
     string name;
     Entity entity;
     

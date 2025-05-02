@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 */
 module dagon.resource.gltf.animation;
 
+import std.algorithm: countUntil;
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.container.array;
@@ -325,6 +326,177 @@ class GLTFPose: Pose
         foreach(i, joint; skin.joints)
         {
             boneMatrices[i] = joint.globalTransform * skin.invBindMatrices[i];
+        }
+    }
+}
+
+struct TRS
+{
+    Vector3f translation;
+    Quaternionf rotation;
+    Vector3f scaling;
+}
+
+class GLTFBlendedPose: Pose
+{
+    GLTFSkin skin;
+    
+    TRS[] poseA;
+    TRS[] poseB;
+    
+    GLTFAnimation animationA;
+    GLTFAnimation animationB;
+    float blendAlpha = 0.0f;
+    float blendSpeed = 0.0f;
+    
+    this(GLTFSkin skin, Owner o)
+    {
+        super(o);
+        this.skin = skin;
+        
+        if (skin.joints.length)
+        {
+            boneMatrices = New!(Matrix4x4f[])(skin.joints.length);
+            boneMatrices[] = Matrix4x4f.identity;
+            valid = true;
+            
+            poseA = New!(TRS[])(skin.joints.length);
+            poseB = New!(TRS[])(skin.joints.length);
+        }
+    }
+    
+    ~this()
+    {
+        if (boneMatrices.length)
+            Delete(boneMatrices);
+        if (poseA.length)
+            Delete(poseA);
+        if (poseB.length)
+            Delete(poseB);
+    }
+    
+    void evaluateAnimation(GLTFAnimation animation, TRS[] outPose)
+    {
+        if (animation)
+        {
+            foreach(i, joint; skin.joints)
+            {
+                outPose[i].translation = joint.position;
+                outPose[i].rotation = joint.rotation;
+                outPose[i].scaling = joint.scaling;
+            }
+            
+            foreach(ch; animation.channels)
+            {
+                if (ch.targetNode is null || ch.sampler is null)
+                    continue;
+                
+                auto node = ch.targetNode;
+                auto sampler = ch.sampler;
+                
+                float prevTime = 0.0f;
+                float nextTime = 0.0f;
+                float loopTime = 0.0f;
+                
+                const prevIdx = sampler.getSampleByTime(time, prevTime, nextTime, loopTime);
+                const nextIdx = prevIdx + 1;
+                
+                const float denom = nextTime - prevTime;
+                const float interpRatio = denom != 0 ? (loopTime - prevTime) / denom : 0.0f;
+
+                auto boneIndex = countUntil(skin.joints.data, node);
+                if (boneIndex == -1) continue;
+                
+                if (ch.targetPath == TRSType.Translation)
+                {
+                    const Vector3f prevTrans = sampler.output.getSlice!Vector3f[prevIdx];
+                    const Vector3f nextTrans = sampler.output.getSlice!Vector3f[nextIdx];
+                    outPose[boneIndex].translation = lerp(prevTrans, nextTrans, interpRatio);
+                }
+                else if (ch.targetPath == TRSType.Rotation)
+                {
+                    const Quaternionf prevRot = sampler.output.getSlice!Quaternionf[prevIdx];
+                    const Quaternionf nextRot = sampler.output.getSlice!Quaternionf[nextIdx];
+                    outPose[boneIndex].rotation = slerp(prevRot, nextRot, interpRatio);
+                }
+                else if (ch.targetPath == TRSType.Scale)
+                {
+                    const Vector3f prevScale = sampler.output.getSlice!Vector3f[prevIdx];
+                    const Vector3f nextScale = sampler.output.getSlice!Vector3f[nextIdx];
+                    outPose[boneIndex].scaling = lerp(prevScale, nextScale, interpRatio);
+                }
+            }
+        }
+        else
+        {
+            foreach(i, joint; skin.joints)
+            {
+                outPose[i].translation = joint.bindPosePosition;
+                outPose[i].rotation = joint.bindPoseRotation;
+                outPose[i].scaling = joint.bindPoseScaling;
+            }
+        }
+    }
+    
+    void switchToAnimation(GLTFAnimation animation)
+    {
+        animationB = animation;
+        blendAlpha = 1.0f;
+        blendSpeed = 0.0f;
+    }
+    
+    void switchToAnimation(GLTFAnimation animation, float duration)
+    {
+        animationB = animation;
+        blendAlpha = 0.0f;
+        blendSpeed = 1.0f / duration;
+    }
+    
+    override void update(Time t)
+    {
+        if (playing)
+        {
+            time.elapsed += t.delta;
+            time.delta = t.delta;
+        }
+        
+        evaluateAnimation(animationA, poseA);
+        evaluateAnimation(animationB, poseB);
+        
+        foreach(i, joint; skin.joints)
+        {
+            TRS a = poseA[i];
+            TRS b = poseB[i];
+
+            joint.position = lerp(a.translation, b.translation, blendAlpha);
+            joint.rotation = slerp(a.rotation, b.rotation, blendAlpha);
+            joint.scaling  = lerp(a.scaling, b.scaling, blendAlpha);
+
+            joint.entity.position = joint.position;
+            joint.entity.rotation = joint.rotation;
+            joint.entity.scaling  = joint.scaling;
+
+            joint.updateLocalTransform();
+        }
+        
+        foreach(i, joint; skin.joints)
+        {
+            boneMatrices[i] = joint.globalTransform * skin.invBindMatrices[i];
+        }
+        
+        if (playing)
+        {
+            if (blendAlpha < 1.0f)
+            {
+                blendAlpha += blendSpeed * t.delta;
+            }
+            else
+            {
+                animationA = animationB;
+                animationB = null;
+                blendAlpha = 0.0f;
+                blendSpeed = 0.0f;
+            }
         }
     }
 }

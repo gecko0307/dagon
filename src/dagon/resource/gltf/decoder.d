@@ -803,6 +803,8 @@ class GLTFAsset: Asset, TriangleSet
                 if ("skin" in node)
                     nodeObj.skinIndex = cast(int)node["skin"].asNumber;
                 
+                nodeObj.index = nodes.length;
+                
                 nodes.insertBack(nodeObj);
             }
         }
