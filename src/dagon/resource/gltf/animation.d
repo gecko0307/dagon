@@ -26,7 +26,8 @@ DEALINGS IN THE SOFTWARE.
 */
 module dagon.resource.gltf.animation;
 
-import std.algorithm: countUntil;
+import std.stdio;
+import std.algorithm;
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.container.array;
@@ -67,6 +68,15 @@ class GLTFAnimationSampler: Owner
     this(Owner o)
     {
         super(o);
+    }
+    
+    float duration()
+    {
+        const timeline = input.getSlice!float;
+        if (timeline.length)
+            return timeline[$ - 1];
+        else
+            return 0.0f;
     }
     
     /// Returns: beginning translation sample number
@@ -139,6 +149,16 @@ class GLTFAnimation: Owner
     {
         samplers.free();
         channels.free();
+    }
+    
+    float duration()
+    {
+        float d = 0.0f;
+        foreach(ch; channels)
+        {
+            d = max(d, ch.sampler.duration);
+        }
+        return d;
     }
 }
 
@@ -337,17 +357,30 @@ struct TRS
     Vector3f scaling;
 }
 
+enum PlayMode
+{
+    Loop,
+    Once
+}
+
+/*
+ * A Pose that supports smooth transition between animations
+ */
 class GLTFBlendedPose: Pose
 {
     GLTFSkin skin;
     
-    TRS[] poseA;
-    TRS[] poseB;
+    TRS[] currentPose;
+    TRS[] nextPose;
     
-    GLTFAnimation animationA;
-    GLTFAnimation animationB;
+    GLTFAnimation previousAnimation;
+    GLTFAnimation animation;
+    GLTFAnimation nextAnimation;
     float blendAlpha = 0.0f;
     float blendSpeed = 0.0f;
+    float previousBlendSpeed = 0.0f;
+    float animationDuration = 0.0f;
+    PlayMode playMode = PlayMode.Loop;
     
     this(GLTFSkin skin, Owner o)
     {
@@ -360,8 +393,8 @@ class GLTFBlendedPose: Pose
             boneMatrices[] = Matrix4x4f.identity;
             valid = true;
             
-            poseA = New!(TRS[])(skin.joints.length);
-            poseB = New!(TRS[])(skin.joints.length);
+            currentPose = New!(TRS[])(skin.joints.length);
+            nextPose = New!(TRS[])(skin.joints.length);
         }
     }
     
@@ -369,15 +402,15 @@ class GLTFBlendedPose: Pose
     {
         if (boneMatrices.length)
             Delete(boneMatrices);
-        if (poseA.length)
-            Delete(poseA);
-        if (poseB.length)
-            Delete(poseB);
+        if (currentPose.length)
+            Delete(currentPose);
+        if (nextPose.length)
+            Delete(nextPose);
     }
     
-    void evaluateAnimation(GLTFAnimation animation, TRS[] outPose)
+    void applyAnimation(GLTFAnimation anim, Time time, TRS[] outPose)
     {
-        if (animation)
+        if (anim)
         {
             foreach(i, joint; skin.joints)
             {
@@ -386,7 +419,7 @@ class GLTFBlendedPose: Pose
                 outPose[i].scaling = joint.scaling;
             }
             
-            foreach(ch; animation.channels)
+            foreach(ch; anim.channels)
             {
                 if (ch.targetNode is null || ch.sampler is null)
                     continue;
@@ -438,35 +471,42 @@ class GLTFBlendedPose: Pose
         }
     }
     
-    void switchToAnimation(GLTFAnimation animation)
+    void switchToAnimation(GLTFAnimation anim, PlayMode playMode = PlayMode.Loop)
     {
-        animationB = animation;
-        blendAlpha = 1.0f;
-        blendSpeed = 0.0f;
+        if (anim !is animation)
+        {
+            nextAnimation = anim;
+            animationDuration = nextAnimation.duration;
+            blendAlpha = 1.0f;
+            blendSpeed = 0.0f;
+            this.playMode = playMode;
+        }
     }
     
-    void switchToAnimation(GLTFAnimation animation, float duration)
+    void switchToAnimation(GLTFAnimation anim, float transitionDuration, PlayMode playMode = PlayMode.Loop)
     {
-        animationB = animation;
-        blendAlpha = 0.0f;
-        blendSpeed = 1.0f / duration;
+        if (anim !is animation)
+        {
+            nextAnimation = anim;
+            if (anim is null)
+                animationDuration = 0.0f;
+            else
+                animationDuration = nextAnimation.duration;
+            blendAlpha = 0.0f;
+            blendSpeed = 1.0f / transitionDuration;
+            this.playMode = playMode;
+        }
     }
     
     override void update(Time t)
     {
-        if (playing)
-        {
-            time.elapsed += t.delta;
-            time.delta = t.delta;
-        }
-        
-        evaluateAnimation(animationA, poseA);
-        evaluateAnimation(animationB, poseB);
+        applyAnimation(animation, time, currentPose);
+        applyAnimation(nextAnimation, Time(0.0f, 0.0f), nextPose);
         
         foreach(i, joint; skin.joints)
         {
-            TRS a = poseA[i];
-            TRS b = poseB[i];
+            TRS a = currentPose[i];
+            TRS b = nextPose[i];
 
             joint.position = lerp(a.translation, b.translation, blendAlpha);
             joint.rotation = slerp(a.rotation, b.rotation, blendAlpha);
@@ -486,16 +526,41 @@ class GLTFBlendedPose: Pose
         
         if (playing)
         {
+            time.elapsed += t.delta;
+            time.delta = t.delta;
+            
             if (blendAlpha < 1.0f)
             {
                 blendAlpha += blendSpeed * t.delta;
+                blendAlpha = min(blendAlpha, 1.0f);
             }
             else
             {
-                animationA = animationB;
-                animationB = null;
+                time.elapsed = 0.0f;
+                previousAnimation = animation;
+                animation = nextAnimation;
+                nextAnimation = null;
                 blendAlpha = 0.0f;
+                previousBlendSpeed = blendSpeed;
                 blendSpeed = 0.0f;
+            }
+            
+            if (nextAnimation is null && time.elapsed >= animationDuration)
+            {
+                if (playMode == PlayMode.Once)
+                {
+                    time.elapsed = 0.0f;
+                    
+                    nextAnimation = previousAnimation;
+                    previousAnimation = null;
+                    if (nextAnimation is null)
+                        animationDuration = 0.0f;
+                    else
+                        animationDuration = nextAnimation.duration;
+                    blendAlpha = 0.0f;
+                    blendSpeed = previousBlendSpeed;
+                    playMode = PlayMode.Loop;
+                }
             }
         }
     }
