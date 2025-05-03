@@ -96,6 +96,10 @@ endif(SDL2_FOUND)
 add_library(cimgui_sdl SHARED ${IMGUI_SOURCES})
 target_link_libraries(cimgui_sdl ${IMGUI_LIBRARIES} ${IMGUI_SDL_LIBRARY})
 
+if(UNIX)
+	set_target_properties(cimgui_sdl PROPERTIES LINK_FLAGS "-Wl,-rpath,\$ORIGIN")
+endif()
+
 #using library
 include_directories(../generator/output/)
 add_executable(test_sdl main.c)
