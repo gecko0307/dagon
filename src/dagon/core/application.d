@@ -250,7 +250,11 @@ class Application: EventListener
     +/
     this(uint winWidth, uint winHeight, bool fullscreen, string windowTitle, string[] args)
     {
-        SDLSupport sdlsup = loadSDL();
+        version(linux)
+            SDLSupport sdlsup = loadSDL("libSDL2-2.0.so.0");
+        else
+            SDLSupport sdlsup = loadSDL();
+        
         if (sdlsup != sdlSupport)
         {
             if (sdlsup == SDLSupport.badLibrary)
