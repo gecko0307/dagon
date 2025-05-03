@@ -65,11 +65,8 @@ __gshared LogOutputOptions logOutputOptions = {
 
 void setLogFilename(string filename)
 {
-    if (exists(filename))
-    {
-        logOutputOptions.printToFile = true;
-        logOutputOptions.filename = filename;
-    }
+    logOutputOptions.printToFile = true;
+    logOutputOptions.filename = filename;
 }
 
 private
