@@ -83,7 +83,7 @@ Runtime Dependencies
 * [PhysFS](https://github.com/icculus/physfs) (optional)
 * [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear) (optional, deprecated)
 
-Most of them are automatically deployed on 64-bit Windows and Linux. On other platforms, you will have to [install them manually](https://github.com/gecko0307/dagon/blob/master/doc/Runtime%20Dependencies.md).
+Most of them are automatically deployed on 64-bit Windows and Linux. Read more [here](https://github.com/gecko0307/dagon/blob/master/doc/Runtime%20Dependencies.md).
 
 Under Linux, if you want to use local libraries in Windows way (from application's working directory rather than from the system), add the following to your `dub.json`:
 
