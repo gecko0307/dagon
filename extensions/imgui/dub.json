@@ -18,10 +18,10 @@
     ],
     
     "copyFiles-windows-x86_64": [
-        "lib/windows-x64/*.dll"
+        "lib/windows-x64/*"
     ],
     
     "copyFiles-linux-x86_64": [
-        "lib/linux-x64/*.so"
+        "lib/linux-x64/*"
     ]
 }

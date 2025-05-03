@@ -10,5 +10,5 @@
         "dagon": "*"
     },
     
-    "copyFiles-windows-x86_64": ["lib/windows-x64/*.dll"]
+    "copyFiles-windows-x86_64": ["lib/windows-x64/*"]
 }

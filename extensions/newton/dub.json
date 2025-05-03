@@ -12,6 +12,6 @@
     },
     
     "copyFiles-linux-x86_64": [
-        "lib/linux-x64/*.so"
+        "lib/linux-x64/*"
     ]
 }

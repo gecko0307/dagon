@@ -11,6 +11,6 @@
         "bindbc-loader": "1.1.4"
     },
     
-    "copyFiles-windows-x86_64": ["lib/windows-x64/*.dll"],
-    "copyFiles-linux-x86_64": ["lib/linux-x64/*.so"]
+    "copyFiles-windows-x86_64": ["lib/windows-x64/*"],
+    "copyFiles-linux-x86_64": ["lib/linux-x64/*"]
 }
