@@ -79,7 +79,8 @@ Runtime Dependencies
 * [libavif](https://github.com/AOMediaCodec/libavif) for AVIF support (optional)
 * [Freetype](https://www.freetype.org) 2.8.1 for text rendering (optional)
 * [Newton Dynamics](https://github.com/MADEAPPS/newton-dynamics) 3.14 for rigid body simulation (optional)
-* [ImGui](https://github.com/ocornut/imgui) (optional)
+* [cimgui](https://github.com/cimgui/cimgui) (optional)
+* [libktx](https://github.com/KhronosGroup/KTX-Software) (optional)
 * [PhysFS](https://github.com/icculus/physfs) (optional)
 * [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear) (optional, deprecated)
 
