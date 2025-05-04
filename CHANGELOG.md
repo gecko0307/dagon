@@ -1,5 +1,5 @@
-Dagon 0.22.0 - TBD
-------------------
+Dagon 0.22.0 - 04 May, 2025
+---------------------------
 - **Core**
   - `dagon.core.event`:
     - Breaking change: separate joystick and controller events. E.g. `EventListener.onControllerButtonDown` and `EventListener.onJoystickButtonDown` are now different event handlers
