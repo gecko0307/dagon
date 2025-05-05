@@ -10,7 +10,7 @@ uniform mat4 invProjectionMatrix;
 uniform float zNear;
 uniform float zFar;
 
-uniform vec2 textureScale;
+uniform mat3 textureMatrix;
 
 uniform float energy;
 uniform float opacity;
@@ -230,7 +230,8 @@ void main()
 {
     vec4 terrTexCoordSample = texture(terrainTexcoordBuffer, texCoord);
     vec2 terrTexCoord = terrTexCoordSample.xy;
-    vec2 uv = terrTexCoord * textureScale;
+    vec2 uv = (textureMatrix * vec3(terrTexCoord, 1.0)).xy;
+    
     float depth = terrTexCoordSample.z;
     vec3 eyePos = unproject(invProjectionMatrix, vec3(texCoord, depth));
     

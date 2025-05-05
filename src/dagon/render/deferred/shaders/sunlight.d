@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -46,11 +46,55 @@ import dagon.graphics.csm;
 
 class SunLightShader: Shader
 {
+   protected:
     String vs, fs;
 
     Matrix4x4f defaultShadowMatrix;
     GLuint defaultShadowTexture;
-
+    
+    ShaderParameter!Matrix4x4f viewMatrix;
+    ShaderParameter!Matrix4x4f invViewMatrix;
+    ShaderParameter!Matrix4x4f projectionMatrix;
+    ShaderParameter!Matrix4x4f invProjectionMatrix;
+    ShaderParameter!Vector2f resolution;
+    ShaderParameter!float zNear;
+    ShaderParameter!float zFar;
+    
+    ShaderParameter!Color4f fogColor;
+    ShaderParameter!float fogStart;
+    ShaderParameter!float fogEnd;
+    
+    ShaderParameter!Vector3f lightDirection;
+    ShaderParameter!Color4f lightColor;
+    ShaderParameter!float lightEnergy;
+    ShaderParameter!int lightScattering;
+    ShaderParameter!float lightScatteringG;
+    ShaderParameter!float lightScatteringDensity;
+    ShaderParameter!int lightScatteringSamples;
+    ShaderParameter!float lightScatteringMaxRandomStepOffset;
+    ShaderParameter!int lightScatteringShadow;
+    ShaderParameter!float lightDiffuse;
+    ShaderParameter!float lightSpecular;
+    
+    ShaderParameter!float time;
+    
+    ShaderParameter!int colorBuffer;
+    ShaderParameter!int depthBuffer;
+    ShaderParameter!int normalBuffer;
+    ShaderParameter!int pbrBuffer;
+    ShaderParameter!int occlusionBuffer;
+    ShaderParameter!int haveOcclusionBuffer;
+    
+    ShaderParameter!int shadowTextureArray;
+    ShaderParameter!float shadowResolution;
+    ShaderParameter!Matrix4x4f shadowMatrix1;
+    ShaderParameter!Matrix4x4f shadowMatrix2;
+    ShaderParameter!Matrix4x4f shadowMatrix3;
+    ShaderSubroutine shadowMapSubroutine;
+    GLuint shadowMapSubroutineCascaded,
+           shadowMapSubroutineNone;
+    
+   public:
     this(Owner owner)
     {
         vs = Shader.load("data/__internal/shaders/SunLight/SunLight.vert.glsl");
@@ -68,6 +112,48 @@ class SunLightShader: Shader
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+        
+        viewMatrix = createParameter!Matrix4x4f("viewMatrix");
+        invViewMatrix = createParameter!Matrix4x4f("invViewMatrix");
+        projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
+        invProjectionMatrix = createParameter!Matrix4x4f("invProjectionMatrix");
+        resolution = createParameter!Vector2f("resolution");
+        zNear = createParameter!float("zNear");
+        zFar = createParameter!float("zFar");
+        
+        fogColor = createParameter!Color4f("fogColor");
+        fogStart = createParameter!float("fogStart");
+        fogEnd = createParameter!float("fogEnd");
+        
+        lightDirection = createParameter!Vector3f("lightDirection");
+        lightColor = createParameter!Color4f("lightColor");
+        lightEnergy = createParameter!float("lightEnergy");
+        lightScattering = createParameter!int("lightScattering");
+        lightScatteringG = createParameter!float("lightScatteringG");
+        lightScatteringDensity = createParameter!float("lightScatteringDensity");
+        lightScatteringSamples = createParameter!int("lightScatteringSamples");
+        lightScatteringMaxRandomStepOffset = createParameter!float("lightScatteringMaxRandomStepOffset");
+        lightScatteringShadow = createParameter!int("lightScatteringShadow");
+        lightDiffuse = createParameter!float("lightDiffuse");
+        lightSpecular = createParameter!float("lightSpecular");
+        
+        time = createParameter!float("time");
+        
+        colorBuffer = createParameter!int("colorBuffer");
+        depthBuffer = createParameter!int("depthBuffer");
+        normalBuffer = createParameter!int("normalBuffer");
+        pbrBuffer = createParameter!int("pbrBuffer");
+        occlusionBuffer = createParameter!int("occlusionBuffer");
+        haveOcclusionBuffer = createParameter!int("haveOcclusionBuffer");
+        
+        shadowTextureArray = createParameter!int("shadowTextureArray");
+        shadowResolution = createParameter!float("shadowResolution");
+        shadowMatrix1 = createParameter!Matrix4x4f("shadowMatrix1");
+        shadowMatrix2 = createParameter!Matrix4x4f("shadowMatrix2");
+        shadowMatrix3 = createParameter!Matrix4x4f("shadowMatrix3");
+        shadowMapSubroutine = createParameterSubroutine("shadowMap", ShaderType.Fragment);
+        shadowMapSubroutineCascaded = shadowMapSubroutine.getIndex("shadowMapCascaded");
+        shadowMapSubroutineNone = shadowMapSubroutine.getIndex("shadowMapNone");
     }
 
     ~this()
@@ -81,45 +167,35 @@ class SunLightShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        setParameter("viewMatrix", state.viewMatrix);
-        setParameter("invViewMatrix", state.invViewMatrix);
-        setParameter("projectionMatrix", state.projectionMatrix);
-        setParameter("invProjectionMatrix", state.invProjectionMatrix);
-        setParameter("resolution", state.resolution);
-        setParameter("zNear", state.zNear);
-        setParameter("zFar", state.zFar);
+        viewMatrix = &state.viewMatrix;
+        invViewMatrix = &state.invViewMatrix;
+        projectionMatrix = &state.projectionMatrix;
+        invProjectionMatrix = &state.invProjectionMatrix;
+        resolution = state.resolution;
+        zNear = state.zNear;
+        zFar = state.zFar;
 
         // Environment
         if (state.environment)
         {
-            setParameter("fogColor", state.environment.fogColor);
-            setParameter("fogStart", state.environment.fogStart);
-            setParameter("fogEnd", state.environment.fogEnd);
+            fogColor = state.environment.fogColor;
+            fogStart = state.environment.fogStart;
+            fogEnd = state.environment.fogEnd;
         }
         else
         {
-            setParameter("fogColor", Color4f(0.5f, 0.5f, 0.5f, 1.0f));
-            setParameter("fogStart", 0.0f);
-            setParameter("fogEnd", 1000.0f);
+            fogColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
+            fogStart = 0.0f;
+            fogEnd = 1000.0f;
         }
 
         // Light
-        Vector4f lightDirHg;
-        Color4f lightColor;
-        float lightEnergy = 1.0f;
-        int lightScattering = 0;
-        float lightScatteringG = 0.0f;
-        float lightScatteringDensity = 0.0f;
-        int lightScatteringSamples = 1;
-        float lightScatteringMaxRandomStepOffset = 0.0f;
-        bool lightScatteringShadow = false;
-        float lightDiffuse = 1.0f;
-        float lightSpecular = 1.0f;
         if (state.light)
         {
             auto light = state.light;
-            lightDirHg = Vector4f(light.directionAbsolute);
+            Vector4f lightDirHg = Vector4f(light.directionAbsolute);
             lightDirHg.w = 0.0;
+            lightDirection = (lightDirHg * state.viewMatrix).xyz;
             lightColor = light.color;
             lightEnergy = light.energy;
             lightScattering = light.scatteringEnabled;
@@ -133,44 +209,41 @@ class SunLightShader: Shader
         }
         else
         {
-            lightDirHg = Vector4f(0.0f, 0.0f, 1.0f, 0.0f);
+            Vector4f lightDirHg = Vector4f(0.0f, 0.0f, 1.0f, 0.0f);
+            lightDirection = (lightDirHg * state.viewMatrix).xyz;
             lightColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+            lightEnergy = 1.0f;
+            lightScattering = 0;
+            lightScatteringG = 0.0f;
+            lightScatteringDensity = 0.0f;
+            lightScatteringSamples = 1;
+            lightScatteringMaxRandomStepOffset = 0.0f;
+            lightScatteringShadow = false;
+            lightDiffuse = 1.0f;
+            lightSpecular = 1.0f;
         }
-        Vector3f lightDir = (lightDirHg * state.viewMatrix).xyz;
-        setParameter("lightDirection", lightDir);
-        setParameter("lightColor", lightColor);
-        setParameter("lightEnergy", lightEnergy);
-        setParameter("lightScattering", lightScattering);
-        setParameter("lightScatteringG", lightScatteringG);
-        setParameter("lightScatteringDensity", lightScatteringDensity);
-        setParameter("lightScatteringSamples", lightScatteringSamples);
-        setParameter("lightScatteringMaxRandomStepOffset", lightScatteringMaxRandomStepOffset);
-        setParameter("lightScatteringShadow", lightScatteringShadow);
-        
-        setParameter("lightDiffuse", lightDiffuse);
-        setParameter("lightSpecular", lightSpecular);
 
-        setParameter("time", state.localTime);
+        time = state.localTime;
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
-        setParameter("colorBuffer", 0);
+        colorBuffer = 0;
 
         // Texture 1 - depth buffer
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, state.depthTexture);
-        setParameter("depthBuffer", 1);
+        depthBuffer = 1;
 
         // Texture 2 - normal buffer
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, state.normalTexture);
-        setParameter("normalBuffer", 2);
+        normalBuffer = 2;
 
         // Texture 3 - pbr buffer
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, state.pbrTexture);
-        setParameter("pbrBuffer", 3);
+        pbrBuffer = 3;
 
         // Texture 4 - shadow map
         if (state.light)
@@ -181,36 +254,37 @@ class SunLightShader: Shader
 
                 glActiveTexture(GL_TEXTURE4);
                 glBindTexture(GL_TEXTURE_2D_ARRAY, csm.depthTexture);
-                setParameter("shadowTextureArray", 4);
-                setParameter("shadowResolution", cast(float)csm.resolution);
-                setParameter("shadowMatrix1", csm.area[0].shadowMatrix);
-                setParameter("shadowMatrix2", csm.area[1].shadowMatrix);
-                setParameter("shadowMatrix3", csm.area[2].shadowMatrix);
-                setParameterSubroutine("shadowMap", ShaderType.Fragment, "shadowMapCascaded");
+                shadowTextureArray = 4;
+                shadowResolution = cast(float)csm.resolution;
+                shadowMatrix1 = &csm.area[0].shadowMatrix;
+                shadowMatrix2 = &csm.area[1].shadowMatrix;
+                shadowMatrix3 = &csm.area[2].shadowMatrix;
+                shadowMapSubroutine.index = shadowMapSubroutineCascaded;
             }
             else
             {
                 glActiveTexture(GL_TEXTURE4);
                 glBindTexture(GL_TEXTURE_2D_ARRAY, defaultShadowTexture);
-                setParameter("shadowTextureArray", 4);
-                setParameter("shadowMatrix1", defaultShadowMatrix);
-                setParameter("shadowMatrix2", defaultShadowMatrix);
-                setParameter("shadowMatrix3", defaultShadowMatrix);
-                setParameterSubroutine("shadowMap", ShaderType.Fragment, "shadowMapNone");
+                shadowTextureArray = 4;
+                shadowMatrix1 = &defaultShadowMatrix;
+                shadowMatrix2 = &defaultShadowMatrix;
+                shadowMatrix3 = &defaultShadowMatrix;
+                shadowMapSubroutine.index = shadowMapSubroutineNone;
             }
         }
 
         // Texture 5 - occlusion buffer
+        glActiveTexture(GL_TEXTURE5);
+        occlusionBuffer = 5;
         if (glIsTexture(state.occlusionTexture))
         {
-            glActiveTexture(GL_TEXTURE5);
             glBindTexture(GL_TEXTURE_2D, state.occlusionTexture);
-            setParameter("occlusionBuffer", 5);
-            setParameter("haveOcclusionBuffer", true);
+            haveOcclusionBuffer = true;
         }
         else
         {
-            setParameter("haveOcclusionBuffer", false);
+            glBindTexture(GL_TEXTURE_2D, 0);
+            haveOcclusionBuffer = false;
         }
 
         glActiveTexture(GL_TEXTURE0);

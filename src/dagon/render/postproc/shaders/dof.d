@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2024 Timur Gafarov
+Copyright (c) 2021-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -45,8 +45,30 @@ import dagon.render.deferred.gbuffer;
 
 class DepthOfFieldShader: Shader
 {
+   protected:
     String vs, fs;
+    
+    ShaderParameter!Vector2f viewSize;
+    ShaderParameter!int dofEnabled;
+    ShaderParameter!float zNear;
+    ShaderParameter!float zFar;
+    ShaderParameter!Matrix4x4f invProjectionMatrix;
+    
+    ShaderParameter!int dofAutofocus;
+    ShaderParameter!float dofFocalDepth;
+    ShaderParameter!float dofFocalLength;
+    ShaderParameter!float dofFstop;
+    
+    ShaderParameter!int dofManual;
+    ShaderParameter!float dofNearStart;
+    ShaderParameter!float dofNearDistance;
+    ShaderParameter!float dofFarStart;
+    ShaderParameter!float dofFarDistance;
+    
+    ShaderParameter!int colorBuffer;
+    ShaderParameter!int depthBuffer;
 
+   public:
     bool enabled = true;
     
     bool autofocus = true; // Focus to screen center
@@ -69,6 +91,26 @@ class DepthOfFieldShader: Shader
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
+        
+        viewSize = createParameter!Vector2f("viewSize");
+        dofEnabled = createParameter!int("enabled");
+        zNear = createParameter!float("zNear");
+        zFar = createParameter!float("zFar");
+        invProjectionMatrix = createParameter!Matrix4x4f("invProjectionMatrix");
+        
+        dofAutofocus = createParameter!int("autofocus");
+        dofFocalDepth = createParameter!float("focalDepth");
+        dofFocalLength = createParameter!float("focalLength");
+        dofFstop = createParameter!float("fstop");
+        
+        dofManual = createParameter!int("manual");
+        dofNearStart = createParameter!float("nearStart");
+        dofNearDistance = createParameter!float("nearDistance");
+        dofFarStart = createParameter!float("farStart");
+        dofFarDistance = createParameter!float("farDistance");
+        
+        colorBuffer = createParameter!int("colorBuffer");
+        depthBuffer = createParameter!int("depthBuffer");
     }
 
     ~this()
@@ -79,35 +121,35 @@ class DepthOfFieldShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        setParameter("viewSize", state.resolution);
-        setParameter("enabled", enabled);
-        setParameter("zNear", state.zNear);
-        setParameter("zFar", state.zFar);
+        viewSize = state.resolution;
+        dofEnabled = enabled;
+        zNear = state.zNear;
+        zFar = state.zFar;
 
-        setParameter("invProjectionMatrix", state.invProjectionMatrix);
+        invProjectionMatrix = &state.invProjectionMatrix;
         
-        setParameter("autofocus", autofocus);
-        setParameter("focalDepth", focalDepth);
-        setParameter("focalLength", focalLength);
-        setParameter("fstop", fStop);
-        
-        setParameter("manual", manual);
-        setParameter("nearStart", nearStart);
-        setParameter("nearDistance", nearDistance);
-        setParameter("farStart", farStart);
-        setParameter("farDistance", farDistance);
+        dofAutofocus = autofocus;
+        dofFocalDepth = focalDepth;
+        dofFocalLength = focalLength;
+        dofFstop = fStop;
+
+        dofManual = manual;
+        dofNearStart = nearStart;
+        dofNearDistance = nearDistance;
+        dofFarStart = farStart;
+        dofFarDistance = farDistance;
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
-        setParameter("colorBuffer", 0);
+        colorBuffer = 0;
 
         if (gbuffer)
         {
             // Texture 1 - depth buffer
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_2D, gbuffer.depthTexture);
-            setParameter("depthBuffer", 1);
+            depthBuffer = 1;
         }
 
         glActiveTexture(GL_TEXTURE0);

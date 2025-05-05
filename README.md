@@ -57,9 +57,6 @@ Features
 * UTF-8 text rendering using TTF fonts via Freetype
 * GUI extension based on [Dear ImGui](https://github.com/ocornut/imgui).
 
-Planned in future:
-* Screen-space reflections.
-
 Getting Started
 ---------------
 The recommended way to start using Dagon is creating a game template with `dub init`. Create an empty directory for the project, cd to it and run the following:

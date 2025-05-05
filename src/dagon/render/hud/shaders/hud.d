@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -46,8 +46,24 @@ import dagon.graphics.state;
 
 class HUDShader: Shader
 {
+   protected:
     String vs, fs;
+    
+    ShaderParameter!Matrix4x4f modelViewMatrix;
+    ShaderParameter!Matrix4x4f normalMatrix;
+    ShaderParameter!Matrix4x4f viewMatrix;
+    ShaderParameter!Matrix4x4f invViewMatrix;
+    ShaderParameter!Matrix4x4f projectionMatrix;
+    
+    ShaderParameter!float opacity;
+    
+    ShaderParameter!int diffuseTexture;
+    ShaderParameter!Color4f diffuseVector;
+    ShaderSubroutine diffuseSurbroutine;
+    GLuint diffuseSurbroutineColorTexture,
+           diffuseSurbroutineColorValue;
 
+   public:
     this(Owner owner)
     {
         vs = Shader.load("data/__internal/shaders/HUD/HUD.vert.glsl");
@@ -55,6 +71,20 @@ class HUDShader: Shader
         
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
+        
+        modelViewMatrix = createParameter!Matrix4x4f("modelViewMatrix");
+        normalMatrix = createParameter!Matrix4x4f("normalMatrix");
+        viewMatrix = createParameter!Matrix4x4f("viewMatrix");
+        invViewMatrix = createParameter!Matrix4x4f("invViewMatrix");
+        projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
+        
+        opacity = createParameter!float("opacity");
+        
+        diffuseTexture = createParameter!int("diffuseTexture");
+        diffuseVector = createParameter!Color4f("diffuseVector");
+        diffuseSurbroutine = createParameterSubroutine("diffuse", ShaderType.Fragment);
+        diffuseSurbroutineColorTexture = diffuseSurbroutine.getIndex("diffuseColorTexture");
+        diffuseSurbroutineColorValue = diffuseSurbroutine.getIndex("diffuseColorValue");
     }
 
     ~this()
@@ -67,27 +97,27 @@ class HUDShader: Shader
     {
         Material mat = state.material;
 
-        setParameter("modelViewMatrix", state.modelViewMatrix);
-        setParameter("projectionMatrix", state.projectionMatrix);
-        setParameter("normalMatrix", state.normalMatrix);
-        setParameter("viewMatrix", state.viewMatrix);
-        setParameter("invViewMatrix", state.invViewMatrix);
-        
-        setParameter("opacity", mat.opacity);
+        modelViewMatrix = &state.modelViewMatrix;
+        normalMatrix = &state.normalMatrix;
+        viewMatrix = &state.viewMatrix;
+        invViewMatrix = &state.invViewMatrix;
+        projectionMatrix = &state.projectionMatrix;
+
+        opacity = mat.opacity * state.opacity;
 
         // Diffuse
         glActiveTexture(GL_TEXTURE0);
-        setParameter("diffuseTexture", cast(int)0);
-        setParameter("diffuseVector", mat.baseColorFactor);
+        diffuseTexture = 0;
+        diffuseVector = mat.baseColorFactor;
         if (mat.baseColorTexture)
         {
             mat.baseColorTexture.bind();
-            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
+            diffuseSurbroutine.index = diffuseSurbroutineColorTexture;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
+            diffuseSurbroutine.index = diffuseSurbroutineColorValue;
         }
 
         glActiveTexture(GL_TEXTURE0);

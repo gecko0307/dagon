@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -44,8 +44,13 @@ import dagon.graphics.state;
 
 class PresentShader: Shader
 {
+   protected:
     String vs, fs;
+    
+    ShaderParameter!int colorBuffer;
+    ShaderParameter!int depthBuffer;
 
+   public:
     this(Owner owner)
     {
         vs = Shader.load("data/__internal/shaders/Present/Present.vert.glsl");
@@ -53,6 +58,9 @@ class PresentShader: Shader
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
+        
+        colorBuffer = createParameter!int("colorBuffer");
+        depthBuffer = createParameter!int("depthBuffer");
     }
 
     ~this()
@@ -66,12 +74,12 @@ class PresentShader: Shader
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
-        setParameter("colorBuffer", 0);
+        colorBuffer = 0;
 
         // Texture 1 - depth buffer
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, state.depthTexture);
-        setParameter("depthBuffer", 1);
+        depthBuffer = 1;
 
         glActiveTexture(GL_TEXTURE0);
 

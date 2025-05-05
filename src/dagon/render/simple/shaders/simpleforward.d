@@ -50,9 +50,51 @@ import dagon.graphics.pose;
 
 class SimpleForwardShader: Shader
 {
+   protected:
     String vs, fs;
+    
+    ShaderParameter!Matrix4x4f modelMatrix;
+    ShaderParameter!Matrix4x4f modelViewMatrix;
+    ShaderParameter!Matrix4x4f projectionMatrix;
+    ShaderParameter!Matrix4x4f normalMatrix;
+    
+    ShaderParameter!float opacity;
+    ShaderParameter!Matrix3x3f textureMatrix;
+    ShaderParameter!int textureMappingMode;
+    ShaderParameter!float alphaTestThreshold;
+    
+    ShaderParameter!int skinned;
     GLint boneMatricesLocation;
-    GLuint defaultShadowTexture;
+    
+    ShaderParameter!Vector3f sunDirection;
+    ShaderParameter!Color4f sunColor;
+    ShaderParameter!float sunEnergy;
+    ShaderParameter!int shaded;
+    ShaderParameter!float gloss;
+    
+    ShaderParameter!Color4f fogColor;
+    ShaderParameter!float fogStart;
+    ShaderParameter!float fogEnd;
+    
+    ShaderParameter!Color4f ambientColor;
+    ShaderParameter!float ambientEnergy;
+    
+    ShaderParameter!int diffuseTexture;
+    ShaderParameter!Color4f diffuseVector;
+    ShaderSubroutine diffuseSurbroutine;
+    GLuint diffuseSurbroutineColorTexture,
+           diffuseSurbroutineColorValue;
+    
+    ShaderParameter!Vector3f sfShadowCenter;
+    ShaderParameter!int sfShadowEnabled;
+    ShaderParameter!float sfShadowMinRadius;
+    ShaderParameter!float sfShadowMaxRadius;
+    ShaderParameter!float sfShadowOpacity;
+    
+    ShaderParameter!Color4f debugHighlightColor;
+    ShaderParameter!float debugHighlightCoef;
+    
+   public:
     Vector3f shadowCenter = Vector3f(0.0f, 0.0f, 0.0f);
     bool shadowEnabled = true;
     float shadowMinRadius = 0.0f;
@@ -67,7 +109,46 @@ class SimpleForwardShader: Shader
         auto prog = New!ShaderProgram(vs, fs, this);
         super(prog, owner);
         
+        modelMatrix = createParameter!Matrix4x4f("modelMatrix");
+        modelViewMatrix = createParameter!Matrix4x4f("modelViewMatrix");
+        projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
+        normalMatrix = createParameter!Matrix4x4f("normalMatrix");
+        
+        opacity = createParameter!float("opacity");
+        textureMatrix = createParameter!Matrix3x3f("textureMatrix");
+        textureMappingMode = createParameter!int("textureMappingMode");
+        alphaTestThreshold = createParameter!float("alphaTestThreshold");
+        
+        skinned = createParameter!int("skinned");
         boneMatricesLocation = glGetUniformLocation(prog.program, "boneMatrices[0]");
+        
+        sunDirection = createParameter!Vector3f("sunDirection");
+        sunColor = createParameter!Color4f("sunColor");
+        sunEnergy = createParameter!float("sunEnergy");
+        shaded = createParameter!int("shaded");
+        gloss = createParameter!float("gloss");
+        
+        fogColor = createParameter!Color4f("fogColor");
+        fogStart = createParameter!float("fogStart");
+        fogEnd = createParameter!float("fogEnd");
+        
+        ambientColor = createParameter!Color4f("ambientColor");
+        ambientEnergy = createParameter!float("ambientEnergy");
+        
+        diffuseTexture = createParameter!int("diffuseTexture");
+        diffuseVector = createParameter!Color4f("diffuseVector");
+        diffuseSurbroutine = createParameterSubroutine("diffuse", ShaderType.Fragment);
+        diffuseSurbroutineColorTexture = diffuseSurbroutine.getIndex("diffuseColorTexture");
+        diffuseSurbroutineColorValue = diffuseSurbroutine.getIndex("diffuseColorValue");
+        
+        sfShadowCenter = createParameter!Vector3f("shadowCenter");
+        sfShadowEnabled = createParameter!int("shadowEnabled");
+        sfShadowMinRadius = createParameter!float("shadowMinRadius");
+        sfShadowMaxRadius = createParameter!float("shadowMaxRadius");
+        sfShadowOpacity = createParameter!float("shadowOpacity");
+        
+        debugHighlightColor = createParameter!Color4f("debugHighlightColor");
+        debugHighlightCoef = createParameter!float("debugHighlightCoef");
     }
 
     ~this()
@@ -80,15 +161,15 @@ class SimpleForwardShader: Shader
     {
         Material mat = state.material;
         
-        setParameter("modelMatrix", state.modelMatrix);
-        setParameter("modelViewMatrix", state.modelViewMatrix);
-        setParameter("projectionMatrix", state.projectionMatrix);
-        setParameter("normalMatrix", state.normalMatrix);
+        modelMatrix = &state.modelMatrix;
+        modelViewMatrix = &state.modelViewMatrix;
+        projectionMatrix = &state.projectionMatrix;
+        normalMatrix = &state.normalMatrix;
         
-        setParameter("opacity", mat.opacity * state.opacity);
-        setParameter("textureMatrix", mat.textureTransformation);
-        setParameter("textureMappingMode", mat.textureMappingMode);
-        setParameter("alphaTestThreshold", mat.alphaTestThreshold);
+        opacity = mat.opacity * state.opacity;
+        textureMatrix = mat.textureTransformation;
+        textureMappingMode = mat.textureMappingMode;
+        alphaTestThreshold = mat.alphaTestThreshold;
         
         if (state.pose)
         {
@@ -100,85 +181,87 @@ class SimpleForwardShader: Shader
                     numBones = 128;
                 glUniformMatrix4fv(boneMatricesLocation, numBones, GL_FALSE, pose.boneMatrices[0].arrayof.ptr);
                 
-                setParameter("skinned", cast(int)1);
+                skinned = true;
             }
             else
             {
-                setParameter("skinned", cast(int)0);
+                skinned = false;
             }
         }
         else
         {
-            setParameter("skinned", cast(int)0);
+            skinned = false;
         }
         
         Light sun = mat.sun;
         if (sun is null && state.environment !is null)
             sun = state.environment.sun;
         
-        Vector3f sunDirection = Vector3f(0.0f, 0.0f, 1.0f);
-        Color4f sunColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
-        float sunEnergy = 1.0f;
         if (sun)
         {
-            sunDirection = sun.directionAbsolute;
+            Vector4f sunDirHg = Vector4f(sun.directionAbsolute);
+            sunDirHg.w = 0.0;
+            sunDirection = (sunDirHg * state.viewMatrix).xyz;
             sunColor = sun.color;
             sunEnergy = sun.energy;
         }
+        else
+        {
+            Vector4f sunDirHg = Vector4f(0.0f, 0.0f, 1.0f, 0.0f);
+            sunDirection = (sunDirHg * state.viewMatrix).xyz;
+            sunColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+            sunEnergy = 1.0f;
+        }
         
-        Vector4f sunDirHg = Vector4f(sunDirection);
-        sunDirHg.w = 0.0;
-        setParameter("sunDirection", (sunDirHg * state.viewMatrix).xyz);
-        setParameter("sunColor", sunColor);
-        setParameter("sunEnergy", sunEnergy);
-        setParameter("shaded", !mat.shadeless);
-        setParameter("gloss", max(0.001f, 1.0f - mat.roughnessFactor));
+        shaded = !mat.shadeless;
+        gloss = max(0.001f, 1.0f - mat.roughnessFactor);
         
         // Ambient
         if (state.environment)
         {
-            setParameter("fogColor", state.environment.fogColor);
-            setParameter("fogStart", state.environment.fogStart);
-            setParameter("fogEnd", state.environment.fogEnd);
-            setParameter("ambientColor", state.environment.ambientColor);
-            setParameter("ambientEnergy", state.environment.ambientEnergy);
+            fogColor = state.environment.fogColor;
+            fogStart = state.environment.fogStart;
+            fogEnd = state.environment.fogEnd;
+            ambientColor = state.environment.ambientColor;
+            ambientEnergy = state.environment.ambientEnergy;
         }
         else
         {
-            setParameter("fogColor", Color4f(0.5f, 0.5f, 0.5f, 1.0f));
-            setParameter("fogStart", 0.0f);
-            setParameter("fogEnd", 1000.0f);
-            setParameter("ambientColor", Color4f(0.0f, 0.0f, 0.0f, 1.0f));
-            setParameter("ambientEnergy", 1.0f);
+            fogColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
+            fogStart = 0.0f;
+            fogEnd = 1000.0f;
+            ambientColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
+            ambientEnergy = 1.0f;
         }
         
         // Diffuse
         glActiveTexture(GL_TEXTURE0);
-        setParameter("diffuseTexture", cast(int)0);
-        setParameter("diffuseVector", mat.baseColorFactor);
+        diffuseTexture = 0;
+        diffuseVector = mat.baseColorFactor;
         if (mat.baseColorTexture)
         {
             mat.baseColorTexture.bind();
-            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
+            diffuseSurbroutine.index = diffuseSurbroutineColorTexture;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
+            diffuseSurbroutine.index = diffuseSurbroutineColorValue;
         }
         
         // Shadow
-        setParameter("shadowCenter", shadowCenter);
-        setParameter("shadowEnabled", shadowEnabled);
-        setParameter("shadowMinRadius", shadowMinRadius);
-        setParameter("shadowMaxRadius", shadowMaxRadius);
-        setParameter("shadowOpacity", shadowOpacity);
+        sfShadowCenter = shadowCenter;
+        sfShadowEnabled = shadowEnabled;
+        sfShadowMinRadius = shadowMinRadius;
+        sfShadowMaxRadius = shadowMaxRadius;
+        sfShadowOpacity = shadowOpacity;
         
-        setParameter("debugHighlightColor", state.debugColor);
-        
-        float debugHighlightCoef = 0.0f;
-        if (state.debugMode) debugHighlightCoef = 0.99f;
-        setParameter("debugHighlightCoef", debugHighlightCoef);
+        // Debug highligting
+        debugHighlightColor = state.debugColor;
+        if (state.debugMode)
+            debugHighlightCoef = 0.99f;
+        else
+            debugHighlightCoef = 0.0f;
 
         super.bindParameters(state);
     }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -45,9 +45,25 @@ import dagon.graphics.shader;
 
 class RayleighShader: Shader
 {
+   protected:
     String vs, fs;
+    
+    ShaderParameter!Matrix4x4f modelViewMatrix;
+    ShaderParameter!Matrix4x4f projectionMatrix;
+    ShaderParameter!Matrix4x4f normalMatrix;
+    ShaderParameter!Matrix4x4f viewMatrix;
+    ShaderParameter!Matrix4x4f invViewMatrix;
+    ShaderParameter!Matrix4x4f prevModelViewMatrix;
+    
+    ShaderParameter!Vector3f cameraPosition;
+    
+    ShaderParameter!float gbufferMask;
+    ShaderParameter!float blurMask;
+    
+    ShaderParameter!Vector3f sunDirection;
 
-    Vector3f sunDirection = Vector3f(-1.0f, -1.0f, -1.0f).normalized;
+   public:
+    Vector3f defaultSunDirection = Vector3f(-1.0f, -1.0f, -1.0f).normalized;
 
     this(Owner owner)
     {
@@ -56,6 +72,20 @@ class RayleighShader: Shader
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
+        
+        modelViewMatrix = createParameter!Matrix4x4f("modelViewMatrix");
+        projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
+        normalMatrix = createParameter!Matrix4x4f("normalMatrix");
+        viewMatrix = createParameter!Matrix4x4f("viewMatrix");
+        invViewMatrix = createParameter!Matrix4x4f("invViewMatrix");
+        prevModelViewMatrix = createParameter!Matrix4x4f("prevModelViewMatrix");
+        
+        cameraPosition = createParameter!Vector3f("cameraPosition");
+        
+        gbufferMask = createParameter!float("gbufferMask");
+        blurMask = createParameter!float("blurMask");
+        
+        sunDirection = createParameter!Vector3f("sunDirection");
     }
 
     ~this()
@@ -68,24 +98,24 @@ class RayleighShader: Shader
     {
         Material mat = state.material;
         
-        setParameter("modelViewMatrix", state.modelViewMatrix);
-        setParameter("projectionMatrix", state.projectionMatrix);
-        setParameter("normalMatrix", state.normalMatrix);
-        setParameter("viewMatrix", state.viewMatrix);
-        setParameter("invViewMatrix", state.invViewMatrix);
-        setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
+        modelViewMatrix = &state.modelViewMatrix;
+        projectionMatrix = &state.projectionMatrix;
+        normalMatrix = &state.normalMatrix;
+        viewMatrix = &state.viewMatrix;
+        invViewMatrix = &state.invViewMatrix;
+        prevModelViewMatrix = &state.prevModelViewMatrix;
 
-        setParameter("cameraPosition", state.cameraPosition);
+        cameraPosition = state.cameraPosition;
 
-        setParameter("gbufferMask", state.gbufferMask);
-        setParameter("blurMask", state.blurMask);
+        gbufferMask = state.gbufferMask;
+        blurMask = state.blurMask;
 
         if (mat.sun)
-            setParameter("sunDirection", mat.sun.directionAbsolute);
+            sunDirection = mat.sun.directionAbsolute;
         else if (state.environment.sun)
-            setParameter("sunDirection", state.environment.sun.directionAbsolute);
+            sunDirection = state.environment.sun.directionAbsolute;
         else
-            setParameter("sunDirection", -sunDirection);
+            sunDirection = -defaultSunDirection;
 
         super.bindParameters(state);
     }

@@ -35,13 +35,13 @@ float noise3d(vec3 x)
     return fract(xhash + yhash + zhash);
 }
 
-uniform vec3 spaceColor;
+uniform vec4 spaceColor;
 uniform float starsThreshold;
 uniform float starsBrightness;
 uniform float starsTwinkleSpeed;
 
 uniform vec3 sunDirection;
-uniform vec3 sunColor;
+uniform vec4 sunColor;
 
 uniform float localTime;
 
@@ -50,7 +50,7 @@ const float sunAngularDiameterCos = 0.9999;
 
 void main()
 {
-    vec3 radiance = toLinear(spaceColor);
+    vec3 radiance = toLinear(spaceColor.rgb);
     
     vec3 n = normalize(worldNormal);
     
@@ -66,7 +66,7 @@ void main()
     
     float cosTheta = clamp(dot(n, sunDirection), 0.0, 1.0);
     float sunDisk = smoothstep(sunAngularDiameterCos, sunAngularDiameterCos + 0.00002, cosTheta);
-    radiance += sunColor * sunDisk * sunEnergy;
+    radiance += toLinear(sunColor.rgb) * sunDisk * sunEnergy;
     
     vec2 posScreen = (currPosition.xy / currPosition.w) * 0.5 + 0.5;
     vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;

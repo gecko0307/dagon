@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -44,8 +44,15 @@ import dagon.graphics.state;
 
 class FXAAShader: Shader
 {
+   protected:
     String vs, fs;
+    
+    ShaderParameter!Vector2f viewSize;
+    ShaderParameter!int fxaaEnabled;
+    ShaderParameter!int colorBuffer;
+    ShaderParameter!int depthBuffer;
 
+   public:
     bool enabled = true;
 
     this(Owner owner)
@@ -55,6 +62,11 @@ class FXAAShader: Shader
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
+
+        viewSize = createParameter!Vector2f("viewSize");
+        fxaaEnabled = createParameter!int("enabled");
+        colorBuffer = createParameter!int("colorBuffer");
+        depthBuffer = createParameter!int("depthBuffer");
     }
 
     ~this()
@@ -65,18 +77,18 @@ class FXAAShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        setParameter("viewSize", state.resolution);
-        setParameter("enabled", enabled);
+        viewSize = state.resolution;
+        fxaaEnabled = enabled;
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
-        setParameter("colorBuffer", 0);
+        colorBuffer = 0;
 
         // Texture 1 - depth buffer
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, state.depthTexture);
-        setParameter("depthBuffer", 1);
+        depthBuffer = 1;
 
         glActiveTexture(GL_TEXTURE0);
 

@@ -47,9 +47,26 @@ import dagon.graphics.pose;
 
 class ShadowShader: Shader
 {
+   protected:
     String vs, fs;
+    
+    ShaderParameter!Matrix4x4f viewMatrix;
+    ShaderParameter!Matrix4x4f invViewMatrix;
+    ShaderParameter!Matrix4x4f modelViewMatrix;
+    ShaderParameter!Matrix4x4f normalMatrix;
+    ShaderParameter!Matrix4x4f projectionMatrix;
+    ShaderParameter!float opacity;
+    ShaderParameter!Matrix3x3f textureMatrix;
+    ShaderParameter!int skinned;
     GLint boneMatricesLocation;
+    
+    ShaderParameter!int diffuseTexture;
+    ShaderParameter!Color4f diffuseVector;
+    ShaderSubroutine diffuseSurbroutine;
+    GLuint diffuseSurbroutineColorTexture,
+           diffuseSurbroutineColorValue;
 
+   public:
     this(Owner owner)
     {
         vs = Shader.load("data/__internal/shaders/Shadow/Shadow.vert.glsl");
@@ -58,7 +75,22 @@ class ShadowShader: Shader
         auto prog = New!ShaderProgram(vs, fs, this);
         super(prog, owner);
         
+        viewMatrix = createParameter!Matrix4x4f("viewMatrix");
+        invViewMatrix = createParameter!Matrix4x4f("invViewMatrix");
+        modelViewMatrix = createParameter!Matrix4x4f("modelViewMatrix");
+        normalMatrix = createParameter!Matrix4x4f("normalMatrix");
+        projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
+        opacity = createParameter!float("opacity");
+        textureMatrix = createParameter!Matrix3x3f("textureMatrix");
+        skinned = createParameter!int("skinned");
+        // TODO: ShaderParameter specialization for uniform arrays
         boneMatricesLocation = glGetUniformLocation(prog.program, "boneMatrices[0]");
+        
+        diffuseTexture = createParameter!int("diffuseTexture");
+        diffuseVector = createParameter!Color4f("diffuseVector");
+        diffuseSurbroutine = createParameterSubroutine("diffuse", ShaderType.Fragment);
+        diffuseSurbroutineColorTexture = diffuseSurbroutine.getIndex("diffuseColorTexture");
+        diffuseSurbroutineColorValue = diffuseSurbroutine.getIndex("diffuseColorValue");
     }
 
     ~this()
@@ -70,15 +102,15 @@ class ShadowShader: Shader
     override void bindParameters(GraphicsState* state)
     {
         Material mat = state.material;
-
-        setParameter("modelViewMatrix", state.modelViewMatrix);
-        setParameter("projectionMatrix", state.projectionMatrix);
-        setParameter("normalMatrix", state.normalMatrix);
-        setParameter("viewMatrix", state.viewMatrix);
-        setParameter("invViewMatrix", state.invViewMatrix);
         
-        setParameter("opacity", state.opacity * mat.opacity);
-        setParameter("textureScale", mat.textureScale);
+        viewMatrix = &state.viewMatrix;
+        invViewMatrix = &state.invViewMatrix;
+        modelViewMatrix = &state.modelViewMatrix;
+        normalMatrix = &state.normalMatrix;
+        projectionMatrix = &state.projectionMatrix;
+        opacity = state.opacity * mat.opacity;
+        textureMatrix = &mat.textureTransformation;
+        // TODO: mat.textureMappingMode;
         
         if (state.pose)
         {
@@ -90,32 +122,31 @@ class ShadowShader: Shader
                     numBones = 128;
                 glUniformMatrix4fv(boneMatricesLocation, numBones, GL_FALSE, pose.boneMatrices[0].arrayof.ptr);
                 
-                setParameter("skinned", cast(int)1);
+                skinned = true;
             }
             else
             {
-                setParameter("skinned", cast(int)0);
+                skinned = false;
             }
         }
         else
         {
-            setParameter("skinned", cast(int)0);
+            skinned = false;
         }
         
         // Diffuse
         glActiveTexture(GL_TEXTURE0);
+        diffuseTexture = 0;
+        diffuseVector = mat.baseColorFactor;
         if (mat.baseColorTexture)
         {
             mat.baseColorTexture.bind();
-            setParameter("diffuseTexture", cast(int)0);
-            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
+            diffuseSurbroutine.index = diffuseSurbroutineColorTexture;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameter("diffuseTexture", cast(int)0);
-            setParameter("diffuseVector", mat.baseColorFactor);
-            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
+            diffuseSurbroutine.index = diffuseSurbroutineColorValue;
         }
 
         super.bindParameters(state);

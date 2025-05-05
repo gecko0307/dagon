@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2024 Timur Gafarov
+Copyright (c) 2024-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -45,8 +45,13 @@ import dagon.graphics.state;
 
 class EmissionShader: Shader
 {
+   protected:
     String vs, fs;
+    
+    ShaderParameter!Vector2f resolution;
+    ShaderParameter!int emissionBuffer;
 
+   public:
     this(Owner owner)
     {
         vs = Shader.load("data/__internal/shaders/Emission/Emission.vert.glsl");
@@ -54,6 +59,9 @@ class EmissionShader: Shader
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
+        
+        resolution = createParameter!Vector2f("resolution");
+        emissionBuffer = createParameter!int("emissionBuffer");
     }
 
     ~this()
@@ -64,12 +72,12 @@ class EmissionShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        setParameter("resolution", state.resolution);
+        resolution = state.resolution;
 
         // Texture 0 - emission buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.emissionTexture);
-        setParameter("emissionBuffer", cast(int)0);
+        emissionBuffer = 0;
         
         glActiveTexture(GL_TEXTURE0);
 

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -58,8 +58,17 @@ enum Tonemapper
 
 class TonemapShader: Shader
 {
+   protected:
     String vs, fs;
+    
+    ShaderParameter!Vector2f viewSize;
+    ShaderParameter!int tEnabled;
+    ShaderParameter!int tTonemapper;
+    ShaderParameter!float tExposure;
+    ShaderParameter!int colorBuffer;
+    ShaderParameter!int depthBuffer;
 
+   public:
     bool enabled = true;
     Tonemapper tonemapper = Tonemapper.ACES;
     float exposure = 1.0f;
@@ -71,6 +80,13 @@ class TonemapShader: Shader
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
+        
+        viewSize = createParameter!Vector2f("viewSize");
+        tEnabled = createParameter!int("enabled");
+        tTonemapper = createParameter!int("tonemapper");
+        tExposure = createParameter!float("exposure");
+        colorBuffer = createParameter!int("colorBuffer");
+        depthBuffer = createParameter!int("depthBuffer");
     }
 
     ~this()
@@ -81,21 +97,20 @@ class TonemapShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        setParameter("viewSize", state.resolution);
-        setParameter("enabled", enabled);
-
-        setParameter("tonemapper", cast(int)tonemapper);
-        setParameter("exposure", exposure);
+        viewSize = state.resolution;
+        tEnabled = enabled;
+        tTonemapper = cast(int)tonemapper;
+        tExposure = exposure;
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
-        setParameter("colorBuffer", 0);
+        colorBuffer = 0;
 
         // Texture 1 - depth buffer
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, state.depthTexture);
-        setParameter("depthBuffer", 1);
+        depthBuffer = 1;
 
         glActiveTexture(GL_TEXTURE0);
 

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -44,8 +44,14 @@ import dagon.graphics.state;
 
 class DenoiseShader: Shader
 {
+   protected:
     String vs, fs;
+    
+    ShaderParameter!Vector2f viewSize;
+    ShaderParameter!float denoiseFactor;
+    ShaderParameter!int colorBuffer;
 
+   public:
     bool enabled = true;
     float factor = 0.5f;
 
@@ -56,6 +62,10 @@ class DenoiseShader: Shader
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
+        
+        viewSize = createParameter!Vector2f("viewSize");
+        denoiseFactor = createParameter!float("factor");
+        colorBuffer = createParameter!int("colorBuffer");
     }
 
     ~this()
@@ -66,13 +76,13 @@ class DenoiseShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        setParameter("viewSize", state.resolution);
-        setParameter("factor", factor);
+        viewSize = state.resolution;
+        denoiseFactor = factor;
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
-        setParameter("colorBuffer", 0);
+        colorBuffer = 0;
 
         glActiveTexture(GL_TEXTURE0);
 

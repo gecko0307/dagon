@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -46,8 +46,62 @@ import dagon.graphics.state;
 
 class ParticleShader: Shader
 {
+   protected:
     String vs, fs;
-
+    
+    ShaderParameter!Matrix4x4f modelViewMatrix;
+    ShaderParameter!Matrix4x4f projectionMatrix;
+    ShaderParameter!Matrix4x4f invProjectionMatrix;
+    ShaderParameter!Matrix4x4f viewMatrix;
+    ShaderParameter!Matrix4x4f invViewMatrix;
+    ShaderParameter!Matrix4x4f prevModelViewMatrix;
+    ShaderParameter!Vector2f viewSize;
+    
+    ShaderParameter!Color4f fogColor;
+    ShaderParameter!float fogStart;
+    ShaderParameter!float fogEnd;
+    ShaderParameter!float ambientEnergy;
+    
+    ShaderParameter!Color4f particleColor;
+    ShaderParameter!float particleAlpha;
+    ShaderParameter!float particleEnergy;
+    ShaderParameter!float alphaCutoutThreshold;
+    ShaderParameter!Vector3f particlePosition;
+    
+    ShaderParameter!Vector3f sunDirection;
+    ShaderParameter!Color4f sunColor;
+    ShaderParameter!float sunEnergy;
+    ShaderParameter!float sunScatteringG;
+    ShaderParameter!float sunScatteringDensity;
+    ShaderParameter!int sunScattering;
+    ShaderParameter!int shaded;
+    
+    ShaderParameter!int diffuseTexture;
+    ShaderParameter!Color4f diffuseVector;
+    ShaderSubroutine diffuseSurbroutine;
+    GLuint diffuseSurbroutineColorTexture,
+           diffuseSurbroutineColorValue;
+    
+    ShaderParameter!int depthTexture;
+    
+    ShaderParameter!int normalTexture;
+    ShaderParameter!Vector3f normalVector;
+    ShaderSubroutine normalSurbroutine;
+    GLuint normalSurbroutineMap,
+           normalSurbroutineFunctionHemisphere,
+           normalSurbroutineValue;
+    ShaderParameter!int generateTBN;
+    ShaderParameter!float normalYSign;
+    
+    ShaderParameter!int ambientTexture;
+    ShaderParameter!int ambientTextureCube;
+    ShaderParameter!Color4f ambientVector;
+    ShaderSubroutine ambientSubroutine;
+    GLuint ambientSubroutineCubemap,
+           ambientSubroutineEquirectangularMap,
+           ambientSubroutineColor;
+    
+   public:
     this(Owner owner)
     {
         vs = Shader.load("data/__internal/shaders/Particle/Particle.vert.glsl");
@@ -55,6 +109,58 @@ class ParticleShader: Shader
 
         auto prog = New!ShaderProgram(vs, fs, this);
         super(prog, owner);
+        
+        modelViewMatrix = createParameter!Matrix4x4f("modelViewMatrix");
+        projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
+        invProjectionMatrix = createParameter!Matrix4x4f("invProjectionMatrix");
+        viewMatrix = createParameter!Matrix4x4f("viewMatrix");
+        invViewMatrix = createParameter!Matrix4x4f("invViewMatrix");
+        prevModelViewMatrix = createParameter!Matrix4x4f("prevModelViewMatrix");
+        viewSize = createParameter!Vector2f("viewSize");
+        
+        fogColor = createParameter!Color4f("fogColor");
+        fogStart = createParameter!float("fogStart");
+        fogEnd = createParameter!float("fogEnd");
+        
+        particleColor = createParameter!Color4f("particleColor");
+        particleAlpha = createParameter!float("particleAlpha");
+        particleEnergy = createParameter!float("particleEnergy");
+        alphaCutoutThreshold = createParameter!float("alphaCutoutThreshold");
+        particlePosition = createParameter!Vector3f("particlePosition");
+        
+        sunDirection = createParameter!Vector3f("sunDirection");
+        sunColor = createParameter!Color4f("sunColor");
+        sunEnergy = createParameter!float("sunEnergy");
+        sunScatteringG = createParameter!float("sunScatteringG");
+        sunScatteringDensity = createParameter!float("sunScatteringDensity");
+        sunScattering = createParameter!int("sunScattering");
+        shaded = createParameter!int("shaded");
+        
+        diffuseTexture = createParameter!int("diffuseTexture");
+        diffuseVector = createParameter!Color4f("diffuseVector");
+        diffuseSurbroutine = createParameterSubroutine("diffuse", ShaderType.Fragment);
+        diffuseSurbroutineColorTexture = diffuseSurbroutine.getIndex("diffuseColorTexture");
+        diffuseSurbroutineColorValue = diffuseSurbroutine.getIndex("diffuseColorValue");
+        
+        depthTexture = createParameter!int("depthTexture");
+        
+        normalTexture = createParameter!int("normalTexture");
+        normalVector = createParameter!Vector3f("normalVector");
+        normalSurbroutine = createParameterSubroutine("normal", ShaderType.Fragment);
+        normalSurbroutineMap = normalSurbroutine.getIndex("normalMap");
+        normalSurbroutineFunctionHemisphere = normalSurbroutine.getIndex("normalFunctionHemisphere");
+        normalSurbroutineValue = normalSurbroutine.getIndex("normalValue");
+        generateTBN = createParameter!int("generateTBN");
+        normalYSign = createParameter!float("normalYSign");
+        
+        ambientEnergy = createParameter!float("ambientEnergy");
+        ambientTexture = createParameter!int("ambientTexture");
+        ambientTextureCube = createParameter!int("ambientTextureCube");
+        ambientVector = createParameter!Color4f("ambientVector");
+        ambientSubroutine = createParameterSubroutine("ambient", ShaderType.Fragment);
+        ambientSubroutineCubemap = ambientSubroutine.getIndex("ambientCubemap");
+        ambientSubroutineEquirectangularMap = ambientSubroutine.getIndex("ambientEquirectangularMap");
+        ambientSubroutineColor = ambientSubroutine.getIndex("ambientColor");
     }
 
     ~this()
@@ -66,105 +172,103 @@ class ParticleShader: Shader
     override void bindParameters(GraphicsState* state)
     {
         Material mat = state.material;
-
-        setParameter("modelViewMatrix", state.modelViewMatrix);
-        setParameter("projectionMatrix", state.projectionMatrix);
-        setParameter("invProjectionMatrix", state.invProjectionMatrix);
-        setParameter("viewMatrix", state.viewMatrix);
-        setParameter("invViewMatrix", state.invViewMatrix);
-        setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
-
-        setParameter("viewSize", state.resolution);
-
-        setParameter("particleColor", mat.baseColorFactor);
-        setParameter("particleAlpha", state.opacity * mat.opacity);
-        setParameter("particleEnergy", mat.emissionEnergy);
         
-        setParameter("alphaCutoutThreshold", mat.alphaTestThreshold);
-        setParameter("particlePosition", state.modelViewMatrix.translation);
+        modelViewMatrix = &state.modelViewMatrix;
+        projectionMatrix = &state.projectionMatrix;
+        invProjectionMatrix = &state.invProjectionMatrix;
+        viewMatrix = &state.viewMatrix;
+        invViewMatrix = &state.invViewMatrix;
+        prevModelViewMatrix = &state.prevModelViewMatrix;
+        viewSize = state.resolution;
+
+        particleColor = mat.baseColorFactor;
+        particleAlpha = state.opacity * mat.opacity;
+        particleEnergy = mat.emissionEnergy;
+        
+        alphaCutoutThreshold = mat.alphaTestThreshold;
+        particlePosition = state.modelViewMatrix.translation;
 
         // Sun
-        Vector3f sunDirection = Vector3f(0.0f, 0.0f, 1.0f);
-        Color4f sunColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
-        float sunEnergy = 1.0f;
-        float sunScatteringG = 0.0f;
-        float sunScatteringDensity = 1.0f;
-        bool shaded = false;
-        bool scatteringEnabled = false;
         if (mat.sun)
         {
             auto sun = mat.sun;
-            sunDirection = sun.directionAbsolute;
+            Vector4f sunDirHg = Vector4f(sun.directionAbsolute);
+            sunDirHg.w = 0.0;
+            sunDirection = (sunDirHg * state.viewMatrix).xyz;
             sunColor = sun.color;
             sunEnergy = sun.energy;
             sunScatteringG = 1.0f - sun.scattering;
             sunScatteringDensity = sun.mediumDensity;
+            sunScattering = sun.scatteringEnabled;
             shaded = !mat.shadeless;
-            scatteringEnabled = sun.scatteringEnabled;
         }
-        Vector4f sunDirHg = Vector4f(sunDirection);
-        sunDirHg.w = 0.0;
-        setParameter("sunDirection", (sunDirHg * state.viewMatrix).xyz);
-        setParameter("sunColor", sunColor);
-        setParameter("sunEnergy", sunEnergy);
-        setParameter("sunScatteringG", sunScatteringG);
-        setParameter("sunScatteringDensity", sunScatteringDensity);
-        setParameter("sunScattering", scatteringEnabled);
-        setParameter("shaded", shaded);
+        else
+        {
+            Vector4f sunDirHg = Vector4f(0.0f, 0.0f, 1.0f, 0.0f);
+            sunDirection = (sunDirHg * state.viewMatrix).xyz;
+            sunColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+            sunEnergy = 1.0f;
+            sunScatteringG = 0.0f;
+            sunScatteringDensity = 1.0f;
+            sunScattering = false;
+            shaded = false;
+        }
         
         // Texture 0 - Diffuse
         glActiveTexture(GL_TEXTURE0);
-        setParameter("diffuseTexture", cast(int)0);
-        setParameter("diffuseVector", mat.baseColorFactor);
+        diffuseTexture = 0;
+        diffuseVector = mat.baseColorFactor;
         if (mat.baseColorTexture)
         {
             mat.baseColorTexture.bind();
-            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
+            diffuseSurbroutine.index = diffuseSurbroutineColorTexture;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
+            diffuseSurbroutine.index = diffuseSurbroutineColorValue;
         }
-
+        
         // Texture 1 - depth texture (for soft particles)
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, state.depthTexture);
-        setParameter("depthTexture", cast(int)1);
+        depthTexture = 1;
         
-        // Texture 2 - normal map
+        // Normal
         glActiveTexture(GL_TEXTURE2);
-        setParameter("normalTexture", cast(int)2);
-        setParameter("normalVector", mat.normalFactor);
+        normalTexture = 2;
+        normalVector = mat.normalFactor;
         if (mat.normalTexture)
         {
             mat.normalTexture.bind();
-            setParameterSubroutine("normal", ShaderType.Fragment, "normalMap");
-            setParameter("generateTBN", cast(int)1);
+            normalSurbroutine.index = normalSurbroutineMap;
+            generateTBN = true;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
             if (mat.sphericalNormal)
-                setParameterSubroutine("normal", ShaderType.Fragment, "normalFunctionHemisphere");
+                normalSurbroutine.index = normalSurbroutineFunctionHemisphere;
             else
-                setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
-            setParameter("generateTBN", cast(int)0);
+                normalSurbroutine.index = normalSurbroutineValue;
+            generateTBN = false;
         }
         
         if (state.material.invertNormalY)
-            setParameter("normalYSign", -1.0f);
+            normalYSign = -1.0f;
         else
-            setParameter("normalYSign", 1.0f);
+            normalYSign = 1.0f;
 
         // Textures 4, 5 - environment (equirectangular map, cube map)
         if (state.environment)
         {
-            setParameter("fogColor", state.environment.fogColor);
-            setParameter("fogStart", state.environment.fogStart);
-            setParameter("fogEnd", state.environment.fogEnd);
-            setParameter("ambientEnergy", state.environment.ambientEnergy);
-
+            fogColor = state.environment.fogColor;
+            fogStart = state.environment.fogStart;
+            fogEnd = state.environment.fogEnd;
+            
+            ambientEnergy = state.environment.ambientEnergy;
+            ambientVector = state.environment.ambientColor;
+            
             if (state.environment.ambientMap)
             {
                 auto ambientMap = state.environment.ambientMap;
@@ -173,58 +277,57 @@ class ParticleShader: Shader
                 {
                     glActiveTexture(GL_TEXTURE4);
                     glBindTexture(GL_TEXTURE_2D, 0);
-                    setParameter("ambientTexture", cast(int)4);
+                    ambientTexture = 4;
                     
                     glActiveTexture(GL_TEXTURE5);
                     ambientMap.bind();
-                    setParameter("ambientTextureCube", cast(int)5);
+                    ambientTextureCube = 5;
                     
-                    setParameterSubroutine("ambient", ShaderType.Fragment, "ambientCubemap");
+                    ambientSubroutine.index = ambientSubroutineCubemap;
                 }
                 else
                 {
                     glActiveTexture(GL_TEXTURE4);
                     ambientMap.bind();
-                    setParameter("ambientTexture", cast(int)4);
+                    ambientTexture = 4;
                     
                     glActiveTexture(GL_TEXTURE5);
                     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-                    setParameter("ambientTextureCube", cast(int)5);
+                    ambientTextureCube = 5;
                     
-                    setParameterSubroutine("ambient", ShaderType.Fragment, "ambientEquirectangularMap");
+                    ambientSubroutine.index = ambientSubroutineEquirectangularMap;
                 }
             }
             else
             {
                 glActiveTexture(GL_TEXTURE4);
                 glBindTexture(GL_TEXTURE_2D, 0);
-                setParameter("ambientTexture", cast(int)4);
+                ambientTexture = 4;
                 
                 glActiveTexture(GL_TEXTURE5);
                 glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-                setParameter("ambientTextureCube", cast(int)5);
+                ambientTextureCube = 5;
                 
-                setParameter("ambientVector", state.environment.ambientColor);
-                
-                setParameterSubroutine("ambient", ShaderType.Fragment, "ambientColor");
+                ambientSubroutine.index = ambientSubroutineColor;
             }
         }
         else
         {
-            setParameter("fogColor", Color4f(0.5f, 0.5f, 0.5f, 1.0f));
-            setParameter("fogStart", 0.0f);
-            setParameter("fogEnd", 1000.0f);
-            setParameter("ambientEnergy", 1.0f);
+            fogColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
+            fogStart = 0.0f;
+            fogEnd = 1000.0f;
+            ambientEnergy = 1.0f;
             
             glActiveTexture(GL_TEXTURE4);
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameter("ambientTexture", cast(int)4);
+            ambientTexture = 4;
             
             glActiveTexture(GL_TEXTURE5);
             glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-            setParameter("ambientTextureCube", cast(int)5);
+            ambientTextureCube = 5;
             
-            setParameter("ambientVector", Color4f(0.5f, 0.5f, 0.5f, 1.0f));
+            ambientVector = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
+            
             setParameterSubroutine("ambient", ShaderType.Fragment, "ambientColor");
         }
 

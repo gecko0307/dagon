@@ -50,11 +50,114 @@ import dagon.graphics.pose;
 
 class ForwardShader: Shader
 {
+   protected:
     String vs, fs;
+    
+    ShaderParameter!Matrix4x4f modelViewMatrix;
+    ShaderParameter!Matrix4x4f projectionMatrix;
+    ShaderParameter!Matrix4x4f normalMatrix;
+    ShaderParameter!Matrix4x4f viewMatrix;
+    ShaderParameter!Matrix4x4f invViewMatrix;
+    ShaderParameter!Matrix4x4f prevModelViewMatrix;
+    
+    ShaderParameter!float materialOpacity;
+    ShaderParameter!float stateOpacity;
+    ShaderParameter!Matrix3x3f textureMatrix;
+    ShaderParameter!int textureMappingMode;
+    ShaderParameter!float layer;
+    ShaderParameter!float blurMask;
+    ShaderParameter!Vector2f viewSize;
+    
+    ShaderParameter!int skinned;
     GLint boneMatricesLocation;
+    
+    ShaderParameter!Vector3f sunDirection;
+    ShaderParameter!Color4f sunColor;
+    ShaderParameter!float sunEnergy;
+    ShaderParameter!float sunScatteringG;
+    ShaderParameter!float sunScatteringDensity;
+    ShaderParameter!int sunScattering;
+    ShaderParameter!int sunScatteringSamples;
+    ShaderParameter!float sunScatteringMaxRandomStepOffset;
+    ShaderParameter!int sunScatteringShadow;
+    ShaderParameter!int shaded;
+    
+    ShaderParameter!float time;
+    
+    ShaderParameter!int sphericalNormal;
+    
+    ShaderParameter!int diffuseTexture;
+    ShaderParameter!Color4f diffuseVector;
+    ShaderSubroutine diffuseSurbroutine;
+    GLuint diffuseSurbroutineColorTexture,
+           diffuseSurbroutineColorValue;
+    
+    ShaderParameter!int normalTexture;
+    ShaderParameter!Vector3f normalVector;
+    ShaderSubroutine normalSurbroutine;
+    GLuint normalSurbroutineMap,
+           normalSurbroutineValue;
+    ShaderParameter!int generateTBN;
+    ShaderParameter!float normalYSign;
+    
+    ShaderParameter!int roughnessMetallicTexture;
+    ShaderParameter!Color4f roughnessMetallicFactor;
+    ShaderSubroutine roughnessSubroutine;
+    ShaderSubroutine metallicSubroutine;
+    GLuint roughnessSubroutineMap,
+           roughnessSubroutineValue;
+    GLuint metallicSubroutineMap,
+           metallicSubroutineValue;
+    
+    ShaderParameter!int emissionTexture;
+    ShaderParameter!Color4f emissionFactor;
+    ShaderSubroutine emissionSubroutine;
+    GLuint emissionSubroutineMap,
+           emissionSubroutineValue;
+    ShaderParameter!float energy;
+    
+    ShaderParameter!int heightTexture;
+    ShaderParameter!float heightScalar;
+    ShaderSubroutine heightSubroutine;
+    GLuint heightSubroutineMap,
+           heightSubroutineValue;
+    
+    ShaderSubroutine parallaxSubroutine;
+    GLuint parallaxSubroutineSimple,
+           parallaxSubroutineOcclusionMapping,
+           parallaxSubroutineNone;
+    ShaderParameter!float parallaxScale;
+    ShaderParameter!float parallaxBias;
+    
+    ShaderParameter!Color4f fogColor;
+    ShaderParameter!float fogStart;
+    ShaderParameter!float fogEnd;
+    
+    ShaderParameter!float ambientEnergy;
+    ShaderParameter!Color4f ambientVector;
+    ShaderParameter!int ambientTexture;
+    ShaderParameter!int ambientTextureCube;
+    ShaderSubroutine ambientSubroutine;
+    GLuint ambientSubroutineCubemap,
+           ambientSubroutineEquirectangularMap,
+           ambientSubroutineColor;
+    
+    ShaderParameter!int shadowTextureArray;
+    ShaderParameter!float shadowResolution;
+    ShaderParameter!Matrix4x4f shadowMatrix1;
+    ShaderParameter!Matrix4x4f shadowMatrix2;
+    ShaderParameter!Matrix4x4f shadowMatrix3;
+    ShaderSubroutine shadowMapSubroutine;
+    GLuint shadowMapSubroutineCascaded,
+           shadowMapSubroutineNone;
+    
+    ShaderParameter!int ambientBRDF;
+    ShaderParameter!int haveAmbientBRDF;
+    
     Matrix4x4f defaultShadowMatrix;
     GLuint defaultShadowTexture;
 
+   public:
     this(Owner owner)
     {
         vs = Shader.load("data/__internal/shaders/Forward/Forward.vert.glsl");
@@ -63,10 +166,110 @@ class ForwardShader: Shader
         auto prog = New!ShaderProgram(vs, fs, this);
         super(prog, owner);
         
+        modelViewMatrix = createParameter!Matrix4x4f("modelViewMatrix");
+        projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
+        normalMatrix = createParameter!Matrix4x4f("normalMatrix");
+        viewMatrix = createParameter!Matrix4x4f("viewMatrix");
+        invViewMatrix = createParameter!Matrix4x4f("invViewMatrix");
+        prevModelViewMatrix = createParameter!Matrix4x4f("prevModelViewMatrix");
+        
+        materialOpacity = createParameter!float("materialOpacity");
+        stateOpacity = createParameter!float("stateOpacity");
+        textureMatrix = createParameter!Matrix3x3f("textureMatrix");
+        textureMappingMode = createParameter!int("textureMappingMode");
+        layer = createParameter!float("layer");
+        blurMask = createParameter!float("blurMask");
+        viewSize = createParameter!Vector2f("viewSize");
+        
+        skinned = createParameter!int("skinned");
+        // TODO: ShaderParameter specialization for uniform arrays
         boneMatricesLocation = glGetUniformLocation(prog.program, "boneMatrices[0]");
-
+        
+        sunDirection = createParameter!Vector3f("sunDirection");
+        sunColor = createParameter!Color4f("sunColor");
+        sunEnergy = createParameter!float("sunEnergy");
+        sunScatteringG = createParameter!float("sunScatteringG");
+        sunScatteringDensity = createParameter!float("sunScatteringDensity");
+        sunScattering = createParameter!int("sunScattering");
+        sunScatteringSamples = createParameter!int("sunScatteringSamples");
+        sunScatteringMaxRandomStepOffset = createParameter!float("sunScatteringMaxRandomStepOffset");
+        sunScatteringShadow = createParameter!int("sunScatteringShadow");
+        shaded = createParameter!int("shaded");
+        
+        time = createParameter!float("time");
+        
+        sphericalNormal = createParameter!int("sphericalNormal");
+        
         defaultShadowMatrix = Matrix4x4f.identity;
-
+        
+        diffuseTexture = createParameter!int("diffuseTexture");
+        diffuseVector = createParameter!Color4f("diffuseVector");
+        diffuseSurbroutine = createParameterSubroutine("diffuse", ShaderType.Fragment);
+        diffuseSurbroutineColorTexture = diffuseSurbroutine.getIndex("diffuseColorTexture");
+        diffuseSurbroutineColorValue = diffuseSurbroutine.getIndex("diffuseColorValue");
+        
+        normalTexture = createParameter!int("normalTexture");
+        normalVector = createParameter!Vector3f("normalVector");
+        normalSurbroutine = createParameterSubroutine("normal", ShaderType.Fragment);
+        normalSurbroutineMap = normalSurbroutine.getIndex("normalMap");
+        normalSurbroutineValue = normalSurbroutine.getIndex("normalValue");
+        generateTBN = createParameter!int("generateTBN");
+        normalYSign = createParameter!float("normalYSign");
+        
+        roughnessMetallicTexture = createParameter!int("roughnessMetallicTexture");
+        roughnessMetallicFactor = createParameter!Color4f("roughnessMetallicFactor");
+        roughnessSubroutine = createParameterSubroutine("roughness", ShaderType.Fragment);
+        roughnessSubroutineMap = roughnessSubroutine.getIndex("roughnessMap");
+        roughnessSubroutineValue = roughnessSubroutine.getIndex("roughnessValue");
+        metallicSubroutine = createParameterSubroutine("metallic", ShaderType.Fragment);
+        metallicSubroutineMap = metallicSubroutine.getIndex("metallicMap");
+        metallicSubroutineValue = metallicSubroutine.getIndex("metallicValue");
+        
+        emissionTexture = createParameter!int("emissionTexture");
+        emissionFactor = createParameter!Color4f("emissionFactor");
+        emissionSubroutine = createParameterSubroutine("emission", ShaderType.Fragment);
+        emissionSubroutineMap = emissionSubroutine.getIndex("emissionMap");
+        emissionSubroutineValue = emissionSubroutine.getIndex("emissionValue");
+        energy = createParameter!float("energy");
+        
+        heightTexture = createParameter!int("heightTexture");
+        heightScalar = createParameter!float("heightScalar");
+        heightSubroutine = createParameterSubroutine("height", ShaderType.Fragment);
+        heightSubroutineMap = heightSubroutine.getIndex("heightMap");
+        heightSubroutineValue = heightSubroutine.getIndex("heightValue");
+        
+        parallaxSubroutine = createParameterSubroutine("parallax", ShaderType.Fragment);
+        parallaxSubroutineSimple = parallaxSubroutine.getIndex("parallaxSimple");
+        parallaxSubroutineOcclusionMapping = parallaxSubroutine.getIndex("parallaxOcclusionMapping");
+        parallaxSubroutineNone = parallaxSubroutine.getIndex("parallaxNone");
+        parallaxScale = createParameter!float("parallaxScale");
+        parallaxBias = createParameter!float("parallaxBias");
+        
+        fogColor = createParameter!Color4f("fogColor");
+        fogStart = createParameter!float("fogStart");
+        fogEnd = createParameter!float("fogEnd");
+        
+        ambientEnergy = createParameter!float("ambientEnergy");
+        ambientVector = createParameter!Color4f("ambientVector");
+        ambientTexture = createParameter!int("ambientTexture");
+        ambientTextureCube = createParameter!int("ambientTextureCube");
+        ambientSubroutine = createParameterSubroutine("ambient", ShaderType.Fragment);
+        ambientSubroutineCubemap = ambientSubroutine.getIndex("ambientCubemap");
+        ambientSubroutineEquirectangularMap = ambientSubroutine.getIndex("ambientEquirectangularMap");
+        ambientSubroutineColor = ambientSubroutine.getIndex("ambientColor");
+        
+        shadowTextureArray = createParameter!int("shadowTextureArray");
+        shadowResolution = createParameter!float("shadowResolution");
+        shadowMatrix1 = createParameter!Matrix4x4f("shadowMatrix1");
+        shadowMatrix2 = createParameter!Matrix4x4f("shadowMatrix2");
+        shadowMatrix3 = createParameter!Matrix4x4f("shadowMatrix3");
+        shadowMapSubroutine = createParameterSubroutine("shadowMap", ShaderType.Fragment);
+        shadowMapSubroutineCascaded = shadowMapSubroutine.getIndex("shadowMapCascaded");
+        shadowMapSubroutineNone = shadowMapSubroutine.getIndex("shadowMapNone");
+        
+        ambientBRDF = createParameter!int("ambientBRDF");
+        haveAmbientBRDF = createParameter!int("haveAmbientBRDF");
+        
         glGenTextures(1, &defaultShadowTexture);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D_ARRAY, defaultShadowTexture);
@@ -89,20 +292,20 @@ class ForwardShader: Shader
     {
         Material mat = state.material;
         
-        setParameter("modelViewMatrix", state.modelViewMatrix);
-        setParameter("projectionMatrix", state.projectionMatrix);
-        setParameter("normalMatrix", state.normalMatrix);
-        setParameter("viewMatrix", state.viewMatrix);
-        setParameter("invViewMatrix", state.invViewMatrix);
-        setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
+        modelViewMatrix = &state.modelViewMatrix;
+        projectionMatrix = &state.projectionMatrix;
+        normalMatrix = &state.normalMatrix;
+        viewMatrix = &state.viewMatrix;
+        invViewMatrix = &state.invViewMatrix;
+        prevModelViewMatrix = &state.prevModelViewMatrix;
         
-        setParameter("materialOpacity", mat.opacity);
-        setParameter("stateOpacity", state.opacity);
-        setParameter("textureMatrix", mat.textureTransformation);
-        setParameter("textureMappingMode", mat.textureMappingMode);
-        setParameter("layer", cast(float)(state.layer));
-        setParameter("blurMask", state.blurMask);
-        setParameter("viewSize", state.resolution);
+        materialOpacity = mat.opacity;
+        stateOpacity = state.opacity;
+        textureMatrix = mat.textureTransformation;
+        textureMappingMode = mat.textureMappingMode;
+        layer = cast(float)(state.layer);
+        blurMask = state.blurMask;
+        viewSize = state.resolution;
         
         if (state.pose)
         {
@@ -114,133 +317,123 @@ class ForwardShader: Shader
                     numBones = 128;
                 glUniformMatrix4fv(boneMatricesLocation, numBones, GL_FALSE, pose.boneMatrices[0].arrayof.ptr);
                 
-                setParameter("skinned", cast(int)1);
+                skinned = true;
             }
             else
             {
-                setParameter("skinned", cast(int)0);
+                skinned = false;
             }
         }
         else
         {
-            setParameter("skinned", cast(int)0);
+            skinned = false;
         }
 
         // Sun
         Light sun = mat.sun;
         if (sun is null)
             sun = state.environment.sun;
-        
-        Vector3f sunDirection = Vector3f(0.0f, 0.0f, 1.0f);
-        Color4f sunColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
-        float sunEnergy = 1.0f;
-        bool sunScatteringEnabled = false;
-        float sunScatteringG = 0.0f;
-        float sunScatteringDensity = 1.0f;
-        int sunScatteringSamples = 1;
-        float sunScatteringMaxRandomStepOffset = 0.0f;
-        bool sunScatteringShadow = false;
-        bool shaded = !mat.shadeless;
         if (sun)
         {
-            sunDirection = sun.directionAbsolute;
+            Vector4f sunDirHg = Vector4f(sun.directionAbsolute);
+            sunDirHg.w = 0.0;
+            sunDirection = (sunDirHg * state.viewMatrix).xyz;
             sunColor = sun.color;
             sunEnergy = sun.energy;
             sunScatteringG = 1.0f - sun.scattering;
             sunScatteringDensity = sun.mediumDensity;
-            sunScatteringEnabled = sun.scatteringEnabled;
+            sunScattering = sun.scatteringEnabled;
             sunScatteringSamples = sun.scatteringSamples;
             sunScatteringMaxRandomStepOffset = sun.scatteringMaxRandomStepOffset;
             sunScatteringShadow = sun.scatteringUseShadow;
         }
-        Vector4f sunDirHg = Vector4f(sunDirection);
-        sunDirHg.w = 0.0;
-        setParameter("sunDirection", (sunDirHg * state.viewMatrix).xyz);
-        setParameter("sunColor", sunColor);
-        setParameter("sunEnergy", sunEnergy);
-        setParameter("sunScatteringG", sunScatteringG);
-        setParameter("sunScatteringDensity", sunScatteringDensity);
-        setParameter("sunScattering", sunScatteringEnabled);
-        setParameter("sunScatteringSamples", sunScatteringSamples);
-        setParameter("sunScatteringMaxRandomStepOffset", sunScatteringMaxRandomStepOffset);
-        setParameter("sunScatteringShadow", sunScatteringShadow);
-        setParameter("shaded", shaded);
+        else
+        {
+            Vector4f sunDirHg = Vector4f(0.0f, 0.0f, 1.0f, 0.0f);
+            sunDirection = (sunDirHg * state.viewMatrix).xyz;
+            sunColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+            sunEnergy = 1.0f;
+            sunScattering = false;
+            sunScatteringG = 0.0f;
+            sunScatteringDensity = 1.0f;
+            sunScatteringSamples = 1;
+            sunScatteringMaxRandomStepOffset = 0.0f;
+            sunScatteringShadow = false;
+        }
         
-        setParameter("time", state.localTime);
-        
-        setParameter("sphericalNormal", cast(int)mat.sphericalNormal);
-        
+        shaded = !mat.shadeless;
+        time = state.localTime;
+        sphericalNormal = mat.sphericalNormal;
+
         // Diffuse
         glActiveTexture(GL_TEXTURE0);
-        setParameter("diffuseTexture", cast(int)0);
-        setParameter("diffuseVector", mat.baseColorFactor);
+        diffuseTexture = 0;
+        diffuseVector = mat.baseColorFactor;
         if (mat.baseColorTexture)
         {
             mat.baseColorTexture.bind();
-            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
+            diffuseSurbroutine.index = diffuseSurbroutineColorTexture;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
+            diffuseSurbroutine.index = diffuseSurbroutineColorValue;
         }
 
-        // Normal/height
+        // Normal
         glActiveTexture(GL_TEXTURE1);
-        setParameter("normalTexture", cast(int)1);
-        setParameter("normalVector", mat.normalFactor);
+        normalTexture = 1;
+        normalVector = mat.normalFactor;
         if (mat.normalTexture)
         {
             mat.normalTexture.bind();
-            setParameterSubroutine("normal", ShaderType.Fragment, "normalMap");
-            setParameter("generateTBN", cast(int)1);
+            normalSurbroutine.index = normalSurbroutineMap;
+            generateTBN = true;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
-            setParameter("generateTBN", cast(int)0);
+            normalSurbroutine.index = normalSurbroutineValue;
+            generateTBN = false;
         }
         
         if (state.material.invertNormalY)
-            setParameter("normalYSign", -1.0f);
+            normalYSign = -1.0f;
         else
-            setParameter("normalYSign", 1.0f);
-        
+            normalYSign = 1.0f;
+
         // PBR
         glActiveTexture(GL_TEXTURE2);
-        setParameter("roughnessMetallicTexture", cast(int)2);
-        setParameter("roughnessMetallicFactor", Vector4f(1.0f, mat.roughnessFactor, mat.metallicFactor, 0.0f));
+        roughnessMetallicTexture = 2;
+        roughnessMetallicFactor = Color4f(1.0f, mat.roughnessFactor, mat.metallicFactor, 0.0f);
         if (mat.roughnessMetallicTexture)
         {
             mat.roughnessMetallicTexture.bind();
-            setParameterSubroutine("specularity", ShaderType.Fragment, "specularityMap");
-            setParameterSubroutine("roughness", ShaderType.Fragment, "roughnessMap");
-            setParameterSubroutine("metallic", ShaderType.Fragment, "metallicMap");
+            roughnessSubroutine.index = roughnessSubroutineMap;
+            metallicSubroutine.index = metallicSubroutineMap;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("specularity", ShaderType.Fragment, "specularityValue");
-            setParameterSubroutine("roughness", ShaderType.Fragment, "roughnessValue");
-            setParameterSubroutine("metallic", ShaderType.Fragment, "metallicValue");
+            roughnessSubroutine.index = roughnessSubroutineValue;
+            metallicSubroutine.index = metallicSubroutineValue;
         }
         
         // Emission
         glActiveTexture(GL_TEXTURE3);
-        setParameter("emissionTexture", cast(int)3);
-        setParameter("emissionFactor", mat.emissionFactor);
+        emissionTexture = 3;
+        emissionFactor = mat.emissionFactor;
         if (mat.emissionTexture)
         {
             mat.emissionTexture.bind();
-            setParameterSubroutine("emission", ShaderType.Fragment, "emissionMap");
+            emissionSubroutine.index = emissionSubroutineMap;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("emission", ShaderType.Fragment, "emissionValue");
+            emissionSubroutine.index = emissionSubroutineValue;
         }
-        setParameter("energy", mat.emissionEnergy);
+        energy = mat.emissionEnergy;
         
         // Height and parallax
         int parallaxMethod = mat.parallaxMode;
@@ -250,128 +443,127 @@ class ForwardShader: Shader
             parallaxMethod = 0;
         
         glActiveTexture(GL_TEXTURE4);
+        heightTexture = 4;
+        heightScalar = mat.heightFactor;
         if (mat.heightTexture)
         {
             mat.heightTexture.bind();
-            setParameter("heightTexture", cast(int)4);
-            setParameterSubroutine("height", ShaderType.Fragment, "heightMap");
+            heightSubroutine.index = heightSubroutineMap;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameter("heightTexture", cast(int)4);
-            setParameter("heightScalar", mat.heightFactor);
-            setParameterSubroutine("height", ShaderType.Fragment, "heightValue");
+            heightSubroutine.index = heightSubroutineValue;
             parallaxMethod = ParallaxNone;
         }
         
         if (parallaxMethod == ParallaxSimple)
-            setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxSimple");
+            parallaxSubroutine.index = parallaxSubroutineSimple;
         else if (parallaxMethod == ParallaxOcclusionMapping)
-            setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxOcclusionMapping");
+            parallaxSubroutine.index = parallaxSubroutineOcclusionMapping;
         else
-            setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxNone");
+            parallaxSubroutine.index = parallaxSubroutineNone;
         
-        setParameter("parallaxScale", mat.parallaxScale);
-        setParameter("parallaxBias", mat.parallaxBias);
+        parallaxScale = mat.parallaxScale;
+        parallaxBias = mat.parallaxBias;
 
         // Environment map
         if (state.environment)
         {
-            setParameter("fogColor", state.environment.fogColor);
-            setParameter("fogStart", state.environment.fogStart);
-            setParameter("fogEnd", state.environment.fogEnd);
-            setParameter("ambientEnergy", state.environment.ambientEnergy);
+            fogColor = state.environment.fogColor;
+            fogStart = state.environment.fogStart;
+            fogEnd = state.environment.fogEnd;
+            ambientEnergy = state.environment.ambientEnergy;
 
-            Texture ambientMap = state.environment.ambientMap;
-            if (ambientMap)
+            if (state.environment.ambientMap)
             {
-                if (ambientMap.isCubemap)
+                if (state.environment.ambientMap.isCubemap)
                 {
                     glActiveTexture(GL_TEXTURE5);
                     glBindTexture(GL_TEXTURE_2D, 0);
-                    setParameter("ambientTexture", cast(int)5);
+                    ambientTexture = 5;
                     
                     glActiveTexture(GL_TEXTURE6);
-                    ambientMap.bind();
-                    setParameter("ambientTextureCube", cast(int)6);
+                    state.environment.ambientMap.bind();
+                    ambientTextureCube = 6;
                     
-                    setParameterSubroutine("ambient", ShaderType.Fragment, "ambientCubemap");
+                    ambientSubroutine.index = ambientSubroutineCubemap;
                 }
                 else
                 {
                     glActiveTexture(GL_TEXTURE5);
-                    ambientMap.bind();
-                    setParameter("ambientTexture", cast(int)5);
+                    state.environment.ambientMap.bind();
+                    ambientTexture = 5;
                     
                     glActiveTexture(GL_TEXTURE6);
                     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-                    setParameter("ambientTextureCube", cast(int)6);
+                    ambientTextureCube = 6;
                     
-                    setParameterSubroutine("ambient", ShaderType.Fragment, "ambientEquirectangularMap");
+                    ambientSubroutine.index = ambientSubroutineEquirectangularMap;
                 }
             }
             else
             {
                 glActiveTexture(GL_TEXTURE5);
                 glBindTexture(GL_TEXTURE_2D, 0);
-                setParameter("ambientTexture", cast(int)5);
+                ambientTexture = 5;
                 
                 glActiveTexture(GL_TEXTURE6);
                 glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-                setParameter("ambientTextureCube", cast(int)6);
-            
-                setParameter("ambientVector", state.environment.ambientColor.toLinear());
+                ambientTextureCube = 6;
                 
-                setParameterSubroutine("ambient", ShaderType.Fragment, "ambientColor");
+                ambientVector = state.environment.ambientColor;
+                
+                ambientSubroutine.index = ambientSubroutineColor;
             }
         }
         else
         {
-            setParameter("fogColor", Color4f(0.5f, 0.5f, 0.5f, 1.0f));
-            setParameter("fogStart", 0.0f);
-            setParameter("fogEnd", 1000.0f);
-            setParameter("ambientEnergy", 1.0f);
-            setParameter("ambientVector", Color4f(0.5f, 0.5f, 0.5f, 1.0f));
-            setParameterSubroutine("ambient", ShaderType.Fragment, "ambientColor");
+            fogColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
+            fogStart = 0.0f;
+            fogEnd = 1000.0f;
+            ambientEnergy = 1.0f;
+            ambientVector = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
+            
+            ambientSubroutine.index = ambientSubroutineColor;
         }
-
+        
         // Shadow map
         if (sun)
         {
             if (sun.shadowEnabled)
             {
-                CascadedShadowMap csm = cast(CascadedShadowMap)sun.shadowMap;
-
+                CascadedShadowMap csm = cast(CascadedShadowMap)state.light.shadowMap;
+                
                 glActiveTexture(GL_TEXTURE7);
                 glBindTexture(GL_TEXTURE_2D_ARRAY, csm.depthTexture);
-                setParameter("shadowTextureArray", cast(int)7);
-                setParameter("shadowResolution", cast(float)csm.resolution);
-                setParameter("shadowMatrix1", csm.area[0].shadowMatrix);
-                setParameter("shadowMatrix2", csm.area[1].shadowMatrix);
-                setParameter("shadowMatrix3", csm.area[2].shadowMatrix);
-                setParameterSubroutine("shadowMap", ShaderType.Fragment, "shadowMapCascaded");
+                shadowTextureArray = 7;
+                shadowResolution = cast(float)csm.resolution;
+                shadowMatrix1 = &csm.area[0].shadowMatrix;
+                shadowMatrix2 = &csm.area[1].shadowMatrix;
+                shadowMatrix3 = &csm.area[2].shadowMatrix;
+                shadowMapSubroutine.index = shadowMapSubroutineCascaded;
             }
             else
             {
                 glActiveTexture(GL_TEXTURE7);
                 glBindTexture(GL_TEXTURE_2D_ARRAY, defaultShadowTexture);
-                setParameter("shadowTextureArray", cast(int)7);
-                setParameter("shadowMatrix1", defaultShadowMatrix);
-                setParameter("shadowMatrix2", defaultShadowMatrix);
-                setParameter("shadowMatrix3", defaultShadowMatrix);
-                setParameterSubroutine("shadowMap", ShaderType.Fragment, "shadowMapNone");
+                shadowTextureArray = 7;
+                shadowMatrix1 = &defaultShadowMatrix;
+                shadowMatrix2 = &defaultShadowMatrix;
+                shadowMatrix3 = &defaultShadowMatrix;
+                shadowMapSubroutine.index = shadowMapSubroutineNone;
             }
         }
         else
         {
             glActiveTexture(GL_TEXTURE7);
             glBindTexture(GL_TEXTURE_2D_ARRAY, defaultShadowTexture);
-            setParameter("shadowTextureArray", cast(int)7);
-            setParameter("shadowMatrix1", defaultShadowMatrix);
-            setParameter("shadowMatrix2", defaultShadowMatrix);
-            setParameter("shadowMatrix3", defaultShadowMatrix);
-            setParameterSubroutine("shadowMap", ShaderType.Fragment, "shadowMapNone");
+            shadowTextureArray = 7;
+            shadowMatrix1 = &defaultShadowMatrix;
+            shadowMatrix2 = &defaultShadowMatrix;
+            shadowMatrix3 = &defaultShadowMatrix;
+            shadowMapSubroutine.index = shadowMapSubroutineNone;
         }
         
         // Environment BRDF LUT
@@ -381,21 +573,21 @@ class ForwardShader: Shader
             if (state.environment.ambientBRDF)
             {
                 state.environment.ambientBRDF.bind();
-                setParameter("ambientBRDF", cast(int)8);
-                setParameter("haveAmbientBRDF", true);
+                ambientBRDF = 8;
+                haveAmbientBRDF = true;
             }
             else
             {
                 glBindTexture(GL_TEXTURE_2D, 0);
-                setParameter("ambientBRDF", cast(int)8);
-                setParameter("haveAmbientBRDF", false);
+                ambientBRDF = 8;
+                haveAmbientBRDF = false;
             }
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameter("ambientBRDF", cast(int)8);
-            setParameter("haveAmbientBRDF", false);
+            ambientBRDF = 8;
+            haveAmbientBRDF = false;
         }
 
         super.bindParameters(state);

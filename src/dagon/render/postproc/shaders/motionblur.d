@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -45,8 +45,28 @@ import dagon.render.deferred.gbuffer;
 
 class MotionBlurShader: Shader
 {
+   protected:
     String vs, fs;
+    
+    ShaderParameter!Vector2f viewSize;
+    ShaderParameter!float zNear;
+    ShaderParameter!float zFar;
+    ShaderParameter!Matrix4x4f invProjectionMatrix;
+    
+    ShaderParameter!int mbEnabled;
+    ShaderParameter!float mbBlurScale;
+    ShaderParameter!int mbSamples;
+    ShaderParameter!float mbOffsetRandomCoef;
+    ShaderParameter!float mbTime;
+    ShaderParameter!float mbMinDistance;
+    ShaderParameter!float mbMaxDistance;
+    ShaderParameter!float mbRadialBlur;
+    
+    ShaderParameter!int colorBuffer;
+    ShaderParameter!int depthBuffer;
+    ShaderParameter!int velocityBuffer;
 
+   public:
     bool enabled = true;
     int samples = 16;
     float currentFramerate = 60.0;
@@ -65,6 +85,24 @@ class MotionBlurShader: Shader
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
+        
+        viewSize = createParameter!Vector2f("viewSize");
+        zNear = createParameter!float("zNear");
+        zFar = createParameter!float("zFar");
+        invProjectionMatrix = createParameter!Matrix4x4f("invProjectionMatrix");
+        
+        mbEnabled = createParameter!int("enabled");
+        mbBlurScale = createParameter!float("blurScale");
+        mbSamples = createParameter!int("samples");
+        mbOffsetRandomCoef = createParameter!float("offsetRandomCoef");
+        mbTime = createParameter!float("time");
+        mbMinDistance = createParameter!float("minDistance");
+        mbMaxDistance = createParameter!float("maxDistance");
+        mbRadialBlur = createParameter!float("radialBlur");
+        
+        colorBuffer = createParameter!int("colorBuffer");
+        depthBuffer = createParameter!int("depthBuffer");
+        velocityBuffer = createParameter!int("velocityBuffer");
     }
 
     ~this()
@@ -75,38 +113,36 @@ class MotionBlurShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        setParameter("viewSize", state.resolution);
-        setParameter("enabled", enabled);
-        setParameter("zNear", state.zNear);
-        setParameter("zFar", state.zFar);
+        viewSize = state.resolution;
+        zNear = state.zNear;
+        zFar = state.zFar;
+        invProjectionMatrix = state.invProjectionMatrix;
 
-        setParameter("invProjectionMatrix", state.invProjectionMatrix);
-
-        setParameter("blurScale", currentFramerate / shutterFramerate);
-        setParameter("samples", samples);
-        setParameter("offsetRandomCoef", offsetRandomCoefficient);
-        setParameter("time", state.localTime);
-        setParameter("minDistance", minDistance);
-        setParameter("maxDistance", maxDistance);
-        
-        setParameter("radialBlur", radialBlur);
+        mbEnabled = enabled;
+        mbBlurScale = currentFramerate / shutterFramerate;
+        mbSamples = samples;
+        mbOffsetRandomCoef = offsetRandomCoefficient;
+        mbTime = state.localTime;
+        mbMinDistance = minDistance;
+        mbMaxDistance = maxDistance;
+        mbRadialBlur = radialBlur;
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
-        setParameter("colorBuffer", 0);
+        colorBuffer = 0;
 
         if (gbuffer)
         {
             // Texture 1 - depth buffer
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_2D, gbuffer.depthTexture);
-            setParameter("depthBuffer", 1);
+            depthBuffer = 1;
 
             // Texture 2 - velocity buffer
             glActiveTexture(GL_TEXTURE2);
             glBindTexture(GL_TEXTURE_2D, gbuffer.velocityTexture);
-            setParameter("velocityBuffer", 2);
+            velocityBuffer = 2;
         }
 
         glActiveTexture(GL_TEXTURE0);

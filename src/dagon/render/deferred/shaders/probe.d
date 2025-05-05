@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2024 Timur Gafarov
+Copyright (c) 2024-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -46,8 +46,47 @@ import dagon.graphics.state;
 
 class EnvironmentProbeShader: Shader
 {
+   protected:
     String vs, fs;
     
+    ShaderParameter!Matrix4x4f modelViewMatrix;
+    ShaderParameter!Matrix4x4f viewMatrix;
+    ShaderParameter!Matrix4x4f invViewMatrix;
+    ShaderParameter!Matrix4x4f invModelMatrix;
+    ShaderParameter!Matrix4x4f projectionMatrix;
+    ShaderParameter!Matrix4x4f invProjectionMatrix;
+    ShaderParameter!Vector2f resolution;
+    ShaderParameter!float zNear;
+    ShaderParameter!float zFar;
+    
+    ShaderParameter!Color4f fogColor;
+    ShaderParameter!float fogStart;
+    ShaderParameter!float fogEnd;
+    
+    ShaderParameter!int colorBuffer;
+    ShaderParameter!int depthBuffer;
+    ShaderParameter!int normalBuffer;
+    ShaderParameter!int pbrBuffer;
+    ShaderParameter!int occlusionBuffer;
+    ShaderParameter!int haveOcclusionBuffer;
+    
+    ShaderParameter!float ambientEnergy;
+    ShaderParameter!Color4f ambientVector;
+    ShaderParameter!int ambientTexture;
+    ShaderParameter!int ambientTextureCube;
+    ShaderSubroutine ambientSubroutine;
+    GLuint ambientSubroutineCubemap,
+           ambientSubroutineEquirectangularMap,
+           ambientSubroutineColor;
+    
+    ShaderParameter!int paramUseBoxProjection;
+    ShaderParameter!Vector3f paramBoxExtents;
+    ShaderParameter!float paramFalloffMargin;
+    
+    ShaderParameter!int ambientBRDF;
+    ShaderParameter!int haveAmbientBRDF;
+    
+   public:
     bool useBoxProjection = false;
     Vector3f boxExtents = Vector3f(1.0f, 1.0f, 1.0f);
     float falloffMargin = 0.1f;
@@ -59,6 +98,43 @@ class EnvironmentProbeShader: Shader
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
+        
+        modelViewMatrix = createParameter!Matrix4x4f("modelViewMatrix");
+        viewMatrix = createParameter!Matrix4x4f("viewMatrix");
+        invViewMatrix = createParameter!Matrix4x4f("invViewMatrix");
+        invModelMatrix = createParameter!Matrix4x4f("invModelMatrix");
+        projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
+        invProjectionMatrix = createParameter!Matrix4x4f("invProjectionMatrix");
+        resolution = createParameter!Vector2f("resolution");
+        zNear = createParameter!float("zNear");
+        zFar = createParameter!float("zFar");
+        
+        fogColor = createParameter!Color4f("fogColor");
+        fogStart = createParameter!float("fogStart");
+        fogEnd = createParameter!float("fogEnd");
+        
+        colorBuffer = createParameter!int("colorBuffer");
+        depthBuffer = createParameter!int("depthBuffer");
+        normalBuffer = createParameter!int("normalBuffer");
+        pbrBuffer = createParameter!int("pbrBuffer");
+        occlusionBuffer = createParameter!int("occlusionBuffer");
+        haveOcclusionBuffer = createParameter!int("haveOcclusionBuffer");
+        
+        ambientEnergy = createParameter!float("ambientEnergy");
+        ambientVector = createParameter!Color4f("ambientVector");
+        ambientTexture = createParameter!int("ambientTexture");
+        ambientTextureCube = createParameter!int("ambientTextureCube");
+        ambientSubroutine = createParameterSubroutine("ambient", ShaderType.Fragment);
+        ambientSubroutineCubemap = ambientSubroutine.getIndex("ambientCubemap");
+        ambientSubroutineEquirectangularMap = ambientSubroutine.getIndex("ambientEquirectangularMap");
+        ambientSubroutineColor = ambientSubroutine.getIndex("ambientColor");
+        
+        paramUseBoxProjection = createParameter!int("useBoxProjection");
+        paramBoxExtents = createParameter!Vector3f("boxExtents");
+        paramFalloffMargin = createParameter!float("falloffMargin");
+        
+        ambientBRDF = createParameter!int("ambientBRDF");
+        haveAmbientBRDF = createParameter!int("haveAmbientBRDF");
     }
 
     ~this()
@@ -71,47 +147,48 @@ class EnvironmentProbeShader: Shader
     {
         Material mat = state.material;
         
-        setParameter("modelViewMatrix", state.modelViewMatrix);
-        setParameter("viewMatrix", state.viewMatrix);
-        setParameter("invViewMatrix", state.invViewMatrix);
-        setParameter("invModelMatrix", state.invModelMatrix);
-        setParameter("projectionMatrix", state.projectionMatrix);
-        setParameter("invProjectionMatrix", state.invProjectionMatrix);
-        setParameter("resolution", state.resolution);
-        setParameter("zNear", state.zNear);
-        setParameter("zFar", state.zFar);
+        modelViewMatrix = &state.modelViewMatrix;
+        viewMatrix = &state.viewMatrix;
+        invViewMatrix = &state.invViewMatrix;
+        invModelMatrix = &state.invModelMatrix;
+        projectionMatrix = &state.projectionMatrix;
+        invProjectionMatrix = &state.invProjectionMatrix;
+        resolution = state.resolution;
+        zNear = state.zNear;
+        zFar = state.zFar;
         
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
-        setParameter("colorBuffer", cast(int)0);
+        colorBuffer = 0;
 
         // Texture 1 - depth buffer
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, state.depthTexture);
-        setParameter("depthBuffer", cast(int)1);
+        depthBuffer = 1;
 
         // Texture 2 - normal buffer
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, state.normalTexture);
-        setParameter("normalBuffer", cast(int)2);
+        normalBuffer = 2;
 
         // Texture 3 - pbr buffer
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, state.pbrTexture);
-        setParameter("pbrBuffer", cast(int)3);
+        pbrBuffer = 3;
         
+        // Environment
         if (state.environment)
         {
-            setParameter("fogColor", state.environment.fogColor);
-            setParameter("fogStart", state.environment.fogStart);
-            setParameter("fogEnd", state.environment.fogEnd);
+            fogColor = state.environment.fogColor;
+            fogStart = state.environment.fogStart;
+            fogEnd = state.environment.fogEnd;
         }
         else
         {
-            setParameter("fogColor", Color4f(0.5f, 0.5f, 0.5f, 1.0f));
-            setParameter("fogStart", 0.0f);
-            setParameter("fogEnd", 1000.0f);
+            fogColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
+            fogStart = 0.0f;
+            fogEnd = 1000.0f;
         }
 
         // Textures 4, 5 - environment (equirectangular map, cube map)
@@ -121,61 +198,61 @@ class EnvironmentProbeShader: Shader
             {
                 glActiveTexture(GL_TEXTURE4);
                 glBindTexture(GL_TEXTURE_2D, 0);
-                setParameter("ambientTexture", cast(int)4);
+                ambientTexture = 4;
                 
                 glActiveTexture(GL_TEXTURE5);
                 mat.emissionTexture.bind();
-                setParameter("ambientTextureCube", cast(int)5);
+                ambientTextureCube = 5;
                 
-                setParameterSubroutine("ambient", ShaderType.Fragment, "ambientCubemap");
+                ambientSubroutine.index = ambientSubroutineCubemap;
             }
             else
             {
                 glActiveTexture(GL_TEXTURE4);
                 mat.emissionTexture.bind();
-                setParameter("ambientTexture", cast(int)4);
+                ambientTexture = 4;
                 
                 glActiveTexture(GL_TEXTURE5);
                 glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-                setParameter("ambientTextureCube", cast(int)5);
+                ambientTextureCube = 5;
                 
-                setParameterSubroutine("ambient", ShaderType.Fragment, "ambientEquirectangularMap");
+                ambientSubroutine.index = ambientSubroutineEquirectangularMap;
             }
         }
         else
         {
-            setParameter("ambientVector", mat.emissionFactor);
+            ambientVector = mat.emissionFactor;
             
             glActiveTexture(GL_TEXTURE4);
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameter("ambientTexture", cast(int)4);
+            ambientTexture = 4;
             
             glActiveTexture(GL_TEXTURE5);
             glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-            setParameter("ambientTextureCube", cast(int)5);
+            ambientTextureCube = 5;
             
-            setParameterSubroutine("ambient", ShaderType.Fragment, "ambientColor");
+            ambientSubroutine.index = ambientSubroutineColor;
         }
         
-        setParameter("ambientEnergy", mat.emissionEnergy);
+        ambientEnergy = mat.emissionEnergy;
         
-        setParameter("useBoxProjection", useBoxProjection);
-        setParameter("boxExtents", boxExtents);
-        setParameter("falloffMargin", falloffMargin);
+        paramUseBoxProjection = useBoxProjection;
+        paramBoxExtents = boxExtents;
+        paramFalloffMargin = falloffMargin;
 
         // Texture 6 - occlusion buffer
         glActiveTexture(GL_TEXTURE6);
         if (glIsTexture(state.occlusionTexture))
         {
             glBindTexture(GL_TEXTURE_2D, state.occlusionTexture);
-            setParameter("occlusionBuffer", cast(int)6);
-            setParameter("haveOcclusionBuffer", true);
+            occlusionBuffer = 6;
+            haveOcclusionBuffer = true;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameter("occlusionBuffer", cast(int)6);
-            setParameter("haveOcclusionBuffer", false);
+            occlusionBuffer = 6;
+            haveOcclusionBuffer = false;
         }
         
         // Texture 7 - environment BRDF LUT
@@ -193,15 +270,15 @@ class EnvironmentProbeShader: Shader
             */
             {
                 glBindTexture(GL_TEXTURE_2D, 0);
-                setParameter("ambientBRDF", cast(int)7);
-                setParameter("haveAmbientBRDF", false);
+                ambientBRDF = 7;
+                haveAmbientBRDF = false;
             }
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameter("ambientBRDF", cast(int)7);
-            setParameter("haveAmbientBRDF", false);
+            ambientBRDF = 7;
+            haveAmbientBRDF = false;
         }
         
         glActiveTexture(GL_TEXTURE0);

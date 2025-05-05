@@ -206,25 +206,6 @@ subroutine uniform srtMetallic metallic;
 
 
 /*
- * Specularity
- */
-subroutine float srtSpecularity(in vec2 uv);
-
-uniform float specularityScalar;
-subroutine(srtSpecularity) float specularityValue(in vec2 uv)
-{
-    return roughnessMetallicFactor.r;
-}
-
-subroutine(srtSpecularity) float specularityMap(in vec2 uv)
-{
-    return texture(roughnessMetallicTexture, uv).r;
-}
-
-subroutine uniform srtSpecularity specularity;
-
-
-/*
  * Emission
  */
 subroutine vec3 srtEmission(in vec2 uv);

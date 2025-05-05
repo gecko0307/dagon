@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -47,8 +47,49 @@ import dagon.graphics.light;
 
 class AreaLightShader: Shader
 {
+   protected:
     String vs, fs;
-
+    
+    ShaderParameter!Matrix4x4f viewMatrix;
+    ShaderParameter!Matrix4x4f invViewMatrix;
+    ShaderParameter!Matrix4x4f modelViewMatrix;
+    ShaderParameter!Matrix4x4f projectionMatrix;
+    ShaderParameter!Matrix4x4f invProjectionMatrix;
+    ShaderParameter!Vector2f resolution;
+    ShaderParameter!float zNear;
+    ShaderParameter!float zFar;
+    
+    ShaderParameter!Color4f fogColor;
+    ShaderParameter!float fogStart;
+    ShaderParameter!float fogEnd;
+    
+    ShaderParameter!Vector3f lightPosition;
+    ShaderParameter!Color4f lightColor;
+    ShaderParameter!float lightEnergy;
+    ShaderParameter!float lightRadius;
+    ShaderParameter!float lightAreaRadius;
+    ShaderParameter!float lightDiffuse;
+    ShaderParameter!float lightSpecular;
+    
+    ShaderParameter!Vector3f lightPosition2;
+    ShaderParameter!float lightSpotCosCutoff;
+    ShaderParameter!float lightSpotCosInnerCutoff;
+    ShaderParameter!Vector3f lightSpotDirection;
+    
+    ShaderSubroutine lightRadianceSubroutine;
+    GLuint lightRadianceSubroutineAreaSphere,
+           lightRadianceSubroutineAreaTube,
+           lightRadianceSubroutineSpot,
+           lightRadianceSubroutineFallback;
+    
+    ShaderParameter!int colorBuffer;
+    ShaderParameter!int depthBuffer;
+    ShaderParameter!int normalBuffer;
+    ShaderParameter!int pbrBuffer;
+    ShaderParameter!int occlusionBuffer;
+    ShaderParameter!int haveOcclusionBuffer;
+    
+   public:
     this(Owner owner)
     {
         vs = Shader.load("data/__internal/shaders/AreaLight/AreaLight.vert.glsl");
@@ -56,6 +97,45 @@ class AreaLightShader: Shader
 
         auto myProgram = New!ShaderProgram(vs.toString, fs.toString, this);
         super(myProgram, owner);
+
+        viewMatrix = createParameter!Matrix4x4f("viewMatrix");
+        invViewMatrix = createParameter!Matrix4x4f("invViewMatrix");
+        modelViewMatrix = createParameter!Matrix4x4f("modelViewMatrix");
+        projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
+        invProjectionMatrix = createParameter!Matrix4x4f("invProjectionMatrix");
+        resolution = createParameter!Vector2f("resolution");
+        zNear = createParameter!float("zNear");
+        zFar = createParameter!float("zFar");
+        
+        fogColor = createParameter!Color4f("fogColor");
+        fogStart = createParameter!float("fogStart");
+        fogEnd = createParameter!float("fogEnd");
+        
+        lightPosition = createParameter!Vector3f("lightPosition");
+        lightColor = createParameter!Color4f("lightColor");
+        lightEnergy = createParameter!float("lightEnergy");
+        lightRadius = createParameter!float("lightRadius");
+        lightAreaRadius = createParameter!float("lightAreaRadius");
+        lightDiffuse = createParameter!float("lightDiffuse");
+        lightSpecular = createParameter!float("lightSpecular");
+        
+        lightPosition2 = createParameter!Vector3f("lightPosition2");
+        lightSpotCosCutoff = createParameter!float("lightSpotCosCutoff");
+        lightSpotCosInnerCutoff = createParameter!float("lightSpotCosInnerCutoff");
+        lightSpotDirection = createParameter!Vector3f("lightSpotDirection");
+        
+        lightRadianceSubroutine = createParameterSubroutine("lightRadiance", ShaderType.Fragment);
+        lightRadianceSubroutineAreaSphere = lightRadianceSubroutine.getIndex("lightRadianceAreaSphere");
+        lightRadianceSubroutineAreaTube = lightRadianceSubroutine.getIndex("lightRadianceAreaTube");
+        lightRadianceSubroutineSpot = lightRadianceSubroutine.getIndex("lightRadianceSpot");
+        lightRadianceSubroutineFallback = lightRadianceSubroutine.getIndex("lightRadianceFallback");
+        
+        colorBuffer = createParameter!int("colorBuffer");
+        depthBuffer = createParameter!int("depthBuffer");
+        normalBuffer = createParameter!int("normalBuffer");
+        pbrBuffer = createParameter!int("pbrBuffer");
+        occlusionBuffer = createParameter!int("occlusionBuffer");
+        haveOcclusionBuffer = createParameter!int("haveOcclusionBuffer");
     }
 
     ~this()
@@ -66,111 +146,109 @@ class AreaLightShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        setParameter("viewMatrix", state.viewMatrix);
-        setParameter("invViewMatrix", state.invViewMatrix);
-        setParameter("modelViewMatrix", state.modelViewMatrix);
-        setParameter("projectionMatrix", state.projectionMatrix);
-        setParameter("invProjectionMatrix", state.invProjectionMatrix);
-        setParameter("resolution", state.resolution);
-        setParameter("zNear", state.zNear);
-        setParameter("zFar", state.zFar);
+        viewMatrix = &state.viewMatrix;
+        invViewMatrix = &state.invViewMatrix;
+        modelViewMatrix = &state.modelViewMatrix;
+        projectionMatrix = &state.projectionMatrix;
+        invProjectionMatrix = &state.invProjectionMatrix;
+        resolution = state.resolution;
+        zNear = state.zNear;
+        zFar = state.zFar;
 
         // Environment
         if (state.environment)
         {
-            setParameter("fogColor", state.environment.fogColor);
-            setParameter("fogStart", state.environment.fogStart);
-            setParameter("fogEnd", state.environment.fogEnd);
+            fogColor = state.environment.fogColor;
+            fogStart = state.environment.fogStart;
+            fogEnd = state.environment.fogEnd;
         }
         else
         {
-            setParameter("fogColor", Color4f(0.5f, 0.5f, 0.5f, 1.0f));
-            setParameter("fogStart", 0.0f);
-            setParameter("fogEnd", 1000.0f);
+            fogColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
+            fogStart = 0.0f;
+            fogEnd = 1000.0f;
         }
 
         // Light
-        Vector3f lightPos;
-        Color4f lightColor;
-        float lightEnergy = 1.0f;
         if (state.light)
         {
             auto light = state.light;
 
-            lightPos = light.positionAbsolute * state.viewMatrix;
+            lightPosition = light.positionAbsolute * state.viewMatrix;
             lightColor = light.color;
             lightEnergy = light.energy;
-
+            lightRadius = light.volumeRadius;
+            lightAreaRadius = light.radius;
+            lightDiffuse = light.diffuse;
+            lightSpecular = light.specular;
+            
             if (light.type == LightType.AreaSphere)
             {
-                setParameterSubroutine("lightRadiance", ShaderType.Fragment, "lightRadianceAreaSphere");
+                lightRadianceSubroutine.index = lightRadianceSubroutineAreaSphere;
             }
             else if (light.type == LightType.AreaTube)
             {
-                Vector3f lightPosition2Eye = (light.positionAbsolute + light.directionAbsolute * light.length) * state.viewMatrix;
-                setParameter("lightPosition2", lightPosition2Eye);
-                setParameterSubroutine("lightRadiance", ShaderType.Fragment, "lightRadianceAreaTube");
+                lightPosition2 = (light.positionAbsolute + light.directionAbsolute * light.length) * state.viewMatrix;
+                lightRadianceSubroutine.index = lightRadianceSubroutineAreaTube;
             }
             else if (light.type == LightType.Spot)
             {
-                setParameter("lightSpotCosCutoff", cos(degtorad(light.spotOuterCutoff)));
-                setParameter("lightSpotCosInnerCutoff", cos(degtorad(light.spotInnerCutoff)));
+                lightSpotCosCutoff = cos(degtorad(light.spotOuterCutoff));
+                lightSpotCosInnerCutoff = cos(degtorad(light.spotInnerCutoff));
                 Vector4f lightDirHg = Vector4f(light.directionAbsolute);
                 lightDirHg.w = 0.0;
-                Vector3f spotDirection = (lightDirHg * state.viewMatrix).xyz;
-                setParameter("lightSpotDirection", spotDirection);
-                setParameterSubroutine("lightRadiance", ShaderType.Fragment, "lightRadianceSpot");
+                lightSpotDirection = (lightDirHg * state.viewMatrix).xyz;
+                lightRadianceSubroutine.index = lightRadianceSubroutineSpot;
             }
             else // unsupported light type
             {
-                setParameterSubroutine("lightRadiance", ShaderType.Fragment, "lightRadianceFallback");
+                lightRadianceSubroutine.index = lightRadianceSubroutineFallback;
             }
-
-            setParameter("lightPosition", lightPos);
-            setParameter("lightColor", lightColor);
-            setParameter("lightEnergy", lightEnergy);
-            setParameter("lightRadius", light.volumeRadius);
-            setParameter("lightAreaRadius", light.radius);
-            
-            setParameter("lightDiffuse", light.diffuse);
-            setParameter("lightSpecular", light.specular);
         }
         else
         {
-            setParameterSubroutine("lightRadiance", ShaderType.Fragment, "lightRadianceFallback");
+            lightRadianceSubroutine.index = lightRadianceSubroutineFallback;
+            lightPosition = Vector3f(0.0f, 0.0f, 0.0f);
+            lightColor = Color4f(0.0f, 0.0f, 0.0f, 0.0f);
+            lightEnergy = 1.0f;
+            lightRadius = 0.0f;
+            lightAreaRadius = 0.0f;
+            lightDiffuse = 0.0f;
+            lightSpecular = 0.0f;
         }
-
+        
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
-        setParameter("colorBuffer", 0);
+        colorBuffer = 0;
 
         // Texture 1 - depth buffer
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, state.depthTexture);
-        setParameter("depthBuffer", 1);
+        depthBuffer = 1;
 
         // Texture 2 - normal buffer
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, state.normalTexture);
-        setParameter("normalBuffer", 2);
+        normalBuffer = 2;
 
         // Texture 3 - pbr buffer
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, state.pbrTexture);
-        setParameter("pbrBuffer", 3);
+        pbrBuffer = 3;
 
         // Texture 5 - occlusion buffer
+        glActiveTexture(GL_TEXTURE5);
+        occlusionBuffer = 5;
         if (glIsTexture(state.occlusionTexture))
         {
-            glActiveTexture(GL_TEXTURE5);
             glBindTexture(GL_TEXTURE_2D, state.occlusionTexture);
-            setParameter("occlusionBuffer", 5);
-            setParameter("haveOcclusionBuffer", true);
+            haveOcclusionBuffer = true;
         }
         else
         {
-            setParameter("haveOcclusionBuffer", false);
+            glBindTexture(GL_TEXTURE_2D, 0);
+            haveOcclusionBuffer = false;
         }
 
         glActiveTexture(GL_TEXTURE0);

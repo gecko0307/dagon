@@ -8,7 +8,7 @@ layout (location = 4) in vec4 va_Weights;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 
-uniform vec2 textureScale;
+uniform mat3 textureMatrix;
 
 uniform bool skinned;
 
@@ -36,6 +36,6 @@ void main()
         modelPosHmg = skinMatrix * vec4(va_Vertex, 1.0);
     }
     
-    texCoord = va_Texcoord * textureScale;
+    texCoord = (textureMatrix * vec3(va_Texcoord, 1.0)).xy;
     gl_Position = projectionMatrix * modelViewMatrix * modelPosHmg;
 }

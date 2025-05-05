@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2024 Timur Gafarov
+Copyright (c) 2024-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -34,6 +34,7 @@ import std.conv;
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.math.vector;
+import dlib.math.matrix;
 import dlib.image.color;
 import dlib.text.str;
 
@@ -43,14 +44,37 @@ import dagon.graphics.shader;
 
 class StarfieldSkyShader: Shader
 {
+   protected:
     String vs, fs;
+    
+    ShaderParameter!Matrix4x4f modelViewMatrix;
+    ShaderParameter!Matrix4x4f projectionMatrix;
+    ShaderParameter!Matrix4x4f normalMatrix;
+    ShaderParameter!Matrix4x4f viewMatrix;
+    ShaderParameter!Matrix4x4f invViewMatrix;
+    ShaderParameter!Matrix4x4f prevModelViewMatrix;
+    
+    ShaderParameter!float gbufferMask;
+    ShaderParameter!float blurMask;
+    
+    ShaderParameter!Color4f ssSpaceColor;
+    ShaderParameter!float ssStarsThreshold;
+    ShaderParameter!float ssStarsBrightness;
+    ShaderParameter!float ssStarsTwinkleSpeed;
+    
+    ShaderParameter!float localTime;
+    
+    ShaderParameter!Vector3f sunDirection;
+    ShaderParameter!Color4f sunColor;
+    
+   public:
     Color4f spaceColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
     float starsThreshold = 0.995f;
     float starsBrightness = 8.0f;
     float starsTwinkleSpeed = 1.0f;
     
-    Vector3f sunDirection = Vector3f(-1.0f, -1.0f, -1.0f).normalized;
-    Color4f sunColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+    Vector3f defaultSunDirection = Vector3f(-1.0f, -1.0f, -1.0f).normalized;
+    Color4f defaultSunColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
 
     this(Owner owner)
     {
@@ -59,6 +83,26 @@ class StarfieldSkyShader: Shader
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
+        
+        modelViewMatrix = createParameter!Matrix4x4f("modelViewMatrix");
+        projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
+        normalMatrix = createParameter!Matrix4x4f("normalMatrix");
+        viewMatrix = createParameter!Matrix4x4f("viewMatrix");
+        invViewMatrix = createParameter!Matrix4x4f("invViewMatrix");
+        prevModelViewMatrix = createParameter!Matrix4x4f("prevModelViewMatrix");
+        
+        gbufferMask = createParameter!float("gbufferMask");
+        blurMask = createParameter!float("blurMask");
+        
+        ssSpaceColor = createParameter!Color4f("spaceColor");
+        ssStarsThreshold = createParameter!float("starsThreshold");
+        ssStarsBrightness = createParameter!float("starsBrightness");
+        ssStarsTwinkleSpeed = createParameter!float("starsTwinkleSpeed");
+        
+        localTime = createParameter!float("localTime");
+        
+        sunDirection = createParameter!Vector3f("sunDirection");
+        sunColor = createParameter!Color4f("sunColor");
     }
 
     ~this()
@@ -69,37 +113,37 @@ class StarfieldSkyShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        setParameter("modelViewMatrix", state.modelViewMatrix);
-        setParameter("projectionMatrix", state.projectionMatrix);
-        setParameter("normalMatrix", state.normalMatrix);
-        setParameter("viewMatrix", state.viewMatrix);
-        setParameter("invViewMatrix", state.invViewMatrix);
-        setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
+        modelViewMatrix = &state.modelViewMatrix;
+        projectionMatrix = &state.projectionMatrix;
+        normalMatrix = &state.normalMatrix;
+        viewMatrix = &state.viewMatrix;
+        invViewMatrix = &state.invViewMatrix;
+        prevModelViewMatrix = &state.prevModelViewMatrix;
         
-        setParameter("gbufferMask", state.gbufferMask);
-        setParameter("blurMask", state.blurMask);
+        gbufferMask = state.gbufferMask;
+        blurMask = state.blurMask;
         
-        setParameter("spaceColor", spaceColor.rgb);
-        setParameter("starsThreshold", starsThreshold);
-        setParameter("starsBrightness", starsBrightness);
-        setParameter("starsTwinkleSpeed", starsTwinkleSpeed);
+        ssSpaceColor = spaceColor;
+        ssStarsThreshold = starsThreshold;
+        ssStarsBrightness = starsBrightness;
+        ssStarsTwinkleSpeed = starsTwinkleSpeed;
         
-        setParameter("localTime", state.localTime);
+        localTime = state.localTime;
         
         if (state.material.sun)
         {
-            setParameter("sunDirection", state.material.sun.directionAbsolute);
-            setParameter("sunColor", state.material.sun.color.rgb);
+            sunDirection = state.material.sun.directionAbsolute;
+            sunColor = state.material.sun.color;
         }
         else if (state.environment.sun)
         {
-            setParameter("sunDirection", state.environment.sun.directionAbsolute);
-            setParameter("sunColor", state.environment.sun.color.rgb);
+            sunDirection = state.environment.sun.directionAbsolute;
+            sunColor = state.environment.sun.color;
         }
         else
         {
-            setParameter("sunDirection", -sunDirection);
-            setParameter("sunColor", sunColor.rgb);
+            sunDirection = -defaultSunDirection;
+            sunColor = defaultSunColor;
         }
         
         super.bindParameters(state);

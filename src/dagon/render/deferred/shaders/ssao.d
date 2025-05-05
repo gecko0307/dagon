@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -45,8 +45,26 @@ import dagon.graphics.state;
 
 class SSAOShader: Shader
 {
+   protected:
     String vs, fs;
+    
+    ShaderParameter!Matrix4x4f viewMatrix;
+    ShaderParameter!Matrix4x4f invViewMatrix;
+    ShaderParameter!Matrix4x4f projectionMatrix;
+    ShaderParameter!Matrix4x4f invProjectionMatrix;
+    ShaderParameter!Vector2f resolution;
+    ShaderParameter!float zNear;
+    ShaderParameter!float zFar;
+    
+    ShaderParameter!int colorBuffer;
+    ShaderParameter!int depthBuffer;
+    ShaderParameter!int normalBuffer;
+    
+    ShaderParameter!int ssaoSamples;
+    ShaderParameter!float ssaoRadius;
+    ShaderParameter!float ssaoPower;
 
+   public:
     int samples = 16;
     float radius = 0.2f;
     float power = 4.0f;
@@ -58,6 +76,22 @@ class SSAOShader: Shader
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
+        
+        viewMatrix = createParameter!Matrix4x4f("viewMatrix");
+        invViewMatrix = createParameter!Matrix4x4f("invViewMatrix");
+        projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
+        invProjectionMatrix = createParameter!Matrix4x4f("invProjectionMatrix");
+        resolution = createParameter!Vector2f("resolution");
+        zNear = createParameter!float("zNear");
+        zFar = createParameter!float("zFar");
+        
+        colorBuffer = createParameter!int("colorBuffer");
+        depthBuffer = createParameter!int("depthBuffer");
+        normalBuffer = createParameter!int("normalBuffer");
+        
+        ssaoSamples = createParameter!int("ssaoSamples");
+        ssaoRadius = createParameter!float("ssaoRadius");
+        ssaoPower = createParameter!float("ssaoPower");
     }
 
     ~this()
@@ -68,32 +102,32 @@ class SSAOShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        setParameter("viewMatrix", state.viewMatrix);
-        setParameter("invViewMatrix", state.invViewMatrix);
-        setParameter("projectionMatrix", state.projectionMatrix);
-        setParameter("invProjectionMatrix", state.invProjectionMatrix);
-        setParameter("resolution", state.resolution);
-        setParameter("zNear", state.zNear);
-        setParameter("zFar", state.zFar);
+        viewMatrix = &state.viewMatrix;
+        invViewMatrix = &state.invViewMatrix;
+        projectionMatrix = &state.projectionMatrix;
+        invProjectionMatrix = &state.invProjectionMatrix;
+        resolution = state.resolution;
+        zNear = state.zNear;
+        zFar = state.zFar;
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
-        setParameter("colorBuffer", 0);
+        colorBuffer = 0;
 
         // Texture 1 - depth buffer
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, state.depthTexture);
-        setParameter("depthBuffer", 1);
+        depthBuffer = 1;
 
         // Texture 2 - normal buffer
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, state.normalTexture);
-        setParameter("normalBuffer", 2);
+        normalBuffer = 2;
 
-        setParameter("ssaoSamples", samples);
-        setParameter("ssaoRadius", radius);
-        setParameter("ssaoPower", power);
+        ssaoSamples = samples;
+        ssaoRadius = radius;
+        ssaoPower = power;
 
         glActiveTexture(GL_TEXTURE0);
 

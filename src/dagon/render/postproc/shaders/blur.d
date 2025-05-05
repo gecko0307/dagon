@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2024 Timur Gafarov
+Copyright (c) 2017-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -44,12 +44,19 @@ import dagon.graphics.state;
 
 class BlurShader: Shader
 {
+   protected:
     String vs, fs;
+    
+    ShaderParameter!Vector2f viewSize;
+    ShaderParameter!int blurEnabled;
+    ShaderParameter!Vector2f blurDirection;
+    ShaderParameter!int colorBuffer;
 
+   public:
     bool enabled = true;
     Vector2f direction;
     float radius = 1.0f;
-
+    
     this(Owner owner)
     {
         vs = Shader.load("data/__internal/shaders/Blur/Blur.vert.glsl");
@@ -59,6 +66,11 @@ class BlurShader: Shader
         super(myProgram, owner);
 
         direction = Vector2f(1.0f, 0.0f);
+        
+        viewSize = createParameter!Vector2f("viewSize");
+        blurEnabled = createParameter!int("enabled");
+        blurDirection = createParameter!Vector2f("direction");
+        colorBuffer = createParameter!int("colorBuffer");
     }
 
     ~this()
@@ -69,16 +81,14 @@ class BlurShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        setParameter("viewSize", state.resolution);
-        setParameter("enabled", enabled);
-
-        Vector2f dirScaled = direction * radius;
-        setParameter("direction", dirScaled);
+        viewSize = state.resolution;
+        blurEnabled = enabled;
+        blurDirection = direction * radius;
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
-        setParameter("colorBuffer", 0);
+        colorBuffer = 0;
 
         super.bindParameters(state);
     }

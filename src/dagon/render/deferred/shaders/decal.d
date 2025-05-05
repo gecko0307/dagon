@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -47,10 +47,67 @@ import dagon.render.deferred.gbuffer;
 
 class DecalShader: Shader
 {
+   protected:
     String vs, fs;
 
     GBuffer gbuffer;
+    
+    ShaderParameter!Matrix4x4f modelViewMatrix;
+    ShaderParameter!Matrix4x4f projectionMatrix;
+    ShaderParameter!Matrix4x4f invProjectionMatrix;
+    ShaderParameter!Matrix4x4f normalMatrix;
+    ShaderParameter!Matrix4x4f viewMatrix;
+    ShaderParameter!Matrix4x4f invViewMatrix;
+    ShaderParameter!Matrix4x4f invModelMatrix;
+    ShaderParameter!Vector2f resolution;
+    ShaderParameter!float opacity;
+    ShaderParameter!Matrix3x3f textureMatrix;
+    
+    ShaderParameter!int depthTexture;
+    ShaderParameter!int diffuseTexture;
+    ShaderParameter!Color4f diffuseVector;
+    ShaderSubroutine diffuseSubroutine;
+    GLuint diffuseSubroutineColorTexture,
+           diffuseSubroutineColorValue;
+    
+    ShaderParameter!int normalTexture;
+    ShaderParameter!Vector3f normalVector;
+    ShaderSubroutine normalSubroutine;
+    GLuint normalSubroutineMap,
+           normalSubroutineValue;
+    ShaderParameter!int generateTBN;
+    ShaderParameter!float normalYSign;
+    
+    ShaderParameter!int heightTexture;
+    ShaderParameter!float heightScalar;
+    ShaderSubroutine heightSubroutine;
+    GLuint heightSubroutineMap,
+           heightSubroutineValue;
+    
+    ShaderSubroutine parallaxSubroutine;
+    GLuint parallaxSubroutineSimple,
+           parallaxSubroutineOcclusionMapping,
+           parallaxSubroutineNone;
+    ShaderParameter!float parallaxScale;
+    ShaderParameter!float parallaxBias;
+    
+    ShaderParameter!int roughnessMetallicTexture;
+    ShaderParameter!Color4f roughnessMetallicFactor;
+    ShaderSubroutine roughnessSubroutine;
+    ShaderSubroutine metallicSubroutine;
+    GLuint roughnessSubroutineMap,
+           roughnessSubroutineValue;
+    GLuint metallicSubroutineMap,
+           metallicSubroutineValue;
+    
+    ShaderParameter!int emissionTexture;
+    ShaderParameter!Color4f emissionFactor;
+    ShaderSubroutine emissionSubroutine;
+    GLuint emissionSubroutineColorTexture,
+           emissionSubroutineColorValue;
+    ShaderParameter!float emissionEnergy;
 
+   public:
     this(GBuffer gbuffer, Owner owner)
     {
         vs = Shader.load("data/__internal/shaders/Decal/Decal.vert.glsl");
@@ -60,6 +117,62 @@ class DecalShader: Shader
         super(prog, owner);
 
         this.gbuffer = gbuffer;
+        
+        modelViewMatrix = createParameter!Matrix4x4f("modelViewMatrix");
+        projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
+        invProjectionMatrix = createParameter!Matrix4x4f("invProjectionMatrix");
+        normalMatrix = createParameter!Matrix4x4f("normalMatrix");
+        viewMatrix = createParameter!Matrix4x4f("viewMatrix");
+        invViewMatrix = createParameter!Matrix4x4f("invViewMatrix");
+        invModelMatrix = createParameter!Matrix4x4f("invModelMatrix");
+        resolution = createParameter!Vector2f("resolution");
+        opacity = createParameter!float("opacity");
+        textureMatrix = createParameter!Matrix3x3f("textureMatrix");
+        
+        depthTexture = createParameter!int("depthTexture");
+        
+        diffuseTexture = createParameter!int("diffuseTexture");
+        diffuseVector = createParameter!Color4f("diffuseVector");
+        diffuseSubroutine = createParameterSubroutine("diffuse", ShaderType.Fragment);
+        diffuseSubroutineColorTexture = diffuseSubroutine.getIndex("diffuseColorTexture");
+        diffuseSubroutineColorValue = diffuseSubroutine.getIndex("diffuseColorValue");
+        
+        normalTexture = createParameter!int("normalTexture");
+        normalVector = createParameter!Vector3f("normalVector");
+        normalSubroutine = createParameterSubroutine("normal", ShaderType.Fragment);
+        normalSubroutineMap = normalSubroutine.getIndex("normalMap");
+        normalSubroutineValue = normalSubroutine.getIndex("normalValue");
+        generateTBN = createParameter!int("generateTBN");
+        normalYSign = createParameter!float("normalYSign");
+        
+        heightTexture = createParameter!int("heightTexture");
+        heightScalar = createParameter!float("heightScalar");
+        heightSubroutine = createParameterSubroutine("height", ShaderType.Fragment);
+        heightSubroutineMap = heightSubroutine.getIndex("heightMap");
+        heightSubroutineValue = heightSubroutine.getIndex("heightValue");
+        
+        parallaxSubroutine = createParameterSubroutine("parallax", ShaderType.Fragment);
+        parallaxSubroutineSimple = parallaxSubroutine.getIndex("parallaxSimple");
+        parallaxSubroutineOcclusionMapping = parallaxSubroutine.getIndex("parallaxOcclusionMapping");
+        parallaxSubroutineNone = parallaxSubroutine.getIndex("parallaxNone");
+        parallaxScale = createParameter!float("parallaxScale");
+        parallaxBias = createParameter!float("parallaxBias");
+        
+        roughnessMetallicTexture = createParameter!int("roughnessMetallicTexture");
+        roughnessMetallicFactor = createParameter!Color4f("roughnessMetallicFactor");
+        roughnessSubroutine = createParameterSubroutine("roughness", ShaderType.Fragment);
+        roughnessSubroutineMap = roughnessSubroutine.getIndex("roughnessMap");
+        roughnessSubroutineValue = roughnessSubroutine.getIndex("roughnessValue");
+        metallicSubroutine = createParameterSubroutine("metallic", ShaderType.Fragment);
+        metallicSubroutineMap = metallicSubroutine.getIndex("metallicMap");
+        metallicSubroutineValue = metallicSubroutine.getIndex("metallicValue");
+        
+        emissionTexture = createParameter!int("emissionTexture");
+        emissionFactor = createParameter!Color4f("emissionFactor");
+        emissionSubroutine = createParameterSubroutine("emission", ShaderType.Fragment);
+        emissionSubroutineColorTexture = emissionSubroutine.getIndex("emissionColorTexture");
+        emissionSubroutineColorValue = emissionSubroutine.getIndex("emissionColorValue");
+        emissionEnergy = createParameter!float("emissionEnergy");
     }
 
     ~this()
@@ -72,36 +185,35 @@ class DecalShader: Shader
     {
         Material mat = state.material;
         
-        setParameter("modelViewMatrix", state.modelViewMatrix);
-        setParameter("projectionMatrix", state.projectionMatrix);
-        setParameter("invProjectionMatrix", state.invProjectionMatrix);
-        setParameter("normalMatrix", state.normalMatrix);
-        setParameter("viewMatrix", state.viewMatrix);
-        setParameter("invViewMatrix", state.invViewMatrix);
-        setParameter("invModelMatrix", state.invModelMatrix);
-        setParameter("resolution", state.resolution);
-
-        setParameter("opacity", state.opacity * mat.opacity);
-        setParameter("textureMatrix", mat.textureTransformation);
+        modelViewMatrix = &state.modelViewMatrix;
+        projectionMatrix = &state.projectionMatrix;
+        invProjectionMatrix = &state.invProjectionMatrix;
+        normalMatrix = &state.normalMatrix;
+        viewMatrix = &state.viewMatrix;
+        invViewMatrix = &state.invViewMatrix;
+        invModelMatrix = &state.invModelMatrix;
+        resolution = state.resolution;
+        opacity = state.opacity * mat.opacity;
+        textureMatrix = &mat.textureTransformation;
 
         // Depth
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, gbuffer.depthTexture);
-        setParameter("depthTexture", cast(int)0);
+        depthTexture = 0;
 
         // Diffuse
         glActiveTexture(GL_TEXTURE1);
-        setParameter("diffuseTexture", cast(int)1);
-        setParameter("diffuseVector", mat.baseColorFactor);
+        diffuseTexture = 1;
+        diffuseVector = mat.baseColorFactor;
         if (mat.baseColorTexture)
         {
             mat.baseColorTexture.bind();
-            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
+            diffuseSubroutine.index = diffuseSubroutineColorTexture;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
+            diffuseSubroutine.index = diffuseSubroutineColorValue;
         }
         
         if (!mat.outputColor)
@@ -111,25 +223,25 @@ class DecalShader: Shader
         
         // Normal
         glActiveTexture(GL_TEXTURE2);
-        setParameter("normalTexture", cast(int)2);
-        setParameter("normalVector", mat.normalFactor);
+        normalTexture = 2;
+        normalVector = mat.normalFactor;
         if (mat.normalTexture)
         {
             mat.normalTexture.bind();
-            setParameterSubroutine("normal", ShaderType.Fragment, "normalMap");
-            setParameter("generateTBN", cast(int)1);
+            normalSubroutine.index = normalSubroutineMap;
+            generateTBN = true;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
-            setParameter("generateTBN", cast(int)0);
+            normalSubroutine.index = normalSubroutineValue;
+            generateTBN = false;
         }
         
         if (state.material.invertNormalY)
-            setParameter("normalYSign", -1.0f);
+            normalYSign = -1.0f;
         else
-            setParameter("normalYSign", 1.0f);
+            normalYSign = 1.0f;
         
         if (!mat.outputNormal)
         {
@@ -144,45 +256,45 @@ class DecalShader: Shader
             parallaxMethod = 0;
         
         glActiveTexture(GL_TEXTURE3);
-        setParameter("heightTexture", cast(int)3);
-        setParameter("heightScalar", mat.heightFactor);
+        heightTexture = 3;
+        heightScalar = mat.heightFactor;
         if (mat.heightTexture)
         {
             mat.heightTexture.bind();
-            setParameterSubroutine("height", ShaderType.Fragment, "heightMap");
+            heightSubroutine.index = heightSubroutineMap;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("height", ShaderType.Fragment, "heightValue");
+            heightSubroutine.index = heightSubroutineValue;
             parallaxMethod = ParallaxNone;
         }
         
         if (parallaxMethod == ParallaxSimple)
-            setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxSimple");
+            parallaxSubroutine.index = parallaxSubroutineSimple;
         else if (parallaxMethod == ParallaxOcclusionMapping)
-            setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxOcclusionMapping");
+            parallaxSubroutine.index = parallaxSubroutineOcclusionMapping;
         else
-            setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxNone");
+            parallaxSubroutine.index = parallaxSubroutineNone;
         
-        setParameter("parallaxScale", mat.parallaxScale);
-        setParameter("parallaxBias", mat.parallaxBias);
+        parallaxScale = mat.parallaxScale;
+        parallaxBias = mat.parallaxBias;
         
         // PBR
         glActiveTexture(GL_TEXTURE4);
-        setParameter("roughnessMetallicTexture", cast(int)4);
-        setParameter("roughnessMetallicFactor", Vector4f(1.0f, mat.roughnessFactor, mat.metallicFactor, 0.0f));
+        roughnessMetallicTexture = 4;
+        roughnessMetallicFactor = Color4f(1.0f, mat.roughnessFactor, mat.metallicFactor, 0.0f);
         if (mat.roughnessMetallicTexture)
         {
             mat.roughnessMetallicTexture.bind();
-            setParameterSubroutine("roughness", ShaderType.Fragment, "roughnessMap");
-            setParameterSubroutine("metallic", ShaderType.Fragment, "metallicMap");
+            roughnessSubroutine.index = roughnessSubroutineMap;
+            metallicSubroutine.index = metallicSubroutineMap;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("roughness", ShaderType.Fragment, "roughnessValue");
-            setParameterSubroutine("metallic", ShaderType.Fragment, "metallicValue");
+            roughnessSubroutine.index = roughnessSubroutineValue;
+            metallicSubroutine.index = metallicSubroutineValue;
         }
         
         if (!mat.outputPBR)
@@ -192,19 +304,19 @@ class DecalShader: Shader
         
         // Emission
         glActiveTexture(GL_TEXTURE5);
-        setParameter("emissionTexture", cast(int)5);
-        setParameter("emissionFactor", mat.emissionFactor);
+        emissionTexture = 5;
+        emissionFactor = mat.emissionFactor;
         if (mat.emissionTexture)
         {
             mat.emissionTexture.bind();
-            setParameterSubroutine("emission", ShaderType.Fragment, "emissionColorTexture");
+            emissionSubroutine.index = emissionSubroutineColorTexture;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("emission", ShaderType.Fragment, "emissionColorValue");
+            emissionSubroutine.index = emissionSubroutineColorValue;
         }
-        setParameter("emissionEnergy", mat.emissionEnergy);
+        emissionEnergy = mat.emissionEnergy;
         
         if (!mat.outputEmission)
         {

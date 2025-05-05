@@ -1,3 +1,11 @@
+Dagon 0.23.0 - TBD
+------------------
+- **Rendering**
+  - Optimized shader parameters binding: parameters are now accessed directly by references rather than names
+  - `Material.textureTransformation` support in shadow and terrain texturing passes
+- **Misc**
+  - Dagon now uses bindbc-sdl 1.5.2.
+
 Dagon 0.22.0 - 04 May, 2025
 ---------------------------
 - **Core**

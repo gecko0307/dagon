@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018-2024 Timur Gafarov
+Copyright (c) 2018-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -42,6 +42,7 @@ import dlib.text.str;
 import dagon.core.bindings;
 import dagon.graphics.material;
 import dagon.graphics.texture;
+import dagon.graphics.light;
 import dagon.graphics.shader;
 import dagon.graphics.state;
 import dagon.graphics.csm;
@@ -55,15 +56,77 @@ import dagon.extra.utils;
  */
 class WaterShader: Shader
 {
+   protected:
     String vs, fs;
 
+    ShaderParameter!Matrix4x4f modelViewMatrix;
+    ShaderParameter!Matrix4x4f projectionMatrix;
+    ShaderParameter!Matrix4x4f invProjectionMatrix;
+    ShaderParameter!Matrix4x4f normalMatrix;
+    ShaderParameter!Matrix4x4f viewMatrix;
+    ShaderParameter!Matrix4x4f invViewMatrix;
+    ShaderParameter!Matrix4x4f prevModelViewMatrix;
+    
+    ShaderParameter!Vector2f textureScale;
+    
+    ShaderParameter!Vector2f viewSize;
+    
+    ShaderParameter!Color4f wWaterColor;
+    ShaderParameter!float wRainIntensity;
+    ShaderParameter!float wFlowSpeed;
+    ShaderParameter!float wWaveAmplitude;
+    
+    ShaderParameter!Vector3f sunDirection;
+    ShaderParameter!Color4f sunColor;
+    ShaderParameter!float sunEnergy;
+    ShaderParameter!float sunScatteringG;
+    ShaderParameter!float sunScatteringDensity;
+    ShaderParameter!int sunScattering;
+    ShaderParameter!int sunScatteringSamples;
+    ShaderParameter!float sunScatteringMaxRandomStepOffset;
+    ShaderParameter!int sunScatteringShadow;
+    ShaderParameter!int shaded;
+    
+    ShaderParameter!int depthBuffer;
+    
+    ShaderParameter!int pRippleTexture;
+    ShaderParameter!Vector4f pRippleTimes;
+    
+    ShaderParameter!Color4f fogColor;
+    ShaderParameter!float fogStart;
+    ShaderParameter!float fogEnd;
+    
+    ShaderParameter!float ambientEnergy;
+    ShaderParameter!Color4f ambientVector;
+    ShaderParameter!int ambientTexture;
+    ShaderParameter!int ambientTextureCube;
+    ShaderSubroutine ambientSubroutine;
+    GLuint ambientSubroutineCubemap,
+           ambientSubroutineEquirectangularMap,
+           ambientSubroutineColor;
+
+    ShaderParameter!int shadowTextureArray;
+    ShaderParameter!float shadowResolution;
+    ShaderParameter!Matrix4x4f shadowMatrix1;
+    ShaderParameter!Matrix4x4f shadowMatrix2;
+    ShaderParameter!Matrix4x4f shadowMatrix3;
+    ShaderSubroutine shadowMapSubroutine;
+    GLuint shadowMapSubroutineCascaded,
+           shadowMapSubroutineNone;
+
+    ShaderParameter!int pNormalTexture1;
+    ShaderParameter!int pNormalTexture2;
+    
+    ShaderParameter!float time;
+
+    Matrix4x4f defaultShadowMatrix;
+    GLuint defaultShadowTexture;
+
+   public:
     GBuffer gbuffer;
     Texture rippleTexture;
     Texture normalTexture1;
     Texture normalTexture2;
-
-    Matrix4x4f defaultShadowMatrix;
-    GLuint defaultShadowTexture;
 
     Color4f waterColor = Color4f(0.02f, 0.02f, 0.08f, 0.9f);
     float rainIntensity = 0.1f;
@@ -77,6 +140,66 @@ class WaterShader: Shader
 
         auto prog = New!ShaderProgram(vs, fs, this);
         super(prog, owner);
+        
+        modelViewMatrix = createParameter!Matrix4x4f("modelViewMatrix");
+        projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
+        invProjectionMatrix = createParameter!Matrix4x4f("invProjectionMatrix");
+        normalMatrix = createParameter!Matrix4x4f("normalMatrix");
+        viewMatrix = createParameter!Matrix4x4f("viewMatrix");
+        invViewMatrix = createParameter!Matrix4x4f("invViewMatrix");
+        prevModelViewMatrix = createParameter!Matrix4x4f("prevModelViewMatrix");
+        
+        textureScale = createParameter!Vector2f("textureScale");
+        
+        viewSize = createParameter!Vector2f("viewSize");
+        
+        wWaterColor = createParameter!Color4f("waterColor");
+        wRainIntensity = createParameter!float("rainIntensity");
+        wFlowSpeed = createParameter!float("flowSpeed");
+        wWaveAmplitude = createParameter!float("waveAmplitude");
+        
+        sunDirection = createParameter!Vector3f("sunDirection");
+        sunColor = createParameter!Color4f("sunColor");
+        sunEnergy = createParameter!float("sunEnergy");
+        sunScatteringG = createParameter!float("sunScatteringG");
+        sunScatteringDensity = createParameter!float("sunScatteringDensity");
+        sunScattering = createParameter!int("sunScattering");
+        sunScatteringSamples = createParameter!int("sunScatteringSamples");
+        sunScatteringMaxRandomStepOffset = createParameter!float("sunScatteringMaxRandomStepOffset");
+        sunScatteringShadow = createParameter!int("sunScatteringShadow");
+        shaded = createParameter!int("shaded");
+        
+        depthBuffer = createParameter!int("depthBuffer");
+        
+        pRippleTexture = createParameter!int("rippleTexture");
+        pRippleTimes = createParameter!Vector4f("rippleTimes");
+        
+        fogColor = createParameter!Color4f("fogColor");
+        fogStart = createParameter!float("fogStart");
+        fogEnd = createParameter!float("fogEnd");
+        
+        ambientEnergy = createParameter!float("ambientEnergy");
+        ambientVector = createParameter!Color4f("ambientVector");
+        ambientTexture = createParameter!int("ambientTexture");
+        ambientTextureCube = createParameter!int("ambientTextureCube");
+        ambientSubroutine = createParameterSubroutine("ambient", ShaderType.Fragment);
+        ambientSubroutineCubemap = ambientSubroutine.getIndex("ambientCubemap");
+        ambientSubroutineEquirectangularMap = ambientSubroutine.getIndex("ambientEquirectangularMap");
+        ambientSubroutineColor = ambientSubroutine.getIndex("ambientColor");
+        
+        shadowTextureArray = createParameter!int("shadowTextureArray");
+        shadowResolution = createParameter!float("shadowResolution");
+        shadowMatrix1 = createParameter!Matrix4x4f("shadowMatrix1");
+        shadowMatrix2 = createParameter!Matrix4x4f("shadowMatrix2");
+        shadowMatrix3 = createParameter!Matrix4x4f("shadowMatrix3");
+        shadowMapSubroutine = createParameterSubroutine("shadowMap", ShaderType.Fragment);
+        shadowMapSubroutineCascaded = shadowMapSubroutine.getIndex("shadowMapCascaded");
+        shadowMapSubroutineNone = shadowMapSubroutine.getIndex("shadowMapNone");
+        
+        pNormalTexture1 = createParameter!int("normalTexture1");
+        pNormalTexture2 = createParameter!int("normalTexture2");
+        
+        time = createParameter!float("time");
 
         this.gbuffer = gbuffer;
 
@@ -112,80 +235,82 @@ class WaterShader: Shader
     override void bindParameters(GraphicsState* state)
     {
         auto mat = state.material;
+        
+        modelViewMatrix = &state.modelViewMatrix;
+        projectionMatrix = &state.projectionMatrix;
+        invProjectionMatrix = &state.invProjectionMatrix;
+        normalMatrix = &state.normalMatrix;
+        viewMatrix = &state.viewMatrix;
+        invViewMatrix = &state.invViewMatrix;
+        prevModelViewMatrix = &state.prevModelViewMatrix;
 
-        setParameter("modelViewMatrix", state.modelViewMatrix);
-        setParameter("projectionMatrix", state.projectionMatrix);
-        setParameter("invProjectionMatrix", state.invProjectionMatrix);
-        setParameter("normalMatrix", state.normalMatrix);
-        setParameter("viewMatrix", state.viewMatrix);
-        setParameter("invViewMatrix", state.invViewMatrix);
-        setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
+        textureScale = mat.textureScale;
 
-        setParameter("textureScale", mat.textureScale);
-
-        setParameter("viewSize", state.resolution);
+        viewSize = state.resolution;
 
         // Water props
-        setParameter("waterColor", waterColor);
-        setParameter("rainIntensity", rainIntensity);
-        setParameter("flowSpeed", flowSpeed);
-        setParameter("waveAmplitude", waveAmplitude);
+        wWaterColor = waterColor;
+        wRainIntensity = rainIntensity;
+        wFlowSpeed = flowSpeed;
+        wWaveAmplitude = waveAmplitude;
 
         // Sun
-        Vector3f sunDirection = Vector3f(0.0f, 0.0f, 1.0f);
-        Color4f sunColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
-        float sunEnergy = 1.0f;
-        bool sunScatteringEnabled = false;
-        float sunScatteringG = 0.0f;
-        float sunScatteringDensity = 1.0f;
-        int sunScatteringSamples = 1;
-        float sunScatteringMaxRandomStepOffset = 0.0f;
-        bool shaded = !mat.shadeless;
-        if (state.material.sun)
+        Light sun = mat.sun;
+        if (sun is null)
+            sun = state.environment.sun;
+        if (sun)
         {
-            auto sun = state.material.sun;
-            sunDirection = sun.directionAbsolute;
+            Vector4f sunDirHg = Vector4f(sun.directionAbsolute);
+            sunDirHg.w = 0.0;
+            sunDirection = (sunDirHg * state.viewMatrix).xyz;
             sunColor = sun.color;
             sunEnergy = sun.energy;
             sunScatteringG = 1.0f - sun.scattering;
             sunScatteringDensity = sun.mediumDensity;
-            sunScatteringEnabled = sun.scatteringEnabled;
+            sunScattering = sun.scatteringEnabled;
+            sunScatteringSamples = sun.scatteringSamples;
+            sunScatteringMaxRandomStepOffset = sun.scatteringMaxRandomStepOffset;
+            sunScatteringShadow = sun.scatteringUseShadow;
         }
-        Vector4f sunDirHg = Vector4f(sunDirection);
-        sunDirHg.w = 0.0;
-        setParameter("sunDirection", (sunDirHg * state.viewMatrix).xyz);
-        setParameter("sunColor", sunColor);
-        setParameter("sunEnergy", sunEnergy);
-        setParameter("sunScatteringG", sunScatteringG);
-        setParameter("sunScatteringDensity", sunScatteringDensity);
-        setParameter("sunScattering", sunScatteringEnabled);
-        setParameter("sunScatteringSamples", sunScatteringSamples);
-        setParameter("sunScatteringMaxRandomStepOffset", sunScatteringMaxRandomStepOffset);
-        setParameter("shaded", shaded);
+        else
+        {
+            Vector4f sunDirHg = Vector4f(0.0f, 0.0f, 1.0f, 0.0f);
+            sunDirection = (sunDirHg * state.viewMatrix).xyz;
+            sunColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+            sunEnergy = 1.0f;
+            sunScattering = false;
+            sunScatteringG = 0.0f;
+            sunScatteringDensity = 1.0f;
+            sunScatteringSamples = 1;
+            sunScatteringMaxRandomStepOffset = 0.0f;
+            sunScatteringShadow = false;
+        }
+        
+        shaded = !mat.shadeless;
 
         // Texture 0 - depth texture (for smooth coast transparency)
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, gbuffer.depthTexture);
-        setParameter("depthBuffer", 0);
+        depthBuffer = 0;
 
         // Ripple parameters
         glActiveTexture(GL_TEXTURE1);
         rippleTexture.bind();
-        setParameter("rippleTexture", 1);
+        pRippleTexture = 1;
 
         float rippleTimesX = frac((state.time.elapsed) * 1.6);
         float rippleTimesY = frac((state.time.elapsed * 0.85 + 0.2) * 1.6);
         float rippleTimesZ = frac((state.time.elapsed * 0.93 + 0.45) * 1.6);
         float rippleTimesW = frac((state.time.elapsed * 1.13 + 0.7) * 1.6);
-        setParameter("rippleTimes", Vector4f(rippleTimesX, rippleTimesY, rippleTimesZ, rippleTimesW));
+        pRippleTimes = Vector4f(rippleTimesX, rippleTimesY, rippleTimesZ, rippleTimesW);
 
         // Environment
         if (state.environment)
         {
-            setParameter("fogColor", state.environment.fogColor);
-            setParameter("fogStart", state.environment.fogStart);
-            setParameter("fogEnd", state.environment.fogEnd);
-            setParameter("ambientEnergy", state.environment.ambientEnergy);
+            fogColor = state.environment.fogColor;
+            fogStart = state.environment.fogStart;
+            fogEnd = state.environment.fogEnd;
+            ambientEnergy = state.environment.ambientEnergy;
 
             if (state.environment.ambientMap)
             {
@@ -193,79 +318,79 @@ class WaterShader: Shader
                 state.environment.ambientMap.bind();
                 if (state.environment.ambientMap.isCubemap)
                 {
-                    setParameter("ambientTextureCube", 2);
-                    setParameterSubroutine("ambient", ShaderType.Fragment, "ambientCubemap");
+                    ambientTextureCube = 2;
+                    ambientSubroutine.index = ambientSubroutineCubemap;
                 }
                 else
                 {
-                    setParameter("ambientTexture", 2);
-                    setParameterSubroutine("ambient", ShaderType.Fragment, "ambientEquirectangularMap");
+                    ambientTexture = 2;
+                    ambientSubroutine.index = ambientSubroutineEquirectangularMap;
                 }
             }
             else
             {
-                setParameter("ambientVector", state.environment.ambientColor);
-                setParameterSubroutine("ambient", ShaderType.Fragment, "ambientColor");
+                ambientVector = state.environment.ambientColor;
+                ambientSubroutine.index = ambientSubroutineColor;
             }
         }
         else
         {
-            setParameter("fogColor", Color4f(0.5f, 0.5f, 0.5f, 1.0f));
-            setParameter("fogStart", 0.0f);
-            setParameter("fogEnd", 1000.0f);
-            setParameter("ambientEnergy", 1.0f);
-            setParameter("ambientVector", Color4f(0.5f, 0.5f, 0.5f, 1.0f));
-            setParameterSubroutine("ambient", ShaderType.Fragment, "ambientColor");
+            fogColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
+            fogStart = 0.0f;
+            fogEnd = 1000.0f;
+            ambientEnergy = 1.0f;
+            ambientVector = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
+            ambientSubroutine.index = ambientSubroutineColor;
         }
 
         // Shadow map
-        if (state.material.sun)
+        if (sun)
         {
-            if (state.material.sun.shadowEnabled)
+            if (sun.shadowEnabled)
             {
-                CascadedShadowMap csm = cast(CascadedShadowMap)state.material.sun.shadowMap;
-
+                CascadedShadowMap csm = cast(CascadedShadowMap)state.light.shadowMap;
+                
                 glActiveTexture(GL_TEXTURE3);
                 glBindTexture(GL_TEXTURE_2D_ARRAY, csm.depthTexture);
-                setParameter("shadowTextureArray", 3);
-                setParameter("shadowResolution", cast(float)csm.resolution);
-                setParameter("shadowMatrix1", csm.area[0].shadowMatrix);
-                setParameter("shadowMatrix2", csm.area[1].shadowMatrix);
-                setParameter("shadowMatrix3", csm.area[2].shadowMatrix);
-                setParameterSubroutine("shadowMap", ShaderType.Fragment, "shadowMapCascaded");
+                shadowTextureArray = 3;
+                shadowResolution = cast(float)csm.resolution;
+                shadowMatrix1 = &csm.area[0].shadowMatrix;
+                shadowMatrix2 = &csm.area[1].shadowMatrix;
+                shadowMatrix3 = &csm.area[2].shadowMatrix;
+                shadowMapSubroutine.index = shadowMapSubroutineCascaded;
             }
             else
             {
                 glActiveTexture(GL_TEXTURE3);
                 glBindTexture(GL_TEXTURE_2D_ARRAY, defaultShadowTexture);
-                setParameter("shadowTextureArray", 3);
-                setParameter("shadowMatrix1", defaultShadowMatrix);
-                setParameter("shadowMatrix2", defaultShadowMatrix);
-                setParameter("shadowMatrix3", defaultShadowMatrix);
-                setParameterSubroutine("shadowMap", ShaderType.Fragment, "shadowMapNone");
+                shadowTextureArray = 3;
+                shadowMatrix1 = &defaultShadowMatrix;
+                shadowMatrix2 = &defaultShadowMatrix;
+                shadowMatrix3 = &defaultShadowMatrix;
+                shadowMapSubroutine.index = shadowMapSubroutineNone;
             }
         }
         else
         {
             glActiveTexture(GL_TEXTURE3);
             glBindTexture(GL_TEXTURE_2D_ARRAY, defaultShadowTexture);
-            setParameter("shadowTextureArray", 3);
-            setParameter("shadowMatrix1", defaultShadowMatrix);
-            setParameter("shadowMatrix2", defaultShadowMatrix);
-            setParameter("shadowMatrix3", defaultShadowMatrix);
-            setParameterSubroutine("shadowMap", ShaderType.Fragment, "shadowMapNone");
+            shadowTextureArray = 3;
+            shadowMatrix1 = &defaultShadowMatrix;
+            shadowMatrix2 = &defaultShadowMatrix;
+            shadowMatrix3 = &defaultShadowMatrix;
+            shadowMapSubroutine.index = shadowMapSubroutineNone;
         }
 
         // Normal maps
         glActiveTexture(GL_TEXTURE4);
         normalTexture1.bind();
-        setParameter("normalTexture1", 4);
+        pNormalTexture1 = 4;
 
         glActiveTexture(GL_TEXTURE5);
         normalTexture2.bind();
-        setParameter("normalTexture2", 5);
+        pNormalTexture2 = 5;
 
-        setParameter("time", cast(float)state.time.elapsed);
+        time = cast(float)state.time.elapsed;
 
         super.bindParameters(state);
     }
@@ -282,7 +407,6 @@ class WaterShader: Shader
 
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, 0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, 0);

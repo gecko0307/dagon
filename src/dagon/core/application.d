@@ -229,6 +229,13 @@ bool isExtensionSupported(string extName)
 +/
 class Application: EventListener
 {
+    SDLSupport loadedSDLSupport;
+    SDLImageSupport loadedSDLImageSupport;
+    GLSupport loadedGLSupport;
+    
+    SDL_version sdlVersion;
+    SDL_version sdlImageVersion;
+    
     uint width;
     uint height;
     bool fullscreen = false;
@@ -236,8 +243,9 @@ class Application: EventListener
     SDL_GLContext glcontext;
     private EventManager _eventManager;
     Cadencer cadencer;
-    String vendor;
-    String renderer;
+    String glVersion;
+    String glVendor;
+    String glRenderer;
     bool sdlImagePresent = true;
 
     /++
@@ -251,29 +259,39 @@ class Application: EventListener
     this(uint winWidth, uint winHeight, bool fullscreen, string windowTitle, string[] args)
     {
         version(linux)
-            SDLSupport sdlsup = loadSDL("libSDL2-2.0.so.0");
+            loadedSDLSupport = loadSDL("libSDL2-2.0.so.0");
         else
-            SDLSupport sdlsup = loadSDL();
+            loadedSDLSupport = loadSDL();
         
-        if (sdlsup != sdlSupport)
+        if (loadedSDLSupport != sdlSupport)
         {
-            if (sdlsup == SDLSupport.badLibrary)
+            if (loadedSDLSupport == SDLSupport.badLibrary)
                 logWarning("Failed to load some SDL functions. It seems that you have an old version of SDL. Dagon will try to use it, but it is recommended to install SDL 2.30 or higher");
             else
                 exitWithError("Error: SDL library is not found. Please, install SDL 2.30 or higher");
         }
         
-        SDLImageSupport sdlimgsup = loadSDLImage();
-        if (sdlimgsup != sdlImageSupport)
+        SDL_GetVersion(&sdlVersion);
+        logInfo("SDL version: ", sdlVersion.major, ".", sdlVersion.minor, ".", sdlVersion.patch);
+        
+        loadedSDLImageSupport = loadSDLImage();
+        
+        if (loadedSDLImageSupport != sdlImageSupport)
         {
-            if (sdlsup == SDLSupport.badLibrary)
+            if (loadedSDLImageSupport == SDLImageSupport.badLibrary)
+            {
                 logWarning("Failed to load some SDL2_Image functions. It seems that you have an old version of SDL2_Image. Dagon will try to use it, but it is recommended to install SDL2_Image 2.8 or higher");
+            }
             else
             {
                 logWarning("SDL2_Image library is not found. Please, install SDL2_Image 2.8 or higher");
                 sdlImagePresent = false;
             }
         }
+        
+        const(SDL_version)* pSdlImageVer = IMG_Linked_Version();
+        sdlImageVersion = *pSdlImageVer;
+        logInfo("SDL_Image version: ", sdlImageVersion.major, ".", sdlImageVersion.minor, ".", sdlImageVersion.patch);
 
         if (SDL_Init(SDL_INIT_EVERYTHING) == -1)
             exitWithError("Failed to init SDL: " ~ to!string(SDL_GetError()));
@@ -326,10 +344,11 @@ class Application: EventListener
         SDL_GL_MakeCurrent(window, glcontext);
         SDL_GL_SetSwapInterval(1);
         
-        GLSupport glsup = loadOpenGL();
+        loadedGLSupport = loadOpenGL();
+        
         if (isOpenGLLoaded())
         {
-            if (glsup < GLSupport.gl40)
+            if (loadedGLSupport < GLSupport.gl40)
             {
                 exitWithError("Dagon requires OpenGL 4.0, but it seems that your graphics card does not support it");
             }
@@ -345,10 +364,12 @@ class Application: EventListener
         super(_eventManager, null);
 
         // Initialize OpenGL
-        vendor = String(glGetString(GL_VENDOR));
-        renderer = String(glGetString(GL_RENDERER));
-        logInfo("OpenGL vendor: ", vendor);
-        logInfo("OpenGL renderer: ", renderer);
+        glVersion = String(glGetString(GL_VERSION));
+        glVendor = String(glGetString(GL_VENDOR));
+        glRenderer = String(glGetString(GL_RENDERER));
+        logInfo("OpenGL version: ", glVersion);
+        logInfo("OpenGL vendor: ", glVendor);
+        logInfo("OpenGL renderer: ", glRenderer);
         
         // Get limits
         glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &_maxTextureUnits);

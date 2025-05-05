@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -45,10 +45,17 @@ import dagon.render.framebuffer;
 
 class GlowShader: Shader
 {
+   protected:
     String vs, fs;
+    
+    ShaderParameter!Vector2f viewSize;
+    ShaderParameter!int glowEnabled;
+    ShaderParameter!float glowIntensity;
+    ShaderParameter!int glowColorBuffer;
+    ShaderParameter!int glowBlurredBuffer;
 
+   public:
     bool enabled = true;
-
     float intensity = 1.0f;
 
     Framebuffer blurredBuffer;
@@ -60,6 +67,12 @@ class GlowShader: Shader
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
+        
+        viewSize = createParameter!Vector2f("viewSize");
+        glowEnabled = createParameter!int("enabled");
+        glowIntensity = createParameter!float("intensity");
+        glowColorBuffer = createParameter!int("colorBuffer");
+        glowBlurredBuffer = createParameter!int("blurredBuffer");
     }
 
     ~this()
@@ -70,21 +83,21 @@ class GlowShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        setParameter("viewSize", state.resolution);
-        setParameter("enabled", enabled);
-        setParameter("intensity", intensity);
+        viewSize = state.resolution;
+        glowEnabled = enabled;
+        glowIntensity = intensity;
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
-        setParameter("colorBuffer", 0);
+        glowColorBuffer = 0;
 
         // Texture 1 - blurred buffer
         if (blurredBuffer)
         {
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_2D, blurredBuffer.colorTexture);
-            setParameter("blurredBuffer", 1);
+            glowBlurredBuffer = 1;
         }
 
         glActiveTexture(GL_TEXTURE0);

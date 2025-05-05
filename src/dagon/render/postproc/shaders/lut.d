@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -46,8 +46,17 @@ import dagon.render.framebuffer;
 
 class LUTShader: Shader
 {
+   protected:
     String vs, fs;
+    
+    ShaderParameter!Vector2f viewSize;
+    ShaderParameter!int colorBuffer;
+    ShaderParameter!int lutEnabled;
+    ShaderParameter!int colorTableSimple;
+    ShaderParameter!int colorTableHald;
+    ShaderParameter!int lookupMode;
 
+   public:
     Texture colorLookupTable;
 
     this(Owner owner)
@@ -57,6 +66,13 @@ class LUTShader: Shader
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
+        
+        viewSize = createParameter!Vector2f("viewSize");
+        colorBuffer = createParameter!int("colorBuffer");
+        lutEnabled = createParameter!int("enabled");
+        colorTableSimple = createParameter!int("colorTableSimple");
+        colorTableHald = createParameter!int("colorTableHald");
+        lookupMode = createParameter!int("lookupMode");
     }
 
     ~this()
@@ -67,19 +83,19 @@ class LUTShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        setParameter("viewSize", state.resolution);
+        viewSize = state.resolution;
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
-        setParameter("colorBuffer", 0);
+        colorBuffer = 0;
 
         // Textures 1, 2 - lookup table
         if (colorLookupTable)
         {
-            setParameter("enabled", 1);
-            setParameter("colorTableSimple", 1);
-            setParameter("colorTableHald", 2);
+            lutEnabled = true;
+            colorTableSimple = 1;
+            colorTableHald = 2;
             
             if (colorLookupTable.format.target == GL_TEXTURE_3D)
             {
@@ -89,7 +105,7 @@ class LUTShader: Shader
                 glActiveTexture(GL_TEXTURE2);
                 colorLookupTable.bind();
                 
-                setParameter("lookupMode", 1);
+                lookupMode = 1;
             }
             else
             {
@@ -99,12 +115,12 @@ class LUTShader: Shader
                 glActiveTexture(GL_TEXTURE2);
                 glBindTexture(GL_TEXTURE_3D, 0);
                 
-                setParameter("lookupMode", 0);
+                lookupMode = 0;
             }
         }
         else
         {
-            setParameter("enabled", 0);
+            lutEnabled = false;
         }
 
         glActiveTexture(GL_TEXTURE0);

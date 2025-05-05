@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -47,8 +47,20 @@ import dagon.graphics.terrain;
 
 class TerrainGeometryShader: Shader
 {
+   protected:
     String vs, fs;
+    
+    ShaderParameter!Matrix4x4f modelViewMatrix;
+    ShaderParameter!Matrix4x4f projectionMatrix;
+    ShaderParameter!Matrix4x4f normalMatrix;
+    ShaderParameter!Matrix4x4f viewMatrix;
+    ShaderParameter!Matrix4x4f invViewMatrix;
+    ShaderParameter!Matrix4x4f prevModelViewMatrix;
+    
+    ShaderParameter!float gbufferMask;
+    ShaderParameter!float blurMask;
 
+   public:
     this(Owner owner)
     {
         vs = Shader.load("data/__internal/shaders/Terrain/TerrainGeometry.vert.glsl");
@@ -56,6 +68,16 @@ class TerrainGeometryShader: Shader
 
         auto prog = New!ShaderProgram(vs, fs, this);
         super(prog, owner);
+        
+        modelViewMatrix = createParameter!Matrix4x4f("modelViewMatrix");
+        projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
+        normalMatrix = createParameter!Matrix4x4f("normalMatrix");
+        viewMatrix = createParameter!Matrix4x4f("viewMatrix");
+        invViewMatrix = createParameter!Matrix4x4f("invViewMatrix");
+        prevModelViewMatrix = createParameter!Matrix4x4f("prevModelViewMatrix");
+        
+        gbufferMask = createParameter!float("gbufferMask");
+        blurMask = createParameter!float("blurMask");
     }
 
     ~this()
@@ -66,17 +88,15 @@ class TerrainGeometryShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        Material mat = state.material;
+        modelViewMatrix = &state.modelViewMatrix;
+        projectionMatrix = &state.projectionMatrix;
+        normalMatrix = &state.normalMatrix;
+        viewMatrix = &state.viewMatrix;
+        invViewMatrix = &state.invViewMatrix;
+        prevModelViewMatrix = &state.prevModelViewMatrix;
         
-        setParameter("modelViewMatrix", state.modelViewMatrix);
-        setParameter("projectionMatrix", state.projectionMatrix);
-        setParameter("normalMatrix", state.normalMatrix);
-        setParameter("viewMatrix", state.viewMatrix);
-        setParameter("invViewMatrix", state.invViewMatrix);
-        setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
-        
-        setParameter("gbufferMask", 1.0f);
-        setParameter("blurMask", state.blurMask);
+        gbufferMask = 1.0f;
+        blurMask = state.blurMask;
         
         super.bindParameters(state);
     }
@@ -89,8 +109,74 @@ class TerrainGeometryShader: Shader
 
 class TerrainTextureLayerShader: Shader
 {
+   protected:
     String vs, fs;
 
+    ShaderParameter!Matrix4x4f viewMatrix;
+    ShaderParameter!Matrix4x4f invViewMatrix;
+    ShaderParameter!Matrix4x4f projectionMatrix;
+    ShaderParameter!Matrix4x4f invProjectionMatrix;
+    ShaderParameter!Vector2f resolution;
+    ShaderParameter!float zNear;
+    ShaderParameter!float zFar;
+
+    ShaderParameter!float opacity;
+    ShaderParameter!Matrix3x3f textureMatrix;
+    ShaderParameter!float clipThreshold;
+    
+    ShaderParameter!int terrainNormalBuffer;
+    ShaderParameter!int terrainTexcoordBuffer;
+    
+    ShaderParameter!int maskTexture;
+    ShaderParameter!float maskFactor;
+    ShaderSubroutine layerMaskSubroutine;
+    GLuint layerMaskSubroutineTexture,
+           layerMaskSubroutineValue;
+
+    ShaderParameter!int diffuseTexture;
+    ShaderParameter!Color4f diffuseVector;
+    ShaderSubroutine diffuseSubroutine;
+    GLuint diffuseSubroutineColorTexture,
+           diffuseSubroutineColorValue;
+
+    ShaderParameter!int normalTexture;
+    ShaderParameter!Vector3f normalVector;
+    ShaderSubroutine normalSubroutine;
+    GLuint normalSubroutineMap,
+           normalSubroutineValue;
+    ShaderParameter!int generateTBN;
+    ShaderParameter!float normalYSign;
+
+    ShaderParameter!int heightTexture;
+    ShaderParameter!float heightScalar;
+    ShaderSubroutine heightSubroutine;
+    GLuint heightSubroutineMap,
+           heightSubroutineValue;
+
+    ShaderSubroutine parallaxSubroutine;
+    GLuint parallaxSubroutineSimple,
+           parallaxSubroutineOcclusionMapping,
+           parallaxSubroutineNone;
+    ShaderParameter!float parallaxScale;
+    ShaderParameter!float parallaxBias;
+
+    ShaderParameter!int roughnessMetallicTexture;
+    ShaderParameter!Color4f roughnessMetallicFactor;
+    ShaderSubroutine roughnessSubroutine;
+    ShaderSubroutine metallicSubroutine;
+    GLuint roughnessSubroutineMap,
+           roughnessSubroutineValue;
+    GLuint metallicSubroutineMap,
+           metallicSubroutineValue;
+
+    ShaderParameter!int emissionTexture;
+    ShaderParameter!Color4f emissionFactor;
+    ShaderSubroutine emissionSubroutine;
+    GLuint emissionSubroutineColorTexture,
+           emissionSubroutineColorValue;
+    ShaderParameter!float energy;
+
+   public:
     this(Owner owner)
     {
         vs = Shader.load("data/__internal/shaders/Terrain/TerrainTextureLayer.vert.glsl");
@@ -98,6 +184,70 @@ class TerrainTextureLayerShader: Shader
 
         auto prog = New!ShaderProgram(vs, fs, this);
         super(prog, owner);
+        
+        viewMatrix = createParameter!Matrix4x4f("viewMatrix");
+        invViewMatrix = createParameter!Matrix4x4f("invViewMatrix");
+        projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
+        invProjectionMatrix = createParameter!Matrix4x4f("invProjectionMatrix");
+        resolution = createParameter!Vector2f("resolution");
+        zNear = createParameter!float("zNear");
+        zFar = createParameter!float("zFar");
+        
+        opacity = createParameter!float("opacity");
+        textureMatrix = createParameter!Matrix3x3f("textureMatrix");
+        clipThreshold = createParameter!float("clipThreshold");
+        
+        terrainNormalBuffer = createParameter!int("terrainNormalBuffer");
+        terrainTexcoordBuffer = createParameter!int("terrainTexcoordBuffer");
+        
+        maskTexture = createParameter!int("maskTexture");
+        maskFactor = createParameter!float("maskFactor");
+        layerMaskSubroutine = createParameterSubroutine("layerMask", ShaderType.Fragment);
+        layerMaskSubroutineTexture = layerMaskSubroutine.getIndex("layerMaskTexture");
+        layerMaskSubroutineValue = layerMaskSubroutine.getIndex("layerMaskValue");
+        
+        diffuseTexture = createParameter!int("diffuseTexture");
+        diffuseVector = createParameter!Color4f("diffuseVector");
+        diffuseSubroutine = createParameterSubroutine("diffuse", ShaderType.Fragment);
+        diffuseSubroutineColorTexture = diffuseSubroutine.getIndex("diffuseColorTexture");
+        diffuseSubroutineColorValue = diffuseSubroutine.getIndex("diffuseColorValue");
+        
+        normalTexture = createParameter!int("normalTexture");
+        normalVector = createParameter!Vector3f("normalVector");
+        normalSubroutine = createParameterSubroutine("normal", ShaderType.Fragment);
+        normalSubroutineMap = normalSubroutine.getIndex("normalMap");
+        normalSubroutineValue = normalSubroutine.getIndex("normalValue");
+        generateTBN = createParameter!int("generateTBN");
+        normalYSign = createParameter!float("normalYSign");
+        
+        heightTexture = createParameter!int("heightTexture");
+        heightScalar = createParameter!float("heightScalar");
+        heightSubroutine = createParameterSubroutine("height", ShaderType.Fragment);
+        heightSubroutineMap = heightSubroutine.getIndex("heightMap");
+        heightSubroutineValue = heightSubroutine.getIndex("heightValue");
+        
+        parallaxSubroutine = createParameterSubroutine("parallax", ShaderType.Fragment);
+        parallaxSubroutineSimple = parallaxSubroutine.getIndex("parallaxSimple");
+        parallaxSubroutineOcclusionMapping = parallaxSubroutine.getIndex("parallaxOcclusionMapping");
+        parallaxSubroutineNone = parallaxSubroutine.getIndex("parallaxNone");
+        parallaxScale = createParameter!float("parallaxScale");
+        parallaxBias = createParameter!float("parallaxBias");
+        
+        roughnessMetallicTexture = createParameter!int("roughnessMetallicTexture");
+        roughnessMetallicFactor = createParameter!Color4f("roughnessMetallicFactor");
+        roughnessSubroutine = createParameterSubroutine("roughness", ShaderType.Fragment);
+        roughnessSubroutineMap = roughnessSubroutine.getIndex("roughnessMap");
+        roughnessSubroutineValue = roughnessSubroutine.getIndex("roughnessValue");
+        metallicSubroutine = createParameterSubroutine("metallic", ShaderType.Fragment);
+        metallicSubroutineMap = metallicSubroutine.getIndex("metallicMap");
+        metallicSubroutineValue = metallicSubroutine.getIndex("metallicValue");
+        
+        emissionTexture = createParameter!int("emissionTexture");
+        emissionFactor = createParameter!Color4f("emissionFactor");
+        emissionSubroutine = createParameterSubroutine("emission", ShaderType.Fragment);
+        emissionSubroutineColorTexture = emissionSubroutine.getIndex("emissionColorTexture");
+        emissionSubroutineColorValue = emissionSubroutine.getIndex("emissionColorValue");
+        energy = createParameter!float("energy");
     }
 
     ~this()
@@ -110,79 +260,79 @@ class TerrainTextureLayerShader: Shader
     {
         Material mat = state.material;
         
-        setParameter("viewMatrix", state.viewMatrix);
-        setParameter("invViewMatrix", state.invViewMatrix);
-        setParameter("projectionMatrix", state.projectionMatrix);
-        setParameter("invProjectionMatrix", state.invProjectionMatrix);
-        setParameter("resolution", state.resolution);
-        setParameter("zNear", state.zNear);
-        setParameter("zFar", state.zFar);
+        viewMatrix = &state.viewMatrix;
+        invViewMatrix = &state.invViewMatrix;
+        projectionMatrix = &state.projectionMatrix;
+        invProjectionMatrix = &state.invProjectionMatrix;
+        resolution = state.resolution;
+        zNear = state.zNear;
+        zFar = state.zFar;
         
-        setParameter("opacity", mat.opacity);
-        setParameter("textureScale", mat.textureScale);
-        setParameter("clipThreshold", mat.alphaTestThreshold);
+        opacity = mat.opacity;
+        textureMatrix = mat.textureTransformation;
+        clipThreshold = mat.alphaTestThreshold;
         
         // Texture 0 - normal buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.normalTexture);
-        setParameter("terrainNormalBuffer", cast(int)0);
+        terrainNormalBuffer = 0;
 
         // Texture 1 - texcoord buffer
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, state.texcoordTexture);
-        setParameter("terrainTexcoordBuffer", cast(int)1);
+        terrainTexcoordBuffer = 1;
         
         // Texture 2 - mask
         glActiveTexture(GL_TEXTURE2);
-        setParameter("maskTexture", cast(int)2);
-        setParameter("maskFactor", mat.maskFactor);
+        maskTexture = 2;
+        maskFactor = mat.maskFactor;
         if (mat.maskTexture)
         {
             mat.maskTexture.bind();
-            setParameterSubroutine("layerMask", ShaderType.Fragment, "layerMaskTexture");
+            layerMaskSubroutine.index = layerMaskSubroutineTexture;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("layerMask", ShaderType.Fragment, "layerMaskValue");
+            layerMaskSubroutine.index = layerMaskSubroutineValue;
         }
         
         // Diffuse
         glActiveTexture(GL_TEXTURE3);
-        setParameter("diffuseTexture", cast(int)3);
-        setParameter("diffuseVector", mat.baseColorFactor);
+        diffuseTexture = 3;
+        diffuseVector = mat.baseColorFactor;
         if (mat.baseColorTexture)
         {
             mat.baseColorTexture.bind();
-            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorTexture");
+            diffuseSubroutine.index = diffuseSubroutineColorTexture;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("diffuse", ShaderType.Fragment, "diffuseColorValue");
+            diffuseSubroutine.index = diffuseSubroutineColorValue;
         }
         
         // Normal
         glActiveTexture(GL_TEXTURE4);
-        setParameter("normalTexture", cast(int)4);
-        setParameter("normalVector", mat.normalFactor);
+        normalTexture = 4;
+        normalVector = mat.normalFactor;
         if (mat.normalTexture)
         {
             mat.normalTexture.bind();
-            setParameterSubroutine("normal", ShaderType.Fragment, "normalMap");
-            setParameter("generateTBN", cast(int)1);
+            normalSubroutine.index = normalSubroutineMap;
+            generateTBN = true;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("normal", ShaderType.Fragment, "normalValue");
-            setParameter("generateTBN", cast(int)0);
+            normalSubroutine.index = normalSubroutineValue;
+            generateTBN = false;
         }
         
         if (state.material.invertNormalY)
-            setParameter("normalYSign", -1.0f);
+            normalYSign = -1.0f;
         else
-            setParameter("normalYSign", 1.0f);
+            normalYSign = 1.0f;
 
         // Height and parallax
         int parallaxMethod = mat.parallaxMode;
@@ -192,62 +342,62 @@ class TerrainTextureLayerShader: Shader
             parallaxMethod = 0;
         
         glActiveTexture(GL_TEXTURE5);
-        setParameter("heightTexture", cast(int)5);
-        setParameter("heightScalar", mat.heightFactor);
+        heightTexture = 5;
+        heightScalar = mat.heightFactor;
         if (mat.heightTexture)
         {
             mat.heightTexture.bind();
-            setParameterSubroutine("height", ShaderType.Fragment, "heightMap");
+            heightSubroutine.index = heightSubroutineMap;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("height", ShaderType.Fragment, "heightValue");
+            heightSubroutine.index = heightSubroutineValue;
             parallaxMethod = ParallaxNone;
         }
         
         if (parallaxMethod == ParallaxSimple)
-            setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxSimple");
+            parallaxSubroutine.index = parallaxSubroutineSimple;
         else if (parallaxMethod == ParallaxOcclusionMapping)
-            setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxOcclusionMapping");
+            parallaxSubroutine.index = parallaxSubroutineOcclusionMapping;
         else
-            setParameterSubroutine("parallax", ShaderType.Fragment, "parallaxNone");
+            parallaxSubroutine.index = parallaxSubroutineNone;
         
-        setParameter("parallaxScale", mat.parallaxScale);
-        setParameter("parallaxBias", mat.parallaxBias);
+        parallaxScale = mat.parallaxScale;
+        parallaxBias = mat.parallaxBias;
         
         // PBR
         glActiveTexture(GL_TEXTURE6);
-        setParameter("roughnessMetallicTexture", cast(int)6);
-        setParameter("roughnessMetallicFactor", Vector4f(1.0f, mat.roughnessFactor, mat.metallicFactor, 0.0f));
+        roughnessMetallicTexture = 6;
+        roughnessMetallicFactor = Color4f(1.0f, mat.roughnessFactor, mat.metallicFactor, 0.0f);
         if (mat.roughnessMetallicTexture)
         {
             mat.roughnessMetallicTexture.bind();
-            setParameterSubroutine("roughness", ShaderType.Fragment, "roughnessMap");
-            setParameterSubroutine("metallic", ShaderType.Fragment, "metallicMap");
+            roughnessSubroutine.index = roughnessSubroutineMap;
+            metallicSubroutine.index = metallicSubroutineMap;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("roughness", ShaderType.Fragment, "roughnessValue");
-            setParameterSubroutine("metallic", ShaderType.Fragment, "metallicValue");
+            roughnessSubroutine.index = roughnessSubroutineValue;
+            metallicSubroutine.index = metallicSubroutineValue;
         }
         
         // Emission
         glActiveTexture(GL_TEXTURE7);
-        setParameter("emissionTexture", cast(int)7);
-        setParameter("emissionFactor", mat.emissionFactor);
+        emissionTexture = 7;
+        emissionFactor = mat.emissionFactor;
         if (mat.emissionTexture)
         {
             mat.emissionTexture.bind();
-            setParameterSubroutine("emission", ShaderType.Fragment, "emissionColorTexture");
+            emissionSubroutine.index = emissionSubroutineColorTexture;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("emission", ShaderType.Fragment, "emissionColorValue");
+            emissionSubroutine.index = emissionSubroutineColorValue;
         }
-        setParameter("energy", mat.emissionEnergy);
+        energy = mat.emissionEnergy;
 
         super.bindParameters(state);
         

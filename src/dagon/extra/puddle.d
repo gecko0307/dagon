@@ -53,7 +53,47 @@ import dagon.extra.utils;
  */
 class PuddleShader: Shader
 {
+   protected:
     String vs, fs;
+    
+    ShaderParameter!Matrix4x4f viewMatrix;
+    ShaderParameter!Matrix4x4f invViewMatrix;
+    ShaderParameter!Matrix4x4f projectionMatrix;
+    ShaderParameter!Matrix4x4f invProjectionMatrix;
+    ShaderParameter!Matrix4x4f normalMatrix;
+    
+    ShaderParameter!Vector2f resolution;
+    ShaderParameter!float zNear;
+    ShaderParameter!float zFar;
+    
+    ShaderParameter!float opacity;
+    ShaderParameter!Vector2f textureScale;
+    //ShaderParameter!Matrix3x3f textureMatrix;
+    ShaderParameter!float clipThreshold;
+    
+    ShaderParameter!Color4f pWaterColor;
+    ShaderParameter!float pRainIntensity;
+    ShaderParameter!float pFlowSpeed;
+    ShaderParameter!float pWaveAmplitude;
+    
+    ShaderParameter!int terrainNormalBuffer;
+    ShaderParameter!int terrainTexcoordBuffer;
+    
+    ShaderParameter!int maskTexture;
+    ShaderParameter!float maskFactor;
+    ShaderSubroutine layerMaskSubroutine;
+    GLuint layerMaskSubroutineTexture,
+           layerMaskSubroutineValue;
+    
+    ShaderParameter!int pRippleTexture;
+    ShaderParameter!Vector4f pRippleTimes;
+    
+    ShaderParameter!int pNormalTexture1;
+    ShaderParameter!int pNormalTexture2;
+    
+    ShaderParameter!float time;
+    
+   public:
     Texture rippleTexture;
     Texture normalTexture1;
     Texture normalTexture2;
@@ -70,6 +110,43 @@ class PuddleShader: Shader
 
         auto prog = New!ShaderProgram(vs, fs, this);
         super(prog, assetManager);
+        
+        viewMatrix = createParameter!Matrix4x4f("viewMatrix");
+        invViewMatrix = createParameter!Matrix4x4f("invViewMatrix");
+        projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
+        invProjectionMatrix = createParameter!Matrix4x4f("invProjectionMatrix");
+        normalMatrix = createParameter!Matrix4x4f("normalMatrix");
+        
+        resolution = createParameter!Vector2f("resolution");
+        zNear = createParameter!float("zNear");
+        zFar = createParameter!float("zFar");
+        
+        opacity = createParameter!float("opacity");
+        textureScale = createParameter!Vector2f("textureScale");
+        //textureMatrix = createParameter!Matrix3x3f("textureMatrix");
+        clipThreshold = createParameter!float("clipThreshold");
+        
+        pWaterColor = createParameter!Color4f("waterColor");
+        pRainIntensity = createParameter!float("rainIntensity");
+        pFlowSpeed = createParameter!float("flowSpeed");
+        pWaveAmplitude = createParameter!float("waveAmplitude");
+        
+        terrainNormalBuffer = createParameter!int("terrainNormalBuffer");
+        terrainTexcoordBuffer = createParameter!int("terrainTexcoordBuffer");
+        
+        maskTexture = createParameter!int("maskTexture");
+        maskFactor = createParameter!float("maskFactor");
+        layerMaskSubroutine = createParameterSubroutine("layerMask", ShaderType.Fragment);
+        layerMaskSubroutineTexture = layerMaskSubroutine.getIndex("layerMaskTexture");
+        layerMaskSubroutineValue = layerMaskSubroutine.getIndex("layerMaskValue");
+        
+        pRippleTexture = createParameter!int("rippleTexture");
+        pRippleTimes = createParameter!Vector4f("rippleTimes");
+        
+        pNormalTexture1 = createParameter!int("normalTexture1");
+        pNormalTexture2 = createParameter!int("normalTexture2");
+        
+        time = createParameter!float("time");
         
         TextureAsset rippleTextureAsset = textureAsset(assetManager, "data/__internal/textures/ripples.png");
         rippleTexture = rippleTextureAsset.texture;
@@ -91,71 +168,73 @@ class PuddleShader: Shader
     {
         Material mat = state.material;
         
-        setParameter("viewMatrix", state.viewMatrix);
-        setParameter("invViewMatrix", state.invViewMatrix);
-        setParameter("projectionMatrix", state.projectionMatrix);
-        setParameter("invProjectionMatrix", state.invProjectionMatrix);
-        setParameter("normalMatrix", state.normalMatrix);
-        setParameter("resolution", state.resolution);
-        setParameter("zNear", state.zNear);
-        setParameter("zFar", state.zFar);
+        viewMatrix = &state.viewMatrix;
+        invViewMatrix = &state.invViewMatrix;
+        projectionMatrix = &state.projectionMatrix;
+        invProjectionMatrix = &state.invProjectionMatrix;
+        normalMatrix = &state.normalMatrix;
         
-        setParameter("opacity", mat.opacity);
-        setParameter("textureScale", mat.textureScale);
-        setParameter("clipThreshold", mat.alphaTestThreshold);
+        resolution = state.resolution;
+        zNear = state.zNear;
+        zNear = state.zFar;
+        
+        opacity = mat.opacity;
+        textureScale = mat.textureScale;
+        //textureMatrix = &mat.textureTransformation;
+        clipThreshold = mat.alphaTestThreshold;
         
         // Water props
-        setParameter("waterColor", waterColor);
-        setParameter("rainIntensity", rainIntensity);
-        setParameter("flowSpeed", flowSpeed);
-        setParameter("waveAmplitude", waveAmplitude);
+        pWaterColor = waterColor;
+        pRainIntensity = rainIntensity;
+        pFlowSpeed = flowSpeed;
+        pWaveAmplitude = waveAmplitude;
         
         // Texture 0 - normal buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.normalTexture);
-        setParameter("terrainNormalBuffer", cast(int)0);
+        terrainNormalBuffer = 0;
 
         // Texture 1 - texcoord buffer
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, state.texcoordTexture);
-        setParameter("terrainTexcoordBuffer", cast(int)1);
+        terrainTexcoordBuffer = 1;
         
         // Texture 2 - mask
         glActiveTexture(GL_TEXTURE2);
-        setParameter("maskTexture", cast(int)2);
-        setParameter("maskFactor", mat.maskFactor);
+        maskTexture = 2;
+        maskFactor = mat.maskFactor;
         if (mat.maskTexture)
         {
             mat.maskTexture.bind();
-            setParameterSubroutine("layerMask", ShaderType.Fragment, "layerMaskTexture");
+            layerMaskSubroutine.index = layerMaskSubroutineTexture;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("layerMask", ShaderType.Fragment, "layerMaskValue");
+            layerMaskSubroutine.index = layerMaskSubroutineValue;
         }
         
         // Ripples
         glActiveTexture(GL_TEXTURE3);
         rippleTexture.bind();
-        setParameter("rippleTexture",  cast(int)3);
+        pRippleTexture = 3;
 
         float rippleTimesX = frac((state.time.elapsed) * 1.6);
         float rippleTimesY = frac((state.time.elapsed * 0.85 + 0.2) * 1.6);
         float rippleTimesZ = frac((state.time.elapsed * 0.93 + 0.45) * 1.6);
         float rippleTimesW = frac((state.time.elapsed * 1.13 + 0.7) * 1.6);
-        setParameter("rippleTimes", Vector4f(rippleTimesX, rippleTimesY, rippleTimesZ, rippleTimesW));
+        pRippleTimes = Vector4f(rippleTimesX, rippleTimesY, rippleTimesZ, rippleTimesW);
         
         // Normal maps
         glActiveTexture(GL_TEXTURE4);
         normalTexture1.bind();
-        setParameter("normalTexture1", cast(int)4);
+        pNormalTexture1 = 4;
 
         glActiveTexture(GL_TEXTURE5);
         normalTexture2.bind();
-        setParameter("normalTexture2", cast(int)5);
+        pNormalTexture2 = 5;
 
-        setParameter("time", cast(float)state.time.elapsed);
+        time = cast(float)state.time.elapsed;
 
         super.bindParameters(state);
         

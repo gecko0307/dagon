@@ -45,8 +45,40 @@ import dagon.graphics.state;
 
 class EnvironmentShader: Shader
 {
+   protected:
     String vs, fs;
+    
+    ShaderParameter!Matrix4x4f viewMatrix;
+    ShaderParameter!Matrix4x4f invViewMatrix;
+    ShaderParameter!Matrix4x4f projectionMatrix;
+    ShaderParameter!Matrix4x4f invProjectionMatrix;
+    ShaderParameter!Vector2f resolution;
+    ShaderParameter!float zNear;
+    ShaderParameter!float zFar;
+    
+    ShaderParameter!Color4f fogColor;
+    ShaderParameter!float fogStart;
+    ShaderParameter!float fogEnd;
+    
+    ShaderParameter!float ambientEnergy;
+    ShaderParameter!Color4f ambientVector;
+    ShaderParameter!int ambientTexture;
+    ShaderParameter!int ambientTextureCube;
+    ShaderSubroutine ambientSubroutine;
+    GLuint ambientSubroutineCubemap,
+           ambientSubroutineEquirectangularMap,
+           ambientSubroutineColor;
+    
+    ShaderParameter!int colorBuffer;
+    ShaderParameter!int depthBuffer;
+    ShaderParameter!int normalBuffer;
+    ShaderParameter!int pbrBuffer;
+    ShaderParameter!int occlusionBuffer;
+    ShaderParameter!int haveOcclusionBuffer;
+    ShaderParameter!int ambientBRDF;
+    ShaderParameter!int haveAmbientBRDF;
 
+   public:
     this(Owner owner)
     {
         vs = Shader.load("data/__internal/shaders/Environment/Environment.vert.glsl");
@@ -54,6 +86,36 @@ class EnvironmentShader: Shader
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
+        
+        viewMatrix = createParameter!Matrix4x4f("viewMatrix");
+        invViewMatrix = createParameter!Matrix4x4f("invViewMatrix");
+        projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
+        invProjectionMatrix = createParameter!Matrix4x4f("invProjectionMatrix");
+        resolution = createParameter!Vector2f("resolution");
+        zNear = createParameter!float("zNear");
+        zFar = createParameter!float("zFar");
+        
+        fogColor = createParameter!Color4f("fogColor");
+        fogStart = createParameter!float("fogStart");
+        fogEnd = createParameter!float("fogEnd");
+        
+        ambientEnergy = createParameter!float("ambientEnergy");
+        ambientVector = createParameter!Color4f("ambientVector");
+        ambientTexture = createParameter!int("ambientTexture");
+        ambientTextureCube = createParameter!int("ambientTextureCube");
+        ambientSubroutine = createParameterSubroutine("ambient", ShaderType.Fragment);
+        ambientSubroutineCubemap = ambientSubroutine.getIndex("ambientCubemap");
+        ambientSubroutineEquirectangularMap = ambientSubroutine.getIndex("ambientEquirectangularMap");
+        ambientSubroutineColor = ambientSubroutine.getIndex("ambientColor");
+        
+        colorBuffer = createParameter!int("colorBuffer");
+        depthBuffer = createParameter!int("depthBuffer");
+        normalBuffer = createParameter!int("normalBuffer");
+        pbrBuffer = createParameter!int("pbrBuffer");
+        occlusionBuffer = createParameter!int("occlusionBuffer");
+        haveOcclusionBuffer = createParameter!int("haveOcclusionBuffer");
+        ambientBRDF = createParameter!int("ambientBRDF");
+        haveAmbientBRDF = createParameter!int("haveAmbientBRDF");
     }
 
     ~this()
@@ -64,41 +126,41 @@ class EnvironmentShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        setParameter("viewMatrix", state.viewMatrix);
-        setParameter("invViewMatrix", state.invViewMatrix);
-        setParameter("projectionMatrix", state.projectionMatrix);
-        setParameter("invProjectionMatrix", state.invProjectionMatrix);
-        setParameter("resolution", state.resolution);
-        setParameter("zNear", state.zNear);
-        setParameter("zFar", state.zFar);
+        viewMatrix = &state.viewMatrix;
+        invViewMatrix = &state.invViewMatrix;
+        projectionMatrix = &state.projectionMatrix;
+        invProjectionMatrix = &state.invProjectionMatrix;
+        resolution = state.resolution;
+        zNear = state.zNear;
+        zFar = state.zFar;
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
-        setParameter("colorBuffer", cast(int)0);
+        colorBuffer = 0;
 
         // Texture 1 - depth buffer
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, state.depthTexture);
-        setParameter("depthBuffer", cast(int)1);
+        depthBuffer = 1;
 
         // Texture 2 - normal buffer
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, state.normalTexture);
-        setParameter("normalBuffer", cast(int)2);
+        normalBuffer = 2;
 
         // Texture 3 - pbr buffer
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, state.pbrTexture);
-        setParameter("pbrBuffer", cast(int)3);
+        pbrBuffer = 3;
 
         // Textures 4, 5 - environment (equirectangular map, cube map)
         if (state.environment)
         {
-            setParameter("fogColor", state.environment.fogColor);
-            setParameter("fogStart", state.environment.fogStart);
-            setParameter("fogEnd", state.environment.fogEnd);
-            setParameter("ambientEnergy", state.environment.ambientEnergy);
+            fogColor = state.environment.fogColor;
+            fogStart = state.environment.fogStart;
+            fogEnd = state.environment.fogEnd;
+            ambientEnergy = state.environment.ambientEnergy;
 
             if (state.environment.ambientMap)
             {
@@ -106,96 +168,94 @@ class EnvironmentShader: Shader
                 {
                     glActiveTexture(GL_TEXTURE4);
                     glBindTexture(GL_TEXTURE_2D, 0);
-                    setParameter("ambientTexture", cast(int)4);
+                    ambientTexture = 4;
                     
                     glActiveTexture(GL_TEXTURE5);
                     state.environment.ambientMap.bind();
-                    setParameter("ambientTextureCube", cast(int)5);
+                    ambientTextureCube = 5;
                     
-                    setParameterSubroutine("ambient", ShaderType.Fragment, "ambientCubemap");
+                    ambientSubroutine.index = ambientSubroutineCubemap;
                 }
                 else
                 {
                     glActiveTexture(GL_TEXTURE4);
                     state.environment.ambientMap.bind();
-                    setParameter("ambientTexture", cast(int)4);
+                    ambientTexture = 4;
                     
                     glActiveTexture(GL_TEXTURE5);
                     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-                    setParameter("ambientTextureCube", cast(int)5);
+                    ambientTextureCube = 5;
                     
-                    setParameterSubroutine("ambient", ShaderType.Fragment, "ambientEquirectangularMap");
+                    ambientSubroutine.index = ambientSubroutineEquirectangularMap;
                 }
             }
             else
             {
                 glActiveTexture(GL_TEXTURE4);
                 glBindTexture(GL_TEXTURE_2D, 0);
-                setParameter("ambientTexture", cast(int)4);
+                ambientTexture = 4;
                 
                 glActiveTexture(GL_TEXTURE5);
                 glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-                setParameter("ambientTextureCube", cast(int)5);
+                ambientTextureCube = 5;
                 
-                setParameter("ambientVector", state.environment.ambientColor);
+                ambientVector = state.environment.ambientColor;
                 
-                setParameterSubroutine("ambient", ShaderType.Fragment, "ambientColor");
+                ambientSubroutine.index = ambientSubroutineColor;
             }
         }
         else
         {
-            setParameter("fogColor", Color4f(0.5f, 0.5f, 0.5f, 1.0f));
-            setParameter("fogStart", 0.0f);
-            setParameter("fogEnd", 1000.0f);
-            setParameter("ambientEnergy", 1.0f);
-            setParameter("ambientVector", Color4f(0.5f, 0.5f, 0.5f, 1.0f));
+            fogColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
+            fogStart = 0.0f;
+            fogEnd = 1000.0f;
+            ambientEnergy = 1.0f;
+            ambientVector = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
             
             glActiveTexture(GL_TEXTURE4);
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameter("ambientTexture", cast(int)4);
+            ambientTexture = 4;
             
             glActiveTexture(GL_TEXTURE5);
             glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-            setParameter("ambientTextureCube", cast(int)5);
+            ambientTextureCube = 5;
             
-            setParameterSubroutine("ambient", ShaderType.Fragment, "ambientColor");
+            ambientSubroutine.index = ambientSubroutineColor;
         }
 
         // Texture 6 - occlusion buffer
         glActiveTexture(GL_TEXTURE6);
+        occlusionBuffer = 6;
         if (glIsTexture(state.occlusionTexture))
         {
             glBindTexture(GL_TEXTURE_2D, state.occlusionTexture);
-            setParameter("occlusionBuffer", cast(int)6);
-            setParameter("haveOcclusionBuffer", true);
+            haveOcclusionBuffer = true;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameter("occlusionBuffer", cast(int)6);
-            setParameter("haveOcclusionBuffer", false);
+            haveOcclusionBuffer = false;
         }
         
         // Texture 7 - environment BRDF LUT
         glActiveTexture(GL_TEXTURE7);
+        ambientBRDF = 7;
         if (state.environment)
         {
             if (state.environment.ambientBRDF)
             {
                 state.environment.ambientBRDF.bind();
-                setParameter("ambientBRDF", cast(int)7);
-                setParameter("haveAmbientBRDF", true);
+                haveAmbientBRDF = true;
             }
             else
             {
                 glBindTexture(GL_TEXTURE_2D, 0);
-                setParameter("ambientBRDF", cast(int)7);
-                setParameter("haveAmbientBRDF", false);
+                haveAmbientBRDF = false;
             }
         }
         else
         {
-            setParameter("haveAmbientBRDF", false);
+            haveAmbientBRDF = false;
         }
         
         glActiveTexture(GL_TEXTURE0);

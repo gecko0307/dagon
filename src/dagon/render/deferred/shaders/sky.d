@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2024 Timur Gafarov
+Copyright (c) 2017-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -45,8 +45,28 @@ import dagon.graphics.material;
 
 class SkyShader: Shader
 {
+   protected:
     String vs, fs;
+    
+    ShaderParameter!Matrix4x4f modelViewMatrix;
+    ShaderParameter!Matrix4x4f projectionMatrix;
+    ShaderParameter!Matrix4x4f normalMatrix;
+    ShaderParameter!Matrix4x4f viewMatrix;
+    ShaderParameter!Matrix4x4f invViewMatrix;
+    ShaderParameter!Matrix4x4f prevModelViewMatrix;
+    
+    ShaderParameter!float gbufferMask;
+    ShaderParameter!float blurMask;
+    
+    ShaderParameter!int envTextureCube;
+    ShaderParameter!int envTexture;
+    ShaderParameter!Color4f envColor;
+    ShaderSubroutine environmentSubroutine;
+    GLuint environmentSubroutineCubemap,
+           environmentSubroutineTexture,
+           environmentSubroutineColor;
 
+   public:
     this(Owner owner)
     {
         vs = Shader.load("data/__internal/shaders/Sky/Sky.vert.glsl");
@@ -54,6 +74,24 @@ class SkyShader: Shader
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
+        
+        modelViewMatrix = createParameter!Matrix4x4f("modelViewMatrix");
+        projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
+        normalMatrix = createParameter!Matrix4x4f("normalMatrix");
+        viewMatrix = createParameter!Matrix4x4f("viewMatrix");
+        invViewMatrix = createParameter!Matrix4x4f("invViewMatrix");
+        prevModelViewMatrix = createParameter!Matrix4x4f("prevModelViewMatrix");
+        
+        gbufferMask = createParameter!float("gbufferMask");
+        blurMask = createParameter!float("blurMask");
+        
+        envTextureCube = createParameter!int("envTextureCube");
+        envTexture = createParameter!int("envTexture");
+        envColor = createParameter!Color4f("envColor");
+        environmentSubroutine = createParameterSubroutine("environment", ShaderType.Fragment);
+        environmentSubroutineCubemap = environmentSubroutine.getIndex("environmentCubemap");
+        environmentSubroutineTexture = environmentSubroutine.getIndex("environmentTexture");
+        environmentSubroutineColor = environmentSubroutine.getIndex("environmentColor");
     }
 
     ~this()
@@ -65,39 +103,38 @@ class SkyShader: Shader
     override void bindParameters(GraphicsState* state)
     {
         Material mat = state.material;
-
-        setParameter("modelViewMatrix", state.modelViewMatrix);
-        setParameter("projectionMatrix", state.projectionMatrix);
-        setParameter("normalMatrix", state.normalMatrix);
-        setParameter("viewMatrix", state.viewMatrix);
-        setParameter("invViewMatrix", state.invViewMatrix);
-        setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
         
-        setParameter("gbufferMask", state.gbufferMask);
-        setParameter("blurMask", state.blurMask);
+        modelViewMatrix = &state.modelViewMatrix;
+        projectionMatrix = &state.projectionMatrix;
+        normalMatrix = &state.normalMatrix;
+        viewMatrix = &state.viewMatrix;
+        invViewMatrix = &state.invViewMatrix;
+        prevModelViewMatrix = &state.prevModelViewMatrix;
+        
+        gbufferMask = state.gbufferMask;
+        blurMask = state.blurMask;
 
         // Diffuse
         glActiveTexture(GL_TEXTURE4);
-        
         if (mat.baseColorTexture)
         {
             if (mat.baseColorTexture.isCubemap)
             {
                 mat.baseColorTexture.bind();
-                setParameter("envTextureCube", cast(int)4);
-                setParameterSubroutine("environment", ShaderType.Fragment, "environmentCubemap");
+                envTextureCube = 4;
+                environmentSubroutine.index = environmentSubroutineCubemap;
             }
             else
             {
                 mat.baseColorTexture.bind();
-                setParameter("envTexture", cast(int)4);
-                setParameterSubroutine("environment", ShaderType.Fragment, "environmentTexture");
+                envTexture = 4;
+                environmentSubroutine.index = environmentSubroutineTexture;
             }
         }
         else
         {
-            setParameter("envColor", mat.baseColorFactor);
-            setParameterSubroutine("environment", ShaderType.Fragment, "environmentColor");
+            envColor = mat.baseColorFactor;
+            environmentSubroutine.index = environmentSubroutineColor;
         }
 
         glActiveTexture(GL_TEXTURE0);

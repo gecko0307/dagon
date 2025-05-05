@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -46,10 +46,29 @@ import dagon.render.deferred.passes;
 
 class DebugOutputShader: Shader
 {
+   protected:
     String vs, fs;
 
-    DebugOutputMode outputMode = DebugOutputMode.Radiance;
+    ShaderParameter!Matrix4x4f viewMatrix;
+    ShaderParameter!Matrix4x4f invViewMatrix;
+    ShaderParameter!Matrix4x4f projectionMatrix;
+    ShaderParameter!Matrix4x4f invProjectionMatrix;
+    ShaderParameter!Vector2f resolution;
+    ShaderParameter!float zNear;
+    ShaderParameter!float zFar;
+    
+    ShaderParameter!int shaderOutputMode;
+    
+    ShaderParameter!int colorBuffer;
+    ShaderParameter!int depthBuffer;
+    ShaderParameter!int normalBuffer;
+    ShaderParameter!int pbrBuffer;
+    ShaderParameter!int occlusionBuffer;
+    ShaderParameter!int haveOcclusionBuffer;
 
+   public:
+    DebugOutputMode outputMode = DebugOutputMode.Radiance;
+   
     this(Owner owner)
     {
         vs = Shader.load("data/__internal/shaders/DebugOutput/DebugOutput.vert.glsl");
@@ -57,6 +76,23 @@ class DebugOutputShader: Shader
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
+        
+        viewMatrix = createParameter!Matrix4x4f("viewMatrix");
+        invViewMatrix = createParameter!Matrix4x4f("invViewMatrix");
+        projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
+        invProjectionMatrix = createParameter!Matrix4x4f("invProjectionMatrix");
+        resolution = createParameter!Vector2f("resolution");
+        zNear = createParameter!float("zNear");
+        zFar = createParameter!float("zFar");
+        
+        shaderOutputMode = createParameter!int("outputMode");
+        
+        colorBuffer = createParameter!int("colorBuffer");
+        depthBuffer = createParameter!int("depthBuffer");
+        normalBuffer = createParameter!int("normalBuffer");
+        pbrBuffer = createParameter!int("pbrBuffer");
+        occlusionBuffer = createParameter!int("occlusionBuffer");
+        haveOcclusionBuffer = createParameter!int("haveOcclusionBuffer");
     }
 
     ~this()
@@ -67,48 +103,48 @@ class DebugOutputShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        setParameter("projectionMatrix", state.projectionMatrix);
+        viewMatrix = &state.viewMatrix;
+        invViewMatrix = &state.invViewMatrix;
+        projectionMatrix = &state.projectionMatrix;
+        invProjectionMatrix = &state.invProjectionMatrix;
+        resolution = state.resolution;
+        zNear = state.zNear;
+        zFar = state.zFar;
 
-        setParameter("viewMatrix", state.viewMatrix);
-        setParameter("invViewMatrix", state.invViewMatrix);
-        setParameter("invProjectionMatrix", state.invProjectionMatrix);
-        setParameter("resolution", state.resolution);
-        setParameter("zNear", state.zNear);
-        setParameter("zFar", state.zFar);
-
-        setParameter("outputMode", cast(int)outputMode);
+        shaderOutputMode = outputMode;
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
-        setParameter("colorBuffer", 0);
+        colorBuffer = 0;
 
         // Texture 1 - depth buffer
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, state.depthTexture);
-        setParameter("depthBuffer", 1);
+        depthBuffer = 1;
 
         // Texture 2 - normal buffer
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, state.normalTexture);
-        setParameter("normalBuffer", 2);
+        normalBuffer = 2;
 
         // Texture 3 - pbr buffer
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, state.pbrTexture);
-        setParameter("pbrBuffer", 3);
+        pbrBuffer = 3;
 
         // Texture 4 - occlusion buffer
+        glActiveTexture(GL_TEXTURE4);
+        occlusionBuffer = 4;
         if (glIsTexture(state.occlusionTexture))
         {
-            glActiveTexture(GL_TEXTURE4);
             glBindTexture(GL_TEXTURE_2D, state.occlusionTexture);
-            setParameter("occlusionBuffer", 4);
-            setParameter("haveOcclusionBuffer", true);
+            haveOcclusionBuffer = true;
         }
         else
         {
-            setParameter("haveOcclusionBuffer", false);
+            glBindTexture(GL_TEXTURE_2D, 0);
+            haveOcclusionBuffer = false;
         }
 
         glActiveTexture(GL_TEXTURE0);

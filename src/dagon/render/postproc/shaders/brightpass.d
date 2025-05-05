@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -44,11 +44,18 @@ import dagon.graphics.state;
 
 class BrightPassShader: Shader
 {
+   protected:
     String vs, fs;
 
+    ShaderParameter!Vector2f viewSize;
+    ShaderParameter!int brightpassEnabled;
+    ShaderParameter!float brightpassLuminanceThreshold;
+    ShaderParameter!int colorBuffer;
+
+   public:
     bool enabled = true;
     float luminanceThreshold = 1.0f;
-
+    
     this(Owner owner)
     {
         vs = Shader.load("data/__internal/shaders/BrightPass/BrightPass.vert.glsl");
@@ -56,6 +63,11 @@ class BrightPassShader: Shader
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
+        
+        viewSize = createParameter!Vector2f("viewSize");
+        brightpassEnabled = createParameter!int("enabled");
+        brightpassLuminanceThreshold = createParameter!float("luminanceThreshold");
+        colorBuffer = createParameter!int("colorBuffer");
     }
 
     ~this()
@@ -66,14 +78,14 @@ class BrightPassShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
-        setParameter("viewSize", state.resolution);
-        setParameter("enabled", enabled);
-        setParameter("luminanceThreshold", luminanceThreshold);
+        viewSize = state.resolution;
+        brightpassEnabled = enabled;
+        brightpassLuminanceThreshold = luminanceThreshold;
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
-        setParameter("colorBuffer", 0);
+        colorBuffer = 0;
 
         glActiveTexture(GL_TEXTURE0);
 
