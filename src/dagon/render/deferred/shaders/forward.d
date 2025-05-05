@@ -533,7 +533,7 @@ class ForwardShader: Shader
         {
             if (sun.shadowEnabled)
             {
-                CascadedShadowMap csm = cast(CascadedShadowMap)state.light.shadowMap;
+                CascadedShadowMap csm = cast(CascadedShadowMap)sun.shadowMap;
                 
                 glActiveTexture(GL_TEXTURE7);
                 glBindTexture(GL_TEXTURE_2D_ARRAY, csm.depthTexture);
@@ -616,7 +616,7 @@ class ForwardShader: Shader
         glBindTexture(GL_TEXTURE_2D, 0);
         
         glActiveTexture(GL_TEXTURE6);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+        glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE7);
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
