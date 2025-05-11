@@ -156,7 +156,7 @@ void log(A...)(LogLevel level, A args)
         {
             try
             {
-                _logFile = File(logOutputOptions.filename, "a");
+                _logFile = File(logOutputOptions.filename, "w");
                 _logFileInitialized = true;
             }
             catch(Exception e)
