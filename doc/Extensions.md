@@ -12,4 +12,3 @@ Available extensions:
 * `dagon:imgui` - immediate mode GUI extension that uses [Dear ImGui](https://github.com/ocornut/imgui) via [i2d-imgui](https://github.com/Inochi2D/i2d-imgui) dynamic binding
 * `dagon:nuklear` - immediate mode GUI extension that uses [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear) library via [bindbc-nuklear](https://github.com/Timu5/bindbc-nuklear) dynamic binding (deprecated, `dagon:imgui` recommended instead)
 * `dagon:iqm` - [IQM](http://sauerbraten.org/iqm/) model format loader and renderer
-* `dagon:stbi` - image loader extension that uses [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h) library.

@@ -59,7 +59,6 @@
         "extensions/newton",
         "extensions/nuklear",
         "extensions/physfs",
-        "extensions/stbi",
         "init-exec"
     ]
 }

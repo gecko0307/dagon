@@ -3,6 +3,8 @@ Dagon 0.23.0 - TBD
 - **Rendering**
   - Optimized shader parameters binding: parameters are now accessed directly by references rather than names
   - `Material.textureTransformation` support in shadow and terrain texturing passes
+- **Extensions**
+  - `dagon:stbi` extension was removed, because Dagon's default texture loader fully replaces it
 - **Misc**
   - Dagon now uses bindbc-sdl 1.5.2.
 
