@@ -97,6 +97,8 @@ Known Bugs and Limitations
 
 Documentation
 -------------
+HTML documentation can be generated from source code using ddox (run `dub build -b ddox`) or Doxygen (run `doxygen`). Be aware that documentation is currently incomplete.
+
 See [tutorials](https://github.com/gecko0307/dagon/wiki/Tutorials) and corresponding [examples](https://github.com/gecko0307/dagon-tutorials).
 
 License
