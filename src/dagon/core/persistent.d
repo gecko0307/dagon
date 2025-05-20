@@ -25,6 +25,19 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Provides persistent key-value data storage.
+ *
+ * Description:
+ * The `dagon.core.persistent` module defines the `PersistentStorage` class,
+ * which stores and retrieves application-specific user data (such as preferences
+ * and game saves) in a platform-appropriate location (home directory on Posix,
+ * %APPDATA% on Windows) using the same format as `dagon.core.config`.
+ *
+ * Copyright: Timur Gafarov 2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.core.persistent;
 
 import std.traits;
@@ -43,24 +56,46 @@ import dlib.filesystem.stdfs;
 import dagon.core.props;
 import dagon.core.logger;
 
-/*
- * Persistent key-value data storage, uses the same format as dagon.core.config.
- * Files are stored in home directory under Posix and in %APPDATA% directory
- * under Windows (C:\Users\<user>\AppData\Roaming).
+/**
+ * Persistent key-value data storage for application/user data.
+ *
+ * Description:
+ * Uses the same format as `dagon.core.config``.
+ * Stores data in the user's home directory (Posix) or %APPDATA% (Windows).
  * It can be used to manage application-specific user data, such as preferences
  * and game saves.
  */
 class PersistentStorage: Owner
 {
+    /// The underlying file system for storage.
     StdFileSystem fs;
+
+    /// The application data directory path.
     String appDataDir;
+
+    /// The full path to the persistent storage file.
     String filename;
+
+    /// The local filename (relative to working directory).
     String localFilename;
+
+    /// The properties object storing key-value pairs.
     Properties props;
-    
-    this(string appFolder, string filename, Owner o)
+
+    /**
+     * Constructs a new `PersistentStorage` object.
+     *
+     * Params:
+     *   appFolder = The application folder name (used under the app data directory).
+     *   filename  = The name of the persistent storage file.
+     *   owner     = The owner object for memory/resource management.
+     *
+     * The constructor determines the appropriate storage directory, creates it if necessary,
+     * and loads existing data if present.
+     */
+    this(string appFolder, string filename, Owner owner)
     {
-        super(o);
+        super(owner);
         fs = New!StdFileSystem();
         
         string homeDirVar = "";
@@ -99,6 +134,7 @@ class PersistentStorage: Owner
         load();
     }
     
+    /// Destructor. Frees resources and cleans up storage paths.
     ~this()
     {
         appDataDir.free();
@@ -107,6 +143,11 @@ class PersistentStorage: Owner
         Delete(fs);
     }
     
+    /**
+     * Loads persistent data from the storage file.
+     *
+     * If the file exists, reads and parses its contents into the properties object.
+     */
     void load()
     {
         FileStat stat;
@@ -120,6 +161,9 @@ class PersistentStorage: Owner
         }
     }
     
+    /**
+     * Saves the current properties to the persistent storage file.
+     */
     void save()
     {
         String data = props.serialize();
@@ -132,11 +176,28 @@ class PersistentStorage: Owner
         data.free();
     }
     
+    /**
+     * Gets a property by key using opDispatch.
+     *
+     * Params:
+     *   key = The property key.
+     * Returns:
+     *   The property value.
+     */
     DProperty opDispatch(string key)()
     {
         return props[key];
     }
     
+    /**
+     * Sets a property by key using opDispatch.
+     *
+     * Params:
+     *   key   = The property key.
+     *   value = The value to set (string, numeric, or vector types).
+     *
+     * Automatically saves the storage file if the value changes.
+     */
     void opDispatch(string key, T)(T value)
     {
         bool changed = false;

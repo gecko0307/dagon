@@ -25,21 +25,58 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Provides the core modules and foundational utilities for Dagon applications.
+ *
+ * The `dagon.core` package includes modules for application management,
+ * configuration, event handling, input, key codes, locale detection, logging,
+ * persistent storage, property system, time management, virtual file system,
+ * and Vulkan image format definitions.
+ *
+ * Copyright: Timur Gafarov 2019-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.core;
 
 public
 {
+    /// Application base class and main loop utilities.
     import dagon.core.application;
+
+    /// SDL/OpenGL bindings.
     import dagon.core.bindings;
+
+    /// Configuration management and property loading.
     import dagon.core.config;
+
+    /// Event types, event manager, and event listener base class.
     import dagon.core.event;
+
+    /// Input manager, input bindings, and action mapping.
     import dagon.core.input;
+
+    /// Symbolic key codes for keyboard, mouse, and gamepad.
     import dagon.core.keycodes;
+
+    /// System locale detection and query utilities.
     import dagon.core.locale;
+
+    /// Logging facilities.
     import dagon.core.logger;
+
+    /// Persistent storage for application data.
     import dagon.core.persistent;
+
+    /// Flexible property system for configuration data.
     import dagon.core.props;
+
+    /// Time management, frame timing, and fixed-step scheduling.
     import dagon.core.time;
+
+    /// Virtual file system abstraction and directory mounting.
     import dagon.core.vfs;
+
+    /// Vulkan image format enumerations.
     import dagon.core.vkformat;
 }

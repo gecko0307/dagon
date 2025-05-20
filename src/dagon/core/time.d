@@ -25,28 +25,73 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Provides time management utilities.
+ *
+ * Description:
+ * The `dagon.core.time` module defines the `Time` struct for frame timing
+ * and the `Cadencer` class for fixed-step update scheduling.
+ *
+ * Copyright: Timur Gafarov 2019-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.core.time;
 
 import dlib.core.ownership;
 
+/**
+ * Represents timing information for a frame.
+ *
+ * Members:
+ *   delta   = Time elapsed since the previous frame (in seconds).
+ *   elapsed = Total time elapsed since the start (in seconds).
+ */
 struct Time
 {
     double delta;
     double elapsed;
 }
 
+/**
+ * Schedules fixed-step updates and tracks frames per second (FPS).
+ *
+ * Description:
+ * The `Cadencer` class accumulates time and calls a user-provided callback at a fixed frequency.
+ * It also tracks and exposes the current FPS.
+ */
 class Cadencer: Owner
 {
     protected:
+
+    /// Accumulated time since last update.
     double elapsedTime = 0.0;
+
+    /// Time step between updates (in seconds).
     double timeStep = 0.0;
+
+    /// Accumulated time for FPS calculation.
     double fpsTimeCounter = 0.0;
+
+    /// Frame counter for FPS calculation.
     int fpsCounter = 0;
+
+    /// Callback to invoke on each update.
     void delegate(Time) callback;
     
     public:
+
+    /// Current frames per second.
     int fps = 0;
     
+    /**
+     * Constructs a Cadencer.
+     *
+     * Params:
+     *   callback = Delegate to call at each fixed update.
+     *   freq     = Update frequency (in Hz).
+     *   owner    = Owner object for memory/resource management.
+     */
     this(scope void delegate(Time) callback, uint freq, Owner owner)
     {
         super(owner);
@@ -54,16 +99,34 @@ class Cadencer: Owner
         setFrequency(freq);
     }
     
+    /**
+     * Sets the update frequency.
+     *
+     * Params:
+     *   freq = Update frequency (in Hz).
+     */
     void setFrequency(uint freq)
     {
         timeStep = 1.0 / cast(double)freq;
     }
     
+    /**
+     * Returns the current time step between updates (in seconds).
+     */
     double getTimeStep()
     {
         return timeStep;
     }
     
+    /**
+     * Updates the cadencer with the given time information.
+     *
+     * Params:
+     *   t = The current frame's timing information.
+     *
+     * Calls the callback if enough time has accumulated for a fixed update,
+     * and updates the FPS counter.
+     */
     void update(Time t)
     {
         elapsedTime += t.delta;

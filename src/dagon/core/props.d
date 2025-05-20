@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2016-2022 Timur Gafarov
+Copyright (c) 2016-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -26,6 +26,20 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Provides a flexible property system.
+ *
+ * Description:
+ * The `dagon.core.props` module defines the `DProperty` struct for storing
+ * typed property values, the `Properties` class for managing collections of
+ * named properties, and utility functions for parsing and handling property
+ * data. Properties can be numbers, vectors, strings, or colors, and are used for
+ * configuration, serialization, and runtime data storage.
+ *
+ * Copyright: Timur Gafarov 2016-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.core.props;
 
 import std.stdio;
@@ -43,26 +57,50 @@ import dlib.text.lexer;
 
 import dagon.core.logger;
 
+/**
+ * Supported property types.
+ */
 enum DPropType
 {
+    /// No value or unknown type.
     Undefined,
+
+    /// Numeric value.
     Number,
+
+    /// Vector value (e.g. Vector3f, Vector4f).
     Vector,
+
+    /// String value.
     String
 }
 
+/**
+ * Represents a single property value with type information.
+ *
+ * Description:
+ * Provides conversion methods to various types
+ * (string, double, float, int, bool, vector, color).
+ */
 struct DProperty
 {
+    /// The property type.
     DPropType type;
+
+    /// The property name.
     string name;
+
+    /// The property value as a string.
     string data;
 
-    string toString()
+    /// Returns the property value as a string.
+    string toString() const
     {
         return data;
     }
 
-    double toDouble()
+    /// Returns the property value as a double.
+    double toDouble() const
     {
         if (data.length)
             return to!double(data);
@@ -70,7 +108,8 @@ struct DProperty
             return double.nan;
     }
 
-    float toFloat()
+    /// Returns the property value as a float.
+    float toFloat() const
     {
         if (data.length)
             return to!float(data);
@@ -78,7 +117,8 @@ struct DProperty
             return float.nan;
     }
 
-    int toInt()
+    /// Returns the property value as an int.
+    int toInt() const
     {
         if (data.length)
             return to!int(data);
@@ -86,7 +126,8 @@ struct DProperty
             return 0;
     }
 
-    int toUInt()
+    /// Returns the property value as an unsigned int.
+    int toUInt() const
     {
         if (data.length)
             return to!uint(data);
@@ -94,7 +135,8 @@ struct DProperty
             return 0;
     }
 
-    bool toBool()
+    /// Returns the property value as a bool.
+    bool toBool() const
     {
         if (data.length)
             return cast(bool)cast(int)(to!float(data));
@@ -102,7 +144,8 @@ struct DProperty
             return false;
     }
 
-    Vector3f toVector3f()
+    /// Returns the property value as a Vector3f.
+    Vector3f toVector3f() const
     {
         if (data.length)
             return Vector3f(data);
@@ -110,7 +153,8 @@ struct DProperty
             return Vector3f();
     }
 
-    Vector4f toVector4f()
+    /// Returns the property value as a Vector4f.
+    Vector4f toVector4f() const
     {
         if (data.length)
             return Vector4f(data);
@@ -118,7 +162,8 @@ struct DProperty
             return Vector4f();
     }
 
-    Color4f toColor4f()
+    /// Returns the property value as a Color4f.
+    Color4f toColor4f() const
     {
         if (data.length)
             return Color4f(Vector4f(data));
@@ -127,21 +172,48 @@ struct DProperty
     }
 }
 
+/**
+ * Stores and manages a collection of named properties.
+ *
+ * Description:
+ * Supports parsing from string, serialization, property lookup, and iteration.
+ */
 class Properties: Owner
 {
+    /// Dictionary of property name to DProperty.
     Dict!(DProperty, string) props;
 
-    this(Owner o)
+    /**
+     * Constructs a new Properties object.
+     *
+     * Params:
+     *   owner = The owner object.
+     */
+    this(Owner owner)
     {
-        super(o);
+        super(owner);
         props = dict!(DProperty, string);
     }
 
+    /**
+     * Parses properties from a string.
+     *
+     * Params:
+     *   input = The string containing property definitions.
+     * Returns:
+     *   `true` if parsing succeeded, `false` otherwise.
+     */
     bool parse(string input)
     {
         return parseProperties(input, this);
     }
     
+    /**
+     * Serializes all properties to a string.
+     *
+     * Returns:
+     *   The serialized property data.
+     */
     String serialize()
     {
         String output;
@@ -155,6 +227,14 @@ class Properties: Owner
         return output;
     }
 
+    /**
+     * Looks up a property by name.
+     *
+     * Params:
+     *   name = The property name.
+     * Returns:
+     *   The property if found, or an undefined property otherwise.
+     */
     DProperty opIndex(string name)
     {
         if (name in props)
@@ -163,6 +243,14 @@ class Properties: Owner
             return DProperty(DPropType.Undefined, "");
     }
 
+    /**
+     * Sets a property value.
+     *
+     * Params:
+     *   type  = The property type.
+     *   name  = The property name.
+     *   value = The property value as a string.
+     */
     void set(DPropType type, string name, string value)
     {
         auto p = name in props;
@@ -182,6 +270,14 @@ class Properties: Owner
         }
     }
 
+    /**
+     * Looks up a property by name using opDispatch.
+     *
+     * Params:
+     *   s = The property name.
+     * Returns:
+     *   The property if found, or an undefined property otherwise.
+     */
     DProperty opDispatch(string s)()
     {
         if (s in props)
@@ -190,11 +286,25 @@ class Properties: Owner
             return DProperty(DPropType.Undefined, "");
     }
 
+    /**
+     * Checks if a property exists by name.
+     *
+     * Params:
+     *   k = The property name.
+     * Returns:
+     *   Pointer to the property if found, `null` otherwise.
+     */
     DProperty* opBinaryRight(string op)(string k) if (op == "in")
     {
         return (k in props);
     }
 
+    /**
+     * Removes a property by name.
+     *
+     * Params:
+     *   name = The property name.
+     */
     void remove(string name)
     {
         if (name in props)
@@ -206,6 +316,14 @@ class Properties: Owner
         }
     }
 
+    /**
+     * Iterates over all properties.
+     *
+     * Params:
+     *   dg = Delegate to call for each property (name, ref DProperty).
+     * Returns:
+     *   Always returns 0.
+     */
     int opApply(int delegate(string, ref DProperty) dg)
     {
         foreach(k, v; props)
@@ -216,6 +334,7 @@ class Properties: Owner
         return 0;
     }
 
+    /// Destructor. Frees all property data.
     ~this()
     {
         foreach(k, v; props)
@@ -227,6 +346,14 @@ class Properties: Owner
     }
 }
 
+/**
+ * Returns true if the string consists only of whitespace or newlines.
+ *
+ * Params:
+ *   s = The string to check.
+ * Returns:
+ *   `true` if the string is whitespace, `false` otherwise.
+ */
 bool isWhiteStr(string s)
 {
     bool res;
@@ -245,11 +372,27 @@ bool isWhiteStr(string s)
     return res;
 }
 
+/**
+ * Returns true if the string is a valid identifier (starts with a letter or underscore).
+ *
+ * Params:
+ *   s = The string to check.
+ * Returns:
+ *   `true` if valid identifier, `false` otherwise.
+ */
 bool isValidIdentifier(string s)
 {
     return (isAlpha(s[0]) || s[0] == '_');
 }
 
+/**
+ * Copies a string or array to a newly allocated buffer.
+ *
+ * Params:
+ *   s = The string or array to copy.
+ * Returns:
+ *   The copied string.
+ */
 string copyStr(T)(T[] s)
 {
     auto res = New!(char[])(s.length);
@@ -258,6 +401,15 @@ string copyStr(T)(T[] s)
     return cast(string)res;
 }
 
+/**
+ * Parses a string containing property definitions and populates a `Properties`` object.
+ *
+ * Params:
+ *   input = The string to parse.
+ *   props = The Properties object to populate.
+ * Returns:
+ *   `true` if parsing succeeded, `false` otherwise.
+ */
 bool parseProperties(string input, Properties props)
 {
     enum Expect

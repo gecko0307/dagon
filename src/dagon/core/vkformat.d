@@ -24,10 +24,31 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * Defines Vulkan image format enumerations.
+ *
+ * The `dagon.core.vkformat` module provides the `VkFormat` enum,
+ * which lists all Vulkan-compatible image and pixel formats, including
+ * uncompressed, compressed, packed, and special-purpose formats,
+ * as defined by the Vulkan specification.
+ *
+ * Copyright: Timur Gafarov 2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.core.vkformat;
 
-/*
- * Vulkan image formats
+/**
+ * Enumerates all Vulkan image and pixel formats supported by the engine.
+ *
+ * The values correspond to the Vulkan `VkFormat` specification, including
+ * uncompressed, compressed, packed, and platform/extension-specific formats.
+ *
+ * Members:
+ *   UNDEFINED, R8G8B8A8_UNORM, BC1_RGB_UNORM_BLOCK, ASTC_4x4_UNORM_BLOCK, etc.
+ *   See $(LINK2 https://registry.khronos.org/vulkan/specs/latest/man/html/VkFormat.html, Vulkan specification)
+ *   for full details.
  */
 enum VkFormat
 {

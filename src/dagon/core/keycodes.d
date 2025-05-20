@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2022 Timur Gafarov
+Copyright (c) 2017-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,10 +25,28 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Defines key codes and button codes for keyboard, mouse, and game controllers.
+ *
+ * The `dagon.core.keycodes` module provides symbolic constants for all supported
+ * keyboard keys (based on SDL scancodes), mouse buttons, and gamepad buttons and axes,
+ * enabling consistent input handling across platforms.
+ *
+ * Copyright: Timur Gafarov 2017-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.core.keycodes;
 
 import dagon.core.bindings;
 
+/**
+ * Keyboard key codes (based on SDL scancodes).
+ *
+ * Description:
+ * These constants map to physical keyboard keys
+ * and are used for input binding and event handling.
+ */
 enum
 {
     KEY_UNKNOWN = 0,
@@ -293,6 +311,12 @@ enum
     NUM_KEYCODES = 512
 }
 
+/**
+ * Mouse button codes and bitmasks.
+ *
+ * MB_LEFT, MB_MIDDLE, MB_RIGHT, MB_X1, MB_X2 are button indices.
+ * MB_LMASK, MB_MMASK, MB_RMASK, MB_X1MASK, MB_X2MASK are SDL bitmasks for button state.
+ */
 enum: ubyte
 {
     MB_LEFT = 1,
@@ -307,6 +331,11 @@ enum: ubyte
     MB_X2MASK = SDL_BUTTON(MB_X2),
 }
 
+/**
+ * Game controller button codes (based on SDL_CONTROLLER_BUTTON_*).
+ *
+ * GB_A, GB_B, GB_X, GB_Y, etc. correspond to standard controller buttons.
+ */
 enum
 {
     GB_INVALID = SDL_CONTROLLER_BUTTON_INVALID,
@@ -334,6 +363,11 @@ enum
     GB_MAX = SDL_CONTROLLER_BUTTON_MAX
 }
 
+/**
+ * Game controller axis codes (based on SDL_CONTROLLER_AXIS_*).
+ *
+ * GA_LEFTX, GA_LEFTY, GA_RIGHTX, GA_RIGHTY, GA_TRIGGERLEFT, GA_TRIGGERRIGHT are standard axes.
+ */
 enum
 {
     GA_INVALID = SDL_CONTROLLER_AXIS_INVALID,

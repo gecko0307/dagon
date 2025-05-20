@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2024 Timur Gafarov
+Copyright (c) 2017-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,9 +25,18 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-/++
-    Base class to inherit Dagon applications from.
-+/
+/**
+ * Generic applicaton class and corresponding utility functions
+ *
+ * Description:
+ * The `dagon.core.application` module provides the base `Application` class and related utilities
+ * for creating and managing a Dagon engine application. This includes SDL window and OpenGL context 
+ * management, event handling, functions for error handling and taking screenshots.
+ *
+ * Copyright: Timur Gafarov 2017-2025.
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.core.application;
 
 import std.stdio;
@@ -59,6 +68,13 @@ version(Windows)
     } 
 }
 
+/**
+ * Immediately terminates the application,
+ * printing an optional fatal error to the logger.
+ *
+ * Params:
+ *   message = Optional error message to log before exiting.
+ */
 void exitWithError(string message = "")
 {
     if (message.length)
@@ -66,11 +82,17 @@ void exitWithError(string message = "")
     core.stdc.stdlib.exit(1);
 }
 
+/**
+ * Reserved event codes for Dagon applications.
+ */
 enum DagonEvent
 {
     Exit = -1
 }
 
+/**
+ * Supported image formats
+ */
 enum ImageFileFormat
 {
     Unknown,
@@ -183,6 +205,14 @@ private
     }
 }
 
+/**
+ * Checks if a compressed texture format is supported.
+ *
+ * Params:
+ *   format = The OpenGL enum value for the texture format.
+ * Returns:
+ *   `true` if the format is supported, `false` otherwise.
+ */
 bool compressedTextureFormatSupported(GLenum format)
 {
     if (compressedTextureFormats.length)
@@ -199,6 +229,14 @@ __gshared private
     string[] _extensions;
 }
 
+/**
+ * Checks if a given image file format is supported.
+ *
+ * Params:
+ *   ffmt = The image file format to check.
+ * Returns:
+ *   `true` if supported, `false` otherwise.
+ */
 bool isImageFileFormatSupported(ImageFileFormat ffmt)
 {
     if (ffmt in _imageFileFormatSupported)
@@ -207,26 +245,43 @@ bool isImageFileFormatSupported(ImageFileFormat ffmt)
         return false;
 }
 
+/**
+ * Returns the maximum number of texture units supported by the hardware.
+ */
 int maxTextureUnits()
 {
     return _maxTextureUnits;
 }
 
+/**
+ * Returns the maximum supported texture size.
+ */
 int maxTextureSize()
 {
     return _maxTextureSize;
 }
 
+/**
+ * Checks if a given OpenGL extension is supported.
+ *
+ * Params:
+ *   extName = The name of the extension.
+ * Returns:
+ *   `true` if supported, `false` otherwise.
+ */
 bool isExtensionSupported(string extName)
 {
     return _extensions.canFind(extName);
 }
 
-/++
-    Base class to inherit Dagon applications from.
-    `Application` wraps SDL2 window, loads dynamic link libraries using BindBC,
-    is responsible for initializing OpenGL context and doing main game loop.
-+/
+/**
+ * Base class to inherit Dagon applications from.
+ *
+ * Description:
+ * This class wraps SDL2 window creation, OpenGL context initialization,
+ * event management, and provides the main game loop.
+ * To use, inherit from `Application` and override `onUpdate` and `onRender`.
+ */
 class Application: EventListener
 {
     SDLSupport loadedSDLSupport;
@@ -248,14 +303,16 @@ class Application: EventListener
     String glRenderer;
     bool sdlImagePresent = true;
 
-    /++
-        Constructor.
-        * `winWidth` - window width
-        * `winHeight` - window height
-        * `fullscreen` - if true, the application will run in fullscreen mode
-        * `windowTitle` - window title
-        * `args` - command line arguments
-    +/
+    /**
+     * Constructs the application, initializes SDL, OpenGL, and related subsystems.
+     *
+     * Params:
+     *   winWidth = Window width in pixels.
+     *   winHeight = Window height in pixels.
+     *   fullscreen = If true, the application will run in fullscreen mode.
+     *   windowTitle = The window title.
+     *   args = Command line arguments.
+     */
     this(uint winWidth, uint winHeight, bool fullscreen, string windowTitle, string[] args)
     {
         version(linux)
@@ -420,6 +477,7 @@ class Application: EventListener
         cadencer = New!Cadencer(&onAnimationFrame, 60, this);
     }
 
+    /// Destructor. Cleans up resources and shuts down SDL.
     ~this()
     {
         releaseCompressedTextureFormats();
@@ -431,21 +489,36 @@ class Application: EventListener
         Delete(_extensions);
     }
     
+    /**
+     * Sets the window size.
+     *
+     * Params:
+     *   w = New window width.
+     *   h = New window height.
+     */
     void setWindowSize(uint w, uint h)
     {
         SDL_SetWindowSize(window, w, h);
     }
     
+    /// Centers the window on the screen.
     void centerWindow()
     {
         SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
     }
     
+    /// Maximizes the window.
     void maximizeWindow()
     {
         SDL_MaximizeWindow(window);
     }
     
+    /**
+     * Switches fullscreen mode.
+     *
+     * Params:
+     *   mode = If true, enables fullscreen; otherwise disables it.
+     */
     void setFullscreen(bool mode)
     {
         if (mode)
@@ -454,11 +527,24 @@ class Application: EventListener
             SDL_SetWindowFullscreen(window, 0);
     }
     
+    /**
+     * Handles log events from the event manager.
+     *
+     * Params:
+     *   level = Log level.
+     *   message = Log message.
+     */
     override void onLogEvent(LogLevel level, string message)
     {
         log(level, message);
     }
 
+    /**
+     * Handles user-defined events.
+     *
+     * Params:
+     *   code = Event code.
+     */
     override void onUserEvent(int code)
     {
         if (code == DagonEvent.Exit)
@@ -467,22 +553,43 @@ class Application: EventListener
         }
     }
     
+    /**
+     * Handles window resize events.
+     *
+     * Params:
+     *   width = New width.
+     *   height = New height.
+     */
     override void onResize(int width, int height)
     {
         this.width = width;
         this.height = height;
     }
 
+
+    /**
+     * Called every frame to update application logic.
+     *
+     * Params:
+     *   t = Time information for the frame.
+     */
     void onUpdate(Time t)
     {
         // Override me
     }
 
+    /// Called every frame to render the scene.
     void onRender()
     {
         // Override me
     }
 
+    /**
+     * Called on each animation frame (cadencer tick).
+     *
+     * Params:
+     *   t = Time information for the frame.
+     */
     void onAnimationFrame(Time t)
     {
         eventManager.update();
@@ -493,6 +600,7 @@ class Application: EventListener
         SDL_GL_SwapWindow(window);
     }
 
+    /// Checks for OpenGL errors and logs them.
     void checkGLError()
     {
         GLenum error = GL_NO_ERROR;
@@ -503,6 +611,7 @@ class Application: EventListener
         }
     }
 
+    /// Runs the main application loop.
     void run()
     {
         Time t = Time(0.0, 0.0);
@@ -515,11 +624,20 @@ class Application: EventListener
         }
     }
 
+    /// Exits the application.
     void exit()
     {
         eventManager.exit();
     }
     
+    /**
+     * Checks if a file exists.
+     *
+     * Params:
+     *   filename = Path to the file.
+     * Returns:
+     *   `true` if the file exists, `false` otherwise.
+     */
     static bool fileExists(string filename)
     {
         FileStat fstat;
@@ -528,6 +646,12 @@ class Application: EventListener
     
     uint screenNum = 0;
     
+    /**
+     * Takes a screenshot of the current framebuffer and returns it as a SuperImage.
+     *
+     * Returns:
+     *   The screenshot image.
+     */
     SuperImage takeScreenshot()
     {
         ubyte[] data = New!(ubyte[])(width * height * 3);
@@ -541,6 +665,12 @@ class Application: EventListener
         return img;
     }
     
+    /**
+     * Takes a screenshot and saves it to the specified path (auto-incrementing filename).
+     *
+     * Params:
+     *   path = Base path for the screenshot file.
+     */
     void takeScreenshot(string path)
     {
         auto img = takeScreenshot();
@@ -560,6 +690,12 @@ class Application: EventListener
         Delete(img);
     }
     
+    /**
+     * Returns the display's refresh rate.
+     *
+     * Returns:
+     *   The refresh rate in Hz.
+     */
     int displayRefreshRate()
     {
         SDL_DisplayMode mode;
@@ -572,6 +708,12 @@ class Application: EventListener
         return mode.refresh_rate;
     }
     
+    /**
+     * Sets the cadencer frequency to the display's refresh rate.
+     *
+     * Returns:
+     *   The refresh rate in Hz.
+     */
     int frequencyToRefreshRate()
     {
         int refreshRate = displayRefreshRate();

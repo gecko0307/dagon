@@ -18,6 +18,7 @@ __test__library__
 
 # Documentation
 docs/
+docs-doxygen/
 docs.json
 __dummy.html
 

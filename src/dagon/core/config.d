@@ -25,6 +25,17 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Provides configuration management for Dagon applications.
+ *
+ * Description:
+ * The `dagon.core.config` module defines the `Configuration` class, which 
+ * manages application properties and supports loading configuration files.
+ *
+ * Copyright: Timur Gafarov 2018-2025.
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.core.config;
 
 import std.stdio;
@@ -37,17 +48,37 @@ import dlib.filesystem.stdfs;
 import dagon.core.vfs;
 import dagon.core.props;
 
+/**
+ * Manages application configuration properties using a virtual file system.
+ *
+ * Description:
+ * The `Configuration` class loads and stores properties, and can read configuration files
+ * from mounted directories, including the user's home or application data directory.
+ */
 class Configuration: Owner
 {
     protected:
+
+    /// The virtual file system used for configuration file access.
     VirtualFileSystem fs;
 
     public:
+
+    /// The properties object storing configuration key-value pairs.
     Properties props;
 
-    this(Owner o)
+    /**
+     * Constructs a new `Configuration` object.
+     *
+     * Params:
+     *   owner = The owner object.
+     *
+     * The constructor mounts the current directory and, if available, the user's home or
+     * application data directory for configuration file access.
+     */
+    this(Owner owner)
     {
-        super(o);
+        super(owner);
 
         fs = New!VirtualFileSystem();
         fs.mount(".");
@@ -65,11 +96,20 @@ class Configuration: Owner
         props = New!Properties(this);
     }
 
+    /// Destructor. Cleans up the virtual file system.
     ~this()
     {
         Delete(fs);
     }
 
+    /**
+     * Loads configuration properties from a file.
+     *
+     * Params:
+     *   filename = The name of the configuration file to load.
+     * Returns:
+     *   `true` if the file was successfully loaded and parsed, `false` otherwise.
+     */
     bool fromFile(string filename)
     {
         FileStat stat;

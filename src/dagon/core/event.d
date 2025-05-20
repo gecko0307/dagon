@@ -26,6 +26,18 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Provides an event manager for input, window, and user-defined events.
+ *
+ * Description:
+ * The `dagon.core.event` module defines the `EventType` enumeration, 
+ * the `Event` struct, the `EventManager` class for event polling and dispatch, 
+ * and the `EventListener` base class for handling events.
+ *
+ * Copyright: Timur Gafarov, Mateusz Muszyński 2014-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov, Mateusz Muszyński
+ */
 module dagon.core.event;
 
 import std.stdio;
@@ -40,6 +52,9 @@ import dagon.core.bindings;
 import dagon.core.input;
 import dagon.core.logger;
 
+/**
+ * All supported event types in Dagon.
+ */
 enum EventType
 {
     KeyDown,
@@ -66,6 +81,10 @@ enum EventType
     UserEvent
 }
 
+/**
+ * Represents a single event in the Dagon event system.
+ * Contains event type and relevant data for the event.
+ */
 struct Event
 {
     EventType type;
@@ -87,8 +106,18 @@ struct Event
     string message;
 }
 
+/**
+ * Maximum number of supported controllers.
+ */
 enum MAX_CONTROLLERS = 1;
 
+/**
+ * Manages event polling, state, and dispatch.
+ *
+ * Description:
+ * Handles input events, window events, controller/joystick events, and user-defined events.
+ * Provides methods for polling SDL events, generating custom events, and querying input state.
+ */
 class EventManager
 {
     SDL_Window* window;
@@ -146,6 +175,14 @@ class EventManager
     
     void delegate(SDL_Event* event) onProcessEvent;
 
+    /**
+     * Constructs an EventManager for the given SDL window and dimensions.
+     *
+     * Params:
+     *   win = SDL window pointer.
+     *   winWidth = Window width.
+     *   winHeight = Window height.
+     */
     this(SDL_Window* win, uint winWidth, uint winHeight)
     {
         window = win;
@@ -166,17 +203,25 @@ class EventManager
         inputManager = New!InputManager(this);
     }
 
+    /// Destructor. Cleans up resources.
     ~this()
     {
         toReset.free();
         Delete(inputManager);
     }
 
+    /// Signals the event manager to stop running (application exit).
     void exit()
     {
         running = false;
     }
 
+    /**
+     * Adds a new event to the event stack.
+     *
+     * Params:
+     *   e = The event to add.
+     */
     void addEvent(Event e) nothrow
     {
         if (numEvents < maxNumEvents)
@@ -186,6 +231,12 @@ class EventManager
         }
     }
 
+    /**
+     * Generates a file change event for the given filename.
+     *
+     * Params:
+     *   filename = The changed file's name.
+     */
     void generateFileChangeEvent(string filename) nothrow
     {
         Event e = Event(EventType.FileChange);
@@ -193,6 +244,12 @@ class EventManager
         addUserEvent(e);
     }
 
+    /**
+     * Adds a user event to the user event stack.
+     *
+     * Params:
+     *   e = The user event to add.
+     */
     void addUserEvent(Event e) nothrow
     {
         if (numUserEvents < maxNumEvents)
@@ -202,6 +259,12 @@ class EventManager
         }
     }
 
+    /**
+     * Generates a user event with the given code.
+     *
+     * Params:
+     *   code = User event code.
+     */
     void generateUserEvent(int code) nothrow
     {
         Event e = Event(EventType.UserEvent);
@@ -209,6 +272,13 @@ class EventManager
         addUserEvent(e);
     }
     
+    /**
+     * Generates a log event with the given log level and message.
+     *
+     * Params:
+     *   level = Log level.
+     *   message = Log message.
+     */
     void generateLogEvent(LogLevel level, string message) nothrow
     {
         Event e = Event(EventType.LogEvent);
@@ -217,6 +287,12 @@ class EventManager
         addUserEvent(e);
     }
     
+    /**
+     * Opens a game controller or joystick at the specified device index.
+     *
+     * Params:
+     *   deviceIndex = The device index to open.
+     */
     void gameControllerOpen(uint deviceIndex)
     {
         if (SDL_IsGameController(deviceIndex))
@@ -261,6 +337,12 @@ class EventManager
         }
     }
     
+    /**
+     * Closes the game controller or joystick at the specified device index.
+     *
+     * Params:
+     *   deviceIndex = The device index to close.
+     */
     void gameControllerClose(uint deviceIndex)
     {
         if (joystick)
@@ -277,16 +359,26 @@ class EventManager
         }
     }
 
+    /// Returns true if a game controller is available.
     bool gameControllerAvailable()
     {
         return (controller !is null);
     }
 
+    /// Returns true if a joystick is available.
     bool joystickAvailable()
     {
-        return (joystick !is null || controller !is null);
+        return (joystick !is null);
     }
 
+    /**
+     * Gets the normalized value of a game controller axis.
+     *
+     * Params:
+     *   axis = Axis index.
+     * Returns:
+     *   Normalized axis value in [-1, 1].
+     */
     float gameControllerAxis(int axis)
     {
         int axisVal = SDL_GameControllerGetAxis(controller, cast(SDL_GameControllerAxis)axis);
@@ -294,6 +386,14 @@ class EventManager
                cast(float)controllerAxisThreshold;
     }
 
+    /**
+     * Gets the normalized value of a joystick axis.
+     *
+     * Params:
+     *   axis = Axis index.
+     * Returns:
+     *   Normalized axis value in [-1, 1].
+     */
     float joystickAxis(int axis)
     {
         int axisVal = 0;
@@ -308,6 +408,14 @@ class EventManager
                cast(float)controllerAxisThreshold;
     }
     
+    /**
+     * Triggers controller rumble (vibration) if supported.
+     *
+     * Params:
+     *   lowFreq = Low frequency rumble intensity.
+     *   hiFreg = High frequency rumble intensity.
+     *   duration = Duration in seconds.
+     */
     void gameControllerRumble(uint lowFreq, uint hiFreg, float duration)
     {
         if (controllerHasRumble)
@@ -317,6 +425,7 @@ class EventManager
                 cast(uint)(duration * 1000.0f));
     }
 
+    /// Polls and processes all pending events.
     void update()
     {
         numEvents = 0;
@@ -548,6 +657,8 @@ class EventManager
     }
 
     protected int lastTime = 0;
+
+    /// Updates the internal timer and computes delta time.
     void updateTimer()
     {
         int currentTime = SDL_GetTicks();
@@ -557,6 +668,13 @@ class EventManager
         deltaTime = cast(double)(elapsedTime) * 0.001;
     }
 
+    /**
+     * Sets the mouse cursor position.
+     *
+     * Params:
+     *   x = X coordinate.
+     *   y = Y coordinate.
+     */
     void setMouse(int x, int y)
     {
         SDL_WarpMouseInWindow(window, x, y);
@@ -564,6 +682,7 @@ class EventManager
         mouseY = y;
     }
 
+    /// Centers the mouse cursor in the window.
     void setMouseToCenter()
     {
         float x = (cast(float)windowWidth) / 2;
@@ -571,21 +690,39 @@ class EventManager
         setMouse(cast(int)x, cast(int)y);
     }
 
+    /**
+     * Shows or hides the mouse cursor.
+     *
+     * Params:
+     *   mode = true to show, false to hide.
+     * Returns:
+     *   SDL result code.
+     */
     int showCursor(bool mode)
     {
         return SDL_ShowCursor(mode);
     }
 
+    /**
+     * Enables or disables relative mouse mode.
+     *
+     * Params:
+     *   mode = true to enable, false to disable.
+     * Returns:
+     *   SDL result code.
+     */
     int setRelativeMouseMode(bool mode)
     {
         return SDL_SetRelativeMouseMode(cast(SDL_bool)mode);
     }
 
+     /// Returns the current window aspect ratio.
     float aspectRatio()
     {
         return cast(float)windowWidth / cast(float)windowHeight;
     }
 
+    /// Resets all UP and DOWN input event states.
     void resetUpDown()
     {
         // reset all UP and DOWN events
@@ -597,12 +734,31 @@ class EventManager
     }
 }
 
+/**
+ * Base class for objects that listen to and handle events.
+ *
+ * Description:
+ * Inherit from `EventListener` and override the relevant event handler methods.
+ * Call `processEvents` each frame to dispatch events to your handlers.
+ */
 abstract class EventListener: Owner
 {
+    /// The event manager used for polling events.
     EventManager eventManager;
+
+    /// The input manager for input state queries.
     InputManager inputManager;
+
+    /// If false, disables event processing.
     bool enabled = true;
 
+    /**
+     * Constructs an EventListener.
+     *
+     * Params:
+     *   emngr = The event manager to use.
+     *   owner = The owner object for memory management.
+     */
     this(EventManager emngr, Owner owner)
     {
         super(owner);
@@ -611,11 +767,23 @@ abstract class EventListener: Owner
             inputManager = emngr.inputManager;
     }
 
+    /**
+     * Generates a user event with the given code.
+     *
+     * Params:
+     *   code = User event code.
+     */
     protected void generateUserEvent(int code)
     {
         eventManager.generateUserEvent(code);
     }
 
+    /**
+     * Processes all pending events, dispatching them to handler methods.
+     *
+     * Params:
+     *   enableInputEvents = If false, disables input event handlers.
+     */
     void processEvents(bool enableInputEvents = true)
     {
         if (!enabled)
@@ -628,6 +796,13 @@ abstract class EventListener: Owner
         }
     }
 
+    /**
+     * Processes a single event, dispatching it to the appropriate handler.
+     *
+     * Params:
+     *   e = The event to process.
+     *   enableInputEvents = If false, disables input event handlers.
+     */
     void processEvent(Event* e, bool enableInputEvents = true)
     {
         switch(e.type)
@@ -700,25 +875,66 @@ abstract class EventListener: Owner
         }
     }
 
+    /// Called when a key is pressed.
     void onKeyDown(int key) {}
+
+    /// Called when a key is released.
     void onKeyUp(int key) {}
+
+    /// Called when text input is received.
     void onTextInput(dchar code) {}
+
+    /// Called when a mouse button is pressed.
     void onMouseButtonDown(int button) {}
+
+    /// Called when a mouse button is released.
     void onMouseButtonUp(int button) {}
+
+    /// Called when the mouse wheel is scrolled.
     void onMouseWheel(int x, int y) {}
+
+    /// Called when a joystick button is pressed.
     void onJoystickButtonDown(int button) {}
+
+    /// Called when a joystick button is released.
     void onJoystickButtonUp(int button) {}
+
+    /// Called when a controller button is pressed.
     void onControllerButtonDown(int button) {}
+
+    /// Called when a controller button is released.
     void onControllerButtonUp(int button) {}
+
+    /// Called when a controller axis is moved.
     void onControllerAxisMotion(int axis, float value) {}
+
+    /// Called when a controller is added.
     void onControllerAdd(uint deviceIndex) {}
+
+    /// Called when a controller is removed.
     void onControllerRemove(uint deviceIndex) {}
+
+    /// Called when the window is resized.
     void onResize(int width, int height) {}
+
+    /// Called when the window loses focus.
     void onFocusLoss() {}
+
+    /// Called when the window gains focus.
     void onFocusGain() {}
+
+    /// Called when a quit event is received.
     void onQuit() {}
+
+    /// Called when a file change is detected.
     void onFileChange(string filename) {}
+
+    /// Called when a file is dropped onto the window.
     void onDropFile(string filename) {}
+
+    /// Called when a log event is received.
     void onLogEvent(LogLevel level, string message) {}
+
+    /// Called when a user event is received.
     void onUserEvent(int code) {}
 }

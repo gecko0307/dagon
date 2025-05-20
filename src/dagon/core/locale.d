@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Timur Gafarov
+Copyright (c) 2022-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,6 +25,17 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Provides utilities for detecting and querying the system locale.
+ *
+ * The `dagon.core.locale` module determines the user's language and country
+ * code at startup, using platform-specific APIs (Windows or Posix),
+ * and exposes the locale as a string in the form `"ll_CC"` (e.g., `"en_US"`).
+ *
+ * Copyright: Timur Gafarov 2022-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.core.locale;
 
 import std.conv;
@@ -53,6 +64,7 @@ version(Windows)
 }
 
 private string syslocale = "en_US";
+
 static this()
 {
     // TODO: don't use GC
@@ -85,6 +97,16 @@ static this()
     }
 }
 
+/**
+ * Returns the system locale string in the form `"ll_CC"` (e.g., `"en_US"`).
+ *
+ * Description:
+ * On Windows, this uses the system's language and country settings.
+ * On Posix systems, this uses the `LANG` environment variable.
+ *
+ * Returns:
+ *   The system locale string.
+ */
 string systemLocale()
 {
     return syslocale;

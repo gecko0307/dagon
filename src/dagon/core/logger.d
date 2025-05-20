@@ -24,6 +24,17 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * Provides logging facilities for Dagon applications.
+ *
+ * Description:
+ * The `dagon.core.logger` module provides logging functions.
+ *
+ * Copyright: Timur Gafarov 2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.core.logger;
 
 import std.stdio;
@@ -32,16 +43,41 @@ import std.format;
 import std.file: exists;
 import dlib.core.ownership;
 
+/**
+ * Log levels for controlling message verbosity and severity.
+ */
 enum LogLevel: uint
 {
+    /// Log all messages.
     All = 0,
+
+    /// Debug messages.
     Debug = 1,
+
+    /// Informational messages.
     Info = 2,
+
+    /// Warnings.
     Warning = 3,
+
+    /// Errors.
     Error = 4,
+
+    /// Fatal errors.
     FatalError = 5
 }
 
+/**
+ * Options for log output configuration.
+ *
+ * Members:
+ *   printToStdout   = If true, log to standard output.
+ *   printToFile     = If true, log to a file.
+ *   printTimestamp  = If true, prepend timestamps to log messages.
+ *   printLogLevel   = If true, prepend log level tags to messages.
+ *   filename        = Log file name (if file output is enabled).
+ *   dateTimePrinter = Function to generate timestamp strings.
+ */
 struct LogOutputOptions
 {
     bool printToStdout;
@@ -52,8 +88,10 @@ struct LogOutputOptions
     string function() dateTimePrinter;
 }
 
+/// Global log level
 __gshared LogLevel logLevel = LogLevel.All;
 
+/// Global log output options
 __gshared LogOutputOptions logOutputOptions = {
     printToStdout: true,
     printToFile: false,
@@ -63,6 +101,12 @@ __gshared LogOutputOptions logOutputOptions = {
     dateTimePrinter: &defaultDateTimePrinter
 };
 
+/**
+ * Sets the filename for file logging and enables file output.
+ *
+ * Params:
+ *   filename = The log file name.
+ */
 void setLogFilename(string filename)
 {
     logOutputOptions.printToFile = true;
@@ -75,6 +119,12 @@ private
     __gshared bool _logFileInitialized = false;
 }
 
+/**
+ * Returns the default timestamp string for log messages.
+ *
+ * Returns:
+ *   A formatted date and time string.
+ */
 string defaultDateTimePrinter()
 {
     auto now = Clock.currTime;
@@ -83,6 +133,13 @@ string defaultDateTimePrinter()
         now.hour, now.minute, now.second);
 }
 
+/**
+ * Logs a message at the specified log level.
+ *
+ * Params:
+ *   level = The log level.
+ *   args  = The message arguments (variadic).
+ */
 void log(A...)(LogLevel level, A args)
 {
     if (level < logLevel)
@@ -169,26 +226,56 @@ void log(A...)(LogLevel level, A args)
     }
 }
 
+/**
+ * Logs a debug message.
+ *
+ * Params:
+ *   args = The message arguments (variadic).
+ */
 void logDebug(A...)(A args)
 {
     log(LogLevel.Debug, args);
 }
 
+/**
+ * Logs an informational message.
+ *
+ * Params:
+ *   args = The message arguments (variadic).
+ */
 void logInfo(A...)(A args)
 {
     log(LogLevel.Info, args);
 }
 
+/**
+ * Logs a warning message.
+ *
+ * Params:
+ *   args = The message arguments (variadic).
+ */
 void logWarning(A...)(A args)
 {
     log(LogLevel.Warning, args);
 }
 
+/**
+ * Logs an error message.
+ *
+ * Params:
+ *   args = The message arguments (variadic).
+ */
 void logError(A...)(A args)
 {
     log(LogLevel.Error, args);
 }
 
+/**
+ * Logs a fatal error message.
+ *
+ * Params:
+ *   args = The message arguments (variadic).
+ */
 void logFatalError(A...)(A args)
 {
     log(LogLevel.FatalError, args);

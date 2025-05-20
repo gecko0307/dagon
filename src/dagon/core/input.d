@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Mateusz Muszyński
+Copyright (c) 2019-2025 Mateusz Muszyński
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -26,6 +26,18 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Provides an input manager.
+ *
+ * Description:
+ * The `dagon.core.input` module defines input binding types, the `Binding` struct, 
+ * and the `InputManager` class, which allows mapping named actions to keyboard, 
+ * mouse, and gamepad inputs, as well as querying button and axis states.
+ *
+ * Copyright: Mateusz Muszyński 2019-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Mateusz Muszyński
+ */
 module dagon.core.input;
 
 import std.stdio;
@@ -46,37 +58,85 @@ import dagon.core.keycodes;
 import dagon.core.config;
 import dagon.core.logger;
 
+/**
+ * All supported input binding types.
+ */
 enum BindingType
 {
+    /// No binding.
     None,
+
+    /// Keyboard key.
     Keyboard,
+
+    /// Mouse button.
     MouseButton,
+
+    /// Mouse axis (movement).
     MouseAxis,
+
+    /// Gamepad button.
     GamepadButton,
+
+    /// Gamepad axis.
     GamepadAxis,
-    VirtualAxis // axis created from two buttons
+
+    /// Virtual axis (composed from two buttons).
+    VirtualAxis
 }
 
+/**
+ * Represents a single input binding.
+ *
+ * Description:
+ * A binding can be a keyboard key, mouse button, mouse axis, 
+ * gamepad button, gamepad axis, or a virtual axis composed from two buttons.
+ */
 struct Binding
 {
+    /// The type of the binding.
     BindingType type;
     union
     {
+        /// Keyboard key code.
         int key;
+
+        /// Mouse or gamepad button code.
         int button;
+
+        /// Mouse or gamepad axis index.
         int axis;
 
         private struct Vaxis
         {
+            /// Type for positive direction.
             BindingType typePos;
+
+            /// Code for positive direction.
             int pos;
+
+            /// Type for negative direction.
             BindingType typeNeg;
+
+            /// Code for negative direction.
             int neg;
         }
-        Vaxis vaxis; // virtual axis
+
+        /// Virtual axis data.
+        Vaxis vaxis;
     }
 }
 
+/**
+ * Replaces all occurrences of `srcElement` with `destElement` in the given array.
+ *
+ * Params:
+ *   arr = The array to modify.
+ *   srcElement = The element to replace.
+ *   destElement = The replacement element.
+ * Returns:
+ *   The number of elements replaced.
+ */
 size_t replaceInArray(T)(T[] arr, T srcElement, T destElement)
 {
     size_t numReplaced = 0;
@@ -93,16 +153,32 @@ size_t replaceInArray(T)(T[] arr, T srcElement, T destElement)
     return numReplaced;
 }
 
+/**
+ * Manages input bindings and queries input state.
+ *
+ * Description:
+ * Loads input configuration from file, allows mapping
+ * named actions to multiple bindings, and provides methods
+ * to query button and axis states.
+ */
 class InputManager
 {
+    /// The event manager used for input state.
     EventManager eventManager;
 
+    /// Dictionary mapping action names to arrays of bindings.
     alias Bindings = Array!Binding;
-
     Dict!(Bindings, string) bindings;
 
+    /// The configuration object for input bindings.
     Configuration config;
 
+    /**
+     * Constructs an InputManager and loads input bindings from "input.conf".
+     *
+     * Params:
+     *   em = The event manager to use for input state.
+     */
     this(EventManager em)
     {
         eventManager = em;
@@ -120,6 +196,7 @@ class InputManager
         }
     }
 
+    /// Destructor. Frees all bindings and configuration resources.
     ~this()
     {
         foreach(name, bind; bindings)
@@ -130,6 +207,14 @@ class InputManager
         Delete(config);
     }
 
+    /**
+     * Parses a single binding from a lexer.
+     *
+     * Params:
+     *   lexer = The lexer containing the binding string.
+     * Returns:
+     *   The parsed Binding.
+     */
     private Binding parseBinding(Lexer lexer)
     {
         // Binding format consist of device type and name(or number)
@@ -232,6 +317,13 @@ class InputManager
         return Binding(BindingType.None, -1);
     }
 
+    /**
+     * Adds one or more bindings for the given action name.
+     *
+     * Params:
+     *   name = The action name.
+     *   value = The binding string (may contain multiple bindings).
+     */
     void addBindings(string name, string value)
     {
         auto lexer = New!Lexer(value, ["_", ",", "(", ")"]);
@@ -268,6 +360,12 @@ class InputManager
         Delete(lexer);
     }
 
+    /**
+     * Removes all bindings for the given action name.
+     *
+     * Params:
+     *   name = The action name.
+     */
     void clearBindings(string name)
     {
         if (auto binding = name in bindings)
@@ -276,6 +374,14 @@ class InputManager
         }
     }
 
+    /**
+     * Checks if the given binding is currently pressed.
+     *
+     * Params:
+     *   binding = The binding to check.
+     * Returns:
+     *   `true` if pressed, `false` otherwise.
+     */
     bool getButton(Binding binding)
     {
         switch(binding.type)
@@ -299,6 +405,14 @@ class InputManager
         return false;
     }
 
+    /**
+     * Checks if any binding for the given action name is currently pressed.
+     *
+     * Params:
+     *   name = The action name.
+     * Returns:
+     *   `true` if pressed, `false` otherwise.
+     */
     bool getButton(string name)
     {
         auto b = name in bindings;
@@ -313,6 +427,14 @@ class InputManager
         return false;
     }
 
+    /**
+     * Checks if any binding for the given action name was released this frame.
+     *
+     * Params:
+     *   name = The action name.
+     * Returns:
+     *   `true` if released, `false` otherwise.
+     */
     bool getButtonUp(string name)
     {
         auto b = name in bindings;
@@ -344,6 +466,14 @@ class InputManager
         return false;
     }
 
+    /**
+     * Checks if any binding for the given action name was pressed this frame.
+     *
+     * Params:
+     *   name = The action name.
+     * Returns:
+     *   `true` if pressed this frame, `false` otherwise.
+     */
     bool getButtonDown(string name)
     {
         auto b = name in bindings;
@@ -376,6 +506,16 @@ class InputManager
         return false;
     }
 
+    /**
+     * Gets the axis value for the given action name.
+     *
+     * For analog axes, returns the current value. For virtual axes, returns -1, 0, or 1.
+     *
+     * Params:
+     *   name = The action name.
+     * Returns:
+     *   The axis value in the range [-1, 1].
+     */
     float getAxis(string name)
     {
         auto b = name in bindings;
