@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,6 +25,20 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Animation for entity properties.
+ *
+ * Description:
+ * The `dagon.graphics.tween` module defines the `Tween` struct,
+ * which supports smooth interpolation (tweening) of `Entity` properties
+ * such as position, rotation, scaling, and color over time, using various
+ * easing functions. Tweens can be paused, played, restarted, repeated, and killed,
+ * and are typically used for procedural animation, cutscenes, and UI effects.
+ *
+ * Copyright: Timur Gafarov 2019-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.graphics.tween;
 
 import dlib.math.vector;
@@ -34,6 +48,9 @@ import dlib.math.utils;
 import dlib.image.color;
 import dagon.graphics.entity;
 
+/**
+ * Types of data that can be tweened.
+ */
 enum TweenDataType
 {
     Float,
@@ -41,6 +58,9 @@ enum TweenDataType
     Color
 }
 
+/**
+ * Types of tweenable properties.
+ */
 enum TweenType
 {
     Unknown = 0,
@@ -51,6 +71,9 @@ enum TweenType
     Alpha,
 }
 
+/**
+ * Supported easing functions for tweening.
+ */
 enum Easing
 {
     Linear,
@@ -63,17 +86,44 @@ enum Easing
     BounceOut
 }
 
+/**
+ * Tween struct for animating entity properties over time.
+ *
+ * Description:
+ * Supports position, rotation, scaling, and color interpolation
+ * with various easing functions. Tweens can be paused, played,
+ * restarted, repeated, and killed.
+ */
 struct Tween
 {
+    /// The type of data being tweened.
     TweenDataType dataType;
+
+    /// The property being tweened.
     TweenType type = TweenType.Unknown;
+
+    /// The easing function used.
     Easing easing;
+
+    /// If `true`, the tween is active.
     bool active = false;
+
+    /// The entity being animated.
     Entity entity;
+
+    /// Duration of the tween in seconds.
     double duration;
+
+    /// Current time in the tween.
     double time = 0.0f;
+
+    /// Number of times to repeat the tween.
     uint repeat = 1;
+
+    /// Current repeat count.
     uint repeatCounter;
+
+    /// If true, the tween is playing.
     bool isPlaying = true;
 
     union
@@ -90,6 +140,7 @@ struct Tween
         float toFloat;
     }
 
+    /// Constructs a vector tween for position, rotation, or scaling.
     this(Entity entity, TweenType type, Vector3f start, Vector3f end, double duration, Easing easing = Easing.Linear)
     {
         this.dataType = TweenDataType.Vector;
@@ -105,6 +156,7 @@ struct Tween
         this.isPlaying = true;
     }
 
+    /// Constructs a color tween.
     this(Entity entity, TweenType type, Color4f start, Color4f end, double duration, Easing easing = Easing.Linear)
     {
         this.dataType = TweenDataType.Color;
@@ -120,6 +172,7 @@ struct Tween
         this.isPlaying = true;
     }
 
+    /// Constructs a float tween (e.g., opacity).
     this(Entity entity, TweenType type, float start, float end, double duration, Easing easing = Easing.Linear)
     {
         this.dataType = TweenDataType.Float;
@@ -135,16 +188,19 @@ struct Tween
         this.isPlaying = true;
     }
 
+    /// Pauses the tween.
     void pause()
     {
         isPlaying = false;
     }
 
+    /// Resumes the tween.
     void play()
     {
         isPlaying = true;
     }
 
+    /// Kills the tween and resets its state.
     void kill()
     {
         active = false;
@@ -153,11 +209,18 @@ struct Tween
         isPlaying = false;
     }
 
+    /// Restarts the tween from the beginning.
     void restart()
     {
         time = 0.0;
     }
 
+    /**
+     * Updates the tween by the given time delta.
+     *
+     * Params:
+     *   dt = Time delta in seconds.
+     */
     void update(double dt)
     {
         if (active && entity && isPlaying)
@@ -189,6 +252,12 @@ struct Tween
         }
     }
 
+    /**
+     * Applies the tweened value to the entity at the given normalized time.
+     *
+     * Params:
+     *   t = Normalized time (0.0 .. 1.0).
+     */
     void applyTween(float t)
     {
         if (type == TweenType.Position)
@@ -199,6 +268,14 @@ struct Tween
             entity.scaling = lerp(fromVector, toVector, ease(t));
     }
 
+    /**
+     * Calculates the eased time value according to the selected easing function.
+     *
+     * Params:
+     *   t = Normalized time (0.0 .. 1.0).
+     * Returns:
+     *   The eased time value.
+     */
     float ease(float t)
     {
         if (easing == Easing.Linear) return t;

@@ -24,6 +24,21 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * Provides a texture class and corresponding utilities.
+ *
+ * Description:
+ * The `dagon.graphics.texture` module defines the `Texture` class
+ * for managing 1D, 2D, 3D, and cubemap textures, supporting compressed
+ * and uncompressed formats, mipmapping, filtering, and OpenGL resource management.
+ * The module also includes enums for texture formats, cube faces, and utility
+ * functions for texture creation, loading, and conversion.
+ *
+ * Copyright: Timur Gafarov 2017-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.graphics.texture;
 
 import std.stdio;
@@ -97,31 +112,66 @@ enum GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR = 0x93DB;
 enum GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR = 0x93DC;
 enum GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR = 0x93DD;
 
+/**
+ * Specifies the dimension of a texture.
+ */
 enum TextureDimension
 {
+    /// Unknown
     Undefined,
+
+    /// 1-dimensional texture
     D1,
+
+    /// 2-dimensional texture
     D2,
+
+    /// 3-dimensional texture
     D3
 }
 
+/**
+ * Represents the size of a texture in pixels.
+ */
 struct TextureSize
 {
+    /// Width
     uint width;
+
+    /// Height
     uint height;
+
+    /// Depth
     uint depth;
 }
 
+/**
+ * The faces of a cubemap texture.
+ */
 enum CubeFace: GLenum
 {
+    /// Positive-X face (right)
     PositiveX = GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+
+    /// Negative-X face (left)
     NegativeX = GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+
+    /// Positive-Y face (top)
     PositiveY = GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+
+    /// Negative-Y face (bottom)
     NegativeY = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+
+    /// Positive-Z face (front)
     PositiveZ = GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+
+    /// Negative-Z face (back)
     NegativeZ = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
 }
 
+/**
+ * Bitmask for cubemap faces.
+ */
 enum CubeFaceBit
 {
     None = 0,
@@ -134,6 +184,9 @@ enum CubeFaceBit
     All = 0xffffffff
 }
 
+/**
+ * Returns a corresponding `CubeFaceBit` for a given `CubeFace`
+ */
 CubeFaceBit cubeFaceBit(CubeFace face)
 {
     CubeFaceBit cfb = CubeFaceBit.None;
@@ -150,6 +203,9 @@ CubeFaceBit cubeFaceBit(CubeFace face)
     return cfb;
 }
 
+/**
+ * Describes the format and layout of a texture.
+ */
 struct TextureFormat
 {
     GLenum target;
@@ -157,9 +213,12 @@ struct TextureFormat
     GLint internalFormat;
     GLenum pixelType;
     uint blockSize;
-    uint cubeFaces; // bitwise combination of CubeFaceBit members
+
+    /// Bitwise combination of `CubeFaceBit` members.
+    uint cubeFaces;
     
-    uint numChannels() @property
+    /// Returns the number of channels.
+    uint numChannels() const @property
     {
         if (format in numChannelsFormat)
             return numChannelsFormat[format];
@@ -167,7 +226,8 @@ struct TextureFormat
             return 0;
     }
     
-    uint channelSize() @property
+    /// Returns the size of a single channel in bytes.
+    uint channelSize() const @property
     {
         uint s = 0;
         switch(pixelType)
@@ -185,22 +245,26 @@ struct TextureFormat
         return s;
     }
     
-    uint pixelSize() @property
+    /// Returns the size of a pixel in bytes.
+    uint pixelSize() const @property
     {
         return numChannels * channelSize;
     }
     
-    bool isCompressed() @property
+    /// Returns `true` if the format is compressed.
+    bool isCompressed() const @property
     {
         return compressedFormats.canFind(internalFormat);
     }
     
-    bool isCubemap() @property
+    /// Returns `true` if the format is a cubemap.
+    bool isCubemap() const @property
     {
         return cubeFaces != CubeFaceBit.None;
     }
     
-    TextureDimension dimension() @property
+    /// Returns the texture dimension.
+    TextureDimension dimension() const @property
     {
         if (target == GL_TEXTURE_1D)
             return TextureDimension.D1;
@@ -327,15 +391,36 @@ enum GLint[] compressedFormats = [
     GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR
 ];
 
-// Intermediate storage, used to load textures from containers
+/**
+ * Intermediate texture data storage.
+ * Used to create textures loaded from container formats,
+ * such as DDS and KTX, from custom formats or directly
+ * from memory.
+ */
 struct TextureBuffer
 {
+    /// Format of a texture data
     TextureFormat format;
+
+    /// Size of a texture data
     TextureSize size;
+
+    /// Number of mip levels
     uint mipLevels;
+
+    // Raw texture data (can be compressed)
     ubyte[] data;
 }
 
+/**
+ * Represents an OpenGL texture object.
+ *
+ * Description:
+ * Supports 1D, 2D, 3D, and cubemap textures, compressed/uncompressed
+ * formats, mipmaps, and filtering. Provides methods for creation from
+ * dlib images, buffers, and equirectangular maps, as well as OpenGL
+ * resource management.
+ */
 class Texture: Owner
 {
     GLuint texture;
@@ -349,16 +434,26 @@ class Texture: Owner
     GLint wrapT = GL_REPEAT;
     GLint wrapR = GL_REPEAT;
     
+    /**
+     * Constructs a new texture object.
+     *
+     * Params:
+     *   owner = The owner object.
+     */
     this(Owner owner)
     {
         super(owner);
     }
     
+    /// Destructor. Releases OpenGL resources.
     ~this()
     {
         release();
     }
     
+    /**
+     * Creates a blank texture with the specified parameters and fill color.
+     */
     void createBlank(uint w, uint h, uint channels, uint bitDepth, bool genMipmaps, Color4f fillColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f))
     {
         release();
@@ -376,6 +471,9 @@ class Texture: Owner
         Delete(img);
     }
     
+    /**
+     * Creates a texture from a 2D image.
+     */
     void createFromImage(SuperImage img, bool genMipmaps)
     {
         release();
@@ -395,6 +493,9 @@ class Texture: Owner
         }
     }
     
+    /**
+     * Creates a 3D texture from a 2D image
+     */
     void createFromImage3D(SuperImage img, uint size = 0)
     {
         if (size == 0)
@@ -427,6 +528,9 @@ class Texture: Owner
         wrapR = GL_CLAMP_TO_EDGE;
     }
     
+    /**
+     * Creates a texture from a buffer.
+     */
     void createFromBuffer(TextureBuffer buff, bool genMipmaps)
     {
         release();
@@ -449,6 +553,9 @@ class Texture: Owner
             logError("Texture creation failed: unsupported target ", format.target);
     }
     
+    /**
+     * Creates a cubemap texture from a buffer.
+     */
     protected void createCubemap(ubyte[] buffer)
     {
         glGenTextures(1, &texture);
@@ -561,6 +668,9 @@ class Texture: Owner
         }
     }
     
+    /**
+     * Creates an 1D texture from a buffer.
+     */
     protected void createTexture1D(ubyte[] buffer)
     {
         glGenTextures(1, &texture);
@@ -616,6 +726,9 @@ class Texture: Owner
         }
     }
     
+    /**
+     * Creates a 2D texture from a buffer.
+     */
     protected void createTexture2D(ubyte[] buffer)
     {
         glGenTextures(1, &texture);
@@ -712,6 +825,9 @@ class Texture: Owner
         }
     }
     
+    /**
+     * Creates a 3D texture from a buffer.
+     */
     protected void createTexture3D(ubyte[] buffer)
     {
         glGenTextures(1, &texture);
@@ -774,6 +890,9 @@ class Texture: Owner
         }
     }
     
+    /**
+     * Creates a cubemap texture from an equirectangular environment map.
+     */
     void createFromEquirectangularMap(SuperImage envmap, uint resolution, bool generateMipmaps = true)
     {
         glGenTextures(1, &texture);
@@ -828,6 +947,7 @@ class Texture: Owner
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     }
     
+    /// Generates mipmaps for the texture.
     void generateMipmap()
     {
         if (valid)
@@ -840,22 +960,26 @@ class Texture: Owner
         }
     }
     
+    /// Generate a default texture; unimplemented
     void createFallbackTexture()
     {
         // TODO
     }
     
+    /// Releases OpenGL resources.
     void release()
     {
         if (valid)
             glDeleteTextures(1, &texture);
     }
     
+    /// Returns true if the texture is valid.
     bool valid()
     {
         return cast(bool)glIsTexture(texture);
     }
     
+    /// Binds the texture to the current OpenGL texture unit.
     void bind()
     {
         if (valid)
@@ -899,6 +1023,7 @@ class Texture: Owner
         }
     }
 
+    /// Unbinds the texture.
     void unbind()
     {
         if (isCubemap)
@@ -911,56 +1036,67 @@ class Texture: Owner
             glBindTexture(GL_TEXTURE_3D, 0);
     }
     
-    uint width() @property
+    /// Returns the width of the texture.
+    uint width() const @property
     {
         return size.width;
     }
     
-    uint height() @property
+    /// Returns the height of the texture.
+    uint height() const @property
     {
         return size.height;
     }
     
-    uint numChannels() @property
+    /// Returns the number of channels.
+    uint numChannels() const @property
     {
         return format.numChannels;
     }
     
-    bool hasAlpha() @property
+    /// Returns true if the texture has an alpha channel.
+    bool hasAlpha() const @property
     {
         return (numChannels == 4);
     }
     
-    bool isCompressed() @property
+    /// Returns true if the texture is compressed.
+    bool isCompressed() const @property
     {
         return format.isCompressed;
     }
     
-    bool isCubemap() @property
+    /// Returns true if the texture is a cubemap.
+    bool isCubemap() const @property
     {
         return format.isCubemap;
     }
     
-    TextureDimension dimension() @property
+    /// Returns the texture dimension.
+    TextureDimension dimension() const @property
     {
         return format.dimension;
     }
     
-    uint channelSize() @property
+    /// Returns the size of a channel in bytes.
+    uint channelSize() const @property
     {
         return format.channelSize;
     }
     
-    uint pixelSize() @property
+    /// Returns the size of a pixel in bytes.
+    uint pixelSize() const @property
     {
         return format.pixelSize;
     }
     
-    bool useMipmapFiltering() @property
+    /// Returns `true` if mipmap filtering is enabled.
+    bool useMipmapFiltering() const @property
     {
         return minFilter == GL_LINEAR_MIPMAP_LINEAR;
     }
     
+    /// Switches mipmap filtering.
     void useMipmapFiltering(bool mode) @property
     {
         if (mode)
@@ -969,6 +1105,7 @@ class Texture: Owner
             minFilter = GL_LINEAR;
     }
     
+    /// Enables or disables texture repeat on UV wrap.
     void enableRepeat(bool mode) @property
     {
         if (mode)
@@ -985,11 +1122,13 @@ class Texture: Owner
         }
     }
     
+    /// Sets the bitmask for a cubemap face.
     void setFaceBit(CubeFace face)
     {
         format.cubeFaces = format.cubeFaces | cubeFaceBit(face);
     }
     
+    /// Sets the image for a cubemap face.
     void setFaceImage(CubeFace face, SuperImage img)
     {
         if (img.width != img.height)
@@ -1034,8 +1173,8 @@ class Texture: Owner
         glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
         if (isCompressed)
         {
-            uint size = ((img.width + 3) / 4) * ((img.height + 3) / 4) * tf.blockSize;
-            glCompressedTexImage2D(face, 0, tf.internalFormat, img.width, img.height, 0, size, cast(void*)img.data.ptr);
+            uint dataSize = ((img.width + 3) / 4) * ((img.height + 3) / 4) * tf.blockSize;
+            glCompressedTexImage2D(face, 0, tf.internalFormat, img.width, img.height, 0, dataSize, cast(void*)img.data.ptr);
         }
         else
         {
@@ -1045,6 +1184,15 @@ class Texture: Owner
     }
 }
 
+/**
+ * Detects the supported texture format from a `SuperImage`.
+ *
+ * Params:
+ *   img = The image to analyze.
+ *   tf  = Output texture format.
+ * Returns:
+ *   true if the format was detected successfully.
+ */
 bool detectTextureFormat(SuperImage img, out TextureFormat tf)
 {
     uint pixelFormat = img.pixelFormat;
@@ -1066,6 +1214,14 @@ bool detectTextureFormat(SuperImage img, out TextureFormat tf)
     return true;
 }
 
+/**
+ * Returns the transformation matrix for a cubemap face.
+ *
+ * Params:
+ *   cf = The cubemap face.
+ * Returns:
+ *   The transformation matrix.
+ */
 Matrix4x4f cubeFaceMatrix(CubeFace cf)
 {
     switch(cf)
@@ -1087,6 +1243,15 @@ Matrix4x4f cubeFaceMatrix(CubeFace cf)
     }
 }
 
+/**
+ * Returns the world space transformation matrix for a cubemap face at a given position.
+ *
+ * Params:
+ *   cf  = The cubemap face.
+ *   pos = The camera position in world space.
+ * Returns:
+ *   The camera matrix.
+ */
 Matrix4x4f cubeFaceCameraMatrix(CubeFace cf, Vector3f pos)
 {
     Matrix4x4f m;
@@ -1116,6 +1281,14 @@ Matrix4x4f cubeFaceCameraMatrix(CubeFace cf, Vector3f pos)
     return m;
 }
 
+/**
+ * Projects a 3D direction vector to equirectangular UV coordinates.
+ *
+ * Params:
+ *   dir = The direction vector.
+ * Returns:
+ *   The UV coordinates in [0,1] range.
+ */
 Vector2f equirectProj(Vector3f dir)
 {
     float phi = acos(dir.y);
