@@ -2,7 +2,7 @@
 
 The goal of this project is to create a modern, easy to use, extensible 3D game engine for [D language](https://dlang.org/). Dagon is based on OpenGL 4.0 core profile and SDL2. It currently works on Windows and Linux.
 
-The engine is still under development and lacks many important features. It is currently not recommended to use Dagon in production due to API instability. Follow the development on [Trello](https://trello.com/b/4sDgRjZI/dagon-development-board) to see the priority tasks.
+The engine is still under development and lacks some of the planned features. Follow the development on [Trello](https://trello.com/b/4sDgRjZI/dagon-development-board) to see the priority tasks.
 
 Dagon uses modern graphics techniques and so requires a fairly powerful graphics card to run (at least Turing-based NVIDIA cards are recommended). The engine is only desktop, support for mobile and web platforms is not planned.
 
