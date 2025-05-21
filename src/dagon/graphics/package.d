@@ -25,6 +25,19 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * The main entry point for Dagon's 3D graphics system.
+ *
+ * Description:
+ * The `dagon.graphics` package publicly imports all core graphics modules,
+ * including scene/world management, materials, shaders, lighting, mesh,
+ * particles system and others. This package provides a comprehensive toolset for
+ * building 3D scenes, managing entities, and implementing visual effects.
+ *
+ * Copyright: Timur Gafarov 2019-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.graphics;
 
 public

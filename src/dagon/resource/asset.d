@@ -25,6 +25,21 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Asset management tools.
+ *
+ * Description:
+ * The `dagon.resource.asset` module defines the `Asset` base class for resource
+ * objects, the `AssetManager` for loading, monitoring, and managing assets,
+ * and loader classes for textures and images. The system supports threaded loading,
+ * live asset monitoring, and virtual file systems. Texture loading can use SDL2_Image
+ * if available, or fall back to dlib.image. The asset manager supports mounting
+ * directories and box files, and can detect and handle base64-encoded images.
+ *
+ * Copyright: Timur Gafarov 2017-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.resource.asset;
 
 import core.stdc.string;
@@ -55,27 +70,64 @@ import dagon.resource.texture;
 import dagon.resource.dds;
 import dagon.resource.sdlimage;
 
+/**
+ * Stores file monitoring information for an asset.
+ */
 struct MonitorInfo
 {
+    /// Last known file status.
     FileStat lastStat;
+
+    /// True if the file currently exists.
     bool fileExists = false;
 }
 
+/**
+ * Abstract base class for all asset types.
+ * Assets are managed by the `AssetManager` and support
+ * thread-safe and thread-unsafe loading.
+ */
 abstract class Asset: Owner
 {
-    this(Owner o)
-    {
-        super(o);
-    }
-
     MonitorInfo monitorInfo;
     bool threadSafePartLoaded = false;
     bool threadUnsafePartLoaded = false;
+
+    this(Owner owner)
+    {
+        super(owner);
+    }
+
+    /**
+     * Loads the thread-safe part of the asset (e.g., reading from disk).
+     *
+     * Params:
+     *   filename = Asset filename.
+     *   istrm    = Input stream for reading data.
+     *   fs       = File system to use.
+     *   mngr     = Asset manager.
+     * Returns:
+     *   True if loading succeeded.
+     */
     bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr);
+
+    /**
+     * Loads the thread-unsafe part of the asset (e.g., OpenGL resource creation).
+     *
+     * Returns:
+     *   True if loading succeeded.
+     */
     bool loadThreadUnsafePart();
+
+     /// Releases all resources associated with the asset.
     void release();
 }
 
+/**
+ * Abstract base class for texture loaders.
+ * Texture loaders are responsible for loading image data
+ * and creating texture assets.
+ */
 abstract class TextureLoader: Owner
 {
     AssetManager assetManager;
@@ -85,8 +137,19 @@ abstract class TextureLoader: Owner
         super(assetManager);
         this.assetManager = assetManager;
     }
-    
-    // Override this
+
+    /**
+     * Loads a texture asset from a stream.
+     *
+     * Params:
+     *   filename  = Name of the file.
+     *   extension = File extension.
+     *   istrm     = Input stream.
+     *   asset     = Texture asset to fill.
+     *   option    = Loader-specific option.
+     * Returns:
+     *   Compound!(bool, string) indicating success and error message.
+     */
     Compound!(bool, string) load(
         string filename,
         string extension,
@@ -95,7 +158,9 @@ abstract class TextureLoader: Owner
         uint option = 0);
 }
 
-// Basic loader that prefers SDL2_Image if present and falls back to dlib.image otherwise
+/**
+ * Default texture loader that prefers SDL2_Image if present, and falls back to dlib.image otherwise.
+ */
 class DefaultTextureLoader: TextureLoader
 {
     UnmanagedImageFactory ldrImageFactory;
@@ -114,6 +179,18 @@ class DefaultTextureLoader: TextureLoader
         Delete(hdrImageFactory);
     }
     
+    /**
+     * Loads a texture asset from a stream, supporting multiple formats.
+     *
+     * Params:
+     *   filename  = Name of the file.
+     *   extension = File extension.
+     *   istrm     = Input stream.
+     *   asset     = Texture asset to fill.
+     *   option    = Loader-specific option (unused).
+     * Returns:
+     *   Compound!(bool, string) indicating success and error message.
+     */
     override Compound!(bool, string) load(
         string filename,
         string extension,
@@ -210,13 +287,31 @@ class DefaultTextureLoader: TextureLoader
     }
 }
 
+/**
+ * Stores information about an image format for base64 detection.
+ */
 struct ImageFormatInfo
 {
+    /// File extension (e.g., ".png").
     string format;
+
+    /// Dummy filename for the format.
     string dummyFilename;
+
+    /// Base64 prefix string.
     string prefix;
 }
 
+/**
+ * Manages loading, monitoring, and access to assets.
+ *
+ * Description:
+ * The `AssetManager` supports threaded loading,
+ * live update monitoring, virtual file systems,
+ * and registration of custom texture loaders.
+ * It can mount directories and box files, and
+ * detect base64-encoded images.
+ */
 class AssetManager: Owner
 {
     Application application; // set by the scene
@@ -241,9 +336,9 @@ class AssetManager: Owner
     
     Dict!(string, string) base64ImagePrefixes;
 
-    this(EventManager emngr, Owner o = null)
+    this(EventManager emngr, Owner owner = null)
     {
-        super(o);
+        super(owner);
         
         defaultTextureLoader = New!DefaultTextureLoader(this);
         
@@ -301,6 +396,14 @@ class AssetManager: Owner
         base64ImagePrefixes["data:image/jxl;base64,"] = "image.jxl";
     }
     
+    /**
+     * Detects the image format and prefix for a base64-encoded image URI.
+     *
+     * Params:
+     *   uri = The base64 URI.
+     * Returns:
+     *   ImageFormatInfo with format, dummy filename, and prefix.
+     */
     ImageFormatInfo detectBase64Image(string uri)
     {
         ImageFormatInfo result;
@@ -333,28 +436,33 @@ class AssetManager: Owner
         Delete(base64ImagePrefixes);
     }
 
+    /// Mounts a directory into the virtual file system.
     void mountDirectory(string dir)
     {
         fs.mount(dir);
     }
 
+    /// Mounts a box file into the virtual file system.
     void mountBoxFile(string filename)
     {
         BoxFileSystem boxfs = New!BoxFileSystem(fs.openForInput(filename), true);
         fs.mount(boxfs);
     }
 
+    /// Mounts a directory from a box file into the virtual file system.
     void mountBoxFileDirectory(string filename, string dir)
     {
         BoxFileSystem boxfs = New!BoxFileSystem(fs.openForInput(filename), true, dir);
         fs.mount(boxfs);
     }
     
+    /// Registers a texture loader for a file extension.
     void registerTextureLoader(string extension, TextureLoader loader)
     {
         textureLoaders[extension] = loader;
     }
     
+    /// Registers a texture loader for multiple file extensions.
     void registerTextureLoader(string[] extensions, TextureLoader loader)
     {
         foreach(extension; extensions)
@@ -363,6 +471,7 @@ class AssetManager: Owner
         }
     }
     
+    /// Returns the texture loader for a given extension.
     TextureLoader textureLoader(string extension)
     {
         if (extension in textureLoaders)
@@ -371,6 +480,7 @@ class AssetManager: Owner
             return null;
     }
 
+    /// Checks if an asset exists by name.
     bool assetExists(string name)
     {
         if (name in assetsByFilename)
@@ -379,6 +489,7 @@ class AssetManager: Owner
             return false;
     }
 
+    /// Adds an asset to the manager.
     Asset addAsset(Asset asset, string name)
     {
         if (!(name in assetsByFilename))
@@ -390,6 +501,7 @@ class AssetManager: Owner
         return asset;
     }
 
+    /// Preloads an asset (thread-safe and thread-unsafe parts).
     Asset preloadAsset(Asset asset, string name)
     {
         if (!(name in assetsByFilename))
@@ -410,6 +522,7 @@ class AssetManager: Owner
         return asset;
     }
 
+    /// Reloads an asset by object and filename.
     void reloadAsset(Asset asset, string filename)
     {
         asset.release();
@@ -421,6 +534,7 @@ class AssetManager: Owner
             asset.threadUnsafePartLoaded = asset.loadThreadUnsafePart();
     }
 
+    /// Reloads an asset by name.
     void reloadAsset(string name)
     {
         auto asset = assetsByFilename[name];
@@ -434,6 +548,7 @@ class AssetManager: Owner
             asset.threadUnsafePartLoaded = asset.loadThreadUnsafePart();
     }
 
+    /// Gets an asset by name.
     Asset getAsset(string name)
     {
         if (name in assetsByFilename)
@@ -442,12 +557,14 @@ class AssetManager: Owner
             return null;
     }
 
+    /// Removes an asset by name.
     void removeAsset(string name)
     {
         Delete(assetsByFilename[name]);
         assetsByFilename.remove(name);
     }
 
+    /// Releases all assets and clears the manager.
     void releaseAssets()
     {
         clearOwnedObjects();
@@ -458,6 +575,7 @@ class AssetManager: Owner
         loadingThread = New!Thread(&threadFunc);
     }
     
+    /// Loads the thread-safe part of an asset from a buffer.
     bool loadAssetThreadSafePart(Asset asset, ubyte[] buffer, string filename)
     {
         ArrayStream arrStrm = New!ArrayStream(buffer);
@@ -466,6 +584,7 @@ class AssetManager: Owner
         return res;
     }
     
+    /// Loads the thread-safe part of an asset from an input stream.
     bool loadAssetThreadSafePart(Asset asset, InputStream istrm, string filename)
     {
         bool res = asset.loadThreadSafePart(filename, istrm, fs, this);
@@ -476,6 +595,7 @@ class AssetManager: Owner
         return res;
     }
 
+    /// Loads the thread-safe part of an asset from a file.
     bool loadAssetThreadSafePart(Asset asset, string filename)
     {
         if (!fileExists(filename))
@@ -504,6 +624,7 @@ class AssetManager: Owner
         }
     }
 
+    /// Starts the threaded loading process.
     void loadThreadSafePart()
     {
         nextLoadingPercentage = 0.0f;
@@ -511,11 +632,13 @@ class AssetManager: Owner
         loadingThread.start();
     }
 
+    /// Returns true if assets are currently being loaded in a thread.
     bool isLoading()
     {
         return loadingThread.isRunning;
     }
 
+     /// Loads the thread-unsafe part of all assets.
     void loadThreadUnsafePart()
     {
         bool res = true;
@@ -533,12 +656,14 @@ class AssetManager: Owner
         }
     }
 
+    /// Checks if a file exists in the virtual file system.
     bool fileExists(string filename)
     {
         FileStat stat;
         return fs.stat(filename, stat);
     }
 
+    /// Updates the asset monitor for live updates.
     void updateMonitor(double dt)
     {
         if (liveUpdate)
@@ -553,6 +678,7 @@ class AssetManager: Owner
         }
     }
 
+    /// Checks for file changes and reloads assets if needed.
     protected void monitorCheck(string filename, Asset asset)
     {
         FileStat currentStat;

@@ -28,6 +28,7 @@ DEALINGS IN THE SOFTWARE.
 /**
  * An abstract interface for skeletal animation poses.
  *
+ * Description:
  * The `dagon.graphics.pose` module defines the `Pose` abstract class,
  * which manages bone transformation matrices for GPU skinning,
  * animation timing, and playback state. Implementations of `Pose` should
