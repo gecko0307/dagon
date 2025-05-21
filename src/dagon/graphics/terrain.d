@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018-2022 Rafał Ziemniewski, Timur Gafarov
+Copyright (c) 2018-2025 Rafał Ziemniewski, Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,6 +25,19 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Provides classes and utilities for terrain rendering.
+ *
+ * Description:
+ * The `dagon.graphics.terrain` module defines the `Terrain` class
+ * for rendering procedural terrains, as well as `TerrainMaterial`
+ * for managing terrain-specific material parameters and textures,
+ * The module supports multi-layered materials with splat mapping.
+ *
+ * Copyright: Rafał Ziemniewski, Timur Gafarov 2018-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Rafał Ziemniewski, Timur Gafarov
+ */
 module dagon.graphics.terrain;
 
 import dlib.core.memory;
@@ -42,16 +55,31 @@ import dagon.graphics.entity;
 import dagon.graphics.material;
 import dagon.graphics.texture;
 
+/**
+ * Represents layered terrain material.
+ *
+ * Description:
+ * The `TerrainMaterial` class manages splat maps, texture layers,
+ * and blending parameters used for physically-based terrain shading.
+ */
 class TerrainMaterial: Material
 {
+    /// Array of terrain texturing layers, where each layer is a separate material
     Array!Material layers;
     
-    this(Owner o)
+    /**
+     * Constructs a new `TerrainMaterial` object.
+     *
+     * Params:
+     *   owner = The owner object.
+     */
+    this(Owner owner)
     {
-        super(o);
+        super(owner);
         alphaTestThreshold = 0.0f;
     }
     
+    /// Adds a new layer
     Material addLayer()
     {
         Material layerMaterial = New!Material(this);
@@ -62,20 +90,49 @@ class TerrainMaterial: Material
     
     // TODO: remove layer
     
+    /// Destructor. Releases all associated resources.
     ~this()
     {
         layers.free();
     }
 }
 
+/**
+ * A terrain object.
+ *
+ * Description:
+ * A `Terrain` is generated from an abstract `Heightmap`, which can be a height data
+ * loaded from a grayscale image, or a procedurally generated 2D noise.
+ * The terrain consists of a render mesh and a collision mesh, both generated at
+ * configurable resolutions. The class supports normal generation, mesh refreshing,
+ * and provides methods for height queries and spatial traversal.
+ */
 class Terrain: Owner, Drawable
 {
+    /// Horizontal resolution (number of vertices along X).
     uint width;
+
+    /// Vertical resilution (number of vertices along Z).
     uint height;
+
+    /// The underlying render mesh of the terrain.
     Mesh mesh;
+    
+    /// The underlying collision mesh the terrain.
     Mesh collisionMesh;
+
+    /// The heightmap source.
     Heightmap heightmap;
 
+    /**
+     * Constructs a square terrain with specified mesh and collision mesh resolutions.
+     *
+     * Params:
+     *   meshResolution          = Visual mesh vertex resolution.
+     *   collisionMeshResolution = Collision mesh vertex resolution.
+     *   heightmap               = The heightmap source.
+     *   owner                   = The owner object.
+     */
     this(uint meshResolution, uint collisionMeshResolution, Heightmap heightmap, Owner owner)
     {
         super(owner);
@@ -92,14 +149,31 @@ class Terrain: Owner, Drawable
         collisionMesh = generateMesh(collisionMeshResolution, collisionMeshResolution, scale, owner);
     }
 
+    /**
+     * Constructs a square terrain with default collision mesh resolution.
+     *
+     * Params:
+     *   meshResolution = Visual mesh vertex resolution.
+     *   heightmap      = The heightmap source.
+     *   owner          = The owner object.
+     */
     this(uint meshResolution, Heightmap heightmap, Owner owner)
     {
         this(meshResolution, 80, heightmap, owner);
     }
 
-    Mesh generateMesh(uint w, uint h, float scale, Owner o)
+    /**
+     * Generates a mesh from the heightmap.
+     *
+     * Params:
+     *   w     = Width of a terrain in vertices.
+     *   h     = Height of a terrain in vertices.
+     *   scale = Scale multiplier 
+     *   owner = The owner object.
+     */
+    Mesh generateMesh(uint w, uint h, float scale, Owner owner)
     {
-        Mesh mesh = New!Mesh(o);
+        Mesh mesh = New!Mesh(owner);
 
         size_t numVerts = w * h;
         mesh.vertices = New!(Vector3f[])(numVerts);
@@ -140,37 +214,65 @@ class Terrain: Owner, Drawable
         return mesh;
     }
 
+    /// Updates the terrain (stub for future logic).
     void update(double dt)
     {
 
     }
 
+    /// Renders the terrain mesh.
     void render(GraphicsState* state)
     {
         mesh.render(state);
     }
 
+    /// Regenerates normals and VAO for the mesh.
     void refreshChanges()
     {
         mesh.generateNormals();
         mesh.prepareVAO();
     }
-    
-    float getHeight(Entity e, Vector3f pos)
+
+    /**
+     * Returns the terrain height at a given world position.
+     *
+     * Params:
+     *   entity = The entity representing the terrain.
+     *   pos    = The world position to query.
+     * Returns:
+     *   The height value at the given position.
+     */
+    float getHeight(Entity entity, Vector3f pos)
     {
-        Vector3f ts = (pos - e.position) / e.scaling;
+        Vector3f ts = (pos - entity.position) / entity.scaling;
         float x = ts.x / width;
         float z = ts.z / height;
         float y = heightmap.getHeight(x, z);
-        return y * e.scaling.y;
+        return y * entity.scaling.y;
     }
 
+    /**
+     * Returns an aggregate for iterating terrain triangles that intersect a given sphere.
+     *
+     * Params:
+     *   sphere = Pointer to the sphere to test against.
+     * Returns:
+     *   A `TerrainSphereTraverseAggregate` for triangle iteration.
+     */
     TerrainSphereTraverseAggregate traverseBySphere(Sphere* sphere)
     {
         return TerrainSphereTraverseAggregate(this, sphere);
     }
 }
 
+/**
+ * A sphere traversal aggregate.
+ *
+ * Description:
+ * Represents data for iterating terrain triangles that intersect a given sphere.
+ * It is meant to be used with `foreach` loop. The traversal is a simple brute-force
+ * algorithm, so it can be not very efficient for detailed terrains.
+ */
 struct TerrainSphereTraverseAggregate
 {
     Terrain terrain;
@@ -202,6 +304,7 @@ struct TerrainSphereTraverseAggregate
     }
 }
 
+/// Tests whether an entity holds a `Terrain`.
 bool entityIsTerrain(Entity e)
 {
     if (e.type == EntityType.Terrain)

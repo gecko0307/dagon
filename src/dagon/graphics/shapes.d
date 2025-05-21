@@ -25,6 +25,21 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Basic geometric shape classes.
+ *
+ * Description:
+ * The `dagon.graphics.shapes` module defines mesh and drawable classes
+ * for common shapes such as planes, quads, boxes, spheres, disks,
+ * cylinders, and cones. These shapes are useful for prototyping, debugging,
+ * and as building blocks for more complex geometry. All shapes are constructed
+ * with configurable parameters and support rendering via the engine's mesh and
+ * drawable interfaces.
+ *
+ * Copyright: Timur Gafarov 2017-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.graphics.shapes;
 
 import std.math;
@@ -38,13 +53,20 @@ import dagon.core.bindings;
 import dagon.graphics.drawable;
 import dagon.graphics.mesh;
 
-/*
- * Basic geometric shapes: grid plane, quad, box, sphere,
- * cylinder, cone
+/**
+ * A mesh representing a grid plane in the XZ plane.
  */
-
 class ShapePlane: Mesh
 {
+    /**
+     * Constructs a `ShapePlane`.
+     *
+     * Params:
+     *   sx       = Size along the X axis.
+     *   sz       = Size along the Z axis.
+     *   numTiles = Number of tiles along each axis.
+     *   owner    = Owner object.
+     */
     this(float sx, float sz, uint numTiles, Owner owner)
     {
         super(owner);
@@ -94,6 +116,12 @@ class ShapePlane: Mesh
     }
 }
 
+/**
+ * A simple quad (rectangle) drawable in 2D.
+ *
+ * Vertices and texture coordinates are defined in normalized [0,1] space.
+ * Useful for screen-space rendering, post-processing, and UI.
+ */
 class ShapeQuad: Owner, Drawable
 {
     Vector2f[4] vertices;
@@ -105,6 +133,12 @@ class ShapeQuad: Owner, Drawable
     GLuint tbo = 0;
     GLuint eao = 0;
 
+    /**
+     * Constructs a `ShapeQuad`.
+     *
+     * Params:
+     *   owner = Owner object.
+     */
     this(Owner owner)
     {
         super(owner);
@@ -154,6 +188,7 @@ class ShapeQuad: Owner, Drawable
         glBindVertexArray(0);
     }
 
+    /// Destructor. Releases OpenGL resources.
     ~this()
     {
         glDeleteVertexArrays(1, &vao);
@@ -162,6 +197,7 @@ class ShapeQuad: Owner, Drawable
         glDeleteBuffers(1, &eao);
     }
 
+    /// Renders the quad using the provided graphics pipeline state.
     void render(GraphicsState* state)
     {
         glDepthMask(0);
@@ -172,8 +208,18 @@ class ShapeQuad: Owner, Drawable
     }
 }
 
+/**
+ * A mesh representing a box (cuboid) with configurable extents.
+ */
 class ShapeBox: Mesh
 {
+    /**
+     * Constructs a `ShapeBox` using extents as a vector.
+     *
+     * Params:
+     *   extents = Half-size along each axis.
+     *   owner   = Owner object.
+     */
     this(Vector3f extents, Owner owner)
     {
         super(owner);
@@ -231,7 +277,16 @@ class ShapeBox: Mesh
         dataReady = true;
         prepareVAO();
     }
-    
+
+    /**
+     * Constructs a `ShapeBox` using extents as separate components.
+     *
+     * Params:
+     *   hw    = Half-width.
+     *   hh    = Half-height.
+     *   hd    = Half-depth.
+     *   owner = Owner object.
+     */
     this(float hw, float hh, float hd, Owner owner)
     {
         this(Vector3f(hw, hh, hd), owner);
@@ -240,13 +295,33 @@ class ShapeBox: Mesh
 
 private enum HALF_PI = PI * 0.5f;
 
+/**
+ * A mesh representing a UV sphere.
+ */
 class ShapeSphere: Mesh
 {
+    /**
+     * Constructs a `ShapeSphere` with the default number of segments.
+     *
+     * Params:
+     *   radius     = Sphere radius.
+     *   owner      = Owner object.
+     */
     this(float radius, Owner owner)
     {
         this(radius, 16, 16, false, owner);
     }
-    
+
+    /**
+     * Constructs a `ShapeSphere`.
+     *
+     * Params:
+     *   radius     = Sphere radius.
+     *   slices     = Number of longitudinal segments.
+     *   stacks     = Number of latitudinal segments.
+     *   invNormals = If `true`, normals are inverted (inside-out sphere).
+     *   owner      = Owner object.
+     */
     this(float radius, int slices, int stacks, bool invNormals, Owner owner)
     {
         super(owner);
@@ -256,14 +331,11 @@ class ShapeSphere: Mesh
         Array!Vector2f daTexcoords;
         Array!(uint[3]) daIndices;
 
-        float X1, Y1, X2, Y2, Z1, Z2;
-        float inc1, inc2, inc3, inc4, inc5, radius1, radius2;
         uint[3] tri;
         uint i = 0;
 
         float cuts = stacks;
         float invCuts = 1.0f / cuts;
-        float heightStep = 2.0f * invCuts;
 
         float invSlices = 1.0f / slices;
         float angleStep = (2.0f * PI) * invSlices;
@@ -382,8 +454,19 @@ class ShapeSphere: Mesh
     }
 }
 
+/**
+ * A mesh representing a flat disk in the XZ plane.
+ */
 class ShapeDisk: Mesh
 {
+    /**
+     * Constructs a `ShapeDisk`.
+     *
+     * Params:
+     *   radius = Disk radius.
+     *   slices = Number of segments.
+     *   owner  = Owner object.
+     */
     this(float radius, uint slices, Owner owner)
     {
         super(owner);
@@ -430,13 +513,35 @@ class ShapeDisk: Mesh
     }
 }
 
+/**
+ * A mesh representing a cylinder.
+ */
 class ShapeCylinder: Mesh
 {
+    /**
+     * Constructs a `ShapeCylinder` with uniform radius.
+     *
+     * Params:
+     *   radius      = Cylinder radius (for both ends).
+     *   height      = Cylinder height.
+     *   slices      = Number of segments.
+     *   owner       = Owner object.
+     */
     this(float radius, float height, uint slices, Owner owner)
     {
         this(radius, radius, height, slices, owner);
     }
     
+    /**
+     * Constructs a `ShapeCylinder` with variying radius (a truncated cone).
+     *
+     * Params:
+     *   bottomRadius = Radius of the bottom cap.
+     *   topRadius    = Radius of the top cap.
+     *   height       = Cylinder height.
+     *   slices       = Number of segments.
+     *   owner        = Owner object.
+     */
     this(float bottomRadius, float topRadius, float height, uint slices, Owner owner)
     {
         super(owner);
@@ -565,8 +670,20 @@ class ShapeCylinder: Mesh
     }
 }
 
+/**
+ * A mesh representing a cone.
+ */
 class ShapeCone: Mesh
 {
+    /**
+     * Constructs a `ShapeCone`.
+     *
+     * Params:
+     *   radius = Base radius.
+     *   height = Cone height.
+     *   slices = Number of segments.
+     *   owner  = Owner object.
+     */
     this(float radius, float height, uint slices, Owner owner)
     {
         super(owner);
