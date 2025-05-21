@@ -24,6 +24,18 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * GLTF 2.0 animation.
+ *
+ * The `dagon.resource.gltf.animation` module defines classes for representing
+ * and evaluating GLTF animation samplers, channels, and animation clips.
+ * Animation playback, blending, and update logic are included.
+ *
+ * Copyright: Denis Feklushkin, Timur Gafarov 2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Denis Feklushkin, Timur Gafarov
+ */
 module dagon.resource.gltf.animation;
 
 import std.stdio;
@@ -45,6 +57,9 @@ import dagon.resource.gltf.accessor;
 import dagon.resource.gltf.node;
 import dagon.resource.gltf.skin;
 
+/**
+ * Interpolation types supported by GLTF animation samplers.
+ */
 enum InterpolationType: string
 {
     Linear = "LINEAR",
@@ -52,6 +67,9 @@ enum InterpolationType: string
     CubicSpline = "CUBICSPLINE"
 }
 
+/**
+ * Animation target property types (translation, rotation, scale).
+ */
 enum TRSType: string
 {
     Translation = "translation",
@@ -59,17 +77,29 @@ enum TRSType: string
     Scale = "scale",
 }
 
+/**
+ * Represents a GLTF animation sampler, which defines keyframe times,
+ * values, and interpolation.
+ */
 class GLTFAnimationSampler: Owner
 {
-    InterpolationType interpolation; // optional, LINEAR by default
-    GLTFAccessor input; // required, contains times (in seconds) for each keyframe.
-    GLTFAccessor output; // required, contains values (of any Accessor.Type) for the animated property at each keyframe.
+    /// Interpolation type (linear, step, cubic spline). Only LINEAR is supported at the moment
+    InterpolationType interpolation;
+
+    /// Accessor for keyframe times (in seconds).
+    GLTFAccessor input;
+
+    /// Accessor for keyframe values.
+    GLTFAccessor output;
     
     this(Owner o)
     {
         super(o);
     }
     
+    /**
+     * Returns the duration of the animation sampler in seconds.
+     */
     float duration()
     {
         const timeline = input.getSlice!float;
@@ -79,7 +109,17 @@ class GLTFAnimationSampler: Owner
             return 0.0f;
     }
     
-    /// Returns: beginning translation sample number
+    /**
+     * Finds the keyframe sample indices and times for a given animation time.
+     *
+     * Params:
+     *   t            = Current animation time.
+     *   previousTime = Output: previous keyframe time.
+     *   nextTime     = Output: next keyframe time.
+     *   loopTime     = Output: wrapped time within the animation duration.
+     * Returns:
+     *   Index of the previous keyframe.
+     */
     size_t getSampleByTime(in Time t, out float previousTime, out float nextTime, out float loopTime)
     {
         assert(input.dataType == GLTFDataType.Scalar);
@@ -122,11 +162,19 @@ class GLTFAnimationSampler: Owner
     }
 }
 
+/**
+ * Represents a GLTF animation channel, which targets a node and property (TRS).
+ */
 class GLTFAnimationChannel: Owner
 {
-    GLTFAnimationSampler sampler; // required
-    TRSType targetPath; // required
-    GLTFNode targetNode; // optional: When undefined, the animated object MAY be defined by an extension.
+    /// The animation sampler for this channel.
+    GLTFAnimationSampler sampler;
+
+    /// The property being animated (translation, rotation, scale).
+    TRSType targetPath;
+
+    /// The node being animated.
+    GLTFNode targetNode;
     
     this(Owner o)
     {
@@ -134,10 +182,18 @@ class GLTFAnimationChannel: Owner
     }
 }
 
+/**
+ * Represents a GLTF animation clip, containing samplers and channels.
+ */
 class GLTFAnimation: Owner
 {
+    /// Animation name.
     string name;
+
+    /// Animation samplers.
     Array!GLTFAnimationSampler samplers;
+
+    /// Animation channels.
     Array!GLTFAnimationChannel channels;
     
     this(Owner o)
@@ -151,6 +207,9 @@ class GLTFAnimation: Owner
         channels.free();
     }
     
+    /**
+     * Returns the duration of the animation in seconds.
+     */
     float duration()
     {
         float d = 0.0f;
@@ -162,10 +221,18 @@ class GLTFAnimation: Owner
     }
 }
 
+/**
+ * `Entity`` component for playing a GLTF animation on an entity.
+ */
 class GLTFAnimationComponent: EntityComponent
 {
+    /// The animation to play.
     GLTFAnimation animation;
+
+    /// Current animation time.
     Time time;
+
+    /// True if the animation is playing.
     bool playing;
     
     this(EventManager em, Entity e, GLTFAnimation animation, bool playing = false)
@@ -177,21 +244,25 @@ class GLTFAnimationComponent: EntityComponent
         e.transformMode = TransformMode.Matrix;
     }
     
+    /// Starts animation playback.
     void play()
     {
         playing = true;
     }
     
+    /// Pauses animation playback.
     void pause()
     {
         playing = false;
     }
     
+    /// Resets animation time to zero.
     void reset()
     {
         time.elapsed = 0;
     }
     
+    /// Updates the animation and applies transforms to the entity.
     override void update(Time t)
     {
         if (playing)
@@ -246,9 +317,15 @@ class GLTFAnimationComponent: EntityComponent
     }
 }
 
+/**
+ * GPU skinning pose for a GLTF skin and animation.
+ */
 class GLTFPose: Pose
 {
+    /// The GLTFSkin being posed.
     GLTFSkin skin;
+
+    /// The animation to play.
     GLTFAnimation animation;
     
     this(GLTFSkin skin, Owner o)
@@ -270,6 +347,7 @@ class GLTFPose: Pose
             Delete(boneMatrices);
     }
     
+    /// Updates the pose for the current animation time.
     override void update(Time t)
     {
         if (playing)
@@ -350,6 +428,9 @@ class GLTFPose: Pose
     }
 }
 
+/**
+ * TRS (Translation, Rotation, Scale) structure for joint transforms.
+ */
 struct TRS
 {
     Vector3f translation;
@@ -357,34 +438,55 @@ struct TRS
     Vector3f scaling;
 }
 
+/**
+ * Animation playback mode (loop or once).
+ */
 enum PlayMode
 {
     Loop,
     Once
 }
 
-/*
- * A Pose that supports smooth transition between animations
+/**
+ * A pose that supports smooth blending between GLTF animations.
  */
 class GLTFBlendedPose: Pose
 {
+    /// The GLTFSkin being posed.
     GLTFSkin skin;
     
+    /// Current TRS pose for each joint.
     TRS[] currentPose;
+
+    /// Next TRS pose for blending.
     TRS[] nextPose;
     
+    /// Previous animation.
     GLTFAnimation previousAnimation;
+
+    /// Current animation.
     GLTFAnimation animation;
+
+    /// Next animation.
     GLTFAnimation nextAnimation;
+
+    /// Blend factor between animations.
     float blendAlpha = 0.0f;
+
+    /// Blend speed.
     float blendSpeed = 0.0f;
+
     float previousBlendSpeed = 0.0f;
+
+    /// Duration of the current animation.
     float animationDuration = 0.0f;
+
+    /// Playback mode (loop or once).
     PlayMode playMode = PlayMode.Loop;
     
-    this(GLTFSkin skin, Owner o)
+    this(GLTFSkin skin, Owner owner)
     {
-        super(o);
+        super(owner);
         this.skin = skin;
         
         if (skin.joints.length)
@@ -408,6 +510,14 @@ class GLTFBlendedPose: Pose
             Delete(nextPose);
     }
     
+    /**
+     * Applies an animation to the pose at a given time.
+     *
+     * Params:
+     *   anim    = The animation to apply.
+     *   time    = The animation time.
+     *   outPose = Output array of TRS for each joint.
+     */
     void applyAnimation(GLTFAnimation anim, Time time, TRS[] outPose)
     {
         if (anim)
@@ -471,6 +581,13 @@ class GLTFBlendedPose: Pose
         }
     }
     
+    /**
+     * Switches to a new animation immediately.
+     *
+     * Params:
+     *   anim              = The new animation.
+     *   playMode          = Playback mode (loop or once).
+     */
     void switchToAnimation(GLTFAnimation anim, PlayMode playMode = PlayMode.Loop)
     {
         if (anim !is animation)
@@ -483,6 +600,14 @@ class GLTFBlendedPose: Pose
         }
     }
     
+    /**
+     * Switches to a new animation smoothly.
+     *
+     * Params:
+     *   anim               = The new animation.
+     *   transitionDuration = Duration of the blend (optional).
+     *   playMode           = Playback mode (loop or once).
+     */
     void switchToAnimation(GLTFAnimation anim, float transitionDuration, PlayMode playMode = PlayMode.Loop)
     {
         if (anim !is animation)
@@ -498,6 +623,7 @@ class GLTFBlendedPose: Pose
         }
     }
     
+    /// Updates the blended pose and applies transforms to the skin.
     override void update(Time t)
     {
         applyAnimation(animation, time, currentPose);

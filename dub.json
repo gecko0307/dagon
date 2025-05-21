@@ -60,5 +60,7 @@
         "extensions/nuklear",
         "extensions/physfs",
         "init-exec"
-    ]
+    ],
+    
+    "-ddoxTool": "scod"
 }

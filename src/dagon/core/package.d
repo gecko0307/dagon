@@ -28,6 +28,7 @@ DEALINGS IN THE SOFTWARE.
 /**
  * Provides the core modules and foundational utilities for Dagon applications.
  *
+ * Description:
  * The `dagon.core` package includes modules for application management,
  * configuration, event handling, input, key codes, locale detection, logging,
  * persistent storage, property system, time management, virtual file system,
