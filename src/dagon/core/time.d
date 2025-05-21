@@ -42,14 +42,13 @@ import dlib.core.ownership;
 
 /**
  * Represents timing information for a frame.
- *
- * Members:
- *   delta   = Time elapsed since the previous frame (in seconds).
- *   elapsed = Total time elapsed since the start (in seconds).
  */
 struct Time
 {
+    /// Time elapsed since the previous frame (in seconds).
     double delta;
+
+    /// Total time elapsed since the start (in seconds).
     double elapsed;
 }
 

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2022 Timur Gafarov
+Copyright (c) 2017-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,6 +25,20 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Defines mesh data structure and utilities.
+ *
+ * Description:
+ * The `dagon.graphics.mesh` module provides the `Mesh` class for storing
+ * and rendering 3D geometry (indexed triangle mesh). The module also defines
+ * the `VertexAttrib` enumeration for standard attribute locations used in the engine,
+ * and the `TriangleSet` interface for triangle iteration.
+ * Meshes support bounding box calculation, normal generation, and OpenGL VAO/VBO management.
+ *
+ * Copyright: Timur Gafarov 2017-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.graphics.mesh;
 
 import std.math;
@@ -39,6 +53,9 @@ import dlib.geometry.aabb;
 import dagon.core.bindings;
 import dagon.graphics.drawable;
 
+/**
+ * Enumerates vertex attribute locations for mesh data.
+ */
 enum VertexAttrib
 {
     Vertices = 0,
@@ -48,35 +65,84 @@ enum VertexAttrib
     Weights = 4
 }
 
+/**
+ * Interface for objects that provide access to a set of triangles.
+ */
 interface TriangleSet
 {
+    /**
+     * Iterates over all triangles in the set.
+     *
+     * Params:
+     *   dg = Delegate to call for each triangle.
+     * Returns:
+     *   0 if iteration completed, or the value returned by the delegate if nonzero.
+     */
     int opApply(scope int delegate(Triangle t) dg);
 }
 
+/**
+ * Represents a 3D mesh with vertex and index data,
+ * supporting rendering and triangle iteration.
+ *
+ * The `Mesh` class stores vertex positions, normals,
+ * texture coordinates, and triangle indices.
+ * It supports bounding box calculation, normal generation,
+ * OpenGL VAO/VBO management, and implements the `Drawable`
+ * and `TriangleSet` interfaces.
+ */
 class Mesh: Owner, Drawable, TriangleSet
 {
+    /// True if mesh data is ready for rendering.
     bool dataReady = false;
+
+    /// True if OpenGL buffers are prepared and mesh can be rendered.
     bool canRender = false;
     
-    // TODO: make these DynamicArrays
+    // TODO: make these DynamicArrays:
+
+    /// Array of vertex positions.
     Vector3f[] vertices;
+
+    /// Array of vertex normals.
     Vector3f[] normals;
+
+    /// Array of texture coordinates.
     Vector2f[] texcoords;
+
+    /// Array of triangle indices (each element is a uint[3]).
     uint[3][] indices;
     
+    /// Axis-aligned bounding box for the mesh.
     AABB boundingBox;
     
+    /// OpenGL vertex array object.
     GLuint vao = 0;
+
+    /// OpenGL vertex buffer object for positions.
     GLuint vbo = 0;
+
+    /// OpenGL vertex buffer object for normals.
     GLuint nbo = 0;
+
+    /// OpenGL vertex buffer object for texture coordinates.
     GLuint tbo = 0;
+
+    /// OpenGL element array object for indices.
     GLuint eao = 0;
     
+    /**
+     * Constructs a mesh with the given owner.
+     *
+     * Params:
+     *   owner = The owner object.
+     */
     this(Owner owner)
     {
         super(owner);
     }
     
+    /// Destructor. Releases all mesh data and OpenGL resources.
     ~this()
     {
         if (vertices.length) Delete(vertices);
@@ -94,6 +160,11 @@ class Mesh: Owner, Drawable, TriangleSet
         }
     }
     
+    /**
+     * Calculates the axis-aligned bounding box for the mesh.
+     *
+     * Sets the `boundingBox` member based on the furthest vertex extents.
+     */
     void calcBoundingBox()
     {
         float maxDimension = 0.0f;
@@ -113,6 +184,14 @@ class Mesh: Owner, Drawable, TriangleSet
         boundingBox = boxFromMinMaxPoints(-furthest, furthest);
     }
     
+    /**
+     * Returns the triangle at the specified face index.
+     *
+     * Params:
+     *   faceIndex = The index of the triangle to retrieve.
+     * Returns:
+     *   The triangle at the given index.
+     */
     Triangle getTriangle(size_t faceIndex)
     {
         uint[3] f = indices[faceIndex];
@@ -130,6 +209,14 @@ class Mesh: Owner, Drawable, TriangleSet
         return tri;
     }
     
+    /**
+     * Iterates over all triangles in the mesh.
+     *
+     * Params:
+     *   dg = Delegate to call for each triangle.
+     * Returns:
+     *   0 if iteration completed, or the value returned by the delegate if nonzero.
+     */
     int opApply(scope int delegate(Triangle t) dg)
     {
         int result = 0;
@@ -145,6 +232,10 @@ class Mesh: Owner, Drawable, TriangleSet
         return result;
     }
     
+    /**
+     * Generates smooth vertex normals for the mesh based on triangle geometry.
+     * Overwrites the `normals` array with computed normals.
+     */
     void generateNormals()
     {
         if (normals.length == 0)
@@ -171,6 +262,11 @@ class Mesh: Owner, Drawable, TriangleSet
         }
     }
     
+    /**
+     * Prepares OpenGL VAO and VBOs for rendering the mesh.
+     * Uploads vertex, normal, texcoord, and index data to the GPU.
+     * Sets up attribute pointers and enables rendering.
+     */
     void prepareVAO()
     {
         if (!dataReady)
@@ -213,6 +309,12 @@ class Mesh: Owner, Drawable, TriangleSet
         canRender = true;
     }
     
+    /**
+     * Renders the mesh using the provided graphics pipeline state.
+     *
+     * Params:
+     *   state = Pointer to the current graphics pipeline state.
+     */
     void render(GraphicsState* state)
     {
         if (canRender)

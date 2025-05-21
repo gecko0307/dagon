@@ -25,6 +25,20 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Defines the environment class.
+ *
+ * Description:
+ * The `dagon.graphics.environment` module provides the `Environment` class,
+ * which encapsulates global scene parameters such as background color,
+ * ambient lighting, fog, sun light, and terrain material.
+ * The environment is used to control the global lighting and atmospheric
+ * effects in a scene.
+ *
+ * Copyright: Timur Gafarov 2017-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.graphics.environment;
 
 import dlib.core.memory;
@@ -35,25 +49,55 @@ import dagon.graphics.light;
 import dagon.graphics.texture;
 import dagon.graphics.terrain;
 
+/**
+ * Represents the global environment settings for a scene.
+ *
+ * Description:
+ * The `Environment` class stores background color, ambient lighting,
+ * fog parameters, sun light, and terrain material. It is used to control
+ * atmospheric effects in the renderer.
+ */
 class Environment: Owner
 {
+    /// The background color of the scene.
     Color4f backgroundColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
+
+    /// The ambient light color.
     Color4f ambientColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
+
+    /// The ambient light texture map.
     Texture ambientMap;
+
+    /// The ambient BRDF lookup texture.
     Texture ambientBRDF;
+
+    /// The ambient light energy multiplier.
     float ambientEnergy = 1.0f;
     
+    /// The color of the fog.
     Color4f fogColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
+
+    /// The distance at which fog starts.
     float fogStart = 0.0f;
+
+    /// The distance at which fog ends.
     float fogEnd = 100.0f;
     
+    /// The main directional light (sun) in the scene.
     Light sun;
     
+    /// The terrain material for the scene.
     TerrainMaterial terrainMaterial;
     
-    this(Owner o)
+    /**
+     * Constructs an `Environment` object.
+     *
+     * Params:
+     *   owner = The owner object.
+     */
+    this(Owner owner)
     {
-        super(o);
+        super(owner);
         terrainMaterial = New!TerrainMaterial(this);
     }
 }

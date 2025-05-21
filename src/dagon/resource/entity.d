@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018-2022 Timur Gafarov
+Copyright (c) 2018-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,6 +25,16 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Provides an entity asset class.
+ *
+ * The `dagon.resource.entity` module provides the `EntityAsset` class that
+ * loads an `Entity` object from file.
+ *
+ * Copyright: Copyright (c) 2018-2025 Timur Gafarov
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.resource.entity;
 
 import dlib.core.memory;
@@ -40,22 +50,48 @@ import dagon.core.props;
 import dagon.resource.asset;
 import dagon.graphics.entity;
 
+/**
+ * An `Asset` specialization that loads an `Entity` object from file.
+ */
 class EntityAsset: Asset
 {
+    /// The raw text content of the entity asset file.
     string text;
+
+    /// The parsed properties for this entity.
     Properties props;
+
+    /// The entity object representing the scene node.
     Entity entity;
 
-    this(Owner o)
+    /**
+     * Constructs an `EntityAsset` with the given owner.
+     *
+     * Params:
+     *   owner = The owner object.
+     */
+    this(Owner owner)
     {
-        super(o);
+        super(owner);
     }
 
+    /// Destructor. Releases all associated resources.
     ~this()
     {
         release();
     }
 
+    /**
+     * Loads the thread-safe part of the entity asset from a file.
+     *
+     * Params:
+     *   filename = The asset file name.
+     *   istrm    = Input stream for the asset file.
+     *   fs       = File system used for loading.
+     *   mngr     = Asset manager.
+     * Returns:
+     *   `true` if the asset was loaded successfully, `false` otherwise.
+     */
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
     {
         text = readText(istrm);
@@ -66,11 +102,18 @@ class EntityAsset: Asset
             return false;
     }
 
+    /**
+     * Loads the thread-unsafe part of the entity asset.
+     *
+     * Returns:
+     *   `true` if successful, `false` otherwise.
+     */
     override bool loadThreadUnsafePart()
     {
         return true;
     }
 
+    /// Releases all resources associated with this entity asset.
     override void release()
     {
         if (text.length)

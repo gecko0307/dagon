@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,18 +25,51 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Defines the camera class.
+ *
+ * Description:
+ * The `dagon.graphics.camera` module provides the `Camera` class,
+ * which inherits from `Entity` and represents a view into the scene.
+ * The camera supports perspective projection parameters (field of view,
+ * near and far planes) and provides methods to obtain the view and inverse
+ * view matrices for rendering.
+ *
+ * Copyright: Timur Gafarov 2019-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.graphics.camera;
 
 import dlib.core.ownership;
 import dlib.math.matrix;
 import dagon.graphics.entity;
 
+/**
+ * Represents a camera in the scene, inheriting from `Entity`.
+ *
+ * Description:
+ * The camera defines a view into the scene with projection parameters.
+ * It provides methods to obtain the view and inverse view matrices
+ * for rendering.
+ */
 class Camera: Entity
 {
+    /// Field of view in degrees (vertical) for perspective projection.
     float fov = 60.0f;
+
+    /// Near clipping plane distance.
     float zNear = 0.01f;
+
+    /// Far clipping plane distance.
     float zFar = 1000.0f;
     
+    /**
+     * Constructs a camera entity.
+     *
+     * Params:
+     *   owner = The owner object.
+     */
     this(Owner owner)
     {
         super(owner);
@@ -45,11 +78,23 @@ class Camera: Entity
         castShadow = false;
     }
     
+    /**
+     * Returns the view matrix for this camera.
+     *
+     * Returns:
+     *   The inverse of the absolute transformation matrix.
+     */
     Matrix4x4f viewMatrix()
     {
         return invAbsoluteTransformation;
     }
     
+    /**
+     * Returns the inverse view matrix for this camera.
+     *
+     * Returns:
+     *   The absolute transformation matrix.
+     */
     Matrix4x4f invViewMatrix()
     {
         return absoluteTransformation;

@@ -25,6 +25,21 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Defines the material system.
+ *
+ * Description:
+ * The `dagon.graphics.material` module provides the `Material` class,
+ * which encapsulates all parameters and resources needed for
+ * physically-based rendering (PBR), including textures, colors, blending modes,
+ * parallax mapping, shadow filtering, and shader/material flags. Materials control
+ * how surfaces are shaded, blended, and rendered, and can be customized for a wide
+ * range of visual effects.
+ *
+ * Copyright: Timur Gafarov 2017-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.graphics.material;
 
 import std.traits;
@@ -46,6 +61,7 @@ import dagon.graphics.state;
 import dagon.graphics.shader;
 import dagon.graphics.light;
 
+/// Common color constants for convenience.
 enum
 {
     CBlack = Color4f(0.0f, 0.0f, 0.0f, 1.0f),
@@ -62,86 +78,200 @@ enum
 
 enum int None = 0;
 
+/// Shadow filter mode constants.
 enum int ShadowFilterNone = 0;
 enum int ShadowFilterPCF = 1;
 
+/// Parallax mapping mode constants.
 enum int ParallaxNone = 0;
 enum int ParallaxSimple = 1;
 enum int ParallaxOcclusionMapping = 2;
 
+/// Blend mode constants.
 enum int Opaque = 0;
 enum int Transparent = 1;
 enum int Additive = 2;
 
+/// Texture mapping mode constants.
 enum int VertexUV = 0;
 enum int Matcap = 1;
 
+/**
+ * Represents a physically-based material for rendering surfaces.
+ *
+ * Description:
+ * The `Material` class encapsulates all parameters and resources needed for
+ * PBR, including textures, colors, blending, parallax, shadow filtering, and
+ * shader/material flags. Materials are used to control how surfaces are shaded,
+ * blended, and rendered in the engine.
+ */
 class Material: Owner
 {
+    /// The material name (for identification).
     string name;
+
+    /// Optional shader used for rendering this material.
     Shader shader;
+
+    /// Optional main directional light (sun) affecting this material.
     Light sun;
+
+    /// Base color (albedo) texture.
     Texture baseColorTexture;
+
+    /// Roughness/metallic texture.
     Texture roughnessMetallicTexture;
+
+    /// Emission texture.
     Texture emissionTexture;
+
+    /// Tangent-space normal map texture.
     Texture normalTexture;
+
+    /// Height map texture (for parallax mapping).
     Texture heightTexture;
+
+    /// Alpha mask texture (for terrain texturing layer material).
     Texture maskTexture;
+
+    /// Base color factor (albedo color). Used if `baseColorTexture` is not specified
     Color4f baseColorFactor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+
+    /// Emission color factor. Used if `emissionTexture` is not specified
     Color4f emissionFactor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
+
+    /// Tangent-space normal vector. Used if `normalTexture` is not specified
     Vector3f normalFactor = Vector3f(0.0f, 0.0f, 1.0f);
+
+    /// Texture transformation matrix.
     Matrix3x3f textureTransformation;
+
+    /// Height factor. Used if `heightTexture` is not specified
     float heightFactor = 0.0f;
+
+    /// Emission energy multiplier.
     float emissionEnergy = 1.0f;
+
+    /// Opacity (alpha value, 0.0 = fully transparent, 1.0 = fully opaque).
     float opacity = 1.0f;
+
+    /// Alpha test threshold (for masked transparency).
     float alphaTestThreshold = 0.5f;
+
+    /// Surface roughness factor (0 = smooth, 1 = rough). Used if `roughnessMetallicTexture` is not specified
     float roughnessFactor = 0.5f;
+
+    /// Surface metallic factor (0 = dielectric, 1 = metal). Used if `roughnessMetallicTexture` is not specified
     float metallicFactor = 0.0f;
+
+    /// Specularity factor.
     float specularity = 1.0f;
+
+    /// Subsurface scattering factor.
     float subsurfaceScattering = 0.0f;
+
+    /// Parallax mapping scale.
     float parallaxScale = 0.03f;
+
+    /// Parallax mapping bias.
     float parallaxBias = -0.01f;
+
+    /// Alpha mask factor (for terrain texturing layer material). Used if `maskTexture` is not specified
     float maskFactor = 1.0f;
+
+    /// Parallax mapping mode.
     int parallaxMode = ParallaxNone;
+
+    /// Shadow filtering mode.
     int shadowFilter = ShadowFilterPCF;
+
+    /// Blending mode (opaque, transparent, additive).
     int blendMode = Opaque;
+
+    /// Texture mapping mode.
     int textureMappingMode = VertexUV;
+
+    /// If `true`, disables all shading (renderer-specific option).
     bool shadeless = false;
+
+    /// If `true`, invert the Y channel of the normal map.
     bool invertNormalY = true;
+
+    /// If `true`, the surface receives shadows.
     bool useShadows = true;
+
+    /// If `true`, the surface is fogged according to `Environment` object settings
     bool useFog = true;
+
+    /// If `true`, enable backface culling.
     bool useCulling = true;
+
+    /// If `true`, use spherical normal mapping.
     bool sphericalNormal = false;
+
+    /// If `false`, disables writing to the color buffer.
     bool colorWrite = true;
+
+    /// If `false`, disables writing to the depth buffer.
     bool depthWrite = true;
+
+    /// If `false`, disables G-buffer color output.
     bool outputColor = true;
+
+    /// If `false`, disables G-buffer normal output.
     bool outputNormal = true;
+
+    /// If `false`, disables G-buffer PBR output.
     bool outputPBR = true;
+
+    /// If `false`, disables G-buffer emission output.
     bool outputEmission = true;
     
+    /// Internal texture offset (for UV translation).
     protected Vector2f textureOffsetInternal = Vector2f(0.0f, 0.0f);
+
+    /// Internal texture scaling (for UV scaling).
     protected Vector2f textureScalingInternal = Vector2f(1.0f, 1.0f);
     
-    this(Owner o)
+    /**
+     * Constructs a new material with default parameters.
+     *
+     * Params:
+     *   owner = The owner object.
+     */
+    this(Owner owner)
     {
-        super(o);
+        super(owner);
         textureTransformation = Matrix3x3f.identity;
     }
     
+    /// Destructor. Releases all resources.
     ~this()
     {
     }
     
-    bool isTransparent()
+    /**
+     * Returns true if the material is transparent (blend mode is not opaque).
+     */
+    bool isTransparent() const
     {
         return (blendMode != Opaque);
     }
     
-    Vector2f textureOffset()
+    /**
+     * Gets the current texture offset (UV translation).
+     */
+    Vector2f textureOffset() const
     {
         return textureOffsetInternal;
     }
     
+    /**
+     * Sets the texture offset (UV translation).
+     *
+     * Params:
+     *   v = The new texture offset.
+     */
     void textureOffset(Vector2f v)
     {
         textureOffsetInternal = v;
@@ -149,11 +279,20 @@ class Material: Owner
         textureTransformation.a23 = v.y;
     }
     
-    Vector2f textureScale()
+    /**
+     * Gets the current texture scaling (UV scaling).
+     */
+    Vector2f textureScale() const
     {
         return textureScalingInternal;
     }
     
+    /**
+     * Sets the texture scaling (UV scaling).
+     *
+     * Params:
+     *   s = The new texture scaling.
+     */
     void textureScale(Vector2f s)
     {
         textureScalingInternal = s;
@@ -161,12 +300,25 @@ class Material: Owner
         textureTransformation.a22 = s.y;
     }
     
+    /**
+     * Sets the sprite UV size and position for texture atlases.
+     *
+     * Params:
+     *   uvSize     = The size of the sprite in UV space.
+     *   uvPosition = The position of the sprite in UV space.
+     */
     void setSprite(Vector2f uvSize, Vector2f uvPosition)
     {
         textureScale = uvSize;
         textureOffset = uvPosition;
     }
     
+    /**
+     * Binds the material and sets all relevant graphics state for rendering.
+     *
+     * Params:
+     *   state = Pointer to the current graphics pipeline state.
+     */
     void bind(GraphicsState* state)
     {
         if (blendMode == Transparent)
@@ -218,6 +370,12 @@ class Material: Owner
         state.material = this;
     }
 
+    /**
+     * Unbinds the material and restores graphics state.
+     *
+     * Params:
+     *   state = Pointer to the current graphics pipeline state.
+     */
     void unbind(GraphicsState* state)
     {
         state.material = null;

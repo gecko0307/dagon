@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,11 +25,35 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Provides the core interface for updateable objects.
+ *
+ * Description:
+ * The `dagon.graphics.updateable` module provides the `Updateable` interface,
+ * which must be implemented by any object that can be updated per frame.
+ * This is typically used for entities, components, and systems that require
+ * time-based updates.
+ *
+ * Copyright: Timur Gafarov 2019-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.graphics.updateable;
 
 import dagon.core.time;
 
+/**
+ * Interface for objects that can be updated each frame.
+ * Implement this interface to receive per-frame update calls
+ * with timing information.
+ */
 interface Updateable
 {
+    /**
+     * Updates the object for the current frame.
+     *
+     * Params:
+     *   t = The current frame's timing information.
+     */
     void update(Time t);
 }

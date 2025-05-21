@@ -25,6 +25,22 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Graphics pipeline state.
+ *
+ * Description:
+ * The `dagon.graphics.state` module defines the `GraphicsState` structure,
+ * which encapsulates all rendering state and context information needed
+ * for drawing objects.
+ * `GraphicsState` includes transformation matrices, camera parameters,
+ * material and shader references, render targets, timing, and various
+ * rendering flags. It is fed to the render passes and `Drawable` objects
+ * to provide all necessary context for rendering.
+ *
+ * Copyright: Timur Gafarov 2019-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.graphics.state;
 
 import dlib.math.vector;
@@ -40,64 +56,131 @@ import dagon.graphics.environment;
 import dagon.graphics.light;
 import dagon.graphics.pose;
 
+/**
+ * Encapsulates all rendering state and context for a draw call.
+ */
 struct GraphicsState
 {
+    /// Color used for debug rendering.
     Color4f debugColor;
+
+    /// If `true`, enables debug rendering.
     bool debugMode;
     
+    /// Render layer index.
     int layer;
+
+    /// Velocity output mask value (for motion blur).
     float blurMask;
+
+    /// G-buffer output mask value.
     float gbufferMask;
 
+    /// Output resolution (viewport width, height).
     Vector2f resolution;
+
+    /// Near clipping plane.
     float zNear;
+
+    /// Far clipping plane.
     float zFar;
 
+    /// Camera position in world space.
     Vector3f cameraPosition;
 
+    /// Matrix that transforms from model space to world space.
     Matrix4x4f modelMatrix;
+
+    /// Inverse model matrix.
     Matrix4x4f invModelMatrix;
+
+    /// Inverse of the view rotation matrix.
     Matrix4x4f invViewRotationMatrix;
 
+    /// View (camera) matrix. Transforms from world space to eye space
     Matrix4x4f viewMatrix;
+
+    /// Inverse view matrix.
     Matrix4x4f invViewMatrix;
 
+    /// Projection matrix. Transforms from eye space to clip space
     Matrix4x4f projectionMatrix;
+
+    /// Inverse projection matrix.
     Matrix4x4f invProjectionMatrix;
 
+    /// Combined model-view matrix.
     Matrix4x4f modelViewMatrix;
+
+    /// Model matrix for transforming normals.
     Matrix4x4f normalMatrix;
     
+    /// Previous frame's view matrix.
     Matrix4x4f prevViewMatrix;
+
+    /// Previous frame's model-view matrix.
     Matrix4x4f prevModelViewMatrix;
     
+    /// View frustum for culling.
     Frustum frustum;
 
+    /// Material used for rendering.
     Material material;
+
+    /// Shader used for rendering.
     Shader shader;
+
+    /// Environment options (IBL, fog, etc.).
     Environment environment;
+
+    /// Main light affecting the draw call.
     Light light;
+
+    /// Skeletal pose for GPU skinning.
     Pose pose;
 
+    /// If `false`, disables color buffer writes.
     bool colorMask;
+
+    /// If `false`, disables depth buffer writes.
     bool depthMask;
 
+    /// If `true`, enables face culling.
     bool culling;
     
+    /// Opacity value for alpha blending.
     float opacity;
 
+    /// Input color buffer texture.
     GLuint colorTexture;
+
+    /// Input depth buffer texture.
     GLuint depthTexture;
+
+    /// Input normal buffer texture.
     GLuint normalTexture;
-    GLuint pbrTexture;
-    GLuint occlusionTexture;
-    GLuint emissionTexture;
-    GLuint texcoordTexture; // used only for terrains
     
+    /// Input PBR buffer texture.
+    GLuint pbrTexture;
+
+    /// Input occlusion buffer texture.
+    GLuint occlusionTexture;
+    
+    /// Input emission buffer texture.
+    GLuint emissionTexture;
+
+    /// Input texcoord buffer texture (used only for terrains).
+    GLuint texcoordTexture;
+    
+    /// Frame timing information.
     Time time;
     
-    float localTime; // 0.0 .. 1.0
+    /// Normalized local time (0.0 .. 1.0).
+    float localTime;
 
+    /**
+     * Resets all fields of the graphics state to their default values.
+     */
     void reset()
     {
         debugColor = Color4f(0.0f, 0.0f, 0.0f, 0.0f);

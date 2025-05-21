@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,6 +25,18 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Provides reusable components for `Entity`.
+ *
+ * Components extend the functionality of entities by adding logic or
+ * behavior that can be attached to any `Entity`. This module includes
+ * components such as `PositionSync`, which synchronizes an entity's position
+ * with another entity, enabling hierarchical or dependent transformations.
+ *
+ * Copyright: Timur Gafarov 2019-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.graphics.components;
 
 import dlib.math.vector;
@@ -35,19 +47,43 @@ import dagon.core.event;
 import dagon.core.time;
 import dagon.graphics.entity;
 
-/*
- * A component that synchronizes Entity's position with other Entity
+/**
+ * A component that synchronizes an entity's position with another entity.
+ *
+ * Description:
+ * When attached, this component updates the entity's transformation so that
+ * its position is always relative to the specified parent entity. Useful for
+ * building dynamic hierarhies, when entities can switch parents in runtime.
+ * `PositionSync` intentionally doesn't take parent's rotation and scaling
+ * into account, which makes possible to implement custom logics for rotation and
+ * scaling on user side.
  */
 class PositionSync: EntityComponent
 {
+    /// The parent entity to synchronize with.
     Entity parent;
 
-    this(EventManager em, Entity e, Entity parent)
+    /**
+     * Constructs a `PositionSync` component.
+     *
+     * Params:
+     *   eventManager = The event manager.
+     *   hostEntity   = The entity to attach this component to.
+     *   parent       = The parent entity to synchronize with.
+     */
+    this(EventManager eventManager, Entity hostEntity, Entity parent)
     {
-        super(em, e);
+        super(eventManager, hostEntity);
         this.parent = parent;
     }
 
+    /**
+     * Updates the entity's transformation to match the parent's
+     * absolute position plus its own offset.
+     *
+     * Params:
+     *   time = The current frame's timing information.
+     */
     override void update(Time time)
     {
         Vector3f pos = parent.positionAbsolute + entity.position;

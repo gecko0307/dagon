@@ -25,6 +25,22 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Provides the scene graph node and component system.
+ *
+ * Description:
+ * The `dagon.graphics.entity` module provides the `Entity` class, which represents
+ * a node in the scene graph and supports hierarchical transformations, components,
+ * tweening, and rendering. Entities can be dynamic or static, cast shadows,
+ * and interact with the rendering system through various flags and material parameters.
+ * The module also defines the `EntityComponent` base class for attachable logic/rendering
+ * components, the `EntityGroup` interface for entity collections, and utility
+ * functions for transformation math.
+ *
+ * Copyright: Timur Gafarov 2019-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.graphics.entity;
 
 import std.math;
@@ -51,82 +67,193 @@ import dagon.graphics.tween;
 import dagon.graphics.world;
 import dagon.graphics.pose;
 
+/**
+ * Specifies the logical layer of an entity in the scene.
+ */
 enum EntityLayer: int
 {
+    /// Background layer.
     Background = 0,
+
+    /// Main spatial layer (default).
     Spatial = 1,
+
+    /// Foreground layer.
     Foreground = 2
 }
 
+/**
+ * Specifies the type of an entity.
+ */
 enum EntityType: int
 {
+    /// General-purpose entity.
     General = 0,
+
+    /// Terrain entity.
     Terrain = 1
 }
 
+/**
+ * Specifies the transformation mode for an entity.
+ */
 enum TransformMode: int
 {
+    /// Use translation, rotation, scaling (separate).
     TRS = 0,
+
+    /// Use a local transformation matrix directly.
     Matrix = 1
 }
 
+/**
+ * Represents a node in the scene graph.
+ *
+ * Description:
+ * Entities are spatially transformable objects that may have children,
+ * components, and a visual representation (via `Drawable`). They can be
+ * dynamic or static, cast shadows, and interact with the rendering system
+ * through various flags and material parameters.
+ * Entities form a hierarchical structure and are updated each frame
+ * as part of the world update cycle.
+ */
 class Entity: Owner, Updateable
 {
    public:
+    /// The logical layer of this entity.
     EntityLayer layer = EntityLayer.Spatial;
+
+    /// The type of this entity.
     EntityType type = EntityType.General;
     
+    /// The render layer index for sorting or batching.
     int renderLayer = 0;
     
+    /// If false, the entity is not rendered.
     bool visible = true;
+
+    /// If true, the entity casts shadows.
     bool castShadow = true;
+
+    /// Whether the entity should be treated as a solid object (for physics/collision).
     bool solid = false;
+
+    /// Indicates whether the entity can move.
     bool dynamic = true;
+
+    /// If true, the entity is treated as a decal.
     bool decal = false;
+
+    /// If true, the entity is treated as an environment probe volume (for lighting/reflections).
     bool probe = false;
+
+    /// The extents of the probe volume.
     Vector3f probeExtents = Vector3f(1.0f, 1.0f, 1.0f);
+
+    /// The falloff margin for the probe.
     float probeFalloffMargin = 0.1f;
+
+    /// If true, enable box projection for the probe volume
     bool probeUseBoxProjection = false;
+
+    /// If true, the entity is treated as transparent.
     bool transparent = false;
+
+    /// Opacity factor for rendering (0.0 = fully transparent, 1.0 = fully opaque).
     float opacity = 1.0f;
+
+   /**
+    * G-buffer mask value for deferred rendering.
+    * This value is treated as an alpha channel when rendering
+    * the entity to the G-buffer.
+    */
     float gbufferMask = 1.0f;
+
+   /**
+    * Motion blur mask value.
+    * This value is treated as an alpha channel when rendering
+    * the entity to the screen-space velocity buffer.
+    */
     float blurMask = 1.0f;
+
+   /**
+    * If `true`, shader parameters will be bound automatically
+    * in the `RenderPass` before rendering the entity.
+    * Otherwise the derived render pass should bind shader
+    * parameters.
+    */
     bool bindShaderParameters = true;
 
+    /// The world this entity belongs to.
     World world;
 
+    /// Optional parent entity in the scene graph.
     Entity parent = null;
+
+    /// List of child entities.
     Array!Entity children;
 
+    /// The attached components.
     Array!EntityComponent components;
+
+    /// Active tweens used to animate this entity.
     Array!Tween tweens;
 
+    /// Optional drawable object (visual representation) for this entity.
     Drawable drawable;
+
+    /// Optional material used for rendering.
     Material material;
 
+    /// Local position.
     Vector3f position;
+
+    /// Local rotation (quaternion).
     Quaternionf rotation;
+
+    /// Local scaling.
     Vector3f scaling;
 
+    /// Local transformation matrix.
     Matrix4x4f transformation;
+
+    /// Inverse of the local transformation matrix.
     Matrix4x4f invTransformation;
 
+    /// Final transformation matrix relative to world root.
     Matrix4x4f absoluteTransformation;
+
+    /// Inverse of the absolute transformation matrix.
     Matrix4x4f invAbsoluteTransformation;
 
+    /// Previous frame's local transformation (for motion blur).
     Matrix4x4f prevTransformation;
+
+    /// Previous frame's absolute transformation.
     Matrix4x4f prevAbsoluteTransformation;
 
+    /// The size of the entity's bounding box.
     Vector3f boundingBoxSize;
     
+    /// Transformation mode (TRS or Matrix).
     TransformMode transformMode = TransformMode.TRS;
     
+    /// Optional pose (for skinning).
     Pose pose;
 
    protected:
+
+    /// The axis-aligned bounding box.
     AABB aabb;
 
    public:
+
+    /**
+     * Constructs an entity and adds it to the world if provided.
+     *
+     * Params:
+     *   owner = The owner object.
+     */
     this(Owner owner)
     {
         super(owner);
@@ -157,39 +284,70 @@ class Entity: Owner, Updateable
         aabb = AABB(position, boundingBoxSize);
     }
 
-    void setParent(Entity e)
+    /**
+     * Sets the parent entity in the scene graph.
+     *
+     * Params:
+     *   parentEntity = The new parent entity.
+     */
+    void setParent(Entity parentEntity)
     {
         if (parent)
             parent.removeChild(this);
 
-        parent = e;
+        parent = parentEntity;
         parent.addChild(this);
     }
 
-    void addChild(Entity e)
+    /**
+     * Adds a child entity.
+     *
+     * Params:
+     *   childEntity = The child entity to add.
+     */
+    void addChild(Entity childEntity)
     {
-        if (e.parent)
-            e.parent.removeChild(e);
-        children.append(e);
-        e.parent = this;
+        if (childEntity.parent)
+            childEntity.parent.removeChild(childEntity);
+        children.append(childEntity);
+        childEntity.parent = this;
     }
 
-    void removeChild(Entity e)
+    /**
+     * Removes a child entity.
+     *
+     * Params:
+     *   childEntity = The child entity to remove.
+     */
+    void removeChild(Entity childEntity)
     {
-        children.removeFirst(e);
-        e.parent = null;
+        children.removeFirst(childEntity);
+        childEntity.parent = null;
     }
 
-    void addComponent(EntityComponent ec)
+    /**
+     * Adds a component to this entity.
+     *
+     * Params:
+     *   component = The component to add.
+     */
+    void addComponent(EntityComponent component)
     {
-        components.append(ec);
+        components.append(component);
     }
 
-    void removeComponent(EntityComponent ec)
+    /**
+     * Removes a component from this entity.
+     *
+     * Params:
+     *   component = The component to remove.
+     */
+    void removeComponent(EntityComponent component)
     {
-        components.removeFirst(ec);
+        components.removeFirst(component);
     }
     
+    /// Updates the absolute transformation matrix.
     void updateAbsoluteTransformation()
     {
         invTransformation = transformation.inverse;
@@ -216,15 +374,15 @@ class Entity: Owner, Updateable
         aabb = AABB(absoluteTransformation.translation, boundingBoxSize);
     }
 
+    /**
+     * Updates the local and absolute transformation matrices.
+     * If `transformMode` is `TransformMode.Matrix`,
+     * the transformation matrix should be updated manually when needed
+     */
     void updateTransformation()
     {
         prevTransformation = transformation;
         
-        /*
-         * If transformMode is TransformMode.Matrix,
-         * the transformation matrix should be
-         * updated manually when needed
-         */
         if (transformMode == TransformMode.TRS)
         {
             transformation =
@@ -236,6 +394,7 @@ class Entity: Owner, Updateable
         updateAbsoluteTransformation();
     }
     
+    /// Updates transformations top-down through the hierarchy (from parent to children).
     void updateTransformationTopDown()
     {
         updateTransformation();
@@ -246,6 +405,7 @@ class Entity: Owner, Updateable
         }
     }
 
+    /// Updates transformations bottom-up through the hierarchy (from child to parent).
     void updateTransformationBottomUp()
     {
         if (parent)
@@ -253,6 +413,12 @@ class Entity: Owner, Updateable
         updateTransformation();
     }
 
+    /**
+     * Updates the entity and its components for the current frame.
+     *
+     * Params:
+     *   t = The current frame's timing information.
+     */
     void update(Time t)
     {
         foreach(i, ref tween; tweens.data)
@@ -268,6 +434,7 @@ class Entity: Owner, Updateable
         }
     }
 
+    /// Releases all resources and detaches from parent and children.
     void release()
     {
         if (parent)
@@ -281,11 +448,13 @@ class Entity: Owner, Updateable
         tweens.free();
     }
 
+    /// Returns the absolute position of the entity.
     Vector3f positionAbsolute()
     {
         return absoluteTransformation.translation;
     }
 
+    /// Returns the absolute rotation of the entity.
     Quaternionf rotationAbsolute()
     {
         if (parent)
@@ -294,21 +463,25 @@ class Entity: Owner, Updateable
             return rotation;
     }
 
+    /// Translates the entity by the given vector.
     void translate(Vector3f v)
     {
         position += v;
     }
 
+    /// Translates the entity by the given vector components.
     void translate(float vx, float vy, float vz)
     {
         position += Vector3f(vx, vy, vz);
     }
 
+    /// Moves the entity forward by the given speed.
     void move(float speed)
     {
         position += transformation.forward * speed;
     }
 
+    /// Moves the entity toward a point at the given speed.
     void moveToPoint(Vector3f p, float speed)
     {
         Vector3f dir = (p - position).normalized;
@@ -319,16 +492,19 @@ class Entity: Owner, Updateable
             position += dir * d;
     }
 
+    /// Strafes (moves to the right) by the given speed.
     void strafe(float speed)
     {
         position += transformation.right * speed;
     }
 
+    /// Lifts (moves up) by the given speed.
     void lift(float speed)
     {
         position += transformation.up * speed;
     }
 
+    /// Sets the rotation using Euler angles (degrees).
     void angles(Vector3f v)
     {
         rotation =
@@ -337,11 +513,13 @@ class Entity: Owner, Updateable
             rotationQuaternion!float(Axis.z, degtorad(v.z));
     }
 
+    /// Sets the rotation using Euler angles (degrees).
     void setRotation(float x, float y, float z)
     {
         angles = Vector3f(x, y, z);
     }
 
+    /// Rotates the entity by the given Euler angles (degrees).
     void rotate(Vector3f v)
     {
         auto r =
@@ -351,81 +529,97 @@ class Entity: Owner, Updateable
         rotation *= r;
     }
 
+    /// Rotates the entity by the given Euler angles (degrees).
     void rotate(float x, float y, float z)
     {
         rotate(Vector3f(x, y, z));
     }
 
+    /// Rotates the entity around the local X axis.
     void pitch(float angle)
     {
         rotation *= rotationQuaternion!float(Axis.x, degtorad(angle));
     }
 
+    /// Rotates the entity around the local Y axis.
     void turn(float angle)
     {
         rotation *= rotationQuaternion!float(Axis.y, degtorad(angle));
     }
 
+    /// Rotates the entity around the local Z axis.
     void roll(float angle)
     {
         rotation *= rotationQuaternion!float(Axis.z, degtorad(angle));
     }
 
+    /// Scales the entity uniformly.
     void scale(float s)
     {
         scaling += Vector3f(s, s, s);
     }
 
+    /// Scales the entity non-uniformly by the given vector.
     void scale(Vector3f s)
     {
         scaling += s;
     }
 
+    /// Scales the entity along the local X axis.
     void scaleX(float s)
     {
         scaling.x += s;
     }
 
+    /// Scales the entity along the local Y axis.
     void scaleY(float s)
     {
         scaling.y += s;
     }
 
+    /// Scales the entity along the Z axis.
     void scaleZ(float s)
     {
         scaling.z += s;
     }
 
-    Vector3f direction() @property
+    /// Returns the local forward vector.
+    Vector3f direction() const @property
     {
         return transformation.forward;
     }
 
-    Vector3f right() @property
+     /// Returns the local right vector.
+    Vector3f right() const @property
     {
         return transformation.right;
     }
 
-    Vector3f up() @property
+    /// Returns the local up vector.
+    Vector3f up() const @property
     {
         return transformation.up;
     }
 
-    Vector3f directionAbsolute() @property
+    /// Returns the absolute forward vector.
+    Vector3f directionAbsolute() const @property
     {
         return absoluteTransformation.forward;
     }
 
-    Vector3f rightAbsolute() @property
+    /// Returns the absolute right vector.
+    Vector3f rightAbsolute() const @property
     {
         return absoluteTransformation.right;
     }
 
-    Vector3f upAbsolute() @property
+    /// Returns the absolute up vector.
+    Vector3f upAbsolute() const @property
     {
         return absoluteTransformation.up;
     }
 
+    /// Returns a pointer to an inactive tween, or null if none.
     Tween* getInactiveTween()
     {
         Tween* inactiveTween = null;
@@ -440,6 +634,17 @@ class Entity: Owner, Updateable
         return inactiveTween;
     }
 
+    /**
+     * Starts a position tween from one point to another.
+     *
+     * Params:
+     *   pointFrom = Starting position.
+     *   pointTo   = Ending position.
+     *   duration  = Duration in seconds.
+     *   easing    = Easing function (default: Linear).
+     * Returns:
+     *   Pointer to the tween.
+     */
     Tween* moveFromTo(Vector3f pointFrom, Vector3f pointTo, double duration, Easing easing = Easing.Linear)
     {
         Tween* existingTween = getInactiveTween();
@@ -457,6 +662,17 @@ class Entity: Owner, Updateable
         }
     }
 
+    /**
+     * Starts a rotation tween from one set of angles to another.
+     *
+     * Params:
+     *   anglesFrom = Starting angles (degrees).
+     *   anglesTo   = Ending angles (degrees).
+     *   duration   = Duration in seconds.
+     *   easing     = Easing function (default: Linear).
+     * Returns:
+     *   Pointer to the tween.
+     */
     Tween* rotateFromTo(Vector3f anglesFrom, Vector3f anglesTo, double duration, Easing easing = Easing.Linear)
     {
         Tween* existingTween = getInactiveTween();
@@ -474,6 +690,17 @@ class Entity: Owner, Updateable
         }
     }
 
+    /**
+     * Starts a scaling tween from one scale to another.
+     *
+     * Params:
+     *   sFrom   = Starting scale.
+     *   sTo     = Ending scale.
+     *   duration = Duration in seconds.
+     *   easing   = Easing function (default: Linear).
+     * Returns:
+     *   Pointer to the tween.
+     */
     Tween* scaleFromTo(Vector3f sFrom, Vector3f sTo, double duration, Easing easing = Easing.Linear)
     {
         Tween* existingTween = getInactiveTween();
@@ -491,7 +718,10 @@ class Entity: Owner, Updateable
         }
     }
 
-    AABB boundingBox() @property
+    /**
+     * Returns the entity's bounding box in world space.
+     */
+    AABB boundingBox() const @property
     {
         if (drawable)
         {
@@ -516,11 +746,13 @@ class Entity: Owner, Updateable
             return aabb;
     }
 
+    /// Destructor. Releases all resources.
     ~this()
     {
         release();
     }
 
+    /// Processes events for all attached components.
     void processEvents()
     {
         foreach(c; components)
@@ -530,34 +762,63 @@ class Entity: Owner, Updateable
     }
 }
 
+/**
+ * Base class for attachable entity components.
+ *
+ * Description:
+ * Components can implement update and render logic, and are attached to entities.
+ */
 class EntityComponent: EventListener, Updateable, Drawable
 {
+    /// The entity this component is attached to.
     Entity entity;
+
+    /// If false, the component is not rendered.
     bool visible = true;
 
-    this(EventManager em, Entity e)
+    /**
+     * Constructs an entity component and attaches it to the given entity.
+     *
+     * Params:
+     *   eventManager = The event manager.
+     *   hostEntity   = The entity to attach to.
+     */
+    this(EventManager eventManager, Entity hostEntity)
     {
-        super(em, e);
-        entity = e;
+        super(eventManager, hostEntity);
+        entity = hostEntity;
         entity.addComponent(this);
     }
 
-    // Override me
+    /// Override to implement per-frame update logic.
     void update(Time t)
     {
     }
 
-    // Override me
+    /// Override to implement rendering logic.
     void render(GraphicsState* state)
     {
     }
 }
 
+/**
+ * Interface for a group of entities.
+ * Provides an opApply for iteration.
+ */
 interface EntityGroup
 {
+    /// Iterates over all entities in the group.
     int opApply(scope int delegate(Entity) dg);
 }
 
+/**
+ * Computes the scale vector from a transformation matrix.
+ *
+ * Params:
+ *   m = The transformation matrix.
+ * Returns:
+ *   The scale as a Vector3f.
+ */
 Vector3f matrixScale(Matrix4x4f m)
 {
     float sx = Vector3f(m.a11, m.a12, m.a13).length;
