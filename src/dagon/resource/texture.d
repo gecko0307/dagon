@@ -25,6 +25,19 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Texture asset.
+ *
+ * Description:
+ * The `dagon.resource.texture` module defines the `TextureAsset` class
+ * for loading GPU textures via the asset manager. The module supports
+ * threaded loading, conversion options, persistent buffers, and integration
+ * with the virtual file system.
+ *
+ * Copyright: Timur Gafarov 2017-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.resource.texture;
 
 import std.stdio;
@@ -48,60 +61,93 @@ import dagon.core.logger;
 import dagon.graphics.texture;
 import dagon.resource.asset;
 
+/**
+ * Options for texture conversion.
+ */
 struct ConversionOptions
 {
+    /// Target width (optional).
     uint width;
+
+    /// Target height (optional).
     uint height;
-    int hint; // loader-specific
+
+    /// Loader-specific hint value.
+    int hint;
 }
 
+/**
+ * Represents a texture asset.
+ *
+ * Description:
+ * The `TextureAsset` class manages the GPU texture,
+ * optional dlib image, temporary buffer, conversion options,
+ * and loader-specific flags.
+ */
 class TextureAsset: Asset
 {
-    // GPU texture
+    /// The GPU texture object.
     Texture texture;
     
-    // dlib image
+    /// The dlib image (optional).
     SuperImage image;
     
-    // Temporary exchange buffer
+    /// Temporary exchange buffer.
     TextureBuffer buffer;
     
-    // Format-specifc options
+    /// Format-specific conversion options.
     ConversionOptions conversion;
     
-    // Set to true to keep buffer.data after sending to GPU
+    /// If `true`, keep `buffer.data` after sending to GPU.
     bool persistent = false;
     
-    // Set to true in the loader if buffer.data refers to image.data
-    // (to prevent double-free)
+    /// Set to `true` in the loader if `buffer.data` refers to `image.data` (to prevent double-free)
     bool bufferDataIsImageData = false;
     
-    // Generate mip levels if needed
+    /// If `true`, generate mip levels.
     bool generateMipmaps = true;
     
-    // Loader-specific
+    /// Loader-specific option.
     uint loaderOption = 0;
     
-    // Filename in virtual filesystem
+    /// Filename in the virtual filesystem.
     string filename;
     
-    // Filename extension
+    /// File extension.
     string extension;
 
-    this(Owner o)
+    /**
+     * Constructs a new texture asset.
+     *
+     * Params:
+     *   owner = Owner object.
+     */
+    this(Owner owner)
     {
-        super(o);
+        super(owner);
         texture = New!Texture(this);
         conversion.width = 0;
         conversion.height = 0;
         conversion.hint = 0;
     }
 
+    /// Destructor. Releases all resources.
     ~this()
     {
         release();
     }
 
+    /**
+     * Loads the thread-safe part of the texture asset (e.g., from file or stream).
+     *
+     * Params:
+     *   filename     = Asset filename.
+     *   istrm        = Input stream.
+     *   fs           = File system.
+     *   assetManager = Asset manager.
+     * Returns:
+     *   True if loading succeeded.
+     */
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager assetManager)
     {
         this.filename = filename;
@@ -126,6 +172,12 @@ class TextureAsset: Asset
         }
     }
 
+    /**
+     * Loads the thread-unsafe part of the texture asset (e.g., GPU upload).
+     *
+     * Returns:
+     *   True if loading succeeded.
+     */
     override bool loadThreadUnsafePart()
     {
         if (texture.valid)
@@ -155,6 +207,7 @@ class TextureAsset: Asset
             return false;
     }
     
+    /// Releases the temporary buffer and image data.
     void releaseBuffer()
     {
         if (image)
@@ -170,6 +223,7 @@ class TextureAsset: Asset
         }
     }
 
+    /// Releases the GPU texture and all associated resources.
     override void release()
     {
         if (texture)
@@ -179,6 +233,15 @@ class TextureAsset: Asset
     }
 }
 
+/**
+ * Loads or retrieves a texture asset from the asset manager.
+ *
+ * Params:
+ *   assetManager = The asset manager to use.
+ *   filename     = The texture filename.
+ * Returns:
+ *   The loaded or existing `TextureAsset`.
+ */
 TextureAsset textureAsset(AssetManager assetManager, string filename)
 {
     TextureAsset asset;
