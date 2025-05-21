@@ -24,6 +24,23 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * GLTF 2.0 decoder.
+ *
+ * Description:
+ * The `dagon.resource.gltf.decoder` module defines the `GLTFAsset` class
+ * for parsing and managing GLTF 2.0 scenes, meshes, materials,
+ * textures, skins, and animations. The loader supports threaded loading,
+ * base64 and bufferView image decoding, PBR material parsing, node hierarchy,
+ * skinning, and animation channels. The module also provides utility
+ * functions for converting JSON values to Dagon math types, and for querying
+ * loaded GLTF resources by names.
+ *
+ * Copyright: Timur Gafarov, Denis Feklushkin 2021-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov, Denis Feklushkin
+ */
 module dagon.resource.gltf.decoder;
 
 import std.stdio;
@@ -66,6 +83,14 @@ import dagon.resource.gltf.node;
 import dagon.resource.gltf.skin;
 import dagon.resource.gltf.animation;
 
+/**
+ * Converts a JSON array value to a `Vector3f`.
+ *
+ * Params:
+ *   value = The JSON value.
+ * Returns:
+ *   The corresponding vector.
+ */
 Vector3f asVector(JSONValue value)
 {
     Vector3f vec = Vector3f(0.0f, 0.0f, 0.0f);
@@ -74,6 +99,14 @@ Vector3f asVector(JSONValue value)
     return vec;
 }
 
+/**
+ * Converts a JSON array value to a `Matrix4x4f`.
+ *
+ * Params:
+ *   value = The JSON value.
+ * Returns:
+ *   The corresponding matrix.
+ */
 Matrix4x4f asMatrix(JSONValue value)
 {
     Matrix4x4f mat = Matrix4x4f.identity;
@@ -82,6 +115,14 @@ Matrix4x4f asMatrix(JSONValue value)
     return mat;
 }
 
+/**
+ * Converts a JSON array value to a `Quaternionf`.
+ *
+ * Params:
+ *   value = The JSON value.
+ * Returns:
+ *   The corresponding quaternion.
+ */
 Quaternionf asQuaternion(JSONValue value)
 {
     Quaternionf q = Quaternionf.identity;
@@ -90,6 +131,14 @@ Quaternionf asQuaternion(JSONValue value)
     return q;
 }
 
+/**
+ * Converts a JSON array value to a `Color4f`.
+ *
+ * Params:
+ *   value = The JSON value.
+ * Returns:
+ *   The corresponding color.
+ */
 Color4f asColor(JSONValue value)
 {
     Color4f col = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -98,9 +147,15 @@ Color4f asColor(JSONValue value)
     return col;
 }
 
+/**
+ * Represents a GLTF scene, containing a set of root nodes.
+ */
 class GLTFScene: Owner
 {
+    /// Scene name.
     string name;
+
+    /// Root nodes in the scene.
     Array!GLTFNode nodes;
     
     this(Owner o)
@@ -114,6 +169,15 @@ class GLTFScene: Owner
     }
 }
 
+/**
+ * Asset class for loading and managing GLTF 2.0 resources.
+ *
+ * Description:
+ * Loads buffers, buffer views, accessors, images, textures,
+ * materials, meshes, nodes, skins, animations, and scenes
+ * from a *.gltf + *.bin pair.
+ * *.glb files are not supported.
+ */
 class GLTFAsset: Asset, TriangleSet
 {
     AssetManager assetManager;
@@ -142,6 +206,17 @@ class GLTFAsset: Asset, TriangleSet
         release();
     }
     
+    /**
+     * Loads the thread-safe part of the GLTF asset (parsing JSON, loading buffers, images, etc.).
+     *
+     * Params:
+     *   filename = The GLTF filename.
+     *   istrm    = Input stream for the GLTF file.
+     *   fs       = File system.
+     *   mngr     = Asset manager.
+     * Returns:
+     *   true if loading succeeded.
+     */
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
     {
         debug logDebug("Loading ", filename);
@@ -997,6 +1072,7 @@ class GLTFAsset: Asset, TriangleSet
         }
     }
     
+    /// Loads the thread-unsafe part (OpenGL resource creation).
     override bool loadThreadUnsafePart()
     {
         foreach(me; meshes)
@@ -1013,6 +1089,7 @@ class GLTFAsset: Asset, TriangleSet
         return true;
     }
     
+    /// Marks entities as transparent if their material uses transparency.
     void markTransparentEntities()
     {
         foreach(node; nodes)
@@ -1032,6 +1109,7 @@ class GLTFAsset: Asset, TriangleSet
         }
     }
     
+    /// Releases all resources associated with the asset.
     override void release()
     {
         foreach(b; buffers)
@@ -1077,6 +1155,14 @@ class GLTFAsset: Asset, TriangleSet
         str.free();
     }
     
+    /**
+     * Iterates over all triangles in the nodes.
+     *
+     * Params:
+     *   dg = Delegate to call for each triangle.
+     * Returns:
+     *   0 if completed, nonzero if interrupted.
+     */
     int opApply(scope int delegate(Triangle t) dg)
     {
         int result = 0;
@@ -1154,6 +1240,7 @@ class GLTFAsset: Asset, TriangleSet
         return result;
     }
     
+    /// Finds a node by name.
     GLTFNode node(string name)
     {
         GLTFNode res;
@@ -1170,6 +1257,7 @@ class GLTFAsset: Asset, TriangleSet
         return res;
     }
     
+    /// Finds a material by name.
     Material material(string name)
     {
         Material res;
@@ -1186,6 +1274,7 @@ class GLTFAsset: Asset, TriangleSet
         return res;
     }
     
+    /// Finds a mesh by name.
     GLTFMesh mesh(string name)
     {
         GLTFMesh res;
@@ -1202,6 +1291,7 @@ class GLTFAsset: Asset, TriangleSet
         return res;
     }
     
+    /// Finds a skin by name.
     GLTFSkin skin(string name)
     {
         GLTFSkin res;
@@ -1218,6 +1308,7 @@ class GLTFAsset: Asset, TriangleSet
         return res;
     }
     
+    /// Finds an animation by name.
     GLTFAnimation animation(string name)
     {
         GLTFAnimation res;
@@ -1234,6 +1325,7 @@ class GLTFAsset: Asset, TriangleSet
         return res;
     }
     
+    /// Finds a scene by name.
     GLTFScene scene(string name)
     {
         GLTFScene res;

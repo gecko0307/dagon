@@ -24,6 +24,21 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * GLTF 2.0 accessor representation.
+ *
+ * Description:
+ * The `dagon.resource.gltf.accessor` module defines the `GLTFAccessor` class,
+ * which describes a typed view into a GLTF buffer view, including
+ * data type, component type, count, and byte offset. Accessors are used to
+ * interpret raw buffer data as vectors, matrices, or scalars for mesh attributes,
+ * skinning, and animation.
+ *
+ * Copyright: Timur Gafarov, Denis Feklushkin 2021-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov, Denis Feklushkin
+ */
 module dagon.resource.gltf.accessor;
 
 import std.stdio;
@@ -33,6 +48,9 @@ import dlib.core.ownership;
 import dagon.core.bindings;
 import dagon.resource.gltf.bufferview;
 
+/**
+ * GLTF accessor data types.
+ */
 enum GLTFDataType
 {
     Undefined,
@@ -45,15 +63,37 @@ enum GLTFDataType
     Mat4
 }
 
+/**
+ * Represents a GLTF accessor, describing a typed view into a buffer view.
+ */
 class GLTFAccessor: Owner
 {
+    /// The buffer view this accessor references.
     GLTFBufferView bufferView;
+
+    /// The type of data (scalar, vector, matrix).
     GLTFDataType dataType;
+
+    /// Number of components per element.
     uint numComponents;
+
+    /// OpenGL enum for the component type (e.g., GL_FLOAT).
     GLenum componentType;
+
+    /// Number of elements.
     uint count;
+
+    /// Offset in bytes from the start of the buffer view.
     uint byteOffset;
     
+    /**
+     * Returns a typed slice of the accessor's data.
+     *
+     * Params:
+     *   T = The element type to interpret the data as.
+     * Returns:
+     *   A slice of type `T[]` covering the accessor's data.
+     */
     T[] getSlice(T)() const @nogc
     {
         assert(bufferView.stride == T.sizeof || bufferView.stride == 0);
@@ -61,9 +101,20 @@ class GLTFAccessor: Owner
         return sliceStart[0..count];
     }
 
-    this(GLTFBufferView bufferView, GLTFDataType dataType, GLenum componentType, uint count, uint byteOffset, Owner o)
+    /**
+     * Constructs a GLTFAccessor.
+     *
+     * Params:
+     *   bufferView    = The buffer view to reference.
+     *   dataType      = The GLTF data type.
+     *   componentType = OpenGL enum for the component type.
+     *   count         = Number of elements.
+     *   byteOffset    = Offset in bytes from the start of the buffer view.
+     *   owner         = Owner object.
+     */
+    this(GLTFBufferView bufferView, GLTFDataType dataType, GLenum componentType, uint count, uint byteOffset, Owner owner)
     {
-        super(o);
+        super(owner);
         
         if (bufferView is null)
             return;
@@ -87,6 +138,7 @@ class GLTFAccessor: Owner
         }
     }
     
+    /// Destructor.
     ~this()
     {
     }

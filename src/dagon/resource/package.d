@@ -28,8 +28,9 @@ DEALINGS IN THE SOFTWARE.
 /**
  * Main entry point for Dagon's asset management system.
  *
+ * Description:
  * The `dagon.resource` package publicly imports an asset manager and all core
- * resource modules, including binary and text assets, texture asset, image loaders,
+ * resource modules, including binary and text assets, texture asset, image decoders,
  * GLTF and OBJ loaders. This package provides a unified interface for loading,
  * managing, and accessing all types of external resources supported by Dagon.
  *
