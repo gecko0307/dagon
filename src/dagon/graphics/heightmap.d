@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018-2022 Timur Gafarov
+Copyright (c) 2018-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,6 +25,19 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Provides interfaces and implementations for heightmap data sources.
+ *
+ * The `dagon.graphics.heightmap` module defines the `Heightmap` interface
+ * for querying height values at arbitrary coordinates, and provides
+ * implementations such as `ImageHeightmap` (using a grayscale image)
+ * and `OpenSimplexHeightmap` (using procedural noise).
+ * Heightmaps are used for terrain rendering and collision detection.
+ *
+ * Copyright: Timur Gafarov 2018-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.graphics.heightmap;
 
 import std.math;
@@ -35,23 +48,65 @@ import dlib.image.image;
 
 import dagon.graphics.opensimplex;
 
+/**
+ * Interface for heightmap data sources.
+ * Implement this interface to provide height values for terrain or
+ * procedural geometry.
+ */
 interface Heightmap
 {
+    /**
+     * Returns the height value at the given (x, z) coordinates.
+     *
+     * Params:
+     *   x = X coordinate (normalized or world space).
+     *   z = Z coordinate (normalized or world space).
+     * Returns:
+     *   The height value at the specified coordinates.
+     */
     float getHeight(float x, float z);
 }
 
+/**
+ * Heightmap implementation based on a grayscale image.
+ *
+ * Description:
+ * Samples height values from a `SuperImage` using bilinear
+ * interpolation and a scale factor.
+ */
 class ImageHeightmap: Owner, Heightmap
 {
+    /// The source image.
     SuperImage img;
+
+    /// Height scale factor.
     float scale;
 
-    this(SuperImage img, float scale, Owner o)
+    /**
+     * Constructs an image-based heightmap.
+     *
+     * Params:
+     *   img   = The source image. Its R-channel is used as a height source.
+     *   scale = Height scale factor.
+     *   owner = Owner object for memory/resource management.
+     */
+    this(SuperImage img, float scale, Owner owner)
     {
-        super(o);
+        super(owner);
         this.img = img;
         this.scale = scale;
     }
 
+    /**
+     * Returns the height value at the given (x, z) coordinates
+     * multiplied by the `scale` parameter.
+     *
+     * Params:
+     *   x = X coordinate (normalized 0..1).
+     *   z = Z coordinate (normalized 0..1).
+     * Returns:
+     *   The scaled height value.
+     */
     float getHeight(float x, float z)
     {
         return img.bilinearPixel(
@@ -60,12 +115,19 @@ class ImageHeightmap: Owner, Heightmap
     }
 }
 
+/**
+ * Heightmap implementation using procedural OpenSimplex noise.
+ * Generates smooth, tileable height values using multiple noise layers.
+ */
 class OpenSimplexHeightmap: Owner, Heightmap
 {
+     /// The OpenSimplex noise generator.
     OpenSimplexNoise!float noise;
+
+    /// If true, generates tileable noise.
     bool tiling = true;
 
-    // TODO: make customizeable
+    /// Scale and amplitude for each noise layer.
     float[2][3] scaleLayers =
     [
         [1.0, 15.0],
@@ -73,13 +135,28 @@ class OpenSimplexHeightmap: Owner, Heightmap
         [19.4, 15.0],
     ];
 
-    this(Owner o)
+    /**
+     * Constructs a procedural OpenSimplex heightmap.
+     *
+     * Params:
+     *   owner = Owner object.
+     */
+    this(Owner owner)
     {
-        super(o);
+        super(owner);
         noise = New!(OpenSimplexNoise!float)(this);
     }
 
-    float getHeight(float s, float t)
+    /**
+     * Returns the height value at the given (x, z) coordinates.
+     *
+     * Params:
+     *   x = X coordinate (normalized 0..1).
+     *   z = Z coordinate (normalized 0..1).
+     * Returns:
+     *   The height value.
+     */
+    float getHeight(float x, float z)
     {
         float multiplier = 1.0f / (2.0f * PI);
         
@@ -88,16 +165,16 @@ class OpenSimplexHeightmap: Owner, Heightmap
         {
             if (tiling)
             {
-                float nx = cos(s * 2.0f * PI) * multiplier;
-                float ny = cos(t * 2.0f * PI) * multiplier;
-                float nz = sin(s * 2.0f * PI) * multiplier;
-                float nw = sin(t * 2.0f * PI) * multiplier;
+                float nx = cos(x * 2.0f * PI) * multiplier;
+                float ny = cos(z * 2.0f * PI) * multiplier;
+                float nz = sin(x * 2.0f * PI) * multiplier;
+                float nw = sin(z * 2.0f * PI) * multiplier;
                 
                 y += noise.eval(nx * psl[0], ny * psl[0], nz * psl[0], nw * psl[0]) * psl[1];
             }
             else
             {
-                y += noise.eval(s * psl[0], t * psl[0]) * psl[1];
+                y += noise.eval(x * psl[0], z * psl[0]) * psl[1];
             }
         }
         return y;

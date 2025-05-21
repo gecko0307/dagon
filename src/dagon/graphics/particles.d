@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2022 Timur Gafarov
+Copyright (c) 2017-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,6 +25,23 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * A particle system.
+ *
+ * The `dagon.graphics.particles` module defines the `ParticleSystem` class
+ * for simulating and rendering particles, as well as supporting
+ * components such as `Emitter` (for spawning particles) and various
+ * `ForceField` types (for affecting particle motion and color). The system
+ * supports attractors, deflectors, vortices, black holes, and
+ * color changers, as well as per-particle properties like position,
+ * velocity, acceleration, color, scale, rotation, and lifetime.
+ * Particle systems are useful for effects such as fire, smoke, sparks,
+ * magic, and environmental phenomena.
+ *
+ * Copyright: Timur Gafarov 2017-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.graphics.particles;
 
 import std.math;
@@ -51,6 +68,9 @@ import dagon.graphics.state;
 import dagon.graphics.material;
 import dagon.graphics.mesh;
 
+/**
+ * Represents a single particle with properties for simulation and rendering.
+ */
 struct Particle
 {
     Color4f startColor;
@@ -69,26 +89,47 @@ struct Particle
     bool active;
 }
 
+/**
+ * Abstract base class for force fields that affect particles.
+ * Force fields can modify particle acceleration, velocity, or color.
+ */
 abstract class ForceField: EntityComponent
 {
+    /// If true, the force field is active.
     bool active = true;
 
-    this(Entity e, ParticleSystem psys)
+    /**
+     * Constructs a force field and registers it with the particle system.
+     *
+     * Params:
+     *   hostEntity       = The entity this force field is attached to.
+     *   particleSystem = The particle system to affect.
+     */
+    this(Entity hostEntity, ParticleSystem particleSystem)
     {
-        super(psys.eventManager, e);
-        psys.addForceField(this);
+        super(particleSystem.eventManager, hostEntity);
+        particleSystem.addForceField(this);
     }
 
+    /**
+     * Applies the force field's effect to a particle.
+     *
+     * Params:
+     *   p = The reference to a particle to affect.
+     */
     void affect(ref Particle p);
 }
 
+/**
+ * Attractor force field that pulls particles toward its position.
+ */
 class Attractor: ForceField
 {
     float g;
 
-    this(Entity e, ParticleSystem psys, float magnitude)
+    this(Entity hostEntity, ParticleSystem particleSystem, float magnitude)
     {
-        super(e, psys);
+        super(hostEntity, particleSystem);
         g = magnitude;
     }
 
@@ -100,13 +141,16 @@ class Attractor: ForceField
     }
 }
 
+/**
+ * Deflector force field that pushes particles away from its position.
+ */
 class Deflector: ForceField
 {
     float g;
 
-    this(Entity e, ParticleSystem psys, float magnitude)
+    this(Entity hostEntity, ParticleSystem particleSystem, float magnitude)
     {
-        super(e, psys);
+        super(hostEntity, particleSystem);
         g = magnitude;
     }
 
@@ -118,14 +162,17 @@ class Deflector: ForceField
     }
 }
 
+/**
+ * Vortex force field that imparts tangential and normal forces to particles.
+ */
 class Vortex: ForceField
 {
     float g1;
     float g2;
 
-    this(Entity e, ParticleSystem psys, float tangentMagnitude, float normalMagnitude)
+    this(Entity hostEntity, ParticleSystem particleSystem, float tangentMagnitude, float normalMagnitude)
     {
-        super(e, psys);
+        super(hostEntity, particleSystem);
         g1 = tangentMagnitude;
         g2 = normalMagnitude;
     }
@@ -144,14 +191,17 @@ class Vortex: ForceField
     }
 }
 
+/**
+ * Black hole force field that absorbs particles within a threshold distance.
+ */
 class BlackHole: ForceField
 {
     float g;
     float threshold = 0.01f;
 
-    this(Entity e, ParticleSystem psys, float magnitude)
+    this(Entity hostEntity, ParticleSystem particleSystem, float magnitude)
     {
-        super(e, psys);
+        super(hostEntity, particleSystem);
         g = magnitude;
     }
 
@@ -173,15 +223,18 @@ class BlackHole: ForceField
     }
 }
 
+/**
+ * Force field that changes the color of particles within a radius.
+ */
 class ColorChanger: ForceField
 {
     Color4f color;
     float outerRadius;
     float innerRadius;
 
-    this(Entity e, ParticleSystem psys, Color4f color, float outerRadius, float innerRadius)
+    this(Entity hostEntity, ParticleSystem particleSystem, Color4f color, float outerRadius, float innerRadius)
     {
-        super(e, psys);
+        super(hostEntity, particleSystem);
         this.color = color;
         this.outerRadius = outerRadius;
         this.innerRadius = innerRadius;
@@ -197,6 +250,10 @@ class ColorChanger: ForceField
     }
 }
 
+/**
+ * Component that emits and manages a set of particles.
+ * Controls emission parameters, initial particle properties, and material.
+ */
 class Emitter: EntityComponent
 {
     Particle[] particles;
@@ -229,11 +286,19 @@ class Emitter: EntityComponent
 
     Entity particleEntity;
 
-    this(Entity e, ParticleSystem psys, uint numParticles)
+    /**
+     * Constructs an emitter with a given number of particles.
+     *
+     * Params:
+     *   hostEntity     = The entity this emitter is attached to.
+     *   particleSystem = The particle system to register with.
+     *   numParticles   = Number of particles to manage.
+     */
+    this(Entity hostEntity, ParticleSystem particleSystem, uint numParticles)
     {
-        super(psys.eventManager, e);
+        super(particleSystem.eventManager, hostEntity);
 
-        psys.addEmitter(this);
+        particleSystem.addEmitter(this);
 
         particles = New!(Particle[])(numParticles);
         foreach(ref p; particles)
@@ -247,6 +312,7 @@ class Emitter: EntityComponent
         Delete(particles);
     }
 
+    /// Resets a particle to its initial state.
     void resetParticle(ref Particle p)
     {
         Vector3f posAbsolute = entity.positionAbsolute;
@@ -292,6 +358,13 @@ class Emitter: EntityComponent
     }
 }
 
+/**
+ * Particle system component for simulating and rendering particles.
+ *
+ * Description:
+ * Manages a set of emitters and force fields, updates particles each frame,
+ * and renders them as camera-facing billboards.
+ */
 class ParticleSystem: EntityComponent
 {
     EventManager eventManager;
@@ -314,9 +387,16 @@ class ParticleSystem: EntityComponent
 
     bool useMotionBlur = true;
 
-    this(EventManager eventManager, Entity e)
+    /**
+     * Constructs a particle system for the given entity.
+     *
+     * Params:
+     *   eventManager = The event manager.
+     *   hostEntity   = The entity to attach to.
+     */
+    this(EventManager eventManager, Entity hostEntity)
     {
-        super(eventManager, e);
+        super(eventManager, hostEntity);
         this.eventManager = eventManager;
 
         vertices[0] = Vector3f(-0.5f, 0.5f, 0);
@@ -370,16 +450,19 @@ class ParticleSystem: EntityComponent
         forceFields.free();
     }
 
+    /// Adds a force field to the system.
     void addForceField(ForceField ff)
     {
         forceFields.append(ff);
     }
 
+    /// Adds an emitter to the system.
     void addEmitter(Emitter em)
     {
         emitters.append(em);
     }
 
+    /// Updates a single particle.
     void updateParticle(Emitter e, ref Particle p, double dt)
     {
         p.time += dt;
@@ -408,6 +491,7 @@ class ParticleSystem: EntityComponent
         p.color.a = lerp(e.startColor.a, e.endColor.a, t);
     }
 
+    /// Updates all particles and emitters.
     override void update(Time t)
     {
         haveParticlesToDraw = false;
@@ -433,6 +517,7 @@ class ParticleSystem: EntityComponent
         }
     }
 
+    /// Renders all active particles as billboards.
     override void render(GraphicsState* state)
     {
         if (haveParticlesToDraw)
@@ -457,6 +542,7 @@ class ParticleSystem: EntityComponent
         }
     }
 
+    /// Renders a single billboard particle.
     void renderBillboardParticle(Emitter e, ref Particle p, GraphicsState* state)
     {
         Matrix4x4f trans = translationMatrix(p.position);
@@ -504,9 +590,17 @@ class ParticleSystem: EntityComponent
     }
 }
 
-bool entityIsParticleSystem(Entity e)
+/**
+ * Utility function to check if an entity is a particle system.
+ *
+ * Params:
+ *   entity = The entity to check.
+ * Returns:
+ *   `true` if the entity contains a `ParticleSystem` component.
+ */
+bool entityIsParticleSystem(Entity entity)
 {
-    foreach(comp; e.components.data)
+    foreach(comp; entity.components.data)
     {
         ParticleSystem psys = cast(ParticleSystem)comp;
         if (psys)

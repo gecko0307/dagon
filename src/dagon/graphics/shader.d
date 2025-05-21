@@ -25,6 +25,19 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Provides classes and utilities for OpenGL shader management.
+ *
+ * The `dagon.graphics.shader` module defines the `Shader` class for managing
+ * OpenGL shader programs, uniform and subroutine parameters, and binding logic.
+ * The module also includes `ShaderProgram` for program compilation/linking,
+ * `BaseShaderParameter` and `ShaderParameter` for uniform management, and
+ * `ShaderSubroutine` for subroutine selection.
+ *
+ * Copyright: Timur Gafarov 2018-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.graphics.shader;
 
 import core.stdc.string;
@@ -83,18 +96,21 @@ class MappedList(T): Owner
 }
 
 /**
-   A shader program class that can be shared between multiple Shaders.
-   TODO: cache program binary
+ * A shader program class that can be shared between multiple `Shader` instances.
+ * Handles compilation and linking of vertex and fragment shaders, and manages OpenGL program objects.
  */
 class ShaderProgram: Owner
 {
+    // TODO: cache program binary
+
     immutable GLuint program;
     GLsizei numVertexSubroutines;
     GLsizei numFragmentSubroutines;
 
-    this(string vertexShaderSrc, string fragmentShaderSrc, Owner o)
+    /// Compiles and links a shader program from source.
+    this(string vertexShaderSrc, string fragmentShaderSrc, Owner owner)
     {
-        super(o);
+        super(owner);
 
         GLuint vert = compileShader(vertexShaderSrc, ShaderStage.vertex);
         GLuint frag = compileShader(fragmentShaderSrc, ShaderStage.fragment);
@@ -111,15 +127,6 @@ class ShaderProgram: Owner
                 GL_FRAGMENT_SHADER,
                 GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS,
                 &numFragmentSubroutines);
-            
-            /*
-            debug
-            {
-                logDebug("Program ", program, ":");
-                logDebug("(vertex)   GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS: ", numVertexSubroutines);
-                logDebug("(fragment) GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS: ", numFragmentSubroutines);
-            }
-            */
             
             /*
             // Get the size of the binary
@@ -140,11 +147,13 @@ class ShaderProgram: Owner
         }
     }
 
+    /// Binds the shader program for use.
     void bind()
     {
         glUseProgram(program);
     }
 
+    /// Unbinds the shader program.
     void unbind()
     {
         glUseProgram(0);
@@ -152,7 +161,8 @@ class ShaderProgram: Owner
 }
 
 /**
-   A shader class that wraps OpenGL shader creation and uniform initialization.
+ * Abstract base class for shader parameters (uniforms and subroutines).
+ * Stores parameter name, location, and binding logic.
  */
 abstract class BaseShaderParameter: Owner
 {
@@ -161,6 +171,7 @@ abstract class BaseShaderParameter: Owner
     GLint location;
     bool autoBind = true;
 
+    /// Initializes the uniform location.
     this(Shader shader, string name)
     {
         super(shader);
@@ -168,8 +179,13 @@ abstract class BaseShaderParameter: Owner
         this.name = name;
     }
 
+    /// Initializes the uniform location.
     void initUniform();
+
+    /// Binds the parameter value to the shader.
     void bind();
+
+    /// Unbinds the parameter.
     void unbind();
 }
 
@@ -179,6 +195,10 @@ enum ShaderType
     Fragment
 }
 
+/**
+ * Represents a shader subroutine parameter.
+ * Allows selection of subroutine implementations for vertex or fragment shaders.
+ */
 class ShaderSubroutine: BaseShaderParameter
 {
     ShaderType shaderType;
@@ -187,6 +207,7 @@ class ShaderSubroutine: BaseShaderParameter
     String _name;
     String subroutineName;
 
+    /// Creates a subroutine parameter for the given shader and type.
     this(Shader shader, ShaderType shaderType, string name)
     {
         super(shader, name);
@@ -195,6 +216,7 @@ class ShaderSubroutine: BaseShaderParameter
         initUniform();
     }
 
+    /// Creates a subroutine parameter with a specific subroutine name.
     this(Shader shader, ShaderType shaderType, string name, string subroutineName)
     {
         super(shader, name);
@@ -204,6 +226,7 @@ class ShaderSubroutine: BaseShaderParameter
         initUniform();
     }
     
+    /// Destructor. Frees all allocated resources.
     ~this()
     {
         _name.free();
@@ -226,6 +249,7 @@ class ShaderSubroutine: BaseShaderParameter
         }
     }
     
+    /// Gets the subroutine index for a given name.
     GLuint getIndex(string subrName)
     {
         auto name = String(subrName);
@@ -238,6 +262,7 @@ class ShaderSubroutine: BaseShaderParameter
         return index;
     }
 
+    /// Binds the subroutine index.
     override void bind()
     {
         if (shaderType == ShaderType.Vertex)
@@ -252,11 +277,16 @@ class ShaderSubroutine: BaseShaderParameter
         }
     }
 
+    /// Unbinds the subroutine (no-op).
     override void unbind()
     {
     }
 }
 
+/**
+ * Represents a shader uniform parameter of type `T`.
+ * Supports binding values, references, or callbacks for automatic updates.
+ */
 class ShaderParameter(T): BaseShaderParameter
     if (is(T == bool) ||
         is(T == int) ||
@@ -272,6 +302,7 @@ class ShaderParameter(T): BaseShaderParameter
     T value;
     T delegate() callback;
     
+    /// Creates a parameter with a default value.
     this(Shader shader, string name)
     {
         super(shader, name);
@@ -281,6 +312,7 @@ class ShaderParameter(T): BaseShaderParameter
         initUniform();
     }
 
+    /// Creates a parameter bound to a reference.
     this(Shader shader, string name, T* source)
     {
         super(shader, name);
@@ -289,6 +321,7 @@ class ShaderParameter(T): BaseShaderParameter
         initUniform();
     }
 
+    /// Creates a parameter with a specific value.
     this(Shader shader, string name, T value)
     {
         super(shader, name);
@@ -298,6 +331,7 @@ class ShaderParameter(T): BaseShaderParameter
         initUniform();
     }
 
+    /// Creates a parameter with a callback for dynamic updates.
     this(Shader shader, string name, T delegate() callback)
     {
         super(shader, name);
@@ -306,33 +340,39 @@ class ShaderParameter(T): BaseShaderParameter
         initUniform();
     }
     
+    /// Sets the parameter value.
     void set(T v)
     {
         value = v;
         source = null;
     }
     
+    /// Sets the parameter reference.
     void set(T* src)
     {
         source = src;
     }
     
+    /// Assigns a value to the parameter.
     void opAssign(T v)
     {
         value = v;
         source = null;
     }
     
+    /// Assigns a reference to the parameter.
     void opAssign(T* src)
     {
         source = src;
     }
 
+    /// Initializes the uniform location.
     override void initUniform()
     {
         location = glGetUniformLocation(shader.program.program, toStringz(name));
     }
 
+    /// Binds the parameter value to the shader.
     override void bind()
     {
         if (callback)
@@ -374,12 +414,19 @@ class ShaderParameter(T): BaseShaderParameter
         }
     }
 
+    /// Unbinds the parameter (no-op).
     override void unbind()
     {
-        //TODO
     }
 }
 
+/**
+ * Base shader class.
+ *
+ * Description:
+ * Manages a shader program, uniform and subroutine parameters, and provides
+ * methods for parameter creation, binding, and validation.
+ */
 class Shader: Owner
 {
     ShaderProgram program;
@@ -387,13 +434,15 @@ class Shader: Owner
     GLuint[] vertexSubroutineIndices;
     GLuint[] fragmentSubroutineIndices;
 
-    this(ShaderProgram program, Owner o)
+    /// Constructs a shader from a program.
+    this(ShaderProgram program, Owner owner)
     {
-        super(o);
+        super(owner);
         this.program = program;
         this.parameters = New!(MappedList!BaseShaderParameter)(this);
     }
 
+    /// Loads shader source code from a file, supporting `#include` directives.
     static String load(string filename)
     {
         if (!exists(filename))
@@ -449,6 +498,7 @@ class Shader: Owner
         return outputText;
     }
     
+    /// Creates a subroutine parameter.
     ShaderSubroutine createParameterSubroutine(string name, ShaderType shaderType)
     {
         if (name in parameters.indices)
@@ -471,6 +521,7 @@ class Shader: Owner
         }
     }
 
+    /// Sets a subroutine parameter with a specific subroutine name.
     ShaderSubroutine setParameterSubroutine(string name, ShaderType shaderType, string subroutineName)
     {
         if (name in parameters.indices)
@@ -495,6 +546,7 @@ class Shader: Owner
         }
     }
     
+    /// Creates a uniform parameter of type `T`.
     ShaderParameter!T createParameter(T)(string name)
     {
         if (name in parameters.indices)
@@ -515,6 +567,7 @@ class Shader: Owner
         }
     }
 
+    /// Sets a uniform parameter of type `T` to a value.
     ShaderParameter!T setParameter(T)(string name, T val)
     {
         if (name in parameters.indices)
@@ -538,6 +591,7 @@ class Shader: Owner
         }
     }
 
+    /// Sets a uniform parameter of type `T` to a reference.
     ShaderParameter!T setParameterRef(T)(string name, ref T val)
     {
         if (name in parameters.indices)
@@ -560,6 +614,7 @@ class Shader: Owner
         }
     }
 
+    /// Sets a uniform parameter of type `T` to a callback.
     ShaderParameter!T setParameterCallback(T)(string name, T delegate() val)
     {
         if (name in parameters.indices)
@@ -582,6 +637,7 @@ class Shader: Owner
         }
     }
 
+    /// Gets a parameter by name.
     BaseShaderParameter getParameter(string name)
     {
         if (name in parameters.indices)
@@ -595,6 +651,7 @@ class Shader: Owner
         }
     }
 
+    /// Gets the value of a parameter by name.
     T getParameterValue(T)(string name)
     {
         if (name in parameters.indices)
@@ -618,16 +675,19 @@ class Shader: Owner
         }
     }
 
+    /// Binds the underlying shader program.
     void bind()
     {
         program.bind();
     }
 
+    /// Unbinds the underlying shader program.
     void unbind()
     {
         program.unbind();
     }
 
+    /// Binds all parameters and subroutines.
     void bindParameters(GraphicsState* state)
     {
         if (program.numVertexSubroutines > 0 && 
@@ -653,6 +713,7 @@ class Shader: Owner
         debug validate();
     }
 
+    /// Unbinds all parameters.
     void unbindParameters(GraphicsState* state)
     {
         foreach(v; parameters.data)
@@ -662,6 +723,7 @@ class Shader: Owner
         }
     }
 
+    /// Validates the shader program.
     void validate()
     {
         glValidateProgram(program.program);
@@ -685,6 +747,7 @@ class Shader: Owner
         assert(status == GL_TRUE, "Shader program validation failed");
     }
     
+    /// Destructor. Releases allocated resources.
     ~this()
     {
         if (vertexSubroutineIndices.length)
