@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018-2022 Timur Gafarov
+Copyright (c) 2018-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,6 +25,20 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * A screen-aligned quad mesh for post-processing and fullscreen effects.
+ *
+ * Description:
+ * The `dagon.graphics.screensurface` module defines the `ScreenSurface` class,
+ * which creates and manages a fullscreen quad mesh with vertex and texture
+ * coordinates, OpenGL buffers, and rendering logic. This is typically used
+ * for post-processing passes, screen-space effects, and rendering
+ * to the backbuffer or offscreen targets.
+ *
+ * Copyright: Timur Gafarov 2018-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.graphics.screensurface;
 
 import dlib.core.ownership;
@@ -35,20 +49,46 @@ import dagon.core.bindings;
 import dagon.graphics.drawable;
 import dagon.graphics.state;
 
+/**
+ * A drawable screen-aligned quad for fullscreen rendering and post-processing.
+ *
+ * Description:
+ * The `ScreenSurface` class manages vertex and texture coordinate buffers,
+ * OpenGL VAO/VBO/EBO, and provides a render method for drawing the quad.
+ * Useful for post-processing, compositing, and screen-space effects.
+ */
 class ScreenSurface: Owner, Drawable
 {
+    /// Quad vertex positions in normalized device coordinates.
     Vector2f[4] vertices;
+
+    /// Quad texture coordinates.
     Vector2f[4] texcoords;
+
+    /// Triangle indices for the quad.
     uint[3][2] indices;
     
+    /// OpenGL vertex array object.
     GLuint vao = 0;
+
+    /// OpenGL vertex buffer object for positions.
     GLuint vbo = 0;
+
+    /// OpenGL vertex buffer object for texture coordinates.
     GLuint tbo = 0;
+
+    /// OpenGL element array object for indices.
     GLuint eao = 0;
     
-    this(Owner o)
+    /**
+     * Constructs a screen surface quad and initializes OpenGL buffers.
+     *
+     * Params:
+     *   owner = The owner object.
+     */
+    this(Owner owner)
     {
-        super(o);
+        super(owner);
         
         vertices[0] = Vector2f(0, 0);
         vertices[1] = Vector2f(0, 1);
@@ -95,6 +135,7 @@ class ScreenSurface: Owner, Drawable
         glBindVertexArray(0);
     }
     
+    /// Destructor. Releases all OpenGL resources.
     ~this()
     {
         glDeleteVertexArrays(1, &vao);
@@ -103,10 +144,12 @@ class ScreenSurface: Owner, Drawable
         glDeleteBuffers(1, &eao);
     }
     
-    void update(double dt)
-    {
-    }
-    
+    /**
+     * Renders the screen-aligned quad using the provided graphics pipeline state.
+     *
+     * Params:
+     *   state = Pointer to the current graphics pipeline state.
+     */
     void render(GraphicsState* state)
     {
         glDisable(GL_DEPTH_TEST);

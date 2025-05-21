@@ -25,6 +25,21 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Utilities for compiling and linking OpenGL shaders.
+ *
+ * Description:
+ * The `dagon.graphics.shaderloader` module defines functions for
+ * compiling individual shader stages from source code, linking
+ * multiple shaders into a program, and checking compilation/linking
+ * status with detailed logging. The module supports all standard OpenGL
+ * shader stages, including vertex, tessellation control/evaluation, geometry,
+ * fragment, and (if supported) compute shaders.
+ *
+ * Copyright: dayllenger 2019-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: dayllenger
+ */
 module dagon.graphics.shaderloader;
 
 import std.stdio;
@@ -34,16 +49,38 @@ import dlib.math.utils: min2;
 import dagon.core.bindings;
 import dagon.core.logger;
 
+/**
+ * Enumerates supported OpenGL shader stages.
+ */
 enum ShaderStage: ubyte
 {
+    /// Vertex shader stage.
     vertex = 1,
+
+    /// Tessellation control shader stage.
     tessControl = 2,
+
+    /// Tessellation evaluation shader stage.
     tessEval = 4,
+
+    /// Geometry shader stage.
     geometry = 8,
+
+    /// Fragment shader stage.
     fragment = 16,
+
+    /// Compute shader stage (if supported).
     compute = 32
 }
 
+/**
+ * Converts a `ShaderStage` to the corresponding OpenGL enum value.
+ *
+ * Params:
+ *   stage = The shader stage.
+ * Returns:
+ *   The OpenGL GLenum for the shader stage.
+ */
 private GLenum shaderStageToGLenum(ShaderStage stage)
 {
     final switch (stage) with(ShaderStage)
@@ -60,7 +97,15 @@ private GLenum shaderStageToGLenum(ShaderStage stage)
     }
 }
 
-/// Compile single shader from source
+/**
+ * Compiles a single shader from source code.
+ *
+ * Params:
+ *   source = The GLSL source code.
+ *   stage  = The shader stage to compile.
+ * Returns:
+ *   The OpenGL shader object, or 0 on failure.
+ */
 GLuint compileShader(string source, const ShaderStage stage)
 {
     // create a shader
@@ -82,7 +127,14 @@ GLuint compileShader(string source, const ShaderStage stage)
     return shaderID;
 }
 
-/// Link compiled shaders
+/**
+ * Links multiple compiled shaders into a single OpenGL program.
+ *
+ * Params:
+ *   shaderIDs = an array of OpenGL shader objects to link.
+ * Returns:
+ *   The OpenGL program object, or 0 on failure.
+ */
 GLuint linkShaders(const GLuint[] shaderIDs...)
 {
     // create and link program
@@ -110,6 +162,15 @@ GLuint linkShaders(const GLuint[] shaderIDs...)
 
 enum logMaxLen = 1023;
 
+/**
+ * Checks the compilation status of a shader and logs errors or warnings.
+ *
+ * Params:
+ *   shaderID = The OpenGL shader object.
+ *   stage    = The shader stage.
+ * Returns:
+ *   `true` if compilation succeeded, `false` otherwise.
+ */
 private bool checkCompilation(const GLuint shaderID, const ShaderStage stage)
 {
     // get status
@@ -135,6 +196,14 @@ private bool checkCompilation(const GLuint shaderID, const ShaderStage stage)
     return ok;
 }
 
+/**
+ * Checks the linking status of a shader program and logs errors or warnings.
+ *
+ * Params:
+ *   programID = The OpenGL program object.
+ * Returns:
+ *   `true` if linking succeeded, `false` otherwise.
+ */
 private bool checkLinking(const GLuint programID)
 {
     // get status

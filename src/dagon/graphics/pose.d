@@ -24,45 +24,82 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * An abstract interface for skeletal animation poses.
+ *
+ * The `dagon.graphics.pose` module defines the `Pose` abstract class,
+ * which manages bone transformation matrices for GPU skinning,
+ * animation timing, and playback state. Implementations of `Pose` should
+ * allocate and fill the `boneMatrices` array, which is used by vertex
+ * shaders for skeletal animation. Dagon supports up to 128 bone matrices
+ * for GPU skinning per pose.
+ *
+ * Copyright: Timur Gafarov 2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.graphics.pose;
 
 import dlib.core.ownership;
 import dlib.math.matrix;
 import dagon.core.time;
 
-/*
+/**
  * Abstract interface for a skeletal animation pose.
- * boneMatrices should be allocated and filled in the implementation.
- * If the Pose object is set in GraphicsState, its boneMatrices will be
- * fed to the mesh vertex shaders.
+ *
+ * Implementations should allocate and fill `boneMatrices` with up to
+ * 128 bone transforms. If the `Pose` object is set in `GraphicsState`,
+ * its bone matrices will be fed to mesh vertex shaders.
  * A single bone matrix applies a bone's local transform to a model-space vertex.
- * Dagon supports maximum 128 bone matrices for GPU skinning.
  */
 abstract class Pose: Owner
 {
+    /// Array of bone transformation matrices (max 128).
     Matrix4x4f[] boneMatrices;
+
+    /// Animation timing information.
     Time time;
+
+    /// True if the pose is valid and ready for use.
     bool valid = false;
+
+    /// True if the animation is currently playing.
     bool playing = false;
     
-    this(Owner o)
+    /**
+     * Constructs a pose object.
+     *
+     * Params:
+     *   owner = Owner object.
+     */
+    this(Owner owner)
     {
-        super(o);
+        super(owner);
         this.time = Time(0.0, 0.0);
     }
     
+    /**
+     * Updates the pose for the given time.
+     *
+     * Params:
+     *   t = Frame timing information.
+     */
     void update(Time t);
     
+    /// Starts or resumes animation playback.
     void play()
     {
         playing = true;
     }
     
+    /// Pauses animation playback.
     void pause()
     {
         playing = false;
     }
     
+    /// Resets the animation time to zero.
     void reset()
     {
         time.elapsed = 0;

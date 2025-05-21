@@ -28,6 +28,7 @@ DEALINGS IN THE SOFTWARE.
 /**
  * A particle system.
  *
+ * Description:
  * The `dagon.graphics.particles` module defines the `ParticleSystem` class
  * for simulating and rendering particles, as well as supporting
  * components such as `Emitter` (for spawning particles) and various

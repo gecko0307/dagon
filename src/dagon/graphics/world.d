@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2023 Timur Gafarov
+Copyright (c) 2023-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,6 +25,22 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Provides the `World` class and related entity group classes for managing
+ * collections of entities in a scene.
+ *
+ * Description:
+ * The `World` class stores entities, manages their root transformation,
+ * and provides various entity groups for efficient queries based on entity type
+ * (such as spatial, opaque, transparent, background, foreground, lights,
+ * decals, and probes). The `MultiWorld` class allows hierarchical composition
+ * of multiple worlds. Entity group classes implement filtering and iteration
+ * for specific entity types or properties.
+ *
+ * Copyright: Timur Gafarov 2023-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.graphics.world;
 
 import dlib.core.memory;
@@ -35,31 +51,60 @@ import dlib.math.matrix;
 import dagon.graphics.entity;
 import dagon.graphics.light;
 
-/*
- * Object that stores entities and provides entity groups
+/**
+ * Stores entities and provides entity groups for organization and queries.
  */
 class World: Owner
 {
+    /// If false, the world and its entities are hidden.
     bool visible = true;
     
+    /// Root transformation matrix for all entities.
     Matrix4x4f rootTransformation;
+
+    /// Inverse of the root transformation.
     Matrix4x4f rootInvTransformation;
+
+    /// Previous frame's root transformation.
     Matrix4x4f prevRootTransformation;
     
+    /// Array of all entities in the world.
     protected Array!Entity entities;
     
+    /// Group of all spatial entities.
     EntityGroupSpatial spatial;
+
+    /// Group of static opaque spatial entities.
     EntityGroupSpatialOpaque spatialOpaqueStatic;
+
+    /// Group of dynamic opaque spatial entities.
     EntityGroupSpatialOpaque spatialOpaqueDynamic;
+
+    /// Group of transparent spatial entities.
     EntityGroupSpatialTransparent spatialTransparent;
+
+    /// Group of background entities.
     EntityGroupBackground background;
+
+    /// Group of foreground entities.
     EntityGroupForeground foreground;
+
+    /// Group of all light entities.
     EntityGroupLights lights;
+
+    /// Group of sun (directional) lights.
     EntityGroupSunLights sunLights;
+
+    /// Group of area and spot lights.
     EntityGroupAreaLights areaLights;
+
+    /// Group of decal entities.
     EntityGroupDecals decals;
+
+    /// Group of probe entities.
     EntityGroupProbes probes;
 
+     /// Constructs a new world and initializes entity groups.
     this(Owner owner)
     {
         super(owner);
@@ -67,11 +112,13 @@ class World: Owner
         createEntityGroups();
     }
     
+    /// Destructor. Frees an entities array.
     ~this()
     {
         entities.free();
     }
     
+    /// Resets the root transformation matrices.
     void resetTransformation()
     {
         rootTransformation = Matrix4x4f.identity;
@@ -79,6 +126,7 @@ class World: Owner
         prevRootTransformation = Matrix4x4f.identity;
     }
     
+     /// Creates and initializes all entity groups.
     void createEntityGroups()
     {
         if (spatial is null)
@@ -115,11 +163,13 @@ class World: Owner
             probes = New!EntityGroupProbes(this, this);
     }
 
+    /// Adds an existing entity to the world.
     void add(Entity e)
     {
         entities.append(e);
     }
     
+    /// Creates and adds a new entity, optionally with a parent.
     Entity addEntity(Entity parent = null)
     {
         Entity e = New!Entity(this);
@@ -128,6 +178,7 @@ class World: Owner
         return e;
     }
     
+    /// Iterates over all entities (by index and reference).
     int opApply(scope int delegate(size_t, ref Entity) dg)
     {
         if (visible)
@@ -135,6 +186,7 @@ class World: Owner
         else return 0;
     }
     
+    /// Iterates over all entities (by reference only).
     int opApply(scope int delegate(ref Entity) dg)
     {
         if (visible)
@@ -142,6 +194,7 @@ class World: Owner
         else return 0;
     }
     
+    /// Iterates in reverse order (by index and reference).
     int opApplyReverse(scope int delegate(size_t, ref Entity) dg)
     {
         if (visible)
@@ -149,6 +202,7 @@ class World: Owner
         else return 0;
     }
     
+    /// Iterates in reverse order (by reference only).
     int opApplyReverse(scope int delegate(ref Entity) dg)
     {
         if (visible)
@@ -156,26 +210,35 @@ class World: Owner
         else return 0;
     }
     
+     /// Returns the number of entities in the world.
     size_t length()
     {
         return entities.length;
     }
 }
 
+/**
+ * A world that can contain multiple sub-worlds.
+ * Allows hierarchical composition of worlds for complex scenes.
+ */
 class MultiWorld: World
 {
+    /// An array of sub-worlds.
     Array!World subWorlds;
     
+    /// Constructs a multi-world.
     this(Owner owner)
     {
         super(owner);
     }
     
+     /// Frees an array of sub-worlds.
     ~this()
     {
         subWorlds.free();
     }
     
+    /// Adds a new sub-world.
     World addSubWorld(bool visible = true)
     {
         auto w = New!World(this);
@@ -184,6 +247,7 @@ class MultiWorld: World
         return w;
     }
     
+    /// Iterates over all entities in all sub-worlds (by index and reference).
     override int opApply(scope int delegate(size_t, ref Entity) dg)
     {
         if (visible)
@@ -201,6 +265,7 @@ class MultiWorld: World
         else return 0;
     }
     
+    /// Iterates over all entities in all sub-worlds (by reference only).
     override int opApply(scope int delegate(ref Entity) dg)
     {
         if (visible)
@@ -218,6 +283,7 @@ class MultiWorld: World
         else return 0;
     }
     
+    /// Iterates in reverse order (by index and reference).
     override int opApplyReverse(scope int delegate(size_t, ref Entity) dg)
     {
         if (visible)
@@ -235,6 +301,7 @@ class MultiWorld: World
         else return 0;
     }
     
+    /// Iterates in reverse order (by reference only).
     override int opApplyReverse(scope int delegate(ref Entity) dg)
     {
         if (visible)
@@ -252,6 +319,7 @@ class MultiWorld: World
         else return 0;
     }
     
+    /// Returns the total number of entities in all sub-worlds.
     override size_t length()
     {
         size_t res = entities.length;
@@ -263,6 +331,9 @@ class MultiWorld: World
     }
 }
 
+/**
+ * Entity group for spatial entities (excluding decals and probes).
+ */
 class EntityGroupSpatial: Owner, EntityGroup
 {
     World world;
@@ -273,6 +344,7 @@ class EntityGroupSpatial: Owner, EntityGroup
         this.world = world;
     }
 
+    /// Iterates over all spatial entities.
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
@@ -289,6 +361,9 @@ class EntityGroupSpatial: Owner, EntityGroup
     }
 }
 
+/**
+ * Entity group for decal entities.
+ */
 class EntityGroupDecals: Owner, EntityGroup
 {
     World world;
@@ -299,6 +374,7 @@ class EntityGroupDecals: Owner, EntityGroup
         this.world = world;
     }
 
+    /// Iterates over all decal entities.
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
@@ -315,6 +391,9 @@ class EntityGroupDecals: Owner, EntityGroup
     }
 }
 
+/**
+ * Entity group for probe entities.
+ */
 class EntityGroupProbes: Owner, EntityGroup
 {
     World world;
@@ -325,6 +404,7 @@ class EntityGroupProbes: Owner, EntityGroup
         this.world = world;
     }
 
+    /// Iterates over all probe entities.
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
@@ -341,6 +421,9 @@ class EntityGroupProbes: Owner, EntityGroup
     }
 }
 
+/**
+ * Entity group for opaque spatial entities (static or dynamic).
+ */
 class EntityGroupSpatialOpaque: Owner, EntityGroup
 {
     World world;
@@ -353,6 +436,7 @@ class EntityGroupSpatialOpaque: Owner, EntityGroup
         this.dynamic = dynamic;
     }
 
+    /// Iterates over all opaque spatial entities matching the dynamic/static flag.
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
@@ -379,6 +463,9 @@ class EntityGroupSpatialOpaque: Owner, EntityGroup
     }
 }
 
+/**
+ * Entity group for transparent spatial entities.
+ */
 class EntityGroupSpatialTransparent: Owner, EntityGroup
 {
     World world;
@@ -389,6 +476,7 @@ class EntityGroupSpatialTransparent: Owner, EntityGroup
         this.world = world;
     }
 
+     /// Iterates over all transparent spatial entities.
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
@@ -415,6 +503,9 @@ class EntityGroupSpatialTransparent: Owner, EntityGroup
     }
 }
 
+/**
+ * Entity group for background entities.
+ */
 class EntityGroupBackground: Owner, EntityGroup
 {
     World world;
@@ -425,6 +516,7 @@ class EntityGroupBackground: Owner, EntityGroup
         this.world = world;
     }
 
+    /// Iterates over all background entities.
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
@@ -441,6 +533,9 @@ class EntityGroupBackground: Owner, EntityGroup
     }
 }
 
+/**
+ * Entity group for foreground entities.
+ */
 class EntityGroupForeground: Owner, EntityGroup
 {
     World world;
@@ -451,6 +546,7 @@ class EntityGroupForeground: Owner, EntityGroup
         this.world = world;
     }
 
+    /// Iterates over all foreground entities.
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
@@ -467,6 +563,9 @@ class EntityGroupForeground: Owner, EntityGroup
     }
 }
 
+/**
+ * Entity group for all light entities.
+ */
 class EntityGroupLights: Owner, EntityGroup
 {
     World world;
@@ -477,6 +576,7 @@ class EntityGroupLights: Owner, EntityGroup
         this.world = world;
     }
 
+    /// Iterates over all light entities.
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
@@ -494,6 +594,9 @@ class EntityGroupLights: Owner, EntityGroup
     }
 }
 
+/**
+ * Entity group for sun (directional) lights.
+ */
 class EntityGroupSunLights: Owner, EntityGroup
 {
     World world;
@@ -504,6 +607,7 @@ class EntityGroupSunLights: Owner, EntityGroup
         this.world = world;
     }
 
+    /// Iterates over all sun light entities.
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
@@ -524,6 +628,9 @@ class EntityGroupSunLights: Owner, EntityGroup
     }
 }
 
+/**
+ * Entity group for area and spot lights.
+ */
 class EntityGroupAreaLights: Owner, EntityGroup
 {
     World world;
@@ -534,6 +641,7 @@ class EntityGroupAreaLights: Owner, EntityGroup
         this.world = world;
     }
 
+    /// Iterates over all area and spot light entities.
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
