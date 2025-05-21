@@ -6,7 +6,8 @@ Dagon 0.23.0 - TBD
 - **Extensions**
   - `dagon:stbi` extension was removed, because Dagon's default texture loader fully replaces it
 - **Misc**
-  - Dagon now uses bindbc-sdl 1.5.2.
+  - Dagon now uses bindbc-sdl 1.5.2
+  - Documentation for most of the classes.
 
 Dagon 0.22.0 - 04 May, 2025
 ---------------------------
