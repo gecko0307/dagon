@@ -25,6 +25,18 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Main entry point for Dagon's asset management system.
+ *
+ * The `dagon.resource` package publicly imports an asset manager and all core
+ * resource modules, including binary and text assets, texture asset, image loaders,
+ * GLTF and OBJ loaders. This package provides a unified interface for loading,
+ * managing, and accessing all types of external resources supported by Dagon.
+ *
+ * Copyright: Timur Gafarov 2019-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.resource;
 
 public
