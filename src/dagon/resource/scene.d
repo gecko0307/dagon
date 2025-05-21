@@ -25,6 +25,21 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Scene class.
+ *
+ * The `dagon.resource.scene` module defines the `Scene` class, which provides
+ * asset manager, world, and environment for a 3D scene.
+ * The `Scene` class provides methods for adding and managing assets (textures,
+ * meshes, materials, etc.), creating entities, cameras, lights, and decals,
+ * and handling scene loading, updating, and event processing. The scene supports
+ * threaded asset loading, progress callbacks, and hooks for custom loading
+ * and update logic.
+ *
+ * Copyright: Timur Gafarov 2019-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.resource.scene;
 
 import std.path;
@@ -53,25 +68,62 @@ import dagon.resource.texture;
 import dagon.resource.text;
 import dagon.resource.binary;
 
+/**
+ * Manages the application context, assets, world,
+ * and environment for a 3D scene.
+ *
+ * The `Scene` class provides methods for adding assets
+ * (textures, OBJ, GLTF, text, binary), creating entities,
+ * cameras, lights, and decals, and handling scene loading
+ * and update logic. It supports threaded asset loading,
+ * progress reporting, and customizable hooks for loading
+ * and update events.
+ */
 class Scene: EventListener
 {
+    /// The application.
     Application application;
     
     protected AssetManager assetManagerInternal;
     protected World worldInternal;
     protected Environment environmentInternal;
     
+    /// The asset manager for this scene.
     AssetManager assetManager;
+
+    /// The world containing all entities.
     World world;
+
+    /// The environment settings for the scene.
     Environment environment;
+
+    /// Default shape for decals.
     ShapeBox decalShape;
+
+    /// True if loading has started.
     bool startedLoading = false;
+
+    /// True if assets are currently loading.
     bool isLoading = false;
+
+    /// True if loading is complete.
     bool loaded = false;
+
+    /// True if the scene is ready to render.
     bool canRender = false;
+
+    /// True if the scene is focused.
     bool focused = true;
+
+    /// True if the scene is paused.
     bool paused = false;
 
+    /**
+     * Constructs a new scene with the given application.
+     *
+     * Params:
+     *   application = The application instance.
+     */
     this(Application application)
     {
         super(application.eventManager, application);
@@ -90,8 +142,16 @@ class Scene: EventListener
         decalShape = New!ShapeBox(Vector3f(1, 1, 1), this);
     }
 
-    // Set preload to true if you want to load the asset immediately
-    // before actual loading (e.g., to render a loading screen)
+    /**
+     * Adds an asset to the scene's asset manager.
+     *
+     * Params:
+     *   asset    = The asset to add.
+     *   filename = The asset filename.
+     *   preload  = If true, preload the asset immediately.
+     * Returns:
+     *   The added asset.
+     */
     Asset addAsset(Asset asset, string filename, bool preload = false)
     {
         if (preload)
@@ -101,6 +161,15 @@ class Scene: EventListener
         return asset;
     }
 
+    /**
+     * Adds an asset of type `T` by filename, optionally preloading.
+     *
+     * Params:
+     *   filename = The asset filename.
+     *   preload  = If true, preload the asset immediately.
+     * Returns:
+     *   The loaded or newly created asset of type `T`.
+     */
     T addAssetAs(T)(string filename, bool preload = false)
     {
         T newAsset;
@@ -116,17 +185,28 @@ class Scene: EventListener
         return newAsset;
     }
 
+    /// Adds a texture asset by filename.
     alias addTextureAsset = addAssetAs!TextureAsset;
+
+    /// Adds an OBJ mesh asset by filename.
     alias addOBJAsset = addAssetAs!OBJAsset;
+
+    /// Adds a GLTF mesh asset by filename.
     alias addGLTFAsset = addAssetAs!GLTFAsset;
+
+    /// Adds a text asset by filename.
     alias addTextAsset = addAssetAs!TextAsset;
+
+    /// Adds a binary asset by filename.
     alias addBinaryAsset = addAssetAs!BinaryAsset;
 
+    /// Creates and adds a new material.
     Material addMaterial()
     {
         return New!Material(assetManager);
     }
 
+    /// Creates and adds a new decal material (transparent, no depth write, no culling).
     Material addDecalMaterial()
     {
         auto mat = addMaterial();
@@ -136,6 +216,7 @@ class Scene: EventListener
         return mat;
     }
 
+    /// Creates and adds a new entity, optionally with a parent.
     Entity addEntity(Entity parent = null)
     {
         Entity e = New!Entity(world);
@@ -144,12 +225,14 @@ class Scene: EventListener
         return e;
     }
 
+    /// Adds an existing entity to the world.
     Entity useEntity(Entity e)
     {
         world.add(e);
         return e;
     }
 
+    /// Creates and adds a new HUD entity (foreground layer), optionally with a parent.
     Entity addEntityHUD(Entity parent = null)
     {
         Entity e = New!Entity(world);
@@ -159,6 +242,7 @@ class Scene: EventListener
         return e;
     }
 
+    /// Creates and adds a new camera, optionally with a parent.
     Camera addCamera(Entity parent = null)
     {
         Camera c = New!Camera(world);
@@ -167,6 +251,7 @@ class Scene: EventListener
         return c;
     }
 
+    /// Creates and adds a new light of the given type, optionally with a parent.
     Light addLight(LightType type, Entity parent = null)
     {
         Light light = New!Light(world);
@@ -176,6 +261,7 @@ class Scene: EventListener
         return light;
     }
 
+    /// Creates and adds a new decal entity, optionally with a parent.
     Entity addDecal(Entity parent = null)
     {
         Entity e = New!Entity(world);
@@ -186,31 +272,48 @@ class Scene: EventListener
         return e;
     }
 
-    // Override me
+    /// Override to perform actions before loading assets.
     void beforeLoad()
     {
     }
 
-    // Override me
+    /**
+     * Override to handle loading progress.
+     *
+     * Params:
+     *   t        = Frame timing information.
+     *   progress = Loading progress (0..1).
+     */
     void onLoad(Time t, float progress)
     {
     }
 
-    // Override me
+    /// Override to perform actions after loading is complete.
     void afterLoad()
     {
     }
 
-    // Override me
+    /**
+     * Override to update scene logic each frame.
+     *
+     * Params:
+     *   t = Frame timing information.
+     */
     void onUpdate(Time t)
     {
     }
     
-    // Override me
+    /// Override to handle scene reset.
     void onReset()
     {
     }
 
+    /**
+     * Updates the scene, processes events, and updates all entities.
+     *
+     * Params:
+     *   t = Frame timing information.
+     */
     void update(Time t)
     {
         processEvents(focused && loaded);

@@ -24,6 +24,19 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * Provides a `SuperImage` interface implementation for texture buffers in Dagon.
+ *
+ * Description:
+ * The `dagon.resource.image` module defines the `TextureImage` class, which adapts
+ * a `TextureBuffer` to the `SuperImage` interface, allowing image-like access
+ * to texture data.
+ *
+ * Copyright: Timur Gafarov 2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.resource.image;
 
 import std.conv;
@@ -35,8 +48,14 @@ import dlib.image.hdri;
 import dagon.core.bindings;
 import dagon.graphics.texture;
 
-/*
- * SuperImage interface for a TextureBuffer
+/**
+ * Adapts a `TextureBuffer` to the `SuperImage` interface
+ * for image-like access.
+ *
+ * Description:
+ * Provides properties for width, height, bit depth, channels,
+ * pixel size, and pixel format. Supports getting and setting
+ * pixel values.
  */
 class TextureImage: SuperImage
 {
@@ -54,6 +73,12 @@ class TextureImage: SuperImage
     
     public:
     
+    /**
+     * Constructs a `TextureImage` from a `TextureBuffer`.
+     *
+     * Params:
+     *   buffer = Pointer to the texture buffer.
+     */
     this(TextureBuffer* buffer)
     {
         linkedBuffer = buffer;
@@ -66,31 +91,37 @@ class TextureImage: SuperImage
         _data = data;
     }
     
+    /// Returns the image width in pixels.
     @property uint width()
     {
         return linkedBuffer.size.width;
     }
     
+    /// Returns the image height in pixels.
     @property uint height()
     {
         return linkedBuffer.size.height;
     }
     
+    /// Returns the bit depth per channel.
     @property uint bitDepth()
     {
         return linkedBuffer.format.channelSize * 8;
     }
     
+    /// Returns the number of color channels.
     @property uint channels()
     {
         return linkedBuffer.format.numChannels;
     }
     
+     /// Returns the size of a pixel in bytes.
     @property uint pixelSize()
     {
         return linkedBuffer.format.pixelSize;
     }
     
+    /// Returns the pixel format as an integer constant.
     @property uint pixelFormat()
     {
         uint res = IntegerPixelFormat.RGBA8;
@@ -131,12 +162,22 @@ class TextureImage: SuperImage
         return res;
     }
     
+    /// Returns the raw image data as a byte array.
     @property ubyte[] data()
     {
         return linkedBuffer.data;
     }
     
-    public Color4 getPixel(int x, int y)
+    /**
+     * Gets the integer color value of the pixel at (x, y).
+     *
+     * Params:
+     *   x = X coordinate.
+     *   y = Y coordinate.
+     * Returns:
+     *   The color value as `Color4`.
+     */
+    Color4 getPixel(int x, int y)
     {
         ubyte[] pixData = _data;
 
@@ -201,7 +242,17 @@ class TextureImage: SuperImage
         }
     }
 
-    public Color4 setPixel(Color4 c, int x, int y)
+    /**
+     * Sets the color value of the pixel at (x, y).
+     *
+     * Params:
+     *   c = The color to set.
+     *   x = X coordinate.
+     *   y = Y coordinate.
+     * Returns:
+     *   The color value set.
+     */
+    Color4 setPixel(Color4 c, int x, int y)
     {
         ubyte[] pixData = _data;
 
@@ -272,29 +323,34 @@ class TextureImage: SuperImage
         return c;
     }
 
+    /// Gets the color value at (x, y) as a floating-point color.
     override Color4f opIndex(int x, int y)
     {
         return Color4f(getPixel(x, y), _bitDepth);
     }
 
+    /// Sets the color value at (x, y) as a floating-point color.
     override Color4f opIndexAssign(Color4f c, int x, int y)
     {
         setPixel(c.convert(_bitDepth), x, y);
         return c;
     }
     
+     /// Returns a duplicate of the image (not implemented).
     @property SuperImage dup()
     {
         // TODO
         return null;
     }
     
+    /// Creates a new image of the same format and given size (not implemented).
     SuperImage createSameFormat(uint w, uint h)
     {
         // TODO
         return null;
     }
     
+    /// Frees the image resources (no-op).
     void free()
     {
     }

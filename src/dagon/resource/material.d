@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018-2022 Timur Gafarov
+Copyright (c) 2018-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,6 +25,20 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Material asset.
+ *
+ * Description:
+ * The `dagon.resource.material` module defines the `MaterialAsset` class
+ * for loading, parsing, and managing material resources from text files.
+ * Material assets are parsed into property sets and can be used to instantiate
+ * `Material` objects. The module supports threaded loading, integration with
+ * the asset manager, and property parsing via Dagon's property system.
+ *
+ * Copyright: Timur Gafarov 2018-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.resource.material;
 
 import dlib.core.memory;
@@ -40,22 +54,52 @@ import dagon.core.props;
 import dagon.resource.asset;
 import dagon.graphics.material;
 
+/**
+ * Asset class for loading and managing material definitions.
+ *
+ * Description:
+ * Loads material properties from text files, and parses them
+ * into a `Properties` object.
+ */
 class MaterialAsset: Asset
 {
+    /// The raw material definition text.
     string text;
+
+    /// Parsed material properties.
     Properties props;
+
+    /// The instantiated material object.
     Material material;
 
-    this(Owner o)
+    /**
+     * Constructs a new material asset.
+     *
+     * Params:
+     *   owner = Owner object.
+     */
+    this(Owner owner)
     {
-        super(o);
+        super(owner);
     }
 
+    /// Destructor. Releases all resources.
     ~this()
     {
         release();
     }
 
+    /**
+     * Loads the thread-safe part of the material asset (parses properties from text).
+     *
+     * Params:
+     *   filename = The material filename.
+     *   istrm    = Input stream for the material file.
+     *   fs       = File system.
+     *   mngr     = Asset manager.
+     * Returns:
+     *   true if parsing succeeded, false otherwise.
+     */
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
     {
         text = readText(istrm);
@@ -66,11 +110,18 @@ class MaterialAsset: Asset
             return false;
     }
 
+    /**
+     * Loads the thread-unsafe part of the material asset (no-op).
+     *
+     * Returns:
+     *   true (always succeeds).
+     */
     override bool loadThreadUnsafePart()
     {
         return true;
     }
 
+    /// Releases all resources associated with the asset.
     override void release()
     {
         if (text.length)
