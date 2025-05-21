@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
+		<title>Class Camera</title>
+		<link rel="stylesheet" href="../../../css/style.min.css"/>
+		<script type="text/javascript" src="../../../js/script.min.js"></script>
+	</head>
+	<body onload="setupDdox();">
+		<header></header>
+		<nav id="main-nav">
+			<div>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<form action="#" method="GET">
+						<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();" autofocus/>
+					</form>
+					<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../../";
+document.getElementById('symbolSearchPane').style.display = 'block';</script>
+				</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">dagon
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../dagon/core.html">core</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/application.html">application</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/bindings.html">bindings</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/config.html">config</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/event.html">event</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/input.html">input</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/keycodes.html">keycodes</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/locale.html">locale</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/logger.html">logger</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/persistent.html">persistent</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/props.html">props</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/time.html">time</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/vfs.html">vfs</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/vkformat.html">vkformat</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../../dagon/graphics.html">graphics</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/billboard.html">billboard</a>
+						</div>
+					</li>
+					<li>
+						<div class="module selected">
+							<a href="../../../dagon/graphics/camera.html">camera</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/components.html">components</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/csm.html">csm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/drawable.html">drawable</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/entity.html">entity</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/environment.html">environment</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/heightmap.html">heightmap</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/light.html">light</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/lod.html">lod</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/material.html">material</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/mesh.html">mesh</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/opensimplex.html">opensimplex</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/particles.html">particles</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/pose.html">pose</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/screensurface.html">screensurface</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/shader.html">shader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/shaderloader.html">shaderloader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/shadowmap.html">shadowmap</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/shapes.html">shapes</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/state.html">state</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/terrain.html">terrain</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/texproc.html">texproc</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/texture.html">texture</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/tween.html">tween</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/updateable.html">updateable</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/world.html">world</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../dagon/resource.html">resource</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">gltf
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/accessor.html">accessor</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/animation.html">animation</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/decoder.html">decoder</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/asset.html">asset</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/binary.html">binary</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/boxfs.html">boxfs</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/dds.html">dds</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/entity.html">entity</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/image.html">image</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/material.html">material</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/obj.html">obj</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/scene.html">scene</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/sdlimage.html">sdlimage</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/text.html">text</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/texture.html">texture</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+				</ul>
+					</li>
+				</ul>
+			</div>
+			<p id="main-nav-footer">
+				Built with<a href="https://github.com/MartinNowak/scod">scod</a>
+			</p>
+		</nav>
+		<div id="main-contents">
+			<div>
+				<h1>Class Camera</h1><p>Represents a camera in the scene, inheriting from <code class="lang-d"><span class="typ">Entity</span></code>.
+</p>
+				<div class="prototype">
+					<code class="lang-d">
+						<div class="single-prototype">
+				<span class="kwd">class</span> <span class="typ">Camera</span><br>&nbsp;&nbsp;: <a href="../../../dagon/graphics/entity/Entity.html"><span class="typ">Entity</span></a><span class="pun">;</span>
+						</div>
+					</code>
+				</div>
+				<section></section>
+
+				<section><h2>Constructors</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/camera/Camera.this.html" class="public">
+									<code>this</code>
+								</a>
+								<span class="tableEntryAnnotation">(owner)</span>
+							</td>
+							<td>Constructs a camera entity.
+</td>
+						</tr>
+					</table>
+				</section>
+				<section><h2>Fields</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Type</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/camera/Camera.fov.html" class="public"><code>fov</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Field of view in degrees (vertical) for perspective projection.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/camera/Camera.zFar.html" class="public"><code>zFar</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Far clipping plane distance.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/camera/Camera.zNear.html" class="public"><code>zNear</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Near clipping plane distance.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.absoluteTransformation.html" class="public inherited"><code>absoluteTransformation</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">matrix<wbr/></span><span class="pun">.</span><span class="typ">Matrix</span>!(float,4L)</code></td><td>Final transformation matrix relative to world root.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.bindShaderParameters.html" class="public inherited"><code>bindShaderParameters</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If <code class="lang-d"><span class="kwd">true</span></code>, shader parameters will be bound automatically
+ in the <code class="lang-d"><span class="typ">RenderPass</span></code> before rendering the entity.
+ Otherwise the derived render pass should bind shader
+ parameters.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.blurMask.html" class="public inherited"><code>blurMask</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Motion blur mask value.
+ This value is treated as an alpha channel when rendering
+ the entity to the screen-space velocity buffer.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.boundingBoxSize.html" class="public inherited"><code>boundingBoxSize</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">vector<wbr/></span><span class="pun">.</span><span class="typ">Vector</span>!(float,3)</code></td><td>The size of the entity's bounding box.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.castShadow.html" class="public inherited"><code>castShadow</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If true, the entity casts shadows.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.children.html" class="public inherited"><code>children</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">container<wbr/></span><span class="pun">.</span><span class="pln">array<wbr/></span><span class="pun">.</span><span class="typ">Array</span>!(dagon.graphics.entity.Entity,32L)</code></td><td>List of child entities.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.components.html" class="public inherited"><code>components</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">container<wbr/></span><span class="pun">.</span><span class="pln">array<wbr/></span><span class="pun">.</span><span class="typ">Array</span>!(dagon.graphics.entity.EntityComponent,32L)</code></td><td>The attached components.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.decal.html" class="public inherited"><code>decal</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If true, the entity is treated as a decal.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.drawable.html" class="public inherited"><code>drawable</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/drawable/Drawable.html"><span class="typ">Drawable</span></a></code></td><td>Optional drawable object (visual representation) for this entity.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.dynamic.html" class="public inherited"><code>dynamic</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Indicates whether the entity can move.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.gbufferMask.html" class="public inherited"><code>gbufferMask</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>G-buffer mask value for deferred rendering.
+ This value is treated as an alpha channel when rendering
+ the entity to the G-buffer.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.invAbsoluteTransformation.html" class="public inherited"><code>invAbsoluteTransformation</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">matrix<wbr/></span><span class="pun">.</span><span class="typ">Matrix</span>!(float,4L)</code></td><td>Inverse of the absolute transformation matrix.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.invTransformation.html" class="public inherited"><code>invTransformation</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">matrix<wbr/></span><span class="pun">.</span><span class="typ">Matrix</span>!(float,4L)</code></td><td>Inverse of the local transformation matrix.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.layer.html" class="public inherited"><code>layer</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/entity/EntityLayer.html"><span class="typ">EntityLayer</span></a></code></td><td>The logical layer of this entity.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.material.html" class="public inherited"><code>material</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/material/Material.html"><span class="typ">Material</span></a></code></td><td>Optional material used for rendering.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.opacity.html" class="public inherited"><code>opacity</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Opacity factor for rendering (0.0 = fully transparent, 1.0 = fully opaque).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.parent.html" class="public inherited"><code>parent</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/entity/Entity.html"><span class="typ">Entity</span></a></code></td><td>Optional parent entity in the scene graph.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.pose.html" class="public inherited"><code>pose</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/pose/Pose.html"><span class="typ">Pose</span></a></code></td><td>Optional pose (for skinning).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.position.html" class="public inherited"><code>position</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">vector<wbr/></span><span class="pun">.</span><span class="typ">Vector</span>!(float,3)</code></td><td>Local position.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.prevAbsoluteTransformation.html" class="public inherited"><code>prevAbsoluteTransformation</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">matrix<wbr/></span><span class="pun">.</span><span class="typ">Matrix</span>!(float,4L)</code></td><td>Previous frame's absolute transformation.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.prevTransformation.html" class="public inherited"><code>prevTransformation</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">matrix<wbr/></span><span class="pun">.</span><span class="typ">Matrix</span>!(float,4L)</code></td><td>Previous frame's local transformation (for motion blur).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.probe.html" class="public inherited"><code>probe</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If true, the entity is treated as an environment probe volume (for lighting/reflections).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.probeExtents.html" class="public inherited"><code>probeExtents</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">vector<wbr/></span><span class="pun">.</span><span class="typ">Vector</span>!(float,3)</code></td><td>The extents of the probe volume.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.probeFalloffMargin.html" class="public inherited"><code>probeFalloffMargin</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>The falloff margin for the probe.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.probeUseBoxProjection.html" class="public inherited"><code>probeUseBoxProjection</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If true, enable box projection for the probe volume
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.renderLayer.html" class="public inherited"><code>renderLayer</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td><td>The render layer index for sorting or batching.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.rotation.html" class="public inherited"><code>rotation</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">quaternion<wbr/></span><span class="pun">.</span><span class="typ">Quaternion</span>!(float)</code></td><td>Local rotation (quaternion).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.scaling.html" class="public inherited"><code>scaling</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">vector<wbr/></span><span class="pun">.</span><span class="typ">Vector</span>!(float,3)</code></td><td>Local scaling.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.solid.html" class="public inherited"><code>solid</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Whether the entity should be treated as a solid object (for physics/collision).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.transformation.html" class="public inherited"><code>transformation</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">matrix<wbr/></span><span class="pun">.</span><span class="typ">Matrix</span>!(float,4L)</code></td><td>Local transformation matrix.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.transformMode.html" class="public inherited"><code>transformMode</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/entity/TransformMode.html"><span class="typ">TransformMode</span></a></code></td><td>Transformation mode (TRS or Matrix).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.transparent.html" class="public inherited"><code>transparent</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If true, the entity is treated as transparent.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.tweens.html" class="public inherited"><code>tweens</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">container<wbr/></span><span class="pun">.</span><span class="pln">array<wbr/></span><span class="pun">.</span><span class="typ">Array</span>!(dagon.graphics.tween.Tween,32L)</code></td><td>Active tweens used to animate this entity.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.type.html" class="public inherited"><code>type</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/entity/EntityType.html"><span class="typ">EntityType</span></a></code></td><td>The type of this entity.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.visible.html" class="public inherited"><code>visible</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If false, the entity is not rendered.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.world.html" class="public inherited"><code>world</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/world/World.html"><span class="typ">World</span></a></code></td><td>The world this entity belongs to.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.aabb.html" class="protected inherited"><code>aabb</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">geometry<wbr/></span><span class="pun">.</span><span class="pln">aabb<wbr/></span><span class="pun">.</span><span class="pln">AABB</span></code></td><td>The axis-aligned bounding box.
+</td>
+						</tr>
+					</table>
+				</section>
+				<section><h2>Properties</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Type</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.boundingBox.html" class="public inherited property"><code>boundingBox</code></a><span class="tableEntryAnnotation">[get]</span>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">geometry<wbr/></span><span class="pun">.</span><span class="pln">aabb<wbr/></span><span class="pun">.</span><span class="pln">AABB</span></code></td><td>Returns the entity's bounding box in world space.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.direction.html" class="public inherited property"><code>direction</code></a><span class="tableEntryAnnotation">[get]</span>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">vector<wbr/></span><span class="pun">.</span><span class="typ">Vector</span>!(float,3)</code></td><td>Returns the local forward vector.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.directionAbsolute.html" class="public inherited property"><code>directionAbsolute</code></a><span class="tableEntryAnnotation">[get]</span>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">vector<wbr/></span><span class="pun">.</span><span class="typ">Vector</span>!(float,3)</code></td><td>Returns the absolute forward vector.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.right.html" class="public inherited property"><code>right</code></a><span class="tableEntryAnnotation">[get]</span>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">vector<wbr/></span><span class="pun">.</span><span class="typ">Vector</span>!(float,3)</code></td><td>Returns the local right vector.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.rightAbsolute.html" class="public inherited property"><code>rightAbsolute</code></a><span class="tableEntryAnnotation">[get]</span>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">vector<wbr/></span><span class="pun">.</span><span class="typ">Vector</span>!(float,3)</code></td><td>Returns the absolute right vector.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.up.html" class="public inherited property"><code>up</code></a><span class="tableEntryAnnotation">[get]</span>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">vector<wbr/></span><span class="pun">.</span><span class="typ">Vector</span>!(float,3)</code></td><td>Returns the local up vector.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.upAbsolute.html" class="public inherited property"><code>upAbsolute</code></a><span class="tableEntryAnnotation">[get]</span>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">vector<wbr/></span><span class="pun">.</span><span class="typ">Vector</span>!(float,3)</code></td><td>Returns the absolute up vector.
+</td>
+						</tr>
+					</table>
+				</section>
+				<section><h2>Methods</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/camera/Camera.invViewMatrix.html" class="public">
+									<code>invViewMatrix</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Returns the inverse view matrix for this camera.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/camera/Camera.viewMatrix.html" class="public">
+									<code>viewMatrix</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Returns the view matrix for this camera.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.addChild.html" class="public inherited">
+									<code>addChild</code>
+								</a>
+								<span class="tableEntryAnnotation">(childEntity)</span>
+							</td>
+							<td>Adds a child entity.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.addComponent.html" class="public inherited">
+									<code>addComponent</code>
+								</a>
+								<span class="tableEntryAnnotation">(component)</span>
+							</td>
+							<td>Adds a component to this entity.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.angles.html" class="public inherited">
+									<code>angles</code>
+								</a>
+								<span class="tableEntryAnnotation">(v)</span>
+							</td>
+							<td>Sets the rotation using Euler angles (degrees).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.getInactiveTween.html" class="public inherited">
+									<code>getInactiveTween</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Returns a pointer to an inactive tween, or null if none.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.lift.html" class="public inherited">
+									<code>lift</code>
+								</a>
+								<span class="tableEntryAnnotation">(speed)</span>
+							</td>
+							<td>Lifts (moves up) by the given speed.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.move.html" class="public inherited">
+									<code>move</code>
+								</a>
+								<span class="tableEntryAnnotation">(speed)</span>
+							</td>
+							<td>Moves the entity forward by the given speed.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.moveFromTo.html" class="public inherited">
+									<code>moveFromTo</code>
+								</a>
+								<span class="tableEntryAnnotation">(pointFrom, pointTo, duration, easing)</span>
+							</td>
+							<td>Starts a position tween from one point to another.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.moveToPoint.html" class="public inherited">
+									<code>moveToPoint</code>
+								</a>
+								<span class="tableEntryAnnotation">(p, speed)</span>
+							</td>
+							<td>Moves the entity toward a point at the given speed.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.pitch.html" class="public inherited">
+									<code>pitch</code>
+								</a>
+								<span class="tableEntryAnnotation">(angle)</span>
+							</td>
+							<td>Rotates the entity around the local X axis.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.positionAbsolute.html" class="public inherited">
+									<code>positionAbsolute</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Returns the absolute position of the entity.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.processEvents.html" class="public inherited">
+									<code>processEvents</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Processes events for all attached components.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.release.html" class="public inherited">
+									<code>release</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Releases all resources and detaches from parent and children.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.removeChild.html" class="public inherited">
+									<code>removeChild</code>
+								</a>
+								<span class="tableEntryAnnotation">(childEntity)</span>
+							</td>
+							<td>Removes a child entity.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.removeComponent.html" class="public inherited">
+									<code>removeComponent</code>
+								</a>
+								<span class="tableEntryAnnotation">(component)</span>
+							</td>
+							<td>Removes a component from this entity.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.roll.html" class="public inherited">
+									<code>roll</code>
+								</a>
+								<span class="tableEntryAnnotation">(angle)</span>
+							</td>
+							<td>Rotates the entity around the local Z axis.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.rotate.html" class="public inherited">
+									<code>rotate</code>
+								</a>
+								<span class="tableEntryAnnotation">(v)</span>
+							</td>
+							<td>Rotates the entity by the given Euler angles (degrees).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.rotateFromTo.html" class="public inherited">
+									<code>rotateFromTo</code>
+								</a>
+								<span class="tableEntryAnnotation">(anglesFrom, anglesTo, duration, easing)</span>
+							</td>
+							<td>Starts a rotation tween from one set of angles to another.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.rotationAbsolute.html" class="public inherited">
+									<code>rotationAbsolute</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Returns the absolute rotation of the entity.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.scale.html" class="public inherited">
+									<code>scale</code>
+								</a>
+								<span class="tableEntryAnnotation">(s)</span>
+							</td>
+							<td>Scales the entity uniformly.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.scale.html" class="public inherited">
+									<code>scale</code>
+								</a>
+								<span class="tableEntryAnnotation">(s)</span>
+							</td>
+							<td>Scales the entity non-uniformly by the given vector.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.scaleFromTo.html" class="public inherited">
+									<code>scaleFromTo</code>
+								</a>
+								<span class="tableEntryAnnotation">(sFrom, sTo, duration, easing)</span>
+							</td>
+							<td>Starts a scaling tween from one scale to another.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.scaleX.html" class="public inherited">
+									<code>scaleX</code>
+								</a>
+								<span class="tableEntryAnnotation">(s)</span>
+							</td>
+							<td>Scales the entity along the local X axis.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.scaleY.html" class="public inherited">
+									<code>scaleY</code>
+								</a>
+								<span class="tableEntryAnnotation">(s)</span>
+							</td>
+							<td>Scales the entity along the local Y axis.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.scaleZ.html" class="public inherited">
+									<code>scaleZ</code>
+								</a>
+								<span class="tableEntryAnnotation">(s)</span>
+							</td>
+							<td>Scales the entity along the Z axis.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.setParent.html" class="public inherited">
+									<code>setParent</code>
+								</a>
+								<span class="tableEntryAnnotation">(parentEntity)</span>
+							</td>
+							<td>Sets the parent entity in the scene graph.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.setRotation.html" class="public inherited">
+									<code>setRotation</code>
+								</a>
+								<span class="tableEntryAnnotation">(x, y, z)</span>
+							</td>
+							<td>Sets the rotation using Euler angles (degrees).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.strafe.html" class="public inherited">
+									<code>strafe</code>
+								</a>
+								<span class="tableEntryAnnotation">(speed)</span>
+							</td>
+							<td>Strafes (moves to the right) by the given speed.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.translate.html" class="public inherited">
+									<code>translate</code>
+								</a>
+								<span class="tableEntryAnnotation">(v)</span>
+							</td>
+							<td>Translates the entity by the given vector.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.translate.html" class="public inherited">
+									<code>translate</code>
+								</a>
+								<span class="tableEntryAnnotation">(vx, vy, vz)</span>
+							</td>
+							<td>Translates the entity by the given vector components.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.turn.html" class="public inherited">
+									<code>turn</code>
+								</a>
+								<span class="tableEntryAnnotation">(angle)</span>
+							</td>
+							<td>Rotates the entity around the local Y axis.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.update.html" class="public inherited">
+									<code>update</code>
+								</a>
+								<span class="tableEntryAnnotation">(t)</span>
+							</td>
+							<td>Updates the entity and its components for the current frame.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.updateAbsoluteTransformation.html" class="public inherited">
+									<code>updateAbsoluteTransformation</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Updates the absolute transformation matrix.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.updateTransformation.html" class="public inherited">
+									<code>updateTransformation</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Updates the local and absolute transformation matrices.
+ If <code class="lang-d"><a href="../../../dagon/graphics/entity/Entity.transformMode.html"><span class="pln">transformMode</span></a></code> is <code class="lang-d"><a href="../../../dagon/graphics/entity/TransformMode.html#Matrix"><span class="typ">TransformMode<wbr/></span><span class="pun">.</span><span class="typ">Matrix</span></a></code>,
+ the transformation matrix should be updated manually when needed
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.updateTransformationBottomUp.html" class="public inherited">
+									<code>updateTransformationBottomUp</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Updates transformations bottom-up through the hierarchy (from child to parent).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.updateTransformationTopDown.html" class="public inherited">
+									<code>updateTransformationTopDown</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Updates transformations top-down through the hierarchy (from parent to children).
+</td>
+						</tr>
+					</table>
+				</section><section><h2>Description</h2>
+<p>The camera defines a view into the scene with projection parameters.
+ It provides methods to obtain the view and inverse view matrices
+ for rendering.
+</p>
+</section>
+
+			</div>
+			<footer>
+				<div id="license-info">
+					<p>Timur Gafarov
+</p>
+<p>Timur Gafarov 2019-2025
+</p>
+<p><a href="https://boost.org/LICENSE_1_0.txt">Boost License 1.0</a>.
+</p>
+
+				</div>
+			</footer>
+		</div>
+	</body>
+</html>

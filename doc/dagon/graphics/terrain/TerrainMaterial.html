@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
+		<title>Class TerrainMaterial</title>
+		<link rel="stylesheet" href="../../../css/style.min.css"/>
+		<script type="text/javascript" src="../../../js/script.min.js"></script>
+	</head>
+	<body onload="setupDdox();">
+		<header></header>
+		<nav id="main-nav">
+			<div>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<form action="#" method="GET">
+						<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();" autofocus/>
+					</form>
+					<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../../";
+document.getElementById('symbolSearchPane').style.display = 'block';</script>
+				</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">dagon
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../dagon/core.html">core</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/application.html">application</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/bindings.html">bindings</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/config.html">config</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/event.html">event</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/input.html">input</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/keycodes.html">keycodes</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/locale.html">locale</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/logger.html">logger</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/persistent.html">persistent</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/props.html">props</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/time.html">time</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/vfs.html">vfs</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/vkformat.html">vkformat</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../../dagon/graphics.html">graphics</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/billboard.html">billboard</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/camera.html">camera</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/components.html">components</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/csm.html">csm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/drawable.html">drawable</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/entity.html">entity</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/environment.html">environment</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/heightmap.html">heightmap</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/light.html">light</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/lod.html">lod</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/material.html">material</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/mesh.html">mesh</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/opensimplex.html">opensimplex</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/particles.html">particles</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/pose.html">pose</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/screensurface.html">screensurface</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/shader.html">shader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/shaderloader.html">shaderloader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/shadowmap.html">shadowmap</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/shapes.html">shapes</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/state.html">state</a>
+						</div>
+					</li>
+					<li>
+						<div class="module selected">
+							<a href="../../../dagon/graphics/terrain.html">terrain</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/texproc.html">texproc</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/texture.html">texture</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/tween.html">tween</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/updateable.html">updateable</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/world.html">world</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../dagon/resource.html">resource</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">gltf
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/accessor.html">accessor</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/animation.html">animation</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/decoder.html">decoder</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/asset.html">asset</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/binary.html">binary</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/boxfs.html">boxfs</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/dds.html">dds</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/entity.html">entity</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/image.html">image</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/material.html">material</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/obj.html">obj</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/scene.html">scene</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/sdlimage.html">sdlimage</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/text.html">text</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/texture.html">texture</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+				</ul>
+					</li>
+				</ul>
+			</div>
+			<p id="main-nav-footer">
+				Built with<a href="https://github.com/MartinNowak/scod">scod</a>
+			</p>
+		</nav>
+		<div id="main-contents">
+			<div>
+				<h1>Class TerrainMaterial</h1><p>Represents layered terrain material.
+</p>
+				<div class="prototype">
+					<code class="lang-d">
+						<div class="single-prototype">
+				<span class="kwd">class</span> <span class="typ">TerrainMaterial</span><br>&nbsp;&nbsp;: <a href="../../../dagon/graphics/material/Material.html"><span class="typ">Material</span></a><span class="pun">;</span>
+						</div>
+					</code>
+				</div>
+				<section></section>
+
+				<section><h2>Constructors</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/terrain/TerrainMaterial.this.html" class="public">
+									<code>this</code>
+								</a>
+								<span class="tableEntryAnnotation">(owner)</span>
+							</td>
+							<td>Constructs a new <code class="lang-d"><a href="../../../dagon/graphics/terrain/TerrainMaterial.html"><span class="typ">TerrainMaterial</span></a></code> object.
+</td>
+						</tr>
+					</table>
+				</section>
+				<section><h2>Fields</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Type</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/terrain/TerrainMaterial.layers.html" class="public"><code>layers</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">container<wbr/></span><span class="pun">.</span><span class="pln">array<wbr/></span><span class="pun">.</span><span class="typ">Array</span>!(dagon.graphics.material.Material,32L)</code></td><td>Array of terrain texturing layers, where each layer is a separate material
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.alphaTestThreshold.html" class="public inherited"><code>alphaTestThreshold</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Alpha test threshold (for masked transparency).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.baseColorFactor.html" class="public inherited"><code>baseColorFactor</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">image<wbr/></span><span class="pun">.</span><span class="pln">color<wbr/></span><span class="pun">.</span><span class="typ">Color4f</span></code></td><td>Base color factor (albedo color). Used if <code class="lang-d"><a href="../../../dagon/graphics/material/Material.baseColorTexture.html"><span class="pln">baseColorTexture</span></a></code> is not specified
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.baseColorTexture.html" class="public inherited"><code>baseColorTexture</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/texture/Texture.html"><span class="typ">Texture</span></a></code></td><td>Base color (albedo) texture.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.blendMode.html" class="public inherited"><code>blendMode</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td><td>Blending mode (opaque, transparent, additive).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.colorWrite.html" class="public inherited"><code>colorWrite</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If <code class="lang-d"><span class="kwd">false</span></code>, disables writing to the color buffer.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.depthWrite.html" class="public inherited"><code>depthWrite</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If <code class="lang-d"><span class="kwd">false</span></code>, disables writing to the depth buffer.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.emissionEnergy.html" class="public inherited"><code>emissionEnergy</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Emission energy multiplier.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.emissionFactor.html" class="public inherited"><code>emissionFactor</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">image<wbr/></span><span class="pun">.</span><span class="pln">color<wbr/></span><span class="pun">.</span><span class="typ">Color4f</span></code></td><td>Emission color factor. Used if <code class="lang-d"><a href="../../../dagon/graphics/material/Material.emissionTexture.html"><span class="pln">emissionTexture</span></a></code> is not specified
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.emissionTexture.html" class="public inherited"><code>emissionTexture</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/texture/Texture.html"><span class="typ">Texture</span></a></code></td><td>Emission texture.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.heightFactor.html" class="public inherited"><code>heightFactor</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Height factor. Used if <code class="lang-d"><a href="../../../dagon/graphics/material/Material.heightTexture.html"><span class="pln">heightTexture</span></a></code> is not specified
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.heightTexture.html" class="public inherited"><code>heightTexture</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/texture/Texture.html"><span class="typ">Texture</span></a></code></td><td>Height map texture (for parallax mapping).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.invertNormalY.html" class="public inherited"><code>invertNormalY</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If <code class="lang-d"><span class="kwd">true</span></code>, invert the Y channel of the normal map.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.maskFactor.html" class="public inherited"><code>maskFactor</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Alpha mask factor (for terrain texturing layer material). Used if <code class="lang-d"><a href="../../../dagon/graphics/material/Material.maskTexture.html"><span class="pln">maskTexture</span></a></code> is not specified
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.maskTexture.html" class="public inherited"><code>maskTexture</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/texture/Texture.html"><span class="typ">Texture</span></a></code></td><td>Alpha mask texture (for terrain texturing layer material).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.metallicFactor.html" class="public inherited"><code>metallicFactor</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Surface metallic factor (0 = dielectric, 1 = metal). Used if <code class="lang-d"><a href="../../../dagon/graphics/material/Material.roughnessMetallicTexture.html"><span class="pln">roughnessMetallicTexture</span></a></code> is not specified
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.name.html" class="public inherited"><code>name</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>The material name (for identification).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.normalFactor.html" class="public inherited"><code>normalFactor</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">vector<wbr/></span><span class="pun">.</span><span class="typ">Vector</span>!(float,3)</code></td><td>Tangent-space normal vector. Used if <code class="lang-d"><a href="../../../dagon/graphics/material/Material.normalTexture.html"><span class="pln">normalTexture</span></a></code> is not specified
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.normalTexture.html" class="public inherited"><code>normalTexture</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/texture/Texture.html"><span class="typ">Texture</span></a></code></td><td>Tangent-space normal map texture.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.opacity.html" class="public inherited"><code>opacity</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Opacity (alpha value, 0.0 = fully transparent, 1.0 = fully opaque).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.outputColor.html" class="public inherited"><code>outputColor</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If <code class="lang-d"><span class="kwd">false</span></code>, disables G-buffer color output.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.outputEmission.html" class="public inherited"><code>outputEmission</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If <code class="lang-d"><span class="kwd">false</span></code>, disables G-buffer emission output.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.outputNormal.html" class="public inherited"><code>outputNormal</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If <code class="lang-d"><span class="kwd">false</span></code>, disables G-buffer normal output.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.outputPBR.html" class="public inherited"><code>outputPBR</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If <code class="lang-d"><span class="kwd">false</span></code>, disables G-buffer PBR output.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.parallaxBias.html" class="public inherited"><code>parallaxBias</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Parallax mapping bias.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.parallaxMode.html" class="public inherited"><code>parallaxMode</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td><td>Parallax mapping mode.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.parallaxScale.html" class="public inherited"><code>parallaxScale</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Parallax mapping scale.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.roughnessFactor.html" class="public inherited"><code>roughnessFactor</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Surface roughness factor (0 = smooth, 1 = rough). Used if <code class="lang-d"><a href="../../../dagon/graphics/material/Material.roughnessMetallicTexture.html"><span class="pln">roughnessMetallicTexture</span></a></code> is not specified
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.roughnessMetallicTexture.html" class="public inherited"><code>roughnessMetallicTexture</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/texture/Texture.html"><span class="typ">Texture</span></a></code></td><td>Roughness/metallic texture.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.shadeless.html" class="public inherited"><code>shadeless</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If <code class="lang-d"><span class="kwd">true</span></code>, disables all shading (renderer-specific option).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.shader.html" class="public inherited"><code>shader</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/shader/Shader.html"><span class="typ">Shader</span></a></code></td><td>Optional shader used for rendering this material.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.shadowFilter.html" class="public inherited"><code>shadowFilter</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td><td>Shadow filtering mode.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.specularity.html" class="public inherited"><code>specularity</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Specularity factor.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.sphericalNormal.html" class="public inherited"><code>sphericalNormal</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If <code class="lang-d"><span class="kwd">true</span></code>, use spherical normal mapping.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.subsurfaceScattering.html" class="public inherited"><code>subsurfaceScattering</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Subsurface scattering factor.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.sun.html" class="public inherited"><code>sun</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/light/Light.html"><span class="typ">Light</span></a></code></td><td>Optional main directional light (sun) affecting this material.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.textureMappingMode.html" class="public inherited"><code>textureMappingMode</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td><td>Texture mapping mode.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.textureTransformation.html" class="public inherited"><code>textureTransformation</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">matrix<wbr/></span><span class="pun">.</span><span class="typ">Matrix</span>!(float,3L)</code></td><td>Texture transformation matrix.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.useCulling.html" class="public inherited"><code>useCulling</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If <code class="lang-d"><span class="kwd">true</span></code>, enable backface culling.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.useFog.html" class="public inherited"><code>useFog</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If <code class="lang-d"><span class="kwd">true</span></code>, the surface is fogged according to <code class="lang-d"><span class="typ">Environment</span></code> object settings
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.useShadows.html" class="public inherited"><code>useShadows</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If <code class="lang-d"><span class="kwd">true</span></code>, the surface receives shadows.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.textureOffsetInternal.html" class="protected inherited"><code>textureOffsetInternal</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">vector<wbr/></span><span class="pun">.</span><span class="typ">Vector</span>!(float,2)</code></td><td>Internal texture offset (for UV translation).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.textureScalingInternal.html" class="protected inherited"><code>textureScalingInternal</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">vector<wbr/></span><span class="pun">.</span><span class="typ">Vector</span>!(float,2)</code></td><td>Internal texture scaling (for UV scaling).
+</td>
+						</tr>
+					</table>
+				</section>
+				<section><h2>Methods</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/terrain/TerrainMaterial.addLayer.html" class="public">
+									<code>addLayer</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Adds a new layer
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.bind.html" class="public inherited">
+									<code>bind</code>
+								</a>
+								<span class="tableEntryAnnotation">(state)</span>
+							</td>
+							<td>Binds the material and sets all relevant graphics state for rendering.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.isTransparent.html" class="public inherited">
+									<code>isTransparent</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Returns true if the material is transparent (blend mode is not opaque).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.setSprite.html" class="public inherited">
+									<code>setSprite</code>
+								</a>
+								<span class="tableEntryAnnotation">(uvSize, uvPosition)</span>
+							</td>
+							<td>Sets the sprite UV size and position for texture atlases.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.textureOffset.html" class="public inherited">
+									<code>textureOffset</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Gets the current texture offset (UV translation).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.textureOffset.html" class="public inherited">
+									<code>textureOffset</code>
+								</a>
+								<span class="tableEntryAnnotation">(v)</span>
+							</td>
+							<td>Sets the texture offset (UV translation).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.textureScale.html" class="public inherited">
+									<code>textureScale</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Gets the current texture scaling (UV scaling).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.textureScale.html" class="public inherited">
+									<code>textureScale</code>
+								</a>
+								<span class="tableEntryAnnotation">(s)</span>
+							</td>
+							<td>Sets the texture scaling (UV scaling).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/material/Material.unbind.html" class="public inherited">
+									<code>unbind</code>
+								</a>
+								<span class="tableEntryAnnotation">(state)</span>
+							</td>
+							<td>Unbinds the material and restores graphics state.
+</td>
+						</tr>
+					</table>
+				</section><section><h2>Description</h2>
+<p>The <code class="lang-d"><span class="typ">TerrainMaterial</span></code> class manages splat maps, texture layers,
+ and blending parameters used for physically-based terrain shading.
+</p>
+</section>
+
+			</div>
+			<footer>
+				<div id="license-info">
+					<p>Rafał Ziemniewski, Timur Gafarov
+</p>
+<p>Rafał Ziemniewski, Timur Gafarov 2018-2025
+</p>
+<p><a href="https://boost.org/LICENSE_1_0.txt">Boost License 1.0</a>.
+</p>
+
+				</div>
+			</footer>
+		</div>
+	</body>
+</html>

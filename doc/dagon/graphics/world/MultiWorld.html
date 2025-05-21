@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
+		<title>Class MultiWorld</title>
+		<link rel="stylesheet" href="../../../css/style.min.css"/>
+		<script type="text/javascript" src="../../../js/script.min.js"></script>
+	</head>
+	<body onload="setupDdox();">
+		<header></header>
+		<nav id="main-nav">
+			<div>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<form action="#" method="GET">
+						<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();" autofocus/>
+					</form>
+					<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../../";
+document.getElementById('symbolSearchPane').style.display = 'block';</script>
+				</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">dagon
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../dagon/core.html">core</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/application.html">application</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/bindings.html">bindings</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/config.html">config</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/event.html">event</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/input.html">input</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/keycodes.html">keycodes</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/locale.html">locale</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/logger.html">logger</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/persistent.html">persistent</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/props.html">props</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/time.html">time</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/vfs.html">vfs</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/vkformat.html">vkformat</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../../dagon/graphics.html">graphics</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/billboard.html">billboard</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/camera.html">camera</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/components.html">components</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/csm.html">csm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/drawable.html">drawable</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/entity.html">entity</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/environment.html">environment</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/heightmap.html">heightmap</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/light.html">light</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/lod.html">lod</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/material.html">material</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/mesh.html">mesh</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/opensimplex.html">opensimplex</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/particles.html">particles</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/pose.html">pose</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/screensurface.html">screensurface</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/shader.html">shader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/shaderloader.html">shaderloader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/shadowmap.html">shadowmap</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/shapes.html">shapes</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/state.html">state</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/terrain.html">terrain</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/texproc.html">texproc</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/texture.html">texture</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/tween.html">tween</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/updateable.html">updateable</a>
+						</div>
+					</li>
+					<li>
+						<div class="module selected">
+							<a href="../../../dagon/graphics/world.html">world</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../dagon/resource.html">resource</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">gltf
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/accessor.html">accessor</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/animation.html">animation</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/decoder.html">decoder</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/asset.html">asset</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/binary.html">binary</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/boxfs.html">boxfs</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/dds.html">dds</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/entity.html">entity</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/image.html">image</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/material.html">material</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/obj.html">obj</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/scene.html">scene</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/sdlimage.html">sdlimage</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/text.html">text</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/texture.html">texture</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+				</ul>
+					</li>
+				</ul>
+			</div>
+			<p id="main-nav-footer">
+				Built with<a href="https://github.com/MartinNowak/scod">scod</a>
+			</p>
+		</nav>
+		<div id="main-contents">
+			<div>
+				<h1>Class MultiWorld</h1><p>A world that can contain multiple sub-worlds.
+ Allows hierarchical composition of worlds for complex scenes.
+</p>
+				<div class="prototype">
+					<code class="lang-d">
+						<div class="single-prototype">
+				<span class="kwd">class</span> <span class="typ">MultiWorld</span><br>&nbsp;&nbsp;: <a href="../../../dagon/graphics/world/World.html"><span class="typ">World</span></a><span class="pun">;</span>
+						</div>
+					</code>
+				</div>
+				
+				<section><h2>Constructors</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/MultiWorld.this.html" class="public">
+									<code>this</code>
+								</a>
+								<span class="tableEntryAnnotation">(owner)</span>
+							</td>
+							<td>Constructs a multi-world.
+</td>
+						</tr>
+					</table>
+				</section>
+				<section><h2>Fields</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Type</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/MultiWorld.subWorlds.html" class="public"><code>subWorlds</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">container<wbr/></span><span class="pun">.</span><span class="pln">array<wbr/></span><span class="pun">.</span><span class="typ">Array</span>!(dagon.graphics.world.World,32L)</code></td><td>An array of sub-worlds.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/World.areaLights.html" class="public inherited"><code>areaLights</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/world/EntityGroupAreaLights.html"><span class="typ">EntityGroupAreaLights</span></a></code></td><td>Group of area and spot lights.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/World.background.html" class="public inherited"><code>background</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/world/EntityGroupBackground.html"><span class="typ">EntityGroupBackground</span></a></code></td><td>Group of background entities.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/World.decals.html" class="public inherited"><code>decals</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/world/EntityGroupDecals.html"><span class="typ">EntityGroupDecals</span></a></code></td><td>Group of decal entities.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/World.foreground.html" class="public inherited"><code>foreground</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/world/EntityGroupForeground.html"><span class="typ">EntityGroupForeground</span></a></code></td><td>Group of foreground entities.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/World.lights.html" class="public inherited"><code>lights</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/world/EntityGroupLights.html"><span class="typ">EntityGroupLights</span></a></code></td><td>Group of all light entities.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/World.prevRootTransformation.html" class="public inherited"><code>prevRootTransformation</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">matrix<wbr/></span><span class="pun">.</span><span class="typ">Matrix</span>!(float,4L)</code></td><td>Previous frame's root transformation.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/World.probes.html" class="public inherited"><code>probes</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/world/EntityGroupProbes.html"><span class="typ">EntityGroupProbes</span></a></code></td><td>Group of probe entities.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/World.rootInvTransformation.html" class="public inherited"><code>rootInvTransformation</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">matrix<wbr/></span><span class="pun">.</span><span class="typ">Matrix</span>!(float,4L)</code></td><td>Inverse of the root transformation.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/World.rootTransformation.html" class="public inherited"><code>rootTransformation</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">matrix<wbr/></span><span class="pun">.</span><span class="typ">Matrix</span>!(float,4L)</code></td><td>Root transformation matrix for all entities.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/World.spatial.html" class="public inherited"><code>spatial</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/world/EntityGroupSpatial.html"><span class="typ">EntityGroupSpatial</span></a></code></td><td>Group of all spatial entities.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/World.spatialOpaqueDynamic.html" class="public inherited"><code>spatialOpaqueDynamic</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/world/EntityGroupSpatialOpaque.html"><span class="typ">EntityGroupSpatialOpaque</span></a></code></td><td>Group of dynamic opaque spatial entities.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/World.spatialOpaqueStatic.html" class="public inherited"><code>spatialOpaqueStatic</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/world/EntityGroupSpatialOpaque.html"><span class="typ">EntityGroupSpatialOpaque</span></a></code></td><td>Group of static opaque spatial entities.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/World.spatialTransparent.html" class="public inherited"><code>spatialTransparent</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/world/EntityGroupSpatialTransparent.html"><span class="typ">EntityGroupSpatialTransparent</span></a></code></td><td>Group of transparent spatial entities.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/World.sunLights.html" class="public inherited"><code>sunLights</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/world/EntityGroupSunLights.html"><span class="typ">EntityGroupSunLights</span></a></code></td><td>Group of sun (directional) lights.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/World.visible.html" class="public inherited"><code>visible</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If false, the world and its entities are hidden.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/World.entities.html" class="protected inherited"><code>entities</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">container<wbr/></span><span class="pun">.</span><span class="pln">array<wbr/></span><span class="pun">.</span><span class="typ">Array</span>!(dagon.graphics.entity.Entity,32L)</code></td><td>Array of all entities in the world.
+</td>
+						</tr>
+					</table>
+				</section>
+				<section><h2>Methods</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/MultiWorld.addSubWorld.html" class="public">
+									<code>addSubWorld</code>
+								</a>
+								<span class="tableEntryAnnotation">(visible)</span>
+							</td>
+							<td>Adds a new sub-world.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/MultiWorld.length.html" class="public">
+									<code>length</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Returns the total number of entities in all sub-worlds.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/MultiWorld.opApply.html" class="public">
+									<code>opApply</code>
+								</a>
+								<span class="tableEntryAnnotation">(dg)</span>
+							</td>
+							<td>Iterates over all entities in all sub-worlds (by index and reference).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/MultiWorld.opApply.html" class="public">
+									<code>opApply</code>
+								</a>
+								<span class="tableEntryAnnotation">(dg)</span>
+							</td>
+							<td>Iterates over all entities in all sub-worlds (by reference only).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/MultiWorld.opApplyReverse.html" class="public">
+									<code>opApplyReverse</code>
+								</a>
+								<span class="tableEntryAnnotation">(dg)</span>
+							</td>
+							<td>Iterates in reverse order (by index and reference).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/MultiWorld.opApplyReverse.html" class="public">
+									<code>opApplyReverse</code>
+								</a>
+								<span class="tableEntryAnnotation">(dg)</span>
+							</td>
+							<td>Iterates in reverse order (by reference only).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/World.add.html" class="public inherited">
+									<code>add</code>
+								</a>
+								<span class="tableEntryAnnotation">(e)</span>
+							</td>
+							<td>Adds an existing entity to the world.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/World.addEntity.html" class="public inherited">
+									<code>addEntity</code>
+								</a>
+								<span class="tableEntryAnnotation">(parent)</span>
+							</td>
+							<td>Creates and adds a new entity, optionally with a parent.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/World.createEntityGroups.html" class="public inherited">
+									<code>createEntityGroups</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Creates and initializes all entity groups.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/world/World.resetTransformation.html" class="public inherited">
+									<code>resetTransformation</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Resets the root transformation matrices.
+</td>
+						</tr>
+					</table>
+				</section>
+			</div>
+			<footer>
+				<div id="license-info">
+					<p>Timur Gafarov
+</p>
+<p>Timur Gafarov 2023-2025
+</p>
+<p><a href="https://boost.org/LICENSE_1_0.txt">Boost License 1.0</a>.
+</p>
+
+				</div>
+			</footer>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
+		<title>Class TextureCombinerShader</title>
+		<link rel="stylesheet" href="../../../css/style.min.css"/>
+		<script type="text/javascript" src="../../../js/script.min.js"></script>
+	</head>
+	<body onload="setupDdox();">
+		<header></header>
+		<nav id="main-nav">
+			<div>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<form action="#" method="GET">
+						<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();" autofocus/>
+					</form>
+					<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../../";
+document.getElementById('symbolSearchPane').style.display = 'block';</script>
+				</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">dagon
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../dagon/core.html">core</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/application.html">application</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/bindings.html">bindings</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/config.html">config</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/event.html">event</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/input.html">input</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/keycodes.html">keycodes</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/locale.html">locale</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/logger.html">logger</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/persistent.html">persistent</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/props.html">props</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/time.html">time</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/vfs.html">vfs</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/vkformat.html">vkformat</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../../dagon/graphics.html">graphics</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/billboard.html">billboard</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/camera.html">camera</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/components.html">components</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/csm.html">csm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/drawable.html">drawable</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/entity.html">entity</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/environment.html">environment</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/heightmap.html">heightmap</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/light.html">light</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/lod.html">lod</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/material.html">material</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/mesh.html">mesh</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/opensimplex.html">opensimplex</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/particles.html">particles</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/pose.html">pose</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/screensurface.html">screensurface</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/shader.html">shader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/shaderloader.html">shaderloader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/shadowmap.html">shadowmap</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/shapes.html">shapes</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/state.html">state</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/terrain.html">terrain</a>
+						</div>
+					</li>
+					<li>
+						<div class="module selected">
+							<a href="../../../dagon/graphics/texproc.html">texproc</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/texture.html">texture</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/tween.html">tween</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/updateable.html">updateable</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/world.html">world</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../dagon/resource.html">resource</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">gltf
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/accessor.html">accessor</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/animation.html">animation</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/decoder.html">decoder</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/asset.html">asset</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/binary.html">binary</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/boxfs.html">boxfs</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/dds.html">dds</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/entity.html">entity</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/image.html">image</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/material.html">material</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/obj.html">obj</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/scene.html">scene</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/sdlimage.html">sdlimage</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/text.html">text</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/texture.html">texture</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+				</ul>
+					</li>
+				</ul>
+			</div>
+			<p id="main-nav-footer">
+				Built with<a href="https://github.com/MartinNowak/scod">scod</a>
+			</p>
+		</nav>
+		<div id="main-contents">
+			<div>
+				<h1>Class TextureCombinerShader</h1><p>Shader for combining up to four textures into a single output.
+</p>
+				<div class="prototype">
+					<code class="lang-d">
+						<div class="single-prototype">
+				<span class="kwd">class</span> <span class="typ">TextureCombinerShader</span><br>&nbsp;&nbsp;: <a href="../../../dagon/graphics/shader/Shader.html"><span class="typ">Shader</span></a><span class="pun">;</span>
+						</div>
+					</code>
+				</div>
+				<section></section>
+
+				<section><h2>Constructors</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/texproc/TextureCombinerShader.this.html" class="public">
+									<code>this</code>
+								</a>
+								<span class="tableEntryAnnotation">(channels, owner)</span>
+							</td>
+							<td>Constructs a texture combiner shader with the given channels.
+</td>
+						</tr>
+					</table>
+				</section>
+				<section><h2>Methods</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/texproc/TextureCombinerShader.bindParameters.html" class="public">
+									<code>bindParameters</code>
+								</a>
+								<span class="tableEntryAnnotation">(state)</span>
+							</td>
+							<td>Binds shader parameters and input textures for rendering.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/texproc/TextureCombinerShader.unbindParameters.html" class="public">
+									<code>unbindParameters</code>
+								</a>
+								<span class="tableEntryAnnotation">(state)</span>
+							</td>
+							<td>Unbinds shader parameters and input textures.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/shader/Shader.bind.html" class="public inherited">
+									<code>bind</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Binds the underlying shader program.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/shader/Shader.createParameter.html" class="public inherited">
+									<code>createParameter</code>
+								</a>
+								<span class="tableEntryAnnotation">(name)</span>
+							</td>
+							<td>Creates a uniform parameter of type <code class="lang-d"><span class="pln">T</span></code>.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/shader/Shader.createParameterSubroutine.html" class="public inherited">
+									<code>createParameterSubroutine</code>
+								</a>
+								<span class="tableEntryAnnotation">(name, shaderType)</span>
+							</td>
+							<td>Creates a subroutine parameter.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/shader/Shader.getParameter.html" class="public inherited">
+									<code>getParameter</code>
+								</a>
+								<span class="tableEntryAnnotation">(name)</span>
+							</td>
+							<td>Gets a parameter by name.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/shader/Shader.getParameterValue.html" class="public inherited">
+									<code>getParameterValue</code>
+								</a>
+								<span class="tableEntryAnnotation">(name)</span>
+							</td>
+							<td>Gets the value of a parameter by name.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/shader/Shader.load.html" class="public inherited">
+									<code>load</code>
+								</a>
+								<span class="tableEntryAnnotation">(filename)</span>
+							</td>
+							<td>Loads shader source code from a file, supporting <code class="lang-d"><span class="pln">#include</span></code> directives.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/shader/Shader.setParameter.html" class="public inherited">
+									<code>setParameter</code>
+								</a>
+								<span class="tableEntryAnnotation">(name, val)</span>
+							</td>
+							<td>Sets a uniform parameter of type <code class="lang-d"><span class="pln">T</span></code> to a value.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/shader/Shader.setParameterCallback.html" class="public inherited">
+									<code>setParameterCallback</code>
+								</a>
+								<span class="tableEntryAnnotation">(name, val)</span>
+							</td>
+							<td>Sets a uniform parameter of type <code class="lang-d"><span class="pln">T</span></code> to a callback.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/shader/Shader.setParameterRef.html" class="public inherited">
+									<code>setParameterRef</code>
+								</a>
+								<span class="tableEntryAnnotation">(name, val)</span>
+							</td>
+							<td>Sets a uniform parameter of type <code class="lang-d"><span class="pln">T</span></code> to a reference.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/shader/Shader.setParameterSubroutine.html" class="public inherited">
+									<code>setParameterSubroutine</code>
+								</a>
+								<span class="tableEntryAnnotation">(name, shaderType, subroutineName)</span>
+							</td>
+							<td>Sets a subroutine parameter with a specific subroutine name.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/shader/Shader.unbind.html" class="public inherited">
+									<code>unbind</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Unbinds the underlying shader program.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/shader/Shader.validate.html" class="public inherited">
+									<code>validate</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Validates the shader program.
+</td>
+						</tr>
+					</table>
+				</section><section><h2>Description</h2>
+<p>The <code class="lang-d"><span class="typ">TextureCombinerShader</span></code> binds up to four input textures (channels) and
+ outputs a combined result.
+</p>
+</section>
+
+			</div>
+			<footer>
+				<div id="license-info">
+					<p>Timur Gafarov
+</p>
+<p>Timur Gafarov 2022-2025
+</p>
+<p><a href="https://boost.org/LICENSE_1_0.txt">Boost License 1.0</a>.
+</p>
+
+				</div>
+			</footer>
+		</div>
+	</body>
+</html>

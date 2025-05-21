@@ -1,3 +1,0 @@
-# Scene
-
-Dagon's core logic is based on a concept of a scene. A scene is an incapsulator for assets and game objects (which are called entities) and any custom data logically tied to them. Scene loads assets, allocates entities, configurates them and initiates game loop. Only one scene is active at any given time. Switching an active scene can optionally cause releasing current assets and loading new ones, as you would expect when going from one game level or location to another. But scenes can represent not only levels, they are used for any logical context in a game - a menu, pause screen, options screen, inventory screen, and so on (this doesn't mean you can't make strategy-style GUI that is rendered over a map - scene based approach is just more generic).

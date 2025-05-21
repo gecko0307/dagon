@@ -1,22 +1,877 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Dagon Documentation</title>
-  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-  <meta name="description" content="Description">
-  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-  <link rel="stylesheet" href="//unpkg.com/docsify/lib/themes/vue.css">
-</head>
-<body>
-  <div id="app"></div>
-  <script>
-    window.$docsify = {
-      name: '',
-      repo: ''
-    }
-  </script>
-  <script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
-  <script src="//unpkg.com/prismjs/components/prism-d.min.js"></script>
-</body>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
+		<title>API documentation</title>
+		<link rel="stylesheet" href="./css/style.min.css"/>
+		<script type="text/javascript" src="./js/script.min.js"></script>
+	</head>
+	<body onload="setupDdox();">
+		<header></header>
+		<nav id="main-nav">
+			<div>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<form action="#" method="GET">
+						<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();" autofocus/>
+					</form>
+					<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="./symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "./";
+document.getElementById('symbolSearchPane').style.display = 'block';</script>
+				</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">dagon
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="./dagon/core.html">core</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="./dagon/core/application.html">application</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/core/bindings.html">bindings</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/core/config.html">config</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/core/event.html">event</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/core/input.html">input</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/core/keycodes.html">keycodes</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/core/locale.html">locale</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/core/logger.html">logger</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/core/persistent.html">persistent</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/core/props.html">props</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/core/time.html">time</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/core/vfs.html">vfs</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/core/vkformat.html">vkformat</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="./dagon/graphics.html">graphics</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/billboard.html">billboard</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/camera.html">camera</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/components.html">components</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/csm.html">csm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/drawable.html">drawable</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/entity.html">entity</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/environment.html">environment</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/heightmap.html">heightmap</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/light.html">light</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/lod.html">lod</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/material.html">material</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/mesh.html">mesh</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/opensimplex.html">opensimplex</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/particles.html">particles</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/pose.html">pose</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/screensurface.html">screensurface</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/shader.html">shader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/shaderloader.html">shaderloader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/shadowmap.html">shadowmap</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/shapes.html">shapes</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/state.html">state</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/terrain.html">terrain</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/texproc.html">texproc</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/texture.html">texture</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/tween.html">tween</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/updateable.html">updateable</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/graphics/world.html">world</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="./dagon/resource.html">resource</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">gltf
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="./dagon/resource/gltf/accessor.html">accessor</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/resource/gltf/animation.html">animation</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/resource/gltf/decoder.html">decoder</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/resource/asset.html">asset</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/resource/binary.html">binary</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/resource/boxfs.html">boxfs</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/resource/dds.html">dds</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/resource/entity.html">entity</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/resource/image.html">image</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/resource/material.html">material</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/resource/obj.html">obj</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/resource/scene.html">scene</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/resource/sdlimage.html">sdlimage</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/resource/text.html">text</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/resource/texture.html">texture</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+				</ul>
+					</li>
+				</ul>
+			</div>
+			<p id="main-nav-footer">
+				Built with<a href="https://github.com/MartinNowak/scod">scod</a>
+			</p>
+		</nav>
+		<div id="main-contents">
+			<div>
+				<h1>API documentation</h1>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Module</th><th>Description</th>
+					</tr>
+				<tr>
+					<td>
+						<a href="./dagon/core/application.html">dagon.core.application</a>
+					</td>
+					<td>
+						Generic applicaton class and corresponding utility functions
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/core/bindings.html">dagon.core.bindings</a>
+					</td>
+					<td>
+						Helper module that publicly imports OpenGL and SDL bindings.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/core/config.html">dagon.core.config</a>
+					</td>
+					<td>
+						Provides configuration management for Dagon applications.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/core/event.html">dagon.core.event</a>
+					</td>
+					<td>
+						Provides an event manager for input, window, and user-defined events.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/core/input.html">dagon.core.input</a>
+					</td>
+					<td>
+						Provides an input manager.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/core/keycodes.html">dagon.core.keycodes</a>
+					</td>
+					<td>
+						Defines key codes and button codes for keyboard, mouse, and game controllers.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/core/locale.html">dagon.core.locale</a>
+					</td>
+					<td>
+						Provides utilities for detecting and querying the system locale.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/core/logger.html">dagon.core.logger</a>
+					</td>
+					<td>
+						Provides logging facilities for Dagon applications.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/core/persistent.html">dagon.core.persistent</a>
+					</td>
+					<td>
+						Provides persistent key-value data storage.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/core/props.html">dagon.core.props</a>
+					</td>
+					<td>
+						Provides a flexible property system.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/core/time.html">dagon.core.time</a>
+					</td>
+					<td>
+						Provides time management utilities.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/core/vfs.html">dagon.core.vfs</a>
+					</td>
+					<td>
+						Provides a virtual file system abstraction.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/core/vkformat.html">dagon.core.vkformat</a>
+					</td>
+					<td>
+						Defines Vulkan image format enumerations.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/billboard.html">dagon.graphics.billboard</a>
+					</td>
+					<td>
+						Provides a billboard class.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/camera.html">dagon.graphics.camera</a>
+					</td>
+					<td>
+						Defines the camera class.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/components.html">dagon.graphics.components</a>
+					</td>
+					<td>
+						Provides reusable components for <code class="lang-d"><span class="typ">Entity</span></code>.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/csm.html">dagon.graphics.csm</a>
+					</td>
+					<td>
+						Provides classes and utilities for cascaded shadow mapping (CSM).
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/drawable.html">dagon.graphics.drawable</a>
+					</td>
+					<td>
+						Provides the core interface and grouping utilities for renderable objects.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/entity.html">dagon.graphics.entity</a>
+					</td>
+					<td>
+						Provides the scene graph node and component system.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/environment.html">dagon.graphics.environment</a>
+					</td>
+					<td>
+						Defines the environment class.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/heightmap.html">dagon.graphics.heightmap</a>
+					</td>
+					<td>
+						Provides interfaces and implementations for heightmap data sources.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/light.html">dagon.graphics.light</a>
+					</td>
+					<td>
+						Defines the core lighting system of the engine.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/lod.html">dagon.graphics.lod</a>
+					</td>
+					<td>
+						Provides level-of-detail (LOD) functionality.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/material.html">dagon.graphics.material</a>
+					</td>
+					<td>
+						Defines the material system.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/mesh.html">dagon.graphics.mesh</a>
+					</td>
+					<td>
+						Defines mesh data structure and utilities.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/opensimplex.html">dagon.graphics.opensimplex</a>
+					</td>
+					<td>
+						An implementation of OpenSimplex noise.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/particles.html">dagon.graphics.particles</a>
+					</td>
+					<td>
+						A particle system.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/pose.html">dagon.graphics.pose</a>
+					</td>
+					<td>
+						An abstract interface for skeletal animation poses.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/screensurface.html">dagon.graphics.screensurface</a>
+					</td>
+					<td>
+						A screen-aligned quad mesh for post-processing and fullscreen effects.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/shader.html">dagon.graphics.shader</a>
+					</td>
+					<td>
+						Provides classes and utilities for OpenGL shader management.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/shaderloader.html">dagon.graphics.shaderloader</a>
+					</td>
+					<td>
+						Utilities for compiling and linking OpenGL shaders.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/shadowmap.html">dagon.graphics.shadowmap</a>
+					</td>
+					<td>
+						Provides the base class for shadow mapping.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/shapes.html">dagon.graphics.shapes</a>
+					</td>
+					<td>
+						Basic geometric shape classes.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/state.html">dagon.graphics.state</a>
+					</td>
+					<td>
+						Graphics pipeline state.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/terrain.html">dagon.graphics.terrain</a>
+					</td>
+					<td>
+						Provides classes and utilities for terrain rendering.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/texproc.html">dagon.graphics.texproc</a>
+					</td>
+					<td>
+						Provides utilities for GPU-accelerated texture processing.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/texture.html">dagon.graphics.texture</a>
+					</td>
+					<td>
+						Provides a texture class and corresponding utilities.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/tween.html">dagon.graphics.tween</a>
+					</td>
+					<td>
+						Animation for entity properties.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/updateable.html">dagon.graphics.updateable</a>
+					</td>
+					<td>
+						Provides the core interface for updateable objects.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics/world.html">dagon.graphics.world</a>
+					</td>
+					<td>
+						Provides the <code class="lang-d"><a href="./dagon/graphics/world/World.html"><span class="typ">World</span></a></code> class and related entity group classes for managing
+ collections of entities in a scene.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/resource/gltf/accessor.html">dagon.resource.gltf.accessor</a>
+					</td>
+					<td>
+						GLTF 2.0 accessor representation.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/resource/gltf/animation.html">dagon.resource.gltf.animation</a>
+					</td>
+					<td>
+						GLTF 2.0 animation.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/resource/gltf/decoder.html">dagon.resource.gltf.decoder</a>
+					</td>
+					<td>
+						GLTF 2.0 decoder.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/resource/asset.html">dagon.resource.asset</a>
+					</td>
+					<td>
+						Asset management tools.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/resource/binary.html">dagon.resource.binary</a>
+					</td>
+					<td>
+						Provides support for loading and managing generic binary assets in Dagon.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/resource/boxfs.html">dagon.resource.boxfs</a>
+					</td>
+					<td>
+						A virtual read-only file system for accessing files packed in Box archives.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/resource/dds.html">dagon.resource.dds</a>
+					</td>
+					<td>
+						DirectDraw Surface (DDS) loader.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/resource/entity.html">dagon.resource.entity</a>
+					</td>
+					<td>
+						Provides an entity asset class.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/resource/image.html">dagon.resource.image</a>
+					</td>
+					<td>
+						Provides a <code class="lang-d"><span class="typ">SuperImage</span></code> interface implementation for texture buffers in Dagon.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/resource/material.html">dagon.resource.material</a>
+					</td>
+					<td>
+						Material asset.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/resource/obj.html">dagon.resource.obj</a>
+					</td>
+					<td>
+						OBJ mesh loader.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/resource/scene.html">dagon.resource.scene</a>
+					</td>
+					<td>
+						Scene class.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/resource/sdlimage.html">dagon.resource.sdlimage</a>
+					</td>
+					<td>
+						Image decoder that uses SDL2_Image.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/resource/text.html">dagon.resource.text</a>
+					</td>
+					<td>
+						Plain text asset.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/resource/texture.html">dagon.resource.texture</a>
+					</td>
+					<td>
+						Texture asset.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/core.html">dagon.core</a>
+					</td>
+					<td>
+						Provides the core modules and foundational utilities for Dagon applications.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/graphics.html">dagon.graphics</a>
+					</td>
+					<td>
+						The main entry point for Dagon's 3D graphics system.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/resource.html">dagon.resource</a>
+					</td>
+					<td>
+						Main entry point for Dagon's asset management system.
+
+					</td>
+				</tr>
+				</table>
+			</div>
+			<footer>
+				<div id="license-info"></div>
+			</footer>
+		</div>
+	</body>
 </html>
