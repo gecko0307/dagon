@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2022 Timur Gafarov
+Copyright (c) 2017-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,6 +25,21 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Plain text asset.
+ *
+ * Description:
+ * The `dagon.resource.text` module defines the `TextAsset` class for
+ * loading, storing, and managing text files as assets. Text assets are useful
+ * for configuration files, scripts, shader sources, or any other textual data
+ * that needs to be loaded and managed by the asset system. The module provides
+ * threaded loading, integration with the asset manager, and virtual file system
+ * support.
+ *
+ * Copyright: Timur Gafarov 2017-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.resource.text;
 
 import dlib.core.memory;
@@ -35,35 +50,64 @@ import dlib.filesystem.stdfs;
 
 import dagon.resource.asset;
 
+/**
+ * Asset class for loading and managing plain text files.
+ * Loads the entire file or stream into a string buffer.
+ */
 class TextAsset: Asset
 {
+    /// The loaded text content.
     string text;
 
-    this(Owner o)
+    /**
+     * Constructs a new text asset.
+     *
+     * Params:
+     *   owner = Owner object.
+     */
+    this(Owner owner)
     {
-        super(o);
+        super(owner);
     }
 
+    /// Destructor. Releases the text buffer.
     ~this()
     {
         release();
     }
 
+    /**
+     * Loads the thread-safe part of the asset (reads the file/stream into the text buffer).
+     *
+     * Params:
+     *   filename = The asset filename.
+     *   istrm    = Input stream to read from.
+     *   fs       = File system.
+     *   mngr     = Asset manager.
+     * Returns:
+     *   true if loading succeeded.
+     */
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
     {
         text = readText(istrm);
         return true;
     }
 
+    /**
+     * Loads the thread-unsafe part of the asset (no-op for text).
+     *
+     * Returns:
+     *   true (always succeeds).
+     */
     override bool loadThreadUnsafePart()
     {
         return true;
     }
 
+    /// Releases the text buffer and all associated resources.
     override void release()
     {
         if (text.length)
             Delete(text);
     }
 }
-

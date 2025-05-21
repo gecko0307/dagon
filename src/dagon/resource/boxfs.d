@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2022 Timur Gafarov
+Copyright (c) 2017-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,6 +25,23 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * A virtual read-only file system for accessing files packed in Box archives.
+ *
+ * Description:
+ * The `dagon.resource.boxfs` module defines the `BoxFileSystem` class, which
+ * allows mounting and reading files from a Box archive format. This is useful
+ * for distributing game assets as a single file, supporting virtual file system
+ * operations such as file lookup, streaming, and stat queries. The module also
+ * provides an `UnmanagedArrayStream` for efficient buffer access.
+ *
+ * An utility for packing and unpacking *.box files:
+ * $(LINK2 https://github.com/gecko0307/box, https://github.com/gecko0307/box).
+ *
+ * Copyright: Timur Gafarov 2017-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.resource.boxfs;
 
 import std.stdio;
@@ -38,41 +55,90 @@ import dlib.container.dict;
 import dlib.container.array;
 import dlib.text.utils;
 
+/**
+ * Represents a file entry in a box archive.
+ */
 struct BoxEntry
 {
+    /// Offset of the file data in the archive.
     ulong offset;
+
+    /// Size of the file data in bytes.
     ulong size;
 }
 
+/**
+ * An array stream interface for a raw buffer.
+ * Used for reading data from a buffer extracted from a box archive.
+ */
 class UnmanagedArrayStream: ArrayStream
 {
     ubyte[] buffer;
 
+    /**
+     * Constructs an unmanaged array stream from a buffer.
+     *
+     * Params:
+     *   data = The buffer to stream from.
+     */
     this(ubyte[] data)
     {
         super(data, data.length);
         buffer = data;
     }
 
+    /// Destructor. Releases the buffer.
     ~this()
     {
         Delete(buffer);
     }
 }
 
+/**
+ * Read-only file system for accessing files in a Box archive.
+ *
+ * Supports file lookup, streaming, and stat queries.
+ * Can mount a *.box file from a filename or input stream,
+ * and optionally restrict access to a subdirectory within the archive.
+ */
 class BoxFileSystem: ReadOnlyFileSystem
 {
+    /// The underlying stream for the box file.
     InputStream boxStrm;
+
+    /// Root directory within the archive.
     string rootDir = "";
+
+    /// Map of filenames to file entries.
     Dict!(BoxEntry, string) files;
+
+    /// List of all filenames in the archive.
     Array!string filenames;
+
+    /// If true, deletes the stream on destruction.
     bool deleteStream = false;
 
+    /**
+     * Constructs a Box file system from a file system and filename.
+     *
+     * Params:
+     *   fs       = The underlying file system.
+     *   filename = The box archive filename.
+     *   rootDir  = Optional root directory within the archive.
+     */
     this(ReadOnlyFileSystem fs, string filename, string rootDir = "")
     {
         this(fs.openForInput(filename), true, rootDir);
     }
 
+    /**
+     * Constructs a Box file system from an input stream.
+     *
+     * Params:
+     *   istrm        = The input stream for the *.box archive.
+     *   deleteStream = If true, deletes the stream on destruction.
+     *   rootDir      = Optional root directory within the archive.
+     */
     this(InputStream istrm, bool deleteStream = false, string rootDir = "")
     {
         this.deleteStream = deleteStream;
@@ -125,6 +191,15 @@ class BoxFileSystem: ReadOnlyFileSystem
             Delete(rootDirWithSeparator);
     }
 
+    /**
+     * Retrieves file statistics for a file in the archive.
+     *
+     * Params:
+     *   filename = The file to query.
+     *   stat     = Output file statistics.
+     * Returns:
+     *   true if the file exists, false otherwise.
+     */
     bool stat(string filename, out FileStat stat)
     {
         if (filename in files)
@@ -141,6 +216,14 @@ class BoxFileSystem: ReadOnlyFileSystem
             return false;
     }
 
+    /**
+     * Opens a file for input from the archive.
+     *
+     * Params:
+     *   filename = The file to open.
+     * Returns:
+     *   An input stream for the file, or null if not found.
+     */
     InputStream openForInput(string filename)
     {
         if (filename in files)
@@ -155,12 +238,21 @@ class BoxFileSystem: ReadOnlyFileSystem
             return null;
     }
 
+    /**
+     * Opens a directory from the archive (not implemented).
+     *
+     * Params:
+     *   dir = The directory to open.
+     * Returns:
+     *   null (not implemented).
+     */
     Directory openDir(string dir)
     {
         // TODO
         return null;
     }
 
+    /// Destructor. Releases all resources and buffers.
     ~this()
     {
         foreach(f; filenames)

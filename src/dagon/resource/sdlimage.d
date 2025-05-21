@@ -24,6 +24,21 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * Image decoder that uses SDL2_Image.
+ *
+ * Description:
+ * The `dagon.resource.sdlimage` module defines functionality for loading
+ * images via SDL2_Image, and converting SDL surfaces to GPU-ready texture buffers.
+ * The loader supports a wide range of formats (BMP, GIF, JPEG, PNG, QOI, TGA,
+ * TIFF, WEBP, AVIF, JXL, SVG, and more), and can handle pixel format conversion.
+ * It also creates a `TextureImage` object for compatibility with `dlib.image``.
+ *
+ * Copyright: Timur Gafarov 2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.resource.sdlimage;
 
 import core.stdc.string;
@@ -40,29 +55,60 @@ import dagon.graphics.texture;
 import dagon.resource.texture;
 import dagon.resource.image;
 
+/// List of file extensions supported by SDL2_Image.
 immutable string[] sdlImageFormats = [
     ".bmp", ".gif", ".jpg", ".jpeg", ".lbm", ".pcx", ".png",
     ".pnm", ".ppm", ".pgm", ".pbm", ".qoi", ".tga", ".xcf", ".xpm",
     ".tif", ".tiff", ".webp", ".avif", ".jxl", ".svg"
 ];
 
+/// List of OpenGL internal formats supported by `dlib.image`.
 immutable GLint[] dlibImageSupportedFormats = [
     GL_R8, GL_RG8, GL_RGB8, GL_RGBA8, GL_R16,
     GL_RG16, GL_RGB16, GL_RGBA16, GL_RGBA32F
 ];
 
+/**
+ * Checks if the given file extension is supported by SDL2_Image.
+ *
+ * Params:
+ *   formatExtension = The file extension (e.g., ".png").
+ * Returns:
+ *   `true` if supported, `false` otherwise.
+ */
 bool isSDLImageSupportedFormat(string formatExtension)
 {
     return sdlImageFormats.canFind(formatExtension);
 }
 
+/**
+ * Hints for pixel format conversion when loading images.
+ */
 enum ConversionHint
 {
+    /// No conversion.
     None = 0,
+
+    /// Convert to RGB.
     RGB = 1,
+
+    /// Convert to RGBA.
     RGBA = 2
 }
 
+/**
+ * Loads an image from an input stream using SDL2_Image and fills a `TextureAsset`.
+ * Handles resizing (for SVG) and pixel format conversion, if needed.
+ * Creates `asset.image` if the image format is compatible with `dlib.image`.
+ * This function is preferred by `DefaultTextureLoader` if SDL2_Image is available.
+ *
+ * Params:
+ *   istrm     = Input stream containing the image data.
+ *   extension = File extension including the dot (e.g., ".png", ".svg").
+ *   asset     = The texture asset to fill.
+ * Returns:
+ *   true if loading succeeded, false otherwise.
+ */
 bool loadImageViaSDLImage(InputStream istrm, string extension, TextureAsset asset)
 {
     size_t dataSize = istrm.size;

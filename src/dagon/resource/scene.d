@@ -28,6 +28,7 @@ DEALINGS IN THE SOFTWARE.
 /**
  * Scene class.
  *
+ * Description:
  * The `dagon.resource.scene` module defines the `Scene` class, which provides
  * asset manager, world, and environment for a 3D scene.
  * The `Scene` class provides methods for adding and managing assets (textures,
@@ -72,6 +73,7 @@ import dagon.resource.binary;
  * Manages the application context, assets, world,
  * and environment for a 3D scene.
  *
+ * Description:
  * The `Scene` class provides methods for adding assets
  * (textures, OBJ, GLTF, text, binary), creating entities,
  * cameras, lights, and decals, and handling scene loading
