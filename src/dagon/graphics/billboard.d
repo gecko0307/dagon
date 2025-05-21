@@ -24,6 +24,20 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * Provides a billboard class.
+ *
+ * Description:
+ * Billboards are flat objects (usually quads) that always face the camera,
+ * commonly used for sprites, particles, lens flares, and other effects that
+ * require consistent orientation regardless of the camera angle.
+ * This module defines the `Billboard` class for single billboards.
+ *
+ * Copyright: Timur Gafarov 2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.graphics.billboard;
 
 import std.math;
@@ -40,11 +54,13 @@ import dagon.graphics.drawable;
 import dagon.graphics.state;
 import dagon.graphics.mesh;
 
-/*
- * Perspective-invariant screen aligned quad
+/**
+ * Represents a plane that always faces the camera.
  */
 class Billboard: Owner, Drawable
 {
+    protected:
+
     Vector2f[4] vertices;
     Vector2f[4] texcoords;
     uint[3][2] indices;
@@ -54,8 +70,17 @@ class Billboard: Owner, Drawable
     GLuint tbo = 0;
     GLuint eao = 0;
     
+    public:
+
+    /// Z-axis rotation
     float rotation = 0.0f;
-    
+
+    /**
+     * Constructs a new billboard.
+     *
+     * Params:
+     *   owner = The owner object.
+     */
     this(Owner owner)
     {
         super(owner);
@@ -105,6 +130,7 @@ class Billboard: Owner, Drawable
         glBindVertexArray(0);
     }
     
+    /// Destructor. Releases OpenGL resources.
     ~this()
     {
         glDeleteVertexArrays(1, &vao);
@@ -113,6 +139,7 @@ class Billboard: Owner, Drawable
         glDeleteBuffers(1, &eao);
     }
     
+    /// Renders the billboard using the provided graphics pipeline state.
     void render(GraphicsState* state)
     {
         GraphicsState stateLocal = *state;

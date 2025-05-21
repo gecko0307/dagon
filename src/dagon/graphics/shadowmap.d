@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2022 Timur Gafarov
+Copyright (c) 2017-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,6 +25,20 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Provides the base class for shadow mapping.
+ *
+ * Description:
+ * The `dagon.graphics.shadowmap` module defines the abstract `ShadowMap` class,
+ * which manages the resolution, light association, and update/resizing interface
+ * for shadow maps. Derived classes implement specific shadow mapping techniques,
+ * such as standard shadow maps or cascaded shadow maps. Shadow maps are used
+ * to render and sample shadows cast by lights in the scene.
+ *
+ * Copyright: Timur Gafarov 2017-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.graphics.shadowmap;
 
 import dlib.core.ownership;
@@ -34,21 +48,52 @@ import dagon.core.time;
 import dagon.graphics.light;
 import dagon.graphics.shader;
 
+/**
+ * Abstract base class for shadow maps.
+ *
+ * Description:
+ * Manages the resolution, associated light, and provides
+ * an interface for enabling, resizing, and updating shadow maps.
+ * Derived classes implement specific shadow mapping techniques.
+ */
 abstract class ShadowMap: Owner
 {
+    /// The resolution of the shadow map texture.
     uint resolution;
+
+    /// The light source associated with this shadow map.
     Light light;
 
+    /**
+     * Constructs a shadow map for the given owner.
+     *
+     * Params:
+     *   owner = The owner object.
+     */
     this(Owner owner)
     {
         super(owner);
     }
 
-    bool enabled() @property
+    /// Returns `true` if the shadow map is enabled (the light casts shadows).
+    bool enabled() const @property
     {
         return light.shadowEnabled;
     }
     
+    /**
+     * Resizes the shadow map to the given resolution.
+     *
+     * Params:
+     *   res = The new resolution.
+     */
     void resize(uint res);
+
+    /**
+     * Updates the shadow map for the current frame.
+     *
+     * Params:
+     *   t = Frame timing information.
+     */
     void update(Time t);
 }

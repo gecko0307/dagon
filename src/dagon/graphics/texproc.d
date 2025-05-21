@@ -24,6 +24,19 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * Provides utilities for GPU-accelerated texture processing.
+ *
+ * Description:
+ * The `dagon.graphics.texproc` module defines the `TextureCombinerShader` class
+ * for combining up to four textures into a single output texture. This is useful for
+ * merging channels and generating composite roughnes-metallic maps for PBR.
+ *
+ * Copyright: Timur Gafarov 2022-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.graphics.texproc;
 
 import std.stdio;
@@ -43,11 +56,25 @@ import dagon.graphics.shader;
 import dagon.graphics.state;
 import dagon.graphics.screensurface;
 
+/**
+ * Shader for combining up to four textures into a single output.
+ *
+ * Description:
+ * The `TextureCombinerShader` binds up to four input textures (channels) and
+ * outputs a combined result.
+ */
 class TextureCombinerShader: Shader
 {
     String vs, fs;
     Texture[4] channels;
     
+    /**
+     * Constructs a texture combiner shader with the given channels.
+     *
+     * Params:
+     *   channels = Array of up to four textures to combine.
+     *   owner    = Owner object.
+     */
     this(Texture[4] channels, Owner owner)
     {
         vs = Shader.load("data/__internal/shaders/TextureCombiner/TextureCombiner.vert.glsl");
@@ -59,12 +86,19 @@ class TextureCombinerShader: Shader
         this.channels[] = channels[];
     }
     
+    /// Destructor. Releases shader source resources.
     ~this()
     {
         vs.free();
         fs.free();
     }
     
+    /**
+     * Binds shader parameters and input textures for rendering.
+     *
+     * Params:
+     *   state = Pointer to the current graphics state.
+     */
     override void bindParameters(GraphicsState* state)
     {
         // Channel0
@@ -132,6 +166,12 @@ class TextureCombinerShader: Shader
         super.bindParameters(state);
     }
     
+    /**
+     * Unbinds shader parameters and input textures.
+     *
+     * Params:
+     *   state = Pointer to the current graphics pipeline state.
+     */
     override void unbindParameters(GraphicsState* state)
     {
         super.unbindParameters(state);
@@ -152,7 +192,13 @@ class TextureCombinerShader: Shader
     }
 }
 
-/// Combine up to 4 textures to one
+/**
+ * Combines up to four textures into a single output texture using the GPU.
+ *
+ * Params:
+ *   channels = Array of up to four input textures.
+ *   output   = Output texture to write the result to.
+ */
 void combineTextures(Texture[4] channels, Texture output)
 {
     GLuint framebuffer;
@@ -197,7 +243,17 @@ void combineTextures(Texture[4] channels, Texture output)
     glDeleteFramebuffers(1, &framebuffer);
 }
 
-/// ditto
+/**
+ * Combines up to four textures into a new output texture of the given size.
+ *
+ * Params:
+ *   w        = Output texture width.
+ *   h        = Output texture height.
+ *   channels = Array of up to four input textures.
+ *   owner    = Owner object for memory/resource management.
+ * Returns:
+ *   The combined output texture.
+ */
 Texture combineTextures(uint w, uint h, Texture[4] channels, Owner owner)
 {
     Texture output = New!Texture(owner);

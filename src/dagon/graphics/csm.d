@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2022 Timur Gafarov, tg
+Copyright (c) 2017-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,6 +25,21 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Provides classes and utilities for cascaded shadow mapping (CSM).
+ *
+ * Description:
+ * Cascaded shadow mapping is a technique for rendering high-quality shadows
+ * over large scenes by splitting the camera frustum into multiple regions
+ * (cascades), each with its own shadow map. This module defines
+ * the `CascadedShadowMap` class, which manage the projection, view, and
+ * shadow matrices for each cascade, as well as OpenGL resources for multi-layered
+ * shadow maps.
+ *
+ * Copyright: Timur Gafarov 2017-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.graphics.csm;
 
 import std.math;
@@ -45,6 +60,12 @@ import dagon.graphics.camera;
 import dagon.graphics.shader;
 import dagon.graphics.entity;
 
+/**
+ * Represents a single shadow area (cascade) for cascaded shadow mapping.
+ * Stores projection, view, and shadow matrices, as well as the position
+ * and size of the cascade. Used internally by `CascadedShadowMap`
+ * to manage each shadow region.
+ */
 class ShadowArea: Owner
 {
     Matrix4x4f biasMatrix;
@@ -57,6 +78,15 @@ class ShadowArea: Owner
     float zStart;
     float zEnd;
     
+    /**
+     * Constructs a shadow area with the given projection size and depth range.
+     *
+     * Params:
+     *   projectionSize = The width/height of the orthographic projection.
+     *   zStart         = Near plane of the projection.
+     *   zEnd           = Far plane of the projection.
+     *   owner          = Owner object.
+     */
     this(float projectionSize, float zStart, float zEnd, Owner owner)
     {
         super(owner);
@@ -76,6 +106,14 @@ class ShadowArea: Owner
         this.position = Vector3f(0.0f, 0.0f, 0.0f);
     }
     
+    /**
+     * Resizes the shadow area projection.
+     *
+     * Params:
+     *   projectionSize = New projection size.
+     *   zStart         = New near plane.
+     *   zEnd           = New far plane.
+     */
     void resize(float projectionSize, float zStart, float zEnd)
     {
         this.projectionSize = projectionSize;
@@ -85,6 +123,13 @@ class ShadowArea: Owner
         this.projectionMatrix = orthoMatrix(-hSize, hSize, -hSize, hSize, zStart, zEnd);
     }
     
+    /**
+     * Updates the shadow area matrices based on the light and camera.
+     *
+     * Params:
+     *   light  = The light source.
+     *   camera = The camera for which shadows are rendered.
+     */
     void update(Light light, Camera camera)
     {
         invViewMatrix = translationMatrix(position) * light.rotationAbsolute.toMatrix4x4;
@@ -93,21 +138,53 @@ class ShadowArea: Owner
     }
 }
 
+/**
+ * Implements cascaded shadow mapping with three cascades.
+ *
+ * Description:
+ * Manages three `ShadowArea` instances, a layered depth texture,
+ * and three framebuffers for rendering each cascade. Handles
+ * OpenGL resource allocation, resizing, and updating of shadow matrices.
+ */
 class CascadedShadowMap: ShadowMap
 {
+    /// The camera for which shadows are rendered.
     Camera camera;
+
+    /// The three shadow cascades.
     ShadowArea[3] area;
     
+    /// Layered depth texture for all cascades.
     GLuint depthTexture;
+
+    /// Framebuffer for cascade 1.
     GLuint framebuffer1;
+
+    /// Framebuffer for cascade 2.
     GLuint framebuffer2;
+
+    /// Framebuffer for cascade 3.
     GLuint framebuffer3;
     
+    /// Resolution of each shadow map.
     uint shadowMapResolution = 2048;
+
+    /// Projection size for each cascade.
     float[3] projectionSize = [20, 60, 400];
-    float zStart = -10000.0f;
-    float zEnd = 10000.0f;
+
+    /// Near plane for all cascades.
+    float zStart = -10_000.0f;
+
+    /// Far plane for all cascades.
+    float zEnd = 10_000.0f;
     
+    /**
+     * Constructs a cascaded shadow map for the given light.
+     *
+     * Params:
+     *   light = The light source.
+     *   owner = Owner object.
+     */
     this(Light light, Owner owner)
     {
         super(owner);
@@ -118,11 +195,18 @@ class CascadedShadowMap: ShadowMap
         area[2] = New!ShadowArea(projectionSize[2], zStart, zEnd, this);
     }
     
+    /// Destructor. Releases all OpenGL resources.
     ~this()
     {
         releaseBuffer();
     }
     
+    /**
+     * Resizes the shadow map textures and framebuffers.
+     *
+     * Params:
+     *   res = New resolution for each cascade.
+     */
     override void resize(uint res)
     {
         this.resolution = res;
@@ -172,6 +256,7 @@ class CascadedShadowMap: ShadowMap
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
     
+    /// Releases all OpenGL resources associated with the shadow map.
     void releaseBuffer()
     {
         if (glIsFramebuffer(framebuffer1))
@@ -187,6 +272,12 @@ class CascadedShadowMap: ShadowMap
             glDeleteTextures(1, &depthTexture);
     }
 
+    /**
+     * Updates the shadow map for the current frame.
+     *
+     * Params:
+     *   t = Frame timing information.
+     */
     override void update(Time t)
     {
         if (camera)

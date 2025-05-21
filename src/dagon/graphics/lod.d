@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,6 +25,19 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Provides level-of-detail (LOD) functionality.
+ *
+ * Description:
+ * The `dagon.graphics.lod` module defines the `LODDrawable` class,
+ * which manages multiple LOD levels and selects the appropriate drawable
+ * and material based on camera distance at render time. This enables efficient
+ * rendering of complex objects by reducing detail as distance from the camera increases.
+ *
+ * Copyright: Timur Gafarov 2019-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.graphics.lod;
 
 import dlib.core.memory;
@@ -37,36 +50,81 @@ import dagon.core.bindings;
 import dagon.graphics.drawable;
 import dagon.graphics.material;
 
+/**
+ * Represents a single level of detail for a drawable object.
+ */
 struct LODLevel
 {
+    /// The drawable object for this LOD level.
     Drawable drawable;
+
+    /// The material to use for this LOD level.
     Material material;
+
+    /// The minimum camera distance at which this LOD is active.
     float startDistance;
+
+    /// The maximum camera distance for this LOD.
     float endDistance;
+
+    /// The distance over which to fade between LODs.
     float fadeDistance;
 }
 
+/**
+ * A drawable object with multiple levels of detail.
+ *
+ * Description:
+ * The `LODDrawable` class manages an array of `LODLevel` objects
+ * and selects the appropriate drawable and material to render based
+ * on the camera's distance. This improves performance by reducing
+ * detail for distant objects.
+ */
 class LODDrawable: Owner, Drawable
 {
+    /// Array of LOD levels.
     Array!LODLevel levels;
 
-    public:
-
+    /**
+     * Constructs an empty `LODDrawable`.
+     *
+     * Params:
+     *   owner = The owner object.
+     */
     this(Owner owner)
     {
         super(owner);
     }
 
+    /// Destructor. Frees all LOD levels.
     ~this()
     {
         levels.free();
     }
 
+    /**
+     * Adds a new LOD level.
+     *
+     * Params:
+     *   drawable   = The drawable object for this LOD.
+     *   material   = The material for this LOD.
+     *   startDist  = The minimum camera distance for this LOD.
+     *   endDist    = The maximum camera distance for this LOD.
+     *   fadeDist   = The fade distance for blending between LODs.
+     */
     void addLevel(Drawable drawable, Material material, float startDist, float endDist, float fadeDist)
     {
         levels.append(LODLevel(drawable, material, startDist, endDist, fadeDist));
     }
 
+    /**
+     * Renders a single LOD level.
+     *
+     * Params:
+     *   level = Pointer to the `LODLevel`.
+     *   dist = distance to the camera.
+     *   state =  Pointer to the current graphics pipeline state.
+     */
     void renderLevel(LODLevel* level, float dist, GraphicsState* state)
     {
         if (level.drawable)
@@ -87,6 +145,12 @@ class LODDrawable: Owner, Drawable
         }
     }
 
+    /**
+     * Renders the appropriate LOD level based on camera distance.
+     *
+     * Params:
+     *   state = Pointer to the current graphics pipeline state.
+     */
     void render(GraphicsState* state)
     {
         float distanceToCam = distance(state.cameraPosition, state.modelMatrix.translation);
