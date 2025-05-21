@@ -25,6 +25,18 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * DirectDraw Surface (DDS) loader.
+ *
+ * Description:
+ * The `dagon.resource.dds` module defines the function for reading DDS files
+ * into GPU-ready texture buffers. The loader supports compressed formats
+ * (DXT1, DXT3, DXT5, BC4, BC5, BC6H, BC7, ASTC), cubemaps, mipmaps, and 3D/volume textures.
+ *
+ * Copyright: Timur Gafarov 2019-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.resource.dds;
 
 import std.stdio;
@@ -41,6 +53,9 @@ import dagon.graphics.texture;
 
 //version = DDSDebug;
 
+/**
+ * Structure describing the pixel format in a DDS file.
+ */
 struct DDSPixelFormat
 {
     uint size;
@@ -53,6 +68,9 @@ struct DDSPixelFormat
     uint alphaMask;
 }
 
+/**
+ * DDS header flags.
+ */
 enum DDSHeaderFlags
 {
     TEXTURE = 0x00001007,
@@ -61,6 +79,9 @@ enum DDSHeaderFlags
     VOLUME = 0x00800000
 }
 
+/**
+ * DDS pixel format flags.
+ */
 enum DDPF
 {
     ALPHAPIXELS = 0x1,
@@ -71,6 +92,9 @@ enum DDPF
     LUMINANCE = 0x20000
 }
 
+/**
+ * DDS capabilities.
+ */
 enum DDSCaps
 {
     RESERVED1 = 0x00000001,
@@ -107,6 +131,9 @@ enum DDSCaps
     ZBUFFER = 0x00020000
 }
 
+/**
+ * DDS extended capabilities.
+ */
 enum DDSCaps2
 {
     RESERVED1 = 0x00000020,
@@ -161,12 +188,18 @@ enum DDSCaps3
     VIDEO = 0x00000200
 }
 
+/**
+ * Structure for color key information in DDS headers.
+ */
 struct DDSColorKey
 {
     uint lowVal;
     uint highVal;
 }
 
+/**
+ * Structure describing the main DDS header.
+ */
 struct DDSHeader
 {
     uint size;
@@ -194,6 +227,9 @@ struct DDSHeader
     uint textureStage;
 }
 
+/**
+ * DXGI image formats.
+ */
 enum DXGIFormat
 {
     UNKNOWN = 0,
@@ -358,6 +394,9 @@ enum DXGIFormat
     ASTC_12X12_UNORM_SRGB = 187
 }
 
+/**
+ * Structure describing the DXT10 extended header (for newer DDS formats).
+ */
 struct DDSHeaderDXT10
 {
     uint dxgiFormat;
@@ -367,6 +406,9 @@ struct DDSHeaderDXT10
     uint miscFlags2;
 }
 
+/**
+ * D3D10 resource dimensions.
+ */
 enum D3D10ResourceDimension
 {
     Unknown = 0,
@@ -376,6 +418,9 @@ enum D3D10ResourceDimension
     Texture3D = 4
 }
 
+/**
+ * D3D10 miscellaneous flags.
+ */
 enum D3D10ResourceMisc
 {
     GenerateMips = 0x01,
@@ -385,6 +430,17 @@ enum D3D10ResourceMisc
     GDICompatible = 0x20
 }
 
+/**
+ * Converts four ASCII characters to a FourCC code.
+ *
+ * Params:
+ *   ch0 = character.
+ *   ch1 = character.
+ *   ch2 = character.
+ *   ch3 = character.
+ * Returns:
+ *   The combined FourCC code as a uint.
+ */
 uint makeFourCC(char ch0, char ch1, char ch2, char ch3)
 {
     return
@@ -408,6 +464,14 @@ enum FOURCC_GRGB = makeFourCC('G', 'R', 'G', 'B');
 
 enum FOURCC_DXT2 = makeFourCC('D', 'X', 'T', '2');
 
+/**
+ * Maps a FourCC code to a `DXGIFormat`.
+ *
+ * Params:
+ *   fourCC = The FourCC code.
+ * Returns:
+ *   The corresponding `DXGIFormat`.
+ */
 DXGIFormat resourceFormatFromFourCC(uint fourCC)
 {
     DXGIFormat format;
@@ -437,6 +501,17 @@ DXGIFormat resourceFormatFromFourCC(uint fourCC)
     return format;
 }
 
+/**
+ * Loads a DDS file from an input stream into a texture buffer.
+ *
+ * Supports compressed formats, cubemaps, mipmaps, and 3D textures.
+ *
+ * Params:
+ *   istrm  = Input stream containing the DDS file data.
+ *   buffer = Output texture buffer to fill.
+ * Returns:
+ *   `true` if loading succeeded, `false` otherwise.
+ */
 bool loadDDS(InputStream istrm, TextureBuffer* buffer)
 {
     bool error(string errorMsg)

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,6 +25,20 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Provides support for loading and managing generic binary assets in Dagon.
+ *
+ * Description:
+ * The `dagon.resource.binary` module defines the `BinaryAsset` class,
+ * which loads arbitrary binary data from files or streams into a buffer.
+ * This is useful for handling custom data formats, raw buffers, or non-standard
+ * resources that do not fit into other asset types. The asset supports threaded
+ * loading and integrates with the asset manager and virtual file system.
+ *
+ * Copyright: Timur Gafarov 2019-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.resource.binary;
 
 import dlib.core.memory;
@@ -35,20 +49,48 @@ import dlib.filesystem.stdfs;
 
 import dagon.resource.asset;
 
+/**
+ * Asset class for loading and managing generic binary data.
+ *
+ * Description:
+ * Loads the entire file or stream into a buffer for later use.
+ * Supports threaded loading and resource management.
+ *
+ * Members:
+ *   buffer = The loaded binary data.
+ */
 class BinaryAsset: Asset
 {
     ubyte[] buffer;
 
-    this(Owner o)
+    /**
+     * Constructs a new binary asset.
+     *
+     * Params:
+     *   owner = Owner object.
+     */
+    this(Owner owner)
     {
-        super(o);
+        super(owner);
     }
 
+    /// Destructor. Releases the buffer.
     ~this()
     {
         release();
     }
 
+    /**
+     * Loads the thread-safe part of the asset (reads the file/stream into the buffer).
+     *
+     * Params:
+     *   filename = The asset filename.
+     *   istrm    = Input stream to read from.
+     *   fs       = File system.
+     *   mngr     = Asset manager.
+     * Returns:
+     *   true if loading succeeded.
+     */
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
     {
         FileStat s;
@@ -58,11 +100,18 @@ class BinaryAsset: Asset
         return true;
     }
 
+    /**
+     * Loads the thread-unsafe part of the asset (no-op for binary data).
+     *
+     * Returns:
+     *   true (always succeeds).
+     */
     override bool loadThreadUnsafePart()
     {
         return true;
     }
 
+    /// Releases the buffer and all associated resources.
     override void release()
     {
         if (buffer.length)

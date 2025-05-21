@@ -25,6 +25,19 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * OBJ mesh loader.
+ *
+ * Description:
+ * The `dagon.resource.obj` module defines the `OBJAsset` class for loading
+ * meshes from Wavefront OBJ files. The loader supports threaded loading,
+ * group extraction, and automatic normal generation if missing.
+ * Materials in OBJ files are not supported and will be ignored with a warning.
+ *
+ * Copyright: Timur Gafarov, Tynuk 2017-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov, Tynuk
+ */
 module dagon.resource.obj;
 
 import std.stdio;
@@ -47,12 +60,21 @@ import dagon.core.logger;
 import dagon.resource.asset;
 import dagon.graphics.mesh;
 
+/**
+ * Represents a single face in an OBJ mesh.
+ */
 struct ObjFace
 {
+    /// Indices of the vertices (3).
     uint[3] v;
+
+    /// Indices of the texture coordinates (3).
     uint[3] t;
+
+    /// Indices of the normals (3).
     uint[3] n;
     
+    /// Constructs a face from vertex, texcoord, and normal indices.
     this(uint v1, uint v2, uint v3,
          uint t1, uint t2, uint t3,
          uint n1, uint n2, uint n3)
@@ -71,23 +93,46 @@ struct ObjFace
     }
 }
 
+/**
+ * Asset class for loading and managing OBJ meshes.
+ *
+ * Descrption:
+ * Loads mesh data from Wavefront OBJ files, supports group meshes,
+ * and generates normals if missing. Materials are not supported.
+ */
 class OBJAsset: Asset
 {
+    /// The main mesh loaded from the OBJ file.
     Mesh mesh;
+
+    /// Meshes for each group in the OBJ file.
     Dict!(Mesh, string) groupMesh;
 
-    this(Owner o)
+    /// Constructs an OBJ asset.
+    this(Owner owner)
     {
-        super(o);
+        super(owner);
         groupMesh = dict!(Mesh, string);
     }
 
+    /// Destructor. Releases all resources.
     ~this()
     {
         release();
         groupMesh.free();
     }
 
+    /**
+     * Loads the thread-safe part of the OBJ asset (parsing file data).
+     *
+     * Params:
+     *   filename = The OBJ filename.
+     *   istrm    = Input stream for the OBJ file.
+     *   fs       = File system.
+     *   mngr     = Asset manager.
+     * Returns:
+     *   True if loading succeeded.
+     */
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
     {
         uint numVerts = 0;
@@ -299,6 +344,18 @@ class OBJAsset: Asset
         return true;
     }
 
+    /**
+     * Fills a mesh from parsed OBJ face and vertex data.
+     *
+     * Params:
+     *   faces        = Array of faces.
+     *   tmpTexcoords = Array of texture coordinates.
+     *   tmpNormals   = Array of normals.
+     *   tmpVertices  = Array of vertices.
+     *   needGenNormals = If true, normals will be generated.
+     * Returns:
+     *   The filled mesh.
+     */
     Mesh fillMesh(
         ObjFace[] faces,
         Vector2f[] tmpTexcoords,
@@ -375,6 +432,12 @@ class OBJAsset: Asset
         return m;
     }
 
+    /**
+     * Loads the thread-unsafe part of the OBJ asset (OpenGL resource creation).
+     *
+     * Returns:
+     *   True if loading succeeded.
+     */
     override bool loadThreadUnsafePart()
     {
         mesh.prepareVAO();
@@ -385,6 +448,7 @@ class OBJAsset: Asset
         return true;
     }
 
+     /// Releases all resources associated with the asset.
     override void release()
     {
         clearOwnedObjects();
