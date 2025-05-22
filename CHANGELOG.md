@@ -1,5 +1,5 @@
-Dagon 0.23.0 - TBD
-------------------
+Dagon 0.23.0 - 22 May, 2025
+---------------------------
 - **Rendering**
   - Optimized shader parameters binding: parameters are now accessed directly by references rather than names
   - `Material.textureTransformation` support in shadow and terrain texturing passes
