@@ -25,6 +25,21 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Core game logic for Dagon-based applications.
+ *
+ * Description:
+ * The `dagon.game.game` module defines the `Game` class, which serves
+ * as a basic template for creating a game application using Dagon's built-in
+ * rendering and resource management systems. The `Game` class provides
+ * deferred renderer, post-processing renderer, methods for managing scenes,
+ * and handles window resize event for correctly updating all render
+ * targets.
+ *
+ * Copyright: Timur Gafarov 2019-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.game.game;
 
 import std.stdio;
@@ -54,15 +69,37 @@ version(Windows)
     import core.sys.windows.windows;
 }
 
+/**
+ * Main game class for Dagon applications.
+ *
+ * Description:
+ * Manages scenes and rendering. The `Game` class is a subclass
+ * of `Application` and provides a framework for creating games
+ * that use Dagon's deferred renderer.
+ * It also handles basic game configuration and loads settings
+ * from a `settings.conf` file.
+ */
 class Game: Application
 {
+    /// The dictionary of scenes, mapping scene objects to their names.
     Dict!(Scene, string) scenes;
+
+    /// The current scene being processed and rendered.
     Scene currentScene;
 
+    /// Active renderer.
     Renderer renderer;
+
+    /// Deferred renderer.
     DeferredRenderer deferredRenderer;
+
+    /// Post-processing renderer.
     PostProcRenderer postProcessingRenderer;
+
+    /// Present renderer.
     PresentRenderer presentRenderer;
+
+    /// HUD renderer.
     HUDRenderer hudRenderer;
     
     alias deferred = deferredRenderer;
@@ -70,13 +107,24 @@ class Game: Application
     alias present = presentRenderer;
     alias hud = hudRenderer;
     
+    /// The configuration object for loading settings.
     Configuration config;
     
+    /// If `true`, the viewport will be resized dynamically with the application window.
     bool dynamicViewport = true;
     
-    // TODO: implement async engine instead
     Scene sceneForDeletion = null;
 
+    /**
+     * Constructs a new game instance.
+     *
+     * Params:
+     *   w = Default window width (if `windowWidth` is not defined in `setting.conf`).
+     *   h = Default window height (if `windowHeight` is not defined in `setting.conf`).
+     *   fullscreen = Default fullscreen mode (if `fullscreen` is not defined in `setting.conf`).
+     *   title = Default window title (if `windowTitle` not defined in `setting.conf`).
+     *   args = Optional command line arguments.
+     */
     this(uint w, uint h, bool fullscreen, string title, string[] args)
     {
         scenes = dict!(Scene, string);
@@ -122,11 +170,18 @@ class Game: Application
         postProcessingRenderer.lensDistortionEnabled = false;
     }
     
+    /// Destructor for the `Game` class.
     ~this()
     {
         Delete(scenes);
     }
 
+    /**
+     * Called every frame to update game logic.
+     *
+     * Params:
+     *   t = Time information for the frame.
+     */
     override void onUpdate(Time t)
     {
         if (sceneForDeletion)
@@ -155,6 +210,7 @@ class Game: Application
         postProcessingRenderer.inputBuffer = renderer.outputBuffer;
     }
 
+    /// Called every frame to render the current scene.
     override void onRender()
     {
         if (currentScene)
@@ -178,6 +234,13 @@ class Game: Application
         if (hudRenderer) hudRenderer.setViewport(0, 0, width, height);
     }
     
+    /**
+     * Handles window resize events.
+     *
+     * Params:
+     *   width = New width.
+     *   height = New height.
+     */
     override void onResize(int width, int height)
     {
         super.onResize(width, height);
@@ -190,6 +253,12 @@ class Game: Application
         return presentRenderer.inputBuffer.colorTexture;
     }
     
+    /**
+     * Sets current scene to the specified scene object.
+     * Params:
+     *   scene = `Scene` object.
+     *   releaseCurrent = if `true`, the current scene will be deleted after the switch.
+     */
     void setCurrentScene(Scene scene, bool releaseCurrent = false)
     {
         if (releaseCurrent && currentScene)
@@ -203,6 +272,12 @@ class Game: Application
             currentScene.onReset();
     }
     
+    /**
+     * Sets current scene to the specified scene name.
+     * Params:
+     *   name = name of an existing scene in `scenes` dictionary.
+     *   releaseCurrent = if `true`, the current scene will be deleted after the switch.
+     */
     void setCurrentScene(string name, bool releaseCurrent = false)
     {
         if (name in scenes)

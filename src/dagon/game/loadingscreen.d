@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,6 +25,16 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * A simple loading screen implementation.
+ *
+ * The `dagon.game.loadingscreen` module defines the `LoadingScreen` class,
+ * which displays a progress bar during asset or scene loading.
+ *
+ * Copyright: Timur Gafarov 2019-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.game.loadingscreen;
 
 import dlib.core.memory;
@@ -45,42 +55,67 @@ import dagon.graphics.shapes;
 import dagon.graphics.material;
 import dagon.render.hud;
 
+/**
+ * Displays a loading progress bar on the screen during asset or scene loading.
+ */
 class LoadingScreen: EventListener
 {
+    /// The application object.
     Application app;
-    ShapeQuad loadingProgressBar;
-    Entity eLoadingProgressBar;
+
+    /// The quad shape representing the progress bar.
+    ShapeQuad progressBarShape;
+
+    /// The entity for the progress bar.
+    Entity progressBarEntity;
+
+    /// The HUD shader used for rendering.
     HUDShader hudShader;
 
+    /**
+     * Constructs a loading screen for the given application.
+     *
+     * Params:
+     *   app    = The application object.
+     *   owner  = The owner object.
+     */
     this(Application app, Owner owner)
     {
         super(app.eventManager, owner);
         this.app = app;
-        loadingProgressBar = New!ShapeQuad(this);
-        eLoadingProgressBar = New!Entity(this);
-        eLoadingProgressBar.drawable = loadingProgressBar;
+        progressBarShape = New!ShapeQuad(this);
+        progressBarEntity = New!Entity(this);
+        progressBarEntity.drawable = progressBarShape;
         hudShader = New!HUDShader(this);
-        eLoadingProgressBar.material = New!Material(this);
-        eLoadingProgressBar.material.baseColorFactor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
-        eLoadingProgressBar.material.useCulling = false;
+        progressBarEntity.material = New!Material(this);
+        progressBarEntity.material.baseColorFactor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+        progressBarEntity.material.useCulling = false;
     }
 
+    /**
+     * Updates the loading progress bar.
+     *
+     * Params:
+     *   t        = Frame timing information.
+     *   progress = Loading progress (0..1).
+     */
     void update(Time t, float progress)
     {
         float maxWidth = eventManager.windowWidth * 0.33f;
         float x = (eventManager.windowWidth - maxWidth) * 0.5f;
         float y = eventManager.windowHeight * 0.5f - 10;
         float w = progress * maxWidth;
-        eLoadingProgressBar.position = Vector3f(x, y, 0);
-        eLoadingProgressBar.scaling = Vector3f(w, 10, 1);
-        eLoadingProgressBar.update(t);
+        progressBarEntity.position = Vector3f(x, y, 0);
+        progressBarEntity.scaling = Vector3f(w, 10, 1);
+        progressBarEntity.update(t);
     }
 
+    /// Renders the loading screen and progress bar.
     void render()
     {
         GraphicsState state;
         state.reset();
-        state.modelViewMatrix = eLoadingProgressBar.absoluteTransformation;
+        state.modelViewMatrix = progressBarEntity.absoluteTransformation;
         state.projectionMatrix = orthoMatrix(0.0f, eventManager.windowWidth, eventManager.windowHeight, 0.0f, 0.0f, 1000.0f);
         state.invProjectionMatrix = state.projectionMatrix.inverse;
         state.resolution = Vector2f(eventManager.windowWidth, eventManager.windowHeight);
@@ -93,23 +128,23 @@ class LoadingScreen: EventListener
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        state.modelViewMatrix = state.viewMatrix * eLoadingProgressBar.absoluteTransformation;
+        state.modelViewMatrix = state.viewMatrix * progressBarEntity.absoluteTransformation;
         state.normalMatrix = state.modelViewMatrix.inverse.transposed;
         state.shader = hudShader;
 
-        if (eLoadingProgressBar.material)
-            eLoadingProgressBar.material.bind(&state);
+        if (progressBarEntity.material)
+            progressBarEntity.material.bind(&state);
 
         hudShader.bind();
         hudShader.bindParameters(&state);
 
-        if (eLoadingProgressBar.drawable)
-            eLoadingProgressBar.drawable.render(&state);
+        if (progressBarEntity.drawable)
+            progressBarEntity.drawable.render(&state);
 
         hudShader.unbindParameters(&state);
         hudShader.unbind();
 
-        if (eLoadingProgressBar.material)
-            eLoadingProgressBar.material.unbind(&state);
+        if (progressBarEntity.material)
+            progressBarEntity.material.unbind(&state);
     }
 }
