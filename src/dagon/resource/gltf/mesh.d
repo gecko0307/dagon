@@ -77,6 +77,9 @@ class GLTFMesh: Owner, Drawable
     
     /**
      * Renders the mesh using the provided graphics pipeline state.
+     *
+     * Params:
+     *   state = Pointer to the current graphics pipeline state.
      */
     void render(GraphicsState* state)
     {

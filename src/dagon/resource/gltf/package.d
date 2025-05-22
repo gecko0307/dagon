@@ -24,6 +24,19 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * The main entry point for GLTF 2.0 support in Dagon.
+ *
+ * Description:
+ * Publicly imports all GLTF resource modules. This package provides
+ * a unified interface for loading, managing, and accessing all GLTF 2.0
+ * resources supported by Dagon's asset system.
+ *
+ * Copyright: Timur Gafarov 2021-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.resource.gltf;
 
 public

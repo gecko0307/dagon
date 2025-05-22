@@ -24,6 +24,21 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * GLTF node.
+ *
+ * Description:
+ * The `dagon.resource.gltf.node` module defines the `GLTFNode` class,
+ * which represents a node in a GLTF scene graph, including transformation,
+ * hierarchy, mesh and skin references, and `Entity` association. Nodes support
+ * both TRS (translation, rotation, scale) and matrix transform modes, and provide
+ * methods for updating local and global transforms.
+ *
+ * Copyright: Timur Gafarov 2021-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.resource.gltf.node;
 
 import std.stdio;
@@ -40,36 +55,74 @@ import dagon.graphics.entity;
 import dagon.resource.gltf.mesh;
 import dagon.resource.gltf.skin;
 
+/**
+ * Represents a node in a GLTF scene graph.
+ */
 class GLTFNode: Owner
 {
+    /// The index of the node in the GLTF file.
     size_t index;
+
+    /// The name of the node.
     string name;
+
+    /// The associated Dagon entity.
     Entity entity;
     
+    /// The parent node.
     GLTFNode parent;
+
+    /// The child nodes.
     GLTFNode[] children;
+
+    /// The indices of the child nodes.
     size_t[] childrenIndices;
     
+    /// The associated mesh (if any).
     GLTFMesh mesh;
     
+    /// The associated skin (if any).
     GLTFSkin skin;
+
+    /// The index of the skin (-1 if none).
     int skinIndex = -1;
     
+    /// The transformation mode (TRS or matrix).
     TransformMode transformMode;
     
+    /// The bind pose translation.
     Vector3f bindPosePosition;
+
+    /// The bind pose rotation.
     Quaternionf bindPoseRotation;
+
+    /// The bind pose scaling.
     Vector3f bindPoseScaling;
+
+    /// The bind pose transformation matrix.
     Matrix4x4f bindPoseTransform;
     
+    /// The node translation.
     Vector3f position;
+
+    /// The node rotation.
     Quaternionf rotation;
+
+    /// The node scaling.
     Vector3f scaling;
+
+    /// The local transformation matrix.
     Matrix4x4f localTransform;
     
-    this(Owner o)
+    /**
+     * Constructs a new GLTF node.
+     *
+     * Params:
+     *   owner = Owner object.
+     */
+    this(Owner owner)
     {
-        super(o);
+        super(owner);
         position = Vector3f(0.0f, 0.0f, 0.0f);
         rotation = Quaternionf.identity;
         scaling = Vector3f(1.0f, 1.0f, 1.0f);
@@ -81,6 +134,7 @@ class GLTFNode: Owner
         entity = New!Entity(this);
     }
     
+    /// Updates the bind pose transformation matrix from TRS components.
     void updateBindPoseTransform()
     {
         bindPoseTransform = trsMatrix(
@@ -89,6 +143,7 @@ class GLTFNode: Owner
             bindPoseScaling);
     }
     
+    /// Updates the local transformation matrix based on the current transform mode.
     void updateLocalTransform()
     {
         if (transformMode == TransformMode.TRS)
@@ -101,7 +156,8 @@ class GLTFNode: Owner
         }
     }
     
-    Matrix4x4f globalTransform() @property
+    /// Returns the global transformation matrix for this node.
+    Matrix4x4f globalTransform() const @property
     {
         if (parent)
             return parent.globalTransform() * localTransform;
@@ -109,6 +165,7 @@ class GLTFNode: Owner
             return localTransform;
     }
     
+    /// Destructor. Releases child nodes and indices.
     ~this()
     {
         if (childrenIndices.length)
@@ -119,6 +176,16 @@ class GLTFNode: Owner
     }
 }
 
+/**
+ * Constructs a transformation matrix from translation, rotation, and scaling.
+ *
+ * Params:
+ *   t = Translation vector.
+ *   r = Rotation quaternion.
+ *   s = Scaling vector.
+ * Returns:
+ *   The resulting transformation matrix.
+ */
 Matrix4x4f trsMatrix(Vector3f t, Quaternionf r, Vector3f s)
 {
     Matrix4x4f res = Matrix4x4f.identity;

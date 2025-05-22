@@ -24,6 +24,22 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * GLTF mesh primitive.
+ *
+ * Description:
+ * The `dagon.resource.gltf.meshprimitive` module defines the `GLTFMeshPrimitive`
+ * class, which represents a single mesh primitive in a GLTF mesh.
+ * This class manages accessors for vertex attributes (positions, normals,
+ * texcoords, joints, weights, indices), OpenGL buffer and VAO creation,
+ * and rendering logic. Mesh primitives are used to draw geometry with a specific
+ * material and attribute layout, supporting both indexed and non-indexed rendering.
+ *
+ * Copyright: Timur Gafarov 2021-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.resource.gltf.meshprimitive;
 
 import std.stdio;
@@ -37,38 +53,94 @@ import dagon.graphics.mesh;
 import dagon.graphics.state;
 import dagon.resource.gltf.accessor;
 
+/**
+ * Represents a single mesh primitive in a GLTF mesh.
+ *
+ * Description:
+ * Manages accessors for vertex attributes, OpenGL buffers,
+ * VAO creation, and rendering logic. Supports indexed and non-indexed
+ * drawing.
+ */
 class GLTFMeshPrimitive: Owner, Drawable
 {
+    /// Accessor for vertex positions.
     GLTFAccessor positionAccessor;
+
+    /// Accessor for vertex normals.
     GLTFAccessor normalAccessor;
+    
+    /// Accessor for texture coordinates.
     GLTFAccessor texCoord0Accessor;
+
+    /// Accessor for joint indices (skinning).
     GLTFAccessor joints0Accessor;
+
+    /// Accessor for joint weights (skinning).
     GLTFAccessor weights0Accessor;
+
+    /// Accessor for triangle indices.
     GLTFAccessor indexAccessor;
+
+    /// Material used for rendering this primitive.
     Material material;
     
+    /// OpenGL vertex array object.
     GLuint vao = 0;
+
+    /// Vertex buffer object.
     GLuint vbo = 0;
+
+    /// Normal buffer object.
     GLuint nbo = 0;
+
+    /// Texture coordinate buffer object.
     GLuint tbo = 0;
+
+    /// Joint buffer object.
     GLuint jbo = 0;
+
+    /// Weight buffer object.
     GLuint wbo = 0;
+
+    /// Element array object.
     GLuint eao = 0;
     
+    /// True if the VAO and buffers are ready for rendering.
     bool canRender = false;
     
+    /// Flags indicating the presence of vertex positions.
     bool hasPositions = false;
+
+    /// Flags indicating the presence of normals.
     bool hasNormals = false;
+
+    /// Flags indicating the presence of texcoords.
     bool hasTexcoords = false;
+
+    /// Flags indicating the presence of joints.
     bool hasJoints = false;
+
+    /// Flags indicating the presence of weights.
     bool hasWeights = false;
+
+    /// Flags indicating the presence of indices.
     bool hasIndices = false;
     
-    this(Owner o)
+    /**
+     * Constructs a mesh primitive.
+     *
+     * Params:
+     *   owner = Owner object.
+     */
+    this(Owner owner)
     {
-        super(o);
+        super(owner);
     }
     
+    /**
+     * Prepares OpenGL VAO and buffers for rendering.
+     * Sets up attribute pointers and uploads vertex/index data.
+     */
     void prepareVAO()
     {
         if (positionAccessor && positionAccessor.bufferView)
@@ -223,6 +295,12 @@ class GLTFMeshPrimitive: Owner, Drawable
         canRender = true;
     }
     
+    /**
+     * Renders the mesh primitive using the provided graphics pipeline state.
+     *
+     * Params:
+     *   state = Pointer to the current graphics pipeline state.
+     */
     void render(GraphicsState* state)
     {
         if (canRender)
@@ -238,6 +316,7 @@ class GLTFMeshPrimitive: Owner, Drawable
         }
     }
     
+    /// Destructor. Releases all OpenGL resources.
     ~this()
     {
         if (canRender)

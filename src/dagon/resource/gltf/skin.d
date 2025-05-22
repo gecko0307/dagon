@@ -24,6 +24,22 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * GLTF skin.
+ *
+ * Description:
+ * The `dagon.resource.gltf.skin` module defines the `GLTFSkin` class,
+ * which represents a skin in a GLTF asset, including joint nodes and
+ * inverse bind matrices. Skins are used for skeletal animation and GPU
+ * skinning, associating a set of joints (bones) with mesh vertices.
+ * The module supports loading joint hierarchies and inverse bind matrices
+ * from GLTF files.
+ *
+ * Copyright: Timur Gafarov 2024-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.resource.gltf.skin;
 
 import std.stdio;
@@ -35,18 +51,35 @@ import dlib.math.matrix;
 import dagon.resource.gltf.node;
 import dagon.resource.gltf.accessor;
 
+/**
+ * Represents a GLTF skin for skeletal animation.
+ */
 class GLTFSkin: Owner
 {
+    /// Name of the skin.
     string name;
+
+    /// Array of joint nodes (bones) associated with the skin.
     Array!GLTFNode joints;
-    Matrix4x4f[] invBindMatrices; // obtained from invBindMatricesAccessor
+
+    /// Array of inverse bind matrices for each joint.
+    Matrix4x4f[] invBindMatrices;
+
+    /// Accessor for the inverse bind matrices in the GLTF buffer.
     GLTFAccessor invBindMatricesAccessor;
     
-    this(Owner o)
+    /**
+     * Constructs a new GLTFSkin.
+     *
+     * Params:
+     *   owner = Owner object.
+     */
+    this(Owner owner)
     {
-        super(o);
+        super(owner);
     }
     
+    /// Destructor. Releases joint resources.
     ~this()
     {
         joints.free();
