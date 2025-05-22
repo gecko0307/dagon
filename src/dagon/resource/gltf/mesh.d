@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2024 Timur Gafarov
+Copyright (c) 2021-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -24,6 +24,19 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * GLTF mesh.
+ *
+ * Description:
+ * The `dagon.resource.gltf.mesh` module defines the `GLTFMesh` class,
+ * which represents a 3D mesh in the GLTF format. The class supports
+ * rendering the mesh using its associated primitives and materials.
+ *
+ * Copyright: Timur Gafarov 2021-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.resource.gltf.mesh;
 
 import std.stdio;
@@ -35,16 +48,36 @@ import dagon.graphics.drawable;
 import dagon.graphics.state;
 import dagon.resource.gltf.meshprimitive;
 
+/**
+ * Represents a GLTF mesh.
+ *
+ * Description:
+ * The `GLTFMesh` class contains an array of `GLTFMeshPrimitive` objects,
+ * each representing a primitive part of the mesh. The class provides
+ * methods for rendering the mesh and managing its resources.
+ */
 class GLTFMesh: Owner, Drawable
 {
+    /// The name of the mesh.
     string name;
+
+    /// The primitives of the mesh.
     Array!GLTFMeshPrimitive primitives;
 
-    this(Owner o)
+    /**
+     * Constructor for creating a GLTFMesh instance.
+     *
+     * Params:
+     *   owner = The owner of the mesh.
+     */
+    this(Owner owner)
     {
-        super(o);
+        super(owner);
     }
     
+    /**
+     * Renders the mesh using the provided graphics pipeline state.
+     */
     void render(GraphicsState* state)
     {
         GraphicsState newState = *state;
@@ -64,6 +97,7 @@ class GLTFMesh: Owner, Drawable
         }
     }
     
+    /// Destructor. Releases any resources held by the mesh.
     ~this()
     {
         primitives.free();

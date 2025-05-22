@@ -40,7 +40,7 @@ DEALINGS IN THE SOFTWARE.
 module dagon.core.vkformat;
 
 /**
- * Enumerates all Vulkan image and pixel formats supported by the engine.
+ * Enumerates all Vulkan image and pixel formats.
  *
  * The values correspond to the Vulkan `VkFormat` specification, including
  * uncompressed, compressed, packed, and platform/extension-specific formats.

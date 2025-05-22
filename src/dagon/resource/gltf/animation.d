@@ -28,6 +28,7 @@ DEALINGS IN THE SOFTWARE.
 /**
  * GLTF 2.0 animation.
  *
+ * Description:
  * The `dagon.resource.gltf.animation` module defines classes for representing
  * and evaluating GLTF animation samplers, channels, and animation clips.
  * Animation playback, blending, and update logic are included.

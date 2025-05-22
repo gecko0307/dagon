@@ -24,6 +24,21 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * GLTF buffers.
+ *
+ * Description:
+ * The `dagon.resource.gltf.buffer` module defines the `GLTFBuffer` class,
+ * which represents a raw binary buffer used by GLTF assets. The class
+ * supports loading buffer data from arrays, input streams, files (via a
+ * virtual file system), and base64-encoded strings. This enables support
+ * for embedded, external, and base64 buffers in GLTF 2.0 files.
+ *
+ * Copyright: Timur Gafarov 2021-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.resource.gltf.buffer;
 
 import std.stdio;
@@ -36,21 +51,45 @@ import dlib.filesystem.filesystem;
 
 import dagon.core.logger;
 
+/**
+ * Represents a GLTF buffer containing raw binary data.
+ * Provides methods for loading buffer data from arrays, streams,
+ * files, and base64-encoded strings.
+ */
 class GLTFBuffer: Owner
 {
+    /// The buffer's raw binary data.
     ubyte[] array;
-    
-    this(Owner o)
+
+    /**
+     * Constructs a new GLTF buffer.
+     *
+     * Params:
+     *   owner = Owner object for memory/resource management.
+     */
+    this(Owner owner)
     {
-        super(o);
+        super(owner);
     }
     
+    /**
+     * Loads buffer data from an array.
+     *
+     * Params:
+     *   arr = The source byte array.
+     */
     void fromArray(ubyte[] arr)
     {
         array = New!(ubyte[])(arr.length);
         array[] = arr[];
     }
     
+    /**
+     * Loads buffer data from an input stream.
+     *
+     * Params:
+     *   istrm = The input stream to read from.
+     */
     void fromStream(InputStream istrm)
     {
         if (istrm is null)
@@ -64,6 +103,13 @@ class GLTFBuffer: Owner
         }
     }
     
+    /**
+     * Loads buffer data from a file in the given file system.
+     *
+     * Params:
+     *   fs       = The file system to use.
+     *   filename = The file to load.
+     */
     void fromFile(ReadOnlyFileSystem fs, string filename)
     {
         FileStat fstat;
@@ -77,6 +123,12 @@ class GLTFBuffer: Owner
             logError("Buffer file \"", filename, "\" not found");
     }
     
+    /**
+     * Loads buffer data from a base64-encoded string.
+     *
+     * Params:
+     *   encoded = The base64-encoded string.
+     */
     void fromBase64(string encoded)
     {
         auto decodedLength = Base64.decodeLength(encoded.length);
@@ -84,6 +136,7 @@ class GLTFBuffer: Owner
         auto decoded = Base64.decode(encoded, array);
     }
     
+    /// Destructor. Releases the buffer data.
     ~this()
     {
         if (array.length)

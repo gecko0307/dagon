@@ -25,6 +25,33 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Dagon is a 3D game engine for D language based on OpenGL 4.0 and SDL2.
+ * It features deferred HDR renderer, PBR materials, an event manager,
+ * scene manager, asset manager, and entity-component model.
+ *
+ * Description:
+ * The `dagon` package publicly imports all of the Dagon's core modules.
+ * Currently Dagon consists of the following packages:
+ *
+ * - $(LINK2 dagon/core.html, dagon.core) - the core modules and foundational utilities
+ *
+ * - $(LINK2 dagon/graphics.html, dagon.graphics) - 3D graphics system
+ *
+ * - $(LINK2 dagon/resource.html, dagon.resource) - asset management system
+ *
+ * - $(LINK2 dagon/render.html, dagon.render) - render pipelines and built-in shaders
+ *
+ * - $(LINK2 dagon/game.html, dagon.game) - base functionality for building a game
+ *
+ * - $(LINK2 dagon/ui.html, dagon.ui) - UI tools
+ *
+ * - $(LINK2 dagon/extra.html, dagon.extra) - additional shaders and effects
+ *
+ * Copyright: Timur Gafarov 2017-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon;
 
 public

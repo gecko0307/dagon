@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2024 Timur Gafarov
+Copyright (c) 2021-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -24,6 +24,20 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * GLTF buffer view.
+ *
+ * Description:
+ * The `dagon.resource.gltf.bufferview` module defines the `GLTFBufferView` class,
+ * which represents a view into a GLTF buffer, describing a subrange of the buffer
+ * with a specific offset, length, and stride. Buffer views are used to organize
+ * vertex attributes, indices, and other structured data in GLTF assets.
+ *
+ * Copyright: Timur Gafarov 2021-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.resource.gltf.bufferview;
 
 import std.stdio;
@@ -34,18 +48,43 @@ import dagon.core.bindings;
 import dagon.core.logger;
 import dagon.resource.gltf.buffer;
 
+/**
+ * Represents a view into a GLTF buffer.
+ */
 class GLTFBufferView: Owner
 {
+    /// The underlying GLTF buffer.
     GLTFBuffer buffer;
+
+    /// Offset in bytes from the start of the buffer.
     uint offset;
+
+    /// Length of the view in bytes.
     uint len;
+
+    /// Stride in bytes between elements (0 for tightly packed).
     uint stride;
+
+    /// The slice of the buffer view.
     ubyte[] slice;
+
+    /// The target for the buffer view (e.g., GL_ARRAY_BUFFER).
     GLenum target;
     
-    this(GLTFBuffer buffer, uint offset, uint len, uint stride, GLenum target, Owner o)
+    /**
+     * Constructs a new buffer view.
+     *
+     * Params:
+     *   buffer = The underlying GLTF buffer.
+     *   offset = Offset in bytes from the start of the buffer.
+     *   len    = Length of the view in bytes.
+     *   stride = Stride in bytes between elements.
+     *   target = The target for the buffer view (e.g., GL_ARRAY_BUFFER).
+     *   owner  = Owner object for memory/resource management.
+     */
+    this(GLTFBuffer buffer, uint offset, uint len, uint stride, GLenum target, Owner owner)
     {
-        super(o);
+        super(owner);
         
         if (buffer is null)
             return;
@@ -66,6 +105,7 @@ class GLTFBufferView: Owner
         }
     }
     
+    /// Destructor. Releases any resources held by the buffer view.
     ~this()
     {
     }
