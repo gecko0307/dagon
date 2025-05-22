@@ -99,7 +99,7 @@ Documentation
 -------------
 HTML documentation can be generated from source code using ddox (run `dub build -b ddox`) or Doxygen (run `doxygen`). Be aware that documentation is currently incomplete.
 
-* [Online documentation (WIP)](https://gecko0307.github.io/dagon/doc/)
+* [Online documentation (WIP)](https://gecko0307.github.io/dagon/doc/dagon.html)
 * [Wiki](https://github.com/gecko0307/dagon/wiki)
 * [FAQ](https://github.com/gecko0307/dagon/wiki/FAQ)
 * [Basic tutorials](https://github.com/gecko0307/dagon/tree/master/doc/tutorials) and corresponding [examples](https://github.com/gecko0307/dagon-tutorials).
