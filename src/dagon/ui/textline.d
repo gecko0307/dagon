@@ -28,6 +28,7 @@ DEALINGS IN THE SOFTWARE.
 /**
  * A simple drawable text line for Dagon's UI system.
  *
+ * Description:
  * The `dagon.ui.textline` module defines the `TextLine` class, which represents
  * a single line of text rendered with a specified font, color, and scaling.
  *

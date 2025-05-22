@@ -25,6 +25,19 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Base class for a render pass in Dagon's rendering pipeline.
+ *
+ * Description:
+ * The `dagon.render.pass` module defines the `RenderPass` abstract class,
+ * which represents a rendering stage in the pipeline, and the
+ * `FallbackShader` class, a simple shader used as a default when no material
+ * or shader is specified.
+ *
+ * Copyright: Timur Gafarov 2019-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.render.pass;
 
 import std.stdio;
@@ -50,10 +63,21 @@ import dagon.graphics.state;
 import dagon.render.pipeline;
 import dagon.render.view;
 
+/**
+ * A fallback shader used when no material or shader is specified.
+ * Loads simple vertex and fragment shaders and binds standard
+ * transformation parameters.
+ */
 class FallbackShader: Shader
 {
     String vs, fs;
 
+    /**
+     * Constructs the fallback shader and loads its source code.
+     *
+     * Params:
+     *   owner = Owner object.
+     */
     this(Owner owner)
     {
         vs = Shader.load("data/__internal/shaders/Fallback/Fallback.vert.glsl");
@@ -63,12 +87,19 @@ class FallbackShader: Shader
         super(myProgram, owner);
     }
 
+    /// Destructor. Frees shader source strings.
     ~this()
     {
         vs.free();
         fs.free();
     }
 
+    /**
+     * Binds standard transformation parameters to the shader.
+     *
+     * Params:
+     *   state = The current graphics pipeline state.
+     */
     override void bindParameters(GraphicsState* state)
     {
         setParameter("modelViewMatrix", state.modelViewMatrix);
@@ -81,18 +112,48 @@ class FallbackShader: Shader
     }
 }
 
+/**
+ * Abstract base class for a render pass in the rendering pipeline.
+ *
+ * Description:
+ * Manages graphics pipeline state and renders an entity group.
+ */
 abstract class RenderPass: EventListener
 {
+    /// The parent render pipeline.
     RenderPipeline pipeline;
+
+    /// The render view for this pass.
     RenderView view;
+
+    /// The group of entities to render.
     EntityGroup group;
+
+    /// The graphics pipeline state.
     GraphicsState state;
+
+    /// Default material used if an entity has none.
     Material defaultMaterial;
+
+    /// Default shader used if an entity has none.
     FallbackShader defaultShader;
+
+    /// Whether this pass is active.
     bool active = true;
+
+    /// Whether to clear the framebuffer.
     bool clear = true;
+
+    /// The previous frame's view matrix.
     Matrix4x4f prevViewMatrix;
 
+    /**
+     * Constructs a render pass and registers it with the pipeline.
+     *
+     * Params:
+     *   pipeline = The parent render pipeline.
+     *   group    = Optional entity group to render.
+     */
     this(RenderPipeline pipeline, EntityGroup group = null)
     {
         super(pipeline.eventManager, pipeline);
@@ -105,6 +166,12 @@ abstract class RenderPass: EventListener
         prevViewMatrix = Matrix4x4f.identity;
     }
 
+    /**
+     * Updates the render pass state for the current frame.
+     *
+     * Params:
+     *   t = Frame timing information.
+     */
     void update(Time t)
     {
         processEvents();
@@ -117,6 +184,7 @@ abstract class RenderPass: EventListener
         updateState();
     }
     
+    /// Updates the graphics pipeline state with the current view.
     void updateState()
     {
         if (view)
@@ -144,6 +212,13 @@ abstract class RenderPass: EventListener
         }
     }
 
+    /**
+     * Renders a single entity with the specified shader.
+     *
+     * Params:
+     *   entity = The entity to render.
+     *   shader = The shader to use.
+     */
     void renderEntity(Entity entity, Shader shader)
     {
         state.layer = entity.layer;
@@ -180,6 +255,7 @@ abstract class RenderPass: EventListener
             defaultMaterial.unbind(&state);
     }
 
+    /// Renders the pass (to be implemented by subclasses).
     void render()
     {
         //

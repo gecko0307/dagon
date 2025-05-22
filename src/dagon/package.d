@@ -44,7 +44,7 @@ DEALINGS IN THE SOFTWARE.
  *
  * - $(LINK2 dagon/game.html, dagon.game) - base functionality for building a game
  *
- * - $(LINK2 dagon/ui.html, dagon.ui) - UI tools
+ * - $(LINK2 dagon/ui.html, dagon.ui) - UI components and tools
  *
  * - $(LINK2 dagon/extra.html, dagon.extra) - additional shaders and effects
  *

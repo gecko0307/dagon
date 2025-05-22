@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2022 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,6 +25,21 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Framebuffer abstraction for Dagon's rendering system.
+ *
+ * Description:
+ * The `dagon.render.framebuffer` defines the `Framebuffer` class, which
+ * encapsulates an OpenGL framebuffer object with configurable color and depth
+ * attachments. The class supports multiple color formats, depth/stencil buffers,
+ * resizing, binding/unbinding, and blitting color or depth buffers. This
+ * abstraction simplifies offscreen rendering, post-processing, and advanced
+ * rendering techniques.
+ *
+ * Copyright: Timur Gafarov 2019-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.render.framebuffer;
 
 import std.stdio;
@@ -35,6 +50,9 @@ import dlib.image.color;
 import dagon.core.bindings;
 import dagon.core.logger;
 
+/**
+ * Supported framebuffer color formats.
+ */
 enum FrameBufferFormat
 {
     R8,
@@ -54,27 +72,69 @@ enum FrameBufferFormat
     RGBA32F
 }
 
+/**
+ * Framebuffer abstraction for offscreen rendering.
+ *
+ * Description:
+ * Manages an OpenGL framebuffer object with color
+ * and optional depth/stencil attachments.
+ */
 class Framebuffer: Owner
 {
+    /// Framebuffer width in pixels.
     uint width;
+
+    /// Framebuffer height in pixels.
     uint height;
+
+    /// Color buffer format.
     FrameBufferFormat colorFormat;
+
+    /// True if a depth/stencil buffer is attached.
     bool hasDepthBuffer;
-    GLuint _colorTexture = 0;
-    GLuint _depthTexture = 0;
+
+    protected GLuint _colorTexture = 0;
+    protected GLuint _depthTexture = 0;
+
+    /// OpenGL framebuffer object.
     GLuint framebuffer;
 
+    /**
+     * Constructs an empty framebuffer.
+     *
+     * Params:
+     *   owner = Owner object.
+     */
     this(Owner owner)
     {
         super(owner);
     }
 
+    /**
+     * Constructs and initializes a framebuffer.
+     *
+     * Params:
+     *   w      = Width in pixels.
+     *   h      = Height in pixels.
+     *   format = Color buffer format.
+     *   depth  = Whether to attach a depth/stencil buffer.
+     *   owner  = Owner object.
+     */
     this(uint w, uint h, FrameBufferFormat format, bool depth, Owner owner)
     {
         super(owner);
         init(w, h, format, depth);
     }
 
+    /**
+     * Initializes or reinitializes the framebuffer.
+     *
+     * Params:
+     *   w      = Width in pixels.
+     *   h      = Height in pixels.
+     *   format = Color buffer format.
+     *   depth  = Whether to attach a depth/stencil buffer.
+     */
     void init(uint w, uint h, FrameBufferFormat format, bool depth)
     {
         width = w;
@@ -84,11 +144,13 @@ class Framebuffer: Owner
         createFramebuffer();
     }
 
+    /// Destructor. Releases all OpenGL resources.
     ~this()
     {
         releaseFramebuffer();
     }
 
+    /// Creates the OpenGL framebuffer and attachments.
     protected void createFramebuffer()
     {
         releaseFramebuffer();
@@ -165,6 +227,7 @@ class Framebuffer: Owner
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
+    /// Releases all OpenGL framebuffer and texture resources.
     void releaseFramebuffer()
     {
         if (glIsFramebuffer(framebuffer))
@@ -177,26 +240,31 @@ class Framebuffer: Owner
             glDeleteTextures(1, &_depthTexture);
     }
 
+    /// Returns the OpenGL color texture handle.
     GLuint colorTexture()
     {
         return _colorTexture;
     }
 
+    /// Returns the OpenGL depth texture handle.
     GLuint depthTexture()
     {
         return _depthTexture;
     }
 
+    /// Binds the framebuffer for drawing.
     void bind()
     {
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
     }
 
+    /// Unbinds the framebuffer (restores default framebuffer).
     void unbind()
     {
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     }
 
+    /// Resizes the framebuffer and its attachments.
     void resize(uint w, uint h)
     {
         width = w;
@@ -204,6 +272,7 @@ class Framebuffer: Owner
         createFramebuffer();
     }
 
+    /// Blits the color buffer to the default framebuffer.
     void blitColorBuffer()
     {
         glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer);
@@ -211,6 +280,7 @@ class Framebuffer: Owner
         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
     }
 
+    /// Blits the depth/stencil buffer to the default framebuffer.
     void blitDepthBuffer()
     {
         if (hasDepthBuffer)

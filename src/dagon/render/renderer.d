@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,6 +25,18 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * A high-level renderer abstraction for Dagon's rendering system.
+ *
+ * Description:
+ * The `dagon.render.renderer` module defines the basic `Renderer` class,
+ * which manages a render pipeline and serves as a base for creating
+ * custom renderers.
+ *
+ * Copyright: Timur Gafarov 2019-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.render.renderer;
 
 import dlib.core.memory;
@@ -38,22 +50,49 @@ import dagon.render.pipeline;
 import dagon.render.framebuffer;
 import dagon.resource.scene;
 
+/**
+ * High-level renderer abstraction.
+ */
 class Renderer: Owner
 {
+    /// The main render view.
     RenderView view;
+
+    /// The render pipeline.
     RenderPipeline pipeline;
+
+    /// Output framebuffer.
     Framebuffer outputBuffer;
 
+    /**
+     * Sets the active camera for rendering.
+     *
+     * Params:
+     *   camera = The camera to use.
+     */
     void activeCamera(Camera camera)
     {
         view.camera = camera;
     }
 
+    /**
+     * Returns the currently active camera.
+     *
+     * Returns:
+     *   The active camera.
+     */
     Camera activeCamera()
     {
         return view.camera;
     }
 
+    /**
+     * Constructs a renderer with the given event manager and owner.
+     *
+     * Params:
+     *   eventManager = The event manager for event processing.
+     *   owner        = Owner object.
+     */
     this(EventManager eventManager, Owner owner)
     {
         super(owner);
@@ -61,16 +100,30 @@ class Renderer: Owner
         pipeline = New!RenderPipeline(eventManager, this);
     }
 
-    // Override me
-    void scene(Scene s)
+    /**
+     * Assigns a scene to the renderer.
+     *
+     * Params:
+     *   scene = The scene to render.
+     * Note:
+     *   Override this method to implement custom scene assignment logic.
+     */
+    void scene(Scene scene)
     {
     }
 
+    /**
+     * Updates the renderer and its pipeline for the current frame.
+     *
+     * Params:
+     *   t = Frame timing information.
+     */
     void update(Time t)
     {
         pipeline.update(t);
     }
 
+    /// Renders the current frame using the pipeline and output buffer.
     void render()
     {
         if (outputBuffer)
@@ -82,6 +135,15 @@ class Renderer: Owner
             outputBuffer.unbind();
     }
 
+    /**
+     * Sets the viewport position and size for rendering.
+     *
+     * Params:
+     *   x = Viewport X position (pixels).
+     *   y = Viewport Y position (pixels).
+     *   w = Viewport width (pixels).
+     *   h = Viewport height (pixels).
+     */
     void setViewport(uint x, uint y, uint w, uint h)
     {
         view.setPosition(x, y);

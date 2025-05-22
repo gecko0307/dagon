@@ -25,6 +25,19 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Provides the `RenderView` abstraction for Dagon's rendering system.
+ *
+ * The `dagon.render.view` module defines the `RenderView` class, which
+ * encapsulates camera, viewport, and projection settings for a render pass.
+ * The class supports perspective and orthographic projections, viewport
+ * resizing, and provides access to view, projection, and camera matrices.
+ * This abstraction is used for rendering scenes.
+ *
+ * Copyright: Timur Gafarov 2019-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.render.view;
 
 import dlib.core.memory;
@@ -39,25 +52,61 @@ import dagon.graphics.camera;
 
 import dagon.render.pipeline;
 
+/// Projection types for RenderView.
 enum: uint
 {
+    /// Perspective projection.
     Perspective = 0,
+
+    /// Orthographic projection (world units).
     Ortho = 1,
+
+    /// Orthographic projection (screen units).
     OrthoScreen = 2
 }
 
+/**
+ * Encapsulates camera, viewport, and projection settings for a render pass.
+ */
 class RenderView: Owner
 {
+    /// The camera used for rendering.
     Camera camera;
+
+    /// Viewport position X coordinate.
     uint x;
+
+    /// Viewport position Y coordinate.
     uint y;
+
+    /// Viewport width in pixels.
     uint width;
+
+    /// Viewport height in pixels.
     uint height;
+
+    /// Aspect ratio of the viewport.
     float aspectRatio;
+
+    /// Projection type (Perspective, Ortho, OrthoScreen).
     uint projection = Perspective;
+
+    /// Scale for orthographic projection.
     float orthoScale = 1.0f;
+
+    /// Render pipeline used for this view.
     RenderPipeline pipeline;
     
+    /**
+     * Constructs a render view with the given viewport and owner.
+     *
+     * Params:
+     *   x       = Viewport position X coordinate (pixels).
+     *   y       = Viewport position Y coordinate (pixels).
+     *   width   = Viewport width (pixels).
+     *   height  = Viewport height (pixels).
+     *   owner   = Owner object.
+     */
     this(uint x, uint y, uint width, uint height, Owner owner)
     {
         super(owner);
@@ -68,10 +117,12 @@ class RenderView: Owner
         aspectRatio = cast(float)width / cast(float)height;
     }
     
+    /// Destructor.
     ~this()
     {
     }
     
+    /// Returns the view matrix for the current camera.
     Matrix4x4f viewMatrix()
     {
         if (camera)
@@ -80,6 +131,7 @@ class RenderView: Owner
             return Matrix4x4f.identity;
     }
     
+    /// Returns the inverse view matrix for the current camera.
     Matrix4x4f invViewMatrix()
     {
         if (camera)
@@ -88,6 +140,7 @@ class RenderView: Owner
             return Matrix4x4f.identity;
     }
     
+    /// Returns the projection matrix for the current projection type.
     Matrix4x4f projectionMatrix()
     {
         float fov = 60.0f;
@@ -110,6 +163,7 @@ class RenderView: Owner
             return Matrix4x4f.identity;
     }
     
+    /// Returns the near clipping plane distance.
     float zNear()
     {
         if (camera)
@@ -118,6 +172,7 @@ class RenderView: Owner
             return 0.01f;
     }
     
+    /// Returns the far clipping plane distance.
     float zFar()
     {
         if (camera)
@@ -126,6 +181,7 @@ class RenderView: Owner
             return 1000.0f;
     }
     
+    /// Returns the absolute camera position in world space.
     Vector3f cameraPosition()
     {
         if (camera)
@@ -134,12 +190,14 @@ class RenderView: Owner
             return Vector3f(0.0f, 0.0f, 0.0f);
     }
     
+    /// Sets the viewport position.
     void setPosition(uint x, uint y)
     {
         this.x = x;
         this.y = y;
     }
     
+    /// Resizes the viewport and updates the aspect ratio.
     void resize(uint width, uint height)
     {
         this.width = width;
