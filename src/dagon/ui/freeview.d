@@ -25,6 +25,22 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Orbit/pan/zoom camera control component.
+ *
+ * Description:
+ * The `dagon.ui.freeview` module defines the `FreeviewComponent` class,
+ * which enables orbit-style camera movement using mouse input.
+ * The component supports smooth translation, rotation, and zooming around
+ * a target point, with configurable sensitivities and stiffness for each axis.
+ * It also provides methods for setting and animating the camera's
+ * target, rotation, and zoom, as well as converting screen coordinates
+ * to world coordinates.
+ *
+ * Copyright: Timur Gafarov 2017-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.ui.freeview;
 
 import std.math;
@@ -40,43 +56,93 @@ import dagon.core.keycodes;
 import dagon.core.time;
 import dagon.graphics.entity;
 
+/**
+ * Free camera orbit/pan/zoom control component for entities.
+ *
+ * Description:
+ * Enables orbiting, panning, and zooming around a target point
+ * using mouse input. Supports smooth transitions, configurable
+ * sensitivities, and conversion between screen and world coordinates.
+ */
 class FreeviewComponent: EntityComponent
 {
+    /// Previous mouse X position.
     int prevMouseX;
+
+    /// Previous mouse Y position.
     int prevMouseY;
+
+    /// Sensitivity for mouse panning.
     float mouseTranslationSensibility;
+
+    /// Sensitivity for mouse rotation.
     float mouseRotationSensibility;
+
+    /// Sensitivity for mouse zoom.
     float mouseZoomSensibility;
     
+    /// Camera target point.
     Vector3f target;
+
+    /// Smoothed camera target point.
     Vector3f smoothTarget;
     
+    /// Distance to target.
     float distanceToTagret;
+
+    /// Smoothed distance to target.
     float smoothDistanceToTagret;
     
+    /// Camera rotation (pitch, yaw, roll)
     Vector3f rotation;
+
+    /// Smoothed camera rotation.
     Vector3f smoothRotation;
     
+    /// Smoothing factor for translation.
     float translationStiffness;
+
+    /// Smoothing factor for rotation.
     float rotationStiffness;
+
+    /// Smoothing factor for zoom.
     float zoomStiffness;
     
+    /// Current orientation quaternion.
     Quaternionf orientation;
+
+    /// Camera transformation.
     Matrix4x4f transform;
+
+    /// Inverse camera transformation.
     Matrix4x4f invTransform;
     
+    /// Whether the component is active.
     bool active;
     
+    /// Enables mouse panning.
     bool enableMouseTranslation;
+
+    /// Enables mouse rotation.
     bool enableMouseRotation;
+
+    /// Enables mouse zoom.
     bool enableMouseZoom;
     
-    this(EventManager em, Entity e)
+    /**
+     * Constructs a freeview component for the given entity.
+     *
+     * Params:
+     *   eventManager = Event manager.
+     *   hostEntity   = Entity to attach the component to.
+     */
+    this(EventManager eventManager, Entity hostEntity)
     {
-        super(em, e);
+        super(eventManager, hostEntity);
         reset();
     }
     
+    /// Resets the camera to default parameters.
     void reset()
     {
         prevMouseX = eventManager.mouseX;
@@ -112,6 +178,7 @@ class FreeviewComponent: EntityComponent
         transformEntity();
     }
     
+    /// Updates the camera each frame, processing input and smoothing.
     override void update(Time time)
     {
         processEvents();
@@ -151,6 +218,7 @@ class FreeviewComponent: EntityComponent
         transformEntity();
     }
     
+    /// Applies the current rotation, translation, and zoom to the entity.
     void transformEntity()
     {
         Quaternionf qPitch = rotationQuaternion(Vector3f(1.0f, 0.0f, 0.0f), degtorad(smoothRotation.x));
@@ -175,96 +243,122 @@ class FreeviewComponent: EntityComponent
         entity.prevAbsoluteTransformation = entity.prevTransformation;
     }
     
+    /// Sets the camera rotation (pitch, yaw, roll) instantly.
     void setRotation(float p, float t, float r)
     {
         rotation = Vector3f(p, t, r);
         smoothRotation = rotation;
     }
     
-    // 2:1 isometry
+    /// Sets the camera to a 2:1 isometric rotation.
     void setIsometricRotation()
     {
         setRotation(30.0f, 45.0f, 0.0f);
     }
     
+    /// Sets the camera rotation smoothly (will interpolate).
     void setRotationSmooth(float p, float t, float r)
     {
         rotation = Vector3f(p, t, r);
     }
     
+    /// Adds to the current rotation.
     void rotate(float p, float t, float r)
     {
         rotation += Vector3f(p, t, r);
     }
     
+    /// Sets the camera's target point instantly.
     void setTarget(Vector3f pos)
     {
         target = pos;
         smoothTarget = target;
     }
     
+    /// Sets the camera's target point smoothly (will interpolate).
     void setTargetSmooth(Vector3f pos)
     {
         target = pos;
     }
     
+    /// Sets the camera's target to an entity's absolute position instantly.
     void setTarget(Entity e)
     {
         target = e.positionAbsolute;
         smoothTarget = target;
     }
     
+    /// Sets the camera's target to an entity's absolute position smoothly.
     void setTargetSmooth(Entity e)
     {
         target = e.positionAbsolute;
     }
 
+    /// Translates the camera's target by the given vector.
     void translateTarget(Vector3f pos)
     {
         target += pos;
     }
     
+    /// Sets the camera's zoom (distance to target) instantly.
     void setZoom(float z)
     {
         distanceToTagret = z;
         smoothDistanceToTagret = z;
     }
 
+    /// Sets the camera's zoom smoothly (will interpolate).
     void setZoomSmooth(float z)
     {
         distanceToTagret = z;
     }
 
+    /// Adjusts the camera's zoom by the given amount.
     void zoom(float z)
     {
         distanceToTagret -= z;
     }
 
+    /// Returns the camera's current position in world space.
     Vector3f position()
     {
         return transform.translation();
     }
 
+    /// Returns the camera's forward direction.
     Vector3f direction()
     {
         return transform.forward();
     }
 
+    /// Returns the camera's right direction.
     Vector3f right()
     {
         return transform.right();
     }
 
+    /// Returns the camera's up direction.
     Vector3f up()
     {
         return transform.up();
     }
 
+    /**
+     * Converts screen coordinates to world coordinates at ground plane (y = 0).
+     *
+     * Params:
+     *   scrx       = Screen-space X coordinate.
+     *   scry       = Screen-space Y coordinate.
+     *   scrw       = Screen width.
+     *   scrh       = Screen height.
+     *   yfov       = Vertical field of view (degrees).
+     *   worldx     = Output world-space x coordinate.
+     *   worldy     = Output world-space y coordinate.
+     *   snap       = If `true`, snap to integer coordinates.
+     */
     void screenToWorld(
-        int scrx,
-        int scry,
-        int scrw,
-        int scrh,
+        int scrx, int scry,
+        int scrw, int scrh,
         float yfov,
         ref float worldx,
         ref float worldy,
@@ -293,7 +387,35 @@ class FreeviewComponent: EntityComponent
         worldx = snap? floor(camPos.x - mx * camPos.y / my) : (camPos.x - mx * camPos.y / my);
         worldy = snap? floor(camPos.z - mz * camPos.y / my) : (camPos.z - mz * camPos.y / my);
     }
+
+    /**
+     * Converts screen coordinates to world coordinates at ground plane (y = 0)
+     * and returns them as a `Vector2f`.
+     *
+     * Params:
+     *   scrx       = Screen-space X coordinate.
+     *   scry       = Screen-space Y coordinate.
+     *   scrw       = Screen width.
+     *   scrh       = Screen height.
+     *   yfov       = Vertical field of view (degrees).
+     *   snap       = If `true`, snap to integer coordinates.
+     *
+     * Returns:
+     *   A `Vector2f` containing the world-space x and y coordinates.
+     */
+    Vector2f screenToWorld(
+        int scrx, int scry,
+        int scrw, int scrh,
+        float yfov,
+        bool snap) {
+        
+        float worldx = 0.0f;
+        float worldy = 0.0f;
+        screenToWorld(scrx, scry, scrw, scrh, yfov, worldx, worldy, snap);
+        return Vector2f(worldx, worldy);
+    }
     
+    /// Handles mouse button down events for camera control.
     override void onMouseButtonDown(int button)
     {
         if (!active)
@@ -306,6 +428,7 @@ class FreeviewComponent: EntityComponent
         }
     }
     
+    /// Handles mouse wheel events for zooming.
     override void onMouseWheel(int x, int y)
     {
         if (!active || !enableMouseZoom)

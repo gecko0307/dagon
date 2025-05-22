@@ -28,6 +28,7 @@ DEALINGS IN THE SOFTWARE.
 /**
  * A simple loading screen implementation.
  *
+ * Description:
  * The `dagon.game.loadingscreen` module defines the `LoadingScreen` class,
  * which displays a progress bar during asset or scene loading.
  *

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2022 Timur Gafarov
+Copyright (c) 2017-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,6 +25,20 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * A first-person camera control component.
+ *
+ * Description:
+ * The `dagon.ui.firstpersonview` module defines the `FirstPersonViewComponent`
+ * class, which enables first-person camera kinematics using mouse input.
+ * The component supports relative and absolute mouse modes, pitch/turn limits,
+ * and configurable sensitivities. It provides methods for moving forward/backward
+ * and strafing left/right, as well as handling window focus events.
+ *
+ * Copyright: Timur Gafarov 2017-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.ui.firstpersonview;
 
 import std.math;
@@ -40,43 +54,83 @@ import dagon.core.keycodes;
 import dagon.core.time;
 import dagon.graphics.entity;
 
+/**
+ * First-person camera control component for entities.
+ *
+ * Description:
+ * Enables mouse and keyboard-based camera orientation and movement,
+ * supporting both relative and absolute mouse modes.
+ * Handles pitch and turn limits and configurable sensitivities.
+ */
 class FirstPersonViewComponent: EntityComponent
 {
     protected bool _active = true;
     protected bool _useRelativeMouseMode = true;
     
+    /// True if mouse input is active.
     bool mouseActive = true;
     
+    /// Mouse sensitivity factor.
     float mouseSensitivity = 0.2f;
+
+    /// Sensitivity for virtual axes (controlled via keyboard or gamepad).
     float axisSensitivity = 20.0f;
     
+    /// Maximum pitch angle (degrees).
     float pitchLimitMax = 60.0f;
+
+    /// Minimum pitch angle (degrees).
     float pitchLimitMin = -60.0f;
     
+    /// Previous mouse X coordinate.
     int prevMouseX = 0;
+
+    /// Previous mouse Y coordinate.
     int prevMouseY = 0;
     
+    /// Camera pitch angle (degrees).
     float pitch = 0.0f;
+
+    /// Camera turn angle (degrees).
     float turn = 0.0f;
     
+    /// Vertical orientation quaternion.
     Quaternionf orientationV = Quaternionf.identity;
+
+    /// Horizontal orientation quaternion.
     Quaternionf orientationH = Quaternionf.identity;
     
+    /// Base orientation quaternion.
     Quaternionf baseOrientation = Quaternionf.identity;
     
+    /// Current forward direction vector.
     Vector3f direction = Vector3f(0.0f, 0.0f, 1.0f);
+
+    /// Forward direction ignoring pitch.
     Vector3f directionHorizontal = Vector3f(0.0f, 0.0f, 1.0f);
+
+    /// Right direction vector.
     Vector3f right = Vector3f(1.0f, 0.0f, 0.0f);
+
+    /// Up direction vector.
     Vector3f up = Vector3f(0.0f, 1.0f, 0.0f);
     
-    this(EventManager em, Entity e)
+    /**
+     * Constructs a first-person view component for the given entity.
+     *
+     * Params:
+     *   eventManager = Event manager.
+     *   hostEntity   = Entity to attach the component to (usually a `Camera` object).
+     */
+    this(EventManager eventManager, Entity hostEntity)
     {
-        super(em, e);
+        super(eventManager, hostEntity);
         active = true;
         useRelativeMouseMode = true;
         reset();
     }
     
+    /// Enables or disables the component.
     void active(bool mode) @property
     {
         _active = mode;
@@ -89,22 +143,26 @@ class FirstPersonViewComponent: EntityComponent
         }
     }
     
-    bool active() @property
+    /// Returns whether the component is active.
+    bool active() const @property
     {
         return _active;
     }
     
+    /// Enables or disables relative mouse mode.
     void useRelativeMouseMode(bool mode) @property
     {
         _useRelativeMouseMode = mode;
         eventManager.setRelativeMouseMode(_useRelativeMouseMode && _active);
     }
     
-    bool useRelativeMouseMode() @property
+    /// Returns whether relative mouse mode is enabled.
+    bool useRelativeMouseMode() const @property
     {
         return _useRelativeMouseMode;
     }
     
+    /// Resets pitch, turn, and mouse state.
     void reset()
     {
         pitch = 0.0f;
@@ -115,6 +173,7 @@ class FirstPersonViewComponent: EntityComponent
         prevMouseY = eventManager.mouseY;
     }
     
+    /// Updates the component each frame (handles input and orientation).
     override void update(Time time)
     {
         processEvents();
@@ -186,37 +245,39 @@ class FirstPersonViewComponent: EntityComponent
         up = orientationH.rotate(Vector3f(01.0f, 1.0f, 0.0f));
     }
     
+    /// Called when the application gains focus.
     override void onFocusGain()
     {
         mouseActive = true;
     }
     
+    /// Called when the application loses focus.
     override void onFocusLoss()
     {
         mouseActive = false;
     }
     
+    /// Moves the entity forward by the given speed.
     void moveForward(float speed)
     {
-        Vector3f forward = entity.transformation.forward;
-        entity.position -= forward.normalized * speed;
+        entity.position -= entity.transformation.forward.normalized * speed;
     }
     
+    /// Moves the entity backward by the given speed.
     void moveBack(float speed)
     {
-        Vector3f forward = entity.transformation.forward;
-        entity.position += forward.normalized * speed;
+        entity.position += entity.transformation.forward.normalized * speed;
     }
     
+    /// Strafes the entity right by the given speed.
     void strafeRight(float speed)
     {
-        Vector3f right = entity.transformation.right;
-        entity.position += right.normalized * speed;
+        entity.position += entity.transformation.right.normalized * speed;
     }
     
+    /// Strafes the entity left by the given speed.
     void strafeLeft(float speed)
     {
-        Vector3f right = entity.transformation.right;
-        entity.position -= right.normalized * speed;
+        entity.position -= entity.transformation.right.normalized * speed;
     }
 }

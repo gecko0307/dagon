@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2022 Timur Gafarov
+Copyright (c) 2017-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,23 +25,65 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * A font abstraction.
+ *
+ * Description:
+ * The `dagon.ui.font` module defines the abstract `Font` abstract class,
+ * which represents a font resource capable of measuring and rendering
+ * text strings. This abstraction allows for different font implementations
+ * (bitmap, vector, etc.) to be used interchangeably in the UI.
+ *
+ * Copyright: Timur Gafarov 2017-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.ui.font;
 
 import dlib.core.ownership;
 import dlib.image.color;
 import dagon.graphics.state;
 
+/**
+ * Abstract base class for font resources.
+ *
+ * Description:
+ * Provides methods for measuring string width and rendering text.
+ */
 abstract class Font: Owner
 {
+    /// The font's size in UI units.
     float height;
     
-    this(Owner o)
+    /**
+     * Constructs a font resource.
+     *
+     * Params:
+     *   owner = Owner object.
+     */
+    this(Owner owner)
     {
-        super(o);
+        super(owner);
         height = 1.0f;
     }
     
+    /**
+     * Returns the width of the given string in UI units.
+     *
+     * Params:
+     *   str = The string to measure.
+     * Returns:
+     *   The width of the string.
+     */
     float width(string str);
+
+    /**
+     * Renders the given string using the specified graphics pipeline state and color.
+     *
+     * Params:
+     *   state = The graphics state to use for rendering.
+     *   color = The color to render the text with.
+     *   str   = The string to render.
+     */
     void render(GraphicsState* state, Color4f color, string str);
 }
-

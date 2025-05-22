@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2022 Timur Gafarov
+Copyright (c) 2017-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,6 +25,16 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * A simple drawable text line for Dagon's UI system.
+ *
+ * The `dagon.ui.textline` module defines the `TextLine` class, which represents
+ * a single line of text rendered with a specified font, color, and scaling.
+ *
+ * Copyright: Timur Gafarov 2017-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.ui.textline;
 
 import dlib.core.memory;
@@ -36,18 +46,40 @@ import dagon.core.bindings;
 import dagon.graphics.drawable;
 import dagon.ui.font;
 
+/**
+ * Represents a single line of text for UI rendering.
+ */
 class TextLine: Owner, Drawable
 {
+    /// The font used to render the text.
     Font font;
+
+    /// Scaling factor for the text.
     float scaling;
+
+    /// The color of the text (RGBA).
     Color4f color;
+
+    /// The string to display.
     string text;
+
+    /// The calculated width of the rendered text.
     float width;
+
+    /// The height of the font
     float height;
 
-    this(Font font, string text, Owner o)
+    /**
+     * Constructs a text line with the given font and text.
+     *
+     * Params:
+     *   font  = The font to use.
+     *   text  = The text string.
+     *   owner = Owner object.
+     */
+    this(Font font, string text, Owner owner)
     {
-        super(o);
+        super(owner);
         this.font = font;
         this.text = text;
         this.scaling = 1.0f;
@@ -56,6 +88,12 @@ class TextLine: Owner, Drawable
         this.color = Color4f(1, 1, 1, 1);
     }
 
+    /**
+     * Renders the text line using the specified graphics pipeline state.
+     *
+     * Params:
+     *   state = Pointer to the graphics pipeline state.
+     */
     override void render(GraphicsState* state)
     {
         glDisable(GL_DEPTH_TEST);
@@ -68,6 +106,12 @@ class TextLine: Owner, Drawable
         glEnable(GL_DEPTH_TEST);
     }
 
+    /**
+     * Sets a new font and updates the text metrics.
+     *
+     * Params:
+     *   font = The new font to use.
+     */
     void setFont(Font font)
     {
         this.font = font;
@@ -75,6 +119,12 @@ class TextLine: Owner, Drawable
         this.height = font.height;
     }
 
+    /**
+     * Sets a new text string and updates the text metrics.
+     *
+     * Params:
+     *   t = The new text string.
+     */
     void setText(string t)
     {
         this.text = t;
