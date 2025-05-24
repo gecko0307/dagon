@@ -208,10 +208,22 @@ CubeFaceBit cubeFaceBit(CubeFace face)
  */
 struct TextureFormat
 {
+    /// OpenGL texture target (GL_TEXTURE_2D, etc).
     GLenum target;
+    
+    /// OpenGL texture format (GL_RGBA, etc).
     GLenum format;
+    
+    /// OpenGL internal format (GL_RGBA8, etc).
     GLint internalFormat;
+    
+    /// OpenGL pixel type (GL_UNSIGNED_BYTE, etc).
     GLenum pixelType;
+    
+    /**
+     * For compressed formats, this should be the size of a 4x4 pixel block in bytes.
+     * For uncompressed formats, this should be zero.
+     */
     uint blockSize;
 
     /// Bitwise combination of `CubeFaceBit` members.
@@ -394,21 +406,21 @@ enum GLint[] compressedFormats = [
 /**
  * Intermediate texture data storage.
  * Used to create textures loaded from container formats,
- * such as DDS and KTX, from custom formats or directly
+ * such as DDS and KTX, from custom formats, or directly
  * from memory.
  */
 struct TextureBuffer
 {
-    /// Format of a texture data
+    /// Format of a texture data.
     TextureFormat format;
 
-    /// Size of a texture data
+    /// Size of a texture data.
     TextureSize size;
 
-    /// Number of mip levels
+    /// Number of mip levels.
     uint mipLevels;
 
-    // Raw texture data (can be compressed)
+    /// Raw texture data (can be compressed).
     ubyte[] data;
 }
 
