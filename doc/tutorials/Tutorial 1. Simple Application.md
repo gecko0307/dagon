@@ -56,7 +56,7 @@ class TestScene: Scene
 }
 ```
 
-In the example above we load a model from OBJ file (`data/suzanne.obj`) and attach it to an entity. We also create a plane object in the same manner. Adding `FreeviewComponent` to the camera allows the user to navigate the scene with mouse like in 3D editors.
+Dagon's core logic is based on a concept of a scene. A scene is an incapsulator for assets and game objects (which are called entities) and any custom data logically tied to them. Scene loads assets, allocates entities and configures them. In the example above we load a model from OBJ file (`data/suzanne.obj`) and attach it to an entity. We also create a plane object in the same manner. Adding `FreeviewComponent` to the camera allows the user to navigate the scene with mouse like in 3D editors.
 
 3. Create a class that inherits from `Game`, create your scene and assign it to `currentScene`:
 ```d
@@ -69,6 +69,8 @@ class MyGame: Game
     }
 }
 ```
+
+Only one scene is active at any given time. Switching an active scene can optionally cause releasing current assets and loading new ones, as you would expect when going from one game level or location to another. But scenes can represent not only levels, they are used for any logical context in a game - a menu, pause screen, options screen, inventory screen, and so on.
 
 4. Add a `main` function, create an instance of `MyApplication` and call its `run` method:
 ```d
