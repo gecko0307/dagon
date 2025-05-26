@@ -2,7 +2,7 @@
 
 This tutorial will guide you through creating your first application using the Dagon engine.
 
-1. Create a new Dub project and add the Dagon dependency.
+## 1. Create a new Dub project and add the Dagon dependency
 
 ```bash
 dub init mygame
@@ -10,7 +10,7 @@ cd mygame
 dub add dagon
 ```
 
-2. Create a basic scene
+## 2. Create a basic scene
 
 Dagon applications are structured around scenes. A scene encapsulates all logic, assets, and entities related to a specific part of your game (such as a level, a menu, etc.).
 
@@ -70,7 +70,7 @@ class TestScene: Scene
 
 This creates a scene with a red Suzanne model and a plane. Adding `FreeviewComponent` to the camera allows the user to navigate the scene with mouse like in 3D editors.
 
-3. Create a `Game` class and assign the scene:
+## 3. Create a `Game` class and assign the scene
 
 ```d
 class MyGame: Game
@@ -85,7 +85,7 @@ class MyGame: Game
 
 Only one scene can be active at a time. Switching the scene can optionally cause releasing current assets and loading new ones, as you would expect when going from one game level or location to another.
 
-4. Write the main function
+## 4. Write the main function
 
 ```d
 void main(string[] args)
@@ -96,7 +96,13 @@ void main(string[] args)
 }
 ```
 
-5. Compile and run (`dub build`). Make sure to have latest SDL2 installed. If you're on Windows, Dub will automatically copy the libraries after each build to the project directory, so you don't have to do it manually. It will also copy some internal data files used by the engine and put them to `data/__internal` folder. Do not delete it, otherwise the application will work incorrectly.
+## 5. Compile and run
+
+```bash
+dub build
+```
+
+Make sure to have latest SDL2 installed. If you're on Windows, Dub will automatically copy the libraries after each build to the project directory, so you don't have to do it manually. It will also copy some internal data files used by the engine and put them to `data/__internal` folder. Do not delete it, otherwise the application will work incorrectly.
 
 You should see this:
 
