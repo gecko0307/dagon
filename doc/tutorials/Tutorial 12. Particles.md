@@ -1,6 +1,6 @@
 # Tutorial 12. Particles
 
-Particles are a set of small, same-shaped objects whos movement is ruled by simple dynamics laws and random factors of varying influence. They are useful for simulating fire, smoke, dust, explosions, fireworks, water splashes, etc. By default particles in Dagon are billboards (camera-oriented quads), but you can use any Entity as a particle. Billboard particles can be soft (gradually blended with underlying environment based on depth distance to avoid ugly clipping). Particles also drop shadows, which can be partially transparent using alpha cutout.
+Particles are a set of small, same-shaped objects whos movement is ruled by simple dynamics laws and random factors of varying influence. They are useful for simulating fire, smoke, dust, explosions, fireworks, water splashes, etc. Particles in Dagon are billboards (camera-oriented quads). They can be soft (gradually blended with underlying environment based on depth distance to avoid ugly clipping). Particles also drop shadows, which can be partially transparent using alpha cutout.
 
 To create a particle system, attach `ParticleSystem` modifier to your entity:
 ```d
@@ -50,8 +50,3 @@ particleSystem.scaleStep = Vector3f(1.0f, 1.0f, 1.0f);
 `minSize`, `maxSize` determine minimum and maximum initial half-size of a particle billboard. Actual initial half-size is a random value in this range.
 
 `scaleStep` is a vector determining half-size change speed. A value of `Vector3f(0, 0, 0)` means no change.
-
-As already stated, you can render any object as a particle:
-```d
-particleSystem.particleEntity = myEntity;
-```
