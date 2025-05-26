@@ -1,3 +1,12 @@
+Dagon 0.24.0 - TBD
+------------------
+- **Rendering**
+  - Per-layer material output toggles (`outputColor`, `outputNormal`, etc.) are now supported in `PassTerrain`
+- **Misc**
+  - Dagon now uses dlib 1.3.2.
+- **Documentation**
+  - Add tutorials 13 and 15.
+
 Dagon 0.23.0 - 22 May, 2025
 ---------------------------
 - **Rendering**
@@ -7,7 +16,8 @@ Dagon 0.23.0 - 22 May, 2025
   - `dagon:stbi` extension was removed, because Dagon's default texture loader fully replaces it
 - **Misc**
   - Dagon now uses bindbc-sdl 1.5.2
-  - Documentation for most of the classes.
+- **Documentation**
+  - Add documentation for most of the classes.
 
 Dagon 0.22.0 - 04 May, 2025
 ---------------------------
