@@ -170,26 +170,32 @@ class PassTerrain: RenderPass
             
             glDisable(GL_DEPTH_TEST);
             
-            if (terrainMaterial)
+            foreach(layer; terrainMaterial.layers)
             {
-                foreach(layer; terrainMaterial.layers)
-                {
-                    state.material = layer;
-                    
-                    Shader shader;
-                    if (state.material.shader)
-                        shader = state.material.shader;
-                    else
-                        shader = terrainTextureLayerShader;
-                    
-                    shader.bind();
-                    shader.bindParameters(&state);
-                    
-                    screenSurface.render(&state);
-                    
-                    shader.unbindParameters(&state);
-                    shader.unbind();
-                }
+                state.material = layer;
+                
+                GLboolean colorMask = layer.outputColor;
+                GLboolean normalMask = layer.outputNormal;
+                GLboolean pbrMask = layer.outputPBR;
+                GLboolean emissionMask = layer.outputEmission;
+                glColorMaski(0, colorMask, colorMask, colorMask, colorMask);
+                glColorMaski(1, normalMask, normalMask, normalMask, normalMask);
+                glColorMaski(2, pbrMask, pbrMask, pbrMask, pbrMask);
+                glColorMaski(3, emissionMask, emissionMask, emissionMask, emissionMask);
+                
+                Shader shader;
+                if (state.material.shader)
+                    shader = state.material.shader;
+                else
+                    shader = terrainTextureLayerShader;
+                
+                shader.bind();
+                shader.bindParameters(&state);
+                
+                screenSurface.render(&state);
+                
+                shader.unbindParameters(&state);
+                shader.unbind();
             }
             
             glEnable(GL_DEPTH_TEST);
@@ -198,6 +204,8 @@ class PassTerrain: RenderPass
             glDisablei(GL_BLEND, 1);
             glDisablei(GL_BLEND, 2);
             glDisablei(GL_BLEND, 3);
+            
+            glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
         }
     }
 }
