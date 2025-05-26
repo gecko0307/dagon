@@ -1,265 +1,349 @@
 <!DOCTYPE html>
-<html lang="ru">
-    <head>
-        <meta charset="UTF-8">
-        <title>Dagon</title>
-        <meta name="viewport" content="width=device-width,initial-scale=1">
-        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-        <style>
-            body {
-                font-family: "Lato", sans-serif;
-            }
-            
-            .mySlides {
-                display: none;
-            }
-            
-            .video-container {
-                overflow: hidden;
-                position: relative;
-                width: 100%;
-                max-width: 1024px;
-                left: 50%;
-                transform: translateX(-50%);
-            }
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dagon</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #f6f8fa;
+      min-height: 100vh;
+      display: block;
+    }
 
-            .video-container::after {
-                padding-top: 56.25%;
-                display: block;
-                content: '';
-            }
+    .topnav {
+      position: sticky;
+      top: 0;
+      background: white;
+      padding: 1rem 0;
+      border-bottom: 1px solid #e1e4e8;
+      z-index: 1000;
+      box-shadow: 0 0 10px rgba(27, 31, 35, 0.1);
+    }
 
-            .video-container iframe {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-            }
-            
-            .ribbon {
-                /* positioning */
-                position: fixed;
-                padding: 5px 45px;
-                width: 256px;
-                /* top right of the page */
-                top: 60px;
-                right: -80px;
-                -webkit-transform: rotate(45deg);
-                -moz-transform: rotate(45deg);
-                -ms-transform: rotate(45deg);
-                transform: rotate(45deg);
-                /* effects with some shadow */
-                box-shadow: 0 0 0 3px #000000, 0 0 20px -3px rgba(0, 0, 0, 0.5);
-                text-shadow: 0 0 0 #ffffff, 0 0 5px rgba(0, 0, 0, 0.3);
-                /* looks */
-                background-color: #000000;
-                color: #ffffff;
-                font-size: 13px;
-                font-family: sans-serif;
-                text-decoration: none;
-                font-weight: bold;
-                /* ribbon effects */
-                border: 2px dotted #ffffff;
-                /* webkit antialias fix */
-                -webkit-backface-visibility: hidden;
-                letter-spacing: .5px;
-                z-index: 1000;
-            }
-            @media screen and (max-width: 850px) {
-                .ribbon {
-                    display: none;
-                }
-            }
-            
-            .content {
-                max-width: 1024px;
-                margin-top: 64px;
-            }
-            @media screen and (max-width: 715px) {
-                .content { margin-top: 128px; }
-            }
-            
-            a:hover {
-                color: #f96854;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="w3-top w3-bar w3-black">
-            <a href="#home" class="w3-bar-item w3-button">Home</a>
-            <a href="#features" class="w3-bar-item w3-button">Features</a>
-            <a href="#download" class="w3-bar-item w3-button">Download</a>
-            <a href="#gettingstarted" class="w3-bar-item w3-button">Getting Started</a>
-            <a href="#tutorials" class="w3-bar-item w3-button">Tutorials</a>
-            <a href="#contributing" class="w3-bar-item w3-button">Contributing</a>
-            <a href="#sponsorship" class="w3-bar-item w3-button">Sponsorship</a>
+    .topnav-container {
+      max-width: 980px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: left;
+      gap: 2rem;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 1rem;
+    }
+
+    .topnav a, .dropbtn {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      color: #0366d6;
+      text-decoration: none;
+      vertical-align: middle;
+      cursor: pointer;
+      white-space: nowrap;
+      user-select: none;
+      transition: color 0.2s ease;
+    }
+
+    .topnav a:hover,
+    .topnav a:focus,
+    .dropbtn:hover,
+    .dropbtn:focus {
+      color: #023e8a;
+      outline: none;
+    }
+
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: white;
+      min-width: 180px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      border: 1px solid #e1e4e8;
+      border-radius: 4px;
+      z-index: 1001;
+    }
+
+    .dropdown-content a {
+      display: block;
+      padding: 0.5rem 1rem;
+      color: #24292e;
+      white-space: nowrap;
+    }
+
+    .dropdown-content a:hover,
+    .dropdown-content a:focus {
+      background-color: #f6f8fa;
+      color: #0366d6;
+      outline: none;
+    }
+    
+    .dropdown-content p {
+      color: #dddddd;
+      padding: 0.5rem 1rem;
+      margin: 0;
+      cursor: default;
+      user-select: none;
+      pointer-events: none;
+      display: block;
+    }
+
+    main {
+      flex-grow: 1;
+      overflow-y: auto;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+                   Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      line-height: 1.6;
+      font-size: 16px;
+      color: #24292e;
+      max-width: 980px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: #ffffff;
+      border-radius: 6px;
+    }
+
+    main h1, main h2, main h3, main h4 {
+      margin-top: 1em;
+      margin-bottom: 0.75em;
+      font-weight: 600;
+      line-height: 1.25;
+    }
+    main h1 { font-size: 2em; border-bottom: 1px solid #e1e4e8; padding-bottom: 0.3em; }
+    main h2 { font-size: 1.5em; border-bottom: 1px solid #e1e4e8; padding-bottom: 0.3em; }
+    main h3 { font-size: 1.25em; }
+    main h4 { font-size: 1.1em; color: #6a737d; }
+
+    main ul, main ol {
+      padding-left: 2em;
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+    main li {
+      margin-bottom: 0.3em;
+    }
+
+    main a {
+      color: #0366d6;
+      text-decoration: none;
+    }
+    main a:hover {
+      text-decoration: underline;
+    }
+
+    main blockquote {
+      margin: 1em 0;
+      padding-left: 1em;
+      border-left: 4px solid #dfe2e5;
+      color: #6a737d;
+    }
+
+    main table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 1em;
+    }
+    main th, main td {
+      border: 1px solid #dfe2e5;
+      padding: 0.6em 1em;
+    }
+    main th {
+      background-color: #f6f8fa;
+      font-weight: 600;
+    }
+
+    main img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 1em auto;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    main .video-container {
+      overflow: hidden;
+      position: relative;
+      width: 100%;
+      max-width: 1024px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    main .video-container::after {
+      padding-top: 56.25%;
+      display: block;
+      content: '';
+    }
+
+    main .video-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css">
+  <style>
+    main code {
+      font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+      background: #f6f8fa;
+      padding: 0.2em 0.4em;
+      border-radius: 4px;
+      font-size: 85%;
+    }
+    main pre code {
+      display: block;
+      padding: 1em;
+      overflow-x: auto;
+      background: #f6f8fa !important;
+      border: 1px solid #e1e4e8 !important;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="topnav-container">
+      <a href="/?p=overview" onclick="loadPage('overview'); return false;">Overview</a>
+      <a href="/?p=features" onclick="loadPage('features'); return false;">Features</a>
+      <a href="https://github.com/gecko0307/dagon/releases" target="_blank">Download</a>
+      <a href="https://gecko0307.github.io/dagon/doc/dagon.html" target="_blank">API Reference</a>
+      <div class="dropdown">
+        <a href="/?p=tutorials" class="dropbtn" onclick="loadPage('tutorials'); return false;">Tutorials ▾</a>
+        <div class="dropdown-content">
+          <a href="/?p=tutorial1" onclick="loadPage('tutorial1'); return false;">1. Simple Application</a>
+          <a href="/?p=tutorial2" onclick="loadPage('tutorial2'); return false;">2. Textures</a>
+          <a href="/?p=tutorial3" onclick="loadPage('tutorial3'); return false;">3. Normal Maps</a>
+          <a href="/?p=tutorial4" onclick="loadPage('tutorial4'); return false;">4. Light Sources</a>
+          <a href="/?p=tutorial5" onclick="loadPage('tutorial5'); return false;">5. Environment Maps</a>
+          <a href="/?p=tutorial6" onclick="loadPage('tutorial6'); return false;">6. PBR</a>
+          <a href="/?p=tutorial7" onclick="loadPage('tutorial7'); return false;">7. First Person Camera</a>
+          <p>8. Procedural Sky</p>
+          <p>9. Post-processing</p>
+          <a href="/?p=tutorial10" onclick="loadPage('tutorial10'); return false;">10. Physics</a>
+          <a href="/?p=tutorial11" onclick="loadPage('tutorial11'); return false;">11. Exporting Assets from Blender</a>
+          <a href="/?p=tutorial12" onclick="loadPage('tutorial12'); return false;">12. Particles</a>
+          <a href="/?p=tutorial13" onclick="loadPage('tutorial13'); return false;">13. Custom Shaders</a>
+          <a href="/?p=tutorial14" onclick="loadPage('tutorial14'); return false;">14. Input Manager</a>
+          <a href="/?p=tutorial15" onclick="loadPage('tutorial15'); return false;">15. Terrain</a>
+          <p>16. Decals</p>
+          <a href="/?p=tutorial17" onclick="loadPage('tutorial17'); return false;">17. Character Controller</a>
+          <a href="/?p=tutorial18" onclick="loadPage('tutorial18'); return false;">18. Nuklear GUI</a>
         </div>
-        <div class="w3-content content">
-            <div id="home" class="w3-container">
-                <h1 class="w3-center">Dagon Engine</h1>
-                <p>
-                    <a href="https://github.com/gecko0307/dagon" target="_blank">Dagon</a> is an Open Source 3D game development framework based on OpenGL 4.0 core profile and SDL2. The goal of this project is to create a modern, easy to use, extensible 3D game engine for D language. Dagon currently works on Windows and Linux.
-                </p>
-                <p>
-                    The engine is still under development and lacks many important features. It is currently not recommended to use Dagon in production due to API instability. Follow the development on <a href="https://trello.com/b/4sDgRjZI/dagon" target="_blank">Trello</a> to see the priority tasks.
-                </p>
-                <div class="video-container">
-                    <iframe src="https://www.youtube.com/embed/iDF4shPofgU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                </div>
-            </div>
-            
-            <div id="features" class="w3-container w3-padding-32">
-                <h1 class="w3-center">Features</h1>
-                <p>
-                    <ul>
-                        <li>Static and animated meshes, <a href="https://www.khronos.org/gltf/" target="_blank">glTF</a>, <a href="https://en.wikipedia.org/wiki/Wavefront_.obj_file" target="_blank">OBJ</a> and <a href="https://github.com/lsalzman/iqm" target="_blank">IQM</a> formats support</li>
-                        <li>Textures in PNG, JPG, TGA, BMP, HDR formats + GIF and PSD via extension</li>
-                        <li>Deferred pipeline for opaque materials, forward pipeline for transparent materials and materials with custom shaders</li>
-                        <li>Physically based rendering (PBR)</li>
-                        <li>HDR rendering with AgX, Reinhard, Hable/Uncharted, ACES and Filmic tonemapping operators</li>
-                        <li>HDRI environment maps. Preconvolved DDS cubemaps</li>
-                        <li>Directional lights with cascaded shadow mapping and volumetric scattering</li>
-                        <li>Spherical and tube area lights, spot lights</li>
-                        <li>Normal/parallax mapping, parallax occlusion mapping</li>
-                        <li>Deferred decals with normal mapping and PBR material properties</li>
-                        <li>Dynamic skydome with sun and day/night cycle</li>
-                        <li>Particle system with force fields. Blended particles, soft particles, shaded particles with normal map support, particle shadows</li>
-                        <li>Terrain rendering. Procedural terrain using OpenSimplex noise or any custom height field</li>
-                        <li>Water rendering</li>
-                        <li>Post-processing (FXAA, SSAO, DoF, lens distortion, motion blur, glow, color grading)</li>
-                        <li>UTF-8 text rendering using TTF fonts via Freetype</li>
-                        <li>GUI based on <a href="https://github.com/ocornut/imgui" target="_blank">Dear ImGui</a></li>
-                        <li>Keyboard, mouse and joystick input. Input manager with abstract bindings and file-based configuration</li>
-                        <li>Unicode text input</li>
-                        <li>Ownership memory model</li>
-                        <li>Entity-component model</li>
-                        <li>Built-in camera logics for easy navigation: freeview and first person views</li>
-                        <li>Physics using <a href="https://newtondynamics.com/" target="_blank">Newton Dynamics</a>.</li>
-                    </ul>
-                </p>
-                <img src="images/eevee_vs_dagon.jpg" alt="Eevee VS Dagon" style="width:100%">
-                <p>Dagon uses modern graphics techniques and so requires a fairly powerful graphics card to run. Turing-based NVIDIA cards are recommended (although ray tracing support is not required). The engine is only desktop, support for mobile and web platforms is not planned. Dagon works on Windows and Linux.</p>
-            </div>
-            
-            <div id="download" class="w3-container w3-padding-32">
-                <h1 class="w3-center">Download</h1>
-                <p>
-                    Latest source tarball can be downloaded from <a href="https://github.com/gecko0307/dagon/releases" target="_blank">GitHub releases page</a>.
-                </p>
-                <p>
-                    You can also add Dagon as a dependency to your DUB project:
-                </p>
-                <code>
-                    dub add dagon
-                </code>
-                <br><br>
-                <img src="images/lights.jpg" alt="Lights" style="width:100%">
-            </div>
-            
-            <div id="gettingstarted" class="w3-container w3-padding-32">
-                <h1 class="w3-center">Getting Started</h1>
-                <p>Assuming you have installed the D language toolchain, the recommended way to start using Dagon is to create a game template with "dub init". Run the following in an empty directory:</p>
-                <code>dub init --type=dagon</code><br>
-                <code>dub build</code>
-                <p>By running a template application you should see a sample scene with a plane and a cube. You can then modify the generated dub.json file to suit your needs.</p>
-            </div>
-            
-            <div id="dependencies" class="w3-container w3-padding-32">
-                <h1 class="w3-center">Installing Runtime Dependencies</h1>
-                <p>Dagon depends on the following shared libraries:</p>
-                <p>
-                    <ul>
-                        <li><a href="https://www.libsdl.org/" target="_blank">SDL</a> 2.0.14</li>
-                        <li><a href="https://www.freetype.org/" target="_blank">Freetype</a> 2.8.1 (optional)</li>
-                        <li><a href="https://github.com/MADEAPPS/newton-dynamics" target="_blank">Newton Dynamics</a> 3.14 (optional)</li>
-                        <li><a href="https://github.com/ocornut/imgui" target="_blank">ImGui</a> (optional)</li>
-                        <li><a href="https://github.com/Immediate-Mode-UI/Nuklear" target="_blank">Nuklear</a> (optional, deprecated)</li>
-                    </ul>
-                </p>
-                <p>The only mandatory dependency is SDL, the others belong to the corresponding extensions.</p>
-                <p>Runtime dependencies are automatically deployed on 64-bit Windows and Linux. On other platforms, you will have to <a href="https://github.com/gecko0307/dagon/blob/master/doc/Runtime%20Dependencies.md" target="_blank">install them manually</a>.</p>
-            </div>
-            
-            <div id="tutorials" class="w3-container w3-padding-32">
-                <h1 class="w3-center">Tutorials</h1>
-                <p>Dagon has a number of tutorials on <a href="https://github.com/gecko0307/dagon/wiki" target="_blank">GitHub wiki</a> (not all are complete):</p>
-                <p>
-                    <ol>
-                        <li><a href="https://github.com/gecko0307/dagon/wiki/Tutorial-1.-Simple-Application" target="_blank">Simple Application</a></li>
-                        <li><a href="https://github.com/gecko0307/dagon/wiki/Tutorial-2.-Textures" target="_blank">Textures</a></li>
-                        <li><a href="https://github.com/gecko0307/dagon/wiki/Tutorial-3.-Normal-Maps" target="_blank">Normal maps</a></li>
-                        <li><a href="https://github.com/gecko0307/dagon/wiki/Tutorial-4.-Light-Sources" target="_blank">Light Sources</a></li>
-                        <li><a href="https://github.com/gecko0307/dagon/wiki/Tutorial-5.-Environment-Maps" target="_blank">Environment Maps</a></li>
-                        <li><a href="https://github.com/gecko0307/dagon/wiki/Tutorial-6.-PBR" target="_blank">PBR</a></li>
-                        <li><a href="https://github.com/gecko0307/dagon/wiki/Tutorial-7.-First-Person-Camera" target="_blank">First Person Camera</a></li>
-                        <li>Procedural Sky</li>
-                        <li>Post-processing</li>
-                        <li><a href="https://github.com/gecko0307/dagon/wiki/Tutorial-10.-Physics" target="_blank">Physics</a></li>
-                        <li>Loading glTF Assets</li>
-                        <li><a href="https://github.com/gecko0307/dagon/wiki/Tutorial-12.-Particles" target="_blank">Particles</a></li>
-                        <li><a href="https://github.com/gecko0307/dagon/wiki/Tutorial-13.-Custom-Shaders" target="_blank">Custom Shaders</a></li>
-                        <li><a href="https://github.com/gecko0307/dagon/wiki/Tutorial-14.-Input-Manager" target="_blank">Input Manager</a></li>
-                        <li>Terrain</li>
-                        <li>Decals</li>
-                        <li>Character Controller</li>
-                        <li><a href="https://github.com/gecko0307/dagon/wiki/Tutorial-18.-Nuklear-GUI" target="_blank">Nuklear GUI</a></li>
-                        <li>3D Sound</li>
-                        <li>Animation</li>
-                        <li>Raycasting</li>
-                        <li>Vehicle Simulator</li>
-                    </ol>
-                </p>
-                <p>Corresponding examples can be found <a href="https://github.com/gecko0307/dagon-tutorials" target="_blank">here</a>.</p>
-                <p>Additional examples can be found in <a href="https://drive.google.com/drive/folders/1ntYfocNqOEkh5T8Q2rm5mLCGdLzIuL5Q?usp=sharing" target="_blank">Patreon Sponsor Folder</a> which is now available to everyone.</p>
-            </div>
+      </div>
+    </div>
+  </nav>
+  <main>
+    <div id="markdown-output"></div>
+  </main>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/d.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    var pages = {
+      "overview": "overview.md",
+      "features": "features.md",
+      "contributing_guidelines": "guidelines.md",
+      "tutorials": "tutorials.md",
+      "tutorial1": "tutorials/Tutorial 1. Simple Application.md",
+      "tutorial2": "tutorials/Tutorial 2. Textures.md",
+      "tutorial3": "tutorials/Tutorial 3. Normal Maps.md",
+      "tutorial4": "tutorials/Tutorial 4. Light Sources.md",
+      "tutorial5": "tutorials/Tutorial 5. Environment Maps.md",
+      "tutorial6": "tutorials/Tutorial 6. PBR.md",
+      "tutorial7": "tutorials/Tutorial 7. First Person Camera.md",
+      "tutorial8": "tutorials/Tutorial 8. Procedural Sky.md",
+      "tutorial9": "tutorials/Tutorial 9. Post-processing.md",
+      "tutorial10": "tutorials/Tutorial 10. Physics.md",
+      "tutorial11": "tutorials/Tutorial 11. Exporting Assets from Blender.md",
+      "tutorial12": "tutorials/Tutorial 12. Particles.md",
+      "tutorial13": "tutorials/Tutorial 13. Custom Shaders.md",
+      "tutorial14": "tutorials/Tutorial 14. Input Manager.md",
+      "tutorial15": "tutorials/Tutorial 15. Terrain.md",
+      "tutorial16": "tutorials/Tutorial 16. Decals.md",
+      "tutorial17": "tutorials/Tutorial 17. Character Controller.md",
+      "tutorial18": "tutorials/Tutorial 18. Nuklear GUI.md"
+    };
 
-            <div id="bugs" class="w3-container w3-padding-32">
-                <h1 class="w3-center">Known Issues and Limitations</h1>
-                <p>
-                    <ul>
-                        <li>The engine doesn't support macOS</li>
-                        <li>dagon:nuklear extension has <a href="https://github.com/gecko0307/dagon/issues/89" target="_blank">problems</a> under Linux. It is deprecated in favor of dagon:imgui</li>
-                        <li>dagon:newton crashes under Linux when loading Newton plugins (NewtonPhysicsWorld.loadPlugins)</li>
-                    </ul>
-                </p>
-            </div>
-            
-            <div id="contributing" class="w3-container w3-padding-32">
-                <h1 class="w3-center">Contributing</h1>
-                <p>If you want to contribute code to Dagon, send pull requests to <a href="https://github.com/gecko0307/dagon" target="_blank">the project repository</a>. Please, read <a href="https://github.com/gecko0307/dagon/blob/master/CONTRIBUTING.md" target="_blank">Contributing Guidelines</a> first.</p>
-                <p>Found a bug? Please, create an issue <a href="https://github.com/gecko0307/dagon/issues" target="_blank">here</a>.</p>
-                <p>Dagon was created by <b>Timur Gafarov</b>, <b>Rafał Ziemniewski</b>, <b>Mateusz Muszyński</b>, <b>Björn Roberg</b>, <b>dayllenger</b>, <b>my-ijet</b>.</p>
-                <p>Also thanks to <b>Lawrence Aberba</b>, <b>Andrey Penechko</b>, <b>Robert Schadek</b>, <b>RUSshy</b>, <b>isaacs-dev</b> for PRs and bug reports.</p>
-            </div>
-            
-            <div id="sponsorship" class="w3-container w3-padding-32">
-                <h1 class="w3-center">Sponsorship</h1>
-                <p>If you like Dagon, please support its development on Patreon and get a reward depending on your donation amount. Supporters who donate $10 and more will be listed on this page as Sponsors. You can also make a donation via PayPal and NowPayments.</p>
-                <p>Big thanks to these awesome people for supporting Dagon: <b>Daniel Laburthe</b>, <b>Rafał Ziemniewski</b>, <b>Kumar Sookram</b>, <b>Aleksandr Kovalev</b>, <b>Robert Georges</b>, <b>Jan Jurzitza (WebFreak)</b>, <b>Rais Safiullin (SARFEX)</b>, <b>Benas Cernevicius</b>, <b>Koichi Takio</b>, <b>Konstantin Menshikov</b>.</p>
-                <p><center><a href="https://www.patreon.com/gecko0307"><img src="images/patron.png"></a></center></p>
-                <p><center><a href="https://nowpayments.io/donation?api_key=EAAJMMS-8Z643SJ-K5Z4V2Q-Z31626N" target="_blank">
-                    <img src="https://nowpayments.io/images/embeds/donation-button-white.svg" alt="Cryptocurrency & Bitcoin donation button by NOWPayments" style="max-width:217px">
-                </a></center></p>
-                <center><form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-                    <input type="hidden" name="cmd" value="_s-xclick" />
-                    <input type="hidden" name="hosted_button_id" value="FJHGS46446EH4" />
-                    <input type="image" src="https://www.paypalobjects.com/en_US/RU/i/btn/btn_donateCC_LG.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
-                    <img alt="" border="0" src="https://www.paypal.com/en_RU/i/scr/pixel.gif" width="1" height="1" />
-                </form></center>
-            </div>
+    function renderContent(section) {
+      var url = pages[section];
+      fetch(url)
+        .then(res => res.text())
+        .then(md => {
+          document.getElementById("markdown-output").innerHTML = marked.parse(md);
+          const firstHeading = md.match(/^#\s+(.*)/m);
+          if (firstHeading) {
+            document.title = firstHeading[1] + " | Dagon";
+          } else {
+            document.title = "Dagon";
+          }
+          
+          document.querySelectorAll("pre code").forEach((block) => {
+              block.classList.add("language-d");
+            });
+          
+          hljs.highlightAll();
+        })
+        .catch(err => {
+          document.getElementById("markdown-output").innerHTML = `<p style='color:red;'>Error loading ${url}</p>`;
+        });
+    }
+    
+    function loadPage(sectionId) {
+        const url = new URL(window.location);
+        url.searchParams.set("p", sectionId);
+        window.history.pushState({}, "", url);
+        renderContent(sectionId);
+    }
 
-            <div id="license" class="w3-container w3-padding-32">
-                <h1 class="w3-center">License</h1>
-                <p>
-                    Copyright (c) 2016-2024 Timur Gafarov, Rafał Ziemniewski, Mateusz Muszyński, dayllenger, Konstantin Menshikov, Björn Roberg, Isaac S., ijet. 
-                    Distributed under the Boost Software License, Version 1.0 (see accompanying file COPYING or at <a href="https://www.boost.org/LICENSE_1_0.txt)" target="_blank">https://www.boost.org/LICENSE_1_0.txt)</a>.
-                </p>
-            </div>
-        </div>
-        
-        <a href="https://github.com/gecko0307/dagon" class="ribbon" target="_blank">Fork me on GitHub</a>
-    </body>
+    window.addEventListener("DOMContentLoaded", () => {
+        const params = new URLSearchParams(window.location.search);
+        const section = params.get("p");
+        console.log(section);
+        if (section) renderContent(section);
+        else renderContent("overview");
+    });
+    
+    window.addEventListener("popstate", () => {
+        const params = new URLSearchParams(window.location.search);
+        const section = params.get("p");
+        if (section) {
+          renderContent(section);
+        }
+    });
+
+    document.querySelectorAll(".dropdown").forEach(dropdown => {
+      const btn = dropdown.querySelector(".dropbtn");
+      const menu = dropdown.querySelector(".dropdown-content");
+
+      dropdown.addEventListener("mouseenter", () => {
+        menu.style.display = "block";
+      });
+
+      dropdown.addEventListener("mouseleave", () => {
+        menu.style.display = "none";
+      });
+      
+      btn.addEventListener("click", () => {
+          menu.style.display = "none";
+      });
+      
+      menu.querySelectorAll("a").forEach(link => {
+        link.addEventListener("click", () => {
+          menu.style.display = "none";
+        });
+      });
+    });
+  </script>
+</body>
 </html>
