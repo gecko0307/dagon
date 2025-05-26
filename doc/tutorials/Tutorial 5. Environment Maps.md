@@ -39,4 +39,4 @@ eSky.material.baseColorTexture = aTexEnvmap.texture;
 
 ![](https://github.com/gecko0307/dagon/blob/master/doc/tutorials/images/screenshot_tutorial5.jpg?raw=true)
 
-[Browse source code for this tutorial](https://github.com/gecko0307/dagon-tutorials/tree/master/tutorial5)
+[Browse source code for this tutorial](https://github.com/gecko0307/dagon-tutorials/tree/master/t5-env-maps)

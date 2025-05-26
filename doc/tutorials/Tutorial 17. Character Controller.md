@@ -60,5 +60,3 @@ override void onUpdate(Time t)
     camera.position = character.eyePoint;
 }
 ```
-
-See also [[First Person Camera tutorial|Tutorial 7. First Person Camera]].

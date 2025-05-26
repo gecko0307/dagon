@@ -56,4 +56,4 @@ mHelmet.emissionTexture = aTexHelmetEmission.texture;
 
 ![](https://github.com/gecko0307/dagon/blob/master/doc/tutorials/images/screenshot_tutorial6.jpg?raw=true)
 
-[Browse source code for this tutorial](https://github.com/gecko0307/dagon-tutorials/tree/master/tutorial6)
+[Browse source code for this tutorial](https://github.com/gecko0307/dagon-tutorials/tree/master/t6-pbr)

@@ -83,13 +83,11 @@ void layout()
 }
 ```
 
-![menu](https://miro.medium.com/max/349/1*ipX6cxhZHQbkNqtD5eaSdQ.png)
-
 ![](https://github.com/gecko0307/dagon/blob/master/doc/tutorials/images/nuklear_menu.png?raw=true)
 
-Layout can get pretty long, so it is feasible to break it into multiple methods — for example, one method per each widget.
+Layout can get pretty long, so it is feasible to break it into multiple methods â€” for example, one method per each widget.
 
-If-blocks are used to bind actions to UI events. If some widget returns true, then it is clicked. However, Nuklear doesn’t respond to user input right out of the box — this is something that you have control over. As a bare minimum, you have to notify Nuklear about mouse button events:
+If-blocks are used to bind actions to UI events. If some widget returns true, then it is clicked. However, Nuklear doesnâ€™t respond to user input right out of the box â€” this is something that you have control over. As a bare minimum, you have to notify Nuklear about mouse button events:
 
 ```d
 override void onMouseButtonDown(int button)
@@ -115,9 +113,9 @@ override void onMouseButtonUp(int button)
 }
 ```
 
-Mouse interaction is a little complicated if you use it somewhere outside of Nuklear — for example, to control the 3D camera that orbits the scene. In this case, you have to check UI focus as shown above: if no widget is touched by this mouse event, then the view component can be activated, and vice versa.
+Mouse interaction is a little complicated if you use it somewhere outside of Nuklear â€” for example, to control the 3D camera that orbits the scene. In this case, you have to check UI focus as shown above: if no widget is touched by this mouse event, then the view component can be activated, and vice versa.
 
-Nuklear supports multi-window layouts. Let’s add a window with a text field:
+Nuklear supports multi-window layouts. Letâ€™s add a window with a text field:
 
 ```d
 if (ui.begin("Input", NKRect(100, 100, 230, 200),

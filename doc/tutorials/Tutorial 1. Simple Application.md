@@ -109,9 +109,9 @@ You should see this:
 ![](https://github.com/gecko0307/dagon/blob/master/doc/tutorials/images/screenshot_tutorial1.jpg?raw=true)
 
 ## Camera Controls
-- **Left mouse button** — rotate the view
-- **Right mouse button** — pan
-- **Mouse wheel** or **Ctrl + LMB** — zoom
+- **Left mouse button** â€” rotate the view
+- **Right mouse button** â€” pan
+- **Mouse wheel** or **Ctrl + LMB** â€” zoom
 
 ## Notes
 You don't have to worry about freeing models, textures and other GPU resources manually! All objects are managed through an ownership system. Once the resource owner (typically the `AssetManager` or the current `Scene`) is destroyed, all its resources are cleaned up automatically.
