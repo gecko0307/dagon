@@ -107,7 +107,7 @@ override void bindParameters(GraphicsState* state)
 }
 ```
 
-Limitations:
+## Limitations
 
 * Custom shaders are not supported in the **deferred rendering pipeline**. Objects using them are rendered in the **forward pipeline**, after deferred rendering is complete.
 * If you want to use lights in your custom shader, you must implement lighting yourself. The simplest approach is to rely on a single global directional light (`Environment.sun`), similar to what the default forward shader does, but more sophisticated techniques are of course possible, too.
