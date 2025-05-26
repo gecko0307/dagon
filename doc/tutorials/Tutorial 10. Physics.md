@@ -25,7 +25,7 @@ void main(string[] args)
     {
         import loader = bindbc.loader.sharedlib;
         foreach(info; loader.errors)
-            writeln(info.error.to!string, " ", info.message.to!string);
+            logError(info.error.to!string, " ", info.message.to!string);
     }
 
     // Create your game and scenes...
