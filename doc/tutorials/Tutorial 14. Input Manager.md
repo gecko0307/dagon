@@ -37,7 +37,7 @@ class TestScene: Scene
         }
     }
     
-    override void onJoystickButtonDown(int btn)
+    override void onControllerButtonDown(int btn)
     {
         if (btn == GB_A)
         {
@@ -45,7 +45,7 @@ class TestScene: Scene
         }
     }
     
-    override void onJoystickButtonUp(int btn)
+    override void onControllerButtonUp(int btn)
     {
         if (btn == GB_A)
         {
@@ -53,7 +53,7 @@ class TestScene: Scene
         }
     }
     
-    override void onJoystickAxisMotion(int axis, float value)
+    override void onControllerAxisMotion(int axis, float value)
     {
         if (axis == GA_LEFTX)
         {
