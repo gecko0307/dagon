@@ -16,11 +16,6 @@ Dagon applications are structured around scenes. A scene encapsulates all logic,
 
 Here's a minimal scene setup:
 
-d
-Копировать
-Редактировать
-
-
 Import `dagon` module and create a class that inherits from `Scene`:
 ```d
 module main;
