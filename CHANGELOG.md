@@ -5,7 +5,7 @@ Dagon 0.24.0 - TBD
 - **Misc**
   - Dagon now uses dlib 1.3.2.
 - **Documentation**
-  - Add tutorials 13 and 15.
+  - Add tutorials 9, 13 and 15.
 
 Dagon 0.23.0 - 22 May, 2025
 ---------------------------
