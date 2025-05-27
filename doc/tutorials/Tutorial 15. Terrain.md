@@ -84,3 +84,5 @@ layer3.outputColor = false;
 Similarly, `outputNormal`, `outputPBR`, and `outputEmission` can be disabled as needed.
 
 **Note:** the `TerrainMaterial` is a scene-level singleton and is shared across all terrain instances due to the nature of deferred texturnig. All terrains in the scene are composited into a common deferred buffer, so mixing multiple terrain materials is not supported by design.
+
+[Browse source code for this tutorial](https://github.com/gecko0307/dagon-tutorials/tree/master/t15-terrain)

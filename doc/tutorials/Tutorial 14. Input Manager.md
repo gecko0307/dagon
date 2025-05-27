@@ -101,16 +101,15 @@ right: "kb_d, kb_right";
 jump: "kb_space";
 interact: "kb_e";
 ```
+
 Binding definition format consists of device type and name(or number) coresponding to button or axis of this device.
 
-```
-kb - keyboard (kb_up, kb_w, etc.)
-ma - mouse axis (ma_0, etc.)
-mb - mouse button (mb_1, etc.)
-ga - gamepad axis (ga_leftx, ga_lefttrigger, etc.)
-gb - gamepad button (gb_a, gb_x, etc.)
-va - virtual axis, has special syntax, for example: va(kb_up, kb_down)
-```
+- `kb` - keyboard (`kb_up`, `kb_w`, etc.)
+- `ma` - mouse axis (`ma_0`, etc.)
+- `mb` - mouse button (`mb_1`, etc.)
+- `ga` - gamepad axis (`ga_leftx`, `ga_lefttrigger`, etc.)
+- `gb` - gamepad button (`gb_a`, `gb_x`, etc.)
+- `va` - virtual axis, has special syntax, for example: `va(kb_up, kb_down)`
 
 To use input manager, you don't need to subscribe to events, all is done with the `getButton` method:
 
@@ -140,3 +139,5 @@ override void onUpdate(Time t)
     spaceship.pitch(inputManager.getAxis("vertical"));
 }
 ```
+
+[Browse source code for this tutorial](https://github.com/gecko0307/dagon-tutorials/tree/master/t14-input-manager)
