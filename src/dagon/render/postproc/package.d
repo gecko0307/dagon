@@ -168,15 +168,15 @@ class PostProcRenderer: Renderer
     float lensDistortionDispersion = 0.1f;
     
     bool autofocus = true;
-    float focalDepth = 1.5;
-    float focalLength = 5.0;
-    float fStop = 2.0;
+    float focalDepth = 1.5f;
+    float focalLength = 5.0f;
+    float fStop = 2.0f;
     
     bool dofManual = false;
-    float dofNearStart = 1.0;
-    float dofNearDistance = 2.0;
-    float dofFarStart = 1.0;
-    float dofFarDistance = 3.0;
+    float dofNearStart = 1.0f;
+    float dofNearDistance = 2.0f;
+    float dofFarStart = 1.0f;
+    float dofFarDistance = 3.0f;
 
     Texture colorLookupTable;
 
