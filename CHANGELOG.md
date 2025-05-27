@@ -1,5 +1,5 @@
-Dagon 0.24.0 - TBD
-------------------
+Dagon 0.23.1 - 27 May, 2025
+---------------------------
 - **Rendering**
   - Per-layer material output toggles (`outputColor`, `outputNormal`, etc.) are now supported in `PassTerrain`
 - **Misc**
