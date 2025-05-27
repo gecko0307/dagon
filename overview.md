@@ -63,7 +63,7 @@ Under Linux, if you want to use local libraries in Windows way (from application
 
 ## Contributing
 
-If you want to contribute code to Dagon, send pull requests to [the project repository](https://github.com/gecko0307/dagon). Please, read [Contributing Guidelines](/?p=contributing_guidelines) first.
+If you want to contribute code to Dagon, send pull requests to [the project repository](https://github.com/gecko0307/dagon). Please, read [Contributing Guidelines](?p=contributing_guidelines) first.
 
 Found a bug? Please, create an issue [here](https://github.com/gecko0307/dagon/issues).
 
@@ -75,7 +75,7 @@ Big thanks to these awesome people for supporting Dagon: **Daniel Laburthe**, **
 
 ## License and Credits
 
-Copyright (c) 2016-2025 Timur Gafarov, Rafal Ziemniewski, Mateusz Muszynski, Denis Feklushkin, dayllenger, Konstantin Menshikov, Bjorn Roberg et al. Distributed under the [Boost Software License, Version 1.0](https://www.boost.org/LICENSE_1_0.txt).
+Copyright (c) 2016-2025 Timur Gafarov, Rafał Ziemniewski, Mateusz Muszyński, Denis Feklushkin, dayllenger, Konstantin Menshikov, Björn Roberg et al. Distributed under the [Boost Software License, Version 1.0](https://www.boost.org/LICENSE_1_0.txt).
 
 * Core engine, Newton extension, Freetype extension, STBI extension, IQM extension, KTX extension - [Timur Gafarov aka gecko0307](https://github.com/gecko0307)
 * ImGui extension (ImGuiOpenGLBackend) - [Joshua T. Fisher aka playmer](https://github.com/playmer), [LunaTheFoxgirl](https://github.com/LunaTheFoxgirl)
