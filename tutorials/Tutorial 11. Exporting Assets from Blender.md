@@ -90,3 +90,5 @@ weapon.drawable = someWeaponMesh;
 ```
 
 This will work only if entire hierarchy of the skeleton is added to the scene with `useEntity` method as shown above.
+
+[Browse source code for this tutorial](https://github.com/gecko0307/dagon-tutorials/tree/master/t11-gltf)
