@@ -254,6 +254,7 @@
   </main>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/d.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/glsl.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
     var pages = {
@@ -299,6 +300,7 @@
             });
           
           hljs.highlightAll();
+           window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
         })
         .catch(err => {
           document.getElementById("markdown-output").innerHTML = `<p style='color:red;'>Error loading ${url}</p>`;
