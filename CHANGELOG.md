@@ -1,3 +1,8 @@
+Dagon 0.24.0 - TBD
+------------------
+- **Extensions**
+  - `dagon:assimp` extension that provides Assimp support.
+
 Dagon 0.23.1 - 27 May, 2025
 ---------------------------
 - **Rendering**
