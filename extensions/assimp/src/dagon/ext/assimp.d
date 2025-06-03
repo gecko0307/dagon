@@ -39,9 +39,11 @@ import dlib.filesystem.filesystem;
 
 import dagon.core.logger;
 import dagon.graphics.mesh;
+import dagon.resource.scene;
 import dagon.resource.asset;
 
-import bindbc.assimp;
+import loader = bindbc.loader.sharedlib;
+public import bindbc.assimp;
 
 /*
  * Asset that loads models using Assimp library
@@ -49,6 +51,7 @@ import bindbc.assimp;
 class AssimpAsset: Asset
 {
     Array!Mesh meshes;
+    uint loaderOption = aiPostProcessSteps.Triangulate;
     
     this(Owner owner)
     {
@@ -61,10 +64,12 @@ class AssimpAsset: Asset
         ubyte[] data = New!(ubyte[])(dataSize);
         istrm.readBytes(data.ptr, dataSize);
         
-        const(aiScene*) scene = aiImportFileFromMemory(cast(const(char)*)data.ptr, cast(uint)dataSize,
-            aiPostProcessSteps.Triangulate |
-            aiPostProcessSteps.FlipUVs,
+        const(aiScene*) scene = aiImportFileFromMemory(
+            cast(const(char)*)data.ptr,
+            cast(uint)dataSize,
+            loaderOption,
             filename.toStringz);
+        
         bool result;
         if (scene)
         {
@@ -164,4 +169,33 @@ class AssimpAsset: Asset
     {
         meshes.free();
     }
+}
+
+AssimpAsset addAssimpAsset(Scene scene, string filename, bool preload = false)
+{
+    AssimpAsset assimpAsset;
+    if (scene.assetManager.assetExists(filename))
+        assimpAsset = cast(AssimpAsset)scene.assetManager.getAsset(filename);
+    else
+    {
+        assimpAsset = New!AssimpAsset(scene.assetManager);
+        scene.addAsset(assimpAsset, filename, preload);
+    }
+    return assimpAsset;
+}
+
+AssimpSupport loadAssimpLibrary()
+{
+    AssimpSupport assimpVersion = loadAssimp();
+    
+    if (loader.errors.length)
+    {
+        logError("Assimp loader errors:");
+        foreach(info; loader.errors)
+        {
+            logError(to!string(info.error), ": ", to!string(info.message));
+        }
+    }
+    
+    return assimpVersion;
 }
