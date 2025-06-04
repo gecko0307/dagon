@@ -76,6 +76,7 @@ Runtime Dependencies
 * [libwebp](https://chromium.googlesource.com/webm/libwebp) for WebP support (optional)
 * [libtiff](https://libtiff.gitlab.io/libtiff/) for TIFF support (optional)
 * [libavif](https://github.com/AOMediaCodec/libavif) for AVIF support (optional)
+* [Assimp](https://github.com/assimp/assimp) for additional 3D formats support (optional)
 * [Freetype](https://www.freetype.org) 2.8.1 for text rendering (optional)
 * [Newton Dynamics](https://github.com/MADEAPPS/newton-dynamics) 3.14 for rigid body simulation (optional)
 * [cimgui](https://github.com/cimgui/cimgui) (optional)
