@@ -1,7 +1,13 @@
 Dagon 0.24.0 - TBD
 ------------------
+- **UI**
+  - Text rendering via Freetype library is now a core engine feature. New module `dagon.ui.freetype`
+- **Assets**
+  - New module `dagon.resource.font`
+  - New method `Scene.addFontAsset`
 - **Extensions**
-  - `dagon:assimp` extension that provides Assimp support.
+  - `dagon:assimp` extension that provides Assimp support
+  - `dagon:ftfont` extension was removed.
 
 Dagon 0.23.1 - 27 May, 2025
 ---------------------------
