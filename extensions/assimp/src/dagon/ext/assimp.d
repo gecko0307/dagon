@@ -34,23 +34,116 @@ import dlib.core.ownership;
 import dlib.core.memory;
 import dlib.core.stream;
 import dlib.math.vector;
+import dlib.math.matrix;
 import dlib.container.array;
 import dlib.filesystem.filesystem;
 
 import dagon.core.logger;
+import dagon.graphics.entity;
+import dagon.graphics.drawable;
 import dagon.graphics.mesh;
+import dagon.graphics.material;
+import dagon.graphics.state;
 import dagon.resource.scene;
 import dagon.resource.asset;
 
 import loader = bindbc.loader.sharedlib;
 public import bindbc.assimp;
 
+class AssimpMesh: Mesh
+{
+    Material material;
+    
+    this(Owner owner)
+    {
+        super(owner);
+    }
+}
+
+class AssimpMeshGroup: Owner, Drawable
+{
+    Array!AssimpMesh meshes;
+    
+    this(Owner owner)
+    {
+        super(owner);
+    }
+    
+    ~this()
+    {
+        meshes.free();
+    }
+    
+    void add(AssimpMesh m)
+    {
+        meshes.append(m);
+    }
+    
+    void render(GraphicsState* state)
+    {
+        GraphicsState newState = *state;
+        foreach(i, mesh; meshes)
+        {
+            if (mesh.material)
+                mesh.material.bind(&newState);
+
+            newState.shader.bindParameters(&newState);
+            mesh.render(&newState);
+            newState.shader.unbindParameters(&newState);
+
+            if (mesh.material)
+                mesh.material.unbind(&newState);
+        }
+    }
+}
+
+class AssimpNode: Owner
+{
+    string name;
+    Entity entity;
+    AssimpNode parent;
+    AssimpNode[] children;
+    AssimpMesh[] meshes;
+    Matrix4x4f transformation;
+    
+    this(Owner owner)
+    {
+        super(owner);
+        transformation = Matrix4x4f.identity;
+        entity = New!Entity(this);
+    }
+    
+    ~this()
+    {
+        if (children.length)
+            Delete(children);
+        
+        if (meshes.length)
+            Delete(meshes);
+    }
+}
+
+Matrix4x4f fromAssimpMatrix(aiMatrix4x4 m)
+{
+    return matrixf(
+        m.a1, m.a2, m.a3, m.a4,
+        m.b1, m.b2, m.b3, m.b4,
+        m.c1, m.c2, m.c3, m.c4,
+        m.d1, m.d2, m.d3, m.d4
+    );
+}
+
 /*
  * Asset that loads models using Assimp library
  */
 class AssimpAsset: Asset
 {
-    Array!Mesh meshes;
+    Entity rootEntity;
+    AssimpNode rootNode;
+    Array!AssimpNode nodes;
+    Array!AssimpMesh meshes;
+    Array!Material materials;
+    
     uint loaderOption = aiPostProcessSteps.Triangulate;
     
     this(Owner owner)
@@ -73,11 +166,18 @@ class AssimpAsset: Asset
         bool result;
         if (scene)
         {
-            auto rootNode = scene.mRootNode;
-            for (uint mi = 0; mi < scene.mNumMeshes; mi++)
+            for (uint i = 0; i < scene.mNumMaterials; i++)
             {
-                readMesh(scene.mMeshes[mi]);
+                readMaterial(scene.mMaterials[i]);
             }
+            
+            for (uint i = 0; i < scene.mNumMeshes; i++)
+            {
+                readMesh(scene.mMeshes[i]);
+            }
+            
+            auto rootNode = readNode(scene.mRootNode);
+            rootEntity = rootNode.entity;
             
             aiReleaseImport(scene);
             result = true;
@@ -93,9 +193,56 @@ class AssimpAsset: Asset
         return result;
     }
     
-    protected void readMesh(const(aiMesh)* mesh)
+    protected AssimpNode readNode(const(aiNode)* node, AssimpNode parent = null)
     {
-        Mesh m = New!Mesh(this);
+        AssimpNode n = New!AssimpNode(this);
+        auto name = node.mName.data[0..node.mName.length];
+        
+        n.transformation = fromAssimpMatrix(node.mTransformation);
+        n.parent = parent;
+        
+        if (node.mNumChildren > 0)
+        {
+            n.children = New!(AssimpNode[])(node.mNumChildren);
+            foreach(i, c; n.children)
+            {
+                n.children[i] = readNode(node.mChildren[i], n);
+                n.entity.addChild(n.children[i].entity);
+            }
+        }
+        
+        if (node.mNumMeshes > 0)
+        {
+            auto meshGroup = New!AssimpMeshGroup(n.entity);
+            n.entity.drawable = meshGroup;
+            
+            n.meshes = New!(AssimpMesh[])(node.mNumMeshes);
+            foreach(i, m; n.meshes)
+            {
+                n.meshes[i] = meshes[i];
+                meshGroup.add(meshes[i]);
+            }
+        }
+        
+        nodes.append(n);
+        
+        return n;
+    }
+    
+    protected Material readMaterial(const(aiMaterial)* material)
+    {
+        Material mat = New!Material(this);
+        
+        // TODO: read material properties
+        
+        materials.append(mat);
+        
+        return mat;
+    }
+    
+    protected AssimpMesh readMesh(const(aiMesh)* mesh)
+    {
+        AssimpMesh m = New!AssimpMesh(this);
         auto name = mesh.mName.data[0..mesh.mName.length];
         
         bool needGenNormals = false;
@@ -146,6 +293,11 @@ class AssimpAsset: Asset
             }
         }
         
+        if (mesh.mMaterialIndex < materials.length)
+        {
+            m.material = materials[mesh.mMaterialIndex];
+        }
+        
         if (needGenNormals)
             m.generateNormals();
         
@@ -153,6 +305,8 @@ class AssimpAsset: Asset
         m.dataReady = true;
         
         meshes.append(m);
+        
+        return m;
     }
     
     override bool loadThreadUnsafePart()
@@ -167,7 +321,9 @@ class AssimpAsset: Asset
     
     override void release()
     {
+        nodes.free();
         meshes.free();
+        materials.free();
     }
 }
 
