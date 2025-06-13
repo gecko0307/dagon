@@ -29,6 +29,7 @@ module dagon.ext.assimp;
 import std.stdio;
 import std.conv;
 import std.string;
+import std.path;
 
 import dlib.core.ownership;
 import dlib.core.memory;
@@ -37,6 +38,8 @@ import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.container.array;
 import dlib.filesystem.filesystem;
+import dlib.image.color;
+import dlib.text.str;
 
 import dagon.core.logger;
 import dagon.graphics.entity;
@@ -46,6 +49,7 @@ import dagon.graphics.material;
 import dagon.graphics.state;
 import dagon.resource.scene;
 import dagon.resource.asset;
+import dagon.resource.texture;
 
 import loader = bindbc.loader.sharedlib;
 public import bindbc.assimp;
@@ -76,7 +80,7 @@ class AssimpMeshGroup: Owner, Drawable
     
     void add(AssimpMesh m)
     {
-        meshes.append(m);
+        meshes.insertBack(m);
     }
     
     void render(GraphicsState* state)
@@ -123,6 +127,11 @@ class AssimpNode: Owner
     }
 }
 
+Color4f fromAssimpColor(aiColor4D col)
+{
+    return Color4f(col.r, col.g, col.b, col.a);
+}
+
 Matrix4x4f fromAssimpMatrix(aiMatrix4x4 m)
 {
     return matrixf(
@@ -138,11 +147,13 @@ Matrix4x4f fromAssimpMatrix(aiMatrix4x4 m)
  */
 class AssimpAsset: Asset
 {
+    AssetManager assetManager;
     Entity rootEntity;
     AssimpNode rootNode;
     Array!AssimpNode nodes;
     Array!AssimpMesh meshes;
     Array!Material materials;
+    Array!TextureAsset textureAssets;
     
     uint loaderOption = aiPostProcessSteps.Triangulate;
     
@@ -151,8 +162,16 @@ class AssimpAsset: Asset
         super(owner);
     }
     
+    ~this()
+    {
+        release();
+    }
+    
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
     {
+        assetManager = mngr;
+        string rootDir = dirName(filename);
+        
         size_t dataSize = istrm.size;
         ubyte[] data = New!(ubyte[])(dataSize);
         istrm.readBytes(data.ptr, dataSize);
@@ -168,7 +187,7 @@ class AssimpAsset: Asset
         {
             for (uint i = 0; i < scene.mNumMaterials; i++)
             {
-                readMaterial(scene.mMaterials[i]);
+                readMaterial(scene.mMaterials[i], fs, rootDir);
             }
             
             for (uint i = 0; i < scene.mNumMeshes; i++)
@@ -191,6 +210,21 @@ class AssimpAsset: Asset
         Delete(data);
         
         return result;
+    }
+    
+    override bool loadThreadUnsafePart()
+    {
+        foreach(m; meshes)
+        {
+            m.prepareVAO();
+        }
+        
+        foreach(textureAsset; textureAssets)
+        {
+            textureAsset.loadThreadUnsafePart();
+        }
+        
+        return true;
     }
     
     protected AssimpNode readNode(const(aiNode)* node, AssimpNode parent = null)
@@ -224,20 +258,93 @@ class AssimpAsset: Asset
             }
         }
         
-        nodes.append(n);
+        nodes.insertBack(n);
         
         return n;
     }
     
-    protected Material readMaterial(const(aiMaterial)* material)
+    protected Material readMaterial(const(aiMaterial)* material, ReadOnlyFileSystem fs, string rootDir)
     {
         Material mat = New!Material(this);
         
-        // TODO: read material properties
+        mat.roughnessFactor = 1.0f;
+        mat.metallicFactor = 0.0f;
         
-        materials.append(mat);
+        Color4f baseColorFactor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+        aiColor4D diffuseColor;
+        if (aiGetMaterialColor(material, "$clr.diffuse", 0, 0, &diffuseColor) == aiReturn.SUCCESS)
+            baseColorFactor = fromAssimpColor(diffuseColor);
+        mat.baseColorFactor = baseColorFactor;
+        
+        string baseColorTexturePath;
+        string normalTexturePath;
+        
+        aiString path;
+        if (aiGetMaterialTexture(material, aiTextureType.BASE_COLOR, 0, &path, null, null, null, null, null, null) == aiReturn.SUCCESS)
+            baseColorTexturePath = cast(string)path.data[0..path.length];
+        else if (aiGetMaterialTexture(material, aiTextureType.DIFFUSE, 0, &path, null, null, null, null, null, null) == aiReturn.SUCCESS)
+            baseColorTexturePath = cast(string)path.data[0..path.length];
+        
+        if (aiGetMaterialTexture(material, aiTextureType.NORMALS, 0, &path, null, null, null, null, null, null) == aiReturn.SUCCESS)
+            normalTexturePath = cast(string)path.data[0..path.length];
+        
+        if (baseColorTexturePath.length)
+        {
+            auto aBaseColorTexture = New!TextureAsset(assetManager);
+            textureAssets.insertBack(aBaseColorTexture);
+            if (loadTextureAsset(aBaseColorTexture, fs, rootDir, baseColorTexturePath))
+                mat.baseColorTexture = aBaseColorTexture.texture;
+        }
+        
+        if (normalTexturePath.length)
+        {
+            auto aNormalTexture = New!TextureAsset(assetManager);
+            textureAssets.insertBack(aNormalTexture);
+            if (loadTextureAsset(aNormalTexture, fs, rootDir, normalTexturePath))
+                mat.normalTexture = aNormalTexture.texture;
+        }
+        
+        materials.insertBack(mat);
         
         return mat;
+    }
+    
+    protected bool loadTextureAsset(TextureAsset asset, ReadOnlyFileSystem fs, string rootDir, string relPath)
+    {
+        String imgPath1 = String(rootDir);
+        imgPath1 ~= "/";
+        imgPath1 ~= relPath;
+        string assetPath1 = imgPath1.toString;
+        
+        bool res = false;
+        FileStat fstat;
+        if (fs.stat(assetPath1, fstat))
+        {
+            res = assetManager.loadAssetThreadSafePart(asset, assetPath1);
+            if (!res)
+                logError("Failed to load \"", assetPath1, "\"");
+        }
+        else
+        {
+            String imgPath2 = String(rootDir);
+            imgPath2 ~= "/";
+            imgPath2 ~= baseName(relPath);
+            string assetPath2 = imgPath2.toString;
+            if (fs.stat(assetPath2, fstat))
+            {
+                res = assetManager.loadAssetThreadSafePart(asset, assetPath2);
+                if (!res)
+                    logError("Failed to load \"", assetPath2, "\"");
+            }
+            else
+                logError("Image file \"", relPath, "\" not found");
+            
+            imgPath2.free();
+        }
+        
+        imgPath1.free();
+        
+        return res;
     }
     
     protected AssimpMesh readMesh(const(aiMesh)* mesh)
@@ -304,19 +411,9 @@ class AssimpAsset: Asset
         m.calcBoundingBox();
         m.dataReady = true;
         
-        meshes.append(m);
+        meshes.insertBack(m);
         
         return m;
-    }
-    
-    override bool loadThreadUnsafePart()
-    {
-        foreach(m; meshes)
-        {
-            m.prepareVAO();
-        }
-        
-        return true;
     }
     
     override void release()
@@ -324,6 +421,7 @@ class AssimpAsset: Asset
         nodes.free();
         meshes.free();
         materials.free();
+        textureAssets.free();
     }
 }
 
