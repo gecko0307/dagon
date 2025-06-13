@@ -73,11 +73,11 @@ Runtime Dependencies
 --------------------
 * [SDL](https://www.libsdl.org) 2.32.4.0
 * [SDL_Image](https://github.com/libsdl-org/SDL_image) 2.8.8.0
+* [Freetype](https://www.freetype.org) 2.8.1 for text rendering
 * [libwebp](https://chromium.googlesource.com/webm/libwebp) for WebP support (optional)
 * [libtiff](https://libtiff.gitlab.io/libtiff/) for TIFF support (optional)
 * [libavif](https://github.com/AOMediaCodec/libavif) for AVIF support (optional)
 * [Assimp](https://github.com/assimp/assimp) for additional 3D formats support (optional)
-* [Freetype](https://www.freetype.org) 2.8.1 for text rendering (optional)
 * [Newton Dynamics](https://github.com/MADEAPPS/newton-dynamics) 3.14 for rigid body simulation (optional)
 * [cimgui](https://github.com/cimgui/cimgui) (optional)
 * [libktx](https://github.com/KhronosGroup/KTX-Software) (optional)

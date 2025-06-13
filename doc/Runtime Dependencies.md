@@ -44,6 +44,10 @@ Then specify SDL2 install path when running cmake, for example `cmake .. -DCMAKE
 
 4. Under Linux, run `make && make install`. Under Windows, open and build generated Visual Studio project.
 
+### Freetype
+
+Dagon requires `freetype-6.dll` under Windows and `libfreetype.so` under Linux. Minimal recommended version is 2.8.1. On 64-bit Windows, Dagon provides prebuilt Freetype, which is automatically copied to your project after compilation (if you are building with DUB). On Linux, Dagon relies on system-wide Freetype installation.
+
 ## dagon:exformats
 
 dagon:exformats extension provides a number of optional dependencies for SDL2_Image under Windows, which are required for WebP, AVIF and TIFF support.
