@@ -97,6 +97,9 @@ class TextLine: Owner, Drawable
      */
     override void render(GraphicsState* state)
     {
+        if (!font.valid)
+            return;
+        
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
         glEnable(GL_BLEND);

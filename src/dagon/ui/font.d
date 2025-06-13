@@ -52,6 +52,8 @@ import dagon.graphics.state;
  */
 abstract class Font: Owner
 {
+    bool valid;
+    
     /// The font's size in UI units.
     float height;
     
@@ -64,6 +66,7 @@ abstract class Font: Owner
     this(Owner owner)
     {
         super(owner);
+        valid = false;
         height = 1.0f;
     }
     

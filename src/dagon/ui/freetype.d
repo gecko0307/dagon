@@ -91,8 +91,6 @@ final class FreeTypeFont: Font
     GLuint tbo = 0;
     GLuint eao = 0;
 
-    bool canRender = false;
-
     GLuint shaderProgram;
 
     GLint modelViewMatrixLoc;
@@ -160,10 +158,7 @@ final class FreeTypeFont: Font
 
     void prepareVAO()
     {
-        if (canRender)
-            return;
-
-        if (ftLibrary is null)
+        if (valid)
             return;
 
         glGenBuffers(1, &vbo);
@@ -212,7 +207,7 @@ final class FreeTypeFont: Font
             glyphColorLoc = glGetUniformLocation(shaderProgram, "glyphColor");
         }
 
-        canRender = true;
+        valid = true;
     }
 
     void preloadASCII()
@@ -234,7 +229,7 @@ final class FreeTypeFont: Font
         vs.free();
         fs.free();
 
-        if (canRender)
+        if (valid)
         {
             glDeleteVertexArrays(1, &vao);
             glDeleteBuffers(1, &vbo);
@@ -312,7 +307,7 @@ final class FreeTypeFont: Font
         return code;
     }
 
-    float renderGlyph(dchar code, float shift)
+    float renderGlyph(dchar code, float xShift, float yShift = 0.0f)
     {
         Glyph glyph;
         if (code in glyphs)
@@ -333,7 +328,7 @@ final class FreeTypeFont: Font
         float x = 0.5f / texWidth + chWidth / texWidth;
         float y = 0.5f / texHeight + chHeight / texHeight;
 
-        Vector2f glyphPosition = Vector2f(shift + bitmapGlyph.left, -bitmapGlyph.top);
+        Vector2f glyphPosition = Vector2f(xShift + bitmapGlyph.left, yShift - bitmapGlyph.top);
         Vector2f glyphScale = Vector2f(bitmap.width, bitmap.rows);
         Vector2f glyphTexcoordScale = Vector2f(x, y);
 
@@ -345,11 +340,11 @@ final class FreeTypeFont: Font
         glDrawElements(GL_TRIANGLES, cast(uint)indices.length * 3, GL_UNSIGNED_INT, cast(void*)0);
         glBindVertexArray(0);
 
-        shift = glyph.advanceX >> 6;
+        xShift = glyph.advanceX >> 6;
 
         glBindTexture(GL_TEXTURE_2D, 0);
 
-        return shift;
+        return xShift;
     }
 
     int glyphAdvance(dchar code)
@@ -361,18 +356,34 @@ final class FreeTypeFont: Font
             glyph = glyphs[loadChar(code)];
         return cast(int)(glyph.advanceX >> 6);
     }
-
-    override void render(GraphicsState* state, Color4f color, string str)
+    
+    void beginRender(GraphicsState* state, Color4f color)
     {
-        if (!canRender)
+        if (!valid)
             return;
-
+        
         glUseProgram(shaderProgram);
 
         glUniformMatrix4fv(modelViewMatrixLoc, 1, GL_FALSE, state.modelViewMatrix.arrayof.ptr);
         glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, state.projectionMatrix.arrayof.ptr);
         glUniform4fv(glyphColorLoc, 1, color.arrayof.ptr);
         glUniform1i(glyphTextureLoc, 0);
+    }
+    
+    void endRender()
+    {
+        if (!valid)
+            return;
+        
+        glUseProgram(0);
+    }
+
+    override void render(GraphicsState* state, Color4f color, string str)
+    {
+        if (!valid)
+            return;
+
+        beginRender(state, color);
 
         float shift = 0.0f;
         UTF8Decoder dec = UTF8Decoder(str);
@@ -391,7 +402,7 @@ final class FreeTypeFont: Font
                 shift += renderGlyph(code, shift);
         } while(ch != UTF8_END && ch != UTF8_ERROR);
 
-        glUseProgram(0);
+        endRender();
     }
 
     override float width(string str)
