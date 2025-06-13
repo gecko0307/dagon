@@ -326,6 +326,7 @@ class AssimpAsset: Asset
         }
         else
         {
+            // If relPath failed (may be absolute path), try to load using baseName
             String imgPath2 = String(rootDir);
             imgPath2 ~= "/";
             imgPath2 ~= baseName(relPath);
