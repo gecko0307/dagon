@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2022 Timur Gafarov
+Copyright (c) 2017-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.ext.ftfont;
+module dagon.ui.freetype;
 
 import std.stdio;
 
@@ -56,26 +56,6 @@ import dagon.resource.asset;
 import dagon.resource.scene;
 
 import dagon.core.bindings;
-public import bindbc.freetype;
-
-__gshared FTSupport freetypeSupport;
-
-void initFreetype()
-{
-    freetypeSupport = loadFreeType();
-    if (freetypeSupport != ftSupport)
-    {
-        if (freetypeSupport == FTSupport.badLibrary)
-            logWarning("Failed to load some Freetype functions. It seems that you have an old version of Freetype. Dagon will try to use it, but it is recommended to install Freetype 2.8.1 or higher");
-        else
-            logError("Freetype library is not found. Please, install Freetype 2.8.1");
-    }
-}
-
-static this()
-{
-    initFreetype();
-}
 
 struct Glyph
 {
@@ -97,8 +77,9 @@ int nextPowerOfTwo(int a)
 
 final class FreeTypeFont: Font
 {
-    FT_Face ftFace;
     FT_Library ftLibrary;
+    FT_Face ftFace;
+    
     Dict!(Glyph, dchar) glyphs;
 
     Vector2f[4] vertices;
@@ -131,9 +112,6 @@ final class FreeTypeFont: Font
         super(o);
         this.height = height;
 
-        if (FT_Init_FreeType(&ftLibrary))
-            exitWithError("FT_Init_FreeType failed");
-
         vertices[0] = Vector2f(0, 1);
         vertices[1] = Vector2f(0, 0);
         vertices[2] = Vector2f(1, 0);
@@ -155,6 +133,9 @@ final class FreeTypeFont: Font
 
     void createFromFile(string filename)
     {
+        if (ftLibrary is null)
+            return;
+        
         if (!exists(filename))
             exitWithError("Cannot find font file " ~ filename);
 
@@ -167,6 +148,9 @@ final class FreeTypeFont: Font
 
     void createFromMemory(ubyte[] buffer)
     {
+        if (ftLibrary is null)
+            return;
+        
         if (FT_New_Memory_Face(ftLibrary, buffer.ptr, cast(uint)buffer.length, 0, &ftFace))
             exitWithError("FT_New_Face failed (there is probably a problem with your font file)");
 
@@ -177,6 +161,9 @@ final class FreeTypeFont: Font
     void prepareVAO()
     {
         if (canRender)
+            return;
+
+        if (ftLibrary is null)
             return;
 
         glGenBuffers(1, &vbo);
@@ -230,6 +217,9 @@ final class FreeTypeFont: Font
 
     void preloadASCII()
     {
+        if (ftLibrary is null)
+            return;
+        
         enum ASCII_CHARS = 128;
         foreach(i; 0..ASCII_CHARS)
         {
@@ -254,7 +244,8 @@ final class FreeTypeFont: Font
 
         foreach(i, glyph; glyphs)
             glDeleteTextures(1, &glyph.textureId);
-        Delete(glyphs);
+        if (glyphs.length > 0)
+            Delete(glyphs);
     }
 
     uint loadGlyph(dchar code, GLuint texId)
@@ -405,6 +396,9 @@ final class FreeTypeFont: Font
 
     override float width(string str)
     {
+        if (ftLibrary is null)
+            return 0.0f;
+        
         float width = 0.0f;
         UTF8Decoder dec = UTF8Decoder(str);
         int ch;
@@ -425,57 +419,4 @@ final class FreeTypeFont: Font
 
         return width;
     }
-}
-
-class FontAsset: Asset
-{
-    FreeTypeFont font;
-    ubyte[] buffer;
-
-    this(uint height, Owner o)
-    {
-        super(o);
-        font = New!FreeTypeFont(height, this);
-    }
-
-    ~this()
-    {
-        release();
-    }
-
-    override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
-    {
-        FileStat s;
-        fs.stat(filename, s);
-        buffer = New!(ubyte[])(cast(size_t)s.sizeInBytes);
-        istrm.fillArray(buffer);
-        font.createFromMemory(buffer);
-        return true;
-    }
-
-    override bool loadThreadUnsafePart()
-    {
-        font.prepareVAO();
-        font.preloadASCII();
-        return true;
-    }
-
-    override void release()
-    {
-        if (buffer.length)
-            Delete(buffer);
-    }
-}
-
-FontAsset addFontAsset(Scene scene, string filename, uint height, bool preload = false)
-{
-    FontAsset font;
-    if (scene.assetManager.assetExists(filename))
-        font = cast(FontAsset)scene.assetManager.getAsset(filename);
-    else
-    {
-        font = New!FontAsset(height, scene.assetManager);
-        scene.addAsset(font, filename, preload);
-    }
-    return font;
 }

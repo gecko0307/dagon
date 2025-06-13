@@ -26,13 +26,15 @@
         "bindbc-loader": "1.1.4",
         "bindbc-opengl": "1.1.1",
         "bindbc-sdl": "1.5.2",
+        "bindbc-freetype": "1.3.2"
     },
 
     "versions": [
         "SDL_2_30",
         "SDL_Image_2_8",
         "GL_40",
-        "GL_ARB"
+        "GL_ARB",
+        "FT_28"
     ],
 
     "buildRequirements":[
@@ -53,7 +55,6 @@
     "subPackages": [
         "extensions/assimp",
         "extensions/exformats",
-        "extensions/ftfont",
         "extensions/imgui",
         "extensions/iqm",
         "extensions/ktx",

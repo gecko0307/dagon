@@ -9,8 +9,7 @@
         "src"
     ],
     "dependencies": {
-        "dagon": "*",
-        "dagon:ftfont": "*"
+        "dagon": "*"
     },
     
     "versions": [

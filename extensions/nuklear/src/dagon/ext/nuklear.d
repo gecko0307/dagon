@@ -47,11 +47,10 @@ import dagon.graphics.updateable;
 import dagon.graphics.shaderloader;
 import dagon.graphics.texture;
 import dagon.graphics.shader;
+import dagon.resource.font;
 
 import dagon.core.bindings;
 public import bindbc.nuklear;
-
-import dagon.ext.ftfont;
 
 __gshared NuklearSupport nuklearSupport;
 

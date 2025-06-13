@@ -68,6 +68,7 @@ import dagon.resource.gltf;
 import dagon.resource.texture;
 import dagon.resource.text;
 import dagon.resource.binary;
+import dagon.resource.font;
 
 /**
  * Manages the application context, assets, world,
@@ -201,6 +202,22 @@ class Scene: EventListener
 
     /// Adds a binary asset by filename.
     alias addBinaryAsset = addAssetAs!BinaryAsset;
+    
+    /// Adds a font asset by filename.
+    FontAsset addFontAsset(string filename, uint height, bool preload = false)
+    {
+        FontAsset fontAsset;
+        if (assetManager.assetExists(filename))
+        {
+            fontAsset = cast(FontAsset)assetManager.getAsset(filename);
+        }
+        else
+        {
+            fontAsset = New!FontAsset(height, assetManager);
+            addAsset(fontAsset, filename, preload);
+        }
+        return fontAsset;
+    }
 
     /// Creates and adds a new material.
     Material addMaterial()

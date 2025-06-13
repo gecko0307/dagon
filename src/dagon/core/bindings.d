@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /**
- * Helper module that publicly imports OpenGL and SDL bindings.
+ * Helper module that publicly imports OpenGL, SDL and Freetype bindings.
  *
  * Copyright: Timur Gafarov 2019-2025.
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
@@ -38,4 +38,5 @@ public
 {
     import bindbc.sdl;
     import bindbc.opengl;
+    import bindbc.freetype;
 }

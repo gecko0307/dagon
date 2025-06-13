@@ -274,6 +274,11 @@ bool isExtensionSupported(string extName)
     return _extensions.canFind(extName);
 }
 
+struct FTVersion
+{
+    int major, minor, patch;
+}
+
 /**
  * Base class to inherit Dagon applications from.
  *
@@ -287,21 +292,31 @@ class Application: EventListener
     SDLSupport loadedSDLSupport;
     SDLImageSupport loadedSDLImageSupport;
     GLSupport loadedGLSupport;
+    FTSupport loadedFTSupport;
+    
+    bool sdlImagePresent = true;
+    bool freetypePresent = true;
     
     SDL_version sdlVersion;
     SDL_version sdlImageVersion;
+    FTVersion ftVersion;
     
     uint width;
     uint height;
     bool fullscreen = false;
+    
     SDL_Window* window = null;
     SDL_GLContext glcontext;
+    
     private EventManager _eventManager;
+    
     Cadencer cadencer;
+    
     String glVersion;
     String glVendor;
     String glRenderer;
-    bool sdlImagePresent = true;
+    
+    FT_Library ftLibrary;
 
     /**
      * Constructs the application, initializes SDL, OpenGL, and related subsystems.
@@ -343,6 +358,21 @@ class Application: EventListener
             {
                 logWarning("SDL2_Image library is not found. Please, install SDL2_Image 2.8 or higher");
                 sdlImagePresent = false;
+            }
+        }
+        
+        loadedFTSupport = loadFreeType();
+        
+        if (loadedFTSupport != ftSupport)
+        {
+            if (loadedFTSupport == FTSupport.badLibrary)
+            {
+                logWarning("Failed to load some Freetype functions. It seems that you have an old version of Freetype. Dagon will try to use it, but it is recommended to install Freetype 2.8.1 or higher");
+            }
+            else
+            {
+                logError("Freetype library is not found. Please, install Freetype 2.8.1");
+                freetypePresent = false;
             }
         }
         
@@ -475,6 +505,20 @@ class Application: EventListener
         }
         
         cadencer = New!Cadencer(&onAnimationFrame, 60, this);
+        
+        if (freetypePresent)
+        {
+            if (FT_Init_FreeType(&ftLibrary))
+            {
+                logError("FT_Init_FreeType failed");
+                freetypePresent = false;
+            }
+            else
+            {
+                FT_Library_Version(ftLibrary, &ftVersion.major, &ftVersion.minor, &ftVersion.patch);
+                logInfo("Freetype version: ", ftVersion.major, ".", ftVersion.minor, ".", ftVersion.patch);
+            }
+        }
     }
 
     /// Destructor. Cleans up resources and shuts down SDL.
@@ -487,6 +531,9 @@ class Application: EventListener
         SDL_Quit();
         Delete(_eventManager);
         Delete(_extensions);
+        
+        if (freetypePresent && ftLibrary)
+            FT_Done_FreeType(ftLibrary);
     }
     
     /**

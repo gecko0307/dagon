@@ -44,5 +44,6 @@ public
     import dagon.ui.firstpersonview;
     import dagon.ui.font;
     import dagon.ui.freeview;
+    import dagon.ui.freetype;
     import dagon.ui.textline;
 }
