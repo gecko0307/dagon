@@ -35,17 +35,17 @@ import dlib.filesystem.stdfs;
 
 import dagon.core.logger;
 import dagon.resource.asset;
-import dagon.ui.freetype;
+import dagon.ui.font;
 
 class FontAsset: Asset
 {
-    FreeTypeFont font;
+    Font font;
     ubyte[] buffer;
 
     this(uint height, Owner o)
     {
         super(o);
-        font = New!FreeTypeFont(height, this);
+        font = New!Font(height, this);
     }
 
     ~this()

@@ -30,8 +30,7 @@ DEALINGS IN THE SOFTWARE.
  *
  * Description:
  * The `dagon.ui` package publicly imports all core UI modules, including
- * first-person and free camera controls, font abstraction, and drawable
- * text line class.
+ * first-person and free camera controls, font, and drawable text line class.
  *
  * Copyright: Timur Gafarov 2019-2025
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
@@ -44,6 +43,5 @@ public
     import dagon.ui.firstpersonview;
     import dagon.ui.font;
     import dagon.ui.freeview;
-    import dagon.ui.freetype;
     import dagon.ui.textline;
 }

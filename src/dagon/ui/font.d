@@ -26,13 +26,11 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /**
- * A font abstraction.
+ * Freetype font.
  *
  * Description:
- * The `dagon.ui.font` module defines the abstract `Font` abstract class,
- * which represents a font resource capable of measuring and rendering
- * text strings. This abstraction allows for different font implementations
- * (bitmap, vector, etc.) to be used interchangeably in the UI.
+ * The `dagon.ui.font` module defines the `Font` class, which represents
+ * a font resource capable of rendering glyphs and text strings.
  *
  * Copyright: Timur Gafarov 2017-2025
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
@@ -40,45 +38,375 @@ DEALINGS IN THE SOFTWARE.
  */
 module dagon.ui.font;
 
-import dlib.core.ownership;
-import dlib.image.color;
-import dagon.graphics.state;
+import std.stdio;
 
-/**
- * Abstract base class for font resources.
- *
- * Description:
- * Provides methods for measuring string width and rendering text.
- */
-abstract class Font: Owner
+import std.string;
+import std.ascii;
+import std.utf;
+import std.file;
+import std.conv;
+
+import dlib.core.memory;
+import dlib.core.ownership;
+import dlib.core.stream;
+import dlib.filesystem.filesystem;
+import dlib.filesystem.stdfs;
+import dlib.container.dict;
+import dlib.text.utf8;
+import dlib.math.vector;
+import dlib.image.color;
+import dlib.text.str;
+
+import dagon.core.logger;
+import dagon.core.application;
+import dagon.graphics.shaderloader;
+import dagon.graphics.state;
+import dagon.graphics.shader;
+import dagon.resource.asset;
+import dagon.resource.scene;
+
+import dagon.core.bindings;
+
+struct Glyph
 {
     bool valid;
+    GLuint textureId = 0;
+    FT_Glyph ftGlyph = null;
+    int width = 0;
+    int height = 0;
+    FT_Pos advanceX = 0;
+}
+
+int nextPowerOfTwo(int a)
+{
+    int rval = 1;
+    while(rval < a)
+        rval <<= 1;
+    return rval;
+}
+
+/**
+ * Freetype font class.
+ *
+ * Description:
+ * Provides methods for rendering text and measuring string width.
+ */
+final class Font: Owner
+{
+    FT_Library ftLibrary;
+    FT_Face ftFace;
     
-    /// The font's size in UI units.
+    Dict!(Glyph, dchar) glyphs;
+    
+    /// Font size in pixels.
     float height;
+
+    Vector2f[4] vertices;
+    Vector2f[4] texcoords;
+    uint[3][2] indices;
+
+    GLuint vao = 0;
+    GLuint vbo = 0;
+    GLuint tbo = 0;
+    GLuint eao = 0;
+
+    GLuint shaderProgram;
+
+    GLint modelViewMatrixLoc;
+    GLint projectionMatrixLoc;
+
+    GLint glyphPositionLoc;
+    GLint glyphScaleLoc;
+    GLint glyphTexcoordScaleLoc;
+
+    GLint glyphTextureLoc;
+    GLint glyphColorLoc;
+
+    String vs, fs;
     
+    bool valid;
+
     /**
-     * Constructs a font resource.
+     * Constructs a font.
      *
      * Params:
+     *   height = em height (font size) in pixels
      *   owner = Owner object.
      */
-    this(Owner owner)
+    this(uint height, Owner o)
     {
-        super(owner);
+        super(o);
+        this.height = height;
+
+        vertices[0] = Vector2f(0, 1);
+        vertices[1] = Vector2f(0, 0);
+        vertices[2] = Vector2f(1, 0);
+        vertices[3] = Vector2f(1, 1);
+
+        texcoords[0] = Vector2f(0, 1);
+        texcoords[1] = Vector2f(0, 0);
+        texcoords[2] = Vector2f(1, 0);
+        texcoords[3] = Vector2f(1, 1);
+
+        indices[0][0] = 0;
+        indices[0][1] = 1;
+        indices[0][2] = 2;
+
+        indices[1][0] = 0;
+        indices[1][1] = 2;
+        indices[1][2] = 3;
+        
         valid = false;
-        height = 1.0f;
+    }
+
+    void createFromFile(string filename)
+    {
+        if (ftLibrary is null)
+            return;
+        
+        if (!exists(filename))
+            exitWithError("Cannot find font file " ~ filename);
+
+        if (FT_New_Face(ftLibrary, toStringz(filename), 0, &ftFace))
+            exitWithError("FT_New_Face failed (there is probably a problem with your font file)");
+
+        FT_Set_Char_Size(ftFace, cast(int)height << 6, cast(int)height << 6, 96, 96);
+        glyphs = New!(Dict!(Glyph, dchar));
+    }
+
+    void createFromMemory(ubyte[] buffer)
+    {
+        if (ftLibrary is null)
+            return;
+        
+        if (FT_New_Memory_Face(ftLibrary, buffer.ptr, cast(uint)buffer.length, 0, &ftFace))
+            exitWithError("FT_New_Face failed (there is probably a problem with your font file)");
+
+        FT_Set_Char_Size(ftFace, cast(int)height << 6, cast(int)height << 6, 96, 96);
+        glyphs = New!(Dict!(Glyph, dchar));
+    }
+
+    void prepareVAO()
+    {
+        if (valid)
+            return;
+
+        glGenBuffers(1, &vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, vertices.length * float.sizeof * 2, vertices.ptr, GL_STATIC_DRAW);
+
+        glGenBuffers(1, &tbo);
+        glBindBuffer(GL_ARRAY_BUFFER, tbo);
+        glBufferData(GL_ARRAY_BUFFER, texcoords.length * float.sizeof * 2, texcoords.ptr, GL_STATIC_DRAW);
+
+        glGenBuffers(1, &eao);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eao);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.length * uint.sizeof * 3, indices.ptr, GL_STATIC_DRAW);
+
+        glGenVertexArrays(1, &vao);
+        glBindVertexArray(vao);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eao);
+
+        glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, null);
+
+        glEnableVertexAttribArray(1);
+        glBindBuffer(GL_ARRAY_BUFFER, tbo);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, null);
+
+        glBindVertexArray(0);
+
+        vs = Shader.load("data/__internal/shaders/Glyph/Glyph.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/Glyph/Glyph.frag.glsl");
+
+        GLuint vert = compileShader(vs, ShaderStage.vertex);
+        GLuint frag = compileShader(fs, ShaderStage.fragment);
+        if (vert != 0 && frag != 0)
+            shaderProgram = linkShaders(vert, frag);
+
+        if (shaderProgram != 0)
+        {
+            modelViewMatrixLoc = glGetUniformLocation(shaderProgram, "modelViewMatrix");
+            projectionMatrixLoc = glGetUniformLocation(shaderProgram, "projectionMatrix");
+
+            glyphPositionLoc = glGetUniformLocation(shaderProgram, "glyphPosition");
+            glyphScaleLoc = glGetUniformLocation(shaderProgram, "glyphScale");
+            glyphTexcoordScaleLoc = glGetUniformLocation(shaderProgram, "glyphTexcoordScale");
+            glyphTextureLoc = glGetUniformLocation(shaderProgram, "glyphTexture");
+            glyphColorLoc = glGetUniformLocation(shaderProgram, "glyphColor");
+        }
+
+        valid = true;
+    }
+
+    void preloadASCII()
+    {
+        if (ftLibrary is null)
+            return;
+        
+        enum ASCII_CHARS = 128;
+        foreach(i; 0..ASCII_CHARS)
+        {
+            GLuint tex;
+            glGenTextures(1, &tex);
+            loadGlyph(i, tex);
+        }
+    }
+
+    ~this()
+    {
+        vs.free();
+        fs.free();
+
+        if (valid)
+        {
+            glDeleteVertexArrays(1, &vao);
+            glDeleteBuffers(1, &vbo);
+            glDeleteBuffers(1, &tbo);
+            glDeleteBuffers(1, &eao);
+        }
+
+        foreach(i, glyph; glyphs)
+            glDeleteTextures(1, &glyph.textureId);
+        if (glyphs.length > 0)
+            Delete(glyphs);
+    }
+
+    uint loadGlyph(dchar code, GLuint texId)
+    {
+        FT_Glyph glyph;
+
+        uint charIndex = FT_Get_Char_Index(ftFace, code);
+
+        if (charIndex == 0)
+        {
+            //TODO: if character wasn't found in font file
+        }
+
+        auto res = FT_Load_Glyph(ftFace, charIndex, FT_LOAD_DEFAULT);
+
+        if (res)
+            exitWithError("FT_Load_Glyph failed with code " ~ res.to!string);
+
+        if (FT_Get_Glyph(ftFace.glyph, &glyph))
+            exitWithError("FT_Get_Glyph failed");
+
+        FT_Glyph_To_Bitmap(&glyph, FT_RENDER_MODE_NORMAL, null, 1);
+        FT_BitmapGlyph bitmapGlyph = cast(FT_BitmapGlyph)glyph;
+
+        FT_Bitmap bitmap = bitmapGlyph.bitmap;
+
+        int width = nextPowerOfTwo(bitmap.width);
+        int height = nextPowerOfTwo(bitmap.rows);
+
+        GLubyte[] img = New!(GLubyte[])(2 * width * height);
+
+        foreach(j; 0..height)
+        foreach(i; 0..width)
+        {
+            img[2 * (i + j * width)] = 255;
+            img[2 * (i + j * width) + 1] =
+                (i >= bitmap.width || j >= bitmap.rows)?
+                 0 : bitmap.buffer[i + bitmap.width * j];
+        }
+
+        glBindTexture(GL_TEXTURE_2D, texId);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        glTexImage2D(GL_TEXTURE_2D,
+            0, GL_RG8, width, height,
+            0, GL_RG, GL_UNSIGNED_BYTE, img.ptr);
+
+        Delete(img);
+
+        Glyph g = Glyph(true, texId, glyph, width, height, ftFace.glyph.advance.x);
+        glyphs[code] = g;
+
+        return charIndex;
+    }
+
+    dchar loadChar(dchar code)
+    {
+        GLuint tex;
+        glGenTextures(1, &tex);
+        loadGlyph(code, tex);
+        return code;
+    }
+
+    float renderGlyph(dchar code, float xShift, float yShift = 0.0f)
+    {
+        Glyph glyph;
+        if (code in glyphs)
+            glyph = glyphs[code];
+        else
+            glyph = glyphs[loadChar(code)];
+
+        FT_BitmapGlyph bitmapGlyph = cast(FT_BitmapGlyph)(glyph.ftGlyph);
+        FT_Bitmap bitmap = bitmapGlyph.bitmap;
+
+        glBindTexture(GL_TEXTURE_2D, glyph.textureId);
+
+        float chWidth = cast(float)bitmap.width;
+        float chHeight = cast(float)bitmap.rows;
+        float texWidth = cast(float)glyph.width;
+        float texHeight = cast(float)glyph.height;
+
+        float x = 0.5f / texWidth + chWidth / texWidth;
+        float y = 0.5f / texHeight + chHeight / texHeight;
+
+        Vector2f glyphPosition = Vector2f(xShift + bitmapGlyph.left, yShift - bitmapGlyph.top);
+        Vector2f glyphScale = Vector2f(bitmap.width, bitmap.rows);
+        Vector2f glyphTexcoordScale = Vector2f(x, y);
+
+        glUniform2fv(glyphPositionLoc, 1, glyphPosition.arrayof.ptr);
+        glUniform2fv(glyphScaleLoc, 1, glyphScale.arrayof.ptr);
+        glUniform2fv(glyphTexcoordScaleLoc, 1, glyphTexcoordScale.arrayof.ptr);
+
+        glBindVertexArray(vao);
+        glDrawElements(GL_TRIANGLES, cast(uint)indices.length * 3, GL_UNSIGNED_INT, cast(void*)0);
+        glBindVertexArray(0);
+
+        xShift = glyph.advanceX >> 6;
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        return xShift;
+    }
+
+    int glyphAdvance(dchar code)
+    {
+        Glyph glyph;
+        if (code in glyphs)
+            glyph = glyphs[code];
+        else
+            glyph = glyphs[loadChar(code)];
+        return cast(int)(glyph.advanceX >> 6);
     }
     
-    /**
-     * Returns the width of the given string in UI units.
-     *
-     * Params:
-     *   str = The string to measure.
-     * Returns:
-     *   The width of the string.
-     */
-    float width(string str);
+    void beginRender(GraphicsState* state, Color4f color)
+    {
+        if (!valid)
+            return;
+        
+        glUseProgram(shaderProgram);
+
+        glUniformMatrix4fv(modelViewMatrixLoc, 1, GL_FALSE, state.modelViewMatrix.arrayof.ptr);
+        glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, state.projectionMatrix.arrayof.ptr);
+        glUniform4fv(glyphColorLoc, 1, color.arrayof.ptr);
+        glUniform1i(glyphTextureLoc, 0);
+    }
+    
+    void endRender()
+    {
+        if (!valid)
+            return;
+        
+        glUseProgram(0);
+    }
 
     /**
      * Renders the given string using the specified graphics pipeline state and color.
@@ -88,5 +416,64 @@ abstract class Font: Owner
      *   color = The color to render the text with.
      *   str   = The string to render.
      */
-    void render(GraphicsState* state, Color4f color, string str);
+    void render(GraphicsState* state, Color4f color, string str)
+    {
+        if (!valid)
+            return;
+
+        beginRender(state, color);
+
+        float shift = 0.0f;
+        UTF8Decoder dec = UTF8Decoder(str);
+        int ch;
+        do
+        {
+            ch = dec.decodeNext();
+            if (ch == 0 || ch == UTF8_END || ch == UTF8_ERROR) break;
+            dchar code = ch;
+            if (code.isASCII)
+            {
+                if (code.isPrintable)
+                    shift += renderGlyph(code, shift);
+            }
+            else
+                shift += renderGlyph(code, shift);
+        } while(ch != UTF8_END && ch != UTF8_ERROR);
+
+        endRender();
+    }
+
+    /**
+     * Returns the width of the given string in pixels.
+     *
+     * Params:
+     *   str = The string to measure.
+     * Returns:
+     *   The width of the string.
+     */
+    float width(string str)
+    {
+        if (ftLibrary is null)
+            return 0.0f;
+        
+        float width = 0.0f;
+        UTF8Decoder dec = UTF8Decoder(str);
+        int ch;
+        do
+        {
+            ch = dec.decodeNext();
+            if (ch == 0 || ch == UTF8_END || ch == UTF8_ERROR) break;
+            dchar code = ch;
+            if (code.isASCII)
+            {
+                if (code.isPrintable)
+                    width += glyphAdvance(code);
+            }
+            else
+                width += glyphAdvance(code);
+        }
+        while(ch != UTF8_END && ch != UTF8_ERROR);
+
+        return width;
+    }
 }
