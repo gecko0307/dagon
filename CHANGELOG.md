@@ -1,7 +1,7 @@
 Dagon 0.24.0 - TBD
 ------------------
 - **UI**
-  - Text rendering via Freetype library is now a core engine feature. New module `dagon.ui.freetype`
+  - Text rendering via Freetype library is now a core engine feature
 - **Assets**
   - New module `dagon.resource.font`
   - New method `Scene.addFontAsset`
