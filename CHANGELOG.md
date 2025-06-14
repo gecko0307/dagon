@@ -10,6 +10,7 @@ Dagon 0.24.0 - TBD
 - **Assets**
   - New module `dagon.resource.font`
   - New method `Scene.addFontAsset`
+  - Dagon now provides a built-in monospace font for UI classes (`data/__internal/fonts/LiberationMono-Regular.ttf`)
 - **Extensions**
   - `dagon:assimp` extension that provides Assimp support
   - Breaking change: `dagon:ftfont` extension was removed.
