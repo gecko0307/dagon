@@ -1,15 +1,18 @@
 Dagon 0.24.0 - TBD
 ------------------
 - **Core**
-  - `dagon.core.logger` now supports printing to buffer (`logOutputOptions.printToBuffer`), which is disabled by default
+  - Breaking change: `EventManager.generateLogEvent` is now `EventManager.asyncLog`. This event now automatically triggers asynchronous logger call without the need for an event listener method. `EventManager.onLogEvent` was removed
+  - `dagon.core.logger` now supports printing to a buffer (`logOutputOptions.printToBuffer`), which is disabled by default. User-side code can access this buffer for reading using `logBuffer` function
+- **Rendering**
+  - Disable depth test in `PassHUD`
 - **UI**
-  - Text rendering via Freetype library is now a core engine feature
+  - `dagon.ui.font`: text rendering via Freetype library is now a core engine feature. `Font` class replaces `FreeTypeFont` class from `dagon:ftfont` extension
 - **Assets**
   - New module `dagon.resource.font`
   - New method `Scene.addFontAsset`
 - **Extensions**
   - `dagon:assimp` extension that provides Assimp support
-  - `dagon:ftfont` extension was removed.
+  - Breaking change: `dagon:ftfont` extension was removed.
 
 Dagon 0.23.1 - 27 May, 2025
 ---------------------------
