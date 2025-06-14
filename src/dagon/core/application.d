@@ -534,6 +534,8 @@ class Application: EventListener
         
         if (freetypePresent && ftLibrary)
             FT_Done_FreeType(ftLibrary);
+        
+        freeLogBuffer();
     }
     
     /**

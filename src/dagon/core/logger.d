@@ -40,8 +40,11 @@ module dagon.core.logger;
 import std.stdio;
 import std.datetime;
 import std.format;
+import std.conv;
 import std.file: exists;
+
 import dlib.core.ownership;
+import dlib.text.str;
 
 /**
  * Log levels for controlling message verbosity and severity.
@@ -82,6 +85,7 @@ struct LogOutputOptions
 {
     bool printToStdout;
     bool printToFile;
+    bool printToBuffer;
     bool printTimestamp;
     bool printLogLevel;
     string filename;
@@ -95,6 +99,7 @@ __gshared LogLevel logLevel = LogLevel.All;
 __gshared LogOutputOptions logOutputOptions = {
     printToStdout: true,
     printToFile: false,
+    printToBuffer: false,
     printTimestamp: false,
     printLogLevel: true,
     filename: "",
@@ -117,6 +122,18 @@ private
 {
     __gshared File _logFile;
     __gshared bool _logFileInitialized = false;
+    
+    __gshared String _logBuffer;
+}
+
+string logBuffer()
+{
+    return _logBuffer.toString;
+}
+
+void freeLogBuffer()
+{
+    _logBuffer.free();
 }
 
 /**
@@ -223,6 +240,16 @@ void log(A...)(LogLevel level, A args)
                 logOutputOptions.printToFile = false;
             }
         }
+    }
+    
+    if (logOutputOptions.printToBuffer)
+    {
+        _logBuffer ~= levelStr;
+        foreach(arg; args)
+        {
+            _logBuffer ~= arg.to!string;
+        }
+        _logBuffer ~= "\n";
     }
 }
 
