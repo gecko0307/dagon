@@ -69,6 +69,8 @@ class PassHUD: RenderPass
                     backgroundColor.a);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             }
+            
+            glDisable(GL_DEPTH_TEST);
 
             foreach(entity; group)
             if (entity.visible && entity.drawable)
@@ -101,6 +103,8 @@ class PassHUD: RenderPass
                     entity.material.unbind(&state);
                 }
             }
+            
+            glEnable(GL_DEPTH_TEST);
         }
     }
 }

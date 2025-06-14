@@ -77,7 +77,7 @@ enum EventType
     Quit,
     FileChange,
     DropFile,
-    LogEvent,
+    AsyncLogEvent,
     UserEvent
 }
 
@@ -123,8 +123,8 @@ class EventManager
     SDL_Window* window;
 
     enum maxNumEvents = 50;
-    Event[maxNumEvents] eventStack;
-    Event[maxNumEvents] userEventStack;
+    Event[maxNumEvents] eventQueue;
+    Event[maxNumEvents] userEventQueue;
     uint numEvents;
     uint numUserEvents;
 
@@ -226,7 +226,7 @@ class EventManager
     {
         if (numEvents < maxNumEvents)
         {
-            eventStack[numEvents] = e;
+            eventQueue[numEvents] = e;
             numEvents++;
         }
     }
@@ -245,7 +245,7 @@ class EventManager
     }
 
     /**
-     * Adds a user event to the user event stack.
+     * Adds a user event to the user event queue.
      *
      * Params:
      *   e = The user event to add.
@@ -254,7 +254,7 @@ class EventManager
     {
         if (numUserEvents < maxNumEvents)
         {
-            userEventStack[numUserEvents] = e;
+            userEventQueue[numUserEvents] = e;
             numUserEvents++;
         }
     }
@@ -273,15 +273,16 @@ class EventManager
     }
     
     /**
-     * Generates a log event with the given log level and message.
+     * Prints to the logger asynchronically using the event queue.
+     * This method is also useful to log from nothrow functions,
+     * because the logger itself is not nothrow.
      *
      * Params:
-     *   level = Log level.
-     *   message = Log message.
+     *   code = User event code.
      */
-    void generateLogEvent(LogLevel level, string message) nothrow
+    void asyncLog(LogLevel level, string message) nothrow
     {
-        Event e = Event(EventType.LogEvent);
+        Event e = Event(EventType.AsyncLogEvent);
         e.logLevel = level;
         e.message = message;
         addUserEvent(e);
@@ -435,8 +436,11 @@ class EventManager
 
         for (uint i = 0; i < numUserEvents; i++)
         {
-            Event e = userEventStack[i];
-            addEvent(e);
+            Event e = userEventQueue[i];
+            if (e.type == EventType.AsyncLogEvent)
+                log(e.logLevel, e.message);
+            else
+                addEvent(e);
         }
 
         numUserEvents = 0;
@@ -791,7 +795,7 @@ abstract class EventListener: Owner
 
         for (uint i = 0; i < eventManager.numEvents; i++)
         {
-            Event* e = &eventManager.eventStack[i];
+            Event* e = &eventManager.eventQueue[i];
             processEvent(e, enableInputEvents);
         }
     }
@@ -864,9 +868,6 @@ abstract class EventListener: Owner
             case EventType.DropFile:
                 if (enableInputEvents) onDropFile(e.filename);
                 break;
-            case EventType.LogEvent:
-                onLogEvent(e.logLevel, e.message);
-                break;
             case EventType.UserEvent:
                 onUserEvent(e.userCode);
                 break;
@@ -932,8 +933,8 @@ abstract class EventListener: Owner
     /// Called when a file is dropped onto the window.
     void onDropFile(string filename) {}
 
-    /// Called when a log event is received.
-    void onLogEvent(LogLevel level, string message) {}
+    /// Called when a log event is manually triggered.
+    void onAsyncLogEvent(LogLevel level, string message) {}
 
     /// Called when a user event is received.
     void onUserEvent(int code) {}

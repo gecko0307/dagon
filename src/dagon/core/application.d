@@ -174,7 +174,7 @@ extern(System) void messageCallback(
             if (app)
             {
                 // Instead of calling logDebug directly (which is not nothrow), use the event loop
-                app.eventManager.generateLogEvent(LogLevel.Debug, cast(string)message[0..length]);
+                app.eventManager.asyncLog(LogLevel.Debug, cast(string)message[0..length]);
             }
         }
         
@@ -575,25 +575,7 @@ class Application: EventListener
         else
             SDL_SetWindowFullscreen(window, 0);
     }
-    
-    /**
-     * Handles log events from the event manager.
-     *
-     * Params:
-     *   level = Log level.
-     *   message = Log message.
-     */
-    override void onLogEvent(LogLevel level, string message)
-    {
-        log(level, message);
-    }
 
-    /**
-     * Handles user-defined events.
-     *
-     * Params:
-     *   code = Event code.
-     */
     override void onUserEvent(int code)
     {
         if (code == DagonEvent.Exit)
@@ -602,19 +584,11 @@ class Application: EventListener
         }
     }
     
-    /**
-     * Handles window resize events.
-     *
-     * Params:
-     *   width = New width.
-     *   height = New height.
-     */
     override void onResize(int width, int height)
     {
         this.width = width;
         this.height = height;
     }
-
 
     /**
      * Called every frame to update application logic.
