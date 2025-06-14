@@ -1,5 +1,7 @@
 Dagon 0.24.0 - TBD
 ------------------
+- **Core**
+  - `dagon.core.logger` now supports printing to buffer (`logOutputOptions.printToBuffer`), which is disabled by default
 - **UI**
   - Text rendering via Freetype library is now a core engine feature
 - **Assets**
