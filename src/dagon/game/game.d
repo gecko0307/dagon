@@ -222,6 +222,7 @@ class Game: Application
                 presentRenderer.inputBuffer = postProcessingRenderer.outputBuffer;
                 presentRenderer.render();
                 hudRenderer.render();
+                currentScene.afterRender();
             }
         }
     }

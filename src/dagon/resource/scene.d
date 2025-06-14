@@ -326,6 +326,11 @@ class Scene: EventListener
     void onReset()
     {
     }
+    
+    /// Called after rendering.
+    void afterRender()
+    {
+    }
 
     /**
      * Updates the scene, processes events, and updates all entities.
