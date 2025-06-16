@@ -49,6 +49,7 @@ public
     import dagon.graphics.drawable;
     import dagon.graphics.entity;
     import dagon.graphics.environment;
+    import dagon.graphics.font;
     import dagon.graphics.heightmap;
     import dagon.graphics.light;
     import dagon.graphics.lod;

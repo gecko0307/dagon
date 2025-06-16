@@ -42,9 +42,9 @@ import dagon.graphics.updateable;
 import dagon.graphics.shapes;
 import dagon.graphics.entity;
 import dagon.graphics.material;
+import dagon.graphics.font;
 import dagon.render.hud;
 import dagon.resource.scene;
-import dagon.ui.font;
 
 class UIManager: EventListener
 {

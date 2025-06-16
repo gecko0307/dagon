@@ -34,8 +34,8 @@ import dlib.filesystem.filesystem;
 import dlib.filesystem.stdfs;
 
 import dagon.core.logger;
+import dagon.graphics.font;
 import dagon.resource.asset;
-import dagon.ui.font;
 
 class FontAsset: Asset
 {

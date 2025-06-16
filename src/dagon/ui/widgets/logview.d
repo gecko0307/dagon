@@ -51,9 +51,9 @@ import dagon.graphics.shapes;
 import dagon.graphics.material;
 import dagon.graphics.shader;
 import dagon.graphics.state;
+import dagon.graphics.font;
 import dagon.resource.scene;
 import dagon.render.hud;
-import dagon.ui.font;
 import dagon.ui.widget;
 
 class LogView: UIWidget

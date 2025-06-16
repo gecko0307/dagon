@@ -58,7 +58,7 @@ import dagon.core.event;
 import dagon.core.time;
 import dagon.core.logger;
 
-import dagon.ui.font;
+import dagon.graphics.font;
 
 version(Windows)
 { 

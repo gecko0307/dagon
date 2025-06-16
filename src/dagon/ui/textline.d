@@ -45,7 +45,7 @@ import dlib.image.color;
 
 import dagon.core.bindings;
 import dagon.graphics.drawable;
-import dagon.ui.font;
+import dagon.graphics.font;
 
 /**
  * Represents a single line of text for UI rendering.

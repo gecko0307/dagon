@@ -41,7 +41,6 @@ module dagon.ui;
 public
 {
     import dagon.ui.firstpersonview;
-    import dagon.ui.font;
     import dagon.ui.freeview;
     import dagon.ui.textline;
     import dagon.ui.widget;

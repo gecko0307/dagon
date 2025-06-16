@@ -29,14 +29,14 @@ DEALINGS IN THE SOFTWARE.
  * Freetype font.
  *
  * Description:
- * The `dagon.ui.font` module defines the `Font` class, which represents
+ * The `dagon.graphics.font` module defines the `Font` class, which represents
  * a font resource capable of rendering glyphs and text strings.
  *
  * Copyright: Timur Gafarov 2017-2025
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Timur Gafarov
  */
-module dagon.ui.font;
+module dagon.graphics.font;
 
 import std.stdio;
 
