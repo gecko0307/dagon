@@ -48,6 +48,7 @@ class Window: UIWidget
     UIWidget content;
     int headerHeight = 24;
     Color4f headerColor = Color4f(0.5f, 0.0f, 0.0f, 1.0f);
+    bool resizeable = true;
     
    protected:
     int prevMouseX;
@@ -82,17 +83,17 @@ class Window: UIWidget
     
     bool mouseOverRightBorder()
     {
-        return ui.mouseOverRegion(entity, width - 15, 0, 15, height);
+        return ui.mouseOverRegion(entity, width - 5, 0, 5, height);
     }
     
     bool mouseOverBottomBorder()
     {
-        return ui.mouseOverRegion(entity, 0, height - 15, width, 15);
+        return ui.mouseOverRegion(entity, 0, height - 5, width, 5);
     }
     
     bool mouseOverBottomRightCorner()
     {
-        return ui.mouseOverRegion(entity, width - 15, height - 15, 15, 15);
+        return ui.mouseOverRegion(entity, width - 5, height - 5, 5, 5);
     }
     
     override void onMouseButtonDown(int button)
@@ -103,7 +104,7 @@ class Window: UIWidget
             {
                 dragging = true;
             }
-            else
+            else if (resizeable)
             {
                 if (mouseOverRightBorder())
                     resizingHorizontal = true;
@@ -143,12 +144,17 @@ class Window: UIWidget
             captureMouse = true;
             hover = true;
             
-            if (mouseOverBottomRightCorner())
-                cursor = Cursor.SizeNWSE;
-            else if (mouseOverRightBorder())
-                cursor = Cursor.SizeWE;
-            else if (mouseOverBottomBorder())
-                cursor = Cursor.SizeNS;
+            if (resizeable)
+            {
+                if (mouseOverBottomRightCorner())
+                    cursor = Cursor.SizeNWSE;
+                else if (mouseOverRightBorder())
+                    cursor = Cursor.SizeWE;
+                else if (mouseOverBottomBorder())
+                    cursor = Cursor.SizeNS;
+                else
+                    cursor = Cursor.Default;
+            }
             else
                 cursor = Cursor.Default;
         }
@@ -168,7 +174,7 @@ class Window: UIWidget
             entity.position.x += dragX;
             entity.position.y += dragY;
         }
-        else
+        else if (resizeable)
         {
             if (resizingHorizontal)
             {
