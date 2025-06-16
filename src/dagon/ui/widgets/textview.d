@@ -265,33 +265,34 @@ class TextViewVisual: Owner, Drawable
         int ch;
         do
         {
+            float gx = cast(float)paddingLeft + xShift;
+            float gy = font.height + yShift - cast(float)scrollY;
+            
             ch = dec.decodeNext();
             if (ch == 0 || ch == UTF8_END || ch == UTF8_ERROR) break;
             dchar code = ch;
-            if (code.isASCII)
+            if (code == '\n')
             {
-                if (code.isPrintable)
-                {
-                    float gx = cast(float)paddingLeft + xShift;
-                    float gy = font.height + yShift - cast(float)scrollY;
-                    
-                    xShift += font.renderGlyph(code, gx, gy);
-                    
-                    if (xShift > cast(float)width - font.height * 2 - paddingRight)
-                    {
-                        xShift = 0.0f;
-                        yShift += ceil(font.height * lineHeight);
-                    }
-                }
-                else if (code == '\n')
-                {
-                    xShift = 0.0f;
-                    yShift += font.height * lineHeight;
-                }
+                xShift = 0.0f;
+                yShift += font.height * lineHeight;
             }
             else
             {
-                xShift += font.renderGlyph(code, xShift, yShift);
+                if (code.isASCII)
+                {
+                    if (code.isPrintable)
+                        xShift += font.renderGlyph(code, gx, gy);
+                }
+                else
+                {
+                    xShift += font.renderGlyph(code, gx, gy);
+                }
+                
+                if (xShift > cast(float)width - font.height * 2 - paddingRight)
+                {
+                    xShift = 0.0f;
+                    yShift += ceil(font.height * lineHeight);
+                }
             }
         }
         while(ch != UTF8_END && ch != UTF8_ERROR);
