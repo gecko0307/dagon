@@ -71,8 +71,6 @@ import dagon.resource.binary;
 import dagon.resource.font;
 
 import dagon.ui.widget;
-import dagon.ui.widgets.label;
-import dagon.ui.widgets.logview;
 
 /**
  * Manages the application context, assets, world,

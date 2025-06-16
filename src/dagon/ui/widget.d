@@ -157,6 +157,7 @@ class UIWidget: EventListener, Updateable
     Font font;
     int width = 100;
     int height = 100;
+    bool fitToParent = false;
     Color4f color = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
     Color4f backgroundColor = Color4f(0.0f, 0.0f, 0.0f, 0.0f);
     bool captureMouse = false;
@@ -231,6 +232,11 @@ class UIWidget: EventListener, Updateable
     void update(Time t)
     {
         processEvents();
+        if (fitToParent && parent)
+        {
+            width = parent.width;
+            height = parent.height;
+        }
         background.scaling = Vector3f(width, height, 1.0f);
         background.material.baseColorFactor = backgroundColor;
     }

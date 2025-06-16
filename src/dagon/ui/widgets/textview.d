@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.ui.widgets.logview;
+module dagon.ui.widgets.textview;
 
 import std.stdio;
 import std.ascii;
@@ -57,14 +57,14 @@ import dagon.resource.scene;
 import dagon.render.hud;
 import dagon.ui.widget;
 
-class LogView: UIWidget
+class TextView: UIWidget
 {
   public:
+    string text = "";
     float scrollSpeed = 10.0f;
-    Color4f textColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+    Color4f textColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
     Color4f scrollbarColor = Color4f(1.0f, 1.0f, 1.0f, 0.75f);
-    TextView textView;
-    
+
    protected:
     
     int _paddingLeft = 0;
@@ -72,6 +72,7 @@ class LogView: UIWidget
     int _paddingTop = 0;
     int _paddingBottom = 0;
     
+    TextViewVisual visual;
     Entity textViewEntity;
     Entity scrollbar;
     
@@ -81,7 +82,6 @@ class LogView: UIWidget
     float minScrollY = 0.0f;
     float maxScrollY = 0.0f;
     float maxScrollbarY = 0.0f;
-    size_t prevLogBufferLength = 0;
     
    public:
     this(UIManager ui, UIWidget parent = null)
@@ -89,10 +89,10 @@ class LogView: UIWidget
         super(ui, parent);
         
         textViewEntity = ui.addElement(entity);
-        textView = New!TextView(ui.fontManager.monospace, this);
-        textView.text = logBuffer;
-        textView.color = textColor;
-        textViewEntity.drawable = textView;
+        visual = New!TextViewVisual(ui.fontManager.sans, this);
+        visual.text = text;
+        visual.color = textColor;
+        textViewEntity.drawable = visual;
         
         scrollbar = ui.addElement(entity);
         scrollbar.scaling = Vector3f(10.0f, 50.0f, 1.0f);
@@ -104,6 +104,11 @@ class LogView: UIWidget
         x = 0;
         y = 0;
         setPadding(10, 10, 10, 10);
+    }
+    
+    void font(Font f) @property
+    {
+        visual.font = f;
     }
     
     void setPadding(int left, int right, int top, int bottom)
@@ -148,28 +153,28 @@ class LogView: UIWidget
         
         scrollbar.material.baseColorFactor = scrollbarColor;
         
-        textView.text = logBuffer;
-        textView.color = textColor;
-        textView.paddingLeft = _paddingLeft;
-        textView.paddingRight = _paddingRight;
-        textView.width = width;
-        textView.height = height - _paddingTop - _paddingBottom;
+        visual.text = text;
+        visual.color = textColor;
+        visual.paddingLeft = _paddingLeft;
+        visual.paddingRight = _paddingRight;
+        visual.width = width;
+        visual.height = height - _paddingTop - _paddingBottom;
         textViewEntity.position.x = 0.0f;
         textViewEntity.position.y = _paddingTop;
         
         float scrollbarHeight = height;
-        if (textView.textHeight > 0.0f)
+        if (visual.textHeight > 0.0f)
         {
-            scrollbarHeight = height * (textView.height / textView.textHeight);
+            scrollbarHeight = height * (visual.height / visual.textHeight);
         }
         
         scrollbar.scaling.y = scrollbarHeight;
         
         maxScrollbarY = max2(0.0f, height - scrollbarHeight);
         
-        if (textView.height < textView.textHeight)
+        if (visual.height < visual.textHeight)
         {
-            maxScrollY = textView.textHeight - textView.height;
+            maxScrollY = visual.textHeight - visual.height;
             scrollBarActive = true;
             scrollbar.visible = true;
         }
@@ -203,15 +208,15 @@ class LogView: UIWidget
         
         scrollbar.position.x = width - scrollbar.scaling.x;
         
-        if (textView.height < textView.textHeight)
+        if (visual.height < visual.textHeight)
         {
             scrollbar.position.y = clamp(scrollbar.position.y, 0.0f, maxScrollbarY);
-            textView.scrollY = cast(int)lerp(minScrollY, maxScrollY, scrollbar.position.y / maxScrollbarY);
+            visual.scrollY = cast(int)lerp(minScrollY, maxScrollY, scrollbar.position.y / maxScrollbarY);
         }
         else
         {
             scrollbar.position.y = 0.0f;
-            textView.scrollY = 0;
+            visual.scrollY = 0;
         }
         
         if (mouseOver() && !ui.mouseOver(scrollbar))
@@ -221,8 +226,7 @@ class LogView: UIWidget
     }
 }
 
-// TODO: make widget
-class TextView: Owner, Drawable
+class TextViewVisual: Owner, Drawable
 {
     string text = "";
     Font font;
