@@ -300,9 +300,9 @@ class Scene: EventListener
         return e;
     }
     
-    T addWidget(T)()
+    T addWidget(T)(UIWidget parent = null)
     {
-        return New!T(ui);
+        return New!T(ui, parent);
     }
 
     /// Override to perform actions before loading assets.

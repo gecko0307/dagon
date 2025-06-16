@@ -52,6 +52,7 @@ class UIManager: EventListener
     ShapeQuad rectangle;
     HUDShader shader;
     Array!UIWidget widgets;
+    bool captureMouse = false;
     
     this(Scene scene, Owner owner)
     {
@@ -92,12 +93,38 @@ class UIManager: EventListener
         return scene.application.fontManager;
     }
     
+    bool mouseInRect(float x, float y, float w, float h)
+    {
+        return eventManager.mouseX >= x &&
+               eventManager.mouseX < (x + w) &&
+               eventManager.mouseY >= y &&
+               eventManager.mouseY < (y + h);
+    }
+    
+    bool mouseOver(Entity e)
+    {
+        float x = e.positionAbsolute.x;
+        float y = e.positionAbsolute.y;
+        float w = e.scaling.x;
+        float h = e.scaling.y;
+        return mouseInRect(x, y, w, h);
+    }
+    
+    bool mouseOverRegion(Entity e, float rx, float ry, float rw, float rh)
+    {
+        float x = e.positionAbsolute.x + rx;
+        float y = e.positionAbsolute.y + ry;
+        return mouseInRect(x, y, rw, rh);
+    }
+    
     void update(Time t)
     {
         processEvents();
+        captureMouse = false;
         foreach(widget; widgets)
         {
             widget.update(t);
+            captureMouse = captureMouse || widget.captureMouse;
         }
     }
 }
@@ -105,6 +132,7 @@ class UIManager: EventListener
 class UIWidget: EventListener, Updateable
 {
     UIManager ui;
+    UIWidget parent;
     Entity entity;
     Entity background;
     Font font;
@@ -115,13 +143,18 @@ class UIWidget: EventListener, Updateable
     bool captureMouse = false;
     bool hover = false;
     
-    this(UIManager ui)
+    this(UIManager ui, UIWidget parent = null)
     {
         super(ui.eventManager, ui);
         ui.registerWidget(this);
         this.ui = ui;
         
-        entity = ui.addElement();
+        this.parent = parent;
+        
+        if (parent)
+            entity = ui.addElement(parent.entity);
+        else
+            entity = ui.addElement();
         
         background = ui.addElement(entity);
         background.drawable = ui.rectangle;
@@ -133,16 +166,12 @@ class UIWidget: EventListener, Updateable
     
     void hide()
     {
-        entity.visible = false;
-        foreach(e; entity.children)
-            e.visible = false;
+        entity.hide();
     }
     
     void show()
     {
-        entity.visible = true;
-        foreach(e; entity.children)
-            e.visible = true;
+        entity.show();
     }
     
     bool visible()
@@ -168,6 +197,15 @@ class UIWidget: EventListener, Updateable
     int y() @property
     {
         return cast(int)entity.position.y;
+    }
+    
+    bool mouseOver()
+    {
+        return ui.mouseInRect(
+            entity.positionAbsolute.x,
+            entity.positionAbsolute.y,
+            width,
+            height);
     }
     
     void update(Time t)

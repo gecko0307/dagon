@@ -83,11 +83,9 @@ class LogView: UIWidget
     size_t prevLogBufferLength = 0;
     
    public:
-    this(UIManager ui)
+    this(UIManager ui, UIWidget parent = null)
     {
-        super(ui);
-        
-        backgroundColor = Color4f(0.0f, 0.0f, 0.0f, 0.5f);
+        super(ui, parent);
         
         textViewEntity = ui.addElement(entity);
         textView = New!TextView(ui.fontManager.monospace, this);
@@ -115,24 +113,11 @@ class LogView: UIWidget
         _paddingBottom = bottom;
     }
     
-    protected bool mouseInRect(float x, float y, float w, float h)
-    {
-        return eventManager.mouseX >= x &&
-               eventManager.mouseX < (x + w) &&
-               eventManager.mouseY >= y &&
-               eventManager.mouseY < (y + h);
-    }
-    
     override void onMouseButtonDown(int button)
     {
         if (button == MB_LEFT && scrollBarActive)
         {
-            float x = scrollbar.positionAbsolute.x;
-            float y = scrollbar.positionAbsolute.y;
-            float w = scrollbar.scaling.x;
-            float h = scrollbar.scaling.y;
-            
-            if (mouseInRect(x, y, w, h))
+            if (ui.mouseOver(scrollbar))
             {
                 scrollbarCaptureMouse = true;
                 prevMouseY = eventManager.mouseY;
@@ -194,7 +179,7 @@ class LogView: UIWidget
             scrollbar.visible = false;
         }
         
-        if (entity.visible && mouseInRect(entity.position.x, entity.position.y, width, height))
+        if (entity.visible && mouseOver())
         {
             captureMouse = true;
             hover = true;

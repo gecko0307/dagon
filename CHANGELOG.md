@@ -7,7 +7,7 @@ Dagon 0.24.0 - TBD
   - Disable depth test in `PassHUD`
   - `dagon.graphics.font`: text rendering via Freetype library is now a core engine feature. `Font` class replaces `FreeTypeFont` class from `dagon:ftfont` extension
 - **UI**
-  - `dagon.ui.widget`: a simple built-in UI engine. Currently two widgets are available: `Label` (`dagon.ui.widgets.label`) and `LogView` (`dagon.ui.widgets.logview`)
+  - `dagon.ui.widget`: a simple built-in UI engine. Currently three widgets are available: `Window` (`dagon.ui.widgets.window`), `Label` (`dagon.ui.widgets.label`), `LogView` (`dagon.ui.widgets.logview`)
 - **Assets**
   - New module `dagon.resource.font`
   - New method `Scene.addFontAsset`

@@ -46,4 +46,5 @@ public
     import dagon.ui.widget;
     import dagon.ui.widgets.label;
     import dagon.ui.widgets.logview;
+    import dagon.ui.widgets.window;
 }

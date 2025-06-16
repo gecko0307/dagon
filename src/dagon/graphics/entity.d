@@ -760,6 +760,24 @@ class Entity: Owner, Updateable
             c.processEvents();
         }
     }
+    
+    void hide()
+    {
+        visible = false;
+        foreach(e; children)
+        {
+            e.hide();
+        }
+    }
+    
+    void show()
+    {
+        visible = true;
+        foreach(e; children)
+        {
+            e.show();
+        }
+    }
 }
 
 /**

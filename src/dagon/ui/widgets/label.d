@@ -39,9 +39,9 @@ class Label: UIWidget, Drawable
 {
     string text;
     
-    this(UIManager ui)
+    this(UIManager ui, UIWidget parent)
     {
-        super(ui);
+        super(ui, parent);
         entity.drawable = this;
     }
     
