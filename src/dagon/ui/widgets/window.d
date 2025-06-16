@@ -35,6 +35,7 @@ import dlib.image.color;
 import dagon.core.bindings;
 import dagon.core.time;
 import dagon.core.keycodes;
+import dagon.core.application;
 import dagon.graphics.drawable;
 import dagon.graphics.entity;
 import dagon.graphics.state;
@@ -78,14 +79,23 @@ class Window: UIWidget
         content.y = headerHeight;
     }
     
+    bool mouseOverResizeHandle()
+    {
+        return ui.mouseOverRegion(entity, width - 20, height - 20, 20, 20);
+    }
+    
     override void onMouseButtonDown(int button)
     {
         if (button == MB_LEFT)
         {
             if (ui.mouseOver(header))
+            {
                 dragging = true;
-            else if (ui.mouseOverRegion(entity, width - 20, height - 20, 20, 20))
+            }
+            else if (mouseOverResizeHandle())
+            {
                 resizing = true;
+            }
             prevMouseX = eventManager.mouseX;
             prevMouseY = eventManager.mouseY;
         }
@@ -117,11 +127,17 @@ class Window: UIWidget
         {
             captureMouse = true;
             hover = true;
+            
+            if (mouseOverResizeHandle())
+                cursor = Cursor.SizeNWSE;
+            else
+                cursor = Cursor.Default;
         }
         else
         {
             captureMouse = dragging || resizing;
             hover = false;
+            cursor = Cursor.Default;
         }
         
         if (dragging)

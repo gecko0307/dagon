@@ -45,6 +45,7 @@ import dagon.core.logger;
 import dagon.core.time;
 import dagon.core.event;
 import dagon.core.keycodes;
+import dagon.core.application;
 import dagon.graphics.drawable;
 import dagon.graphics.entity;
 import dagon.graphics.shapes;
@@ -212,6 +213,11 @@ class LogView: UIWidget
             scrollbar.position.y = 0.0f;
             textView.scrollY = 0;
         }
+        
+        if (mouseOver())
+            cursor = Cursor.IBeam;
+        else
+            cursor = Cursor.Default;
     }
 }
 

@@ -38,6 +38,7 @@ import dlib.image.color;
 import dagon.core.event;
 import dagon.core.time;
 import dagon.core.logger;
+import dagon.core.application;
 import dagon.graphics.updateable;
 import dagon.graphics.shapes;
 import dagon.graphics.entity;
@@ -48,12 +49,17 @@ import dagon.resource.scene;
 
 class UIManager: EventListener
 {
+   public:
     Scene scene;
     ShapeQuad rectangle;
     HUDShader shader;
     Array!UIWidget widgets;
     bool captureMouse = false;
     
+  protected:
+    Cursor currentCursor = Cursor.Default;
+    
+   public:
     this(Scene scene, Owner owner)
     {
         super(scene.eventManager, owner);
@@ -121,10 +127,23 @@ class UIManager: EventListener
     {
         processEvents();
         captureMouse = false;
+        bool cursorChanged = false;
+        Cursor newCursor = Cursor.Default;
         foreach(widget; widgets)
         {
             widget.update(t);
             captureMouse = captureMouse || widget.captureMouse;
+            if (!cursorChanged && widget.cursor != Cursor.Default)
+            {
+                newCursor = widget.cursor;
+                cursorChanged = true;
+            }
+        }
+        
+        if (newCursor != currentCursor)
+        {
+            scene.application.setCursor(newCursor);
+            currentCursor = newCursor;
         }
     }
 }
@@ -142,6 +161,7 @@ class UIWidget: EventListener, Updateable
     Color4f backgroundColor = Color4f(0.0f, 0.0f, 0.0f, 0.0f);
     bool captureMouse = false;
     bool hover = false;
+    Cursor cursor = Cursor.Default;
     
     this(UIManager ui, UIWidget parent = null)
     {

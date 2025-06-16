@@ -281,6 +281,22 @@ struct FTVersion
     int major, minor, patch;
 }
 
+enum Cursor: uint
+{
+    Default = 0,
+    IBeam = 1,
+    Wait = 2,
+    Crosshair = 3,
+    WaitArrow = 4,
+    SizeNWSE = 5,
+    SizeNESW = 6,
+    SizeWE = 7,
+    SizeNS = 8,
+    SizeAll = 9,
+    No = 10,
+    Hand = 11
+}
+
 /**
  * Base class to inherit Dagon applications from.
  *
@@ -320,6 +336,8 @@ class Application: EventListener
     
     FT_Library ftLibrary;
     FontManager fontManager;
+    
+    SDL_Cursor*[12] cursor;
 
     /**
      * Constructs the application, initializes SDL, OpenGL, and related subsystems.
@@ -524,6 +542,19 @@ class Application: EventListener
         }
         
         fontManager = New!FontManager(this);
+        
+        cursor[Cursor.Default] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+        cursor[Cursor.IBeam] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
+        cursor[Cursor.Wait] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
+        cursor[Cursor.Crosshair] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_CROSSHAIR);
+        cursor[Cursor.WaitArrow] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAITARROW);
+        cursor[Cursor.SizeNWSE] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE);
+        cursor[Cursor.SizeNESW] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW);
+        cursor[Cursor.SizeWE] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEWE);
+        cursor[Cursor.SizeNS] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENS);
+        cursor[Cursor.SizeAll] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL);
+        cursor[Cursor.No] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO);
+        cursor[Cursor.Hand] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
     }
 
     /// Destructor. Cleans up resources and shuts down SDL.
@@ -532,6 +563,16 @@ class Application: EventListener
         releaseCompressedTextureFormats();
 
         SDL_GL_DeleteContext(glcontext);
+        
+        foreach(i, cur; cursor)
+        {
+            if (cur)
+            {
+                SDL_FreeCursor(cur);
+                cursor[i] = null;
+            }
+        }
+        
         SDL_DestroyWindow(window);
         SDL_Quit();
         Delete(_eventManager);
@@ -565,6 +606,16 @@ class Application: EventListener
     void maximizeWindow()
     {
         SDL_MaximizeWindow(window);
+    }
+    
+    /// Set mouse cursor
+    void setCursor(Cursor cur)
+    {
+        if (cur < cursor.length)
+        {
+            if (cursor[cur])
+                SDL_SetCursor(cursor[cur]);
+        }
     }
     
     /**
