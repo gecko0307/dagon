@@ -64,14 +64,12 @@ class TextView: UIWidget
     float scrollSpeed = 10.0f;
     Color4f textColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
     Color4f scrollbarColor = Color4f(1.0f, 1.0f, 1.0f, 0.75f);
-
+    int paddingLeft = 10;
+    int paddingRight = 10;
+    int paddingTop = 10;
+    int paddingBottom = 10;
+    
    protected:
-    
-    int _paddingLeft = 0;
-    int _paddingRight = 0;
-    int _paddingTop = 0;
-    int _paddingBottom = 0;
-    
     TextViewVisual visual;
     Entity textViewEntity;
     Entity scrollbar;
@@ -103,20 +101,11 @@ class TextView: UIWidget
         height = 240;
         x = 0;
         y = 0;
-        setPadding(10, 10, 10, 10);
     }
     
     void font(Font f) @property
     {
         visual.font = f;
-    }
-    
-    void setPadding(int left, int right, int top, int bottom)
-    {
-        _paddingLeft = left;
-        _paddingRight =  right;
-        _paddingTop = top;
-        _paddingBottom = bottom;
     }
     
     override void onMouseButtonDown(int button)
@@ -155,12 +144,12 @@ class TextView: UIWidget
         
         visual.text = text;
         visual.color = textColor;
-        visual.paddingLeft = _paddingLeft;
-        visual.paddingRight = _paddingRight;
+        visual.paddingLeft = paddingLeft;
+        visual.paddingRight = paddingRight;
         visual.width = width;
-        visual.height = height - _paddingTop - _paddingBottom;
+        visual.height = height - paddingTop - paddingBottom;
         textViewEntity.position.x = 0.0f;
-        textViewEntity.position.y = _paddingTop;
+        textViewEntity.position.y = paddingTop;
         
         float scrollbarHeight = height;
         if (visual.textHeight > 0.0f)
