@@ -5,12 +5,16 @@ Dagon 0.24.0 - TBD
   - `dagon.core.logger` now supports printing to a buffer (`logOutputOptions.printToBuffer`), which is disabled by default. User-side code can access this buffer for reading using `logBuffer` function
 - **Rendering**
   - Disable depth test in `PassHUD`
+  - `dagon.graphics.font`: text rendering via Freetype library is now a core engine feature. `Font` class replaces `FreeTypeFont` class from `dagon:ftfont` extension
 - **UI**
-  - `dagon.ui.font`: text rendering via Freetype library is now a core engine feature. `Font` class replaces `FreeTypeFont` class from `dagon:ftfont` extension
+  - `dagon.ui.widget`: a simple built-in UI engine. Currently two widgets are available: `Label` (`dagon.ui.widgets.label`) and `LogView` (`dagon.ui.widgets.logview`)
 - **Assets**
   - New module `dagon.resource.font`
   - New method `Scene.addFontAsset`
-  - Dagon now provides a built-in monospace font for UI classes (`data/__internal/fonts/LiberationMono-Regular.ttf`)
+  - New property `Scene.ui`
+  - New method `Scene.onEndUpdate`
+  - Dagon now provides a built-in fonts for UI classes (`data/__internal/fonts/LiberationSans-Regular.ttf`, `data/__internal/fonts/LiberationMono-Regular.ttf`)
+  - `Application.fontManager` that loads built-in fonts and allows to register custom ones
 - **Extensions**
   - `dagon:assimp` extension that provides Assimp support
   - Breaking change: `dagon:ftfont` extension was removed.

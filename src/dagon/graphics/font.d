@@ -112,6 +112,12 @@ class FontManager: Owner
         Delete(fonts);
     }
     
+    Font addFont(string name, Font font)
+    {
+        fonts[name] = font;
+        return font;
+    }
+    
     Font addFont(string name, string filename, uint height)
     {
         if (application.freetypePresent)
