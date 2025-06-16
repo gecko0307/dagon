@@ -3,6 +3,7 @@ Dagon 0.24.0 - TBD
 - **Core**
   - Breaking change: `EventManager.generateLogEvent` is now `EventManager.asyncLog`. This event now automatically triggers asynchronous logger call without the need for an event listener method. `EventManager.onLogEvent` was removed
   - `dagon.core.logger` now supports printing to a buffer (`logOutputOptions.printToBuffer`), which is disabled by default. User-side code can access this buffer for reading using `logBuffer` function
+  - It is now possible to change the mouse cursor via `Application.setCursor`
 - **Rendering**
   - Disable depth test in `PassHUD`
   - `dagon.graphics.font`: text rendering via Freetype library is now a core engine feature. `Font` class replaces `FreeTypeFont` class from `dagon:ftfont` extension
