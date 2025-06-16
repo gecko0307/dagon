@@ -70,6 +70,10 @@ import dagon.resource.text;
 import dagon.resource.binary;
 import dagon.resource.font;
 
+import dagon.ui.widget;
+import dagon.ui.widgets.label;
+import dagon.ui.widgets.logview;
+
 /**
  * Manages the application context, assets, world,
  * and environment for a 3D scene.
@@ -120,6 +124,9 @@ class Scene: EventListener
 
     /// True if the scene is paused.
     bool paused = false;
+    
+    /// Graphical user interface manager
+    UIManager ui;
 
     /**
      * Constructs a new scene with the given application.
@@ -143,6 +150,8 @@ class Scene: EventListener
         environment = environmentInternal;
         
         decalShape = New!ShapeBox(Vector3f(1, 1, 1), this);
+        
+        ui = New!UIManager(this, assetManager);
     }
 
     /**
@@ -290,6 +299,11 @@ class Scene: EventListener
             e.setParent(parent);
         return e;
     }
+    
+    T addWidget(T)()
+    {
+        return New!T(ui);
+    }
 
     /// Override to perform actions before loading assets.
     void beforeLoad()
@@ -313,12 +327,22 @@ class Scene: EventListener
     }
 
     /**
-     * Override to update scene logic each frame.
+     * Override to run custom logic each time step before all entities are updated.
      *
      * Params:
      *   t = Frame timing information.
      */
     void onUpdate(Time t)
+    {
+    }
+    
+    /**
+     * Override to run custom logic each time step after all entities were updated.
+     *
+     * Params:
+     *   t = Frame timing information.
+     */
+    void onEndUpdate(Time t)
     {
     }
     
@@ -367,12 +391,15 @@ class Scene: EventListener
                 onLoad(t, 1.0f);
                 canRender = true;
             }
-            
-            onUpdate(t);
-
-            foreach(e; world)
+            else
             {
-                e.update(t);
+                ui.update(t);
+                onUpdate(t);
+                foreach(e; world)
+                {
+                    e.update(t);
+                }
+                onEndUpdate(t);
             }
         }
     }

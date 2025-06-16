@@ -58,6 +58,8 @@ import dagon.core.event;
 import dagon.core.time;
 import dagon.core.logger;
 
+import dagon.ui.font;
+
 version(Windows)
 { 
     import core.sys.windows.windows: SetConsoleCP, SetConsoleOutputCP;
@@ -317,6 +319,7 @@ class Application: EventListener
     String glRenderer;
     
     FT_Library ftLibrary;
+    FontManager fontManager;
 
     /**
      * Constructs the application, initializes SDL, OpenGL, and related subsystems.
@@ -519,6 +522,8 @@ class Application: EventListener
                 logInfo("Freetype version: ", ftVersion.major, ".", ftVersion.minor, ".", ftVersion.patch);
             }
         }
+        
+        fontManager = New!FontManager(this);
     }
 
     /// Destructor. Cleans up resources and shuts down SDL.

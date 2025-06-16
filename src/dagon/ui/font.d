@@ -57,15 +57,12 @@ import dlib.math.vector;
 import dlib.image.color;
 import dlib.text.str;
 
+import dagon.core.bindings;
 import dagon.core.logger;
 import dagon.core.application;
 import dagon.graphics.shaderloader;
 import dagon.graphics.state;
 import dagon.graphics.shader;
-import dagon.resource.asset;
-import dagon.resource.scene;
-
-import dagon.core.bindings;
 
 struct Glyph
 {
@@ -83,6 +80,56 @@ int nextPowerOfTwo(int a)
     while(rval < a)
         rval <<= 1;
     return rval;
+}
+
+class FontManager: Owner
+{
+    Application application;
+    Dict!(Font, string) fonts;
+    Font sans;
+    Font monospace;
+    
+    this(Application application)
+    {
+        super(application);
+        this.application = application;
+        
+        fonts = New!(Dict!(Font, string));
+        
+        if (application.freetypePresent)
+        {
+            sans = addFont("sans", "data/__internal/fonts/LiberationSans-Regular.ttf", 10);
+            monospace = addFont("sans", "data/__internal/fonts/LiberationMono-Regular.ttf", 10);
+        }
+        else
+        {
+            logError("Failed to load default fonts");
+        }
+    }
+    
+    ~this()
+    {
+        Delete(fonts);
+    }
+    
+    Font addFont(string name, string filename, uint height)
+    {
+        if (application.freetypePresent)
+        {
+            Font font = New!Font(height, this);
+            font.ftLibrary = application.ftLibrary;
+            font.createFromFile(filename);
+            font.prepareVAO();
+            font.preloadASCII();
+            fonts[name] = font;
+            return font;
+        }
+        else
+        {
+            logError("Failed to add font \"", name, "\": problem with Freetype?");
+            return null;
+        }
+    }
 }
 
 /**
@@ -157,6 +204,8 @@ final class Font: Owner
         indices[1][2] = 3;
         
         valid = false;
+        
+        glyphs = New!(Dict!(Glyph, dchar));
     }
 
     void createFromFile(string filename)
@@ -171,7 +220,6 @@ final class Font: Owner
             exitWithError("FT_New_Face failed (there is probably a problem with your font file)");
 
         FT_Set_Char_Size(ftFace, cast(int)height << 6, cast(int)height << 6, 96, 96);
-        glyphs = New!(Dict!(Glyph, dchar));
     }
 
     void createFromMemory(ubyte[] buffer)
@@ -183,7 +231,6 @@ final class Font: Owner
             exitWithError("FT_New_Face failed (there is probably a problem with your font file)");
 
         FT_Set_Char_Size(ftFace, cast(int)height << 6, cast(int)height << 6, 96, 96);
-        glyphs = New!(Dict!(Glyph, dchar));
     }
 
     void prepareVAO()

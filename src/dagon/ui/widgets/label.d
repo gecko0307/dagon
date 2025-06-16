@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2025 Timur Gafarov
+Copyright (c) 2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,26 +25,38 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-/**
- * The main entry point for Dagon's user interface components.
- *
- * Description:
- * The `dagon.ui` package publicly imports all core UI modules, including
- * first-person and free camera controls, font, and drawable text line class.
- *
- * Copyright: Timur Gafarov 2019-2025
- * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
- * Authors: Timur Gafarov
- */
-module dagon.ui;
+module dagon.ui.widgets.label;
 
-public
+import dlib.core.memory;
+import dlib.core.ownership;
+
+import dagon.core.bindings;
+import dagon.graphics.drawable;
+import dagon.graphics.state;
+import dagon.ui.widget;
+
+class Label: UIWidget, Drawable
 {
-    import dagon.ui.firstpersonview;
-    import dagon.ui.font;
-    import dagon.ui.freeview;
-    import dagon.ui.textline;
-    import dagon.ui.widget;
-    import dagon.ui.widgets.label;
-    import dagon.ui.widgets.logview;
+    string text;
+    
+    this(UIManager ui)
+    {
+        super(ui);
+        entity.drawable = this;
+    }
+    
+    void render(GraphicsState* state)
+    {
+        if (font is null || !font.valid || text.length == 0)
+            return;
+        
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        font.render(state, color, text);
+        glDisable(GL_BLEND);
+        glEnable(GL_CULL_FACE);
+        glEnable(GL_DEPTH_TEST);
+    }
 }
