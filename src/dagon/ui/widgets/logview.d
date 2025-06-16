@@ -221,6 +221,7 @@ class LogView: UIWidget
     }
 }
 
+// TODO: make widget
 class TextView: Owner, Drawable
 {
     string text = "";
