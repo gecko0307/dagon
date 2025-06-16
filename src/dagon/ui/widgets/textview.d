@@ -61,7 +61,7 @@ class TextView: UIWidget
 {
   public:
     string text = "";
-    float scrollSpeed = 10.0f;
+    float scrollSpeed = 15.0f;
     Color4f textColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
     Color4f scrollbarColor = Color4f(1.0f, 1.0f, 1.0f, 0.75f);
     int paddingLeft = 10;
