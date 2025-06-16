@@ -214,7 +214,7 @@ class LogView: UIWidget
             textView.scrollY = 0;
         }
         
-        if (mouseOver())
+        if (mouseOver() && !ui.mouseOver(scrollbar))
             cursor = Cursor.IBeam;
         else
             cursor = Cursor.Default;

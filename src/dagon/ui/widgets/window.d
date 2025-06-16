@@ -53,7 +53,8 @@ class Window: UIWidget
     int prevMouseX;
     int prevMouseY;
     bool dragging = false;
-    bool resizing = false;
+    bool resizingHorizontal = false;
+    bool resizingVertical = false;
     
    public:
     this(UIManager ui, UIWidget parent)
@@ -79,9 +80,19 @@ class Window: UIWidget
         content.y = headerHeight;
     }
     
-    bool mouseOverResizeHandle()
+    bool mouseOverRightBorder()
     {
-        return ui.mouseOverRegion(entity, width - 20, height - 20, 20, 20);
+        return ui.mouseOverRegion(entity, width - 15, 0, 15, height);
+    }
+    
+    bool mouseOverBottomBorder()
+    {
+        return ui.mouseOverRegion(entity, 0, height - 15, width, 15);
+    }
+    
+    bool mouseOverBottomRightCorner()
+    {
+        return ui.mouseOverRegion(entity, width - 15, height - 15, 15, 15);
     }
     
     override void onMouseButtonDown(int button)
@@ -92,9 +103,12 @@ class Window: UIWidget
             {
                 dragging = true;
             }
-            else if (mouseOverResizeHandle())
+            else
             {
-                resizing = true;
+                if (mouseOverRightBorder())
+                    resizingHorizontal = true;
+                if (mouseOverBottomBorder())
+                    resizingVertical = true;
             }
             prevMouseX = eventManager.mouseX;
             prevMouseY = eventManager.mouseY;
@@ -106,7 +120,8 @@ class Window: UIWidget
         if (button == MB_LEFT)
         {
             dragging = false;
-            resizing = false;
+            resizingHorizontal = false;
+            resizingVertical = false;
         }
     }
     
@@ -128,14 +143,18 @@ class Window: UIWidget
             captureMouse = true;
             hover = true;
             
-            if (mouseOverResizeHandle())
+            if (mouseOverBottomRightCorner())
                 cursor = Cursor.SizeNWSE;
+            else if (mouseOverRightBorder())
+                cursor = Cursor.SizeWE;
+            else if (mouseOverBottomBorder())
+                cursor = Cursor.SizeNS;
             else
                 cursor = Cursor.Default;
         }
         else
         {
-            captureMouse = dragging || resizing;
+            captureMouse = dragging || resizingHorizontal || resizingVertical;
             hover = false;
             cursor = Cursor.Default;
         }
@@ -149,14 +168,21 @@ class Window: UIWidget
             entity.position.x += dragX;
             entity.position.y += dragY;
         }
-        else if (resizing)
+        else
         {
-            int dragX = eventManager.mouseX - prevMouseX;
-            int dragY = eventManager.mouseY - prevMouseY;
-            prevMouseX = eventManager.mouseX;
-            prevMouseY = eventManager.mouseY;
-            width += dragX;
-            height += dragY;
+            if (resizingHorizontal)
+            {
+                int dragX = eventManager.mouseX - prevMouseX;
+                prevMouseX = eventManager.mouseX;
+                width += dragX;
+            }
+            
+            if (resizingVertical)
+            {
+                int dragY = eventManager.mouseY - prevMouseY;
+                prevMouseY = eventManager.mouseY;
+                height += dragY;
+            }
         }
     }
 }
