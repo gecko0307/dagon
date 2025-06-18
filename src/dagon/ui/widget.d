@@ -55,9 +55,11 @@ class UIManager: EventListener
     HUDShader shader;
     Array!UIWidget widgets;
     bool captureMouse = false;
+    bool focused = false;
     
   protected:
     Cursor currentCursor = Cursor.Default;
+    bool cursorFreezed = false;
     
    public:
     this(Scene scene, Owner owner)
@@ -123,10 +125,42 @@ class UIManager: EventListener
         return mouseInRect(x, y, rw, rh);
     }
     
+    void focus(Entity entity)
+    {
+        scene.world.putEntityOnTop(entity);
+        foreach(child; entity.children)
+        {
+            focus(child);
+        }
+    }
+    
+    void focus(UIWidget widget)
+    {
+        foreach(w; widgets)
+        {
+            w.focused = false;
+        }
+        widget.focused = true;
+        focus(widget.entity);
+    }
+    
+    void freezeCursor(Cursor cur)
+    {
+        scene.application.setCursor(cur);
+        cursorFreezed = true;
+    }
+    
+    void unfreezeCursor(Cursor cur = Cursor.Default)
+    {
+        scene.application.setCursor(cur);
+        cursorFreezed = false;
+    }
+    
     void update(Time t)
     {
         processEvents();
         captureMouse = false;
+        focused = false;
         bool cursorChanged = false;
         Cursor newCursor = Cursor.Default;
         foreach(widget; widgets)
@@ -138,12 +172,16 @@ class UIManager: EventListener
                 newCursor = widget.cursor;
                 cursorChanged = true;
             }
+            focused = focused || widget.focused;
         }
         
-        if (newCursor != currentCursor)
+        if (!cursorFreezed)
         {
-            scene.application.setCursor(newCursor);
-            currentCursor = newCursor;
+            if (newCursor != currentCursor)
+            {
+                scene.application.setCursor(newCursor);
+                currentCursor = newCursor;
+            }
         }
     }
 }
@@ -160,6 +198,7 @@ class UIWidget: EventListener, Updateable
     bool fitToParent = false;
     Color4f color = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
     Color4f backgroundColor = Color4f(0.0f, 0.0f, 0.0f, 0.0f);
+    bool focused = false;
     bool captureMouse = false;
     bool hover = false;
     Cursor cursor = Cursor.Default;
@@ -227,6 +266,11 @@ class UIWidget: EventListener, Updateable
             entity.positionAbsolute.y,
             width,
             height);
+    }
+    
+    void focus()
+    {
+        ui.focus(this);
     }
     
     void update(Time t)

@@ -68,9 +68,9 @@ class TextView: UIWidget
     int paddingRight = 10;
     int paddingTop = 10;
     int paddingBottom = 10;
+    TextViewVisual visual;
     
    protected:
-    TextViewVisual visual;
     Entity textViewEntity;
     Entity scrollbar;
     
@@ -106,6 +106,11 @@ class TextView: UIWidget
     void font(Font f) @property
     {
         visual.font = f;
+    }
+    
+    Font font() @property
+    {
+        return visual.font;
     }
     
     override void onMouseButtonDown(int button)
@@ -165,7 +170,7 @@ class TextView: UIWidget
         {
             maxScrollY = visual.textHeight - visual.height;
             scrollBarActive = true;
-            scrollbar.visible = true;
+            scrollbar.visible = entity.visible;
         }
         else
         {
@@ -246,7 +251,6 @@ class TextViewVisual: Owner, Drawable
         if (text.length == 0)
             return;
         
-        glDisable(GL_CULL_FACE);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         
@@ -300,9 +304,6 @@ class TextViewVisual: Owner, Drawable
         font.endRender();
         
         textHeight = yShift;
-
-        glDisable(GL_BLEND);
-        glEnable(GL_CULL_FACE);
         
         glDisable(GL_SCISSOR_TEST);
     }

@@ -529,4 +529,52 @@ final class Font: Owner
 
         return width;
     }
+    
+    Vector2f glyphPosition(string str, size_t index, float maxWidth, float lineHeight)
+    {
+        if (ftLibrary is null)
+            return Vector2f(0.0f, 0.0f);
+        
+        float xShift = 0.0f;
+        float yShift = 0.0f;
+        UTF8Decoder dec = UTF8Decoder(str);
+        int ch;
+        size_t chIndex = 0;
+        do
+        {
+            ch = dec.decodeNext();
+            if (ch == 0 || ch == UTF8_END || ch == UTF8_ERROR) break;
+            dchar code = ch;
+            
+            if (code == '\n')
+            {
+                xShift = 0.0f;
+                yShift += lineHeight;
+            }
+            else
+            {
+                if (code.isASCII)
+                {
+                    if (code.isPrintable)
+                        xShift += glyphAdvance(code);
+                }
+                else
+                    xShift += glyphAdvance(code);
+                
+                if (xShift > maxWidth)
+                {
+                    xShift = 0.0f;
+                    yShift += lineHeight;
+                }
+            }
+            
+            if (chIndex == index)
+                break;
+            
+            chIndex++;
+        }
+        while(ch != UTF8_END && ch != UTF8_ERROR);
+
+        return Vector2f(xShift, yShift);
+    }
 }

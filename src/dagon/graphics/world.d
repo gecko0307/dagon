@@ -210,10 +210,31 @@ class World: Owner
         else return 0;
     }
     
-     /// Returns the number of entities in the world.
+    /// Returns the number of entities in the world.
     size_t length()
     {
         return entities.length;
+    }
+    
+    void putEntityOnTop(Entity entity)
+    {
+        size_t entityIndex;
+        bool found = false;
+        foreach(i, e; entities)
+        {
+            if (e is entity)
+            {
+                entityIndex = i;
+                found = true;
+                break;
+            }
+        }
+        
+        if (found)
+        {
+            entities.removeKey(entityIndex);
+            entities.append(entity);
+        }
     }
 }
 

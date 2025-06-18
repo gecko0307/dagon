@@ -71,6 +71,7 @@ class PassHUD: RenderPass
             }
             
             glDisable(GL_DEPTH_TEST);
+            glDisable(GL_CULL_FACE);
 
             foreach(entity; group)
             if (entity.visible && entity.drawable)
@@ -104,6 +105,7 @@ class PassHUD: RenderPass
                 }
             }
             
+            glEnable(GL_CULL_FACE);
             glEnable(GL_DEPTH_TEST);
         }
     }

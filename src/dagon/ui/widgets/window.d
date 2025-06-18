@@ -49,6 +49,8 @@ class Window: UIWidget
     int headerHeight = 24;
     Color4f headerColor = Color4f(0.5f, 0.0f, 0.0f, 1.0f);
     bool resizeable = true;
+    int minWidth = 100;
+    int minHeight = 100;
     
    protected:
     int prevMouseX;
@@ -98,18 +100,40 @@ class Window: UIWidget
     
     override void onMouseButtonDown(int button)
     {
+        if (ui.captureMouse)
+            return;
+        
         if (button == MB_LEFT)
         {
+            if (mouseOver())
+                focus();
+            
             if (ui.mouseOver(header))
             {
                 dragging = true;
+                ui.freezeCursor(Cursor.SizeAll);
             }
             else if (resizeable)
             {
-                if (mouseOverRightBorder())
+                bool hoverRight = mouseOverRightBorder();
+                bool hoverBottom = mouseOverBottomBorder();
+                
+                if (hoverRight && hoverBottom)
+                {
                     resizingHorizontal = true;
-                if (mouseOverBottomBorder())
                     resizingVertical = true;
+                    ui.freezeCursor(Cursor.SizeNWSE);
+                }
+                else if (hoverRight)
+                {
+                    resizingHorizontal = true;
+                    ui.freezeCursor(Cursor.SizeWE);
+                }
+                else if (hoverBottom)
+                {
+                    resizingVertical = true;
+                    ui.freezeCursor(Cursor.SizeNS);
+                }
             }
             prevMouseX = eventManager.mouseX;
             prevMouseY = eventManager.mouseY;
@@ -123,6 +147,7 @@ class Window: UIWidget
             dragging = false;
             resizingHorizontal = false;
             resizingVertical = false;
+            ui.unfreezeCursor();
         }
     }
     
@@ -144,19 +169,24 @@ class Window: UIWidget
             captureMouse = true;
             hover = true;
             
-            if (resizeable)
+            bool canChangeCursor = true;
+            
+            if (canChangeCursor)
             {
-                if (mouseOverBottomRightCorner())
-                    cursor = Cursor.SizeNWSE;
-                else if (mouseOverRightBorder())
-                    cursor = Cursor.SizeWE;
-                else if (mouseOverBottomBorder())
-                    cursor = Cursor.SizeNS;
+                if (resizeable)
+                {
+                    if (mouseOverBottomRightCorner())
+                        cursor = Cursor.SizeNWSE;
+                    else if (mouseOverRightBorder())
+                        cursor = Cursor.SizeWE;
+                    else if (mouseOverBottomBorder())
+                        cursor = Cursor.SizeNS;
+                    else
+                        cursor = Cursor.Default;
+                }
                 else
                     cursor = Cursor.Default;
             }
-            else
-                cursor = Cursor.Default;
         }
         else
         {
@@ -181,6 +211,8 @@ class Window: UIWidget
                 int dragX = eventManager.mouseX - prevMouseX;
                 prevMouseX = eventManager.mouseX;
                 width += dragX;
+                if (width <= minWidth)
+                    width = minWidth;
             }
             
             if (resizingVertical)
@@ -188,6 +220,8 @@ class Window: UIWidget
                 int dragY = eventManager.mouseY - prevMouseY;
                 prevMouseY = eventManager.mouseY;
                 height += dragY;
+                if (height <= minHeight)
+                    height = minHeight;
             }
         }
     }

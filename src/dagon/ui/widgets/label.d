@@ -50,13 +50,8 @@ class Label: UIWidget, Drawable
         if (font is null || !font.valid || text.length == 0)
             return;
         
-        glDisable(GL_DEPTH_TEST);
-        glDisable(GL_CULL_FACE);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         font.render(state, color, text);
-        glDisable(GL_BLEND);
-        glEnable(GL_CULL_FACE);
-        glEnable(GL_DEPTH_TEST);
     }
 }
