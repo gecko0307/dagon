@@ -44,6 +44,7 @@ public
     import dagon.ui.freeview;
     import dagon.ui.textline;
     import dagon.ui.widget;
+    import dagon.ui.widgets.console;
     import dagon.ui.widgets.label;
     import dagon.ui.widgets.textinput;
     import dagon.ui.widgets.textview;
