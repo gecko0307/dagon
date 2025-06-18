@@ -113,6 +113,14 @@ class TextView: UIWidget
         return visual.font;
     }
     
+    Vector2f glyphPosition(size_t index)
+    {
+        return visual.font.glyphPosition(
+            text, index, 
+            visual.width - visual.font.height * 2 - paddingRight,
+            visual.font.height * visual.lineHeight);
+    }
+    
     override void onMouseButtonDown(int button)
     {
         if (button == MB_LEFT && scrollBarActive)

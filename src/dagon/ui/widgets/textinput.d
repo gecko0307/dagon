@@ -93,14 +93,16 @@ class TextInput: UIWidget
             }
         }
         
+        view.text = encodedText.toString;
+        
+        calcCursorPosition();
+    }
+    
+    protected void calcCursorPosition()
+    {
         if (view)
         {
-            view.text = encodedText;
-            Vector2f pos = view.font.glyphPosition(
-                encodedText.toString,
-                textCursorPosition,
-                view.visual.width - view.font.height * 2 - view.paddingRight,
-                view.font.height * view.visual.lineHeight);
+            Vector2f pos = view.glyphPosition(textCursorPosition);
             textCursor.position.x = pos.x;
             textCursor.position.y = pos.y;
         }
@@ -139,7 +141,7 @@ class TextInput: UIWidget
             if (textCursorPosition > 0)
             {
                 textCursorPosition--;
-                encode();
+                calcCursorPosition();
             }
         }
         else if (key == KEY_RIGHT)
@@ -147,7 +149,7 @@ class TextInput: UIWidget
             if (textCursorPosition < text.length)
             {
                 textCursorPosition++;
-                encode();
+                calcCursorPosition();
             }
         }
     }

@@ -497,7 +497,7 @@ final class Font: Owner
     }
 
     /**
-     * Returns the width of the given string in pixels.
+     * Returns the width of the given single-line string in pixels.
      *
      * Params:
      *   str = The string to measure.
@@ -542,6 +542,9 @@ final class Font: Owner
         size_t chIndex = 0;
         do
         {
+            if (chIndex == index)
+                break;
+            
             ch = dec.decodeNext();
             if (ch == 0 || ch == UTF8_END || ch == UTF8_ERROR) break;
             dchar code = ch;
@@ -568,12 +571,9 @@ final class Font: Owner
                 }
             }
             
-            if (chIndex == index)
-                break;
-            
             chIndex++;
         }
-        while(ch != UTF8_END && ch != UTF8_ERROR);
+        while(ch != 0 && ch != UTF8_END && ch != UTF8_ERROR);
 
         return Vector2f(xShift, yShift);
     }
