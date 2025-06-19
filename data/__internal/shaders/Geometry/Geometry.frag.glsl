@@ -208,7 +208,6 @@ layout(location = 1) out vec4 fragNormal;
 layout(location = 2) out vec4 fragPBR;
 layout(location = 3) out vec4 fragEmission;
 layout(location = 4) out vec4 fragVelocity;
-//layout(location = 5) out vec4 fragRadiance;
 
 void main()
 {
