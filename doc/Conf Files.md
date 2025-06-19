@@ -1,0 +1,34 @@
+# Conf Files
+
+Conf is a configuration file format in Dagon. Any application using Dagon tries to read two configuration files from working directory: `settings.conf` and `input.conf`.
+
+## Syntax
+
+Conf file consists of key-value pairs separated by semicolon:
+
+```
+optionName: optionValue;
+```
+
+optionValue can be a number, a vector, or a double-quoted string:
+
+```
+numberOption: 10;
+vectorOption: [0.5, 1.0, 1.0];
+stringOption: "Some text";
+```
+
+## settings.conf
+`settings.conf` contains engine settings. It is fully preserved for Dagon, and you are not recommended to use it for storing game-specific settings. Supported options are the following:
+
+* `windowWidth`, `windowHeight` - size of a game window. They override default values specified in an application
+* `fullscreen` - `0` or `1`, run in fullscreen or windowed mode
+* `windowTitle` - window title text
+* `hideConsole` - `0` or `1`, hide or leave the system console window. For example, it is convenient to leave it when debugging the game and hide it for end users.
+
+The engine doesn't modify `settings.conf`, and you can imlement a visual configurator in your game that modifies this file.
+
+If the file doesn't exist, the engine will print a warning and run with default settings.
+
+## input.conf
+`input.conf` contains input bindings. See Input Manager tutorial for details.
