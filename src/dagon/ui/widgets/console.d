@@ -136,9 +136,25 @@ class Console: UIWidget
         textCursor.position.y = view.paddingTop + pos.y;
     }
     
+    override void onMouseButtonDown(int button)
+    {
+        if (ui.captureMouse)
+            return;
+        
+        if (button == MB_LEFT)
+        {
+            if (mouseOver())
+            {
+                focus();
+                focused = true;
+                view.focused = true;
+            }
+        }
+    }
+    
     override void onTextInput(dchar code)
     {
-        if (!visible)
+        if (!visible || !view.focused)
             return;
         
         if (input.length == 0 || textCursorPosition == input.length)
@@ -151,7 +167,7 @@ class Console: UIWidget
     
     override void onKeyDown(int key)
     {
-        if (!visible || input.length == 0)
+        if (!visible || !view.focused || input.length == 0)
             return;
         
         if (key == KEY_BACKSPACE)
@@ -195,6 +211,6 @@ class Console: UIWidget
         textCursor.material.baseColorFactor = textColor;
         real tInt, tFrac;
         tFrac = modf(t.elapsed, tInt);
-        textCursor.visible = visible && (tFrac < 0.5f);
+        textCursor.visible = visible && view.focused && (tFrac < 0.5f);
     }
 }

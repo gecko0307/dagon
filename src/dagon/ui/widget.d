@@ -47,6 +47,15 @@ import dagon.graphics.font;
 import dagon.render.hud;
 import dagon.resource.scene;
 
+bool pointInRect(float px, float py, float rx, float ry, float rw, float rh)
+{
+    return
+        px >= rx &&
+        px < (rx + rw) &&
+        py >= ry &&
+        py < (ry + rh);
+}
+
 class UIManager: EventListener
 {
    public:
@@ -125,12 +134,31 @@ class UIManager: EventListener
         return mouseInRect(x, y, rw, rh);
     }
     
-    void focus(Entity entity)
+    bool isWidgetVisibleAtPoint(UIWidget widget, int x, int y)
+    {
+        UIWidget topWidget;
+        foreach(w; widgets)
+        {
+            if (w.pointIn(x, y))
+            {
+                topWidget = w;
+            }
+        }
+        
+        return (topWidget is widget);
+    }
+    
+    bool isWidgetVisibleUnderMouse(UIWidget widget)
+    {
+        return isWidgetVisibleAtPoint(widget, eventManager.mouseX, eventManager.mouseY);
+    }
+    
+    void putEntityOnTop(Entity entity)
     {
         scene.world.putEntityOnTop(entity);
         foreach(child; entity.children)
         {
-            focus(child);
+            putEntityOnTop(child);
         }
     }
     
@@ -141,7 +169,39 @@ class UIManager: EventListener
             w.focused = false;
         }
         widget.focused = true;
-        focus(widget.entity);
+        putWidgetOnTop(widget);
+        putEntityOnTop(widget.entity);
+        focusChildren(widget);
+    }
+    
+    void focusChildren(UIWidget widget)
+    {
+        foreach(w; widgets)
+        {
+            if (w.isChildOf(widget))
+                w.focused = true;
+        }
+    }
+    
+    void putWidgetOnTop(UIWidget widget)
+    {
+        size_t widgetIndex;
+        bool found = false;
+        foreach(i, w; widgets)
+        {
+            if (w is widget)
+            {
+                widgetIndex = i;
+                found = true;
+                break;
+            }
+        }
+        
+        if (found)
+        {
+            widgets.removeKey(widgetIndex);
+            widgets.append(widget);
+        }
     }
     
     void freezeCursor(Cursor cur)
@@ -224,6 +284,16 @@ class UIWidget: EventListener, Updateable
         font = ui.fontManager.sans;
     }
     
+    bool isChildOf(UIWidget w)
+    {
+        if (parent is w)
+            return true;
+        else if (parent)
+            return parent.isChildOf(w);
+        else
+            return false;
+    }
+    
     void hide()
     {
         entity.hide();
@@ -259,17 +329,24 @@ class UIWidget: EventListener, Updateable
         return cast(int)entity.position.y;
     }
     
-    bool mouseOver()
+    bool pointIn(float px, float py)
     {
-        return ui.mouseInRect(
+        return pointInRect(
+            px, py,
             entity.positionAbsolute.x,
             entity.positionAbsolute.y,
-            width,
-            height);
+            width, height);
+    }
+    
+    bool mouseOver()
+    {
+        return ui.isWidgetVisibleUnderMouse(this);
     }
     
     void focus()
     {
+        if (parent)
+            parent.focus();
         ui.focus(this);
     }
     

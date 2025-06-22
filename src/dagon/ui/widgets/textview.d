@@ -116,13 +116,21 @@ class TextView: UIWidget
     Vector2f glyphPosition(size_t index)
     {
         return visual.font.glyphPosition(
-            text, index, 
+            text, index,
             visual.width - visual.font.height * 2 - paddingRight,
             visual.font.height * visual.lineHeight);
     }
     
     override void onMouseButtonDown(int button)
     {
+        if (button == MB_LEFT)
+        {
+            if (mouseOver())
+            {
+                focus();
+            }
+        }
+        
         if (button == MB_LEFT && scrollBarActive)
         {
             if (ui.mouseOver(scrollbar))
@@ -221,10 +229,12 @@ class TextView: UIWidget
             visual.scrollY = 0;
         }
         
-        if (mouseOver() && !ui.mouseOver(scrollbar))
+        /*
+        if (hover && !ui.mouseOver(scrollbar))
             cursor = Cursor.IBeam;
         else
             cursor = Cursor.Default;
+        */
     }
 }
 

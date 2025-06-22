@@ -85,28 +85,30 @@ class Window: UIWidget
     
     bool mouseOverRightBorder()
     {
-        return ui.mouseOverRegion(entity, width - 5, 0, 5, height);
+        return ui.mouseOverRegion(entity, width - 10, 0, 10, height);
     }
     
     bool mouseOverBottomBorder()
     {
-        return ui.mouseOverRegion(entity, 0, height - 5, width, 5);
+        return ui.mouseOverRegion(entity, 0, height - 10, width, 10);
     }
     
     bool mouseOverBottomRightCorner()
     {
-        return ui.mouseOverRegion(entity, width - 5, height - 5, 5, 5);
+        return ui.mouseOverRegion(entity, width - 10, height - 10, 10, 10);
     }
     
     override void onMouseButtonDown(int button)
     {
-        if (ui.captureMouse)
+        if (!visible || ui.captureMouse)
             return;
         
         if (button == MB_LEFT)
         {
-            if (mouseOver())
+            if (hover)
+            {
                 focus();
+            }
             
             if (ui.mouseOver(header))
             {
@@ -169,24 +171,19 @@ class Window: UIWidget
             captureMouse = true;
             hover = true;
             
-            bool canChangeCursor = true;
-            
-            if (canChangeCursor)
+            if (resizeable)
             {
-                if (resizeable)
-                {
-                    if (mouseOverBottomRightCorner())
-                        cursor = Cursor.SizeNWSE;
-                    else if (mouseOverRightBorder())
-                        cursor = Cursor.SizeWE;
-                    else if (mouseOverBottomBorder())
-                        cursor = Cursor.SizeNS;
-                    else
-                        cursor = Cursor.Default;
-                }
+                if (mouseOverBottomRightCorner())
+                    cursor = Cursor.SizeNWSE;
+                else if (mouseOverRightBorder())
+                    cursor = Cursor.SizeWE;
+                else if (mouseOverBottomBorder())
+                    cursor = Cursor.SizeNS;
                 else
                     cursor = Cursor.Default;
             }
+            else
+                cursor = Cursor.Default;
         }
         else
         {

@@ -108,8 +108,25 @@ class TextInput: UIWidget
         }
     }
     
+    override void onMouseButtonDown(int button)
+    {
+        if (ui.captureMouse)
+            return;
+        
+        if (button == MB_LEFT)
+        {
+            if (mouseOver())
+            {
+                focus();
+            }
+        }
+    }
+    
     override void onTextInput(dchar code)
     {
+        if (!focused || !visible)
+            return;
+        
         if (text.length == 0 || textCursorPosition == text.length)
             text.append(code);
         else
@@ -120,7 +137,7 @@ class TextInput: UIWidget
     
     override void onKeyDown(int key)
     {
-        if (text.length == 0)
+        if (!focused || !visible || text.length == 0)
             return;
         
         if (key == KEY_BACKSPACE)
@@ -164,7 +181,7 @@ class TextInput: UIWidget
             textCursor.material.baseColorFactor = textColor;
             real tInt, tFrac;
             tFrac = modf(t.elapsed, tInt);
-            textCursor.visible = (tFrac < 0.5f);
+            textCursor.visible = focused && visible && (tFrac < 0.5f);
         }
         else
         {
