@@ -257,7 +257,8 @@ class UIWidget: EventListener, Updateable
     int height = 100;
     bool fitToParent = false;
     Color4f color = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
-    Color4f backgroundColor = Color4f(0.0f, 0.0f, 0.0f, 0.0f);
+    Color4f backgroundFocusedColor = Color4f(0.0f, 0.0f, 0.0f, 0.0f);
+    Color4f backgroundUnfocusedColor = Color4f(0.0f, 0.0f, 0.0f, 0.0f);
     bool focused = false;
     bool captureMouse = false;
     bool hover = false;
@@ -279,7 +280,7 @@ class UIWidget: EventListener, Updateable
         background = ui.addElement(entity);
         background.drawable = ui.rectangle;
         background.material = ui.addMaterial();
-        background.material.baseColorFactor = backgroundColor;
+        background.material.baseColorFactor = backgroundUnfocusedColor;
         
         font = ui.fontManager.sans;
     }
@@ -359,6 +360,9 @@ class UIWidget: EventListener, Updateable
             height = parent.height;
         }
         background.scaling = Vector3f(width, height, 1.0f);
-        background.material.baseColorFactor = backgroundColor;
+        if (focused)
+            background.material.baseColorFactor = backgroundFocusedColor;
+        else
+            background.material.baseColorFactor = backgroundUnfocusedColor;
     }
 }

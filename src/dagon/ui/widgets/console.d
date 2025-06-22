@@ -68,7 +68,8 @@ class Console: UIWidget
         width = ui.scene.application.width;
         height = 30;
         
-        backgroundColor = Color4f(0.0f, 0.0f, 0.0f, 0.5f);
+        backgroundFocusedColor = Color4f(0.1f, 0.1f, 0.1f, 0.9f);
+        backgroundUnfocusedColor = Color4f(0.15f, 0.15f, 0.15f, 0.9f);
         
         view = New!TextView(ui, this);
         view.fitToParent = true;

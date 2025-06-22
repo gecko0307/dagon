@@ -69,7 +69,9 @@ class Window: UIWidget
         x = 0;
         y = 0;
         
-        backgroundColor = Color4f(0.0f, 0.0f, 0.0f, 0.75f);
+        backgroundFocusedColor = Color4f(0.1f, 0.1f, 0.1f, 0.9f);
+        backgroundUnfocusedColor = Color4f(0.15f, 0.15f, 0.15f, 0.9f);
+        
         background.position.y = headerHeight;
         background.scaling.y = height - headerHeight;
         
@@ -112,12 +114,13 @@ class Window: UIWidget
                 focus();
             }
             
-            if (ui.mouseOver(header))
+            if (focused && ui.mouseOver(header))
             {
                 dragging = true;
                 ui.freezeCursor(Cursor.SizeAll);
             }
-            else if (resizeable)
+            
+            if (resizeable)
             {
                 bool hoverRight = mouseOverRightBorder();
                 bool hoverBottom = mouseOverBottomBorder();
@@ -194,7 +197,7 @@ class Window: UIWidget
             cursor = Cursor.Default;
         }
         
-        if (dragging)
+        if (focused && dragging)
         {
             int dragX = eventManager.mouseX - prevMouseX;
             int dragY = eventManager.mouseY - prevMouseY;
@@ -203,7 +206,8 @@ class Window: UIWidget
             entity.position.x += dragX;
             entity.position.y += dragY;
         }
-        else if (resizeable)
+        
+        if (!dragging && resizeable)
         {
             if (resizingHorizontal)
             {
