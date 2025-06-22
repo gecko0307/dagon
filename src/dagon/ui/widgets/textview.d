@@ -151,7 +151,7 @@ class TextView: UIWidget
     
     override void onMouseWheel(int x, int y)
     {
-        if (hover)
+        if (focused)
         {
             scrollbar.position.y -= y * scrollSpeed;
         }

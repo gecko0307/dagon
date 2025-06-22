@@ -47,7 +47,8 @@ class Window: UIWidget
     Entity header;
     UIWidget content;
     int headerHeight = 24;
-    Color4f headerColor = Color4f(0.5f, 0.0f, 0.0f, 1.0f);
+    Color4f headerFocusedColor = Color4f(0.5f, 0.0f, 0.0f, 1.0f);
+    Color4f headerUnfocusedColor = Color4f(0.35f, 0.0f, 0.0f, 1.0f);
     bool resizeable = true;
     int minWidth = 100;
     int minHeight = 100;
@@ -67,6 +68,7 @@ class Window: UIWidget
         height = 240;
         x = 0;
         y = 0;
+        
         backgroundColor = Color4f(0.0f, 0.0f, 0.0f, 0.75f);
         background.position.y = headerHeight;
         background.scaling.y = height - headerHeight;
@@ -75,7 +77,7 @@ class Window: UIWidget
         header.scaling = Vector3f(width, headerHeight, 1.0f);
         header.drawable = ui.rectangle;
         header.material = ui.addMaterial();
-        header.material.baseColorFactor = headerColor;
+        header.material.baseColorFactor = headerFocusedColor;
         
         content = New!UIWidget(ui, this);
         content.width = width;
@@ -221,5 +223,10 @@ class Window: UIWidget
                     height = minHeight;
             }
         }
+        
+        if (focused)
+            header.material.baseColorFactor = headerFocusedColor;
+        else
+            header.material.baseColorFactor = headerUnfocusedColor;
     }
 }
