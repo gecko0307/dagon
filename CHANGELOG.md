@@ -1,5 +1,5 @@
-Dagon 0.24.0 - TBD
-------------------
+Dagon 0.24.0 - 27 Jun, 2025
+---------------------------
 - **Core**
   - Breaking change: `EventManager.generateLogEvent` is now `EventManager.asyncLog`. This event now automatically triggers asynchronous logger call without the need for an event listener method. `EventManager.onLogEvent` was removed
   - `dagon.core.logger` now supports printing to a buffer (`logOutputOptions.printToBuffer`), which is disabled by default. User-side code can access this buffer for reading using `logBuffer` function
