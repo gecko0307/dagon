@@ -159,6 +159,7 @@ extern(C) void vlcLog(void* data, int level, const(libvlc_log_t)* ctx, const(cha
     VideoManager videoManager = cast(VideoManager)data;
     char[1024] buf;
     vsnprintf(buf.ptr, buf.sizeof, fmt, args);
+    buf[$-1] = 0; // ensure null-terminated
     switch (level)
     {
         case libvlc_log_level.LIBVLC_DEBUG:
