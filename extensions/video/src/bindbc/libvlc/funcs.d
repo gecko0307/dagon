@@ -1,0 +1,78 @@
+module bindbc.libvlc.funcs;
+
+import bindbc.libvlc.signatures;
+
+__gshared
+{
+    // libvlc.h
+    f_libvlc_errmsg libvlc_errmsg;
+    f_libvlc_clearerr libvlc_clearerr;
+    f_libvlc_vprinterr libvlc_vprinterr;
+    f_libvlc_printerr libvlc_printerr;
+    f_libvlc_new libvlc_new;
+    f_libvlc_release libvlc_release;
+    f_libvlc_retain libvlc_retain;
+    f_libvlc_add_intf libvlc_add_intf;
+    f_libvlc_set_exit_handler libvlc_set_exit_handler;
+    f_libvlc_set_user_agent libvlc_set_user_agent;
+    f_libvlc_set_app_id libvlc_set_app_id;
+    f_libvlc_get_version libvlc_get_version;
+    f_libvlc_get_compiler libvlc_get_compiler;
+    f_libvlc_get_changeset libvlc_get_changeset;
+    f_libvlc_free libvlc_free;
+    f_libvlc_event_attach libvlc_event_attach;
+    f_libvlc_event_detach libvlc_event_detach;
+    f_libvlc_event_type_name libvlc_event_type_name;
+    f_libvlc_log_get_context libvlc_log_get_context;
+    f_libvlc_log_get_object libvlc_log_get_object;
+    f_libvlc_log_unset libvlc_log_unset;
+    f_libvlc_log_set libvlc_log_set;
+    f_libvlc_log_set_file libvlc_log_set_file;
+    f_libvlc_module_description_list_release libvlc_module_description_list_release;
+    f_libvlc_audio_filter_list_get libvlc_audio_filter_list_get;
+    f_libvlc_video_filter_list_get libvlc_video_filter_list_get;
+    f_libvlc_clock libvlc_clock;
+    
+    // libvlc_media.h
+    f_libvlc_media_new_location libvlc_media_new_location;
+    f_libvlc_media_new_path libvlc_media_new_path;
+    f_libvlc_media_new_fd libvlc_media_new_fd;
+    f_libvlc_media_new_callbacks libvlc_media_new_callbacks;
+    f_libvlc_media_new_as_node libvlc_media_new_as_node;
+    f_libvlc_media_add_option libvlc_media_add_option;
+    f_libvlc_media_add_option_flag libvlc_media_add_option_flag;
+    f_libvlc_media_retain libvlc_media_retain;
+    f_libvlc_media_release libvlc_media_release;
+    f_libvlc_media_get_mrl libvlc_media_get_mrl;
+    f_libvlc_media_duplicate libvlc_media_duplicate;
+    f_libvlc_media_get_meta libvlc_media_get_meta;
+    f_libvlc_media_set_meta libvlc_media_set_meta;
+    f_libvlc_media_save_meta libvlc_media_save_meta;
+    f_libvlc_media_get_state libvlc_media_get_state;
+    f_libvlc_media_get_stats libvlc_media_get_stats;
+    f_libvlc_media_subitems libvlc_media_subitems;
+    f_libvlc_media_get_duration libvlc_media_get_duration;
+    f_libvlc_media_parse_with_options libvlc_media_parse_with_options;
+    f_libvlc_media_parse_stop libvlc_media_parse_stop;
+    f_libvlc_media_get_parsed_status libvlc_media_get_parsed_status;
+    f_libvlc_media_set_user_data libvlc_media_set_user_data;
+    f_libvlc_media_get_user_data libvlc_media_get_user_data;
+    f_libvlc_media_tracks_get libvlc_media_tracks_get;
+    f_libvlc_media_get_codec_description libvlc_media_get_codec_description;
+    f_libvlc_media_tracks_release libvlc_media_tracks_release;
+    f_libvlc_media_get_type libvlc_media_get_type;
+    f_libvlc_media_slaves_add libvlc_media_slaves_add;
+    f_libvlc_media_slaves_clear libvlc_media_slaves_clear;
+    f_libvlc_media_slaves_get libvlc_media_slaves_get;
+    f_libvlc_media_slaves_release libvlc_media_slaves_release;
+    
+    // libvlc_media_player.h
+    f_libvlc_media_player_new_from_media libvlc_media_player_new_from_media;
+    f_libvlc_video_get_size libvlc_video_get_size;
+    f_libvlc_video_set_callbacks libvlc_video_set_callbacks;
+    f_libvlc_media_player_play libvlc_media_player_play;
+    f_libvlc_media_player_is_playing libvlc_media_player_is_playing;
+    f_libvlc_media_player_set_hwnd libvlc_media_player_set_hwnd;
+    f_libvlc_video_set_scale libvlc_video_set_scale;
+    f_libvlc_video_set_format libvlc_video_set_format;
+}

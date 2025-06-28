@@ -1,0 +1,16 @@
+{
+    "name": "video",
+    "importPaths": [
+        "src"
+    ],
+    "sourcePaths": [
+        "src"
+    ],
+    "dependencies": {
+        "dagon": "*",
+        "bindbc-loader": "1.1.4"
+    },
+    
+    "copyFiles-windows-x86_64": ["lib/windows-x64/*", "plugins"],
+    "copyFiles-linux-x86_64": ["lib/linux-x64/*", "plugins_linux"]
+}

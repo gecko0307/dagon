@@ -1,3 +1,8 @@
+Dagon 0.25.0 - TBD
+------------------
+- **Extensions**
+  - `dagon:video` extension that provides video textures.
+
 Dagon 0.24.0 - 27 Jun, 2025
 ---------------------------
 - **Core**
