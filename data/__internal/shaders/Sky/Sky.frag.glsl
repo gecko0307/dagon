@@ -6,6 +6,8 @@ const float PI2 = PI * 2.0;
 uniform mat4 invViewMatrix;
 uniform float gbufferMask;
 uniform float blurMask;
+uniform bool linearize;
+uniform float energy;
 
 in vec3 eyePosition;
 in vec3 worldNormal;
@@ -14,6 +16,7 @@ in vec4 currPosition;
 in vec4 prevPosition;
 
 #include <envMapEquirect.glsl>
+#include <gamma.glsl>
 
 /*
  * Diffuse color
@@ -48,14 +51,20 @@ layout(location = 5) out vec4 fragRadiance;
 
 void main()
 {
-    vec3 fragDiffuse = environment(normalize(worldNormal));
+    vec3 color = environment(normalize(worldNormal));
+    
+    vec3 radiance;
+    if (linearize)
+        radiance = toLinear(color) * energy;
+    else
+        radiance = color * energy;
     
     vec2 posScreen = (currPosition.xy / currPosition.w) * 0.5 + 0.5;
     vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;
     vec2 velocity = posScreen - prevPosScreen;
     
-    fragColor = vec4(fragDiffuse, gbufferMask);
+    fragColor = vec4(color, gbufferMask);
     fragEmission = vec4(0.0, 0.0, 0.0, 1.0);
     fragVelocity = vec4(velocity, blurMask, 1.0);
-    fragRadiance = vec4(fragDiffuse, 1.0);
+    fragRadiance = vec4(radiance, 1.0);
 }

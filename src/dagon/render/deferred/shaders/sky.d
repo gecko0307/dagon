@@ -57,6 +57,8 @@ class SkyShader: Shader
     
     ShaderParameter!float gbufferMask;
     ShaderParameter!float blurMask;
+    ShaderParameter!int linearize;
+    ShaderParameter!float energy;
     
     ShaderParameter!int envTextureCube;
     ShaderParameter!int envTexture;
@@ -84,6 +86,8 @@ class SkyShader: Shader
         
         gbufferMask = createParameter!float("gbufferMask");
         blurMask = createParameter!float("blurMask");
+        linearize = createParameter!int("linearize");
+        energy = createParameter!float("energy");
         
         envTextureCube = createParameter!int("envTextureCube");
         envTexture = createParameter!int("envTexture");
@@ -113,6 +117,9 @@ class SkyShader: Shader
         
         gbufferMask = state.gbufferMask;
         blurMask = state.blurMask;
+        
+        linearize = !mat.linearColor;
+        energy = mat.emissionEnergy;
 
         // Diffuse
         glActiveTexture(GL_TEXTURE4);

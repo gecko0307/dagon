@@ -32,7 +32,7 @@ Features
 * Native [glTF 2.0](https://www.khronos.org/gltf/), [OBJ](https://en.wikipedia.org/wiki/Wavefront_.obj_file) and [IQM](https://github.com/lsalzman/iqm) formats support. [FBX](https://en.wikipedia.org/wiki/FBX) and many other model formats support via [Assimp](https://github.com/assimp/assimp) library
 * GPU skinning
 * Textures in PNG, JPEG, WebP, AVIF, DDS, KTX, KTX2, HDR, SVG and many other formats
-* Video playback (video textures) using [libVLC](https://www.videolan.org/vlc/libvlc.html)
+* Video playback (video textures) using [libVLC](https://www.videolan.org/vlc/libvlc.html). Equirectangular 360° video support
 * Deferred pipeline for opaque materials, forward pipeline for transparent materials and materials with custom shaders
 * Simplified render pipeline for retro and casual-style graphics
 * Physically based rendering (PBR)

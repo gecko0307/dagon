@@ -136,6 +136,8 @@ class Material: Owner
 
     /// Base color factor (albedo color). Used if `baseColorTexture` is not specified
     Color4f baseColorFactor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+    
+    bool linearColor = false;
 
     /// Emission color factor. Used if `emissionTexture` is not specified
     Color4f emissionFactor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
