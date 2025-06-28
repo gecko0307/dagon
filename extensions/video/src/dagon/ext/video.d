@@ -16,6 +16,7 @@ public import bindbc.libvlc;
 
 class VideoManager: Owner
 {
+    LogLevel logLevel = LogLevel.Error;
     libvlc_instance_t* vlc;
     bool valid = false;
     
@@ -40,6 +41,16 @@ class VideoManager: Owner
             logError("Failed to create libVLC instance (missing plugins?)");
         else
             valid = true;
+        
+        if (valid)
+        {
+            libvlc_log_set(vlc, &vlcLog, cast(void*)this);
+        }
+        
+        debug
+        {
+            logLevel = LogLevel.All;
+        }
     }
     
     ~this()
@@ -140,6 +151,34 @@ class Video: Owner
         if (media)
             libvlc_media_release(media);
         Delete(outputBuffer);
+    }
+}
+
+extern(C) void vlcLog(void* data, int level, const(libvlc_log_t)* ctx, const(char)* fmt, va_list args)
+{
+    VideoManager videoManager = cast(VideoManager)data;
+    char[1024] buf;
+    vsnprintf(buf.ptr, buf.sizeof, fmt, args);
+    switch (level)
+    {
+        case libvlc_log_level.LIBVLC_DEBUG:
+            if (videoManager.logLevel <= LogLevel.Debug)
+                logDebug("libVLC: ", buf);
+            break;
+        case libvlc_log_level.LIBVLC_NOTICE:
+            if (videoManager.logLevel <= LogLevel.Info)
+                logInfo("libVLC: ", buf);
+            break;
+        case libvlc_log_level.LIBVLC_WARNING:
+            if (videoManager.logLevel <= LogLevel.Warning)
+                logWarning("libVLC: ", buf);
+            break;
+        case libvlc_log_level.LIBVLC_ERROR:
+            if (videoManager.logLevel <= LogLevel.Error)
+                logError("libVLC: ", buf);
+            break;
+        default:
+            break;
     }
 }
 
