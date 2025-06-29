@@ -277,25 +277,27 @@ extern(C) void vlcLog(void* data, int level, const(libvlc_log_t)* ctx, const(cha
 {
     VideoManager videoManager = cast(VideoManager)data;
     char[1024] buf;
-    vsnprintf(buf.ptr, buf.sizeof, fmt, args);
-    buf[$-1] = 0; // ensure null-terminated
+    int numChars = vsnprintf(buf.ptr, buf.sizeof, fmt, args);
+    if (numChars > buf.length)
+        numChars = buf.length;
+    string msg = cast(string)buf[0..numChars];
     switch (level)
     {
         case libvlc_log_level.LIBVLC_DEBUG:
             if (videoManager.logLevel <= LogLevel.Debug)
-                logDebug("libVLC: ", buf);
+                logDebug("libVLC: ", msg);
             break;
         case libvlc_log_level.LIBVLC_NOTICE:
             if (videoManager.logLevel <= LogLevel.Info)
-                logInfo("libVLC: ", buf);
+                logInfo("libVLC: ", msg);
             break;
         case libvlc_log_level.LIBVLC_WARNING:
             if (videoManager.logLevel <= LogLevel.Warning)
-                logWarning("libVLC: ", buf);
+                logWarning("libVLC: ", msg);
             break;
         case libvlc_log_level.LIBVLC_ERROR:
             if (videoManager.logLevel <= LogLevel.Error)
-                logError("libVLC: ", buf);
+                logError("libVLC: ", msg);
             break;
         default:
             break;
