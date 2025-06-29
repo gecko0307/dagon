@@ -1,5 +1,10 @@
 Dagon 0.25.0 - TBD
 ------------------
+- **Rendering**
+  - `Entity.opacity` is now supported in HUD pass
+  - `Material.emissionEnergy` is now supported in Sky shader;
+- **Animation**
+  - New methods `Entity.fadeIn`, `Entity.fadeOut`
 - **Extensions**
   - `dagon:video` extension that provides video textures.
 
