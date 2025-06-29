@@ -45,7 +45,7 @@ class MyScene: Scene
         matVideo.alphaTestThreshold = 0.0f;
         
         auto ePlane = addEntity();
-        float videoAspectRatio = 1920.0f / 960.0f;
+        float videoAspectRatio = 1920.0f / 1080.0f;
         ePlane.drawable = New!ShapePlane(10 * videoAspectRatio, 10, 1, assetManager);
         ePlane.material = matVideo;
         
