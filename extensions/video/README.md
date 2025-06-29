@@ -4,29 +4,50 @@ Adds support for video textures via [libVLC](https://www.videolan.org/vlc/libvlc
 
 ## Usage
 
+An example with video playing on a 3D plane:
+
 ```d
 import dagon;
 import dagon.ext.video;
 
 class MyScene: Scene
 {
-    VideoManager videoManager;
+    MyGame game;
     Video video;
     
     this(MyGame game)
     {
         super(game);
-        this.videoManager = game.videoManager;
+        this.game = game;
     }
     
     override void afterLoad()
     {
-        video = New!Video(videoManager, 1920, 1080, assetManager);
+        auto camera = addCamera();
+        auto freeview = New!FreeviewComponent(eventManager, camera);
+        freeview.setZoom(5);
+        freeview.setRotation(30.0f, -45.0f, 0.0f);
+        freeview.translationStiffness = 0.25f;
+        freeview.rotationStiffness = 0.25f;
+        freeview.zoomStiffness = 0.25f;
+        game.renderer.activeCamera = camera;
+        
+        auto sun = addLight(LightType.Sun);
+        sun.shadowEnabled = true;
+        sun.energy = 5.0f;
+        sun.pitch(-45.0f);
+        
+        video = New!Video(game.videoManager, 1920, 1080, assetManager);
         video.open("media/video.mp4");
         
         auto matVideo = addMaterial();
         matVideo.baseColorTexture = video.texture;
         matVideo.alphaTestThreshold = 0.0f;
+        
+        auto ePlane = addEntity();
+        float videoAspectRatio = 1920.0f / 960.0f;
+        ePlane.drawable = New!ShapePlane(10 * videoAspectRatio, 10, 1, assetManager);
+        ePlane.material = matVideo;
         
         video.play();
     }
@@ -62,7 +83,7 @@ void main(string[] args)
 {
     VLCSupport sup = loadVLC();
     
-    MyGame game = New!MyGame(1280, 720, false, "Dagon app", args);
+    MyGame game = New!MyGame(1280, 720, false, "Dagon video demo", args);
     game.run();
     Delete(game);
 }
