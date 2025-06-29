@@ -1,4 +1,3 @@
-
 Please distribute this file with the SDL runtime environment:
 
 The Simple DirectMedia Layer (SDL for short) is a cross-platform library
@@ -10,4 +9,3 @@ https://www.libsdl.org/
 
 This library is distributed under the terms of the zlib license:
 http://www.zlib.net/zlib_license.html
-
