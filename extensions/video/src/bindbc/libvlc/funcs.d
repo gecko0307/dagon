@@ -67,12 +67,23 @@ __gshared
     f_libvlc_media_slaves_release libvlc_media_slaves_release;
     
     // libvlc_media_player.h
+    f_libvlc_media_player_new libvlc_media_player_new;
     f_libvlc_media_player_new_from_media libvlc_media_player_new_from_media;
+    f_libvlc_media_player_release libvlc_media_player_release;
+    f_libvlc_media_player_retain libvlc_media_player_retain;
+    f_libvlc_media_player_set_media libvlc_media_player_set_media;
     f_libvlc_video_get_size libvlc_video_get_size;
     f_libvlc_video_set_callbacks libvlc_video_set_callbacks;
     f_libvlc_media_player_play libvlc_media_player_play;
+    f_libvlc_media_player_set_pause libvlc_media_player_set_pause;
+    f_libvlc_media_player_stop libvlc_media_player_stop;
     f_libvlc_media_player_is_playing libvlc_media_player_is_playing;
     f_libvlc_media_player_set_hwnd libvlc_media_player_set_hwnd;
     f_libvlc_video_set_scale libvlc_video_set_scale;
     f_libvlc_video_set_format libvlc_video_set_format;
+    f_libvlc_media_player_get_position libvlc_media_player_get_position;
+    f_libvlc_media_player_will_play libvlc_media_player_will_play;
+    f_libvlc_media_player_get_state libvlc_media_player_get_state;
+    f_libvlc_audio_toggle_mute libvlc_audio_toggle_mute;
+    f_libvlc_audio_set_volume libvlc_audio_set_volume;
 }

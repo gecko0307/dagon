@@ -104,10 +104,8 @@ class Video: Owner
     
     bool open(string filename)
     {
-        // TODO: release player if not null
-        
-        if (media)
-            libvlc_media_release(media);
+        stop();
+        release();
         
         media = libvlc_media_new_path(manager.vlc, filename.toStringz);
         if (media is null)
@@ -137,19 +135,131 @@ class Video: Owner
             libvlc_media_player_play(player);
     }
     
-    // TODO: pause()
-    // TODO: setVolume(float v)
+    void pause()
+    {
+        if (player)
+            libvlc_media_player_set_pause(player, 1);
+    }
+    
+    void resume()
+    {
+        if (player)
+            libvlc_media_player_set_pause(player, 0);
+    }
+    
+    void stop()
+    {
+        if (player)
+            libvlc_media_player_stop(player);
+    }
+    
+    float position() @property
+    {
+        if (player)
+            return libvlc_media_player_get_position(player);
+        else
+            return -1.0f;
+    }
+    
+    bool willPlay() @property
+    {
+        if (player)
+            return cast(bool)libvlc_media_player_will_play(player);
+        else
+            return false;
+    }
+    
+    auto getState() @property
+    {
+        if (player)
+            return libvlc_media_player_get_state(player);
+        else
+            return libvlc_state_t.libvlc_NothingSpecial;
+    }
+    
+    bool isPlaying() @property
+    {
+        if (player)
+        {
+            libvlc_state_t state = libvlc_media_player_get_state(player);
+            return state == libvlc_state_t.libvlc_Playing;
+        }
+        else
+            return false;
+    }
+    
+    bool isPaused() @property
+    {
+        if (player)
+        {
+            libvlc_state_t state = libvlc_media_player_get_state(player);
+            return state == libvlc_state_t.libvlc_Paused;
+        }
+        else
+            return false;
+    }
+    
+    bool isStopped() @property
+    {
+        if (player)
+        {
+            libvlc_state_t state = libvlc_media_player_get_state(player);
+            return state == libvlc_state_t.libvlc_Stopped;
+        }
+        else
+            return false;
+    }
+    
+    bool isEnded() @property
+    {
+        if (player)
+        {
+            libvlc_state_t state = libvlc_media_player_get_state(player);
+            return state == libvlc_state_t.libvlc_Ended;
+        }
+        else
+            return false;
+    }
+    
+    void toggleMute()
+    {
+        if (player)
+            libvlc_audio_toggle_mute(player);
+    }
+    
+    void setVolume(float v)
+    {
+        if (player)
+            libvlc_audio_set_volume(player, cast(int)(v * 100));
+    }
     
     void upload()
     {
         texture.bind();
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_BGRA, GL_UNSIGNED_BYTE, outputBuffer.ptr);
+        needsUploading = false;
+    }
+    
+    void release()
+    {
+        if (player)
+        {
+            libvlc_media_player_set_media(player, null);
+            libvlc_media_player_release(player);
+            player = null;
+        }
+        
+        if (media)
+        {
+            libvlc_media_release(media);
+            media = null;
+        }
     }
     
     ~this()
     {
-        if (media)
-            libvlc_media_release(media);
+        stop();
+        release();
         Delete(outputBuffer);
     }
 }

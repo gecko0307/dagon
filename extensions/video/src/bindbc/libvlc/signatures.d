@@ -90,7 +90,12 @@ alias f_libvlc_media_slaves_get = uint function(libvlc_media_t* p_md, libvlc_med
 alias f_libvlc_media_slaves_release = void function(libvlc_media_slave_t** pp_slaves, uint i_count);
 
 // libvlc_media_player.h
+alias f_libvlc_media_player_new = libvlc_media_player_t* function(libvlc_instance_t* p_libvlc_instance);
 alias f_libvlc_media_player_new_from_media = libvlc_media_player_t* function(libvlc_media_t* p_md);
+alias f_libvlc_media_player_release = void function(libvlc_media_player_t* p_mi);
+alias f_libvlc_media_player_retain = void function(libvlc_media_player_t* p_mi);
+alias f_libvlc_media_player_set_media = void function(libvlc_media_player_t* p_mi, libvlc_media_t* p_md);
+
 alias f_libvlc_video_get_size = int function(libvlc_media_player_t* p_mi, uint num, uint* px, uint* py);
 alias f_libvlc_video_set_callbacks = void function(
     libvlc_media_player_t* mp,
@@ -99,7 +104,21 @@ alias f_libvlc_video_set_callbacks = void function(
     libvlc_video_display_cb display,
     void* opaque);
 alias f_libvlc_media_player_play = int function(libvlc_media_player_t* p_mi);
+alias f_libvlc_media_player_set_pause = void function(libvlc_media_player_t* mp, int do_pause);
+
+alias f_libvlc_media_player_stop = void function(libvlc_media_player_t* p_mi);
+
 alias f_libvlc_media_player_is_playing = int function(libvlc_media_player_t* p_mi);
 alias f_libvlc_media_player_set_hwnd = void function(libvlc_media_player_t* p_mi, void* drawable);
 alias f_libvlc_video_set_scale = void function(libvlc_media_player_t* p_mi, float f_factor);
 alias f_libvlc_video_set_format = void function(libvlc_media_player_t* mp, const(char)* chroma, uint width, uint height, uint pitch);
+
+alias f_libvlc_media_player_get_position = float function(libvlc_media_player_t* p_mi);
+
+alias f_libvlc_media_player_will_play = int function(libvlc_media_player_t* p_mi);
+
+alias f_libvlc_media_player_get_state = libvlc_state_t function(libvlc_media_player_t* p_mi);
+
+alias f_libvlc_audio_toggle_mute = void function(libvlc_media_player_t* p_mi);
+
+alias f_libvlc_audio_set_volume = int function(libvlc_media_player_t* p_mi, int i_volume);

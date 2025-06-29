@@ -11,6 +11,7 @@ import dagon.ext.video;
 class MyScene: Scene
 {
     VideoManager videoManager;
+    Video video;
     
     this(MyGame game)
     {
@@ -20,7 +21,7 @@ class MyScene: Scene
     
     override void afterLoad()
     {
-        auto video = New!Video(videoManager, 1920, 1080, assetManager);
+        video = New!Video(videoManager, 1920, 1080, assetManager);
         video.open("media/video.mp4");
         
         auto matVideo = addMaterial();
@@ -28,6 +29,20 @@ class MyScene: Scene
         matVideo.alphaTestThreshold = 0.0f;
         
         video.play();
+    }
+    
+    override void onUpdate(Time t)
+    {
+        if (video.needsUploading && !video.locked)
+        {
+            video.upload();
+            video.needsUploading = false;
+        }
+        
+        if (video.isEnded)
+        {
+            // do something
+        }
     }
 }
 

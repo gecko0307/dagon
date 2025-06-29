@@ -267,6 +267,96 @@ extern(C)
 
 struct libvlc_media_player_t;
 
+struct libvlc_track_description_t
+{
+    int i_id;
+    char* psz_name;
+    libvlc_track_description_t* p_next;
+}
+
+enum
+{
+    libvlc_title_menu          = 0x01,
+    libvlc_title_interactive   = 0x02
+}
+
+struct libvlc_title_description_t
+{
+    int64_t i_duration;
+    char* psz_name;
+    uint i_flags;
+}
+
+struct libvlc_chapter_description_t
+{
+    int64_t i_time_offset;
+    int64_t i_duration;
+    char* psz_name;
+}
+
+struct libvlc_audio_output_t
+{
+    char* psz_name;
+    char* psz_description;
+    libvlc_audio_output_t* p_next;
+}
+
+struct libvlc_audio_output_device_t
+{
+    libvlc_audio_output_device_t* p_next;
+    char* psz_device;
+    char* psz_description;
+}
+
+enum libvlc_video_marquee_option_t
+{
+    libvlc_marquee_Enable = 0,
+    libvlc_marquee_Text,
+    libvlc_marquee_Color,
+    libvlc_marquee_Opacity,
+    libvlc_marquee_Position,
+    libvlc_marquee_Refresh,
+    libvlc_marquee_Size,
+    libvlc_marquee_Timeout,
+    libvlc_marquee_X,
+    libvlc_marquee_Y
+}
+
+enum libvlc_navigate_mode_t
+{
+    libvlc_navigate_activate = 0,
+    libvlc_navigate_up,
+    libvlc_navigate_down,
+    libvlc_navigate_left,
+    libvlc_navigate_right,
+    libvlc_navigate_popup
+}
+
+enum libvlc_position_t
+{
+    libvlc_position_disable=-1,
+    libvlc_position_center,
+    libvlc_position_left,
+    libvlc_position_right,
+    libvlc_position_top,
+    libvlc_position_top_left,
+    libvlc_position_top_right,
+    libvlc_position_bottom,
+    libvlc_position_bottom_left,
+    libvlc_position_bottom_right
+}
+
+enum libvlc_teletext_key_t
+{
+    libvlc_teletext_key_red = 'r' << 16,
+    libvlc_teletext_key_green = 'g' << 16,
+    libvlc_teletext_key_yellow = 'y' << 16,
+    libvlc_teletext_key_blue = 'b' << 16,
+    libvlc_teletext_key_index = 'i' << 16,
+}
+
+struct libvlc_equalizer_t;
+
 extern(C)
 {
     alias libvlc_video_lock_cb = void* function(void* opaque, void** planes);
