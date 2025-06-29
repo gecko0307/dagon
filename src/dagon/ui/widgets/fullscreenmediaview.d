@@ -70,6 +70,7 @@ class FullscreenMediaView: UIWidget
         mediaWidth = texture.width;
         mediaHeight = texture.height;
         mediaAspectRatio = cast(float)mediaWidth / cast(float)mediaHeight;
+        fit();
     }
     
     void fit()
