@@ -219,7 +219,7 @@ class GLTFAsset: Asset, TriangleSet
      */
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
     {
-        debug logDebug("Loading ", filename);
+        version(GLTFDebug) logDebug("Loading ", filename);
         assetManager = mngr;
         rootEntity = New!Entity(this);
         string rootDir = dirName(filename);
@@ -241,7 +241,7 @@ class GLTFAsset: Asset, TriangleSet
     
     void loadBuffers(JSONValue root, ReadOnlyFileSystem fs, string rootDir)
     {
-        debug logDebug("Loading buffers...");
+        version(GLTFDebug) logDebug("Loading buffers...");
         if ("buffers" in root.asObject)
         {
             foreach(buffer; root.asObject["buffers"].asArray)
@@ -276,7 +276,7 @@ class GLTFAsset: Asset, TriangleSet
     
     void loadBufferViews(JSONValue root)
     {
-        debug logDebug("Loading bufferViews...");
+        version(GLTFDebug) logDebug("Loading bufferViews...");
         if ("bufferViews" in root.asObject)
         {
             foreach(bufferView; root.asObject["bufferViews"].asArray)
@@ -316,7 +316,7 @@ class GLTFAsset: Asset, TriangleSet
     
     void loadAccessors(JSONValue root)
     {
-        debug logDebug("Loading accessors...");
+        version(GLTFDebug) logDebug("Loading accessors...");
         if ("accessors" in root.asObject)
         {
             foreach(i, accessor; root.asObject["accessors"].asArray)
@@ -374,7 +374,7 @@ class GLTFAsset: Asset, TriangleSet
     
     void loadImages(JSONValue root, ReadOnlyFileSystem fs, string rootDir)
     {
-        debug logDebug("Loading images...");
+        version(GLTFDebug) logDebug("Loading images...");
         if ("images" in root.asObject)
         {
             foreach(i, img; root.asObject["images"].asArray)
@@ -463,7 +463,7 @@ class GLTFAsset: Asset, TriangleSet
     
     void loadTextures(JSONValue root)
     {
-        debug logDebug("Loading textures...");
+        version(GLTFDebug) logDebug("Loading textures...");
         if ("textures" in root.asObject)
         {
             foreach(i, tex; root.asObject["textures"].asArray)
@@ -498,7 +498,7 @@ class GLTFAsset: Asset, TriangleSet
     
     void loadMaterials(JSONValue root)
     {
-        debug logDebug("Loading materials...");
+        version(GLTFDebug) logDebug("Loading materials...");
         if ("materials" in root.asObject)
         {
             foreach(i, mat; root.asObject["materials"].asArray)
@@ -662,7 +662,7 @@ class GLTFAsset: Asset, TriangleSet
     
     void loadMeshes(JSONValue root)
     {
-        debug logDebug("Loading meshes...");
+        version(GLTFDebug) logDebug("Loading meshes...");
         if ("meshes" in root.asObject)
         {
             foreach(i, mesh; root.asObject["meshes"].asArray)
@@ -788,7 +788,7 @@ class GLTFAsset: Asset, TriangleSet
     
     void loadNodes(JSONValue root)
     {
-        debug logDebug("Loading nodes...");
+        version(GLTFDebug) logDebug("Loading nodes...");
         if ("nodes" in root.asObject)
         {
             foreach(i, n; root.asObject["nodes"].asArray)
@@ -905,7 +905,7 @@ class GLTFAsset: Asset, TriangleSet
     
     void loadSkins(JSONValue root)
     {
-        debug logDebug("Loading skins...");
+        version(GLTFDebug) logDebug("Loading skins...");
         if ("skins" in root.asObject)
         {
             foreach(i, s; root.asObject["skins"].asArray)
@@ -962,7 +962,7 @@ class GLTFAsset: Asset, TriangleSet
     
     void loadAnimations(JSONValue root)
     {
-        debug logDebug("Loading animations...");
+        version(GLTFDebug) logDebug("Loading animations...");
         
         auto animationsArr = ("animations" in root.asObject);
 
@@ -1045,7 +1045,7 @@ class GLTFAsset: Asset, TriangleSet
 
     void loadScenes(JSONValue root)
     {
-        debug logDebug("Loading scenes...");
+        version(GLTFDebug) logDebug("Loading scenes...");
         if ("scenes" in root.asObject)
         {
             foreach(i, s; root.asObject["scenes"].asArray)
