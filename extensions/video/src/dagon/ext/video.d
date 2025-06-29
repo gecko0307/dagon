@@ -236,6 +236,12 @@ class Video: Owner
             libvlc_audio_set_volume(player, cast(int)(v * 100));
     }
     
+    void update()
+    {
+        if (needsUploading && !locked)
+            upload();
+    }
+    
     void upload()
     {
         texture.bind();

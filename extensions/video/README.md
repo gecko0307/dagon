@@ -14,6 +14,8 @@ class MyScene: Scene
 {
     MyGame game;
     Video video;
+    bool canPlayVideo = false;
+    bool videoIsPlaying = false;
     
     this(MyGame game)
     {
@@ -38,7 +40,7 @@ class MyScene: Scene
         sun.pitch(-45.0f);
         
         video = New!Video(game.videoManager, 1920, 1080, assetManager);
-        video.open("media/video.mp4");
+        canPlayVideo = video.open("media/video.mp4");
         
         auto matVideo = addMaterial();
         matVideo.baseColorTexture = video.texture;
@@ -49,19 +51,21 @@ class MyScene: Scene
         ePlane.drawable = New!ShapePlane(10 * videoAspectRatio, 10, 1, assetManager);
         ePlane.material = matVideo;
         
-        video.play();
+        if (canPlayVideo)
+        {
+            video.play();
+            videoIsPlaying = true;
+        }
     }
     
     override void onUpdate(Time t)
     {
-        if (video.needsUploading && !video.locked)
-        {
-            video.upload();
-            video.needsUploading = false;
-        }
+        if (videoIsPlaying)
+            video.update();
         
         if (video.isEnded)
         {
+            videoIsPlaying = false;
             // do something
         }
     }
