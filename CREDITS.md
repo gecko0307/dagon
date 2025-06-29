@@ -22,5 +22,5 @@ Dagon and its extensions depend on the following libraries:
 * [Open Asset Import Library (Assimp)](https://github.com/assimp/assimp)
 * [PhysFS](https://github.com/icculus/physfs)
 * [libVLC](https://images.videolan.org/vlc/libvlc.html)
-* [Dear ImGui](https://github.com/ocornut/imgui)
+* [cimgui](https://github.com/cimgui/cimgui)
 * [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear)
