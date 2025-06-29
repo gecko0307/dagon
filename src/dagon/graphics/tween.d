@@ -266,6 +266,8 @@ struct Tween
             entity.angles = lerp(fromVector, toVector, ease(t));
         else if (type == TweenType.Scaling)
             entity.scaling = lerp(fromVector, toVector, ease(t));
+        else if (type == TweenType.Alpha)
+            entity.opacity = lerp(fromFloat, toFloat, ease(t));
     }
 
     /**

@@ -80,6 +80,7 @@ class PassHUD: RenderPass
 
                 state.modelViewMatrix = state.viewMatrix * entity.absoluteTransformation;
                 state.normalMatrix = state.modelViewMatrix.inverse.transposed;
+                state.opacity = entity.opacity;
 
                 if (entity.material)
                 {

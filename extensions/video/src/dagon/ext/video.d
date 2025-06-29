@@ -104,6 +104,9 @@ class Video: Owner
     
     bool open(string filename)
     {
+        if (!manager.valid)
+            return false;
+        
         stop();
         release();
         
