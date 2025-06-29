@@ -12,7 +12,7 @@ class MyScene: Scene
 {
     VideoManager videoManager;
     
-    this(GMyGame game)
+    this(MyGame game)
     {
         super(game);
         this.videoManager = game.videoManager;
@@ -20,7 +20,7 @@ class MyScene: Scene
     
     override void afterLoad()
     {
-        video = New!Video(videoManager, 1920, 1080, assetManager);
+        auto video = New!Video(videoManager, 1920, 1080, assetManager);
         video.open("media/video.mp4");
         
         auto matVideo = addMaterial();
@@ -43,7 +43,7 @@ class MyGame: Game
     }
 }
 
-void main()
+void main(string[] args)
 {
     VLCSupport sup = loadVLC();
     
