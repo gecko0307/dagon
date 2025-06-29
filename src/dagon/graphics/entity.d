@@ -717,6 +717,33 @@ class Entity: Owner, Updateable
             return &tweens.data[$-1];
         }
     }
+    
+    Tween* opacityFromTo(float opFrom, float opTo, double duration, Easing easing = Easing.Linear)
+    {
+        Tween* existingTween = getInactiveTween();
+
+        if (existingTween)
+        {
+            *existingTween = Tween(this, TweenType.Alpha, opFrom, opTo, duration, easing);
+            return existingTween;
+        }
+        else
+        {
+            Tween t = Tween(this, TweenType.Alpha, opFrom, opTo, duration, easing);
+            tweens.append(t);
+            return &tweens.data[$-1];
+        }
+    }
+    
+    Tween* fadeIn(double duration, Easing easing = Easing.Linear)
+    {
+        return opacityFromTo(0.0f, 1.0f, duration, easing);
+    }
+
+    Tween* fadeOut(double duration, Easing easing = Easing.Linear)
+    {
+        return opacityFromTo(1.0f, 0.0f, duration, easing);
+    }
 
     /**
      * Returns the entity's bounding box in world space.
