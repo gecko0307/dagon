@@ -4,7 +4,75 @@ Adds support for video textures via [libVLC](https://www.videolan.org/vlc/libvlc
 
 ## Usage
 
-An example with video playing on a 3D plane:
+Simple use case - fullscreen video (for title screens, cutscenes, etc.):
+
+```d
+import dagon;
+import dagon.ext.video;
+
+class MyScene: Scene
+{
+    MyGame game;
+    Video video;
+    FullscreenMediaView videoView;
+    bool videoIsPlaying = false;
+    
+    this(MyGame game)
+    {
+        super(game);
+        this.game = game;
+    }
+    
+    override void afterLoad()
+    {
+        video = New!Video(videoManager, 1920, 1080, assetManager);
+        video.open("media/video.mp4");
+        
+        videoView = addWidget!FullscreenMediaView();
+        videoView.setMediaTexture(video.texture);
+        
+        video.play();
+        videoIsPlaying = true;
+    }
+    
+    override void onUpdate(Time t)
+    {
+        if (videoIsPlaying)
+        {
+            video.update();
+            if (video.isEnded)
+            {
+                videoIsPlaying = false;
+                videoView.visible = false;
+                // do something
+            }
+        }
+    }
+}
+
+class MyGame: Game
+{
+    VideoManager videoManager;
+    
+    this(uint w, uint h, bool fullscreen, string title, string[] args)
+    {
+        super(w, h, fullscreen, title, args);
+        videoManager = New!VideoManager(this);
+        currentScene = New!MyScene(this);
+    }
+}
+
+void main(string[] args)
+{
+    VLCSupport sup = loadVLC();
+    
+    MyGame game = New!MyGame(1280, 720, false, "Dagon video demo", args);
+    game.run();
+    Delete(game);
+}
+```
+
+Video texture playing on a 3D plane:
 
 ```d
 import dagon;
@@ -61,34 +129,14 @@ class MyScene: Scene
     override void onUpdate(Time t)
     {
         if (videoIsPlaying)
-            video.update();
-        
-        if (video.isEnded)
         {
-            videoIsPlaying = false;
-            // do something
+            video.update();
+            if (video.isEnded)
+            {
+                videoIsPlaying = false;
+                // do something
+            }
         }
     }
-}
-
-class MyGame: Game
-{
-    VideoManager videoManager;
-    
-    this(uint w, uint h, bool fullscreen, string title, string[] args)
-    {
-        super(w, h, fullscreen, title, args);
-        videoManager = New!VideoManager(this);
-        currentScene = New!MyScene(this);
-    }
-}
-
-void main(string[] args)
-{
-    VLCSupport sup = loadVLC();
-    
-    MyGame game = New!MyGame(1280, 720, false, "Dagon video demo", args);
-    game.run();
-    Delete(game);
 }
 ```
