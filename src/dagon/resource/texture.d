@@ -98,6 +98,8 @@ class TextureAsset: Asset
     /// Format-specific conversion options.
     ConversionOptions conversion;
     
+    bool loaded = false;
+    
     /// If `true`, keep `buffer.data` after sending to GPU.
     bool persistent = false;
     
@@ -150,6 +152,9 @@ class TextureAsset: Asset
      */
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager assetManager)
     {
+        if (loaded)
+            return true;
+        
         this.filename = filename;
         this.extension = filename.extension.toLower;
         auto loader = assetManager.textureLoader(this.extension);
@@ -157,18 +162,23 @@ class TextureAsset: Asset
         {
             auto res = loader.load(filename, this.extension, istrm, this, loaderOption);
             if (res[0])
-                return true;
+            {
+                loaded = true;
+                return loaded;
+            }
             else
             {
                 if (res[1].length)
                     logError(res[1]);
-                return false;
+                loaded = false;
+                return loaded;
             }
         }
         else
         {
             logError(filename, ": unsupported texture file extension \"", this.extension, "\"");
-            return false;
+            loaded = false;
+            return loaded;
         }
     }
 
@@ -180,6 +190,9 @@ class TextureAsset: Asset
      */
     override bool loadThreadUnsafePart()
     {
+        if (!loaded)
+            return false;
+        
         if (texture.valid)
             return true;
         

@@ -51,6 +51,7 @@ import dlib.container.array;
 import dlib.container.dict;
 import dlib.text.utils;
 import dlib.math.vector;
+import dlib.math.matrix;
 import dlib.image.color;
 import dlib.text.str;
 import dlib.text.lexer;
@@ -169,6 +170,24 @@ struct DProperty
             return Color4f(Vector4f(data));
         else
             return Color4f();
+    }
+    
+    /// Returns the property value as Matrix3x3f.
+    Matrix3x3f toMatrix3x3f() const
+    {
+        if (data.length)
+            return Matrix3x3f(data);
+        else
+            return Matrix3x3f.identity;
+    }
+    
+    /// Returns the property value as Matrix4x4f.
+    Matrix4x4f toMatrix4x4f() const
+    {
+        if (data.length)
+            return Matrix4x4f(data);
+        else
+            return Matrix4x4f.identity;
     }
 }
 

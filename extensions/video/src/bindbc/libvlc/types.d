@@ -357,9 +357,84 @@ enum libvlc_teletext_key_t
 
 struct libvlc_equalizer_t;
 
+enum libvlc_video_logo_option_t
+{
+    libvlc_logo_enable,
+    libvlc_logo_file,
+    libvlc_logo_x,
+    libvlc_logo_y,
+    libvlc_logo_delay,
+    libvlc_logo_repeat,
+    libvlc_logo_opacity,
+    libvlc_logo_position
+}
+
+enum libvlc_video_adjust_option_t
+{
+    libvlc_adjust_Enable = 0,
+    libvlc_adjust_Contrast,
+    libvlc_adjust_Brightness,
+    libvlc_adjust_Hue,
+    libvlc_adjust_Saturation,
+    libvlc_adjust_Gamma
+}
+
+enum libvlc_audio_output_device_types_t
+{
+    libvlc_AudioOutputDevice_Error  = -1,
+    libvlc_AudioOutputDevice_Mono   =  1,
+    libvlc_AudioOutputDevice_Stereo =  2,
+    libvlc_AudioOutputDevice_2F2R   =  4,
+    libvlc_AudioOutputDevice_3F2R   =  5,
+    libvlc_AudioOutputDevice_5_1    =  6,
+    libvlc_AudioOutputDevice_6_1    =  7,
+    libvlc_AudioOutputDevice_7_1    =  8,
+    libvlc_AudioOutputDevice_SPDIF  = 10
+}
+
+enum libvlc_audio_output_channel_t
+{
+    libvlc_AudioChannel_Error   = -1,
+    libvlc_AudioChannel_Stereo  =  1,
+    libvlc_AudioChannel_RStereo =  2,
+    libvlc_AudioChannel_Left    =  3,
+    libvlc_AudioChannel_Right   =  4,
+    libvlc_AudioChannel_Dolbys  =  5
+}
+
+enum libvlc_media_player_role_t
+{
+    libvlc_role_None = 0,
+    libvlc_role_Music,
+    libvlc_role_Video,
+    libvlc_role_Communication,
+    libvlc_role_Game,
+    libvlc_role_Notification,
+    libvlc_role_Animation,
+    libvlc_role_Production,
+    libvlc_role_Accessibility, 
+    libvlc_role_Test,
+    libvlc_role_Last = libvlc_role_Test
+}
+
+alias libvlc_media_player_role = libvlc_media_player_role_t;
+
 extern(C)
 {
     alias libvlc_video_lock_cb = void* function(void* opaque, void** planes);
     alias libvlc_video_unlock_cb = void function(void* opaque, void* picture, const(void)** planes);
     alias libvlc_video_display_cb = void function(void* opaque, void* picture);
+    alias libvlc_video_format_cb = uint function(void** opaque, char* chroma, uint* width, uint* height, uint* pitches, uint* lines);
+    alias libvlc_audio_play_cb = void function(void* data, const(void)* samples, uint count, int64_t pts);
+    alias libvlc_audio_pause_cb = void function(void* data, int64_t pts);
+    alias libvlc_audio_resume_cb = void function(void* data, int64_t pts);
+    alias libvlc_audio_flush_cb = void function(void* data, int64_t pts);
+    alias libvlc_audio_drain_cb = void function(void* data);
+    alias libvlc_audio_set_volume_cb = void function(void* data, float volume, bool mute);
+    alias libvlc_audio_setup_cb = int function(void** data, char* format, uint* rate, uint* channels);
+    alias libvlc_video_cleanup_cb = void function(void* opaque);
 }
+
+// libvlc_renderer_discoverer.h
+
+struct libvlc_renderer_item_t;

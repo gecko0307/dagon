@@ -49,10 +49,13 @@ import dlib.filesystem.stdfs;
 import dlib.math.vector;
 import dlib.text.lexer;
 import dlib.text.utils;
+import dlib.container.dict;
 
 import dagon.core.props;
-import dagon.resource.asset;
 import dagon.graphics.material;
+import dagon.graphics.texture;
+import dagon.resource.asset;
+import dagon.resource.texture;
 
 /**
  * Asset class for loading and managing material definitions.
@@ -71,6 +74,8 @@ class MaterialAsset: Asset
 
     /// The instantiated material object.
     Material material;
+    
+    protected Dict!(TextureAsset, string) textureAssets;
 
     /**
      * Constructs a new material asset.
@@ -81,12 +86,14 @@ class MaterialAsset: Asset
     this(Owner owner)
     {
         super(owner);
+        textureAssets = New!(Dict!(TextureAsset, string));
     }
 
     /// Destructor. Releases all resources.
     ~this()
     {
         release();
+        Delete(textureAssets);
     }
 
     /**
@@ -102,23 +109,262 @@ class MaterialAsset: Asset
      */
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
     {
+        material = New!Material(mngr);
         text = readText(istrm);
         props = New!Properties(mngr);
         if (parseProperties(text, props))
+        {
+            setMaterialProperties(mngr);
             return true;
+        }
         else
             return false;
     }
 
     /**
-     * Loads the thread-unsafe part of the material asset (no-op).
+     * Loads the thread-unsafe part of the material asset.
      *
      * Returns:
      *   true (always succeeds).
      */
     override bool loadThreadUnsafePart()
     {
+        foreach(filename, asset; textureAssets)
+        {
+            asset.loadThreadUnsafePart();
+        }
+        
         return true;
+    }
+    
+    Texture getTexture(AssetManager mngr, string filename)
+    {
+        if (filename in mngr.assetsByFilename)
+        {
+            TextureAsset textureAsset = cast(TextureAsset)mngr.assetsByFilename[filename];
+            if (textureAsset)
+                return textureAsset.texture;
+            else
+                return null;
+        }
+        else if (filename in textureAssets)
+        {
+            return textureAssets[filename].texture;
+        }
+        else
+        {
+            TextureAsset textureAsset = New!TextureAsset(mngr);
+            mngr.loadAssetThreadSafePart(textureAsset, filename);
+            textureAssets[filename] = textureAsset;
+            return textureAsset.texture;
+        }
+    }
+    
+    void setMaterialProperties(AssetManager mngr)
+    {
+        if ("name" in props)
+            material.name = props["name"].toString;
+        
+        if ("baseColor" in props)
+        {
+            auto baseColor = props["baseColor"];
+            if (baseColor.type == DPropType.String)
+                material.baseColorTexture = getTexture(mngr, baseColor.toString);
+            else if (baseColor.type == DPropType.Vector)
+                material.baseColorFactor = baseColor.toColor4f;
+        }
+        if ("baseColorTexture" in props)
+        {
+            string filename = props["baseColorTexture"].toString;
+            material.baseColorTexture = getTexture(mngr, filename);
+        }
+        if ("baseColorFactor" in props)
+        {
+            material.baseColorFactor = props["baseColorFactor"].toColor4f;
+        }
+        
+        if ("roughnessMetallicTexture" in props)
+        {
+            auto roughnessMetallic = props["roughnessMetallicTexture"];
+            material.roughnessMetallicTexture = getTexture(mngr, roughnessMetallic.toString);
+        }
+        if ("roughnessFactor" in props)
+        {
+            material.roughnessFactor = props["roughnessFactor"].toFloat;
+        }
+        if ("metallicFactor" in props)
+        {
+            material.metallicFactor = props["metallicFactor"].toFloat;
+        }
+        
+        if ("normal" in props)
+        {
+            auto normal = props["normal"];
+            if (normal.type == DPropType.String)
+                material.normalTexture = getTexture(mngr, normal.toString);
+            else if (normal.type == DPropType.Vector)
+                material.normalFactor = normal.toVector3f;
+        }
+        if ("normalTexture" in props)
+        {
+            string filename = props["normalTexture"].toString;
+            material.normalTexture = getTexture(mngr, filename);
+        }
+        if ("normalFactor" in props)
+        {
+            material.normalFactor = props["normalFactor"].toVector3f;
+        }
+        
+        if ("emission" in props)
+        {
+            auto emission = props["emission"];
+            if (emission.type == DPropType.String)
+                material.emissionTexture = getTexture(mngr, emission.toString);
+            else if (emission.type == DPropType.Vector)
+                material.emissionFactor = emission.toColor4f;
+        }
+        if ("emissionTexture" in props)
+        {
+            string filename = props["emissionTexture"].toString;
+            material.emissionTexture = getTexture(mngr, filename);
+        }
+        if ("emissionFactor" in props)
+        {
+            material.emissionFactor = props["emissionFactor"].toColor4f;
+        }
+        
+        if ("linearColor" in props)
+            material.linearColor = props["linearColor"].toBool;
+        if ("textureTransformation" in props)
+            material.textureTransformation = props["textureTransformation"].toMatrix3x3f;
+        if ("heightFactor" in props)
+            material.heightFactor = props["heightFactor"].toFloat;
+        if ("emissionEnergy" in props)
+            material.emissionEnergy = props["emissionEnergy"].toFloat;
+        if ("opacity" in props)
+            material.opacity = props["opacity"].toFloat;
+        if ("alphaTestThreshold" in props)
+            material.opacity = props["alphaTestThreshold"].toFloat;
+        if ("specularity" in props)
+            material.specularity = props["specularity"].toFloat;
+        if ("subsurfaceScattering" in props)
+            material.subsurfaceScattering = props["subsurfaceScattering"].toFloat;
+        if ("parallaxScale" in props)
+            material.parallaxScale = props["parallaxScale"].toFloat;
+        if ("parallaxBias" in props)
+            material.parallaxBias = props["parallaxBias"].toFloat;
+        if ("maskFactor" in props)
+            material.maskFactor = props["maskFactor"].toFloat;
+        if ("parallaxMode" in props)
+        {
+            auto parallaxMode = props["parallaxMode"];
+            if (parallaxMode.type == DPropType.Number)
+                material.parallaxMode = parallaxMode.toInt;
+            else if (parallaxMode.type == DPropType.String)
+            {
+                switch(parallaxMode.toString)
+                {
+                    case "ParallaxNone":
+                        material.parallaxMode = ParallaxNone;
+                        break;
+                    case "ParallaxSimple":
+                        material.parallaxMode = ParallaxSimple;
+                        break;
+                    case "ParallaxOcclusionMapping":
+                        material.parallaxMode = ParallaxOcclusionMapping;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        if ("shadowFilter" in props)
+        {
+            auto shadowFilter = props["shadowFilter"];
+            if (shadowFilter.type == DPropType.Number)
+                material.shadowFilter = shadowFilter.toInt;
+            else if (shadowFilter.type == DPropType.String)
+            {
+                switch(shadowFilter.toString)
+                {
+                    case "ShadowFilterNone":
+                        material.shadowFilter = ShadowFilterNone;
+                        break;
+                    case "ShadowFilterPCF":
+                        material.shadowFilter = ShadowFilterPCF;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        if ("blendMode" in props)
+        {
+            auto blendMode = props["blendMode"];
+            if (blendMode.type == DPropType.Number)
+                material.blendMode = blendMode.toInt;
+            else
+            {
+                switch(blendMode.toString)
+                {
+                    case "Opaque":
+                        material.blendMode = Opaque;
+                        break;
+                    case "Transparent":
+                        material.blendMode = Transparent;
+                        break;
+                    case "Additive":
+                        material.blendMode = Additive;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        if ("textureMappingMode" in props)
+        {
+            auto textureMappingMode = props["textureMappingMode"];
+            if (textureMappingMode.type == DPropType.Number)
+                material.textureMappingMode = props["textureMappingMode"].toInt;
+            else
+            {
+                switch(textureMappingMode.toString)
+                {
+                    case "VertexUV":
+                        material.textureMappingMode = VertexUV;
+                        break;
+                    case "Matcap":
+                        material.textureMappingMode = Matcap;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        if ("shadeless" in props)
+            material.shadeless = props["shadeless"].toBool;
+        if ("invertNormalY" in props)
+            material.invertNormalY = props["invertNormalY"].toBool;
+        if ("useShadows" in props)
+            material.useShadows = props["useShadows"].toBool;
+        if ("useFog" in props)
+            material.useFog = props["useFog"].toBool;
+        if ("useCulling" in props)
+            material.useCulling = props["useCulling"].toBool;
+        if ("sphericalNormal" in props)
+            material.sphericalNormal = props["sphericalNormal"].toBool;
+        if ("colorWrite" in props)
+            material.colorWrite = props["colorWrite"].toBool;
+        if ("depthWrite" in props)
+            material.depthWrite = props["depthWrite"].toBool;
+        if ("outputColor" in props)
+            material.outputColor = props["outputColor"].toBool;
+        if ("outputNormal" in props)
+            material.outputNormal = props["outputNormal"].toBool;
+        if ("outputPBR" in props)
+            material.outputPBR = props["outputPBR"].toBool;
+        if ("outputEmission" in props)
+            material.outputEmission = props["outputEmission"].toBool;
     }
 
     /// Releases all resources associated with the asset.

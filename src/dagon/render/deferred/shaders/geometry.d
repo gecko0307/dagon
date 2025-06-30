@@ -65,6 +65,7 @@ class GeometryShader: Shader
     ShaderParameter!float blurMask;
     ShaderParameter!int sphericalNormal;
     ShaderParameter!float clipThreshold;
+    ShaderParameter!int gammaCorrect;
     
     ShaderParameter!int skinned;
     GLint boneMatricesLocation;
@@ -137,6 +138,7 @@ class GeometryShader: Shader
         blurMask = createParameter!float("blurMask");
         sphericalNormal = createParameter!int("sphericalNormal");
         clipThreshold = createParameter!float("clipThreshold");
+        gammaCorrect = createParameter!int("gammaCorrect");
         
         skinned = createParameter!int("skinned");
         // TODO: ShaderParameter specialization for uniform arrays
@@ -212,6 +214,7 @@ class GeometryShader: Shader
         blurMask = state.blurMask;
         sphericalNormal = mat.sphericalNormal;
         clipThreshold = mat.alphaTestThreshold;
+        gammaCorrect = mat.linearColor;
         
         if (state.pose)
         {

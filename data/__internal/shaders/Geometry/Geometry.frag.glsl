@@ -13,6 +13,7 @@ uniform float clipThreshold;
 uniform float gbufferMask;
 uniform float blurMask;
 uniform int textureMappingMode;
+uniform bool gammaCorrect;
 
 #include <gamma.glsl>
 #include <matcap.glsl>
@@ -227,6 +228,9 @@ void main()
     }
     
     vec4 fragDiffuse = diffuse(uv);
+    vec3 color = fragDiffuse.rgb;
+    if (gammaCorrect)
+        color = toGamma(fragDiffuse.rgb);
     
     if ((fragDiffuse.a * opacity) < clipThreshold)
         discard;
@@ -235,7 +239,7 @@ void main()
     vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;
     vec2 velocity = posScreen - prevPosScreen;
     
-    fragColor = vec4(fragDiffuse.rgb, gbufferMask);
+    fragColor = vec4(color, gbufferMask);
     fragNormal = vec4(N, 0.0);
     fragPBR = vec4(
         max(roughness(uv), 0.0001),

@@ -66,6 +66,7 @@ import dagon.resource.asset;
 import dagon.resource.obj;
 import dagon.resource.gltf;
 import dagon.resource.texture;
+import dagon.resource.material;
 import dagon.resource.text;
 import dagon.resource.binary;
 import dagon.resource.font;
@@ -209,6 +210,9 @@ class Scene: EventListener
 
     /// Adds a binary asset by filename.
     alias addBinaryAsset = addAssetAs!BinaryAsset;
+    
+    /// Adds a materia asset by filename.
+    alias addMaterialAsset = addAssetAs!MaterialAsset;
     
     /// Adds a font asset by filename.
     FontAsset addFontAsset(string filename, uint height, bool preload = false)
