@@ -1,10 +1,17 @@
 Dagon 0.25.0 - TBD
 ------------------
+- **Core**
+  - `DProperty` now support matrices (`DProperty.toMatrix3x3f`, `DProperty.toMatrix4x4f`). Syntactically, a matrix is defined as an array of 9 or 16 row-ordered values
 - **Rendering**
   - `Entity.opacity` is now supported in HUD pass
   - `Material.emissionEnergy` is now supported in Sky shader;
 - **Animation**
-  - New methods `Entity.fadeIn`, `Entity.fadeOut`
+  - `Entity.opacity` can now be tweened. New methods `Entity.fadeIn`, `Entity.fadeOut` to animate opacity
+- **UI**
+  - New widget `FullscreenMediaView` that displays an image or video proportionally scaled to fit the application window. It can be used to render splash screens and cutscenes
+- **Assets**
+  - `MaterialAsset` is finally implemented. It can be used to store material definitions in files (using the same syntax as *.conf files)
+  - `TextureAsset.loaded` property that indicates the texture was successfully decoded
 - **Extensions**
   - `dagon:video` extension that provides video textures.
 

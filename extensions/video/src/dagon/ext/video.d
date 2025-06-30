@@ -23,9 +23,10 @@ class VideoManager: Owner
     this(Owner owner)
     {
         super(owner);
+        
         version(linux)
         {
-            environment["VLC_PLUGIN_PATH"] = absolutePath("./plugins_linux");
+            setLinuxPluginsPath(absolutePath("./plugins_linux"));
         }
         
         auto ver = libvlc_get_version();
@@ -51,6 +52,11 @@ class VideoManager: Owner
         {
             logLevel = LogLevel.All;
         }
+    }
+    
+    void setLinuxPluginsPath(string path)
+    {
+        environment["VLC_PLUGIN_PATH"] = path;
     }
     
     ~this()
