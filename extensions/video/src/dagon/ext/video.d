@@ -26,7 +26,7 @@ class VideoManager: Owner
         
         version(linux)
         {
-            setLinuxPluginsPath(absolutePath("./plugins_linux"));
+            setPluginsPath(absolutePath("./plugins_linux"));
         }
         
         auto ver = libvlc_get_version();
@@ -54,9 +54,10 @@ class VideoManager: Owner
         }
     }
     
-    void setLinuxPluginsPath(string path)
+    void setPluginsPath(string absPath)
     {
-        environment["VLC_PLUGIN_PATH"] = path;
+        // Doesn't work on Windows! Plugins should be in 'plugins' folder
+        environment["VLC_PLUGIN_PATH"] = absPath;
     }
     
     ~this()
