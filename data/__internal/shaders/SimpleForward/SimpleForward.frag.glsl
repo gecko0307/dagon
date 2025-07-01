@@ -26,6 +26,28 @@ uniform vec3 shadowCenter;
 uniform bool celShading;
 uniform bool rimLight;
 
+struct Light
+{
+    vec4 position;
+    vec4 direction;
+    vec4 color;
+    
+    // x = type, y = volumeRadius, z = spotOuterCutoff, w = spotInnerCutoff
+    vec4 geometryParams;
+    
+    // x = energy, y = diffuseCoef, z = specularCoef, w = reserved (should be zero)
+    vec4 energyParams;
+};
+
+#define MAX_FIXED_LIGHTS 8
+
+layout(std140) uniform Lights
+{
+    Light lights[MAX_FIXED_LIGHTS];
+};
+
+uniform int numFixedLights;
+
 #include <gamma.glsl>
 #include <matcap.glsl>
 
@@ -96,6 +118,62 @@ void main()
         outputColor =
             diffuseColor * (ambientColor.rgb * ambientEnergy + lightColor * diffuseEnergy * sunEnergy) +
             lightColor * specularEnergy * sunEnergy;
+        
+        // Fixed lights
+        if (!celShading)
+        {
+            for (int i = 0; i < numFixedLights; i++)
+            {
+                vec3 lightPosition = lights[i].position.xyz;
+                vec3 lightDirection = lights[i].direction.xyz;
+                lightColor = toLinear(lights[i].color.rgb);
+                float lightType = lights[i].geometryParams.x;
+                float lightVolumeRadius = lights[i].geometryParams.y;
+                float lightSpotOuterCutoff = lights[i].geometryParams.z;
+                float lightSpotInnerCutoff = lights[i].geometryParams.w;
+                float lightEnergy = lights[i].energyParams.x;
+                float lightDiffuseCoef = lights[i].energyParams.y;
+                float lightSpecularCoef = lights[i].energyParams.z;
+                
+                float attenuation = 0.0;
+                
+                vec3 positionToLight = lightPosition - eyePosition;
+                float distanceToLight = length(positionToLight);
+                
+                if (lightType == 0.0)
+                {
+                    // Point light
+                    L = normalize(positionToLight);
+                    attenuation = pow(clamp(1.0 - (distanceToLight / max(lightVolumeRadius, 0.001)), 0.0, 1.0), 4.0) * lightEnergy;
+                }
+                else if (lightType == 1.0)
+                {
+                    // Spot light
+                    L = normalize(positionToLight);
+                    attenuation = pow(clamp(1.0 - (distanceToLight / max(lightVolumeRadius, 0.001)), 0.0, 1.0), 2.0) * lightEnergy;
+                    float spotCos = clamp(dot(L, normalize(lightDirection)), 0.0, 1.0);
+                    float spotValue = smoothstep(lightSpotOuterCutoff, lightSpotInnerCutoff, spotCos);
+                    attenuation *= spotValue;
+                }
+                else if (lightType == 2.0)
+                {
+                    // Sun light
+                    L = lightDirection;
+                    attenuation = lightEnergy;
+                }
+                
+                NL = max(dot(N, L), 0.0);
+                H = normalize(E + L);
+                NH = max(dot(N, H), 0.0);
+                
+                diffuseEnergy = NL;
+                specularEnergy = pow(NH, 128.0 * gloss) * gloss;
+                
+                outputColor +=
+                    (diffuseColor * lightColor * diffuseEnergy * lightDiffuseCoef +
+                     lightColor * specularEnergy * lightSpecularCoef) * attenuation;
+            }
+        }
     }
     
     // Shadow

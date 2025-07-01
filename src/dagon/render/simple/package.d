@@ -27,6 +27,8 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.render.simple;
 
+import std.algorithm;
+
 import dlib.core.ownership;
 import dlib.core.memory;
 import dlib.container.array;
@@ -35,8 +37,10 @@ import dlib.math.vector;
 
 import dagon.core.event;
 import dagon.core.bindings;
+import dagon.core.logger;
 import dagon.resource.scene;
 import dagon.graphics.entity;
+import dagon.graphics.light;
 import dagon.render.renderer;
 import dagon.render.framebuffer;
 import dagon.render.pipeline;
@@ -118,6 +122,8 @@ class SimpleRenderPass: RenderPass
     bool visible = true;
     Color4f debugColor;
     
+    Array!Light lights;
+    
     Vector3f shadowCenter = Vector3f(0.0f, 0.0f, 0.0f);
     float shadowMinRadius = 0.0f;
     float shadowMaxRadius = 1.0f;
@@ -131,6 +137,19 @@ class SimpleRenderPass: RenderPass
         defaultShader = New!SimpleForwardShader(this);
     }
     
+    ~this()
+    {
+        lights.free();
+    }
+    
+    Light addLight(Light light)
+    {
+        if (lights.length >= 8)
+            logWarning("SimpleRenderPass cannot handle more than 8 lights");
+        lights.append(light);
+        return light;
+    }
+    
     override void render()
     {
         if (group && visible)
@@ -139,6 +158,15 @@ class SimpleRenderPass: RenderPass
             glViewport(0, 0, view.width, view.height);
             
             state.environment = pipeline.environment;
+            
+            for (size_t i = 0; i < lights.length; i++)
+            {
+                if (i == state.lights.length)
+                    break;
+                state.lights[i] = lights[i];
+            }
+            
+            state.numLights = min(8, cast(uint)lights.length);
             
             state.debugColor = debugColor;
             

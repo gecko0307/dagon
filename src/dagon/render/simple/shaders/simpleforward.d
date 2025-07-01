@@ -37,6 +37,7 @@ import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
+import dlib.math.utils;
 import dlib.image.color;
 import dlib.text.str;
 
@@ -47,6 +48,19 @@ import dagon.graphics.shader;
 import dagon.graphics.state;
 import dagon.graphics.light;
 import dagon.graphics.pose;
+
+struct UBOLight
+{
+    Vector4f position;
+    Vector4f direction;
+    Vector4f color;
+    
+    // x = type, y = volumeRadius, z = spotOuterCutoff, w = spotInnerCutoff
+    Vector4f geometryParams;
+    
+    // x = energy, y = diffuseCoef, z = specularCoef, w = reserved (should be zero)
+    Vector4f energyParams;
+}
 
 class SimpleForwardShader: Shader
 {
@@ -96,6 +110,13 @@ class SimpleForwardShader: Shader
     
     ShaderParameter!Color4f debugHighlightColor;
     ShaderParameter!float debugHighlightCoef;
+    
+    UBOLight[8] lights;
+    GLuint uboLights;
+    GLuint uboLightsIndex;
+    GLuint lightsBinding = 0;
+    
+    ShaderParameter!int numFixedLights;
     
    public:
     Vector3f shadowCenter = Vector3f(0.0f, 0.0f, 0.0f);
@@ -155,6 +176,16 @@ class SimpleForwardShader: Shader
         
         debugHighlightColor = createParameter!Color4f("debugHighlightColor");
         debugHighlightCoef = createParameter!float("debugHighlightCoef");
+        
+        glGenBuffers(1, &uboLights);
+        glBindBuffer(GL_UNIFORM_BUFFER, uboLights);
+        glBufferData(GL_UNIFORM_BUFFER, UBOLight.sizeof * lights.length, lights.ptr, GL_STATIC_DRAW);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        
+        uboLightsIndex = glGetUniformBlockIndex(prog.program, "Lights");
+        glUniformBlockBinding(prog.program, uboLightsIndex, lightsBinding);
+        
+        numFixedLights = createParameter!int("numFixedLights");
     }
 
     ~this()
@@ -199,6 +230,7 @@ class SimpleForwardShader: Shader
             skinned = false;
         }
         
+        /// Lights
         Light sun = mat.sun;
         if (sun is null && state.environment !is null)
             sun = state.environment.sun;
@@ -218,6 +250,57 @@ class SimpleForwardShader: Shader
             sunColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
             sunEnergy = 1.0f;
         }
+        
+        foreach(i, light; state.lights)
+        {
+            if (light)
+            {
+                Vector4f lightPosition = Vector4f(light.positionAbsolute);
+                lightPosition.w = 1.0f;
+                lights[i].position = lightPosition * state.viewMatrix;
+                
+                Vector4f lightDirection = Vector4f(light.directionAbsolute);
+                lightDirection.w = 0.0f;
+                lights[i].direction = lightDirection * state.viewMatrix;
+                
+                float lightType;
+                switch(light.type)
+                {
+                    case LightType.AreaSphere: lightType = 0.0f; break;
+                    case LightType.Spot: lightType = 1.0f; break;
+                    case LightType.Sun: lightType = 2.0f; break;
+                    default: lightType = 0.0f; break;
+                }
+                lights[i].color = light.color;
+                lights[i].geometryParams = Vector4f(
+                    lightType,
+                    light.volumeRadius,
+                    cos(degtorad(light.spotOuterCutoff)),
+                    cos(degtorad(light.spotInnerCutoff))
+                );
+                lights[i].energyParams = Vector4f(
+                    light.energy,
+                    light.diffuse,
+                    light.specular,
+                    0.0f
+                );
+            }
+            else
+            {
+                lights[i].position = Vector4f(0.0f, 0.0f, 0.0f, 1.0f);
+                lights[i].direction = Vector4f(0.0f, 0.0f, 1.0f, 0.0f);
+                lights[i].color = Vector4f(0.0f, 0.0f, 0.0f, 1.0f);
+                lights[i].geometryParams = Vector4f(0.0f, 0.0f, 0.0f, 0.0f);
+                lights[i].energyParams = Vector4f(0.0f, 0.0f, 0.0f, 0.0f);
+            }
+        }
+        
+        numFixedLights = state.numLights;
+        
+        glBindBuffer(GL_UNIFORM_BUFFER, uboLights);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, UBOLight.sizeof * lights.length, lights.ptr);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        glBindBufferBase(GL_UNIFORM_BUFFER, lightsBinding, uboLights);
         
         shaded = !mat.shadeless;
         gloss = max(0.001f, 1.0f - mat.roughnessFactor);

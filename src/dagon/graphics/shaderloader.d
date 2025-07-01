@@ -190,7 +190,7 @@ private bool checkCompilation(const GLuint shaderID, const ShaderStage stage)
         
         // it can be some warning
         if (!ok)
-            logError("Failed to compile %s shader:", stage);
+            logError("Failed to compile ", stage, " shader");
         logWarning(s);
     }
     return ok;

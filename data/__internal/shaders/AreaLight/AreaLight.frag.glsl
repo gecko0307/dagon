@@ -29,7 +29,6 @@ uniform vec4 lightColor;
 uniform float lightEnergy;
 uniform float lightSpotCosCutoff;
 uniform float lightSpotCosInnerCutoff;
-uniform float lightSpotExponent;
 uniform vec3 lightSpotDirection;
 uniform float lightSpecular;
 uniform float lightDiffuse;
@@ -159,7 +158,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceAreaTube(
 
     vec3 positionToLightSource = (lightPosition + lightPosition2) * 0.5 - pos;
     float distanceToLight = length(positionToLightSource);
-    float attenuation = pow(clamp(1.0 - (distanceToLight / lightRadius), 0.0, 1.0), 4.0) * lightEnergy;
+    float attenuation = pow(clamp(1.0 - (distanceToLight / max(lightRadius, 0.001)), 0.0, 1.0), 4.0) * lightEnergy;
 
     vec3 Lpt = normalize(positionToLightSource);
 
@@ -212,7 +211,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceSpot(
     vec3 positionToLightSource = lightPosition - pos;
     float distanceToLight = length(positionToLightSource);
     vec3 L = normalize(positionToLightSource);
-    float attenuation = pow(clamp(1.0 - (distanceToLight / lightRadius), 0.0, 1.0), 2.0) * lightEnergy;
+    float attenuation = pow(clamp(1.0 - (distanceToLight / max(lightRadius, 0.001)), 0.0, 1.0), 2.0) * lightEnergy;
 
     float spotCos = clamp(dot(L, normalize(lightSpotDirection)), 0.0, 1.0);
     float spotValue = smoothstep(lightSpotCosCutoff, lightSpotCosInnerCutoff, spotCos);
@@ -224,7 +223,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceSpot(
     float LH = max(dot(L, H), 0.0);
 
     float NDF = distributionGGX(N, H, roughness);
-    float G = geometrySmith(N, E, L, roughness);      
+    float G = geometrySmith(N, E, L, roughness);
     vec3 F = fresnel(max(dot(H, E), 0.0), f0);
     
     vec3 kD = vec3(1.0) - F;

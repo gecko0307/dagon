@@ -136,6 +136,12 @@ struct GraphicsState
     /// Main light affecting the draw call.
     Light light;
 
+    /// Fixed lights array for forward pipelines.
+    Light[8] lights;
+    
+    /// Number of fixed lights.
+    uint numLights;
+
     /// Skeletal pose for GPU skinning.
     Pose pose;
 
@@ -216,6 +222,8 @@ struct GraphicsState
         shader = null;
         environment = null;
         light = null;
+        lights[] = null;
+        numLights = 0;
         pose = null;
 
         colorMask = true;
