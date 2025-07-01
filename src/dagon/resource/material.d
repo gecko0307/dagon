@@ -353,6 +353,10 @@ class MaterialAsset: Asset
             material.useCulling = props["useCulling"].toBool;
         if ("sphericalNormal" in props)
             material.sphericalNormal = props["sphericalNormal"].toBool;
+        if ("celShading" in props)
+            material.celShading = props["celShading"].toBool;
+        if ("rimLight" in props)
+            material.rimLight = props["rimLight"].toBool;
         if ("colorWrite" in props)
             material.colorWrite = props["colorWrite"].toBool;
         if ("depthWrite" in props)

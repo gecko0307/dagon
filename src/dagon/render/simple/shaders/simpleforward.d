@@ -91,6 +91,9 @@ class SimpleForwardShader: Shader
     ShaderParameter!float sfShadowMaxRadius;
     ShaderParameter!float sfShadowOpacity;
     
+    ShaderParameter!int celShading;
+    ShaderParameter!int rimLight;
+    
     ShaderParameter!Color4f debugHighlightColor;
     ShaderParameter!float debugHighlightCoef;
     
@@ -146,6 +149,9 @@ class SimpleForwardShader: Shader
         sfShadowMinRadius = createParameter!float("shadowMinRadius");
         sfShadowMaxRadius = createParameter!float("shadowMaxRadius");
         sfShadowOpacity = createParameter!float("shadowOpacity");
+        
+        celShading = createParameter!int("celShading");
+        rimLight = createParameter!int("rimLight");
         
         debugHighlightColor = createParameter!Color4f("debugHighlightColor");
         debugHighlightCoef = createParameter!float("debugHighlightCoef");
@@ -255,6 +261,10 @@ class SimpleForwardShader: Shader
         sfShadowMinRadius = shadowMinRadius;
         sfShadowMaxRadius = shadowMaxRadius;
         sfShadowOpacity = shadowOpacity;
+        
+        // Cel shading
+        celShading = mat.celShading;
+        rimLight = mat.rimLight;
         
         // Debug highligting
         debugHighlightColor = state.debugColor;

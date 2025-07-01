@@ -211,6 +211,12 @@ class Material: Owner
 
     /// If `true`, use spherical normal mapping.
     bool sphericalNormal = false;
+    
+    /// Enables cel shading (pipeline-specific)
+    bool celShading = false;
+    
+    /// Enables rim light (pipeline-specific)
+    bool rimLight = false;
 
     /// If `false`, disables writing to the color buffer.
     bool colorWrite = true;

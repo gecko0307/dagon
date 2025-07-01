@@ -23,6 +23,8 @@ uniform float shadowMinRadius;
 uniform float shadowMaxRadius;
 uniform float shadowOpacity;
 uniform vec3 shadowCenter;
+uniform bool celShading;
+uniform bool rimLight;
 
 #include <gamma.glsl>
 #include <matcap.glsl>
@@ -75,14 +77,25 @@ void main()
         vec3 H = normalize(E + L);
         float NH = max(dot(N, H), 0.0);
         
-        float diffuseEnergy = NL * sunEnergy;
-        float specularEnergy = pow(NH, 128.0 * gloss) * gloss * sunEnergy;
+        float diffuseEnergy = NL;
+        float specularEnergy = pow(NH, 128.0 * gloss) * gloss;
+        
+        if (celShading)
+        {
+            diffuseEnergy = diffuseEnergy > 0.001? 1.0 : 0.0;
+            specularEnergy = specularEnergy > 0.2? 1.0 : 0.0;
+            if (rimLight)
+            {
+                float rim = (1.0 - dot(E, N)) * NL;
+                specularEnergy += rim > 0.6? 1.0 : 0.0;
+            }
+        }
         
         vec3 lightColor = toLinear(sunColor.rgb);
         
         outputColor =
-            diffuseColor * (ambientColor.rgb * ambientEnergy + lightColor * diffuseEnergy) +
-            lightColor * specularEnergy;
+            diffuseColor * (ambientColor.rgb * ambientEnergy + lightColor * diffuseEnergy * sunEnergy) +
+            lightColor * specularEnergy * sunEnergy;
     }
     
     // Shadow
