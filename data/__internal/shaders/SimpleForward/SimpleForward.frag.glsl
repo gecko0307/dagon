@@ -92,9 +92,9 @@ void main()
     if (outputAlpha < alphaTestThreshold)
         discard;
     
-    // Sun light
     if (shaded)
     {
+        // Sun light
         float NL = max(dot(N, L), 0.0);
         vec3 H = normalize(E + L);
         float NH = max(dot(N, H), 0.0);
@@ -119,7 +119,7 @@ void main()
             diffuseColor * (ambientColor.rgb * ambientEnergy + lightColor * diffuseEnergy * sunEnergy) +
             lightColor * specularEnergy * sunEnergy;
         
-        // Fixed lights
+        // Fixed lights (maximum 8 lights per pass)
         if (!celShading)
         {
             for (int i = 0; i < numFixedLights; i++)
