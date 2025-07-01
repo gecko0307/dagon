@@ -4,7 +4,8 @@ Dagon 0.25.0 - TBD
   - `DProperty` now support matrices (`DProperty.toMatrix3x3f`, `DProperty.toMatrix4x4f`). Syntactically, a matrix is defined as an array of 9 or 16 row-ordered values
 - **Rendering**
   - `Entity.opacity` is now supported in HUD pass
-  - `Material.emissionEnergy` is now supported in Sky shader;
+  - `Material.emissionEnergy` is now supported in Sky shader
+  - Cel shading support in the simple rendering pipeline. New properties `Material.celShading` and `Material.rimLight`
 - **Animation**
   - `Entity.opacity` can now be tweened. New methods `Entity.fadeIn`, `Entity.fadeOut` to animate opacity
 - **UI**
