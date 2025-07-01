@@ -2,6 +2,8 @@
 
 [Dagon](https://github.com/gecko0307/dagon) is an Open Source 3D game development framework based on OpenGL 4.0 core profile and SDL2. The goal of this project is to create a modern, easy to use, extensible 3D game engine for [D language](https://dlang.org/).
 
+> Note: this project is not connected to Dagon engine by Senscape. Also not to be confused with Dagor engine by Gaijin Entertainment.
+
 Dagon uses modern graphics techniques and so requires a fairly powerful graphics card to run (at least Turing-based NVIDIA cards are recommended). The engine works on Windows and Linux, support for mobile and web platforms is not planned.
 
 The engine is still under development and lacks some of the planned features. Follow the development on [Trello](https://trello.com/b/4sDgRjZI/dagon-development-board) to see the priority tasks.
