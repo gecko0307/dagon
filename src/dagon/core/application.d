@@ -80,7 +80,10 @@ version(Windows)
 void exitWithError(string message = "")
 {
     if (message.length)
+    {
         logFatalError(message);
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", message.toStringz, null);
+    }
     core.stdc.stdlib.exit(1);
 }
 
