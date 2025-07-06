@@ -5,7 +5,7 @@ Dagon 0.25.0 - TBD
 - **Rendering**
   - `Entity.opacity` is now supported in HUD pass
   - `Material.emissionEnergy` is now supported in Sky shader
-  - Lighting support in the simple rendering pipeline (fixed array of 8 lights per layer). `SimpleRenderPass.addLight` method
+  - Lighting support in the simple rendering pipeline (fixed array of 8 lights per render layer). `SimpleRenderPass.addLight` method
   - `GraphicsState.lights` and `GraphicsState.numLights` properties to pass fixed lights to shaders
   - Cel shading support in the simple rendering pipeline. New properties `Material.celShading` and `Material.rimLight`
 - **Animation**
@@ -13,7 +13,7 @@ Dagon 0.25.0 - TBD
 - **UI**
   - New widget `FullscreenMediaView` that displays an image or video proportionally scaled to fit the application window. It can be used to render splash screens and cutscenes
 - **Assets**
-  - `MaterialAsset` is finally implemented. It can be used to store material definitions in files (using the same syntax as *.conf files)
+  - `MaterialAsset` is finally implemented. It can be used to store material definitions as text files (using the same syntax as *.conf files)
   - `TextureAsset.loaded` property that indicates the texture was successfully decoded
 - **Extensions**
   - Experimental `dagon:video` extension based on libVLC. The extension provides a `Video` object with `texture` property, which can be displayed on screen (see `FullscreenMediaView`) or applied to mesh materials.
