@@ -2,6 +2,7 @@ Dagon 0.25.0 - TBD
 ------------------
 - **Core**
   - `DProperty` now support matrices (`DProperty.toMatrix3x3f`, `DProperty.toMatrix4x4f`). Syntactically, a matrix is defined as an array of 9 or 16 row-ordered values
+  - `exitWithError` now shows error message box
 - **Rendering**
   - `Entity.opacity` is now supported in HUD pass
   - `Material.emissionEnergy` is now supported in Sky shader
