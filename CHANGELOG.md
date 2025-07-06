@@ -8,6 +8,7 @@ Dagon 0.25.0 - TBD
   - Lighting support in the simple rendering pipeline (fixed array of 8 lights per render layer). `SimpleRenderPass.addLight` method
   - `GraphicsState.lights` and `GraphicsState.numLights` properties to pass fixed lights to shaders
   - Cel shading support in the simple rendering pipeline. New properties `Material.celShading` and `Material.rimLight`
+  - Uniform blocks support for shaders (`UniformBlockParameter`) that are created from arrays of structs
 - **Animation**
   - `Entity.opacity` can now be tweened. New methods `Entity.fadeIn`, `Entity.fadeOut` to animate opacity
 - **UI**
