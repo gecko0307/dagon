@@ -46,6 +46,7 @@ import std.stdio;
 import std.string;
 import std.algorithm;
 import std.file;
+import std.traits;
 
 import dlib.core.ownership;
 import dlib.core.memory;
@@ -64,6 +65,23 @@ import dagon.core.logger;
 import dagon.graphics.shaderloader;
 import dagon.graphics.texture;
 import dagon.graphics.state;
+
+bool isFieldsOffsetAligned(T, alias numBytes)()
+{
+    static if (is(T == struct))
+    {
+        static foreach(f; T.tupleof)
+        {
+            static if (f.offsetof % numBytes != 0)
+                return false;
+        }
+        
+        return true;
+    }
+    else return false;
+}
+
+alias isStd140Compliant(T) = isFieldsOffsetAligned!(T, 16);
 
 // TODO: move to separate module
 class MappedList(T): Owner
@@ -420,6 +438,55 @@ class ShaderParameter(T): BaseShaderParameter
     }
 }
 
+class UniformBlockParameter(T): BaseShaderParameter if (isStd140Compliant!T)
+{
+    String _name;
+    T[] data;
+    GLuint uniformBuffer;
+    GLuint index;
+    GLuint binding;
+    
+    this(Shader shader, string name, uint length, uint binding)
+    {
+        super(shader, name);
+        this._name = String(name);
+        this.data = New!(T[])(length);
+        this.binding = binding;
+        initUniform();
+    }
+    
+    ~this()
+    {
+        glDeleteBuffers(1, &uniformBuffer);
+        _name.free();
+        Delete(data);
+    }
+    
+    override void initUniform()
+    {
+        glGenBuffers(1, &uniformBuffer);
+        glBindBuffer(GL_UNIFORM_BUFFER, uniformBuffer);
+        glBufferData(GL_UNIFORM_BUFFER, T.sizeof * data.length, data.ptr, GL_STATIC_DRAW);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        
+        index = glGetUniformBlockIndex(shader.program.program, _name.ptr);
+        glUniformBlockBinding(shader.program.program, index, binding);
+    }
+
+    override void bind()
+    {
+        glBindBuffer(GL_UNIFORM_BUFFER, uniformBuffer);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, T.sizeof * data.length, data.ptr);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        glBindBufferBase(GL_UNIFORM_BUFFER, binding, uniformBuffer);
+    }
+
+    override void unbind()
+    {
+        
+    }
+}
+
 /**
  * Base shader class.
  *
@@ -562,6 +629,27 @@ class Shader: Owner
         else
         {
             auto sp = New!(ShaderParameter!T)(this, name);
+            parameters.set(name, sp);
+            return sp;
+        }
+    }
+
+    /// Creates a uniform block parameter of type `T`.
+    UniformBlockParameter!T createBlockParameter(T)(string name, uint length, uint location)
+    {
+        if (name in parameters.indices)
+        {
+            auto sp = cast(UniformBlockParameter!T)parameters.get(name);
+            if (sp is null)
+            {
+                logWarning("Type mismatch for shader parameter \"%s\"", name);
+                return null;
+            }
+            return sp;
+        }
+        else
+        {
+            auto sp = New!(UniformBlockParameter!T)(this, name, length, location);
             parameters.set(name, sp);
             return sp;
         }

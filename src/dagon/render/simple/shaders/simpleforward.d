@@ -51,6 +51,7 @@ import dagon.graphics.pose;
 
 struct UBOLight
 {
+  align(16):
     Vector4f position;
     Vector4f direction;
     Vector4f color;
@@ -111,11 +112,7 @@ class SimpleForwardShader: Shader
     ShaderParameter!Color4f debugHighlightColor;
     ShaderParameter!float debugHighlightCoef;
     
-    UBOLight[8] lights;
-    GLuint uboLights;
-    GLuint uboLightsIndex;
-    GLuint lightsBinding = 0;
-    
+    UniformBlockParameter!UBOLight lightsBlock;
     ShaderParameter!int numFixedLights;
     
    public:
@@ -177,14 +174,7 @@ class SimpleForwardShader: Shader
         debugHighlightColor = createParameter!Color4f("debugHighlightColor");
         debugHighlightCoef = createParameter!float("debugHighlightCoef");
         
-        glGenBuffers(1, &uboLights);
-        glBindBuffer(GL_UNIFORM_BUFFER, uboLights);
-        glBufferData(GL_UNIFORM_BUFFER, UBOLight.sizeof * lights.length, lights.ptr, GL_STATIC_DRAW);
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-        
-        uboLightsIndex = glGetUniformBlockIndex(prog.program, "Lights");
-        glUniformBlockBinding(prog.program, uboLightsIndex, lightsBinding);
-        
+        lightsBlock = createBlockParameter!UBOLight("Lights", 8, 0);
         numFixedLights = createParameter!int("numFixedLights");
     }
 
@@ -251,6 +241,7 @@ class SimpleForwardShader: Shader
             sunEnergy = 1.0f;
         }
         
+        auto lights = lightsBlock.data;
         foreach(i, light; state.lights)
         {
             if (light)
@@ -296,11 +287,6 @@ class SimpleForwardShader: Shader
         }
         
         numFixedLights = state.numLights;
-        
-        glBindBuffer(GL_UNIFORM_BUFFER, uboLights);
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, UBOLight.sizeof * lights.length, lights.ptr);
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-        glBindBufferBase(GL_UNIFORM_BUFFER, lightsBinding, uboLights);
         
         shaded = !mat.shadeless;
         gloss = max(0.001f, 1.0f - mat.roughnessFactor);
