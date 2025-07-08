@@ -25,7 +25,7 @@ class MyScene: Scene
     
     override void afterLoad()
     {
-        video = New!Video(videoManager, 1920, 1080, assetManager);
+        video = New!Video(game.videoManager, 1920, 1080, assetManager);
         video.open("media/video.mp4");
         
         videoView = addWidget!FullscreenMediaView();
