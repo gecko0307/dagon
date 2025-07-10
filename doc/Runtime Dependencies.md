@@ -2,7 +2,7 @@
 
 ## Core Engine
 
-Dagon requires at least OpenGL 4.0, SDL2 2.30 + SDL2_Image 2.8. OpenGL library is usually provided by graphics card manufacturer. SDL2 and SDL2_Image can be obtained from the [official site](https://www.libsdl.org/), compiled from source or installed with a package manager such as APT.
+Dagon requires at least OpenGL 4.0, SDL2 2.30, SDL2_Image 2.8 and FreeType. OpenGL library is usually provided by graphics card manufacturer. SDL2 and SDL2_Image can be obtained from the [official site](https://www.libsdl.org/), compiled from source or installed with a package manager such as APT.
 
 Under Linux, if you want to use local libraries from application's working directory rather than from the system, add the following to your `dub.json`:
 
@@ -44,15 +44,15 @@ Then specify SDL2 install path when running cmake, for example `cmake .. -DCMAKE
 
 4. Under Linux, run `make && make install`. Under Windows, open and build generated Visual Studio project.
 
-### Freetype
+### FreeType
 
-Dagon requires `freetype-6.dll` under Windows and `libfreetype.so` under Linux. Minimal recommended version is 2.8.1. On 64-bit Windows, Dagon provides prebuilt Freetype, which is automatically copied to your project after compilation (if you are building with DUB). On Linux, Dagon relies on system-wide Freetype installation.
+Dagon requires `freetype-6.dll` under Windows and `libfreetype.so` under Linux. Minimal recommended version is 2.8.1. On 64-bit Windows, Dagon provides prebuilt FreeType, which is automatically copied to your project after compilation (if you are building with DUB). On Linux, Dagon relies on system-wide FreeType installation.
 
 ## dagon:exformats
 
 dagon:exformats extension provides a number of optional dependencies for SDL2_Image under Windows, which are required for WebP, AVIF and TIFF support.
 
-Under Linux, SDL2_Image, if configured, will use libwebp, libavif and libtiff from the system.
+Under Linux, if configured, SDL2_Image will use libwebp, libavif and libtiff from the system.
 
 On 64-bit Windows, the extension provides `libwebp-7.dll`, `libwebpdemux-2.dll`, `libavif-16.dll`, `libtiff-5.dll`, which are automatically copied to your project after compilation (if you are building with DUB).
 
