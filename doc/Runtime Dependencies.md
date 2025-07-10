@@ -103,3 +103,15 @@ Compiling from source:
 2. Download [PhysFS 3.2.0](https://github.com/icculus/physfs/releases/tag/release-3.2.0)
 3. Inside the PhysFS source directory, create `build` directory. Inside it, run `cmake ..`
 4. Under Linux, run `make`. Under Windows, open and build generated Visual Studio project.
+
+## dagon:assimp
+
+dagon:assimp extension requires [Open Asset Importer Library](https://github.com/assimp/assimp). It can be installed system-wide or placed to the project's folder.
+
+dagon:assimp requires `Assimp.dll` under Windows and `libassimp.so` under Linux. On 64-bit platforms, Dagon provides a prebuilt Assimp library, which is automatically copied to your project after compilation (if you are building with DUB).
+
+## dagon:video
+
+dagon:video extension requires [libVLC](https://www.videolan.org/vlc/libvlc.html) 3.0.21. It can be installed system-wide or placed to the project's folder.
+
+dagon:video requires `libvlccore.dll` and `libvlc.dll` under Windows and `libvlccore.so.9`, `libvlc.so` and `libidn.so.11` under Linux. On 64-bit platforms, Dagon provides prebuilt librares, which are automatically copied to your project after compilation (if you are building with DUB). Also a number of plugins are necessary for libVLC to work properly. They are stored in `plugins` folder under Windows and `plugins_linux` folder under Linux.
