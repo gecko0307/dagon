@@ -33,4 +33,5 @@ public
     import dagon.extra.starfieldsky;
     import dagon.extra.water;
     import dagon.extra.puddle;
+    import dagon.extra.verlet;
 }

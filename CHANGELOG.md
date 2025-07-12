@@ -1,5 +1,12 @@
-Dagon 0.25.0 - TBD
+Dagon 0.26.0 - TBD
 ------------------
+- **Assets**
+  - `GLTFPose` and `GLTFBlendedPose`, when animating, now update transformation matrices of entities associated with the skin joins. This allows, for instance, to use `Entity.positionAbsolute` to obtain exact world-space position of an animated joint taking the parent `Entity` transformation to account
+- **Extra**
+  - New module `dagon.extra.verlet` that implements `VerletChain`, a simple position-based dynamics for chain/rope simulation.
+
+Dagon 0.25.0 - 10 Jul, 2025
+---------------------------
 - **Core**
   - `DProperty` now support matrices (`DProperty.toMatrix3x3f`, `DProperty.toMatrix4x4f`). Syntactically, a matrix is defined as an array of 9 or 16 row-ordered values
   - `exitWithError` now shows error message box

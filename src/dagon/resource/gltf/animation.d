@@ -405,6 +405,7 @@ class GLTFPose: Pose
             foreach(i, joint; skin.joints)
             {
                 joint.updateLocalTransform();
+                joint.entity.updateTransformation();
             }
         }
         else
@@ -419,6 +420,7 @@ class GLTFPose: Pose
                 joint.entity.position = joint.bindPosePosition;
                 joint.entity.rotation = joint.bindPoseRotation;
                 joint.entity.scaling = joint.bindPoseScaling;
+                joint.entity.updateTransformation();
             }
         }
         
@@ -644,6 +646,7 @@ class GLTFBlendedPose: Pose
             joint.entity.scaling  = joint.scaling;
 
             joint.updateLocalTransform();
+            joint.entity.updateTransformation();
         }
         
         foreach(i, joint; skin.joints)
