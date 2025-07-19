@@ -40,6 +40,7 @@ DEALINGS IN THE SOFTWARE.
 module dagon.graphics.texproc;
 
 import std.stdio;
+import std.traits;
 
 import dlib.core.memory;
 import dlib.core.ownership;
@@ -244,13 +245,13 @@ void combineTextures(Texture[4] channels, Texture output)
 }
 
 /**
- * Combines up to four textures into a new output texture of the given size.
+ * Combines up to four textures into a new output texture of the given size using the GPU.
  *
  * Params:
  *   w        = Output texture width.
  *   h        = Output texture height.
  *   channels = Array of up to four input textures.
- *   owner    = Owner object for memory/resource management.
+ *   owner    = Owner object for resulting texture.
  * Returns:
  *   The combined output texture.
  */
@@ -261,4 +262,137 @@ Texture combineTextures(uint w, uint h, Texture[4] channels, Owner owner)
     combineTextures(channels, output);
     output.generateMipmap();
     return output;
+}
+
+class CubemapGeneratorShader: Shader
+{
+    String vs, fs;
+    Texture envmap;
+    CubeFace cubeFace;
+    
+    this(Texture envmap, Owner owner)
+    {
+        vs = Shader.load("data/__internal/shaders/CubemapGenerator/CubemapGenerator.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/CubemapGenerator/CubemapGenerator.frag.glsl");
+
+        auto myProgram = New!ShaderProgram(vs, fs, this);
+        super(myProgram, owner);
+        
+        this.envmap = envmap;
+    }
+    
+    ~this()
+    {
+        vs.free();
+        fs.free();
+    }
+    
+    override void bindParameters(GraphicsState* state)
+    {
+        glActiveTexture(GL_TEXTURE0);
+        setParameter("envmap", cast(int)0);
+        envmap.bind();
+        
+        Matrix4x4f pixelToWorldMatrix = cubeFaceMatrix(cubeFace);
+        setParameter("pixelToWorldMatrix", pixelToWorldMatrix);
+        
+        super.bindParameters(state);
+    }
+    
+    override void unbindParameters(GraphicsState* state)
+    {
+        super.unbindParameters(state);
+        
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+}
+
+/**
+ * Creates a cubemap texture from an equirectangular environment map using the GPU.
+ *
+ * Params:
+ *   inputEnvmap = Input texture.
+ *   output      = Output cubemap to write the result to.
+ */
+void generateCubemap(Texture inputEnvmap, Texture output)
+{
+    ScreenSurface screenSurface = New!ScreenSurface(null);
+    CubemapGeneratorShader shader = New!CubemapGeneratorShader(inputEnvmap, null);
+    
+    GraphicsState state;
+    state.reset();
+    state.resolution = Vector2f(output.size.width, output.size.height);
+    
+    GLuint framebuffer;
+    glGenFramebuffers(1, &framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    
+    GLenum drawBuffer = GL_COLOR_ATTACHMENT0;
+    glDrawBuffers(1, &drawBuffer);
+    
+    foreach(cubeFace; EnumMembers!CubeFace)
+    {
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, cubeFace, output.texture, 0);
+        
+        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        if (status != GL_FRAMEBUFFER_COMPLETE)
+        {
+            logError("generateCubemap failed: framebuffer status = ", status);
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glDeleteFramebuffers(1, &framebuffer);
+            return;
+        }
+        
+        glScissor(0, 0, output.size.width, output.size.height);
+        glViewport(0, 0, output.size.width, output.size.height);
+        
+        glDisable(GL_DEPTH_TEST);
+        glDepthMask(GL_FALSE);
+        
+        shader.cubeFace = cubeFace;
+        shader.bind();
+        shader.bindParameters(&state);
+        screenSurface.render(&state);
+        shader.unbindParameters(&state);
+        shader.unbind();
+        
+        glDepthMask(GL_TRUE);
+        glEnable(GL_DEPTH_TEST);
+    }
+    
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDeleteFramebuffers(1, &framebuffer);
+    
+    Delete(shader);
+    Delete(screenSurface);
+}
+
+/**
+ * Creates a cubemap texture from an equirectangular environment map using the GPU.
+ *
+ * Params:
+ *   resolution  = Output cubemap width.
+ *   inputEnvmap = Input texture.
+ *   owner       = Owner object for resulting cubemap.
+ * Returns:
+ *   The cubemap texture.
+ */
+Texture generateCubemap(uint resolution, Texture inputEnvmap, Owner owner)
+{
+    TextureFormat format = {
+        target: GL_TEXTURE_CUBE_MAP,
+        format: GL_RGBA,
+        internalFormat: GL_RGBA16F,
+        pixelType: GL_HALF_FLOAT,
+        blockSize: 0,
+        cubeFaces: CubeFaceBit.All
+    };
+    
+    Texture cubemap = New!Texture(owner);
+    cubemap.createBlankCubemap(format, resolution);
+    generateCubemap(inputEnvmap, cubemap);
+    cubemap.generateMipmap();
+    
+    return cubemap;
 }

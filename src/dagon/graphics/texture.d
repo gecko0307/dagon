@@ -565,6 +565,39 @@ class Texture: Owner
             logError("Texture creation failed: unsupported target ", format.target);
     }
     
+    void createBlankCubemap(TextureFormat format, uint resolution)
+    {
+        release();
+        
+        this.generateMipmaps = false;
+        this.format = format;
+        this.size = TextureSize(resolution, resolution, 1);
+        this.mipLevels = 1;
+        
+        glGenTextures(1, &texture);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+        
+        minFilter = GL_LINEAR;
+        magFilter = GL_LINEAR;
+        wrapS = GL_CLAMP_TO_EDGE;
+        wrapT = GL_CLAMP_TO_EDGE;
+        wrapR = GL_CLAMP_TO_EDGE;
+        
+        uint pSize = pixelSize;
+        uint faceDataSize = resolution * resolution * pSize;
+        ubyte[] faceData = New!(ubyte[])(faceDataSize);
+        
+        foreach(cubeFace; EnumMembers!CubeFace)
+        {
+            glTexImage2D(cubeFace, 0, format.internalFormat, resolution, resolution, 0, format.format, format.pixelType, cast(void*)(faceData.ptr));
+        }
+        
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+        
+        Delete(faceData);
+    }
+    
     /**
      * Creates a cubemap texture from a buffer.
      */
@@ -903,7 +936,8 @@ class Texture: Owner
     }
     
     /**
-     * Creates a cubemap texture from an equirectangular environment map.
+     * Creates a cubemap texture from an equirectangular environment map on the CPU side.
+     * Warning: this is slow! Use the GPU-accelerated generator (generateCubemap from dagon.graphics.texproc) if you do this regularly and don't cache the resulting cubemap.
      */
     void createFromEquirectangularMap(SuperImage envmap, uint resolution, bool generateMipmaps = true)
     {
