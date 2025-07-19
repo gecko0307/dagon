@@ -49,6 +49,7 @@ import core.stdc.stdlib;
 import core.stdc.string;
 
 import dlib.core.memory;
+import dlib.core.stream;
 import dlib.image;
 import dlib.filesystem;
 import dlib.text.str;
@@ -310,6 +311,8 @@ enum Cursor: uint
  */
 class Application: EventListener
 {
+    StdFileSystem fs;
+    
     SDLSupport loadedSDLSupport;
     SDLImageSupport loadedSDLImageSupport;
     GLSupport loadedGLSupport;
@@ -354,6 +357,8 @@ class Application: EventListener
      */
     this(uint winWidth, uint winHeight, bool fullscreen, string windowTitle, string[] args)
     {
+        fs = New!StdFileSystem();
+        
         version(linux)
             loadedSDLSupport = loadSDL("libSDL2-2.0.so.0");
         else
@@ -585,6 +590,8 @@ class Application: EventListener
             FT_Done_FreeType(ftLibrary);
         
         freeLogBuffer();
+        
+        Delete(fs);
     }
     
     /**
@@ -801,5 +808,17 @@ class Application: EventListener
         int refreshRate = displayRefreshRate();
         cadencer.setFrequency(refreshRate);
         return refreshRate;
+    }
+    
+    InputStream openFile(string filename)
+    {
+        FileStat stat;
+        if (fs.stat(filename, stat))
+            return fs.openForInput(filename);
+        else
+        {
+            logError(filename, " is not found");
+            return null;
+        }
     }
 }

@@ -46,6 +46,7 @@ import std.stdio;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.core.stream;
 import dlib.container.dict;
 
 import dagon.core.logger;
@@ -168,6 +169,18 @@ class Game: Application
         postProcessingRenderer.fxaaEnabled = false;
         postProcessingRenderer.lutEnabled = false;
         postProcessingRenderer.lensDistortionEnabled = false;
+        
+        string brdfFilename = "data/__internal/textures/brdf.dds";
+        InputStream istrm = openFile(brdfFilename);
+        if (istrm)
+        {
+            deferredRenderer.loadDefaultBRDF(istrm);
+            Delete(istrm);
+        }
+        else
+        {
+            logWarning(brdfFilename, " not found");
+        }
     }
     
     /// Destructor for the `Game` class.

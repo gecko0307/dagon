@@ -29,10 +29,13 @@ module dagon.render.deferred;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.core.stream;
 
 import dagon.core.event;
 import dagon.core.time;
+import dagon.graphics.texture;
 import dagon.resource.scene;
+import dagon.resource.dds;
 import dagon.render.renderer;
 import dagon.render.view;
 import dagon.render.framebuffer;
@@ -44,6 +47,8 @@ import dagon.render.postproc.shaders.denoise;
 
 class DeferredRenderer: Renderer
 {
+    Texture brdf;
+    
     GBuffer gbuffer;
     PassShadow passShadow;
     PassBackground passBackground;
@@ -176,6 +181,26 @@ class DeferredRenderer: Renderer
         passParticles.view = view;
         passParticles.outputBuffer = outputBuffer;
         passParticles.gbuffer = gbuffer;
+    }
+    
+    void loadDefaultBRDF(InputStream istrm)
+    {
+        if (brdf)
+        {
+            deleteOwnedObject(brdf);
+            brdf = null;
+        }
+        
+        TextureBuffer brdfTextureBuffer;
+        bool brdfLoaded = loadDDS(istrm, &brdfTextureBuffer);
+        if (brdfLoaded)
+        {
+            brdf = New!Texture(this);
+            brdf.createFromBuffer(brdfTextureBuffer, false);
+            brdf.useMipmapFiltering = false;
+            brdf.enableRepeat(false);
+            Delete(brdfTextureBuffer.data);
+        }
     }
 
     override void scene(Scene s)
