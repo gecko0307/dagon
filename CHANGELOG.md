@@ -3,6 +3,8 @@ Dagon 0.26.0 - TBD
 - **Graphics components**
   - GPU-accelerated cubemap generator - `dagon.graphics.texproc.generateCubemap`. It is a high-performant replacement for `Texture.createFromEquirectangularMap`
   - New method `Texture.createBlankCubemap`
+- **Rendering**
+  - `DeferredRenderer.brdf` - default BRDF LUT loaded from data/__internal/textures/brdf.dds. You can use assign it to `Environment.ambientBRDF` to get physically-based Fresnel responce: `environment.ambientBRDF = game.deferredRenderer.brdf;`
 - **Assets**
   - `GLTFPose` and `GLTFBlendedPose`, when animating, now update transformation matrices of entities associated with the skin joins. This allows, for instance, to use `Entity.positionAbsolute` to obtain exact world-space position of an animated joint taking the parent `Entity` transformation to account
 - **Extra**
