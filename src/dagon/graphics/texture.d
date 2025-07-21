@@ -506,7 +506,7 @@ class Texture: Owner
     }
     
     /**
-     * Creates a 3D texture from a 2D image
+     * Creates a 3D texture from a 2D image using SuperImage as input
      */
     void createFromImage3D(SuperImage img, uint size = 0)
     {
@@ -533,6 +533,39 @@ class Texture: Owner
         buff.mipLevels = 1;
         buff.data = img.data;
         createFromBuffer(buff, false);
+        minFilter = GL_LINEAR;
+        magFilter = GL_LINEAR;
+        wrapS = GL_CLAMP_TO_EDGE;
+        wrapT = GL_CLAMP_TO_EDGE;
+        wrapR = GL_CLAMP_TO_EDGE;
+    }
+    
+    /**
+     * Creates a 3D texture from a 2D image using TextureBuffer as input
+     */
+    void createFromBuffer3D(TextureBuffer buff, uint size = 0)
+    {
+        if (size == 0)
+        {
+            size = cast(uint)cbrt(buff.size.width * buff.size.height);
+        }
+        else
+        {
+            if (buff.size.width != buff.size.height || buff.size.width * buff.size.height != size * size * size)
+            {
+                uint s = cast(uint)sqrt(cast(real)size * size * size);
+                logError("Wrong image resolution for 3D texture size ", size, ": should be ", s, "x", s);
+                return;
+            }
+        }
+        
+        TextureBuffer buff3d;
+        buff3d.format = buff.format;
+        buff3d.format.target = GL_TEXTURE_3D;
+        buff3d.size = TextureSize(size, size, size);
+        buff3d.mipLevels = 1;
+        buff3d.data = buff.data;
+        createFromBuffer(buff3d, false);
         minFilter = GL_LINEAR;
         magFilter = GL_LINEAR;
         wrapS = GL_CLAMP_TO_EDGE;

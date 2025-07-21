@@ -109,6 +109,12 @@ class TextureAsset: Asset
     /// If `true`, generate mip levels.
     bool generateMipmaps = true;
     
+    ///
+    bool loadAs3D = false;
+    
+    ///
+    uint resolution3D = 0;
+    
     /// Loader-specific option.
     uint loaderOption = 0;
     
@@ -198,7 +204,10 @@ class TextureAsset: Asset
         
         if (buffer.data.length)
         {
-            texture.createFromBuffer(buffer, generateMipmaps);
+            if (loadAs3D && buffer.format.target != GL_TEXTURE_3D)
+                texture.createFromBuffer3D(buffer, resolution3D);
+            else
+                texture.createFromBuffer(buffer, generateMipmaps);
             if (!persistent)
                 releaseBuffer();
             if (texture.valid)
@@ -208,7 +217,10 @@ class TextureAsset: Asset
         }
         else if (image !is null)
         {
-            texture.createFromImage(image, generateMipmaps);
+            if (loadAs3D)
+                texture.createFromImage3D(image, resolution3D);
+            else
+                texture.createFromImage(image, generateMipmaps);
             if (!persistent)
                 releaseBuffer();
             if (texture.valid)
