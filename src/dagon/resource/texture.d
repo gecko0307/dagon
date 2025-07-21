@@ -80,9 +80,9 @@ struct ConversionOptions
  * Represents a texture asset.
  *
  * Description:
- * The `TextureAsset` class manages the GPU texture,
- * optional dlib image, temporary buffer, conversion options,
- * and loader-specific flags.
+ * The `TextureAsset` class loads an image to the GPU texture
+ * using a `TextureLoader` defined for the given file extension
+ * in the `AssetManager`.
  */
 class TextureAsset: Asset
 {
