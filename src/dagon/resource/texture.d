@@ -109,7 +109,7 @@ class TextureAsset: Asset
     /// If `true`, generate mip levels.
     bool generateMipmaps = true;
     
-    ///
+    /// If true, the input image will be interpreted as 3D texture
     bool loadAs3D = false;
     
     ///
