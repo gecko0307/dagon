@@ -6,6 +6,8 @@ Dagon 0.26.0 - TBD
 - **Rendering**
   - `DeferredRenderer.brdf` - default BRDF LUT loaded from data/__internal/textures/brdf.dds. You can use assign it to `Environment.ambientBRDF` to get physically-based Fresnel responce: `environment.ambientBRDF = game.deferredRenderer.brdf;`
 - **Assets**
+  - `TextureAsset` now can interpret 2D images as 3D if `loadAs3D` property is set to true. This is useful to load Hald CLUTs directly to 3D textures
+  - New method `Texture.createFromBuffer3D`
   - `GLTFPose` and `GLTFBlendedPose`, when animating, now update transformation matrices of entities associated with the skin joins. This allows, for instance, to use `Entity.positionAbsolute` to obtain exact world-space position of an animated joint taking the parent `Entity` transformation to account
 - **Extra**
   - New module `dagon.extra.verlet` that implements `VerletChain`, a simple position-based dynamics for chain/rope simulation.
