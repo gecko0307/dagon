@@ -4,7 +4,7 @@ Dagon 0.26.0 - TBD
   - GPU-accelerated cubemap generator - `dagon.graphics.texproc.generateCubemap`. It is a high-performant replacement for `Texture.createFromEquirectangularMap`
   - New method `Texture.createBlankCubemap`
 - **Rendering**
-  - `DeferredRenderer.brdf` - default BRDF LUT loaded from data/__internal/textures/brdf.dds. You can use assign it to `Environment.ambientBRDF` to get physically-based Fresnel responce: `environment.ambientBRDF = game.deferredRenderer.brdf;`
+  - `DeferredRenderer.brdf` - default BRDF LUT loaded from data/__internal/textures/brdf.dds. You can assign it to `Environment.ambientBRDF` to get physically-based Fresnel responce: `environment.ambientBRDF = game.deferredRenderer.brdf;`
 - **Assets**
   - `TextureAsset` now can interpret 2D images as 3D if `loadAs3D` property is set to true. This is useful to load Hald CLUTs directly to 3D textures
   - New method `Texture.createFromBuffer3D`
