@@ -328,7 +328,6 @@ VirtualFileSystem globalVFS()
  */
 class Application: EventListener
 {
-    protected string defaultAppFolder = ".dagon";
     string appFolder;
     
     VirtualFileSystem vfs;
@@ -379,9 +378,9 @@ class Application: EventListener
      *   args = Command line arguments.
      *   appFolder = The application folder name (used under the HOME or APPDATA directory).
      */
-    this(uint winWidth, uint winHeight, bool fullscreen, string windowTitle, string[] args, string appFolder = "")
+    this(uint winWidth, uint winHeight, bool fullscreen, string windowTitle, string[] args, string appFolder = ".dagon")
     {
-        setAppFolder(appFolder);
+        this.appFolder = appFolder;
         createVFS();
         
         config = New!Configuration(vfs, this);
@@ -613,14 +612,6 @@ class Application: EventListener
         cursor[Cursor.SizeAll] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL);
         cursor[Cursor.No] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO);
         cursor[Cursor.Hand] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
-    }
-    
-    protected void setAppFolder(string folderName)
-    {
-        if (folderName.length)
-            appFolder = folderName;
-        else
-            appFolder = defaultAppFolder;
     }
     
     protected void createVFS()
@@ -877,6 +868,7 @@ class Application: EventListener
     /// Mounts the specified directory to the virtual file system.
     void mount(string dirName)
     {
+        // TODO: create folder if needed
         vfs.mount(dirName);
         if (dirName == ".")
             logInfo("VFS: mounted working directory");

@@ -114,7 +114,7 @@ class Game: Application
      *   title = Default window title (if `windowTitle` not defined in `setting.conf`).
      *   args = Optional command line arguments.
      */
-    this(uint w, uint h, bool fullscreen, string title, string[] args, string appFolder = "")
+    this(uint w, uint h, bool fullscreen, string title, string[] args, string appFolder = ".dagon")
     {
         super(w, h, fullscreen, title, args, appFolder);
         
