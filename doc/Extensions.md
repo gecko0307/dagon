@@ -2,7 +2,7 @@ Dagon Extensions
 ================
 Some functionality in Dagon is implemented via extension mechanism. Extensions are [DUB sub-packages](https://dub.pm/dub-reference/subpackages/) and should be explicitly added as dependencies to your project, for example:
 
-`dub add dagon:newton` - adds Newton extension available as `dagon.newton` package import.
+`dub add dagon:newton` - adds Newton extension available as `dagon.ext.newton` package import.
 
 All extensions are experimental and not guaranteed to work on all platforms. Some of them require installing third-party libraries.
 
