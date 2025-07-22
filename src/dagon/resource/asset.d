@@ -320,7 +320,6 @@ class AssetManager: Owner
     
     Dict!(Asset, string) assetsByFilename;
     
-    // TODO: use Application.vfs instead
     VirtualFileSystem fs;
     StdFileSystem stdfs;
     
@@ -364,10 +363,13 @@ class AssetManager: Owner
         registerTextureLoader(".svg", defaultTextureLoader);
         
         assetsByFilename = New!(Dict!(Asset, string));
+        
+        // TODO: use Application.vfs instead of creating own VFS
         fs = New!VirtualFileSystem();
         stdfs = New!StdFileSystem();
         fs.mount(stdfs);
         fs.mount(".");
+        
         imageFactory = New!UnmanagedImageFactory();
         hdrImageFactory = New!UnmanagedHDRImageFactory();
 
