@@ -175,7 +175,7 @@ class VirtualFileSystem: ReadOnlyFileSystem
     string containingDir(string filename)
     {
         string res;
-        foreach(i, fs; mounted)
+        foreach_reverse(i, fs; mounted)
         {
             if (cast(StdDirFileSystem)fs)
             {
@@ -202,7 +202,7 @@ class VirtualFileSystem: ReadOnlyFileSystem
     bool stat(string filename, out FileStat stat)
     {
         bool res = false;
-        foreach(i, fs; mounted)
+        foreach_reverse(i, fs; mounted)
         {
             FileStat s;
             if (fs.stat(filename, s))
@@ -226,7 +226,7 @@ class VirtualFileSystem: ReadOnlyFileSystem
      */
     InputStream openForInput(string filename)
     {
-        foreach(i, fs; mounted)
+        foreach_reverse(i, fs; mounted)
         {
             FileStat s;
             if (fs.stat(filename, s))
