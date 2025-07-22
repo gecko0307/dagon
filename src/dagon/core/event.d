@@ -49,6 +49,7 @@ import dlib.core.ownership;
 import dlib.math.utils;
 import dlib.container.array;
 import dagon.core.bindings;
+import dagon.core.application;
 import dagon.core.input;
 import dagon.core.logger;
 
@@ -120,6 +121,8 @@ enum MAX_CONTROLLERS = 1;
  */
 class EventManager
 {
+    Application application;
+    
     SDL_Window* window;
 
     enum maxNumEvents = 50;
@@ -146,7 +149,19 @@ class EventManager
     bool[255] controllerButtonUp = false;
     bool[255] controllerButtonDown = false;
     
-    Array!(bool*) toReset; // Used for resetting UP and DOWN events after end of frame
+    bool trackUpDownState = false;
+    
+    protected
+    {
+        bool needToResetKeyUp = false;
+        bool needToResetKeyDown = false;
+        bool needToResetMouseUp = false;
+        bool needToResetMouseDown = false;
+        bool needToResetJoystickUp = false;
+        bool needToResetJoystickDown = false;
+        bool needToResetControllerUp = false;
+        bool needToResetControllerDown = false;
+    }
 
     int mouseX = 0;
     int mouseY = 0;
@@ -183,12 +198,14 @@ class EventManager
      *   winWidth = Window width.
      *   winHeight = Window height.
      */
-    this(SDL_Window* win, uint winWidth, uint winHeight)
+    this(Application app)
     {
-        window = win;
+        application = app;
+        
+        window = app.window;
 
-        windowWidth = winWidth;
-        windowHeight = winHeight;
+        windowWidth = app.width;
+        windowHeight = app.height;
         
         if (exists("gamecontrollerdb.txt"))
             SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
@@ -198,15 +215,12 @@ class EventManager
             gameControllerOpen(0);
         }
 
-        toReset = Array!(bool*)();
-
         inputManager = New!InputManager(this);
     }
 
     /// Destructor. Cleans up resources.
     ~this()
     {
-        toReset.free();
         Delete(inputManager);
     }
 
@@ -444,6 +458,9 @@ class EventManager
         }
 
         numUserEvents = 0;
+        
+        if (trackUpDownState)
+            resetUpDown();
 
         SDL_Event event;
 
@@ -458,9 +475,12 @@ class EventManager
                         break;
 
                     keyPressed[event.key.keysym.scancode] = true;
-                    keyDown[event.key.keysym.scancode] = true;
-                    keyUp[event.key.keysym.scancode] = false;
-                    toReset.insertBack(&keyDown[event.key.keysym.scancode]);
+                    
+                    if (trackUpDownState)
+                    {
+                        keyDown[event.key.keysym.scancode] = true;
+                        needToResetKeyDown = true;
+                    }
 
                     e = Event(EventType.KeyDown);
                     e.key = event.key.keysym.scancode;
@@ -469,9 +489,12 @@ class EventManager
 
                 case SDL_KEYUP:
                     keyPressed[event.key.keysym.scancode] = false;
-                    keyDown[event.key.keysym.scancode] = false;
-                    keyUp[event.key.keysym.scancode] = true;
-                    toReset.insertBack(&keyUp[event.key.keysym.scancode]);
+                    
+                    if (trackUpDownState)
+                    {
+                        keyUp[event.key.keysym.scancode] = true;
+                        needToResetKeyUp = true;
+                    }
 
                     e = Event(EventType.KeyUp);
                     e.key = event.key.keysym.scancode;
@@ -501,9 +524,13 @@ class EventManager
 
                 case SDL_MOUSEBUTTONDOWN:
                     mouseButtonPressed[event.button.button] = true;
-                    mouseButtonDown[event.button.button] = true;
-                    toReset.insertBack(&mouseButtonDown[event.button.button]);
-
+                    
+                    if (trackUpDownState)
+                    {
+                        mouseButtonDown[event.button.button] = true;
+                        needToResetMouseDown = true;
+                    }
+                    
                     e = Event(EventType.MouseButtonDown);
                     e.button = event.button.button;
                     addEvent(e);
@@ -511,9 +538,13 @@ class EventManager
 
                 case SDL_MOUSEBUTTONUP:
                     mouseButtonPressed[event.button.button] = false;
-                    mouseButtonUp[event.button.button] = true;
-                    toReset.insertBack(&mouseButtonUp[event.button.button]);
-
+                    
+                    if (trackUpDownState)
+                    {
+                        mouseButtonUp[event.button.button] = true;
+                        needToResetMouseUp = true;
+                    }
+                    
                     e = Event(EventType.MouseButtonUp);
                     e.button = event.button.button;
                     addEvent(e);
@@ -532,15 +563,23 @@ class EventManager
                     {
                         e = Event(EventType.JoystickButtonDown);
                         joystickButtonPressed[event.jbutton.button] = true;
-                        joystickButtonDown[event.jbutton.button] = true;
-                        toReset.insertBack(&joystickButtonDown[event.jbutton.button]);
+                        
+                        if (trackUpDownState)
+                        {
+                            joystickButtonDown[event.jbutton.button] = true;
+                            needToResetJoystickDown = true;
+                        }
                     }
                     else if (event.jbutton.state == SDL_RELEASED)
                     {
                         e = Event(EventType.JoystickButtonUp);
                         joystickButtonPressed[event.jbutton.button] = false;
-                        joystickButtonUp[event.jbutton.button] = true;
-                        toReset.insertBack(&joystickButtonUp[event.jbutton.button]);
+                        
+                        if (trackUpDownState)
+                        {
+                            joystickButtonUp[event.jbutton.button] = true;
+                            needToResetJoystickUp = true;
+                        }
                     }
                     e.joystickButton = event.jbutton.button;
                     addEvent(e);
@@ -552,15 +591,23 @@ class EventManager
                     {
                         e = Event(EventType.JoystickButtonDown);
                         joystickButtonPressed[event.jbutton.button] = true;
-                        joystickButtonDown[event.jbutton.button] = true;
-                        toReset.insertBack(&joystickButtonDown[event.jbutton.button]);
+                        
+                        if (trackUpDownState)
+                        {
+                            joystickButtonDown[event.jbutton.button] = true;
+                            needToResetJoystickDown = true;
+                        }
                     }
                     else if (event.jbutton.state == SDL_RELEASED)
                     {
                         e = Event(EventType.JoystickButtonUp);
                         joystickButtonPressed[event.jbutton.button] = false;
-                        joystickButtonUp[event.jbutton.button] = true;
-                        toReset.insertBack(&joystickButtonUp[event.jbutton.button]);
+                        
+                        if (trackUpDownState)
+                        {
+                            joystickButtonUp[event.jbutton.button] = true;
+                            needToResetJoystickUp = true;
+                        }
                     }
                     e.joystickButton = event.jbutton.button;
                     addEvent(e);
@@ -568,8 +615,12 @@ class EventManager
 
                 case SDL_CONTROLLERBUTTONDOWN:
                     controllerButtonPressed[event.cbutton.button] = true;
-                    controllerButtonDown[event.cbutton.button] = true;
-                    toReset.insertBack(&controllerButtonDown[event.cbutton.button]);
+                    
+                    if (trackUpDownState)
+                    {
+                        controllerButtonDown[event.cbutton.button] = true;
+                        needToResetControllerDown = true;
+                    }
 
                     e = Event(EventType.ControllerButtonDown);
                     e.controllerButton = event.cbutton.button;
@@ -578,8 +629,12 @@ class EventManager
 
                 case SDL_CONTROLLERBUTTONUP:
                     controllerButtonPressed[event.cbutton.button] = false;
-                    controllerButtonUp[event.cbutton.button] = true;
-                    toReset.insertBack(&controllerButtonUp[event.cbutton.button]);
+                    
+                    if (trackUpDownState)
+                    {
+                        controllerButtonUp[event.cbutton.button] = true;
+                        needToResetControllerUp = true;
+                    }
 
                     e = Event(EventType.ControllerButtonUp);
                     e.controllerButton = event.cbutton.button;
@@ -729,12 +784,53 @@ class EventManager
     /// Resets all UP and DOWN input event states.
     void resetUpDown()
     {
-        // reset all UP and DOWN events
-        foreach(key; toReset)
+        if (needToResetKeyUp)
         {
-            *key = false;
+            keyUp[] = false;
+            needToResetKeyUp = false;
         }
-        toReset.removeBack(cast(uint)toReset.length);
+        
+        if (needToResetKeyDown)
+        {
+            keyDown[] = false;
+            needToResetKeyDown = false;
+        }
+        
+        if (needToResetMouseUp)
+        {
+            mouseButtonUp[] = false;
+            needToResetMouseUp = false;
+        }
+        
+        if (needToResetMouseDown)
+        {
+            mouseButtonDown[] = false;
+            needToResetMouseDown = false;
+        }
+        
+        if (needToResetJoystickUp)
+        {
+            joystickButtonUp[] = false;
+            needToResetJoystickUp = false;
+        }
+        
+        if (needToResetJoystickDown)
+        {
+            joystickButtonDown[] = false;
+            needToResetJoystickDown = false;
+        }
+        
+        if (needToResetControllerUp)
+        {
+            controllerButtonUp[] = false;
+            needToResetControllerUp = false;
+        }
+        
+        if (needToResetControllerDown)
+        {
+            controllerButtonDown[] = false;
+            needToResetControllerDown = false;
+        }
     }
 }
 

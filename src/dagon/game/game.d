@@ -82,6 +82,9 @@ version(Windows)
  */
 class Game: Application
 {
+    /// Identifier of the game
+    string id = "";
+    
     /// The dictionary of scenes, mapping scene objects to their names.
     Dict!(Scene, string) scenes;
 
@@ -126,11 +129,16 @@ class Game: Application
      *   title = Default window title (if `windowTitle` not defined in `setting.conf`).
      *   args = Optional command line arguments.
      */
-    this(uint w, uint h, bool fullscreen, string title, string[] args)
+    this(uint w, uint h, bool fullscreen, string title, string[] args, string gameID = "")
     {
-        scenes = dict!(Scene, string);
+        id = gameID;
+        createVFS();
+        if (id.length)
+            mountAppDataFolder(id);
         
-        config = New!Configuration(this);
+        scenes = dict!(Scene, string);
+        config = New!Configuration(vfs, this);
+        
         if (config.fromFile("settings.conf"))
         {
             if ("windowWidth" in config.props)

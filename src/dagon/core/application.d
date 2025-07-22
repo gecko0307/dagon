@@ -45,6 +45,7 @@ import std.getopt;
 import std.string;
 import std.file;
 import std.algorithm: canFind;
+import std.process;
 import core.stdc.stdlib;
 import core.stdc.string;
 
@@ -58,6 +59,7 @@ import dagon.core.bindings;
 import dagon.core.event;
 import dagon.core.time;
 import dagon.core.logger;
+import dagon.core.vfs;
 
 import dagon.graphics.font;
 
@@ -311,7 +313,7 @@ enum Cursor: uint
  */
 class Application: EventListener
 {
-    StdFileSystem fs;
+    VirtualFileSystem vfs;
     
     SDLSupport loadedSDLSupport;
     SDLImageSupport loadedSDLImageSupport;
@@ -357,7 +359,7 @@ class Application: EventListener
      */
     this(uint winWidth, uint winHeight, bool fullscreen, string windowTitle, string[] args)
     {
-        fs = New!StdFileSystem();
+        createVFS();
         
         version(linux)
             loadedSDLSupport = loadSDL("libSDL2-2.0.so.0");
@@ -476,7 +478,7 @@ class Application: EventListener
         
         setFullscreen(fullscreen);
 
-        _eventManager = New!EventManager(window, width, height);
+        _eventManager = New!EventManager(this);
         super(_eventManager, null);
 
         // Initialize OpenGL
@@ -564,6 +566,15 @@ class Application: EventListener
         cursor[Cursor.No] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO);
         cursor[Cursor.Hand] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
     }
+    
+    protected void createVFS()
+    {
+        if (vfs is null)
+        {
+            vfs = New!VirtualFileSystem();
+            vfs.mount(".");
+        }
+    }
 
     /// Destructor. Cleans up resources and shuts down SDL.
     ~this()
@@ -591,7 +602,8 @@ class Application: EventListener
         
         freeLogBuffer();
         
-        Delete(fs);
+        if (vfs)
+            Delete(vfs);
     }
     
     /**
@@ -810,11 +822,40 @@ class Application: EventListener
         return refreshRate;
     }
     
+    /// Mounts the specified directory to the virtual file system.
+    void mount(string dirName)
+    {
+        vfs.mount(dirName);
+        logInfo("VFS: mounted ", dirName);
+    }
+    
+    /**
+     * Mounts the game folder in application data directory
+     * to the virtual file system.
+     */
+    void mountAppDataFolder(string gameID)
+    {
+        string homeDirVar = "";
+        version(Windows) homeDirVar = "APPDATA";
+        version(Posix) homeDirVar = "HOME";
+        auto homeDir = environment.get(homeDirVar, "");
+        if (homeDir.length)
+        {
+            string dirSeparator;
+            version(Windows) dirSeparator = "\\";
+            version(Posix) dirSeparator = "/";
+            string appdataDir = format("%s%s.%s", homeDir, dirSeparator, gameID);
+            vfs.mount(appdataDir);
+            logInfo("VFS: mounted ", appdataDir);
+        }
+    }
+    
+    /// Opens file stream for reading from the virtual file system.
     InputStream openFile(string filename)
     {
         FileStat stat;
-        if (fs.stat(filename, stat))
-            return fs.openForInput(filename);
+        if (vfs.stat(filename, stat))
+            return vfs.openForInput(filename);
         else
         {
             logError(filename, " is not found");

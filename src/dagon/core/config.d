@@ -47,20 +47,22 @@ import dlib.filesystem.filesystem;
 import dlib.filesystem.stdfs;
 import dagon.core.vfs;
 import dagon.core.props;
+import dagon.core.logger;
 
 /**
  * Manages application configuration properties using a virtual file system.
  *
  * Description:
- * The `Configuration` class loads and stores properties, and can read configuration files
- * from mounted directories, including the user's home or application data directory.
+ * The `Configuration` class loads and stores properties, and can read
+ * configuration files from mounted directories.
  */
 class Configuration: Owner
 {
     protected:
 
     /// The virtual file system used for configuration file access.
-    VirtualFileSystem fs;
+    VirtualFileSystem vfs;
+    bool vfsIsOwned = false;
 
     public:
 
@@ -73,33 +75,32 @@ class Configuration: Owner
      * Params:
      *   owner = The owner object.
      *
-     * The constructor mounts the current directory and, if available, the user's home or
-     * application data directory for configuration file access.
+     * The constructor mounts the current directory for configuration file access.
      */
-    this(Owner owner)
+    this(VirtualFileSystem vfs, Owner owner)
     {
         super(owner);
-
-        fs = New!VirtualFileSystem();
-        fs.mount(".");
-
-        string homeDirVar = "";
-        version(Windows) homeDirVar = "APPDATA";
-        version(Posix) homeDirVar = "HOME";
-        auto homeDir = environment.get(homeDirVar, "");
-        if (homeDir.length)
+        
+        if (vfs)
         {
-            string appdataDir = format("%s/.dagon", homeDir);
-            fs.mount(appdataDir);
+            this.vfs = vfs;
+            vfsIsOwned = false;
         }
-
+        else
+        {
+            this.vfs = New!VirtualFileSystem();
+            this.vfs.mount(".");
+            vfsIsOwned = true;
+        }
+        
         props = New!Properties(this);
     }
 
     /// Destructor. Cleans up the virtual file system.
     ~this()
     {
-        Delete(fs);
+        if (vfsIsOwned)
+            Delete(vfs);
     }
 
     /**
@@ -113,9 +114,9 @@ class Configuration: Owner
     bool fromFile(string filename)
     {
         FileStat stat;
-        if (fs.stat(filename, stat))
+        if (vfs.stat(filename, stat))
         {
-            auto istrm = fs.openForInput(filename);
+            auto istrm = vfs.openForInput(filename);
             auto input = readText(istrm);
             Delete(istrm);
             props.parse(input);

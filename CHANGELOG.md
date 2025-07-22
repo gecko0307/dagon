@@ -1,5 +1,7 @@
 Dagon 0.26.0 - TBD
 ------------------
+- **Core**
+  - `Application.fs` - a default filesystem for streamed file access. New method `Application.openFile`
 - **Graphics components**
   - GPU-accelerated cubemap generator - `dagon.graphics.texproc.generateCubemap`. It is a high-performant replacement for `Texture.createFromEquirectangularMap`
   - New method `Texture.createBlankCubemap`
