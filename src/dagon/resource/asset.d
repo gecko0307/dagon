@@ -319,8 +319,11 @@ class AssetManager: Owner
     DefaultTextureLoader defaultTextureLoader;
     
     Dict!(Asset, string) assetsByFilename;
+    
+    // TODO: use Application.vfs instead
     VirtualFileSystem fs;
     StdFileSystem stdfs;
+    
     UnmanagedImageFactory imageFactory;
     UnmanagedHDRImageFactory hdrImageFactory;
     Thread loadingThread;

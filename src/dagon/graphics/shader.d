@@ -517,6 +517,7 @@ class Shader: Owner
             exitWithError("Error: shader \"" ~ filename ~ "\" not found!");
         }
         
+        // TODO: use Application.vfs instead
         auto fs = New!StdFileSystem();
         auto istrm = fs.openForInput(filename);
         string inputText = readText(istrm);

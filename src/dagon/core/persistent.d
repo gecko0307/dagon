@@ -96,6 +96,7 @@ class PersistentStorage: Owner
     this(string appFolder, string filename, Owner owner)
     {
         super(owner);
+        // TODO: use Application.vfs instead
         fs = New!StdFileSystem();
         
         string homeDirVar = "";

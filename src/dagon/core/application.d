@@ -809,6 +809,13 @@ class Application: EventListener
         return refreshRate;
     }
     
+    /// Mounts the specified ReadOnlyFileSystem to the virtual file system.
+    void mount(ReadOnlyFileSystem fs)
+    {
+        vfs.mount(fs);
+        logInfo("VFS: mounted a filesystem");
+    }
+    
     /// Mounts the specified directory to the virtual file system.
     void mount(string dirName)
     {
