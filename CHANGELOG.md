@@ -1,7 +1,8 @@
 Dagon 0.26.0 - TBD
 ------------------
 - **Core**
-  - `Application.fs` - a default filesystem for streamed file access. New method `Application.openFile`
+  - `Application.vfs` - a default virtual filesystem for streamed file access. New methods `Application.mount`, `Application.mountAppDataFolder`, `Application.openFile`, `Application.fileStatus`. App-level VFS is used to load default configuration files (settings.conf, input.conf). Other resources in the engine are currently managed independently, but the long-term plan is to move all file I/O in Dagon to the `Application.vfs`
+  - Up/down state tracking in `EventManager` now works correctly (`EventManager.keyDown`, `EventManager.keyUp`, etc). It is disabled by default, you have to enable it with `EventManager.trackUpDownState`. Effectively, `InputManager.getButtonUp` and`InputManager.getButtonDown` now also work as intended
 - **Graphics components**
   - GPU-accelerated cubemap generator - `dagon.graphics.texproc.generateCubemap`. It is a high-performant replacement for `Texture.createFromEquirectangularMap`
   - New method `Texture.createBlankCubemap`

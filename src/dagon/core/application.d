@@ -731,20 +731,6 @@ class Application: EventListener
         eventManager.exit();
     }
     
-    /**
-     * Checks if a file exists.
-     *
-     * Params:
-     *   filename = Path to the file.
-     * Returns:
-     *   `true` if the file exists, `false` otherwise.
-     */
-    static bool fileExists(string filename)
-    {
-        FileStat fstat;
-        return stat(filename, fstat);
-    }
-    
     uint screenNum = 0;
     
     /**
@@ -774,6 +760,7 @@ class Application: EventListener
      */
     void takeScreenshot(string path)
     {
+        // TODO: use vfs to save the file
         auto img = takeScreenshot();
         
         bool saved = false;
@@ -861,5 +848,34 @@ class Application: EventListener
             logError(filename, " is not found");
             return null;
         }
+    }
+    
+    /**
+     * Checks if a file exists in the VFS.
+     *
+     * Params:
+     *   filename = Path to the file.
+     * Returns:
+     *   `true` if the file exists, `false` otherwise.
+     */
+    bool fileExists(string filename)
+    {
+        FileStat stat;
+        return vfs.stat(filename, stat);
+    }
+    
+    /**
+     * Returns file status.
+     *
+     * Params:
+     *   filename = Path to the file.
+     * Returns:
+     *   FileStat struct for the file.
+     */
+    FileStat fileStatus(string filename)
+    {
+        FileStat stat;
+        vfs.stat(filename, stat);
+        return stat;
     }
 }
