@@ -82,9 +82,6 @@ version(Windows)
  */
 class Game: Application
 {
-    /// Identifier of the game
-    string id = "";
-    
     /// The dictionary of scenes, mapping scene objects to their names.
     Dict!(Scene, string) scenes;
 
@@ -129,12 +126,14 @@ class Game: Application
      *   title = Default window title (if `windowTitle` not defined in `setting.conf`).
      *   args = Optional command line arguments.
      */
-    this(uint w, uint h, bool fullscreen, string title, string[] args, string gameID = "")
+    this(uint w, uint h, bool fullscreen, string title, string[] args, string appFolder = "")
     {
-        id = gameID;
+        if (appFolder.length)
+            this.appFolder = appFolder;
+        else
+            this.appFolder = ".dagon";
+        
         createVFS();
-        if (id.length)
-            mountAppDataFolder(id);
         
         scenes = dict!(Scene, string);
         config = New!Configuration(vfs, this);

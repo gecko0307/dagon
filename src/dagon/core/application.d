@@ -235,6 +235,8 @@ __gshared private
     GLint _maxTextureUnits;
     GLint _maxTextureSize;
     string[] _extensions;
+    
+    VirtualFileSystem _vfs;
 }
 
 /**
@@ -303,6 +305,11 @@ enum Cursor: uint
     Hand = 11
 }
 
+VirtualFileSystem globalVFS()
+{
+    return _vfs;
+}
+
 /**
  * Base class to inherit Dagon applications from.
  *
@@ -313,6 +320,7 @@ enum Cursor: uint
  */
 class Application: EventListener
 {
+    string appFolder;
     VirtualFileSystem vfs;
     
     SDLSupport loadedSDLSupport;
@@ -357,8 +365,13 @@ class Application: EventListener
      *   windowTitle = The window title.
      *   args = Command line arguments.
      */
-    this(uint winWidth, uint winHeight, bool fullscreen, string windowTitle, string[] args)
+    this(uint winWidth, uint winHeight, bool fullscreen, string windowTitle, string[] args, string appFolder = "")
     {
+        if (appFolder.length)
+            this.appFolder = appFolder;
+        else
+            this.appFolder = ".dagon";
+        
         createVFS();
         
         version(linux)
@@ -572,7 +585,9 @@ class Application: EventListener
         if (vfs is null)
         {
             vfs = New!VirtualFileSystem();
-            vfs.mount(".");
+            mount(".");
+            mountAppFolder();
+            _vfs = vfs;
         }
     }
 
@@ -820,14 +835,17 @@ class Application: EventListener
     void mount(string dirName)
     {
         vfs.mount(dirName);
-        logInfo("VFS: mounted ", dirName);
+        if (dirName == ".")
+            logInfo("VFS: mounted working directory");
+        else
+            logInfo("VFS: mounted ", dirName);
     }
     
     /**
      * Mounts the game folder in application data directory
      * to the virtual file system.
      */
-    void mountAppDataFolder(string gameID)
+    void mountAppFolder()
     {
         string homeDirVar = "";
         version(Windows) homeDirVar = "APPDATA";
@@ -838,7 +856,7 @@ class Application: EventListener
             string dirSeparator;
             version(Windows) dirSeparator = "\\";
             version(Posix) dirSeparator = "/";
-            string appdataDir = format("%s%s.%s", homeDir, dirSeparator, gameID);
+            string appdataDir = format("%s%s%s", homeDir, dirSeparator, appFolder);
             vfs.mount(appdataDir);
             logInfo("VFS: mounted ", appdataDir);
         }
