@@ -49,6 +49,12 @@ import std.process;
 import core.stdc.stdlib;
 import core.stdc.string;
 
+version(Windows)
+{
+    pragma(lib, "user32");
+    import core.sys.windows.windows;
+}
+
 import dlib.core.memory;
 import dlib.core.stream;
 import dlib.image;
@@ -60,6 +66,7 @@ import dagon.core.event;
 import dagon.core.time;
 import dagon.core.logger;
 import dagon.core.vfs;
+import dagon.core.config;
 
 import dagon.graphics.font;
 
@@ -315,13 +322,19 @@ VirtualFileSystem globalVFS()
  *
  * Description:
  * This class wraps SDL2 window creation, OpenGL context initialization,
- * event management, and provides the main game loop.
+ * event management, and provides the main game loop. It also handles
+ * basic app configuration and loads settings from a `settings.conf` file.
  * To use, inherit from `Application` and override `onUpdate` and `onRender`.
  */
 class Application: EventListener
 {
+    protected string defaultAppFolder = ".dagon";
     string appFolder;
+    
     VirtualFileSystem vfs;
+    
+    /// The configuration object for loading settings.
+    Configuration config;
     
     SDLSupport loadedSDLSupport;
     SDLImageSupport loadedSDLImageSupport;
@@ -364,15 +377,37 @@ class Application: EventListener
      *   fullscreen = If true, the application will run in fullscreen mode.
      *   windowTitle = The window title.
      *   args = Command line arguments.
+     *   appFolder = The application folder name (used under the HOME or APPDATA directory).
      */
     this(uint winWidth, uint winHeight, bool fullscreen, string windowTitle, string[] args, string appFolder = "")
     {
-        if (appFolder.length)
-            this.appFolder = appFolder;
-        else
-            this.appFolder = ".dagon";
-        
+        setAppFolder(appFolder);
         createVFS();
+        
+        config = New!Configuration(vfs, this);
+        
+        if (config.fromFile("settings.conf"))
+        {
+            if ("windowWidth" in config.props)
+                winWidth = config.props["windowWidth"].toUInt;
+            if ("windowHeight" in config.props)
+                winHeight = config.props["windowHeight"].toUInt;
+            if ("fullscreen" in config.props)
+                fullscreen = cast(bool)(config.props["fullscreen"].toUInt);
+            if ("windowTitle" in config.props)
+                windowTitle = config.props["windowTitle"].toString;
+            
+            version(Windows)
+            {
+                if ("hideConsole" in config.props)
+                    if (config.props["hideConsole"].toUInt)
+                        showConsoleWindow(false);
+            }
+        }
+        else
+        {
+            logWarning("No \"settings.conf\" found");
+        }
         
         version(linux)
             loadedSDLSupport = loadSDL("libSDL2-2.0.so.0");
@@ -578,6 +613,14 @@ class Application: EventListener
         cursor[Cursor.SizeAll] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL);
         cursor[Cursor.No] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO);
         cursor[Cursor.Hand] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
+    }
+    
+    protected void setAppFolder(string folderName)
+    {
+        if (folderName.length)
+            appFolder = folderName;
+        else
+            appFolder = defaultAppFolder;
     }
     
     protected void createVFS()
@@ -841,11 +884,7 @@ class Application: EventListener
             logInfo("VFS: mounted ", dirName);
     }
     
-    /**
-     * Mounts the game folder in application data directory
-     * to the virtual file system.
-     */
-    void mountAppFolder()
+    protected void mountAppFolder()
     {
         string homeDirVar = "";
         version(Windows) homeDirVar = "APPDATA";
@@ -902,5 +941,16 @@ class Application: EventListener
         FileStat stat;
         vfs.stat(filename, stat);
         return stat;
+    }
+    
+    void showConsoleWindow(bool mode)
+    {
+        version(Windows)
+        {
+            if (mode)
+                ShowWindow(GetConsoleWindow(), SW_SHOW);
+            else
+                ShowWindow(GetConsoleWindow(), SW_HIDE);
+        }
     }
 }

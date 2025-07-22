@@ -1,7 +1,9 @@
 Dagon 0.26.0 - TBD
 ------------------
 - **Core**
-  - `Application.vfs` - a default virtual filesystem for streamed file access. New methods `Application.mount`, `Application.mountAppFolder`, `Application.openFile`, `Application.fileStatus`. App-level VFS is used to load default configuration files (settings.conf, input.conf). Other resources in the engine are currently managed independently, but the long-term plan is to move all file I/O in Dagon to the `Application.vfs`
+  - `Application.vfs` - a default virtual filesystem for streamed file access. New methods `Application.mount`, `Application.openFile`, `Application.fileStatus`. App-level VFS is used to load default configuration files (settings.conf, input.conf). Other resources in the engine are currently managed independently, but the long-term plan is to move all file I/O in Dagon to the `Application.vfs`
+  - `Application.appFolder` (`".dagon"` by default)
+  - `Game.config` moved to the `Application` class
   - Breaking change: `VirtualFileSystem` now scans mounted filesystems in reverse order, so that the user-defined directories have higher priority over working directory
   - Up/down state tracking in `EventManager` now works correctly (`EventManager.keyDown`, `EventManager.keyUp`, etc). It is disabled by default, you have to enable it with `EventManager.trackUpDownState`. Effectively, `InputManager.getButtonUp` and`InputManager.getButtonDown` now also work as intended
   - `EventManager.application`

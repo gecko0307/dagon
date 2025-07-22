@@ -54,7 +54,6 @@ import dagon.core.bindings;
 import dagon.core.event;
 import dagon.core.time;
 import dagon.core.application;
-import dagon.core.config;
 import dagon.graphics.state;
 import dagon.graphics.entity;
 import dagon.resource.scene;
@@ -64,12 +63,6 @@ import dagon.render.postproc;
 import dagon.render.present;
 import dagon.render.hud;
 
-version(Windows)
-{
-    pragma(lib, "user32");
-    import core.sys.windows.windows;
-}
-
 /**
  * Main game class for Dagon applications.
  *
@@ -77,8 +70,6 @@ version(Windows)
  * Manages scenes and rendering. The `Game` class is a subclass
  * of `Application` and provides a framework for creating games
  * that use Dagon's deferred renderer.
- * It also handles basic game configuration and loads settings
- * from a `settings.conf` file.
  */
 class Game: Application
 {
@@ -108,9 +99,6 @@ class Game: Application
     alias present = presentRenderer;
     alias hud = hudRenderer;
     
-    /// The configuration object for loading settings.
-    Configuration config;
-    
     /// If `true`, the viewport will be resized dynamically with the application window.
     bool dynamicViewport = true;
     
@@ -128,36 +116,9 @@ class Game: Application
      */
     this(uint w, uint h, bool fullscreen, string title, string[] args, string appFolder = "")
     {
-        if (appFolder.length)
-            this.appFolder = appFolder;
-        else
-            this.appFolder = ".dagon";
-        
-        createVFS();
+        super(w, h, fullscreen, title, args, appFolder);
         
         scenes = dict!(Scene, string);
-        config = New!Configuration(vfs, this);
-        
-        if (config.fromFile("settings.conf"))
-        {
-            if ("windowWidth" in config.props)
-                w = config.props["windowWidth"].toUInt;
-            if ("windowHeight" in config.props)
-                h = config.props["windowHeight"].toUInt;
-            if ("fullscreen" in config.props)
-                fullscreen = cast(bool)(config.props["fullscreen"].toUInt);
-            if ("windowTitle" in config.props)
-                title = config.props["windowTitle"].toString;
-            version(Windows) if ("hideConsole" in config.props)
-                if (config.props["hideConsole"].toUInt)
-                    ShowWindow(GetConsoleWindow(), SW_HIDE);
-        }
-        else
-        {
-            logWarning("No \"settings.conf\" found");
-        }
-        
-        super(w, h, fullscreen, title, args);
         
         deferredRenderer = New!DeferredRenderer(eventManager, this);
         renderer = deferredRenderer;
