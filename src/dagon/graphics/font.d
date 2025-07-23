@@ -178,6 +178,8 @@ final class Font: Owner
     String vs, fs;
     
     bool valid;
+    
+    protected ubyte[] buffer;
 
     /**
      * Constructs a font.
@@ -219,10 +221,18 @@ final class Font: Owner
         if (ftLibrary is null)
             return;
         
-        if (!exists(filename))
+        auto fs = globalVFS();
+        
+        FileStat s;
+        if (!fs.stat(filename, s))
             exitWithError("Cannot find font file " ~ filename);
-
-        if (FT_New_Face(ftLibrary, toStringz(filename), 0, &ftFace))
+        
+        auto istrm = fs.openForInput(filename);
+        buffer = New!(ubyte[])(cast(size_t)s.sizeInBytes);
+        istrm.fillArray(buffer);
+        Delete(istrm);
+        
+        if (FT_New_Memory_Face(ftLibrary, buffer.ptr, cast(uint)buffer.length, 0, &ftFace))
             exitWithError("FT_New_Face failed (there is probably a problem with your font file)");
 
         FT_Set_Char_Size(ftFace, cast(int)height << 6, cast(int)height << 6, 96, 96);
@@ -324,6 +334,9 @@ final class Font: Owner
             glDeleteTextures(1, &glyph.textureId);
         if (glyphs.length > 0)
             Delete(glyphs);
+        
+        if (buffer.length > 0)
+            Delete(buffer);
     }
 
     uint loadGlyph(dchar code, GLuint texId)
