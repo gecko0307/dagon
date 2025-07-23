@@ -1,7 +1,7 @@
 Dagon 0.26.0 - TBD
 ------------------
 - **Core**
-  - `Application.vfs` - a default virtual filesystem for streamed file access. New methods `Application.mount`, `Application.openFile`, `Application.fileStatus`. App-level VFS is used to load default configuration files (settings.conf, input.conf). Other resources in the engine are currently managed independently, but the long-term plan is to move all file I/O in Dagon to the `Application.vfs`
+  - `Application.vfs` - a default virtual filesystem for streamed file access. New methods `Application.mount`, `Application.openFile`, `Application.fileStatus`
   - `Application.appFolder` (`".dagon"` by default)
   - `Game.config` moved to the `Application` class
   - New method `Application.showConsoleWindow` (works only under Windows)
@@ -14,6 +14,7 @@ Dagon 0.26.0 - TBD
 - **Rendering**
   - `DeferredRenderer.brdf` - default BRDF LUT loaded from data/__internal/textures/brdf.dds. You can assign it to `Environment.ambientBRDF` to get physically-based Fresnel responce: `environment.ambientBRDF = game.deferredRenderer.brdf;`
 - **Assets**
+  - All resources in the engine are now loaded using `Application.vfs`, including user-defined assets, configuration files (settings.conf, input.conf), built-in shaders, images and fonts
   - `TextureAsset` now can interpret 2D images as 3D if `loadAs3D` property is set to true. This is useful to load Hald CLUTs directly to 3D textures
   - New method `Texture.createFromBuffer3D`
   - `GLTFPose` and `GLTFBlendedPose`, when animating, now update transformation matrices of entities associated with the skin joins. This allows, for instance, to use `Entity.positionAbsolute` to obtain exact world-space position of an animated joint taking the parent `Entity` transformation to account

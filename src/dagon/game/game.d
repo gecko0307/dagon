@@ -139,7 +139,7 @@ class Game: Application
         postProcessingRenderer.lensDistortionEnabled = false;
         
         string brdfFilename = "data/__internal/textures/brdf.dds";
-        InputStream istrm = openFile(brdfFilename);
+        InputStream istrm = this.openFile(brdfFilename);
         if (istrm)
         {
             deferredRenderer.loadDefaultBRDF(istrm);
