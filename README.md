@@ -28,6 +28,7 @@ Screenshots
 Features
 --------
 * Scene graph
+* Virtual file system
 * Static and animated meshes
 * Native [glTF 2.0](https://www.khronos.org/gltf/), [OBJ](https://en.wikipedia.org/wiki/Wavefront_.obj_file) and [IQM](https://github.com/lsalzman/iqm) formats support. [FBX](https://en.wikipedia.org/wiki/FBX) and many other model formats support via [Assimp](https://github.com/assimp/assimp) library
 * GPU skinning
