@@ -2,7 +2,6 @@ Dagon 0.26.0 - TBD
 ------------------
 - **Core**
   - `Application.vfs` - a default virtual filesystem for streamed file access. New methods `Application.mount`, `Application.openFile`, `Application.fileStatus`
-  - `Application.appFolder` (`".dagon"` by default)
   - `Game.config` moved to the `Application` class
   - New method `Application.showConsoleWindow` (works only under Windows)
   - Breaking change: `VirtualFileSystem` now scans mounted filesystems in reverse order, so that the user-defined directories have higher priority over working directory
