@@ -148,6 +148,7 @@ class VirtualFileSystem: ReadOnlyFileSystem
     this()
     {
         stdfs = New!StdFileSystem();
+        mount(stdfs);
     }
 
     /**
@@ -296,7 +297,6 @@ class VirtualFileSystem: ReadOnlyFileSystem
         foreach(i, fs; mounted)
             Delete(fs);
         mounted.free();
-        Delete(stdfs);
         appDataPath.free();
     }
 }

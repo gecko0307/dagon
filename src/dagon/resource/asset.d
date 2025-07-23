@@ -338,7 +338,7 @@ class AssetManager: Owner
     
     Dict!(string, string) base64ImagePrefixes;
 
-    this(EventManager emngr, Owner owner = null)
+    this(EventManager emngr, VirtualFileSystem vfs, Owner owner = null)
     {
         super(owner);
         
@@ -364,11 +364,8 @@ class AssetManager: Owner
         
         assetsByFilename = New!(Dict!(Asset, string));
         
-        // TODO: use Application.vfs instead of creating own VFS
-        fs = New!VirtualFileSystem();
-        stdfs = New!StdFileSystem();
-        fs.mount(stdfs);
-        fs.mount(".");
+        fs = vfs;
+        stdfs = vfs.stdfs;
         
         imageFactory = New!UnmanagedImageFactory();
         hdrImageFactory = New!UnmanagedHDRImageFactory();
@@ -434,7 +431,6 @@ class AssetManager: Owner
     {
         Delete(textureLoaders);
         Delete(assetsByFilename);
-        Delete(fs);
         Delete(imageFactory);
         Delete(hdrImageFactory);
         Delete(loadingThread);

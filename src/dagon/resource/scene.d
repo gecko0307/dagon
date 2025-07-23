@@ -139,7 +139,7 @@ class Scene: EventListener
         super(application.eventManager, application);
         this.application = application;
         
-        assetManagerInternal = New!AssetManager(eventManager, this);
+        assetManagerInternal = New!AssetManager(eventManager, application.vfs, this);
         assetManager = assetManagerInternal;
         assetManager.application = application;
         
