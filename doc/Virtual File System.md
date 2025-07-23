@@ -26,7 +26,7 @@ You can mount any other locations, absolute or relative to the working directory
 
 The application data directory is not created by default, you can create it using `vfs.createAppDataDirectory` method. Its typical purpose is to keep user-specific game data, such as configuration files, saves, and mods. Because the application data directory overrides the working directory, any game resource can be safely modified without compromising the integrity of the original resource. This, potentially, allows total conversions, provided that the game logic does not rely on hardcoded assumptions about the structure of its resources.
 
-## Mounting custom filesystems
+## Mounting custom file systems
 
 `vfs.mount` allows to mount any external storage system that implements `ReadOnlyFileSystem` interface. One use case for this is PhysFS integration which allows to load files from archives:
 

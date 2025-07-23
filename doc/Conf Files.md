@@ -10,7 +10,7 @@ Conf file consists of key-value pairs separated by semicolon:
 optionName: optionValue;
 ```
 
-optionValue can be a number, a vector, or a double-quoted string:
+optionValue can be a number, a vector (an array), or a double-quoted string:
 
 ```
 numberOption: 10;
@@ -19,7 +19,7 @@ stringOption: "Some text";
 ```
 
 ## settings.conf
-`settings.conf` contains engine settings. It is fully preserved for Dagon, and you are not recommended to use it for storing game-specific settings. Supported options are the following:
+`settings.conf` contains engine settings. It is fully preserved for Dagon's internal mechanisms, and you are not recommended to use it for storing game-specific settings. Supported options are the following:
 
 * `windowWidth`, `windowHeight` - size of a game window. They override default values specified in an application
 * `fullscreen` - `0` or `1`, run in fullscreen or windowed mode
