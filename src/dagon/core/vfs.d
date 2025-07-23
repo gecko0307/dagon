@@ -297,5 +297,6 @@ class VirtualFileSystem: ReadOnlyFileSystem
             Delete(fs);
         mounted.free();
         Delete(stdfs);
+        appDataPath.free();
     }
 }
