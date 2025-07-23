@@ -53,6 +53,7 @@ import dlib.text.str;
 import dlib.filesystem.filesystem;
 import dlib.filesystem.stdfs;
 
+import dagon.core.vfs;
 import dagon.core.props;
 import dagon.core.logger;
 
@@ -86,38 +87,28 @@ class PersistentStorage: Owner
      * Constructs a new `PersistentStorage` object.
      *
      * Params:
-     *   appFolder = The application folder name (used under the app data directory).
      *   filename  = The name of the persistent storage file.
      *   owner     = The owner object for memory/resource management.
      *
      * The constructor determines the appropriate storage directory, creates it if necessary,
      * and loads existing data if present.
      */
-    this(string appFolder, string filename, Owner owner)
+    this(VirtualFileSystem vfs, string filename, Owner owner)
     {
         super(owner);
-        // TODO: use Application.vfs instead of creating own FS
-        fs = New!StdFileSystem();
-        
-        string homeDirVar = "";
-        version(Windows) homeDirVar = "APPDATA";
-        version(Posix) homeDirVar = "~";
+        fs = vfs.stdfs;
         
         string dirSeparator;
         version(Windows) dirSeparator = "\\";
         version(Posix) dirSeparator = "/";
         
-        appDataDir = String(environment.get(homeDirVar, ""));
+        vfs.createAppDataDirectory();
+        string appDataDir = vfs.appDataPath;
+        
         if (appDataDir.length)
         {
-            // Use <appDataDir>/<appFolder>/<filename>
-            String output;
-            this.filename = String(appDataDir);
-            this.filename ~= dirSeparator;
-            this.filename ~= appFolder;
-            
-            fs.createDir(this.filename, true);
-            
+            // Use <appDataDir>/<filename>
+            this.filename = String(vfs.appDataPath);
             this.filename ~= dirSeparator;
             this.filename ~= filename;
         }
@@ -141,7 +132,6 @@ class PersistentStorage: Owner
         appDataDir.free();
         filename.free();
         localFilename.free();
-        Delete(fs);
     }
     
     /**

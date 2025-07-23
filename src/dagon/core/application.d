@@ -328,8 +328,6 @@ VirtualFileSystem globalVFS()
  */
 class Application: EventListener
 {
-    string appFolder;
-    
     VirtualFileSystem vfs;
     
     /// The configuration object for loading settings.
@@ -378,10 +376,9 @@ class Application: EventListener
      *   args = Command line arguments.
      *   appFolder = The application folder name (used under the HOME or APPDATA directory).
      */
-    this(uint winWidth, uint winHeight, bool fullscreen, string windowTitle, string[] args, string appFolder = ".dagon")
+    this(uint winWidth, uint winHeight, bool fullscreen, string windowTitle, string[] args, string appDataFolderName = ".dagon")
     {
-        this.appFolder = appFolder;
-        createVFS();
+        createVFS(appDataFolderName);
         
         config = New!Configuration(vfs, this);
         
@@ -614,13 +611,17 @@ class Application: EventListener
         cursor[Cursor.Hand] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
     }
     
-    protected void createVFS()
+    protected void createVFS(string appDataFolderName)
     {
         if (vfs is null)
         {
             vfs = New!VirtualFileSystem();
             mount(".");
-            mountAppFolder();
+            if (appDataFolderName.length > 0)
+            {
+                vfs.mountAppDataDirectory(appDataFolderName);
+                logInfo("VFS: mounted ", vfs.appDataPath);
+            }
             _vfs = vfs;
         }
     }
@@ -874,23 +875,6 @@ class Application: EventListener
             logInfo("VFS: mounted working directory");
         else
             logInfo("VFS: mounted ", dirName);
-    }
-    
-    protected void mountAppFolder()
-    {
-        string homeDirVar = "";
-        version(Windows) homeDirVar = "APPDATA";
-        version(Posix) homeDirVar = "HOME";
-        auto homeDir = environment.get(homeDirVar, "");
-        if (homeDir.length)
-        {
-            string dirSeparator;
-            version(Windows) dirSeparator = "\\";
-            version(Posix) dirSeparator = "/";
-            string appdataDir = format("%s%s%s", homeDir, dirSeparator, appFolder);
-            vfs.mount(appdataDir);
-            logInfo("VFS: mounted ", appdataDir);
-        }
     }
     
     /// Opens file stream for reading from the virtual file system.

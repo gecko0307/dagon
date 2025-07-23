@@ -41,12 +41,15 @@ module dagon.core.vfs;
 
 import std.string;
 import std.path;
+import std.process;
+
 import dlib.core.memory;
 import dlib.core.stream;
 import dlib.container.array;
 import dlib.container.dict;
 import dlib.filesystem.filesystem;
 import dlib.filesystem.stdfs;
+import dlib.text.str;
 
 /**
  * Read-only file system implementation for a standard directory.
@@ -133,12 +136,18 @@ class StdDirFileSystem: ReadOnlyFileSystem
  */
 class VirtualFileSystem: ReadOnlyFileSystem
 {
+    /// Standard file system for physical access.
+    StdFileSystem stdfs;
+    
     /// Array of mounted file systems.
     Array!ReadOnlyFileSystem mounted;
+    
+    String appDataPath;
 
     /// Constructs an empty virtual file system.
     this()
     {
+        stdfs = New!StdFileSystem();
     }
 
     /**
@@ -151,6 +160,35 @@ class VirtualFileSystem: ReadOnlyFileSystem
     {
         StdDirFileSystem fs = New!StdDirFileSystem(dir);
         mounted.append(fs);
+    }
+    
+    void mountAppDataDirectory(string folderName)
+    {
+        if (folderName.length > 0)
+        {
+            string homeDirVar = "";
+            version(Windows) homeDirVar = "APPDATA";
+            version(Posix) homeDirVar = "HOME";
+            auto homeDir = environment.get(homeDirVar, "");
+            if (homeDir.length)
+            {
+                string dirSeparator;
+                version(Windows) dirSeparator = "\\";
+                version(Posix) dirSeparator = "/";
+                
+                appDataPath = String(homeDir);
+                appDataPath ~= dirSeparator;
+                appDataPath ~= folderName;
+                
+                mount(appDataPath);
+            }
+        }
+    }
+    
+    void createAppDataDirectory()
+    {
+        if (appDataPath.length > 0)
+            stdfs.createDir(appDataPath, true);
     }
 
     /**
@@ -258,5 +296,6 @@ class VirtualFileSystem: ReadOnlyFileSystem
         foreach(i, fs; mounted)
             Delete(fs);
         mounted.free();
+        Delete(stdfs);
     }
 }
