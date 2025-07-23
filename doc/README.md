@@ -27,14 +27,13 @@ Dagon is a framework-style engine, meaning that it is controlled programmaticall
 Dagon is written with extendability in mind, so you can easily add your own drawable objects, entity components, shaders and asset loaders. Drawable can be anything you want - you can manually create meshes and animate them. With components you can dynamically attach custom data and functionality to game entities. Materials can use custom GLSL shaders and parameters, and your asset loaders help Dagon understand files that you want to load from disk - these can be 3D models, levels, save files, etc.
 
 ## Further reading
-[Installing Runtime Dependencies](https://github.com/gecko0307/dagon/blob/master/doc/Runtime%20Dependencies.md)
-
-[Application Architecture](https://github.com/gecko0307/dagon/blob/master/doc/Architecture.md)
-
-[Scene and Asset Management](https://github.com/gecko0307/dagon/blob/master/doc/Scene%20and%20Asset%20Management.md)
-
-[Material properties](https://github.com/gecko0307/dagon/blob/master/doc/Material.md)
-
-[Extensions](https://github.com/gecko0307/dagon/blob/master/doc/Extensions.md)
-
-[Tutorials](https://github.com/gecko0307/dagon/wiki/Tutorials)
+- [Installing Runtime Dependencies](https://github.com/gecko0307/dagon/blob/master/doc/Runtime%20Dependencies.md)
+- [Application Architecture](https://github.com/gecko0307/dagon/blob/master/doc/Architecture.md)
+- [Scene and Asset Management](https://github.com/gecko0307/dagon/blob/master/doc/Scene%20and%20Asset%20Management.md)
+- [The Virtual File System](https://github.com/gecko0307/dagon/blob/master/doc/Virtual%20File%20System.md)
+- [Conf Files](https://github.com/gecko0307/dagon/blob/master/doc/Conf%20Files.md)
+- [Material properties](https://github.com/gecko0307/dagon/blob/master/doc/Material.md)
+- [Extensions](https://github.com/gecko0307/dagon/blob/master/doc/Extensions.md)
+- [Basic tutorials](https://github.com/gecko0307/dagon/wiki/Tutorials)
+- [Render Pipeline Overview](https://github.com/gecko0307/dagon/blob/master/doc/Render%20Pipeline%20Overview.md)
+- [Dagon Development Guide](https://github.com/gecko0307/dagon/blob/master/doc/Development%20Guide.md)

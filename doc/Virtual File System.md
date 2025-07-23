@@ -10,7 +10,7 @@ Key concept of the VFS is mounting. For a location to be accessed, it has to be 
 
 `<appDataFolder>` is `.dagon` by default and can be overridden in the constructor of the class inherited from the `Game` or `Application`:
 
-```
+```d
 class MyGame: Game
 {
     this(uint w, uint h, bool fullscreen, string title, string[] args)
