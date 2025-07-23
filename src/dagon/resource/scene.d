@@ -53,6 +53,7 @@ import dagon.core.application;
 import dagon.core.bindings;
 import dagon.core.event;
 import dagon.core.time;
+import dagon.core.persistent;
 
 import dagon.graphics.entity;
 import dagon.graphics.camera;
@@ -305,6 +306,11 @@ class Scene: EventListener
     T addWidget(T)(UIWidget parent = null)
     {
         return New!T(ui, parent);
+    }
+    
+    PersistentStorage addPersistentStorage(string filename)
+    {
+        return New!PersistentStorage(application.vfs, filename, this);
     }
 
     /// Override to perform actions before loading assets.
