@@ -900,8 +900,7 @@ class Application: EventListener
      */
     bool fileExists(string filename)
     {
-        FileStat stat;
-        return vfs.stat(filename, stat);
+        return vfs.exists(filename);
     }
     
     /**

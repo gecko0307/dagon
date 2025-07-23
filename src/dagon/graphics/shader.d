@@ -512,13 +512,13 @@ class Shader: Owner
     /// Loads shader source code from a file, supporting `#include` directives.
     static String load(string filename)
     {
-        if (!exists(filename))
+        auto fs = globalVFS();
+        
+        if (!fs.exists(filename))
         {
             exitWithError("Error: shader \"" ~ filename ~ "\" not found!");
         }
         
-        // TODO: use Application.vfs instead creating own FS
-        auto fs = New!StdFileSystem();
         auto istrm = fs.openForInput(filename);
         string inputText = readText(istrm);
         Delete(istrm);
@@ -536,7 +536,7 @@ class Shader: Owner
                     string includeFilename = cast(string)buf[0..strlen(buf.ptr)-1];
                     String includeFullPath = includePath;
                     includeFullPath ~= includeFilename;
-                    if (exists(includeFullPath))
+                    if (fs.exists(includeFullPath))
                     {
                         istrm = fs.openForInput(includeFullPath.toString);
                         string includeText = readText(istrm);
@@ -560,7 +560,6 @@ class Shader: Owner
             }
         }
 
-        Delete(fs);
         Delete(inputText);
 
         return outputText;

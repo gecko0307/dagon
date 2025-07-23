@@ -290,6 +290,20 @@ class VirtualFileSystem: ReadOnlyFileSystem
         // TODO
         return null;
     }
+    
+    /**
+     * Checks if a file exists in the VFS.
+     *
+     * Params:
+     *   filename = Path to the file.
+     * Returns:
+     *   `true` if the file exists, `false` otherwise.
+     */
+    bool exists(string filename)
+    {
+        FileStat stat;
+        return this.stat(filename, stat);
+    }
 
     /// Destructor. Cleans up all mounted file systems.
     ~this()
