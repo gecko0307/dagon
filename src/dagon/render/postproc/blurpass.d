@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -39,22 +39,18 @@ import dagon.graphics.shader;
 import dagon.render.pipeline;
 import dagon.render.pass;
 import dagon.render.framebuffer;
+import dagon.render.postproc.filterpass;
 import dagon.render.postproc.shaders.blur;
 
-class BlurPass: RenderPass
+class BlurPass: FilterPass
 {
-    Framebuffer inputBuffer;
-    Framebuffer outputBuffer;
-    Framebuffer outputBuffer2;
-    ScreenSurface screenSurface;
     BlurShader blurShader;
     uint radius = 1;
 
     this(RenderPipeline pipeline)
     {
-        super(pipeline);
-        screenSurface = New!ScreenSurface(this);
         blurShader = New!BlurShader(this);
+        super(pipeline, blurShader);
     }
 
     override void render()

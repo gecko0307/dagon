@@ -342,7 +342,7 @@ class PostProcRenderer: Renderer
         dofShader.farDistance = dofFarDistance;
         
         motionBlurShader.samples = motionBlurSamples;
-        motionBlurShader.currentFramerate = 60.0f; //1.0 / t.delta;
+        motionBlurShader.currentFramerate = 60.0f;
         motionBlurShader.shutterFramerate = motionBlurFramerate;
         motionBlurShader.offsetRandomCoefficient = motionBlurRandomness;
         motionBlurShader.minDistance = motionBlurMinDistance;
@@ -391,7 +391,7 @@ class PostProcRenderer: Renderer
             passBrightPass.inputBuffer = passMotionBlur.outputBuffer;
             passGlow.inputBuffer = passMotionBlur.outputBuffer;
         }
-            
+        
         if (!_glowEnabled)
         {
             if (_motionBlurEnabled)

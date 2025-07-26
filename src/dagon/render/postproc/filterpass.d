@@ -43,6 +43,7 @@ class FilterPass: RenderPass
 {
     Framebuffer inputBuffer;
     Framebuffer outputBuffer;
+    Framebuffer outputBuffer2; // optional
     ScreenSurface screenSurface;
     Shader shader;
 
