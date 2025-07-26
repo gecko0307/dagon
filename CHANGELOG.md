@@ -1,5 +1,5 @@
-Dagon 0.26.0 - TBD
-------------------
+Dagon 0.26.0 - 27 Jul, 2025
+---------------------------
 - **Core**
   - `Application.vfs` - a default virtual filesystem for streamed file access. New methods `Application.mount`, `Application.openFile`, `Application.fileStatus`
   - `Game.config` moved to the `Application` class
