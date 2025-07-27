@@ -38,7 +38,7 @@ Features
 * Simplified render pipeline for retro and casual-style graphics
 * Physically based rendering (PBR)
 * HDR rendering with Reinhard, Hable/Uncharted, Unreal, ACES, Filmic and AgX tonemappers
-* HDRI environment maps. Built-in GPU-based cubemap prefiltering with GGX BRDF and importance sampling. Loading prefiltered DDS and KTX cubemaps
+* HDRI environment maps. Equirectangular HDRI to cubemap conversion. GPU-based cubemap prefiltering with GGX BRDF and importance sampling. Loading prebaked cubemaps from DDS or KTX files
 * Directional lights with cascaded shadow mapping and volumetric scattering
 * Spherical and tube area lights, spot lights
 * Local environment probes with box-projected cube mapping for approximated interior GI
