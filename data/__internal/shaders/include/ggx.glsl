@@ -11,10 +11,8 @@ float distributionGGX(vec3 N, vec3 H, float roughness)
     return num / denom;
 }
 
-float geometrySchlickGGX(float NdotV, float roughness)
+float geometrySchlickGGX(float NdotV, float k)
 {
-    float r = (roughness + 1.0);
-    float k = (r*r) / 8.0;
     float num = NdotV;
     float denom = NdotV * (1.0 - k) + k;
     return num / denom;
@@ -22,9 +20,11 @@ float geometrySchlickGGX(float NdotV, float roughness)
 
 float geometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 {
+    float r = (roughness + 1.0);
+    float k = (r * r) / 8.0;
     float NdotV = max(dot(N, V), 0.0);
     float NdotL = max(dot(N, L), 0.0);
-    float ggx2  = geometrySchlickGGX(NdotV, roughness);
-    float ggx1  = geometrySchlickGGX(NdotL, roughness);
+    float ggx2  = geometrySchlickGGX(NdotV, k);
+    float ggx1  = geometrySchlickGGX(NdotL, k);
     return ggx1 * ggx2;
 }
