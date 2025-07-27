@@ -43,8 +43,6 @@ subroutine(srtAmbient) vec3 ambientEquirectangularMap(in vec3 wN, in float perce
 {
     ivec2 envMapSize = textureSize(ambientTexture, 0);
     float resolution = float(max(envMapSize.x, envMapSize.y));
-    //float glossyExponent = 2.0 / pow(roughness, 4.0) - 2.0;
-    //float lod = log2(size * sqrt(3.0)) - 0.5 * log2(glossyExponent + 1.0);
     float lod = log2(resolution) * perceptualRoughness;
     return textureLod(ambientTexture, envMapEquirect(wN), lod).rgb;
 }
@@ -54,8 +52,6 @@ subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float perceptualRoughn
 {
     ivec2 envMapSize = textureSize(ambientTextureCube, 0);
     float resolution = float(max(envMapSize.x, envMapSize.y));
-    //float glossyExponent = 2.0 / pow(roughness, 4.0) - 2.0;
-    //float lod = log2(size * sqrt(3.0)) - 0.5 * log2(glossyExponent + 1.0);
     float lod = log2(resolution) * perceptualRoughness;
     return textureLod(ambientTextureCube, wN, lod).rgb;
 }
@@ -103,8 +99,9 @@ void main()
     vec3 F = clamp(fresnelRoughness(NE, f0, roughness), 0.0, 1.0);
     vec3 kD = (1.0 - F) * (1.0 - metallic);
     vec2 brdf = haveAmbientBRDF? texture(ambientBRDF, vec2(NE, roughness)).rg : vec2(1.0, 0.0);
+    vec3 diffuse = kD * irradiance * albedo;
     vec3 specular = reflection * clamp(F * brdf.x + brdf.y, 0.0, 1.0);
-    vec3 radiance = (kD * irradiance * albedo + specular) * occlusion * ambientEnergy;
+    vec3 radiance = (diffuse + specular) * occlusion * ambientEnergy;
     
     // Fog
     float linearDepth = abs(eyePos.z);
