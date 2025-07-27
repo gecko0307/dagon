@@ -40,6 +40,8 @@ DEALINGS IN THE SOFTWARE.
 module dagon.graphics.texproc;
 
 import std.stdio;
+import std.math;
+import std.algorithm;
 import std.traits;
 
 import dlib.core.memory;
@@ -320,6 +322,9 @@ void generateCubemap(Texture inputEnvmap, Texture output)
     ScreenSurface screenSurface = New!ScreenSurface(null);
     CubemapGeneratorShader shader = New!CubemapGeneratorShader(inputEnvmap, null);
     
+    inputEnvmap.useMipmapFiltering = false;
+    inputEnvmap.enableRepeat(false);
+    
     GraphicsState state;
     state.reset();
     state.resolution = Vector2f(output.size.width, output.size.height);
@@ -395,4 +400,150 @@ Texture generateCubemap(uint resolution, Texture inputEnvmap, Owner owner)
     cubemap.generateMipmap();
     
     return cubemap;
+}
+
+class CubemapPrefilterShader: Shader
+{
+    Texture cubemap;
+    CubeFace cubeFace;
+    float roughness = 0.5f;
+    float inputMipLevel = 0.0f;
+    float inputThreshold = 10.0f;
+    float inputScale = 2.0f;
+    
+    ShaderParameter!Vector2f resolutionUniform;
+    ShaderParameter!int cubemapFaceIndexUniform;
+    ShaderParameter!float inputMipLevelUniform;
+    ShaderParameter!float roughnessUniform;
+    ShaderParameter!int envmapUniform;
+    ShaderParameter!float inputThresholdUniform;
+    ShaderParameter!float inputScaleUniform;
+    
+    this(Texture cubemap, Owner owner)
+    {
+        this.cubemap = cubemap;
+        
+        string vs = Shader.load("data/__internal/shaders/CubemapPrefilter/CubemapPrefilter.vert.glsl");
+        string fs = Shader.load("data/__internal/shaders/CubemapPrefilter/CubemapPrefilter.frag.glsl");
+        auto shaderProgram = New!ShaderProgram(vs, fs, this);
+        super(shaderProgram, owner);
+        
+        resolutionUniform = createParameter!Vector2f("resolution");
+        cubemapFaceIndexUniform = createParameter!int("cubemapFaceIndex");
+        inputMipLevelUniform = createParameter!float("inputMipLevel");
+        roughnessUniform = createParameter!float("roughness");
+        envmapUniform = createParameter!int("envmap");
+        inputThresholdUniform = createParameter!float("inputThreshold");
+        inputScaleUniform = createParameter!float("inputScale");
+    }
+    
+    override void bindParameters(GraphicsState* state)
+    {
+        resolutionUniform = state.resolution;
+        
+        if (cubeFace == CubeFace.PositiveX) cubemapFaceIndexUniform = 0;
+        if (cubeFace == CubeFace.NegativeX) cubemapFaceIndexUniform = 1;
+        if (cubeFace == CubeFace.PositiveY) cubemapFaceIndexUniform = 2;
+        if (cubeFace == CubeFace.NegativeY) cubemapFaceIndexUniform = 3;
+        if (cubeFace == CubeFace.PositiveZ) cubemapFaceIndexUniform = 4;
+        if (cubeFace == CubeFace.NegativeZ) cubemapFaceIndexUniform = 5;
+        
+        inputMipLevelUniform = inputMipLevel;
+        roughnessUniform = roughness;
+        inputThresholdUniform = inputThreshold;
+        inputScaleUniform = inputScale;
+        
+        glActiveTexture(GL_TEXTURE0);
+        envmapUniform = 0;
+        if (cubemap)
+            cubemap.bind();
+        else
+            glBindTexture(GL_TEXTURE_2D, 0);
+        
+        super.bindParameters(state);
+    }
+}
+
+void prefilterCubemap(Texture inputCubemap, Texture outputCubemap)
+{
+    ScreenSurface screenSurface = New!ScreenSurface(null);
+    CubemapPrefilterShader shader = New!CubemapPrefilterShader(inputCubemap, null);
+    
+    GraphicsState state;
+    state.reset();
+    
+    GLuint framebuffer;
+    glGenFramebuffers(1, &framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    
+    GLenum drawBuffer = GL_COLOR_ATTACHMENT0;
+    glDrawBuffers(1, &drawBuffer);
+    
+    glDisable(GL_DEPTH_TEST);
+    glDepthMask(GL_FALSE);
+    
+    foreach(cubeFace; EnumMembers!CubeFace)
+    {
+        for(int mipLevel = 0; mipLevel < outputCubemap.mipLevels; mipLevel++)
+        {
+            GLint width, height;
+            glGetTextureLevelParameteriv(outputCubemap.texture, mipLevel, GL_TEXTURE_WIDTH, &width);
+            glGetTextureLevelParameteriv(outputCubemap.texture, mipLevel, GL_TEXTURE_HEIGHT, &height);
+            state.resolution = Vector2f(width, height);
+            
+            shader.cubeFace = cubeFace;
+            shader.roughness = cast(float)mipLevel / (cast(float)outputCubemap.mipLevels - 1.0f);
+            shader.roughness = min(0.9f, shader.roughness * shader.roughness);
+            shader.inputMipLevel = 0;
+            
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, cubeFace, outputCubemap.texture, mipLevel);
+            
+            GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+            if (status != GL_FRAMEBUFFER_COMPLETE)
+            {
+                logError("filterCubemap failed: framebuffer status = ", status);
+                glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                glDeleteFramebuffers(1, &framebuffer);
+                return;
+            }
+            
+            glScissor(0, 0, width, height);
+            glViewport(0, 0, width, height);
+            
+            shader.bind();
+            shader.bindParameters(&state);
+            screenSurface.render(&state);
+            shader.unbindParameters(&state);
+            shader.unbind();
+        }
+    }
+    
+    glDepthMask(GL_TRUE);
+    glEnable(GL_DEPTH_TEST);
+    
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDeleteFramebuffers(1, &framebuffer);
+    
+    Delete(shader);
+    Delete(screenSurface);
+}
+
+Texture prefilterCubemap(uint resolution, Texture inputCubemap, Owner owner)
+{
+    TextureFormat format = {
+        target: GL_TEXTURE_CUBE_MAP,
+        format: GL_RGBA,
+        internalFormat: GL_RGBA16F,
+        pixelType: GL_HALF_FLOAT,
+        blockSize: 0,
+        cubeFaces: CubeFaceBit.All
+    };
+    
+    Texture outputCubemap = New!Texture(owner);
+    outputCubemap.createBlankCubemap(format, resolution);
+    outputCubemap.generateMipmap();
+    
+    prefilterCubemap(inputCubemap, outputCubemap);
+    
+    return outputCubemap;
 }
