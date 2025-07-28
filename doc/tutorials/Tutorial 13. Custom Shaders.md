@@ -83,7 +83,7 @@ void main()
 
 ## Textures
 
-To use textures in shaders, you'll need access to `Texture` objects with an underlying `texture` property (OpenGL texture handle). Texture management is up to you: you can store textures directly in the shader (if the texture is shared across all objects using the shader), or use the standard PBR textures available in `Matrial` (`baseColorTexture`, `normalTexture`, `roughnessMetallicTexture`). You can also derive your own material class, add custom properties, and use them in your shaders. For example, suppose you have a `CustomMaterial` class with `someCustomTexture` field. Here's how you could bind it:
+To use textures in shaders, you'll need access to `Texture` objects with an underlying `texture` property (OpenGL texture handle). Texture management is up to you: you can store textures directly in the shader (if the texture is shared across all objects using the shader), or use the standard PBR textures available in `Material` (`baseColorTexture`, `normalTexture`, `roughnessMetallicTexture`). Current material can be obtained from the `GraphicsState` object: `state.material`. You can also derive your own material class, add custom properties, and use them in your shaders. For example, suppose you have a `CustomMaterial` class with `someCustomTexture` field. Here's how you could bind it:
 
 ```d
 ShaderParameter!int someTexureUnitUniform;
