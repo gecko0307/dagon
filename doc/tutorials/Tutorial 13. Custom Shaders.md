@@ -109,7 +109,7 @@ override void bindParameters(GraphicsState* state)
 
 ## Block Parameters
 
-In some cases you need to pass arrays of structured data to the shader. Efficient way to do this is via uniform blocks. Dagon takes control of the underlying UBO management, and you only have to create `UniformBlockParameter` and feed it your data.
+In some cases you need to pass arrays of structured data to the shader. Efficient way to do this is via uniform blocks. Dagon takes control of the underlying UBO management, and you only have to create a `UniformBlockParameter` and feed it your data in `bindParameters`.
 
 GLSL side:
 
