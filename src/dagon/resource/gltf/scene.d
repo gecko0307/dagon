@@ -25,30 +25,36 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-/**
- * The main entry point for GLTF 2.0 support in Dagon.
- *
- * Description:
- * Publicly imports all GLTF resource modules. This package provides
- * a unified interface for loading, managing, and accessing all GLTF 2.0
- * resources supported by Dagon's asset system.
- *
- * Copyright: Timur Gafarov 2021-2025
- * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
- * Authors: Timur Gafarov
- */
-module dagon.resource.gltf;
+module dagon.resource.gltf.scene;
 
-public
+import dlib.core.ownership;
+import dlib.container.array;
+import dlib.serialization.json;
+
+import dagon.core.bindings;
+import dagon.resource.gltf.node;
+
+/**
+ * Represents a GLTF scene, containing a set of root nodes.
+ */
+class GLTFScene: Owner
 {
-    import dagon.resource.gltf.accessor;
-    import dagon.resource.gltf.animation;
-    import dagon.resource.gltf.buffer;
-    import dagon.resource.gltf.bufferview;
-    import dagon.resource.gltf.decoder;
-    import dagon.resource.gltf.mesh;
-    import dagon.resource.gltf.meshprimitive;
-    import dagon.resource.gltf.node;
-    import dagon.resource.gltf.scene;
-    import dagon.resource.gltf.skin;
+    /// Scene name.
+    string name;
+
+    /// Root nodes in the scene.
+    Array!GLTFNode nodes;
+    
+    /// Application-specific data.
+    JSONObject extras;
+    
+    this(Owner o)
+    {
+        super(o);
+    }
+    
+    ~this()
+    {
+        nodes.free();
+    }
 }

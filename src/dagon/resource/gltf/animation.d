@@ -41,6 +41,7 @@ module dagon.resource.gltf.animation;
 
 import std.stdio;
 import std.algorithm;
+
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.container.array;
@@ -49,6 +50,8 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.quaternion;
 import dlib.math.interpolation;
+import dlib.serialization.json;
+
 import dagon.core.bindings;
 import dagon.core.event;
 import dagon.core.time;
@@ -92,6 +95,9 @@ class GLTFAnimationSampler: Owner
 
     /// Accessor for keyframe values.
     GLTFAccessor output;
+    
+    /// Application-specific data.
+    JSONObject extras;
     
     this(Owner o)
     {
@@ -176,7 +182,10 @@ class GLTFAnimationChannel: Owner
 
     /// The node being animated.
     GLTFNode targetNode;
-    
+
+    /// Application-specific data.
+    JSONObject extras;
+
     this(Owner o)
     {
         super(o);
@@ -196,7 +205,10 @@ class GLTFAnimation: Owner
 
     /// Animation channels.
     Array!GLTFAnimationChannel channels;
-    
+
+    /// Application-specific data.
+    JSONObject extras;
+
     this(Owner o)
     {
         super(o);
@@ -235,7 +247,7 @@ class GLTFAnimationComponent: EntityComponent
 
     /// True if the animation is playing.
     bool playing;
-    
+
     this(EventManager em, Entity e, GLTFAnimation animation, bool playing = false)
     {
         super(em, e);

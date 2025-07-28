@@ -41,9 +41,8 @@ DEALINGS IN THE SOFTWARE.
  */
 module dagon.resource.gltf.accessor;
 
-import std.stdio;
-
 import dlib.core.ownership;
+import dlib.serialization.json;
 
 import dagon.core.bindings;
 import dagon.resource.gltf.bufferview;
@@ -85,6 +84,9 @@ class GLTFAccessor: Owner
 
     /// Offset in bytes from the start of the buffer view.
     uint byteOffset;
+    
+    /// Application-specific data.
+    JSONObject extras;
     
     /**
      * Returns a typed slice of the accessor's data.

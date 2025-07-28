@@ -45,6 +45,7 @@ module dagon.resource.gltf.meshprimitive;
 import std.stdio;
 
 import dlib.core.ownership;
+import dlib.serialization.json;
 
 import dagon.core.bindings;
 import dagon.graphics.drawable;
@@ -125,7 +126,10 @@ class GLTFMeshPrimitive: Owner, Drawable
 
     /// Flags indicating the presence of indices.
     bool hasIndices = false;
-    
+
+    /// Application-specific data.
+    JSONObject extras;
+
     /**
      * Constructs a mesh primitive.
      *

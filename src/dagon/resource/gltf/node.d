@@ -50,6 +50,7 @@ import dlib.math.vector;
 import dlib.math.quaternion;
 import dlib.math.matrix;
 import dlib.math.transformation;
+import dlib.serialization.json;
 
 import dagon.graphics.entity;
 import dagon.resource.gltf.mesh;
@@ -113,7 +114,10 @@ class GLTFNode: Owner
 
     /// The local transformation matrix.
     Matrix4x4f localTransform;
-    
+
+    /// Application-specific data.
+    JSONObject extras;
+
     /**
      * Constructs a new GLTF node.
      *

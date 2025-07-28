@@ -43,6 +43,7 @@ module dagon.resource.gltf.bufferview;
 import std.stdio;
 
 import dlib.core.ownership;
+import dlib.serialization.json;
 
 import dagon.core.bindings;
 import dagon.core.logger;
@@ -70,7 +71,10 @@ class GLTFBufferView: Owner
 
     /// The target for the buffer view (e.g., GL_ARRAY_BUFFER).
     GLenum target;
-    
+
+    /// Application-specific data.
+    JSONObject extras;
+
     /**
      * Constructs a new buffer view.
      *

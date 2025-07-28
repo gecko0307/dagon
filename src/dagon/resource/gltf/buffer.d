@@ -48,6 +48,7 @@ import dlib.core.ownership;
 import dlib.core.memory;
 import dlib.core.stream;
 import dlib.filesystem.filesystem;
+import dlib.serialization.json;
 
 import dagon.core.logger;
 
@@ -60,6 +61,9 @@ class GLTFBuffer: Owner
 {
     /// The buffer's raw binary data.
     ubyte[] array;
+
+    /// Application-specific data.
+    JSONObject extras;
 
     /**
      * Constructs a new GLTF buffer.

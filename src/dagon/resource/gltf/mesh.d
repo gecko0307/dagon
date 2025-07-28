@@ -43,6 +43,7 @@ import std.stdio;
 
 import dlib.core.ownership;
 import dlib.container.array;
+import dlib.serialization.json;
 
 import dagon.graphics.drawable;
 import dagon.graphics.state;
@@ -63,6 +64,9 @@ class GLTFMesh: Owner, Drawable
 
     /// The primitives of the mesh.
     Array!GLTFMeshPrimitive primitives;
+
+    /// Application-specific data.
+    JSONObject extras;
 
     /**
      * Constructor for creating a GLTFMesh instance.

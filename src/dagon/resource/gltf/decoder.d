@@ -80,6 +80,7 @@ import dagon.resource.gltf.accessor;
 import dagon.resource.gltf.meshprimitive;
 import dagon.resource.gltf.mesh;
 import dagon.resource.gltf.node;
+import dagon.resource.gltf.scene;
 import dagon.resource.gltf.skin;
 import dagon.resource.gltf.animation;
 
@@ -148,25 +149,16 @@ Color4f asColor(JSONValue value)
 }
 
 /**
- * Represents a GLTF scene, containing a set of root nodes.
+ * Converts a JSON number value to uint.
+ *
+ * Params:
+ *   value = The JSON value.
+ * Returns:
+ *   Unsigned integer.
  */
-class GLTFScene: Owner
+uint asUint(JSONValue value)
 {
-    /// Scene name.
-    string name;
-
-    /// Root nodes in the scene.
-    Array!GLTFNode nodes;
-    
-    this(Owner o)
-    {
-        super(o);
-    }
-    
-    ~this()
-    {
-        nodes.free();
-    }
+    return cast(uint)value.asNumber;
 }
 
 /**
@@ -247,12 +239,13 @@ class GLTFAsset: Asset, TriangleSet
             foreach(buffer; root.asObject["buffers"].asArray)
             {
                 auto buf = buffer.asObject;
+                
+                GLTFBuffer b = New!GLTFBuffer(this);
+                
                 if ("uri" in buf)
                 {
                     string uri = buf["uri"].asString;
                     string base64Prefix = "data:application/octet-stream;base64,";
-                    
-                    GLTFBuffer b = New!GLTFBuffer(this);
                     
                     if (uri.startsWith(base64Prefix))
                     {
@@ -267,9 +260,12 @@ class GLTFAsset: Asset, TriangleSet
                         b.fromFile(fs, bufFilename.toString);
                         bufFilename.free();
                     }
-                    
-                    buffers.insertBack(b);
                 }
+                
+                if ("extras" in buf)
+                    b.extras = buf["extras"].asObject;
+                
+                buffers.insertBack(b);
             }
         }
     }
@@ -299,17 +295,22 @@ class GLTFAsset: Asset, TriangleSet
                 if ("target" in bv)
                     target = cast(GLenum)bv["target"].asNumber;
                 
+                GLTFBufferView bufv;
+                
                 if (bufferIndex < buffers.length)
                 {
-                    GLTFBufferView bufv = New!GLTFBufferView(buffers[bufferIndex], byteOffset, byteLength, byteStride, target, this);
-                    bufferViews.insertBack(bufv);
+                    bufv = New!GLTFBufferView(buffers[bufferIndex], byteOffset, byteLength, byteStride, target, this);
                 }
                 else
                 {
                     logError("Can't create buffer view for nonexistent buffer ", bufferIndex);
-                    GLTFBufferView bufv = New!GLTFBufferView(null, 0, 0, 0, 0, this);
-                    bufferViews.insertBack(bufv);
+                    bufv = New!GLTFBufferView(null, 0, 0, 0, 0, this);
                 }
+                
+                if ("extras" in bv)
+                    bufv.extras = bv["extras"].asObject;
+                
+                bufferViews.insertBack(bufv);
             }
         }
     }
@@ -357,17 +358,22 @@ class GLTFAsset: Asset, TriangleSet
                 else
                     logError("Unsupported data type for accessor ", i);
                 
+                GLTFAccessor ac;
+                
                 if (bufferViewIndex < bufferViews.length)
                 {
-                    GLTFAccessor ac = New!GLTFAccessor(bufferViews[bufferViewIndex], dataType, componentType, count, byteOffset, this);
-                    accessors.insertBack(ac);
+                    ac = New!GLTFAccessor(bufferViews[bufferViewIndex], dataType, componentType, count, byteOffset, this);
                 }
                 else
                 {
                     logError("Can't create accessor for nonexistent buffer view ", bufferViewIndex);
-                    GLTFAccessor ac = New!GLTFAccessor(null, dataType, componentType, count, byteOffset, this);
-                    accessors.insertBack(ac);
+                    ac = New!GLTFAccessor(null, dataType, componentType, count, byteOffset, this);
                 }
+                
+                if ("extras" in acc)
+                    ac.extras = acc["extras"].asObject;
+                
+                accessors.insertBack(ac);
             }
         }
     }
@@ -455,6 +461,8 @@ class GLTFAsset: Asset, TriangleSet
                     
                     images.insertBack(textureAsset);
                 }
+                
+                // TODO: support extras
             }
         }
     }
@@ -492,6 +500,8 @@ class GLTFAsset: Asset, TriangleSet
                 }
                 
                 // TODO: sampler
+                
+                // TODO: support samplers
             }
         }
     }
@@ -656,6 +666,8 @@ class GLTFAsset: Asset, TriangleSet
                     material.alphaTestThreshold = ma["alphaCutoff"].asNumber;
                 
                 materials.insertBack(material);
+                
+                // TODO: support extras
             }
         }
     }
@@ -781,6 +793,9 @@ class GLTFAsset: Asset, TriangleSet
                     }
                 }
                 
+                if ("extras" in m)
+                    me.extras = m["extras"].asObject;
+                
                 meshes.insertBack(me);
             }
         }
@@ -880,6 +895,9 @@ class GLTFAsset: Asset, TriangleSet
                 
                 nodeObj.index = nodes.length;
                 
+                if ("extras" in node)
+                    nodeObj.extras = node["extras"].asObject;
+                
                 nodes.insertBack(nodeObj);
             }
         }
@@ -942,6 +960,9 @@ class GLTFAsset: Asset, TriangleSet
                         skinObj.invBindMatrices = skinObj.invBindMatricesAccessor.getSlice!Matrix4x4f;
                 }
                 
+                if ("extras" in skin)
+                    skinObj.extras = skin["extras"].asObject;
+                
                 skins.insertBack(skinObj);
             }
         }
@@ -973,11 +994,17 @@ class GLTFAsset: Asset, TriangleSet
                 auto animationObj = New!GLTFAnimation(this);
                 scope(exit) animations.insertBack(animationObj);
                 
-                auto name = ("name" in animation.asObject);
+                auto anim = animation.asObject;
+                
+                auto animExtras = ("extras" in anim);
+                if (animExtras !is null)
+                    animationObj.extras = animExtras.asObject;
+                
+                auto name = ("name" in anim);
                 if (name !is null)
                     animationObj.name = name.asString;
 
-                auto samplers = ("samplers" in animation.asObject);
+                auto samplers = ("samplers" in anim);
                 if (samplers !is null)
                 {
                     foreach(i, s; samplers.asArray)
@@ -991,11 +1018,16 @@ class GLTFAsset: Asset, TriangleSet
                             samplerObj.interpolation = InterpolationType.Linear;
                         checkAndGetAccessor(samplerObj.input, sampler["input"].asUint);
                         checkAndGetAccessor(samplerObj.output, sampler["output"].asUint);
+                        
+                        auto samplerExtras = ("extras" in sampler);
+                        if (samplerExtras !is null)
+                            animationObj.extras = samplerExtras.asObject;
+                        
                         animationObj.samplers.insertBack(samplerObj);
                     }
                 }
 
-                auto channels = ("channels" in animation.asObject);
+                auto channels = ("channels" in anim);
                 if (channels !is null)
                 {
                     foreach(i, ch; channels.asArray)
@@ -1029,6 +1061,10 @@ class GLTFAsset: Asset, TriangleSet
                                     logError("Nonexistent target node");
                             }
                         }
+                        
+                        auto channelExtras = ("extras" in channel);
+                        if (channelExtras !is null)
+                            channelObj.extras = channelExtras.asObject;
                     }
                 }
             }
@@ -1066,6 +1102,9 @@ class GLTFAsset: Asset, TriangleSet
                             sceneObj.nodes.insertBack(nodes[nodeIndex]);
                     }
                 }
+                
+                if ("extras" in scene)
+                    sceneObj.extras = scene["extras"].asObject;
                 
                 scenes.insertBack(sceneObj);
             }
@@ -1343,11 +1382,6 @@ class GLTFAsset: Asset, TriangleSet
     }
 }
 
-private uint asUint(in JSONValue j)
-{
-    return cast(uint) j.asNumber;
-}
-
 // TODO: generate random name instead of "undefined"
 string nameFromMimeType(string mime)
 {
@@ -1366,35 +1400,3 @@ string nameFromMimeType(string mime)
     }
     return name;
 }
-
-/*
-void decomposeMatrix(
-    Matrix4x4f m,
-    out Vector3f position,
-    out Quaternionf rotation,
-    out Vector3f scale)
-{
-    position = Vector3f(m[12], m[13], m[14]);
-    
-    float sx = sqrt(m[0] * m[0] + m[1] * m[1] + m[2] * m[2]);
-    float sy = sqrt(m[4] * m[4] + m[5] * m[5] + m[6] * m[6]);
-    float sz = sqrt(m[8] * m[8] + m[9] * m[9] + m[10] * m[10]);
-
-    if (m.determinant < 0)
-        sx = -sx;
-    
-    scale = Vector3f(sx, sy, sz);
-    
-    float invSx = 1.0f / sx;
-    float invSy = 1.0f / sy;
-    float invSz = 1.0f / sz;
-    
-    Matrix3x3f rotationMatrix = matrixf(
-        m[0] * invSx, m[4] * invSy, m[8] * invSz,
-        m[1] * invSx, m[5] * invSy, m[9] * invSz,
-        m[2] * invSx, m[6] * invSy, m[10] * invSz
-    );
-    
-    rotation = Quaternionf.fromMatrix(matrix3x3to4x4(rotationMatrix));
-}
-*/

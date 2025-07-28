@@ -42,11 +42,10 @@ DEALINGS IN THE SOFTWARE.
  */
 module dagon.resource.gltf.skin;
 
-import std.stdio;
-
 import dlib.core.ownership;
 import dlib.container.array;
 import dlib.math.matrix;
+import dlib.serialization.json;
 
 import dagon.resource.gltf.node;
 import dagon.resource.gltf.accessor;
@@ -67,7 +66,10 @@ class GLTFSkin: Owner
 
     /// Accessor for the inverse bind matrices in the GLTF buffer.
     GLTFAccessor invBindMatricesAccessor;
-    
+
+    /// Application-specific data.
+    JSONObject extras;
+
     /**
      * Constructs a new GLTFSkin.
      *
