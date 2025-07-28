@@ -107,6 +107,64 @@ override void bindParameters(GraphicsState* state)
 }
 ```
 
+## Block Parameters
+
+In some cases you need to pass arrays of structured data to the shader. Efficient way to do this is via uniform blocks. Dagon takes control of the underlying UBO management, and you only have to create `UniformBlockParameter` and feed it your data.
+
+Shader side:
+
+```glsl
+struct MyStruct
+{
+    vec4 prop1;
+    vec4 prop2;
+};
+
+#define MAX_STRUCTS 8
+
+layout(std140) uniform MyStructs
+{
+    MyStruct structs[MAX_STRUCTS];
+};
+
+uniform int numStructs;
+```
+
+D program side:
+
+```d
+struct UBOLight
+{
+  align(16):
+    Vector4f prop1;
+    Vector4f prop2;
+}
+```
+
+Dagon only supports std140 memory layout. This example uses `align(16)` to ensure 16-byte alignment of the fields, but it is not necessary if the struct already complies with std140.
+
+```d
+UniformBlockParameter!MyStruct myStructUniform;
+ShaderParameter!int numStructsUniform;
+enum MaxStructs = 8;
+
+this(Owner owner)
+{
+    // Initialization omitted
+    
+    myStructUniform = createBlockParameter!MyStruct("MyStructs", MaxStructs, 0);
+    numStructsUniform = createParameter!int("numStructs");
+}
+
+override void bindParameters(GraphicsState* state)
+{
+    auto structs = numStructsUniform.data;
+    structs[0].prop1 = Vector4f(0.0f, 1.0f, 0.0, 1.0f);
+    structs[0].prop2 = Vector4f(1.0f, 1.0f, 1.0, 1.0f);
+    numStructsUniform = 1;
+}
+```
+
 ## Limitations
 
 * Custom shaders are not supported in the **deferred rendering pipeline**. Objects using them are rendered in the **forward pipeline**, after deferred rendering is complete.
