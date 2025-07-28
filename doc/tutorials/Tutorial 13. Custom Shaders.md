@@ -111,7 +111,7 @@ override void bindParameters(GraphicsState* state)
 
 In some cases you need to pass arrays of structured data to the shader. Efficient way to do this is via uniform blocks. Dagon takes control of the underlying UBO management, and you only have to create `UniformBlockParameter` and feed it your data.
 
-Shader side:
+GLSL side:
 
 ```glsl
 struct MyStruct
@@ -133,7 +133,7 @@ uniform int numStructs;
 D program side:
 
 ```d
-struct UBOLight
+struct MyStruct
 {
   align(16):
     Vector4f prop1;
@@ -141,7 +141,7 @@ struct UBOLight
 }
 ```
 
-Dagon only supports std140 memory layout. This example uses `align(16)` to ensure 16-byte alignment of the fields, but it is not necessary if the struct already complies with std140.
+Dagon only supports std140 memory layout. This example uses `align(16)` to ensure 16-byte alignment of the fields, but it is not necessary if the struct already complies with std140. Basic compliancy check is done at compile time, when the `UniformBlockParameter` specialization is defined.
 
 ```d
 UniformBlockParameter!MyStruct myStructUniform;
@@ -152,18 +152,26 @@ this(Owner owner)
 {
     // Initialization omitted
     
+    // Define a UBO with a maximum of 8 elements of type MyStruct, at the binding 0
     myStructUniform = createBlockParameter!MyStruct("MyStructs", MaxStructs, 0);
+    
     numStructsUniform = createParameter!int("numStructs");
 }
 
 override void bindParameters(GraphicsState* state)
 {
-    auto structs = numStructsUniform.data;
+    auto structs = myStructUniform.data;
+    
+    // Fill only the first element:
     structs[0].prop1 = Vector4f(0.0f, 1.0f, 0.0, 1.0f);
     structs[0].prop2 = Vector4f(1.0f, 1.0f, 1.0, 1.0f);
     numStructsUniform = 1;
 }
 ```
+
+## Subroutines
+
+TODO
 
 ## Limitations
 
