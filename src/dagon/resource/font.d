@@ -67,7 +67,7 @@ class FontAsset: Asset
         }
         else
         {
-            logWarning("Freetype library is not available, font will not be loaded");
+            logWarning("FreeType library is not available, font will not be loaded");
             return false;
         }
     }

@@ -57,7 +57,7 @@ Features
 * Rigid body physics extension that uses [Newton Dynamics](http://newtondynamics.com). Built-in character controller
 * Orthographic projection support. Sprites and billboards. Create 2.5D isometric games with ease
 * Screen-aligned 2D rendering
-* UTF-8 text rendering using TTF fonts via [Freetype](https://freetype.org/)
+* UTF-8 text rendering using TTF fonts via [FreeType](https://freetype.org/)
 * GUI extension based on [Dear ImGui](https://github.com/ocornut/imgui)
 * Very basic and lightweight built-in UI toolkit.
 

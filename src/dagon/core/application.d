@@ -591,7 +591,7 @@ class Application: EventListener
             else
             {
                 FT_Library_Version(ftLibrary, &ftVersion.major, &ftVersion.minor, &ftVersion.patch);
-                logInfo("Freetype version: ", ftVersion.major, ".", ftVersion.minor, ".", ftVersion.patch);
+                logInfo("FreeType version: ", ftVersion.major, ".", ftVersion.minor, ".", ftVersion.patch);
             }
         }
         

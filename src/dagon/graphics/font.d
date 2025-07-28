@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /**
- * Freetype font.
+ * FreeType font.
  *
  * Description:
  * The `dagon.graphics.font` module defines the `Font` class, which represents
@@ -132,7 +132,7 @@ class FontManager: Owner
         }
         else
         {
-            logError("Failed to add font \"", name, "\": problem with Freetype?");
+            logError("Failed to add font \"", name, "\": problem with FreeType?");
             return null;
         }
     }
