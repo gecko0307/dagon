@@ -58,6 +58,7 @@ Features
 * Orthographic projection support. Sprites and billboards. Create 2.5D isometric games with ease
 * Screen-aligned 2D rendering
 * UTF-8 text rendering using TTF fonts via [FreeType](https://freetype.org/)
+* Internationalization support
 * GUI extension based on [Dear ImGui](https://github.com/ocornut/imgui)
 * Very basic and lightweight built-in UI toolkit.
 

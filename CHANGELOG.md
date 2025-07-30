@@ -1,5 +1,7 @@
 Dagon 0.27.0 - TBD
 ------------------
+- **Core**
+  - Internationalization support (`dagon.core.i18n`). The `Application` object now tries to load locale files at startup - locale/en_US.lang by default, and a user-specific locale according to system info or settings.conf. *.lang files use the same syntax as *.conf files. To get a translation for a string, use `Application.translate`
 - **Graphics components**
   - GPU-based cubemap prefiltering (`dagon.graphics.texproc.prefilterCubemap`) that generates mip levels for an environment map by convolving it with GGX BRDF at different roughness values
 - **Assets**
