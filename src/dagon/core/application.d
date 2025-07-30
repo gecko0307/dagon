@@ -360,6 +360,8 @@ class Application: EventListener
     String glVendor;
     String glRenderer;
     
+    float maxTextureAnisotropy = 8.0f;
+    
     FT_Library ftLibrary;
     FontManager fontManager;
     
@@ -564,6 +566,22 @@ class Application: EventListener
         SDL_GL_SwapWindow(window);
 
         enumerateCompressedTextureFormats();
+        
+        bool anisotropicFilteringSupported = isExtensionSupported("GL_EXT_texture_filter_anisotropic");
+        logInfo("GL_EXT_texture_filter_anisotropic: ", anisotropicFilteringSupported);
+        
+        if (anisotropicFilteringSupported)
+        {
+            maxTextureAnisotropy = 8.0f;
+            float queriedValue = maxTextureAnisotropy;
+            glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &queriedValue);
+            maxTextureAnisotropy = (queriedValue > maxTextureAnisotropy) ? maxTextureAnisotropy : queriedValue;
+            logInfo("GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT: ", maxTextureAnisotropy);
+        }
+        else
+        {
+            maxTextureAnisotropy = 0.0f;
+        }
 
         // Debug output
         debug

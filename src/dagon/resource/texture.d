@@ -161,6 +161,8 @@ class TextureAsset: Asset
         if (loaded)
             return true;
         
+        texture.maxAnisotropy = assetManager.application.maxTextureAnisotropy;
+        
         this.filename = filename;
         this.extension = filename.extension.toLower;
         auto loader = assetManager.textureLoader(this.extension);
