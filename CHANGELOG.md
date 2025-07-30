@@ -1,8 +1,9 @@
 Dagon 0.27.0 - TBD
 ------------------
 - **Graphics components**
-  - GPU-based cubemap prefiltering (`dagon.graphics.texproc.prefilterCubemap`) that generates mip levels for an environment map by convolving it with GGX BRDF at different roughness values.
+  - GPU-based cubemap prefiltering (`dagon.graphics.texproc.prefilterCubemap`) that generates mip levels for an environment map by convolving it with GGX BRDF at different roughness values
 - **Assets**
+  - Anisotropic filtering support for textures (`Texture.useAnisotropicFiltering`, `Texture.anisotropy`, `Texture.maxAnisotropy`)
   - glTF decoder now supports `extras` for most of the objects, excluding images, textures and materials.
 
 Dagon 0.26.0 - 27 Jul, 2025
