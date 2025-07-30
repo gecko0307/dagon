@@ -26,11 +26,7 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /**
- * Provides utilities for detecting and querying the system locale.
- *
- * The `dagon.core.locale` module determines the user's language and country
- * code at startup, using platform-specific APIs (Windows or Posix),
- * and exposes the locale as a string in the form `"ll_CC"` (e.g., `"en_US"`).
+ * Provides a function for detecting and querying the system locale.
  *
  * Copyright: Timur Gafarov 2022-2025
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
@@ -63,9 +59,17 @@ version(Windows)
     enum uint LOCALE_SISO3166CTRYNAME = 0x5a;
 }
 
-private string syslocale = "en_US";
-
-static this()
+/**
+ * Returns the system locale string in the form `"ll_CC"` (e.g., `"en_US"`).
+ *
+ * Description:
+ * On Windows, this uses the system's language and country settings.
+ * On Posix systems, this uses the `LANG` environment variable.
+ *
+ * Returns:
+ *   The system locale string.
+ */
+string systemLocale()
 {
     // TODO: don't use GC
     version(Windows)
@@ -86,28 +90,17 @@ static this()
     
         string lang = getLanguage();
         string country = getCountry();
-        syslocale = format("%s_%s", lang, country);
+        return format("%s_%s", lang, country);
     }
-    else version(Posix)
+    else version(linux)
     {
         string lang = environment.get("LANG", "en_US.utf8");
         string locale, encoding;
         formattedRead(lang, "%s.%s", &locale, &encoding);
-        syslocale = locale;
+        return locale;
     }
-}
-
-/**
- * Returns the system locale string in the form `"ll_CC"` (e.g., `"en_US"`).
- *
- * Description:
- * On Windows, this uses the system's language and country settings.
- * On Posix systems, this uses the `LANG` environment variable.
- *
- * Returns:
- *   The system locale string.
- */
-string systemLocale()
-{
-    return syslocale;
+    else
+    {
+        return "en_US";
+    }
 }

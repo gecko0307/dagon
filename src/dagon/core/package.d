@@ -53,6 +53,9 @@ public
 
     /// Event types, event manager, and event listener base class.
     import dagon.core.event;
+    
+    /// Internationalization functionalty.
+    import dagon.core.i18n;
 
     /// Input manager, input bindings, and action mapping.
     import dagon.core.input;

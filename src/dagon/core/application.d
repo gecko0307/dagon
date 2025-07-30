@@ -67,6 +67,8 @@ import dagon.core.time;
 import dagon.core.logger;
 import dagon.core.vfs;
 import dagon.core.config;
+import dagon.core.locale;
+import dagon.core.i18n;
 
 import dagon.graphics.font;
 
@@ -362,6 +364,10 @@ class Application: EventListener
     
     float maxTextureAnisotropy = 8.0f;
     
+    string locale = "en_US";
+    string userLocale = "en_US";
+    Translation translation;
+    
     FT_Library ftLibrary;
     FontManager fontManager;
     
@@ -382,6 +388,10 @@ class Application: EventListener
     {
         createVFS(appDataFolderName);
         
+        locale = systemLocale();
+        logInfo("System locale: ", locale);
+        userLocale = locale;
+        
         config = New!Configuration(vfs, this);
         
         if (config.fromFile("settings.conf"))
@@ -394,6 +404,8 @@ class Application: EventListener
                 fullscreen = cast(bool)(config.props["fullscreen"].toUInt);
             if ("windowTitle" in config.props)
                 windowTitle = config.props["windowTitle"].toString;
+            if ("locale" in config.props)
+                userLocale = config.props["locale"].toString;
             
             version(Windows)
             {
@@ -406,6 +418,11 @@ class Application: EventListener
         {
             logWarning("No \"settings.conf\" found");
         }
+        
+        translation = New!Translation(this, this);
+        translation.load("en_US");
+        if (userLocale != "en_US")
+            translation.load(userLocale);
         
         version(linux)
             loadedSDLSupport = loadSDL("libSDL2-2.0.so.0");
