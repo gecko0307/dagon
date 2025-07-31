@@ -38,24 +38,28 @@ import dagon.core.time;
 import dagon.graphics.entity;
 import dagon.graphics.camera;
 import dagon.graphics.light;
+import dagon.graphics.dpsm;
 import dagon.graphics.csm;
 import dagon.graphics.shader;
 import dagon.render.pipeline;
 import dagon.render.pass;
 import dagon.render.deferred.shaders.shadow;
+import dagon.render.deferred.shaders.dpsm;
 
 class PassShadow: RenderPass
 {
     EntityGroup lightGroup;
     ShadowShader csmShader;
+    DualParaboloidShadowShader dpsmShader;
     Camera camera;
 
     this(RenderPipeline pipeline)
     {
         super(pipeline);
         csmShader = New!ShadowShader(this);
-        state.colorMask = false;
-        state.culling = false;
+        dpsmShader = New!DualParaboloidShadowShader(this);
+        //state.colorMask = false;
+        //state.culling = false;
     }
 
     override void update(Time t)
@@ -95,9 +99,12 @@ class PassShadow: RenderPass
                     {
                         state.light = light;
                         CascadedShadowMap csm = cast(CascadedShadowMap)light.shadowMap;
+                        DualParaboloidShadowMap dpsm = cast(DualParaboloidShadowMap)light.shadowMap;
                         
                         if (light.type == LightType.Sun && csm)
                             renderCSM(csm);
+                        else if (dpsm)
+                            renderDPSM(dpsm);
                     }
                 }
             }
@@ -138,6 +145,8 @@ class PassShadow: RenderPass
 
     void renderCSM(CascadedShadowMap csm)
     {
+        state.colorMask = false;
+        state.culling = false;
         state.resolution = Vector2f(csm.resolution, csm.resolution);
         state.zNear = csm.area[0].zStart;
         state.zFar = csm.area[0].zEnd;
@@ -180,5 +189,40 @@ class PassShadow: RenderPass
         glPolygonOffset(0.0, 0.0);
 
         csmShader.unbind();
+    }
+    
+    void renderDPSM(DualParaboloidShadowMap dpsm)
+    {
+        state.colorMask = true;
+        state.culling = false;
+        state.resolution = Vector2f(dpsm.resolution, dpsm.resolution);
+        state.light = dpsm.light;
+        
+        glScissor(0, 0, dpsm.resolution, dpsm.resolution);
+        glViewport(0, 0, dpsm.resolution, dpsm.resolution);
+        
+        dpsmShader.bind();
+        
+        glPolygonOffset(3.0, 0.0);
+        glDisable(GL_CULL_FACE);
+        
+        float r = dpsm.light.volumeRadius;
+        glClearColor(r, r, r, r);
+        glClearDepth(1.0f);
+        
+        dpsmShader.paraboloidDirection = 1.0f;
+        bindFramebuffer(dpsm.framebuffer1);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        renderEntities(dpsmShader);
+        
+        dpsmShader.paraboloidDirection = -1.0f;
+        bindFramebuffer(dpsm.framebuffer2);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        renderEntities(dpsmShader);
+        
+        glEnable(GL_CULL_FACE);
+        glPolygonOffset(0.0, 0.0);
+        
+        dpsmShader.unbind();
     }
 }

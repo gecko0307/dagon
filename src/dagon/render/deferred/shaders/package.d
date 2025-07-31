@@ -32,6 +32,7 @@ public
     import dagon.render.deferred.shaders.arealight;
     import dagon.render.deferred.shaders.debugoutput;
     import dagon.render.deferred.shaders.decal;
+    import dagon.render.deferred.shaders.dpsm;
     import dagon.render.deferred.shaders.emission;
     import dagon.render.deferred.shaders.environment;
     import dagon.render.deferred.shaders.forward;

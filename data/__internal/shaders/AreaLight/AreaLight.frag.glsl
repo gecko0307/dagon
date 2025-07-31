@@ -21,6 +21,7 @@ uniform vec4 fogColor;
 uniform float fogStart;
 uniform float fogEnd;
 
+uniform vec3 lightPositionWorld;
 uniform vec3 lightPosition;
 uniform vec3 lightPosition2;
 uniform float lightRadius;
@@ -32,6 +33,9 @@ uniform float lightSpotCosInnerCutoff;
 uniform vec3 lightSpotDirection;
 uniform float lightSpecular;
 uniform float lightDiffuse;
+
+uniform sampler2DArray shadowTextureArray;
+uniform float shadowResolution;
 
 layout(location = 0) out vec4 fragColor;
 
@@ -251,6 +255,30 @@ subroutine(srtLightRadiance) vec3 lightRadianceSpot(
 
 subroutine uniform srtLightRadiance lightRadiance;
 
+subroutine float srtShadow(in vec3 pos);
+
+subroutine(srtShadow) float shadowMapNone(in vec3 pos)
+{
+    return 1.0;
+}
+
+const float bias = 0.05;
+subroutine(srtShadow) float shadowMapDualParaboloid(in vec3 worldPos)
+{
+    vec3 lightToFrag = worldPos - lightPositionWorld;
+    float distanceToLight = length(lightToFrag);
+    vec3 dir = normalize(lightToFrag);
+    vec2 uv = dir.xy / (1.0 + abs(dir.z));
+    uv = uv * 0.5 + 0.5;
+    bool front = dir.z >= 0.0; // select a texture
+    float shadowDepth = texture(shadowTextureArray, front ? vec3(uv, 0.0) : vec3(uv, 1.0)).r;
+    float shadow = distanceToLight > shadowDepth + bias ? 0.0 : 1.0;
+    return shadow;
+}
+
+subroutine uniform srtShadow shadowMap;
+
+
 void main()
 {
     vec2 texCoord = gl_FragCoord.xy / resolution;
@@ -274,8 +302,9 @@ void main()
     float subsurface = pbr.b;
     
     float occlusion = haveOcclusionBuffer? texture(occlusionBuffer, texCoord).r : 1.0;
+    float shadow = shadowMap(worldPos);
     
-    vec3 radiance = lightRadiance(eyePos, N, E, albedo, roughness, metallic, subsurface, occlusion);
+    vec3 radiance = lightRadiance(eyePos, N, E, albedo, roughness, metallic, subsurface, occlusion) * shadow;
     
     // Fog
     float linearDepth = abs(eyePos.z);

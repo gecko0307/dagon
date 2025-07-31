@@ -44,6 +44,7 @@ import dagon.core.bindings;
 import dagon.graphics.shader;
 import dagon.graphics.state;
 import dagon.graphics.light;
+import dagon.graphics.dpsm;
 
 class AreaLightShader: Shader
 {
@@ -64,6 +65,7 @@ class AreaLightShader: Shader
     ShaderParameter!float fogEnd;
     
     ShaderParameter!Vector3f lightPosition;
+    ShaderParameter!Vector3f lightPositionWorld;
     ShaderParameter!Color4f lightColor;
     ShaderParameter!float lightEnergy;
     ShaderParameter!float lightRadius;
@@ -81,6 +83,12 @@ class AreaLightShader: Shader
            lightRadianceSubroutineAreaTube,
            lightRadianceSubroutineSpot,
            lightRadianceSubroutineFallback;
+    
+    ShaderParameter!int shadowTextureArray;
+    ShaderParameter!float shadowResolution;
+    ShaderSubroutine shadowMapSubroutine;
+    GLuint shadowMapSubroutineDualParaboloid,
+           shadowMapSubroutineNone;
     
     ShaderParameter!int colorBuffer;
     ShaderParameter!int depthBuffer;
@@ -112,6 +120,7 @@ class AreaLightShader: Shader
         fogEnd = createParameter!float("fogEnd");
         
         lightPosition = createParameter!Vector3f("lightPosition");
+        lightPositionWorld = createParameter!Vector3f("lightPositionWorld");
         lightColor = createParameter!Color4f("lightColor");
         lightEnergy = createParameter!float("lightEnergy");
         lightRadius = createParameter!float("lightRadius");
@@ -129,6 +138,12 @@ class AreaLightShader: Shader
         lightRadianceSubroutineAreaTube = lightRadianceSubroutine.getIndex("lightRadianceAreaTube");
         lightRadianceSubroutineSpot = lightRadianceSubroutine.getIndex("lightRadianceSpot");
         lightRadianceSubroutineFallback = lightRadianceSubroutine.getIndex("lightRadianceFallback");
+        
+        shadowTextureArray = createParameter!int("shadowTextureArray");
+        shadowResolution = createParameter!float("shadowResolution");
+        shadowMapSubroutine = createParameterSubroutine("shadowMap", ShaderType.Fragment);
+        shadowMapSubroutineDualParaboloid = shadowMapSubroutine.getIndex("shadowMapDualParaboloid");
+        shadowMapSubroutineNone = shadowMapSubroutine.getIndex("shadowMapNone");
         
         colorBuffer = createParameter!int("colorBuffer");
         depthBuffer = createParameter!int("depthBuffer");
@@ -175,6 +190,7 @@ class AreaLightShader: Shader
             auto light = state.light;
 
             lightPosition = light.positionAbsolute * state.viewMatrix;
+            lightPositionWorld = light.positionAbsolute;
             lightColor = light.color;
             lightEnergy = light.energy;
             lightRadius = light.volumeRadius;
@@ -236,6 +252,27 @@ class AreaLightShader: Shader
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, state.pbrTexture);
         pbrBuffer = 3;
+        
+        // Texture 4 - shadow map
+        if (state.light)
+        {
+            if (state.light.shadowEnabled)
+            {
+                DualParaboloidShadowMap dpsm = cast(DualParaboloidShadowMap)state.light.shadowMap;
+                glActiveTexture(GL_TEXTURE4);
+                glBindTexture(GL_TEXTURE_2D_ARRAY, dpsm.shadowTextureArray);
+                shadowTextureArray = 4;
+                shadowResolution = cast(float)dpsm.resolution;
+                shadowMapSubroutine.index = shadowMapSubroutineDualParaboloid;
+            }
+            else
+            {
+                glActiveTexture(GL_TEXTURE4);
+                glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+                shadowTextureArray = 4;
+                shadowMapSubroutine.index = shadowMapSubroutineNone;
+            }
+        }
 
         // Texture 5 - occlusion buffer
         glActiveTexture(GL_TEXTURE5);
@@ -271,6 +308,9 @@ class AreaLightShader: Shader
 
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, 0);
+
+        glActiveTexture(GL_TEXTURE4);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 
         glActiveTexture(GL_TEXTURE5);
         glBindTexture(GL_TEXTURE_2D, 0);

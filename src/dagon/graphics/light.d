@@ -59,6 +59,7 @@ import dagon.graphics.state;
 import dagon.graphics.entity;
 import dagon.graphics.shadowmap;
 import dagon.graphics.csm;
+import dagon.graphics.dpsm;
 
 /**
  * Supported light types.
@@ -200,6 +201,8 @@ class Light: Entity
         {
             if (type == LightType.Sun)
                 _shadowMap = New!CascadedShadowMap(this, this);
+            else
+                _shadowMap = New!DualParaboloidShadowMap(this, this);
         }
         
         return _shadowMap;
