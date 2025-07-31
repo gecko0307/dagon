@@ -56,6 +56,9 @@ class DualParaboloidShadowShader: Shader
     ShaderParameter!float lightRadius;
     ShaderParameter!float direction;
     
+    ShaderParameter!int skinned;
+    GLint boneMatricesLocation;
+    
    public:
     float paraboloidDirection = 1.0f;
     
@@ -71,6 +74,10 @@ class DualParaboloidShadowShader: Shader
         lightPosition = createParameter!Vector4f("lightPosition");
         lightRadius = createParameter!float("lightRadius");
         direction = createParameter!float("direction");
+        
+        skinned = createParameter!int("skinned");
+        // TODO: ShaderParameter specialization for uniform arrays
+        boneMatricesLocation = glGetUniformLocation(prog.program, "boneMatrices[0]");
     }
 
     ~this()
@@ -92,6 +99,28 @@ class DualParaboloidShadowShader: Shader
         lightRadius = max(0.001f, state.light.volumeRadius);
         
         direction = paraboloidDirection;
+        
+        if (state.pose)
+        {
+            Pose pose = state.pose;
+            if (pose.boneMatrices.length)
+            {
+                int numBones = cast(int)pose.boneMatrices.length;
+                if (numBones > 128)
+                    numBones = 128;
+                glUniformMatrix4fv(boneMatricesLocation, numBones, GL_FALSE, pose.boneMatrices[0].arrayof.ptr);
+                
+                skinned = true;
+            }
+            else
+            {
+                skinned = false;
+            }
+        }
+        else
+        {
+            skinned = false;
+        }
 
         super.bindParameters(state);
     }

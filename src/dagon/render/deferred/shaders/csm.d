@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.deferred.shaders.shadow;
+module dagon.render.deferred.shaders.csm;
 
 import std.stdio;
 import std.math;
@@ -45,7 +45,7 @@ import dagon.graphics.shader;
 import dagon.graphics.state;
 import dagon.graphics.pose;
 
-class ShadowShader: Shader
+class CascadedShadowShader: Shader
 {
    protected:
     String vs, fs;
@@ -69,8 +69,8 @@ class ShadowShader: Shader
    public:
     this(Owner owner)
     {
-        vs = Shader.load("data/__internal/shaders/Shadow/Shadow.vert.glsl");
-        fs = Shader.load("data/__internal/shaders/Shadow/Shadow.frag.glsl");
+        vs = Shader.load("data/__internal/shaders/CascadedShadow/CascadedShadow.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/CascadedShadow/CascadedShadow.frag.glsl");
 
         auto prog = New!ShaderProgram(vs, fs, this);
         super(prog, owner);

@@ -43,20 +43,20 @@ import dagon.graphics.csm;
 import dagon.graphics.shader;
 import dagon.render.pipeline;
 import dagon.render.pass;
-import dagon.render.deferred.shaders.shadow;
+import dagon.render.deferred.shaders.csm;
 import dagon.render.deferred.shaders.dpsm;
 
 class PassShadow: RenderPass
 {
     EntityGroup lightGroup;
-    ShadowShader csmShader;
+    CascadedShadowShader csmShader;
     DualParaboloidShadowShader dpsmShader;
     Camera camera;
 
     this(RenderPipeline pipeline)
     {
         super(pipeline);
-        csmShader = New!ShadowShader(this);
+        csmShader = New!CascadedShadowShader(this);
         dpsmShader = New!DualParaboloidShadowShader(this);
         state.colorMask = false;
         state.culling = false;

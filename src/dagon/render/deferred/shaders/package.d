@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -30,6 +30,7 @@ module dagon.render.deferred.shaders;
 public
 {
     import dagon.render.deferred.shaders.arealight;
+    import dagon.render.deferred.shaders.csm;
     import dagon.render.deferred.shaders.debugoutput;
     import dagon.render.deferred.shaders.decal;
     import dagon.render.deferred.shaders.dpsm;
@@ -39,7 +40,6 @@ public
     import dagon.render.deferred.shaders.geometry;
     import dagon.render.deferred.shaders.particle;
     import dagon.render.deferred.shaders.probe;
-    import dagon.render.deferred.shaders.shadow;
     import dagon.render.deferred.shaders.sky;
     import dagon.render.deferred.shaders.ssao;
     import dagon.render.deferred.shaders.sunlight;
