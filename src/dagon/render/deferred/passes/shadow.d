@@ -58,8 +58,8 @@ class PassShadow: RenderPass
         super(pipeline);
         csmShader = New!ShadowShader(this);
         dpsmShader = New!DualParaboloidShadowShader(this);
-        //state.colorMask = false;
-        //state.culling = false;
+        state.colorMask = false;
+        state.culling = false;
     }
 
     override void update(Time t)
@@ -145,8 +145,8 @@ class PassShadow: RenderPass
 
     void renderCSM(CascadedShadowMap csm)
     {
-        state.colorMask = false;
-        state.culling = false;
+        //state.colorMask = false;
+        //state.culling = false;
         state.resolution = Vector2f(csm.resolution, csm.resolution);
         state.zNear = csm.area[0].zStart;
         state.zFar = csm.area[0].zEnd;
@@ -193,8 +193,8 @@ class PassShadow: RenderPass
     
     void renderDPSM(DualParaboloidShadowMap dpsm)
     {
-        state.colorMask = true;
-        state.culling = false;
+        //state.colorMask = false;
+        //state.culling = false;
         state.resolution = Vector2f(dpsm.resolution, dpsm.resolution);
         state.light = dpsm.light;
         
@@ -206,8 +206,8 @@ class PassShadow: RenderPass
         glPolygonOffset(3.0, 0.0);
         glDisable(GL_CULL_FACE);
         
-        float r = dpsm.light.volumeRadius;
-        glClearColor(r, r, r, r);
+        //float r = dpsm.light.volumeRadius;
+        //glClearColor(r, r, r, r);
         glClearDepth(1.0f);
         
         dpsmShader.paraboloidDirection = 1.0f;

@@ -7,20 +7,17 @@ uniform vec4 lightPosition;
 uniform float lightRadius;
 uniform float direction;
 
-out vec3 dir;
-out float distanceToLight;
+out float z;
 
 void main()
 {
     vec4 modelPosHmg = vec4(va_Vertex, 1.0);
     vec4 worldPos = modelMatrix * modelPosHmg;
-    
     vec3 lightSpacePos = worldPos.xyz - lightPosition.xyz;
-    distanceToLight = length(lightSpacePos);
-    
-    dir = normalize(lightSpacePos);
+    float distanceToLight = length(lightSpacePos);
+    vec3 dir = normalize(lightSpacePos);
     dir.z *= direction;
     vec2 xy = dir.xy / (1.0 + dir.z);
-    float z = distanceToLight / lightRadius;
+    z = distanceToLight / lightRadius;
     gl_Position = vec4(xy, z, 1.0);
 }

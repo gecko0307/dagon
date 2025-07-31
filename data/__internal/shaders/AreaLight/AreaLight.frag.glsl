@@ -34,7 +34,7 @@ uniform vec3 lightSpotDirection;
 uniform float lightSpecular;
 uniform float lightDiffuse;
 
-uniform sampler2DArray shadowTextureArray;
+uniform sampler2DArrayShadow shadowTextureArray;
 uniform float shadowResolution;
 
 layout(location = 0) out vec4 fragColor;
@@ -265,14 +265,14 @@ subroutine(srtShadow) float shadowMapNone(in vec3 pos)
 const float bias = 0.05;
 subroutine(srtShadow) float shadowMapDualParaboloid(in vec3 worldPos)
 {
-    vec3 lightToFrag = worldPos - lightPositionWorld;
-    float distanceToLight = length(lightToFrag);
-    vec3 dir = normalize(lightToFrag);
+    vec3 lightSpacePos = worldPos - lightPositionWorld;
+    float distanceToLight = length(lightSpacePos);
+    vec3 dir = normalize(lightSpacePos);
     vec2 uv = dir.xy / (1.0 + abs(dir.z));
     uv = uv * 0.5 + 0.5;
-    bool front = dir.z >= 0.0; // select a texture
-    float shadowDepth = texture(shadowTextureArray, front ? vec3(uv, 0.0) : vec3(uv, 1.0)).r;
-    float shadow = distanceToLight > shadowDepth + bias ? 0.0 : 1.0;
+    float layer = 1.0 - float(dir.z >= 0.0);
+    float z = distanceToLight / max(0.001, lightRadius) - bias;
+    float shadow = texture(shadowTextureArray, vec4(uv, layer, z));
     return shadow;
 }
 

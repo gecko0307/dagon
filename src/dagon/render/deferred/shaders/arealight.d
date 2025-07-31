@@ -260,7 +260,7 @@ class AreaLightShader: Shader
             {
                 DualParaboloidShadowMap dpsm = cast(DualParaboloidShadowMap)state.light.shadowMap;
                 glActiveTexture(GL_TEXTURE4);
-                glBindTexture(GL_TEXTURE_2D_ARRAY, dpsm.shadowTextureArray);
+                glBindTexture(GL_TEXTURE_2D_ARRAY, dpsm.depthTextureArray);
                 shadowTextureArray = 4;
                 shadowResolution = cast(float)dpsm.resolution;
                 shadowMapSubroutine.index = shadowMapSubroutineDualParaboloid;

@@ -41,7 +41,6 @@ class DualParaboloidShadowMap: ShadowMap
     uint shadowMapResolution = 512;
     
     GLuint depthTextureArray;
-    GLuint shadowTextureArray;
     
     GLuint framebuffer1;
     GLuint framebuffer2;
@@ -68,30 +67,19 @@ class DualParaboloidShadowMap: ShadowMap
         
         glGenTextures(1, &depthTextureArray);
         glBindTexture(GL_TEXTURE_2D_ARRAY, depthTextureArray);
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT24, resolution, resolution, 2, 0, GL_DEPTH_COMPONENT, GL_FLOAT, null);
-        
-        glGenTextures(1, &shadowTextureArray);
-        glBindTexture(GL_TEXTURE_2D_ARRAY, shadowTextureArray);
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_R32F, resolution, resolution, 2, 0, GL_RED, GL_FLOAT, null);
-        
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BASE_LEVEL, 0);
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAX_LEVEL, 0);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+        glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT24, resolution, resolution, 2, 0, GL_DEPTH_COMPONENT, GL_FLOAT, null);
         
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
         
-        GLenum drawBuffer = GL_COLOR_ATTACHMENT0;
-        
         glGenFramebuffers(1, &framebuffer1);
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer1);
-        glDrawBuffers(1, &drawBuffer);
+        glDrawBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
         glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTextureArray, 0, 0);
-        glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, shadowTextureArray, 0, 0);
         
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (status != GL_FRAMEBUFFER_COMPLETE) {
@@ -100,9 +88,9 @@ class DualParaboloidShadowMap: ShadowMap
         
         glGenFramebuffers(1, &framebuffer2);
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer2);
-        glDrawBuffers(1, &drawBuffer);
+        glDrawBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
         glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTextureArray, 0, 1);
-        glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, shadowTextureArray, 0, 1);
         
         status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (status != GL_FRAMEBUFFER_COMPLETE) {
@@ -122,9 +110,6 @@ class DualParaboloidShadowMap: ShadowMap
         
         if (glIsTexture(depthTextureArray))
             glDeleteTextures(1, &depthTextureArray);
-        
-        if (glIsTexture(shadowTextureArray))
-            glDeleteTextures(1, &shadowTextureArray);
     }
     
     override void update(Time t)
