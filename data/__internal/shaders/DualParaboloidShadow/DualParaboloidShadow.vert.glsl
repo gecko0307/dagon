@@ -12,6 +12,8 @@ out float z;
 
 void main()
 {
+    // TODO: vertex skinning
+    
     vec4 modelPosHmg = vec4(va_Vertex, 1.0);
     vec4 worldPos = modelMatrix * modelPosHmg;
     vec3 lightSpacePos = worldPos.xyz - lightPosition.xyz;
