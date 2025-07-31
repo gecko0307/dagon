@@ -41,6 +41,7 @@ Features
 * HDRI environment maps. Equirectangular HDRI to cubemap conversion. GPU-based cubemap prefiltering with GGX BRDF and importance sampling. Loading prebaked cubemaps from DDS or KTX files
 * Directional lights with cascaded shadow mapping and volumetric scattering
 * Spherical and tube area lights, spot lights
+* Dual paraboloid shadow mapping for area lights
 * Local environment probes with box-projected cube mapping for approximated interior GI
 * Normal/parallax mapping, parallax occlusion mapping
 * Deferred decals with normal mapping and PBR material properties

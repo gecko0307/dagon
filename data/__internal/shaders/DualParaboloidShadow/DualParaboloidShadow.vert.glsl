@@ -7,6 +7,7 @@ uniform vec4 lightPosition;
 uniform float lightRadius;
 uniform float direction;
 
+out float clipZ;
 out float z;
 
 void main()
@@ -16,6 +17,7 @@ void main()
     vec3 lightSpacePos = worldPos.xyz - lightPosition.xyz;
     float distanceToLight = length(lightSpacePos);
     vec3 dir = normalize(lightSpacePos);
+    clipZ = dir.z;
     dir.z *= direction;
     vec2 xy = dir.xy / (1.0 + dir.z);
     z = distanceToLight / lightRadius;

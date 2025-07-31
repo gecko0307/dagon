@@ -38,7 +38,8 @@ import dagon.graphics.light;
 
 class DualParaboloidShadowMap: ShadowMap
 {
-    uint shadowMapResolution = 512;
+    // TODO: store in DeferredRenderer
+    uint shadowMapResolution = 1024;
     
     GLuint depthTextureArray;
     

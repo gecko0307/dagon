@@ -167,7 +167,7 @@ class CascadedShadowMap: ShadowMap
     GLuint framebuffer3;
     
     /// Resolution of each shadow map.
-    uint shadowMapResolution = 2048;
+    uint shadowMapResolution = 2048; // TODO: store in DeferredRenderer
 
     /// Projection size for each cascade.
     float[3] projectionSize = [20, 60, 400];

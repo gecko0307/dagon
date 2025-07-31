@@ -145,8 +145,6 @@ class PassShadow: RenderPass
 
     void renderCSM(CascadedShadowMap csm)
     {
-        //state.colorMask = false;
-        //state.culling = false;
         state.resolution = Vector2f(csm.resolution, csm.resolution);
         state.zNear = csm.area[0].zStart;
         state.zFar = csm.area[0].zEnd;
@@ -193,8 +191,6 @@ class PassShadow: RenderPass
     
     void renderDPSM(DualParaboloidShadowMap dpsm)
     {
-        //state.colorMask = false;
-        //state.culling = false;
         state.resolution = Vector2f(dpsm.resolution, dpsm.resolution);
         state.light = dpsm.light;
         
@@ -206,18 +202,14 @@ class PassShadow: RenderPass
         glPolygonOffset(3.0, 0.0);
         glDisable(GL_CULL_FACE);
         
-        //float r = dpsm.light.volumeRadius;
-        //glClearColor(r, r, r, r);
-        glClearDepth(1.0f);
-        
         dpsmShader.paraboloidDirection = 1.0f;
         bindFramebuffer(dpsm.framebuffer1);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_DEPTH_BUFFER_BIT);
         renderEntities(dpsmShader);
         
         dpsmShader.paraboloidDirection = -1.0f;
         bindFramebuffer(dpsm.framebuffer2);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_DEPTH_BUFFER_BIT);
         renderEntities(dpsmShader);
         
         glEnable(GL_CULL_FACE);
