@@ -262,7 +262,7 @@ subroutine(srtShadow) float shadowMapNone(in vec3 pos)
     return 1.0;
 }
 
-const float bias = 0.05;
+const float bias = 0.01;
 subroutine(srtShadow) float shadowMapDualParaboloid(in vec3 worldPos)
 {
     vec3 lightSpacePos = worldPos - lightPositionWorld;
