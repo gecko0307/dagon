@@ -31,7 +31,7 @@ DEALINGS IN THE SOFTWARE.
  * Description:
  * The `dagon.graphics.updateable` module provides the `Updateable` interface,
  * which must be implemented by any object that can be updated per frame.
- * This is typically used for entities, components, and systems that require
+ * This is typically used for entities, components, and other systems that require
  * time-based updates.
  *
  * Copyright: Timur Gafarov 2019-2025

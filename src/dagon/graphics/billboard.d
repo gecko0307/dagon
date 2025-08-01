@@ -29,10 +29,9 @@ DEALINGS IN THE SOFTWARE.
  * Provides a billboard class.
  *
  * Description:
- * Billboards are flat objects (usually quads) that always face the camera,
- * commonly used for sprites, particles, lens flares, and other effects that
- * require consistent orientation regardless of the camera angle.
- * This module defines the `Billboard` class for single billboards.
+ * Billboard is a quad that always face the camera, commonly used for sprites,
+ * particles, lens flares, and other effects that require consistent orientation
+ * regardless of the camera angle.
  *
  * Copyright: Timur Gafarov 2025
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
