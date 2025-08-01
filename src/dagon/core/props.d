@@ -27,13 +27,13 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /**
- * Provides a flexible property system.
+ * Provides a dynamic type system.
  *
  * Description:
  * The `dagon.core.props` module defines the `DProperty` struct for storing
- * typed property values, the `Properties` class for managing collections of
+ * dynamically-typed property values, the `Properties` class for managing collections of
  * named properties, and utility functions for parsing and handling property
- * data. Properties can be numbers, vectors, strings, or colors, and are used for
+ * data. Properties can be numbers, vectors, or strings, and are used for
  * configuration, serialization, and runtime data storage.
  *
  * Copyright: Timur Gafarov 2016-2025

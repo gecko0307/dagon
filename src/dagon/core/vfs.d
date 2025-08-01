@@ -31,7 +31,8 @@ DEALINGS IN THE SOFTWARE.
  * Description:
  * The `dagon.core.vfs` module defines the `StdDirFileSystem` for mounting
  * directories and the `VirtualFileSystem` class for managing multiple
- * mounted file systems, enabling transparent file access across several directories or sources.
+ * mounted file systems, enabling transparent file access across several 
+ * directories or sources.
  *
  * Copyright: Timur Gafarov 2017-2025
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
