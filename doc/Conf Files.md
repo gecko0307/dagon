@@ -22,9 +22,10 @@ stringOption: "Some text";
 `settings.conf` contains engine settings. It is fully preserved for Dagon's internal mechanisms, and you are not recommended to use it for storing game-specific settings. Supported options are the following:
 
 * `windowWidth`, `windowHeight` - size of a game window. They override default values specified in an application
-* `fullscreen` - `0` or `1`, run in fullscreen or windowed mode
+* `fullscreen` - `0` or `1`, run in windowed or fullscreen mode
 * `windowTitle` - window title text
-* `hideConsole` - `0` or `1`, hide or leave the system console window. For example, it is convenient to leave it when debugging the game and hide it for end users.
+* `hideConsole` - `0` or `1`, show or hide the console window. For example, it is convenient to leave it when debugging the game and hide it for end users
+* `locale` - locale that should be loaded. This option overrides automatically selected locale based on system language and region. For example, `locale: "en_US";` means that application will try load `locales/en_US.lang` file and will ignore system language.
 
 The engine doesn't modify `settings.conf`, and you can imlement a visual configurator in your game that modifies this file.
 
