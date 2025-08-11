@@ -540,7 +540,7 @@ void registerKTXLoader(AssetManager assetManager)
     assetManager.registerTextureLoader([".ktx", ".ktx2"], ktxLoader);
 }
 
-void saveTextureToKTX2(Texture texture, string filename)
+void saveTextureToKTX2(Texture texture, string filename, bool compressBasis = false, uint basisQuality = 128)
 {
     VkFormat vkFormat = glFormatToVkFormat(texture.format.internalFormat);
     
@@ -595,7 +595,9 @@ void saveTextureToKTX2(Texture texture, string filename)
         exitWithError("ktxTexture_SetImageFromMemory failed");
     }
     
-    ktxTexture2_CompressBasis(ktxTex, 128);
+    if (compressBasis)
+        ktxTexture2_CompressBasis(ktxTex, basisQuality);
+    
     ktxTexture2_DeflateZstd(ktxTex, 10);
     
     err = ktxTexture2_WriteToNamedFile(ktxTex, filename.toStringz);
