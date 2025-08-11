@@ -43,14 +43,20 @@ __gshared
     f_ktxTexture1_CreateFromStream ktxTexture1_CreateFromStream;
     f_ktxTexture1_Destroy ktxTexture1_Destroy;
     f_ktxTexture1_NeedsTranscoding ktxTexture1_NeedsTranscoding;
+    f_ktxTexture1_WriteKTX2ToNamedFile ktxTexture1_WriteKTX2ToNamedFile;
     
+    f_ktxTexture2_Create ktxTexture2_Create;
     f_ktxTexture2_CreateFromStdioStream ktxTexture2_CreateFromStdioStream;
     f_ktxTexture2_CreateFromNamedFile ktxTexture2_CreateFromNamedFile;
     f_ktxTexture2_CreateFromMemory ktxTexture2_CreateFromMemory;
     f_ktxTexture2_CreateFromStream ktxTexture2_CreateFromStream;
     f_ktxTexture2_Destroy ktxTexture2_Destroy;
+    f_ktxTexture2_CompressBasis ktxTexture2_CompressBasis;
+    f_ktxTexture2_DeflateZstd ktxTexture2_DeflateZstd;
+    f_ktxTexture2_DeflateZLIB ktxTexture2_DeflateZLIB;
     f_ktxTexture2_NeedsTranscoding ktxTexture2_NeedsTranscoding;
     f_ktxTexture2_TranscodeBasis ktxTexture2_TranscodeBasis;
     f_ktxTexture2_GetImageOffset ktxTexture2_GetImageOffset;
     f_ktxTexture2_GetNumComponents ktxTexture2_GetNumComponents;
+    f_ktxTexture2_WriteToNamedFile ktxTexture2_WriteToNamedFile;
 }

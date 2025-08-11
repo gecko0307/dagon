@@ -30,6 +30,7 @@ import std.stdio;
 import std.path;
 import std.algorithm;
 import std.conv;
+import std.string;
 
 import dlib.core.stream;
 import dlib.core.memory;
@@ -47,7 +48,7 @@ import dagon.resource.texture;
 import dagon.resource.scene;
 
 import loader = bindbc.loader.sharedlib;
-import bindbc.ktx;
+public import bindbc.ktx;
 
 bool vkFormatToGLFormat(VkFormat vkFormat, out TextureFormat tf)
 {
@@ -123,12 +124,12 @@ bool vkFormatToGLFormat(VkFormat vkFormat, out TextureFormat tf)
         
         case VkFormat.BC4_UNORM_BLOCK:
             tf.internalFormat = GL_COMPRESSED_RED_RGTC1;
-            tf.blockSize = 16;
+            tf.blockSize = 8;
             break;
         
         case VkFormat.BC4_SNORM_BLOCK:
             tf.internalFormat = GL_COMPRESSED_SIGNED_RED_RGTC1;
-            tf.blockSize = 16;
+            tf.blockSize = 8;
             break;
         
         case VkFormat.BC5_UNORM_BLOCK:
@@ -169,6 +170,97 @@ bool vkFormatToGLFormat(VkFormat vkFormat, out TextureFormat tf)
     return true;
 }
 
+VkFormat glFormatToVkFormat(GLenum internalFormat)
+{
+    switch(internalFormat)
+    {
+        // Uncompressed formats
+        case GL_R8:               return VkFormat.R8_UNORM;
+        case GL_R8_SNORM:         return VkFormat.R8_SNORM;
+        case GL_R8UI:             return VkFormat.R8_UINT;
+        case GL_R8I:              return VkFormat.R8_SINT;
+
+        case GL_RG8:              return VkFormat.R8G8_UNORM;
+        case GL_RG8_SNORM:        return VkFormat.R8G8_SNORM;
+        case GL_RG8UI:            return VkFormat.R8G8_UINT;
+        case GL_RG8I:             return VkFormat.R8G8_SINT;
+
+        case GL_RGB8:             return VkFormat.R8G8B8_UNORM;
+        case GL_RGB8_SNORM:       return VkFormat.R8G8B8_SNORM;
+        case GL_RGB8UI:           return VkFormat.R8G8B8_UINT;
+        case GL_RGB8I:            return VkFormat.R8G8B8_SINT;
+
+        case GL_RGBA8:            return VkFormat.R8G8B8A8_UNORM;
+        case GL_SRGB8_ALPHA8:     return VkFormat.R8G8B8A8_SRGB;
+        case GL_RGBA8_SNORM:      return VkFormat.R8G8B8A8_SNORM;
+        case GL_RGBA8UI:          return VkFormat.R8G8B8A8_UINT;
+        case GL_RGBA8I:           return VkFormat.R8G8B8A8_SINT;
+
+        case GL_RGB10_A2:         return VkFormat.A2R10G10B10_UNORM_PACK32;
+        case GL_RGB10_A2UI:       return VkFormat.A2R10G10B10_UINT_PACK32;
+
+        case GL_R16F:             return VkFormat.R16_SFLOAT;
+        case GL_RG16F:            return VkFormat.R16G16_SFLOAT;
+        case GL_RGB16F:           return VkFormat.R16G16B16_SFLOAT;
+        case GL_RGBA16F:          return VkFormat.R16G16B16A16_SFLOAT;
+
+        case GL_R32F:             return VkFormat.R32_SFLOAT;
+        case GL_RG32F:            return VkFormat.R32G32_SFLOAT;
+        case GL_RGB32F:           return VkFormat.R32G32B32_SFLOAT;
+        case GL_RGBA32F:          return VkFormat.R32G32B32A32_SFLOAT;
+
+        // DXTn
+        case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:        return VkFormat.BC1_RGB_UNORM_BLOCK;
+        case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:       return VkFormat.BC1_RGBA_UNORM_BLOCK;
+        case GL_COMPRESSED_SRGB_S3TC_DXT1_EXT:       return VkFormat.BC1_RGB_SRGB_BLOCK;
+        case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT: return VkFormat.BC1_RGBA_SRGB_BLOCK;
+
+        case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:       return VkFormat.BC2_UNORM_BLOCK;
+        case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT: return VkFormat.BC2_SRGB_BLOCK;
+
+        case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:       return VkFormat.BC3_UNORM_BLOCK;
+        case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT: return VkFormat.BC3_SRGB_BLOCK;
+
+        // RGTC1, RGTC2
+        case GL_COMPRESSED_RED_RGTC1:                return VkFormat.BC4_UNORM_BLOCK;
+        case GL_COMPRESSED_SIGNED_RED_RGTC1:         return VkFormat.BC4_SNORM_BLOCK;
+        case GL_COMPRESSED_RG_RGTC2:                 return VkFormat.BC5_UNORM_BLOCK;
+        case GL_COMPRESSED_SIGNED_RG_RGTC2:          return VkFormat.BC5_SNORM_BLOCK;
+
+        // BPTC
+        case GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_ARB: return VkFormat.BC6H_UFLOAT_BLOCK;
+        case GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_ARB:   return VkFormat.BC6H_SFLOAT_BLOCK;
+        case GL_COMPRESSED_RGBA_BPTC_UNORM_ARB:         return VkFormat.BC7_UNORM_BLOCK;
+        case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_ARB:   return VkFormat.BC7_SRGB_BLOCK;
+
+        // ETC2/EAC
+        case GL_COMPRESSED_RGB8_ETC2:                return VkFormat.ETC2_R8G8B8_UNORM_BLOCK;
+        case GL_COMPRESSED_SRGB8_ETC2:               return VkFormat.ETC2_R8G8B8_SRGB_BLOCK;
+        case GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+                                                     return VkFormat.ETC2_R8G8B8A1_UNORM_BLOCK;
+        case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+                                                     return VkFormat.ETC2_R8G8B8A1_SRGB_BLOCK;
+        case GL_COMPRESSED_RGBA8_ETC2_EAC:           return VkFormat.ETC2_R8G8B8A8_UNORM_BLOCK;
+        case GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:    return VkFormat.ETC2_R8G8B8A8_SRGB_BLOCK;
+
+        case GL_COMPRESSED_R11_EAC:                  return VkFormat.EAC_R11_UNORM_BLOCK;
+        case GL_COMPRESSED_SIGNED_R11_EAC:           return VkFormat.EAC_R11_SNORM_BLOCK;
+        case GL_COMPRESSED_RG11_EAC:                 return VkFormat.EAC_R11G11_UNORM_BLOCK;
+        case GL_COMPRESSED_SIGNED_RG11_EAC:          return VkFormat.EAC_R11G11_SNORM_BLOCK;
+
+        // ASTC
+        case GL_COMPRESSED_RGBA_ASTC_4x4_KHR:        return VkFormat.ASTC_4x4_UNORM_BLOCK;
+        case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR:
+                                                     return VkFormat.ASTC_4x4_SRGB_BLOCK;
+        case GL_COMPRESSED_RGBA_ASTC_8x8_KHR:        return VkFormat.ASTC_8x8_UNORM_BLOCK;
+        case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR:
+                                                     return VkFormat.ASTC_8x8_SRGB_BLOCK;
+
+        default:
+            return VkFormat.UNDEFINED;
+    }
+}
+
 bool loadKTX1(InputStream istrm, string filename, TextureBuffer* buffer, bool* generateMipmaps)
 {
     size_t dataSize = istrm.size;
@@ -186,7 +278,7 @@ bool loadKTX1(InputStream istrm, string filename, TextureBuffer* buffer, bool* g
     
     TextureSize size;
     size.width = tex.baseWidth;
-    size.height = tex.baseWidth;
+    size.height = tex.baseHeight;
     size.depth = tex.baseDepth;
     
     TextureFormat format;
@@ -330,7 +422,7 @@ bool loadKTX2(InputStream istrm, string filename, TextureBuffer* buffer, Transco
     
     TextureSize size;
     size.width = tex.baseWidth;
-    size.height = tex.baseWidth;
+    size.height = tex.baseHeight;
     size.depth = tex.baseDepth;
     
     TextureFormat format;
@@ -446,4 +538,75 @@ void registerKTXLoader(AssetManager assetManager)
 {
     auto ktxLoader = New!KTXLoader(assetManager);
     assetManager.registerTextureLoader([".ktx", ".ktx2"], ktxLoader);
+}
+
+void saveTextureToKTX2(Texture texture, string filename)
+{
+    VkFormat vkFormat = glFormatToVkFormat(texture.format.internalFormat);
+    
+    ktxTextureCreateInfo createInfo = {
+        glInternalformat: texture.format.internalFormat,
+        vkFormat: vkFormat,
+        pDfd: null,
+        baseWidth: texture.width,
+        baseHeight: texture.height,
+        baseDepth: 1,
+        numDimensions: 2,
+        numLevels: 1,
+        numLayers: 1,
+        numFaces: 1,
+        isArray: KTX_FALSE,
+        generateMipmaps: KTX_FALSE
+    };
+    
+    ktxTexture2* ktxTex = null;
+    KTX_error_code err = ktxTexture2_Create(
+        &createInfo,
+        ktxTextureCreateStorageEnum.KTX_TEXTURE_CREATE_ALLOC_STORAGE,
+        &ktxTex);
+    if (err != KTX_error_code.KTX_SUCCESS)
+    {
+        logError(err);
+        exitWithError("ktxTexture2_Create failed");
+    }
+    
+    texture.bind();
+    
+    ubyte[] data;
+    if (texture.isCompressed)
+    {
+        GLint compressedSize = 0;
+        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &compressedSize);
+        data = New!(ubyte[])(compressedSize);
+        glGetCompressedTexImage(GL_TEXTURE_2D, 0, data.ptr);
+    }
+    else
+    {
+        data = New!(ubyte[])(texture.size.width * texture.size.height * 4);
+        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.ptr);
+    }
+    
+    texture.unbind();
+    
+    err = ktxTexture_SetImageFromMemory(ktxTex, 0, 0, 0, data.ptr, data.length);
+    if (err != KTX_error_code.KTX_SUCCESS)
+    {
+        logError(err);
+        exitWithError("ktxTexture_SetImageFromMemory failed");
+    }
+    
+    ktxTexture2_CompressBasis(ktxTex, 128);
+    ktxTexture2_DeflateZstd(ktxTex, 10);
+    
+    err = ktxTexture2_WriteToNamedFile(ktxTex, filename.toStringz);
+    if (err != KTX_error_code.KTX_SUCCESS)
+    {
+        logError(err);
+        exitWithError("ktxTexture2_WriteToNamedFile failed");
+    }
+    
+    ktxTexture2_Destroy(ktxTex);
+    
+    if (data.length)
+        Delete(data);
 }

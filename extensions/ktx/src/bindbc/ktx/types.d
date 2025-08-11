@@ -280,6 +280,28 @@ struct ktxTexture2
     ktxTexture2_private* _private;
 }
 
+struct ktxTextureCreateInfo
+{
+    ktx_uint32_t glInternalformat;
+    ktx_uint32_t vkFormat;
+    ktx_uint32_t* pDfd;
+    ktx_uint32_t baseWidth;
+    ktx_uint32_t baseHeight;
+    ktx_uint32_t baseDepth;
+    ktx_uint32_t numDimensions;
+    ktx_uint32_t numLevels;
+    ktx_uint32_t numLayers;
+    ktx_uint32_t numFaces;
+    ktx_bool_t isArray;
+    ktx_bool_t generateMipmaps;
+}
+
+enum ktxTextureCreateStorageEnum
+{
+    KTX_TEXTURE_CREATE_NO_STORAGE = 0,
+    KTX_TEXTURE_CREATE_ALLOC_STORAGE = 1
+}
+
 enum ktx_transcode_fmt_e
 {
     KTX_TTF_ETC1_RGB = 0,
@@ -329,6 +351,11 @@ auto ktxTexture_NeedsTranscoding(TEX)(TEX* tex)
     return tex.vtbl.NeedsTranscoding(cast(ktxTexture*)tex);
 }
 
+auto ktxTexture_SetImageFromMemory(TEX)(TEX* tex, ktx_uint32_t level, ktx_uint32_t layer, ktx_uint32_t faceSlice, const(ktx_uint8_t)* src, ktx_size_t srcSize)
+{
+    return tex.vtbl.SetImageFromMemory(cast(ktxTexture*)tex, level, layer, faceSlice, src, srcSize);
+}
+
 auto ktxTexture_GetImageOffset(TEX)(TEX* tex, ktx_uint32_t level, ktx_uint32_t layer, ktx_uint32_t faceSlice, ktx_size_t* pOffset)
 {
     return tex.vtbl.GetImageOffset(cast(ktxTexture*)tex, level, layer, faceSlice, pOffset);
@@ -347,4 +374,9 @@ auto ktxTexture_GetLevelSize(TEX)(TEX* tex, ktx_uint32_t level)
 auto ktxTexture_IterateLevels(TEX)(TEX* tex, PFNKTXITERCB iterCb, void* userdata)
 {
     return tex.vtbl.IterateLevels(cast(ktxTexture*)tex, iterCb, userdata);
+}
+
+auto ktxTexture_WriteToNamedFile(TEX)(TEX* tex, const(char)* dstname)
+{
+    return tex.vtbl.WriteToNamedFile(cast(ktxTexture*)tex, dstname);
 }
