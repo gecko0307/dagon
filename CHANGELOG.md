@@ -1,5 +1,10 @@
-Dagon 0.27.0 - TBD
-------------------
+Dagon 0.27.1 - 11 Aug, 2025
+---------------------------
+- **Extensions**
+  - `dagon:ktx`: fix a number of issues with KTX/KTX2 loader. New function `saveTextureToKTX2`.
+
+Dagon 0.27.0 - 11 Aug, 2025
+---------------------------
 - **Core**
   - Internationalization support (`dagon.core.i18n`). The `Application` object now tries to load locale files at startup - locale/en_US.lang by default, and a user-specific locale according to system info or settings.conf. *.lang files use the same syntax as *.conf files. To get a translation for a string, use `Application.translate`
 - **Graphics components**
