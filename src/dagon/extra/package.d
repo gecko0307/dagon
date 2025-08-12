@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020-2022 Timur Gafarov
+Copyright (c) 2020-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -32,6 +32,7 @@ public
     import dagon.extra.rayleigh;
     import dagon.extra.starfieldsky;
     import dagon.extra.water;
+    import dagon.extra.ocean;
     import dagon.extra.puddle;
     import dagon.extra.verlet;
 }
