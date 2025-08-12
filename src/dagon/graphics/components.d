@@ -62,6 +62,8 @@ class PositionSync: EntityComponent
 {
     /// The parent entity to synchronize with.
     Entity parent;
+    
+    Vector3f mask = Vector3f(1.0f, 1.0f, 1.0f);
 
     /**
      * Constructs a `PositionSync` component.
@@ -86,7 +88,7 @@ class PositionSync: EntityComponent
      */
     override void update(Time time)
     {
-        Vector3f pos = parent.positionAbsolute + entity.position;
+        Vector3f pos = parent.positionAbsolute * mask + entity.position;
 
         entity.transformation =
             translationMatrix(pos) *
