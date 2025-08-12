@@ -208,6 +208,8 @@ class Game: Application
         if ("renderer.exposure" in config.props)
             postProcessingRenderer.exposure = config.props["renderer.exposure"].toFloat;
         
+        if ("renderer.dofEnabled" in config.props)
+            postProcessingRenderer.depthOfFieldEnabled = cast(bool)(config.props["renderer.dofEnabled"].toUInt);
         if ("renderer.autofocus" in config.props)
             postProcessingRenderer.autofocus = cast(bool)(config.props["renderer.autofocus"].toUInt);
         if ("renderer.focalDepth" in config.props)
