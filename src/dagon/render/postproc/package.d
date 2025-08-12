@@ -254,6 +254,7 @@ class PostProcRenderer: Renderer
         passLensDistortion.view = view;
         passLensDistortion.inputBuffer = ldrDoubleBuffer;
         passLensDistortion.outputBuffer = ldrDoubleBuffer;
+        passLensDistortion.active = false;
 
         lutShader = New!LUTShader(this);
         passLUT = New!FilterPass(pipeline, lutShader);
