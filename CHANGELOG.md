@@ -1,3 +1,8 @@
+Dagon 0.28.0 - TBD
+------------------
+- **Rendering**
+  - settings.conf now supports renderer options (see [the sample file](https://github.com/gecko0307/dagon/blob/master/settings.conf) for details).
+
 Dagon 0.27.1 - 11 Aug, 2025
 ---------------------------
 - **Extensions**
