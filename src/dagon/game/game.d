@@ -57,6 +57,7 @@ import dagon.core.application;
 import dagon.graphics.state;
 import dagon.graphics.entity;
 import dagon.resource.scene;
+import dagon.resource.asset;
 import dagon.render.renderer;
 import dagon.render.deferred;
 import dagon.render.postproc;
@@ -73,6 +74,9 @@ import dagon.render.hud;
  */
 class Game: Application
 {
+    /// Global asset manager.
+    AssetManager assetManager;
+    
     /// The dictionary of scenes, mapping scene objects to their names.
     Dict!(Scene, string) scenes;
 
@@ -117,6 +121,9 @@ class Game: Application
     this(uint w, uint h, bool fullscreen, string title, string[] args, string appFolder = ".dagon")
     {
         super(w, h, fullscreen, title, args, appFolder);
+        
+        assetManager = New!AssetManager(eventManager, vfs, this);
+        assetManager.application = this;
         
         scenes = dict!(Scene, string);
         
@@ -229,7 +236,16 @@ class Game: Application
         if ("renderer.dofFarDistance" in config.props)
             postProcessingRenderer.dofFarDistance = config.props["renderer.dofFarDistance"].toFloat;
         
-        postProcessingRenderer.lutEnabled = false;
+        if ("renderer.lutEnabled" in config.props)
+            postProcessingRenderer.lutEnabled = cast(bool)(config.props["renderer.lutEnabled"].toUInt);
+        if ("renderer.lut" in config.props)
+        {
+            string lutFilename = config.props["renderer.lut"].toString;
+            if (lutFilename.length)
+            {
+                postProcessingRenderer.loadDefaultLUT(assetManager, lutFilename);
+            }
+        }
         
         string brdfFilename = "data/__internal/textures/brdf.dds";
         if ("renderer.brdf" in config.props)

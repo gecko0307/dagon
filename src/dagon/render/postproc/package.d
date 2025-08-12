@@ -35,6 +35,8 @@ import dagon.core.time;
 import dagon.core.bindings;
 import dagon.graphics.texture;
 import dagon.resource.scene;
+import dagon.resource.asset;
+import dagon.resource.texture;
 import dagon.render.renderer;
 import dagon.render.pass;
 import dagon.render.view;
@@ -178,6 +180,7 @@ class PostProcRenderer: Renderer
     float dofFarStart = 1.0f;
     float dofFarDistance = 3.0f;
 
+    Texture defaultColorLookupTable;
     Texture colorLookupTable;
 
     this(EventManager eventManager, Framebuffer inputBuffer, GBuffer gbuffer, Owner owner)
@@ -318,6 +321,25 @@ class PostProcRenderer: Renderer
     bool lutEnabled() @property
     {
         return passLUT.active;
+    }
+    
+    void loadDefaultLUT(AssetManager assetManager, string filename)
+    {
+        if (defaultColorLookupTable)
+        {
+            deleteOwnedObject(defaultColorLookupTable);
+            defaultColorLookupTable = null;
+        }
+        
+        TextureAsset lutAsset = cast(TextureAsset)assetManager.getAsset(filename);
+        if (lutAsset is null)
+        {
+            lutAsset = New!TextureAsset(assetManager);
+            assetManager.preloadAsset(lutAsset, filename);
+        }
+        
+        defaultColorLookupTable = lutAsset.texture;
+        colorLookupTable = defaultColorLookupTable;
     }
 
     override void update(Time t)
