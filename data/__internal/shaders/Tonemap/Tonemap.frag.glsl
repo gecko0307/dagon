@@ -22,6 +22,9 @@ out vec4 fragColor;
  *
  * tonemapAgX is based on code by Don McCurdy, which in turn is based on Blender and Filament implementations
  * https://github.com/mrdoob/three.js/pull/27618
+ *
+ * tonemapPBRNeutral is based on code by Khronos Group
+ * https://github.com/KhronosGroup/ToneMapping
  */
 
 vec3 hableFunc(vec3 x)
@@ -79,7 +82,7 @@ vec3 tonemapUnreal(vec3 color)
     return pow(result, vec3(2.2));
 }
 
-// Matrices for Rec. 2020 <> R.ec 709 color space conversion.
+// Matrices for Rec. 2020 <> Rec. 709 color space conversion.
 // Matrix provided in row-major order so it has been transposed.
 // https://www.itu.int/pub/R-REP-BT.2407-2017
 const mat3 LINEAR_REC2020_TO_LINEAR_SRGB = mat3(
@@ -196,11 +199,33 @@ vec3 tonemapAgX(vec3 color, int look)
     return color;
 }
 
+vec3 tonemapPBRNeutral(vec3 color)
+{
+    const float startCompression = 0.8 - 0.04;
+    const float desaturation = 0.15;
+
+    float x = min(color.r, min(color.g, color.b));
+    float offset = x < 0.08 ? x - 6.25 * x * x : 0.04;
+    color -= offset;
+
+    float peak = max(color.r, max(color.g, color.b));
+    if (peak < startCompression) return color;
+
+    const float d = 1.0 - startCompression;
+    float newPeak = 1.0 - d * d / (peak + d - startCompression);
+    color *= newPeak / peak;
+
+    float g = 1.0 - 1.0 / (desaturation * (peak - newPeak) + 1.0);
+    return mix(color, newPeak * vec3(1.0, 1.0, 1.0), g);
+}
+
 void main()
 {
     vec3 res = texture(colorBuffer, texCoord).rgb * exposure;
     
-    if (tonemapper == 8)
+    if (tonemapper == 9)
+        res = tonemapPBRNeutral(res);
+    else if (tonemapper == 8)
         res = tonemapAgX(res, AGX_LOOK_PUNCHY);
     else if (tonemapper == 7)
         res = tonemapAgX(res, AGX_LOOK_BASE);

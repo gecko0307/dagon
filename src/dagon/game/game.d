@@ -211,6 +211,8 @@ class Game: Application
                 postProcessingRenderer.tonemapper = Tonemapper.AgX_Base;
             else if (tonemapper == "AgX_Punchy")
                 postProcessingRenderer.tonemapper = Tonemapper.AgX_Punchy;
+            else if (tonemapper == "KhronosPBRNeutral")
+                postProcessingRenderer.tonemapper = Tonemapper.KhronosPBRNeutral;
         }
         if ("renderer.exposure" in config.props)
             postProcessingRenderer.exposure = config.props["renderer.exposure"].toFloat;
