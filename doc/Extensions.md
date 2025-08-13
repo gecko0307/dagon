@@ -4,7 +4,7 @@ Some functionality in Dagon is implemented via extension mechanism. Extensions a
 
 `dub add dagon:newton` - adds Newton extension available as `dagon.ext.newton` package import.
 
-All extensions are experimental and not guaranteed to work on all platforms. Some of them require installing third-party libraries.
+All extensions are experimental and not guaranteed to work on all operating systems. Some of them require installing third-party libraries.
 
 Available extensions:
 * `dagon:assimp` - [Assimp](https://github.com/assimp/assimp) library integration
