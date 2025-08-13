@@ -19,6 +19,8 @@ Screenshots
 
 [![Space](https://blog.pixperfect.online/wp-content/uploads/2025/05/space.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/05/space.jpg)
 
+[![Ocean](https://blog.pixperfect.online/wp-content/uploads/2025/08/ocean5.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/08/ocean5.jpg)
+
 [![Forest](https://blog.pixperfect.online/wp-content/uploads/2025/05/forest.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/05/forest.jpg)
 
 [![Chillwave Drive](https://blog.pixperfect.online/wp-content/uploads/2025/05/chillwave-drive.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/05/chillwave-drive.jpg)
