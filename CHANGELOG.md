@@ -3,6 +3,7 @@ Dagon 0.28.0 - TBD
 - **Graphics components**
   - New property `PositionSync.mask` for selective axis constraining
 - **Rendering**
+  - Khronos PBR Neutral tonemapping support: `Tonemapper.KhronosPBRNeutral`
   - settings.conf now supports renderer options (see [the sample file](https://github.com/gecko0307/dagon/blob/master/settings.conf) for details)
 - **Extra**
   - `dagon.extra.ocean` - realistic sea/ocean shader with Gerstner waves.
