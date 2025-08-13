@@ -3,6 +3,8 @@
 #define PI 3.14159265359
 const float PI2 = PI * 2.0;
 
+#include <hash.glsl>
+
 layout(location = 0) in vec3 va_Vertex;
 layout(location = 1) in vec3 va_Normal;
 layout(location = 2) in vec2 va_Texcoord;
@@ -23,16 +25,18 @@ uniform vec3 cameraPosition;
 //uniform vec4 waves[16]; // x: amplitude, y: wavelength, z: speed, w: choppiness
 //uniform vec2 directions[16];
 
-int numWaves = 3;
-vec4 waves[3] = vec4[3](
-    vec4(0.4, 0.08, time1, 1.5),
-    vec4(0.1, 0.1, time2, 1.5),
-    vec4(0.2, 0.15, time2, 1.5)
+int numWaves = 4;
+vec4 waves[4] = vec4[4](
+    vec4(0.2, 0.08, time1, 2.0),
+    vec4(0.1, 0.1, time2, 2.0),
+    vec4(0.1, 0.15, time1, 2.0),
+    vec4(0.2, 0.12, time2, 2.0)
 );
-vec2 directions[3] = vec2[3](
+vec2 directions[4] = vec2[4](
     vec2(1.0, 0.0),
-    vec2(0.5, 0.5),
-    vec2(0.5, -1.0)
+    vec2(1.0, 1.0),
+    vec2(-1.0, -1.0),
+    vec2(0.0, -1.0)
 );
 
 vec3 gerstnerDisplace(vec3 pos, out vec3 normal)
@@ -58,14 +62,11 @@ vec3 gerstnerDisplace(vec3 pos, out vec3 normal)
         float cos_p = cos(phase);
         float sin_p = sin(phase);
 
-        // Horizontal displacement (choppiness)
         P.x += Q * A * D.x * cos_p;
         P.z += Q * A * D.y * cos_p;
-        // vertical
         P.y += A * sin_p;
         
         float wA = w * A;
-        //float comm = Q * wA * sin_p;
 
         float Qi = steepness / (wA * float(numWaves));
         normal.xz -= D * wA * cos_p;

@@ -60,17 +60,29 @@ class OceanShader: Shader
     float time2 = 0.0f;
     float rippleTime = 0.0f;
     
+    ShaderParameter!Color4f fogColor;
+    ShaderParameter!float fogStart;
+    ShaderParameter!float fogEnd;
+    
+    ShaderParameter!float ambientEnergy;
+    ShaderParameter!Color4f ambientVector;
+    ShaderParameter!int ambientTexture;
+    ShaderParameter!int ambientTextureCube;
+    ShaderSubroutine ambientSubroutine;
+    GLuint ambientSubroutineCubemap,
+           ambientSubroutineEquirectangularMap,
+           ambientSubroutineColor;
+    
    public:
     float waveSpeed1 = 0.2f;
-    float waveSpeed2 = 0.1f;
+    float waveSpeed2 = 0.2f;
     float rippleSpeed = 0.03f;
     
     Texture normalTexture1;
     Texture normalTexture2;
     
     Color4f waterColor = Color4f(0.1f, 0.12f, 0.13f, 1.0f);
-    Color4f scatteringColor = Color4f(0.3f, 0.6f, 0.5f, 1.0f);
-    Color4f reflectionColor = Color4f(0.7f, 0.8f, 0.9f, 1.0f);
+    Color4f scatteringColor = Color4f(0.5f, 0.9f, 0.7f, 1.0f);
 
     this(AssetManager assetManager)
     {
@@ -85,6 +97,19 @@ class OceanShader: Shader
 
         TextureAsset normalTexture2Asset = textureAsset(assetManager, "data/__internal/textures/water_normal2.png");
         normalTexture2 = normalTexture2Asset.texture;
+        
+        fogColor = createParameter!Color4f("fogColor");
+        fogStart = createParameter!float("fogStart");
+        fogEnd = createParameter!float("fogEnd");
+        
+        ambientEnergy = createParameter!float("ambientEnergy");
+        ambientVector = createParameter!Color4f("ambientVector");
+        ambientTexture = createParameter!int("ambientTexture");
+        ambientTextureCube = createParameter!int("ambientTextureCube");
+        ambientSubroutine = createParameterSubroutine("ambient", ShaderType.Fragment);
+        ambientSubroutineCubemap = ambientSubroutine.getIndex("ambientCubemap");
+        ambientSubroutineEquirectangularMap = ambientSubroutine.getIndex("ambientEquirectangularMap");
+        ambientSubroutineColor = ambientSubroutine.getIndex("ambientColor");
     }
     
     ~this()
@@ -107,9 +132,9 @@ class OceanShader: Shader
         
         setParameter("cameraPosition", state.cameraPosition);
         
-        setParameter("fogColor", state.environment.fogColor);
-        setParameter("fogStart", state.environment.fogStart);
-        setParameter("fogEnd", state.environment.fogEnd);
+        //setParameter("fogColor", state.environment.fogColor);
+        //setParameter("fogStart", state.environment.fogStart);
+        //setParameter("fogEnd", state.environment.fogEnd);
         
         // Sun
         Light sun = mat.sun;
@@ -150,7 +175,6 @@ class OceanShader: Shader
         
         setParameter("waterColor", waterColor);
         setParameter("scatteringColor", scatteringColor);
-        setParameter("reflectionColor", reflectionColor);
         
         // Normal textures
         glActiveTexture(GL_TEXTURE0);
@@ -160,6 +184,75 @@ class OceanShader: Shader
         glActiveTexture(GL_TEXTURE1);
         normalTexture2.bind();
         setParameter("normalTexture2", 1);
+        
+        // Textures 2, 3 - environment (equirectangular map, cube map)
+        if (state.environment)
+        {
+            fogColor = state.environment.fogColor;
+            fogStart = state.environment.fogStart;
+            fogEnd = state.environment.fogEnd;
+            ambientEnergy = state.environment.ambientEnergy;
+
+            if (state.environment.ambientMap)
+            {
+                if (state.environment.ambientMap.isCubemap)
+                {
+                    glActiveTexture(GL_TEXTURE2);
+                    glBindTexture(GL_TEXTURE_2D, 0);
+                    ambientTexture = 2;
+                    
+                    glActiveTexture(GL_TEXTURE3);
+                    state.environment.ambientMap.bind();
+                    ambientTextureCube = 3;
+                    
+                    ambientSubroutine.index = ambientSubroutineCubemap;
+                }
+                else
+                {
+                    glActiveTexture(GL_TEXTURE2);
+                    state.environment.ambientMap.bind();
+                    ambientTexture = 2;
+                    
+                    glActiveTexture(GL_TEXTURE3);
+                    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+                    ambientTextureCube = 3;
+                    
+                    ambientSubroutine.index = ambientSubroutineEquirectangularMap;
+                }
+            }
+            else
+            {
+                glActiveTexture(GL_TEXTURE2);
+                glBindTexture(GL_TEXTURE_2D, 0);
+                ambientTexture = 2;
+                
+                glActiveTexture(GL_TEXTURE3);
+                glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+                ambientTextureCube = 3;
+                
+                ambientVector = state.environment.ambientColor;
+                
+                ambientSubroutine.index = ambientSubroutineColor;
+            }
+        }
+        else
+        {
+            fogColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
+            fogStart = 0.0f;
+            fogEnd = 1000.0f;
+            ambientEnergy = 1.0f;
+            ambientVector = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
+            
+            glActiveTexture(GL_TEXTURE2);
+            glBindTexture(GL_TEXTURE_2D, 0);
+            ambientTexture = 2;
+            
+            glActiveTexture(GL_TEXTURE3);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+            ambientTextureCube = 3;
+            
+            ambientSubroutine.index = ambientSubroutineColor;
+        }
         
         super.bindParameters(state);
     }
@@ -173,5 +266,13 @@ class OceanShader: Shader
 
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+        
+        glActiveTexture(GL_TEXTURE0);
     }
 }

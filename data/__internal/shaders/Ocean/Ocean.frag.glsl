@@ -6,6 +6,7 @@ const float invPI = 1.0 / PI;
 
 #include <gamma.glsl>
 #include <cotangentFrame.glsl>
+#include <envMapEquirect.glsl>
 
 in vec3 eyeNormal;
 in vec3 eyePosition;
@@ -25,7 +26,6 @@ uniform float sunEnergy;
 
 uniform vec4 waterColor;
 uniform vec4 scatteringColor;
-uniform vec4 reflectionColor;
 
 uniform sampler2D normalTexture1;
 uniform sampler2D normalTexture2;
@@ -35,6 +35,36 @@ uniform float rippleTime;
 uniform vec4 fogColor;
 uniform float fogStart;
 uniform float fogEnd;
+
+uniform float ambientEnergy;
+
+subroutine vec3 srtAmbient(in vec3 wN, in float perceptualRoughness);
+
+uniform vec4 ambientVector;
+subroutine(srtAmbient) vec3 ambientColor(in vec3 wN, in float perceptualRoughness)
+{
+    return toLinear(ambientVector.rgb);
+}
+
+uniform sampler2D ambientTexture;
+subroutine(srtAmbient) vec3 ambientEquirectangularMap(in vec3 wN, in float perceptualRoughness)
+{
+    ivec2 envMapSize = textureSize(ambientTexture, 0);
+    float resolution = float(max(envMapSize.x, envMapSize.y));
+    float lod = log2(resolution) * perceptualRoughness;
+    return textureLod(ambientTexture, envMapEquirect(wN), lod).rgb;
+}
+
+uniform samplerCube ambientTextureCube;
+subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float perceptualRoughness)
+{
+    ivec2 envMapSize = textureSize(ambientTextureCube, 0);
+    float resolution = float(max(envMapSize.x, envMapSize.y));
+    float lod = log2(resolution) * perceptualRoughness;
+    return textureLod(ambientTextureCube, wN, lod).rgb;
+}
+
+subroutine uniform srtAmbient ambient;
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec4 fragVelocity;
@@ -48,14 +78,20 @@ void main()
     
     mat3 tangentToEye = cotangentFrame(N, eyePosition, texCoord);
     
-    const float bumpiness = 0.8;
+    const float rippleBumpiness = 0.6; // TODO: make uniform
     
     vec2 scrolluv1 = vec2(uv.x, uv.y + rippleTime);
     vec2 scrolluv2 = vec2(uv.x + rippleTime, uv.y);
     vec3 wave1N = normalize(texture(normalTexture1, scrolluv1).rgb * 2.0 - 1.0);
     vec3 wave2N = normalize(texture(normalTexture2, scrolluv2).rgb * 2.0 - 1.0);
-    N = mix(vec3(0.0, 0.0, 1.0), (wave1N + wave2N) * 0.5, bumpiness);
+    N = mix(vec3(0.0, 0.0, 1.0), (wave1N + wave2N) * 0.5, rippleBumpiness);
     N = normalize(tangentToEye * N);
+    
+    vec3 worldPos = (invViewMatrix * vec4(eyePosition, 1.0)).xyz;
+    vec3 worldCamPos = (invViewMatrix[3]).xyz;
+    vec3 worldE = normalize(worldPos - worldCamPos);
+    vec3 worldN = normalize((vec4(N, 0.0) * viewMatrix).xyz);
+    vec3 worldR = reflect(worldE, worldN);
     
     // Sun light
     vec3 L = sunDirection;
@@ -67,12 +103,16 @@ void main()
     
     // Scattering and Fresnel reflection
     vec3 baseColor = toLinear(waterColor.rgb);
-    baseColor += (1.0 - LE) * clamp(dot(N, E), 0.0, 1.0) * mix(vec3(0.0), toLinear(scatteringColor.rgb), height);
-    const float fresnelPower = 8.0;
-    const float f0 = 0.1;
+    const float scatteringEnergy = 1.0; // TODO: make uniform
+    baseColor += (1.0 - LE) * clamp(dot(N, E), 0.0, 1.0) * mix(vec3(0.0), toLinear(scatteringColor.rgb) * scatteringEnergy, height);
+    const float fresnelPower = 16.0;
+    const float f0 = 0.05;
     float fresnel = clamp(f0 + pow(1.0 - dot(N, E), fresnelPower), 0.0, 1.0);
     
-    vec3 radiance = mix(baseColor, toLinear(reflectionColor.rgb), fresnel) + toLinear(sunColor.rgb) * sunEnergy * specular;
+    const float reflectivity = 1.0; // TODO: make uniform
+    vec3 reflection = ambient(worldR, 0.4) * reflectivity;
+    
+    vec3 radiance = mix(baseColor, reflection, fresnel) + toLinear(sunColor.rgb) * sunEnergy * specular;
     
     // Fog
     float linearDepth = abs(eyePosition.z);
