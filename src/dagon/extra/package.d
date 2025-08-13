@@ -25,6 +25,17 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Extra shaders and effects.
+ *
+ * Description:
+ * The `dagon.extra` package contains additional or expermental shaders
+ * and render techniques that are not part of any particular pipeline.
+ *
+ * Copyright: Timur Gafarov 2020-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.extra;
 
 public
