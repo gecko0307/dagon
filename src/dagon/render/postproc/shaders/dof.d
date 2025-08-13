@@ -143,14 +143,11 @@ class DepthOfFieldShader: Shader
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
         colorBuffer = 0;
-
-        if (gbuffer)
-        {
-            // Texture 1 - depth buffer
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, gbuffer.depthTexture);
-            depthBuffer = 1;
-        }
+        
+        // Texture 1 - depth buffer
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, state.depthTexture);
+        depthBuffer = 1;
 
         glActiveTexture(GL_TEXTURE0);
 
@@ -165,9 +162,6 @@ class DepthOfFieldShader: Shader
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE0);

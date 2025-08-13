@@ -109,7 +109,7 @@ void main()
     
     // Scattering and Fresnel reflection
     vec3 foamColor = toLinear(vec3(0.9, 1.0, 0.8));
-    vec3 scattering = toLinear(scatteringColor.rgb) * scatteringEnergy + foamColor * sunEnergy * foam;
+    vec3 scattering = toLinear(scatteringColor.rgb) * scatteringEnergy + foamColor * 10.0 * foam;
     vec3 diffuse = toLinear(waterColor.rgb);
     diffuse += (1.0 - LE) * clamp(dot(N, E), 0.0, 1.0) * mix(vec3(0.0), scattering, height) + vec3(1.0) * foam2;
     const float f0 = 0.05;
