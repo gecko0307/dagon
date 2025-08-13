@@ -2,7 +2,7 @@
 
 This guide will help you with modifying and extending the engine.
 
-Dagon is fully modular: most of its components can be replaced with custom ones. You can override almost anything: make your own asset loaders, implement a custom render pipeline with your own shaders and techniques, and, overall, take much more control over your game than with other engines. You can even override the application's main loop (`Application.run`), the very heart of the engine, using your own timer. At the same time, Dagon is written in such a way that it is easy to use and doesn't require much boilerplate code and engineer-level understanding on the user side, so a number of design patterns should be adhered when extending the engine.
+Dagon is fully modular: most of its components can be replaced with custom ones. You can override almost anything: make your own asset loaders, implement a custom render pipeline with your own shaders and techniques, and, overall, take much more control over your game than with other engines. You can even override the application's main loop (`Application.run`), the very heart of the engine, using your own timer. At the same time, Dagon is written in such a way that it is easy to use and doesn't require much boilerplate code and engineer-level understanding on the user side, so a number of design patterns should be adhered when extending the engine. Extending Dagon also requires getting familiar with dlib's best coding practices.
 
 ## Memory Management
 
