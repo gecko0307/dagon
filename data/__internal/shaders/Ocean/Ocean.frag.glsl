@@ -105,7 +105,7 @@ void main()
     vec3 H = normalize(E + L);
     float NH = max(dot(N, H), 0.0);
     float LE = clamp(dot(L, E), 0.0, 1.0);
-    float specular = float(NH > 0.998);
+    float specular = float(NH > 0.997);
     
     // Scattering and Fresnel reflection
     vec3 foamColor = toLinear(vec3(0.9, 1.0, 0.8));
