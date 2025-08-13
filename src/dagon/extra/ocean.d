@@ -56,13 +56,40 @@ class OceanShader: Shader
    protected:
     String vs, fs;
     
-    float time1 = 0.0f;
-    float time2 = 0.0f;
-    float rippleTime = 0.0f;
+    float _time1 = 0.0f;
+    float _time2 = 0.0f;
+    float _rippleTime = 0.0f;
+    
+    ShaderParameter!Matrix4x4f modelViewMatrix;
+    ShaderParameter!Matrix4x4f projectionMatrix;
+    ShaderParameter!Matrix4x4f normalMatrix;
+    ShaderParameter!Matrix4x4f viewMatrix;
+    ShaderParameter!Matrix4x4f invViewMatrix;
+    ShaderParameter!Matrix4x4f prevModelViewMatrix;
+    ShaderParameter!Matrix3x3f textureMatrix;
+    
+    ShaderParameter!Vector3f cameraPosition;
+    
+    ShaderParameter!Vector3f sunDirection;
+    ShaderParameter!Color4f sunColor;
+    ShaderParameter!float sunEnergy;
+    
+    ShaderParameter!float time1;
+    ShaderParameter!float time2;
+    ShaderParameter!float rippleTime;
+    ShaderParameter!Color4f waterDepthColor;
+    ShaderParameter!Color4f waterScatteringColor;
+    ShaderParameter!float waterScatteringEnergy;
+    ShaderParameter!float waterGloss;
+    ShaderParameter!float waterRelief;
+    ShaderParameter!float waterFresnelPower;
     
     ShaderParameter!Color4f fogColor;
     ShaderParameter!float fogStart;
     ShaderParameter!float fogEnd;
+    
+    ShaderParameter!int normalTexture1;
+    ShaderParameter!int normalTexture2;
     
     ShaderParameter!float ambientEnergy;
     ShaderParameter!Color4f ambientVector;
@@ -73,16 +100,23 @@ class OceanShader: Shader
            ambientSubroutineEquirectangularMap,
            ambientSubroutineColor;
     
+    TextureAsset normalTexture1Asset;
+    TextureAsset normalTexture2Asset;
+    
    public:
     float waveSpeed1 = 0.2f;
     float waveSpeed2 = 0.2f;
     float rippleSpeed = 0.03f;
     
-    Texture normalTexture1;
-    Texture normalTexture2;
-    
     Color4f waterColor = Color4f(0.1f, 0.12f, 0.13f, 1.0f);
     Color4f scatteringColor = Color4f(0.5f, 0.9f, 0.7f, 1.0f);
+    float scatteringEnergy = 0.5f;
+    float gloss = 0.5f;
+    float fresnelPower = 12.0f;
+    
+    Texture reliefNormalTexture1;
+    Texture reliefNormalTexture2;
+    float relief = 0.5f;
 
     this(AssetManager assetManager)
     {
@@ -92,11 +126,38 @@ class OceanShader: Shader
         auto prog = New!ShaderProgram(vs, fs, this);
         super(prog, assetManager);
         
-        TextureAsset normalTexture1Asset = textureAsset(assetManager, "data/__internal/textures/water_normal1.png");
-        normalTexture1 = normalTexture1Asset.texture;
+        modelViewMatrix = createParameter!Matrix4x4f("modelViewMatrix");
+        projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
+        normalMatrix = createParameter!Matrix4x4f("normalMatrix");
+        viewMatrix = createParameter!Matrix4x4f("viewMatrix");
+        invViewMatrix = createParameter!Matrix4x4f("invViewMatrix");
+        prevModelViewMatrix = createParameter!Matrix4x4f("prevModelViewMatrix");
+        textureMatrix = createParameter!Matrix3x3f("textureMatrix");
+        
+        cameraPosition = createParameter!Vector3f("cameraPosition");
+        
+        sunDirection = createParameter!Vector3f("sunDirection");
+        sunColor = createParameter!Color4f("sunColor");
+        sunEnergy = createParameter!float("sunEnergy");
+        
+        time1 = createParameter!float("time1");
+        time2 = createParameter!float("time2");
+        rippleTime = createParameter!float("rippleTime");
+        waterDepthColor = createParameter!Color4f("waterColor");
+        waterScatteringColor = createParameter!Color4f("scatteringColor");
+        waterScatteringEnergy = createParameter!float("scatteringEnergy");
+        waterGloss = createParameter!float("gloss");
+        waterRelief = createParameter!float("relief");
+        waterFresnelPower = createParameter!float("fresnelPower");
+        
+        normalTexture1Asset = textureAsset(assetManager, "data/__internal/textures/water_normal1.png");
+        reliefNormalTexture1 = normalTexture1Asset.texture;
 
-        TextureAsset normalTexture2Asset = textureAsset(assetManager, "data/__internal/textures/water_normal2.png");
-        normalTexture2 = normalTexture2Asset.texture;
+        normalTexture2Asset = textureAsset(assetManager, "data/__internal/textures/water_normal2.png");
+        reliefNormalTexture2 = normalTexture2Asset.texture;
+        
+        normalTexture1 = createParameter!int("normalTexture1");
+        normalTexture2 = createParameter!int("normalTexture2");
         
         fogColor = createParameter!Color4f("fogColor");
         fogStart = createParameter!float("fogStart");
@@ -122,68 +183,67 @@ class OceanShader: Shader
     {
         Material mat = state.material;
         
-        setParameter("modelViewMatrix", state.modelViewMatrix);
-        setParameter("projectionMatrix", state.projectionMatrix);
-        setParameter("normalMatrix", state.normalMatrix);
-        setParameter("viewMatrix", state.viewMatrix);
-        setParameter("invViewMatrix", state.invViewMatrix);
-        setParameter("prevModelViewMatrix", state.prevModelViewMatrix);
-        setParameter("textureMatrix", mat.textureTransformation);
+        modelViewMatrix = &state.modelViewMatrix;
+        projectionMatrix = &state.projectionMatrix;
+        normalMatrix = &state.normalMatrix;
+        viewMatrix = &state.viewMatrix;
+        invViewMatrix = &state.invViewMatrix;
+        prevModelViewMatrix = &state.prevModelViewMatrix;
+        textureMatrix = &mat.textureTransformation;
         
-        setParameter("cameraPosition", state.cameraPosition);
-        
-        //setParameter("fogColor", state.environment.fogColor);
-        //setParameter("fogStart", state.environment.fogStart);
-        //setParameter("fogEnd", state.environment.fogEnd);
+        cameraPosition = state.cameraPosition;
         
         // Sun
         Light sun = mat.sun;
         if (sun is null)
             sun = state.environment.sun;
         
-        Vector3f sunDirection = Vector3f(0.0f, 0.0f, 1.0f);
-        Color4f sunColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
-        float sunEnergy = 1.0f;
-        
         if (sun)
         {
-            sunDirection = sun.directionAbsolute;
+            Vector4f sunDirHg = Vector4f(sun.directionAbsolute);
+            sunDirHg.w = 0.0f;
+            sunDirection = (sunDirHg * state.viewMatrix).xyz;
             sunColor = sun.color;
             sunEnergy = sun.energy;
         }
-        
-        Vector4f sunDirHg = Vector4f(sunDirection);
-        sunDirHg.w = 0.0;
-        setParameter("sunDirection", (sunDirHg * state.viewMatrix).xyz);
-        setParameter("sunColor", sunColor);
-        setParameter("sunEnergy", sunEnergy);
+        else
+        {
+            Vector4f sunDirHg = Vector4f(0.0f, 0.0f, 1.0f, 0.0f);
+            sunDirection = (sunDirHg * state.viewMatrix).xyz;
+            sunColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+            sunEnergy = 1.0f;
+        }
         
         // Time
-        time1 += state.time.delta * waveSpeed1;
-        if (time1 >= 1.0f)
-            time1 = 0.0f;
-        time2 += state.time.delta * waveSpeed2;
-        if (time2 >= 1.0f)
-            time2 = 0.0f;
-        setParameter("time1", time1);
-        setParameter("time2", time2);
+        _time1 += state.time.delta * waveSpeed1;
+        if (_time1 >= 1.0f)
+            _time1 = 0.0f;
+        _time2 += state.time.delta * waveSpeed2;
+        if (_time2 >= 1.0f)
+            _time2 = 0.0f;
+        time1 = _time1;
+        time2 = _time2;
         
-        rippleTime += state.time.delta * rippleSpeed;
-        if (rippleTime >= 1.0f)
-            rippleTime = 0.0f;
-        setParameter("rippleTime", rippleTime);
+        _rippleTime += state.time.delta * rippleSpeed;
+        if (_rippleTime >= 1.0f)
+            _rippleTime = 0.0f;
+        rippleTime = _rippleTime;
         
-        setParameter("waterColor", waterColor);
-        setParameter("scatteringColor", scatteringColor);
+        waterDepthColor = waterColor;
+        waterScatteringColor = scatteringColor;
+        waterScatteringEnergy = scatteringEnergy;
+        waterGloss = gloss;
+        waterRelief = relief;
+        waterFresnelPower = fresnelPower;
         
         // Normal textures
         glActiveTexture(GL_TEXTURE0);
-        normalTexture1.bind();
-        setParameter("normalTexture1", 0);
+        reliefNormalTexture1.bind();
+        normalTexture1 = 0;
 
         glActiveTexture(GL_TEXTURE1);
-        normalTexture2.bind();
-        setParameter("normalTexture2", 1);
+        reliefNormalTexture2.bind();
+        normalTexture2 = 1;
         
         // Textures 2, 3 - environment (equirectangular map, cube map)
         if (state.environment)

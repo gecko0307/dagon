@@ -2,7 +2,6 @@
 
 #define PI 3.14159265359
 const float PI2 = PI * 2.0;
-const float invPI = 1.0 / PI;
 
 #include <gamma.glsl>
 #include <cotangentFrame.glsl>
@@ -26,9 +25,13 @@ uniform float sunEnergy;
 
 uniform vec4 waterColor;
 uniform vec4 scatteringColor;
+uniform float scatteringEnergy;
+uniform float gloss;
+uniform float fresnelPower;
 
 uniform sampler2D normalTexture1;
 uniform sampler2D normalTexture2;
+uniform float relief;
 
 uniform float rippleTime;
 
@@ -78,13 +81,16 @@ void main()
     
     mat3 tangentToEye = cotangentFrame(N, eyePosition, texCoord);
     
-    const float rippleBumpiness = 0.6; // TODO: make uniform
-    
     vec2 scrolluv1 = vec2(uv.x, uv.y + rippleTime);
     vec2 scrolluv2 = vec2(uv.x + rippleTime, uv.y);
     vec3 wave1N = normalize(texture(normalTexture1, scrolluv1).rgb * 2.0 - 1.0);
     vec3 wave2N = normalize(texture(normalTexture2, scrolluv2).rgb * 2.0 - 1.0);
-    N = mix(vec3(0.0, 0.0, 1.0), (wave1N + wave2N) * 0.5, rippleBumpiness);
+    N = mix(vec3(0.0, 0.0, 1.0), (wave1N + wave2N) * 0.5, relief);
+    
+    float foam = clamp(dot(N, vec3(0.0, 0.0, 1.0)), 0.0, 1.0);
+    foam = height * (1.0 - (foam - 0.4) / (1.0 - 0.4));
+    float foam2 = float(foam * 10.0 > 0.4);
+    
     N = normalize(tangentToEye * N);
     
     vec3 worldPos = (invViewMatrix * vec4(eyePosition, 1.0)).xyz;
@@ -102,17 +108,14 @@ void main()
     float specular = float(NH > 0.998);
     
     // Scattering and Fresnel reflection
-    vec3 baseColor = toLinear(waterColor.rgb);
-    const float scatteringEnergy = 1.0; // TODO: make uniform
-    baseColor += (1.0 - LE) * clamp(dot(N, E), 0.0, 1.0) * mix(vec3(0.0), toLinear(scatteringColor.rgb) * scatteringEnergy, height);
-    const float fresnelPower = 16.0;
+    vec3 foamColor = toLinear(vec3(0.9, 1.0, 0.8));
+    vec3 scattering = toLinear(scatteringColor.rgb) * scatteringEnergy + foamColor * sunEnergy * foam;
+    vec3 diffuse = toLinear(waterColor.rgb);
+    diffuse += (1.0 - LE) * clamp(dot(N, E), 0.0, 1.0) * mix(vec3(0.0), scattering, height) + vec3(1.0) * foam2;
     const float f0 = 0.05;
     float fresnel = clamp(f0 + pow(1.0 - dot(N, E), fresnelPower), 0.0, 1.0);
-    
-    const float reflectivity = 1.0; // TODO: make uniform
-    vec3 reflection = ambient(worldR, 0.4) * reflectivity;
-    
-    vec3 radiance = mix(baseColor, reflection, fresnel) + toLinear(sunColor.rgb) * sunEnergy * specular;
+    vec3 reflection = mix(diffuse, ambient(worldR, 0.4), gloss);
+    vec3 radiance = mix(diffuse, reflection, fresnel) + toLinear(sunColor.rgb) * sunEnergy * specular;
     
     // Fog
     float linearDepth = abs(eyePosition.z);
