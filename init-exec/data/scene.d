@@ -54,10 +54,6 @@ class MyScene: Scene
         
         auto ePlane = addEntity();
         ePlane.drawable = New!ShapePlane(10, 10, 1, assetManager);
-        
-        game.deferredRenderer.ssaoEnabled = true;
-        game.deferredRenderer.ssaoPower = 6.0;
-        game.postProcessingRenderer.fxaaEnabled = true;
     }
     
     // Event callbacks:
