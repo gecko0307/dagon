@@ -19,12 +19,7 @@ class TestScene: Scene
     }
 
     override void afterLoad()
-    {  
-        game.deferredRenderer.ssaoEnabled = true;
-        game.deferredRenderer.ssaoPower = 6.0;
-        game.postProcessingRenderer.tonemapper = Tonemapper.Filmic;
-        game.postProcessingRenderer.fxaaEnabled = true;
-        
+    {
         auto camera = addCamera();
         auto freeview = New!FreeviewComponent(eventManager, camera);
         freeview.setZoom(5);
