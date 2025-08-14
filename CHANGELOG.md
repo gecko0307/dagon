@@ -3,7 +3,7 @@ Dagon 0.28.0 - TBD
 - **Graphics components**
   - New property `PositionSync.mask` for selective axis constraining
 - **Rendering**
-  - Khronos PBR Neutral tonemapping support: `Tonemapper.KhronosPBRNeutral`
+  - New tonemapper - Khronos PBR Neutral (`Tonemapper.KhronosPBRNeutral`)
   - Fix a bug with wrong input depth buffer in the DoF shader
   - settings.conf now supports renderer options (see [the sample file](https://github.com/gecko0307/dagon/blob/master/settings.conf) for details)
 - **Extra**
