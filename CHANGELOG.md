@@ -1,5 +1,5 @@
-Dagon 0.28.0 - TBD
-------------------
+Dagon 0.28.0 - 16 Aug, 2025
+---------------------------
 - **Graphics components**
   - New property `PositionSync.mask` for selective axis constraining
 - **Rendering**
