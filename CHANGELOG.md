@@ -1,3 +1,10 @@
+Dagon 0.29.0 - TBD
+------------------
+- **Core**
+  - New module `dagon.core.dxgiformat`
+- **Graphics components**
+  - Texture format conversion functions in `dagon.graphics.texture`: `dxgiFormatToGLFormat`, `vkFormatToGLFormat`, `glFormatToVkFormat`.
+
 Dagon 0.28.0 - 16 Aug, 2025
 ---------------------------
 - **Graphics components**
