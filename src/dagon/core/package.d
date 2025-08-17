@@ -50,6 +50,9 @@ public
 
     /// Configuration management and property loading.
     import dagon.core.config;
+    
+    /// DirectX image format enumerations.
+    import dagon.core.dxgiformat;
 
     /// Event types, event manager, and event listener base class.
     import dagon.core.event;

@@ -32,8 +32,8 @@ DEALINGS IN THE SOFTWARE.
  * The `dagon.graphics.texture` module defines the `Texture` class
  * for managing 1D, 2D, 3D, and cubemap textures, supporting compressed
  * and uncompressed formats, mipmapping, filtering, and OpenGL resource management.
- * The module also includes enums for texture formats, cube faces, and utility
- * functions for texture creation, loading, and conversion.
+ * The module also includes enums for cube faces, and utility functions for
+ * texture creation, loading, and conversion.
  *
  * Copyright: Timur Gafarov 2017-2025
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
@@ -59,6 +59,8 @@ import dlib.math.matrix;
 import dlib.math.transformation;
 
 import dagon.core.bindings;
+import dagon.core.dxgiformat;
+import dagon.core.vkformat;
 import dagon.core.logger;
 
 /**
@@ -1331,4 +1333,323 @@ Vector2f equirectProj(Vector3f dir)
     float phi = acos(dir.y);
     float theta = atan2(dir.x, dir.z) + PI;
     return Vector2f(theta / (PI * 2.0f), phi / PI);
+}
+
+/**
+ * Converts DirectX texture format to OpenGL texture format.
+ *
+ * Params:
+ *   fmt = DirectX texture format.
+ *   tf = Output TextureFormat
+ * Returns:
+ *   true if format is supported, false otherwise
+ */
+bool dxgiFormatToGLFormat(DXGIFormat fmt, out TextureFormat tf)
+{
+    switch(fmt)
+    {
+        case DXGIFormat.R8_UNORM:
+            tf.format = GL_RED;
+            tf.internalFormat = GL_R8;
+            tf.pixelType = GL_UNSIGNED_BYTE;
+            break;
+        case DXGIFormat.R8G8_UNORM:
+            tf.format = GL_RG;
+            tf.internalFormat = GL_RG8;
+            tf.pixelType = GL_UNSIGNED_BYTE;
+            break;
+        case DXGIFormat.R8G8B8A8_UNORM:
+            tf.format = GL_RGBA;
+            tf.internalFormat = GL_RGBA8;
+            tf.pixelType = GL_UNSIGNED_BYTE;
+            break;
+        case DXGIFormat.R32G32B32A32_FLOAT:
+            tf.format = GL_RGBA;
+            tf.internalFormat = GL_RGBA32F;
+            tf.pixelType = GL_FLOAT;
+            break;
+        case DXGIFormat.R16G16B16A16_FLOAT:
+            tf.format = GL_RGBA;
+            tf.internalFormat = GL_RGBA16F;
+            tf.pixelType = GL_HALF_FLOAT;
+            break;
+        case DXGIFormat.BC1_UNORM:
+            tf.internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+            tf.blockSize = 8;
+            break;
+        case DXGIFormat.BC2_UNORM:
+            tf.internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+            tf.blockSize = 16;
+            break;
+        case DXGIFormat.BC3_UNORM:
+            tf.internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+            tf.blockSize = 16;
+            break;
+        case DXGIFormat.BC4_UNORM:
+            tf.internalFormat = GL_COMPRESSED_RED_RGTC1;
+            tf.blockSize = 16;
+            break;
+        case DXGIFormat.BC4_SNORM:
+            tf.internalFormat = GL_COMPRESSED_SIGNED_RED_RGTC1;
+            tf.blockSize = 16;
+            break;
+        case DXGIFormat.BC5_UNORM:
+            tf.internalFormat = GL_COMPRESSED_RG_RGTC2;
+            tf.blockSize = 16;
+            break;
+        case DXGIFormat.BC5_SNORM:
+            tf.internalFormat = GL_COMPRESSED_SIGNED_RG_RGTC2;
+            tf.blockSize = 16;
+            break;
+        case DXGIFormat.BC6H_SF16:
+            tf.internalFormat = GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_ARB;
+            tf.blockSize = 16;
+            break;
+        case DXGIFormat.BC6H_UF16:
+            tf.internalFormat = GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_ARB;
+            tf.blockSize = 16;
+            break;
+        case DXGIFormat.BC7_UNORM, DXGIFormat.BC7_UNORM_SRGB:
+            tf.internalFormat = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
+            tf.blockSize = 16;
+            break;
+        case DXGIFormat.ASTC_4X4_UNORM, DXGIFormat.ASTC_4X4_UNORM_SRGB:
+            tf.internalFormat = GL_COMPRESSED_RGBA_ASTC_4x4_KHR;
+            tf.blockSize = 16;
+            break;
+        // TODO: other ASTC formats
+        default:
+            logWarning("Unsupported DXGIFormat");
+            return false;
+    }
+    
+    return true;
+}
+
+/**
+ * Converts Vulkan texture format to OpenGL texture format.
+ *
+ * Params:
+ *   vkFormat = Vulkan texture format.
+ *   tf = Output TextureFormat
+ * Returns:
+ *   true if format is supported, false otherwise
+ */
+bool vkFormatToGLFormat(VkFormat vkFormat, out TextureFormat tf)
+{
+    tf.format = 0;
+    tf.internalFormat = 0;
+    tf.pixelType = 0;
+    tf.blockSize = 0;
+    
+    switch(vkFormat)
+    {
+        case VkFormat.R8_UNORM:
+            tf.format = GL_RED;
+            tf.internalFormat = GL_R8;
+            tf.pixelType = GL_UNSIGNED_BYTE;
+            break;
+        
+        case VkFormat.R8_SNORM:
+            tf.format = GL_RED;
+            tf.internalFormat = GL_R8;
+            tf.pixelType = GL_BYTE;
+            break;
+        
+        case VkFormat.R8G8_UNORM:
+            tf.format = GL_RG;
+            tf.internalFormat = GL_RG8;
+            tf.pixelType = GL_UNSIGNED_BYTE;
+            break;
+        
+        case VkFormat.R8G8_SNORM:
+            tf.format = GL_RG;
+            tf.internalFormat = GL_RG8;
+            tf.pixelType = GL_BYTE;
+            break;
+        
+        case VkFormat.R8G8B8A8_UNORM, VkFormat.R8G8B8A8_SRGB:
+            tf.format = GL_RGBA;
+            tf.internalFormat = GL_RGBA8;
+            tf.pixelType = GL_UNSIGNED_BYTE;
+            break;
+        
+        case VkFormat.R8G8B8_UNORM, VkFormat.R8G8B8_SRGB:
+            tf.format = GL_RGB;
+            tf.internalFormat = GL_RGB8;
+            tf.pixelType = GL_UNSIGNED_BYTE;
+            break;
+        
+        case VkFormat.R32G32B32A32_SFLOAT:
+            tf.format = GL_RGBA;
+            tf.internalFormat = GL_RGBA32F;
+            tf.pixelType = GL_FLOAT;
+            break;
+        
+        case VkFormat.R16G16B16A16_SFLOAT:
+            tf.format = GL_RGBA;
+            tf.internalFormat = GL_RGBA16F;
+            tf.pixelType = GL_HALF_FLOAT;
+            break;
+        
+        case VkFormat.BC1_RGB_UNORM_BLOCK, VkFormat.BC1_RGB_SRGB_BLOCK:
+            tf.internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+            tf.blockSize = 8;
+            break;
+        
+        case VkFormat.BC2_UNORM_BLOCK, VkFormat.BC2_SRGB_BLOCK:
+            tf.internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+            tf.blockSize = 16;
+            break;
+        
+        case VkFormat.BC3_UNORM_BLOCK, VkFormat.BC3_SRGB_BLOCK:
+            tf.internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+            tf.blockSize = 16;
+            break;
+        
+        case VkFormat.BC4_UNORM_BLOCK:
+            tf.internalFormat = GL_COMPRESSED_RED_RGTC1;
+            tf.blockSize = 8;
+            break;
+        
+        case VkFormat.BC4_SNORM_BLOCK:
+            tf.internalFormat = GL_COMPRESSED_SIGNED_RED_RGTC1;
+            tf.blockSize = 8;
+            break;
+        
+        case VkFormat.BC5_UNORM_BLOCK:
+            tf.internalFormat = GL_COMPRESSED_RG_RGTC2;
+            tf.blockSize = 16;
+            break;
+        
+        case VkFormat.BC5_SNORM_BLOCK:
+            tf.internalFormat = GL_COMPRESSED_SIGNED_RG_RGTC2;
+            tf.blockSize = 16;
+            break;
+        
+        case VkFormat.BC6H_SFLOAT_BLOCK:
+            tf.internalFormat = GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_ARB;
+            tf.blockSize = 16;
+            break;
+        
+        case VkFormat.BC6H_UFLOAT_BLOCK:
+            tf.internalFormat = GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_ARB;
+            tf.blockSize = 16;
+            break;
+        
+        case VkFormat.BC7_UNORM_BLOCK, VkFormat.BC7_SRGB_BLOCK:
+            tf.internalFormat = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
+            tf.blockSize = 16;
+            break;
+        
+        case VkFormat.ASTC_4x4_UNORM_BLOCK, VkFormat.ASTC_4x4_SRGB_BLOCK:
+            tf.internalFormat = GL_COMPRESSED_RGBA_ASTC_4x4_KHR;
+            tf.blockSize = 16;
+            break;
+        
+        default:
+            logWarning("Unsupported VkFormat");
+            return false;
+    }
+    
+    return true;
+}
+
+/**
+ * Converts OpenGL internal format to Vulkan texture format.
+ *
+ * Params:
+ *   internalFormat = OpenGL internal format.
+ * Returns:
+ *   corresoinding Vulkan texture format, or VkFormat.UNDEFINED if conversion fails.
+ */
+VkFormat glFormatToVkFormat(GLenum internalFormat)
+{
+    switch(internalFormat)
+    {
+        // Uncompressed formats
+        case GL_R8:               return VkFormat.R8_UNORM;
+        case GL_R8_SNORM:         return VkFormat.R8_SNORM;
+        case GL_R8UI:             return VkFormat.R8_UINT;
+        case GL_R8I:              return VkFormat.R8_SINT;
+
+        case GL_RG8:              return VkFormat.R8G8_UNORM;
+        case GL_RG8_SNORM:        return VkFormat.R8G8_SNORM;
+        case GL_RG8UI:            return VkFormat.R8G8_UINT;
+        case GL_RG8I:             return VkFormat.R8G8_SINT;
+
+        case GL_RGB8:             return VkFormat.R8G8B8_UNORM;
+        case GL_RGB8_SNORM:       return VkFormat.R8G8B8_SNORM;
+        case GL_RGB8UI:           return VkFormat.R8G8B8_UINT;
+        case GL_RGB8I:            return VkFormat.R8G8B8_SINT;
+
+        case GL_RGBA8:            return VkFormat.R8G8B8A8_UNORM;
+        case GL_SRGB8_ALPHA8:     return VkFormat.R8G8B8A8_SRGB;
+        case GL_RGBA8_SNORM:      return VkFormat.R8G8B8A8_SNORM;
+        case GL_RGBA8UI:          return VkFormat.R8G8B8A8_UINT;
+        case GL_RGBA8I:           return VkFormat.R8G8B8A8_SINT;
+
+        case GL_RGB10_A2:         return VkFormat.A2R10G10B10_UNORM_PACK32;
+        case GL_RGB10_A2UI:       return VkFormat.A2R10G10B10_UINT_PACK32;
+
+        case GL_R16F:             return VkFormat.R16_SFLOAT;
+        case GL_RG16F:            return VkFormat.R16G16_SFLOAT;
+        case GL_RGB16F:           return VkFormat.R16G16B16_SFLOAT;
+        case GL_RGBA16F:          return VkFormat.R16G16B16A16_SFLOAT;
+
+        case GL_R32F:             return VkFormat.R32_SFLOAT;
+        case GL_RG32F:            return VkFormat.R32G32_SFLOAT;
+        case GL_RGB32F:           return VkFormat.R32G32B32_SFLOAT;
+        case GL_RGBA32F:          return VkFormat.R32G32B32A32_SFLOAT;
+
+        // DXTn
+        case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:        return VkFormat.BC1_RGB_UNORM_BLOCK;
+        case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:       return VkFormat.BC1_RGBA_UNORM_BLOCK;
+        case GL_COMPRESSED_SRGB_S3TC_DXT1_EXT:       return VkFormat.BC1_RGB_SRGB_BLOCK;
+        case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT: return VkFormat.BC1_RGBA_SRGB_BLOCK;
+
+        case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:       return VkFormat.BC2_UNORM_BLOCK;
+        case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT: return VkFormat.BC2_SRGB_BLOCK;
+
+        case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:       return VkFormat.BC3_UNORM_BLOCK;
+        case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT: return VkFormat.BC3_SRGB_BLOCK;
+
+        // RGTC1, RGTC2
+        case GL_COMPRESSED_RED_RGTC1:                return VkFormat.BC4_UNORM_BLOCK;
+        case GL_COMPRESSED_SIGNED_RED_RGTC1:         return VkFormat.BC4_SNORM_BLOCK;
+        case GL_COMPRESSED_RG_RGTC2:                 return VkFormat.BC5_UNORM_BLOCK;
+        case GL_COMPRESSED_SIGNED_RG_RGTC2:          return VkFormat.BC5_SNORM_BLOCK;
+
+        // BPTC
+        case GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_ARB: return VkFormat.BC6H_UFLOAT_BLOCK;
+        case GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_ARB:   return VkFormat.BC6H_SFLOAT_BLOCK;
+        case GL_COMPRESSED_RGBA_BPTC_UNORM_ARB:         return VkFormat.BC7_UNORM_BLOCK;
+        case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_ARB:   return VkFormat.BC7_SRGB_BLOCK;
+
+        // ETC2/EAC
+        case GL_COMPRESSED_RGB8_ETC2:                return VkFormat.ETC2_R8G8B8_UNORM_BLOCK;
+        case GL_COMPRESSED_SRGB8_ETC2:               return VkFormat.ETC2_R8G8B8_SRGB_BLOCK;
+        case GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+                                                     return VkFormat.ETC2_R8G8B8A1_UNORM_BLOCK;
+        case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+                                                     return VkFormat.ETC2_R8G8B8A1_SRGB_BLOCK;
+        case GL_COMPRESSED_RGBA8_ETC2_EAC:           return VkFormat.ETC2_R8G8B8A8_UNORM_BLOCK;
+        case GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:    return VkFormat.ETC2_R8G8B8A8_SRGB_BLOCK;
+
+        case GL_COMPRESSED_R11_EAC:                  return VkFormat.EAC_R11_UNORM_BLOCK;
+        case GL_COMPRESSED_SIGNED_R11_EAC:           return VkFormat.EAC_R11_SNORM_BLOCK;
+        case GL_COMPRESSED_RG11_EAC:                 return VkFormat.EAC_R11G11_UNORM_BLOCK;
+        case GL_COMPRESSED_SIGNED_RG11_EAC:          return VkFormat.EAC_R11G11_SNORM_BLOCK;
+
+        // ASTC
+        case GL_COMPRESSED_RGBA_ASTC_4x4_KHR:        return VkFormat.ASTC_4x4_UNORM_BLOCK;
+        case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR:
+                                                     return VkFormat.ASTC_4x4_SRGB_BLOCK;
+        case GL_COMPRESSED_RGBA_ASTC_8x8_KHR:        return VkFormat.ASTC_8x8_UNORM_BLOCK;
+        case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR:
+                                                     return VkFormat.ASTC_8x8_SRGB_BLOCK;
+
+        default:
+            return VkFormat.UNDEFINED;
+    }
 }
