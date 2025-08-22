@@ -63,6 +63,7 @@ import dagon.graphics.drawable;
 import dagon.graphics.mesh;
 import dagon.graphics.terrain;
 import dagon.graphics.material;
+import dagon.graphics.shader;
 import dagon.graphics.tween;
 import dagon.graphics.world;
 import dagon.graphics.pose;
@@ -804,6 +805,14 @@ class Entity: Owner, Updateable
         {
             e.show();
         }
+    }
+    
+    Shader shader() @property
+    {
+        if (material)
+            return material.shader;
+        else
+            return null;
     }
 }
 

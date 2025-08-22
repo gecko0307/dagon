@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2019-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -51,7 +51,6 @@ class PassGeometry: RenderPass
     GBuffer gbuffer;
     GeometryShader geometryShader;
     uint renderedEntities = 0;
-    bool frustumCulling = false;
     
     this(RenderPipeline pipeline, GBuffer gbuffer, EntityGroup group = null)
     {
@@ -73,6 +72,8 @@ class PassGeometry: RenderPass
             
             state.environment = pipeline.environment;
             
+            bool customShaderLoop = false;
+            
             geometryShader.bind();
             foreach(entity; group)
             {
@@ -80,16 +81,35 @@ class PassGeometry: RenderPass
                 {
                     if (!entityIsTerrain(entity) && !entityIsParticleSystem(entity))
                     {
-                        auto bb = entity.boundingBox();
-                        if (!frustumCulling || state.frustum.intersectsAABB(bb))
+                        if (entity.shader is null)
                         {
                             renderEntity(entity, geometryShader);
                             renderedEntities++;
                         }
+                        else customShaderLoop = true;
                     }
                 }
             }
             geometryShader.unbind();
+            
+            if (customShaderLoop)
+            foreach(entity; group)
+            {
+                if (entity.visible && entity.drawable)
+                {
+                    if (!entityIsTerrain(entity) && !entityIsParticleSystem(entity))
+                    {
+                        Shader customGeometryShader = entity.shader;
+                        if (customGeometryShader !is null)
+                        {
+                            customGeometryShader.bind();
+                            renderEntity(entity, customGeometryShader);
+                            renderedEntities++;
+                            customGeometryShader.unbind();
+                        }
+                    }
+                }
+            }
         }
     }
 }
