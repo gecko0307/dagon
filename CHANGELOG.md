@@ -1,11 +1,13 @@
-Dagon 0.29.0 - TBD
-------------------
+Dagon 0.28.1 - 26 Aug, 2025
+---------------------------
 - **Core**
   - New module `dagon.core.dxgiformat`
 - **Graphics components**
   - Texture format conversion functions in `dagon.graphics.texture`: `dxgiFormatToGLFormat`, `vkFormatToGLFormat`, `glFormatToVkFormat`
 - **Rendering**
-  - Custom geometry pass shaders per entity.
+  - Per-entity custom geometry pass shaders
+- **Assets**
+  - Fix frame interpolation in `GLTFPose` and `GLTFBlendedPose`.
 
 Dagon 0.28.0 - 16 Aug, 2025
 ---------------------------
