@@ -387,7 +387,8 @@ class GLTFPose: Pose
                 const nextIdx = prevIdx + 1;
                 
                 const float denom = nextTime - prevTime;
-                const float interpRatio = denom != 0 ? (loopTime - prevTime) / denom : 0.0f;
+                float interpRatio = denom != 0 ? (loopTime - prevTime) / denom : 0.0f;
+                interpRatio = clamp(interpRatio, 0.0f, 1.0f);
                 
                 // TODO: support all interpolation types
                 
@@ -560,7 +561,8 @@ class GLTFBlendedPose: Pose
                 const nextIdx = prevIdx + 1;
                 
                 const float denom = nextTime - prevTime;
-                const float interpRatio = denom != 0 ? (loopTime - prevTime) / denom : 0.0f;
+                float interpRatio = denom != 0 ? (loopTime - prevTime) / denom : 0.0f;
+                interpRatio = clamp(interpRatio, 0.0f, 1.0f);
 
                 auto boneIndex = countUntil(skin.joints.data, node);
                 if (boneIndex == -1) continue;
