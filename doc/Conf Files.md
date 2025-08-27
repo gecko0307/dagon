@@ -62,6 +62,8 @@ stringOption: "Some text";
 * `renderer.dofFarDistance` - 
 * `renderer.lutEnabled` - 
 * `renderer.lut` - 
+* `renderer.pixelizationEnabled` -
+* `renderer.pixelSize` -
 
 The engine doesn't modify `settings.conf`, and you can imlement a visual configurator in your game that modifies this file.
 
