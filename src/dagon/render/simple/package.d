@@ -130,6 +130,8 @@ class SimpleRenderPass: RenderPass
     float shadowOpacity = 1.0f;
     bool shadowEnabled = false;
     
+    bool retroVertexSnapping = false;
+    
     this(RenderPipeline pipeline, EntityGroup group = null)
     {
         super(pipeline, group);
@@ -175,6 +177,7 @@ class SimpleRenderPass: RenderPass
             defaultShader.shadowMaxRadius = shadowMaxRadius;
             defaultShader.shadowOpacity = shadowOpacity;
             defaultShader.shadowEnabled = shadowEnabled;
+            defaultShader.retroVertexSnapping = retroVertexSnapping;
             defaultShader.bind();
             foreach(entity; group)
             {

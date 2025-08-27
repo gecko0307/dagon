@@ -16,6 +16,8 @@ uniform bool skinned;
 
 uniform mat4 boneMatrices[128];
 
+uniform bool vertexSnapping;
+
 out vec3 eyeNormal;
 out vec3 eyePosition;
 out vec3 worldPosition;
@@ -51,10 +53,25 @@ void main()
     }
     
     vec4 pos = modelViewMatrix * modelPosHmg;
+    
     eyePosition = pos.xyz;
     eyeNormal = (normalMatrix * modelNorHmg).xyz;
     texCoord = (textureMatrix * vec3(va_Texcoord, 1.0)).xy;
     vec4 currPosition = projectionMatrix * pos;
     worldPosition = (modelMatrix * modelPosHmg).xyz;
+    
+    if (vertexSnapping)
+    {
+        // Retro-style snapping
+        vec4 vertex = currPosition;
+        vertex.xyz = currPosition.xyz / currPosition.w;
+        vertex.x = floor(320.0 * vertex.x) / 320.0;
+        vertex.y = floor(240.0 * vertex.y) / 240.0;
+        vertex.xyz *= currPosition.w;
+        currPosition = vertex;
+    }
+    
+    texCoord = (textureMatrix * vec3(va_Texcoord, 1.0)).xy;
+    
     gl_Position = currPosition;
 }

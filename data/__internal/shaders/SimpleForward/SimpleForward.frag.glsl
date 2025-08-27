@@ -10,6 +10,7 @@ uniform float debugHighlightCoef;
 
 uniform float opacity;
 uniform bool shaded;
+uniform float energy;
 uniform vec3 sunDirection;
 uniform vec4 sunColor;
 uniform float sunEnergy;
@@ -25,6 +26,10 @@ uniform float shadowOpacity;
 uniform vec3 shadowCenter;
 uniform bool celShading;
 uniform bool rimLight;
+
+uniform vec4 fogColor;
+uniform float fogStart;
+uniform float fogEnd;
 
 struct Light
 {
@@ -69,6 +74,25 @@ subroutine(srtColor) vec4 diffuseColorTexture(in vec2 uv)
 }
 
 subroutine uniform srtColor diffuse;
+
+/*
+ * Emission
+ */
+subroutine vec3 srtEmission(in vec2 uv);
+
+uniform vec4 emissionFactor;
+subroutine(srtEmission) vec3 emissionValue(in vec2 uv)
+{
+    return emissionFactor.rgb * energy;
+}
+
+uniform sampler2D emissionTexture;
+subroutine(srtEmission) vec3 emissionMap(in vec2 uv)
+{
+    return texture(emissionTexture, uv).rgb * emissionFactor.rgb * energy;
+}
+
+subroutine uniform srtEmission emission;
 
 layout(location = 0) out vec4 fragColor;
 
@@ -182,6 +206,13 @@ void main()
         float shadow = clamp((distance(worldPosition.xz, shadowCenter.xz) - shadowMinRadius) / (shadowMaxRadius - shadowMinRadius), 0.0, 1.0);
         outputColor *= mix(1.0 - shadowOpacity, 1.0, shadow);
     }
+    
+    // Fog
+    float linearDepth = abs(eyePosition.z);
+    float fogFactor = clamp((fogEnd - linearDepth) / (fogEnd - fogStart), 0.0, 1.0);
+    outputColor = mix(toLinear(fogColor.rgb), outputColor, fogFactor);
+    
+    outputColor += toLinear(emission(uv));
     
     fragColor = vec4(mix(outputColor, debugHighlightColor.rgb, debugHighlightCoef), outputAlpha);
 }

@@ -73,6 +73,8 @@ class SimpleForwardShader: Shader
     ShaderParameter!Matrix4x4f projectionMatrix;
     ShaderParameter!Matrix4x4f normalMatrix;
     
+    ShaderParameter!int vertexSnapping;
+    
     ShaderParameter!float opacity;
     ShaderParameter!Matrix3x3f textureMatrix;
     ShaderParameter!int textureMappingMode;
@@ -100,6 +102,13 @@ class SimpleForwardShader: Shader
     GLuint diffuseSurbroutineColorTexture,
            diffuseSurbroutineColorValue;
     
+    ShaderParameter!int emissionTexture;
+    ShaderParameter!Color4f emissionFactor;
+    ShaderSubroutine emissionSubroutine;
+    GLuint emissionSubroutineMap,
+           emissionSubroutineValue;
+    ShaderParameter!float energy;
+    
     ShaderParameter!Vector3f sfShadowCenter;
     ShaderParameter!int sfShadowEnabled;
     ShaderParameter!float sfShadowMinRadius;
@@ -121,6 +130,7 @@ class SimpleForwardShader: Shader
     float shadowMinRadius = 0.0f;
     float shadowMaxRadius = 1.0f;
     float shadowOpacity = 1.0f;
+    bool retroVertexSnapping = false;
 
     this(Owner owner)
     {
@@ -134,6 +144,8 @@ class SimpleForwardShader: Shader
         modelViewMatrix = createParameter!Matrix4x4f("modelViewMatrix");
         projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
         normalMatrix = createParameter!Matrix4x4f("normalMatrix");
+        
+        vertexSnapping = createParameter!int("vertexSnapping");
         
         opacity = createParameter!float("opacity");
         textureMatrix = createParameter!Matrix3x3f("textureMatrix");
@@ -161,6 +173,13 @@ class SimpleForwardShader: Shader
         diffuseSurbroutine = createParameterSubroutine("diffuse", ShaderType.Fragment);
         diffuseSurbroutineColorTexture = diffuseSurbroutine.getIndex("diffuseColorTexture");
         diffuseSurbroutineColorValue = diffuseSurbroutine.getIndex("diffuseColorValue");
+        
+        emissionTexture = createParameter!int("emissionTexture");
+        emissionFactor = createParameter!Color4f("emissionFactor");
+        emissionSubroutine = createParameterSubroutine("emission", ShaderType.Fragment);
+        emissionSubroutineMap = emissionSubroutine.getIndex("emissionMap");
+        emissionSubroutineValue = emissionSubroutine.getIndex("emissionValue");
+        energy = createParameter!float("energy");
         
         sfShadowCenter = createParameter!Vector3f("shadowCenter");
         sfShadowEnabled = createParameter!int("shadowEnabled");
@@ -192,6 +211,8 @@ class SimpleForwardShader: Shader
         modelViewMatrix = &state.modelViewMatrix;
         projectionMatrix = &state.projectionMatrix;
         normalMatrix = &state.normalMatrix;
+        
+        vertexSnapping = retroVertexSnapping;
         
         opacity = mat.opacity * state.opacity;
         textureMatrix = mat.textureTransformation;
@@ -324,6 +345,22 @@ class SimpleForwardShader: Shader
             diffuseSurbroutine.index = diffuseSurbroutineColorValue;
         }
         
+        // Emission
+        glActiveTexture(GL_TEXTURE1);
+        emissionTexture = 1;
+        emissionFactor = mat.emissionFactor;
+        if (mat.emissionTexture)
+        {
+            mat.emissionTexture.bind();
+            emissionSubroutine.index = emissionSubroutineMap;
+        }
+        else
+        {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            emissionSubroutine.index = emissionSubroutineValue;
+        }
+        energy = mat.emissionEnergy;
+        
         // Shadow
         sfShadowCenter = shadowCenter;
         sfShadowEnabled = shadowEnabled;
@@ -350,6 +387,9 @@ class SimpleForwardShader: Shader
         super.unbindParameters(state);
         
         glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, 0);
         
         glActiveTexture(GL_TEXTURE0);
