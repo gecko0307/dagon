@@ -46,12 +46,15 @@ class FilterPass: RenderPass
     Framebuffer outputBuffer2; // optional
     ScreenSurface screenSurface;
     Shader shader;
+    GLenum minFilter, magFilter;
 
     this(RenderPipeline pipeline, Shader shader)
     {
         super(pipeline);
         screenSurface = New!ScreenSurface(this);
         this.shader = shader;
+        minFilter = GL_LINEAR;
+        magFilter = GL_LINEAR;
     }
 
     override void render()
@@ -62,6 +65,9 @@ class FilterPass: RenderPass
 
             state.colorTexture = inputBuffer.colorTexture;
             state.depthTexture = inputBuffer.depthTexture;
+            
+            state.minFilter = minFilter;
+            state.magFilter = magFilter;
 
             glScissor(view.x, view.y, view.width, view.height);
             glViewport(view.x, view.y, view.width, view.height);

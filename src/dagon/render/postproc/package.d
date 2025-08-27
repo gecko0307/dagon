@@ -182,6 +182,8 @@ class PostProcRenderer: Renderer
 
     Texture defaultColorLookupTable;
     Texture colorLookupTable;
+    
+    bool useLinearFilter = true;
 
     this(EventManager eventManager, Framebuffer inputBuffer, GBuffer gbuffer, Owner owner)
     {
@@ -433,6 +435,20 @@ class PostProcRenderer: Renderer
         {
             if (pass.active)
             {
+                FilterPass filterPass = cast(FilterPass)pass;
+                if (filterPass)
+                {
+                    if (useLinearFilter)
+                    {
+                        filterPass.minFilter = GL_LINEAR;
+                        filterPass.magFilter = GL_LINEAR;
+                    }
+                    else
+                    {
+                        filterPass.minFilter = GL_NEAREST;
+                        filterPass.magFilter = GL_NEAREST;
+                    }
+                }
                 pass.render();
                 ldrDoubleBuffer.swap();
             }

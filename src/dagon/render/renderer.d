@@ -129,6 +129,7 @@ class Renderer: Owner
         if (outputBuffer)
             outputBuffer.bind();
 
+        pipeline.outputBuffer = outputBuffer;
         pipeline.render();
 
         if (outputBuffer)

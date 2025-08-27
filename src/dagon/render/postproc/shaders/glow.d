@@ -90,6 +90,8 @@ class GlowShader: Shader
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, state.minFilter);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, state.magFilter);
         glowColorBuffer = 0;
 
         // Texture 1 - blurred buffer

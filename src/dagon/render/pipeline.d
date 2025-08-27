@@ -49,6 +49,7 @@ import dagon.core.event;
 import dagon.core.time;
 import dagon.graphics.entity;
 import dagon.graphics.environment;
+import dagon.render.framebuffer;
 import dagon.render.pass;
 
 __gshared GLuint currentFramebuffer = 0;
@@ -81,6 +82,8 @@ class RenderPipeline: EventListener
 
     /// Enables debug rendering features.
     bool debugMode = false;
+    
+    Framebuffer outputBuffer;
 
     /**
      * Constructs a render pipeline.

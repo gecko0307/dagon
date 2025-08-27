@@ -159,6 +159,9 @@ struct GraphicsState
 
     /// Input color buffer texture.
     GLuint colorTexture;
+    
+    GLenum minFilter;
+    GLenum magFilter;
 
     /// Input depth buffer texture.
     GLuint depthTexture;
@@ -239,6 +242,9 @@ struct GraphicsState
         pbrTexture = 0;
         occlusionTexture = 0;
         texcoordTexture = 0;
+        
+        minFilter = GL_LINEAR;
+        magFilter = GL_LINEAR;
         
         time = Time(0.0, 0.0);
         localTime = 0.0f;

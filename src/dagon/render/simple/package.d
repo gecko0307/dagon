@@ -49,6 +49,7 @@ import dagon.render.simple.shaders;
 
 class SimpleRenderer: Renderer
 {
+    uint outputBufferRatio = 1;
     Array!RenderPass layerPasses;
     SimpleClearPass clearPass;
     SimpleRenderPass defaultLayerPass;
@@ -57,7 +58,10 @@ class SimpleRenderer: Renderer
     {
         super(eventManager, owner);
         
-        outputBuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, FrameBufferFormat.RGBA16F, true, this);
+        outputBuffer = New!Framebuffer(
+            eventManager.windowWidth / outputBufferRatio,
+            eventManager.windowHeight / outputBufferRatio,
+            FrameBufferFormat.RGBA16F, true, this);
         
         clearPass = New!SimpleClearPass(pipeline);
         clearPass.view = view;
@@ -87,7 +91,9 @@ class SimpleRenderer: Renderer
     override void setViewport(uint x, uint y, uint w, uint h)
     {
         super.setViewport(x, y, w, h);
-        outputBuffer.resize(view.width, view.height);
+        outputBuffer.resize(
+            view.width / outputBufferRatio,
+            view.height / outputBufferRatio);
     }
 }
 
@@ -100,8 +106,8 @@ class SimpleClearPass: RenderPass
     
     override void render()
     {
-        glScissor(0, 0, view.width, view.height);
-        glViewport(0, 0, view.width, view.height);
+        glScissor(0, 0, pipeline.outputBuffer.width, pipeline.outputBuffer.height);
+        glViewport(0, 0, pipeline.outputBuffer.width, pipeline.outputBuffer.height);
         
         state.environment = pipeline.environment;
         
@@ -156,8 +162,8 @@ class SimpleRenderPass: RenderPass
     {
         if (group && visible)
         {
-            glScissor(0, 0, view.width, view.height);
-            glViewport(0, 0, view.width, view.height);
+            glScissor(0, 0, pipeline.outputBuffer.width, pipeline.outputBuffer.height);
+            glViewport(0, 0, pipeline.outputBuffer.width, pipeline.outputBuffer.height);
             
             state.environment = pipeline.environment;
             
