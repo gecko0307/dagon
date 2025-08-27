@@ -43,6 +43,9 @@ class PresentRenderer: Renderer
 {
     Framebuffer _inputBuffer;
     PresentPass passPresent;
+    
+    bool pixelization = false;
+    float pixelSize = 1.0f;
 
     this(EventManager eventManager, Framebuffer inputBuffer, Owner owner)
     {
@@ -67,6 +70,13 @@ class PresentRenderer: Renderer
     
     override void render()
     {
+        passPresent.presentShader.pixelization = pixelization;
+        passPresent.presentShader.pixelSize = pixelSize;
+        if (pixelization)
+        {
+            passPresent.presentShader.minFilter = GL_NEAREST;
+            passPresent.presentShader.magFilter = GL_NEAREST;
+        }
         super.render();
     }
 }

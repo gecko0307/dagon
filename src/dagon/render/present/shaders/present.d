@@ -47,10 +47,21 @@ class PresentShader: Shader
    protected:
     String vs, fs;
     
+    ShaderParameter!Vector2f viewSize;
+    
+    ShaderParameter!int _pixelization;
+    ShaderParameter!float _pixelSize;
+    
     ShaderParameter!int colorBuffer;
     ShaderParameter!int depthBuffer;
 
    public:
+    GLenum minFilter = GL_LINEAR;
+    GLenum magFilter = GL_LINEAR;
+    
+    bool pixelization = false;
+    float pixelSize = 1.0f;
+    
     this(Owner owner)
     {
         vs = Shader.load("data/__internal/shaders/Present/Present.vert.glsl");
@@ -58,6 +69,11 @@ class PresentShader: Shader
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
+        
+        viewSize = createParameter!Vector2f("viewSize");
+        
+        _pixelization = createParameter!int("pixelization");
+        _pixelSize = createParameter!float("pixelSize");
         
         colorBuffer = createParameter!int("colorBuffer");
         depthBuffer = createParameter!int("depthBuffer");
@@ -71,9 +87,15 @@ class PresentShader: Shader
 
     override void bindParameters(GraphicsState* state)
     {
+        viewSize = state.resolution;
+        _pixelization = pixelization;
+        _pixelSize = pixelSize;
+        
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
         colorBuffer = 0;
 
         // Texture 1 - depth buffer

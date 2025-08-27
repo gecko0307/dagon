@@ -251,6 +251,11 @@ class Game: Application
             }
         }
         
+        if ("renderer.pixelizationEnabled" in config.props)
+            presentRenderer.pixelization = cast(bool)(config.props["renderer.pixelizationEnabled"].toUInt);
+        if ("renderer.pixelSize" in config.props)
+            presentRenderer.pixelSize = config.props["renderer.pixelSize"].toFloat;
+        
         string brdfFilename = "data/__internal/textures/brdf.dds";
         if ("renderer.brdf" in config.props)
             brdfFilename = config.props["renderer.brdf"].toString;
