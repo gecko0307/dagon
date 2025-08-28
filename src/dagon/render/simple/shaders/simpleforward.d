@@ -89,6 +89,7 @@ class SimpleForwardShader: Shader
     ShaderParameter!int shaded;
     ShaderParameter!float gloss;
     
+    ShaderParameter!int fogEnabled;
     ShaderParameter!Color4f fogColor;
     ShaderParameter!float fogStart;
     ShaderParameter!float fogEnd;
@@ -161,6 +162,7 @@ class SimpleForwardShader: Shader
         shaded = createParameter!int("shaded");
         gloss = createParameter!float("gloss");
         
+        fogEnabled = createParameter!int("fogEnabled");
         fogColor = createParameter!Color4f("fogColor");
         fogStart = createParameter!float("fogStart");
         fogEnd = createParameter!float("fogEnd");
@@ -313,6 +315,7 @@ class SimpleForwardShader: Shader
         gloss = max(0.001f, 1.0f - mat.roughnessFactor);
         
         // Ambient
+        fogEnabled = mat.useFog;
         if (state.environment)
         {
             fogColor = state.environment.fogColor;

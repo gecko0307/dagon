@@ -27,6 +27,7 @@ uniform vec3 shadowCenter;
 uniform bool celShading;
 uniform bool rimLight;
 
+uniform bool fogEnabled;
 uniform vec4 fogColor;
 uniform float fogStart;
 uniform float fogEnd;
@@ -209,9 +210,12 @@ void main()
     }
     
     // Fog
-    float linearDepth = abs(eyePosition.z);
-    float fogFactor = clamp((fogEnd - linearDepth) / (fogEnd - fogStart), 0.0, 1.0);
-    outputColor = mix(toLinear(fogColor.rgb), outputColor, fogFactor);
+    if (fogEnabled)
+    {
+        float linearDepth = abs(eyePosition.z);
+        float fogFactor = clamp((fogEnd - linearDepth) / (fogEnd - fogStart), 0.0, 1.0);
+        outputColor = mix(toLinear(fogColor.rgb), outputColor, fogFactor);
+    }
     
     outputColor += toLinear(emission(uv));
     

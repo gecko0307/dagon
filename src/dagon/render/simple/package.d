@@ -40,6 +40,7 @@ import dagon.core.bindings;
 import dagon.core.logger;
 import dagon.resource.scene;
 import dagon.graphics.entity;
+import dagon.graphics.shader;
 import dagon.graphics.light;
 import dagon.render.renderer;
 import dagon.render.framebuffer;
@@ -52,7 +53,8 @@ class SimpleRenderer: Renderer
     uint outputBufferRatio = 1;
     Array!RenderPass layerPasses;
     SimpleClearPass clearPass;
-    SimpleRenderPass defaultLayerPass;
+    SimpleBackgroundPass backgroundPass;
+    SimpleSpatialPass defaultLayerPass;
     
     this(EventManager eventManager, Owner owner)
     {
@@ -66,12 +68,15 @@ class SimpleRenderer: Renderer
         clearPass = New!SimpleClearPass(pipeline);
         clearPass.view = view;
         
+        backgroundPass = New!SimpleBackgroundPass(pipeline);
+        backgroundPass.view = view;
+        
         defaultLayerPass = addLayerPass(0);
     }
     
-    SimpleRenderPass addLayerPass(int layer)
+    SimpleSpatialPass addLayerPass(int layer)
     {
-        auto pass = New!SimpleRenderPass(pipeline);
+        auto pass = New!SimpleSpatialPass(pipeline);
         pass.layer = layer;
         pass.view = view;
         layerPasses.append(pass);
@@ -80,6 +85,8 @@ class SimpleRenderer: Renderer
     
     override void scene(Scene s)
     {
+        backgroundPass.group = s.world.background;
+        
         foreach(pass; layerPasses)
         {
             pass.group = s.world.spatial;
@@ -121,7 +128,69 @@ class SimpleClearPass: RenderPass
     }
 }
 
-class SimpleRenderPass: RenderPass
+class SimpleBackgroundPass: RenderPass
+{
+    SimpleSkyShader skyShader;
+
+    this(RenderPipeline pipeline, EntityGroup group = null)
+    {
+        super(pipeline, group);
+        skyShader = New!SimpleSkyShader(this);
+    }
+
+    override void render()
+    {
+        if (group)
+        {
+            glScissor(0, 0, pipeline.outputBuffer.width, pipeline.outputBuffer.height);
+            glViewport(0, 0, pipeline.outputBuffer.width, pipeline.outputBuffer.height);
+
+            state.environment = pipeline.environment;
+            
+            glClear(GL_DEPTH_BUFFER_BIT);
+
+            foreach(entity; group)
+            if (entity.visible && entity.drawable)
+            {
+                state.layer = entity.layer;
+                state.blurMask = entity.blurMask;
+                state.gbufferMask = entity.gbufferMask;
+                state.modelMatrix = entity.absoluteTransformation;
+                state.invModelMatrix = entity.invAbsoluteTransformation;
+                state.modelViewMatrix = state.viewMatrix * state.modelMatrix;
+                state.normalMatrix = state.modelViewMatrix.inverse.transposed;
+                state.prevModelViewMatrix = state.prevViewMatrix * entity.prevAbsoluteTransformation;
+                state.opacity = entity.opacity;
+
+                if (entity.material)
+                    entity.material.bind(&state);
+                else
+                    defaultMaterial.bind(&state);
+
+                Shader shader = skyShader;
+                if (entity.material.shader)
+                    shader = entity.material.shader;
+
+                state.shader = shader;
+
+                shader.bind();
+                shader.bindParameters(&state);
+
+                entity.drawable.render(&state);
+
+                shader.unbindParameters(&state);
+                shader.unbind();
+
+                if (entity.material)
+                    entity.material.unbind(&state);
+                else
+                    defaultMaterial.unbind(&state);
+            }
+        }
+    }
+}
+
+class SimpleSpatialPass: RenderPass
 {
     SimpleForwardShader defaultShader;
     int layer = 0;
@@ -196,3 +265,5 @@ class SimpleRenderPass: RenderPass
         }
     }
 }
+
+alias SimpleRenderPass = SimpleSpatialPass;

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2024 Timur Gafarov
+Copyright (c) 2024-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -30,4 +30,5 @@ module dagon.render.simple.shaders;
 public
 {
     import dagon.render.simple.shaders.simpleforward;
+    import dagon.render.simple.shaders.simplesky;
 }
