@@ -7,7 +7,8 @@ Dagon 0.29.0 - 28 Aug, 2025
 - **Rendering**
   - Per-entity custom geometry pass shaders
   - Retro rendering support: vertex snapping (`SimpleRenderPass.retroVertexSnapping`) and pixelization (`PresentRenderer.pixelization`, `PresentRenderer.pixelSize`)
-  - Emission and fog support in `SimpleRenderer`
+  - Emission, fog and background support in `SimpleRenderer`
+  - Fix shadow circle bug in `SimpleRenderer`
 - **Assets**
   - Fix frame interpolation in `GLTFPose` and `GLTFBlendedPose`.
 
