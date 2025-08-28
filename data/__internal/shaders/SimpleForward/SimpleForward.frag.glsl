@@ -203,7 +203,8 @@ void main()
     // Shadow
     if (shadowEnabled)
     {
-        float shadow = clamp((distance(worldPosition.xz, shadowCenter.xz) - shadowMinRadius) / (shadowMaxRadius - shadowMinRadius), 0.0, 1.0);
+        // TODO: multiple shadows
+        float shadow = clamp((distance(worldPosition, shadowCenter) - shadowMinRadius) / (shadowMaxRadius - shadowMinRadius), 0.0, 1.0);
         outputColor *= mix(1.0 - shadowOpacity, 1.0, shadow);
     }
     
