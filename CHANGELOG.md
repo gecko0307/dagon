@@ -10,7 +10,9 @@ Dagon 0.29.0 - 30 Aug, 2025
   - Emission, fog and background support in `SimpleRenderer`
   - Fix shadow circle bug in `SimpleRenderer`
 - **Assets**
-  - Fix frame interpolation in `GLTFPose` and `GLTFBlendedPose`.
+  - Fix frame interpolation in `GLTFPose` and `GLTFBlendedPose`
+- **Misc**
+  - Dagon now uses dlib 1.3.3, which fixes important bugs in JSON decoder.
 
 Dagon 0.28.0 - 16 Aug, 2025
 ---------------------------
