@@ -1,4 +1,4 @@
-Dagon 0.29.0 - 28 Aug, 2025
+Dagon 0.29.0 - 30 Aug, 2025
 ---------------------------
 - **Core**
   - New module `dagon.core.dxgiformat`
