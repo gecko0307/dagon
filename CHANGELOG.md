@@ -1,3 +1,8 @@
+Dagon 0.29.1 - TBD
+------------------
+- **Assets**
+  - glTF `doubleSided` property now is interpreted correctly.
+
 Dagon 0.29.0 - 30 Aug, 2025
 ---------------------------
 - **Core**
