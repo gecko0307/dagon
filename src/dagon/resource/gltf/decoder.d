@@ -646,8 +646,8 @@ class GLTFAsset: Asset, TriangleSet
                 
                 if ("doubleSided" in ma)
                 {
-                    uint doubleSided = cast(uint)ma["doubleSided"].asNumber;
-                    if (doubleSided > 0)
+                    bool doubleSided = ma["doubleSided"].asBoolean;
+                    if (doubleSided)
                         material.useCulling = false;
                     else
                         material.useCulling = true;
