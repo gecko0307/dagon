@@ -1,3 +1,10 @@
+Dagon 0.29.2 - TBD
+------------------
+- **Graphics components**
+  - New method `Camera.projectionMatrix`
+- **UI**
+  - `TextLine` now supports material color.
+
 Dagon 0.29.1 - 1 Sep, 2025
 --------------------------
 - **Graphics components**
