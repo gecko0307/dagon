@@ -140,6 +140,9 @@ struct Tween
         float toFloat;
     }
 
+    void delegate(Tween* thisTween) onRepeat;
+    void delegate(Tween* thisTween) onComplete;
+
     /// Constructs a vector tween for position, rotation, or scaling.
     this(Entity entity, TweenType type, Vector3f start, Vector3f end, double duration, Easing easing = Easing.Linear)
     {
@@ -238,9 +241,14 @@ struct Tween
                     if (repeatCounter >= repeat)
                     {
                         repeatCounter = 0;
+                        if (onComplete)
+                            onComplete(&this);
                         active = false;
                         t = 1.0f;
                     }
+                    else
+                        if (onRepeat)
+                            onRepeat(&this);
                 }
             }
             else

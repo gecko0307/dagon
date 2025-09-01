@@ -354,10 +354,18 @@ class UIWidget: EventListener, Updateable
     void update(Time t)
     {
         processEvents();
-        if (fitToParent && parent)
+        if (fitToParent)
         {
-            width = parent.width;
-            height = parent.height;
+            if (parent)
+            {
+                width = parent.width;
+                height = parent.height;
+            }
+            else
+            {
+                width = ui.eventManager.windowWidth;
+                height = ui.eventManager.windowHeight;
+            }
         }
         background.scaling = Vector3f(width, height, 1.0f);
         if (focused)
