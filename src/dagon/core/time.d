@@ -40,6 +40,8 @@ module dagon.core.time;
 
 import dlib.core.ownership;
 
+import dagon.graphics.updateable;
+
 /**
  * Represents timing information for a frame.
  */
@@ -75,8 +77,8 @@ class Cadencer: Owner
     /// Frame counter for FPS calculation.
     int fpsCounter = 0;
 
-    /// Callback to invoke on each update.
-    void delegate(Time) callback;
+    /// Object that is being updated.
+    Updateable updateable;
     
     public:
 
@@ -91,10 +93,10 @@ class Cadencer: Owner
      *   freq     = Update frequency (in Hz).
      *   owner    = Owner object for memory/resource management.
      */
-    this(scope void delegate(Time) callback, uint freq, Owner owner)
+    this(Updateable updateable, uint freq, Owner owner)
     {
         super(owner);
-        this.callback = callback;
+        this.updateable = updateable;
         setFrequency(freq);
     }
     
@@ -133,7 +135,7 @@ class Cadencer: Owner
         
         if (elapsedTime >= timeStep)
         {
-            callback(Time(timeStep, t.elapsed));
+            updateable.update(Time(timeStep, t.elapsed));
             elapsedTime = 0.0;
             fpsCounter++;
         }

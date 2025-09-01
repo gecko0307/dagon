@@ -70,6 +70,7 @@ import dagon.core.config;
 import dagon.core.locale;
 import dagon.core.i18n;
 
+import dagon.graphics.updateable;
 import dagon.graphics.font;
 
 version(Windows)
@@ -328,7 +329,7 @@ VirtualFileSystem globalVFS()
  * basic app configuration and loads settings from a `settings.conf` file.
  * To use, inherit from `Application` and override `onUpdate` and `onRender`.
  */
-class Application: EventListener
+class Application: EventListener, Updateable
 {
     VirtualFileSystem vfs;
     
@@ -614,7 +615,7 @@ class Application: EventListener
             }
         }
         
-        cadencer = New!Cadencer(&onAnimationFrame, 60, this);
+        cadencer = New!Cadencer(this, 60, this);
         
         if (freetypePresent)
         {
@@ -776,7 +777,7 @@ class Application: EventListener
      * Params:
      *   t = Time information for the frame.
      */
-    void onAnimationFrame(Time t)
+    void update(Time t)
     {
         eventManager.update();
         processEvents();
