@@ -58,7 +58,7 @@ class TextLine: Owner, Drawable
     /// Scaling factor for the text.
     float scaling;
 
-    /// The color of the text (RGBA).
+    /// Default color of the text, if no material specified.
     Color4f color;
 
     /// The string to display.
@@ -100,14 +100,13 @@ class TextLine: Owner, Drawable
         if (!font.valid)
             return;
         
-        glDisable(GL_DEPTH_TEST);
-        glDisable(GL_CULL_FACE);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        font.render(state, color, text);
+        Color4f textColor = color;
+        if (state.material)
+            textColor = state.material.baseColorFactor;
+        font.render(state, textColor, text);
         glDisable(GL_BLEND);
-        glEnable(GL_CULL_FACE);
-        glEnable(GL_DEPTH_TEST);
     }
 
     /**

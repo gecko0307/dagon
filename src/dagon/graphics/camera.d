@@ -43,6 +43,7 @@ module dagon.graphics.camera;
 
 import dlib.core.ownership;
 import dlib.math.matrix;
+import dlib.math.transformation;
 import dagon.graphics.entity;
 
 /**
@@ -98,5 +99,10 @@ class Camera: Entity
     Matrix4x4f invViewMatrix()
     {
         return absoluteTransformation;
+    }
+    
+    Matrix4x4f projectionMatrix(float aspectRatio)
+    {
+         return perspectiveMatrix(fov, aspectRatio, zNear, zFar);
     }
 }
