@@ -1,7 +1,10 @@
-Dagon 0.29.1 - TBD
+Dagon 0.30.0 - TBD
 ------------------
 - **Assets**
-  - glTF `doubleSided` property now is interpreted correctly.
+  - glTF `doubleSided` property now is interpreted correctly
+- **UI**
+  - `Tween.onComplete` and `Tween.onRepeat` callbacks
+  - `UIWidget.fitToParent` now works for root-level widgets, fitting them to window size.
 
 Dagon 0.29.0 - 30 Aug, 2025
 ---------------------------
