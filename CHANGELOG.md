@@ -1,5 +1,8 @@
 Dagon 0.29.2 - TBD
 ------------------
+- **Core**
+  - `Application` now implements `Updateable` interface
+  - `Cadencer` now uses `Updateable` object instead of the callback
 - **Graphics components**
   - New method `Camera.projectionMatrix`
 - **UI**
