@@ -1,6 +1,10 @@
 Dagon 0.30.0 - TBD
 ------------------
+- **Graphics components**
+  - Fix some bugs in the tween engine
+  - `Entity.getTween` that adds new tween to the pool if necessary
 - **Assets**
+  - `Scene.delayedCall`, a helper method that allows to run a function after a given time in seconds
   - glTF `doubleSided` property now is interpreted correctly
 - **UI**
   - `Tween.onComplete` and `Tween.onRepeat` callbacks

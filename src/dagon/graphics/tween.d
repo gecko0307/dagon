@@ -121,7 +121,7 @@ struct Tween
     uint repeat = 1;
 
     /// Current repeat count.
-    uint repeatCounter;
+    uint repeatCounter = 0;
 
     /// If true, the tween is playing.
     bool isPlaying = true;
@@ -247,14 +247,14 @@ struct Tween
             time += dt;
             float t;
 
-            if (time > duration)
+            if (time >= duration)
             {
-                time = 0.0;
-                t = 0.0f;
+                time = duration;
+                applyTween(1.0f);
                 if (repeat >= 0)
                 {
                     repeatCounter++;
-                    if (repeatCounter >= repeat)
+                    if (repeatCounter == repeat)
                     {
                         active = false;
                         isPlaying = false;
@@ -265,12 +265,16 @@ struct Tween
                     }
                     else
                     {
+                        time = 0.0;
+                        t = 0.0f;
                         if (onRepeat)
                             onRepeat(&this);
                     }
                 }
                 else
                 {
+                    time = 0.0;
+                    t = 0.0f;
                     if (onRepeat)
                         onRepeat(&this);
                 }
@@ -278,9 +282,8 @@ struct Tween
             else
             {
                 t = time / duration;
+                applyTween(t);
             }
-
-            applyTween(t);
         }
     }
 
