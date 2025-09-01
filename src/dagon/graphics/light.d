@@ -191,6 +191,8 @@ class Light: Entity
     
     /**
      * Returns the shadow map for this light, creating it if necessary.
+     * Sun light uses cascaded shadow maps, other light types use
+     * dual paraboloid shadow maps.
      *
      * Returns:
      *   The shadow map object, or `null` if shadows are not enabled.

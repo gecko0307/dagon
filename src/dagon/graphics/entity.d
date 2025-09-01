@@ -115,6 +115,7 @@ enum TransformMode: int
  * components, and a visual representation (via `Drawable`). They can be
  * dynamic or static, cast shadows, and interact with the rendering system
  * through various flags and material parameters.
+ * Entity is a basic building block for a scene.
  * Entities form a hierarchical structure and are updated each frame
  * as part of the world update cycle.
  */
@@ -197,7 +198,7 @@ class Entity: Owner, Updateable
     /// The attached components.
     Array!EntityComponent components;
 
-    /// Active tweens used to animate this entity.
+    /// Pool of tweens used to animate this entity.
     Array!Tween tweens;
 
     /// Optional drawable object (visual representation) for this entity.

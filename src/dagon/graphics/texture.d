@@ -32,8 +32,7 @@ DEALINGS IN THE SOFTWARE.
  * The `dagon.graphics.texture` module defines the `Texture` class
  * for managing 1D, 2D, 3D, and cubemap textures, supporting compressed
  * and uncompressed formats, mipmapping, filtering, and OpenGL resource management.
- * The module also includes enums for cube faces, and utility functions for
- * texture creation, loading, and conversion.
+ * The module also includes utility functions for texture format conversion.
  *
  * Copyright: Timur Gafarov 2017-2025
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).

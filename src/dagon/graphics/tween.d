@@ -93,6 +93,7 @@ enum Easing
  * Supports position, rotation, scaling, and color interpolation
  * with various easing functions. Tweens can be paused, played,
  * restarted, repeated, and killed.
+ * Tweens are typically stored and managed by the Entity class.
  */
 struct Tween
 {

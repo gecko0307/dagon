@@ -30,11 +30,10 @@ DEALINGS IN THE SOFTWARE.
  *
  * Description:
  * The `dagon.graphics.material` module provides the `Material` class,
- * which encapsulates all parameters and resources needed for
- * physically-based rendering (PBR), including textures, colors, blending modes,
- * parallax mapping, shadow filtering, and shader/material flags. Materials control
- * how surfaces are shaded, blended, and rendered, and can be customized for a wide
- * range of visual effects.
+ * which stores parameters needed for rendering a surface,
+ * including PBR textures, blending mode, parallax mapping, shadow filtering,
+ * output flags and others. Materials control how surfaces are shaded and blended, 
+ * and can be customized for a wide range of visual effects.
  *
  * Copyright: Timur Gafarov 2017-2025
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).

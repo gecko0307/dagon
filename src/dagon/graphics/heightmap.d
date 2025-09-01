@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /**
- * Provides interfaces and implementations for heightmap data sources.
+ * Provides interfaces and implementations for height data sources.
  *
  * The `dagon.graphics.heightmap` module defines the `Heightmap` interface
  * for querying height values at arbitrary coordinates, and provides

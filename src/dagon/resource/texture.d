@@ -257,6 +257,8 @@ class TextureAsset: Asset
             texture.release();
         
         releaseBuffer();
+        
+        loaded = false;
     }
 }
 

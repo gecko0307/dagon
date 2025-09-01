@@ -9,7 +9,7 @@ Dagon 0.29.1 - 1 Sep, 2025
 --------------------------
 - **Graphics components**
   - Fix some bugs in the tween engine
-  - `Entity.getTween` that adds new tween to the pool if necessary
+  - `Entity.getTween` method that adds new tween to the pool if necessary
 - **Assets**
   - `Scene.delayedCall`, a helper method that allows to run a function after a given time in seconds
   - glTF `doubleSided` property is now interpreted correctly
@@ -728,7 +728,7 @@ Dagon 0.1.1 - 8 Jun, 2017
 
 Dagon 0.1.0 - 8 Jun, 2017
 -------------------------
-* Excluded dmech from core Dagon, it is now part of demo application
+* Excluded dmech from core Dagon, it is now part of the demo application
 * Use dlib 0.11.1
 * `FirstPersonView` now utilizes SDL's relative mouse mode and can be activated/deactivated
 * Fixed lots of bugs, including asset management bug with reloading scenes.
@@ -747,7 +747,7 @@ Dagon 0.0.3 - 10 Apr, 2017
 
 Dagon 0.0.2 - 5 Apr, 2017
 -------------------------
-Added Dagon to DUB package registry.
+Added Dagon to the DUB package registry.
 
 Dagon 0.0.1 - 28 Mar, 2017
 -------------------------
