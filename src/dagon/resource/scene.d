@@ -56,6 +56,7 @@ import dagon.core.time;
 import dagon.core.persistent;
 
 import dagon.graphics.entity;
+import dagon.graphics.tween;
 import dagon.graphics.camera;
 import dagon.graphics.light;
 import dagon.graphics.environment;
@@ -127,6 +128,8 @@ class Scene: EventListener
     
     /// Graphical user interface manager
     UIManager ui;
+    
+    private Entity timerEntity; // dummy entity used for delayed calls
 
     /**
      * Constructs a new scene with the given application.
@@ -152,6 +155,9 @@ class Scene: EventListener
         decalShape = New!ShapeBox(Vector3f(1, 1, 1), this);
         
         ui = New!UIManager(this, assetManager);
+        
+        timerEntity = New!Entity(this);
+        timerEntity.visible = false;
     }
 
     /**
@@ -312,6 +318,14 @@ class Scene: EventListener
     {
         return New!PersistentStorage(application.vfs, filename, this);
     }
+    
+    Tween* delayedCall(double delay, scope void delegate(Tween*) callback)
+    {
+        Tween* tween = timerEntity.getTween();
+        *tween = Tween(timerEntity, delay);
+        tween.onComplete = callback;
+        return tween;
+    }
 
     /// Override to perform actions before loading assets.
     void beforeLoad()
@@ -401,6 +415,7 @@ class Scene: EventListener
             }
             else
             {
+                timerEntity.update(t);
                 ui.update(t);
                 onUpdate(t);
                 foreach(e; world)

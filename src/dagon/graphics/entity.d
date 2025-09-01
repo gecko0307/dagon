@@ -620,7 +620,7 @@ class Entity: Owner, Updateable
         return absoluteTransformation.up;
     }
 
-    /// Returns a pointer to an inactive tween, or null if none.
+    /// Returns a pointer to an inactive tween from the tweens pool, or null if none.
     Tween* getInactiveTween()
     {
         Tween* inactiveTween = null;
@@ -633,6 +633,20 @@ class Entity: Owner, Updateable
             }
         }
         return inactiveTween;
+    }
+    
+    /// Returns a pointer to an inactive tween, adding a new one to the tweens pool if necessary.
+    Tween* getTween()
+    {
+        Tween* tween = getInactiveTween();
+        if (tween)
+            return tween;
+        else
+        {
+            Tween t;
+            tweens.append(t);
+            return &tweens.data[$-1];
+        }
     }
 
     /**
@@ -648,19 +662,9 @@ class Entity: Owner, Updateable
      */
     Tween* moveFromTo(Vector3f pointFrom, Vector3f pointTo, double duration, Easing easing = Easing.Linear)
     {
-        Tween* existingTween = getInactiveTween();
-
-        if (existingTween)
-        {
-            *existingTween = Tween(this, TweenType.Position, pointFrom, pointTo, duration, easing);
-            return existingTween;
-        }
-        else
-        {
-            Tween t = Tween(this, TweenType.Position, pointFrom, pointTo, duration, easing);
-            tweens.append(t);
-            return &tweens.data[$-1];
-        }
+        Tween* tween = getTween();
+        *tween = Tween(this, TweenType.Position, pointFrom, pointTo, duration, easing);
+        return tween;
     }
 
     /**
@@ -676,19 +680,9 @@ class Entity: Owner, Updateable
      */
     Tween* rotateFromTo(Vector3f anglesFrom, Vector3f anglesTo, double duration, Easing easing = Easing.Linear)
     {
-        Tween* existingTween = getInactiveTween();
-
-        if (existingTween)
-        {
-            *existingTween = Tween(this, TweenType.Rotation, anglesFrom, anglesTo, duration, easing);
-            return existingTween;
-        }
-        else
-        {
-            Tween t = Tween(this, TweenType.Rotation, anglesFrom, anglesTo, duration, easing);
-            tweens.append(t);
-            return &tweens.data[$-1];
-        }
+        Tween* tween = getTween();
+        *tween = Tween(this, TweenType.Rotation, anglesFrom, anglesTo, duration, easing);
+        return tween;
     }
 
     /**
@@ -704,36 +698,16 @@ class Entity: Owner, Updateable
      */
     Tween* scaleFromTo(Vector3f sFrom, Vector3f sTo, double duration, Easing easing = Easing.Linear)
     {
-        Tween* existingTween = getInactiveTween();
-
-        if (existingTween)
-        {
-            *existingTween = Tween(this, TweenType.Scaling, sFrom, sTo, duration, easing);
-            return existingTween;
-        }
-        else
-        {
-            Tween t = Tween(this, TweenType.Scaling, sFrom, sTo, duration, easing);
-            tweens.append(t);
-            return &tweens.data[$-1];
-        }
+        Tween* tween = getTween();
+        *tween = Tween(this, TweenType.Scaling, sFrom, sTo, duration, easing);
+        return tween;
     }
     
     Tween* opacityFromTo(float opFrom, float opTo, double duration, Easing easing = Easing.Linear)
     {
-        Tween* existingTween = getInactiveTween();
-
-        if (existingTween)
-        {
-            *existingTween = Tween(this, TweenType.Alpha, opFrom, opTo, duration, easing);
-            return existingTween;
-        }
-        else
-        {
-            Tween t = Tween(this, TweenType.Alpha, opFrom, opTo, duration, easing);
-            tweens.append(t);
-            return &tweens.data[$-1];
-        }
+        Tween* tween = getTween();
+        *tween = Tween(this, TweenType.Alpha, opFrom, opTo, duration, easing);
+        return tween;
     }
     
     Tween* fadeIn(double duration, Easing easing = Easing.Linear)

@@ -142,6 +142,22 @@ struct Tween
 
     void delegate(Tween* thisTween) onRepeat;
     void delegate(Tween* thisTween) onComplete;
+    
+    /// Constructs a no-op tween that animates nothing.
+    this(Entity entity, double duration)
+    {
+        this.dataType = TweenDataType.Float;
+        this.type = TweenType.Unknown;
+        this.easing = Easing.Linear;
+        this.active = true;
+        this.entity = entity;
+        this.duration = duration;
+        this.time = 0.0f;
+        this.fromFloat = 0.0f;
+        this.toFloat = 0.0f;
+        this.repeatCounter = 0;
+        this.isPlaying = true;
+    }
 
     /// Constructs a vector tween for position, rotation, or scaling.
     this(Entity entity, TweenType type, Vector3f start, Vector3f end, double duration, Easing easing = Easing.Linear)
@@ -240,15 +256,23 @@ struct Tween
                     repeatCounter++;
                     if (repeatCounter >= repeat)
                     {
-                        repeatCounter = 0;
+                        active = false;
+                        isPlaying = false;
+                        t = 1.0f;
                         if (onComplete)
                             onComplete(&this);
-                        active = false;
-                        t = 1.0f;
+                        repeatCounter = 0;
                     }
                     else
+                    {
                         if (onRepeat)
                             onRepeat(&this);
+                    }
+                }
+                else
+                {
+                    if (onRepeat)
+                        onRepeat(&this);
                 }
             }
             else
