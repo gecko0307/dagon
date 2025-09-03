@@ -51,7 +51,7 @@ bool rayVsShape(
     Vector3f hitPoint = rayStart;
     Vector3f hitNormal = Vector3f(0, 0, 0);
     
-    Vector3f v = hitPoint - shape.supportPointGlobal(Vector3f(0, 0, 0));
+    Vector3f v = hitPoint - shape.supportPoint(Vector3f(0, 0, 0));
     float vSqrd = v.lengthsqr;
     
     Vector3f p = Vector3f(0, 0, 0);
@@ -84,7 +84,7 @@ bool rayVsShape(
         if (iterations >= maxIterations)
             break;
         
-        p = shape.supportPointGlobal(v);
+        p = shape.supportPoint(v);
         w = hitPoint - p;
 
         v_dot_w = dot(v, w);

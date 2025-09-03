@@ -33,7 +33,8 @@ public
     import dagon.collision.collision;
     import dagon.collision.contact;
     import dagon.collision.geometry;
+    import dagon.collision.jss;
+    import dagon.collision.mpr;
     import dagon.collision.raycast;
     import dagon.collision.shape;
-    import dagon.collision.world;
 }

@@ -25,37 +25,55 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * Johnson Simplex Solver.
+ *
+ * Description:
+ * The `dagon.collision.jss` implements the Johnson Simplex Solver for
+ * collision detection algorithms. It provides the `JohnsonSimplexSolver`
+ * structure, which manages simplex points, support points, and related
+ * calculations for algorithms such as GJK.
+ *
+ * Copyright: Timur Gafarov 2014-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.collision.jss;
 
 import dlib.math.vector;
 
+/// Johnson Simplex Solver structure.
 struct JohnsonSimplexSolver
 {
-    // Reduced simplex bits.
+    /// Reduced simplex bits.
     byte XBits = 0;
 
-    // Y = Wk + wk
+    /// Y = Wk + wk
     byte YBits = 0;
 
-    // Max vertex index
+    /// Max vertex index.
     byte maxVertexIndex = 3;
 
-    // Last vertex index
+    /// Last vertex index.
     byte lastVertexIndex = 3;
 
-    // Support points on shape A
+    /// Support points on shape A.
     Vector3f[4] supportPointsOnA;
 
-    // Support points on shape B
+    /// Support points on shape B.
     Vector3f[4] supportPointsOnB;
 
-    // Cached edges. The diagonal does not hold a subtraction, it holds all four simplex points instead
+    /// Cached edges. The diagonal does not hold a subtraction, it holds all four simplex points instead
     Vector3f[4][4] edges;
 
-    // Cached determinants. This cache supports any combination of simplex's 4 points.
-    // The first column stores the squared length for each point
+    /**
+     * Cached determinants. This cache supports any combination of simplex's 4 points.
+     * The first column stores the squared length for each point.
+     */
     float[4][16] determinants;
     
+    /// Initializes all data to zero.
     void initialize()
     {
         foreach(ref v; supportPointsOnA)
@@ -73,6 +91,7 @@ struct JohnsonSimplexSolver
             v = 0.0f;
     }
 
+    /// Calculates closest point for current simplex.
     void calcClosestPoint(out Vector3f v)
     {
         float maxVertexSqrd = 0;
@@ -103,6 +122,7 @@ struct JohnsonSimplexSolver
         v = closestPoint / deltaX;
     }
 
+    /// Calculates closest point for a given subset.
     void calcClosestPoint(byte set, out Vector3f v)
     {
         float deltaX = 0;
@@ -127,6 +147,7 @@ struct JohnsonSimplexSolver
         v = closestPoint / deltaX;
     }
 
+    /// Calculates closest point using backup method.
     void backupCalcClosestPoint(out Vector3f v)
     {
         // We don't need to update maxVertexIndex because this method is called when the algorithm terminates
@@ -152,6 +173,7 @@ struct JohnsonSimplexSolver
         }
     }
 
+    /// Calculates closest points on both shapes.
     void calcClosestPoints(out Vector3f pClosestPointOnA, out Vector3f pClosestPointOnB)
     {
         float deltaX = 0;
@@ -178,6 +200,7 @@ struct JohnsonSimplexSolver
         pClosestPointOnB = q / deltaX;
     }
 
+    /// Attempts to reduce the simplex.
     bool reduceSimplex()
     {
         for (byte subset = YBits; subset > 0; --subset)
@@ -193,7 +216,7 @@ struct JohnsonSimplexSolver
         return false;
     }
 
-
+    /// Adds a point to the simplex.
     void addPoint(Vector3f point)
     {
         // Find a free slot for new point
@@ -220,6 +243,7 @@ struct JohnsonSimplexSolver
         determinants[0][lastVertexIndex] = pointSqrd;
     }
 
+    /// Adds a point and its support points.
     void addPoint(Vector3f point, Vector3f supportOnA, Vector3f supportOnB)
     {
         // Find a free slot for new point
@@ -249,6 +273,7 @@ struct JohnsonSimplexSolver
         determinants[0][lastVertexIndex] = pointSqrd;
     }
 
+    /// Removes all points from the simplex.
     void removeAllPoints()
     {
         XBits = 0;
@@ -258,6 +283,7 @@ struct JohnsonSimplexSolver
         lastVertexIndex = 3;
     }
 
+    /// Loads simplex from bits and points.
     void loadSimplex(byte simplexBits, Vector3f[] simplexPoints)
     {
         // Reset simplex
@@ -303,6 +329,7 @@ struct JohnsonSimplexSolver
         }
     }
 
+    /// Loads simplex with support points.
     void loadSimplex(byte simplexBits, Vector3f[] simplexPoints, Vector3f[] supportOnA, Vector3f[] supportOnB)
     {
         loadSimplex(simplexBits, simplexPoints);
@@ -317,12 +344,14 @@ struct JohnsonSimplexSolver
         }
     }
 
+    /// Checks if a point is in the reduced simplex.
     bool isReducedSimplexPoint(byte index)
     {
         assert(index < 4, "Invalid index");
         return (XBits & (1 << index)) > 0;
     }
 
+    /// Checks if a point is in the reduced simplex.
     bool isReducedSimplexPoint(Vector3f point)
     {
         for (byte i = 0; i < 4; ++i)
@@ -334,12 +363,14 @@ struct JohnsonSimplexSolver
         return false;
     }
 
+    /// Checks if a point is in the simplex.
     bool isSimplexPoint(byte index)
     {
         assert(index < 4, "Invalid index");
         return (YBits & (1 << index)) > 0;
     }
 
+    /// Checks if a point is in the simplex.
     bool isSimplexPoint(Vector3f point)
     {
         for (byte i = 0; i < 4; ++i)
@@ -351,18 +382,21 @@ struct JohnsonSimplexSolver
         return false;
     }
 
+    /// Gets a simplex point by index.
     Vector3f getPoint(byte index)
     {
         assert(index < 4, "Invalid index");
         return edges[index][index];
     }
 
+    /// Sets a simplex point.
     void setPoint(byte index, Vector3f point)
     {
         assert(index < 4, "Invalid index");
         edges[index][index] = point;
     }
 
+    /// Sets a simplex point and its supports.
     void setPoint(byte index, Vector3f point, Vector3f supportPointOnA, Vector3f supportPointOnB)
     {
         assert(index < 4, "Invalid index!");
@@ -371,6 +405,7 @@ struct JohnsonSimplexSolver
         supportPointsOnB[index] = supportPointOnB;
     }
 
+    /// Gets the current simplex points.
     byte getSimplex(Vector3f[] simplexPoints)
     {
         assert(simplexPoints.length >= 4, "Input array length must be greater or equal to 4");
@@ -389,6 +424,7 @@ struct JohnsonSimplexSolver
         return nbPoints;
     }
 
+    /// Gets the current simplex points.
     byte getSimplex(float[] simplexPoints)
     {
         assert(simplexPoints.length >= 12, "Input array length must be greater or equal to 12");
@@ -411,6 +447,7 @@ struct JohnsonSimplexSolver
        return nbPoints;
     }
 
+    /// Gets support points on shape A.
     byte getSupportPointsOnA(Vector3f[] worldSupportPointsOnA)
     {
         assert(supportPointsOnA.length >= 4, "Input array length must be greater or equal to 4");
@@ -429,6 +466,7 @@ struct JohnsonSimplexSolver
         return nbPoints;
     }
 
+    /// Gets support points on shape B.
     byte getSupportPointsOnB(Vector3f[] worldSupportPointsOnB)
     {
         assert(supportPointsOnB.length >= 4, "Input array length must be greater or equal to 4");
@@ -447,38 +485,45 @@ struct JohnsonSimplexSolver
         return nbPoints;
     }
 
+    /// Gets a support point on shape A.
     Vector3f getSupportPointOnA(byte index)
     {
         assert(index < 4, "Invalid index");
         return supportPointsOnA[index];
     }
 
+    /// Gets a support point on shape B.
     Vector3f getSupportPointOnB(byte index)
     {
         assert(index < 4, "Invalid index");
         return supportPointsOnB[index];
     }
 
+    /// Checks if simplex is full.
     bool isFullSimplex()
     {
         return (XBits == 0xf);
     }
 
+    /// Checks if simplex is empty.
     bool isEmptySimplex()
     {
         return (XBits == 0);
     }
 
+    /// Sets max vertex squared length.
     void setMaxVertexSqrd(float maxVertexSqrd)
     {
         determinants[0][maxVertexIndex] = maxVertexSqrd;
     }
 
+    /// Gets max vertex squared length.
     float getMaxVertexSqrd()
     {
         return determinants[0][maxVertexIndex];
     }
 
+    /// Updates max vertex index.
     void updateMaxVertex()
     {
         float maxVertexSqrd = -float.max;
@@ -500,11 +545,13 @@ struct JohnsonSimplexSolver
         determinants[0][maxVertexIndex] = maxVertexSqrd;
     }
 
+    /// Checks subset relation.
     bool isSubsetOrEqualTo(byte set, byte subset)
     {
         return ((set & subset) == subset);
     }
 
+    /// Checks if a set is valid.
     bool isValidSet(byte set)
     {
         for (byte i = 0; i < 4; ++i)
@@ -529,6 +576,7 @@ struct JohnsonSimplexSolver
         return true;
     }
 
+    /// Checks if a set is proper.
     bool isProperSet(byte set)
     {
         for (byte i = 0; i < 4; ++i)
@@ -540,6 +588,7 @@ struct JohnsonSimplexSolver
         return true;
     }
 
+    /// Finds a free slot for a new point.
     byte findFreeSlot()
     {
         for (byte i = 0; i < 4; ++i)
@@ -552,6 +601,7 @@ struct JohnsonSimplexSolver
         return 4;
     }
 
+    /// Updates cached edges.
     void updateEdges(byte index)
     {
         assert(index < 4, "Invalid index");
@@ -566,6 +616,7 @@ struct JohnsonSimplexSolver
         }
     }
 
+    /// Updates cached determinants.
     void updateDeterminants(byte index)
     {
         assert(index < 4, "Invalid index!");

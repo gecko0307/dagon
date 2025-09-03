@@ -25,22 +25,63 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * Contact information between two collision shapes.
+ *
+ * Description:
+ * The `dagon.collision.contact` defines the `Contact` structure for representing
+ * collision information between shapes, including contact point, normal,
+ * penetration depth, and tangent directions.
+ *
+ * Copyright: Timur Gafarov 2013-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.collision.contact;
 
 import dlib.math.vector;
 import dagon.collision.shape;
 
+/** 
+ * Stores contact information for a collision between two shapes.
+ *
+ *  Members:
+ *    point       = Contact point in world space.
+ *    normal      = Contact normal vector.
+ *    penetration = Penetration depth (or hit distance for raycasting).
+ *    hitDistance = Alias for penetration, for raycasting convenience.
+ *    fact        = `true` if the contact is valid.
+ *
+ * Methods:
+ *    calcFDir    = Calculates tangent directions (friction directions) for the contact normal.
+ */
 struct Contact
 {
+    /// Contact point in world space.
     Vector3f point;
+
+    /// Contact normal vector.
     Vector3f normal;
+
+    /// Penetration depth or hit distance.
     float penetration;
-    alias hitDistance = penetration; // convenience alias for raycasting
+
+    /// Convenience alias for raycasting.
+    alias hitDistance = penetration;
+
+    /// `true` if the contact is valid.
     bool fact;
 
+    /**
+     * Calculates tangent (friction) directions for the contact normal.
+     *
+     * Params:
+     *   fdir1 = First tangent direction (output).
+     *   fdir2 = Second tangent direction (output).
+     */
     void calcFDir(out Vector3f fdir1, out Vector3f fdir2)
     {
-        // Calculate tangent space for contact normal
         if (dot(normal, Vector3f(1,0,0)) < 0.5f)
             fdir1 = cross(normal, Vector3f(1,0,0)); 
         else

@@ -26,6 +26,18 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Convex geometry.
+ *
+ * Description:
+ * The `dagon.collision.geometry` module provides abstract and concrete classes
+ * for various convex geometric shapes used in collision detection.
+ * Includes support for spheres, boxes, cylinders, cones, ellipsoids, capsules, and triangles.
+ *
+ * Copyright: Timur Gafarov 2013-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.collision.geometry;
 
 import std.math;
@@ -39,6 +51,9 @@ import dlib.math.transformation;
 import dlib.math.utils;
 import dlib.geometry.aabb;
 
+/**
+ * Enumeration of supported geometry types.
+ */
 enum GeomType
 {
     Undefined,
@@ -52,61 +67,96 @@ enum GeomType
     UserDefined
 }
 
+/**
+ * Abstract base class for convex geometry.
+ * Provides interface for support point and bounding box calculations.
+ */
 abstract class Geometry: Owner
 {
+    /// The type of geometry.
     GeomType type = GeomType.Undefined;
 
-    this(Owner o = null)
+    /**
+     * Constructor.
+     * Params:
+     *   owner = Owner object.
+    */
+    this(Owner owner = null)
     {
-        super(o);
+        super(owner);
     }
 
+    /// Returns the support point in the given direction.
     Vector3f supportPoint(Vector3f dir)
     {
         return Vector3f(0.0f, 0.0f, 0.0f);
     }
 
+    /// Returns the axis-aligned bounding box (AABB) for the geometry at the given position.
     AABB boundingBox(Vector3f position)
     {
         return AABB(position, Vector3f(1.0f, 1.0f, 1.0f));
     }
 }
 
+/// Sphere geometry.
 class GeomSphere: Geometry
 {
+    /// Radius of the sphere.
     float radius;
 
-    this(float r, Owner o = null)
+    /**
+     * Constructor.
+     *
+     * Params:
+     *   radius = Radius of the sphere.
+     *   owner  = Owner object.
+     */
+    this(float radius, Owner owner = null)
     {
-        super(o);
+        super(owner);
         type = GeomType.Sphere;
-        radius = r;
+        this.radius = radius;
     }
 
+    /// Returns the support point in the given direction.
     override Vector3f supportPoint(Vector3f dir)
     {
         return dir.normalized * radius;
     }
 
+    /// Returns the bounding box for the sphere.
     override AABB boundingBox(Vector3f position)
     {
         return AABB(position, Vector3f(radius, radius, radius));
     }
 }
 
+/// Box geometry.
 class GeomBox: Geometry
 {
+    /// Half-size (extents) of the box.
     Vector3f halfSize;
-    float bsphereRadius;
 
-    this(Vector3f hsize, Owner o = null)
+    /// Bounding sphere radius.
+    float boundingSphereRadius;
+
+    /**
+     * Constructor.
+     *
+     * Params:
+     *   halfSize = Half-size vector of the box.
+     *   owner    = Owner object.
+     */
+    this(Vector3f halfSize, Owner owner = null)
     {
-        super(o);
+        super(owner);
         type = GeomType.Box;
-        halfSize = hsize;
-        bsphereRadius = halfSize.length;
+        this.halfSize = halfSize;
+        boundingSphereRadius = halfSize.length;
     }
 
+    /// Returns the support point in the given direction.
     override Vector3f supportPoint(Vector3f dir)
     {
         Vector3f result;
@@ -116,26 +166,42 @@ class GeomBox: Geometry
         return result;
     }
 
+    /// Returns the bounding box for the box.
     override AABB boundingBox(Vector3f position)
     {
-        return AABB(position,
-            Vector3f(bsphereRadius, bsphereRadius, bsphereRadius));
+        return AABB(position, Vector3f(
+            boundingSphereRadius,
+            boundingSphereRadius,
+            boundingSphereRadius));
     }
 }
 
+/// Cylinder geometry.
 class GeomCylinder: Geometry
 {
+    /// Height of the cylinder.
     float height;
+
+    /// Radius of the cylinder.
     float radius;
 
-    this(float h, float r, Owner o = null)
+    /**
+     * Constructor.
+     *
+     * Params:
+     *   height = Height of the cylinder.
+     *   radius = Radius of the cylinder.
+     *   owner  = Owner object.
+     */
+    this(float height, float radius, Owner owner = null)
     {
-        super(o);
+        super(owner);
         type = GeomType.Cylinder;
-        height = h;
-        radius = r;
+        this.height = height;
+        this.radius = radius;
     }
 
+    /// Returns the support point in the given direction.
     override Vector3f supportPoint(Vector3f dir)
     {
         Vector3f result;
@@ -157,6 +223,7 @@ class GeomCylinder: Geometry
         return result;
     }
 
+    /// Returns the bounding box for the cylinder.
     override AABB boundingBox(Vector3f position)
     {
         float rsum = radius + radius;
@@ -165,19 +232,32 @@ class GeomCylinder: Geometry
     }
 }
 
+/// Cone geometry.
 class GeomCone: Geometry
 {
+    /// Radius of the cone base.
     float radius;
+
+    /// Height of the cone.
     float height;
 
-    this(float h, float r, Owner o = null)
+    /**
+     * Constructor.
+     *
+     * Params:
+     *   height = Height of the cone.
+     *   radius = Radius of the cone.
+     *   owner  = Owner object.
+     */
+    this(float height, float r, Owner owner = null)
     {
-        super(o);
+        super(owner);
         type = GeomType.Cone;
-        height = h;
-        radius = r;
+        this.height = height;
+        this.radius = radius;
     }
 
+    /// Returns the support point in the given direction.
     override Vector3f supportPoint(Vector3f dir)
     {
         float zdist = dir[0] * dir[0] + dir[1] * dir[1];
@@ -185,7 +265,6 @@ class GeomCone: Geometry
         zdist = sqrt(zdist);
         len = sqrt(len);
         float half_h = height * 0.5;
-        float radius = radius;
 
         float sin_a = radius / sqrt(radius * radius + 4.0f * half_h * half_h);
 
@@ -200,6 +279,7 @@ class GeomCone: Geometry
             return Vector3f(0.0f, 0.0f, -half_h);
     }
 
+    /// Returns the bounding box for the cone.
     override AABB boundingBox(Vector3f position)
     {
         float rsum = radius + radius;
@@ -208,43 +288,70 @@ class GeomCone: Geometry
     }
 }
 
+/// Ellipsoid geometry.
 class GeomEllipsoid: Geometry
 {
+    /// Radii of the ellipsoid.
     Vector3f radii;
 
-    this(Vector3f r, Owner o = null)
+    /**
+     * Constructor.
+     *
+     * Params:
+     *   radii = Radii vector of the ellipsoid.
+     *   owner = Owner object.
+     */
+    this(Vector3f radii, Owner owner = null)
     {
-        super(o);
+        super(owner);
         type = GeomType.Ellipsoid;
-        radii = r;
+        this.radii = radii;
     }
 
+    /// Returns the support point in the given direction.
     override Vector3f supportPoint(Vector3f dir)
     {
         return dir.normalized * radii;
     }
 
+    /// Returns the bounding box for the ellipsoid.
     override AABB boundingBox(Vector3f position)
     {
         return AABB(position, radii);
     }
 }
 
+/// Capsule geometry.
 class GeomCapsule: Geometry
 {
+    /// Radius of the capsule.
     float radius;
+
+    /// Base position.
     float base;
+
+    /// Cap position.
     float cap;
-    
-    this(float base, float cap, float r, Owner o = null)
+
+    /**
+     * Constructor.
+     *
+     * Params:
+     *   base   = Base position along the capsule axis.
+     *   cap    = Cap position along the capsule axis.
+     *   radius = Radius of the capsule.
+     *   owner  = Owner object.
+     */
+    this(float base, float cap, float radius, Owner owner = null)
     {
-        super(o);
+        super(owner);
         type = GeomType.Capsule;
         this.base = base;
         this.cap = cap;
-        radius = r;
+        this.radius = radius;
     }
     
+    /// Returns the support point in the given direction.
     override Vector3f supportPoint(Vector3f dir)
     {
         dir = dir.normalized;
@@ -258,25 +365,38 @@ class GeomCapsule: Geometry
         }
     }
 
+    /// Returns the bounding box for the capsule.
     override AABB boundingBox(Vector3f position)
     {
         return AABB(position, Vector3f(radius, max(base, cap) + radius, radius));
     }
 }
 
+/// Triangle geometry.
 class GeomTriangle: Geometry
 {
+    /// Vertices of the triangle.
     Vector3f[3] v;
 
-    this(Vector3f a, Vector3f b, Vector3f c, Owner o = null)
+    /**
+     * Constructor.
+     *
+     * Params:
+     *   a     = First vertex.
+     *   b     = Second vertex.
+     *   c     = Third vertex.
+     *   owner = Owner object.
+     */
+    this(Vector3f a, Vector3f b, Vector3f c, Owner owner = null)
     {
-        super(o);
+        super(owner);
         type = GeomType.Triangle;
         v[0] = a;
         v[1] = b;
         v[2] = c;
     }
 
+    /// Returns the support point in the given direction.
     override Vector3f supportPoint(Vector3f dir)
     {
         float dota = dir.dot(v[0]);
@@ -299,5 +419,26 @@ class GeomTriangle: Geometry
         }
     }
 
-    // TODO: boundingBox
+    /// Returns the bounding box for the triangle.
+    override AABB boundingBox(Vector3f position)
+    {
+        Vector3f mi = v[0];
+        Vector3f ma = v[0];
+
+        foreach (i; 1..3)
+        {
+            mi.x = min(mi.x, v[i].x);
+            mi.y = min(mi.y, v[i].y);
+            mi.z = min(mi.z, v[i].z);
+
+            ma.x = max(ma.x, v[i].x);
+            ma.y = max(ma.y, v[i].y);
+            ma.z = max(ma.z, v[i].z);
+        }
+
+        Vector3f center = (mi + ma) * 0.5f;
+        Vector3f halfSize = (ma - mi) * 0.5f;
+
+        return AABB(position + center, halfSize);
+    }
 }

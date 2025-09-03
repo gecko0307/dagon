@@ -32,10 +32,8 @@ import dagon.collision.contact;
 import dagon.collision.mpr;
 import dagon.collision.shape;
 
-bool shapeVsShape(
-    CollisionShape shape1,
-    CollisionShape shape2,
-    out Contact contact)
+/// Detects collision between two convex shapes.
+bool shapeVsShape(CollisionShape shape1, CollisionShape shape2, out Contact contact)
 {
     if (mprTest(shape1, shape2, contact))
     {
@@ -44,4 +42,3 @@ bool shapeVsShape(
     }
     else return false;
 }
-

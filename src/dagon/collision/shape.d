@@ -25,6 +25,19 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * Convex collision shape.
+ *
+ * Description:
+ * The `dagon.collision.shape` module provides the `CollisionShape` that encapsulates convex geometry
+ * and transformation data, and provides methods for bounding volumes and support point calculations.
+ * `CollisionShape` is a proxy for the underlying geometry, applying transformations as needed.
+ *
+ * Copyright: Timur Gafarov 2014-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.collision.shape;
 
 import dlib.core.ownership;
@@ -37,12 +50,27 @@ import dlib.geometry.sphere;
 
 import dagon.collision.geometry;
 
+/**
+ * Represents a collision shape with geometry and transformation.
+ * This class provides access to the shape's position, bounding volumes,
+ * and support point calculations for collision detection algorithms.
+ */
 class CollisionShape: Owner
 {
+    /// The geometry object representing the shape.
     Geometry geometry;
     
+    /// The transformation matrix applied to the shape.
     Matrix4x4f transformation;
 
+    /**
+     * Constructor. Creates a new `CollisionShape` with the specified
+     * geometry and optional owner.
+     *
+     * Params:
+     *   g     = The geometry to use for the shape.
+     *   owner = Owner object.
+     */
     this(Geometry g, Owner owner = null)
     {
         super(owner);
@@ -50,18 +78,20 @@ class CollisionShape: Owner
         transformation = Matrix4x4f.identity;
     }
 
-    // position in world space
+    /// Returns position of the shape in world space.
     @property Vector3f position()
     {
         return transformation.translation;
     }
 
+    /// Returns the axis-aligned bounding box (AABB) of the shape in world space.
     @property AABB boundingBox()
     {
         return geometry.boundingBox(
             transformation.translation);
     }
 
+    /// Returns the bounding sphere of the shape in world space.
     @property Sphere boundingSphere()
     {
         AABB aabb = geometry.boundingBox(
@@ -69,7 +99,14 @@ class CollisionShape: Owner
         return Sphere(aabb.center, aabb.size.length);
     }
 
-    Vector3f supportPointGlobal(Vector3f dir)
+    /**
+     * Computes the support point of the shape in a given direction in world space.
+     * This can be used used in collision detection algorithms such as GJK.
+     *
+     * Params:
+     *   dir = The direction vector in which to find the support point.
+     */
+    Vector3f supportPoint(Vector3f dir)
     {
         Vector3f result;
         Matrix4x4f* m = &transformation;

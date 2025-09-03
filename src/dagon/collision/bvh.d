@@ -35,10 +35,17 @@ import dlib.core.compound;
 import dlib.container.array;
 import dlib.math.utils;
 import dlib.math.vector;
+import dlib.math.matrix;
 import dlib.geometry.aabb;
 import dlib.geometry.sphere;
 import dlib.geometry.ray;
 import dlib.geometry.intersection;
+import dlib.geometry.triangle;
+
+import dagon.core.time;
+import dagon.graphics.entity;
+import dagon.graphics.mesh;
+import dagon.graphics.terrain;
 
 /*
  * Bounding Volume Hierarchy implementation
@@ -399,7 +406,7 @@ class BVHTree(T)
 
             if (leftObjectsLength > 0 && rightObjectsLength > 0)
             {
-                float SAHCost = getSAHCost(boxes[0], leftObjectsLength, 
+                float SAHCost = getSAHCost(boxes[0], leftObjectsLength,
                                            boxes[1], rightObjectsLength, box);
 
                 if (bestSAHCost.isNaN || SAHCost < bestSAHCost)
@@ -428,4 +435,85 @@ class BVHTree(T)
         float depth = bbox.pmax.z - bbox.pmin.z;
         return 2.0f * (width * height + width * depth + height * depth);
     }
+}
+
+void collectEntityTris(Entity e, ref Array!Triangle tris, bool recursive = true)
+{
+    if (e.drawable)
+    {
+        e.update(Time(0.0, 0.0));
+        Matrix4x4f normalMatrix = e.invAbsoluteTransformation.transposed;
+
+        Mesh mesh = cast(Mesh)e.drawable;
+        if (mesh is null)
+        {
+            Terrain t = cast(Terrain)e.drawable;
+            if (t)
+            {
+                mesh = t.collisionMesh;
+            }
+        }
+
+        if (mesh)
+        {
+            foreach(tri; mesh)
+            {
+                Vector3f v1 = tri.v[0];
+                Vector3f v2 = tri.v[1];
+                Vector3f v3 = tri.v[2];
+                Vector3f n = tri.normal * normalMatrix;
+
+                v1 = v1 * e.absoluteTransformation;
+                v2 = v2 * e.absoluteTransformation;
+                v3 = v3 * e.absoluteTransformation;
+
+                Triangle tri2 = tri;
+                tri2.v[0] = v1;
+                tri2.v[1] = v2;
+                tri2.v[2] = v3;
+                tri2.normal = n;
+                tri2.barycenter = (tri2.v[0] + tri2.v[1] + tri2.v[2]) / 3;
+                tris.append(tri2);
+            }
+        }
+    }
+
+    if (recursive)
+    {
+        foreach(c; e.children)
+            collectEntityTris(c, tris, recursive);
+    }
+}
+
+BVHTree!Triangle entityToBVH(Entity rootEntity, bool recursive = true)
+{
+    Array!Triangle tris;
+
+    collectEntityTris(rootEntity, tris);
+
+    if (tris.length)
+    {
+        BVHTree!Triangle bvh = New!(BVHTree!Triangle)(tris, 4, 10, Heuristic.HMA);
+        tris.free();
+        return bvh;
+    }
+    else
+        return null;
+}
+
+BVHTree!Triangle entitiesToBVH(T)(T entities, bool recursive = true)
+{
+    Array!Triangle tris;
+
+    foreach(e; entities)
+        collectEntityTris(e, tris, recursive);
+
+    if (tris.length)
+    {
+        BVHTree!Triangle bvh = New!(BVHTree!Triangle)(tris, 8);
+        tris.free();
+        return bvh;
+    }
+    else
+        return null;
 }

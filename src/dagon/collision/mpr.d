@@ -25,6 +25,20 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * Minkowski Portal Refinement algorithm.
+ *
+ * Description:
+ * The `dagon.collision.mpr` implements the Minkowski Portal Refinement (MPR)
+ * algorithm for collision detection between convex shapes. This module provides
+ * a function to test for intersection and retrieve contact information between two
+ * `CollisionShape` objects.
+ *
+ * Copyright: Timur Gafarov 2013-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.collision.mpr;
 
 import dlib.math.vector;
@@ -35,13 +49,15 @@ import dlib.math.utils;
 import dagon.collision.shape;
 import dagon.collision.contact;
 
-/*
- * Implementation of the Minkowski Portal Refinement algorithm
+/**
+ * Tests for intersection between two convex shapes using the MPR algorithm
+ * and computes the contact point, normal, and penetration depth.
  *
- * TODO:
- * - write c.fact here
+ * Params:
+ *   s1 = First collision shape.
+ *   s2 = Second collision shape.
+ *   c  = Reference to a `Contact` struct to store contact information.
  */
-
 bool mprTest(
     CollisionShape s1,
     CollisionShape s2,
@@ -82,8 +98,8 @@ bool mprTest(
     // v1 = support in direction of origin
     c.normal = -v0;
 
-    v11 = s1.supportPointGlobal(v0);
-    v12 = s2.supportPointGlobal(c.normal);
+    v11 = s1.supportPoint(v0);
+    v12 = s2.supportPoint(c.normal);
     v1 = v12 - v11;
 
     if (dot(v1, c.normal) <= 0.0f)
@@ -106,8 +122,8 @@ bool mprTest(
         return true;
     }
 
-    v21 = s1.supportPointGlobal(-c.normal);
-    v22 = s2.supportPointGlobal(c.normal);
+    v21 = s1.supportPoint(-c.normal);
+    v22 = s2.supportPoint(c.normal);
     v2 = v22 - v21;
 
     if (dot(v2, c.normal) <= 0.0f)
@@ -141,8 +157,8 @@ bool mprTest(
 
         // Obtain the support point in a direction perpendicular to the existing plane
         // Note: This point is guaranteed to lie off the plane
-        v31 = s1.supportPointGlobal(-c.normal);
-        v32 = s2.supportPointGlobal(c.normal);
+        v31 = s1.supportPoint(-c.normal);
+        v32 = s2.supportPoint(c.normal);
         v3 = v32 - v31;
 
         if (dot(v3, c.normal) <= 0.0f)
@@ -193,8 +209,8 @@ bool mprTest(
                 hit = true;
 
             // Find the support point in the direction of the wedge face
-            v41 = s1.supportPointGlobal(-c.normal);
-            v42 = s2.supportPointGlobal(c.normal);
+            v41 = s1.supportPoint(-c.normal);
+            v42 = s2.supportPoint(c.normal);
             v4 = v42 - v41;
 
             float delta = dot(v4 - v3, c.normal);
