@@ -4,7 +4,8 @@ Dagon 0.30.0 - TBD
   - Breaking change: `dagon.collision.world` is removed. Its functionality is now available in `dagon.collision.bvh`
   - Breaking change: `CollisionShape.supportPointGlobal` is now `CollisionShape.supportPoint`
   - Experimental Gilbert-Johnson-Keerthi collision detection algorithm implementation (`dagon.collision.gjk.gjkTest`). No EPA yet, so the function doesn't return contact info
-  - `GeomTriangle.boundingBox` implementation.
+  - `GeomTriangle.boundingBox` implementation
+  - Bugfixes in the BVH module.
 
 Dagon 0.29.2 - 2 Sep, 2025
 --------------------------
