@@ -144,12 +144,11 @@ class BVHNode(T)
         aabb = enclosingAABB(objects.data);
     }
     
-    void free()
+    ~this()
     {
         objects.free();
-        if (child[0] !is null) child[0].free();
-        if (child[1] !is null) child[1].free();
-        Delete(this);
+        if (child[0]) Delete(child[0]);
+        if (child[1]) Delete(child[1]);
     }
     
     AABBTraverseQuery!T traverseByAABB(AABB* aabb)
@@ -301,12 +300,12 @@ class BVHTree(T)
         root = construct(objects, 0, maxObjectsPerNode, maxRecursionDepth, splitHeuristic);
     }
     
-    void free()
+    ~this()
     {
-        root.free();
-        Delete(this);
+        Delete(root);
     }
 
+   protected:
     BVHNode!T construct(
         Array!T objects,
         uint rec,
