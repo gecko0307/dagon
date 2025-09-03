@@ -343,9 +343,11 @@ class BVHTree(T)
         
         foreach(obj; node.objects.data)
         {
-            if (boxes[0].intersectsAABB(obj.boundingBox))
+            bool inLeft = boxes[0].intersectsAABB(obj.boundingBox);
+            bool inRight = boxes[1].intersectsAABB(obj.boundingBox);
+            if (inLeft)
                 leftObjects.append(obj);
-            else if (boxes[1].intersectsAABB(obj.boundingBox))
+            if (inRight && !inLeft)
                 rightObjects.append(obj);
         }
 
