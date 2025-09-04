@@ -52,6 +52,7 @@ import dagon.core.bindings;
 import dagon.core.application;
 import dagon.core.input;
 import dagon.core.logger;
+import dagon.core.actor;
 
 /**
  * All supported event types in Dagon.
@@ -79,6 +80,7 @@ enum EventType
     FileChange,
     DropFile,
     AsyncLogEvent,
+    Message,
     UserEvent
 }
 
@@ -105,6 +107,16 @@ struct Event
     string filename;
     LogLevel logLevel;
     string message;
+    string sender;
+}
+
+Event messageEvent(string sender, string message)
+{
+    Event e;
+    e.type = EventType.Message;
+    e.sender = sender;
+    e.message = message;
+    return e;
 }
 
 /**
@@ -119,7 +131,7 @@ enum MAX_CONTROLLERS = 1;
  * Handles input events, window events, controller/joystick events, and user-defined events.
  * Provides methods for polling SDL events, generating custom events, and querying input state.
  */
-class EventManager
+class EventManager: Owner
 {
     Application application;
     
@@ -188,6 +200,8 @@ class EventManager
     
     InputManager inputManager;
     
+    MessageBroker messageBroker;
+    
     void delegate(SDL_Event* event) onProcessEvent;
 
     /**
@@ -200,6 +214,8 @@ class EventManager
      */
     this(Application app)
     {
+        super(app);
+        
         application = app;
         
         window = app.window;
@@ -216,6 +232,8 @@ class EventManager
         }
 
         inputManager = New!InputManager(this);
+        
+        messageBroker = New!MessageBroker(this);
     }
 
     /// Destructor. Cleans up resources.
@@ -713,6 +731,8 @@ class EventManager
                     break;
             }
         }
+        
+        messageBroker.update();
     }
 
     protected int lastTime = 0;
@@ -835,67 +855,19 @@ class EventManager
 }
 
 /**
- * Base class for objects that listen to and handle events.
+ * Base class for event dispatchers.
  *
  * Description:
- * Inherit from `EventListener` and override the relevant event handler methods.
- * Call `processEvents` each frame to dispatch events to your handlers.
+ * Inherit from `EventDispatcher` and override the relevant event handler methods.
+ * Call `processEvents` to dispatch events to your handlers.
  */
-abstract class EventListener: Owner
+abstract class EventDispatcher: Owner
 {
-    /// The event manager used for polling events.
-    EventManager eventManager;
-
-    /// The input manager for input state queries.
-    InputManager inputManager;
-
-    /// If false, disables event processing.
-    bool enabled = true;
-
-    /**
-     * Constructs an EventListener.
-     *
-     * Params:
-     *   emngr = The event manager to use.
-     *   owner = The owner object for memory management.
-     */
-    this(EventManager emngr, Owner owner)
+    this(Owner owner)
     {
         super(owner);
-        eventManager = emngr;
-        if(emngr !is null)
-            inputManager = emngr.inputManager;
     }
-
-    /**
-     * Generates a user event with the given code.
-     *
-     * Params:
-     *   code = User event code.
-     */
-    protected void generateUserEvent(int code)
-    {
-        eventManager.generateUserEvent(code);
-    }
-
-    /**
-     * Processes all pending events, dispatching them to handler methods.
-     *
-     * Params:
-     *   enableInputEvents = If false, disables input event handlers.
-     */
-    void processEvents(bool enableInputEvents = true)
-    {
-        if (!enabled)
-            return;
-
-        for (uint i = 0; i < eventManager.numEvents; i++)
-        {
-            Event* e = &eventManager.eventQueue[i];
-            processEvent(e, enableInputEvents);
-        }
-    }
-
+    
     /**
      * Processes a single event, dispatching it to the appropriate handler.
      *
@@ -963,6 +935,9 @@ abstract class EventListener: Owner
                 break;
             case EventType.DropFile:
                 if (enableInputEvents) onDropFile(e.filename);
+                break;
+            case EventType.Message:
+                onMessageEvent(e.sender, e.message);
                 break;
             case EventType.UserEvent:
                 onUserEvent(e.userCode);
@@ -1032,6 +1007,68 @@ abstract class EventListener: Owner
     /// Called when a log event is manually triggered.
     void onAsyncLogEvent(LogLevel level, string message) {}
 
+    /// Called when a message event is received.
+    void onMessageEvent(string sender, string message) {}
+
     /// Called when a user event is received.
     void onUserEvent(int code) {}
+}
+
+/**
+ * Base class for single-threaded event listeners.
+ */
+abstract class EventListener: EventDispatcher
+{
+    /// The event manager used for polling events.
+    EventManager eventManager;
+    
+    /// The input manager for input state queries.
+    InputManager inputManager;
+    
+    /// If false, disables event processing.
+    bool enabled = true;
+    
+    /**
+     * Constructs an EventListener.
+     *
+     * Params:
+     *   emngr = The event manager to use.
+     *   owner = The owner object for memory management.
+     */
+    this(EventManager emngr, Owner owner)
+    {
+        super(owner);
+        eventManager = emngr;
+        if(emngr !is null)
+            inputManager = emngr.inputManager;
+    }
+
+    /**
+     * Generates a user event with the given code.
+     *
+     * Params:
+     *   code = User event code.
+     */
+    protected void generateUserEvent(int code)
+    {
+        eventManager.generateUserEvent(code);
+    }
+
+    /**
+     * Processes all pending events, dispatching them to handler methods.
+     *
+     * Params:
+     *   enableInputEvents = If false, disables input event handlers.
+     */
+    void processEvents(bool enableInputEvents = true)
+    {
+        if (!enabled)
+            return;
+
+        for (uint i = 0; i < eventManager.numEvents; i++)
+        {
+            Event* e = &eventManager.eventQueue[i];
+            processEvent(e, enableInputEvents);
+        }
+    }
 }

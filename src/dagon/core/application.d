@@ -680,7 +680,6 @@ class Application: EventListener, Updateable
         
         SDL_DestroyWindow(window);
         SDL_Quit();
-        Delete(_eventManager);
         Delete(_extensions);
         
         if (freetypePresent && ftLibrary)

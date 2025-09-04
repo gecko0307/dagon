@@ -42,6 +42,9 @@ module dagon.core;
 
 public
 {
+    /// Actor model for multithreaded logics.
+    import dagon.core.actor;
+    
     /// Application base class and main loop utilities.
     import dagon.core.application;
 
