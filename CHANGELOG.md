@@ -1,5 +1,11 @@
 Dagon 0.30.0 - TBD
 ------------------
+- **Core**
+  - Asynchronous thread-safe messaging using lock-free SPSC queues and inbox/outbox pattern with a lightweight actor model based on it (`dagon.core.actor`). `Actor` objects communicate with each other by sending message events through a `MessageBroker` built into the `EventManager`. They can also react to ordinary events such as user input. `ThreadedActor` class can be used to run tasks in a separate thread, useful for building network clients and doing heavy I/O at runtime
+  - New event type `EventType.Message`
+  - New field `Event.sender`
+  - New property `EventManager.messageBroker`
+  - New class `EventDispatcher`
 - **Collision**
   - Breaking change: `dagon.collision.world` is removed. Its functionality is now available in `dagon.collision.bvh`
   - Breaking change: `CollisionShape.supportPointGlobal` is now `CollisionShape.supportPoint`
