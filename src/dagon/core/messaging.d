@@ -133,9 +133,9 @@ abstract class Endpoint: EventDispatcher
     }
 
     /// Send a message to a recipient.
-    protected bool send(string recipient, string message, uint domain = MessageDomain.ITC)
+    protected bool send(string recipient, string message, void* payload, uint domain = MessageDomain.ITC)
     {
-        return outbox.push(messageEvent(address, recipient, message, domain));
+        return outbox.push(messageEvent(address, recipient, message, payload, domain));
     }
 
     /// Receive an event from the inbox.

@@ -122,13 +122,14 @@ enum MessageDomain
     ITC = 0
 }
 
-Event messageEvent(string sender, string recipient, string message, uint domain = MessageDomain.ITC)
+Event messageEvent(string sender, string recipient, string message, void* payload, uint domain = MessageDomain.ITC)
 {
     Event e;
     e.type = EventType.Message;
     e.sender = sender;
     e.recipient = recipient;
     e.message = message;
+    e.payload = payload;
     e.domain = domain;
     return e;
 }
@@ -963,7 +964,7 @@ abstract class EventDispatcher: Owner
                 break;
             case EventType.Message:
                 if (e.recipient == address || e.recipient == "broadcast")
-                    onMessageEvent(e.domain, e.sender, e.message);
+                    onMessageEvent(e.domain, e.sender, e.message, e.payload);
                 break;
             case EventType.UserEvent:
                 onUserEvent(e.userCode);
@@ -1037,7 +1038,7 @@ abstract class EventDispatcher: Owner
     void onAsyncLogEvent(LogLevel level, string message) {}
 
     /// Called when a message event is received.
-    void onMessageEvent(uint domain, string sender, string message) {}
+    void onMessageEvent(uint domain, string sender, string message, void* payload) {}
     
     /// Called when a task event is received.
     void onTaskEvent(TaskCallback callback, void* payload) {}
