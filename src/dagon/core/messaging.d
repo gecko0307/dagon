@@ -25,7 +25,7 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-module dagon.core.actor;
+module dagon.core.messaging;
 
 import core.atomic;
 
@@ -36,46 +36,42 @@ import dlib.container.array;
 
 import dagon.core.event;
 
-struct Message
+struct SPSCEventQueue(size_t capacity)
 {
-    string from;
-    string recipient; // "broadcast" = to everyone
-    Event event;
-}
-
-struct SPSCQueue(size_t capacity)
-{
-    Message[capacity] buffer;
+    Event[capacity] buffer;
     shared size_t head = 0; // producer writes here
     shared size_t tail = 0; // consumer reads here
 
-    bool push(Message value)
+    bool push(Event event)
     {
         auto next = (head + 1) % capacity;
         if (next == tail) // queue full
             return false;
 
-        buffer[head] = value;
+        buffer[head] = event;
         atomicStore!(MemoryOrder.rel)(head, next);
         return true;
     }
 
-    bool pop(out Message value)
+    bool pop(out Event event)
     {
         if (tail == atomicLoad!(MemoryOrder.acq)(head))
             return false; // empty
 
-        value = buffer[tail];
+        event = buffer[tail];
         tail = (tail + 1) % capacity;
         return true;
     }
 }
 
-abstract class Actor: EventDispatcher
+/**
+ * Asynchronous receiver with a lock-free inbox/outbox messaging mechanism.
+ */
+abstract class Receiver: EventDispatcher
 {
-    string address;
-    SPSCQueue!(50) inbox;
-    SPSCQueue!(50) outbox;
+    SPSCEventQueue!(50) inbox;
+    SPSCEventQueue!(50) outbox;
+    bool enabled = true;
     
     this(string address, Owner owner)
     {
@@ -83,28 +79,33 @@ abstract class Actor: EventDispatcher
         this.address = address;
     }
 
-    protected bool send(string recipient, string message)
+    protected bool send(string recipient, string message, uint domain = MessageDomain.ITC)
     {
-        return outbox.push(
-            Message(this.address, recipient, messageEvent(this.address, message)));
+        return outbox.push(messageEvent(address, recipient, message, domain));
     }
 
-    protected bool receive(out Message value)
+    protected bool receive(out Event event)
     {
-        return inbox.pop(value);
+        return inbox.pop(event);
     }
 
-    protected void dispatch()
+    protected void processEvents()
     {
-        Message msg;
-        while(receive(msg))
+        if (!enabled)
+            return;
+        
+        Event event;
+        while(receive(event))
         {
-            processEvent(&msg.event);
+            processEvent(&event);
         }
     }
 }
 
-class ThreadedActor: Actor
+/**
+ * Threaded receiver.
+ */
+class ReceiverThread: Receiver
 {
     Thread thread;
     bool running = false;
@@ -117,22 +118,25 @@ class ThreadedActor: Actor
     
     ~this()
     {
-        if (thread.isRunning())
+        if (thread.isRunning)
             stop();
         Delete(thread);
     }
     
     void run()
     {
-        running = true;
-        thread.start();
+        if (!thread.isRunning)
+        {
+            running = true;
+            thread.start();
+        }
     }
     
     void threadFunc()
     {
         while(running)
         {
-            dispatch();
+            processEvents();
             onUpdate();
         }
     }
@@ -154,8 +158,8 @@ class MessageBroker: Owner
     bool enabled = false;
     string name = "broker";
     EventManager eventManager;
-    Message[1024] messageBuffer;
-    Array!Actor actors;
+    Event[1024] eventBuffer;
+    Array!Receiver receivers;
 
     this(EventManager eventManager)
     {
@@ -165,12 +169,12 @@ class MessageBroker: Owner
 
     ~this()
     {
-        actors.free();
+        receivers.free();
     }
 
-    void add(Actor actor)
+    void add(Receiver r)
     {
-        actors.append(actor);
+        receivers.append(r);
     }
     
     void update()
@@ -182,9 +186,9 @@ class MessageBroker: Owner
         
         for (uint i = 0; i < eventManager.numEvents; i++)
         {
-            if (numCollected < messageBuffer.length)
+            if (numCollected < eventBuffer.length)
             {
-                messageBuffer[numCollected] = Message(name, "broadcast", eventManager.eventQueue[i]);
+                eventBuffer[numCollected] = eventManager.eventQueue[i];
                 numCollected++;
             }
             else
@@ -193,14 +197,14 @@ class MessageBroker: Owner
             }
         }
 
-        foreach(actor; actors)
+        foreach(receiver; receivers)
         {
-            Message msg;
-            if (actor.outbox.pop(msg))
+            Event event;
+            if (receiver.outbox.pop(event))
             {
-                if (numCollected < messageBuffer.length)
+                if (numCollected < eventBuffer.length)
                 {
-                    messageBuffer[numCollected] = msg;
+                    eventBuffer[numCollected] = event;
                     numCollected++;
                 }
                 else
@@ -212,16 +216,33 @@ class MessageBroker: Owner
 
         for (size_t i = 0; i < numCollected; i++)
         {
-            Message msg = messageBuffer[i];
-            foreach(actor; actors)
+            Event event = eventBuffer[i];
+            if (event.type == EventType.Message)
             {
-                if (msg.recipient == "broadcast")
+                if (event.domain == MessageDomain.ITC)
                 {
-                    if (msg.from != actor.address)
-                        actor.inbox.push(msg);
+                    foreach(receiver; receivers)
+                    {
+                        if (event.recipient == "broadcast")
+                        {
+                            if (event.sender != receiver.address)
+                                receiver.inbox.push(event);
+                        }
+                        else if (event.recipient == receiver.address)
+                            receiver.inbox.push(event);
+                    }
                 }
-                else if (msg.recipient == actor.address)
-                    actor.inbox.push(msg);
+                else
+                {
+                    eventManager.addEvent(event);
+                }
+            }
+            else
+            {
+                foreach(receiver; receivers)
+                {
+                    receiver.inbox.push(event);
+                }
             }
         }
     }

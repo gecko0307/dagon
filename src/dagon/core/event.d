@@ -52,7 +52,7 @@ import dagon.core.bindings;
 import dagon.core.application;
 import dagon.core.input;
 import dagon.core.logger;
-import dagon.core.actor;
+import dagon.core.messaging;
 
 /**
  * All supported event types in Dagon.
@@ -104,18 +104,27 @@ struct Event
     int userCode;
     int mouseWheelX;
     int mouseWheelY;
-    string filename;
     LogLevel logLevel;
+    uint domain;
+    string filename;
     string message;
     string sender;
+    string recipient;
 }
 
-Event messageEvent(string sender, string message)
+enum MessageDomain
+{
+    ITC = 0
+}
+
+Event messageEvent(string sender, string recipient, string message, uint domain = MessageDomain.ITC)
 {
     Event e;
     e.type = EventType.Message;
     e.sender = sender;
+    e.recipient = recipient;
     e.message = message;
+    e.domain = domain;
     return e;
 }
 
@@ -859,10 +868,12 @@ class EventManager: Owner
  *
  * Description:
  * Inherit from `EventDispatcher` and override the relevant event handler methods.
- * Call `processEvents` to dispatch events to your handlers.
+ * Call `processEvents` to dispatch an event to your handlers.
  */
 abstract class EventDispatcher: Owner
 {
+    string address = "";
+    
     this(Owner owner)
     {
         super(owner);
@@ -937,7 +948,8 @@ abstract class EventDispatcher: Owner
                 if (enableInputEvents) onDropFile(e.filename);
                 break;
             case EventType.Message:
-                onMessageEvent(e.sender, e.message);
+                if (e.recipient == address || e.recipient == "broadcast")
+                    onMessageEvent(e.domain, e.sender, e.message);
                 break;
             case EventType.UserEvent:
                 onUserEvent(e.userCode);
@@ -1008,7 +1020,7 @@ abstract class EventDispatcher: Owner
     void onAsyncLogEvent(LogLevel level, string message) {}
 
     /// Called when a message event is received.
-    void onMessageEvent(string sender, string message) {}
+    void onMessageEvent(uint domain, string sender, string message) {}
 
     /// Called when a user event is received.
     void onUserEvent(int code) {}
