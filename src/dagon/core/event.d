@@ -81,8 +81,11 @@ enum EventType
     DropFile,
     AsyncLogEvent,
     Message,
+    Task,
     UserEvent
 }
+
+alias TaskCallback = void delegate(Object, void*);
 
 /**
  * Represents a single event in the Dagon event system.
@@ -110,6 +113,8 @@ struct Event
     string message;
     string sender;
     string recipient;
+    TaskCallback callback;
+    void* payload;
 }
 
 enum MessageDomain
@@ -125,6 +130,15 @@ Event messageEvent(string sender, string recipient, string message, uint domain 
     e.recipient = recipient;
     e.message = message;
     e.domain = domain;
+    return e;
+}
+
+Event taskEvent(TaskCallback callback, void* payload)
+{
+    Event e;
+    e.type = EventType.Task;
+    e.callback = callback;
+    e.payload = payload;
     return e;
 }
 
@@ -954,6 +968,9 @@ abstract class EventDispatcher: Owner
             case EventType.UserEvent:
                 onUserEvent(e.userCode);
                 break;
+            case EventType.Task:
+                onTaskEvent(e.callback, e.payload);
+                break;
             default:
                 break;
         }
@@ -1021,6 +1038,9 @@ abstract class EventDispatcher: Owner
 
     /// Called when a message event is received.
     void onMessageEvent(uint domain, string sender, string message) {}
+    
+    /// Called when a task event is received.
+    void onTaskEvent(TaskCallback callback, void* payload) {}
 
     /// Called when a user event is received.
     void onUserEvent(int code) {}

@@ -97,10 +97,13 @@ struct SPSCEventQueue(size_t capacity)
 }
 
 /**
- * Asynchronous receiver with a lock-free inbox/outbox messaging.
+ * Base class for senders/receivers with a lock-free inbox/outbox messaging.
  */
-abstract class Receiver: EventDispatcher
+abstract class Endpoint: EventDispatcher
 {
+    /// Reference to a message broker
+    MessageBroker broker;
+    
     /// Incoming event queue.
     SPSCEventQueue!(50) inbox;
 
@@ -110,10 +113,23 @@ abstract class Receiver: EventDispatcher
     /// Receiver enabled flag.
     bool enabled = true;
     
-    this(string address, Owner owner)
+    this(string address, MessageBroker broker, Owner owner)
     {
         super(owner);
+        this.broker = broker;
         this.address = address;
+        broker.add(this);
+    }
+    
+    this(string address, MessageBroker broker)
+    {
+        this(address, broker, broker);
+    }
+    
+    /// Initiate a main thread task.
+    protected bool queueTask(scope TaskCallback callback, void* payload)
+    {
+        return outbox.push(taskEvent(callback, payload));
     }
 
     /// Send a message to a recipient.
@@ -143,10 +159,9 @@ abstract class Receiver: EventDispatcher
 }
 
 /**
- * Threaded receiver.
- * Runs its own thread to process events asynchronously.
+ * An endpoint that runs in its own thread to process events asynchronously.
  */
-class ReceiverThread: Receiver
+class ThreadedEndpoint: Endpoint
 {
     /// Internal thread.
     Thread thread;
@@ -154,9 +169,9 @@ class ReceiverThread: Receiver
     /// Thread running flag.
     shared bool running = false;
     
-    this(string address, Owner owner)
+    this(string address, MessageBroker broker, Owner owner)
     {
-        super(address, owner);
+        super(address, broker, owner);
         thread = New!Thread(&threadFunc);
     }
     
@@ -201,6 +216,8 @@ class ReceiverThread: Receiver
     }
 }
 
+alias Actor = ThreadedEndpoint;
+
 /**
  * Message broker for distributing events and messages.
  * Collects events from EventManager and receivers, then dispatches them.
@@ -216,8 +233,8 @@ class MessageBroker: Owner
     /// Temporary buffer for collected events.
     Event[1024] eventBuffer;
 
-    /// List of registered receivers.
-    Array!Receiver receivers;
+    /// List of registered endpoints.
+    Array!Endpoint endpoints;
 
     this(EventManager eventManager)
     {
@@ -227,13 +244,13 @@ class MessageBroker: Owner
 
     ~this()
     {
-        receivers.free();
+        endpoints.free();
     }
 
     /// Register a receiver.
-    void add(Receiver r)
+    void add(Endpoint endpoint)
     {
-        receivers.append(r);
+        endpoints.append(endpoint);
     }
     
     /// Collect and dispatch events/messages.
@@ -244,23 +261,29 @@ class MessageBroker: Owner
         
         size_t numCollected = 0;
         
+        // Collect events from the main event queue
         for (uint i = 0; i < eventManager.numEvents; i++)
         {
-            if (numCollected < eventBuffer.length)
+            Event event = eventManager.eventQueue[i];
+            if (event.type != EventType.Task)
             {
-                eventBuffer[numCollected] = eventManager.eventQueue[i];
-                numCollected++;
-            }
-            else
-            {
-                // TODO
+                if (numCollected < eventBuffer.length)
+                {
+                    eventBuffer[numCollected] = eventManager.eventQueue[i];
+                    numCollected++;
+                }
+                else
+                {
+                    // TODO
+                }
             }
         }
 
-        foreach(receiver; receivers)
+        // Collect endpoint outgoing events
+        foreach(endpoint; endpoints)
         {
             Event event;
-            if (receiver.outbox.pop(event))
+            if (endpoint.outbox.pop(event))
             {
                 if (numCollected < eventBuffer.length)
                 {
@@ -274,22 +297,27 @@ class MessageBroker: Owner
             }
         }
 
+        // Dispatch collected events
         for (size_t i = 0; i < numCollected; i++)
         {
             Event event = eventBuffer[i];
-            if (event.type == EventType.Message)
+            if (event.type == EventType.Task)
+            {
+                eventManager.addEvent(event);
+            }
+            else if (event.type == EventType.Message)
             {
                 if (event.domain == MessageDomain.ITC)
                 {
-                    foreach(receiver; receivers)
+                    foreach(endpoint; endpoints)
                     {
                         if (event.recipient == "broadcast")
                         {
-                            if (event.sender != receiver.address)
-                                receiver.inbox.push(event);
+                            if (event.sender != endpoint.address)
+                                endpoint.inbox.push(event);
                         }
-                        else if (event.recipient == receiver.address)
-                            receiver.inbox.push(event);
+                        else if (event.recipient == endpoint.address)
+                            endpoint.inbox.push(event);
                     }
                 }
                 else
@@ -299,9 +327,9 @@ class MessageBroker: Owner
             }
             else
             {
-                foreach(receiver; receivers)
+                foreach(endpoint; endpoints)
                 {
-                    receiver.inbox.push(event);
+                    endpoint.inbox.push(event);
                 }
             }
         }
