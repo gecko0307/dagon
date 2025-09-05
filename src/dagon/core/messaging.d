@@ -152,7 +152,7 @@ class ReceiverThread: Receiver
     Thread thread;
 
     /// Thread running flag.
-    bool running = false;
+    shared bool running = false;
     
     this(string address, Owner owner)
     {
@@ -172,7 +172,7 @@ class ReceiverThread: Receiver
     {
         if (!thread.isRunning)
         {
-            running = true;
+            atomicStore!(MemoryOrder.rel)(running, true);
             thread.start();
         }
     }
@@ -180,7 +180,7 @@ class ReceiverThread: Receiver
     /// Thread main loop.
     void threadFunc()
     {
-        while(running)
+        while(atomicLoad!(MemoryOrder.acq)(running))
         {
             processEvents();
             onUpdate();
