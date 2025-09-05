@@ -25,6 +25,19 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * Messaging module.
+ *
+ * Description:
+ * The `dagon.core.messaging` provides lock-free, single-producer single-consumer (SPSC)
+ * event queues, asynchronous receivers, threaded receivers, and a message broker
+ * for inter-thread communication and bidirectional messaging between EventManager and receivers.
+ *
+ * Copyright: Timur Gafarov 2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.core.messaging;
 
 import core.atomic;
@@ -36,12 +49,30 @@ import dlib.container.array;
 
 import dagon.core.event;
 
+/**
+ * Lock-free single-producer single-consumer event queue.
+ *
+ * Params:
+ *   capacity = Maximum number of events in the queue.
+ *
+ * Members:
+ *   buffer = Circular buffer for events.
+ *   head = Producer write index.
+ *   tail = Consumer read index.
+ *
+ * Methods:
+ *   push = Add an event to the queue. Returns false if full.
+ *   pop = Remove an event from the queue. Returns false if empty.
+ */
 struct SPSCEventQueue(size_t capacity)
 {
+    /// Circular buffer for events.
     Event[capacity] buffer;
+
     shared size_t head = 0; // producer writes here
     shared size_t tail = 0; // consumer reads here
 
+    /// Add an event to the queue. Returns false if full.
     bool push(Event event)
     {
         auto next = (head + 1) % capacity;
@@ -53,6 +84,7 @@ struct SPSCEventQueue(size_t capacity)
         return true;
     }
 
+    /// Remove an event from the queue. Returns false if empty.
     bool pop(out Event event)
     {
         if (tail == atomicLoad!(MemoryOrder.acq)(head))
@@ -65,12 +97,17 @@ struct SPSCEventQueue(size_t capacity)
 }
 
 /**
- * Asynchronous receiver with a lock-free inbox/outbox messaging mechanism.
+ * Asynchronous receiver with a lock-free inbox/outbox messaging.
  */
 abstract class Receiver: EventDispatcher
 {
+    /// Incoming event queue.
     SPSCEventQueue!(50) inbox;
+
+    /// Outgoing event queue.
     SPSCEventQueue!(50) outbox;
+
+    /// Receiver enabled flag.
     bool enabled = true;
     
     this(string address, Owner owner)
@@ -79,16 +116,19 @@ abstract class Receiver: EventDispatcher
         this.address = address;
     }
 
+    /// Send a message to a recipient.
     protected bool send(string recipient, string message, uint domain = MessageDomain.ITC)
     {
         return outbox.push(messageEvent(address, recipient, message, domain));
     }
 
+    /// Receive an event from the inbox.
     protected bool receive(out Event event)
     {
         return inbox.pop(event);
     }
 
+    /// Process all events in the inbox.
     protected void processEvents()
     {
         if (!enabled)
@@ -104,10 +144,14 @@ abstract class Receiver: EventDispatcher
 
 /**
  * Threaded receiver.
+ * Runs its own thread to process events asynchronously.
  */
 class ReceiverThread: Receiver
 {
+    /// Internal thread.
     Thread thread;
+
+    /// Thread running flag.
     bool running = false;
     
     this(string address, Owner owner)
@@ -123,6 +167,7 @@ class ReceiverThread: Receiver
         Delete(thread);
     }
     
+    /// Start the thread.
     void run()
     {
         if (!thread.isRunning)
@@ -132,6 +177,7 @@ class ReceiverThread: Receiver
         }
     }
     
+    /// Thread main loop.
     void threadFunc()
     {
         while(running)
@@ -141,11 +187,13 @@ class ReceiverThread: Receiver
         }
     }
 
+    /// Called every update cycle.
     void onUpdate()
     {
         //
     }
     
+    /// Stop the thread.
     void stop()
     {
         atomicStore!(MemoryOrder.rel)(running, false);
@@ -153,12 +201,22 @@ class ReceiverThread: Receiver
     }
 }
 
+/**
+ * Message broker for distributing events and messages.
+ * Collects events from EventManager and receivers, then dispatches them.
+ */
 class MessageBroker: Owner
 {
+    /// Broker enabled flag.
     bool enabled = false;
-    string name = "broker";
+
+    /// Associated event manager.
     EventManager eventManager;
+
+    /// Temporary buffer for collected events.
     Event[1024] eventBuffer;
+
+    /// List of registered receivers.
     Array!Receiver receivers;
 
     this(EventManager eventManager)
@@ -172,11 +230,13 @@ class MessageBroker: Owner
         receivers.free();
     }
 
+    /// Register a receiver.
     void add(Receiver r)
     {
         receivers.append(r);
     }
     
+    /// Collect and dispatch events/messages.
     void update()
     {
         if (!enabled)
