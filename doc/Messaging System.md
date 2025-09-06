@@ -81,7 +81,7 @@ class TestScene: Scene
 
 A simple task runner:
 
-```
+```d
 class Worker: ThreadedEndpoint
 {
     this(string address, MessageBroker broker, Owner owner)
