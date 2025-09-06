@@ -1058,9 +1058,6 @@ abstract class EventDispatcher: Owner
     /// Called when a file is dropped onto the window.
     void onDropFile(string filename) {}
 
-    /// Called when a log event is manually triggered.
-    void onAsyncLogEvent(LogLevel level, string message) {}
-
     /// Called when a message event is received.
     void onMessageEvent(uint domain, string sender, string message, void* payload) {}
     

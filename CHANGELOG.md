@@ -1,11 +1,16 @@
 Dagon 0.30.0 - TBD
 ------------------
 - **Core**
-  - Asynchronous thread-safe messaging using lock-free SPSC queues and inbox/outbox patterns (`dagon.core.messaging`). `Endpoint` objects communicate with each other by sending message events through a `MessageBroker` built into the `EventManager`. They can also react to ordinary events such as user input. `ThreadedEndpoint` or (`Actor`) can be used to run tasks in separate threads, useful for building network clients and doing heavy I/O at runtime. Endpoints can also initiate synchronized tasks to modify main thread state
+  - Asynchronous thread-safe messaging framework using lock-free SPSC queues and inbox/outbox patterns (`dagon.core.messaging`). `Endpoint` objects communicate with each other by sending message events through a `MessageBroker` built into the `EventManager`. They can also react to ordinary events such as user input. `ThreadedEndpoint` or (`Actor`) can be used to run tasks in separate threads, useful for building network clients and doing heavy I/O at runtime. Endpoints can also initiate synchronized tasks to modify main thread state
   - New event types `EventType.Message`, `EventType.Task`
   - New fields `Event.sender`, `Event.recipient`, `Event.domain`, `Event.callback`, `Event.payload`
   - New property `EventManager.messageBroker`
+  - New method `EventManager.queueEvent`
+  - Breaking change: `EventManager.userEventQueue` is now `EventManager.outboxEventQueue`, `EventManager.numUserEvents` is now `EventManager.numOutboxEvents`
+  - Deprecated aliases for backward compatibility: `EventManager.addUserEvent` = `EventManager.queueEvent`, `EventManager.generateFileChangeEvent` = `EventManager.queueFileChangeEvent`, `EventManager.generateUserEvent` = `EventManager.queueUserEvent`, `EventManager.asyncLog` = `EventManager.queueLogEvent`
   - New class `EventDispatcher`
+  - New event handlers: `EventListener.onMessageEvent`, `EventListener.onTaskEvent`
+  - New method `EventListener.queueTask`
 - **Collision**
   - Breaking change: `dagon.collision.world` is removed. Its functionality is now available in `dagon.collision.bvh`
   - Breaking change: `CollisionShape.supportPointGlobal` is now `CollisionShape.supportPoint`
