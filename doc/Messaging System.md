@@ -3,7 +3,7 @@
 Dagon's messaging module provides a framework for building concurrent applications using in-process microservices (called endpoints) that run in separate threads. The system provides asynchronous event handling and lock-free inter-thread communication. It combines ideas from the actor model, distributed architectures, and OS-level message passing.
 
 ## Architecture Overview
-Unlike many frameworks that strictly separate synchronous and asynchronous workflows, Dagon introduces a unified messaging layer that seamlessly integrates both. This design combines the familiarity of an event bus with the scalability of the actor model. The system glues together both synchronous event delivery (`EventManager` and its single-threaded event queue) and asynchronous processing (`MessageBroker` and SPSC queues). Each endpoint behaves like an actor - it runs in its own thread, has an inbox, and communicates only through messages and tasks. Endpoints can safely send messages back to the main thread, and the main thread can post messages/tasks to endpoints, all through the same API.
+Unlike many frameworks that strictly separate synchronous and asynchronous workflows, Dagon introduces a unified messaging layer that seamlessly integrates both. This design combines the familiarity of an event bus with the scalability of the actor model. The system glues together both synchronous event delivery (`EventManager` and its single-threaded event queue) and asynchronous processing (`MessageBroker` and SPSC queues). Each endpoint behaves like an actor - it runs in its own thread, has an inbox and an outbox, and communicates only through messages and tasks. Endpoints can safely send messages back to the main thread, and the main thread can post messages/tasks to endpoints, all through the same API.
 
 Features:
 - Lock-free queues. Efficient single-producer single-consumer event queues for fast bidirectional communication
@@ -18,11 +18,11 @@ Some typical use cases include
 - Heavy I/O tasks such as reading or writing files, that would otherwise block the main thread
 - AI agents running heavy computations (e.g., A* pathfinding, decision trees) can also operate in background threads without blocking the game loop.
 
-Remember that the system is asynchronous: unlike in `EventManager`, messages and tasks do not propagate immediately, and the order in which they are processed cannot be assumed. Messaging system can only serve as a basis for logic that don't strictly require immediate responses and tolerant for delays. There are many cases where asynchronous computations are not effective at all:
+Remember that the system is asynchronous: unlike in `EventManager`, messages and tasks do not propagate immediately, and the order in which they are processed cannot be assumed. Messaging system can only serve as a basis for logic that don't strictly require immediate responses and tolerant for delays. There are many cases where asynchronous computations are not efficient at all:
 - Strictly real-time data processing. If the renderer absolutely needs the data to be updated per-frame (like in animation), then you should do that in `onUpdate` methods rather than in the asynchronous event handlers
 - Managing GPU resources. OpenGL API is not thread-safe, and using it requires synchronization with the renderer
 - Deterministic logic. Mechanics where the order of events and their exact sequence are critical, such as simulations, turn-based combat, or replication logic
-- Tight feedback loops. Any logic where the player expects an immediate response (character control, UI elements) should be executed synchronously.
+- Tight feedback loops. Any logic where the user expects an immediate response (character control, UI elements) should be executed synchronously.
 
 ## Key Concepts
 - **Event**. The system operates on the same event structs as `dagon.core.event`. `Event` type represents a single occurrence - e.g., key press, window resize, a message.
