@@ -35,6 +35,46 @@ Remember that the system is asynchronous: unlike in `EventManager`, messages and
 - **Payload**. An arbitrary pointer that can be passed with events. It is used in message and task events. Its access semantics is entirely up to the user - the system does not guarantee safe access to it and doesn't manage its ownership and lifetime. Ensure proper synchronization and memory management. In most cases, prefer managed data structures (unless performance requires raw data). For example, use payload pointer to carry a refernce to an owned class instance.
 
 ## Usage
-A simple endpoint that just prints (asynchronously) all incoming messages to the logger:
+A simple endpoint that just logs (asynchronously) all incoming messages and answers back:
 
+```d
+class Responder: ThreadedEndpoint
+{
+    this(string address, MessageBroker broker, Owner owner)
+    {
+        super(address, broker, owner);
+    }
+    
+    override void onMessage(uint domain, string sender, string message, void* payload)
+    {
+        queueLog(LogLevel.Info, message);
+        
+        send("Scene", "Hi!", null, MessageDomain.MainThread);
+    }
+}
 
+class TestScene: Scene
+{
+    Responder responder;
+    
+    override void afterLoad()
+    {
+        this.address = "Scene"; // important to receive messages!
+        
+        responder = New!Responder("Responder", eventManager.messageBroker, this);
+        responder.run();
+        
+        eventManager.messageBroker.enabled = true; // broker is disabled by default for optimization
+    }
+    
+    override void onKeyDown(int key)
+    {
+        send("Responder", "Hello, World!");
+    }
+    
+    override void onMessage(uint domain, string sender, string message, void* payload)
+    {
+        logInfo("Scene received from ", sender, ": ", message);
+    }
+}
+```
