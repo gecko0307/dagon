@@ -273,7 +273,7 @@ class MessageBroker: Owner
     /// List of registered workers.
     Array!Worker workers;
     
-    size_t lastWorkerEndpointIndex = 0;
+    size_t lastWorkerIndex = 0;
 
     public:
 
@@ -360,9 +360,9 @@ class MessageBroker: Owner
             {
                 if (event.domain <= MessageDomain.ITC)
                 {
-                    size_t idx = lastWorkerEndpointIndex % workers.length;
+                    size_t idx = lastWorkerIndex % workers.length;
                     workers[idx].inbox.push(event);
-                    lastWorkerEndpointIndex++;
+                    lastWorkerIndex++;
                 }
                 else
                 {
