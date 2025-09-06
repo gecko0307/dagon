@@ -31,8 +31,8 @@ DEALINGS IN THE SOFTWARE.
  *
  * Description:
  * The `dagon.core.messaging` provides lock-free, single-producer single-consumer (SPSC)
- * event queues, asynchronous receivers, threaded receivers, and a message broker
- * for inter-thread communication and bidirectional messaging between EventManager and receivers.
+ * event queues, messaging endpoints, threaded endpoints, workers, and a message broker
+ * for inter-thread communication and bidirectional messaging.
  *
  * Copyright: Timur Gafarov 2025
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
@@ -235,6 +235,9 @@ class ThreadedEndpoint: Endpoint
 
 alias Actor = ThreadedEndpoint;
 
+/**
+ * A specialized threaded endpoint that executes tasks in the background.
+ */
 class Worker: ThreadedEndpoint
 {
     this(string address, MessageBroker broker, Owner owner)
@@ -272,7 +275,8 @@ class MessageBroker: Owner
 
     /// List of registered workers.
     Array!Worker workers;
-    
+
+    /// Last worker index for round-robin scheduling
     size_t lastWorkerIndex = 0;
 
     public:
@@ -312,9 +316,11 @@ class MessageBroker: Owner
         {
             Event event = eventManager.eventQueue[i];
             
+            // Ignore log events
             if (event.type == EventType.Log)
                 continue;
             
+            // Ignore main-thread messages
             if ((event.type == EventType.Message || event.type == EventType.Task) && 
                 event.domain > MessageDomain.ITC)
                 continue;
@@ -354,18 +360,21 @@ class MessageBroker: Owner
             Event event = eventBuffer[i];
             if (event.type == EventType.Log)
             {
+                // Asynchronous log from an endpoint
                 eventManager.queueEvent(event);
             }
             else if (event.type == EventType.Task)
             {
                 if (event.domain <= MessageDomain.ITC)
                 {
+                    // ITC task, obtain a worker with round-robin method
                     size_t idx = lastWorkerIndex % workers.length;
                     workers[idx].inbox.push(event);
                     lastWorkerIndex++;
                 }
                 else
                 {
+                    // Main-thread task, forward to the synchronous bus
                     eventManager.addEvent(event);
                 }
             }
@@ -373,10 +382,12 @@ class MessageBroker: Owner
             {
                 if (event.domain <= MessageDomain.ITC)
                 {
+                    // ITC message, route to an endpoint
                     foreach(endpoint; endpoints)
                     {
                         if (event.recipient.length == 0)
                         {
+                            // Broadcast to all but the sender
                             if (event.sender != endpoint.address)
                                 endpoint.inbox.push(event);
                         }
@@ -386,11 +397,13 @@ class MessageBroker: Owner
                 }
                 else
                 {
+                    // Main-thread message, forward to the synchronous bus
                     eventManager.addEvent(event);
                 }
             }
             else
             {
+                // Global events
                 foreach(endpoint; endpoints)
                 {
                     endpoint.inbox.push(event);
