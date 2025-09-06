@@ -55,7 +55,8 @@ Features
 * Unicode text input
 * Ownership memory model
 * Entity-component model
-* Asynchronous thread-safe messaging. Run anything in a separate thread and use the message broker built into the event system to communicate between threads and the main loop
+* Parallel tasks for background processes: run delegates in worker threads
+* Asynchronous thread-safe messaging. Use the message broker built into the event system to communicate between threads and the main loop
 * Built-in camera logics for easy navigation: freeview and first person views
 * Collision detection using MPR algorithm, raycasting
 * Rigid body physics extension that uses [Newton Dynamics](http://newtondynamics.com). Built-in character controller
