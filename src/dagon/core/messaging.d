@@ -117,6 +117,7 @@ abstract class Endpoint: EventDispatcher
     {
         super(owner);
         this.broker = broker;
+        this.domain = MessageDomain.ITC;
         this.address = address;
         broker.add(this);
     }
@@ -127,9 +128,9 @@ abstract class Endpoint: EventDispatcher
     }
     
     /// Initiate a main thread task.
-    protected bool queueTask(scope TaskCallback callback, void* payload)
+    protected bool queueTask(string recipient, scope TaskCallback callback, void* payload, uint domain = MessageDomain.MainThread)
     {
-        return outbox.push(taskEvent(callback, payload));
+        return outbox.push(taskEvent(address, recipient, callback, payload, domain));
     }
 
     /// Send a message to a recipient.
@@ -218,15 +219,21 @@ class ThreadedEndpoint: Endpoint
 
 alias Actor = ThreadedEndpoint;
 
+import std.stdio;
+
 /**
  * Message broker for distributing events and messages.
  * Collects events from EventManager and receivers, then dispatches them.
  */
 class MessageBroker: Owner
 {
+    public:
+    
     /// Broker enabled flag.
     bool enabled = false;
 
+    protected:
+    
     /// Associated event manager.
     EventManager eventManager;
 
@@ -235,7 +242,11 @@ class MessageBroker: Owner
 
     /// List of registered endpoints.
     Array!Endpoint endpoints;
+    
+    size_t lastWorkerEndpointIndex = 0;
 
+    public:
+    
     this(EventManager eventManager)
     {
         super(eventManager);
@@ -265,17 +276,19 @@ class MessageBroker: Owner
         for (uint i = 0; i < eventManager.numEvents; i++)
         {
             Event event = eventManager.eventQueue[i];
-            if (event.type != EventType.Task)
+            
+            if ((event.type == EventType.Message || event.type == EventType.Task) && 
+                event.domain != MessageDomain.ITC)
+                continue;
+
+            if (numCollected < eventBuffer.length)
             {
-                if (numCollected < eventBuffer.length)
-                {
-                    eventBuffer[numCollected] = eventManager.eventQueue[i];
-                    numCollected++;
-                }
-                else
-                {
-                    // TODO
-                }
+                eventBuffer[numCollected] = eventManager.eventQueue[i];
+                numCollected++;
+            }
+            else
+            {
+                // TODO
             }
         }
 
@@ -303,7 +316,30 @@ class MessageBroker: Owner
             Event event = eventBuffer[i];
             if (event.type == EventType.Task)
             {
-                eventManager.addEvent(event);
+                if (event.domain == MessageDomain.ITC)
+                {
+                    if (event.recipient.length > 0)
+                    {
+                        foreach (endpoint; endpoints)
+                        {
+                            if (endpoint.address == event.recipient)
+                            {
+                                endpoint.inbox.push(event);
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        size_t idx = lastWorkerEndpointIndex % endpoints.length;
+                        endpoints[idx].inbox.push(event);
+                        lastWorkerEndpointIndex++;
+                    }
+                }
+                else
+                {
+                    eventManager.addEvent(event);
+                }
             }
             else if (event.type == EventType.Message)
             {
@@ -311,7 +347,7 @@ class MessageBroker: Owner
                 {
                     foreach(endpoint; endpoints)
                     {
-                        if (event.recipient == "broadcast")
+                        if (event.recipient.length == 0)
                         {
                             if (event.sender != endpoint.address)
                                 endpoint.inbox.push(event);

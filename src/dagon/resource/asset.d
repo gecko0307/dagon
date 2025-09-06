@@ -696,7 +696,7 @@ class AssetManager: Owner
             {
                 reloadAsset(filename);
                 asset.monitorInfo.lastStat = currentStat;
-                eventManager.generateFileChangeEvent(filename);
+                eventManager.queueFileChangeEvent(filename);
             }
         }
         else

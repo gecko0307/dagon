@@ -192,7 +192,7 @@ extern(System) void messageCallback(
             if (app)
             {
                 // Instead of calling logDebug directly (which is not nothrow), use the event loop
-                app.eventManager.asyncLog(LogLevel.Debug, cast(string)message[0..length]);
+                app.eventManager.queueLogEvent(LogLevel.Debug, cast(string)message[0..length]);
             }
         }
         

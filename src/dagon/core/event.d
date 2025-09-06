@@ -79,7 +79,7 @@ enum EventType
     Quit,
     FileChange,
     DropFile,
-    AsyncLogEvent,
+    Log,
     Message,
     Task,
     UserEvent
@@ -119,7 +119,8 @@ struct Event
 
 enum MessageDomain
 {
-    ITC = 0
+    ITC = 0,
+    MainThread = 1
 }
 
 Event messageEvent(string sender, string recipient, string message, void* payload, uint domain = MessageDomain.ITC)
@@ -134,12 +135,15 @@ Event messageEvent(string sender, string recipient, string message, void* payloa
     return e;
 }
 
-Event taskEvent(TaskCallback callback, void* payload)
+Event taskEvent(string sender, string recipient, TaskCallback callback, void* payload, uint domain = MessageDomain.ITC)
 {
     Event e;
     e.type = EventType.Task;
+    e.sender = sender;
+    e.recipient = recipient;
     e.callback = callback;
     e.payload = payload;
+    e.domain = domain;
     return e;
 }
 
@@ -162,10 +166,18 @@ class EventManager: Owner
     SDL_Window* window;
 
     enum maxNumEvents = 50;
+    
+    /// Inbox event queue. All synchronic events (such as user input) go here.
     Event[maxNumEvents] eventQueue;
-    Event[maxNumEvents] userEventQueue;
+    
+    /// Number of events in the inbox queue.
     uint numEvents;
-    uint numUserEvents;
+
+    /// Outbox event queue. All asynchronic events (such as messages and tasks) go here.
+    Event[maxNumEvents] outboxEventQueue;
+    
+    /// Number of events in the outbox queue.
+    uint numOutboxEvents;
 
     bool running = true;
 
@@ -273,7 +285,7 @@ class EventManager: Owner
     }
 
     /**
-     * Adds a new event to the event stack.
+     * Adds a new event to the inbox queue.
      *
      * Params:
      *   e = The event to add.
@@ -286,6 +298,23 @@ class EventManager: Owner
             numEvents++;
         }
     }
+    
+    /**
+     * Adds a new event to the outbox queue.
+     *
+     * Params:
+     *   e = The event to add.
+     */
+    void queueEvent(Event e) nothrow
+    {
+        if (numOutboxEvents < maxNumEvents)
+        {
+            outboxEventQueue[numOutboxEvents] = e;
+            numOutboxEvents++;
+        }
+    }
+
+    deprecated("use queueEvent instead") alias addUserEvent = queueEvent;
 
     /**
      * Generates a file change event for the given filename.
@@ -293,27 +322,14 @@ class EventManager: Owner
      * Params:
      *   filename = The changed file's name.
      */
-    void generateFileChangeEvent(string filename) nothrow
+    void queueFileChangeEvent(string filename) nothrow
     {
         Event e = Event(EventType.FileChange);
         e.filename = filename;
-        addUserEvent(e);
+        queueEvent(e);
     }
-
-    /**
-     * Adds a user event to the user event queue.
-     *
-     * Params:
-     *   e = The user event to add.
-     */
-    void addUserEvent(Event e) nothrow
-    {
-        if (numUserEvents < maxNumEvents)
-        {
-            userEventQueue[numUserEvents] = e;
-            numUserEvents++;
-        }
-    }
+    
+    deprecated("use queueFileChangeEvent instead") alias generateFileChangeEvent = queueFileChangeEvent;
 
     /**
      * Generates a user event with the given code.
@@ -321,12 +337,14 @@ class EventManager: Owner
      * Params:
      *   code = User event code.
      */
-    void generateUserEvent(int code) nothrow
+    void queueUserEvent(int code) nothrow
     {
         Event e = Event(EventType.UserEvent);
         e.userCode = code;
-        addUserEvent(e);
+        queueEvent(e);
     }
+    
+    deprecated("use queueUserEvent instead") alias generateUserEvent = queueUserEvent;
     
     /**
      * Prints to the logger asynchronically using the event queue.
@@ -336,13 +354,15 @@ class EventManager: Owner
      * Params:
      *   code = User event code.
      */
-    void asyncLog(LogLevel level, string message) nothrow
+    void queueLogEvent(LogLevel level, string message) nothrow
     {
-        Event e = Event(EventType.AsyncLogEvent);
+        Event e = Event(EventType.Log);
         e.logLevel = level;
         e.message = message;
-        addUserEvent(e);
+        queueEvent(e);
     }
+    
+    deprecated("use queueLogEvent instead") alias asyncLog = queueLogEvent;
     
     /**
      * Opens a game controller or joystick at the specified device index.
@@ -489,17 +509,17 @@ class EventManager: Owner
 
         mouseRelX = 0;
         mouseRelY = 0;
-
-        for (uint i = 0; i < numUserEvents; i++)
+        
+        for (uint i = 0; i < numOutboxEvents; i++)
         {
-            Event e = userEventQueue[i];
-            if (e.type == EventType.AsyncLogEvent)
+            Event e = outboxEventQueue[i];
+            if (e.type == EventType.Log)
                 log(e.logLevel, e.message);
             else
                 addEvent(e);
         }
-
-        numUserEvents = 0;
+        
+        numOutboxEvents = 0;
         
         if (trackUpDownState)
             resetUpDown();
@@ -887,6 +907,7 @@ class EventManager: Owner
  */
 abstract class EventDispatcher: Owner
 {
+    uint domain = MessageDomain.MainThread;
     string address = "";
     
     this(Owner owner)
@@ -963,14 +984,17 @@ abstract class EventDispatcher: Owner
                 if (enableInputEvents) onDropFile(e.filename);
                 break;
             case EventType.Message:
-                if (e.recipient == address || e.recipient == "broadcast")
-                    onMessageEvent(e.domain, e.sender, e.message, e.payload);
+                if (e.domain == domain)
+                    if (e.recipient.length == 0 || e.recipient == address)
+                        onMessageEvent(e.domain, e.sender, e.message, e.payload);
+                break;
+            case EventType.Task:
+                if (e.domain == domain)
+                    if (e.recipient.length == 0 || e.recipient == address)
+                        onTaskEvent(e.domain, e.sender, e.callback, e.payload);
                 break;
             case EventType.UserEvent:
                 onUserEvent(e.userCode);
-                break;
-            case EventType.Task:
-                onTaskEvent(e.callback, e.payload);
                 break;
             default:
                 break;
@@ -1041,7 +1065,7 @@ abstract class EventDispatcher: Owner
     void onMessageEvent(uint domain, string sender, string message, void* payload) {}
     
     /// Called when a task event is received.
-    void onTaskEvent(TaskCallback callback, void* payload) {}
+    void onTaskEvent(uint domain, string sender, TaskCallback callback, void* payload) {}
 
     /// Called when a user event is received.
     void onUserEvent(int code) {}
@@ -1071,6 +1095,7 @@ abstract class EventListener: EventDispatcher
     this(EventManager emngr, Owner owner)
     {
         super(owner);
+        domain = MessageDomain.MainThread;
         eventManager = emngr;
         if(emngr !is null)
             inputManager = emngr.inputManager;
@@ -1084,7 +1109,13 @@ abstract class EventListener: EventDispatcher
      */
     protected void generateUserEvent(int code)
     {
-        eventManager.generateUserEvent(code);
+        eventManager.queueUserEvent(code);
+    }
+
+    protected void queueTask(string recipient, scope TaskCallback callback, void* payload, uint domain = MessageDomain.ITC)
+    {
+        Event task = taskEvent(address, recipient, callback, payload, domain);
+        eventManager.queueEvent(task);
     }
 
     /**
