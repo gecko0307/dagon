@@ -48,6 +48,7 @@ import dlib.core.thread;
 import dlib.container.array;
 
 import dagon.core.event;
+import dagon.core.logger;
 
 /**
  * Lock-free single-producer single-consumer event queue.
@@ -127,31 +128,41 @@ abstract class Endpoint: EventDispatcher
         this(address, broker, broker);
     }
     
-    protected bool queue(Event e)
+    protected:
+    bool queue(Event e)
     {
         return outbox.push(e);
     }
 
     /// Send a message to a recipient.
-    protected bool send(string recipient, string message, void* payload, uint domain = MessageDomain.ITC)
+    bool send(string recipient, string message, void* payload = null, uint domain = MessageDomain.ITC)
     {
         return outbox.push(messageEvent(address, recipient, message, payload, domain));
     }
 
     /// Initiate a main thread task.
-    protected bool queueTask(string recipient, scope TaskCallback callback, void* payload, uint domain = MessageDomain.MainThread)
+    bool queueTask(string recipient, scope TaskCallback callback, void* payload = null, uint domain = MessageDomain.MainThread)
     {
         return outbox.push(taskEvent(address, recipient, callback, payload, domain));
     }
+    
+    /// Thread-safe log
+    void queueLog(LogLevel level, string message)
+    {
+        Event e = Event(EventType.Log);
+        e.logLevel = level;
+        e.message = message;
+        queue(e);
+    }
 
     /// Receive an event from the inbox.
-    protected bool receive(out Event event)
+    bool receive(out Event event)
     {
         return inbox.pop(event);
     }
 
     /// Process all events in the inbox.
-    protected void processEvents()
+    void processEvents()
     {
         if (!enabled)
             return;
@@ -282,6 +293,9 @@ class MessageBroker: Owner
         {
             Event event = eventManager.eventQueue[i];
             
+            if (event.type == EventType.Log)
+                continue;
+            
             if ((event.type == EventType.Message || event.type == EventType.Task) && 
                 event.domain != MessageDomain.ITC)
                 continue;
@@ -319,7 +333,11 @@ class MessageBroker: Owner
         for (size_t i = 0; i < numCollected; i++)
         {
             Event event = eventBuffer[i];
-            if (event.type == EventType.Task)
+            if (event.type == EventType.Log)
+            {
+                eventManager.queueEvent(event);
+            }
+            else if (event.type == EventType.Task)
             {
                 if (event.domain == MessageDomain.ITC)
                 {

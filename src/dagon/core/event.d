@@ -986,12 +986,12 @@ abstract class EventDispatcher: Owner
             case EventType.Message:
                 if (e.domain == domain)
                     if (e.recipient.length == 0 || e.recipient == address)
-                        onMessageEvent(e.domain, e.sender, e.message, e.payload);
+                        onMessage(e.domain, e.sender, e.message, e.payload);
                 break;
             case EventType.Task:
                 if (e.domain == domain)
                     if (e.recipient.length == 0 || e.recipient == address)
-                        onTaskEvent(e.domain, e.sender, e.callback, e.payload);
+                        onTask(e.domain, e.sender, e.callback, e.payload);
                 break;
             case EventType.UserEvent:
                 onUserEvent(e.userCode);
@@ -1059,10 +1059,10 @@ abstract class EventDispatcher: Owner
     void onDropFile(string filename) {}
 
     /// Called when a message event is received.
-    void onMessageEvent(uint domain, string sender, string message, void* payload) {}
+    void onMessage(uint domain, string sender, string message, void* payload) {}
     
     /// Called when a task event is received.
-    void onTaskEvent(uint domain, string sender, TaskCallback callback, void* payload) {}
+    void onTask(uint domain, string sender, TaskCallback callback, void* payload) {}
 
     /// Called when a user event is received.
     void onUserEvent(int code) {}
@@ -1109,13 +1109,13 @@ abstract class EventListener: EventDispatcher
         eventManager.queueUserEvent(code);
     }
     
-    protected void send(string recipient, string message, void* payload, uint domain = MessageDomain.ITC)
+    protected void send(string recipient, string message, void* payload = null, uint domain = MessageDomain.ITC)
     {
         Event task = messageEvent(address, recipient, message, payload, domain);
         eventManager.queueEvent(task);
     }
 
-    protected void queueTask(string recipient, scope TaskCallback callback, void* payload, uint domain = MessageDomain.ITC)
+    protected void queueTask(string recipient, scope TaskCallback callback, void* payload = null, uint domain = MessageDomain.ITC)
     {
         Event task = taskEvent(address, recipient, callback, payload, domain);
         eventManager.queueEvent(task);
