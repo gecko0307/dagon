@@ -108,7 +108,7 @@ struct Event
     int mouseWheelX;
     int mouseWheelY;
     LogLevel logLevel;
-    uint domain;
+    int domain;
     string filename;
     string message;
     string sender;
@@ -119,11 +119,11 @@ struct Event
 
 enum MessageDomain
 {
-    ITC = 0,
+    ITC = -1,
     MainThread = 1
 }
 
-Event messageEvent(string sender, string recipient, string message, void* payload, uint domain = MessageDomain.ITC)
+Event messageEvent(string sender, string recipient, string message, void* payload, int domain = MessageDomain.ITC)
 {
     Event e;
     e.type = EventType.Message;
@@ -135,7 +135,7 @@ Event messageEvent(string sender, string recipient, string message, void* payloa
     return e;
 }
 
-Event taskEvent(string sender, string recipient, TaskCallback callback, void* payload, uint domain = MessageDomain.ITC)
+Event taskEvent(string sender, string recipient, TaskCallback callback, void* payload, int domain = MessageDomain.ITC)
 {
     Event e;
     e.type = EventType.Task;
@@ -907,7 +907,7 @@ class EventManager: Owner
  */
 abstract class EventDispatcher: Owner
 {
-    uint domain = MessageDomain.MainThread;
+    int domain = MessageDomain.MainThread;
     string address = "";
     
     this(Owner owner)
@@ -984,12 +984,12 @@ abstract class EventDispatcher: Owner
                 if (enableInputEvents) onDropFile(e.filename);
                 break;
             case EventType.Message:
-                if (e.domain == domain)
+                if (e.domain * domain > 0)
                     if (e.recipient.length == 0 || e.recipient == address)
                         onMessage(e.domain, e.sender, e.message, e.payload);
                 break;
             case EventType.Task:
-                if (e.domain == domain)
+                if (e.domain * domain > 0)
                     if (e.recipient.length == 0 || e.recipient == address)
                         onTask(e.domain, e.sender, e.callback, e.payload);
                 break;
@@ -1059,10 +1059,10 @@ abstract class EventDispatcher: Owner
     void onDropFile(string filename) {}
 
     /// Called when a message event is received.
-    void onMessage(uint domain, string sender, string message, void* payload) {}
+    void onMessage(int domain, string sender, string message, void* payload) {}
     
     /// Called when a task event is received.
-    void onTask(uint domain, string sender, TaskCallback callback, void* payload) {}
+    void onTask(int domain, string sender, TaskCallback callback, void* payload) {}
 
     /// Called when a user event is received.
     void onUserEvent(int code) {}
@@ -1109,13 +1109,13 @@ abstract class EventListener: EventDispatcher
         eventManager.queueUserEvent(code);
     }
     
-    protected void send(string recipient, string message, void* payload = null, uint domain = MessageDomain.ITC)
+    protected void send(string recipient, string message, void* payload = null, int domain = MessageDomain.ITC)
     {
         Event task = messageEvent(address, recipient, message, payload, domain);
         eventManager.queueEvent(task);
     }
 
-    protected void queueTask(string recipient, scope TaskCallback callback, void* payload = null, uint domain = MessageDomain.ITC)
+    protected void queueTask(string recipient, scope TaskCallback callback, void* payload = null, int domain = MessageDomain.ITC)
     {
         Event task = taskEvent(address, recipient, callback, payload, domain);
         eventManager.queueEvent(task);

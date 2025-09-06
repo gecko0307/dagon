@@ -30,7 +30,7 @@ Remember that the system is asynchronous: unlike in `EventManager`, messages and
 - **ThreadedEndpoint (Actor)**. An endpoint running in its own thread for asynchronous event processing. Think of it as a threaded analog of `EventListener`: it uses the same dynamic dispatch pattern with `processEvents` and event handler methods.
 - **MessageBroker**. Central hub for distributing events and messages between endpoints.
 - **Address**. A string that identifies a message/task recipient (`ThreadedEndpoint` or `EventListener`). An empty address (empty string) is a special case: for messages, it means that the message is forwarded to all known recipients in the domain. For tasks, it means that the sender does not care which endpoint should process it; the message broker is free to choose any.
-- **Domain**. Unlike traditional game event managers, Dagon's messaging system introduces domains as a lightweight routing mechanism. This allows endpoints and main-thread listeners to coexist in a single unified communication layer. `Event.domain` is an integer tag that determines the routing layer: zero means inter-thread communication via endpoints, non-zero means synchronized messages via the main event bus. If it is zero, the message is distributed to the corresponding endpoint by the message broker. Otherwise the message goes to the synchronized event bus and is dispatched by the `EventListener` with the corresponding address. Applications can repurpose non-zero domains to group messages or encode custom semantics (e.g., message classes, sender groups).
+- **Domain**. Unlike traditional game event managers, Dagon's messaging system introduces domains as a lightweight routing mechanism. This allows endpoints and main-thread listeners to coexist in a single unified communication layer. `Event.domain` is an integer tag that determines the routing layer: negative domain means inter-thread communication via endpoints, positive domain means synchronized messages via the main event bus. If `Event.domain` is negative, the message is distributed to the corresponding endpoint by the message broker. Otherwise the message goes to the synchronized event bus and is dispatched by the `EventListener` with the corresponding address. Applications can repurpose exact domain values to group messages or encode custom semantics (e.g., message classes, sender groups, or anything else).
 - **Task**. A special event with a `callback` delegate for safe cross-thread invocation. It is used to call methods in non-blocking way by queueing them for running by one of the endpoints. Endpoints, in contrast, can use tasks to safely modify game state from their threads by sending task events to the synchronized event bus. The task should be handled manually in `onTask` method of the `EventListener` or `ThreadedEndpoint`. Typically the task event is handled only by one listener to whom it is addressed. Tasks have domains in the same way as messages.
 - **Payload**. An arbitrary pointer that can be passed with events. It is used in message and task events. Its access semantics is entirely up to the user - the system does not guarantee safe access to it and doesn't manage its ownership and lifetime. Ensure proper synchronization and memory management. In most cases, prefer managed data structures (unless performance requires raw data). For example, use payload pointer to carry a refernce to an owned class instance.
 
@@ -72,7 +72,7 @@ class TestScene: Scene
         send("Responder", "Hello, World!");
     }
     
-    override void onMessage(uint domain, string sender, string message, void* payload)
+    override void onMessage(int domain, string sender, string message, void* payload)
     {
         logInfo("Scene received from ", sender, ": ", message);
     }
@@ -89,7 +89,7 @@ class Worker: ThreadedEndpoint
         super(address, broker, owner);
     }
     
-    override void onTask(uint domain, string sender, TaskCallback callback, void* payload)
+    override void onTask(int domain, string sender, TaskCallback callback, void* payload)
     {
         callback(null, payload);
     }

@@ -135,13 +135,13 @@ abstract class Endpoint: EventDispatcher
     }
 
     /// Send a message to a recipient.
-    bool send(string recipient, string message, void* payload = null, uint domain = MessageDomain.ITC)
+    bool send(string recipient, string message, void* payload = null, int domain = MessageDomain.ITC)
     {
         return outbox.push(messageEvent(address, recipient, message, payload, domain));
     }
 
     /// Initiate a main thread task.
-    bool queueTask(string recipient, scope TaskCallback callback, void* payload = null, uint domain = MessageDomain.MainThread)
+    bool queueTask(string recipient, scope TaskCallback callback, void* payload = null, int domain = MessageDomain.MainThread)
     {
         return outbox.push(taskEvent(address, recipient, callback, payload, domain));
     }
@@ -297,7 +297,7 @@ class MessageBroker: Owner
                 continue;
             
             if ((event.type == EventType.Message || event.type == EventType.Task) && 
-                event.domain != MessageDomain.ITC)
+                event.domain > MessageDomain.ITC)
                 continue;
 
             if (numCollected < eventBuffer.length)
@@ -339,7 +339,7 @@ class MessageBroker: Owner
             }
             else if (event.type == EventType.Task)
             {
-                if (event.domain == MessageDomain.ITC)
+                if (event.domain <= MessageDomain.ITC)
                 {
                     if (event.recipient.length > 0)
                     {
@@ -366,7 +366,7 @@ class MessageBroker: Owner
             }
             else if (event.type == EventType.Message)
             {
-                if (event.domain == MessageDomain.ITC)
+                if (event.domain <= MessageDomain.ITC)
                 {
                     foreach(endpoint; endpoints)
                     {
