@@ -10,7 +10,7 @@ Dagon 0.30.0 - TBD
   - Deprecated aliases for backward compatibility: `EventManager.addUserEvent` = `EventManager.queueEvent`, `EventManager.generateFileChangeEvent` = `EventManager.queueFileChangeEvent`, `EventManager.generateUserEvent` = `EventManager.queueUserEvent`, `EventManager.asyncLog` = `EventManager.queueLogEvent`
   - New class `EventDispatcher`
   - New event handlers: `EventListener.onMessage`, `EventListener.onTask`
-  - New method `EventListener.queueTask`
+  - New method `EventListener.send`, `EventListener.queueTask`
 - **Collision**
   - Breaking change: `dagon.collision.world` is removed. Its functionality is now available in `dagon.collision.bvh`
   - Breaking change: `CollisionShape.supportPointGlobal` is now `CollisionShape.supportPoint`
