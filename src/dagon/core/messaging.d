@@ -235,7 +235,18 @@ class ThreadedEndpoint: Endpoint
 
 alias Actor = ThreadedEndpoint;
 
-import std.stdio;
+class Worker: ThreadedEndpoint
+{
+    this(string address, MessageBroker broker, Owner owner)
+    {
+        super(address, broker, owner);
+    }
+    
+    override void onTask(int domain, string sender, TaskCallback callback, void* payload)
+    {
+        callback(null, payload);
+    }
+}
 
 /**
  * Message broker for distributing events and messages.
@@ -258,11 +269,14 @@ class MessageBroker: Owner
 
     /// List of registered endpoints.
     Array!Endpoint endpoints;
+
+    /// List of registered workers.
+    Array!Worker workers;
     
     size_t lastWorkerEndpointIndex = 0;
 
     public:
-    
+
     this(EventManager eventManager)
     {
         super(eventManager);
@@ -272,14 +286,19 @@ class MessageBroker: Owner
     ~this()
     {
         endpoints.free();
+        workers.free();
     }
 
     /// Register a receiver.
     void add(Endpoint endpoint)
     {
-        endpoints.append(endpoint);
+        Worker worker = cast(Worker)endpoint;
+        if (worker)
+            workers.append(worker);
+        else
+            endpoints.append(endpoint);
     }
-    
+
     /// Collect and dispatch events/messages.
     void update()
     {
@@ -341,23 +360,9 @@ class MessageBroker: Owner
             {
                 if (event.domain <= MessageDomain.ITC)
                 {
-                    if (event.recipient.length > 0)
-                    {
-                        foreach (endpoint; endpoints)
-                        {
-                            if (endpoint.address == event.recipient)
-                            {
-                                endpoint.inbox.push(event);
-                                break;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        size_t idx = lastWorkerEndpointIndex % endpoints.length;
-                        endpoints[idx].inbox.push(event);
-                        lastWorkerEndpointIndex++;
-                    }
+                    size_t idx = lastWorkerEndpointIndex % workers.length;
+                    workers[idx].inbox.push(event);
+                    lastWorkerEndpointIndex++;
                 }
                 else
                 {
