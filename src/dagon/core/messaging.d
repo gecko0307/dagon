@@ -127,16 +127,21 @@ abstract class Endpoint: EventDispatcher
         this(address, broker, broker);
     }
     
-    /// Initiate a main thread task.
-    protected bool queueTask(string recipient, scope TaskCallback callback, void* payload, uint domain = MessageDomain.MainThread)
+    protected bool queue(Event e)
     {
-        return outbox.push(taskEvent(address, recipient, callback, payload, domain));
+        return outbox.push(e);
     }
 
     /// Send a message to a recipient.
     protected bool send(string recipient, string message, void* payload, uint domain = MessageDomain.ITC)
     {
         return outbox.push(messageEvent(address, recipient, message, payload, domain));
+    }
+
+    /// Initiate a main thread task.
+    protected bool queueTask(string recipient, scope TaskCallback callback, void* payload, uint domain = MessageDomain.MainThread)
+    {
+        return outbox.push(taskEvent(address, recipient, callback, payload, domain));
     }
 
     /// Receive an event from the inbox.

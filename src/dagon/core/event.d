@@ -1108,6 +1108,12 @@ abstract class EventListener: EventDispatcher
     {
         eventManager.queueUserEvent(code);
     }
+    
+    protected void send(string recipient, string message, void* payload, uint domain = MessageDomain.ITC)
+    {
+        Event task = messageEvent(address, recipient, message, payload, domain);
+        eventManager.queueEvent(task);
+    }
 
     protected void queueTask(string recipient, scope TaskCallback callback, void* payload, uint domain = MessageDomain.ITC)
     {
