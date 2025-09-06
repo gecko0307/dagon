@@ -59,7 +59,7 @@ class TestScene: Scene
     
     override void afterLoad()
     {
-        this.address = "Scene"; // important to receive messages!
+        address = "Scene"; // important to receive messages!
         
         responder = New!Responder("Responder", eventManager.messageBroker, this);
         responder.run();
