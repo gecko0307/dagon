@@ -78,3 +78,45 @@ class TestScene: Scene
     }
 }
 ```
+
+A simple task runner:
+
+```
+class Worker: ThreadedEndpoint
+{
+    this(string address, MessageBroker broker, Owner owner)
+    {
+        super(address, broker, owner);
+    }
+    
+    override void onTask(uint domain, string sender, TaskCallback callback, void* payload)
+    {
+        callback(null, payload);
+    }
+}
+
+class TestScene: Scene
+{
+    Worker worker;
+    
+    override void afterLoad()
+    {
+        address = "Scene"; // important to receive messages!
+        
+        worker = New!Worker("Worker", eventManager.messageBroker, this);
+        worker.run();
+        
+        eventManager.messageBroker.enabled = true; // broker is disabled by default for optimization
+    }
+    
+    void doSomethingThatBlocks(Object obj, void* payload)
+    {
+        logInfo("doSomethingThatBlocks");
+    }
+    
+    override void onKeyDown(int key)
+    {
+        queueTask("Worker", &doSomethingThatBlocks);
+    }
+}
+```
