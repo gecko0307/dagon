@@ -51,47 +51,48 @@ import dagon.core.event;
 import dagon.core.logger;
 
 /**
- * Lock-free single-producer single-consumer event queue.
+ * Generic, wait-free single-producer single-consumer queue.
  *
  * Params:
- *   capacity = Maximum number of events in the queue.
+ *   T        = element type.
+ *   capacity = Maximum number of elements in the queue.
  *
  * Members:
- *   buffer = Circular buffer for events.
+ *   buffer = Circular buffer.
  *   head = Producer write index.
  *   tail = Consumer read index.
  *
  * Methods:
- *   push = Add an event to the queue. Returns false if full.
- *   pop = Remove an event from the queue. Returns false if empty.
+ *   push = Add an element to the queue. Returns false if full.
+ *   pop = Remove an element from the queue. Returns false if empty.
  */
-struct SPSCEventQueue(size_t capacity)
+struct SPSCQueue(T, size_t capacity)
 {
-    /// Circular buffer for events.
-    Event[capacity] buffer;
+    /// Circular buffer.
+    T[capacity] buffer;
 
     shared size_t head = 0; // producer writes here
     shared size_t tail = 0; // consumer reads here
 
-    /// Add an event to the queue. Returns false if full.
-    bool push(Event event)
+    /// Add an element to the queue. Returns false if full.
+    bool push(T value)
     {
         auto next = (head + 1) % capacity;
         if (next == tail) // queue full
             return false;
 
-        buffer[head] = event;
+        buffer[head] = value;
         atomicStore!(MemoryOrder.rel)(head, next);
         return true;
     }
 
-    /// Remove an event from the queue. Returns false if empty.
-    bool pop(out Event event)
+    /// Remove an element from the queue. Returns false if empty.
+    bool pop(out T value)
     {
         if (tail == atomicLoad!(MemoryOrder.acq)(head))
             return false; // empty
 
-        event = buffer[tail];
+        value = buffer[tail];
         tail = (tail + 1) % capacity;
         return true;
     }
@@ -106,10 +107,10 @@ abstract class Endpoint: EventDispatcher
     MessageBroker broker;
     
     /// Incoming event queue.
-    SPSCEventQueue!(50) inbox;
+    SPSCQueue!(Event, 50) inbox;
 
     /// Outgoing event queue.
-    SPSCEventQueue!(50) outbox;
+    SPSCQueue!(Event, 50) outbox;
 
     /// Receiver enabled flag.
     bool enabled = true;
