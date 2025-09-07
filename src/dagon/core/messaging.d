@@ -253,8 +253,8 @@ class Worker: ThreadedEndpoint
 }
 
 /**
- * Message broker for distributing events and messages.
- * Collects events from EventManager and receivers, then dispatches them.
+ * Message broker for distributing messages and scheduling tasks.
+ * Collects and routes events from EventManager and registered endpoints.
  */
 class MessageBroker: Owner
 {
