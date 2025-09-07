@@ -30,7 +30,7 @@ DEALINGS IN THE SOFTWARE.
  * Messaging module.
  *
  * Description:
- * The `dagon.core.messaging` provides lock-free, single-producer single-consumer (SPSC)
+ * The `dagon.core.messaging` provides wait-free, single-producer single-consumer (SPSC)
  * event queues, messaging endpoints, threaded endpoints, workers, and a message broker
  * for inter-thread communication and bidirectional messaging.
  *
@@ -54,7 +54,7 @@ import dagon.core.logger;
  * Generic, wait-free single-producer single-consumer queue.
  *
  * Params:
- *   T        = element type.
+ *   T = element type.
  *   capacity = Maximum number of elements in the queue.
  *
  * Members:
