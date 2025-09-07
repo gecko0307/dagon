@@ -155,32 +155,47 @@ Event taskEvent(string sender, string recipient, TaskCallback callback, void* pa
 enum MAX_CONTROLLERS = 1;
 
 /**
- * Manages event polling, state, and dispatch.
+ * Manages event polling, event queue and input state.
  *
  * Description:
- * Handles input events, window events, controller/joystick events, and user-defined events.
- * Provides methods for polling SDL events, generating custom events, and querying input state.
+ * EventManager polls SDL events and aggregates them in a queue. It also tracks
+ * keyboard, mouse, joystick and controller state. Provides methods for generating
+ * custom events.
  */
 class EventManager: Owner
 {
+    /// Application object that owns this EventManager.
     Application application;
     
+    /// A pointer to main application window.
     SDL_Window* window;
 
+    /// Maximum number of simultaneous events.
     enum maxNumEvents = 50;
     
-    /// Inbox event queue. All synchronic events (such as user input) go here.
-    Event[maxNumEvents] eventQueue;
+    /**
+     * Inbox event queue. All synchronous events from SDL (such as user input) go here.
+     * Inbox queue is cleared at the beginning of each event loop iteration,
+     * so for emitting custom events, outboxEventQueue should be used.
+     */
+    Event[maxNumEvents] inboxEventQueue;
+    
+    alias eventQueue = inboxEventQueue;
     
     /// Number of events in the inbox queue.
-    uint numEvents;
+    uint numInboxEvents;
+    
+    alias numEvents = numInboxEvents;
 
-    /// Outbox event queue. All asynchronic events (such as messages and tasks) go here.
+    /**
+     * Outbox event queue. All external events (user events, messages, tasks) should go here.
+     */
     Event[maxNumEvents] outboxEventQueue;
     
     /// Number of events in the outbox queue.
     uint numOutboxEvents;
 
+    /// Used by Application to indicate activity. Set to false to stop the main loop.
     bool running = true;
 
     bool[512] keyPressed = false;
@@ -243,7 +258,7 @@ class EventManager: Owner
     void delegate(SDL_Event* event) onProcessEvent;
 
     /**
-     * Constructs an EventManager for the given SDL window and dimensions.
+     * Constructs an EventManager for the given Application.
      *
      * Params:
      *   win = SDL window pointer.
