@@ -909,7 +909,8 @@ class EventManager: Owner
  */
 abstract class EventDispatcher: Owner
 {
-    int domain = MessageDomain.MainThread;
+    protected int domain = MessageDomain.MainThread;
+    
     string address = "";
     
     this(Owner owner)
