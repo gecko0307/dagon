@@ -1124,7 +1124,7 @@ abstract class EventListener: EventDispatcher
         eventManager.queueEvent(task);
     }
     
-    void queueLog(LogLevel level, string message)
+    protected void queueLog(LogLevel level, string message)
     {
         Event e = Event(EventType.Log);
         e.logLevel = level;
