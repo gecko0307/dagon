@@ -1123,6 +1123,14 @@ abstract class EventListener: EventDispatcher
         Event task = taskEvent(address, "", callback, payload, MessageDomain.ITC);
         eventManager.queueEvent(task);
     }
+    
+    void queueLog(LogLevel level, string message)
+    {
+        Event e = Event(EventType.Log);
+        e.logLevel = level;
+        e.message = message;
+        eventManager.queueEvent(e);
+    }
 
     /**
      * Processes all pending events, dispatching them to handler methods.
