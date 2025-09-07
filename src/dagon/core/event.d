@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /**
- * Provides an event manager for input, window, and user-defined events.
+ * Provides an event manager.
  *
  * Description:
  * The `dagon.core.event` module defines the `EventType` enumeration, 
@@ -86,6 +86,9 @@ enum EventType
     UserEvent
 }
 
+/**
+ * A delegate that can be used as an asynchronous callback in task events.
+ */
 alias TaskCallback = void delegate(Object, void*);
 
 /**
@@ -125,6 +128,9 @@ enum MessageDomain
     MainThread = 1
 }
 
+/**
+ * Constructs a message event.
+ */
 Event messageEvent(string sender, string recipient, string message, void* payload, int domain = MessageDomain.ITC)
 {
     Event e;
@@ -137,6 +143,9 @@ Event messageEvent(string sender, string recipient, string message, void* payloa
     return e;
 }
 
+/**
+ * Constructs a task event.
+ */
 Event taskEvent(string sender, string recipient, TaskCallback callback, void* payload, int domain = MessageDomain.ITC)
 {
     Event e;
@@ -295,7 +304,7 @@ class EventManager: Owner
         Delete(inputManager);
     }
 
-    /// Signals the event manager to stop running (application exit).
+    /// Signals the Application to stop running.
     void exit()
     {
         running = false;
