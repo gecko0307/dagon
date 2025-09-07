@@ -1157,7 +1157,7 @@ abstract class EventListener: EventDispatcher
     }
 
     /**
-     * Processes all pending events, dispatching them to handler methods.
+     * Processes all pending events in EventManager, dispatching them to handler methods.
      *
      * Params:
      *   enableInputEvents = If false, disables input event handlers.
