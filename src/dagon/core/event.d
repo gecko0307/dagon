@@ -59,6 +59,7 @@ import dagon.core.messaging;
  */
 enum EventType
 {
+    Cancelled = 0,
     KeyDown,
     KeyUp,
     TextInput,
@@ -119,6 +120,7 @@ struct Event
 
 enum MessageDomain
 {
+    Circular = 0,
     ITC = -1,
     MainThread = 1
 }
@@ -984,12 +986,12 @@ abstract class EventDispatcher: Owner
                 if (enableInputEvents) onDropFile(e.filename);
                 break;
             case EventType.Message:
-                if (e.domain * domain > 0)
+                if (e.domain * domain >= 0)
                     if (e.recipient.length == 0 || e.recipient == address)
                         onMessage(e.domain, e.sender, e.message, e.payload);
                 break;
             case EventType.Task:
-                if (e.domain * domain > 0)
+                if (e.domain * domain >= 0)
                     if (e.recipient.length == 0 || e.recipient == address)
                         onTask(e.domain, e.sender, e.callback, e.payload);
                 break;

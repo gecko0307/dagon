@@ -316,19 +316,26 @@ class MessageBroker: Owner
         {
             Event event = eventManager.eventQueue[i];
             
-            // Ignore log events
+            // Ignore any log events
             if (event.type == EventType.Log)
                 continue;
             
             // Ignore main-thread messages
-            if ((event.type == EventType.Message || event.type == EventType.Task) && 
-                event.domain > MessageDomain.ITC)
+            if (event.type == EventType.Message && event.domain >= MessageDomain.MainThread)
+                continue;
+            
+            // Ignore main-thread tasks
+            if (event.type == EventType.Task && event.domain > MessageDomain.ITC)
                 continue;
 
             if (numCollected < eventBuffer.length)
             {
                 eventBuffer[numCollected] = eventManager.eventQueue[i];
                 numCollected++;
+                
+                // Cancel the original message/task
+                if (event.type == EventType.Message || event.type == EventType.Task)
+                    eventManager.eventQueue[i].type = EventType.Cancelled;
             }
             else
             {
@@ -361,6 +368,8 @@ class MessageBroker: Owner
             if (event.type == EventType.Log)
             {
                 // Asynchronous log from an endpoint
+                // (this is guaranteed, because we have previously filtered out
+                // all logs from the main event queue)
                 eventManager.queueEvent(event);
             }
             else if (event.type == EventType.Task)
@@ -380,9 +389,9 @@ class MessageBroker: Owner
             }
             else if (event.type == EventType.Message)
             {
-                if (event.domain <= MessageDomain.ITC)
+                if (event.domain < MessageDomain.MainThread)
                 {
-                    // ITC message, route to an endpoint
+                    // ITC or circular message, route to an endpoint
                     foreach(endpoint; endpoints)
                     {
                         if (event.recipient.length == 0)
@@ -395,9 +404,10 @@ class MessageBroker: Owner
                             endpoint.inbox.push(event);
                     }
                 }
-                else
+                
+                if (event.domain > MessageDomain.ITC)
                 {
-                    // Main-thread message, forward to the synchronous bus
+                    // Main-thread or circular message, forward to the synchronous bus
                     eventManager.addEvent(event);
                 }
             }
