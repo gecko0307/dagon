@@ -299,6 +299,7 @@ struct FTVersion
     int major, minor, patch;
 }
 
+/// Supported cursor types.
 enum Cursor: uint
 {
     Default = 0,
@@ -315,64 +316,127 @@ enum Cursor: uint
     Hand = 11
 }
 
+/// Returns VFS used by the Application.
 VirtualFileSystem globalVFS()
 {
     return _vfs;
 }
 
 /**
- * Base class to inherit Dagon applications from.
+ * Base class to inherit application object from.
  *
  * Description:
- * This class wraps SDL2 window creation, OpenGL context initialization,
- * event management, and provides the main game loop. It also handles
- * basic app configuration and loads settings from a `settings.conf` file.
- * To use, inherit from `Application` and override `onUpdate` and `onRender`.
+ * This class wraps dynamic library binding, SDL window creation, OpenGL context initialization and
+ * information querying, event management, and the main game loop. It also handles basic configuration
+ * via `settings.conf` file and provides a number of helper methods (taking screenshots, querying display
+ * refresh rate, switching console window, etc.).
+ * By itself, `Application` doesn't render anything and doesn't contain game logic. To make a game,
+ * inherit from `Application` and override `onUpdate` and `onRender`.
  */
 class Application: EventListener, Updateable
 {
+    /// Global VFS that all resource loaders should use.
     VirtualFileSystem vfs;
     
-    /// The configuration object for loading settings.
+    /// The configuration object for storing user-defined settings.
     Configuration config;
     
+    /**
+     * Loaded SDL API version. This is not an actual SDL library version!
+     * Dagon assumes SDLSupport.v2_30, but this is not a strict requirement,
+     * the engine will continue running even if 2.30 fails to load.
+     * To check actually loaded library version, use `sdlVersion`.
+     */
     SDLSupport loadedSDLSupport;
+    
+    /**
+     * Loaded SDL_Image API version. This is not an actual SDL_Image library version!
+     * Dagon assumes SDLImageSupport.v2_8, but this is not a strict requirement,
+     * the engine will continue running even if 2.8 fails to load.
+     * To check actually loaded library version, use `sdlImageVersion`.
+     */
     SDLImageSupport loadedSDLImageSupport;
+    
+    /**
+     * Loaded OpenGL API version.
+     * Dagon requires at least GLSupport.gl40 and will not run on a lower version.
+     */
     GLSupport loadedGLSupport;
+    
+    /**
+     * Loaded FreeType API version. This is not an actual FreeType library version!
+     * Dagon assumes FTSupport.v2_8, but this is not a strict requirement,
+     * the engine will continue running even if 2.8 fails to load.
+     * To check actually loaded library version, use `ftVersion`.
+     */
     FTSupport loadedFTSupport;
     
+    /// SDL_Image available or not.
     bool sdlImagePresent = true;
+    
+    /// FreeType available or not.
     bool freetypePresent = true;
     
+    /// Actually used SDL library version.
     SDL_version sdlVersion;
+    
+    /// Actually used SDL_Image library version.
     SDL_version sdlImageVersion;
+    
+    /// Actually used FreeType library version.
     FTVersion ftVersion;
     
+    /// Application window width;
     uint width;
+    
+    /// Application window height;
     uint height;
+    
+    /// Fullscreen or windowed.
     bool fullscreen = false;
     
+    /// Pointer to the main SDL window created by the Application.
     SDL_Window* window = null;
+    
+    /// OpenGL context.
     SDL_GLContext glcontext;
     
     private EventManager _eventManager;
     
+    /// Main loop runner. Calls `Application.update` with a given fixed frequency (60 Hz by default).
     Cadencer cadencer;
     
+    /// OpenGL version string obtained from the graphics driver.
     String glVersion;
+    
+    /// OpenGL vendor string obtained from the graphics driver.
     String glVendor;
+    
+    /// OpenGL renderer string (graphics card model) obtained from the graphics driver.
     String glRenderer;
     
+    /**
+     * Maximum supported level of anisotropic texture filtering.
+     * If anisotropic filtering is not supported, this is set to zero.
+     */
     float maxTextureAnisotropy = 8.0f;
     
+    /// System locale (ISO 639 language + ISO 3166 region)
     string locale = "en_US";
+    
+    /// User-defined locale (ISO 639 language + ISO 3166 region). Overrides system locale.
     string userLocale = "en_US";
+    
+    /// Loaded translation (from locale/*.lang file) based on selected locale.
     Translation translation;
     
+    /// Handle to a FreeType library instance.
     FT_Library ftLibrary;
+    
+    /// Object that loads and registers fonts.
     FontManager fontManager;
     
-    SDL_Cursor*[12] cursor;
+    protected SDL_Cursor*[12] cursor;
 
     /**
      * Constructs the application, initializes SDL, OpenGL, and related subsystems.
@@ -797,7 +861,10 @@ class Application: EventListener, Updateable
         }
     }
 
-    /// Runs the main application loop.
+    /**
+     * Runs the main loop.
+     * This will block the thread until the application terminates.
+     */
     void run()
     {
         Time t = Time(0.0, 0.0);
@@ -810,13 +877,13 @@ class Application: EventListener, Updateable
         }
     }
 
-    /// Exits the application.
+    /// Terminates the application.
     void exit()
     {
         eventManager.exit();
     }
     
-    uint screenNum = 0;
+    protected uint screenNum = 0;
     
     /**
      * Takes a screenshot of the current framebuffer and returns it as a SuperImage.
@@ -864,32 +931,37 @@ class Application: EventListener, Updateable
     }
     
     /**
-     * Returns the display's refresh rate.
+     * Returns the display's refresh rate, or `fallbackRefreshRate` if query fails.
+     *
+     * Params:
+     *   fallbackRefreshRate = Fallback value in case of a query error.
      *
      * Returns:
      *   The refresh rate in Hz.
      */
-    int displayRefreshRate()
+    int displayRefreshRate(int fallbackRefreshRate = 60)
     {
         SDL_DisplayMode mode;
         int displayIndex = SDL_GetWindowDisplayIndex(window);
-        int defaultRefreshRate = 60;
         if (SDL_GetDesktopDisplayMode(displayIndex, &mode) != 0)
-            return defaultRefreshRate;
+            return fallbackRefreshRate;
         if (mode.refresh_rate == 0)
-            return defaultRefreshRate;
+            return fallbackRefreshRate;
         return mode.refresh_rate;
     }
     
     /**
      * Sets the cadencer frequency to the display's refresh rate.
      *
+     * Params:
+     *   fallbackRefreshRate = Fallback value in case of a query error.
+     *
      * Returns:
      *   The refresh rate in Hz.
      */
-    int frequencyToRefreshRate()
+    int frequencyToRefreshRate(int fallbackRefreshRate = 60)
     {
-        int refreshRate = displayRefreshRate();
+        int refreshRate = displayRefreshRate(fallbackRefreshRate);
         cadencer.setFrequency(refreshRate);
         return refreshRate;
     }
@@ -953,6 +1025,13 @@ class Application: EventListener, Updateable
         return stat;
     }
     
+    /**
+     * Switches console window visibility under Windows.
+     * Under other OSes does nothing.
+     *
+     * Params:
+     *   mode = show or hide the console window.
+     */
     void showConsoleWindow(bool mode)
     {
         version(Windows)

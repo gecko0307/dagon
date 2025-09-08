@@ -58,8 +58,11 @@ struct Time
  * Schedules fixed-step updates and tracks frames per second (FPS).
  *
  * Description:
- * The `Cadencer` class accumulates time and calls a user-provided callback at a fixed frequency.
- * It also tracks and exposes the current FPS.
+ * The `Cadencer` class accumulates time and udates a user-provided
+ * `Updateable` at a fixed frequency. It also tracks and exposes the
+ * current FPS.
+ * Cadencer by itself doesn't query system time, this should be done
+ * with `EventManager`.
  */
 class Cadencer: Owner
 {
@@ -89,9 +92,9 @@ class Cadencer: Owner
      * Constructs a Cadencer.
      *
      * Params:
-     *   callback = Delegate to call at each fixed update.
-     *   freq     = Update frequency (in Hz).
-     *   owner    = Owner object for memory/resource management.
+     *   updateable = Object to update with a fixed frequency.
+     *   freq       = Update frequency (in Hz).
+     *   owner      = Owner object.
      */
     this(Updateable updateable, uint freq, Owner owner)
     {
