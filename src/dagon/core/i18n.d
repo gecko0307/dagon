@@ -25,6 +25,19 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Internationalization system for Dagon applications.
+ *
+ * Description:
+ * The `dagon.core.i18n` module implements a simple text localization mechanism
+ * based on key-value configuration files (`*.lang`).
+ * Localization is loaded into the `Translation` object and provides access to strings by keys.
+ * Locales are loaded from `locale/<locale_code>.lang`, for example `locale/en_US.lang`.
+ *
+ * Copyright: Timur Gafarov 2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.core.i18n;
 
 import dlib.core.memory;
@@ -35,16 +48,41 @@ import dagon.core.application;
 import dagon.core.config;
 import dagon.core.logger;
 
+/**
+ * Represents a translation table for the given locale.
+ *
+ * Loads a dictionary of strings from the configuration file
+ * and allows retrieving translations by keys.
+ */
 class Translation: Owner
 {
+    /// Dictionary of localized strings.
     Configuration dictionary;
     
+    /**
+     * Creates a new localization object.
+     *
+     * Params:
+     *   app = Reference to the application from which the VFS is taken.
+     *   owner = Owner object.
+     */
     this(Application app, Owner owner)
     {
         super(owner);
         dictionary = New!Configuration(app.vfs, this);
     }
     
+    /**
+     * Loads a locale file by its code.
+     * The file name is generated automatically as `locale/<code>.lang`,
+     * where `<code>` is a string in the POSIX locale format (`en_US`, `ru_RU`, etc.).
+     *
+     * If the file is not found, a warning is logged,
+     * if found, a message is loaded and logged.
+     *
+     * Params:
+     *   locale = Locale code (e.g. `"en_US"`).
+     */
     void load(string locale)
     {
         string dirSeparator = "/";
@@ -67,13 +105,23 @@ class Translation: Owner
         localeFilename.free();
     }
     
-    string get(string s)
+    /**
+     * Gets the translation of a string by key.
+     * If no translation is found, the key itself is returned.
+     *
+     * Params:
+     *   key = Text key.
+     *
+     * Returns:
+     *   Localized text or original key.
+     */
+    string get(string key)
     {
-        auto tr = s in dictionary.props;
+        auto tr = key in dictionary.props;
         if (tr)
             return tr.toString;
         else
-            return s;
+            return key;
     }
     
     alias opCall = get;
