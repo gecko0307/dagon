@@ -76,6 +76,7 @@ enum LogLevel: uint
  * Members:
  *   printToStdout   = If true, log to standard output.
  *   printToFile     = If true, log to a file.
+ *   printToBuffer   = If true, log to buffer.
  *   printTimestamp  = If true, prepend timestamps to log messages.
  *   printLogLevel   = If true, prepend log level tags to messages.
  *   filename        = Log file name (if file output is enabled).
@@ -126,11 +127,24 @@ private
     __gshared String _logBuffer;
 }
 
+/**
+ * Returns internal log buffer that is used for printing
+ * if `logOutputOptions.printToBuffer` is enabled.
+ *
+ * The buffer can be reallocated as it grows, so ideally
+ * this should be called each frame to update in a timely manner.
+ *
+ * Returns:
+ *   A string containing the log history.
+ */
 string logBuffer()
 {
     return _logBuffer.toString;
 }
 
+/**
+ * Frees internal log buffer.
+ */
 void freeLogBuffer()
 {
     _logBuffer.free();

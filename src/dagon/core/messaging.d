@@ -131,12 +131,13 @@ abstract class Endpoint: EventDispatcher
     
     protected:
     
+    /// Queues an outgoing event.
     bool queue(Event e)
     {
         return outbox.push(e);
     }
 
-    /// Send a message to a recipient.
+    /// Queues an outgoing message.
     bool queueMessage(string recipient, string message, void* payload = null, int domain = MessageDomain.ITC)
     {
         return outbox.push(messageEvent(address, recipient, message, payload, domain));
@@ -144,13 +145,13 @@ abstract class Endpoint: EventDispatcher
     
     alias send = queueMessage;
 
-    /// Initiate a main thread task.
+    /// Queues a task event.
     bool queueTask(string recipient, scope TaskCallback callback, void* payload = null, int domain = MessageDomain.MainThread)
     {
         return outbox.push(taskEvent(address, recipient, callback, payload, domain));
     }
     
-    /// Thread-safe log
+    /// Queues a log event.
     void queueLog(LogLevel level, string message)
     {
         Event e = Event(EventType.Log);
@@ -251,13 +252,14 @@ class Worker: Service
 
 /**
  * Message broker for distributing messages and scheduling tasks.
+ *
  * Collects and routes events from EventManager and registered endpoints.
  */
 class MessageBroker: Owner
 {
     public:
     
-    /// Broker enabled flag.
+    /// Activity flag.
     bool enabled = false;
 
     protected:
@@ -301,12 +303,13 @@ class MessageBroker: Owner
             endpoints.append(endpoint);
     }
     
+    /// Returns true if the broker is enabled and has workers.
     bool canRunTasks()
     {
         return !enabled && workers.length == 0;
     }
 
-    /// Collect and dispatch events/messages.
+    /// Collects and dispatches events.
     void update()
     {
         if (!enabled)
