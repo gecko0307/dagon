@@ -55,7 +55,7 @@ Features
 * Unicode text input
 * Ownership memory model
 * Entity-component model
-* Microservices and worker threads for running tasks in background, so that thay don't block the main game loop
+* Microservices and worker threads for running tasks in background, so that they don't block the main game loop
 * Asynchronous thread-safe messaging. Use the message broker built into the event system to communicate between threads and the main loop
 * Built-in camera logics for easy navigation: freeview and first person views
 * Collision detection using MPR algorithm, raycasting
