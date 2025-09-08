@@ -1,7 +1,7 @@
 Dagon 0.30.0 - 8 Sep, 2025
 --------------------------
 - **Core**
-  - Asynchronous thread-safe messaging framework using lock-free SPSC queues and inbox/outbox patterns (`dagon.core.messaging`). `Endpoint` objects communicate with each other by sending message events through a `MessageBroker` built into the `EventManager`. They can also react to ordinary events such as user input. `Service` is an endpoint that runs in a separate thread - these are useful for building network clients and doing heavy I/O at runtime. Services can also initiate synchronized tasks to modify main thread state, and send messages to `EventListener`s
+  - Microservice and thread-safe messaging framework using lock-free SPSC queues and inbox/outbox pattern (`dagon.core.messaging`). `Service` objects that run in separate threads and communicate with each other by sending message events through a `MessageBroker` built into the `EventManager`. They can also react to ordinary events such as user input. This is useful for building network clients and doing heavy I/O at runtime. Services can also initiate synchronized tasks to modify main thread state, and send messages to `EventListener`s
   - New event types `EventType.Message`, `EventType.Task`
   - New fields `Event.sender`, `Event.recipient`, `Event.domain`, `Event.callback`, `Event.payload`
   - New property `EventManager.messageBroker`
