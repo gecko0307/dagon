@@ -1,7 +1,7 @@
-Dagon 0.30.0 - TBD
-------------------
+Dagon 0.30.0 - 8 Sep, 2025
+--------------------------
 - **Core**
-  - Asynchronous thread-safe messaging framework using lock-free SPSC queues and inbox/outbox patterns (`dagon.core.messaging`). `Endpoint` objects communicate with each other by sending message events through a `MessageBroker` built into the `EventManager`. They can also react to ordinary events such as user input. `ThreadedEndpoint` or (`Actor`) can be used to run tasks in separate threads, useful for building network clients and doing heavy I/O at runtime. Endpoints can also initiate synchronized tasks to modify main thread state
+  - Asynchronous thread-safe messaging framework using lock-free SPSC queues and inbox/outbox patterns (`dagon.core.messaging`). `Endpoint` objects communicate with each other by sending message events through a `MessageBroker` built into the `EventManager`. They can also react to ordinary events such as user input. `ThreadedEndpoint` or (`Actor`) can be used to run tasks in separate threads, useful for building network clients and doing heavy I/O at runtime. Endpoints can also initiate synchronized tasks to modify main thread state, and send messages to `EventListener`s
   - New event types `EventType.Message`, `EventType.Task`
   - New fields `Event.sender`, `Event.recipient`, `Event.domain`, `Event.callback`, `Event.payload`
   - New property `EventManager.messageBroker`
@@ -16,7 +16,7 @@ Dagon 0.30.0 - TBD
   - Breaking change: `CollisionShape.supportPointGlobal` is now `CollisionShape.supportPoint`
   - Experimental Gilbert-Johnson-Keerthi collision detection algorithm implementation (`dagon.collision.gjk.gjkTest`). No EPA yet, so the function doesn't return contact info
   - `GeomTriangle.boundingBox` implementation
-  - Bugfixes in the BVH module.
+  - Some bugfixes in the BVH module.
 
 Dagon 0.29.2 - 2 Sep, 2025
 --------------------------
