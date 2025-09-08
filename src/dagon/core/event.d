@@ -88,8 +88,10 @@ enum EventType
 
 /**
  * A delegate that can be used as an asynchronous callback in task events.
+ * `executor` parameter is meant to be the object that executes the task.
+ * `payload` is user-defined pointer passed with the event.
  */
-alias TaskCallback = void delegate(Object, void*);
+alias TaskCallback = void delegate(Object executor, void* payload);
 
 /**
  * Represents a single event in the Dagon event system.

@@ -245,7 +245,7 @@ class Worker: Service
     
     override void onTask(int domain, string sender, TaskCallback callback, void* payload)
     {
-        callback(null, payload);
+        callback(this, payload);
     }
 }
 
