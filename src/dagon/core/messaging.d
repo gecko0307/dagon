@@ -31,7 +31,7 @@ DEALINGS IN THE SOFTWARE.
  *
  * Description:
  * The `dagon.core.messaging` provides wait-free, single-producer single-consumer (SPSC)
- * event queues, messaging endpoints, threaded endpoints, workers, and a message broker
+ * event queues, messaging endpoints, threaded services, workers, and a message broker
  * for inter-thread communication and bidirectional messaging.
  *
  * Copyright: Timur Gafarov 2025
@@ -130,16 +130,19 @@ abstract class Endpoint: EventDispatcher
     }
     
     protected:
+    
     bool queue(Event e)
     {
         return outbox.push(e);
     }
 
     /// Send a message to a recipient.
-    bool send(string recipient, string message, void* payload = null, int domain = MessageDomain.ITC)
+    bool queueMessage(string recipient, string message, void* payload = null, int domain = MessageDomain.ITC)
     {
         return outbox.push(messageEvent(address, recipient, message, payload, domain));
     }
+    
+    alias send = queueMessage;
 
     /// Initiate a main thread task.
     bool queueTask(string recipient, scope TaskCallback callback, void* payload = null, int domain = MessageDomain.MainThread)
@@ -156,12 +159,8 @@ abstract class Endpoint: EventDispatcher
         queue(e);
     }
 
-    /// Receive an event from the inbox.
-    bool receive(out Event event)
-    {
-        return inbox.pop(event);
-    }
-
+    public:
+    
     /// Process all events in the inbox.
     void processEvents()
     {
@@ -169,7 +168,7 @@ abstract class Endpoint: EventDispatcher
             return;
         
         Event event;
-        while(receive(event))
+        while(inbox.pop(event))
         {
             processEvent(&event);
         }
@@ -179,7 +178,7 @@ abstract class Endpoint: EventDispatcher
 /**
  * An endpoint that runs in its own thread to process events asynchronously.
  */
-class ThreadedEndpoint: Endpoint
+class Service: Endpoint
 {
     /// Internal thread.
     Thread thread;
@@ -234,12 +233,10 @@ class ThreadedEndpoint: Endpoint
     }
 }
 
-alias Actor = ThreadedEndpoint;
-
 /**
  * A specialized threaded endpoint that executes tasks in the background.
  */
-class Worker: ThreadedEndpoint
+class Worker: Service
 {
     this(string address, MessageBroker broker, Owner owner)
     {
@@ -302,6 +299,11 @@ class MessageBroker: Owner
             workers.append(worker);
         else
             endpoints.append(endpoint);
+    }
+    
+    bool canRunTasks()
+    {
+        return !enabled && workers.length == 0;
     }
 
     /// Collect and dispatch events/messages.

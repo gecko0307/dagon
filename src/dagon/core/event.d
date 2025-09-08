@@ -536,11 +536,14 @@ class EventManager: Owner
         mouseRelX = 0;
         mouseRelY = 0;
         
+        /// Aggregate user-emitted events
         for (uint i = 0; i < numOutboxEvents; i++)
         {
             Event e = outboxEventQueue[i];
             if (e.type == EventType.Log)
                 log(e.logLevel, e.message);
+            else if (e.type == EventType.Task && !messageBroker.canRunTasks)
+                e.callback(null, e.payload);
             else
                 addEvent(e);
         }
@@ -1011,12 +1014,12 @@ abstract class EventDispatcher: Owner
                 if (enableInputEvents) onDropFile(e.filename);
                 break;
             case EventType.Message:
-                if (e.domain * domain >= 0)
+                if (e.domain * domain >= 0) // if domains are same
                     if (e.recipient.length == 0 || e.recipient == address)
                         onMessage(e.domain, e.sender, e.message, e.payload);
                 break;
             case EventType.Task:
-                if (e.domain * domain >= 0)
+                if (e.domain * domain >= 0) // if domains are same
                     if (e.recipient.length == 0 || e.recipient == address)
                         onTask(e.domain, e.sender, e.callback, e.payload);
                 break;
@@ -1136,15 +1139,17 @@ abstract class EventListener: EventDispatcher
         eventManager.queueUserEvent(code);
     }
     
-    protected void send(string recipient, string message, void* payload = null, int domain = MessageDomain.ITC)
+    protected void queueMessage(string recipient, string message, void* payload = null, int domain = MessageDomain.ITC)
     {
         Event task = messageEvent(address, recipient, message, payload, domain);
         eventManager.queueEvent(task);
     }
     
-    protected void queueTask(scope TaskCallback callback, void* payload = null)
+    alias send = queueMessage;
+    
+    protected void queueTask(scope TaskCallback callback, void* payload = null, int domain = MessageDomain.ITC)
     {
-        Event task = taskEvent(address, "", callback, payload, MessageDomain.ITC);
+        Event task = taskEvent(address, "", callback, payload, domain);
         eventManager.queueEvent(task);
     }
     
