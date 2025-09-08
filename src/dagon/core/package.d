@@ -31,8 +31,7 @@ DEALINGS IN THE SOFTWARE.
  * Description:
  * The `dagon.core` package includes modules for application management,
  * configuration, event handling, input, key codes, locale detection, logging,
- * persistent storage, property system, time management, virtual file system,
- * and Vulkan image format definitions.
+ * persistent key-value storage, property system, time management and virtual file system.
  *
  * Copyright: Timur Gafarov 2019-2025
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
@@ -42,7 +41,7 @@ module dagon.core;
 
 public
 {
-    /// Lock-free inter-thread communication
+    /// Lock-free inter-thread communication.
     import dagon.core.messaging;
     
     /// Application base class and main loop utilities.

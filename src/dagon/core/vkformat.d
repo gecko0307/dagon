@@ -28,6 +28,7 @@ DEALINGS IN THE SOFTWARE.
 /**
  * Defines Vulkan image format enumerations.
  *
+ * Description:
  * The `dagon.core.vkformat` module provides the `VkFormat` enum,
  * which lists all Vulkan-compatible image and pixel formats, including
  * uncompressed, compressed, packed, and special-purpose formats,
@@ -41,7 +42,6 @@ module dagon.core.vkformat;
 
 /**
  * Enumerates all Vulkan image and pixel formats.
- *
  * The values correspond to the Vulkan `VkFormat` specification, including
  * uncompressed, compressed, packed, and platform/extension-specific formats.
  *

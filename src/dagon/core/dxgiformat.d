@@ -27,7 +27,6 @@ DEALINGS IN THE SOFTWARE.
 
 /**
  * Defines DirectX Graphics Infrastructure image format enumerations.
- *
  * This module is for compatibility with DirectX-specific data structures.
  *
  * Copyright: Timur Gafarov 2025

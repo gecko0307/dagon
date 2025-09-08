@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 
 /**
  * Helper module that publicly imports OpenGL, SDL and Freetype bindings.
+ * Also provides a number of additional enums for OpenGL extensions.
  *
  * Copyright: Timur Gafarov 2019-2025.
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
@@ -50,22 +51,6 @@ enum GL_COMPRESSED_SRGB_S3TC_DXT1_EXT = 0x8C4C;
 enum GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT = 0x8C4D;
 enum GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT = 0x8C4E;
 enum GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT = 0x8C4F;
-
-// RGTC formats
-/*
-enum GL_COMPRESSED_RED_RGTC1 = 0x8DBB;        // BC4_UNORM
-enum GL_COMPRESSED_SIGNED_RED_RGTC1 = 0x8DBC; // BC4_SNORM
-enum GL_COMPRESSED_RG_RGTC2 = 0x8DBD;         // BC5_UNORM
-enum GL_COMPRESSED_SIGNED_RG_RGTC2 = 0x8DBE;  // BC5_SNORM
-*/
-
-// BPTC formats
-/*
-enum GL_COMPRESSED_RGBA_BPTC_UNORM_ARB = 0x8E8C;         // BC7_UNORM
-enum GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_ARB = 0x8E8D;   // BC7_UNORM_SRGB
-enum GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_ARB = 0x8E8E;   // BC6H_SF16
-enum GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_ARB = 0x8E8F; // BC6H_UF16
-*/
 
 // ASTC formats
 enum GL_COMPRESSED_RGBA_ASTC_4x4_KHR = 0x93B0;

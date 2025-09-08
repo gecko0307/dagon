@@ -27,12 +27,15 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /**
- * Provides an event manager.
+ * Primitives and tools for event-driven programming.
  *
  * Description:
  * The `dagon.core.event` module defines the `EventType` enumeration, 
- * the `Event` struct, the `EventManager` class for event polling and dispatch, 
+ * the `Event` struct, the `EventManager` class for event polling and storing, 
  * and the `EventListener` base class for handling events.
+ *
+ * `EventManager` is single-threaded. For multi-threaded event/message passing,
+ * use `MessageBroker`.
  *
  * Copyright: Timur Gafarov, Mateusz Muszyński 2014-2025
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
@@ -123,6 +126,12 @@ struct Event
     void* payload;
 }
 
+/**
+ * Communication layer `Event` is subject to.
+ * Circular - event goes to both message broker and main-thread event listeners;
+ * ITC - event goes to the message broker;
+ * MainThread - event goes to main-thread event listeners.
+ */
 enum MessageDomain
 {
     Circular = 0,
@@ -180,7 +189,7 @@ class EventManager: Owner
     
     /// A pointer to main application window.
     SDL_Window* window;
-
+    
     /// Maximum number of simultaneous events.
     enum maxNumEvents = 50;
     
@@ -197,7 +206,7 @@ class EventManager: Owner
     uint numInboxEvents;
     
     alias numEvents = numInboxEvents;
-
+    
     /**
      * Outbox event queue. All external events (user events, messages, tasks) should go here.
      */
@@ -205,26 +214,47 @@ class EventManager: Owner
     
     /// Number of events in the outbox queue.
     uint numOutboxEvents;
-
+    
     /// Used by Application to indicate activity. Set to false to stop the main loop.
     bool running = true;
-
+    
+    /// Keyboard key is currently pressed/released.
     bool[512] keyPressed = false;
+    
+    /// Keyboard key went up this frame (valid only if `trackUpDownState` is true).
     bool[512] keyUp = false;
+    
+    /// Keyboard key went down this frame (valid only if `trackUpDownState` is true).
     bool[512] keyDown = false;
-
+    
+    /// Mouse button is currently pressed/released.
     bool[255] mouseButtonPressed = false;
+    
+    /// Mouse button went up this frame (valid only if `trackUpDownState` is true).
     bool[255] mouseButtonUp = false;
+    
+    /// Mouse button went down this frame (valid only if `trackUpDownState` is true).
     bool[255] mouseButtonDown = false;
     
+    /// Joystick button is currently pressed/released.
     bool[255] joystickButtonPressed = false;
+    
+    /// Joystick button went up this frame (valid only if `trackUpDownState` is true).
     bool[255] joystickButtonUp = false;
+    
+    /// Joystick button went down this frame (valid only if `trackUpDownState` is true).
     bool[255] joystickButtonDown = false;
-
+    
+    /// Controller button is currently pressed/released.
     bool[255] controllerButtonPressed = false;
+    
+    /// Controller button went up this frame (valid only if `trackUpDownState` is true).
     bool[255] controllerButtonUp = false;
+    
+    /// Controller button went down this frame (valid only if `trackUpDownState` is true).
     bool[255] controllerButtonDown = false;
     
+    /// Whether to update up/down states for keys and buttons.
     bool trackUpDownState = false;
     
     protected
@@ -238,43 +268,72 @@ class EventManager: Owner
         bool needToResetControllerUp = false;
         bool needToResetControllerDown = false;
     }
-
+    
+    /// Mouse pointer's X-coordinate relative to the window.
     int mouseX = 0;
+    
+    /// Mouse pointer's Y-coordinate relative to the window.
     int mouseY = 0;
+    
+    /// Relative change of the X-coordinate of the mouse pointer's position.
     int mouseRelX = 0;
+    
+    /// Relative change of the Y-coordinate of the mouse pointer's position.
     int mouseRelY = 0;
+    
+    /// Switch key repeat.
     bool enableKeyRepeat = false;
-
+    
+    /// Time in seconds since the last `updateTimer` call.
     double deltaTime = 0.0;
+    
+    /// Time in milliseconds since the last `updateTimer` call.
     uint deltaTimeMs = 0;
-
+    
+    /// Application's main window width.
     uint windowWidth;
+    
+    /// Application's main window height.
     uint windowHeight;
+    
+    /// Application's main window focus state.
     bool windowFocused = true;
-
-    // TODO: support multiple controllers up to MAX_CONTROLLERS
-    SDL_GameController* controller = null;
+    
+    /// Last opened controller, if any.
+    SDL_GameController* controller = null; // TODO: support multiple controllers
+    
+    /// Last opened joystick, if any.
     SDL_Joystick* joystick = null;
+    
+    /// A maximum that controller axis value is clamped to (for normalization in 0..1 range).
     int controllerAxisThreshold = 32639;
+    
     deprecated("use controllerAxisThreshold instead")
     alias joystickAxisThreshold = controllerAxisThreshold;
+    
+    /// Current controller vibration support.
     bool controllerHasRumble = false;
+    
+    /// Current controller name.
     string controllerName;
+    
+    /// Current joystick name.
     string joystickName;
     
+    /// Configurable input manager.
     InputManager inputManager;
     
+    /// Message broker for distributing messages and scheduling tasks.
     MessageBroker messageBroker;
     
+    /// Event dispatching hook. Provide your delegate to receive SDL events directly.
     void delegate(SDL_Event* event) onProcessEvent;
 
     /**
-     * Constructs an EventManager for the given Application.
+     * Constructs an EventManager for the given `Application`.
      *
      * Params:
-     *   win = SDL window pointer.
-     *   winWidth = Window width.
-     *   winHeight = Window height.
+     *   app = application object.
      */
     this(Application app)
     {
@@ -538,7 +597,7 @@ class EventManager: Owner
         mouseRelX = 0;
         mouseRelY = 0;
         
-        /// Aggregate user-emitted events
+        // Aggregate user-emitted events
         for (uint i = 0; i < numOutboxEvents; i++)
         {
             Event e = outboxEventQueue[i];
@@ -876,7 +935,7 @@ class EventManager: Owner
         return cast(float)windowWidth / cast(float)windowHeight;
     }
 
-    /// Resets all UP and DOWN input event states.
+    /// Resets all up and down input event states.
     void resetUpDown()
     {
         if (needToResetKeyUp)
@@ -938,10 +997,18 @@ class EventManager: Owner
  */
 abstract class EventDispatcher: Owner
 {
+    /// Addressing domain of this dispatcher.
     protected int domain = MessageDomain.MainThread;
     
+    /// Address of this dispatcher.
     string address = "";
     
+    /**
+     * Constructs an EventDispatcher.
+     *
+     * Params:
+     *   owner = owner object.
+     */
     this(Owner owner)
     {
         super(owner);
@@ -1131,7 +1198,7 @@ abstract class EventListener: EventDispatcher
     }
 
     /**
-     * Generates a user event with the given code.
+     * Queues a user event with the given code.
      *
      * Params:
      *   code = User event code.
@@ -1141,6 +1208,15 @@ abstract class EventListener: EventDispatcher
         eventManager.queueUserEvent(code);
     }
     
+    /**
+     * Queues a message event.
+     *
+     * Params:
+     *   recipient = Recipient object's address. Leave empty for broadcast.
+     *   message = Message string.
+     *   payload = Optional pointer to be passed with the event.
+     *   domain = Message domain/communication layer (ITC or main-thread).
+     */
     protected void queueMessage(string recipient, string message, void* payload = null, int domain = MessageDomain.ITC)
     {
         Event task = messageEvent(address, recipient, message, payload, domain);
@@ -1149,12 +1225,27 @@ abstract class EventListener: EventDispatcher
     
     alias send = queueMessage;
     
+    /**
+     * Queues a task event.
+     *
+     * Params:
+     *   callback = A delegate that should be executed.
+     *   payload = Optional pointer to be passed with the event.
+     *   domain = Message domain/communication layer (ITC or main-thread).
+     */
     protected void queueTask(scope TaskCallback callback, void* payload = null, int domain = MessageDomain.ITC)
     {
         Event task = taskEvent(address, "", callback, payload, domain);
         eventManager.queueEvent(task);
     }
     
+    /**
+     * Queues a log event.
+     *
+     * Params:
+     *   level = Log level.
+     *   message = Log message.
+     */
     protected void queueLog(LogLevel level, string message)
     {
         Event e = Event(EventType.Log);
@@ -1164,7 +1255,7 @@ abstract class EventListener: EventDispatcher
     }
 
     /**
-     * Processes all pending events in EventManager, dispatching them to handler methods.
+     * Processes all pending events, dispatching them to handler methods.
      *
      * Params:
      *   enableInputEvents = If false, disables input event handlers.
