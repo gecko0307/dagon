@@ -143,6 +143,7 @@ class VirtualFileSystem: ReadOnlyFileSystem
     /// Array of mounted file systems.
     Array!ReadOnlyFileSystem mounted;
     
+    /// Application data path, based on `APPDATA` under Windows and `HOME` under Posix.
     String appDataPath;
 
     /// Constructs an empty virtual file system.
