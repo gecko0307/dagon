@@ -49,11 +49,11 @@ Parallax mapping only affects the appearance of surface detail, not the actual g
 * A value of 1.0 represents maximum subsurface softness, with diffuse lighting appearing to come from below the surface.
 Intermediate values blend between standard Lambertian diffusion and subsurface diffusion.
 
-`opacity` - transparency multiplier for base color's alpha value, a number between 0.0 and 1.0. Affects surface transparency if `blendMode` property is set to `Transparent`.
+`opacity` - transparency multiplier for base color's alpha value, a number between 0.0 and 1.0. Affects partial transparency of a surface if `blendMode` property is set to `Transparent`. Partial transparency is supported only in forward pipeline; in deferred pipeline surface pixels can be either fully solid or fully transparent (alpha cutout). This is controlled with the `alphaTestThreshold` property.
 
-`alphaTestThreshold` - alpha cutout threshold, a number between 0.0 and 1.0. Any alpha lower than this value will be treated as 0 (fully transparent) in deferred pipeline. In forward pipeline this parameter is not used.
+`alphaTestThreshold` - alpha cutout threshold, a number between 0.0 and 1.0. Any `opacity` lower than this value will be treated as 0 (fully transparent) in deferred pipeline. In forward pipeline this parameter is not used.
 
-`useFog` - if set to `true`, surface will be mixed with fog color based on distance from camera.
+`useFog` - if set to `true`, surface will be mixed with fog color based on distance from camera. Exact look and feel or the fog effect is largely pipeline-defined and should be programmed in a shader, but all built-in implementations in Dagon respect standard fog parameters from `Environment` object.
 
 `useCulling` - enable backface culling.
 
@@ -61,7 +61,7 @@ Intermediate values blend between standard Lambertian diffusion and subsurface d
 * `VertexUV` (0) - per-vertex UV coordinates;
 * `Matcap` (1) - calculated spherical coordinates for fake reflections.
 
-`textureTransformation` - 3x3 matrix that transforms mesh texture coordinates, if `textureMappingMode` is set to `VertexUV`.
+`textureTransformation` - 3x3 affine matrix that transforms mesh texture coordinates, if `textureMappingMode` is set to `VertexUV`.
 
 `textureScale` - when using textures, this `Vector2f` define the scale of UV coordinates. This is useful to repeat a texture on surface.
 
@@ -69,6 +69,6 @@ Intermediate values blend between standard Lambertian diffusion and subsurface d
 * `ShadowFilterNone` (0) - don't filter shadows
 * `ShadowFilterPCF` (1) - use percentage-closer filtering (soft shadows)
 
-`colorWrite`, `depthWrite` - enable write to color buffer (or GBuffer) and depth buffers.
+`colorWrite`, `depthWrite` - enable write to color buffer (or GBuffer) and depth buffer, respectively.
 
 `outputColor`, `outputNormal`, `outputPBR`, `outputEmission` - enable writing to the corresponding render target in G-buffer.
