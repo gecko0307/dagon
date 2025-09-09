@@ -1,6 +1,6 @@
 ﻿# Event System
 
-Dagon encourages event-driven programming and includes its own real-time event queue. While SDL assumes a single listener that polls for events via `SDL_PollEvent` - Dagon's event manager aggregates SDL events into its own queue, allowing an unlimited number of listener objects (inheriting from `EventListener`) to poll for events. In contrast to many similar systems, Dagon's event system doesn't require event listeners to be registered. Instead, all listeners access the global queue and, if enabled, respond to events via dynamic dispatch in real time. For engine's built-in game objects this is done automatically, but if you create your own `EventListener`s, you have full control over their dispatching process.
+Dagon encourages event-driven programming and includes its own real-time event queue based on SDL input. While SDL assumes a single listener that polls for events via `SDL_PollEvent` - Dagon's event manager aggregates SDL events into its own queue, allowing an unlimited number of listener objects (inheriting from `EventListener`) to poll for events. In contrast to many similar systems, Dagon's event system doesn't require event listeners to be registered. Instead, all listeners access the global queue and, if enabled, respond to events via dynamic dispatch in real time. For engine's built-in game objects this is done automatically, but if you create your own `EventListener`s, you have full control over their dispatching process.
 
 ## Events
 
