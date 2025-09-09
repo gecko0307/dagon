@@ -6,6 +6,8 @@ Material in Dagon is a description of entity's surface properties. Dagon impleme
 
 PBR a combination of rendering techniques that bring real-time graphics closer to real world by following laws of optics. PBR operates on a unified set of inputs that are completely independent from lighting, so PBR materials look consistent in any environment and are usually portable between different graphics software and game engines.
 
+"Physical" material properties like roughness and metallic correspond to PBR parameters only in physically-based pipelines (in Dagon, these are standard deferred and fallback forward pipelines). In other cases, their meaning is implementation-specific, and they may be not supported at all.
+
 ## Properties
 
 `baseColorFactor` and `baseColorTexture` - color of a surface. This is also called albedo or diffuse color. The alpha channel defines surface transparency if `blendMode` property is set to `Transparent`. Color data must be in sRGB space.

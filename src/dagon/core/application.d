@@ -44,6 +44,7 @@ import std.conv;
 import std.getopt;
 import std.string;
 import std.file;
+import std.path;
 import std.algorithm: canFind;
 import std.process;
 import core.stdc.stdlib;
@@ -335,6 +336,12 @@ VirtualFileSystem globalVFS()
  */
 class Application: EventListener, Updateable
 {
+    /// Full path of the executable.
+    string path;
+    
+    /// Absolute directory containing the executable.
+    string directory;
+    
     /// Global VFS that all resource loaders should use.
     VirtualFileSystem vfs;
     
@@ -451,6 +458,9 @@ class Application: EventListener, Updateable
      */
     this(uint winWidth, uint winHeight, bool fullscreen, string windowTitle, string[] args, string appDataFolderName = ".dagon")
     {
+        path = thisExePath();
+        directory = dirName(path);
+        
         createVFS(appDataFolderName);
         
         locale = systemLocale();
@@ -716,6 +726,7 @@ class Application: EventListener, Updateable
         if (vfs is null)
         {
             vfs = New!VirtualFileSystem();
+            mount(directory);
             mount(".");
             if (appDataFolderName.length > 0)
             {
