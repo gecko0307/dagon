@@ -38,7 +38,7 @@ A list of supported event types:
 - `UserEvent` - a user event is emitted. User events carry user-defined signed integer codes (`Event.code`). All negative codes are reserved to Dagon's internals. Currently, one negative code is defined, `DagonEvent.Exit` (-1)
 
 ### Misc
-- `Log` - an asynchronous log event. It doesn't propagate to the listeners - instead, it is immediately handled by the `EventManager` itself;
+- `Log` - an asynchronous log event. It doesn't propagate to the listeners - instead, it is immediately handled by the `EventManager` itself
 - `Cancelled` - event is obsolete and should be ignored (special status for internal use). Cancelled events don't propagate to the listeners.
 
 ## Joysticks vs Controllers
