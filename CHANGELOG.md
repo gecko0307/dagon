@@ -1,3 +1,13 @@
+Dagon 0.31.0 - TBD
+------------------
+- **Core**
+  - New properties `Application.path`, `Application.directory`
+  - Core VFS now mounts executable directory as the lowest priority source
+  - `Application.displayRefreshRate` and `Application.frequencyToRefreshRate` now support optional fallback frequency parameters (60 Hz by default)
+  - New event types `EventType.JoystickAxisMotion`, `EventType.LocaleChange`
+  - New fields `Event.joystickAxis`, `Event.joystickAxisValue`
+  - New event handlers `EventListener.onJoystickAxisMotion`, `EventListener.onLocaleChange`.
+
 Dagon 0.30.0 - 8 Sep, 2025
 --------------------------
 - **Core**
