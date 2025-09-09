@@ -18,10 +18,11 @@ A list of supported event types:
 - `MouseWheel` - mouse wheel scrolled. Reports via `Event.mouseWheelX`, `Event.mouseWheelY`
 
 ### Gamepad
-- `JoystickButtonDown`, `JoystickButtonUp` - joystick button pressed/released. Reports a button number (via `Event.joystickButton`)
-- `ControllerButtonDown`, `ControllerButtonUp` - controller button pressed/released. Reports a button type (via `Event.controllerButton`) defined as `GB_*` constants in `dagon.core.keycodes` (equivalent to `SDL_GameControllerButton`)
-- `ControllerAxisMotion` - controller axis moved. Reports an axis type (via `Event.controllerAxis`) defined as `GA_*` constants in `dagon.core.keycodes` (equivalent to `SDL_GameControllerAxis`), and an axis value (via `Event.controllerAxisValue`) as floating-point in -1..1 range. SDL reports axis values as integers - Dagon normalizes them, so that these values can be used properly in further calculations. You can fine-tune normalization by changing `EventManager.controllerAxisThreshold` (32639 by default), though this is usually not needed for most of the devices
 - `ControllerAdd`, `ControllerRemove` - controller plugged/unplugged. Reports `Event.controllerDeviceIndex`
+- `ControllerButtonDown`, `ControllerButtonUp` - controller button pressed/released. Reports a button type (via `Event.controllerButton`) defined as `GB_*` constants in `dagon.core.keycodes` (equivalent to `SDL_GameControllerButton`)
+- `ControllerAxisMotion` - controller axis moved. Reports an axis type (via `Event.controllerAxis`) defined as `GA_*` constants in `dagon.core.keycodes` (equivalent to `SDL_GameControllerAxis`), and an axis value (via `Event.controllerAxisValue`) as floating-point in -1..1 range. SDL reports axis values as integers - Dagon normalizes them, so that these values can be used properly in further calculations. You can fine-tune normalization by changing `EventManager.controllerAxisThreshold` (32639 by default), though this is usually not needed for most devices
+- `JoystickButtonDown`, `JoystickButtonUp` - joystick button pressed/released. Reports a button number (via `Event.joystickButton`)
+- `JoystickAxisMotion` - joystick axis moved. Reports an axis index (via `Event.joystickAxis`) and an axis value (via `Event.joystickAxisValue`) as floating-point in -1..1 range. SDL reports axis values as integers - Dagon normalizes them, so that these values can be used properly in further calculations. You can fine-tune normalization by changing `EventManager.controllerAxisThreshold` (32639 by default), though this is usually not needed for most devices
 
 ### Window
 - `Resize` - window is resized. Reports new size as `Event.width`, `Event.height`
@@ -45,6 +46,6 @@ A list of supported event types:
 
 Dagon, like SDL, provides two abstraction layers to work with game input devices - joysticks and controllers. The distinction between them lies in the level of standardization.
 
-Joystick is an abstraction of any gaming device with buttons and axes that can be connected to the system. It does not require the device to support standardized control schemes. A "joystick" can be anything: a steering wheel, an arcade pad, a controller from a rare manufacturer. SDL API simply reports button or axe number, but does not interpret their functions (e.g. which joystick is the left or right stick).
+Joystick is an abstraction of any gaming device with buttons and axes that can be connected to the system. It does not require the device to support standardized control schemes. A "joystick" can be anything: a steering wheel, an arcade pad, a controller from a rare manufacturer. SDL API simply reports button or axis number, but does not interpret their functions (e.g. which joystick is the left or right stick).
 
 Controller is a joystick that SDL recognizes as a "standard gamepad" (XInput, DualShock, Switch Pro, etc.). Controllers have fixed standard buttons and axes: A/B/X/Y, left and right triggers, sticks, d-pad. SDL allows the application to access buttons by action type, rather than by number. Controller API is very convenient for adapting the input logic to different devices - the code is the same for all controllers that SDL recognizes.

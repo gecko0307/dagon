@@ -66,12 +66,14 @@ enum EventType
     KeyDown,
     KeyUp,
     TextInput,
+    LocaleChange,
     MouseMotion,
     MouseButtonDown,
     MouseButtonUp,
     MouseWheel,
     JoystickButtonDown,
     JoystickButtonUp,
+    JoystickAxisMotion,
     ControllerButtonDown,
     ControllerButtonUp,
     ControllerAxisMotion,
@@ -107,6 +109,8 @@ struct Event
     dchar unicode;
     int button;
     int joystickButton;
+    int joystickAxis;
+    float joystickAxisValue;
     int controllerButton;
     int controllerAxis;
     float controllerAxisValue;
@@ -667,6 +671,12 @@ class EventManager: Owner
                     addEvent(e);
                     break;
 
+                case SDL_LOCALECHANGED:
+                    e = Event(EventType.LocaleChange);
+                    //application.locale = systemLocale(); // do we need this?
+                    addEvent(e);
+                    break;
+
                 case SDL_MOUSEMOTION:
                     mouseX = event.motion.x;
                     mouseY = event.motion.y;
@@ -790,6 +800,21 @@ class EventManager: Owner
 
                     e = Event(EventType.ControllerButtonUp);
                     e.controllerButton = event.cbutton.button;
+                    addEvent(e);
+                    break;
+
+                case SDL_JOYAXISMOTION:
+                    // TODO: add state modification
+                    e = Event(EventType.JoystickAxisMotion);
+                    e.joystickAxis = event.caxis.axis;
+                    int axisValue = event.caxis.value;
+                    if (joystick)
+                    {
+                        axisValue = SDL_JoystickGetAxis(joystick, e.joystickAxis);
+                    }
+                    e.joystickAxisValue =
+                        cast(float)clamp(axisValue, -controllerAxisThreshold, controllerAxisThreshold) / 
+                        cast(float)controllerAxisThreshold;
                     addEvent(e);
                     break;
 
@@ -1049,6 +1074,9 @@ abstract class EventDispatcher: Owner
             case EventType.JoystickButtonUp:
                 if (enableInputEvents) onJoystickButtonUp(e.joystickButton);
                 break;
+            case EventType.JoystickAxisMotion:
+                if (enableInputEvents) onJoystickAxisMotion(e.joystickAxis, e.joystickAxisValue);
+                break;
             case EventType.ControllerButtonDown:
                 if (enableInputEvents) onControllerButtonDown(e.controllerButton);
                 break;
@@ -1075,6 +1103,9 @@ abstract class EventDispatcher: Owner
                 break;
             case EventType.Quit:
                 onQuit();
+                break;
+            case EventType.LocaleChange:
+                onLocaleChange();
                 break;
             case EventType.FileChange:
                 onFileChange(e.filename);
@@ -1123,6 +1154,9 @@ abstract class EventDispatcher: Owner
 
     /// Called when a joystick button is released.
     void onJoystickButtonUp(int button) {}
+    
+    /// Called when a joystick axis is moved.
+    void onJoystickAxisMotion(int axis, float value) {}
 
     /// Called when a controller button is pressed.
     void onControllerButtonDown(int button) {}
@@ -1150,6 +1184,9 @@ abstract class EventDispatcher: Owner
 
     /// Called when a quit event is received.
     void onQuit() {}
+
+    /// Called when a user locale preferences have changed.
+    void onLocaleChange() {}
 
     /// Called when a file change is detected.
     void onFileChange(string filename) {}
