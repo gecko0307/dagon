@@ -1,6 +1,6 @@
 ﻿# Event System
 
-Dagon encourages event-driven programming and includes its own real-time event queue based on SDL input. While SDL assumes a single listener that polls for events via `SDL_PollEvent` - Dagon's event manager aggregates SDL events into its own queue, allowing an unlimited number of listener objects (inheriting from `EventListener`) to poll for events. In contrast to many similar systems, Dagon's event system doesn't require event listeners to be registered. Instead, all listeners access the global queue and, if enabled, respond to events via dynamic dispatch in real time. For engine's built-in game objects this is done automatically, but if you create your own `EventListener`s, you have full control over their dispatching process.
+Dagon encourages event-driven programming and includes its own real-time event queue based on SDL input. While SDL assumes a single listener that polls for events via `SDL_PollEvent`, Dagon's event manager aggregates SDL events into its own queue, allowing an unlimited number of listener objects (inheriting from `EventListener`) to poll for events. In contrast to many similar systems, Dagon's event system doesn't require event listeners to be registered. Instead, all listeners access the global queue and, if enabled, respond to events via dynamic dispatch in real time. For engine's built-in game objects this is done automatically, but if you create your own `EventListener`s, you have full control over their dispatching process.
 
 ## Events
 
@@ -35,7 +35,7 @@ A list of supported event types:
 ### Logic flow
 - `Message` - a message is received from the `MessageBroker`. See the Messaging System documentation for details. Reports `Event.message`, `Event.sender`, `Event.domain`, `Event.payload`
 - `Task` - a task is received from the `MessageBroker`. See the Messaging System documentation for details. Reports `Event.callback`, `Event.sender`, `Event.domain`, `Event.payload`
-- `UserEvent` - a user event is emitted. Reports `Event.code`. User events carry user-defined signed integer codes. All negative codes are reserved to Dagon's internals. Currently, one negative code is defined, `DagonEvent.Exit` (-1)
+- `UserEvent` - a user event is emitted. User events carry user-defined signed integer codes (`Event.code`). All negative codes are reserved to Dagon's internals. Currently, one negative code is defined, `DagonEvent.Exit` (-1)
 
 ### Misc
 - `Log` - an asynchronous log event. It doesn't propagate to the listeners - instead, it is immediately handled by the `EventManager` itself;
