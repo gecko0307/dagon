@@ -2,7 +2,7 @@
 
 This is a brief description of Dagon's graphics tech.
 
-## Deferred Rendering
+### Deferred Rendering
 
 Deferred rendering is one of the two major techniques in rasterization. It breaks rendering into two main phases - geometry pass and light pass. First all visible geometry is rasterized into a set of fragment attribute buffers (often collectively called a G-buffer), which include depth buffer, normal buffer, color buffer, etc. Then a desired number of light volumes are rasterized into a final radiance buffer. A light shader calculates radiance for a given fragment based on light's properties and G-buffer values corresponding to that fragment. 
 
@@ -18,7 +18,7 @@ There are some disadvantages as well:
 * No simple way of handling transparency. We can't simply blend a fragment to G-buffer over existing data because then the resulting attributes will be meaningless. Transparent objects are usually discarded at the geometry pass and rendered in forward mode as a final step after the light pass. This means that they can't be lit with deferred light volumes and should be handled with some fallback lighting technique.
 * Less material variety. In classic deferred renderer BRDF is defined by light volume shaders, so we can have different BRDFs per light, but not per material. This limitation is less critical if a renderer uses PBR principles (albedo, roughness and metallic maps, microfacet BRDF, image-based lighting, etc.). PBR, which is de-facto standard way of defining materials nowadays, allows greater variety of common materials, such as colored metals, shiny and rough dielectrics, and any combinations of them on the same surface. PBR extension of a deferred renderer comes at additional VRAM cost, but the outcome is very good. Again, objects with custom BRDFs (which you actually don't have too much in typical situations) can be rendered in forward mode.
 
-## Area Lights
+### Area Lights
 
 Area lights are an interesting topic that is given much attention recently. They provide more realistic and physically correct approximation of real-world lights than traditional point light sources. An area light is a polygonal or volumetric shape that emits light from its surface. Such lights are useful to represent ball lamps, fluorescent tubes, LED panels, etc.
 
@@ -26,12 +26,32 @@ Dagon supports spherical and tube area lights. Spherical area lights can be seen
 
 Dagon's deferred renderer treats all point lights as area lights - if the light has zero radius and length, it becomes classic point light.
 
-## Cascaded shadow maps
+### Cascaded shadow maps
 
 Cascaded shadow maps are the most popular technique to render plausible quality shadows at any distance from the viewer. Several shadow maps (cascades) are used with different projection sizes. First cascade covers a relatively small area in front of the viewer, so nearest shadows have the best quality. Next cascade cover larger area and hence is less detailed, and so on. Key point is that distant shadows occupy much less space on screen so that aliasing artifacts become negligible. The result is a smooth decrease of shadow detalization as the distance increases.
 
 Dagon uses 3 cascades placed in order of increasing distance from the camera. Because cascades have the same resolution, Dagon passes them in one texture unit as an array texture of `sampler2DArrayShadow` sampler type. To access it in GLSL via `texture` function, you should use 4-vector XYZW where XY are texture coordinates, Z is a cascade index (0, 1 or 2), and W is a fragment depth (reference value). Look into `shadowLookup` function in standard shaders to learn how things work.
 
-## HDR
+### HDR
 
 Dagon's renderer outputs radiance into a floating-point frame buffer without clamping the values to 0..1 range, so the buffer contains greater luminance information compared to traditional integer frame buffer. The final image that is visible on screen is a result of an additional tone mapping pass, which applies a non-linear luminance compression to the incoming values. Very dark and very bright pixels are compressed more, and pixels of a medium brightness are compressed less. There are five tone mapping functions supported by Dagon: Reinhard, Hable (Uncharted), Unreal, Filmic and ACES.
+
+## Pipeline Execution Model
+
+Render pipeline is a heart of any 3D visualization. Pipeline execution model describes the sequence of operations for transforming 3D data into a 2D image displayed on a screen. It is typically divided into several conceptual stages, involving both CPU and GPU processing. In Dagon, "pipeline" term refers to `dagon.render.pipeline.Pipeline` class, an abstraction that manages a sequence of `RenderPass` objects. A pass binds a render target, a shader with corresponding parameters, prepares a `GraphicsState` structure and finally makes a series of draw calls for a certain subset of entities in the scene.
+
+### 1. Binding a Render Target
+
+TODO
+
+### 2. Binding a Shader
+
+TODO
+
+### 3. Preparing GraphicsState
+
+`GraphicsState` structure encapsulates all context information needed for a draw call. Its main purpose is to store per-frame changing state such as transformation matrices, and currently bound rendering parameters such as `Material`, `Environment`, `Pose`, etc. 
+
+## 4. Drawing
+
+TODO
