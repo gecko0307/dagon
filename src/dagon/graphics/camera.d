@@ -101,6 +101,13 @@ class Camera: Entity
         return absoluteTransformation;
     }
     
+    /**
+     * Returns the projection matrix (perspective transform) for this camera
+     * and given aspect ratio.
+     *
+     * Returns:
+     *   The projection matrix.
+     */
     Matrix4x4f projectionMatrix(float aspectRatio)
     {
          return perspectiveMatrix(fov, aspectRatio, zNear, zFar);

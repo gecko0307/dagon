@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /**
- * Provides classes and utilities for cascaded shadow mapping (CSM).
+ * Provides boilerplate for cascaded shadow mapping (CSM).
  *
  * Description:
  * Cascaded shadow mapping is a technique for rendering high-quality shadows
@@ -61,21 +61,38 @@ import dagon.graphics.shader;
 import dagon.graphics.entity;
 
 /**
- * Represents a single shadow area (cascade) for cascaded shadow mapping.
+ * Geometric representation a single shadow area (cascade) for CSM.
  * Stores projection, view, and shadow matrices, as well as the position
- * and size of the cascade. Used internally by `CascadedShadowMap`
+ * and size of the cascade. Used internally by `CascadedShadowMap` class
  * to manage each shadow region.
  */
 class ShadowArea: Owner
 {
+    /// Transforms from projection space to texture space.
     Matrix4x4f biasMatrix;
+    
+    /// Orthographic shadow projection.
     Matrix4x4f projectionMatrix;
+    
+    /// Transforms eye-space coordinates to the shadow texture space.
     Matrix4x4f shadowMatrix;
+    
+    /// Transforms world-space coordinates to the light space.
     Matrix4x4f viewMatrix;
+    
+    /// Inverse of the `viewMatrix`.
     Matrix4x4f invViewMatrix;
+    
+    /// Cascade's center in world space.
     Vector3f position;
+    
+    /// Orthographic projection size. This effectively defines the shadowing area of the cascade.
     float projectionSize;
+    
+    /// Near plane of the orthographic projection.
     float zStart;
+    
+    /// Far plane of the orthographic projection.
     float zEnd;
     
     /**
@@ -139,7 +156,7 @@ class ShadowArea: Owner
 }
 
 /**
- * Implements cascaded shadow mapping with three cascades.
+ * Cascaded shadow map with three cascades.
  *
  * Description:
  * Manages three `ShadowArea` instances, a layered depth texture,
@@ -167,7 +184,7 @@ class CascadedShadowMap: ShadowMap
     GLuint framebuffer3;
     
     /// Resolution of each shadow map.
-    uint shadowMapResolution = 2048; // TODO: store in DeferredRenderer
+    uint shadowMapResolution = 2048;
 
     /// Projection size for each cascade.
     float[3] projectionSize = [20, 60, 400];
@@ -198,11 +215,11 @@ class CascadedShadowMap: ShadowMap
     /// Destructor. Releases all OpenGL resources.
     ~this()
     {
-        releaseBuffer();
+        releaseBuffers();
     }
     
     /**
-     * Resizes the shadow map textures and framebuffers.
+     * Resizes the shadow maps and framebuffers.
      *
      * Params:
      *   res = New resolution for each cascade.
@@ -211,7 +228,7 @@ class CascadedShadowMap: ShadowMap
     {
         this.resolution = res;
         
-        releaseBuffer();
+        releaseBuffers();
         
         glGenTextures(1, &depthTexture);
         glActiveTexture(GL_TEXTURE0);
@@ -257,7 +274,7 @@ class CascadedShadowMap: ShadowMap
     }
     
     /// Releases all OpenGL resources associated with the shadow map.
-    void releaseBuffer()
+    void releaseBuffers()
     {
         if (glIsFramebuffer(framebuffer1))
             glDeleteFramebuffers(1, &framebuffer1);

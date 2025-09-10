@@ -87,7 +87,7 @@ abstract class ShadowMap: Owner
      * Params:
      *   res = The new resolution.
      */
-    void resize(uint res);
+    void resize(uint res) {}
 
     /**
      * Updates the shadow map for the current frame.
@@ -95,5 +95,5 @@ abstract class ShadowMap: Owner
      * Params:
      *   t = Frame timing information.
      */
-    void update(Time t);
+    void update(Time t) {}
 }

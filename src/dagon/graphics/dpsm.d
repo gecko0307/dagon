@@ -24,6 +24,14 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * Provides boilerplate for dual-paraboloid shadow mapping (DPSM).
+ *
+ * Copyright: Timur Gafarov 2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.graphics.dpsm;
 
 import dlib.core.memory;
@@ -36,16 +44,30 @@ import dagon.core.time;
 import dagon.graphics.shadowmap;
 import dagon.graphics.light;
 
+/**
+ * Dual-paraboloid shadow map.
+ */
 class DualParaboloidShadowMap: ShadowMap
 {
-    // TODO: store in DeferredRenderer
+    /// Resolution of each shadow map.
     uint shadowMapResolution = 1024;
     
+    /// Layered depth texture for a dual paraboloid.
     GLuint depthTextureArray;
     
+    /// Framebuffer for paraboloid 1.
     GLuint framebuffer1;
+    
+    /// Framebuffer for paraboloid 2.
     GLuint framebuffer2;
     
+    /**
+     * Constructs a dual-paraboloid shadow map for the given light.
+     *
+     * Params:
+     *   light = The light source.
+     *   owner = Owner object.
+     */
     this(Light light, Owner owner)
     {
         super(owner);
@@ -53,11 +75,18 @@ class DualParaboloidShadowMap: ShadowMap
         resize(shadowMapResolution);
     }
     
+    /// Destructor. Releases all OpenGL resources.
     ~this()
     {
         releaseBuffers();
     }
     
+    /**
+     * Resizes the shadow maps and framebuffers.
+     *
+     * Params:
+     *   res = New resolution for each paraboloid side.
+     */
     override void resize(uint res)
     {
         this.resolution = res;
@@ -101,6 +130,7 @@ class DualParaboloidShadowMap: ShadowMap
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
     
+    /// Releases all OpenGL resources associated with the shadow map.
     void releaseBuffers()
     {
         if (glIsFramebuffer(framebuffer1))
@@ -111,9 +141,5 @@ class DualParaboloidShadowMap: ShadowMap
         
         if (glIsTexture(depthTextureArray))
             glDeleteTextures(1, &depthTextureArray);
-    }
-    
-    override void update(Time t)
-    {
     }
 }
