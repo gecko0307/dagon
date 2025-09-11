@@ -40,6 +40,7 @@ public
     import dagon.render.deferred.shaders.geometry;
     import dagon.render.deferred.shaders.particle;
     import dagon.render.deferred.shaders.probe;
+    import dagon.render.deferred.shaders.psm;
     import dagon.render.deferred.shaders.sky;
     import dagon.render.deferred.shaders.ssao;
     import dagon.render.deferred.shaders.sunlight;

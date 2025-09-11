@@ -59,6 +59,7 @@ import dagon.graphics.state;
 import dagon.graphics.entity;
 import dagon.graphics.shadowmap;
 import dagon.graphics.csm;
+import dagon.graphics.psm;
 import dagon.graphics.dpsm;
 
 /**
@@ -203,6 +204,8 @@ class Light: Entity
         {
             if (type == LightType.Sun)
                 _shadowMap = New!CascadedShadowMap(this, this);
+            else if (type == LightType.Spot)
+                _shadowMap = New!PerspectiveShadowMap(this, this);
             else
                 _shadowMap = New!DualParaboloidShadowMap(this, this);
         }

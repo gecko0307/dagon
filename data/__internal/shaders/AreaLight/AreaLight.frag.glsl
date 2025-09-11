@@ -34,6 +34,8 @@ uniform vec3 lightSpotDirection;
 uniform float lightSpecular;
 uniform float lightDiffuse;
 
+uniform mat4 shadowMatrix;
+uniform sampler2DShadow shadowTexture;
 uniform sampler2DArrayShadow shadowTextureArray;
 uniform float shadowResolution;
 
@@ -257,9 +259,18 @@ subroutine uniform srtLightRadiance lightRadiance;
 
 subroutine float srtShadow(in vec3 pos);
 
-subroutine(srtShadow) float shadowMapNone(in vec3 pos)
+subroutine(srtShadow) float shadowMapNone(in vec3 worldPos)
 {
     return 1.0;
+}
+
+subroutine(srtShadow) float shadowMapPerspective(in vec3 worldPos)
+{
+    vec4 clipPos = shadowMatrix * vec4(worldPos, 1.0);
+    vec3 ndc = clipPos.xyz / clipPos.w;
+    vec3 texCoord = ndc * 0.5 + 0.5;
+    float shadow = texture(shadowTexture, texCoord);
+    return shadow;
 }
 
 const float bias = 0.01;

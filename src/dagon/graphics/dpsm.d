@@ -112,9 +112,8 @@ class DualParaboloidShadowMap: ShadowMap
         glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTextureArray, 0, 0);
         
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-        if (status != GL_FRAMEBUFFER_COMPLETE) {
+        if (status != GL_FRAMEBUFFER_COMPLETE)
             logError("Framebuffer ", framebuffer1, " incomplete: ", status);
-        }
         
         glGenFramebuffers(1, &framebuffer2);
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer2);
@@ -123,9 +122,8 @@ class DualParaboloidShadowMap: ShadowMap
         glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTextureArray, 0, 1);
         
         status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-        if (status != GL_FRAMEBUFFER_COMPLETE) {
+        if (status != GL_FRAMEBUFFER_COMPLETE)
             logError("Framebuffer ", framebuffer2, " incomplete: ", status);
-        }
         
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }

@@ -38,18 +38,21 @@ import dagon.core.time;
 import dagon.graphics.entity;
 import dagon.graphics.camera;
 import dagon.graphics.light;
+import dagon.graphics.psm;
 import dagon.graphics.dpsm;
 import dagon.graphics.csm;
 import dagon.graphics.shader;
 import dagon.render.pipeline;
 import dagon.render.pass;
 import dagon.render.deferred.shaders.csm;
+import dagon.render.deferred.shaders.psm;
 import dagon.render.deferred.shaders.dpsm;
 
 class PassShadow: RenderPass
 {
     EntityGroup lightGroup;
     CascadedShadowShader csmShader;
+    PerspectiveShadowShader psmShader;
     DualParaboloidShadowShader dpsmShader;
     Camera camera;
 
@@ -57,6 +60,7 @@ class PassShadow: RenderPass
     {
         super(pipeline);
         csmShader = New!CascadedShadowShader(this);
+        psmShader = New!PerspectiveShadowShader(this);
         dpsmShader = New!DualParaboloidShadowShader(this);
         state.colorMask = false;
         state.culling = false;
@@ -98,11 +102,15 @@ class PassShadow: RenderPass
                     if (light.shadowEnabled)
                     {
                         state.light = light;
+                        
                         CascadedShadowMap csm = cast(CascadedShadowMap)light.shadowMap;
+                        PerspectiveShadowMap psm = cast(PerspectiveShadowMap)light.shadowMap;
                         DualParaboloidShadowMap dpsm = cast(DualParaboloidShadowMap)light.shadowMap;
                         
                         if (light.type == LightType.Sun && csm)
                             renderCSM(csm);
+                        else if (light.type == LightType.Spot && psm)
+                            renderPSM(psm);
                         else if (dpsm)
                             renderDPSM(dpsm);
                     }
@@ -187,6 +195,36 @@ class PassShadow: RenderPass
         glPolygonOffset(0.0, 0.0);
 
         csmShader.unbind();
+    }
+    
+    void renderPSM(PerspectiveShadowMap psm)
+    {
+        Light light = psm.light;
+        
+        state.resolution = Vector2f(psm.resolution, psm.resolution);
+        state.light = light;
+        
+        glScissor(0, 0, psm.resolution, psm.resolution);
+        glViewport(0, 0, psm.resolution, psm.resolution);
+        
+        psmShader.bind();
+        
+        glPolygonOffset(3.0, 0.0);
+        glDisable(GL_CULL_FACE);
+        
+        state.invViewMatrix = psm.invViewMatrix;
+        state.viewMatrix = psm.viewMatrix;
+        state.projectionMatrix = psm.projectionMatrix;
+        state.invProjectionMatrix = state.projectionMatrix.inverse;
+        
+        bindFramebuffer(psm.framebuffer);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        renderEntities(psmShader);
+        
+        glEnable(GL_CULL_FACE);
+        glPolygonOffset(0.0, 0.0);
+        
+        psmShader.unbind();
     }
     
     void renderDPSM(DualParaboloidShadowMap dpsm)
