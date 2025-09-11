@@ -53,6 +53,8 @@ class AreaLightShader: Shader
     String vs, fs;
     
     Matrix4x4f defaultShadowMatrix;
+    GLuint defaultShadowTexture;
+    GLuint defaultShadowTextureArray;
     
     ShaderParameter!Matrix4x4f viewMatrix;
     ShaderParameter!Matrix4x4f invViewMatrix;
@@ -156,6 +158,22 @@ class AreaLightShader: Shader
         shadowMapSubroutineDualParaboloid = shadowMapSubroutine.getIndex("shadowMapDualParaboloid");
         shadowMapSubroutineNone = shadowMapSubroutine.getIndex("shadowMapNone");
         
+        glGenTextures(1, &defaultShadowTexture);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, defaultShadowTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, 1, 1, 0, GL_DEPTH_COMPONENT, GL_FLOAT, null);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glGenTextures(1, &defaultShadowTextureArray);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, defaultShadowTextureArray);
+        glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT24, 1, 1, 2, 0, GL_DEPTH_COMPONENT, GL_FLOAT, null);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+        
         colorBuffer = createParameter!int("colorBuffer");
         depthBuffer = createParameter!int("depthBuffer");
         normalBuffer = createParameter!int("normalBuffer");
@@ -166,6 +184,12 @@ class AreaLightShader: Shader
 
     ~this()
     {
+        if (glIsTexture(defaultShadowTexture))
+            glDeleteTextures(1, &defaultShadowTexture);
+        
+        if (glIsTexture(defaultShadowTextureArray))
+            glDeleteTextures(1, &defaultShadowTextureArray);
+        
         vs.free();
         fs.free();
     }
@@ -274,7 +298,7 @@ class AreaLightShader: Shader
                     PerspectiveShadowMap psm = cast(PerspectiveShadowMap)state.light.shadowMap;
                     
                     glActiveTexture(GL_TEXTURE4);
-                    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+                    glBindTexture(GL_TEXTURE_2D_ARRAY, defaultShadowTextureArray);
                     shadowTextureArray = 4;
                     
                     glActiveTexture(GL_TEXTURE5);
@@ -295,7 +319,7 @@ class AreaLightShader: Shader
                     shadowTextureArray = 4;
                     
                     glActiveTexture(GL_TEXTURE5);
-                    glBindTexture(GL_TEXTURE_2D, 0);
+                    glBindTexture(GL_TEXTURE_2D, defaultShadowTexture);
                     shadowTexture = 5;
                     
                     shadowResolution = cast(float)dpsm.resolution;
@@ -307,11 +331,11 @@ class AreaLightShader: Shader
             else
             {
                 glActiveTexture(GL_TEXTURE4);
-                glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+                glBindTexture(GL_TEXTURE_2D_ARRAY, defaultShadowTextureArray);
                 shadowTextureArray = 4;
                 
                 glActiveTexture(GL_TEXTURE5);
-                glBindTexture(GL_TEXTURE_2D, 0);
+                glBindTexture(GL_TEXTURE_2D, defaultShadowTexture);
                 shadowTexture = 5;
                 
                 shadowMapSubroutine.index = shadowMapSubroutineNone;

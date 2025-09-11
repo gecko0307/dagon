@@ -158,8 +158,8 @@ class SunLightShader: Shader
 
     ~this()
     {
-        if (glIsFramebuffer(defaultShadowTexture))
-            glDeleteFramebuffers(1, &defaultShadowTexture);
+        if (glIsTexture(defaultShadowTexture))
+            glDeleteTextures(1, &defaultShadowTexture);
 
         vs.free();
         fs.free();
