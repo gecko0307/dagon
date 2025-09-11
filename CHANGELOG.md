@@ -7,6 +7,8 @@ Dagon 0.31.0 - TBD
   - New event types `EventType.JoystickAxisMotion`, `EventType.LocaleChange`
   - New fields `Event.joystickAxis`, `Event.joystickAxisValue`
   - New event handlers `EventListener.onJoystickAxisMotion`, `EventListener.onLocaleChange`.
+- **Rendering**
+  - Perspective shadow mapping support for spot lights. This technique uses a single depth buffer, so it is more optimal for spot lights that DPSM.
 
 Dagon 0.30.0 - 8 Sep, 2025
 --------------------------
