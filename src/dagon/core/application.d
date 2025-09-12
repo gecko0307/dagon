@@ -50,12 +50,6 @@ import std.process;
 import core.stdc.stdlib;
 import core.stdc.string;
 
-version(Windows)
-{
-    pragma(lib, "user32");
-    import core.sys.windows.windows;
-}
-
 import dlib.core.memory;
 import dlib.core.stream;
 import dlib.image;
@@ -75,13 +69,17 @@ import dagon.graphics.updateable;
 import dagon.graphics.font;
 
 version(Windows)
-{ 
-    import core.sys.windows.windows: SetConsoleCP, SetConsoleOutputCP;
+{
+    pragma(lib, "user32");
+    
+    import core.sys.windows.windows;
+    import dagon.core.wintab;
+    
     static this()
     { 
         SetConsoleCP(65001);
         SetConsoleOutputCP(65001);
-    } 
+    }
 }
 
 /**
@@ -384,6 +382,9 @@ class Application: EventListener, Updateable
     /// FreeType available or not.
     bool freetypePresent = true;
     
+    /// Wintab available or not.
+    bool wintabPresent = false;
+    
     /// Actually used SDL library version.
     SDL_version sdlVersion;
     
@@ -542,6 +543,23 @@ class Application: EventListener, Updateable
             {
                 logError("Freetype library is not found. Please, install Freetype 2.8.1");
                 freetypePresent = false;
+            }
+        }
+        
+        version(Windows)
+        {
+            WintabSupport loadedWintabSupport = loadWintab();
+            if (loadedWintabSupport != WintabSupport.v140)
+            {
+                if (loadedWintabSupport == WintabSupport.badLibrary)
+                {
+                    logWarning("Failed to load some Wintab functions");
+                    wintabPresent = true;
+                }
+                else
+                {
+                    logError("Wintab library is not found");
+                }
             }
         }
         

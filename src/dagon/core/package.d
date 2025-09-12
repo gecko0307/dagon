@@ -59,6 +59,9 @@ public
     /// Event types, event manager, and event listener base class.
     import dagon.core.event;
     
+    /// Graphics tablet API
+    import dagon.core.graphicstablet;
+    
     /// Internationalization functionalty.
     import dagon.core.i18n;
 

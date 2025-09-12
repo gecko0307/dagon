@@ -56,6 +56,7 @@ import dagon.core.application;
 import dagon.core.input;
 import dagon.core.logger;
 import dagon.core.messaging;
+import dagon.core.graphicstablet;
 
 /**
  * All supported event types in Dagon.
@@ -342,6 +343,8 @@ class EventManager: Owner
     
     Array!CustomInputDevice customInputDevices;
     
+    GraphicsTablet graphicsTablet;
+    
     /// Event dispatching hook. Provide your delegate to receive SDL events directly.
     void delegate(SDL_Event* event) onProcessEvent;
 
@@ -373,6 +376,16 @@ class EventManager: Owner
         inputManager = New!InputManager(this);
         
         messageBroker = New!MessageBroker(this);
+        
+        graphicsTablet = New!GraphicsTablet(this);
+        if (graphicsTablet.initialize(this))
+        {
+            addCustomInputDevice(graphicsTablet);
+        }
+        else
+        {
+            logWarning("Graphics tablet is not available");
+        }
     }
 
     /// Destructor. Cleans up resources.
