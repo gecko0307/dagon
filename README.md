@@ -54,6 +54,7 @@ Features
 * Tween engine for simple animation. Delayed function calls
 * Keyboard, mouse and joystick input. Input manager with abstract bindings and file-based configuration
 * Unicode text input
+* Graphics tablet input
 * Ownership memory model
 * Entity-component model
 * Microservices and worker threads for running tasks in background, so that they don't block the main game loop

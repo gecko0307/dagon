@@ -4,9 +4,10 @@ Dagon 0.31.0 - TBD
   - New properties `Application.path`, `Application.directory`
   - Core VFS now mounts executable directory as the lowest priority source
   - `Application.displayRefreshRate` and `Application.frequencyToRefreshRate` now support optional fallback frequency parameters (60 Hz by default)
-  - New event types `EventType.JoystickAxisMotion`, `EventType.LocaleChange`
-  - New fields `Event.joystickAxis`, `Event.joystickAxisValue`
-  - New event handlers `EventListener.onJoystickAxisMotion`, `EventListener.onLocaleChange`.
+  - Graphics tablets support (currently only on Windows, via Wintab API)
+  - New event types `EventType.PenMotion`, `EventType.JoystickAxisMotion`, `EventType.LocaleChange`
+  - New fields `Event.x`, `Event.y`, `Event.pressure`, `Event.joystickAxis`, `Event.joystickAxisValue`
+  - New event handlers `EventListener.onPenMotion`, `EventListener.onJoystickAxisMotion`, `EventListener.onLocaleChange`.
 - **Rendering**
   - Perspective shadow mapping support for spot lights. This technique uses a single depth buffer, so it is more optimal for spot lights that DPSM.
 
