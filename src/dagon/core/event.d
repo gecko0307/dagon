@@ -305,14 +305,22 @@ class EventManager: Owner
     /// Time in milliseconds since the last `updateTimer` call.
     uint deltaTimeMs = 0;
     
+    uint displayWidth;
+    uint displayHeight;
+    
     /// Application's main window width.
     uint windowWidth;
     
     /// Application's main window height.
     uint windowHeight;
     
+    int windowX = 0;
+    int windowY = 0;
+    
     /// Application's main window focus state.
     bool windowFocused = true;
+    
+    SDL_SysWMinfo wmInfo;
     
     /// Last opened controller, if any.
     SDL_GameController* controller = null; // TODO: support multiple controllers
@@ -364,6 +372,16 @@ class EventManager: Owner
 
         windowWidth = app.width;
         windowHeight = app.height;
+        
+        SDL_GetWindowPosition(window, &windowX, &windowY);
+        
+        SDL_DisplayMode displayMode;
+        SDL_GetCurrentDisplayMode(0, &displayMode);
+        displayWidth = displayMode.w;
+        displayHeight = displayMode.h;
+        
+        SDL_VERSION(&wmInfo.version_);
+        SDL_GetWindowWMInfo(window, &wmInfo);
         
         if (exists("gamecontrollerdb.txt"))
             SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
@@ -631,6 +649,8 @@ class EventManager: Owner
 
         mouseRelX = 0;
         mouseRelY = 0;
+        
+        SDL_GetWindowPosition(window, &windowX, &windowY);
         
         // Aggregate user-emitted events
         for (uint i = 0; i < numOutboxEvents; i++)

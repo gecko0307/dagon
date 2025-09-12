@@ -39,6 +39,10 @@ version(Windows)
     
     alias TabletPacket = PACKET!PK_ALL;
 }
+else version(linux)
+{
+    // TODO
+}
 
 import loader = bindbc.loader.sharedlib;
 
@@ -47,13 +51,14 @@ class GraphicsTablet: Owner, CustomInputDevice
    protected:
     EventManager eventManager;
     
-    int displayWidth = 0;
-    int displayHeight = 0;
-    
     version(Windows)
     {
         HCTX ctx = null;
         int maxPenPressure;
+    }
+    else version(linux)
+    {
+        // TODO
     }
     
     bool initialized = false;
@@ -71,21 +76,9 @@ class GraphicsTablet: Owner, CustomInputDevice
     {
         this.eventManager = eventManager;
         
-        // TODO: move this to EventManager
-        SDL_DisplayMode displayMode;
-        SDL_GetCurrentDisplayMode(0, &displayMode);
-        displayWidth = displayMode.w;
-        displayHeight = displayMode.h;
-        
-        // TODO: move this to EventManager
-        SDL_SysWMinfo wmInfo;
-        SDL_VERSION(&wmInfo.version_);
-        SDL_GetWindowWMInfo(eventManager.window, &wmInfo);
-        
         version(Windows)
         {
-            // TODO: move this to EventManager
-            HWND hwnd = wmInfo.info.win.window;
+            HWND hwnd = eventManager.wmInfo.info.win.window;
             
             LOGCONTEXT lc;
             if (WTInfo(WTI_DEFSYSCTX, 0, &lc))
@@ -112,6 +105,10 @@ class GraphicsTablet: Owner, CustomInputDevice
                 initialized = false;
             }
         }
+        else version(linux)
+        {
+            // TODO
+        }
         
         return initialized;
     }
@@ -121,18 +118,13 @@ class GraphicsTablet: Owner, CustomInputDevice
         if (!initialized || !enabled)
             return false;
         
-        // TODO: move this to EventManager
-        int windowX = 0;
-        int windowY = 0;
-        SDL_GetWindowPosition(eventManager.window, &windowX, &windowY);
-        
         version(Windows)
         {
             TabletPacket packet;
             if (WTPacketsGet(ctx, 1, &packet))
             {
-                int x = packet.pkX - windowX;
-                int y = (displayHeight - packet.pkY) - windowY;
+                int x = packet.pkX - eventManager.windowX;
+                int y = (eventManager.displayHeight - packet.pkY) - eventManager.windowY;
                 
                 if (x < 0 || y < 0 || x > eventManager.windowWidth || y > eventManager.windowHeight)
                     return false;
@@ -148,6 +140,10 @@ class GraphicsTablet: Owner, CustomInputDevice
                 
                 return true;
             }
+        }
+        else version(linux)
+        {
+            // TODO
         }
         
         return false;
