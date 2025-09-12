@@ -79,6 +79,7 @@ enum EventType
     ControllerAxisMotion,
     ControllerAdd,
     ControllerRemove,
+    PenMotion,
     Resize,
     FocusLoss,
     FocusGain,
@@ -115,11 +116,14 @@ struct Event
     int controllerAxis;
     float controllerAxisValue;
     int controllerDeviceIndex = -1;
+    int x;
+    int y;
     int width;
     int height;
     int userCode;
     int mouseWheelX;
     int mouseWheelY;
+    float pressure;
     LogLevel logLevel;
     int domain;
     string filename;
@@ -171,6 +175,12 @@ Event taskEvent(string sender, string recipient, TaskCallback callback, void* pa
     e.payload = payload;
     e.domain = domain;
     return e;
+}
+
+interface CustomInputDevice
+{
+    bool initialize(EventManager eventManager);
+    bool pollEvents();
 }
 
 /**
@@ -330,6 +340,8 @@ class EventManager: Owner
     /// Message broker for distributing messages and scheduling tasks.
     MessageBroker messageBroker;
     
+    Array!CustomInputDevice customInputDevices;
+    
     /// Event dispatching hook. Provide your delegate to receive SDL events directly.
     void delegate(SDL_Event* event) onProcessEvent;
 
@@ -367,12 +379,18 @@ class EventManager: Owner
     ~this()
     {
         Delete(inputManager);
+        customInputDevices.free();
     }
 
     /// Signals the Application to stop running.
     void exit()
     {
         running = false;
+    }
+
+    void addCustomInputDevice(CustomInputDevice device)
+    {
+        customInputDevices.append(device);
     }
 
     /**
@@ -891,6 +909,14 @@ class EventManager: Owner
             }
         }
         
+        foreach(device; customInputDevices)
+        {
+            while(device.pollEvents())
+            {
+                //
+            }
+        }
+        
         messageBroker.update();
     }
 
@@ -1092,6 +1118,9 @@ abstract class EventDispatcher: Owner
             case EventType.ControllerRemove:
                 if (enableInputEvents) onControllerRemove(e.controllerDeviceIndex);
                 break;
+            case EventType.PenMotion:
+                if (enableInputEvents) onPenMotion(e.x, e.y, e.pressure);
+                break;
             case EventType.Resize:
                 onResize(e.width, e.height);
                 break;
@@ -1172,6 +1201,8 @@ abstract class EventDispatcher: Owner
 
     /// Called when a controller is removed.
     void onControllerRemove(uint deviceIndex) {}
+    
+    void onPenMotion(int x, int y, float pressure) {}
 
     /// Called when the window is resized.
     void onResize(int width, int height) {}
