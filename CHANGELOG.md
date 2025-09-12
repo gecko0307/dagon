@@ -2,6 +2,7 @@ Dagon 0.31.0 - TBD
 ------------------
 - **Core**
   - New properties `Application.path`, `Application.directory`
+  - New property `Application.hwnd` under Windows
   - Core VFS now mounts executable directory as the lowest priority source
   - `Application.displayRefreshRate` and `Application.frequencyToRefreshRate` now support optional fallback frequency parameters (60 Hz by default)
   - Abstract input devices (input event emitters) support. Use `InputDevice` interface and `EventManager.addInputDevice` method

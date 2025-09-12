@@ -1071,4 +1071,12 @@ class Application: EventListener, Updateable
                 ShowWindow(GetConsoleWindow(), SW_HIDE);
         }
     }
+    
+    version(Windows)
+    {
+        HWND hwnd()
+        {
+            return eventManager.wmInfo.info.win.window;
+        }
+    }
 }
