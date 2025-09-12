@@ -15,7 +15,7 @@ A list of supported event types:
 ### Mouse
 - `MouseMotion` - mouse cursor is moved inside an application window. This event doesn't propagate to the listeners - instead, it updates `EventManager.mouseX` and `EventManager.mouseY`, mouse pointer coordinates relative to the window
 - `MouseButtonDown`, `MouseButtonUp` - mouse button pressed/released. Reports mouse button codes (via `Event.button`) defined as `MB_*` constants in `dagon.core.keycodes` (equivalent to `SDL_MouseButtonFlags`)
-- `MouseWheel` - mouse wheel scrolled. Reports via `Event.mouseWheelX`, `Event.mouseWheelY`
+- `MouseWheel` - mouse wheel scrolled. Reports scroll delta via `Event.mouseWheelX`, `Event.mouseWheelY`. Ordinary mouse wheel affects Y-coordinate, and the side wheel (present in some professional mice) affects X-coordinate
 
 ### Gamepad
 - `ControllerAdd`, `ControllerRemove` - controller plugged/unplugged. Reports `Event.controllerDeviceIndex`
