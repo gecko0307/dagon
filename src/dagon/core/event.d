@@ -178,7 +178,7 @@ Event taskEvent(string sender, string recipient, TaskCallback callback, void* pa
     return e;
 }
 
-interface CustomInputDevice
+interface InputDevice
 {
     bool initialize(EventManager eventManager);
     bool pollEvents();
@@ -306,6 +306,7 @@ class EventManager: Owner
     uint deltaTimeMs = 0;
     
     uint displayWidth;
+    
     uint displayHeight;
     
     /// Application's main window width.
@@ -315,6 +316,7 @@ class EventManager: Owner
     uint windowHeight;
     
     int windowX = 0;
+    
     int windowY = 0;
     
     /// Application's main window focus state.
@@ -349,7 +351,7 @@ class EventManager: Owner
     /// Message broker for distributing messages and scheduling tasks.
     MessageBroker messageBroker;
     
-    Array!CustomInputDevice customInputDevices;
+    protected Array!InputDevice inputDevices;
     
     GraphicsTablet graphicsTablet;
     
@@ -397,20 +399,16 @@ class EventManager: Owner
         
         graphicsTablet = New!GraphicsTablet(this);
         if (graphicsTablet.initialize(this))
-        {
-            addCustomInputDevice(graphicsTablet);
-        }
+            addInputDevice(graphicsTablet);
         else
-        {
             logWarning("Graphics tablet is not available");
-        }
     }
 
     /// Destructor. Cleans up resources.
     ~this()
     {
         Delete(inputManager);
-        customInputDevices.free();
+        inputDevices.free();
     }
 
     /// Signals the Application to stop running.
@@ -419,9 +417,9 @@ class EventManager: Owner
         running = false;
     }
 
-    void addCustomInputDevice(CustomInputDevice device)
+    void addInputDevice(InputDevice device)
     {
-        customInputDevices.append(device);
+        inputDevices.append(device);
     }
 
     /**
@@ -942,7 +940,7 @@ class EventManager: Owner
             }
         }
         
-        foreach(device; customInputDevices)
+        foreach(device; inputDevices)
         {
             while(device.pollEvents())
             {

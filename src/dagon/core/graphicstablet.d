@@ -46,7 +46,7 @@ else version(linux)
 
 import loader = bindbc.loader.sharedlib;
 
-class GraphicsTablet: Owner, CustomInputDevice
+class GraphicsTablet: Owner, InputDevice
 {
    protected:
     EventManager eventManager;

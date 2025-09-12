@@ -4,7 +4,9 @@ Dagon 0.31.0 - TBD
   - New properties `Application.path`, `Application.directory`
   - Core VFS now mounts executable directory as the lowest priority source
   - `Application.displayRefreshRate` and `Application.frequencyToRefreshRate` now support optional fallback frequency parameters (60 Hz by default)
+  - Abstract input devices (input event emitters) support. Use `InputDevice` interface and `EventManager.addInputDevice` method
   - Graphics tablets support (currently only on Windows, via Wintab API)
+  - New properties `EventManager.displayWidth`, `EventManager.displayHeight`, `EventManager.windowX`, `EventManager.windowY`, `EventManager.wmInfo`, `EventManager.graphicsTablet`
   - New event types `EventType.PenMotion`, `EventType.JoystickAxisMotion`, `EventType.LocaleChange`
   - New fields `Event.x`, `Event.y`, `Event.pressure`, `Event.joystickAxis`, `Event.joystickAxisValue`
   - New event handlers `EventListener.onPenMotion`, `EventListener.onJoystickAxisMotion`, `EventListener.onLocaleChange`.
