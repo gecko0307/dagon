@@ -39,9 +39,8 @@ Features
 * HDR rendering with many tonemapping operators, including Reinhard, Hable/Uncharted, Unreal, ACES, Filmic, AgX, and Khronos PBR Neutral
 * HDRI environment maps. Equirectangular HDRI to cubemap conversion. GPU-based cubemap prefiltering with GGX BRDF and importance sampling. Loading prebaked cubemaps from DDS or KTX files
 * Directional lights with cascaded shadow mapping and volumetric scattering
-* Spherical and tube area lights, spot lights
-* Perspective shadow mapping for spot lights
-* Dual paraboloid shadow mapping for point/area lights
+* Spherical and tube area lights with dual paraboloid shadow mapping
+* Spot lights with perspective shadow mapping
 * Local environment probes with box-projected cube mapping for approximated interior GI
 * Normal/parallax mapping, parallax occlusion mapping
 * Deferred decals with normal mapping and PBR material properties
