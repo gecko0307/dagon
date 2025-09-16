@@ -1,5 +1,5 @@
-Dagon 0.31.0 - TBD
-------------------
+Dagon 0.31.0 - 16 Sep, 2025
+---------------------------
 - **Core**
   - New properties `Application.path`, `Application.directory`
   - New property `Application.hwnd` under Windows
