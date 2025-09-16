@@ -1,3 +1,10 @@
+Dagon 0.32.0 - TBD
+------------------
+- **Core**
+  - Dagon now requires OpenGL 4.3
+- **Graphics components**
+  - Shader binary cache (experimental). It can be enabled by specifying `enableShaderCache: 1;` in settings.conf.
+
 Dagon 0.31.0 - 16 Sep, 2025
 ---------------------------
 - **Core**
