@@ -34,7 +34,7 @@ A list of supported event types:
 - `FileChange` - emitted when an asset is modified by an external application (if the file is being monitored for changes). Reports `Event.filename`
 
 ### Logic flow
-- `Message` - a message is received from the `MessageBroker`. See the Messaging System documentation for details. Reports `Event.message`, `Event.sender`, `Event.domain`, `Event.payload`
+- `Message` - a message is received from the `MessageBroker`. See the "Messaging System.md" file for details. Reports `Event.message`, `Event.sender`, `Event.domain`, `Event.payload`
 - `Task` - a task is received from the `MessageBroker`. See the Messaging System documentation for details. Reports `Event.callback`, `Event.sender`, `Event.domain`, `Event.payload`
 - `UserEvent` - a user event is emitted. User events carry user-defined signed integer codes (`Event.code`). All negative codes are reserved to Dagon's internals. Currently, one negative code is defined, `DagonEvent.Exit` (-1)
 

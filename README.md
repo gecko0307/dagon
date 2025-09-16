@@ -34,7 +34,7 @@ Features
 * GPU skinning
 * Textures in PNG, JPEG, WebP, AVIF, DDS, KTX, KTX2, HDR, SVG and many other formats
 * Video support using [libVLC](https://www.videolan.org/vlc/libvlc.html). Screen-aligned 2D video playback and video textures on 3D meshes. Equirectangular 360° video support
-* Deferred pipeline for opaque materials, forward pipeline for transparent materials and materials with custom shaders
+* Hybrid rendering pipeline: deferred for opaque materials, forward for transparent materials and materials with custom shaders
 * Physically based rendering (PBR)
 * HDR rendering with many tonemapping operators, including Reinhard, Hable/Uncharted, Unreal, ACES, Filmic, AgX, and Khronos PBR Neutral
 * HDRI environment maps. Equirectangular HDRI to cubemap conversion. GPU-based cubemap prefiltering with GGX BRDF and importance sampling. Loading prebaked cubemaps from DDS or KTX files

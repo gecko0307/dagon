@@ -27,6 +27,8 @@ void main(string[] args)
 }
 ```
 
+Window parameters that are passed to the game class are default ones which can be overridden by the user via the `setting.conf` file. See "Conf Files.md" for details.
+
 Note that Dagon doesn't use D's built-in memory allocator (`new` operator), instead it allocates all its data with `New` and `Delete` functions from `dlib.core.memory`. You are also expected to do so. You still can use garbage collected data in Dagon, but this may result in weird bugs, so you are strongly recommended to do things our way. Most part of the engine is built around dlib's ownership model - every object belongs to some other object (owner), and deleting the owner will delete all of its owned objects. This allows semi-automatic memory management - you have to manually delete only root owner, which usually is a game object.
 
 ## Scene
