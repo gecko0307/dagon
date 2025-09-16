@@ -2,6 +2,8 @@
 
 The goal of this project is to create a modern, easy to use, extensible 3D game engine for [D language](https://dlang.org/). Dagon is based on OpenGL 4.0 core profile and SDL2. It currently works on Windows and Linux.
 
+> Note: this project is not connected to Dagon engine by Senscape. Also not to be confused with Dagor engine by Gaijin Entertainment.
+
 Dagon uses computation-heavy graphics techniques and so requires a fairly powerful graphics card to run (Ampere-based NVIDIA GPUs are recommended for optimal performance). The engine is only desktop, support for mobile and web platforms is not planned.
 
 If you like Dagon, support its development on [Patreon](https://www.patreon.com/gecko0307) or [Liberapay](https://liberapay.com/gecko0307). You can also make a one-time donation via [NOWPayments](https://nowpayments.io/donation/gecko0307). I appreciate any support. Thanks in advance!
