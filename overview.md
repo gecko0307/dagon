@@ -6,11 +6,9 @@
 
 Dagon uses modern graphics techniques and so requires a fairly powerful graphics card to run (at least Turing-based NVIDIA cards are recommended). The engine works on Windows and Linux, support for mobile and web platforms is not planned.
 
-The engine is still under development and lacks some of the planned features. Follow the development on [Trello](https://trello.com/b/4sDgRjZI/dagon-development-board) to see the priority tasks.
+[![Sponza](https://blog.pixperfect.online/wp-content/uploads/2025/05/sponza.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/05/sponza.jpg?)
 
-[![Screenshot1](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/05/sponza10.jpg?)](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/05/sponza10.jpg?)
-
-[![Screenshot2](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/10/eevee_vs_dagon.jpg?)](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/10/eevee_vs_dagon.jpg?)
+[![Eevee vs Dagon](https://blog.pixperfect.online/wp-content/uploads/2025/05/eevee_vs_dagon.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/05/eevee_vs_dagon.jpg?)
 
 <div class="video-container">
     <iframe src="https://www.youtube.com/embed/iDF4shPofgU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
@@ -43,14 +41,16 @@ Dagon depends on the following shared libraries:
 
 * [SDL](https://www.libsdl.org) 2.32.4.0
 * [SDL_Image](https://github.com/libsdl-org/SDL_image) 2.8.8.0
+* [Freetype](https://www.freetype.org) 2.8.1 for text rendering
 * [libwebp](https://chromium.googlesource.com/webm/libwebp) for WebP support (optional)
 * [libtiff](https://libtiff.gitlab.io/libtiff/) for TIFF support (optional)
 * [libavif](https://github.com/AOMediaCodec/libavif) for AVIF support (optional)
-* [Freetype](https://www.freetype.org) 2.8.1 for text rendering (optional)
+* [Assimp](https://github.com/assimp/assimp) for additional 3D formats support (optional)
 * [Newton Dynamics](https://github.com/MADEAPPS/newton-dynamics) 3.14 for rigid body simulation (optional)
 * [cimgui](https://github.com/cimgui/cimgui) (optional)
 * [libktx](https://github.com/KhronosGroup/KTX-Software) (optional)
 * [PhysFS](https://github.com/icculus/physfs) (optional)
+* [libVLC](https://www.videolan.org/vlc/libvlc.html) (optional)
 * [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear) (optional, deprecated)
 
 Mandatory dependencies are SDL and SDL_image, the others belong to the corresponding extensions.
@@ -79,7 +79,8 @@ Big thanks to these awesome people for supporting Dagon: **Daniel Laburthe**, **
 
 Copyright (c) 2016-2025 Timur Gafarov, Rafał Ziemniewski, Mateusz Muszyński, Denis Feklushkin, dayllenger, Konstantin Menshikov, Björn Roberg et al. Distributed under the [Boost Software License, Version 1.0](https://www.boost.org/LICENSE_1_0.txt).
 
-* Core engine, Newton extension, Freetype extension, STBI extension, IQM extension, KTX extension - [Timur Gafarov aka gecko0307](https://github.com/gecko0307)
+* Core engine, Newton extension, IQM extension, KTX extension, Assimp extension, PhysFS extension, video extension - [Timur Gafarov aka gecko0307](https://github.com/gecko0307)
+* Wintab binding - [Vadim Lopatin aka buggins](https://github.com/buggins)
 * ImGui extension (ImGuiOpenGLBackend) - [Joshua T. Fisher aka playmer](https://github.com/playmer), [LunaTheFoxgirl](https://github.com/LunaTheFoxgirl)
 * Input manager, Nuklear extension - [Mateusz Muszyński aka Timu5](https://github.com/Timu5)
 * Terrain rendering, OpenSimplex noise generator - Rafał Ziemniewski

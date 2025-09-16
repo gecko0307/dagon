@@ -28,6 +28,42 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</div>
 				<ul class="tree-view">
 					<li class="tree-view collapsed">
+						<div class="package ">collision
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/contact.html">contact</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/geometry.html">geometry</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/gjk.html">gjk</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/jss.html">jss</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/mpr.html">mpr</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/shape.html">shape</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
 						<div class="package ">
 							<a href="../../dagon/core.html">core</a>
 						</div>
@@ -49,7 +85,17 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../dagon/core/dxgiformat.html">dxgiformat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../dagon/core/event.html">event</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/i18n.html">i18n</a>
 						</div>
 					</li>
 					<li>
@@ -70,6 +116,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../dagon/core/logger.html">logger</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/messaging.html">messaging</a>
 						</div>
 					</li>
 					<li>
@@ -95,6 +146,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../dagon/core/vkformat.html">vkformat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/wintab.html">wintab</a>
 						</div>
 					</li>
 				</ul>
@@ -143,6 +199,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../dagon/graphics/dpsm.html">dpsm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../dagon/graphics/drawable.html">drawable</a>
 						</div>
 					</li>
@@ -154,6 +215,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../dagon/graphics/environment.html">environment</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/font.html">font</a>
 						</div>
 					</li>
 					<li>
@@ -194,6 +260,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../dagon/graphics/pose.html">pose</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/psm.html">psm</a>
 						</div>
 					</li>
 					<li>
@@ -421,11 +492,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
-							<a href="../../dagon/ui/font.html">font</a>
-						</div>
-					</li>
-					<li>
-						<div class="module ">
 							<a href="../../dagon/ui/freeview.html">freeview</a>
 						</div>
 					</li>
@@ -435,6 +501,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</div>
 					</li>
 				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/extra.html">extra</a>
+						</div>
 					</li>
 				</ul>
 					</li>
@@ -448,13 +519,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 			<div>
 				<h1>Module dagon.graphics.texproc</h1><p>Provides utilities for GPU-accelerated texture processing.
 </p><section></section>
-<section><section><h2>Description</h2>
-<p>The <code class="lang-d"><span class="pln">dagon<wbr/></span><span class="pun">.</span><span class="pln">graphics<wbr/></span><span class="pun">.</span><span class="pln">texproc</span></code> module defines the <code class="lang-d"><a href="../../dagon/graphics/texproc/TextureCombinerShader.html"><span class="typ">TextureCombinerShader</span></a></code> class
- for combining up to four textures into a single output texture. This is useful for
- merging channels and generating composite roughnes-metallic maps for PBR.
-</p>
-</section>
-</section>
+<section></section>
 				<section>
 					<h2>Functions</h2>
 					<table>
@@ -465,19 +530,55 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						<tr>
 							<td>
 								<code>
-									<a id="combineTextures" class="public" href="../../dagon/graphics/texproc/combineTextures.html">combineTextures</a><span class="tableEntryAnnotation">(w, h, channels, owner)</span>
+									<a id="combineTextures" class="public" href="../../dagon/graphics/texproc/combineTextures.html">combineTextures</a><span class="tableEntryAnnotation">(channels, output)</span>
 								</code>
 							</td>
-							<td>Combines up to four textures into a new output texture of the given size.
+							<td>Combines up to four textures into a single output texture using the GPU.
 </td>
 						</tr>
 						<tr>
 							<td>
 								<code>
-									<a id="combineTextures" class="public" href="../../dagon/graphics/texproc/combineTextures.html">combineTextures</a><span class="tableEntryAnnotation">(channels, output)</span>
+									<a id="combineTextures" class="public" href="../../dagon/graphics/texproc/combineTextures.html">combineTextures</a><span class="tableEntryAnnotation">(w, h, channels, owner)</span>
 								</code>
 							</td>
-							<td>Combines up to four textures into a single output texture using the GPU.
+							<td>Combines up to four textures into a new output texture of the given size using the GPU.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="generateCubemap" class="public" href="../../dagon/graphics/texproc/generateCubemap.html">generateCubemap</a><span class="tableEntryAnnotation">(inputEnvmap, output)</span>
+								</code>
+							</td>
+							<td>Creates a cube map texture from an equirectangular environment map using the GPU.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="generateCubemap" class="public" href="../../dagon/graphics/texproc/generateCubemap.html">generateCubemap</a><span class="tableEntryAnnotation">(resolution, inputEnvmap, owner)</span>
+								</code>
+							</td>
+							<td>Creates a cube map texture from an equirectangular environment map using the GPU.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="prefilterCubemap" class="public" href="../../dagon/graphics/texproc/prefilterCubemap.html">prefilterCubemap</a><span class="tableEntryAnnotation">(inputCubemap, outputCubemap)</span>
+								</code>
+							</td>
+							<td>Prefilters a cube map texture using the GPU.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="prefilterCubemap" class="public" href="../../dagon/graphics/texproc/prefilterCubemap.html">prefilterCubemap</a><span class="tableEntryAnnotation">(resolution, inputCubemap, owner)</span>
+								</code>
+							</td>
+							<td>Prefilters a cube map texture using the GPU.
 </td>
 						</tr>
 					</table>
@@ -488,6 +589,24 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						<col class="caption"/>
 						<tr>
 							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="CubemapGeneratorShader" class="public" href="../../dagon/graphics/texproc/CubemapGeneratorShader.html">CubemapGeneratorShader</a>
+								</code>
+							</td>
+							<td>Shader for converting equirectangular environment maps to cube maps.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="CubemapPrefilterShader" class="public" href="../../dagon/graphics/texproc/CubemapPrefilterShader.html">CubemapPrefilterShader</a>
+								</code>
+							</td>
+							<td>Shader for prefiltering cube maps (convolving with the GGX BRDF).
+</td>
 						</tr>
 						<tr>
 							<td>

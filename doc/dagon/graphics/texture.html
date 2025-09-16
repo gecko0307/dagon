@@ -28,6 +28,42 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</div>
 				<ul class="tree-view">
 					<li class="tree-view collapsed">
+						<div class="package ">collision
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/contact.html">contact</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/geometry.html">geometry</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/gjk.html">gjk</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/jss.html">jss</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/mpr.html">mpr</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/shape.html">shape</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
 						<div class="package ">
 							<a href="../../dagon/core.html">core</a>
 						</div>
@@ -49,7 +85,17 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../dagon/core/dxgiformat.html">dxgiformat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../dagon/core/event.html">event</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/i18n.html">i18n</a>
 						</div>
 					</li>
 					<li>
@@ -70,6 +116,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../dagon/core/logger.html">logger</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/messaging.html">messaging</a>
 						</div>
 					</li>
 					<li>
@@ -95,6 +146,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../dagon/core/vkformat.html">vkformat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/wintab.html">wintab</a>
 						</div>
 					</li>
 				</ul>
@@ -143,6 +199,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../dagon/graphics/dpsm.html">dpsm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../dagon/graphics/drawable.html">drawable</a>
 						</div>
 					</li>
@@ -154,6 +215,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../dagon/graphics/environment.html">environment</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/font.html">font</a>
 						</div>
 					</li>
 					<li>
@@ -194,6 +260,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../dagon/graphics/pose.html">pose</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/psm.html">psm</a>
 						</div>
 					</li>
 					<li>
@@ -421,11 +492,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
-							<a href="../../dagon/ui/font.html">font</a>
-						</div>
-					</li>
-					<li>
-						<div class="module ">
 							<a href="../../dagon/ui/freeview.html">freeview</a>
 						</div>
 					</li>
@@ -435,6 +501,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</div>
 					</li>
 				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/extra.html">extra</a>
+						</div>
 					</li>
 				</ul>
 					</li>
@@ -450,10 +521,9 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 </p><section></section>
 <section><section><h2>Description</h2>
 <p>The <code class="lang-d"><span class="pln">dagon<wbr/></span><span class="pun">.</span><span class="pln">graphics<wbr/></span><span class="pun">.</span><span class="pln">texture</span></code> module defines the <code class="lang-d"><a href="../../dagon/graphics/texture/Texture.html"><span class="typ">Texture</span></a></code> class
- for managing 1D, 2D, 3D, and cubemap textures, supporting compressed
+ for managing 1D, 2D, 3D, and cube map textures, supporting compressed
  and uncompressed formats, mipmapping, filtering, and OpenGL resource management.
- The module also includes enums for texture formats, cube faces, and utility
- functions for texture creation, loading, and conversion.
+ The module also includes utility functions for texture format conversion.
 </p>
 </section>
 </section>
@@ -503,10 +573,37 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						<tr>
 							<td>
 								<code>
+									<a id="dxgiFormatToGLFormat" class="public" href="../../dagon/graphics/texture/dxgiFormatToGLFormat.html">dxgiFormatToGLFormat</a><span class="tableEntryAnnotation">(fmt, tf)</span>
+								</code>
+							</td>
+							<td>Converts DirectX texture format to OpenGL texture format.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
 									<a id="equirectProj" class="public" href="../../dagon/graphics/texture/equirectProj.html">equirectProj</a><span class="tableEntryAnnotation">(dir)</span>
 								</code>
 							</td>
 							<td>Projects a 3D direction vector to equirectangular UV coordinates.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="glFormatToVkFormat" class="public" href="../../dagon/graphics/texture/glFormatToVkFormat.html">glFormatToVkFormat</a><span class="tableEntryAnnotation">(internalFormat)</span>
+								</code>
+							</td>
+							<td>Converts OpenGL internal format to Vulkan texture format.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="vkFormatToGLFormat" class="public" href="../../dagon/graphics/texture/vkFormatToGLFormat.html">vkFormatToGLFormat</a><span class="tableEntryAnnotation">(vkFormat, tf)</span>
+								</code>
+							</td>
+							<td>Converts Vulkan texture format to OpenGL texture format.
 </td>
 						</tr>
 					</table>
@@ -544,7 +641,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							</td>
 							<td>Intermediate texture data storage.
  Used to create textures loaded from container formats,
- such as DDS and KTX, from custom formats or directly
+ such as DDS and KTX, from custom formats, or directly
  from memory.
 </td>
 						</tr>
@@ -581,7 +678,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 									<a id="CubeFace" class="public" href="../../dagon/graphics/texture/CubeFace.html">CubeFace</a>
 								</code>
 							</td>
-							<td>The faces of a cubemap texture.
+							<td>The faces of a cube map texture.
 </td>
 						</tr>
 						<tr>
@@ -590,7 +687,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 									<a id="CubeFaceBit" class="public" href="../../dagon/graphics/texture/CubeFaceBit.html">CubeFaceBit</a>
 								</code>
 							</td>
-							<td>Bitmask for cubemap faces.
+							<td>Bitmask for cube map faces.
 </td>
 						</tr>
 						<tr>

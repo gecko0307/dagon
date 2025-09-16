@@ -27,6 +27,42 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<a href="../../dagon.html">dagon</a>
 						</div>
 				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">collision
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/contact.html">contact</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/geometry.html">geometry</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/gjk.html">gjk</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/jss.html">jss</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/mpr.html">mpr</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/shape.html">shape</a>
+						</div>
+					</li>
+				</ul>
+					</li>
 					<li class="tree-view ">
 						<div class="package ">
 							<a href="../../dagon/core.html">core</a>
@@ -48,8 +84,18 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</div>
 					</li>
 					<li>
+						<div class="module ">
+							<a href="../../dagon/core/dxgiformat.html">dxgiformat</a>
+						</div>
+					</li>
+					<li>
 						<div class="module selected">
 							<a href="../../dagon/core/event.html">event</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/i18n.html">i18n</a>
 						</div>
 					</li>
 					<li>
@@ -70,6 +116,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../dagon/core/logger.html">logger</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/messaging.html">messaging</a>
 						</div>
 					</li>
 					<li>
@@ -95,6 +146,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../dagon/core/vkformat.html">vkformat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/wintab.html">wintab</a>
 						</div>
 					</li>
 				</ul>
@@ -143,6 +199,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../dagon/graphics/dpsm.html">dpsm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../dagon/graphics/drawable.html">drawable</a>
 						</div>
 					</li>
@@ -154,6 +215,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../dagon/graphics/environment.html">environment</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/font.html">font</a>
 						</div>
 					</li>
 					<li>
@@ -194,6 +260,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../dagon/graphics/pose.html">pose</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/psm.html">psm</a>
 						</div>
 					</li>
 					<li>
@@ -421,11 +492,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
-							<a href="../../dagon/ui/font.html">font</a>
-						</div>
-					</li>
-					<li>
-						<div class="module ">
 							<a href="../../dagon/ui/freeview.html">freeview</a>
 						</div>
 					</li>
@@ -435,6 +501,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</div>
 					</li>
 				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/extra.html">extra</a>
+						</div>
 					</li>
 				</ul>
 					</li>
@@ -446,15 +517,64 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 		</nav>
 		<div id="main-contents">
 			<div>
-				<h1>Module dagon.core.event</h1><p>Provides an event manager for input, window, and user-defined events.
+				<h1>Module dagon.core.event</h1><p>Primitives and tools for event-driven programming.
 </p><section></section>
 <section><section><h2>Description</h2>
 <p>The <code class="lang-d"><span class="pln">dagon<wbr/></span><span class="pun">.</span><span class="pln">core<wbr/></span><span class="pun">.</span><span class="pln">event</span></code> module defines the <code class="lang-d"><a href="../../dagon/core/event/EventType.html"><span class="typ">EventType</span></a></code> enumeration,
- the <code class="lang-d"><a href="../../dagon/core/event/Event.html"><span class="typ">Event</span></a></code> struct, the <code class="lang-d"><a href="../../dagon/core/event/EventManager.html"><span class="typ">EventManager</span></a></code> class for event polling and dispatch,
+ the <code class="lang-d"><a href="../../dagon/core/event/Event.html"><span class="typ">Event</span></a></code> struct, the <code class="lang-d"><a href="../../dagon/core/event/EventManager.html"><span class="typ">EventManager</span></a></code> class for event polling and storing,
  and the <code class="lang-d"><a href="../../dagon/core/event/EventListener.html"><span class="typ">EventListener</span></a></code> base class for handling events.
+</p>
+
+<p> <code class="lang-d"><a href="../../dagon/core/event/EventManager.html"><span class="typ">EventManager</span></a></code> is single-threaded. For multi-threaded event/message passing,
+ use <code class="lang-d"><span class="typ">MessageBroker</span></code>.
 </p>
 </section>
 </section>
+				<section>
+					<h2>Functions</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="messageEvent" class="public" href="../../dagon/core/event/messageEvent.html">messageEvent</a><span class="tableEntryAnnotation">(sender, recipient, message, payload, domain)</span>
+								</code>
+							</td>
+							<td>Constructs a message event.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="taskEvent" class="public" href="../../dagon/core/event/taskEvent.html">taskEvent</a><span class="tableEntryAnnotation">(sender, recipient, callback, payload, domain)</span>
+								</code>
+							</td>
+							<td>Constructs a task event.
+</td>
+						</tr>
+					</table>
+				</section>
+				<section>
+					<h2>Interfaces</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="InputDevice" class="public" href="../../dagon/core/event/InputDevice.html">InputDevice</a>
+								</code>
+							</td>
+							<td>Interface for input event emitters.
+</td>
+						</tr>
+					</table>
+				</section>
 				<section>
 					<h2>Classes</h2>
 					<table>
@@ -465,10 +585,19 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						<tr>
 							<td>
 								<code>
+									<a id="EventDispatcher" class="public" href="../../dagon/core/event/EventDispatcher.html">EventDispatcher</a>
+								</code>
+							</td>
+							<td>Base class for event dispatchers.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
 									<a id="EventListener" class="public" href="../../dagon/core/event/EventListener.html">EventListener</a>
 								</code>
 							</td>
-							<td>Base class for objects that listen to and handle events.
+							<td>Base class for single-threaded event listeners.
 </td>
 						</tr>
 						<tr>
@@ -477,7 +606,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 									<a id="EventManager" class="public" href="../../dagon/core/event/EventManager.html">EventManager</a>
 								</code>
 							</td>
-							<td>Manages event polling, state, and dispatch.
+							<td>Manages event polling, event queue and input state.
 </td>
 						</tr>
 					</table>
@@ -517,6 +646,18 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<td>All supported event types in Dagon.
 </td>
 						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="MessageDomain" class="public" href="../../dagon/core/event/MessageDomain.html">MessageDomain</a>
+								</code>
+							</td>
+							<td>Communication layer <code class="lang-d"><a href="../../dagon/core/event/Event.html"><span class="typ">Event</span></a></code> is subject to.
+ Circular - event goes to both message broker and main-thread event listeners;
+ ITC - event goes to the message broker;
+ MainThread - event goes to main-thread event listeners.
+</td>
+						</tr>
 					</table>
 				</section>
 				<section>
@@ -535,6 +676,29 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<td>
 							</td>
 							<td>Maximum number of supported controllers.
+</td>
+						</tr>
+					</table>
+				</section>
+				<section>
+					<h2>Aliases</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Type</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a id="TaskCallback" class="public" href="../../dagon/core/event/TaskCallback.html">
+									<code>TaskCallback</code>
+								</a>
+							</td>
+							<td>
+								<code class="prettyprint lang-d"><span class="typ">void</span> <span class="kwd">delegate</span><span class="pun">(</span><span class="typ">Object</span><span class="pun">, </span><span class="typ">void</span><span class="pun">*</span><span class="pun">)</span></code>
+							</td>
+							<td>A delegate that can be used as an asynchronous callback in task events.
+ <code class="lang-d"><span class="pln">executor</span></code> parameter is meant to be the object that executes the task.
+ <code class="lang-d"><span class="pln">payload</span></code> is user-defined pointer passed with the event.
 </td>
 						</tr>
 					</table>

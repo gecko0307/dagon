@@ -27,6 +27,42 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<a href="../../dagon.html">dagon</a>
 						</div>
 				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">collision
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/contact.html">contact</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/geometry.html">geometry</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/gjk.html">gjk</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/jss.html">jss</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/mpr.html">mpr</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/shape.html">shape</a>
+						</div>
+					</li>
+				</ul>
+					</li>
 					<li class="tree-view ">
 						<div class="package ">
 							<a href="../../dagon/core.html">core</a>
@@ -49,7 +85,17 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../dagon/core/dxgiformat.html">dxgiformat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../dagon/core/event.html">event</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/i18n.html">i18n</a>
 						</div>
 					</li>
 					<li>
@@ -70,6 +116,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../dagon/core/logger.html">logger</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/messaging.html">messaging</a>
 						</div>
 					</li>
 					<li>
@@ -95,6 +146,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../dagon/core/vkformat.html">vkformat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/wintab.html">wintab</a>
 						</div>
 					</li>
 				</ul>
@@ -143,6 +199,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../dagon/graphics/dpsm.html">dpsm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../dagon/graphics/drawable.html">drawable</a>
 						</div>
 					</li>
@@ -154,6 +215,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../dagon/graphics/environment.html">environment</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/font.html">font</a>
 						</div>
 					</li>
 					<li>
@@ -194,6 +260,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../dagon/graphics/pose.html">pose</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/psm.html">psm</a>
 						</div>
 					</li>
 					<li>
@@ -421,11 +492,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
-							<a href="../../dagon/ui/font.html">font</a>
-						</div>
-					</li>
-					<li>
-						<div class="module ">
 							<a href="../../dagon/ui/freeview.html">freeview</a>
 						</div>
 					</li>
@@ -435,6 +501,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</div>
 					</li>
 				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/extra.html">extra</a>
+						</div>
 					</li>
 				</ul>
 					</li>
@@ -479,6 +550,15 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							</td>
 							<td>Immediately terminates the application,
  printing an optional fatal error to the logger.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="globalVFS" class="public" href="../../dagon/core/application/globalVFS.html">globalVFS</a><span class="tableEntryAnnotation">()</span>
+								</code>
+							</td>
+							<td>Returns VFS used by the Application.
 </td>
 						</tr>
 						<tr>
@@ -532,7 +612,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 									<a id="Application" class="public" href="../../dagon/core/application/Application.html">Application</a>
 								</code>
 							</td>
-							<td>Base class to inherit Dagon applications from.
+							<td>Base class to inherit application object from.
 </td>
 						</tr>
 					</table>
@@ -543,6 +623,15 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						<col class="caption"/>
 						<tr>
 							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="Cursor" class="public" href="../../dagon/core/application/Cursor.html">Cursor</a>
+								</code>
+							</td>
+							<td>Supported cursor types.
+</td>
 						</tr>
 						<tr>
 							<td>

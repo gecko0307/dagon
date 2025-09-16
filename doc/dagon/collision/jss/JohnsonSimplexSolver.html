@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
+		<title>Struct JohnsonSimplexSolver</title>
+		<link rel="stylesheet" href="../../../css/style.min.css"/>
+		<script type="text/javascript" src="../../../js/script.min.js"></script>
+	</head>
+	<body onload="setupDdox();">
+		<header></header>
+		<nav id="main-nav">
+			<div>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<form action="#" method="GET">
+						<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();" autofocus/>
+					</form>
+					<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../../";
+document.getElementById('symbolSearchPane').style.display = 'block';</script>
+				</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../../dagon.html">dagon</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">collision
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/collision/contact.html">contact</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/collision/geometry.html">geometry</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/collision/gjk.html">gjk</a>
+						</div>
+					</li>
+					<li>
+						<div class="module selected">
+							<a href="../../../dagon/collision/jss.html">jss</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/collision/mpr.html">mpr</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/collision/shape.html">shape</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../dagon/core.html">core</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/application.html">application</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/bindings.html">bindings</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/config.html">config</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/dxgiformat.html">dxgiformat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/event.html">event</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/i18n.html">i18n</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/input.html">input</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/keycodes.html">keycodes</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/locale.html">locale</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/logger.html">logger</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/messaging.html">messaging</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/persistent.html">persistent</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/props.html">props</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/time.html">time</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/vfs.html">vfs</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/vkformat.html">vkformat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/wintab.html">wintab</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../dagon/game.html">game</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/game/game.html">game</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/game/loadingscreen.html">loadingscreen</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../dagon/graphics.html">graphics</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/billboard.html">billboard</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/camera.html">camera</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/components.html">components</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/csm.html">csm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/dpsm.html">dpsm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/drawable.html">drawable</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/entity.html">entity</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/environment.html">environment</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/font.html">font</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/heightmap.html">heightmap</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/light.html">light</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/lod.html">lod</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/material.html">material</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/mesh.html">mesh</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/opensimplex.html">opensimplex</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/particles.html">particles</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/pose.html">pose</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/psm.html">psm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/screensurface.html">screensurface</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/shader.html">shader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/shaderloader.html">shaderloader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/shadowmap.html">shadowmap</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/shapes.html">shapes</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/state.html">state</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/terrain.html">terrain</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/texproc.html">texproc</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/texture.html">texture</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/tween.html">tween</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/updateable.html">updateable</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/world.html">world</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../dagon/render.html">render</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/render/framebuffer.html">framebuffer</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/render/pass.html">pass</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/render/pipeline.html">pipeline</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/render/renderer.html">renderer</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/render/view.html">view</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../dagon/resource.html">resource</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../dagon/resource/gltf.html">gltf</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/accessor.html">accessor</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/animation.html">animation</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/buffer.html">buffer</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/bufferview.html">bufferview</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/decoder.html">decoder</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/mesh.html">mesh</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/meshprimitive.html">meshprimitive</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/node.html">node</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/skin.html">skin</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/asset.html">asset</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/binary.html">binary</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/boxfs.html">boxfs</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/dds.html">dds</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/entity.html">entity</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/image.html">image</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/material.html">material</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/obj.html">obj</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/scene.html">scene</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/sdlimage.html">sdlimage</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/text.html">text</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/texture.html">texture</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../dagon/ui.html">ui</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/ui/firstpersonview.html">firstpersonview</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/ui/freeview.html">freeview</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/ui/textline.html">textline</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/extra.html">extra</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+				</ul>
+			</div>
+			<p id="main-nav-footer">
+				Built with<a href="https://github.com/MartinNowak/scod">scod</a>
+			</p>
+		</nav>
+		<div id="main-contents">
+			<div>
+				<h1>Struct JohnsonSimplexSolver</h1><p>Johnson Simplex Solver structure.
+</p>
+				<div class="prototype">
+					<code class="lang-d">
+						<div class="single-prototype">
+				<span class="kwd">struct</span> <span class="typ">JohnsonSimplexSolver</span><span class="pun">;</span>
+						</div>
+					</code>
+				</div>
+				
+				<section><h2>Fields</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Type</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.determinants.html" class="public"><code>determinants</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span><span class="pun">[</span><span class="lit">4</span><span class="pun">]</span><span class="pun">[</span><span class="lit">16</span><span class="pun">]</span></code></td><td>Cached determinants. This cache supports any combination of simplex's 4 points.
+ The first column stores the squared length for each point.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.edges.html" class="public"><code>edges</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">vector<wbr/></span><span class="pun">.</span><span class="typ">Vector</span>!(float,3)<span class="pun">[</span><span class="lit">4</span><span class="pun">]</span><span class="pun">[</span><span class="lit">4</span><span class="pun">]</span></code></td><td>Cached edges. The diagonal does not hold a subtraction, it holds all four simplex points instead
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.lastVertexIndex.html" class="public"><code>lastVertexIndex</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">byte</span></code></td><td>Last vertex index.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.maxVertexIndex.html" class="public"><code>maxVertexIndex</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">byte</span></code></td><td>Max vertex index.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.supportPointsOnA.html" class="public"><code>supportPointsOnA</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">vector<wbr/></span><span class="pun">.</span><span class="typ">Vector</span>!(float,3)<span class="pun">[</span><span class="lit">4</span><span class="pun">]</span></code></td><td>Support points on shape A.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.supportPointsOnB.html" class="public"><code>supportPointsOnB</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">vector<wbr/></span><span class="pun">.</span><span class="typ">Vector</span>!(float,3)<span class="pun">[</span><span class="lit">4</span><span class="pun">]</span></code></td><td>Support points on shape B.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.XBits.html" class="public"><code>XBits</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">byte</span></code></td><td>Reduced simplex bits.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.YBits.html" class="public"><code>YBits</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">byte</span></code></td><td>Y = Wk + wk
+</td>
+						</tr>
+					</table>
+				</section>
+				<section><h2>Methods</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.addPoint.html" class="public">
+									<code>addPoint</code>
+								</a>
+								<span class="tableEntryAnnotation">(point)</span>
+							</td>
+							<td>Adds a point to the simplex.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.addPoint.html" class="public">
+									<code>addPoint</code>
+								</a>
+								<span class="tableEntryAnnotation">(point, supportOnA, supportOnB)</span>
+							</td>
+							<td>Adds a point and its support points.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.backupCalcClosestPoint.html" class="public">
+									<code>backupCalcClosestPoint</code>
+								</a>
+								<span class="tableEntryAnnotation">(v)</span>
+							</td>
+							<td>Calculates closest point using backup method.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.calcClosestPoint.html" class="public">
+									<code>calcClosestPoint</code>
+								</a>
+								<span class="tableEntryAnnotation">(v)</span>
+							</td>
+							<td>Calculates closest point for current simplex.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.calcClosestPoint.html" class="public">
+									<code>calcClosestPoint</code>
+								</a>
+								<span class="tableEntryAnnotation">(set, v)</span>
+							</td>
+							<td>Calculates closest point for a given subset.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.calcClosestPoints.html" class="public">
+									<code>calcClosestPoints</code>
+								</a>
+								<span class="tableEntryAnnotation">(pClosestPointOnA, pClosestPointOnB)</span>
+							</td>
+							<td>Calculates closest points on both shapes.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.findFreeSlot.html" class="public">
+									<code>findFreeSlot</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Finds a free slot for a new point.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.getMaxVertexSqrd.html" class="public">
+									<code>getMaxVertexSqrd</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Gets max vertex squared length.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.getPoint.html" class="public">
+									<code>getPoint</code>
+								</a>
+								<span class="tableEntryAnnotation">(index)</span>
+							</td>
+							<td>Gets a simplex point by index.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.getSimplex.html" class="public">
+									<code>getSimplex</code>
+								</a>
+								<span class="tableEntryAnnotation">(simplexPoints)</span>
+							</td>
+							<td>Gets the current simplex points.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.getSupportPointOnA.html" class="public">
+									<code>getSupportPointOnA</code>
+								</a>
+								<span class="tableEntryAnnotation">(index)</span>
+							</td>
+							<td>Gets a support point on shape A.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.getSupportPointOnB.html" class="public">
+									<code>getSupportPointOnB</code>
+								</a>
+								<span class="tableEntryAnnotation">(index)</span>
+							</td>
+							<td>Gets a support point on shape B.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.getSupportPointsOnA.html" class="public">
+									<code>getSupportPointsOnA</code>
+								</a>
+								<span class="tableEntryAnnotation">(worldSupportPointsOnA)</span>
+							</td>
+							<td>Gets support points on shape A.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.getSupportPointsOnB.html" class="public">
+									<code>getSupportPointsOnB</code>
+								</a>
+								<span class="tableEntryAnnotation">(worldSupportPointsOnB)</span>
+							</td>
+							<td>Gets support points on shape B.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.initialize.html" class="public">
+									<code>initialize</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Initializes all data to zero.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.isEmptySimplex.html" class="public">
+									<code>isEmptySimplex</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Checks if simplex is empty.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.isFullSimplex.html" class="public">
+									<code>isFullSimplex</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Checks if simplex is full.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.isProperSet.html" class="public">
+									<code>isProperSet</code>
+								</a>
+								<span class="tableEntryAnnotation">(set)</span>
+							</td>
+							<td>Checks if a set is proper.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.isReducedSimplexPoint.html" class="public">
+									<code>isReducedSimplexPoint</code>
+								</a>
+								<span class="tableEntryAnnotation">(index)</span>
+							</td>
+							<td>Checks if a point is in the reduced simplex.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.isSimplexPoint.html" class="public">
+									<code>isSimplexPoint</code>
+								</a>
+								<span class="tableEntryAnnotation">(index)</span>
+							</td>
+							<td>Checks if a point is in the simplex.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.isSubsetOrEqualTo.html" class="public">
+									<code>isSubsetOrEqualTo</code>
+								</a>
+								<span class="tableEntryAnnotation">(set, subset)</span>
+							</td>
+							<td>Checks subset relation.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.isValidSet.html" class="public">
+									<code>isValidSet</code>
+								</a>
+								<span class="tableEntryAnnotation">(set)</span>
+							</td>
+							<td>Checks if a set is valid.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.loadSimplex.html" class="public">
+									<code>loadSimplex</code>
+								</a>
+								<span class="tableEntryAnnotation">(simplexBits, simplexPoints)</span>
+							</td>
+							<td>Loads simplex from bits and points.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.loadSimplex.html" class="public">
+									<code>loadSimplex</code>
+								</a>
+								<span class="tableEntryAnnotation">(simplexBits, simplexPoints, supportOnA, supportOnB)</span>
+							</td>
+							<td>Loads simplex with support points.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.reduceSimplex.html" class="public">
+									<code>reduceSimplex</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Attempts to reduce the simplex.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.removeAllPoints.html" class="public">
+									<code>removeAllPoints</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Removes all points from the simplex.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.setMaxVertexSqrd.html" class="public">
+									<code>setMaxVertexSqrd</code>
+								</a>
+								<span class="tableEntryAnnotation">(maxVertexSqrd)</span>
+							</td>
+							<td>Sets max vertex squared length.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.setPoint.html" class="public">
+									<code>setPoint</code>
+								</a>
+								<span class="tableEntryAnnotation">(index, point)</span>
+							</td>
+							<td>Sets a simplex point.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.setPoint.html" class="public">
+									<code>setPoint</code>
+								</a>
+								<span class="tableEntryAnnotation">(index, point, supportPointOnA, supportPointOnB)</span>
+							</td>
+							<td>Sets a simplex point and its supports.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.updateDeterminants.html" class="public">
+									<code>updateDeterminants</code>
+								</a>
+								<span class="tableEntryAnnotation">(index)</span>
+							</td>
+							<td>Updates cached determinants.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.updateEdges.html" class="public">
+									<code>updateEdges</code>
+								</a>
+								<span class="tableEntryAnnotation">(index)</span>
+							</td>
+							<td>Updates cached edges.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/collision/jss/JohnsonSimplexSolver.updateMaxVertex.html" class="public">
+									<code>updateMaxVertex</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Updates max vertex index.
+</td>
+						</tr>
+					</table>
+				</section>
+			</div>
+			<footer>
+				<div id="license-info">
+					<p>Timur Gafarov
+</p>
+<p>Timur Gafarov 2014-2025
+</p>
+<p><a href="https://boost.org/LICENSE_1_0.txt">Boost License 1.0</a>.
+</p>
+
+				</div>
+			</footer>
+		</div>
+	</body>
+</html>

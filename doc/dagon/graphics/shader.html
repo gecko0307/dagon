@@ -28,6 +28,42 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</div>
 				<ul class="tree-view">
 					<li class="tree-view collapsed">
+						<div class="package ">collision
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/contact.html">contact</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/geometry.html">geometry</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/gjk.html">gjk</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/jss.html">jss</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/mpr.html">mpr</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/shape.html">shape</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
 						<div class="package ">
 							<a href="../../dagon/core.html">core</a>
 						</div>
@@ -49,7 +85,17 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../dagon/core/dxgiformat.html">dxgiformat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../dagon/core/event.html">event</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/i18n.html">i18n</a>
 						</div>
 					</li>
 					<li>
@@ -70,6 +116,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../dagon/core/logger.html">logger</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/messaging.html">messaging</a>
 						</div>
 					</li>
 					<li>
@@ -95,6 +146,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../dagon/core/vkformat.html">vkformat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/wintab.html">wintab</a>
 						</div>
 					</li>
 				</ul>
@@ -143,6 +199,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../dagon/graphics/dpsm.html">dpsm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../dagon/graphics/drawable.html">drawable</a>
 						</div>
 					</li>
@@ -154,6 +215,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../dagon/graphics/environment.html">environment</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/font.html">font</a>
 						</div>
 					</li>
 					<li>
@@ -194,6 +260,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../dagon/graphics/pose.html">pose</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/psm.html">psm</a>
 						</div>
 					</li>
 					<li>
@@ -421,11 +492,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
-							<a href="../../dagon/ui/font.html">font</a>
-						</div>
-					</li>
-					<li>
-						<div class="module ">
 							<a href="../../dagon/ui/freeview.html">freeview</a>
 						</div>
 					</li>
@@ -435,6 +501,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</div>
 					</li>
 				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/extra.html">extra</a>
+						</div>
 					</li>
 				</ul>
 					</li>
@@ -448,10 +519,8 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 			<div>
 				<h1>Module dagon.graphics.shader</h1><p>Provides classes and utilities for OpenGL shader management.
 </p><section><p>The <code class="lang-d"><span class="pln">dagon<wbr/></span><span class="pun">.</span><span class="pln">graphics<wbr/></span><span class="pun">.</span><span class="pln">shader</span></code> module defines the <code class="lang-d"><a href="../../dagon/graphics/shader/Shader.html"><span class="typ">Shader</span></a></code> class for managing
- OpenGL shader programs, uniform and subroutine parameters, and binding logic.
- The module also includes <code class="lang-d"><a href="../../dagon/graphics/shader/ShaderProgram.html"><span class="typ">ShaderProgram</span></a></code> for program compilation/linking,
- <code class="lang-d"><a href="../../dagon/graphics/shader/BaseShaderParameter.html"><span class="typ">BaseShaderParameter</span></a></code> and <code class="lang-d"><a href="../../dagon/graphics/shader/ShaderParameter.html"><span class="typ">ShaderParameter</span></a></code> for uniform management, and
- <code class="lang-d"><a href="../../dagon/graphics/shader/ShaderSubroutine.html"><span class="typ">ShaderSubroutine</span></a></code> for subroutine selection.
+ OpenGL shader programs, uniform, subroutine and UBO parameters, and binding logic.
+ The module also includes <code class="lang-d"><a href="../../dagon/graphics/shader/ShaderProgram.html"><span class="typ">ShaderProgram</span></a></code> for program compilation/linking.
 </p>
 </section>
 <section></section>
@@ -509,6 +578,34 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							</td>
 							<td>Represents a shader subroutine parameter.
  Allows selection of subroutine implementations for vertex or fragment shaders.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="UniformBlockParameter" class="public" href="../../dagon/graphics/shader/UniformBlockParameter.html">UniformBlockParameter</a>
+								</code>
+							</td>
+							<td>Represents a std140 uniform block parameter (UBO) of type <code class="lang-d"><span class="pln">T</span></code>
+ for passing arrays of structures to shaders.
+</td>
+						</tr>
+					</table>
+				</section>
+				<section>
+					<h2>Enums</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="ShaderType" class="public" href="../../dagon/graphics/shader/ShaderType.html">ShaderType</a>
+								</code>
+							</td>
+							<td>Shader type enumeration.
 </td>
 						</tr>
 					</table>
