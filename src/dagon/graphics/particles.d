@@ -257,34 +257,58 @@ class ColorChanger: ForceField
  */
 class Emitter: EntityComponent
 {
+    /// An array of particles that belong to this emitter.
     Particle[] particles;
 
+    /// Minimum lifetime for emitted particles.
     double minLifetime = 1.0;
+
+    /// Maximum lifetime for emitted particles.
     double maxLifetime = 3.0;
 
+    /// Minimum scale for emitted particles.
     float minSize = 0.25f;
+
+    /// Maximum scale for emitted particles.
     float maxSize = 1.0f;
+
+    /// Scaling speed for emitted particles.
     Vector3f scaleStep = Vector3f(0, 0, 0);
 
+    /// Angular speed for emitted particles.
     float rotationStep = 0.0f;
 
+    /// Randomization factor for initial offset for emitted particles.
     float initialPositionRandomRadius = 0.0f;
 
+    /// Minimum initial speed for emitted particles.
     float minInitialSpeed = 1.0f;
+
+    /// Maximum initial speed for emitted particles.
     float maxInitialSpeed = 5.0f;
 
+    /// Initial direction for emitted particles.
     Vector3f initialDirection = Vector3f(0, 1, 0);
+
+    /// Randomization factor for initial direction for emitted particles.
     float initialDirectionRandomFactor = 1.0f;
 
+    /// Start color for emitted particles.
     Color4f startColor = Color4f(1, 1, 1, 1);
+
+    /// Final color for emitted particles.
     Color4f endColor = Color4f(1, 1, 1, 0);
 
+    /// Damping factor for slowing out particles.
     float airFrictionDamping = 0.98f;
 
+    /// If true, particles are emitted.
     bool emitting = true;
 
+    /// Material for emitted particles.
     Material material;
 
+    /// An entity that should be used for emitted particles instead of the quad (currently not supported).
     Entity particleEntity;
 
     /**
@@ -368,24 +392,40 @@ class Emitter: EntityComponent
  */
 class ParticleSystem: EntityComponent
 {
+    /// Event manager.
     EventManager eventManager;
 
+    /// A list of emitters.
     Array!Emitter emitters;
+    
+    /// A list of force fields.
     Array!ForceField forceFields;
 
+    /// Vertex buffer for rendering a particle quad.
     Vector3f[4] vertices;
+    
+    /// Texture coordinate buffer for rendering a particle quad.
     Vector2f[4] texcoords;
+    
+    /// Vertex indices forming a particle quad.
     uint[3][2] indices;
 
+    /// OpenGL vertex array object for the particle quad.
     GLuint vao = 0;
+    
+    /// OpenGL vertex buffer object for the particle quad.
     GLuint vbo = 0;
+    
+    /// OpenGL texture coordinate buffer object for the particle quad.
     GLuint tbo = 0;
+    
+    /// OpenGL element array buffer object for the particle quad.
     GLuint eao = 0;
 
-    Matrix4x4f invViewMatRot;
-
+    /// If true, the system has active particles.
     bool haveParticlesToDraw = false;
 
+    /// If true, the screen-space velocity is computed for particles to render motion blur.
     bool useMotionBlur = true;
 
     /**

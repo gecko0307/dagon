@@ -33,7 +33,7 @@ DEALINGS IN THE SOFTWARE.
  * which encapsulates all rendering state and context information needed
  * for drawing objects.
  * `GraphicsState` includes transformation matrices, camera parameters,
- * material and shader references, render targets, timing, and various
+ * material and shader references, input buffers, timing, and various
  * rendering flags. It is fed to the render passes and `Drawable` objects
  * to provide all necessary context for rendering.
  *
@@ -160,7 +160,10 @@ struct GraphicsState
     /// Input color buffer texture.
     GLuint colorTexture;
     
+    /// Minification filter for sampling input buffer textures.
     GLenum minFilter;
+    
+    /// Magnification filter for sampling input buffer textures.
     GLenum magFilter;
 
     /// Input depth buffer texture.

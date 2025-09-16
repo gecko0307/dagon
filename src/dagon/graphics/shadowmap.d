@@ -30,10 +30,9 @@ DEALINGS IN THE SOFTWARE.
  *
  * Description:
  * The `dagon.graphics.shadowmap` module defines the abstract `ShadowMap` class,
- * which manages the resolution, light association, and update/resizing interface
- * for shadow maps. Derived classes implement specific shadow mapping techniques,
- * such as standard shadow maps or cascaded shadow maps. Shadow maps are used
- * to render and sample shadows cast by lights in the scene.
+ * which provides an interface for managing and using a shadow map.
+ * Derived classes implement specific shadow mapping techniques.
+ * Shadow maps are used to render and sample shadows cast by lights in the scene.
  *
  * Copyright: Timur Gafarov 2017-2025
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).

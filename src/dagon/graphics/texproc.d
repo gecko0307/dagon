@@ -28,11 +28,6 @@ DEALINGS IN THE SOFTWARE.
 /**
  * Provides utilities for GPU-accelerated texture processing.
  *
- * Description:
- * The `dagon.graphics.texproc` module defines the `TextureCombinerShader` class
- * for combining up to four textures into a single output texture. This is useful for
- * merging channels and generating composite roughnes-metallic maps for PBR.
- *
  * Copyright: Timur Gafarov 2022-2025
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Timur Gafarov
@@ -266,12 +261,22 @@ Texture combineTextures(uint w, uint h, Texture[4] channels, Owner owner)
     return output;
 }
 
+/**
+ * Shader for converting equirectangular environment maps to cube maps.
+ */
 class CubemapGeneratorShader: Shader
 {
     String vs, fs;
     Texture envmap;
     CubeFace cubeFace;
     
+    /**
+     * Constructs a cube map generation shader with the given environment map.
+     *
+     * Params:
+     *   envmap = Equirectangular environment map.
+     *   owner  = Owner object.
+     */
     this(Texture envmap, Owner owner)
     {
         vs = Shader.load("data/__internal/shaders/CubemapGenerator/CubemapGenerator.vert.glsl");
@@ -283,12 +288,19 @@ class CubemapGeneratorShader: Shader
         this.envmap = envmap;
     }
     
+    /// Destructor. Releases shader source resources.
     ~this()
     {
         vs.free();
         fs.free();
     }
     
+    /**
+     * Binds shader parameters and input textures for rendering.
+     *
+     * Params:
+     *   state = Pointer to the current graphics state.
+     */
     override void bindParameters(GraphicsState* state)
     {
         glActiveTexture(GL_TEXTURE0);
@@ -301,6 +313,12 @@ class CubemapGeneratorShader: Shader
         super.bindParameters(state);
     }
     
+    /**
+     * Unbinds shader parameters and input textures.
+     *
+     * Params:
+     *   state = Pointer to the current graphics pipeline state.
+     */
     override void unbindParameters(GraphicsState* state)
     {
         super.unbindParameters(state);
@@ -311,11 +329,11 @@ class CubemapGeneratorShader: Shader
 }
 
 /**
- * Creates a cubemap texture from an equirectangular environment map using the GPU.
+ * Creates a cube map texture from an equirectangular environment map using the GPU.
  *
  * Params:
  *   inputEnvmap = Input texture.
- *   output      = Output cubemap to write the result to.
+ *   output      = Output cube map to write the result to.
  */
 void generateCubemap(Texture inputEnvmap, Texture output)
 {
@@ -374,14 +392,14 @@ void generateCubemap(Texture inputEnvmap, Texture output)
 }
 
 /**
- * Creates a cubemap texture from an equirectangular environment map using the GPU.
+ * Creates a cube map texture from an equirectangular environment map using the GPU.
  *
  * Params:
- *   resolution  = Output cubemap width.
+ *   resolution  = Output cube map resolution.
  *   inputEnvmap = Input texture.
- *   owner       = Owner object for resulting cubemap.
+ *   owner       = Owner object for resulting cube map.
  * Returns:
- *   The cubemap texture.
+ *   The cube map texture.
  */
 Texture generateCubemap(uint resolution, Texture inputEnvmap, Owner owner)
 {
@@ -402,6 +420,9 @@ Texture generateCubemap(uint resolution, Texture inputEnvmap, Owner owner)
     return cubemap;
 }
 
+/**
+ * Shader for prefiltering cube maps (convolving with the GGX BRDF).
+ */
 class CubemapPrefilterShader: Shader
 {
     Texture cubemap;
@@ -419,6 +440,13 @@ class CubemapPrefilterShader: Shader
     ShaderParameter!float inputThresholdUniform;
     ShaderParameter!float inputScaleUniform;
     
+    /**
+     * Constructs a prefiltering shader with the given cube map.
+     *
+     * Params:
+     *   cubemap = an input cube map.
+     *   owner   = Owner object.
+     */
     this(Texture cubemap, Owner owner)
     {
         this.cubemap = cubemap;
@@ -437,6 +465,12 @@ class CubemapPrefilterShader: Shader
         inputScaleUniform = createParameter!float("inputScale");
     }
     
+    /**
+     * Binds shader parameters and input textures for rendering.
+     *
+     * Params:
+     *   state = Pointer to the current graphics state.
+     */
     override void bindParameters(GraphicsState* state)
     {
         resolutionUniform = state.resolution;
@@ -464,6 +498,13 @@ class CubemapPrefilterShader: Shader
     }
 }
 
+/**
+ * Prefilters a cube map texture using the GPU.
+ *
+ * Params:
+ *   inputCubemap = Input cube map.
+ *   output       = Output cube map to write the result to. Should already have an allocated mip chain.
+ */
 void prefilterCubemap(Texture inputCubemap, Texture outputCubemap)
 {
     ScreenSurface screenSurface = New!ScreenSurface(null);
@@ -528,6 +569,16 @@ void prefilterCubemap(Texture inputCubemap, Texture outputCubemap)
     Delete(screenSurface);
 }
 
+/**
+ * Prefilters a cube map texture using the GPU.
+ *
+ * Params:
+ *   resolution   = Output cube map resolution.
+ *   inputCubemap = Input cube map texture.
+ *   owner        = Owner object for resulting cube map.
+ * Returns:
+ *   The cube map texture.
+ */
 Texture prefilterCubemap(uint resolution, Texture inputCubemap, Owner owner)
 {
     TextureFormat format = {

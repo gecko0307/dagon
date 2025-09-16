@@ -156,11 +156,13 @@ class FontManager: Owner
  *
  * Description:
  * Stores a dictionary of glyphs loaded from the font file and the boilerplate necessary for
- * text rendering. Provides methods for rendering single glyphs and strings of text
+ * text rendering. Provides methods for rendering single glyphs and UTF-8 strings
  * and measuring string width.
  */
 final class Font: Owner
 {
+    public:
+    
     /// FreeType library instance.
     FT_Library ftLibrary;
     
@@ -172,6 +174,8 @@ final class Font: Owner
     
     /// Font size in pixels.
     float height;
+
+    protected:
 
     /// Vertex buffer for rendering a glyph quad.
     Vector2f[4] vertices;
@@ -209,12 +213,15 @@ final class Font: Owner
 
     String vs, fs;
     
-    bool valid;
-    
     protected ubyte[] buffer;
+    
+    public:
+
+    /// True if the text can be rendered.
+    bool valid;
 
     /**
-     * Constructs a font.
+     * Constructor.
      *
      * Params:
      *   height = em height (font size) in pixels
@@ -248,6 +255,7 @@ final class Font: Owner
         glyphs = New!(Dict!(Glyph, dchar));
     }
 
+    /// Creates a font object from file.
     void createFromFile(string filename)
     {
         if (ftLibrary is null)
@@ -270,6 +278,7 @@ final class Font: Owner
         FT_Set_Char_Size(ftFace, cast(int)height << 6, cast(int)height << 6, 96, 96);
     }
 
+    /// Creates a font object from memory buffer.
     void createFromMemory(ubyte[] buffer)
     {
         if (ftLibrary is null)
@@ -281,6 +290,7 @@ final class Font: Owner
         FT_Set_Char_Size(ftFace, cast(int)height << 6, cast(int)height << 6, 96, 96);
     }
 
+    /// Initializes OpenGL buffers for rendering.
     void prepareVAO()
     {
         if (valid)
@@ -335,6 +345,7 @@ final class Font: Owner
         valid = true;
     }
 
+    /// Loads first 128 characters to the VRAM.
     void preloadASCII()
     {
         if (ftLibrary is null)
@@ -371,6 +382,7 @@ final class Font: Owner
             Delete(buffer);
     }
 
+    /// Loads a single glyph to the given OpenGL texture.
     uint loadGlyph(dchar code, GLuint texId)
     {
         FT_Glyph glyph;
@@ -427,6 +439,7 @@ final class Font: Owner
         return charIndex;
     }
 
+    /// Loads a given character by its Unicode code point.
     dchar loadChar(dchar code)
     {
         GLuint tex;
@@ -435,6 +448,7 @@ final class Font: Owner
         return code;
     }
 
+    /// Renders a single glyph by its Unicode code point at the given offset from the local origin.
     float renderGlyph(dchar code, float xShift, float yShift = 0.0f)
     {
         Glyph glyph;
@@ -475,6 +489,7 @@ final class Font: Owner
         return xShift;
     }
 
+    /// Returns glyph's advance width (the distance from its origin to the origin of the next glyph on the line).
     int glyphAdvance(dchar code)
     {
         Glyph glyph;
@@ -485,6 +500,7 @@ final class Font: Owner
         return cast(int)(glyph.advanceX >> 6);
     }
     
+    /// Begins text rendering.
     void beginRender(GraphicsState* state, Color4f color)
     {
         if (!valid)
@@ -498,6 +514,7 @@ final class Font: Owner
         glUniform1i(glyphTextureLoc, 0);
     }
     
+    /// Ends text rendering.
     void endRender()
     {
         if (!valid)
@@ -507,7 +524,7 @@ final class Font: Owner
     }
 
     /**
-     * Renders the given string using the specified graphics pipeline state and color.
+     * Renders the given UTF-8 string using the specified graphics pipeline state and color.
      *
      * Params:
      *   state = The graphics state to use for rendering.
@@ -542,7 +559,7 @@ final class Font: Owner
     }
 
     /**
-     * Returns the width of the given single-line string in pixels.
+     * Returns the width of the given single-line UTF-8 string in pixels.
      *
      * Params:
      *   str = The string to measure.
@@ -575,6 +592,10 @@ final class Font: Owner
         return width;
     }
     
+    /**
+     * Returns visual position of the glyph under the given index in the UTF-8 string.
+     * Takes newlines into account.
+     */
     Vector2f glyphPosition(string str, size_t index, float maxWidth, float lineHeight)
     {
         if (ftLibrary is null)

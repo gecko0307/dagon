@@ -25,6 +25,14 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Provides boilerplate for perspective shadow mapping (PSM)
+ * that is used for spot lights.
+ *
+ * Copyright: Timur Gafarov 2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.graphics.psm;
 
 import dlib.core.memory;
@@ -39,21 +47,42 @@ import dagon.core.time;
 import dagon.graphics.shadowmap;
 import dagon.graphics.light;
 
+/**
+ * Perspective shadow map.
+ */
 class PerspectiveShadowMap: ShadowMap
 {
+    /// Resolution of the depth texture.
     uint shadowMapResolution = 1024;
     
+    /// Light-space depth texture.
     GLuint depthTexture;
     
+    /// Framebuffer to render the depth texture.
     GLuint framebuffer;
     
+    /// Transforms world-space coordinates to the light space.
     Matrix4x4f viewMatrix;
+    
+    /// Inverse of the `viewMatrix`.
     Matrix4x4f invViewMatrix;
+    
+    /// Perspective shadow projection.
     Matrix4x4f projectionMatrix;
+    
+    /// Transforms world-space coordinates to the shadow texture space.
     Matrix4x4f shadowMatrix;
     
+    /// Near plane of the orthographic projection.
     float zNear = 0.01f;
     
+    /**
+     * Constructs a perspective shadow map for the given light.
+     *
+     * Params:
+     *   light = The light source.
+     *   owner = Owner object.
+     */
     this(Light light, Owner owner)
     {
         super(owner);
@@ -70,6 +99,12 @@ class PerspectiveShadowMap: ShadowMap
         releaseBuffer();
     }
     
+    /**
+     * Resizes the depth texture.
+     *
+     * Params:
+     *   res = New depth texture resolution.
+     */
     override void resize(uint res)
     {
         this.resolution = res;
@@ -101,6 +136,7 @@ class PerspectiveShadowMap: ShadowMap
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
     
+    /// Releases all OpenGL resources associated with the shadow map.
     void releaseBuffer()
     {
         if (glIsFramebuffer(framebuffer))
@@ -110,6 +146,12 @@ class PerspectiveShadowMap: ShadowMap
             glDeleteTextures(1, &depthTexture);
     }
     
+    /**
+     * Updates the shadow map for the current frame.
+     *
+     * Params:
+     *   t = Frame timing information.
+     */
     override void update(Time t)
     {
         invViewMatrix = translationMatrix(light.positionAbsolute) * light.rotationAbsolute.toMatrix4x4;

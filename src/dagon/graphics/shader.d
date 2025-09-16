@@ -29,10 +29,8 @@ DEALINGS IN THE SOFTWARE.
  * Provides classes and utilities for OpenGL shader management.
  *
  * The `dagon.graphics.shader` module defines the `Shader` class for managing
- * OpenGL shader programs, uniform and subroutine parameters, and binding logic.
- * The module also includes `ShaderProgram` for program compilation/linking,
- * `BaseShaderParameter` and `ShaderParameter` for uniform management, and
- * `ShaderSubroutine` for subroutine selection.
+ * OpenGL shader programs, uniform, subroutine and UBO parameters, and binding logic.
+ * The module also includes `ShaderProgram` for program compilation/linking.
  *
  * Copyright: Timur Gafarov 2018-2025
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
@@ -147,20 +145,21 @@ class ShaderProgram: Owner
                 &numFragmentSubroutines);
             
             /*
-            // Get the size of the binary
-            GLint binarySize = 0;
-            glGetProgramiv(program, GL_PROGRAM_BINARY_LENGTH, &binarySize);
-            
-            // Allocate buffer for the binary, as well as the binary format
-            size_t bufferSize = GLenum.sizeof + binarySize;
-            ubyte[] binary = New!(ubyte[])[bufferSize];
-            
-            // Get the binary from the driver, saving the format
-            GLenum binaryFormat;
-            glGetProgramBinary(program, binarySize, null, &binaryFormat, binary.ptr + GLenum.sizeof);
-            *(cast(GLenum*)binary.ptr) = binaryFormat;
-            
-            // TODO: save the binary to file
+            static if (glSupport >= GLSupport.gl41)
+            {
+                // Get the size of the binary
+                GLint binarySize = 0;
+                glGetProgramiv(program, GL_PROGRAM_BINARY_LENGTH, &binarySize);
+                
+                // Allocate buffer for the binary, as well as the binary format
+                size_t bufferSize = GLenum.sizeof + binarySize;
+                ubyte[] binary = New!(ubyte[])[bufferSize];
+                
+                // Get the binary from the driver, saving the format
+                GLenum binaryFormat;
+                glGetProgramBinary(program, binarySize, null, &binaryFormat, binary.ptr + GLenum.sizeof);
+                *(cast(GLenum*)binary.ptr) = binaryFormat;
+            }
             */
         }
     }
@@ -207,6 +206,7 @@ abstract class BaseShaderParameter: Owner
     void unbind();
 }
 
+/// Shader type enumeration.
 enum ShaderType
 {
     Vertex,
@@ -251,6 +251,7 @@ class ShaderSubroutine: BaseShaderParameter
         subroutineName.free();
     }
 
+    /// Initializes the uniform location.
     override void initUniform()
     {
         if (shaderType == ShaderType.Vertex)
@@ -438,6 +439,10 @@ class ShaderParameter(T): BaseShaderParameter
     }
 }
 
+/**
+ * Represents a std140 uniform block parameter (UBO) of type `T`
+ * for passing arrays of structures to shaders.
+ */
 class UniformBlockParameter(T): BaseShaderParameter if (isStd140Compliant!T)
 {
     String _name;
@@ -446,6 +451,7 @@ class UniformBlockParameter(T): BaseShaderParameter if (isStd140Compliant!T)
     GLuint index;
     GLuint binding;
     
+    /// Creates a uniform block parameter with the given name, array length and binding point.
     this(Shader shader, string name, uint length, uint binding)
     {
         super(shader, name);
@@ -462,6 +468,7 @@ class UniformBlockParameter(T): BaseShaderParameter if (isStd140Compliant!T)
         Delete(data);
     }
     
+    /// Initializes the UBO and assigns a binding point to the uniform block.
     override void initUniform()
     {
         glGenBuffers(1, &uniformBuffer);
@@ -473,6 +480,7 @@ class UniformBlockParameter(T): BaseShaderParameter if (isStd140Compliant!T)
         glUniformBlockBinding(shader.program.program, index, binding);
     }
 
+    /// Binds the parameter value to the shader.
     override void bind()
     {
         glBindBuffer(GL_UNIFORM_BUFFER, uniformBuffer);
@@ -481,9 +489,10 @@ class UniformBlockParameter(T): BaseShaderParameter if (isStd140Compliant!T)
         glBindBufferBase(GL_UNIFORM_BUFFER, binding, uniformBuffer);
     }
 
+    /// Unbinds the parameter (no-op).
     override void unbind()
     {
-        
+    
     }
 }
 

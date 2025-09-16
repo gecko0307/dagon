@@ -30,7 +30,7 @@ DEALINGS IN THE SOFTWARE.
  *
  * Description:
  * The `dagon.graphics.texture` module defines the `Texture` class
- * for managing 1D, 2D, 3D, and cubemap textures, supporting compressed
+ * for managing 1D, 2D, 3D, and cube map textures, supporting compressed
  * and uncompressed formats, mipmapping, filtering, and OpenGL resource management.
  * The module also includes utility functions for texture format conversion.
  *
@@ -96,7 +96,7 @@ struct TextureSize
 }
 
 /**
- * The faces of a cubemap texture.
+ * The faces of a cube map texture.
  */
 enum CubeFace: GLenum
 {
@@ -120,7 +120,7 @@ enum CubeFace: GLenum
 }
 
 /**
- * Bitmask for cubemap faces.
+ * Bitmask for cube map faces.
  */
 enum CubeFaceBit
 {
@@ -219,7 +219,7 @@ struct TextureFormat
         return compressedFormats.canFind(internalFormat);
     }
     
-    /// Returns `true` if the format is a cubemap.
+    /// Returns `true` if the format is a cube map.
     bool isCubemap() const @property
     {
         return cubeFaces != CubeFaceBit.None;
@@ -380,8 +380,7 @@ struct TextureBuffer
  * Description:
  * Supports 1D, 2D, 3D, and cubemap textures, compressed/uncompressed
  * formats, mipmaps, and filtering. Provides methods for creation from
- * dlib images, buffers, and equirectangular maps, as well as OpenGL
- * resource management.
+ * dlib images and buffers, as well as OpenGL resource management.
  */
 class Texture: Owner
 {
@@ -551,6 +550,9 @@ class Texture: Owner
             logError("Texture creation failed: unsupported target ", format.target);
     }
     
+    /**
+     * Generates a blank cubemap of a given resolution.
+     */
     void createBlankCubemap(TextureFormat format, uint resolution)
     {
         release();
@@ -923,8 +925,10 @@ class Texture: Owner
     
     /**
      * Creates a cubemap texture from an equirectangular environment map on the CPU side.
-     * Warning: this is slow! Use the GPU-accelerated generator (generateCubemap from dagon.graphics.texproc) if you do this regularly and don't cache the resulting cubemap.
+     * Warning: this is very slow! Use the GPU-accelerated generator (generateCubemap from
+     * dagon.graphics.texproc) if you do this regularly and don't cache the resulting cubemap.
      */
+    deprecated("use dagon.graphics.texproc.generateCubemap instead")
     void createFromEquirectangularMap(SuperImage envmap, uint resolution, bool generateMipmaps = true)
     {
         glGenTextures(1, &texture);
@@ -992,7 +996,7 @@ class Texture: Owner
         }
     }
     
-    /// Generate a default texture; unimplemented
+    /// Generate a default texture (unimplemented).
     void createFallbackTexture()
     {
         // TODO
