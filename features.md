@@ -32,12 +32,14 @@
 
 Screenshots
 -----------
-[![Screenshot1](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/05/sponza10.jpg?)](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/05/sponza10.jpg?)
+[![Sponza](https://blog.pixperfect.online/wp-content/uploads/2025/05/sponza.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/05/sponza.jpg)
 
-[![Screenshot2](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/10/eevee_vs_dagon.jpg?)](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/10/eevee_vs_dagon.jpg?)
+[![Space](https://blog.pixperfect.online/wp-content/uploads/2025/05/space.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/05/space.jpg)
 
-[![Screenshot3](https://gamedev.timurgafarov.ru/wp-content/uploads/2024/12/box_proj_004.jpg?)](https://gamedev.timurgafarov.ru/wp-content/uploads/2024/12/box_proj_004.jpg?)
+[![Ocean](https://blog.pixperfect.online/wp-content/uploads/2025/08/ocean5.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/08/ocean5.jpg)
 
-[![Screenshot4](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/01/cerberus.jpg?)](https://gamedev.timurgafarov.ru/wp-content/uploads/2020/01/cerberus.jpg?)
+[![Forest](https://blog.pixperfect.online/wp-content/uploads/2025/05/forest.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/05/forest.jpg)
 
-[![Screenshot5](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/08/003.jpg?)](https://gamedev.timurgafarov.ru/wp-content/uploads/2021/08/003.jpg?)
+[![Chillwave Drive](https://blog.pixperfect.online/wp-content/uploads/2025/05/chillwave-drive.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/05/chillwave-drive.jpg)
+
+[![Eevee vs Dagon](https://blog.pixperfect.online/wp-content/uploads/2025/05/eevee_vs_dagon.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/05/eevee_vs_dagon.jpg)
