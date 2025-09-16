@@ -83,7 +83,7 @@ void main()
 
 ## Textures
 
-To use textures in shaders, you'll need access to `Texture` objects with an underlying `texture` property (OpenGL texture handle). Texture management is up to you: you can store textures directly in the shader (if the texture is shared across all objects using the shader), or use the standard PBR textures available in `Matrial` (`baseColorTexture`, `normalTexture`, `roughnessMetallicTexture`). You can also derive your own material class, add custom properties, and use them in your shaders. For example, suppose you have a `CustomMaterial` class with `someCustomTexture` field. Here's how you could bind it:
+To use textures in shaders, you'll need access to `Texture` objects with an underlying `texture` property (OpenGL texture handle). Texture management is up to you: you can store textures directly in the shader (if the texture is shared across all objects using the shader), or use the standard PBR textures available in `Material` (`baseColorTexture`, `normalTexture`, `roughnessMetallicTexture`). Current material can be obtained from the `GraphicsState` object: `state.material`. You can also derive your own material class, add custom properties, and use them in your shaders. For example, suppose you have a `CustomMaterial` class with `someCustomTexture` field. Here's how you could bind it:
 
 ```d
 ShaderParameter!int someTexureUnitUniform;
@@ -106,6 +106,72 @@ override void bindParameters(GraphicsState* state)
     someTexureUnitUniform = 0;
 }
 ```
+
+## Block Parameters
+
+In some cases you need to pass arrays of structured data to the shader. Efficient way to do this is via uniform blocks. Dagon takes control of the underlying UBO management, and you only have to create a `UniformBlockParameter` and feed it your data in `bindParameters`.
+
+GLSL side:
+
+```glsl
+struct MyStruct
+{
+    vec4 prop1;
+    vec4 prop2;
+};
+
+#define MAX_STRUCTS 8
+
+layout(std140) uniform MyStructs
+{
+    MyStruct structs[MAX_STRUCTS];
+};
+
+uniform int numStructs;
+```
+
+D program side:
+
+```d
+struct MyStruct
+{
+  align(16):
+    Vector4f prop1;
+    Vector4f prop2;
+}
+```
+
+Dagon only supports std140 memory layout. This example uses `align(16)` to ensure 16-byte alignment of the fields, but it is not necessary if the struct already complies with std140. Basic compliancy check is done at compile time, when the `UniformBlockParameter` specialization is defined.
+
+```d
+UniformBlockParameter!MyStruct myStructUniform;
+ShaderParameter!int numStructsUniform;
+enum MaxStructs = 8;
+
+this(Owner owner)
+{
+    // Initialization omitted
+    
+    // Define a UBO with a maximum of 8 elements of type MyStruct, at the binding 0
+    myStructUniform = createBlockParameter!MyStruct("MyStructs", MaxStructs, 0);
+    
+    numStructsUniform = createParameter!int("numStructs");
+}
+
+override void bindParameters(GraphicsState* state)
+{
+    auto structs = myStructUniform.data;
+    
+    // Fill only the first element:
+    structs[0].prop1 = Vector4f(0.0f, 1.0f, 0.0, 1.0f);
+    structs[0].prop2 = Vector4f(1.0f, 1.0f, 1.0, 1.0f);
+    numStructsUniform = 1;
+}
+```
+
+## Subroutines
+
+TODO
 
 ## Limitations
 
