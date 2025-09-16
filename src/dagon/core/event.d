@@ -503,7 +503,8 @@ class EventManager: Owner
      * because the logger itself is not nothrow.
      *
      * Params:
-     *   code = User event code.
+     *   level   = Log level.
+     *   message = Log message.
      */
     void queueLogEvent(LogLevel level, string message) nothrow
     {

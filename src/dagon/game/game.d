@@ -117,6 +117,7 @@ class Game: Application
      *   fullscreen = Default fullscreen mode (if `fullscreen` is not defined in `setting.conf`).
      *   title = Default window title (if `windowTitle` not defined in `setting.conf`).
      *   args = Optional command line arguments.
+     *   appFolder = Optional game data folder name (used under the HOME or APPDATA directory). ".dagon" by default.
      */
     this(uint w, uint h, bool fullscreen, string title, string[] args, string appFolder = ".dagon")
     {

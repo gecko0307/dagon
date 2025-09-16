@@ -56,22 +56,16 @@ import dagon.core.logger;
  * Params:
  *   T = element type.
  *   capacity = Maximum number of elements in the queue.
- *
- * Members:
- *   buffer = Circular buffer.
- *   head = Producer write index.
- *   tail = Consumer read index.
- *
- * Methods:
- *   push = Add an element to the queue. Returns false if full.
- *   pop = Remove an element from the queue. Returns false if empty.
  */
 struct SPSCQueue(T, size_t capacity)
 {
     /// Circular buffer.
     T[capacity] buffer;
 
+    /// Producer write index.
     shared size_t head = 0; // producer writes here
+    
+    /// Consumer read index.
     shared size_t tail = 0; // consumer reads here
 
     /// Add an element to the queue. Returns false if full.

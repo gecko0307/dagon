@@ -227,9 +227,9 @@ final class Font: Owner
      *   height = em height (font size) in pixels
      *   owner = Owner object.
      */
-    this(uint height, Owner o)
+    this(uint height, Owner owner)
     {
-        super(o);
+        super(owner);
         this.height = height;
 
         vertices[0] = Vector2f(0, 1);

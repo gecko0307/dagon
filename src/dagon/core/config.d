@@ -62,6 +62,7 @@ class Configuration: Owner
 
     /// The virtual file system used for configuration file access.
     VirtualFileSystem vfs;
+    
     bool vfsIsOwned = false;
 
     public:
@@ -73,6 +74,7 @@ class Configuration: Owner
      * Constructs a new `Configuration` object.
      *
      * Params:
+     *   vfs   = The virtual file system used for configuration file access.
      *   owner = The owner object.
      *
      * The constructor mounts the current directory for configuration file access.

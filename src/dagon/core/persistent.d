@@ -87,6 +87,7 @@ class PersistentStorage: Owner
      * Constructs a new `PersistentStorage` object.
      *
      * Params:
+     *   vfs       = The virtual file system used for persistent storage file access.
      *   filename  = The name of the persistent storage file.
      *   owner     = The owner object for memory/resource management.
      *

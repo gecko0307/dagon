@@ -708,8 +708,8 @@ class Entity: Owner, Updateable
      * Starts an opacity tween.
      *
      * Params:
-     *   sFrom    = Starting opacity.
-     *   sTo      = Ending opacity.
+     *   opFrom   = Starting opacity.
+     *   opTo     = Ending opacity.
      *   duration = Duration in seconds.
      *   easing   = Easing function (default: Linear).
      * Returns:

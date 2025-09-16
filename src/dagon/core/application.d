@@ -455,7 +455,7 @@ class Application: EventListener, Updateable
      *   fullscreen = If true, the application will run in fullscreen mode.
      *   windowTitle = The window title.
      *   args = Command line arguments.
-     *   appFolder = The application folder name (used under the HOME or APPDATA directory).
+     *   appDataFolderName = The application folder name (used under the HOME or APPDATA directory).
      */
     this(uint winWidth, uint winHeight, bool fullscreen, string windowTitle, string[] args, string appDataFolderName = ".dagon")
     {

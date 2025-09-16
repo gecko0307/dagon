@@ -502,8 +502,8 @@ class CubemapPrefilterShader: Shader
  * Prefilters a cube map texture using the GPU.
  *
  * Params:
- *   inputCubemap = Input cube map.
- *   output       = Output cube map to write the result to. Should already have an allocated mip chain.
+ *   inputCubemap  = Input cube map.
+ *   outputCubemap = Output cube map to write the result to. Should already have an allocated mip chain.
  */
 void prefilterCubemap(Texture inputCubemap, Texture outputCubemap)
 {
