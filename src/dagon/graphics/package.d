@@ -31,7 +31,7 @@ DEALINGS IN THE SOFTWARE.
  * Description:
  * The `dagon.graphics` package publicly imports all core graphics modules,
  * including scene/world management, materials, shaders, lighting, mesh,
- * particles system and others. This package provides a comprehensive toolset for
+ * particle system and others. This package provides a comprehensive toolset for
  * building 3D scenes, managing entities, and implementing visual effects.
  *
  * Copyright: Timur Gafarov 2019-2025
