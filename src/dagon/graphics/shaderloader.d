@@ -171,7 +171,7 @@ enum logMaxLen = 1023;
  * Returns:
  *   `true` if compilation succeeded, `false` otherwise.
  */
-private bool checkCompilation(const GLuint shaderID, const ShaderStage stage)
+bool checkCompilation(const GLuint shaderID, const ShaderStage stage)
 {
     // get status
     GLint status = GL_FALSE;
@@ -204,7 +204,7 @@ private bool checkCompilation(const GLuint shaderID, const ShaderStage stage)
  * Returns:
  *   `true` if linking succeeded, `false` otherwise.
  */
-private bool checkLinking(const GLuint programID)
+bool checkLinking(const GLuint programID)
 {
     // get status
     GLint status = GL_FALSE;

@@ -1,6 +1,6 @@
 <img align="left" alt="dagon logo" src="https://github.com/gecko0307/dagon/raw/master/logo/dagon-logo-320.png" width="100" style="vertical-align:top" />
 
-The goal of this project is to create a modern, easy to use, extensible 3D game engine for [D language](https://dlang.org/). Dagon is based on OpenGL 4.0 core profile and SDL2. It currently works on Windows and Linux.
+The goal of this project is to create a modern, easy to use, extensible 3D game engine for [D language](https://dlang.org/). Dagon is based on OpenGL 4.3 core profile and SDL2. It currently works on Windows and Linux.
 
 > Note: this project is not connected to Dagon engine by Senscape. Also not to be confused with Dagor engine by Gaijin Entertainment.
 

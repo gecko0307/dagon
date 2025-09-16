@@ -67,6 +67,7 @@ import dagon.core.i18n;
 
 import dagon.graphics.updateable;
 import dagon.graphics.font;
+import dagon.graphics.shader;
 
 version(Windows)
 {
@@ -246,6 +247,7 @@ __gshared private
     string[] _extensions;
     
     VirtualFileSystem _vfs;
+    ShaderCache _globalShaderCache;
 }
 
 /**
@@ -321,6 +323,11 @@ VirtualFileSystem globalVFS()
     return _vfs;
 }
 
+ShaderCache globalShaderCache()
+{
+    return _globalShaderCache;
+}
+
 /**
  * Base class to inherit application object from.
  *
@@ -364,7 +371,7 @@ class Application: EventListener, Updateable
     
     /**
      * Loaded OpenGL API version.
-     * Dagon requires at least GLSupport.gl40 and will not run on a lower version.
+     * Dagon requires at least GLSupport.gl43 and will not run on a lower version.
      */
     GLSupport loadedGLSupport;
     
@@ -444,6 +451,9 @@ class Application: EventListener, Updateable
     /// Object that loads and registers fonts.
     FontManager fontManager;
     
+    /// Shader cache.
+    ShaderCache shaderCache;
+    
     protected SDL_Cursor*[12] cursor;
 
     /**
@@ -470,6 +480,8 @@ class Application: EventListener, Updateable
         
         config = New!Configuration(vfs, this);
         
+        bool enableShaderCache = false;
+        
         if (config.fromFile("settings.conf"))
         {
             if ("windowWidth" in config.props)
@@ -489,6 +501,9 @@ class Application: EventListener, Updateable
                     if (config.props["hideConsole"].toUInt)
                         showConsoleWindow(false);
             }
+            
+            if ("enableShaderCache" in config.props)
+                enableShaderCache = cast(bool)(config.props["enableShaderCache"].toUInt);
         }
         else
         {
@@ -601,7 +616,7 @@ class Application: EventListener, Updateable
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -622,14 +637,14 @@ class Application: EventListener, Updateable
         
         if (isOpenGLLoaded())
         {
-            if (loadedGLSupport < GLSupport.gl40)
+            if (loadedGLSupport < GLSupport.gl43)
             {
-                exitWithError("Dagon requires OpenGL 4.0, but it seems that your graphics card does not support it");
+                exitWithError("Dagon requires OpenGL 4.3, but it seems that your graphics card does not support it");
             }
         }
         else
         {
-            exitWithError("Failed to load OpenGL functions. Please, update graphics card driver and make sure it supports OpenGL 4.0");
+            exitWithError("Failed to load OpenGL functions. Please, update graphics card driver and make sure it supports OpenGL 4.3");
         }
         
         setFullscreen(fullscreen);
@@ -724,6 +739,11 @@ class Application: EventListener, Updateable
         }
         
         fontManager = New!FontManager(this);
+        
+        shaderCache = New!ShaderCache(vfs, this);
+        shaderCache.enabled = enableShaderCache;
+        logInfo("Shader cache enabled: ", shaderCache.enabled);
+        _globalShaderCache = shaderCache;
         
         cursor[Cursor.Default] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
         cursor[Cursor.IBeam] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);

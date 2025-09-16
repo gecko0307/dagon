@@ -45,21 +45,25 @@ import std.string;
 import std.algorithm;
 import std.file;
 import std.traits;
+import std.digest.murmurhash;
 
 import dlib.core.ownership;
 import dlib.core.memory;
+import dlib.core.stream;
 import dlib.container.array;
 import dlib.container.dict;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.utils: min2;
 import dlib.image.color;
+import dlib.filesystem.filesystem;
 import dlib.filesystem.stdfs;
 import dlib.text.str;
 
 import dagon.core.application;
 import dagon.core.bindings;
 import dagon.core.logger;
+import dagon.core.vfs;
 import dagon.graphics.shaderloader;
 import dagon.graphics.texture;
 import dagon.graphics.state;
@@ -111,57 +115,177 @@ class MappedList(T): Owner
     }
 }
 
+class ShaderCache: Owner
+{
+    VirtualFileSystem vfs;
+    StdFileSystem fs;
+    
+    string cacheFolder = "data/__internal/shader_cache";
+    
+    bool enabled = false;
+    
+    this(VirtualFileSystem vfs, Owner owner)
+    {
+        super(owner);
+        this.vfs = vfs;
+        fs = vfs.stdfs;
+        fs.createDir(cacheFolder, true);
+    }
+    
+    void saveBinary(string filename, ubyte[] data)
+    {
+        string dirSeparator;
+        version(Windows) dirSeparator = "\\";
+        version(Posix) dirSeparator = "/";
+        
+        String path = String(cacheFolder);
+        path ~= "/";
+        path ~= filename;
+        
+        OutputStream strm = fs.openForOutput(path, FileSystem.create);
+        strm.writeArray(data);
+        strm.close();
+        Delete(strm);
+        
+        path.free();
+    }
+    
+    ubyte[] loadBinary(string filename)
+    {
+        ubyte[] binary;
+        
+        String path = String(cacheFolder);
+        path ~= "/";
+        path ~= filename;
+        
+        if (vfs.exists(path))
+        {
+            FileStat s;
+            fs.stat(path, s);
+            size_t size = cast(size_t)s.sizeInBytes;
+            if (size > 0)
+            {
+                auto istrm = fs.openForInput(path);
+                binary = New!(ubyte[])(size);
+                istrm.fillArray(binary);
+                Delete(istrm);
+            }
+        }
+        
+        return binary;
+    }
+}
+
 /**
  * A shader program class that can be shared between multiple `Shader` instances.
  * Handles compilation and linking of vertex and fragment shaders, and manages OpenGL program objects.
  */
 class ShaderProgram: Owner
 {
-    // TODO: cache program binary
-
-    immutable GLuint program;
+    GLuint program;
     GLsizei numVertexSubroutines;
     GLsizei numFragmentSubroutines;
+
+    ubyte[] binary;
+    GLint binarySize = 0;
+    GLenum binaryFormat;
 
     /// Compiles and links a shader program from source.
     this(string vertexShaderSrc, string fragmentShaderSrc, Owner owner)
     {
         super(owner);
-
-        GLuint vert = compileShader(vertexShaderSrc, ShaderStage.vertex);
-        GLuint frag = compileShader(fragmentShaderSrc, ShaderStage.fragment);
-        if (vert != 0 && frag != 0)
+        
+        bool recompilationNeeded = true;
+        
+        ubyte[16] hashBytes;
+        string hash;
+        
+        if (globalShaderCache.enabled)
         {
-            program = linkShaders(vert, frag);
+            hashBytes = digest!(MurmurHash3!(128, 64))(vertexShaderSrc, fragmentShaderSrc)[];
+            hash = toHexString(hashBytes).idup;
             
-            glGetProgramStageiv(program,
-                GL_VERTEX_SHADER,
-                GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS,
-                &numVertexSubroutines);
-            
-            glGetProgramStageiv(program,
-                GL_FRAGMENT_SHADER,
-                GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS,
-                &numFragmentSubroutines);
-            
-            /*
             static if (glSupport >= GLSupport.gl41)
             {
-                // Get the size of the binary
-                GLint binarySize = 0;
-                glGetProgramiv(program, GL_PROGRAM_BINARY_LENGTH, &binarySize);
-                
-                // Allocate buffer for the binary, as well as the binary format
-                size_t bufferSize = GLenum.sizeof + binarySize;
-                ubyte[] binary = New!(ubyte[])[bufferSize];
-                
-                // Get the binary from the driver, saving the format
-                GLenum binaryFormat;
-                glGetProgramBinary(program, binarySize, null, &binaryFormat, binary.ptr + GLenum.sizeof);
-                *(cast(GLenum*)binary.ptr) = binaryFormat;
+                binary = globalShaderCache.loadBinary(hash);
+                if (binary.length)
+                {
+                    program = glCreateProgram();
+                    binaryFormat = *(cast(GLenum*)binary.ptr);
+                    binarySize = cast(uint)(binary.length - GLenum.sizeof);
+                    glProgramBinary(program, binaryFormat, binary.ptr + GLenum.sizeof, binarySize);
+                    
+                    if (checkLinking(program))
+                    {
+                        recompilationNeeded = false;
+                        debug logDebug("Loaded cached shader binary ", hash);
+                        
+                        glGetProgramStageiv(program,
+                            GL_VERTEX_SHADER,
+                            GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS,
+                            &numVertexSubroutines);
+                        
+                        glGetProgramStageiv(program,
+                            GL_FRAGMENT_SHADER,
+                            GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS,
+                            &numFragmentSubroutines);
+                    }
+                    else
+                    {
+                        glDeleteProgram(program);
+                    }
+                }
             }
-            */
         }
+
+        if (recompilationNeeded)
+        {
+            GLuint vert = compileShader(vertexShaderSrc, ShaderStage.vertex);
+            GLuint frag = compileShader(fragmentShaderSrc, ShaderStage.fragment);
+            if (vert != 0 && frag != 0)
+            {
+                program = linkShaders(vert, frag);
+                
+                glGetProgramStageiv(program,
+                    GL_VERTEX_SHADER,
+                    GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS,
+                    &numVertexSubroutines);
+                
+                glGetProgramStageiv(program,
+                    GL_FRAGMENT_SHADER,
+                    GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS,
+                    &numFragmentSubroutines);
+                
+                if (globalShaderCache.enabled)
+                {
+                    static if (glSupport >= GLSupport.gl41)
+                    {
+                        // Get the size of the binary
+                        glGetProgramiv(program, GL_PROGRAM_BINARY_LENGTH, &binarySize);
+                        
+                        if (binarySize > 0)
+                        {
+                            // Allocate buffer for the binary, as well as the binary format
+                            size_t bufferSize = GLenum.sizeof + binarySize;
+                            binary = New!(ubyte[])(bufferSize);
+                            
+                            // Get the binary from the driver, saving the format
+                            GLenum binaryFormat;
+                            glGetProgramBinary(program, binarySize, null, &binaryFormat, binary.ptr + GLenum.sizeof);
+                            *(cast(GLenum*)binary.ptr) = binaryFormat;
+                            
+                            globalShaderCache.saveBinary(hash, binary);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    ~this()
+    {
+        if (binary.length)
+            Delete(binary);
     }
 
     /// Binds the shader program for use.
