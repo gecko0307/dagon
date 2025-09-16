@@ -249,7 +249,7 @@ class GeomCone: Geometry
      *   radius = Radius of the cone.
      *   owner  = Owner object.
      */
-    this(float height, float r, Owner owner = null)
+    this(float height, float radius, Owner owner = null)
     {
         super(owner);
         type = GeomType.Cone;
