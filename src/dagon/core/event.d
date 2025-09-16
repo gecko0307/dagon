@@ -178,9 +178,15 @@ Event taskEvent(string sender, string recipient, TaskCallback callback, void* pa
     return e;
 }
 
+/**
+ * Interface for input event emitters.
+ */
 interface InputDevice
 {
+    /// Initialize the device. Returns false on failure and true on success.
     bool initialize(EventManager eventManager);
+    
+    /// Emits next pending event and returns true if there are more events to poll. Otherwise returns false.
     bool pollEvents();
 }
 
@@ -305,8 +311,10 @@ class EventManager: Owner
     /// Time in milliseconds since the last `updateTimer` call.
     uint deltaTimeMs = 0;
     
+    /// Width of the screen.
     uint displayWidth;
     
+    /// Height of the screen.
     uint displayHeight;
     
     /// Application's main window width.
@@ -315,13 +323,16 @@ class EventManager: Owner
     /// Application's main window height.
     uint windowHeight;
     
+    /// Application's main window's X-coordinate.
     int windowX = 0;
     
+    /// Application's main window's Y-coordinate.
     int windowY = 0;
     
     /// Application's main window focus state.
     bool windowFocused = true;
     
+    /// Window manager info obtained from SDL.
     SDL_SysWMinfo wmInfo;
     
     /// Last opened controller, if any.
@@ -353,6 +364,7 @@ class EventManager: Owner
     
     protected Array!InputDevice inputDevices;
     
+    /// `PenMotion` events emitter.
     GraphicsTablet graphicsTablet;
     
     /// Event dispatching hook. Provide your delegate to receive SDL events directly.
@@ -417,6 +429,7 @@ class EventManager: Owner
         running = false;
     }
 
+    /// Adds an input device to the event emitters list.
     void addInputDevice(InputDevice device)
     {
         inputDevices.append(device);
@@ -1233,6 +1246,7 @@ abstract class EventDispatcher: Owner
     /// Called when a controller is removed.
     void onControllerRemove(uint deviceIndex) {}
     
+    /// Called when a pen (stilus) is moved over a graphics tablet.
     void onPenMotion(int x, int y, float pressure) {}
 
     /// Called when the window is resized.

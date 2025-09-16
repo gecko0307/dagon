@@ -334,7 +334,7 @@ VirtualFileSystem globalVFS()
  */
 class Application: EventListener, Updateable
 {
-    /// Full path of the executable.
+    /// Full path of the executable (not CWD!).
     string path;
     
     /// Absolute directory containing the executable.
@@ -1074,6 +1074,9 @@ class Application: EventListener, Updateable
     
     version(Windows)
     {
+        /**
+         * Windows-only: returns HWND of the application window.
+         */
         HWND hwnd()
         {
             return eventManager.wmInfo.info.win.window;

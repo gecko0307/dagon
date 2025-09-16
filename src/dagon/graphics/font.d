@@ -64,6 +64,7 @@ import dagon.graphics.shaderloader;
 import dagon.graphics.state;
 import dagon.graphics.shader;
 
+/// Represents a single glyph of the FreeType font for rendering and typographics.
 struct Glyph
 {
     bool valid;
@@ -74,6 +75,7 @@ struct Glyph
     FT_Pos advanceX = 0;
 }
 
+/// Returns nearest higher power of 2 for an arbitrary integer.
 int nextPowerOfTwo(int a)
 {
     int rval = 1;
@@ -82,13 +84,22 @@ int nextPowerOfTwo(int a)
     return rval;
 }
 
+/// Object that loads and registers fonts.
 class FontManager: Owner
 {
+    /// Application that the manager is bound to.
     Application application;
+    
+    /// Dictionary of the registered fonts.
     Dict!(Font, string) fonts;
+    
+    /// Default sans font.
     Font sans;
+    
+    /// Default monospace font.
     Font monospace;
     
+    /// Constructor.
     this(Application application)
     {
         super(application);
@@ -112,12 +123,14 @@ class FontManager: Owner
         Delete(fonts);
     }
     
+    /// Registers a font under a given name.
     Font addFont(string name, Font font)
     {
         fonts[name] = font;
         return font;
     }
     
+    /// Loads and registers a font under a given name.
     Font addFont(string name, string filename, uint height)
     {
         if (application.freetypePresent)
@@ -139,30 +152,49 @@ class FontManager: Owner
 }
 
 /**
- * Freetype font class.
+ * Basic typography class.
  *
  * Description:
- * Provides methods for rendering text and measuring string width.
+ * Stores a dictionary of glyphs loaded from the font file and the boilerplate necessary for
+ * text rendering. Provides methods for rendering single glyphs and strings of text
+ * and measuring string width.
  */
 final class Font: Owner
 {
+    /// FreeType library instance.
     FT_Library ftLibrary;
+    
+    /// FreeType face object.
     FT_Face ftFace;
     
+    /// Dictionary of loaded glyphs.
     Dict!(Glyph, dchar) glyphs;
     
     /// Font size in pixels.
     float height;
 
+    /// Vertex buffer for rendering a glyph quad.
     Vector2f[4] vertices;
+    
+    /// Texture coordinate buffer for rendering a glyph quad.
     Vector2f[4] texcoords;
+    
+    /// Vertex indices forming a glyph quad.
     uint[3][2] indices;
 
+    /// OpenGL vertex array object for the glyph quad.
     GLuint vao = 0;
+    
+    /// OpenGL vertex buffer object for the glyph quad.
     GLuint vbo = 0;
+    
+    /// OpenGL texture coordinate buffer object for the glyph quad.
     GLuint tbo = 0;
+    
+    /// OpenGL element array buffer object for the glyph quad.
     GLuint eao = 0;
 
+    /// OpenGL shader program for rendering the glyph quad.
     GLuint shaderProgram;
 
     GLint modelViewMatrixLoc;

@@ -63,6 +63,7 @@ class PositionSync: EntityComponent
     /// The parent entity to synchronize with.
     Entity parent;
     
+    /// Parent position mask that allows to ignore some of the axes.
     Vector3f mask = Vector3f(1.0f, 1.0f, 1.0f);
 
     /**

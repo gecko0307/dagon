@@ -690,8 +690,8 @@ class Entity: Owner, Updateable
      * Starts a scaling tween from one scale to another.
      *
      * Params:
-     *   sFrom   = Starting scale.
-     *   sTo     = Ending scale.
+     *   sFrom    = Starting scale.
+     *   sTo      = Ending scale.
      *   duration = Duration in seconds.
      *   easing   = Easing function (default: Linear).
      * Returns:
@@ -704,6 +704,17 @@ class Entity: Owner, Updateable
         return tween;
     }
     
+    /**
+     * Starts an opacity tween.
+     *
+     * Params:
+     *   sFrom    = Starting opacity.
+     *   sTo      = Ending opacity.
+     *   duration = Duration in seconds.
+     *   easing   = Easing function (default: Linear).
+     * Returns:
+     *   Pointer to the tween.
+     */
     Tween* opacityFromTo(float opFrom, float opTo, double duration, Easing easing = Easing.Linear)
     {
         Tween* tween = getTween();
@@ -711,11 +722,29 @@ class Entity: Owner, Updateable
         return tween;
     }
     
+    /**
+     * Starts a "fade-in" opacity tween (from 0 to 1)
+     *
+     * Params:
+     *   duration = Duration in seconds.
+     *   easing   = Easing function (default: Linear).
+     * Returns:
+     *   Pointer to the tween.
+     */
     Tween* fadeIn(double duration, Easing easing = Easing.Linear)
     {
         return opacityFromTo(0.0f, 1.0f, duration, easing);
     }
 
+    /**
+     * Starts a "fade-out" opacity tween (from 1 to 0)
+     *
+     * Params:
+     *   duration = Duration in seconds.
+     *   easing   = Easing function (default: Linear).
+     * Returns:
+     *   Pointer to the tween.
+     */
     Tween* fadeOut(double duration, Easing easing = Easing.Linear)
     {
         return opacityFromTo(1.0f, 0.0f, duration, easing);
@@ -764,6 +793,7 @@ class Entity: Owner, Updateable
         }
     }
     
+    /// Makes the entity and, recursively, all of its children invisible.
     void hide()
     {
         visible = false;
@@ -773,6 +803,7 @@ class Entity: Owner, Updateable
         }
     }
     
+    /// Makes the entity and, recursively, all of its children visible.
     void show()
     {
         visible = true;
@@ -782,6 +813,7 @@ class Entity: Owner, Updateable
         }
     }
     
+    /// Returns the shader of entity's material, if available. Otherwise returns null.
     Shader shader() @property
     {
         if (material)
