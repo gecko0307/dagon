@@ -4,7 +4,9 @@ Dagon 0.32.0 - TBD
   - Dagon now requires OpenGL 4.3
   - If `windowWidth` and `windowHeight` are both zero, Dagon creates a desktop-sized window (so-called "windowed fullscreen mode")
 - **Graphics components**
-  - Shader binary cache (experimental). It can be enabled by specifying `enableShaderCache: 1;` in settings.conf.
+  - Shader binary cache (experimental). It can be enabled by specifying `enableShaderCache: 1;` in settings.conf
+- **Extensions**
+  - New extension `dagon:nfd` for displaying native file open/save dialogs via [NFD](https://github.com/mlabbe/nativefiledialog).
 
 Dagon 0.31.0 - 16 Sep, 2025
 ---------------------------

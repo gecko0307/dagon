@@ -1,6 +1,6 @@
 # dagon:nfd
 
-A simple way to show system file open/save dialogs. Based on [Native File Dialog](https://github.com/mlabbe/nativefiledialog) library.
+A simple way to show native file open/save dialogs. Based on [Native File Dialog](https://github.com/mlabbe/nativefiledialog) library.
 
 Currently Windows-only.
 
