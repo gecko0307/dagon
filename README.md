@@ -63,8 +63,7 @@ Features
 * Built-in camera logics for easy navigation: freeview and first person views
 * Collision detection using MPR algorithm, raycasting
 * Rigid body physics extension that uses [Newton Dynamics](http://newtondynamics.com). Built-in character controller
-* Orthographic projection support. Sprites and billboards. Create 2.5D isometric games with ease
-* Screen-aligned 2D rendering
+* Orthographic projection support. Screen-aligned rendering. Sprites and billboards. Create 2D/2.5D/isometric games with ease
 * UTF-8 text rendering using TTF fonts via [FreeType](https://freetype.org/)
 * Internationalization support
 * GUI extension based on [Dear ImGui](https://github.com/ocornut/imgui)
