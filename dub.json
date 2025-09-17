@@ -62,6 +62,7 @@
         "extensions/iqm",
         "extensions/ktx",
         "extensions/newton",
+        "extensions/nfd",
         "extensions/nuklear",
         "extensions/physfs",
         "extensions/video",
