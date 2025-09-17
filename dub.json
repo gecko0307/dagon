@@ -57,6 +57,7 @@
     
     "subPackages": [
         "extensions/assimp",
+        "extensions/audio",
         "extensions/exformats",
         "extensions/imgui",
         "extensions/iqm",
