@@ -60,7 +60,7 @@ import dlib.text.str;
 import dagon.core.bindings;
 import dagon.core.logger;
 import dagon.core.application;
-import dagon.graphics.shaderloader;
+import dagon.core.shaderloader;
 import dagon.graphics.state;
 import dagon.graphics.shader;
 

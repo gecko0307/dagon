@@ -435,6 +435,14 @@ class Texture: Owner
         Delete(img);
     }
     
+    void createBlank(uint w, uint h, uint channels, uint bitDepth)
+    {
+        release();
+        SuperImage img = unmanagedImage(w, h, channels, bitDepth);
+        createFromImage(img, false);
+        Delete(img);
+    }
+    
     /**
      * Creates a texture from a 2D image.
      */

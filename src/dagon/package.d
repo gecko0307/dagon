@@ -38,6 +38,8 @@ DEALINGS IN THE SOFTWARE.
  *
  * - $(LINK2 dagon/graphics.html, dagon.graphics) - 3D graphics system
  *
+ * - $(LINK2 dagon/graphics.html, dagon.compute) - GPU compute system
+ *
  * - $(LINK2 dagon/resource.html, dagon.resource) - asset management system
  *
  * - $(LINK2 dagon/render.html, dagon.render) - render pipelines and built-in shaders
@@ -57,7 +59,9 @@ module dagon;
 public
 {
     import dlib;
+    
     import dagon.collision;
+    import dagon.compute;
     import dagon.core;
     import dagon.extra;
     import dagon.game;

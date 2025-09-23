@@ -62,7 +62,6 @@ public
     import dagon.graphics.psm;
     import dagon.graphics.screensurface;
     import dagon.graphics.shader;
-    import dagon.graphics.shaderloader;
     import dagon.graphics.shadowmap;
     import dagon.graphics.shapes;
     import dagon.graphics.state;

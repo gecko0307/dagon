@@ -64,7 +64,8 @@ import dagon.core.application;
 import dagon.core.bindings;
 import dagon.core.logger;
 import dagon.core.vfs;
-import dagon.graphics.shaderloader;
+import dagon.core.mappedlist;
+import dagon.core.shaderloader;
 import dagon.graphics.texture;
 import dagon.graphics.state;
 
@@ -84,36 +85,6 @@ bool isFieldsOffsetAligned(T, alias numBytes)()
 }
 
 alias isStd140Compliant(T) = isFieldsOffsetAligned!(T, 16);
-
-// TODO: move to separate module
-class MappedList(T): Owner
-{
-    Array!T data;
-    Dict!(size_t, string) indices;
-
-    this(Owner o)
-    {
-        super(o);
-        indices = New!(Dict!(size_t, string))();
-    }
-
-    void set(string name, T val)
-    {
-        data.append(val);
-        indices[name] = data.length - 1;
-    }
-
-    T get(string name)
-    {
-        return data[indices[name]];
-    }
-
-    ~this()
-    {
-        data.free();
-        Delete(indices);
-    }
-}
 
 class ShaderCache: Owner
 {
@@ -178,108 +149,21 @@ class ShaderCache: Owner
 
 /**
  * A shader program class that can be shared between multiple `Shader` instances.
- * Handles compilation and linking of vertex and fragment shaders, and manages OpenGL program objects.
+ * Manages OpenGL program objects.
  */
-class ShaderProgram: Owner
+abstract class BaseShaderProgram: Owner
 {
     GLuint program;
-    GLsizei numVertexSubroutines;
-    GLsizei numFragmentSubroutines;
-
+    GLsizei numVertexSubroutines = 0;
+    GLsizei numFragmentSubroutines = 0;
+    
     ubyte[] binary;
     GLint binarySize = 0;
     GLenum binaryFormat;
-
-    /// Compiles and links a shader program from source.
-    this(string vertexShaderSrc, string fragmentShaderSrc, Owner owner)
+    
+    this(Owner owner)
     {
         super(owner);
-        
-        bool recompilationNeeded = true;
-        
-        ubyte[16] hashBytes;
-        string hash;
-        
-        if (globalShaderCache.enabled)
-        {
-            hashBytes = digest!(MurmurHash3!(128, 64))(vertexShaderSrc, fragmentShaderSrc)[];
-            hash = toHexString(hashBytes).idup;
-            
-            static if (glSupport >= GLSupport.gl41)
-            {
-                binary = globalShaderCache.loadBinary(hash);
-                if (binary.length)
-                {
-                    program = glCreateProgram();
-                    binaryFormat = *(cast(GLenum*)binary.ptr);
-                    binarySize = cast(uint)(binary.length - GLenum.sizeof);
-                    glProgramBinary(program, binaryFormat, binary.ptr + GLenum.sizeof, binarySize);
-                    
-                    if (checkLinking(program))
-                    {
-                        recompilationNeeded = false;
-                        debug logDebug("Loaded cached shader binary ", hash);
-                        
-                        glGetProgramStageiv(program,
-                            GL_VERTEX_SHADER,
-                            GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS,
-                            &numVertexSubroutines);
-                        
-                        glGetProgramStageiv(program,
-                            GL_FRAGMENT_SHADER,
-                            GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS,
-                            &numFragmentSubroutines);
-                    }
-                    else
-                    {
-                        glDeleteProgram(program);
-                    }
-                }
-            }
-        }
-
-        if (recompilationNeeded)
-        {
-            GLuint vert = compileShader(vertexShaderSrc, ShaderStage.vertex);
-            GLuint frag = compileShader(fragmentShaderSrc, ShaderStage.fragment);
-            if (vert != 0 && frag != 0)
-            {
-                program = linkShaders(vert, frag);
-                
-                glGetProgramStageiv(program,
-                    GL_VERTEX_SHADER,
-                    GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS,
-                    &numVertexSubroutines);
-                
-                glGetProgramStageiv(program,
-                    GL_FRAGMENT_SHADER,
-                    GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS,
-                    &numFragmentSubroutines);
-                
-                if (globalShaderCache.enabled)
-                {
-                    static if (glSupport >= GLSupport.gl41)
-                    {
-                        // Get the size of the binary
-                        glGetProgramiv(program, GL_PROGRAM_BINARY_LENGTH, &binarySize);
-                        
-                        if (binarySize > 0)
-                        {
-                            // Allocate buffer for the binary, as well as the binary format
-                            size_t bufferSize = GLenum.sizeof + binarySize;
-                            binary = New!(ubyte[])(bufferSize);
-                            
-                            // Get the binary from the driver, saving the format
-                            GLenum binaryFormat;
-                            glGetProgramBinary(program, binarySize, null, &binaryFormat, binary.ptr + GLenum.sizeof);
-                            *(cast(GLenum*)binary.ptr) = binaryFormat;
-                            
-                            globalShaderCache.saveBinary(hash, binary);
-                        }
-                    }
-                }
-            }
-        }
     }
     
     ~this()
@@ -298,6 +182,114 @@ class ShaderProgram: Owner
     void unbind()
     {
         glUseProgram(0);
+    }
+    
+    void saveBinary(string name)
+    {
+        static if (glSupport >= GLSupport.gl41)
+        {
+            // Get the size of the binary
+            glGetProgramiv(program, GL_PROGRAM_BINARY_LENGTH, &binarySize);
+            
+            if (binarySize > 0)
+            {
+                // Allocate buffer for the binary, as well as the binary format
+                size_t bufferSize = GLenum.sizeof + binarySize;
+                binary = New!(ubyte[])(bufferSize);
+                
+                // Get the binary from the driver, saving the format
+                GLenum binaryFormat;
+                glGetProgramBinary(program, binarySize, null, &binaryFormat, binary.ptr + GLenum.sizeof);
+                *(cast(GLenum*)binary.ptr) = binaryFormat;
+                
+                globalShaderCache.saveBinary(name, binary);
+            }
+        }
+    }
+    
+    bool loadBinary(string name)
+    {
+        static if (glSupport >= GLSupport.gl41)
+        {
+            binary = globalShaderCache.loadBinary(name);
+            if (binary.length)
+            {
+                program = glCreateProgram();
+                binaryFormat = *(cast(GLenum*)binary.ptr);
+                binarySize = cast(uint)(binary.length - GLenum.sizeof);
+                glProgramBinary(program, binaryFormat, binary.ptr + GLenum.sizeof, binarySize);
+                
+                if (checkLinking(program))
+                {
+                    debug logDebug("Loaded cached shader binary ", name);
+                    return true;
+                }
+                else
+                {
+                    glDeleteProgram(program);
+                    return false;
+                }
+            }
+            else
+                return false;
+        }
+        
+        return false;
+    }
+}
+
+/**
+ * Handles compilation and linking of vertex and fragment shaders.
+ */
+class ShaderProgram: BaseShaderProgram
+{
+    /// Compiles and links a shader program from vertex and fragment sources.
+    this(string vertexShaderSrc, string fragmentShaderSrc, Owner owner)
+    {
+        super(owner);
+        
+        bool recompilationNeeded = true;
+        
+        ubyte[16] hashBytes;
+        string hash;
+        
+        if (globalShaderCache.enabled)
+        {
+            hashBytes = digest!(MurmurHash3!(128, 64))(vertexShaderSrc, fragmentShaderSrc)[];
+            hash = toHexString(hashBytes).idup;
+            
+            if (loadBinary(hash))
+            {
+                recompilationNeeded = false;
+                getNumSubroutines();
+            }
+        }
+
+        if (recompilationNeeded)
+        {
+            GLuint vert = compileShader(vertexShaderSrc, ShaderStage.vertex);
+            GLuint frag = compileShader(fragmentShaderSrc, ShaderStage.fragment);
+            if (vert != 0 && frag != 0)
+            {
+                program = linkShaders(vert, frag);
+                getNumSubroutines();
+                if (globalShaderCache.enabled)
+                    saveBinary(hash);
+            }
+        }
+    }
+    
+    void getNumSubroutines()
+    {
+        glGetProgramStageiv(program,
+            GL_VERTEX_SHADER,
+            GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS,
+            &numVertexSubroutines);
+        
+        glGetProgramStageiv(program,
+            GL_FRAGMENT_SHADER,
+            GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS,
+            &numFragmentSubroutines);
     }
 }
 
@@ -621,7 +613,7 @@ class UniformBlockParameter(T): BaseShaderParameter if (isStd140Compliant!T)
 }
 
 /**
- * Base shader class.
+ * Basic shader class.
  *
  * Description:
  * Manages a shader program, uniform and subroutine parameters, and provides
@@ -629,13 +621,14 @@ class UniformBlockParameter(T): BaseShaderParameter if (isStd140Compliant!T)
  */
 class Shader: Owner
 {
-    ShaderProgram program;
+    BaseShaderProgram program;
     MappedList!BaseShaderParameter parameters;
+
     GLuint[] vertexSubroutineIndices;
     GLuint[] fragmentSubroutineIndices;
 
     /// Constructs a shader from a program.
-    this(ShaderProgram program, Owner owner)
+    this(BaseShaderProgram program, Owner owner)
     {
         super(owner);
         this.program = program;
@@ -697,7 +690,7 @@ class Shader: Owner
 
         return outputText;
     }
-    
+
     /// Creates a subroutine parameter.
     ShaderSubroutine createParameterSubroutine(string name, ShaderType shaderType)
     {
@@ -896,16 +889,28 @@ class Shader: Owner
         }
     }
 
-    /// Binds the underlying shader program.
-    void bind()
+    /// Validates the program.
+    void validate()
     {
-        program.bind();
-    }
-
-    /// Unbinds the underlying shader program.
-    void unbind()
-    {
-        program.unbind();
+        glValidateProgram(program.program);
+        
+        GLint status;
+        glGetProgramiv(program.program, GL_VALIDATE_STATUS, &status);
+        
+        if (status != GL_TRUE)
+        {
+            GLint infolen;
+            glGetProgramiv(program.program, GL_INFO_LOG_LENGTH, &infolen);
+            if (infolen > 0)
+            {
+                char[logMaxLen + 1] infobuffer = 0;
+                glGetProgramInfoLog(program.program, logMaxLen, null, infobuffer.ptr);
+                infolen = min2(infolen - 1, logMaxLen);
+                char[] s = stripRight(infobuffer[0..infolen]);
+                logError(s);
+            }
+        }
+        assert(status == GL_TRUE, "Shader program validation failed");
     }
 
     /// Binds all parameters and subroutines.
@@ -944,30 +949,18 @@ class Shader: Owner
         }
     }
 
-    /// Validates the shader program.
-    void validate()
+    /// Binds the underlying shader program.
+    void bind()
     {
-        glValidateProgram(program.program);
-        
-        GLint status;
-        glGetProgramiv(program.program, GL_VALIDATE_STATUS, &status);
-        
-        if (status != GL_TRUE)
-        {
-            GLint infolen;
-            glGetProgramiv(program.program, GL_INFO_LOG_LENGTH, &infolen);
-            if (infolen > 0)
-            {
-                char[logMaxLen + 1] infobuffer = 0;
-                glGetProgramInfoLog(program.program, logMaxLen, null, infobuffer.ptr);
-                infolen = min2(infolen - 1, logMaxLen);
-                char[] s = stripRight(infobuffer[0..infolen]);
-                logError(s);
-            }
-        }
-        assert(status == GL_TRUE, "Shader program validation failed");
+        program.bind();
     }
-    
+
+    /// Unbinds the underlying shader program.
+    void unbind()
+    {
+        program.unbind();
+    }
+
     /// Destructor. Releases allocated resources.
     ~this()
     {

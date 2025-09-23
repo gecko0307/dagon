@@ -41,9 +41,6 @@ module dagon.core;
 
 public
 {
-    /// Lock-free inter-thread communication.
-    import dagon.core.messaging;
-    
     /// Application base class and main loop utilities.
     import dagon.core.application;
 
@@ -77,11 +74,20 @@ public
     /// Logging facilities.
     import dagon.core.logger;
 
+    /// 
+    import dagon.core.mappedlist;
+
+    /// Lock-free inter-thread communication.
+    import dagon.core.messaging;
+
     /// Persistent storage for application data.
     import dagon.core.persistent;
 
     /// Flexible property system for configuration data.
     import dagon.core.props;
+
+    /// 
+    import dagon.core.shaderloader;
 
     /// Time management, frame timing, and fixed-step scheduling.
     import dagon.core.time;
@@ -91,4 +97,7 @@ public
 
     /// Vulkan image format enumerations.
     import dagon.core.vkformat;
+
+    /// Vulkan image format enumerations.
+    import dagon.core.wintab;
 }

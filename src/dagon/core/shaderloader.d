@@ -29,7 +29,7 @@ DEALINGS IN THE SOFTWARE.
  * Utilities for compiling and linking OpenGL shaders.
  *
  * Description:
- * The `dagon.graphics.shaderloader` module defines functions for
+ * The `dagon.core.shaderloader` module defines functions for
  * compiling individual shader stages from source code, linking
  * multiple shaders into a program, and checking compilation/linking
  * status with detailed logging. The module supports all standard OpenGL
@@ -40,7 +40,7 @@ DEALINGS IN THE SOFTWARE.
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: dayllenger
  */
-module dagon.graphics.shaderloader;
+module dagon.core.shaderloader;
 
 import std.stdio;
 import std.string: stripRight;
@@ -177,6 +177,8 @@ bool checkCompilation(const GLuint shaderID, const ShaderStage stage)
     GLint status = GL_FALSE;
     glGetShaderiv(shaderID, GL_COMPILE_STATUS, &status);
     const bool ok = status != GL_FALSE;
+    if (!ok)
+        logError("Failed to compile ", stage, " shader");
     
     // get log
     GLint infolen;
@@ -189,8 +191,6 @@ bool checkCompilation(const GLuint shaderID, const ShaderStage stage)
         char[] s = stripRight(infobuffer[0..infolen]);
         
         // it can be some warning
-        if (!ok)
-            logError("Failed to compile ", stage, " shader");
         logWarning(s);
     }
     return ok;
@@ -210,6 +210,8 @@ bool checkLinking(const GLuint programID)
     GLint status = GL_FALSE;
     glGetProgramiv(programID, GL_LINK_STATUS, &status);
     const bool ok = status != GL_FALSE;
+    if (!ok)
+        logError("Failed to link shaders");
     
     // get log
     GLint infolen;
@@ -222,8 +224,6 @@ bool checkLinking(const GLuint programID)
         char[] s = stripRight(infobuffer[0..infolen]);
         
         // it can be some warning
-        if (!ok)
-            logError("Failed to link shaders:");
         logWarning(s);
     }
     return ok;

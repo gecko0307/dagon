@@ -436,6 +436,12 @@ class Application: EventListener, Updateable
      */
     float maxTextureAnisotropy = 8.0f;
     
+    /// Maximum number of workgroups per compute dispatch.
+    int[3] maxWorkGroups;
+    
+    /// Maximum size of a single workgorup in a compute shader.
+    int[3] maxWorkGroupSize;
+    
     /// System locale (ISO 639 language + ISO 3166 region)
     string locale = "en_US";
     
@@ -718,6 +724,16 @@ class Application: EventListener, Updateable
         {
             maxTextureAnisotropy = 0.0f;
         }
+        
+        glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &maxWorkGroups[0]);
+        glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &maxWorkGroups[1]);
+        glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &maxWorkGroups[2]);
+        logInfo("GL_MAX_COMPUTE_WORK_GROUP_COUNT: ", maxWorkGroups);
+        
+        glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &maxWorkGroups[0]);
+        glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &maxWorkGroups[1]);
+        glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &maxWorkGroups[2]);
+        logInfo("GL_MAX_COMPUTE_WORK_GROUP_SIZE: ", maxWorkGroups);
 
         // Debug output
         debug
