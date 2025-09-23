@@ -29,5 +29,6 @@ module dagon.compute;
 
 public
 {
+    import dagon.compute.resample;
     import dagon.compute.shader;
 }

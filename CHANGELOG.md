@@ -7,6 +7,7 @@ Dagon 0.32.0 - TBD
   - Shader binary cache (experimental). It can be enabled by specifying `enableShaderCache: 1;` in settings.conf
 - **Compute**
   - Initial compute shaders support. `dagon.compute` package
+  - `dagon.compute.resample` - GPU-based texture resize with bilinear filtering
 - **Extensions**
   - New extension `dagon:audio` for sound playback via [SoLoud](https://solhsa.com/soloud/)
   - New extension `dagon:nfd` for displaying native file open/save dialogs via [NFD](https://github.com/mlabbe/nativefiledialog).
