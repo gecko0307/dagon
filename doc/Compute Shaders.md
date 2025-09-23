@@ -19,12 +19,12 @@ A `ComputeShader` wraps around a `ComputeProgram` and provides the higher-level 
 You usually subclass `ComputeShader` to define your own GPU task (for example, `BlurShader`, `ParticlesUpdateShader`).
 
 ### Workgroup
-A workgroup is the fundamental unit of execution. Each workgroup contains a fixed number of shader invocations (threads). The size of a workgroup (e.g. `local_size_x = 16, local_size_y = 16`) is defined in the shader code itself. Inside a workgroup, invocations can share data through shared memory and synchronize using barriers.
+A workgroup is the fundamental unit of parallel execution. Each workgroup contains a fixed number of shader invocations (threads). The size of a workgroup (e.g. `local_size_x = 16, local_size_y = 16`) is defined in the shader code itself. Inside a workgroup, invocations can share data through shared memory and synchronize using barriers.
 
 Tuning the workgroup size is important for performance — it should align well with your GPU's hardware thread scheduler. A shader writer defines the work group size explicitly in GLSL code. Dagon automatically queries this and helps you dispatch the correct number of groups.
 
 ### Compute Space
-The compute space is the 3D grid of workgroups that you dispatch. Think of it as a box equially divided into small cells. Each invocation can query its position in this space via built-in variables like `gl_GlobalInvocationID`. You can map this space directly onto a 2D texture, a 3D voxel field, or just a flat buffer of data. For example, a blur filter might use compute space matching the width and height of the target image.
+The compute space is the 3D grid of workgroups that maps to the data. Think of it as a box equially divided into small cells. Each invocation can query its position in this space via built-in variables like `gl_GlobalInvocationID`. You can map this space directly onto a 2D texture, a 3D voxel field, or just a flat buffer of data. For example, a blur filter might use compute space matching the width and height of the target image.
 
 ### Dispatching
 Dispatching is how you invoke GPU threads to execute your compute shader code. You call `dispatch(x, y, z)` or a convenience method `run(width, height, depth)` that automatically calculates the compute space from the given data size. The GPU then launches work groups in parallel to cover the specified problem space. Dispatching is explicit: nothing happens until you tell the GPU to start. Unlike render shaders, there are no draw calls — just raw parallel computation.
