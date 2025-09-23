@@ -18,9 +18,6 @@ A `ComputeShader` wraps around a `ComputeProgram` and provides the higher-level 
 
 You usually subclass `ComputeShader` to define your own GPU task (for example, `BlurShader`, `ParticlesUpdateShader`).
 
-### Dispatching
-Dispatching is how you invoke GPU threads to execute your compute shader code. You call `dispatch(x, y, z)` or a convenience method like `run(width, height, depth)`. The GPU then launches work groups in parallel to cover the specified problem space. Dispatching is explicit: nothing happens until you tell the GPU to start. Unlike render shaders, there are no draw calls — just raw parallel computation.
-
 ### Workgroup
 A workgroup is the fundamental unit of execution. Each workgroup contains a fixed number of shader invocations (threads). The size of a workgroup (e.g. `local_size_x = 16, local_size_y = 16`) is defined in the shader code itself. Inside a workgroup, invocations can share data through shared memory and synchronize using barriers.
 
@@ -28,6 +25,9 @@ Tuning the workgroup size is important for performance — it should align well 
 
 ### Compute Space
 The compute space is the 3D grid of workgroups that you dispatch. Think of it as a box equially divided into small cells. Each invocation can query its position in this space via built-in variables like `gl_GlobalInvocationID`. You can map this space directly onto a 2D texture, a 3D voxel field, or just a flat buffer of data. For example, a blur filter might use compute space matching the width and height of the target image.
+
+### Dispatching
+Dispatching is how you invoke GPU threads to execute your compute shader code. You call `dispatch(x, y, z)` or a convenience method `run(width, height, depth)` that automatically calculates the compute space from the given data size. The GPU then launches work groups in parallel to cover the specified problem space. Dispatching is explicit: nothing happens until you tell the GPU to start. Unlike render shaders, there are no draw calls — just raw parallel computation.
 
 ### TextureAccessMode
 This enum specifies how your shader is allowed to interact with a bound image texture:
@@ -107,9 +107,9 @@ class InvertShader: ComputeShader
 
 3. **Dispatch Work**
 
-   * Call `run(width, height, depth)` to execute the shader across your data.
-   * `width`, `height` and `depth` typically match the size of the texture or buffer you're processing. `depth` is 1 by default.
+   * Call `run(width, height, depth)` to execute the shader across your data. `width`, `height` and `depth` usually match the size of the texture or buffer you're writing to. `depth` is 1 by default.
    * The system automatically calculates the number of workgroups needed based on the shader's declared `local_size`.
+   * It is convenient to provide an overloaded `run` that automatically sets the output data size.
 
 ```d
 auto invert = new InvertShader(myTexture, owner);
