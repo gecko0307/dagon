@@ -26,11 +26,14 @@ DEALINGS IN THE SOFTWARE.
 */
 module dagon.compute.shader;
 
+import std.digest.murmurhash;
+
 import dlib.core.ownership;
 import dlib.core.memory;
 
 import dagon.core.bindings;
 import dagon.core.shaderloader;
+import dagon.core.application;
 import dagon.graphics.shader;
 import dagon.graphics.texture;
 import dagon.graphics.state;
@@ -42,9 +45,30 @@ class ComputeProgram: BaseShaderProgram
     {
         super(owner);
         
-        GLuint comp = compileShader(computeShaderSrc, ShaderStage.compute);
-        if (comp != 0)
-            program = linkShaders(comp);
+        bool recompilationNeeded = true;
+        
+        ubyte[16] hashBytes;
+        string hash;
+        
+        if (globalShaderCache.enabled)
+        {
+            hashBytes = digest!(MurmurHash3!(128, 64))(computeShaderSrc)[];
+            hash = toHexString(hashBytes).idup;
+            
+            if (loadBinary(hash))
+                recompilationNeeded = false;
+        }
+
+        if (recompilationNeeded)
+        {
+            GLuint comp = compileShader(computeShaderSrc, ShaderStage.compute);
+            if (comp != 0)
+            {
+                program = linkShaders(comp);
+                if (globalShaderCache.enabled)
+                    saveBinary(hash);
+            }
+        }
     }
 }
 
