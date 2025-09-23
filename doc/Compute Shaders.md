@@ -116,7 +116,7 @@ auto invert = new InvertShader(myTexture, owner);
 invert.run();
 ```
 
-4. **Synchronize Memory (Barriers)**
+4. **Synchronize Memory**
 
    * By default, `run()` inserts a full barrier (`ComputeBarrier.All`) after the dispatch.
    * If you want more fine-grained control (e.g., running multiple compute passes in sequence), you can specify your own barrier bit.
