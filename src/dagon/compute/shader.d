@@ -32,11 +32,12 @@ import dlib.core.memory;
 import dagon.core.bindings;
 import dagon.core.shaderloader;
 import dagon.graphics.shader;
+import dagon.graphics.texture;
 import dagon.graphics.state;
 
 class ComputeProgram: BaseShaderProgram
 {
-    /// Compiles and links a shader program from source.
+    /// Compiles and links a compute shader program from source.
     this(string computeShaderSrc, Owner owner)
     {
         super(owner);
@@ -47,15 +48,52 @@ class ComputeProgram: BaseShaderProgram
     }
 }
 
+enum TextureAccessMode
+{
+    Read = GL_READ_ONLY,
+    Write = GL_WRITE_ONLY,
+    ReadWrite = GL_READ_WRITE
+}
+
+enum ComputeBarrier: GLbitfield
+{
+    None                     = 0,
+    VertexAttribArray        = GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT,
+    ElementArray             = GL_ELEMENT_ARRAY_BARRIER_BIT,
+    Uniform                  = GL_UNIFORM_BARRIER_BIT,
+    TextureFetch             = GL_TEXTURE_FETCH_BARRIER_BIT,
+    ShaderImageAccess        = GL_SHADER_IMAGE_ACCESS_BARRIER_BIT,
+    Command                  = GL_COMMAND_BARRIER_BIT,
+    PixelBuffer              = GL_PIXEL_BUFFER_BARRIER_BIT,
+    TextureUpdate            = GL_TEXTURE_UPDATE_BARRIER_BIT,
+    BufferUpdate             = GL_BUFFER_UPDATE_BARRIER_BIT,
+    Framebuffer              = GL_FRAMEBUFFER_BARRIER_BIT,
+    TransformFeedback        = GL_TRANSFORM_FEEDBACK_BARRIER_BIT,
+    AtomicCounter            = GL_ATOMIC_COUNTER_BARRIER_BIT,
+    ShaderStorage            = GL_SHADER_STORAGE_BARRIER_BIT,
+    ClientMappedBuffer       = GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT,
+    QueryBuffer              = GL_QUERY_BUFFER_BARRIER_BIT,
+    All                      = GL_ALL_BARRIER_BITS
+}
+
+enum ComputeBarrierGroup: GLbitfield
+{
+    ImageAndTexture = ComputeBarrier.ShaderImageAccess | ComputeBarrier.TextureFetch,
+    BufferAndAtomic = ComputeBarrier.ShaderStorage | ComputeBarrier.AtomicCounter,
+}
+
 class ComputeShader: Shader
 {
-    uint maxWorkGroupSizeX = 16;
-    uint maxWorkGroupSizeY = 16;
-    uint maxWorkGroupSizeZ = 16;
+    protected GLint[3] workGroupSize;
     
     this(ComputeProgram program, Owner owner)
     {
         super(program, owner);
+        
+        if (program.program)
+        {
+            glGetProgramiv(program.program, GL_COMPUTE_WORK_GROUP_SIZE, workGroupSize.ptr);
+        }
     }
     
     /// Binds all parameters.
@@ -70,25 +108,59 @@ class ComputeShader: Shader
         debug validate();
     }
     
+    void bindImageTexture(uint unit, Texture texture, TextureAccessMode accessMode)
+    {
+        glActiveTexture(GL_TEXTURE0 + unit);
+        glBindImageTexture(unit, texture.texture, 0, GL_FALSE, 0, accessMode, texture.format.internalFormat);
+        texture.bind();
+    }
+    
     void dispatch(uint workGroupsX, uint workGroupsY, uint workGroupsZ)
     {
         glDispatchCompute(workGroupsX, workGroupsY, workGroupsZ);
     }
 
-    void barrier(GLbitfield bits)
+    void barrier(ComputeBarrier barrier = ComputeBarrier.All)
     {
-        glMemoryBarrier(bits);
+        glMemoryBarrier(barrier);
     }
     
-    void run(uint width, uint heigh, uint depth = 1)
+    protected void computeWorkGroups(uint width, uint height, uint depth, out GLuint wgx, out GLuint wgy, out GLuint wgz)
     {
+        wgx = (width  + (workGroupSize[0] - 1)) / workGroupSize[0];
+        wgy = (height + (workGroupSize[1] - 1)) / workGroupSize[1];
+        wgz = (depth  + (workGroupSize[2] - 1)) / workGroupSize[2];
+    }
+    
+    void run(uint width, uint height, uint depth = 1, ComputeBarrier barrier = ComputeBarrier.All)
+    {
+        if (program.program == 0)
+            return;
+        
         GraphicsState state;
         program.bind();
         bindParameters(&state);
-        GLuint wgx = (width + (maxWorkGroupSizeX - 1)) / maxWorkGroupSizeX;
-        GLuint wgy = (heigh + (maxWorkGroupSizeY - 1)) / maxWorkGroupSizeY;
-        GLuint wgz = (depth + (maxWorkGroupSizeZ - 1)) / maxWorkGroupSizeZ;
+        
+        GLuint wgx, wgy, wgz;
+        computeWorkGroups(width, height, depth, wgx, wgy, wgz);
+        
         glDispatchCompute(wgx, wgy, wgz);
-        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
+        
+        glMemoryBarrier(barrier);
+    }
+    
+    void runNoBarrier(uint width, uint height, uint depth = 1)
+    {
+        if (program.program == 0)
+            return;
+
+        GraphicsState state;
+        program.bind();
+        bindParameters(&state);
+
+        GLuint wgx, wgy, wgz;
+        computeWorkGroups(width, height, depth, wgx, wgy, wgz);
+
+        glDispatchCompute(wgx, wgy, wgz);
     }
 }
