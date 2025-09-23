@@ -25,6 +25,18 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * The main entry point for Dagon's GPU compute system.
+ *
+ * Description:
+ * The `dagon.compute` package publicly imports all compute modules,
+ * including the base compute shader class and a number of built-in shaders,
+ * such as the texture resampling shader.
+ *
+ * Copyright: Timur Gafarov 2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.compute;
 
 public

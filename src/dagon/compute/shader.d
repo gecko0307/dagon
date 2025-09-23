@@ -24,6 +24,13 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * Compute shader support.
+ * 
+ * `dagon.compute.shader` provides classes and enums for compiling, managing,
+ * and dispatching compute shaders, as well as setting up GPU memory barriers.
+*/
 module dagon.compute.shader;
 
 import std.digest.murmurhash;
@@ -38,9 +45,18 @@ import dagon.graphics.shader;
 import dagon.graphics.texture;
 import dagon.graphics.state;
 
+/**
+ * Represents a compiled and linked compute shader program.
+ */
 class ComputeProgram: BaseShaderProgram
 {
-    /// Compiles and links a compute shader program from source.
+    /**
+     * Compiles and links a compute shader program from source.
+     *
+     * Params:
+     *   computeShaderSrc = GLSL source code for the compute shader.
+     *   owner = Owner object.
+     */
     this(string computeShaderSrc, Owner owner)
     {
         super(owner);
@@ -56,7 +72,10 @@ class ComputeProgram: BaseShaderProgram
             hash = toHexString(hashBytes).idup;
             
             if (loadBinary(hash))
+            {
                 recompilationNeeded = false;
+                getNumSubroutines();
+            }
         }
 
         if (recompilationNeeded)
@@ -65,13 +84,26 @@ class ComputeProgram: BaseShaderProgram
             if (comp != 0)
             {
                 program = linkShaders(comp);
+                getNumSubroutines();
                 if (globalShaderCache.enabled)
                     saveBinary(hash);
             }
         }
     }
+
+    /// Gets the number of subroutine uniform locations for the compute shader.
+    final void getNumSubroutines()
+    {
+        glGetProgramStageiv(program,
+            GL_COMPUTE_SHADER,
+            GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS,
+            &numComputeSubroutines);
+    }
 }
 
+/**
+ * Specifies access mode for image textures in compute shaders.
+ */
 enum TextureAccessMode
 {
     Read = GL_READ_ONLY,
@@ -79,6 +111,10 @@ enum TextureAccessMode
     ReadWrite = GL_READ_WRITE
 }
 
+/**
+ * Specifies memory barrier bits for compute shader synchronization.
+ * Used with `ComputeShader.barrier` to ensure correct memory visibility.
+ */
 enum ComputeBarrier: GLbitfield
 {
     None                     = 0,
@@ -100,16 +136,30 @@ enum ComputeBarrier: GLbitfield
     All                      = GL_ALL_BARRIER_BITS
 }
 
+/**
+ * Common groups of compute barriers for convenience.
+ */
 enum ComputeBarrierGroup: GLbitfield
 {
     ImageAndTexture = ComputeBarrier.ShaderImageAccess | ComputeBarrier.TextureFetch,
     BufferAndAtomic = ComputeBarrier.ShaderStorage | ComputeBarrier.AtomicCounter,
 }
 
+/**
+ * Represents a compute shader.
+ * Provides methods for dispatch, resource binding and setting memory barriers.
+ */
 class ComputeShader: Shader
 {
     protected GLint[3] workGroupSize;
     
+    /**
+     * Constructs a ComputeShader from a given ComputeProgram.
+     *
+     * Params:
+     *   program = Compute shader program.
+     *   owner = Owner object.
+     */
     this(ComputeProgram program, Owner owner)
     {
         super(program, owner);
@@ -120,7 +170,12 @@ class ComputeShader: Shader
         }
     }
     
-    /// Binds all parameters.
+    /**
+     * Binds all shader parameters.
+     *
+     * Params:
+     *   state = Pointer to the graphics state to use with this binding.
+     */
     override void bindParameters(GraphicsState* state)
     {
         foreach(v; parameters.data)
@@ -132,6 +187,14 @@ class ComputeShader: Shader
         debug validate();
     }
     
+    /**
+     * Binds a texture as an image for read/write access in the shader.
+     *
+     * Params:
+     *   unit = Image unit index.
+     *   texture = Texture to bind.
+     *   accessMode = Access mode (read, write, or read/write).
+     */
     void bindImageTexture(uint unit, Texture texture, TextureAccessMode accessMode)
     {
         glActiveTexture(GL_TEXTURE0 + unit);
@@ -139,16 +202,42 @@ class ComputeShader: Shader
         texture.bind();
     }
     
+    /**
+     * Dispatches the compute shader with the specified work group counts.
+     *
+     * Params:
+     *   workGroupsX = Number of work groups in X dimension.
+     *   workGroupsY = Number of work groups in Y dimension.
+     *   workGroupsZ = Number of work groups in Z dimension.
+     */
     void dispatch(uint workGroupsX, uint workGroupsY, uint workGroupsZ)
     {
         glDispatchCompute(workGroupsX, workGroupsY, workGroupsZ);
     }
 
+    /**
+     * Inserts a memory barrier for compute shader resource synchronization.
+     *
+     * Params:
+     *   barrier = Barrier bits to use (default: ComputeBarrier.All).
+     */
     void barrier(ComputeBarrier barrier = ComputeBarrier.All)
     {
-        glMemoryBarrier(barrier);
+        if (barrier != ComputeBarrier.None)
+            glMemoryBarrier(barrier);
     }
     
+    /**
+     * Computes the number of work groups needed for the given workload size.
+     *
+     * Params:
+     *   width = Total width to process.
+     *   height = Total height to process.
+     *   depth = Total depth to process.
+     *   wgx = Output: computed work groups in X.
+     *   wgy = Output: computed work groups in Y.
+     *   wgz = Output: computed work groups in Z.
+     */
     protected void computeWorkGroups(uint width, uint height, uint depth, out GLuint wgx, out GLuint wgy, out GLuint wgz)
     {
         wgx = (width  + (workGroupSize[0] - 1)) / workGroupSize[0];
@@ -156,6 +245,15 @@ class ComputeShader: Shader
         wgz = (depth  + (workGroupSize[2] - 1)) / workGroupSize[2];
     }
     
+    /**
+     * Runs the compute shader for the given workload size and inserts a memory barrier.
+     *
+     * Params:
+     *   width = Total width to process.
+     *   height = Total height to process.
+     *   depth = Total depth to process (default: 1).
+     *   barrier = Barrier bits to use after dispatch (default: ComputeBarrier.All).
+     */
     void run(uint width, uint height, uint depth = 1, ComputeBarrier barrier = ComputeBarrier.All)
     {
         if (program.program == 0)
@@ -170,21 +268,7 @@ class ComputeShader: Shader
         
         glDispatchCompute(wgx, wgy, wgz);
         
-        glMemoryBarrier(barrier);
-    }
-    
-    void runNoBarrier(uint width, uint height, uint depth = 1)
-    {
-        if (program.program == 0)
-            return;
-
-        GraphicsState state;
-        program.bind();
-        bindParameters(&state);
-
-        GLuint wgx, wgy, wgz;
-        computeWorkGroups(width, height, depth, wgx, wgy, wgz);
-
-        glDispatchCompute(wgx, wgy, wgz);
+        if (barrier != ComputeBarrier.None)
+            glMemoryBarrier(barrier);
     }
 }

@@ -44,6 +44,8 @@ module dagon.core.shaderloader;
 
 import std.stdio;
 import std.string: stripRight;
+import std.traits;
+
 import dlib.math.utils: min2;
 
 import dagon.core.bindings;
@@ -81,7 +83,7 @@ enum ShaderStage: ubyte
  * Returns:
  *   The OpenGL GLenum for the shader stage.
  */
-private GLenum shaderStageToGLenum(ShaderStage stage)
+GLenum shaderStageToGLenum(ShaderStage stage)
 {
     final switch (stage) with(ShaderStage)
     {
@@ -228,3 +230,31 @@ bool checkLinking(const GLuint programID)
     }
     return ok;
 }
+
+/**
+ * Checks if all fields of a struct are aligned to the specified number of bytes.
+ *
+ * Params:
+ *   T = Struct type to check.
+ *   numBytes = Alignment in bytes.
+ *
+ * Returns:
+ *   true if all fields are aligned, false otherwise.
+ */
+bool isFieldsOffsetAligned(T, alias numBytes)()
+{
+    static if (is(T == struct))
+    {
+        static foreach(f; T.tupleof)
+        {
+            static if (f.offsetof % numBytes != 0)
+                return false;
+        }
+        
+        return true;
+    }
+    else return false;
+}
+
+/// Alias for checking std140 alignment compliance for a struct.
+alias isStd140Compliant(T) = isFieldsOffsetAligned!(T, 16);

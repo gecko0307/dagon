@@ -40,11 +40,9 @@ module dagon.graphics.shader;
 
 import core.stdc.string;
 import std.stdio;
-import std.stdio;
 import std.string;
 import std.algorithm;
 import std.file;
-import std.traits;
 import std.digest.murmurhash;
 
 import dlib.core.ownership;
@@ -69,32 +67,24 @@ import dagon.core.shaderloader;
 import dagon.graphics.texture;
 import dagon.graphics.state;
 
-bool isFieldsOffsetAligned(T, alias numBytes)()
-{
-    static if (is(T == struct))
-    {
-        static foreach(f; T.tupleof)
-        {
-            static if (f.offsetof % numBytes != 0)
-                return false;
-        }
-        
-        return true;
-    }
-    else return false;
-}
-
-alias isStd140Compliant(T) = isFieldsOffsetAligned!(T, 16);
-
+/**
+ * Global shader cache for saving and loading compiled shader binaries.
+ */
 class ShaderCache: Owner
 {
+    /// Virtual filesystem to use for file operations.
     VirtualFileSystem vfs;
+
+    /// Standard filesystem interface.
     StdFileSystem fs;
     
+    /// Cache folder path.
     string cacheFolder = "data/__internal/shader_cache";
     
+    /// Whether the shader cache is enabled.
     bool enabled = false;
     
+    /// Constructor.
     this(VirtualFileSystem vfs, Owner owner)
     {
         super(owner);
@@ -103,6 +93,7 @@ class ShaderCache: Owner
         fs.createDir(cacheFolder, true);
     }
     
+    /// Saves a compiled shader binary to file.
     void saveBinary(string filename, ubyte[] data)
     {
         string dirSeparator;
@@ -121,6 +112,7 @@ class ShaderCache: Owner
         path.free();
     }
     
+    /// Loads a shader binary from file.
     ubyte[] loadBinary(string filename)
     {
         ubyte[] binary;
@@ -149,23 +141,38 @@ class ShaderCache: Owner
 
 /**
  * A shader program class that can be shared between multiple `Shader` instances.
- * Manages OpenGL program objects.
+ * Manages OpenGL program object.
  */
 abstract class BaseShaderProgram: Owner
 {
+    /// OpenGL program handle.
     GLuint program;
+
+    /// Number of vertex shader subroutine uniform locations.
     GLsizei numVertexSubroutines = 0;
+
+    /// Number of fragment shader subroutine uniform locations.
     GLsizei numFragmentSubroutines = 0;
+
+    /// Number of compute shader subroutine uniform locations.
+    GLsizei numComputeSubroutines = 0;
     
+    /// Compiled shader binary data.
     ubyte[] binary;
+
+    /// Size of the shader binary data.
     GLint binarySize = 0;
+
+    /// Format of the shader binary data.
     GLenum binaryFormat;
     
+    /// Constructor.
     this(Owner owner)
     {
         super(owner);
     }
     
+    /// Destructor. Frees the shader binary data.
     ~this()
     {
         if (binary.length)
@@ -183,7 +190,33 @@ abstract class BaseShaderProgram: Owner
     {
         glUseProgram(0);
     }
+
+    /// Validates the program.
+    bool validate()
+    {
+        glValidateProgram(program);
+        
+        GLint status;
+        glGetProgramiv(program, GL_VALIDATE_STATUS, &status);
+        
+        if (status != GL_TRUE)
+        {
+            GLint infolen;
+            glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infolen);
+            if (infolen > 0)
+            {
+                char[logMaxLen + 1] infobuffer = 0;
+                glGetProgramInfoLog(program, logMaxLen, null, infobuffer.ptr);
+                infolen = min2(infolen - 1, logMaxLen);
+                char[] s = stripRight(infobuffer[0..infolen]);
+                logError(s);
+            }
+        }
+
+        return(status == GL_TRUE);
+    }
     
+    /// Saves the compiled shader binary to the cache.
     void saveBinary(string name)
     {
         static if (glSupport >= GLSupport.gl41)
@@ -198,7 +231,6 @@ abstract class BaseShaderProgram: Owner
                 binary = New!(ubyte[])(bufferSize);
                 
                 // Get the binary from the driver, saving the format
-                GLenum binaryFormat;
                 glGetProgramBinary(program, binarySize, null, &binaryFormat, binary.ptr + GLenum.sizeof);
                 *(cast(GLenum*)binary.ptr) = binaryFormat;
                 
@@ -207,6 +239,7 @@ abstract class BaseShaderProgram: Owner
         }
     }
     
+    /// Loads a compiled shader binary from the cache.
     bool loadBinary(string name)
     {
         static if (glSupport >= GLSupport.gl41)
@@ -239,7 +272,7 @@ abstract class BaseShaderProgram: Owner
 }
 
 /**
- * Handles compilation and linking of vertex and fragment shaders.
+ * Represents a compiled and linked shader program with vertex and fragment shaders.
  */
 class ShaderProgram: BaseShaderProgram
 {
@@ -279,7 +312,8 @@ class ShaderProgram: BaseShaderProgram
         }
     }
     
-    void getNumSubroutines()
+    /// Gets the number of subroutine uniform locations for vertex and fragment shaders.
+    final void getNumSubroutines()
     {
         glGetProgramStageiv(program,
             GL_VERTEX_SHADER,
@@ -299,9 +333,16 @@ class ShaderProgram: BaseShaderProgram
  */
 abstract class BaseShaderParameter: Owner
 {
+    /// Owning shader.
     Shader shader;
+
+    /// Parameter name.
     string name;
+
+    /// Parameter location in the shader program.
     GLint location;
+
+    /// Whether to automatically bind the parameter when the shader is bound.
     bool autoBind = true;
 
     /// Initializes the uniform location.
@@ -326,7 +367,8 @@ abstract class BaseShaderParameter: Owner
 enum ShaderType
 {
     Vertex,
-    Fragment
+    Fragment,
+    Compute
 }
 
 /**
@@ -335,10 +377,19 @@ enum ShaderType
  */
 class ShaderSubroutine: BaseShaderParameter
 {
+    /// Shader type.
     ShaderType shaderType;
+
+    /// Subroutine location and index.
     GLint location;
+
+    /// Subroutine index.
     GLuint index;
+
+    /// Parameter name.
     String _name;
+
+    /// Subroutine name.
     String subroutineName;
 
     /// Creates a subroutine parameter for the given shader and type.
@@ -368,7 +419,7 @@ class ShaderSubroutine: BaseShaderParameter
     }
 
     /// Initializes the uniform location.
-    override void initUniform()
+    override final void initUniform()
     {
         if (shaderType == ShaderType.Vertex)
         {
@@ -382,22 +433,30 @@ class ShaderSubroutine: BaseShaderParameter
             if (subroutineName.length)
                 index = glGetSubroutineIndex(shader.program.program, GL_FRAGMENT_SHADER, subroutineName.ptr);
         }
+        else if (shaderType == ShaderType.Compute)
+        {
+            location = glGetSubroutineUniformLocation(shader.program.program, GL_COMPUTE_SHADER, _name.ptr);
+            if (subroutineName.length)
+                index = glGetSubroutineIndex(shader.program.program, GL_COMPUTE_SHADER, subroutineName.ptr);
+        }
     }
     
     /// Gets the subroutine index for a given name.
     GLuint getIndex(string subrName)
     {
         auto name = String(subrName);
-        GLuint index;
+        GLuint ind;
         if (shaderType == ShaderType.Vertex)
-            index = glGetSubroutineIndex(shader.program.program, GL_VERTEX_SHADER, name.ptr);
+            ind = glGetSubroutineIndex(shader.program.program, GL_VERTEX_SHADER, name.ptr);
         else if (shaderType == ShaderType.Fragment)
-            index = glGetSubroutineIndex(shader.program.program, GL_FRAGMENT_SHADER, name.ptr);
+            ind = glGetSubroutineIndex(shader.program.program, GL_FRAGMENT_SHADER, name.ptr);
+        else if (shaderType == ShaderType.Compute)
+            ind = glGetSubroutineIndex(shader.program.program, GL_COMPUTE_SHADER, name.ptr);
         name.free();
-        return index;
+        return ind;
     }
 
-    /// Binds the subroutine index.
+    /// Binds the subroutine.
     override void bind()
     {
         if (shaderType == ShaderType.Vertex)
@@ -409,6 +468,11 @@ class ShaderSubroutine: BaseShaderParameter
         {
             if (location != -1)
                 shader.fragmentSubroutineIndices[location] = index;
+        }
+        else if (shaderType == ShaderType.Compute)
+        {
+            if (location != -1)
+                shader.computeSubroutineIndices[location] = index;
         }
     }
 
@@ -433,8 +497,13 @@ class ShaderParameter(T): BaseShaderParameter
         is(T == Matrix4x4f) ||
         is(T == Matrix3x3f))
 {
+    /// Pointer to a source value for dynamic updates.
     T* source;
+
+    /// Current value if not using a source reference.
     T value;
+
+    /// Callback for dynamic updates.
     T delegate() callback;
     
     /// Creates a parameter with a default value.
@@ -502,7 +571,7 @@ class ShaderParameter(T): BaseShaderParameter
     }
 
     /// Initializes the uniform location.
-    override void initUniform()
+    final override void initUniform()
     {
         location = glGetUniformLocation(shader.program.program, toStringz(name));
     }
@@ -561,10 +630,19 @@ class ShaderParameter(T): BaseShaderParameter
  */
 class UniformBlockParameter(T): BaseShaderParameter if (isStd140Compliant!T)
 {
+    /// Parameter name.
     String _name;
+
+    /// Array of data elements.
     T[] data;
+
+    /// OpenGL uniform buffer object handle.
     GLuint uniformBuffer;
+
+    /// Uniform block index in the program.
     GLuint index;
+
+    /// Uniform block binding point.
     GLuint binding;
     
     /// Creates a uniform block parameter with the given name, array length and binding point.
@@ -577,6 +655,7 @@ class UniformBlockParameter(T): BaseShaderParameter if (isStd140Compliant!T)
         initUniform();
     }
     
+    /// Destructor. Frees all allocated resources.
     ~this()
     {
         glDeleteBuffers(1, &uniformBuffer);
@@ -585,7 +664,7 @@ class UniformBlockParameter(T): BaseShaderParameter if (isStd140Compliant!T)
     }
     
     /// Initializes the UBO and assigns a binding point to the uniform block.
-    override void initUniform()
+    final override void initUniform()
     {
         glGenBuffers(1, &uniformBuffer);
         glBindBuffer(GL_UNIFORM_BUFFER, uniformBuffer);
@@ -608,7 +687,6 @@ class UniformBlockParameter(T): BaseShaderParameter if (isStd140Compliant!T)
     /// Unbinds the parameter (no-op).
     override void unbind()
     {
-    
     }
 }
 
@@ -621,11 +699,23 @@ class UniformBlockParameter(T): BaseShaderParameter if (isStd140Compliant!T)
  */
 class Shader: Owner
 {
+    /// Shader program to use.
     BaseShaderProgram program;
+
+    /// List of shader parameters.
     MappedList!BaseShaderParameter parameters;
 
+    /// Array of vertex shader subroutine indices.
     GLuint[] vertexSubroutineIndices;
+
+    /// Array of fragment shader subroutine indices.
     GLuint[] fragmentSubroutineIndices;
+
+    /// Array of compute shader subroutine indices.
+    GLuint[] computeSubroutineIndices;
+
+    /// In debug mode, enables or disables shader validation on bind.
+    bool validationEnabled = true;
 
     /// Constructs a shader from a program.
     this(BaseShaderProgram program, Owner owner)
@@ -892,28 +982,14 @@ class Shader: Owner
     /// Validates the program.
     void validate()
     {
-        glValidateProgram(program.program);
-        
-        GLint status;
-        glGetProgramiv(program.program, GL_VALIDATE_STATUS, &status);
-        
-        if (status != GL_TRUE)
+        if (validationEnabled)
         {
-            GLint infolen;
-            glGetProgramiv(program.program, GL_INFO_LOG_LENGTH, &infolen);
-            if (infolen > 0)
-            {
-                char[logMaxLen + 1] infobuffer = 0;
-                glGetProgramInfoLog(program.program, logMaxLen, null, infobuffer.ptr);
-                infolen = min2(infolen - 1, logMaxLen);
-                char[] s = stripRight(infobuffer[0..infolen]);
-                logError(s);
-            }
+            if (!program.validate())
+                exitWithError("Shader program validation failed");
         }
-        assert(status == GL_TRUE, "Shader program validation failed");
     }
 
-    /// Binds all parameters and subroutines.
+    /// Binds all parameters.
     void bindParameters(GraphicsState* state)
     {
         if (program.numVertexSubroutines > 0 && 
@@ -923,6 +999,10 @@ class Shader: Owner
         if (program.numFragmentSubroutines > 0 && 
             fragmentSubroutineIndices.length == 0)
             fragmentSubroutineIndices = New!(GLuint[])(program.numFragmentSubroutines);
+        
+        if (program.numComputeSubroutines > 0 && 
+            computeSubroutineIndices.length == 0)
+            computeSubroutineIndices = New!(GLuint[])(program.numComputeSubroutines);
         
         foreach(v; parameters.data)
         {
@@ -935,6 +1015,9 @@ class Shader: Owner
 
         if (fragmentSubroutineIndices.length)
             glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, cast(uint)fragmentSubroutineIndices.length, fragmentSubroutineIndices.ptr);
+        
+        if (computeSubroutineIndices.length)
+            glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, cast(uint)computeSubroutineIndices.length, computeSubroutineIndices.ptr);
         
         debug validate();
     }
@@ -968,5 +1051,7 @@ class Shader: Owner
             Delete(vertexSubroutineIndices);
         if (fragmentSubroutineIndices.length)
             Delete(fragmentSubroutineIndices);
+        if (computeSubroutineIndices.length)
+            Delete(computeSubroutineIndices);
     }
 }

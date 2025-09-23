@@ -24,6 +24,13 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * GPU-based texture resizing through compute shader.
+ *
+ * This module provides a compute shader wrapper for resizing RGBA8 textures
+ * using GPU acceleration.
+ */
 module dagon.compute.resample;
 
 import dlib.core.memory;
@@ -43,14 +50,30 @@ import dagon.compute.shader;
 class ResampleShader: ComputeShader
 {
    protected:
+    /// Compute shader source code.
     String cs;
+
+    /// Source texture size parameter.
     ShaderParameter!Vector2f _srcSize;
+
+    /// Destination texture size parameter.
     ShaderParameter!Vector2f _destSize;
 
    public:
+    /// Input texture to be resized.
     Texture inputTexture;
+
+    /// Output texture to write resized data.
     Texture outputTexture;
 
+    /**
+     * Constructs a resample shader for resizing from an input texture to an output texture.
+     *
+     * Params:
+     *   inputTexture = Source texture (must be RGBA8).
+     *   outputTexture = Destination texture.
+     *   owner = Owner object.
+     */
     this(Texture inputTexture, Texture outputTexture, Owner owner)
     {
         cs = Shader.load("data/__internal/shaders/Compute/Resample.comp.glsl");
@@ -71,17 +94,33 @@ class ResampleShader: ComputeShader
         this.inputTexture = inputTexture;
     }
     
+    /**
+     * Constructs a resample shader and creates a new output texture of the given size.
+     *
+     * Params:
+     *   inputTexture = Source RGBA8 texture.
+     *   outputWidth = Width of the output texture.
+     *   outputHeight = Height of the output texture.
+     *   owner = Owner object
+     */
     this(Texture inputTexture, uint outputWidth, uint outputHeight, Owner owner)
     {
         Texture outTexture = New!Texture(outputWidth, outputHeight, owner);
         this(inputTexture, outTexture, owner);
     }
     
+    /// Destructor. Frees the shader source string.
     ~this()
     {
         cs.free();
     }
 
+    /**
+     * Binds shader parameters and image textures.
+     * 
+     * Params:
+     *   state = Pointer to the graphics state.
+     */
     override void bindParameters(GraphicsState* state)
     {
         if (inputTexture)
@@ -99,6 +138,12 @@ class ResampleShader: ComputeShader
         super.bindParameters(state);
     }
 
+    /**
+     * Runs the resample compute shader.
+     *
+     * Dispatches the compute shader to resize the input texture into the output texture.
+     * Does nothing if either texture is missing.
+     */
     void run()
     {
         if (inputTexture && outputTexture)
