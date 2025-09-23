@@ -409,6 +409,18 @@ class Texture: Owner
         super(owner);
     }
     
+    this(uint w, uint h, uint channels, uint bitDepth, Owner owner)
+    {
+        super(owner);
+        createBlank(w, h, channels, bitDepth);
+    }
+    
+    this(uint w, uint h, Owner owner)
+    {
+        super(owner);
+        createBlank(w, h, 4, 8);
+    }
+    
     /// Destructor. Releases OpenGL resources.
     ~this()
     {

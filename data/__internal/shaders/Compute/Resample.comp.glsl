@@ -2,7 +2,7 @@
 layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 
 layout(rgba8, binding = 0) readonly uniform image2D srcTex;
-layout(rgba8, binding = 1) writeonly uniform image2D destTex;
+layout(binding = 1) writeonly uniform image2D destTex;
 
 uniform vec2 srcSize;
 uniform vec2 destSize;

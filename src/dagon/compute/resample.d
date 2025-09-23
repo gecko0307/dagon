@@ -31,6 +31,7 @@ import dlib.core.ownership;
 import dlib.math.vector;
 import dlib.text.str;
 
+import dagon.core.logger;
 import dagon.graphics.shader;
 import dagon.graphics.texture;
 import dagon.graphics.state;
@@ -50,7 +51,7 @@ class ResampleShader: ComputeShader
     Texture inputTexture;
     Texture outputTexture;
 
-    this(Owner owner)
+    this(Texture inputTexture, Texture outputTexture, Owner owner)
     {
         cs = Shader.load("data/__internal/shaders/Compute/Resample.comp.glsl");
         auto program = New!ComputeProgram(cs, this);
@@ -58,6 +59,22 @@ class ResampleShader: ComputeShader
 
         _srcSize = createParameter!Vector2f("srcSize");
         _destSize = createParameter!Vector2f("destSize");
+        
+        this.outputTexture = outputTexture;
+        
+        if (inputTexture.numChannels != 4 && inputTexture.channelSize != 8)
+        {
+            logError("Input texture for ResampleShader must be RGBA8. Consider loading the asset with conversion.hint = ConversionHint.RGBA to ensure correct format");
+            return;
+        }
+        
+        this.inputTexture = inputTexture;
+    }
+    
+    this(Texture inputTexture, uint outputWidth, uint outputHeight, Owner owner)
+    {
+        Texture outTexture = New!Texture(outputWidth, outputHeight, owner);
+        this(inputTexture, outTexture, owner);
     }
     
     ~this()
@@ -68,20 +85,23 @@ class ResampleShader: ComputeShader
     override void bindParameters(GraphicsState* state)
     {
         if (inputTexture)
+        {
             bindImageTexture(0, inputTexture, TextureAccessMode.Read);
+            _srcSize = Vector2f(inputTexture.width, inputTexture.height);
+        }
         
         if (outputTexture)
+        {
             bindImageTexture(1, outputTexture, TextureAccessMode.Write);
-
-        _srcSize = Vector2f(inputTexture.width, inputTexture.height);
-        _destSize = Vector2f(outputTexture.width, outputTexture.height);
-
+            _destSize = Vector2f(outputTexture.width, outputTexture.height);
+        }
+        
         super.bindParameters(state);
     }
 
     void run()
     {
-        if (outputTexture)
+        if (inputTexture && outputTexture)
             super.run(outputTexture.width, outputTexture.height);
     }
 }
