@@ -135,7 +135,7 @@ invert.barrier(ComputeBarrier.ShaderImageAccess);
 
 ## Built-in: Resampling a Texture
 
-Dagon provides a ready-to-use compute shader for resizing RGBA8 textures: `ResampleShader`.
+Dagon provides a ready-to-use compute shader for resizing RGBA8 textures:
 
 ```d
 auto rs = new ResampleShader(inputTexture, outputWidth, outputHeight, owner);
