@@ -210,7 +210,7 @@ class ComputeShader: Shader
      *   workGroupsY = Number of work groups in Y dimension.
      *   workGroupsZ = Number of work groups in Z dimension.
      */
-    void dispatch(uint workGroupsX, uint workGroupsY, uint workGroupsZ)
+    static void dispatch(uint workGroupsX, uint workGroupsY, uint workGroupsZ)
     {
         glDispatchCompute(workGroupsX, workGroupsY, workGroupsZ);
     }
@@ -221,7 +221,7 @@ class ComputeShader: Shader
      * Params:
      *   barrier = Barrier bits to use (default: ComputeBarrier.All).
      */
-    void barrier(ComputeBarrier barrier = ComputeBarrier.All)
+    static void barrier(ComputeBarrier barrier = ComputeBarrier.All)
     {
         if (barrier != ComputeBarrier.None)
             glMemoryBarrier(barrier);
@@ -238,7 +238,7 @@ class ComputeShader: Shader
      *   wgy = Output: computed work groups in Y.
      *   wgz = Output: computed work groups in Z.
      */
-    protected void computeWorkGroups(uint width, uint height, uint depth, out GLuint wgx, out GLuint wgy, out GLuint wgz)
+    protected final void computeWorkGroups(uint width, uint height, uint depth, out GLuint wgx, out GLuint wgy, out GLuint wgz)
     {
         wgx = (width  + (workGroupSize[0] - 1)) / workGroupSize[0];
         wgy = (height + (workGroupSize[1] - 1)) / workGroupSize[1];
