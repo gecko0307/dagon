@@ -49,6 +49,10 @@ class ComputeProgram: BaseShaderProgram
 
 class ComputeShader: Shader
 {
+    uint maxWorkGroupSizeX = 16;
+    uint maxWorkGroupSizeY = 16;
+    uint maxWorkGroupSizeZ = 16;
+    
     this(ComputeProgram program, Owner owner)
     {
         super(program, owner);
@@ -74,5 +78,17 @@ class ComputeShader: Shader
     void barrier(GLbitfield bits)
     {
         glMemoryBarrier(bits);
+    }
+    
+    void run(uint width, uint heigh, uint depth = 1)
+    {
+        GraphicsState state;
+        program.bind();
+        bindParameters(&state);
+        GLuint wgx = (width + (maxWorkGroupSizeX - 1)) / maxWorkGroupSizeX;
+        GLuint wgy = (heigh + (maxWorkGroupSizeY - 1)) / maxWorkGroupSizeY;
+        GLuint wgz = (depth + (maxWorkGroupSizeZ - 1)) / maxWorkGroupSizeZ;
+        glDispatchCompute(wgx, wgy, wgz);
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
     }
 }
