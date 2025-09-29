@@ -27,7 +27,7 @@ There are some disadvantages as well:
 
 ### Area Lights
 
-Area lights are an interesting topic that is given much attention recently. They provide more realistic and physically correct approximation of real-world lights than traditional point light sources. An area light is a polygonal or volumetric shape that emits light from its surface. Such lights are useful to represent ball lamps, fluorescent tubes, LED panels, etc.
+Area lights provide more realistic and physically correct approximation of real-world lights than traditional point light sources. An area light is a polygonal or volumetric shape that emits light from its surface. Such lights are useful to represent ball lamps, fluorescent tubes, LED panels, etc.
 
 Dagon supports spherical and tube area lights. Spherical area lights can be seen as direct generalization of point lights. They have a position and a radius. For a given point on a surface, instead of a vector to the center of the light, a vector to the closest point on a sphere is used to evaluate BRDF. Then the lighting is computed as usual using preferred BRDF such as GGX. Tube area lights are basically the same, but have also a length.
 
@@ -41,7 +41,11 @@ Dagon uses 3 cascades placed in order of increasing distance from the camera. Be
 
 ### Dual-Paraboloid Shadow Maps
 
-Dual-paraboloid shadow maps are an optimized method for rendering and sampling shadows for omnidirectional light sources. Straightforward shadowing technique for such lights is a depth cube map, rendered from 6 directions around the light source. Paraboloid projection allows to use only two depth maps, each covering a half-space around the light source. Same projection is then used to convert eye-space coordinates to depth texture coordinates to sample the map for an arbitrary point. The trade-off is singularity artifacts at the border between half-spaces, but they are usually negligible.
+Dual-paraboloid shadow maps are an optimized method for rendering and sampling shadows for omnidirectional light sources (in Dagon, these are spherical and tube area lights). Straightforward shadowing technique for such lights is a depth cube map, rendered from 6 directions around the light source. Paraboloid projection allows to use only 2 depth maps, each covering a half-space around the light source. Same projection is then used to convert eye-space coordinates to depth texture coordinates to sample the map for an arbitrary point. The trade-off is singularity artifacts at the border between half-spaces, but they are usually negligible.
+
+### Perspective Shadow Maps
+
+TODO
 
 ### HDR
 

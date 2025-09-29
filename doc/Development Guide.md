@@ -143,7 +143,3 @@ s.free();
 ```
 
 It also uses SSO (short string optimization), so that strings of less than 128 bytes live entirely on the stack and don't allocate memory. Another advantage is that `String` is implicitly zero-terminated, so it can be passed to C libraries without onerous `toStringz`.
-
-## File I/O
-
-TODO

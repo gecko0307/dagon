@@ -1,6 +1,6 @@
 # Conf Files
 
-Conf is a configuration file format in Dagon. Any application using Dagon tries to read two configuration files from working directory: `settings.conf` and `input.conf`.
+Conf is a configuration file format in Dagon. Any application using Dagon tries to read two configuration files from the mounted filesystem: `settings.conf` and `input.conf`.
 
 ## Syntax
 

@@ -1,5 +1,7 @@
 # Dagon Application Architecture
+
 ## Game
+
 Dagon is object oriented: all entities in it are classes. At the root of an application hierarchy there is an `Application` object. Usually you'll want to use its more feature-rich derived class, `Game`. Typical use case is to make a custom game class that derives from `Game` and encapsulates your components:
 
 ```d
@@ -32,6 +34,7 @@ Window parameters that are passed to the game class are default ones which can b
 Note that Dagon doesn't use D's built-in memory allocator (`new` operator), instead it allocates all its data with `New` and `Delete` functions from `dlib.core.memory`. You are also expected to do so. You still can use garbage collected data in Dagon, but this may result in weird bugs, so you are strongly recommended to do things our way. Most part of the engine is built around dlib's ownership model - every object belongs to some other object (owner), and deleting the owner will delete all of its owned objects. This allows semi-automatic memory management - you have to manually delete only root owner, which usually is a game object.
 
 ## Scene
+
 Dagon's core logic is based on a concept of a scene. A scene is an incapsulator for assets and game objects (which are called entities) and any custom data logically tied to them. Scene loads assets, allocates entities, configurates them and initiates game loop. Only one scene (`currentScene`) is active at any given time.
 
 Similarly to a `Game`, you have to define your own scenes that derive from standard `Scene` class:
