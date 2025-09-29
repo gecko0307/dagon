@@ -59,6 +59,7 @@ Features
 * Graphics tablet input
 * Ownership memory model
 * Entity-component model
+* Fast arena allocator
 * Compute shaders
 * Microservices and worker threads for running tasks in background, so that they don't block the main game loop
 * Asynchronous thread-safe messaging. Use the message broker built into the event system to communicate between threads and the main loop

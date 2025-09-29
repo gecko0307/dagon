@@ -3,6 +3,7 @@ Dagon 0.32.0 - TBD
 - **Core**
   - Dagon now requires OpenGL 4.3
   - If `windowWidth` and `windowHeight` are both zero, Dagon creates a desktop-sized window (so-called "windowed fullscreen mode")
+  - New module `dagon.core.arena` - a general-purpose arena allocator for objects that don't need to be freed individually
 - **Graphics components**
   - Shader binary cache (experimental). It can be enabled by specifying `enableShaderCache: 1;` in settings.conf
 - **Compute**
