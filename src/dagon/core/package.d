@@ -44,6 +44,9 @@ public
     /// Application base class and main loop utilities.
     import dagon.core.application;
 
+    /// Region-based memory allocator.
+    import dagon.core.arena;
+
     /// SDL/OpenGL bindings.
     import dagon.core.bindings;
 
@@ -74,7 +77,7 @@ public
     /// Logging facilities.
     import dagon.core.logger;
 
-    /// 
+    /// A list with string-mapped indices.
     import dagon.core.mappedlist;
 
     /// Lock-free inter-thread communication.
@@ -86,7 +89,7 @@ public
     /// Flexible property system for configuration data.
     import dagon.core.props;
 
-    /// 
+    /// Utilities for compiling and linking OpenGL shaders.
     import dagon.core.shaderloader;
 
     /// Time management, frame timing, and fixed-step scheduling.
