@@ -474,7 +474,6 @@ string[] split(Arena arena, string str, char delimiter)
             count++;
 
     auto result = arena.create!(string[])(count);
-    writeln(count);
 
     size_t index = 0;
     size_t start = 0;
@@ -484,7 +483,6 @@ string[] split(Arena arena, string str, char delimiter)
         if (str[i] == delimiter && numChars > 0)
         {
             string part = arena.store(str[start..start+numChars]);
-            writeln(part);
             result[index++] = part;
             start = i + 1;
             numChars = 0;
@@ -496,7 +494,6 @@ string[] split(Arena arena, string str, char delimiter)
     if (numChars > 0)
     {
         string part = arena.store(str[start..start+numChars]);
-        writeln(part);
         result[index++] = part;
     }
 
