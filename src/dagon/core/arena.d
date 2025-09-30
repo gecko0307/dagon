@@ -81,12 +81,12 @@ class Arena: Owner
     
     Array!ArenaBuffer buffers;
     size_t currentBufferIndex;
-    size_t totalCapacity;
-    size_t totalAllocated;
     ArenaBuffer* lastBuffer;
     size_t lastAllocationSize;
     
     public:
+    
+    Array!Object objects;
     
     /**
      * Constructor.
@@ -98,12 +98,11 @@ class Arena: Owner
     this(size_t bufferSize, Owner owner = null)
     {
         super(owner);
-        totalCapacity = 0;
-        totalAllocated = 0;
         addBuffer(bufferSize);
         currentBufferIndex = 0;
         lastAllocationSize = 0;
         lastBuffer = null;
+        objects.reserve(1024);
     }
     
     ~this()
@@ -114,10 +113,21 @@ class Arena: Owner
     /// Resets arena for reuse.
     void reset()
     {
+        if (objects.length)
+        {
+            // Call destructors
+            foreach_reverse(obj; objects)
+            {
+                destroy(obj);
+            }
+            
+            // Don't free the register, just reset its position
+            objects.removeBack(cast(uint)objects.length);
+        }
+        
         foreach (ref buf; buffers)
             buf.offset = 0;
         currentBufferIndex = 0;
-        totalAllocated = 0;
         lastAllocationSize = 0;
         lastBuffer = null;
     }
@@ -125,12 +135,17 @@ class Arena: Owner
     /// Releases all allocated buffers.
     void release()
     {
+        // Call destructors and free the register
+        foreach_reverse(Object obj; this.objects)
+        {
+            destroy(obj);
+        }
+        objects.free();
+        
         foreach(buf; buffers)
             Delete(buf.data);
         buffers.free();
         
-        totalCapacity = 0;
-        totalAllocated = 0;
         currentBufferIndex = 0;
         lastAllocationSize = 0;
         lastBuffer = null;
@@ -169,7 +184,6 @@ class Arena: Owner
             offset: 0
         };
         buffers.append(buf);
-        totalCapacity += size;
         return &buffers.data[buffers.length - 1];
     }
     
@@ -186,13 +200,12 @@ class Arena: Owner
     ubyte[] allocate(size_t size, size_t alignment = 1)
     {
         // Fast path: allocate in the current buffer, if possible
-        ArenaBuffer* currentBuffer = &buffers.data[$ - 1];
+        ArenaBuffer* currentBuffer = &buffers.data[currentBufferIndex];
         size_t alignedOffset = alignup(currentBuffer.offset, alignment);
         if (alignedOffset + size <= currentBuffer.data.length)
         {
             ubyte[] res = currentBuffer.data[alignedOffset..alignedOffset+size];
             currentBuffer.offset = alignedOffset + size;
-            totalAllocated += size;
             lastBuffer = currentBuffer;
             lastAllocationSize = size;
             return res;
@@ -207,8 +220,7 @@ class Arena: Owner
                 currentBufferIndex = i;
                 ubyte[] res = buf.data[alignedOffset..alignedOffset+size];
                 buf.offset = alignedOffset + size;
-                totalAllocated += size;
-                lastBuffer = &buf;
+                lastBuffer = &buffers.data[i];
                 lastAllocationSize = size;
                 return res;
             }
@@ -219,10 +231,21 @@ class Arena: Owner
         currentBufferIndex = buffers.length - 1;
         ubyte[] res = currentBuffer.data[0..size];
         currentBuffer.offset = size;
-        totalAllocated += size;
         lastBuffer = currentBuffer;
         lastAllocationSize = size;
         return res;
+    }
+
+    /// Shrinks the last allocation to a new size.
+    /// Only allowed if newSize <= lastAllocationSize.
+    void shrinkLastAllocation(size_t newSize)
+    {
+        if (newSize <= lastAllocationSize)
+        {
+            // Move the buffer offset back by the difference
+            lastBuffer.offset -= (lastAllocationSize - newSize);
+            lastAllocationSize = newSize;
+        }
     }
     
     /**
@@ -235,6 +258,7 @@ class Arena: Owner
     
     /**
      * Rolls back to the specified mark, reclaiming a memory allocated in the buffer after the mark.
+     * Use with caution: all objects created after the mark must be destroyed.
      */
     void rollback(AllocationMark m)
     {
@@ -242,7 +266,6 @@ class Arena: Owner
         {
             lastBuffer = m.buffer;
             lastBuffer.offset = m.offset;
-            totalAllocated -= m.size;
         }
     }
     
@@ -263,7 +286,8 @@ class Arena: Owner
             onOutOfMemoryError();
         auto memory = p[psize..psize+size];
         *cast(size_t*)p = size;
-        auto res = emplace!(T, A)(memory, args);
+        T res = emplace!(T, A)(memory, args);
+        objects.append(res);
         return res;
     }
     
@@ -341,24 +365,6 @@ class Arena: Owner
         space[] = str[];
         return cast(string)space;
     }
-    
-    /// Returns the total amount of allocated chunks.
-    size_t allocated() const
-    {
-        return totalAllocated;
-    }
-    
-    /// Returns the total capacity of all allocated buffers.
-    size_t capacity() const
-    {
-        return totalCapacity;
-    }
-    
-    /// Returns the arena usage rate in 0..1 range.
-    double usageRatio() const
-    {
-        return cast(double)totalAllocated / totalCapacity;
-    }
 }
 
 /**
@@ -423,24 +429,26 @@ string format(T...)(Arena arena, string fmt, T args)
     size_t size = 256;
     while (true)
     {
-        AllocationMark m = arena.mark();
         char[] space = arena.allocateString(size);
         auto written = snprintf(space.ptr, space.length, fmt.ptr, args);
         if (written < 0)
             onOutOfMemoryError();
         if (cast(size_t)written < space.length)
         {
-            // Successfully formatted, shrink to actual size
-            m.offset -= (space.length - written - 1);
-            arena.rollback(m);
+            // Successfully formatted, shrink to actual size, including null-terminator
+            arena.shrinkLastAllocation(cast(size_t)written + 1);
+
+            // Return the formatted string
             return cast(string)space[0..cast(size_t)written];
         }
-        
-        // Not enough space, try again with a larger buffer
-        size = cast(size_t)written + 1;
-        
-        // Rollback the buffer
-        arena.rollback(m);
+        else
+        {
+            // Not enough space, try again with a larger buffer
+            size = cast(size_t)written + 1;
+
+            // Rollback the buffer
+            arena.shrinkLastAllocation(0);
+        }
     }
     
     // Should never get here
@@ -464,18 +472,34 @@ string[] split(Arena arena, string str, char delimiter)
     foreach (c; str)
         if (c == delimiter)
             count++;
-    
-    string[] result = arena.create!(string[])(count);
+
+    auto result = arena.create!(string[])(count);
+    writeln(count);
+
     size_t index = 0;
     size_t start = 0;
-    for (size_t i = 0; i <= str.length; i++)
+    size_t numChars = 0;
+    for (size_t i = 0; i < str.length; i++)
     {
-        if (i == str.length || str[i] == delimiter)
+        if (str[i] == delimiter && numChars > 0)
         {
-            result[index++] = arena.store(str[start..i]);
+            string part = arena.store(str[start..start+numChars]);
+            writeln(part);
+            result[index++] = part;
             start = i + 1;
+            numChars = 0;
         }
+        else
+            numChars++;
     }
+    
+    if (numChars > 0)
+    {
+        string part = arena.store(str[start..start+numChars]);
+        writeln(part);
+        result[index++] = part;
+    }
+
     return result;
 }
 
