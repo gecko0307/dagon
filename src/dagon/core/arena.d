@@ -367,6 +367,30 @@ class Arena: Owner
     }
 }
 
+T[] cat(T)(Arena arena, T[] a, T[] b)
+{
+    T[] arr = arena.create!(T[])(a.length + b.length);
+    arr[0..a.length] = a[];
+    arr[a.length..$] = b[];
+    return arr;
+}
+
+T[] cat(T)(Arena arena, T[] a, T b)
+{
+    T[] arr = arena.create!(T[])(a.length + 1);
+    arr[0..a.length] = a[];
+    arr[a.length] = b;
+    return arr;
+}
+
+T[] cat(T)(Arena arena, T a, T[] b)
+{
+    T[] arr = arena.create!(T[])(b.length + 1);
+    arr[1..b.length] = b[];
+    arr[0] = a;
+    return arr;
+}
+
 /**
  * Concatenates two strings and stores the result in the arena.
  *
