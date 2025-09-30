@@ -12,7 +12,7 @@ Dagon 0.32.0 - TBD
 - **Extensions**
   - New extension `dagon:audio` for sound playback via [SoLoud](https://solhsa.com/soloud/)
   - New extension `dagon:nfd` for displaying native file open/save dialogs via [NFD](https://github.com/mlabbe/nativefiledialog)
-  - New extension `dagon:gscript` for running [GScript3](https://github.com/gecko0307/gscript3) bytecode inside a virtual machine.
+  - New extension `dagon:gscript` for running [GScript3](https://github.com/gecko0307/gscript3) bytecode inside a virtual machine. No built-in compiler yet, scripts have to be compiled with GS compiler.
 
 Dagon 0.31.0 - 16 Sep, 2025
 ---------------------------
