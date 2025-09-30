@@ -70,7 +70,8 @@ Features
 * UTF-8 text rendering using TTF fonts via [FreeType](https://freetype.org/)
 * Internationalization support
 * GUI extension based on [Dear ImGui](https://github.com/ocornut/imgui)
-* Very basic and lightweight built-in UI toolkit.
+* Very basic and lightweight built-in UI toolkit
+* Built-in scripting engine (WIP).
 
 Getting Started
 ---------------
