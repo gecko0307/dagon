@@ -11,7 +11,8 @@ Dagon 0.32.0 - TBD
   - `dagon.compute.resample` - GPU-based texture resize with bilinear filtering
 - **Extensions**
   - New extension `dagon:audio` for sound playback via [SoLoud](https://solhsa.com/soloud/)
-  - New extension `dagon:nfd` for displaying native file open/save dialogs via [NFD](https://github.com/mlabbe/nativefiledialog).
+  - New extension `dagon:nfd` for displaying native file open/save dialogs via [NFD](https://github.com/mlabbe/nativefiledialog)
+  - New extension `dagon:gscript` for running [GScript3](https://github.com/gecko0307/gscript3) bytecode inside a virtual machine.
 
 Dagon 0.31.0 - 16 Sep, 2025
 ---------------------------

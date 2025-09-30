@@ -1,0 +1,12 @@
+{
+    "name": "gscript",
+    "importPaths": [
+        "src"
+    ],
+    "sourcePaths": [
+        "src"
+    ],
+    "dependencies": {
+        "dagon": "*"
+    }
+}
