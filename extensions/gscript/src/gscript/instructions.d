@@ -65,7 +65,7 @@ enum GsInstructionType: ubyte
     LENGTH = 28,       // LENGTH             - pop array and push its length
     PRINT = 29,        // PRINT              - print the top value on the stack
     HALT = 30,         // HALT               - stop execution
-    CALL = 31,         // CALL X             - pop a subroutine name/function/delegate and call it using N arguments
+    CALL = 31,         // CALL N             - pop a subroutine name/function/delegate and call it using N arguments
     RET = 32,          // RET                - return from a subroutine
     LOAD_VAR = 33,     // LOAD_VAR N         - push a local variable N onto the stack
     STORE_VAR = 34,    // STORE_VAR N        - pop a value from the stack and store it as a local variable N
@@ -82,7 +82,10 @@ enum GsInstructionType: ubyte
     INIT_SET = 45,     // INIT_SET "X"       - pop a value, then peek an object. Set the object's property X to the value
     REUSE = 46,        // REUSE              - pop an object, create a derived object and push it onto the stack
     LOAD_ARGS = 47,    // LOAD_ARGS          - push all available arguments as an array slice onto the stack
-    SPAWN = 48         // SPAWN              - pop a subroutine name and spawn a new thread that runs this subroutine
+    SPAWN = 48,        // SPAWN N            - pop a subroutine name and spawn a new thread that runs this subroutine
+    AWAIT = 49,        // AWAIT              - pop a thread object and wait until it yields or terminates
+    SYNC = 50,         // SYNC               
+    YIELD = 51         // YIELD              
 }
 
 enum GsOperandType: ubyte
