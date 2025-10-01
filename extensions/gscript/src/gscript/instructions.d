@@ -81,7 +81,8 @@ enum GsInstructionType: ubyte
     GLOBAL_STORE_VAR = 44,
     INIT_SET = 45,     // INIT_SET "X"       - pop a value, then peek an object. Set the object's property X to the value
     REUSE = 46,        // REUSE              - pop an object, create a derived object and push it onto the stack
-    LOAD_ARGS = 47     // LOAD_ARGS          - push all available arguments as an array slice onto the stack
+    LOAD_ARGS = 47,    // LOAD_ARGS          - push all available arguments as an array slice onto the stack
+    SPAWN = 48         // SPAWN              - pop a subroutine name and spawn a new thread that runs this subroutine
 }
 
 enum GsOperandType: ubyte

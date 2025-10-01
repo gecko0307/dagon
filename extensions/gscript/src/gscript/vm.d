@@ -36,6 +36,7 @@ import std.ascii;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.container.array;
 import dlib.container.dict;
 
 import gscript.arena;
@@ -132,18 +133,9 @@ struct GsCallFrame
 
 class GsVirtualMachine: Owner, GsObject
 {
-  protected:
-    GsDynamic[] stack;
-    GsInstruction[] instructions;
-    size_t[] callStack;            // Call stack for subroutine return addresses
-    GsCallFrame[] callFrames;      // Stack of call frames
-    size_t ip;                     // Instruction pointer
-    size_t sp;                     // Stack pointer
-    size_t cp;                     // Call stack pointer
-
-    Dict!(size_t, string) jumpTable;  // Function table mapping names to instruction indices
-    
+    GsInstruction[] instructions;     // Program code
     Dict!(GsDynamic, string) globals; // Built-in variables
+    Dict!(size_t, string) jumpTable;  // Function table mapping names to instruction indices
     
     // Standard library
     GsGlobalArray globArray;
@@ -151,23 +143,17 @@ class GsVirtualMachine: Owner, GsObject
     GsGlobalIO globIO;
     GsGlobalTime globTime;
     
-    size_t callDepth = 1;
-    
-  public:
     GsArena heap;
-
-    this(Owner owner)
+    
+    Array!GsThread threads;
+    GsThread mainThread;
+    
+    bool running = false;
+    
+    this(Owner owner = null)
     {
         super(owner);
-        
         heap = New!GsArena(1024 * 10, this);
-        
-        stack = New!(GsDynamic[])(256);
-        callStack = New!(size_t[])(256);
-        callFrames = New!(GsCallFrame[])(256);
-        ip = 0;
-        sp = 0;
-        cp = 0;
         
         jumpTable = dict!(size_t, string);
         
@@ -184,16 +170,19 @@ class GsVirtualMachine: Owner, GsObject
         
         globTime = heap.create!GsGlobalTime(heap);
         globals["time"] = GsDynamic(globTime);
+        
+        mainThread = New!GsThread(this);
+        threads.append(mainThread);
     }
     
     ~this()
     {
-        Delete(stack);
-        Delete(callStack);
-        Delete(callFrames);
         Delete(jumpTable);
         Delete(globals);
+        threads.free();
     }
+    
+    // GsObject methods
     
     GsDynamic get(string key)
     {
@@ -218,33 +207,13 @@ class GsVirtualMachine: Owner, GsObject
     {
         // No-op
     }
-
-    // Stack manipulation methods
-    GsDynamic pop()
+    
+    // 
+    
+    void fatality(A...)(string fmt, A args)
     {
-        if (sp == 0)
-        {
-            fatality("Fatality: stack underflow");
-        }
-        return stack[--sp];
-    }
-
-    GsDynamic peek()
-    {
-        if (sp == 0)
-        {
-            fatality("Fatality: stack is empty");
-        }
-        return stack[sp - 1];
-    }
-
-    void push(GsDynamic value)
-    {
-        if (sp >= stack.length)
-        {
-            fatality("Fatality: stack overflow");
-        }
-        stack[sp++] = value;
+        writefln(fmt, args);
+        finalize();
     }
     
     GsObject createObject()
@@ -266,19 +235,49 @@ class GsVirtualMachine: Owner, GsObject
     {
         if (jumpLabel in jumpTable)
         {
-            auto callFrame = &callFrames[0];
+            auto callFrame = &mainThread.callFrames[0];
             for(size_t i = 0; i < args.length; i++)
             {
                 callFrame.parameters[i] = args[i];
             }
             callFrame.numParameters = args.length;
-            callDepth = 0;
+            mainThread.callDepth = 0;
             run(jumpTable[jumpLabel], 0);
         }
         else
         {
             writeln("Error: unknown jump label \"", jumpLabel, "\"");
         }
+    }
+    
+    void spawnThread(GsThread thread, string jumpLabel, GsDynamic[] args)
+    {
+        if (jumpLabel in jumpTable)
+        {
+            auto callFrame = &thread.callFrames[0];
+            callFrame.parameters[0] = GsDynamic(thread);
+            for(size_t i = 1; i < args.length; i++)
+            {
+                callFrame.parameters[i] = args[i];
+            }
+            callFrame.numParameters = args.length + 1;
+            thread.start(jumpTable[jumpLabel], 0);
+        }
+        else
+        {
+            writeln("Error: unknown jump label \"", jumpLabel, "\"");
+            thread.finalize();
+        }
+    }
+    
+    void finalize()
+    {
+        for (size_t i = 0; i < threads.length; i++)
+        {
+            threads[i].finalize();
+        }
+        
+        running = false;
     }
 
     void load(GsInstruction[] instructions)
@@ -297,533 +296,677 @@ class GsVirtualMachine: Owner, GsObject
         finalize();
     }
     
-    void fatality(A...)(string fmt, A args)
-    {
-        writefln(fmt, args);
-        finalize();
-    }
-    
-    void finalize()
-    {
-        ip = instructions.length - 1;
-    }
-    
     void run(size_t initialIp = 0, size_t initialCallDepth = 1)
     {
-        ip = initialIp;
-        sp = 0;
-        cp = 0;
-        GsCallFrame* callFrame = &callFrames[cp];
-        callDepth = initialCallDepth;
+        finalize();
+        running = true;
+        mainThread.start(initialIp, initialCallDepth);
         
-        while (ip < instructions.length)
+        // Progress each active thread
+        while(running)
         {
-            auto instruction = instructions[ip++];
-            switch (instruction.type)
+            size_t numActiveThreads = 0;
+            
+            GsThread tr = mainThread;
+            
+            while(tr !is null)
             {
-                case GsInstructionType.LABEL:
-                    break;
-                case GsInstructionType.PUSH:
-                    push(instruction.operand);
-                    break;
-                case GsInstructionType.POP:
-                    pop();
-                    break;
-                case GsInstructionType.ADD:
-                    auto b = pop();
-                    auto a = pop();
-                    if (a.type == GsDynamicType.Number && b.type == GsDynamicType.Number)
-                        push(GsDynamic(a.asNumber + b.asNumber));
-                    else
-                    {
-                        fatality("Fatality: addition of %s and %s", a.type, b.type);
-                        return;
-                    }
-                    break;
-                case GsInstructionType.SUB:
-                    auto b = pop();
-                    auto a = pop();
-                    if (a.type == GsDynamicType.Number && b.type == GsDynamicType.Number)
-                        push(GsDynamic(a.asNumber - b.asNumber));
-                    else
-                    {
-                        fatality("Fatality: subtraction of %s and %s", a.type, b.type);
-                        return;
-                    }
-                    break;
-                case GsInstructionType.MUL:
-                    auto b = pop();
-                    auto a = pop();
-                    if (a.type == GsDynamicType.Number && b.type == GsDynamicType.Number)
-                        push(GsDynamic(a.asNumber * b.asNumber));
-                    else
-                    {
-                        fatality("Fatality: multiplication of %s and %s", a.type, b.type);
-                        return;
-                    }
-                    break;
-                case GsInstructionType.DIV:
-                    auto b = pop();
-                    auto a = pop();
-                    if (a.type == GsDynamicType.Number && b.type == GsDynamicType.Number)
-                        push(GsDynamic(a.asNumber / b.asNumber));
-                    else
-                    {
-                        fatality("Fatality: division of %s and %s", a.type, b.type);
-                        return;
-                    }
-                    break;
-                case GsInstructionType.NEG:
-                    auto a = pop();
-                    if (a.type == GsDynamicType.Number)
-                        push(GsDynamic(-a.asNumber));
-                    else
-                    {
-                        fatality("Fatality: negation of %s", a.type);
-                        return;
-                    }
-                    break;
-                case GsInstructionType.MOD:
-                    auto b = pop();
-                    auto a = pop();
-                    if (a.type == GsDynamicType.Number && b.type == GsDynamicType.Number)
-                        push(GsDynamic(a.asNumber % b.asNumber));
-                    else
-                    {
-                        fatality("Fatality: modulo of %s and %s", a.type, b.type);
-                        return;
-                    }
-                    break;
-                case GsInstructionType.POW:
-                    auto b = pop();
-                    auto a = pop();
-                    if (a.type == GsDynamicType.Number && b.type == GsDynamicType.Number)
-                        push(GsDynamic(a.asNumber ^^ b.asNumber));
-                    else
-                    {
-                        fatality("Fatality: power of %s and %s", a.type, b.type);
-                        return;
-                    }
-                    break;
-                case GsInstructionType.BITWISE_AND:
-                    auto b = pop();
-                    auto a = pop();
-                    if (a.type == GsDynamicType.Number && b.type == GsDynamicType.Number)
-                        push(GsDynamic(cast(long)a.asNumber & cast(long)b.asNumber));
-                    else
-                    {
-                        fatality("Fatality: bitwise AND of %s and %s", a.type, b.type);
-                        return;
-                    }
-                    break;
-                case GsInstructionType.BITWISE_OR:
-                    auto b = pop();
-                    auto a = pop();
-                    if (a.type == GsDynamicType.Number && b.type == GsDynamicType.Number)
-                        push(GsDynamic(cast(long)a.asNumber | cast(long)b.asNumber));
-                    else
-                    {
-                        fatality("Fatality: bitwise OR of %s and %s", a.type, b.type);
-                        return;
-                    }
-                    break;
-                case GsInstructionType.BITWISE_XOR:
-                    auto b = pop();
-                    auto a = pop();
-                    if (a.type == GsDynamicType.Number && b.type == GsDynamicType.Number)
-                        push(GsDynamic(cast(long)a.asNumber ^ cast(long)b.asNumber));
-                    else
-                    {
-                        fatality("Fatality: bitwise XOR of %s and %s", a.type, b.type);
-                        return;
-                    }
-                    break;
-                case GsInstructionType.AND:
-                    auto b = pop();
-                    auto a = pop();
-                    if (a.type == GsDynamicType.Number && b.type == GsDynamicType.Number)
-                        push(GsDynamic(a.asNumber && b.asNumber));
-                    else
-                    {
-                        fatality("Fatality: logical AND of %s and %s", a.type, b.type);
-                        return;
-                    }
-                    break;
-                case GsInstructionType.OR:
-                    auto b = pop();
-                    auto a = pop();
-                    if (a.type == GsDynamicType.Number && b.type == GsDynamicType.Number)
-                        push(GsDynamic(a.asNumber || b.asNumber));
-                    else
-                    {
-                        fatality("Fatality: logical OR of %s and %s", a.type, b.type);
-                        return;
-                    }
-                    break;
-                case GsInstructionType.NOT:
-                    auto a = pop();
-                    if (a.type == GsDynamicType.Number)
-                        push(GsDynamic(!a.asNumber));
-                    else
-                    {
-                        fatality("Fatality: logical NOT of %s", a.type);
-                        return;
-                    }
-                    break;
-                case GsInstructionType.CAT:
-                    auto b = pop();
-                    auto a = pop();
-                    if (a.type == GsDynamicType.String && b.type == GsDynamicType.String)
-                    {
-                        push(GsDynamic(heap.cat(a.toString(), b.toString())));
-                    }
-                    else if (a.type == GsDynamicType.Array && b.type == GsDynamicType.Array)
-                    {
-                        GsDynamic[] newArr = heap.cat(a.asArray, b.asArray);
-                        push(GsDynamic(newArr));
-                    }
-                    else if (a.type == GsDynamicType.Array && b.type != GsDynamicType.Array)
-                    {
-                        GsDynamic[] newArr = heap.cat(a.asArray, b);
-                        push(GsDynamic(newArr));
-                    }
-                    else if (a.type != GsDynamicType.Array && b.type == GsDynamicType.Array)
-                    {
-                        GsDynamic[] newArr = heap.cat(a, b.asArray);
-                        push(GsDynamic(newArr));
-                    }
-                    else
-                    {
-                        GsDynamic[] newArr = heap.create!(GsDynamic[])(2);
-                        newArr[0] = a;
-                        newArr[0] = b;
-                        push(GsDynamic(newArr));
-                    }
-                    break;
-                case GsInstructionType.EQ:
-                    auto b = pop();
-                    auto a = pop();
-                    push(GsDynamic(a == b));
-                    break;
-                case GsInstructionType.LESS:
-                    auto b = pop().asNumber;
-                    auto a = pop().asNumber;
-                    push(GsDynamic(a < b));
-                    break;
-                case GsInstructionType.GREATER:
-                    auto b = pop().asNumber;
-                    auto a = pop().asNumber;
-                    push(GsDynamic(a > b));
-                    break;
-                case GsInstructionType.NEQ:
-                    auto b = pop();
-                    auto a = pop();
-                    push(GsDynamic(a != b));
-                    break;
-                case GsInstructionType.LESS_EQ:
-                    auto b = pop().asNumber;
-                    auto a = pop().asNumber;
-                    push(GsDynamic(a <= b));
-                    break;
-                case GsInstructionType.GREATER_EQ:
-                    auto b = pop().asNumber;
-                    auto a = pop().asNumber;
-                    push(GsDynamic(a >= b));
-                    break;
-                case GsInstructionType.JMP:
-                    ip = jumpTable[instruction.operand.asString];
-                    break;
-                case GsInstructionType.JMP_IF:
-                    if (cast(bool)pop().asNumber)
-                        ip = jumpTable[instruction.operand.asString];
-                    break;
-                case GsInstructionType.JMP_IF_NOT:
-                    if (!cast(bool)pop().asNumber)
-                        ip = jumpTable[instruction.operand.asString];
-                    break;
-                case GsInstructionType.INDEX_GET:
-                    size_t index = cast(size_t)pop().asNumber;
-                    auto arrayParam = pop();
-                    if (arrayParam.type == GsDynamicType.Array)
-                    {
-                        auto array = arrayParam.asArray;
-                        if (index >= 0 && index < array.length)
-                        {
-                            push(array[index]);
-                            break;
-                        }
-                        else
-                        {
-                            fatality("Fatality: index is outside array capability");
-                            return;
-                        }
-                    }
-                    else if (arrayParam.type == GsDynamicType.String)
-                    {
-                        auto str = arrayParam.asString;
-                        if (index >= 0 && index < str.length)
-                        {
-                            push(GsDynamic(cast(double)str[index]));
-                            break;
-                        }
-                        else
-                        {
-                            fatality("Fatality: index is outside string length");
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        fatality("Fatality: attempting to index %s which is not an array", arrayParam.type);
-                        return;
-                    }
-                case GsInstructionType.INDEX_SET:
-                    size_t index = cast(size_t)pop().asNumber;
-                    auto arrayParam = pop();
-                    if (arrayParam.type == GsDynamicType.Array)
-                    {
-                        auto array = arrayParam.asArray;
-                        auto value = pop();
-                        if (index >= 0 && index < array.length)
-                            array[index] = value;
-                        else
-                        {
-                            fatality("Fatality: index is outside array capability");
-                            return;
-                        }
-                        push(value);
+                if (!tr.running)
+                {
+                    tr = tr.next;
+                    continue;
+                }
+                
+                numActiveThreads++;
+                
+                tr.callFrame = &tr.callFrames[tr.cp];
+                
+                if (tr.ip >= instructions.length)
+                    tr.running = false;
+                
+                auto instruction = instructions[tr.ip++];
+                switch (instruction.type)
+                {
+                    case GsInstructionType.LABEL:
                         break;
-                    }
-                    else
-                    {
-                        fatality("Fatality: attempting to index %s which is not an array", arrayParam.type);
-                        return;
-                    }
-                case GsInstructionType.LENGTH:
-                    auto array = pop();
-                    push(GsDynamic(array.asArray.length));
-                    break;
-                case GsInstructionType.PRINT:
-                    writeln(pop());
-                    break;
-                case GsInstructionType.GLOBAL:
-                    push(GsDynamic(this));
-                    break;
-                case GsInstructionType.ARRAY:
-                    size_t len = cast(size_t)pop().asNumber;
-                    auto arr = createArray(len);
-                    for (size_t i = 0; i < len; i++)
-                    {
-                        arr[$ - 1 - i] = pop();
-                    }
-                    push(GsDynamic(arr));
-                    break;
-                case GsInstructionType.CALL:
-                    size_t numParams = cast(size_t)instruction.operand.asNumber;
-                    
-                    auto func = pop();
-                    
-                    GsNativeMethod nativeMethod;
-                    GsNativeFunc nativeFuncPtr;
-                    bool useNativeMethod = false;
-                    bool useNativeFunc = false;
-                    
-                    if (func.type == GsDynamicType.NativeMethod)
-                    {
-                        nativeMethod = func.asNativeMethod;
-                        useNativeMethod = true;
-                    }
-                    else if (func.type == GsDynamicType.NativeFunction)
-                    {
-                        nativeFuncPtr = func.asNativeFunction;
-                        useNativeFunc = true;
-                    }
-                    else
-                    {
-                        if (func.type == GsDynamicType.String)
+                    case GsInstructionType.PUSH:
+                        tr.push(instruction.operand);
+                        break;
+                    case GsInstructionType.POP:
+                        tr.pop();
+                        break;
+                    case GsInstructionType.ADD:
+                        auto b = tr.pop();
+                        auto a = tr.pop();
+                        if (a.type == GsDynamicType.Number && b.type == GsDynamicType.Number)
+                            tr.push(GsDynamic(a.asNumber + b.asNumber));
+                        else
                         {
-                            string funcName = func.asString;
-                            if (funcName in jumpTable)
+                            fatality("Fatality: addition of %s and %s", a.type, b.type);
+                            return;
+                        }
+                        break;
+                    case GsInstructionType.SUB:
+                        auto b = tr.pop();
+                        auto a = tr.pop();
+                        if (a.type == GsDynamicType.Number && b.type == GsDynamicType.Number)
+                            tr.push(GsDynamic(a.asNumber - b.asNumber));
+                        else
+                        {
+                            fatality("Fatality: subtraction of %s and %s", a.type, b.type);
+                            return;
+                        }
+                        break;
+                    case GsInstructionType.MUL:
+                        auto b = tr.pop();
+                        auto a = tr.pop();
+                        if (a.type == GsDynamicType.Number && b.type == GsDynamicType.Number)
+                            tr.push(GsDynamic(a.asNumber * b.asNumber));
+                        else
+                        {
+                            fatality("Fatality: multiplication of %s and %s", a.type, b.type);
+                            return;
+                        }
+                        break;
+                    case GsInstructionType.DIV:
+                        auto b = tr.pop();
+                        auto a = tr.pop();
+                        if (a.type == GsDynamicType.Number && b.type == GsDynamicType.Number)
+                            tr.push(GsDynamic(a.asNumber / b.asNumber));
+                        else
+                        {
+                            fatality("Fatality: division of %s and %s", a.type, b.type);
+                            return;
+                        }
+                        break;
+                    case GsInstructionType.NEG:
+                        auto a = tr.pop();
+                        if (a.type == GsDynamicType.Number)
+                            tr.push(GsDynamic(-a.asNumber));
+                        else
+                        {
+                            fatality("Fatality: negation of %s", a.type);
+                            return;
+                        }
+                        break;
+                    case GsInstructionType.MOD:
+                        auto b = tr.pop();
+                        auto a = tr.pop();
+                        if (a.type == GsDynamicType.Number && b.type == GsDynamicType.Number)
+                            tr.push(GsDynamic(a.asNumber % b.asNumber));
+                        else
+                        {
+                            fatality("Fatality: modulo of %s and %s", a.type, b.type);
+                            return;
+                        }
+                        break;
+                    case GsInstructionType.POW:
+                        auto b = tr.pop();
+                        auto a = tr.pop();
+                        if (a.type == GsDynamicType.Number && b.type == GsDynamicType.Number)
+                            tr.push(GsDynamic(a.asNumber ^^ b.asNumber));
+                        else
+                        {
+                            fatality("Fatality: power of %s and %s", a.type, b.type);
+                            return;
+                        }
+                        break;
+                    case GsInstructionType.BITWISE_AND:
+                        auto b = tr.pop();
+                        auto a = tr.pop();
+                        if (a.type == GsDynamicType.Number && b.type == GsDynamicType.Number)
+                            tr.push(GsDynamic(cast(long)a.asNumber & cast(long)b.asNumber));
+                        else
+                        {
+                            fatality("Fatality: bitwise AND of %s and %s", a.type, b.type);
+                            return;
+                        }
+                        break;
+                    case GsInstructionType.BITWISE_OR:
+                        auto b = tr.pop();
+                        auto a = tr.pop();
+                        if (a.type == GsDynamicType.Number && b.type == GsDynamicType.Number)
+                            tr.push(GsDynamic(cast(long)a.asNumber | cast(long)b.asNumber));
+                        else
+                        {
+                            fatality("Fatality: bitwise OR of %s and %s", a.type, b.type);
+                            return;
+                        }
+                        break;
+                    case GsInstructionType.BITWISE_XOR:
+                        auto b = tr.pop();
+                        auto a = tr.pop();
+                        if (a.type == GsDynamicType.Number && b.type == GsDynamicType.Number)
+                            tr.push(GsDynamic(cast(long)a.asNumber ^ cast(long)b.asNumber));
+                        else
+                        {
+                            fatality("Fatality: bitwise XOR of %s and %s", a.type, b.type);
+                            return;
+                        }
+                        break;
+                    case GsInstructionType.AND:
+                        auto b = tr.pop();
+                        auto a = tr.pop();
+                        if (a.type == GsDynamicType.Number && b.type == GsDynamicType.Number)
+                            tr.push(GsDynamic(a.asNumber && b.asNumber));
+                        else
+                        {
+                            fatality("Fatality: logical AND of %s and %s", a.type, b.type);
+                            return;
+                        }
+                        break;
+                    case GsInstructionType.OR:
+                        auto b = tr.pop();
+                        auto a = tr.pop();
+                        if (a.type == GsDynamicType.Number && b.type == GsDynamicType.Number)
+                            tr.push(GsDynamic(a.asNumber || b.asNumber));
+                        else
+                        {
+                            fatality("Fatality: logical OR of %s and %s", a.type, b.type);
+                            return;
+                        }
+                        break;
+                    case GsInstructionType.NOT:
+                        auto a = tr.pop();
+                        if (a.type == GsDynamicType.Number)
+                            tr.push(GsDynamic(!a.asNumber));
+                        else
+                        {
+                            fatality("Fatality: logical NOT of %s", a.type);
+                            return;
+                        }
+                        break;
+                    case GsInstructionType.CAT:
+                        auto b = tr.pop();
+                        auto a = tr.pop();
+                        if (a.type == GsDynamicType.String && b.type == GsDynamicType.String)
+                        {
+                            tr.push(GsDynamic(heap.cat(a.toString(), b.toString())));
+                        }
+                        else if (a.type == GsDynamicType.Array && b.type == GsDynamicType.Array)
+                        {
+                            GsDynamic[] newArr = heap.cat(a.asArray, b.asArray);
+                            tr.push(GsDynamic(newArr));
+                        }
+                        else if (a.type == GsDynamicType.Array && b.type != GsDynamicType.Array)
+                        {
+                            GsDynamic[] newArr = heap.cat(a.asArray, b);
+                            tr.push(GsDynamic(newArr));
+                        }
+                        else if (a.type != GsDynamicType.Array && b.type == GsDynamicType.Array)
+                        {
+                            GsDynamic[] newArr = heap.cat(a, b.asArray);
+                            tr.push(GsDynamic(newArr));
+                        }
+                        else
+                        {
+                            GsDynamic[] newArr = heap.create!(GsDynamic[])(2);
+                            newArr[0] = a;
+                            newArr[0] = b;
+                            tr.push(GsDynamic(newArr));
+                        }
+                        break;
+                    case GsInstructionType.EQ:
+                        auto b = tr.pop();
+                        auto a = tr.pop();
+                        tr.push(GsDynamic(a == b));
+                        break;
+                    case GsInstructionType.LESS:
+                        auto b = tr.pop().asNumber;
+                        auto a = tr.pop().asNumber;
+                        tr.push(GsDynamic(a < b));
+                        break;
+                    case GsInstructionType.GREATER:
+                        auto b = tr.pop().asNumber;
+                        auto a = tr.pop().asNumber;
+                        tr.push(GsDynamic(a > b));
+                        break;
+                    case GsInstructionType.NEQ:
+                        auto b = tr.pop();
+                        auto a = tr.pop();
+                        tr.push(GsDynamic(a != b));
+                        break;
+                    case GsInstructionType.LESS_EQ:
+                        auto b = tr.pop().asNumber;
+                        auto a = tr.pop().asNumber;
+                        tr.push(GsDynamic(a <= b));
+                        break;
+                    case GsInstructionType.GREATER_EQ:
+                        auto b = tr.pop().asNumber;
+                        auto a = tr.pop().asNumber;
+                        tr.push(GsDynamic(a >= b));
+                        break;
+                    case GsInstructionType.JMP:
+                        tr.ip = jumpTable[instruction.operand.asString];
+                        break;
+                    case GsInstructionType.JMP_IF:
+                        if (cast(bool)tr.pop().asNumber)
+                            tr.ip = jumpTable[instruction.operand.asString];
+                        break;
+                    case GsInstructionType.JMP_IF_NOT:
+                        if (!cast(bool)tr.pop().asNumber)
+                            tr.ip = jumpTable[instruction.operand.asString];
+                        break;
+                    case GsInstructionType.INDEX_GET:
+                        size_t index = cast(size_t)tr.pop().asNumber;
+                        auto arrayParam = tr.pop();
+                        if (arrayParam.type == GsDynamicType.Array)
+                        {
+                            auto array = arrayParam.asArray;
+                            if (index >= 0 && index < array.length)
                             {
-                                callStack[cp] = ip; // Push the current instruction pointer onto the call stack
-                                // Push a new call frame
-                                cp++;
-                                callFrame = &callFrames[cp];
-                                for(size_t i = 0; i < callFrame.parameters.length; i++)
-                                {
-                                    if (i < numParams)
-                                        callFrame.parameters[numParams - 1 - i] = pop();
-                                    else
-                                        callFrame.parameters[i] = GsDynamic();
-                                }
-                                callFrame.numParameters = numParams;
-                                
-                                ip = jumpTable[funcName]; // Jump to the function's starting instruction
-                                
-                                callDepth++;
-                                
+                                tr.push(array[index]);
                                 break;
                             }
                             else
                             {
-                                fatality("Fatality: undefined jump label \"%s\"", funcName);
+                                fatality("Fatality: index is outside array capability");
+                                return;
+                            }
+                        }
+                        else if (arrayParam.type == GsDynamicType.String)
+                        {
+                            auto str = arrayParam.asString;
+                            if (index >= 0 && index < str.length)
+                            {
+                                tr.push(GsDynamic(cast(double)str[index]));
+                                break;
+                            }
+                            else
+                            {
+                                fatality("Fatality: index is outside string length");
                                 return;
                             }
                         }
                         else
                         {
-                            fatality("Fatality: attempting to call %s, which is not a function", func.type);
+                            fatality("Fatality: attempting to index %s which is not an array", arrayParam.type);
                             return;
                         }
-                    }
-                    
-                    // Native call: push a new call frame
-                    cp++;
-                    callFrame = &callFrames[cp];
-                    for(size_t i = 0; i < callFrame.parameters.length; i++)
-                    {
-                        if (i < numParams)
-                            callFrame.parameters[numParams - 1 - i] = pop();
+                    case GsInstructionType.INDEX_SET:
+                        size_t index = cast(size_t)tr.pop().asNumber;
+                        auto arrayParam = tr.pop();
+                        if (arrayParam.type == GsDynamicType.Array)
+                        {
+                            auto array = arrayParam.asArray;
+                            auto value = tr.pop();
+                            if (index >= 0 && index < array.length)
+                                array[index] = value;
+                            else
+                            {
+                                fatality("Fatality: index is outside array capability");
+                                return;
+                            }
+                            tr.push(value);
+                            break;
+                        }
                         else
-                            callFrame.parameters[i] = GsDynamic();
-                    }
-                    callFrame.numParameters = numParams;
-                    
-                    GsDynamic result;
-                    if (useNativeMethod)
-                        result = nativeMethod(callFrame.parameters[0..numParams]);
-                    else if (useNativeFunc)
-                        result = nativeFuncPtr(callFrame.parameters[0..numParams]);
-                    
-                    cp--;
-                    callFrame = &callFrames[cp];
-                    push(result);
-                    
-                    break;
-                case GsInstructionType.RET:
-                    if (callDepth > 0)
-                    {
-                        cp--;
-                        ip = callStack[cp]; // Pop the return address from the call stack
-                        callFrame = &callFrames[cp];
-                        callDepth--;
-                    }
-                    else
-                    {
-                        finalize();
-                        return;
-                    }
-                    break;
-                case GsInstructionType.STORE_VAR:
-                    size_t vIndex = cast(size_t)instruction.operand.asNumber;
-                    callFrames[cp].localVariables[vIndex] = peek(); // Store a value into a local variable
-                    break;
-                case GsInstructionType.LOAD_VAR:
-                    size_t vIndex = cast(size_t)instruction.operand.asNumber;
-                    push(callFrames[cp].localVariables[vIndex]); // Load a local variable onto the stack
-                    break;
-                case GsInstructionType.STORE_ARG:
-                    size_t vIndex = cast(size_t)instruction.operand.asNumber;
-                    callFrames[cp].parameters[vIndex] = peek(); // Store a stack value into a parameter
-                    break;
-                case GsInstructionType.LOAD_ARG:
-                    size_t vIndex = cast(size_t)instruction.operand.asNumber;
-                    push(callFrames[cp].parameters[vIndex]); // Load a parameter onto the stack
-                    break;
-                case GsInstructionType.LOAD_ARGS:
-                    auto frame = &callFrames[cp];
-                    push(GsDynamic(frame.parameters[0..frame.numParameters])); // Load all parameters onto the stack
-                    break;
-                case GsInstructionType.GLOBAL_STORE_VAR:
-                    size_t vIndex = cast(size_t)instruction.operand.asNumber;
-                    callFrames[0].localVariables[vIndex] = peek(); // Store a value into a global variable
-                    break;
-                case GsInstructionType.GLOBAL_LOAD_VAR:
-                    size_t vIndex = cast(size_t)instruction.operand.asNumber;
-                    push(callFrames[0].localVariables[vIndex]); // Load a global variable onto the stack
-                    break;
-                case GsInstructionType.NEW:
-                    auto obj = createObject();
-                    push(GsDynamic(obj));
-                    break;
-                case GsInstructionType.REUSE:
-                    auto param = pop();
-                    if (param.type == GsDynamicType.Object)
-                    {
-                        auto newObj = createObject();
-                        newObj.setPrototype(param.asObject);
-                        push(GsDynamic(newObj));
-                    }
-                    else
-                    {
-                        fatality("Fatality: attempting to reuse non-object");
-                        return;
-                    }
-                    break;
-                case GsInstructionType.GET:
-                    auto key = instruction.operand.asString;
-                    auto param = pop();
-                    if (param.type == GsDynamicType.Object)
-                    {
-                        push(param.asObject.get(key));
-                    }
-                    else
-                    {
-                        fatality("Fatality: attempting to read member \"", key, "\" of non-object");
-                        return;
-                    }
-                    break;
-                case GsInstructionType.SET:
-                    auto key = instruction.operand.asString;
-                    auto param = pop();
-                    auto value = pop();
-                    if (param.type == GsDynamicType.Object)
-                    {
-                        param.asObject.set(key, value);
-                        push(value);
+                        {
+                            fatality("Fatality: attempting to index %s which is not an array", arrayParam.type);
+                            return;
+                        }
+                    case GsInstructionType.LENGTH:
+                        auto param = tr.pop();
+                        if (param.type == GsDynamicType.Array)
+                            tr.push(GsDynamic(param.asArray.length));
+                        else if (param.type == GsDynamicType.String)
+                            tr.push(GsDynamic(param.asString.length));
+                        else if (param.type == GsDynamicType.Undefined)
+                            tr.push(GsDynamic(0.0));
+                        else
+                            tr.push(GsDynamic(1.0));
                         break;
-                    }
-                    else
-                    {
-                        fatality("Fatality: attempting to write member \"", key, "\" of non-object");
-                        return;
-                    }
-                case GsInstructionType.INIT_SET:
-                    auto key = instruction.operand.asString;
-                    auto value = pop();
-                    auto param = peek();
-                    if (param.type == GsDynamicType.Object)
-                    {
-                        param.asObject.set(key, value);
+                    case GsInstructionType.PRINT:
+                        writeln(tr.pop());
                         break;
-                    }
-                    else
-                    {
-                        fatality("Fatality: attempting to write member \"", key, "\" of non-object");
+                    case GsInstructionType.GLOBAL:
+                        tr.push(GsDynamic(this));
+                        break;
+                    case GsInstructionType.ARRAY:
+                        size_t len = cast(size_t)tr.pop().asNumber;
+                        auto arr = createArray(len);
+                        for (size_t ai = 0; ai < len; ai++)
+                        {
+                            arr[$ - 1 - ai] = tr.pop();
+                        }
+                        tr.push(GsDynamic(arr));
+                        break;
+                    case GsInstructionType.CALL:
+                        size_t numParams = cast(size_t)instruction.operand.asNumber;
+                        
+                        auto func = tr.pop();
+                        
+                        GsNativeMethod nativeMethod;
+                        GsNativeFunc nativeFuncPtr;
+                        bool useNativeMethod = false;
+                        bool useNativeFunc = false;
+                        
+                        if (func.type == GsDynamicType.NativeMethod)
+                        {
+                            nativeMethod = func.asNativeMethod;
+                            useNativeMethod = true;
+                        }
+                        else if (func.type == GsDynamicType.NativeFunction)
+                        {
+                            nativeFuncPtr = func.asNativeFunction;
+                            useNativeFunc = true;
+                        }
+                        else
+                        {
+                            if (func.type == GsDynamicType.String)
+                            {
+                                string funcName = func.asString;
+                                if (funcName in jumpTable)
+                                {
+                                    tr.callStack[tr.cp] = tr.ip; // Push the current instruction pointer onto the call stack
+                                    // Push a new call frame
+                                    tr.cp++;
+                                    tr.callFrame = &tr.callFrames[tr.cp];
+                                    for(size_t pi = 0; pi < tr.callFrame.parameters.length; pi++)
+                                    {
+                                        if (pi < numParams)
+                                            tr.callFrame.parameters[numParams - 1 - pi] = tr.pop();
+                                        else
+                                            tr.callFrame.parameters[pi] = GsDynamic();
+                                    }
+                                    tr.callFrame.numParameters = numParams;
+                                    
+                                    tr.ip = jumpTable[funcName]; // Jump to the function's starting instruction
+                                    
+                                    tr.callDepth++;
+                                    
+                                    break;
+                                }
+                                else
+                                {
+                                    fatality("Fatality: undefined jump label \"%s\"", funcName);
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                fatality("Fatality: attempting to call %s, which is not a function", func.type);
+                                return;
+                            }
+                        }
+                        
+                        // Native call: push a new call frame
+                        tr.cp++;
+                        tr.callFrame = &tr.callFrames[tr.cp];
+                        for(size_t pi = 0; pi < tr.callFrame.parameters.length; pi++)
+                        {
+                            if (pi < numParams)
+                                tr.callFrame.parameters[numParams - 1 - pi] = tr.pop();
+                            else
+                                tr.callFrame.parameters[pi] = GsDynamic();
+                        }
+                        tr.callFrame.numParameters = numParams;
+                        
+                        GsDynamic result;
+                        if (useNativeMethod)
+                            result = nativeMethod(tr.callFrame.parameters[0..numParams]);
+                        else if (useNativeFunc)
+                            result = nativeFuncPtr(tr.callFrame.parameters[0..numParams]);
+                         
+                        tr.cp--;
+                        tr.callFrame = &tr.callFrames[tr.cp];
+                        tr.push(result);
+                        break;
+                    case GsInstructionType.RET:
+                        if (tr.callDepth > 0)
+                        {
+                            tr.cp--;
+                            tr.ip = tr.callStack[tr.cp]; // Pop the return address from the call stack
+                            tr.callFrame = &tr.callFrames[tr.cp];
+                            tr.callDepth--;
+                        }
+                        else
+                        {
+                            // Return from external call, halt execution
+                            tr.finalize();
+                        }
+                        break;
+                    case GsInstructionType.STORE_VAR:
+                        size_t vIndex = cast(size_t)instruction.operand.asNumber;
+                        tr.callFrames[tr.cp].localVariables[vIndex] = tr.peek(); // Store a value into a local variable
+                        break;
+                    case GsInstructionType.LOAD_VAR:
+                        size_t vIndex = cast(size_t)instruction.operand.asNumber;
+                        tr.push(tr.callFrames[tr.cp].localVariables[vIndex]); // Load a local variable onto the stack
+                        break;
+                    case GsInstructionType.STORE_ARG:
+                        size_t vIndex = cast(size_t)instruction.operand.asNumber;
+                        tr.callFrames[tr.cp].parameters[vIndex] = tr.peek(); // Store a stack value into a parameter
+                        break;
+                    case GsInstructionType.LOAD_ARG:
+                        size_t vIndex = cast(size_t)instruction.operand.asNumber;
+                        tr.push(tr.callFrames[tr.cp].parameters[vIndex]); // Load a parameter onto the stack
+                        break;
+                    case GsInstructionType.LOAD_ARGS:
+                        auto frame = &tr.callFrames[tr.cp];
+                        tr.push(GsDynamic(frame.parameters[0..frame.numParameters])); // Load all parameters onto the stack
+                        break;
+                    case GsInstructionType.GLOBAL_STORE_VAR:
+                        size_t vIndex = cast(size_t)instruction.operand.asNumber;
+                        mainThread.callFrames[0].localVariables[vIndex] = tr.peek(); // Store a value into a global variable
+                        break;
+                    case GsInstructionType.GLOBAL_LOAD_VAR:
+                        size_t vIndex = cast(size_t)instruction.operand.asNumber;
+                        tr.push(mainThread.callFrames[0].localVariables[vIndex]); // Load a global variable onto the stack
+                        break;
+                    case GsInstructionType.NEW:
+                        auto obj = createObject();
+                        tr.push(GsDynamic(obj));
+                        break;
+                    case GsInstructionType.REUSE:
+                        auto param = tr.pop();
+                        if (param.type == GsDynamicType.Object)
+                        {
+                            auto newObj = createObject();
+                            newObj.setPrototype(param.asObject);
+                            tr.push(GsDynamic(newObj));
+                        }
+                        else
+                        {
+                            fatality("Fatality: attempting to reuse non-object");
+                            return;
+                        }
+                        break;
+                    case GsInstructionType.GET:
+                        auto key = instruction.operand.asString;
+                        auto param = tr.pop();
+                        if (param.type == GsDynamicType.Object)
+                        {
+                            tr.push(param.asObject.get(key));
+                        }
+                        else
+                        {
+                            fatality("Fatality: attempting to read member \"", key, "\" of non-object");
+                            return;
+                        }
+                        break;
+                    case GsInstructionType.SET:
+                        auto key = instruction.operand.asString;
+                        auto param = tr.pop();
+                        auto value = tr.pop();
+                        if (param.type == GsDynamicType.Object)
+                        {
+                            param.asObject.set(key, value);
+                            tr.push(value);
+                            break;
+                        }
+                        else
+                        {
+                            fatality("Fatality: attempting to write member \"", key, "\" of non-object");
+                            return;
+                        }
+                    case GsInstructionType.INIT_SET:
+                        auto key = instruction.operand.asString;
+                        auto value = tr.pop();
+                        auto param = tr.peek();
+                        if (param.type == GsDynamicType.Object)
+                        {
+                            param.asObject.set(key, value);
+                            break;
+                        }
+                        else
+                        {
+                            fatality("Fatality: attempting to write member \"", key, "\" of non-object");
+                            return;
+                        }
+                    case GsInstructionType.CONTAINS:
+                        auto key = instruction.operand.asString;
+                        auto param = tr.pop();
+                        if (param.type == GsDynamicType.Object)
+                        {
+                            tr.push(GsDynamic(param.asObject.contains(key)));
+                        }
+                        else
+                        {
+                            fatality("Fatality: attempting to read member \"", key, "\" of non-object");
+                            return;
+                        }
+                        break;
+                    case GsInstructionType.SPAWN:
+                        auto func = tr.pop();
+                        if (func.type == GsDynamicType.String)
+                        {
+                            GsThread newThread = New!GsThread(this);
+                            threads.append(newThread);
+                            // Add to linked list
+                            if (tr.next)
+                                newThread.next = tr.next;
+                            tr.next = newThread;
+                            // TODO: arguments
+                            spawnThread(newThread, func.asString, []);
+                            tr.push(GsDynamic(newThread));
+                        }
+                        else
+                        {
+                            fatality("Fatality: attempting to spawn %s, which is not a function", func.type);
+                            return;
+                        }
+                        break;
+                    case GsInstructionType.HALT:
+                        tr.running = false;
+                        break;
+                    default:
+                        fatality("Fatality: unknown instruction: ", instruction.type);
                         return;
-                    }
-                case GsInstructionType.CONTAINS:
-                    auto key = instruction.operand.asString;
-                    auto param = pop();
-                    if (param.type == GsDynamicType.Object)
-                    {
-                        push(GsDynamic(param.asObject.contains(key)));
-                    }
-                    else
-                    {
-                        fatality("Fatality: attempting to read member \"", key, "\" of non-object");
-                        return;
-                    }
-                    break;
-                case GsInstructionType.HALT:
-                    finalize();
-                    return;
-                default:
-                    fatality("Fatality: unknown instruction: ", instruction.type);
-                    return;
+                }
+                
+                tr = tr.next;
             }
+            
+            if (numActiveThreads == 0)
+                running = false;
         }
+    }
+}
+
+class GsThread: Owner, GsObject
+{
+  protected:
+    GsVirtualMachine vm;
+    GsObject data;
+    GsDynamic[] stack;
+    size_t[] callStack;            // Call stack for subroutine return addresses
+    GsCallFrame[] callFrames;      // Stack of call frames
+    size_t ip;                     // Instruction pointer
+    size_t sp;                     // Stack pointer
+    size_t cp;                     // Call stack pointer
+    size_t callDepth = 1;
+    
+  public:
+    GsCallFrame* callFrame;        // Current call frame
+    bool running = false;
+    GsThread next = null;          // Linked list of threads
+    
+    this(GsVirtualMachine vm)
+    {
+        super(vm);
         
-        finalize();
+        this.vm = vm;
+        
+        data = vm.createObject();
+        
+        stack = New!(GsDynamic[])(256);
+        callStack = New!(size_t[])(256);
+        callFrames = New!(GsCallFrame[])(256);
+        ip = 0;
+        sp = 0;
+        cp = 0;
+    }
+    
+    ~this()
+    {
+        Delete(stack);
+        Delete(callStack);
+        Delete(callFrames);
+    }
+    
+    GsDynamic get(string key)
+    {
+        return data.get(key);
+    }
+    
+    void set(string key, GsDynamic value)
+    {
+        return data.set(key, value);
+    }
+    
+    bool contains(string key)
+    {
+        return data.contains(key);
+    }
+    
+    void setPrototype(GsObject proto)
+    {
+        data.setPrototype(proto);
+    }
+    
+    // Stack manipulation methods
+    GsDynamic pop()
+    {
+        if (sp == 0)
+        {
+            vm.fatality("Fatality: stack underflow");
+        }
+        return stack[--sp];
+    }
+
+    GsDynamic peek()
+    {
+        if (sp == 0)
+        {
+            vm.fatality("Fatality: stack is empty");
+        }
+        return stack[sp - 1];
+    }
+
+    void push(GsDynamic value)
+    {
+        if (sp >= stack.length)
+        {
+            vm.fatality("Fatality: stack overflow");
+        }
+        stack[sp++] = value;
+    }
+    
+    void finalize()
+    {
+        ip = vm.instructions.length - 1;
+        running = false;
+        data.set("running", GsDynamic(0.0));
+    }
+    
+    void start(size_t initialIp = 0, size_t initialCallDepth = 1)
+    {
+        ip = initialIp;
+        sp = 0;
+        cp = 0;
+        callDepth = initialCallDepth;
+        running = true;
+        data.set("running", GsDynamic(1.0));
     }
 }
