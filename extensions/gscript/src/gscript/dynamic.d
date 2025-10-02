@@ -34,7 +34,7 @@ import gscript.vm;
 
 enum GsDynamicType: uint
 {
-    Undefined = 0,
+    Null = 0,
     Number = 1,
     String = 2,
     Array = 3,
@@ -105,8 +105,8 @@ struct GsDynamic
     {
         switch(type)
         {
-            case GsDynamicType.Undefined:
-                return "undefined";
+            case GsDynamicType.Null:
+                return "null";
             case GsDynamicType.Number:
                 return asNumber.to!string;
             case GsDynamicType.String:
@@ -120,7 +120,7 @@ struct GsDynamic
             case GsDynamicType.NativeFunction:
                 return "function";
             default:
-                return "undefined";
+                return "null";
         }
     }
 }

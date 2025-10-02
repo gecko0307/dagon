@@ -102,7 +102,7 @@ struct GsInstruction
     
     GsOperandType operandType()
     {
-        if (operand.type == GsDynamicType.Undefined)
+        if (operand.type == GsDynamicType.Null)
             return GsOperandType.None;
         else if (operand.type == GsDynamicType.String)
             return GsOperandType.String;
@@ -114,7 +114,7 @@ struct GsInstruction
     
     string toString()
     {
-        if (operand.type == GsDynamicType.Undefined)
+        if (operand.type == GsDynamicType.Null)
             return type.to!string;
         else
         {
