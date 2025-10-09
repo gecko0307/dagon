@@ -40,11 +40,18 @@ enum GsDynamicType: uint
     Array = 3,
     Object = 4,
     NativeMethod = 5,
-    NativeFunction = 6
+    NativeFunction = 6,
+    Error = 7,
+    Function = 8
 }
 
 alias GsNativeMethod = GsDynamic delegate(GsDynamic[]);
 alias GsNativeFunc = GsDynamic function(GsDynamic[]);
+
+enum GsSemanticsHint: uint
+{
+    LibraryFunctionBit = 1 << 0
+}
 
 struct GsDynamic
 {
@@ -58,8 +65,9 @@ struct GsDynamic
         string asString;
     }
     
+    GsObject owner;
     GsDynamicType type;
-    uint payload;
+    uint hintBits;
     
     this(T)(T value)
     {
@@ -99,6 +107,8 @@ struct GsDynamic
             type = GsDynamicType.NativeFunction;
         }
         else static assert("Unsupported type for GsDynamic: " ~ T.stringof);
+        
+        owner = null;
     }
     
     string toString()
@@ -112,15 +122,48 @@ struct GsDynamic
             case GsDynamicType.String:
                 return asString;
             case GsDynamicType.Array:
-                return asArray.to!string;
+                return printArray(asArray, asArray);
             case GsDynamicType.Object:
                 return asObject.to!string;
             case GsDynamicType.NativeMethod:
                 return "delegate";
             case GsDynamicType.NativeFunction:
                 return "function";
+            case GsDynamicType.Function:
+                return "function";
+            case GsDynamicType.Error:
+                return asString;
             default:
                 return "null";
         }
     }
+}
+
+string printArray(GsDynamic[] rootArray, GsDynamic[] array)
+{
+    string output = "[";
+    foreach(i, e; array)
+    {
+        if (e.type == GsDynamicType.Array)
+        {
+            if (e.asArray.ptr is rootArray.ptr && e.asArray.length == rootArray.length)
+            {
+                output ~= "[recursion]";
+            }
+            else
+            {
+                output ~= printArray(rootArray, e.asArray);
+            }
+        }
+        else
+        {
+            output ~= e.toString();
+        }
+        
+        if (i < array.length - 1)
+            output ~= ", ";
+    }
+    output ~= "]";
+    
+    return output;
 }
