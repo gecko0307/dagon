@@ -28,11 +28,13 @@ module dagon.ext.audio.audiomanager;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.core.stream;
 import dlib.math.vector;
 import dlib.text.str;
 
 import dagon.core.logger;
 import dagon.core.application;
+import dagon.core.vfs;
 import dagon.core.event;
 import dagon.core.time;
 import dagon.core.config;
@@ -42,6 +44,27 @@ import bindbc.soloud;
 import soloud;
 
 import dagon.ext.audio.soundcomponent;
+
+enum AudioBackend
+{
+    Auto = 0,
+    SDL1 = 1,
+    SDL2 = 2,
+    PortAudio = 3,
+    WinMM = 4,
+    XAudio2 = 5,
+    WASAPI = 6,
+    ALSA = 7,
+    JACK = 8,
+    OSS = 9,
+    OpenAL = 10,
+    CoreAudio = 11,
+    OpenSLES = 12,
+    VitaHomebrew = 13,
+    MiniAudio = 14,
+    NoSound = 15,
+    NullDriver = 16
+}
 
 enum AttenuationModel
 {
@@ -67,6 +90,7 @@ class AudioManager: Owner
 {
     Application application;
     Configuration config;
+    VirtualFileSystem vfs;
     EventManager eventManager;
     
     SLSupport loadedSLSupport;
@@ -76,8 +100,8 @@ class AudioManager: Owner
     bool enabled = true;
     
     Soloud audio;
-    uint backendId;
-    String backend;
+    AudioBackend backend;
+    String backendName;
     uint channels;
     uint sampleRate;
     uint bufferSize;
@@ -95,6 +119,7 @@ class AudioManager: Owner
         
         this.application = application;
         this.config = application.config;
+        this.vfs = application.vfs;
         this.eventManager = application.eventManager;
         
         loadedSLSupport = loadSoloud();
@@ -122,13 +147,40 @@ class AudioManager: Owner
         soloudVersion = audio.getVersion();
         logInfo("SoLoud version: ", soloudVersion);
         
-        audio.init(Soloud.CLIP_ROUNDOFF | Soloud.LEFT_HANDED_3D, Soloud.AUTO, Soloud.AUTO, Soloud.AUTO, 2);
+        backend = AudioBackend.Auto;
+        if ("audio.backend" in config.props)
+        {
+            string backendStr = config.props["audio.backend"].toString;
+            switch(backendStr)
+            {
+                case "Auto": backend = AudioBackend.Auto; break;
+                case "SDL1": backend = AudioBackend.SDL1; break;
+                case "SDL2": backend = AudioBackend.SDL2; break;
+                case "PortAudio": backend = AudioBackend.PortAudio; break;
+                case "WinMM": backend = AudioBackend.WinMM; break;
+                case "XAudio2": backend = AudioBackend.XAudio2; break;
+                case "WASAPI": backend = AudioBackend.WASAPI; break;
+                case "ALSA": backend = AudioBackend.ALSA; break;
+                case "JACK": backend = AudioBackend.JACK; break;
+                case "OSS": backend = AudioBackend.OSS; break;
+                case "OpenAL": backend = AudioBackend.OpenAL; break;
+                case "CoreAudio": backend = AudioBackend.CoreAudio; break;
+                case "OpenSLES": backend = AudioBackend.OpenSLES; break;
+                case "VitaHomebrew": backend = AudioBackend.VitaHomebrew; break;
+                case "MiniAudio": backend = AudioBackend.MiniAudio; break;
+                case "NoSound": backend = AudioBackend.NoSound; break;
+                case "NullDriver": backend = AudioBackend.NullDriver; break;
+                default: break;
+            }
+        }
+        
+        audio.init(Soloud.CLIP_ROUNDOFF | Soloud.LEFT_HANDED_3D, backend, Soloud.AUTO, Soloud.AUTO, 2);
         audio.setGlobalVolume(0.0f);
         
-        backendId = audio.getBackendId();
+        backend = cast(AudioBackend)audio.getBackendId();
         const(char)* backendStr = audio.getBackendString();
-        backend = String(backendStr);
-        logInfo("Audio backend: ", backend);
+        backendName = String(backendStr);
+        logInfo("Audio backend: ", backendName);
         
         channels = audio.getBackendChannels();
         sampleRate = audio.getBackendSamplerate();
@@ -176,37 +228,53 @@ class AudioManager: Owner
             audio.deinit();
         }
         
-        backend.free();
+        backendName.free();
     }
     
-    // TODO: use VFS to load the file
     Wav loadSound(string filename)
     {
-        String filenameCStr = String(filename);
         Wav sound = Wav.create();
-        sound.load(filenameCStr.ptr);
-        filenameCStr.free();
+        InputStream istrm = vfs.openForInput(filename);
+        ubyte[] data = New!(ubyte[])(istrm.size);
+        istrm.fillArray(data);
+        sound.loadMem(data.ptr, cast(uint)data.length, true, false);
+        Delete(data);
+        Delete(istrm);
         return sound;
     }
     
-    // TODO: use VFS to load the file
-    WavStream loadMusic(string filename)
+    void loadMusic(ref WavStream wavStream, string filename)
     {
-        String filenameCStr = String(filename);
-        WavStream music = WavStream.create();
-        music.load(filenameCStr.ptr);
-        filenameCStr.free();
-        return music;
+        InputStream istrm = vfs.openForInput(filename);
+        ubyte[] data = New!(ubyte[])(istrm.size);
+        istrm.fillArray(data);
+        wavStream.loadMem(data.ptr, cast(uint)data.length, true, false);
+        Delete(data);
+        Delete(istrm);
     }
     
-    // TODO: use VFS to load the file
+    WavStream loadMusic(string filename)
+    {
+        WavStream wavStream = WavStream.create();
+        loadMusic(wavStream, filename);
+        return wavStream;
+    }
+    
+    void loadTrackerMusic(ref Openmpt openmpt, string filename)
+    {
+        InputStream istrm = vfs.openForInput(filename);
+        ubyte[] data = New!(ubyte[])(istrm.size);
+        istrm.fillArray(data);
+        openmpt.loadMem(data.ptr, cast(uint)data.length, true, false);
+        Delete(data);
+        Delete(istrm);
+    }
+    
     Openmpt loadTrackerMusic(string filename)
     {
-        String filenameCStr = String(filename);
-        Openmpt music = Openmpt.create();
-        music.load(filenameCStr.ptr);
-        filenameCStr.free();
-        return music;
+        Openmpt openmpt = Openmpt.create();
+        loadTrackerMusic(openmpt, filename);
+        return openmpt;
     }
     
     SoundComponent addSoundTo(Entity entity)
@@ -220,7 +288,6 @@ class AudioManager: Owner
             return 0;
         
         int voice = audio.play(sound);
-        audio.setLooping(voice, false);
         audio.setVolume(voice, options[soundClass].volume);
         audio.setLooping(voice, looping);
         return voice;
@@ -232,7 +299,6 @@ class AudioManager: Owner
             return 0;
         
         int voice = audio.play3d(sound, position.x, position.y, position.z);
-        audio.setLooping(voice, false);
         audio.setVolume(voice, options[soundClass].volume);
         audio.setLooping(voice, looping);
         // TODO: use master 3D sound settings
@@ -259,10 +325,24 @@ class AudioManager: Owner
         return playAtPosition(sound, SoundClass.Music, position, looping);
     }
     
-    void stop()
+    void stopAll()
     {
-        if (soloudPresent)
+        if (enabled)
             audio.stopAll();
+    }
+    
+    void stop(int voice)
+    {
+        if (enabled)
+            audio.stop(voice);
+    }
+    
+    bool isPlaying(int voice)
+    {
+        if (enabled)
+            return cast(bool)audio.isValidVoiceHandle(voice);
+        else
+            return false;
     }
     
     void update(Time time)

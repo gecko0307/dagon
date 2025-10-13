@@ -32,4 +32,5 @@ public
     import soloud;
     import dagon.ext.audio.audiomanager;
     import dagon.ext.audio.soundcomponent;
+    import dagon.ext.audio.playlist;
 }

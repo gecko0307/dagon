@@ -71,6 +71,7 @@ Features
 * Internationalization support
 * GUI extension based on [Dear ImGui](https://github.com/ocornut/imgui)
 * Very basic and lightweight built-in UI toolkit
+* 2D/3D sound, various audio formats support including WAV, MP3, OGG/Vorbis, FLAC
 * Built-in scripting engine (WIP).
 
 Getting Started
