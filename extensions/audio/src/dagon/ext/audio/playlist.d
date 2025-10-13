@@ -130,8 +130,8 @@ class Playlist: Owner
     bool looping = true;
     
     static immutable string[] streamedFormats = [
-        ".wav", ".mp3", ".ogg", ".m4a", ".flac",
-        ".WAV", ".MP3", ".OGG", ".M4A", ".FLAC"
+        ".wav", ".mp3", ".ogg", ".flac",
+        ".WAV", ".MP3", ".OGG", ".FLAC"
     ];
 
     static immutable string[] openmptFormats = [
@@ -190,7 +190,10 @@ class Playlist: Owner
             currentTrackIndex = track;
             currentTrack = tracks[track];
             currentTrack.play();
-            return currentTrack;
+            if (currentTrack.isPlaying())
+                return currentTrack;
+            else
+                return null;
         }
         else
         {
@@ -207,9 +210,21 @@ class Playlist: Owner
         if (!currentTrack.isPlaying)
         {
             if (currentTrackIndex < tracks.length - 1)
-                play(currentTrackIndex + 1);
+            {
+                if (play(currentTrackIndex + 1) is null)
+                {
+                    currentTrack = null;
+                    currentTrackIndex = 0;
+                }
+            }
             else if (looping)
-                play(0);
+            {
+                if (play(0) is null)
+                {
+                    currentTrack = null;
+                    currentTrackIndex = 0;
+                }
+            }
             else
             {
                 currentTrack = null;

@@ -97,6 +97,7 @@ Runtime Dependencies
 * [cimgui](https://github.com/cimgui/cimgui) (optional)
 * [libktx](https://github.com/KhronosGroup/KTX-Software) (optional)
 * [PhysFS](https://github.com/icculus/physfs) (optional)
+* [SoLoud](https://github.com/jarikomppa/soloud) (optional)
 * [libVLC](https://www.videolan.org/vlc/libvlc.html) (optional)
 * [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear) (optional, deprecated)
 
