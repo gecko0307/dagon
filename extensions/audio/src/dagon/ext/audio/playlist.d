@@ -99,7 +99,7 @@ class StreamedMusicTrack: PlaylistTrack
     }
 }
 
-class TrackerMusicTrack: PlaylistTrack
+class OpenMPTTrack: PlaylistTrack
 {
     Openmpt openmpt;
     
@@ -134,7 +134,7 @@ class Playlist: Owner
         ".WAV", ".MP3", ".OGG", ".M4A", ".FLAC"
     ];
 
-    static immutable string[] trackerFormats = [
+    static immutable string[] openmptFormats = [
         ".mod", ".xm", ".s3m", ".it",
         ".MOD", ".XM", ".S3M", ".IT"
     ];
@@ -165,9 +165,9 @@ class Playlist: Owner
             tracks.append(t);
             return t;
         }
-        else if (trackerFormats.canFind(ext))
+        else if (openmptFormats.canFind(ext))
         {
-            auto t = New!TrackerMusicTrack(this, filename);
+            auto t = New!OpenMPTTrack(this, filename);
             tracks.append(t);
             return t;
         }
@@ -177,6 +177,8 @@ class Playlist: Owner
             return null;
         }
     }
+    
+    // TODO: addTracksFrom(string directory)
     
     PlaylistTrack play(uint track = 0)
     {

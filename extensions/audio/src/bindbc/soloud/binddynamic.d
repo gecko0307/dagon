@@ -34,8 +34,8 @@ extern(C) @nogc nothrow
     alias int* function() da_Soloud_create;
     alias int* function(int* aObjHandle) da_Soloud_destroy;
     alias int function(int* aObjHandle, uint aFlags, uint aBackend, uint aSamplerate, uint aBufferSize, uint aChannels) da_Soloud_initEx;
-    alias int function(int* aObjHandle) da_Soloud_pause;
-    alias int function(int* aObjHandle) da_Soloud_resume;
+    //alias int function(int* aObjHandle) da_Soloud_pause;
+    //alias int function(int* aObjHandle) da_Soloud_resume;
     alias void function(int* aObjHandle) da_Soloud_deinit;
     alias uint function(int* aObjHandle) da_Soloud_getVersion;
     alias const(char)* function(int* aObjHandle, int aErrorCode) da_Soloud_getErrorString;
@@ -497,8 +497,8 @@ __gshared
     da_Soloud_create Soloud_create;
     da_Soloud_destroy Soloud_destroy;
     da_Soloud_initEx Soloud_initEx;
-    da_Soloud_pause Soloud_pause;
-    da_Soloud_resume Soloud_resume;
+    //da_Soloud_pause Soloud_pause;
+    //da_Soloud_resume Soloud_resume;
     da_Soloud_deinit Soloud_deinit;
     da_Soloud_getVersion Soloud_getVersion;
     da_Soloud_getErrorString Soloud_getErrorString;
@@ -1035,8 +1035,8 @@ SLSupport loadSoloud(const(char)* libName)
     lib.bindSymbol(cast(void**)&Soloud_create, "Soloud_create");
     lib.bindSymbol(cast(void**)&Soloud_destroy, "Soloud_destroy");
     lib.bindSymbol(cast(void**)&Soloud_initEx, "Soloud_initEx");
-    lib.bindSymbol(cast(void**)&Soloud_pause, "Soloud_pause");
-    lib.bindSymbol(cast(void**)&Soloud_resume, "Soloud_resume");
+    //lib.bindSymbol(cast(void**)&Soloud_pause, "Soloud_pause");
+    //lib.bindSymbol(cast(void**)&Soloud_resume, "Soloud_resume");
     lib.bindSymbol(cast(void**)&Soloud_deinit, "Soloud_deinit");
     lib.bindSymbol(cast(void**)&Soloud_getVersion, "Soloud_getVersion");
     lib.bindSymbol(cast(void**)&Soloud_getErrorString, "Soloud_getErrorString");
@@ -1074,20 +1074,20 @@ SLSupport loadSoloud(const(char)* libName)
     lib.bindSymbol(cast(void**)&Soloud_isValidVoiceHandle, "Soloud_isValidVoiceHandle");
     lib.bindSymbol(cast(void**)&Soloud_getRelativePlaySpeed, "Soloud_getRelativePlaySpeed");
     lib.bindSymbol(cast(void**)&Soloud_getPostClipScaler, "Soloud_getPostClipScaler");
-    lib.bindSymbol(cast(void**)&Soloud_getMainResampler, "Soloud_getMainResampler");
+    //lib.bindSymbol(cast(void**)&Soloud_getMainResampler, "Soloud_getMainResampler");
     lib.bindSymbol(cast(void**)&Soloud_getGlobalVolume, "Soloud_getGlobalVolume");
     lib.bindSymbol(cast(void**)&Soloud_getMaxActiveVoiceCount, "Soloud_getMaxActiveVoiceCount");
     lib.bindSymbol(cast(void**)&Soloud_getLooping, "Soloud_getLooping");
-    lib.bindSymbol(cast(void**)&Soloud_getAutoStop, "Soloud_getAutoStop");
+    //lib.bindSymbol(cast(void**)&Soloud_getAutoStop, "Soloud_getAutoStop");
     lib.bindSymbol(cast(void**)&Soloud_getLoopPoint, "Soloud_getLoopPoint");
     lib.bindSymbol(cast(void**)&Soloud_setLoopPoint, "Soloud_setLoopPoint");
     lib.bindSymbol(cast(void**)&Soloud_setLooping, "Soloud_setLooping");
-    lib.bindSymbol(cast(void**)&Soloud_setAutoStop, "Soloud_setAutoStop");
+    //lib.bindSymbol(cast(void**)&Soloud_setAutoStop, "Soloud_setAutoStop");
     lib.bindSymbol(cast(void**)&Soloud_setMaxActiveVoiceCount, "Soloud_setMaxActiveVoiceCount");
     lib.bindSymbol(cast(void**)&Soloud_setInaudibleBehavior, "Soloud_setInaudibleBehavior");
     lib.bindSymbol(cast(void**)&Soloud_setGlobalVolume, "Soloud_setGlobalVolume");
     lib.bindSymbol(cast(void**)&Soloud_setPostClipScaler, "Soloud_setPostClipScaler");
-    lib.bindSymbol(cast(void**)&Soloud_setMainResampler, "Soloud_setMainResampler");
+    //lib.bindSymbol(cast(void**)&Soloud_setMainResampler, "Soloud_setMainResampler");
     lib.bindSymbol(cast(void**)&Soloud_setPause, "Soloud_setPause");
     lib.bindSymbol(cast(void**)&Soloud_setPauseAll, "Soloud_setPauseAll");
     lib.bindSymbol(cast(void**)&Soloud_setRelativePlaySpeed, "Soloud_setRelativePlaySpeed");
@@ -1095,7 +1095,7 @@ SLSupport loadSoloud(const(char)* libName)
     lib.bindSymbol(cast(void**)&Soloud_setSamplerate, "Soloud_setSamplerate");
     lib.bindSymbol(cast(void**)&Soloud_setPan, "Soloud_setPan");
     lib.bindSymbol(cast(void**)&Soloud_setPanAbsolute, "Soloud_setPanAbsolute");
-    lib.bindSymbol(cast(void**)&Soloud_setChannelVolume, "Soloud_setChannelVolume");
+    //lib.bindSymbol(cast(void**)&Soloud_setChannelVolume, "Soloud_setChannelVolume");
     lib.bindSymbol(cast(void**)&Soloud_setVolume, "Soloud_setVolume");
     lib.bindSymbol(cast(void**)&Soloud_setDelaySamples, "Soloud_setDelaySamples");
     lib.bindSymbol(cast(void**)&Soloud_fadeVolume, "Soloud_fadeVolume");
@@ -1136,6 +1136,7 @@ SLSupport loadSoloud(const(char)* libName)
     lib.bindSymbol(cast(void**)&Soloud_set3dSourceDopplerFactor, "Soloud_set3dSourceDopplerFactor");
     lib.bindSymbol(cast(void**)&Soloud_mix, "Soloud_mix");
     lib.bindSymbol(cast(void**)&Soloud_mixSigned16, "Soloud_mixSigned16");
+    /*
     lib.bindSymbol(cast(void**)&Ay_create, "Ay_create");
     lib.bindSymbol(cast(void**)&Ay_destroy, "Ay_destroy");
     lib.bindSymbol(cast(void**)&Ay_setVolume, "Ay_setVolume");
@@ -1153,6 +1154,7 @@ SLSupport loadSoloud(const(char)* libName)
     lib.bindSymbol(cast(void**)&Ay_getLoopPoint, "Ay_getLoopPoint");
     lib.bindSymbol(cast(void**)&Ay_setFilter, "Ay_setFilter");
     lib.bindSymbol(cast(void**)&Ay_stop, "Ay_stop");
+    */
     lib.bindSymbol(cast(void**)&BassboostFilter_create, "BassboostFilter_create");
     lib.bindSymbol(cast(void**)&BassboostFilter_destroy, "BassboostFilter_destroy");
     lib.bindSymbol(cast(void**)&BassboostFilter_getParamCount, "BassboostFilter_getParamCount");
@@ -1183,11 +1185,11 @@ SLSupport loadSoloud(const(char)* libName)
     lib.bindSymbol(cast(void**)&Bus_getWave, "Bus_getWave");
     lib.bindSymbol(cast(void**)&Bus_getApproximateVolume, "Bus_getApproximateVolume");
     lib.bindSymbol(cast(void**)&Bus_getActiveVoiceCount, "Bus_getActiveVoiceCount");
-    lib.bindSymbol(cast(void**)&Bus_getResampler, "Bus_getResampler");
-    lib.bindSymbol(cast(void**)&Bus_setResampler, "Bus_setResampler");
+    //lib.bindSymbol(cast(void**)&Bus_getResampler, "Bus_getResampler");
+    //lib.bindSymbol(cast(void**)&Bus_setResampler, "Bus_setResampler");
     lib.bindSymbol(cast(void**)&Bus_setVolume, "Bus_setVolume");
     lib.bindSymbol(cast(void**)&Bus_setLooping, "Bus_setLooping");
-    lib.bindSymbol(cast(void**)&Bus_setAutoStop, "Bus_setAutoStop");
+    //lib.bindSymbol(cast(void**)&Bus_setAutoStop, "Bus_setAutoStop");
     lib.bindSymbol(cast(void**)&Bus_set3dMinMaxDistance, "Bus_set3dMinMaxDistance");
     lib.bindSymbol(cast(void**)&Bus_set3dAttenuation, "Bus_set3dAttenuation");
     lib.bindSymbol(cast(void**)&Bus_set3dDopplerFactor, "Bus_set3dDopplerFactor");
@@ -1254,7 +1256,7 @@ SLSupport loadSoloud(const(char)* libName)
     lib.bindSymbol(cast(void**)&Monotone_loadFile, "Monotone_loadFile");
     lib.bindSymbol(cast(void**)&Monotone_setVolume, "Monotone_setVolume");
     lib.bindSymbol(cast(void**)&Monotone_setLooping, "Monotone_setLooping");
-    lib.bindSymbol(cast(void**)&Monotone_setAutoStop, "Monotone_setAutoStop");
+    //lib.bindSymbol(cast(void**)&Monotone_setAutoStop, "Monotone_setAutoStop");
     lib.bindSymbol(cast(void**)&Monotone_set3dMinMaxDistance, "Monotone_set3dMinMaxDistance");
     lib.bindSymbol(cast(void**)&Monotone_set3dAttenuation, "Monotone_set3dAttenuation");
     lib.bindSymbol(cast(void**)&Monotone_set3dDopplerFactor, "Monotone_set3dDopplerFactor");
@@ -1273,7 +1275,7 @@ SLSupport loadSoloud(const(char)* libName)
     lib.bindSymbol(cast(void**)&Noise_setType, "Noise_setType");
     lib.bindSymbol(cast(void**)&Noise_setVolume, "Noise_setVolume");
     lib.bindSymbol(cast(void**)&Noise_setLooping, "Noise_setLooping");
-    lib.bindSymbol(cast(void**)&Noise_setAutoStop, "Noise_setAutoStop");
+    //lib.bindSymbol(cast(void**)&Noise_setAutoStop, "Noise_setAutoStop");
     lib.bindSymbol(cast(void**)&Noise_set3dMinMaxDistance, "Noise_set3dMinMaxDistance");
     lib.bindSymbol(cast(void**)&Noise_set3dAttenuation, "Noise_set3dAttenuation");
     lib.bindSymbol(cast(void**)&Noise_set3dDopplerFactor, "Noise_set3dDopplerFactor");
@@ -1293,7 +1295,7 @@ SLSupport loadSoloud(const(char)* libName)
     lib.bindSymbol(cast(void**)&Openmpt_loadFile, "Openmpt_loadFile");
     lib.bindSymbol(cast(void**)&Openmpt_setVolume, "Openmpt_setVolume");
     lib.bindSymbol(cast(void**)&Openmpt_setLooping, "Openmpt_setLooping");
-    lib.bindSymbol(cast(void**)&Openmpt_setAutoStop, "Openmpt_setAutoStop");
+    //lib.bindSymbol(cast(void**)&Openmpt_setAutoStop, "Openmpt_setAutoStop");
     lib.bindSymbol(cast(void**)&Openmpt_set3dMinMaxDistance, "Openmpt_set3dMinMaxDistance");
     lib.bindSymbol(cast(void**)&Openmpt_set3dAttenuation, "Openmpt_set3dAttenuation");
     lib.bindSymbol(cast(void**)&Openmpt_set3dDopplerFactor, "Openmpt_set3dDopplerFactor");
@@ -1315,7 +1317,7 @@ SLSupport loadSoloud(const(char)* libName)
     lib.bindSymbol(cast(void**)&Queue_setParamsEx, "Queue_setParamsEx");
     lib.bindSymbol(cast(void**)&Queue_setVolume, "Queue_setVolume");
     lib.bindSymbol(cast(void**)&Queue_setLooping, "Queue_setLooping");
-    lib.bindSymbol(cast(void**)&Queue_setAutoStop, "Queue_setAutoStop");
+    //lib.bindSymbol(cast(void**)&Queue_setAutoStop, "Queue_setAutoStop");
     lib.bindSymbol(cast(void**)&Queue_set3dMinMaxDistance, "Queue_set3dMinMaxDistance");
     lib.bindSymbol(cast(void**)&Queue_set3dAttenuation, "Queue_set3dAttenuation");
     lib.bindSymbol(cast(void**)&Queue_set3dDopplerFactor, "Queue_set3dDopplerFactor");
@@ -1345,7 +1347,7 @@ SLSupport loadSoloud(const(char)* libName)
     lib.bindSymbol(cast(void**)&Sfxr_loadPreset, "Sfxr_loadPreset");
     lib.bindSymbol(cast(void**)&Sfxr_setVolume, "Sfxr_setVolume");
     lib.bindSymbol(cast(void**)&Sfxr_setLooping, "Sfxr_setLooping");
-    lib.bindSymbol(cast(void**)&Sfxr_setAutoStop, "Sfxr_setAutoStop");
+    //lib.bindSymbol(cast(void**)&Sfxr_setAutoStop, "Sfxr_setAutoStop");
     lib.bindSymbol(cast(void**)&Sfxr_set3dMinMaxDistance, "Sfxr_set3dMinMaxDistance");
     lib.bindSymbol(cast(void**)&Sfxr_set3dAttenuation, "Sfxr_set3dAttenuation");
     lib.bindSymbol(cast(void**)&Sfxr_set3dDopplerFactor, "Sfxr_set3dDopplerFactor");
@@ -1364,7 +1366,7 @@ SLSupport loadSoloud(const(char)* libName)
     lib.bindSymbol(cast(void**)&Speech_setParamsEx, "Speech_setParamsEx");
     lib.bindSymbol(cast(void**)&Speech_setVolume, "Speech_setVolume");
     lib.bindSymbol(cast(void**)&Speech_setLooping, "Speech_setLooping");
-    lib.bindSymbol(cast(void**)&Speech_setAutoStop, "Speech_setAutoStop");
+    //lib.bindSymbol(cast(void**)&Speech_setAutoStop, "Speech_setAutoStop");
     lib.bindSymbol(cast(void**)&Speech_set3dMinMaxDistance, "Speech_set3dMinMaxDistance");
     lib.bindSymbol(cast(void**)&Speech_set3dAttenuation, "Speech_set3dAttenuation");
     lib.bindSymbol(cast(void**)&Speech_set3dDopplerFactor, "Speech_set3dDopplerFactor");
@@ -1384,7 +1386,7 @@ SLSupport loadSoloud(const(char)* libName)
     lib.bindSymbol(cast(void**)&TedSid_loadFile, "TedSid_loadFile");
     lib.bindSymbol(cast(void**)&TedSid_setVolume, "TedSid_setVolume");
     lib.bindSymbol(cast(void**)&TedSid_setLooping, "TedSid_setLooping");
-    lib.bindSymbol(cast(void**)&TedSid_setAutoStop, "TedSid_setAutoStop");
+    //lib.bindSymbol(cast(void**)&TedSid_setAutoStop, "TedSid_setAutoStop");
     lib.bindSymbol(cast(void**)&TedSid_set3dMinMaxDistance, "TedSid_set3dMinMaxDistance");
     lib.bindSymbol(cast(void**)&TedSid_set3dAttenuation, "TedSid_set3dAttenuation");
     lib.bindSymbol(cast(void**)&TedSid_set3dDopplerFactor, "TedSid_set3dDopplerFactor");
@@ -1405,7 +1407,7 @@ SLSupport loadSoloud(const(char)* libName)
     lib.bindSymbol(cast(void**)&Vic_getRegister, "Vic_getRegister");
     lib.bindSymbol(cast(void**)&Vic_setVolume, "Vic_setVolume");
     lib.bindSymbol(cast(void**)&Vic_setLooping, "Vic_setLooping");
-    lib.bindSymbol(cast(void**)&Vic_setAutoStop, "Vic_setAutoStop");
+    //lib.bindSymbol(cast(void**)&Vic_setAutoStop, "Vic_setAutoStop");
     lib.bindSymbol(cast(void**)&Vic_set3dMinMaxDistance, "Vic_set3dMinMaxDistance");
     lib.bindSymbol(cast(void**)&Vic_set3dAttenuation, "Vic_set3dAttenuation");
     lib.bindSymbol(cast(void**)&Vic_set3dDopplerFactor, "Vic_set3dDopplerFactor");
@@ -1423,7 +1425,7 @@ SLSupport loadSoloud(const(char)* libName)
     lib.bindSymbol(cast(void**)&Vizsn_setText, "Vizsn_setText");
     lib.bindSymbol(cast(void**)&Vizsn_setVolume, "Vizsn_setVolume");
     lib.bindSymbol(cast(void**)&Vizsn_setLooping, "Vizsn_setLooping");
-    lib.bindSymbol(cast(void**)&Vizsn_setAutoStop, "Vizsn_setAutoStop");
+    //lib.bindSymbol(cast(void**)&Vizsn_setAutoStop, "Vizsn_setAutoStop");
     lib.bindSymbol(cast(void**)&Vizsn_set3dMinMaxDistance, "Vizsn_set3dMinMaxDistance");
     lib.bindSymbol(cast(void**)&Vizsn_set3dAttenuation, "Vizsn_set3dAttenuation");
     lib.bindSymbol(cast(void**)&Vizsn_set3dDopplerFactor, "Vizsn_set3dDopplerFactor");
@@ -1447,7 +1449,7 @@ SLSupport loadSoloud(const(char)* libName)
     lib.bindSymbol(cast(void**)&Wav_getLength, "Wav_getLength");
     lib.bindSymbol(cast(void**)&Wav_setVolume, "Wav_setVolume");
     lib.bindSymbol(cast(void**)&Wav_setLooping, "Wav_setLooping");
-    lib.bindSymbol(cast(void**)&Wav_setAutoStop, "Wav_setAutoStop");
+    //lib.bindSymbol(cast(void**)&Wav_setAutoStop, "Wav_setAutoStop");
     lib.bindSymbol(cast(void**)&Wav_set3dMinMaxDistance, "Wav_set3dMinMaxDistance");
     lib.bindSymbol(cast(void**)&Wav_set3dAttenuation, "Wav_set3dAttenuation");
     lib.bindSymbol(cast(void**)&Wav_set3dDopplerFactor, "Wav_set3dDopplerFactor");
@@ -1478,7 +1480,7 @@ SLSupport loadSoloud(const(char)* libName)
     lib.bindSymbol(cast(void**)&WavStream_getLength, "WavStream_getLength");
     lib.bindSymbol(cast(void**)&WavStream_setVolume, "WavStream_setVolume");
     lib.bindSymbol(cast(void**)&WavStream_setLooping, "WavStream_setLooping");
-    lib.bindSymbol(cast(void**)&WavStream_setAutoStop, "WavStream_setAutoStop");
+    //lib.bindSymbol(cast(void**)&WavStream_setAutoStop, "WavStream_setAutoStop");
     lib.bindSymbol(cast(void**)&WavStream_set3dMinMaxDistance, "WavStream_set3dMinMaxDistance");
     lib.bindSymbol(cast(void**)&WavStream_set3dAttenuation, "WavStream_set3dAttenuation");
     lib.bindSymbol(cast(void**)&WavStream_set3dDopplerFactor, "WavStream_set3dDopplerFactor");

@@ -26,6 +26,8 @@ DEALINGS IN THE SOFTWARE.
 */
 module dagon.ext.audio.audiomanager;
 
+import std.conv;
+
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.core.stream;
@@ -41,6 +43,7 @@ import dagon.core.config;
 import dagon.graphics.entity;
 
 import bindbc.soloud;
+import loader = bindbc.loader.sharedlib;
 import soloud;
 
 import dagon.ext.audio.soundcomponent;
@@ -123,6 +126,15 @@ class AudioManager: Owner
         this.eventManager = application.eventManager;
         
         loadedSLSupport = loadSoloud();
+        
+        if (loader.errors.length)
+        {
+            logError("SoLoad loader errors:");
+            foreach(info; loader.errors)
+            {
+                logError(to!string(info.error), ": ", to!string(info.message));
+            }
+        }
         
         if (loadedSLSupport != slSupport)
         {
