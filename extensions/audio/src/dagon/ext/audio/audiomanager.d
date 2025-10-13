@@ -35,6 +35,7 @@ import dagon.core.logger;
 import dagon.core.application;
 import dagon.core.event;
 import dagon.core.time;
+import dagon.core.config;
 import dagon.graphics.entity;
 
 import bindbc.soloud;
@@ -65,27 +66,35 @@ struct SoundClassOptions
 class AudioManager: Owner
 {
     Application application;
+    Configuration config;
+    EventManager eventManager;
+    
     SLSupport loadedSLSupport;
     bool soloudPresent = true;
     uint soloudVersion;
+    
+    bool enabled = true;
+    
     Soloud audio;
-    EventManager eventManager;
-    Entity listener;
     uint backendId;
     String backend;
     uint channels;
     uint sampleRate;
     uint bufferSize;
+    
     float masterVolume = 1.0f;
     float masterVolumeCoef = 0.0f; // start with zero, gradually increment to 1.0f
     float masterFadeInDuration = 0.25f; // in seconds
     SoundClassOptions[32] options;
+    
+    Entity listener;
     
     this(Application application)
     {
         super(application);
         
         this.application = application;
+        this.config = application.config;
         this.eventManager = application.eventManager;
         
         loadedSLSupport = loadSoloud();
@@ -103,6 +112,8 @@ class AudioManager: Owner
             }
         }
         
+        enabled = soloudPresent;
+        
         if (!soloudPresent)
             return;
         
@@ -111,10 +122,8 @@ class AudioManager: Owner
         soloudVersion = audio.getVersion();
         logInfo("SoLoud version: ", soloudVersion);
         
-        // TODO: options from settings.conf
         audio.init(Soloud.CLIP_ROUNDOFF | Soloud.LEFT_HANDED_3D, Soloud.AUTO, Soloud.AUTO, Soloud.AUTO, 2);
         audio.setGlobalVolume(0.0f);
-        masterVolume = 1.0f;
         
         backendId = audio.getBackendId();
         const(char)* backendStr = audio.getBackendString();
@@ -128,8 +137,35 @@ class AudioManager: Owner
         logInfo("Audio sample rate: ", sampleRate);
         logInfo("Audio buffer size: ", bufferSize);
         
+        // Set options
         foreach(ref opt; options)
             opt = SoundClassOptions(0.5f, true);
+        
+        if ("audio.enabled" in config.props)
+            enabled = soloudPresent && cast(bool)config.props["audio.enabled"].toUInt;
+        
+        if ("audio.masterVolume" in config.props)
+            masterVolume = config.props["audio.masterVolume"].toFloat;
+        
+        if ("audio.masterFadeInDuration" in config.props)
+            masterFadeInDuration = config.props["audio.masterFadeInDuration"].toFloat;
+        
+        float sfxVolume = 0.5f;
+        bool sfxEnabled = true;
+        if ("audio.sfxVolume" in config.props)
+            sfxVolume = config.props["audio.sfxVolume"].toFloat;
+        if ("audio.sfxEnabled" in config.props)
+            sfxEnabled = cast(bool)config.props["audio.sfxEnabled"].toUInt;
+        
+        float musicVolume = 0.5f;
+        bool musicEnabled = true;
+        if ("audio.musicVolume" in config.props)
+            musicVolume = config.props["audio.musicVolume"].toFloat;
+        if ("audio.musicEnabled" in config.props)
+            musicEnabled = cast(bool)config.props["audio.musicEnabled"].toUInt;
+        
+        options[SoundClass.SFX] = SoundClassOptions(sfxVolume, sfxEnabled);
+        options[SoundClass.Music] = SoundClassOptions(musicVolume, musicEnabled);
     }
     
     ~this()
@@ -180,6 +216,9 @@ class AudioManager: Owner
     
     int play(SoloudObject sound, uint soundClass, bool looping = false)
     {
+        if (!enabled)
+            return 0;
+        
         int voice = audio.play(sound);
         audio.setLooping(voice, false);
         audio.setVolume(voice, options[soundClass].volume);
@@ -189,6 +228,9 @@ class AudioManager: Owner
     
     int playAtPosition(SoloudObject sound, uint soundClass, Vector3f position, bool looping = false)
     {
+        if (!enabled)
+            return 0;
+        
         int voice = audio.play3d(sound, position.x, position.y, position.z);
         audio.setLooping(voice, false);
         audio.setVolume(voice, options[soundClass].volume);

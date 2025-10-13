@@ -56,8 +56,11 @@ class SoundComponent: EntityComponent
         this.audioManager = audioManager;
     }
     
-    void play(SoloudObject sound, uint soundClass)
+    int play(SoloudObject sound, uint soundClass)
     {
+        if (!audioManager.enabled)
+            return 0;
+        
         Vector3f pos = entity.positionAbsolute;
         voice = audioManager.audio.play3d(sound, pos.x, pos.y, pos.z);
         audioManager.audio.set3dSourceVelocity(voice, velocity.x, velocity.y, velocity.z);
@@ -67,11 +70,12 @@ class SoundComponent: EntityComponent
         audioManager.audio.set3dSourceAttenuation(voice, attenuationModel, attenuationRolloffFactor);
         audioManager.audio.set3dSourceDopplerFactor(voice, dopplerFactor);
         audioManager.audio.update3dAudio();
+        return voice;
     }
     
-    void play(WavStream music)
+    int play(WavStream music)
     {
-        play(music, SoundClass.Music);
+        return play(music, SoundClass.Music);
     }
     
     override void update(Time time)
