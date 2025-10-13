@@ -47,6 +47,7 @@ import loader = bindbc.loader.sharedlib;
 import soloud;
 
 import dagon.ext.audio.soundcomponent;
+import dagon.ext.audio.playlist;
 
 enum AudioBackend
 {
@@ -115,6 +116,8 @@ class AudioManager: Owner
     SoundClassOptions[32] options;
     
     Entity listener;
+    
+    Playlist activePlaylist;
     
     this(Application application)
     {
@@ -294,6 +297,13 @@ class AudioManager: Owner
         return New!SoundComponent(eventManager, this, entity);
     }
     
+    Playlist addPlaylist()
+    {
+        Playlist p = New!Playlist(this, this);
+        activePlaylist = p;
+        return p;
+    }
+    
     int play(SoloudObject sound, uint soundClass, bool looping = false)
     {
         if (!enabled)
@@ -379,5 +389,8 @@ class AudioManager: Owner
             audio.set3dListenerUp(up.x, up.y, up.z);
             audio.update3dAudio();
         }
+        
+        if (activePlaylist)
+            activePlaylist.update();
     }
 }

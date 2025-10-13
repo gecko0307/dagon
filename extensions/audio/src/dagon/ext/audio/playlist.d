@@ -178,13 +178,19 @@ class Playlist: Owner
         }
     }
     
-    // TODO: addTracksFrom(string directory)
+    // TODO: addTracksFromDirectory(string directory)
+    
+    void addTracks(string[] list)
+    {
+        foreach(filename; list)
+        {
+            addTrack(filename);
+        }
+    }
     
     PlaylistTrack play(uint track = 0)
     {
-        // TODO: stop current
-        if (currentTrack)
-            currentTrack.stop();
+        stop();
         if (track < tracks.length)
         {
             currentTrackIndex = track;
@@ -199,6 +205,16 @@ class Playlist: Owner
         {
             logError("Track index ", track, " is out of playlist range");
             return null;
+        }
+    }
+    
+    void stop()
+    {
+        if (currentTrack)
+        {
+            currentTrack.stop();
+            currentTrack = null;
+            currentTrackIndex = 0;
         }
     }
     
