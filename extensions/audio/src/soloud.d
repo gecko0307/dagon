@@ -4,7 +4,7 @@ public import bindbc.soloud;
 
 nothrow @nogc:
 
-private struct SoloudObject
+public struct SoloudObject
 {
     public int* objhandle;
 }
