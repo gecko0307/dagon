@@ -106,7 +106,6 @@ class ShaderCache: Owner
         
         OutputStream strm = fs.openForOutput(path, FileSystem.create);
         strm.writeArray(data);
-        strm.close();
         Delete(strm);
         
         path.free();
