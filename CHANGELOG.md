@@ -10,8 +10,8 @@ Dagon 0.32.0 - TBD
   - Initial compute shaders support. `dagon.compute` package
   - `dagon.compute.resample` - GPU-based texture resize with bilinear filtering
 - **Extensions**
-  - New extension `dagon:audio` for sound playback via [SoLoud](https://solhsa.com/soloud/)
-  - New extension `dagon:nfd` for displaying native file open/save dialogs via [NFD](https://github.com/mlabbe/nativefiledialog)
+  - New experimental extension `dagon:audio` for sound playback via [SoLoud](https://solhsa.com/soloud/)
+  - New experimental extension `dagon:nfd` for displaying native file open/save dialogs via [NFD](https://github.com/mlabbe/nativefiledialog)
   - New experimental extension `dagon:gscript` for running [GScript3](https://github.com/gecko0307/gscript3) bytecode inside a virtual machine. No built-in compiler yet, scripts have to be compiled with GS compiler.
 
 Dagon 0.31.0 - 16 Sep, 2025
