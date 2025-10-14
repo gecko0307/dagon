@@ -1,6 +1,6 @@
 Copyright (c) 2016-2025 Timur Gafarov, Rafał Ziemniewski, Mateusz Muszyński,
 Denis Feklushkin, dayllenger, Konstantin Menshikov, Björn Roberg, Isaac S.,
-Adrien Allard, Dennis Korpel, Ilya Lemeshko, Vlad Davydov.
+Adrien Allard, Dennis Korpel, Vadim Lopatin, Ilya Lemeshko, Vlad Davydov.
 
 Boost Software License - Version 1.0 - August 17th, 2003
 

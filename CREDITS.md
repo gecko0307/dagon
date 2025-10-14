@@ -1,5 +1,5 @@
 # Dagon Authors and Contributors
-* Core engine, Newton extension, IQM extension, KTX extension, Assimp extension, PhysFS extension, video extension - [Timur Gafarov aka gecko0307](https://github.com/gecko0307)
+* Core engine, Newton extension, IQM extension, KTX extension, Assimp extension, PhysFS extension, audio extension, video extension - [Timur Gafarov aka gecko0307](https://github.com/gecko0307)
 * Wintab binding - [Vadim Lopatin aka buggins](https://github.com/buggins)
 * ImGui extension (ImGuiOpenGLBackend) - [Joshua T. Fisher aka playmer](https://github.com/playmer), [LunaTheFoxgirl](https://github.com/LunaTheFoxgirl)
 * Input manager, Nuklear extension - [Mateusz Muszyński aka Timu5](https://github.com/Timu5)

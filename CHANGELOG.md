@@ -1,5 +1,5 @@
-Dagon 0.32.0 - TBD
-------------------
+Dagon 0.32.0 - 14 Oct, 2025
+---------------------------
 - **Core**
   - Dagon now requires OpenGL 4.3
   - If `windowWidth` and `windowHeight` are both zero, Dagon creates a desktop-sized window (so-called "windowed fullscreen mode"). Works also with settings.conf
