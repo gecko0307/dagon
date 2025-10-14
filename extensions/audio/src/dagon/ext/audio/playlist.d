@@ -26,8 +26,10 @@ DEALINGS IN THE SOFTWARE.
 */
 module dagon.ext.audio.playlist;
 
+import std.stdio;
 import std.path;
 import std.algorithm;
+import std.string;
 
 import dlib.core.memory;
 import dlib.core.ownership;
@@ -42,6 +44,9 @@ abstract class PlaylistTrack: Owner
 {
     Playlist playlist;
     String filename;
+    bool streaming = true;
+    bool loaded = false;
+    bool valid = false;
     int voice;
     
     this(Playlist playlist, string filename)
@@ -61,13 +66,16 @@ abstract class PlaylistTrack: Owner
     void play()
     {
         SoloudObject audioSrc = load();
-        voice = playlist.audioManager.playMusic(audioSrc, false);
-        // TODO: fade in
+        if (valid)
+        {
+            voice = playlist.audioManager.playMusic(audioSrc, false);
+            // TODO: fade in
+        }
     }
     
     void stop()
     {
-        if (isPlaying)
+        if (valid && isPlaying)
             playlist.audioManager.stop(voice);
     }
     
@@ -89,7 +97,14 @@ class StreamedMusicTrack: PlaylistTrack
     
     override SoloudObject load()
     {
-        playlist.audioManager.loadMusic(wavStream, filename);
+        if (!loaded)
+        {
+            if (streaming)
+                valid = playlist.audioManager.streamMusic(wavStream, filename);
+            else
+                valid = playlist.audioManager.loadMusic(wavStream, filename);
+            loaded = true;
+        }
         return wavStream;
     }
     
@@ -111,7 +126,11 @@ class OpenMPTTrack: PlaylistTrack
     
     override SoloudObject load()
     {
-        playlist.audioManager.loadTrackerMusic(openmpt, filename);
+        if (!loaded)
+        {
+            valid = playlist.audioManager.loadTrackerMusic(openmpt, filename);
+            loaded = true;
+        }
         return openmpt;
     }
     
@@ -130,13 +149,23 @@ class Playlist: Owner
     bool looping = true;
     
     static immutable string[] streamedFormats = [
-        ".wav", ".mp3", ".ogg", ".flac",
-        ".WAV", ".MP3", ".OGG", ".FLAC"
+        ".wav", ".mp3", ".ogg", ".flac"
     ];
 
     static immutable string[] openmptFormats = [
-        ".mod", ".xm", ".s3m", ".it",
-        ".MOD", ".XM", ".S3M", ".IT"
+        ".mod", ".xm", ".s3m", ".it", ".mptm",
+        ".667", ".669", ".amf", ".dmf", ".ams",
+        ".c67", ".cba", ".dbm", ".digi", ".dmf",
+        ".dsm", ".dsym", ".dtm", ".etx", ".far",
+        ".fc", ".fc13", ".fc14", ".smod",
+        ".fmt", ".ftm", ".gdm", ".gmc", ".gtk", ".gt2",
+        ".ice", ".st26", ".imf", ".ims", ".itp",
+        ".j2b", ".m15", ".stk", ".mdl", ".med",
+        ".mo3", ".mt2", ".mtm", ".mus", ".okt",
+        ".oxm", ".psm", ".plm", ".pt36", ".ptm",
+        ".puma", ".rtm", ".sfx", ".sfx2", ".mms",
+        ".stm", ".stx", ".stp", ".symmod", ".ult",
+        ".umx", ".wow", ".xmf"
     ];
     
     this(AudioManager audioManager, Owner owner)
@@ -158,17 +187,19 @@ class Playlist: Owner
     
     PlaylistTrack addTrack(string filename)
     {
-        string ext = extension(filename);
+        string ext = extension(filename).toLower;
         if (streamedFormats.canFind(ext))
         {
             auto t = New!StreamedMusicTrack(this, filename);
             tracks.append(t);
+            logInfo("Add track \"", filename, "\"");
             return t;
         }
         else if (openmptFormats.canFind(ext))
         {
             auto t = New!OpenMPTTrack(this, filename);
             tracks.append(t);
+            logInfo("Add track \"", filename, "\"");
             return t;
         }
         else
@@ -178,7 +209,21 @@ class Playlist: Owner
         }
     }
     
-    // TODO: addTracksFromDirectory(string directory)
+    void addTracksFromDirectory(string directory)
+    {
+        auto dir = audioManager.vfs.openDir(directory);
+        if (dir)
+        {
+            foreach(entry; dir.contents)
+            {
+                String path = String(directory);
+                path ~= dirSeparator;
+                path ~= entry.name;
+                addTrack(path);
+                path.free();
+            }
+        }
+    }
     
     void addTracks(string[] list)
     {

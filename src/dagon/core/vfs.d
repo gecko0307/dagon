@@ -43,6 +43,7 @@ module dagon.core.vfs;
 import std.string;
 import std.path;
 import std.process;
+import std.algorithm.iteration: joiner;
 
 import dlib.core.memory;
 import dlib.core.stream;
@@ -65,7 +66,7 @@ class StdDirFileSystem: ReadOnlyFileSystem
 
     /// The root directory for this file system.
     string rootDir;
-
+    
     /**
      * Constructs a `StdDirFileSystem` for the given root directory.
      *
@@ -89,7 +90,10 @@ class StdDirFileSystem: ReadOnlyFileSystem
      */
     bool stat(string filename, out FileStat stat)
     {
-        string path = format("%s/%s", rootDir, filename);
+        String path = String(rootDir);
+        path ~= dirSeparator;
+        path ~= filename;
+        scope(exit) path.free();
         return stdfs.stat(path, stat);
     }
 
@@ -103,7 +107,10 @@ class StdDirFileSystem: ReadOnlyFileSystem
      */
     InputStream openForInput(string filename)
     {
-        string path = format("%s/%s", rootDir, filename);
+        String path = String(rootDir);
+        path ~= dirSeparator;
+        path ~= filename;
+        scope(exit) path.free();
         return stdfs.openForInput(path);
     }
 
@@ -117,7 +124,10 @@ class StdDirFileSystem: ReadOnlyFileSystem
      */
     Directory openDir(string dir)
     {
-        string path = format("%s/%s", rootDir, dir);
+        String path = String(rootDir);
+        path ~= dirSeparator;
+        path ~= dir;
+        scope(exit) path.free();
         return stdfs.openDir(path);
     }
 
@@ -165,6 +175,13 @@ class VirtualFileSystem: ReadOnlyFileSystem
         mounted.append(fs);
     }
     
+    /**
+     * Mounts a folder in the system-specific application data directory
+     * (APPDATA\folderName under Windows, HOME/folderName under Posix).
+     *
+     * Params:
+     *   folderName = The folder to mount.
+     */
     void mountAppDataDirectory(string folderName)
     {
         if (folderName.length > 0)
@@ -175,10 +192,6 @@ class VirtualFileSystem: ReadOnlyFileSystem
             auto homeDir = environment.get(homeDirVar, "");
             if (homeDir.length)
             {
-                string dirSeparator;
-                version(Windows) dirSeparator = "\\";
-                version(Posix) dirSeparator = "/";
-                
                 appDataPath = String(homeDir);
                 appDataPath ~= dirSeparator;
                 appDataPath ~= folderName;
@@ -289,7 +302,13 @@ class VirtualFileSystem: ReadOnlyFileSystem
      */
     Directory openDir(string path)
     {
-        // TODO
+        foreach_reverse(i, fs; mounted)
+        {
+            auto dir = fs.openDir(path);
+            if (dir)
+                return dir;
+        }
+        
         return null;
     }
     

@@ -271,43 +271,70 @@ class AudioManager: Owner
         backendName.free();
     }
     
+    void logErrorCode(string filename, int code)
+    {
+        String errMsg = String(audio.getErrorString(code));
+        logError("Failed to load \"", filename, "\": ", errMsg);
+        errMsg.free();
+    }
+    
     Wav loadSound(string filename)
     {
         Wav sound = Wav.create();
         InputStream istrm = vfs.openForInput(filename);
         ubyte[] data = New!(ubyte[])(istrm.size);
         istrm.fillArray(data);
-        sound.loadMem(data.ptr, cast(uint)data.length, true, false);
+        int result = sound.loadMem(data.ptr, cast(uint)data.length, true, false);
+        if (result != 0)
+            logErrorCode(filename, result);
         Delete(data);
         Delete(istrm);
         return sound;
     }
     
-    void loadMusic(ref WavStream wavStream, string filename)
+    bool loadMusic(ref WavStream wavStream, string filename)
     {
         InputStream istrm = vfs.openForInput(filename);
         ubyte[] data = New!(ubyte[])(istrm.size);
         istrm.fillArray(data);
-        wavStream.loadMem(data.ptr, cast(uint)data.length, true, false);
+        int result = wavStream.loadMem(data.ptr, cast(uint)data.length, true, false);
+        if (result != 0)
+            logErrorCode(filename, result);
         Delete(data);
         Delete(istrm);
+        return result == 0;
     }
     
     WavStream loadMusic(string filename)
     {
         WavStream wavStream = WavStream.create();
-        loadMusic(wavStream, filename);
+        int result = loadMusic(wavStream, filename);
+        if (result != 0)
+            logErrorCode(filename, result);
         return wavStream;
     }
     
-    void loadTrackerMusic(ref Openmpt openmpt, string filename)
+    bool streamMusic(ref WavStream wavStream, string filename)
+    {
+        String filenameCStr = String(filename);
+        int result = wavStream.load(filenameCStr.ptr);
+        if (result != 0)
+            logErrorCode(filename, result);
+        filenameCStr.free();
+        return result == 0;
+    }
+    
+    bool loadTrackerMusic(ref Openmpt openmpt, string filename)
     {
         InputStream istrm = vfs.openForInput(filename);
         ubyte[] data = New!(ubyte[])(istrm.size);
         istrm.fillArray(data);
-        openmpt.loadMem(data.ptr, cast(uint)data.length, true, false);
+        int result = openmpt.loadMem(data.ptr, cast(uint)data.length, true, false);
+        if (result != 0)
+            logErrorCode(filename, result);
         Delete(data);
         Delete(istrm);
+        return result == 0;
     }
     
     Openmpt loadTrackerMusic(string filename)
