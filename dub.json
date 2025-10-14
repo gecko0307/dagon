@@ -46,6 +46,8 @@
         "allowWarnings"
     ],
     
+    "libs-windows": ["user32", "comdlg32"],
+    
     "configurations": [
         {
             "name": "library",
