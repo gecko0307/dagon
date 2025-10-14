@@ -114,6 +114,11 @@ abstract class PlaylistTrack: Owner
             playlistPlayer.audioManager.togglePause(voice);
     }
     
+    void setFilter(uint filterId, SoloudObject filter)
+    {
+        //
+    }
+    
     ~this()
     {
         filename.free();
@@ -143,6 +148,11 @@ class StreamedMusicTrack: PlaylistTrack
         return wavStream;
     }
     
+    override void setFilter(uint filterId, SoloudObject filter)
+    {
+        wavStream.setFilter(filterId, filter);
+    }
+    
     ~this()
     {
         wavStream.free();
@@ -167,6 +177,11 @@ class OpenMPTTrack: PlaylistTrack
             loaded = true;
         }
         return openmpt;
+    }
+    
+    override void setFilter(uint filterId, SoloudObject filter)
+    {
+        openmpt.setFilter(filterId, filter);
     }
     
     ~this()

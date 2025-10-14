@@ -39,6 +39,9 @@ import dagon.ext.audio.playlist;
 import bindbc.soloud;
 import soloud;
 
+/**
+ * A component for playing spatial sounds at Entity's position
+ */
 class SoundComponent: EntityComponent
 {
     AudioManager audioManager;
