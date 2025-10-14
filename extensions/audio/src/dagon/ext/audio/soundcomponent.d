@@ -34,6 +34,7 @@ import dagon.core.event;
 import dagon.core.time;
 import dagon.graphics.entity;
 import dagon.ext.audio.audiomanager;
+import dagon.ext.audio.playlist;
 
 import bindbc.soloud;
 import soloud;
@@ -41,6 +42,7 @@ import soloud;
 class SoundComponent: EntityComponent
 {
     AudioManager audioManager;
+    PlaylistPlayer playlistPlayer;
     int voice;
     bool looping = false;
     Vector3f velocity = Vector3f(0.0f, 0.0f, 0.0f);
@@ -69,13 +71,37 @@ class SoundComponent: EntityComponent
         audioManager.audio.set3dSourceMinMaxDistance(voice, minDistance, maxDistance);
         audioManager.audio.set3dSourceAttenuation(voice, attenuationModel, attenuationRolloffFactor);
         audioManager.audio.set3dSourceDopplerFactor(voice, dopplerFactor);
-        audioManager.audio.update3dAudio();
         return voice;
     }
     
     int play(WavStream music)
     {
         return play(music, SoundClass.Music);
+    }
+    
+    int play(uint playlistTrack)
+    {
+        if (!audioManager.enabled)
+            return 0;
+        
+        if (playlistPlayer is null)
+            return 0;
+        
+        Vector3f pos = entity.positionAbsolute;
+        playlistPlayer.positional = true;
+        playlistPlayer.position = pos;
+        PlaylistTrack track = playlistPlayer.play(playlistTrack);
+        if (track)
+        {
+            voice = track.voice;
+            audioManager.audio.set3dSourceVelocity(voice, velocity.x, velocity.y, velocity.z);
+            audioManager.audio.setLooping(voice, looping);
+            audioManager.audio.setVolume(voice, audioManager.options[SoundClass.Music].volume);
+            audioManager.audio.set3dSourceMinMaxDistance(voice, minDistance, maxDistance);
+            audioManager.audio.set3dSourceAttenuation(voice, attenuationModel, attenuationRolloffFactor);
+            audioManager.audio.set3dSourceDopplerFactor(voice, dopplerFactor);
+        }
+        return voice;
     }
     
     override void update(Time time)

@@ -35,6 +35,7 @@ import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.container.array;
 import dlib.text.str;
+import dlib.math.vector;
 
 import soloud;
 import dagon.core.logger;
@@ -42,17 +43,17 @@ import dagon.ext.audio.audiomanager;
 
 abstract class PlaylistTrack: Owner
 {
-    Playlist playlist;
+    PlaylistPlayer playlistPlayer;
     String filename;
     bool streaming = true;
     bool loaded = false;
     bool valid = false;
     int voice;
     
-    this(Playlist playlist, string filename)
+    this(PlaylistPlayer playlistPlayer, string filename)
     {
-        super(playlist);
-        this.playlist = playlist;
+        super(playlistPlayer);
+        this.playlistPlayer = playlistPlayer;
         this.filename = String(filename);
     }
     
@@ -60,41 +61,57 @@ abstract class PlaylistTrack: Owner
     
     bool isPlaying()
     {
-        return playlist.audioManager.isPlaying(voice);
+        return playlistPlayer.audioManager.isPlaying(voice);
     }
     
-    void play()
+    int play()
     {
         SoloudObject audioSrc = load();
         if (valid)
         {
-            voice = playlist.audioManager.playMusic(audioSrc, false);
+            voice = playlistPlayer.audioManager.playMusic(audioSrc, false);
             // TODO: fade in
+            return voice;
         }
+        else
+            return 0;
+    }
+    
+    int playAtPosition(Vector3f position)
+    {
+        SoloudObject audioSrc = load();
+        if (valid)
+        {
+            voice = playlistPlayer.audioManager.playMusicAtPosition(audioSrc, position, false);
+            // TODO: fade in
+            return voice;
+        }
+        else
+            return 0;
     }
     
     void stop()
     {
         if (valid && isPlaying)
-            playlist.audioManager.stop(voice);
+            playlistPlayer.audioManager.stop(voice);
     }
     
     void pause()
     {
         if (valid && isPlaying)
-            playlist.audioManager.pause(voice);
+            playlistPlayer.audioManager.pause(voice);
     }
     
     void resume()
     {
         if (valid && isPlaying)
-            playlist.audioManager.resume(voice);
+            playlistPlayer.audioManager.resume(voice);
     }
     
     void togglePause()
     {
         if (valid && isPlaying)
-            playlist.audioManager.togglePause(voice);
+            playlistPlayer.audioManager.togglePause(voice);
     }
     
     ~this()
@@ -107,9 +124,9 @@ class StreamedMusicTrack: PlaylistTrack
 {
     WavStream wavStream;
     
-    this(Playlist playlist, string filename)
+    this(PlaylistPlayer playlistPlayer, string filename)
     {
-        super(playlist, filename);
+        super(playlistPlayer, filename);
         wavStream = WavStream.create();
     }
     
@@ -118,9 +135,9 @@ class StreamedMusicTrack: PlaylistTrack
         if (!loaded)
         {
             if (streaming)
-                valid = playlist.audioManager.streamMusic(wavStream, filename);
+                valid = playlistPlayer.audioManager.streamMusic(wavStream, filename);
             else
-                valid = playlist.audioManager.loadMusic(wavStream, filename);
+                valid = playlistPlayer.audioManager.loadMusic(wavStream, filename);
             loaded = true;
         }
         return wavStream;
@@ -136,9 +153,9 @@ class OpenMPTTrack: PlaylistTrack
 {
     Openmpt openmpt;
     
-    this(Playlist playlist, string filename)
+    this(PlaylistPlayer playlistPlayer, string filename)
     {
-        super(playlist, filename);
+        super(playlistPlayer, filename);
         openmpt = Openmpt.create();
     }
     
@@ -146,7 +163,7 @@ class OpenMPTTrack: PlaylistTrack
     {
         if (!loaded)
         {
-            valid = playlist.audioManager.loadTrackerMusic(openmpt, filename);
+            valid = playlistPlayer.audioManager.loadTrackerMusic(openmpt, filename);
             loaded = true;
         }
         return openmpt;
@@ -158,13 +175,15 @@ class OpenMPTTrack: PlaylistTrack
     }
 }
 
-class Playlist: Owner
+class PlaylistPlayer: Owner
 {
     AudioManager audioManager;
     Array!PlaylistTrack tracks;
     uint currentTrackIndex;
     PlaylistTrack currentTrack;
     bool looping = true;
+    bool positional = false;
+    Vector3f position = Vector3f(0.0f, 0.0f, 0.0f);
     
     static immutable string[] streamedFormats = [
         ".wav", ".mp3", ".ogg", ".flac"
@@ -258,7 +277,10 @@ class Playlist: Owner
         {
             currentTrackIndex = track;
             currentTrack = tracks[track];
-            currentTrack.play();
+            if (positional)
+                currentTrack.playAtPosition(position);
+            else
+                currentTrack.play();
             if (currentTrack.isPlaying())
             {
                 logInfo("Now playing: [", track, "] \"", currentTrack.filename, "\"");
@@ -375,5 +397,5 @@ class Playlist: Owner
             next();
     }
     
-    // TODO: playRandom()
+    // TODO: shuffle
 }

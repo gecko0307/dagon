@@ -118,7 +118,7 @@ class AudioManager: EventListener
     
     Entity listener;
     
-    Playlist activePlaylist;
+    PlaylistPlayer activePlaylistPlayer;
     
     bool multimediaKeysEnabled = true;
     
@@ -282,6 +282,21 @@ class AudioManager: EventListener
         errMsg.free();
     }
     
+    void setVolume(SoundClass soundClass, float volume)
+    {
+        options[soundClass].volume = volume;
+    }
+    
+    void setSFXVolume(float volume)
+    {
+        options[SoundClass.SFX].volume = volume;
+    }
+    
+    void setMusicVolume(float volume)
+    {
+        options[SoundClass.Music].volume = volume;
+    }
+    
     Wav loadSound(string filename)
     {
         Wav sound = Wav.create();
@@ -353,10 +368,10 @@ class AudioManager: EventListener
         return New!SoundComponent(eventManager, this, entity);
     }
     
-    Playlist addPlaylist()
+    PlaylistPlayer addPlaylistPlayer()
     {
-        Playlist p = New!Playlist(this, this);
-        activePlaylist = p;
+        PlaylistPlayer p = New!PlaylistPlayer(this, this);
+        activePlaylistPlayer = p;
         return p;
     }
     
@@ -478,22 +493,22 @@ class AudioManager: EventListener
             audio.update3dAudio();
         }
         
-        if (activePlaylist)
-            activePlaylist.update();
+        if (activePlaylistPlayer)
+            activePlaylistPlayer.update();
     }
     
     override void onKeyDown(int key)
     {
-        if (activePlaylist && multimediaKeysEnabled)
+        if (activePlaylistPlayer && multimediaKeysEnabled)
         {
             if (key == KEY_AUDIOSTOP)
-                activePlaylist.stop();
+                activePlaylistPlayer.stop();
             else if (key == KEY_AUDIOPLAY)
-                activePlaylist.togglePause();
+                activePlaylistPlayer.togglePause();
             else if (key == KEY_AUDIONEXT)
-                activePlaylist.next();
+                activePlaylistPlayer.next();
             else if (key == KEY_AUDIOPREV)
-                activePlaylist.previous();
+                activePlaylistPlayer.previous();
         }
     }
 }
