@@ -40,6 +40,7 @@ import dagon.core.vfs;
 import dagon.core.event;
 import dagon.core.time;
 import dagon.core.config;
+import dagon.core.props;
 import dagon.graphics.entity;
 
 import bindbc.soloud;
@@ -168,7 +169,7 @@ class AudioManager: Owner
             string backendStr = config.props["audio.backend"].toString;
             switch(backendStr)
             {
-                case "Auto": backend = AudioBackend.Auto; break;
+                case "auto": backend = AudioBackend.Auto; break;
                 case "SDL1": backend = AudioBackend.SDL1; break;
                 case "SDL2": backend = AudioBackend.SDL2; break;
                 case "PortAudio": backend = AudioBackend.PortAudio; break;
@@ -189,7 +190,31 @@ class AudioManager: Owner
             }
         }
         
-        audio.init(Soloud.CLIP_ROUNDOFF | Soloud.LEFT_HANDED_3D, backend, Soloud.AUTO, Soloud.AUTO, 2);
+        sampleRate = Soloud.AUTO;
+        if ("audio.sampleRate" in config.props)
+        {
+            auto prop = config.props["audio.sampleRate"];
+            if (prop.type == DPropType.Number)
+                sampleRate = prop.toUInt;
+        }
+        
+        bufferSize = Soloud.AUTO;
+        if ("audio.bufferSize" in config.props)
+        {
+            auto prop = config.props["audio.bufferSize"];
+            if (prop.type == DPropType.Number)
+                bufferSize = prop.toUInt;
+        }
+        
+        channels = Soloud.AUTO;
+        if ("audio.channels" in config.props)
+        {
+            auto prop = config.props["audio.channels"];
+            if (prop.type == DPropType.Number)
+                channels = prop.toUInt;
+        }
+        
+        audio.init(Soloud.CLIP_ROUNDOFF | Soloud.LEFT_HANDED_3D, backend, sampleRate, bufferSize, channels);
         audio.setGlobalVolume(0.0f);
         
         backend = cast(AudioBackend)audio.getBackendId();
