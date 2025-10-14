@@ -79,6 +79,24 @@ abstract class PlaylistTrack: Owner
             playlist.audioManager.stop(voice);
     }
     
+    void pause()
+    {
+        if (valid && isPlaying)
+            playlist.audioManager.pause(voice);
+    }
+    
+    void resume()
+    {
+        if (valid && isPlaying)
+            playlist.audioManager.resume(voice);
+    }
+    
+    void togglePause()
+    {
+        if (valid && isPlaying)
+            playlist.audioManager.togglePause(voice);
+    }
+    
     ~this()
     {
         filename.free();
@@ -242,7 +260,10 @@ class Playlist: Owner
             currentTrack = tracks[track];
             currentTrack.play();
             if (currentTrack.isPlaying())
+            {
+                logInfo("Now playing: [", track, "] \"", currentTrack.filename, "\"");
                 return currentTrack;
+            }
             else
                 return null;
         }
@@ -263,12 +284,27 @@ class Playlist: Owner
         }
     }
     
-    void update()
+    void pause()
     {
-        if (tracks.length == 0 || currentTrack is null)
-            return;
-        
-        if (!currentTrack.isPlaying)
+        if (currentTrack)
+            currentTrack.pause();
+    }
+    
+    void resume()
+    {
+        if (currentTrack)
+            currentTrack.resume();
+    }
+    
+    void togglePause()
+    {
+        if (currentTrack)
+            currentTrack.togglePause();
+    }
+    
+    void next()
+    {
+        if (currentTrack)
         {
             if (currentTrackIndex < tracks.length - 1)
             {
@@ -292,6 +328,51 @@ class Playlist: Owner
                 currentTrackIndex = 0;
             }
         }
+    }
+    
+    void previous()
+    {
+        if (currentTrack)
+        {
+            if (currentTrackIndex > 0)
+            {
+                if (play(currentTrackIndex - 1) is null)
+                {
+                    currentTrack = null;
+                    currentTrackIndex = 0;
+                }
+            }
+            else if (looping)
+            {
+                if (play(cast(uint)tracks.length - 1) is null)
+                {
+                    currentTrack = null;
+                    currentTrackIndex = 0;
+                }
+            }
+            else
+            {
+                currentTrack = null;
+                currentTrackIndex = 0;
+            }
+        }
+    }
+    
+    bool isPlaying()
+    {
+        if (currentTrack)
+            return currentTrack.isPlaying;
+        else
+            return false;
+    }
+    
+    void update()
+    {
+        if (tracks.length == 0 || currentTrack is null)
+            return;
+        
+        if (!currentTrack.isPlaying)
+            next();
     }
     
     // TODO: playRandom()

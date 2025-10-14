@@ -38,6 +38,7 @@ import dagon.core.logger;
 import dagon.core.application;
 import dagon.core.vfs;
 import dagon.core.event;
+import dagon.core.keycodes;
 import dagon.core.time;
 import dagon.core.config;
 import dagon.core.props;
@@ -91,12 +92,11 @@ struct SoundClassOptions
     bool enabled;
 }
 
-class AudioManager: Owner
+class AudioManager: EventListener
 {
     Application application;
     Configuration config;
     VirtualFileSystem vfs;
-    EventManager eventManager;
     
     SLSupport loadedSLSupport;
     bool soloudPresent = true;
@@ -120,14 +120,15 @@ class AudioManager: Owner
     
     Playlist activePlaylist;
     
+    bool multimediaKeysEnabled = true;
+    
     this(Application application)
     {
-        super(application);
+        super(application.eventManager, application);
         
         this.application = application;
         this.config = application.config;
         this.vfs = application.vfs;
-        this.eventManager = application.eventManager;
         
         loadedSLSupport = loadSoloud();
         
@@ -258,6 +259,9 @@ class AudioManager: Owner
         
         options[SoundClass.SFX] = SoundClassOptions(sfxVolume, sfxEnabled);
         options[SoundClass.Music] = SoundClassOptions(musicVolume, musicEnabled);
+        
+        if ("audio.multimediaKeysEnabled" in config.props)
+            multimediaKeysEnabled = cast(bool)config.props["audio.multimediaKeysEnabled"].toUInt;
     }
     
     ~this()
@@ -411,6 +415,36 @@ class AudioManager: Owner
             audio.stop(voice);
     }
     
+    void pauseAll()
+    {
+        if (enabled)
+            audio.setPauseAll(true);
+    }
+    
+    void pause(int voice)
+    {
+        if (enabled)
+            audio.setPause(voice, true);
+    }
+    
+    void resumeAll()
+    {
+        if (enabled)
+            audio.setPauseAll(false);
+    }
+    
+    void resume(int voice)
+    {
+        if (enabled)
+            audio.setPause(voice, false);
+    }
+    
+    void togglePause(int voice)
+    {
+        if (enabled)
+            audio.setPause(voice, !audio.getPause(voice));
+    }
+    
     bool isPlaying(int voice)
     {
         if (enabled)
@@ -421,6 +455,8 @@ class AudioManager: Owner
     
     void update(Time time)
     {
+        processEvents();
+        
         if (!soloudPresent)
             return;
         
@@ -444,5 +480,20 @@ class AudioManager: Owner
         
         if (activePlaylist)
             activePlaylist.update();
+    }
+    
+    override void onKeyDown(int key)
+    {
+        if (activePlaylist && multimediaKeysEnabled)
+        {
+            if (key == KEY_AUDIOSTOP)
+                activePlaylist.stop();
+            else if (key == KEY_AUDIOPLAY)
+                activePlaylist.togglePause();
+            else if (key == KEY_AUDIONEXT)
+                activePlaylist.next();
+            else if (key == KEY_AUDIOPREV)
+                activePlaylist.previous();
+        }
     }
 }

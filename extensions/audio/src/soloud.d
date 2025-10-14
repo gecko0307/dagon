@@ -64,18 +64,6 @@ public struct Soloud
     {
         return Soloud_initEx(objhandle, aFlags, aBackend, aSamplerate, aBufferSize, aChannels);
     }
-
-    /*
-    public int pause()
-    {
-        return Soloud_pause(objhandle);
-    }
-
-    public int resume()
-    {
-        return Soloud_resume(objhandle);
-    }
-    */
     
     public void deinit()
     {
