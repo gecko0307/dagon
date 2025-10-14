@@ -73,7 +73,6 @@ Features
 * Native file open/save dialogs (for Windows, GTK, and Qt)
 * Very basic and lightweight built-in UI toolkit
 * 2D/3D sound, various audio formats support including WAV, MP3, OGG/Vorbis, FLAC
-* Built-in scripting engine (WIP).
 
 Getting Started
 ---------------

@@ -61,7 +61,6 @@
         "extensions/assimp",
         "extensions/audio",
         "extensions/exformats",
-        "extensions/gscript",
         "extensions/imgui",
         "extensions/iqm",
         "extensions/ktx",

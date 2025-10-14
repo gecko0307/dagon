@@ -4,6 +4,7 @@ Dagon 0.32.0 - TBD
   - Dagon now requires OpenGL 4.3
   - If `windowWidth` and `windowHeight` are both zero, Dagon creates a desktop-sized window (so-called "windowed fullscreen mode"). Works also with settings.conf
   - New module `dagon.core.arena` - a general-purpose arena allocator for objects that don't need to be freed individually
+  - New module `dagon.core.dialogs` - native file open/save dialogs (for Windows, GTK, and Qt)
 - **Graphics components**
   - Shader binary cache (experimental). It can be enabled by specifying `enableShaderCache: 1;` in settings.conf
 - **Compute**
@@ -11,7 +12,6 @@ Dagon 0.32.0 - TBD
   - `dagon.compute.resample` - GPU-based texture resize with bilinear filtering
 - **Extensions**
   - New extension `dagon:audio` for sound playback via [SoLoud](https://solhsa.com/soloud/)
-  - New experimental extension `dagon:gscript` for running [GScript3](https://github.com/gecko0307/gscript3) bytecode inside a virtual machine. No built-in compiler yet, scripts have to be compiled with GS compiler.
 
 Dagon 0.31.0 - 16 Sep, 2025
 ---------------------------
