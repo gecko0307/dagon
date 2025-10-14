@@ -26,4 +26,3 @@ Dagon and its extensions depend on the following libraries:
 * [libVLC](https://images.videolan.org/vlc/libvlc.html)
 * [cimgui](https://github.com/cimgui/cimgui)
 * [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear)
-* [Native File Dialog](https://github.com/mlabbe/nativefiledialog)

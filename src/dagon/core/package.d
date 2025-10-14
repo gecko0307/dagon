@@ -53,6 +53,9 @@ public
     /// Configuration management and property loading.
     import dagon.core.config;
     
+    /// Cross-platform native dialogs.
+    import dagon.core.dialogs;
+    
     /// DirectX image format enumerations.
     import dagon.core.dxgiformat;
 

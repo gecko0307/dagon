@@ -110,6 +110,12 @@ dagon:assimp extension requires [Open Asset Importer Library](https://github.com
 
 dagon:assimp requires `Assimp.dll` under Windows and `libassimp.so` under Linux. On 64-bit platforms, Dagon provides a prebuilt Assimp library, which is automatically copied to your project after compilation (if you are building with DUB).
 
+## dagon:audio
+
+dagon:audio extension requires [SoLoud](https://github.com/jarikomppa/soloud). It can be installed system-wide or placed to the project's folder.
+
+dagon:audio requires `soloud.dll` under Windows and `libsoloud.so` under Linux. On 64-bit platforms, Dagon provides a prebuilt SoLoud library, which is automatically copied to your project after compilation (if you are building with DUB). Under windows Dagon also provides optional OpenMPT libraries for tracker music formats support.
+
 ## dagon:video
 
 dagon:video extension requires [libVLC](https://www.videolan.org/vlc/libvlc.html) 3.0.21. It can be installed system-wide or placed to the project's folder.
