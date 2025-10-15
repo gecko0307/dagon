@@ -74,7 +74,10 @@ class FirstPersonViewComponent: EntityComponent
     float mouseSensitivity = 0.2f;
 
     /// Sensitivity for virtual axes (controlled via keyboard or gamepad).
-    float axisSensitivity = 20.0f;
+    float axisSensitivity = 2.0f;
+    
+    /// Lower threshold of controller axis value.
+    float axisDeadzone = 0.075f;
     
     /// Maximum pitch angle (degrees).
     float pitchLimitMax = 60.0f;
@@ -180,7 +183,8 @@ class FirstPersonViewComponent: EntityComponent
         
         if (_active & mouseActive)
         {
-            float mouseRelH, mouseRelV;
+            float mouseRelH = 0.0f;
+            float mouseRelV = 0.0f;
             if (useRelativeMouseMode)
             {
                 mouseRelH = eventManager.mouseRelX * mouseSensitivity;
@@ -192,11 +196,13 @@ class FirstPersonViewComponent: EntityComponent
                 mouseRelV = (eventManager.mouseY - prevMouseY) * mouseSensitivity;
             }
             
-            float axisV = inputManager.getAxis("vertical") * axisSensitivity * mouseSensitivity;
-            float axisH = inputManager.getAxis("horizontal") * axisSensitivity * mouseSensitivity;
+            float hAxis = inputManager.getAxis("horizontal");
+            float vAxis = inputManager.getAxis("vertical");
+            if (abs(hAxis) < axisDeadzone) hAxis = 0.0f;
+            if (abs(vAxis) < axisDeadzone) vAxis = 0.0f;
             
-            pitch -= mouseRelV + axisV;
-            turn -= mouseRelH + axisH;
+            pitch -= mouseRelV + vAxis * axisSensitivity;
+            turn -= mouseRelH + hAxis * axisSensitivity;
             
             if (pitch > pitchLimitMax)
             {
