@@ -26,31 +26,31 @@ stringOption: "Some text";
 * `windowTitle` - window title text
 * `hideConsole` - `0` or `1`, show or hide the console window. For example, it is convenient to leave it when debugging the game and hide it for end users
 * `locale` - locale that should be loaded. This option overrides automatically selected locale based on system language and region. For example, `locale: "en_US";` means that application will try load `locales/en_US.lang` file and will ignore system language.
-* `renderer.fxaaEnabled` - 
-* `renderer.ssaoEnabled` - 
+* `renderer.fxaaEnabled` - `0` or `1`
+* `renderer.ssaoEnabled` - `0` or `1`
 * `renderer.ssaoSamples` - 
 * `renderer.ssaoRadius` - 
 * `renderer.ssaoPower` - 
 * `renderer.ssaoDenoise` - 
 * `renderer.occlusionBufferDetail` - 
-* `renderer.glowEnabled` - 
+* `renderer.glowEnabled` - `0` or `1`
 * `renderer.glowViewScale` - 
 * `renderer.glowThreshold` - 
 * `renderer.glowIntensity` - 
 * `renderer.glowRadius` - 
 * `renderer.tonemapper` - 
 * `renderer.exposure` - 
-* `renderer.motionBlurEnabled` - 
+* `renderer.motionBlurEnabled` - `0` or `1`
 * `renderer.motionBlurSamples` - 
 * `renderer.motionBlurFramerate` - 
 * `renderer.motionBlurRandomness` - 
 * `renderer.motionBlurMinDistance` - 
 * `renderer.motionBlurMaxDistance` - 
 * `renderer.radialBlurAmount` - 
-* `renderer.lensDistortionEnabled` - 
+* `renderer.lensDistortionEnabled` - `0` or `1`
 * `renderer.lensDistortionScale` - 
 * `renderer.lensDistortionDispersion` - 
-* `renderer.dofEnabled` - 
+* `renderer.dofEnabled` - `0` or `1`
 * `renderer.autofocus` - 
 * `renderer.focalDepth` - 
 * `renderer.focalLength` - 
@@ -60,9 +60,9 @@ stringOption: "Some text";
 * `renderer.dofNearDistance` - 
 * `renderer.dofFarStart` - 
 * `renderer.dofFarDistance` - 
-* `renderer.lutEnabled` - 
+* `renderer.lutEnabled` - `0` or `1`
 * `renderer.lut` - 
-* `renderer.pixelizationEnabled` -
+* `renderer.pixelizationEnabled` - `0` or `1`
 * `renderer.pixelSize` -
 
 The engine doesn't modify `settings.conf`, and you can imlement a visual configurator in your game that modifies this file.

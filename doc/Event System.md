@@ -36,7 +36,7 @@ A list of supported event types:
 ### Logic flow
 - `Message` - a message is received from the `MessageBroker`. See the "Messaging System.md" file for details. Reports `Event.message`, `Event.sender`, `Event.domain`, `Event.payload`
 - `Task` - a task is received from the `MessageBroker`. See the Messaging System documentation for details. Reports `Event.callback`, `Event.sender`, `Event.domain`, `Event.payload`
-- `UserEvent` - a user event is emitted. User events carry user-defined signed integer codes (`Event.code`). All negative codes are reserved to Dagon's internals. Currently, one negative code is defined, `DagonEvent.Exit` (-1)
+- `UserEvent` - a user event is emitted. User events carry user-defined signed integer codes (`Event.code`). All negative codes are reserved to Dagon's internals. Currently, one negative code is defined, `DagonEvent.Exit` (`-1`)
 
 ### Misc
 - `Log` - an asynchronous log event. It doesn't propagate to the listeners - instead, it is immediately handled by the `EventManager` itself
