@@ -32,8 +32,9 @@ Recognozed by the `Application` class.
   * `"info"` - prints informational messages, warnings and errors
   * `"warning"` - prints warnings and errors
   * `"error"` - prints only errors
-* `logTimestampTags` - `0` or `1`, disables or enables timestamps in log messages. Note that some early log output ignore this setting, because the config file is loaded after the VFS and locale system initialization
-* `logLevelTags` - `0` or `1`, disables or enables level tags in log messages. Note that some early log output ignore this setting, because the config file is loaded after the VFS and locale system initialization
+* `logToStdout` - `0` or `1`, disables or enables printing log messages to the standard output. Default is `1`. Note that some early log output ignore this setting, because the config file is loaded after the VFS and locale system initialization
+* `logTimestampTags` - `0` or `1`, disables or enables timestamps in log messages. Default is `0`. Note that some early log output ignore this setting, because the config file is loaded after the VFS and locale system initialization
+* `logLevelTags` - `0` or `1`, disables or enables level tags in log messages. Default is `1`. Note that some early log output ignore this setting, because the config file is loaded after the VFS and locale system initialization
 * `logFile` - enables logging to file, specifying the filename. File output for the logger is disabled by default. Note that some early log output ignore this setting, because the config file is loaded after the VFS and locale system initialization
 * `windowWidth`, `windowHeight` - size of the game window. These values override default ones hardcoded in the application
 * `windowResizable` - `0` or `1`, allow the user to resize the window or not. Default is `1`

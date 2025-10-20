@@ -513,11 +513,12 @@ class Application: EventListener, Updateable
                     logLevel = LogLevel.Error;
             }
             
+            if ("logToStdout" in config.props)
+                logOutputOptions.printToStdout = cast(bool)config.props["logToStdout"].toUInt;
+            
             if ("logFile" in config.props)
-            {
                 if (config.props["logFile"].type == DPropType.String)
                     setLogFilename(config.props["logFile"].toString);
-            }
             
             if ("logTimestampTags" in config.props)
                 logOutputOptions.printTimestamp = cast(bool)config.props["logTimestampTags"].toUInt;
