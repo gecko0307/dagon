@@ -502,6 +502,8 @@ class Application: EventListener, Updateable
         debug logLevel = LogLevel.Debug;
         if (config.fromFile("settings.conf"))
         {
+            // TODO: VFS settings
+            
             // Logger settings
             if ("logLevel" in config.props)
             {
