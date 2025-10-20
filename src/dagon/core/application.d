@@ -29,9 +29,9 @@ DEALINGS IN THE SOFTWARE.
  * Generic applicaton class and corresponding utility functions
  *
  * Description:
- * The `dagon.core.application` module provides the base `Application` class and related utilities
- * for creating and managing a Dagon engine application. This includes SDL window and OpenGL context 
- * management, event handling, functions for error handling and taking screenshots.
+ * The `dagon.core.application` module provides the base `Application` class and related functionality
+ * for creating and managing a Dagon-based application. This includes SDL window and OpenGL context 
+ * management, event handling, functions for error handling, taking screenshots and others.
  *
  * Copyright: Timur Gafarov 2017-2025.
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
@@ -61,6 +61,7 @@ import dagon.core.event;
 import dagon.core.time;
 import dagon.core.logger;
 import dagon.core.vfs;
+import dagon.core.props;
 import dagon.core.config;
 import dagon.core.locale;
 import dagon.core.i18n;
@@ -484,23 +485,57 @@ class Application: EventListener, Updateable
         logInfo("System locale: ", locale);
         userLocale = locale;
         
-        config = New!Configuration(vfs, this);
-        
+        int windowX = SDL_WINDOWPOS_CENTERED;
+        int windowY = SDL_WINDOWPOS_CENTERED;
+        bool windowResizable = true;
+        int vsync = 1;
+        bool enableDebugOutput = false;
+        debug enableDebugOutput = true;
         bool enableShaderCache = false;
+        
+        config = New!Configuration(vfs, this);
         
         if (config.fromFile("settings.conf"))
         {
+            // Logger settings
+            LogLevel logLevel = LogLevel.All;
+            if ("logLevel" in config.props)
+            {
+                string logLevelStr = config.props["logLevel"].toString;
+                if (logLevelStr == "debug")
+                    logLevel = LogLevel.Debug;
+                else if (logLevelStr == "info")
+                    logLevel = LogLevel.Info;
+                else if (logLevelStr == "warning")
+                    logLevel = LogLevel.Warning;
+                else if (logLevelStr == "error")
+                    logLevel = LogLevel.Error;
+            }
+            dagon.core.logger.logLevel = logLevel;
+            
+            // Window settings
             if ("windowWidth" in config.props)
                 winWidth = config.props["windowWidth"].toUInt;
             if ("windowHeight" in config.props)
                 winHeight = config.props["windowHeight"].toUInt;
+            if ("windowX" in config.props)
+            {
+                if (config.props["windowX"].type == DPropType.Number)
+                    windowX = config.props["windowX"].toInt;
+            }
+            if ("windowY" in config.props)
+            {
+                if (config.props["windowY"].type == DPropType.Number)
+                    windowY = config.props["windowY"].toInt;
+            }
             if ("fullscreen" in config.props)
                 fullscreen = cast(bool)(config.props["fullscreen"].toUInt);
+            if ("windowResizable" in config.props)
+                windowResizable = cast(bool)config.props["windowResizable"].toUInt;
             if ("windowTitle" in config.props)
                 windowTitle = config.props["windowTitle"].toString;
             if ("locale" in config.props)
                 userLocale = config.props["locale"].toString;
-            
             version(Windows)
             {
                 if ("hideConsole" in config.props)
@@ -508,8 +543,13 @@ class Application: EventListener, Updateable
                         showConsoleWindow(false);
             }
             
+            // Graphics API settings
+            if ("vsync" in config.props)
+                vsync = config.props["vsync"].toInt;
             if ("enableShaderCache" in config.props)
                 enableShaderCache = cast(bool)(config.props["enableShaderCache"].toUInt);
+            if ("glDebugOutput" in config.props)
+                enableDebugOutput = cast(bool)config.props["glDebugOutput"].toUInt;
         }
         else
         {
@@ -638,9 +678,12 @@ class Application: EventListener, Updateable
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+        
+        uint windowFlags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
+        if (windowResizable)
+            windowFlags |= SDL_WINDOW_RESIZABLE;
 
-        window = SDL_CreateWindow(toStringz(windowTitle),
-            SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+        window = SDL_CreateWindow(toStringz(windowTitle), windowX, windowY, width, height, windowFlags);
         if (window is null)
             exitWithError("Failed to create window: " ~ to!string(SDL_GetError()));
 
@@ -648,7 +691,8 @@ class Application: EventListener, Updateable
         if (glcontext is null)
             exitWithError("Failed to create OpenGL context: " ~ to!string(SDL_GetError()));
         SDL_GL_MakeCurrent(window, glcontext);
-        SDL_GL_SetSwapInterval(1);
+        
+        SDL_GL_SetSwapInterval(vsync);
         
         loadedGLSupport = loadOpenGL();
         
@@ -734,9 +778,9 @@ class Application: EventListener, Updateable
         glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &maxWorkGroups[1]);
         glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &maxWorkGroups[2]);
         logInfo("GL_MAX_COMPUTE_WORK_GROUP_SIZE: ", maxWorkGroups);
-
+        
         // Debug output
-        debug
+        if (enableDebugOutput)
         {
             if (hasKHRDebug)
             {
@@ -744,9 +788,7 @@ class Application: EventListener, Updateable
                 glDebugMessageCallback(&messageCallback, cast(void*)this);
             }
             else
-            {
                 logWarning("GL_KHR_debug is not supported, debug output is not available");
-            }
         }
         
         cadencer = New!Cadencer(this, 60, this);
