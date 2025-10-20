@@ -72,7 +72,7 @@ Features
 * GUI extension based on [Dear ImGui](https://github.com/ocornut/imgui)
 * Native file open/save dialogs (for Windows, GTK, and Qt)
 * Very basic and lightweight built-in UI toolkit
-* 2D/3D sound. Various audio formats support including WAV, MP3, OGG/Vorbis, FLAC
+* 2D/3D sound. Various audio formats support including WAV, MP3, OGG/Vorbis, FLAC. Stereo, 5.1, 7.1 support.
 
 Getting Started
 ---------------
