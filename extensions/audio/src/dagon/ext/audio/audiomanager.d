@@ -215,7 +215,7 @@ class AudioManager: EventListener
                 channels = prop.toUInt;
         }
         
-        audio.init(Soloud.CLIP_ROUNDOFF | Soloud.LEFT_HANDED_3D, backend, sampleRate, bufferSize, channels);
+        audio.init(Soloud.CLIP_ROUNDOFF, backend, sampleRate, bufferSize, channels);
         audio.setGlobalVolume(0.0f);
         
         backend = cast(AudioBackend)audio.getBackendId();
@@ -485,7 +485,7 @@ class AudioManager: EventListener
         if (listener)
         {
             Vector3f pos = listener.positionAbsolute;
-            Vector3f dir = listener.directionAbsolute;
+            Vector3f dir = -listener.directionAbsolute;
             Vector3f up = listener.upAbsolute;
             audio.set3dListenerPosition(pos.x, pos.y, pos.z);
             audio.set3dListenerAt(dir.x, dir.y, dir.z);
