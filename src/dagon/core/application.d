@@ -513,6 +513,18 @@ class Application: EventListener, Updateable
                     logLevel = LogLevel.Error;
             }
             
+            if ("logFile" in config.props)
+            {
+                if (config.props["logFile"].type == DPropType.String)
+                    setLogFilename(config.props["logFile"].toString);
+            }
+            
+            if ("logTimestampTags" in config.props)
+                logOutputOptions.printTimestamp = cast(bool)config.props["logTimestampTags"].toUInt;
+            
+            if ("logLevelTags" in config.props)
+                logOutputOptions.printLogLevel = cast(bool)config.props["logLevelTags"].toUInt;
+            
             // Window settings
             if ("windowWidth" in config.props)
                 winWidth = config.props["windowWidth"].toUInt;
