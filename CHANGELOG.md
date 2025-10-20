@@ -1,3 +1,10 @@
+Dagon 0.32.1 - 20 Oct, 2025
+---------------------------
+- **UI**
+  - New property `FirstPersonViewComponent.axisDeadzone`
+- **Extensions**
+  - `dagon:audio` now uses right-handed 3D for correct 5.1 channel mapping.
+
 Dagon 0.32.0 - 14 Oct, 2025
 ---------------------------
 - **Core**
