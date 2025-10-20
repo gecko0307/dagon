@@ -1,7 +1,7 @@
 Dagon 0.33.0 - TBD
 ------------------
 - **Core**
-  - New config options: `logLevel`, `logToStdout`, `logFile`, `logTimestampTags`, `logLevelTags`, `windowResizable`, `windowX`, `windowY`, `vsync`, `glDebugOutput`.
+  - New config options: `logLevel`, `logToStdout`, `logFile`, `logTimestampTags`, `logLevelTags`, `windowResizable`, `windowX`, `windowY`, `vsync`, `glDebugOutput`, `SDL2Path`, `SDL2ImagePath`.
 
 Dagon 0.32.1 - 20 Oct, 2025
 ---------------------------

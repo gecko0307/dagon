@@ -485,8 +485,8 @@ class Application: EventListener, Updateable
         logInfo("System locale: ", locale);
         userLocale = locale;
         
-        string sdlLibraryPath = "";
-        string sdlImageLibraryPath = "";
+        string sdlLibraryPath = "auto";
+        string sdlImageLibraryPath = "auto";
         
         int windowX = SDL_WINDOWPOS_CENTERED;
         int windowY = SDL_WINDOWPOS_CENTERED;
@@ -530,23 +530,23 @@ class Application: EventListener, Updateable
                 logOutputOptions.printLogLevel = cast(bool)config.props["logLevelTags"].toUInt;
             
             // Library settings
-            if ("sdlPath" in config.props)
-                sdlLibraryPath = config.props["sdlPath"].toString;
-            if ("sdlImagePath" in config.props)
-                sdlLibraryPath = config.props["sdlImagePath"].toString;
+            if ("SDL2Path" in config.props)
+                sdlLibraryPath = config.props["SDL2Path"].toString;
+            if ("SDL2ImagePath" in config.props)
+                sdlLibraryPath = config.props["SDL2ImagePath"].toString;
             version(Windows)
             {
-                if ("sdlPath.windows" in config.props)
-                    sdlLibraryPath = config.props["sdlPath.windows"].toString;
-                if ("sdlImagePath.windows" in config.props)
-                    sdlImageLibraryPath = config.props["sdlImagePath.windows"].toString;
+                if ("SDL2Path.windows" in config.props)
+                    sdlLibraryPath = config.props["SDL2Path.windows"].toString;
+                if ("SDL2ImagePath.windows" in config.props)
+                    sdlImageLibraryPath = config.props["SDL2ImagePath.windows"].toString;
             }
             else version(linux)
             {
-                if ("sdlPath.linux" in config.props)
-                    sdlLibraryPath = config.props["sdlPath.linux"].toString;
-                if ("sdlImagePath.linux" in config.props)
-                    sdlImageLibraryPath = config.props["sdlImagePath.linux"].toString;
+                if ("SDL2Path.linux" in config.props)
+                    sdlLibraryPath = config.props["SDL2Path.linux"].toString;
+                if ("SDL2ImagePath.linux" in config.props)
+                    sdlImageLibraryPath = config.props["SDL2ImagePath.linux"].toString;
             }
             
             // Window settings
@@ -601,8 +601,19 @@ class Application: EventListener, Updateable
         
         version(linux)
         {
-            if (sdlLibraryPath.length == 0)
+            if (sdlLibraryPath == "auto")
                 sdlLibraryPath = "libSDL2-2.0.so.0";
+            
+            if (sdlImageLibraryPath == "auto")
+                sdlImageLibraryPath = "libSDL2_image-2.0.so";
+        }
+        else version(Windows)
+        {
+            if (sdlLibraryPath == "auto")
+                sdlLibraryPath = "SDL2.dll";
+            
+            if (sdlImageLibraryPath == "auto")
+                sdlImageLibraryPath = "SDL2_image.dll";
         }
         
         if (sdlLibraryPath.length)

@@ -46,12 +46,12 @@ Recognozed by the `Application` class.
 * `locale` - locale that should be loaded. This option overrides automatically selected locale based on system language and region. For example, `locale: "en_US";` means that application will try load `locales/en_US.lang` file and will ignore system language
 * `glDebugOutput` - `0` or `1`, force disable or enable OpenGL debug output. Default is `1` in debug builds, `0` in release builds. This option is ignored if `logLevel` is higher than `"debug"`
 * `enableShaderCache` - `0` or `1`, cache compiled shader binaries to files for reuse instead of compiling shaders on each run. Disabled by default. This is an experimental feature, use with care
-* `sdlPath` - path to SDL2 shared library. If empty string specified, default path is used
-* `sdlPath.windows` - path to SDL2 shared library under Windows, overrides `sdlPath`. If empty string specified, default path is used
-* `sdlPath.linux` - path to SDL2 shared library under Linux, overrides `sdlPath`. If empty string specified, default path is used
-* `sdlImagePath` - path to SDL2_Image shared library. If empty string specified, default path is used
-* `sdlImagePath.windows` - path to SDL2_Image shared library under Windows, overrides `sdlImagePath`. If empty string specified, default path is used
-* `sdlImagePath.linux` - path to SDL2_Image shared library under Linux, overrides `sdlImagePath`. If empty string specified, default path is used
+* `SDL2Path` - path to SDL2 shared library. If empty string specified, the path is automatically determined by the library loader. If `"auto"` specified (default case), `"SDL2.dll"` is used under Windows, and `"libSDL2-2.0.so.0"` is used under Linux
+* `SDL2Path.windows` - path to SDL2 shared library under Windows, overrides `SDL2Path`. If empty string specified, the path is automatically determined by the library loader. If `"auto"` specified, `"SDL2.dll"` is used
+* `SDL2Path.linux` - path to SDL2 shared library under Linux, overrides `SDL2Path`. If empty string specified, the path is automatically determined by the library loader. If `"auto"` specified, `"libSDL2-2.0.so.0"` is used
+* `SDL2ImagePath` - path to SDL2_Image shared library. If empty string specified, the path is automatically determined by the library loader. If `"auto"` specified (default case), `"SDL2_Image.dll"` is used under Windows, and `"libSDL2_image-2.0.so"` is used under Linux
+* `SDL2ImagePath.windows` - path to SDL2_Image shared library under Windows, overrides `SDL2ImagePath`. If empty string specified, the path is automatically determined by the library loader. If `"auto"` specified, `"SDL2_Image.dll"` is used
+* `SDL2ImagePath.linux` - path to SDL2_Image shared library under Linux, overrides `SDL2ImagePath`. If empty string specified, the path is automatically determined by the library loader. If `"auto"` specified, `"libSDL2_image-2.0.so"` is used.
 
 ### Renderer settings
 
