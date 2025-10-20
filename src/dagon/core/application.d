@@ -485,6 +485,9 @@ class Application: EventListener, Updateable
         logInfo("System locale: ", locale);
         userLocale = locale;
         
+        string sdlLibraryPath = "";
+        string sdlImageLibraryPath = "";
+        
         int windowX = SDL_WINDOWPOS_CENTERED;
         int windowY = SDL_WINDOWPOS_CENTERED;
         bool windowResizable = true;
@@ -525,6 +528,26 @@ class Application: EventListener, Updateable
             
             if ("logLevelTags" in config.props)
                 logOutputOptions.printLogLevel = cast(bool)config.props["logLevelTags"].toUInt;
+            
+            // Library settings
+            if ("sdlPath" in config.props)
+                sdlLibraryPath = config.props["sdlPath"].toString;
+            if ("sdlImagePath" in config.props)
+                sdlLibraryPath = config.props["sdlImagePath"].toString;
+            version(Windows)
+            {
+                if ("sdlPath.windows" in config.props)
+                    sdlLibraryPath = config.props["sdlPath.windows"].toString;
+                if ("sdlImagePath.windows" in config.props)
+                    sdlImageLibraryPath = config.props["sdlImagePath.windows"].toString;
+            }
+            else version(linux)
+            {
+                if ("sdlPath.linux" in config.props)
+                    sdlLibraryPath = config.props["sdlPath.linux"].toString;
+                if ("sdlImagePath.linux" in config.props)
+                    sdlImageLibraryPath = config.props["sdlImagePath.linux"].toString;
+            }
             
             // Window settings
             if ("windowWidth" in config.props)
@@ -577,7 +600,13 @@ class Application: EventListener, Updateable
             translation.load(userLocale);
         
         version(linux)
-            loadedSDLSupport = loadSDL("libSDL2-2.0.so.0");
+        {
+            if (sdlLibraryPath.length == 0)
+                sdlLibraryPath = "libSDL2-2.0.so.0";
+        }
+        
+        if (sdlLibraryPath.length)
+            loadedSDLSupport = loadSDL(sdlLibraryPath.toStringz);
         else
             loadedSDLSupport = loadSDL();
         
@@ -592,7 +621,10 @@ class Application: EventListener, Updateable
         SDL_GetVersion(&sdlVersion);
         logInfo("SDL version: ", sdlVersion.major, ".", sdlVersion.minor, ".", sdlVersion.patch);
         
-        loadedSDLImageSupport = loadSDLImage();
+        if (sdlImageLibraryPath.length)
+            loadedSDLImageSupport = loadSDLImage(sdlImageLibraryPath.toStringz);
+        else
+            loadedSDLImageSupport = loadSDLImage();
         
         if (loadedSDLImageSupport != sdlImageSupport)
         {
@@ -607,6 +639,7 @@ class Application: EventListener, Updateable
             }
         }
         
+        // TODO: freetypeLibraryPath
         loadedFTSupport = loadFreeType();
         
         if (loadedFTSupport != ftSupport)
@@ -624,6 +657,7 @@ class Application: EventListener, Updateable
         
         version(Windows)
         {
+            // TODO: wintabLibraryPath
             WintabSupport loadedWintabSupport = loadWintab();
             if (loadedWintabSupport != WintabSupport.v140)
             {
@@ -736,23 +770,22 @@ class Application: EventListener, Updateable
         logInfo("OpenGL vendor: ", glVendor);
         logInfo("OpenGL renderer: ", glRenderer);
         
-        // Get limits
+        // Get OpenGL limits
         glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &_maxTextureUnits);
         glGetIntegerv(GL_MAX_TEXTURE_SIZE, &_maxTextureSize);
-        
         logInfo("GL_MAX_TEXTURE_IMAGE_UNITS: ", _maxTextureUnits);
         logInfo("GL_MAX_TEXTURE_SIZE: ", _maxTextureSize);
         
-        // Get extensions list
+        // Get OpenGL extensions list
         GLint numExtensions;
         glGetIntegerv(GL_NUM_EXTENSIONS, &numExtensions);
         _extensions = New!(string[])(numExtensions);
         for (GLint i = 0; i < numExtensions; i++) {
             _extensions[i] = glGetStringi(GL_EXTENSIONS, i).to!string;
         }
-        
         logInfo("GL_ARB_texture_compression_bptc: ", isExtensionSupported("GL_ARB_texture_compression_bptc"));
         
+        // Initial OpenGL state settings
         glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClearDepth(1.0);
@@ -762,10 +795,10 @@ class Application: EventListener, Updateable
         glEnable(GL_POLYGON_OFFSET_FILL);
         glCullFace(GL_BACK);
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-
+        
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         SDL_GL_SwapWindow(window);
-
+        
         enumerateCompressedTextureFormats();
         
         bool anisotropicFilteringSupported = isExtensionSupported("GL_EXT_texture_filter_anisotropic");
@@ -806,8 +839,10 @@ class Application: EventListener, Updateable
                 logWarning("GL_KHR_debug is not supported, debug output is not available");
         }
         
+        // Create cadencer
         cadencer = New!Cadencer(this, 60, this);
         
+        // Init FreeType and the font manager
         if (freetypePresent)
         {
             if (FT_Init_FreeType(&ftLibrary))
@@ -824,11 +859,14 @@ class Application: EventListener, Updateable
         
         fontManager = New!FontManager(this);
         
+        // Init shader cache
         shaderCache = New!ShaderCache(vfs, this);
         shaderCache.enabled = enableShaderCache;
         logInfo("Shader cache enabled: ", shaderCache.enabled);
         _globalShaderCache = shaderCache;
         
+        // Get cursors
+        // TODO: support custom cursors
         cursor[Cursor.Default] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
         cursor[Cursor.IBeam] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
         cursor[Cursor.Wait] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);

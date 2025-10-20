@@ -45,7 +45,13 @@ Recognozed by the `Application` class.
 * `hideConsole` - `0` or `1`, show or hide the console window. It is convenient to leave it when debugging the game and hide it for end users. Default is `0`
 * `locale` - locale that should be loaded. This option overrides automatically selected locale based on system language and region. For example, `locale: "en_US";` means that application will try load `locales/en_US.lang` file and will ignore system language
 * `glDebugOutput` - `0` or `1`, force disable or enable OpenGL debug output. Default is `1` in debug builds, `0` in release builds. This option is ignored if `logLevel` is higher than `"debug"`
-* `enableShaderCache` - `0` or `1`, cache compiled shader binaries to files for reuse instead of compiling shaders on each run. Disabled by default. This is an experimental feature, use with care.
+* `enableShaderCache` - `0` or `1`, cache compiled shader binaries to files for reuse instead of compiling shaders on each run. Disabled by default. This is an experimental feature, use with care
+* `sdlPath` - path to SDL2 shared library. If empty string specified, default path is used
+* `sdlPath.windows` - path to SDL2 shared library under Windows, overrides `sdlPath`. If empty string specified, default path is used
+* `sdlPath.linux` - path to SDL2 shared library under Linux, overrides `sdlPath`. If empty string specified, default path is used
+* `sdlImagePath` - path to SDL2_Image shared library. If empty string specified, default path is used
+* `sdlImagePath.windows` - path to SDL2_Image shared library under Windows, overrides `sdlImagePath`. If empty string specified, default path is used
+* `sdlImagePath.linux` - path to SDL2_Image shared library under Linux, overrides `sdlImagePath`. If empty string specified, default path is used
 
 ### Renderer settings
 
