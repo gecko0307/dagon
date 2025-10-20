@@ -23,7 +23,7 @@ stringOption: "Some text";
 
 The engine doesn't modify `settings.conf`, and you can implement a visual configurator in your game that modifies this file. If the file doesn't exist, the engine will print a warning and run with default settings.
 
-### Application options
+### Application settings
 
 Recognozed by the `Application` class.
 
@@ -32,6 +32,7 @@ Recognozed by the `Application` class.
   * `"info"` - prints informational messages, warnings and errors
   * `"warning"` - prints warnings and errors
   * `"error"` - prints only errors
+  Default is `"debug"` in debug builds and `"info"` in release builds. Note that some early log output ignore this setting, because the config file is loaded after the VFS and locale system initialization.
 * `windowWidth`, `windowHeight` - size of the game window. These values override default ones hardcoded in the application
 * `windowResizable` - `0` or `1`, allow the user to resize the window or not. Default is `1`
 * `windowX`, `windowY` - window position (in windowed mode). If not specified, the window is centered on the screen
@@ -43,7 +44,7 @@ Recognozed by the `Application` class.
 * `glDebugOutput` - `0` or `1`, force disable or enable OpenGL debug output. Default is `1` in debug builds, `0` in release builds. This option is ignored if `logLevel` is higher than `"debug"`
 * `enableShaderCache` - `0` or `1`, cache compiled shader binaries to files for reuse instead of compiling shaders on each run. Disabled by default. This is an experimental feature, use with care.
 
-### Renderer options
+### Renderer settings
 
 Recognozed by the `Game` class, applied to the `Game.deferredRenderer`.
 
@@ -86,7 +87,7 @@ Recognozed by the `Game` class, applied to the `Game.deferredRenderer`.
 * `renderer.pixelizationEnabled` - `0` or `1`
 * `renderer.pixelSize` -
 
-### Audio options
+### Audio settings
 
 Recognized by the `AudioManager` class of the dagon:audio extension.
 

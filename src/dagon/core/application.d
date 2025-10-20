@@ -495,10 +495,11 @@ class Application: EventListener, Updateable
         
         config = New!Configuration(vfs, this);
         
+        LogLevel logLevel = LogLevel.Info;
+        debug logLevel = LogLevel.Debug;
         if (config.fromFile("settings.conf"))
         {
             // Logger settings
-            LogLevel logLevel = LogLevel.All;
             if ("logLevel" in config.props)
             {
                 string logLevelStr = config.props["logLevel"].toString;
@@ -511,7 +512,6 @@ class Application: EventListener, Updateable
                 else if (logLevelStr == "error")
                     logLevel = LogLevel.Error;
             }
-            dagon.core.logger.logLevel = logLevel;
             
             // Window settings
             if ("windowWidth" in config.props)
@@ -555,6 +555,8 @@ class Application: EventListener, Updateable
         {
             logWarning("No \"settings.conf\" found");
         }
+        
+        dagon.core.logger.logLevel = logLevel;
         
         translation = New!Translation(this, this);
         translation.load("en_US");
