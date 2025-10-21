@@ -421,7 +421,7 @@ string copyStr(T)(T[] s)
 }
 
 /**
- * Parses a string containing property definitions and populates a `Properties`` object.
+ * Parses a string containing property definitions and populates a `Properties` object.
  *
  * Params:
  *   input = The string to parse.

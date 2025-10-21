@@ -45,28 +45,14 @@ import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.filesystem.filesystem;
 import dlib.filesystem.stdfs;
-import dagon.core.vfs;
 import dagon.core.props;
 import dagon.core.logger;
 
 /**
- * Manages application configuration properties using a virtual file system.
- *
- * Description:
- * The `Configuration` class loads and stores properties, and can read
- * configuration files from mounted directories.
+ * Manages application configuration properties.
  */
 class Configuration: Owner
 {
-    protected:
-
-    /// The virtual file system used for configuration file access.
-    VirtualFileSystem vfs;
-    
-    bool vfsIsOwned = false;
-
-    public:
-
     /// The properties object storing configuration key-value pairs.
     Properties props;
 
@@ -74,56 +60,47 @@ class Configuration: Owner
      * Constructs a new `Configuration` object.
      *
      * Params:
-     *   vfs   = The virtual file system used for configuration file access.
      *   owner = The owner object.
      *
      * The constructor mounts the current directory for configuration file access.
      */
-    this(VirtualFileSystem vfs, Owner owner)
+    this(Owner owner)
     {
         super(owner);
-        
-        if (vfs)
-        {
-            this.vfs = vfs;
-            vfsIsOwned = false;
-        }
-        else
-        {
-            this.vfs = New!VirtualFileSystem();
-            this.vfs.mount(".");
-            vfsIsOwned = true;
-        }
-        
         props = New!Properties(this);
     }
 
-    /// Destructor. Cleans up the virtual file system.
-    ~this()
+    /**
+     * Loads configuration properties from a string.
+     *
+     * Params:
+     *   configStr = Configuration string.
+     */
+    bool fromString(string configStr)
     {
-        if (vfsIsOwned)
-            Delete(vfs);
+        return props.parse(configStr);
     }
 
     /**
      * Loads configuration properties from a file.
      *
      * Params:
+     *   fs       = The abstract file system used for configuration file access.
      *   filename = The name of the configuration file to load.
      * Returns:
      *   `true` if the file was successfully loaded and parsed, `false` otherwise.
      */
-    bool fromFile(string filename)
+    bool fromFile(ReadOnlyFileSystem fs, string filename)
     {
         FileStat stat;
-        if (vfs.stat(filename, stat))
+        if (fs.stat(filename, stat))
         {
-            auto istrm = vfs.openForInput(filename);
+            auto istrm = fs.openForInput(filename);
             auto input = readText(istrm);
             Delete(istrm);
-            props.parse(input);
+            bool result = props.parse(input);
             Delete(input);
-            return true;
+            return result;
         }
         else
             return false;

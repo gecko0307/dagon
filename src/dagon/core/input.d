@@ -184,8 +184,8 @@ class InputManager
         eventManager = em;
         bindings = dict!(Bindings, string)();
 
-        config = New!Configuration(eventManager.application.vfs, null);
-        if (!config.fromFile("input.conf"))
+        config = New!Configuration(null);
+        if (!config.fromFile(eventManager.application.vfs, "input.conf"))
         {
             logWarning("No \"input.conf\" found");
         }

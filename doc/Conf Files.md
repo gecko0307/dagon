@@ -27,15 +27,15 @@ The engine doesn't modify `settings.conf`, and you can implement a visual config
 
 Recognozed by the `Application` class.
 
-* `logLevel` - minimum verbosity level of the logger. Default is `"debug"` in debug builds and `"info"` in release builds. Note that some early log output ignore this setting, because the config file is loaded after the VFS and locale system initialization. Supported options are:
+* `logLevel` - minimum verbosity level of the logger. Default is `"debug"` in debug builds and `"info"` in release builds. Supported options are:
   * `"debug"` - debug mode, prints all messages
   * `"info"` - prints informational messages, warnings and errors
   * `"warning"` - prints warnings and errors
   * `"error"` - prints only errors
-* `logToStdout` - `0` or `1`, disables or enables printing log messages to the standard output. Default is `1`. Note that some early log output ignore this setting, because the config file is loaded after the VFS and locale system initialization
-* `logTimestampTags` - `0` or `1`, disables or enables timestamps in log messages. Default is `0`. Note that some early log output ignore this setting, because the config file is loaded after the VFS and locale system initialization
-* `logLevelTags` - `0` or `1`, disables or enables level tags in log messages. Default is `1`. Note that some early log output ignore this setting, because the config file is loaded after the VFS and locale system initialization
-* `logFile` - enables logging to file, specifying the filename. File output for the logger is disabled by default. Note that some early log output ignore this setting, because the config file is loaded after the VFS and locale system initialization
+* `logToStdout` - `0` or `1`, disables or enables printing log messages to the standard output. Default is `1`
+* `logTimestampTags` - `0` or `1`, disables or enables timestamps in log messages. Default is `0`
+* `logLevelTags` - `0` or `1`, disables or enables level tags in log messages. Default is `1`
+* `logFile` - enables logging to file, specifying the filename. File output for the logger is disabled by default
 * `windowWidth`, `windowHeight` - size of the game window. These values override default ones hardcoded in the application
 * `windowResizable` - `0` or `1`, allow the user to resize the window or not. Default is `1`
 * `windowX`, `windowY` - window position (in windowed mode). If not specified, the window is centered on the screen

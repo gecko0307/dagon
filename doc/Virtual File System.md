@@ -6,7 +6,6 @@ The VFS is managed by the `Application` class and is available as `Application.v
 
 Key concept of the VFS is mounting. For a location to be accessed, it has to be mounted using `vfs.mount` method. File search is performed on a LIFO basis: the last mounted location has the highest priority. If the file is not found there, the previously mounted location is checked, and so on. The engine automatically mounts the following directories at the start:
 - Executable directory. This is always the last location to search;
-- Working directory;
 - The application data directory (`C:\Users\AppData\Roaming\<appDataFolder>` on Windows and `~\<appDataFolder>` on Linux).
 
 `<appDataFolder>` is `.dagon` by default and can be overridden in the constructor of the class inherited from the `Game` or `Application`:

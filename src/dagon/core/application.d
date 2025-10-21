@@ -342,11 +342,28 @@ ShaderCache globalShaderCache()
  */
 class Application: EventListener, Updateable
 {
+    protected string configFilename = "settings.conf";
+    
+    /// Initial log level.
+    LogLevel logLevel = LogLevel.Info;
+    
+    /// Command line arguments.
+    string[] args;
+    
     /// Full path of the executable (not CWD!).
     string path;
     
     /// Absolute directory containing the executable.
     string directory;
+    
+    ///
+    string appDataFolderName;
+    
+    ///
+    string sdlLibraryPath = "auto";
+    
+    ///
+    string sdlImageLibraryPath = "auto";
     
     /// Global VFS that all resource loaders should use.
     VirtualFileSystem vfs;
@@ -402,14 +419,35 @@ class Application: EventListener, Updateable
     /// Actually used FreeType library version.
     FTVersion ftVersion;
     
-    /// Application window width;
+    /// Application window width.
     uint width;
     
-    /// Application window height;
+    /// Application window height.
     uint height;
+    
+    /// Application window X-coordinate.
+    int windowX = SDL_WINDOWPOS_CENTERED;
+    
+    /// Application window Y-coordinate.
+    int windowY = SDL_WINDOWPOS_CENTERED;
+    
+    ///
+    string windowTitle;
+    
+    ///
+    bool windowResizable = true;
     
     /// Fullscreen or windowed.
     bool fullscreen = false;
+    
+    ///
+    int vsync = 1;
+    
+    ///
+    bool enableDebugOutput = false;
+    
+    ///
+    bool enableShaderCache = false;
     
     /// Pointer to the main SDL window created by the Application.
     SDL_Window* window = null;
@@ -476,131 +514,91 @@ class Application: EventListener, Updateable
      */
     this(uint winWidth, uint winHeight, bool fullscreen, string windowTitle, string[] args, string appDataFolderName = ".dagon")
     {
-        path = thisExePath();
-        directory = dirName(path);
+        // Initialize with hardcoded parameters
+        this.width = winWidth;
+        this.height = winHeight;
+        this.fullscreen = fullscreen;
+        this.windowTitle = windowTitle;
+        this.args = args;
         
-        createVFS(appDataFolderName);
+        debug
+        {
+            this.enableDebugOutput = true;
+            this.logLevel = LogLevel.Debug;
+        }
         
+        dagon.core.logger.logLevel = this.logLevel;
+        
+        // Important paths
+        this.path = thisExePath();
+        this.directory = dirName(path);
+        this.appDataFolderName = appDataFolderName;
+        
+        // Set default locale
         locale = systemLocale();
-        logInfo("System locale: ", locale);
         userLocale = locale;
         
-        string sdlLibraryPath = "auto";
-        string sdlImageLibraryPath = "auto";
+        // Create VFS
+        vfs = New!VirtualFileSystem();
         
-        int windowX = SDL_WINDOWPOS_CENTERED;
-        int windowY = SDL_WINDOWPOS_CENTERED;
-        bool windowResizable = true;
-        int vsync = 1;
-        bool enableDebugOutput = false;
-        debug enableDebugOutput = true;
-        bool enableShaderCache = false;
+        // Create main config
+        config = New!Configuration(this);
+        bool configFileFound = false;
         
-        config = New!Configuration(vfs, this);
-        
-        LogLevel logLevel = LogLevel.Info;
-        debug logLevel = LogLevel.Debug;
-        if (config.fromFile("settings.conf"))
+        // Load initial config from executable directory
+        String initConfigPath = String(directory);
+        initConfigPath ~= dirSeparator;
+        initConfigPath ~= configFilename;
+        FileStat stat;
+        if (vfs.stdfs.stat(configFilename, stat))
         {
-            // TODO: VFS settings
-            
-            // Logger settings
-            if ("logLevel" in config.props)
+            auto istrm = vfs.stdfs.openForInput(initConfigPath);
+            auto initConfig = readText(istrm);
+            Delete(istrm);
+            if (config.fromString(initConfig))
             {
-                string logLevelStr = config.props["logLevel"].toString;
-                if (logLevelStr == "debug")
-                    logLevel = LogLevel.Debug;
-                else if (logLevelStr == "info")
-                    logLevel = LogLevel.Info;
-                else if (logLevelStr == "warning")
-                    logLevel = LogLevel.Warning;
-                else if (logLevelStr == "error")
-                    logLevel = LogLevel.Error;
+                updateSettings();
+                configFileFound = true;
             }
-            
-            if ("logToStdout" in config.props)
-                logOutputOptions.printToStdout = cast(bool)config.props["logToStdout"].toUInt;
-            
-            if ("logFile" in config.props)
-                if (config.props["logFile"].type == DPropType.String)
-                    setLogFilename(config.props["logFile"].toString);
-            
-            if ("logTimestampTags" in config.props)
-                logOutputOptions.printTimestamp = cast(bool)config.props["logTimestampTags"].toUInt;
-            
-            if ("logLevelTags" in config.props)
-                logOutputOptions.printLogLevel = cast(bool)config.props["logLevelTags"].toUInt;
-            
-            // Library settings
-            if ("SDL2Path" in config.props)
-                sdlLibraryPath = config.props["SDL2Path"].toString;
-            if ("SDL2ImagePath" in config.props)
-                sdlLibraryPath = config.props["SDL2ImagePath"].toString;
-            version(Windows)
-            {
-                if ("SDL2Path.windows" in config.props)
-                    sdlLibraryPath = config.props["SDL2Path.windows"].toString;
-                if ("SDL2ImagePath.windows" in config.props)
-                    sdlImageLibraryPath = config.props["SDL2ImagePath.windows"].toString;
-            }
-            else version(linux)
-            {
-                if ("SDL2Path.linux" in config.props)
-                    sdlLibraryPath = config.props["SDL2Path.linux"].toString;
-                if ("SDL2ImagePath.linux" in config.props)
-                    sdlImageLibraryPath = config.props["SDL2ImagePath.linux"].toString;
-            }
-            
-            // Window settings
-            if ("windowWidth" in config.props)
-                winWidth = config.props["windowWidth"].toUInt;
-            if ("windowHeight" in config.props)
-                winHeight = config.props["windowHeight"].toUInt;
-            if ("windowX" in config.props)
-            {
-                if (config.props["windowX"].type == DPropType.Number)
-                    windowX = config.props["windowX"].toInt;
-            }
-            if ("windowY" in config.props)
-            {
-                if (config.props["windowY"].type == DPropType.Number)
-                    windowY = config.props["windowY"].toInt;
-            }
-            if ("fullscreen" in config.props)
-                fullscreen = cast(bool)(config.props["fullscreen"].toUInt);
-            if ("windowResizable" in config.props)
-                windowResizable = cast(bool)config.props["windowResizable"].toUInt;
-            if ("windowTitle" in config.props)
-                windowTitle = config.props["windowTitle"].toString;
-            if ("locale" in config.props)
-                userLocale = config.props["locale"].toString;
-            version(Windows)
-            {
-                if ("hideConsole" in config.props)
-                    if (config.props["hideConsole"].toUInt)
-                        showConsoleWindow(false);
-            }
-            
-            // Graphics API settings
-            if ("vsync" in config.props)
-                vsync = config.props["vsync"].toInt;
-            if ("enableShaderCache" in config.props)
-                enableShaderCache = cast(bool)(config.props["enableShaderCache"].toUInt);
-            if ("glDebugOutput" in config.props)
-                enableDebugOutput = cast(bool)config.props["glDebugOutput"].toUInt;
+            Delete(initConfig);
         }
-        else
+        initConfigPath.free();
+        
+        logInfo("System locale: ", locale);
+        logInfo("Selected locale: ", userLocale);
+        
+        // Mount additional directories to the VFS
+        mount(this.directory);
+        if (appDataFolderName.length > 0)
         {
-            logWarning("No \"settings.conf\" found");
+            vfs.mountAppDataDirectory(appDataFolderName);
+            logInfo("VFS: mounted ", vfs.appDataPath);
+        }
+        _vfs = vfs;
+        
+        // Load overrifing configs from additional VFS directories
+        if (vfs.mounted.length > 1)
+        {
+            foreach(fs; vfs.mounted.data[1..$])
+            {
+                if (config.fromFile(fs, configFilename))
+                {
+                    updateSettings();
+                    configFileFound = true;
+                }
+            }
         }
         
-        dagon.core.logger.logLevel = logLevel;
+        if (!configFileFound)
+            logWarning("No \"", configFilename, "\" found");
         
+        // Load selected translation
         translation = New!Translation(this, this);
         translation.load("en_US");
         if (userLocale != "en_US")
             translation.load(userLocale);
         
+        // Load shared libraries
         version(linux)
         {
             if (sdlLibraryPath == "auto")
@@ -690,23 +688,19 @@ class Application: EventListener, Updateable
         sdlImageVersion = *pSdlImageVer;
         logInfo("SDL_Image version: ", sdlImageVersion.major, ".", sdlImageVersion.minor, ".", sdlImageVersion.patch);
 
+        // Init SDL
         if (SDL_Init(SDL_INIT_EVERYTHING) == -1)
             exitWithError("Failed to init SDL: " ~ to!string(SDL_GetError()));
 
         SDL_Rect desktopBounds;
         SDL_GetDisplayBounds(0, &desktopBounds);
         
-        if (winWidth == 0)
+        if (width == 0)
             width = desktopBounds.w;
-        else
-            width = winWidth;
-        
-        if (winHeight == 0)
+        if (height == 0)
             height = desktopBounds.h;
-        else
-            height = winHeight;
         
-        this.fullscreen = fullscreen;
+        
         
         _imageFileFormatSupported[ImageFileFormat.PNG] = true;
         _imageFileFormatSupported[ImageFileFormat.JPEG] = true;
@@ -894,6 +888,99 @@ class Application: EventListener, Updateable
         cursor[Cursor.Hand] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
     }
     
+    protected void updateSettings()
+    {
+        // TODO: appDataFolderName
+        // TODO: VFS settings
+        
+        // Logger settings
+        if ("logLevel" in config.props)
+        {
+            string logLevelStr = config.props["logLevel"].toString;
+            if (logLevelStr == "debug")
+                this.logLevel = LogLevel.Debug;
+            else if (logLevelStr == "info")
+                this.logLevel = LogLevel.Info;
+            else if (logLevelStr == "warning")
+                this.logLevel = LogLevel.Warning;
+            else if (logLevelStr == "error")
+                this.logLevel = LogLevel.Error;
+            dagon.core.logger.logLevel = this.logLevel;
+        }
+        
+        if ("logToStdout" in config.props)
+            logOutputOptions.printToStdout = cast(bool)config.props["logToStdout"].toUInt;
+        
+        if ("logFile" in config.props)
+            if (config.props["logFile"].type == DPropType.String)
+                setLogFilename(config.props["logFile"].toString);
+        
+        if ("logTimestampTags" in config.props)
+            logOutputOptions.printTimestamp = cast(bool)config.props["logTimestampTags"].toUInt;
+        
+        if ("logLevelTags" in config.props)
+            logOutputOptions.printLogLevel = cast(bool)config.props["logLevelTags"].toUInt;
+        
+        // Library settings
+        if ("SDL2Path" in config.props)
+            sdlLibraryPath = config.props["SDL2Path"].toString;
+        if ("SDL2ImagePath" in config.props)
+            sdlLibraryPath = config.props["SDL2ImagePath"].toString;
+        version(Windows)
+        {
+            if ("SDL2Path.windows" in config.props)
+                sdlLibraryPath = config.props["SDL2Path.windows"].toString;
+            if ("SDL2ImagePath.windows" in config.props)
+                sdlImageLibraryPath = config.props["SDL2ImagePath.windows"].toString;
+        }
+        else version(linux)
+        {
+            if ("SDL2Path.linux" in config.props)
+                sdlLibraryPath = config.props["SDL2Path.linux"].toString;
+            if ("SDL2ImagePath.linux" in config.props)
+                sdlImageLibraryPath = config.props["SDL2ImagePath.linux"].toString;
+        }
+        
+        // Window settings
+        if ("windowWidth" in config.props)
+            width = config.props["windowWidth"].toUInt;
+        if ("windowHeight" in config.props)
+            height = config.props["windowHeight"].toUInt;
+        if ("windowX" in config.props)
+        {
+            if (config.props["windowX"].type == DPropType.Number)
+                windowX = config.props["windowX"].toInt;
+        }
+        if ("windowY" in config.props)
+        {
+            if (config.props["windowY"].type == DPropType.Number)
+                windowY = config.props["windowY"].toInt;
+        }
+        if ("fullscreen" in config.props)
+            fullscreen = cast(bool)(config.props["fullscreen"].toUInt);
+        if ("windowResizable" in config.props)
+            windowResizable = cast(bool)config.props["windowResizable"].toUInt;
+        if ("windowTitle" in config.props)
+            windowTitle = config.props["windowTitle"].toString;
+        if ("locale" in config.props)
+            userLocale = config.props["locale"].toString;
+        version(Windows)
+        {
+            if ("hideConsole" in config.props)
+                if (config.props["hideConsole"].toUInt)
+                    showConsoleWindow(false);
+        }
+        
+        // Graphics API settings
+        if ("vsync" in config.props)
+            vsync = config.props["vsync"].toInt;
+        if ("enableShaderCache" in config.props)
+            enableShaderCache = cast(bool)(config.props["enableShaderCache"].toUInt);
+        if ("glDebugOutput" in config.props)
+            enableDebugOutput = cast(bool)config.props["glDebugOutput"].toUInt;
+    }
+    
+    /*
     protected void createVFS(string appDataFolderName)
     {
         if (vfs is null)
@@ -909,6 +996,7 @@ class Application: EventListener, Updateable
             _vfs = vfs;
         }
     }
+    */
 
     /// Destructor. Cleans up resources and shuts down SDL.
     ~this()

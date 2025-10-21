@@ -47,6 +47,7 @@ import dlib.text.str;
 import dagon.core.application;
 import dagon.core.config;
 import dagon.core.logger;
+import dagon.core.vfs;
 
 /**
  * Represents a translation table for the given locale.
@@ -59,6 +60,9 @@ class Translation: Owner
     /// Dictionary of localized strings.
     Configuration dictionary;
     
+    ///
+    VirtualFileSystem vfs;
+    
     /**
      * Creates a new localization object.
      *
@@ -69,7 +73,8 @@ class Translation: Owner
     this(Application app, Owner owner)
     {
         super(owner);
-        dictionary = New!Configuration(app.vfs, this);
+        vfs = app.vfs;
+        dictionary = New!Configuration(this);
     }
     
     /**
@@ -93,7 +98,7 @@ class Translation: Owner
         localeFilename ~= locale;
         localeFilename ~= ".lang";
         
-        if (!dictionary.fromFile(localeFilename))
+        if (!dictionary.fromFile(vfs, localeFilename))
         {
             logWarning("i18n: no \"", localeFilename, "\" found");
         }
