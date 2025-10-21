@@ -1,6 +1,7 @@
 Dagon 0.33.0 - TBD
 ------------------
 - **Core**
+  - Reworked settings.conf handling code in `Application`. Now each VFS entry can have its own settings.conf file overriding a default one in the executable directory. Also default settings.conf is now loaded before initializing other systems, which allows, in particular, to override logger settings from the beginning
   - New config options: `logLevel`, `logToStdout`, `logFile`, `logTimestampTags`, `logLevelTags`, `windowResizable`, `windowX`, `windowY`, `vsync`, `glDebugOutput`, `SDL2Path`, `SDL2ImagePath`.
 
 Dagon 0.32.1 - 20 Oct, 2025
