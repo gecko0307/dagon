@@ -130,13 +130,14 @@ Recognized by the `AudioManager` class of the dagon:audio extension.
   * `"MiniAudio"` - cross-platform
   * `"NoSound"` - disables sound output
 * `channels` - number of audio output channels. To use 5.1, specify `6`. To use 7.1, specify `8`. When using multichannel output, dagon:audio will map 3D sound to specified number of channels for surround effect. Default is `2` (stereo)
-* `sampleRate` - sample rate in Hz. Automatically chosen by default
-* `bufferSize` - buffer size in bytes. Automatically chosen by default
-* `masterVolume` - a number in 0.0..1.0 range. Global audio output volume. Default is `1.0`
-* `musicEnabled` - `0` or `1`. Disables or enables playing of sounds created as `SoundClass.Music`. Default is `1`
-* `musicVolume` - a number in 0.0..1.0 range. Background music volume (for sounds created as `SoundClass.Music`). Default is `0.5`
-* `sfxEnabled` - `0` or `1`. Disables or enables playing of sounds created as `SoundClass.SFX`. Default is `1`
-* `sfxVolume` - a number in 0.0..1.0 range. Sound effects volume (for sounds created as `SoundClass.SFX`). Default is `0.5`
+* `sampleRate` - sample rate in Hz. Automatically chosen by default (`"auto"`)
+* `bufferSize` - buffer size in bytes. Automatically chosen by default (`"auto"`)
+* `master.volume` - a number in 0.0..1.0 range. Global audio output volume. Default is `1.0`
+* `master.fadeInDuration` - master volume fade-in in seconds. This is used to smoothly increase volume after the initialization, so that there will be no unpleasant "click" noise. Default is `0.25`
+* `music.enabled` - `0` or `1`. Disables or enables playing of sounds created as `SoundClass.Music`. Default is `1`
+* `music.volume` - a number in 0.0..1.0 range. Background music volume (for sounds created as `SoundClass.Music`). Default is `0.5`
+* `sfx.enabled` - `0` or `1`. Disables or enables playing of sounds created as `SoundClass.SFX`. Default is `1`
+* `sfx.volume` - a number in 0.0..1.0 range. Sound effects volume (for sounds created as `SoundClass.SFX`). Default is `0.5`
 * `multimediaKeysEnabled` - `0` or `1`. Use multimedia keys found on some keyboards to control the active playlist. Note that audio players often hijack multimedia keypresses, in which cases they are not detected by Dagon. Default is `1`
 
 ## input.conf

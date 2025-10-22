@@ -242,25 +242,25 @@ class AudioManager: EventListener
         if ("enabled" in config.props)
             enabled = soloudPresent && cast(bool)config.props["enabled"].toUInt;
         
-        if ("masterVolume" in config.props)
-            masterVolume = config.props["masterVolume"].toFloat;
+        if ("master.volume" in config.props)
+            masterVolume = config.props["master.volume"].toFloat;
         
-        if ("masterFadeInDuration" in config.props)
-            masterFadeInDuration = config.props["masterFadeInDuration"].toFloat;
+        if ("master.fadeInDuration" in config.props)
+            masterFadeInDuration = config.props["master.fadeInDuration"].toFloat;
         
         float sfxVolume = 0.5f;
         bool sfxEnabled = true;
-        if ("sfxVolume" in config.props)
-            sfxVolume = config.props["sfxVolume"].toFloat;
-        if ("sfxEnabled" in config.props)
-            sfxEnabled = cast(bool)config.props["sfxEnabled"].toUInt;
+        if ("sfx.volume" in config.props)
+            sfxVolume = config.props["sfx.volume"].toFloat;
+        if ("sfx.enabled" in config.props)
+            sfxEnabled = cast(bool)config.props["sfx.enabled"].toUInt;
         
         float musicVolume = 0.5f;
         bool musicEnabled = true;
-        if ("musicVolume" in config.props)
-            musicVolume = config.props["musicVolume"].toFloat;
-        if ("musicEnabled" in config.props)
-            musicEnabled = cast(bool)config.props["musicEnabled"].toUInt;
+        if ("music.volume" in config.props)
+            musicVolume = config.props["music.volume"].toFloat;
+        if ("music.enabled" in config.props)
+            musicEnabled = cast(bool)config.props["music.enabled"].toUInt;
         
         options[SoundClass.SFX] = SoundClassOptions(sfxVolume, sfxEnabled);
         options[SoundClass.Music] = SoundClassOptions(musicVolume, musicEnabled);
