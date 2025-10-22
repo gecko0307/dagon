@@ -935,8 +935,8 @@ class EventManager: Owner
                         application.drawableWidth = drawableWidth;
                         application.drawableHeight = drawableHeight;
                         e = Event(EventType.Resize);
-                        e.width = drawableWidth;
-                        e.height = drawableHeight;
+                        e.width = windowWidth;
+                        e.height = windowHeight;
                         addEvent(e);
                     }
                     else if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
