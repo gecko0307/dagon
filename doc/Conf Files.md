@@ -122,7 +122,7 @@ Recognized by the `AudioManager` class of the dagon:audio extension.
 * `backend` - backend API for audio output. This option is platform-specific: not all backends work on all platforms. It is recommended to change backend only if automatically selected one is not working. Supported options are:
   * `"auto"` - default value, backend is automatically selected
   * `"SDL1"` - cross-platform
-  * `"SDL2"` - cross-platform (dagon:audio normally selects under Windows it because SDL2 is Dagon's core dependency)
+  * `"SDL2"` - cross-platform (autumatically selected option under Windows because SDL2 is Dagon's core dependency)
   * `"PortAudio"` - cross-platform
   * `"WinMM"` - Windows-only
   * `"XAudio2"` - Windows-only
