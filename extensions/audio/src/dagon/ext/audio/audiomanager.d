@@ -127,8 +127,13 @@ class AudioManager: EventListener
         super(application.eventManager, application);
         
         this.application = application;
-        this.config = application.config;
+        this.config = New!Configuration(this);
         this.vfs = application.vfs;
+        
+        foreach(fs; vfs.mounted)
+        {
+            config.fromFile(fs, "audio.conf");
+        }
         
         loadedSLSupport = loadSoloud();
         
@@ -165,9 +170,9 @@ class AudioManager: EventListener
         logInfo("SoLoud version: ", soloudVersion);
         
         backend = AudioBackend.Auto;
-        if ("audio.backend" in config.props)
+        if ("backend" in config.props)
         {
-            string backendStr = config.props["audio.backend"].toString;
+            string backendStr = config.props["backend"].toString;
             switch(backendStr)
             {
                 case "auto": backend = AudioBackend.Auto; break;
@@ -192,25 +197,25 @@ class AudioManager: EventListener
         }
         
         sampleRate = Soloud.AUTO;
-        if ("audio.sampleRate" in config.props)
+        if ("sampleRate" in config.props)
         {
-            auto prop = config.props["audio.sampleRate"];
+            auto prop = config.props["sampleRate"];
             if (prop.type == DPropType.Number)
                 sampleRate = prop.toUInt;
         }
         
         bufferSize = Soloud.AUTO;
-        if ("audio.bufferSize" in config.props)
+        if ("bufferSize" in config.props)
         {
-            auto prop = config.props["audio.bufferSize"];
+            auto prop = config.props["bufferSize"];
             if (prop.type == DPropType.Number)
                 bufferSize = prop.toUInt;
         }
         
         channels = Soloud.AUTO;
-        if ("audio.channels" in config.props)
+        if ("channels" in config.props)
         {
-            auto prop = config.props["audio.channels"];
+            auto prop = config.props["channels"];
             if (prop.type == DPropType.Number)
                 channels = prop.toUInt;
         }
@@ -234,34 +239,34 @@ class AudioManager: EventListener
         foreach(ref opt; options)
             opt = SoundClassOptions(0.5f, true);
         
-        if ("audio.enabled" in config.props)
-            enabled = soloudPresent && cast(bool)config.props["audio.enabled"].toUInt;
+        if ("enabled" in config.props)
+            enabled = soloudPresent && cast(bool)config.props["enabled"].toUInt;
         
-        if ("audio.masterVolume" in config.props)
-            masterVolume = config.props["audio.masterVolume"].toFloat;
+        if ("masterVolume" in config.props)
+            masterVolume = config.props["masterVolume"].toFloat;
         
-        if ("audio.masterFadeInDuration" in config.props)
-            masterFadeInDuration = config.props["audio.masterFadeInDuration"].toFloat;
+        if ("masterFadeInDuration" in config.props)
+            masterFadeInDuration = config.props["masterFadeInDuration"].toFloat;
         
         float sfxVolume = 0.5f;
         bool sfxEnabled = true;
-        if ("audio.sfxVolume" in config.props)
-            sfxVolume = config.props["audio.sfxVolume"].toFloat;
-        if ("audio.sfxEnabled" in config.props)
-            sfxEnabled = cast(bool)config.props["audio.sfxEnabled"].toUInt;
+        if ("sfxVolume" in config.props)
+            sfxVolume = config.props["sfxVolume"].toFloat;
+        if ("sfxEnabled" in config.props)
+            sfxEnabled = cast(bool)config.props["sfxEnabled"].toUInt;
         
         float musicVolume = 0.5f;
         bool musicEnabled = true;
-        if ("audio.musicVolume" in config.props)
-            musicVolume = config.props["audio.musicVolume"].toFloat;
-        if ("audio.musicEnabled" in config.props)
-            musicEnabled = cast(bool)config.props["audio.musicEnabled"].toUInt;
+        if ("musicVolume" in config.props)
+            musicVolume = config.props["musicVolume"].toFloat;
+        if ("musicEnabled" in config.props)
+            musicEnabled = cast(bool)config.props["musicEnabled"].toUInt;
         
         options[SoundClass.SFX] = SoundClassOptions(sfxVolume, sfxEnabled);
         options[SoundClass.Music] = SoundClassOptions(musicVolume, musicEnabled);
         
-        if ("audio.multimediaKeysEnabled" in config.props)
-            multimediaKeysEnabled = cast(bool)config.props["audio.multimediaKeysEnabled"].toUInt;
+        if ("multimediaKeysEnabled" in config.props)
+            multimediaKeysEnabled = cast(bool)config.props["multimediaKeysEnabled"].toUInt;
     }
     
     ~this()

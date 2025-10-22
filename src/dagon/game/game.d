@@ -53,6 +53,7 @@ import dagon.core.logger;
 import dagon.core.bindings;
 import dagon.core.event;
 import dagon.core.time;
+import dagon.core.config;
 import dagon.core.application;
 import dagon.graphics.state;
 import dagon.graphics.entity;
@@ -82,6 +83,9 @@ class Game: Application
 
     /// The current scene being processed and rendered.
     Scene currentScene;
+
+    /// The configuration object for storing user-defined renderer settings.
+    Configuration rendererConfig;
 
     /// Active renderer.
     Renderer renderer;
@@ -128,6 +132,12 @@ class Game: Application
         
         scenes = dict!(Scene, string);
         
+        rendererConfig = New!Configuration(this);
+        foreach(fs; vfs.mounted)
+        {
+            rendererConfig.fromFile(fs, "render.conf");
+        }
+        
         deferredRenderer = New!DeferredRenderer(eventManager, this);
         renderer = deferredRenderer;
         postProcessingRenderer = New!PostProcRenderer(eventManager, deferredRenderer.outputBuffer, deferredRenderer.gbuffer, this);
@@ -140,58 +150,58 @@ class Game: Application
         hudRenderer.setViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
         
         // Default renderer configuration
-        if ("renderer.ssaoEnabled" in config.props)
-            deferredRenderer.ssaoEnabled = cast(bool)(config.props["renderer.ssaoEnabled"].toUInt);
-        if ("renderer.ssaoSamples" in config.props)
-            deferredRenderer.ssaoSamples = config.props["renderer.ssaoSamples"].toUInt;
-        if ("renderer.ssaoRadius" in config.props)
-            deferredRenderer.ssaoRadius = config.props["renderer.ssaoRadius"].toFloat;
-        if ("renderer.ssaoPower" in config.props)
-            deferredRenderer.ssaoPower = config.props["renderer.ssaoPower"].toFloat;
-        if ("renderer.ssaoDenoise" in config.props)
-            deferredRenderer.ssaoDenoise = config.props["renderer.ssaoDenoise"].toFloat;
-        if ("renderer.occlusionBufferDetail" in config.props)
-            deferredRenderer.occlusionBufferDetail = config.props["renderer.occlusionBufferDetail"].toFloat;
+        if ("ssao.enabled" in rendererConfig.props)
+            deferredRenderer.ssaoEnabled = cast(bool)(rendererConfig.props["ssao.enabled"].toUInt);
+        if ("ssao.samples" in rendererConfig.props)
+            deferredRenderer.ssaoSamples = rendererConfig.props["ssao.samples"].toUInt;
+        if ("ssao.radius" in rendererConfig.props)
+            deferredRenderer.ssaoRadius = rendererConfig.props["ssao.radius"].toFloat;
+        if ("ssao.power" in rendererConfig.props)
+            deferredRenderer.ssaoPower = rendererConfig.props["ssao.power"].toFloat;
+        if ("ssao.denoise" in rendererConfig.props)
+            deferredRenderer.ssaoDenoise = rendererConfig.props["ssao.denoise"].toFloat;
+        if ("ssao.occlusionBufferDetail" in rendererConfig.props)
+            deferredRenderer.occlusionBufferDetail = rendererConfig.props["ssao.occlusionBufferDetail"].toFloat;
         
-        if ("renderer.motionBlurEnabled" in config.props)
-            postProcessingRenderer.motionBlurEnabled = cast(bool)(config.props["renderer.motionBlurEnabled"].toUInt);
-        if ("renderer.motionBlurSamples" in config.props)
-            postProcessingRenderer.motionBlurSamples = config.props["renderer.motionBlurSamples"].toUInt;
-        if ("renderer.motionBlurFramerate" in config.props)
-            postProcessingRenderer.motionBlurFramerate = config.props["renderer.motionBlurFramerate"].toUInt;
-        if ("renderer.motionBlurRandomness" in config.props)
-            postProcessingRenderer.motionBlurRandomness = config.props["renderer.motionBlurRandomness"].toFloat;
-        if ("renderer.motionBlurMinDistance" in config.props)
-            postProcessingRenderer.motionBlurMinDistance = config.props["renderer.motionBlurMinDistance"].toFloat;
-        if ("renderer.motionBlurMaxDistance" in config.props)
-            postProcessingRenderer.motionBlurMaxDistance = config.props["renderer.motionBlurMaxDistance"].toFloat;
-        if ("renderer.radialBlurAmount" in config.props)
-            postProcessingRenderer.radialBlurAmount = config.props["renderer.radialBlurAmount"].toFloat;
+        if ("motionBlur.enabled" in rendererConfig.props)
+            postProcessingRenderer.motionBlurEnabled = cast(bool)(rendererConfig.props["motionBlur.enabled"].toUInt);
+        if ("motionBlur.samples" in rendererConfig.props)
+            postProcessingRenderer.motionBlurSamples = rendererConfig.props["motionBlur.samples"].toUInt;
+        if ("motionBlur.framerate" in rendererConfig.props)
+            postProcessingRenderer.motionBlurFramerate = rendererConfig.props["motionBlur.framerate"].toUInt;
+        if ("motionBlur.randomness" in rendererConfig.props)
+            postProcessingRenderer.motionBlurRandomness = rendererConfig.props["motionBlur.randomness"].toFloat;
+        if ("motionBlur.minDistance" in rendererConfig.props)
+            postProcessingRenderer.motionBlurMinDistance = rendererConfig.props["motionBlur.minDistance"].toFloat;
+        if ("motionBlur.maxDistance" in rendererConfig.props)
+            postProcessingRenderer.motionBlurMaxDistance = rendererConfig.props["motionBlur.maxDistance"].toFloat;
+        if ("motionBlur.radialBlurAmount" in rendererConfig.props)
+            postProcessingRenderer.radialBlurAmount = rendererConfig.props["motionBlur.radialBlurAmount"].toFloat;
         
-        if ("renderer.glowEnabled" in config.props)
-            postProcessingRenderer.glowEnabled = cast(bool)(config.props["renderer.glowEnabled"].toUInt);
-        if ("renderer.glowViewScale" in config.props)
-            postProcessingRenderer.glowViewScale = config.props["renderer.glowViewScale"].toFloat;
-        if ("renderer.glowThreshold" in config.props)
-            postProcessingRenderer.glowThreshold = config.props["renderer.glowThreshold"].toFloat;
-        if ("renderer.glowIntensity" in config.props)
-            postProcessingRenderer.glowIntensity = config.props["renderer.glowIntensity"].toFloat;
-        if ("renderer.glowRadius" in config.props)
-            postProcessingRenderer.glowRadius = config.props["renderer.glowRadius"].toUInt;
+        if ("glow.enabled" in rendererConfig.props)
+            postProcessingRenderer.glowEnabled = cast(bool)(rendererConfig.props["glow.enabled"].toUInt);
+        if ("glow.viewScale" in rendererConfig.props)
+            postProcessingRenderer.glowViewScale = rendererConfig.props["glow.viewScale"].toFloat;
+        if ("glow.threshold" in rendererConfig.props)
+            postProcessingRenderer.glowThreshold = rendererConfig.props["glow.threshold"].toFloat;
+        if ("glow.intensity" in rendererConfig.props)
+            postProcessingRenderer.glowIntensity = rendererConfig.props["glow.intensity"].toFloat;
+        if ("glow.radius" in rendererConfig.props)
+            postProcessingRenderer.glowRadius = rendererConfig.props["glow.radius"].toUInt;
         
-        if ("renderer.fxaaEnabled" in config.props)
-            postProcessingRenderer.fxaaEnabled = cast(bool)(config.props["renderer.fxaaEnabled"].toUInt);
+        if ("fxaa.enabled" in rendererConfig.props)
+            postProcessingRenderer.fxaaEnabled = cast(bool)(rendererConfig.props["fxaa.enabled"].toUInt);
         
-        if ("renderer.lensDistortionEnabled" in config.props)
-            postProcessingRenderer.lensDistortionEnabled = cast(bool)(config.props["renderer.lensDistortionEnabled"].toUInt);
-        if ("renderer.lensDistortionScale" in config.props)
-            postProcessingRenderer.lensDistortionScale = config.props["renderer.lensDistortionScale"].toFloat;
-        if ("renderer.lensDistortionDispersion" in config.props)
-            postProcessingRenderer.lensDistortionDispersion = config.props["renderer.lensDistortionDispersion"].toFloat;
+        if ("lensDistortion.enabled" in rendererConfig.props)
+            postProcessingRenderer.lensDistortionEnabled = cast(bool)(rendererConfig.props["lensDistortion.enabled"].toUInt);
+        if ("lensDistortion.scale" in rendererConfig.props)
+            postProcessingRenderer.lensDistortionScale = rendererConfig.props["lensDistortion.scale"].toFloat;
+        if ("lensDistortion.dispersion" in rendererConfig.props)
+            postProcessingRenderer.lensDistortionDispersion = rendererConfig.props["lensDistortion.dispersion"].toFloat;
         
-        if ("renderer.tonemapper" in config.props)
+        if ("hdr.tonemapper" in rendererConfig.props)
         {
-            string tonemapper = config.props["renderer.tonemapper"].toString;
+            string tonemapper = rendererConfig.props["hdr.tonemapper"].toString;
             if (tonemapper == "None")
                 postProcessingRenderer.tonemapper = Tonemapper.None;
             else if (tonemapper == "Reinhard")
@@ -217,49 +227,49 @@ class Game: Application
             else
                 logError("Unknown tonemapper: \"", tonemapper, "\"");
         }
-        if ("renderer.exposure" in config.props)
-            postProcessingRenderer.exposure = config.props["renderer.exposure"].toFloat;
+        if ("hdr.exposure" in rendererConfig.props)
+            postProcessingRenderer.exposure = rendererConfig.props["hdr.exposure"].toFloat;
         
-        if ("renderer.dofEnabled" in config.props)
-            postProcessingRenderer.depthOfFieldEnabled = cast(bool)(config.props["renderer.dofEnabled"].toUInt);
-        if ("renderer.autofocus" in config.props)
-            postProcessingRenderer.autofocus = cast(bool)(config.props["renderer.autofocus"].toUInt);
-        if ("renderer.focalDepth" in config.props)
-            postProcessingRenderer.focalDepth = config.props["renderer.focalDepth"].toFloat;
-        if ("renderer.focalLength" in config.props)
-            postProcessingRenderer.focalLength = config.props["renderer.focalLength"].toFloat;
-        if ("renderer.fStop" in config.props)
-            postProcessingRenderer.fStop = config.props["renderer.fStop"].toFloat;
-        if ("renderer.dofManual" in config.props)
-            postProcessingRenderer.dofManual = cast(bool)(config.props["renderer.dofManual"].toUInt);
-        if ("renderer.dofNearStart" in config.props)
-            postProcessingRenderer.dofNearStart = config.props["renderer.dofNearStart"].toFloat;
-        if ("renderer.dofNearDistance" in config.props)
-            postProcessingRenderer.dofNearDistance = config.props["renderer.dofNearDistance"].toFloat;
-        if ("renderer.dofFarStart" in config.props)
-            postProcessingRenderer.dofFarStart = config.props["renderer.dofFarStart"].toFloat;
-        if ("renderer.dofFarDistance" in config.props)
-            postProcessingRenderer.dofFarDistance = config.props["renderer.dofFarDistance"].toFloat;
+        if ("dof.enabled" in rendererConfig.props)
+            postProcessingRenderer.depthOfFieldEnabled = cast(bool)(rendererConfig.props["dof.enabled"].toUInt);
+        if ("dof.autofocus" in rendererConfig.props)
+            postProcessingRenderer.autofocus = cast(bool)(rendererConfig.props["dof.autofocus"].toUInt);
+        if ("dof.focalDepth" in rendererConfig.props)
+            postProcessingRenderer.focalDepth = rendererConfig.props["dof.focalDepth"].toFloat;
+        if ("dof.focalLength" in rendererConfig.props)
+            postProcessingRenderer.focalLength = rendererConfig.props["dof.focalLength"].toFloat;
+        if ("dof.fStop" in rendererConfig.props)
+            postProcessingRenderer.fStop = rendererConfig.props["dof.fStop"].toFloat;
+        if ("dof.manual" in rendererConfig.props)
+            postProcessingRenderer.dofManual = cast(bool)(rendererConfig.props["dof.manual"].toUInt);
+        if ("dof.nearStart" in rendererConfig.props)
+            postProcessingRenderer.dofNearStart = rendererConfig.props["dof.nearStart"].toFloat;
+        if ("dof.nearDistance" in rendererConfig.props)
+            postProcessingRenderer.dofNearDistance = rendererConfig.props["dof.nearDistance"].toFloat;
+        if ("dof.farStart" in rendererConfig.props)
+            postProcessingRenderer.dofFarStart = rendererConfig.props["dof.farStart"].toFloat;
+        if ("dof.farDistance" in rendererConfig.props)
+            postProcessingRenderer.dofFarDistance = rendererConfig.props["dof.farDistance"].toFloat;
         
-        if ("renderer.lutEnabled" in config.props)
-            postProcessingRenderer.lutEnabled = cast(bool)(config.props["renderer.lutEnabled"].toUInt);
-        if ("renderer.lut" in config.props)
+        if ("lut.enabled" in rendererConfig.props)
+            postProcessingRenderer.lutEnabled = cast(bool)(rendererConfig.props["lut.enabled"].toUInt);
+        if ("lut.file" in rendererConfig.props)
         {
-            string lutFilename = config.props["renderer.lut"].toString;
+            string lutFilename = rendererConfig.props["lut.file"].toString;
             if (lutFilename.length)
             {
                 postProcessingRenderer.loadDefaultLUT(assetManager, lutFilename);
             }
         }
         
-        if ("renderer.pixelizationEnabled" in config.props)
-            presentRenderer.pixelization = cast(bool)(config.props["renderer.pixelizationEnabled"].toUInt);
-        if ("renderer.pixelSize" in config.props)
-            presentRenderer.pixelSize = config.props["renderer.pixelSize"].toFloat;
+        if ("pixelization.enabled" in rendererConfig.props)
+            presentRenderer.pixelization = cast(bool)(rendererConfig.props["pixelization.enabled"].toUInt);
+        if ("pixelization.pixelSize" in rendererConfig.props)
+            presentRenderer.pixelSize = rendererConfig.props["pixelization.pixelSize"].toFloat;
         
         string brdfFilename = "data/__internal/textures/brdf.dds";
-        if ("renderer.brdf" in config.props)
-            brdfFilename = config.props["renderer.brdf"].toString;
+        if ("brdf.file" in rendererConfig.props)
+            brdfFilename = rendererConfig.props["brdf.file"].toString;
         if (brdfFilename.length)
         {
             InputStream istrm = this.openFile(brdfFilename);

@@ -894,9 +894,9 @@ class Application: EventListener, Updateable
         // TODO: VFS settings
         
         // Logger settings
-        if ("logLevel" in config.props)
+        if ("log.level" in config.props)
         {
-            string logLevelStr = config.props["logLevel"].toString;
+            string logLevelStr = config.props["log.level"].toString;
             if (logLevelStr == "debug")
                 this.logLevel = LogLevel.Debug;
             else if (logLevelStr == "info")
@@ -908,60 +908,85 @@ class Application: EventListener, Updateable
             dagon.core.logger.logLevel = this.logLevel;
         }
         
-        if ("logToStdout" in config.props)
-            logOutputOptions.printToStdout = cast(bool)config.props["logToStdout"].toUInt;
+        if ("log.toStdout" in config.props)
+            logOutputOptions.printToStdout = cast(bool)config.props["log.toStdout"].toUInt;
         
-        if ("logFile" in config.props)
-            if (config.props["logFile"].type == DPropType.String)
-                setLogFilename(config.props["logFile"].toString);
+        if ("log.file" in config.props)
+            if (config.props["log.file"].type == DPropType.String)
+                setLogFilename(config.props["log.file"].toString);
         
-        if ("logTimestampTags" in config.props)
-            logOutputOptions.printTimestamp = cast(bool)config.props["logTimestampTags"].toUInt;
+        if ("log.timestampTags" in config.props)
+            logOutputOptions.printTimestamp = cast(bool)config.props["log.timestampTags"].toUInt;
         
-        if ("logLevelTags" in config.props)
-            logOutputOptions.printLogLevel = cast(bool)config.props["logLevelTags"].toUInt;
+        if ("log.levelTags" in config.props)
+            logOutputOptions.printLogLevel = cast(bool)config.props["log.levelTags"].toUInt;
         
         // Library settings
-        if ("SDL2Path" in config.props)
-            sdlLibraryPath = config.props["SDL2Path"].toString;
-        if ("SDL2ImagePath" in config.props)
-            sdlLibraryPath = config.props["SDL2ImagePath"].toString;
+        if ("SDL2.path" in config.props)
+            sdlLibraryPath = config.props["SDL2.path"].toString;
+        if ("SDL2Image.Path" in config.props)
+            sdlLibraryPath = config.props["SDL2Image.path"].toString;
         version(Windows)
         {
-            if ("SDL2Path.windows" in config.props)
-                sdlLibraryPath = config.props["SDL2Path.windows"].toString;
-            if ("SDL2ImagePath.windows" in config.props)
-                sdlImageLibraryPath = config.props["SDL2ImagePath.windows"].toString;
+            if ("SDL2.path.windows" in config.props)
+                sdlLibraryPath = config.props["SDL2.path.windows"].toString;
+            if ("SDL2Image.path.windows" in config.props)
+                sdlImageLibraryPath = config.props["SDL2Image.path.windows"].toString;
         }
         else version(linux)
         {
-            if ("SDL2Path.linux" in config.props)
-                sdlLibraryPath = config.props["SDL2Path.linux"].toString;
-            if ("SDL2ImagePath.linux" in config.props)
-                sdlImageLibraryPath = config.props["SDL2ImagePath.linux"].toString;
+            if ("SDL2.path.linux" in config.props)
+                sdlLibraryPath = config.props["SDL2.path.linux"].toString;
+            if ("SDL2Image.path.linux" in config.props)
+                sdlImageLibraryPath = config.props["SDL2Image.path.linux"].toString;
         }
         
         // Window settings
-        if ("windowWidth" in config.props)
+        if ("window.width" in config.props)
+            width = config.props["window.width"].toUInt;
+        else if ("windowWidth" in config.props)
+        {
+            logWarning("\"windowWidth\" is deprecated, use \"window.width\" instead");
             width = config.props["windowWidth"].toUInt;
-        if ("windowHeight" in config.props)
+        }
+        
+        if ("window.height" in config.props)
+            height = config.props["window.height"].toUInt;
+        else if ("windowHeight" in config.props)
+        {
+            logWarning("\"windowHeight\" is deprecated, use \"window.height\" instead");
             height = config.props["windowHeight"].toUInt;
-        if ("windowX" in config.props)
-        {
-            if (config.props["windowX"].type == DPropType.Number)
-                windowX = config.props["windowX"].toInt;
         }
-        if ("windowY" in config.props)
+        
+        if ("window.x" in config.props)
         {
-            if (config.props["windowY"].type == DPropType.Number)
-                windowY = config.props["windowY"].toInt;
+            if (config.props["window.x"].type == DPropType.Number)
+                windowX = config.props["window.x"].toInt;
+            else
+                windowX = SDL_WINDOWPOS_CENTERED;
         }
+        if ("window.y" in config.props)
+        {
+            if (config.props["window.y"].type == DPropType.Number)
+                windowY = config.props["window.y"].toInt;
+            else
+                windowY = SDL_WINDOWPOS_CENTERED;
+        }
+        
         if ("fullscreen" in config.props)
             fullscreen = cast(bool)(config.props["fullscreen"].toUInt);
-        if ("windowResizable" in config.props)
-            windowResizable = cast(bool)config.props["windowResizable"].toUInt;
-        if ("windowTitle" in config.props)
+        
+        if ("window.resizable" in config.props)
+            windowResizable = cast(bool)config.props["window.resizable"].toUInt;
+        
+        if ("window.title" in config.props)
+            windowTitle = config.props["window.title"].toString;
+        else if ("windowTitle" in config.props)
+        {
+            logWarning("\"windowTitle\" is deprecated, use \"window.title\" instead");
             windowTitle = config.props["windowTitle"].toString;
+        }
+        
         if ("locale" in config.props)
             userLocale = config.props["locale"].toString;
         version(Windows)
@@ -974,29 +999,11 @@ class Application: EventListener, Updateable
         // Graphics API settings
         if ("vsync" in config.props)
             vsync = config.props["vsync"].toInt;
-        if ("enableShaderCache" in config.props)
-            enableShaderCache = cast(bool)(config.props["enableShaderCache"].toUInt);
-        if ("glDebugOutput" in config.props)
-            enableDebugOutput = cast(bool)config.props["glDebugOutput"].toUInt;
+        if ("gl.enableShaderCache" in config.props)
+            enableShaderCache = cast(bool)(config.props["gl.enableShaderCache"].toUInt);
+        if ("gl.debugOutput" in config.props)
+            enableDebugOutput = cast(bool)config.props["gl.debugOutput"].toUInt;
     }
-    
-    /*
-    protected void createVFS(string appDataFolderName)
-    {
-        if (vfs is null)
-        {
-            vfs = New!VirtualFileSystem();
-            mount(directory);
-            mount(".");
-            if (appDataFolderName.length > 0)
-            {
-                vfs.mountAppDataDirectory(appDataFolderName);
-                logInfo("VFS: mounted ", vfs.appDataPath);
-            }
-            _vfs = vfs;
-        }
-    }
-    */
 
     /// Destructor. Cleans up resources and shuts down SDL.
     ~this()
