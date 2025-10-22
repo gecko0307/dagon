@@ -449,6 +449,9 @@ class Application: EventListener, Updateable
     ///
     int drawableHeight;
     
+    ///
+    float pixelRatio = 1.0f;
+    
     /// Fullscreen or windowed.
     bool fullscreen = false;
     
@@ -774,12 +777,16 @@ class Application: EventListener, Updateable
         if (windowHighDPI)
             windowFlags |= SDL_WINDOW_ALLOW_HIGHDPI;
         
+        logInfo("Window size: ", width, "x", height);
+        
         window = SDL_CreateWindow(toStringz(windowTitle), windowX, windowY, width, height, windowFlags);
         if (window is null)
             exitWithError("Failed to create window: " ~ to!string(SDL_GetError()));
         
         SDL_GL_GetDrawableSize(window, &drawableWidth, &drawableHeight);
-        logInfo("Window drawable size: ", drawableWidth, "x", drawableHeight);
+        
+        pixelRatio = cast(float)drawableHeight / cast(float)height;
+        logInfo("Pixel ratio: ", pixelRatio);
 
         glcontext = SDL_GL_CreateContext(window);
         if (glcontext is null)
