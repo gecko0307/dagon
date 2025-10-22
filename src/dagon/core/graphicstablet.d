@@ -85,6 +85,9 @@ class GraphicsTablet: Owner, InputDevice
     
     bool initialize(EventManager eventManager)
     {
+        if (!eventManager.application.wintabPresent)
+            return false;
+        
         this.eventManager = eventManager;
         
         version(Windows)
