@@ -37,6 +37,7 @@ Features
 * Textures in PNG, JPEG, WebP, AVIF, DDS, KTX, KTX2, HDR, SVG and many other formats
 * GPU-based texture resizing
 * Video support using [libVLC](https://www.videolan.org/vlc/libvlc.html). Screen-aligned 2D video playback and video textures on 3D meshes. Equirectangular 360° video support
+* HiDPI support
 * Hybrid rendering pipeline: deferred for opaque materials, forward for transparent materials and materials with custom shaders
 * Physically based rendering (PBR)
 * HDR rendering with many tonemapping operators, including Reinhard, Hable/Uncharted, Unreal, ACES, Filmic, AgX, and Khronos PBR Neutral
@@ -53,7 +54,6 @@ Features
 * Water rendering. Realistic ocean shader with Gerstner waves
 * Post-processing (FXAA, SSAO, DoF, lens distortion, motion blur, glow, color grading)
 * Simplified render pipeline for casual-style graphics. Retro rendering support: pixelization and vertex snapping
-* High DPI support
 * Tween engine for simple animation. Delayed function calls
 * Keyboard, mouse and joystick input. Input manager with abstract bindings and file-based configuration
 * Unicode text input
