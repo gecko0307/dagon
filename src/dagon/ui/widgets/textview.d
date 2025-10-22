@@ -91,6 +91,7 @@ class TextView: UIWidget
         visual = New!TextViewVisual(ui.fontManager.sans, this);
         visual.text = _text;
         visual.color = textColor;
+        visual.pixelRatio = ui.eventManager.application.pixelRatio;
         textViewEntity.drawable = visual;
         
         scrollbar = ui.addElement(entity);
@@ -122,10 +123,11 @@ class TextView: UIWidget
     
     Vector2f glyphPosition(size_t index)
     {
+        float pixelRatio = ui.eventManager.application.pixelRatio;
         return visual.font.glyphPosition(
             _text, index,
-            visual.width - visual.font.height * 2 - paddingRight,
-            visual.font.height * visual.lineHeight);
+            (visual.width - visual.font.height * 2 - paddingRight) * pixelRatio,
+            visual.font.height * visual.lineHeight) / pixelRatio;
     }
     
     override void onMouseButtonDown(int button)
@@ -256,6 +258,7 @@ class TextViewVisual: Owner, Drawable
     int paddingRight = 0;
     int scrollY = 0;
     float textHeight = 0.0f;
+    float pixelRatio = 1.0f;
     
     this(Font font, Owner owner)
     {
@@ -329,7 +332,7 @@ class TextViewVisual: Owner, Drawable
 
         font.endRender();
         
-        textHeight = yShift;
+        textHeight = (yShift + ceil(font.height * lineHeight)) / pixelRatio;
         
         glDisable(GL_SCISSOR_TEST);
     }
