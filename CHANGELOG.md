@@ -2,8 +2,9 @@ Dagon 0.33.0 - TBD
 ------------------
 - **Core**
   - Reworked settings.conf handling code in `Application`. Now each VFS entry can have its own settings.conf file overriding a default one in the executable directory. Also default settings.conf is now loaded before initializing other systems, which allows, in particular, to override logger settings from the beginning
-  - Breaking change: renderer and post-processing settings are now in render.conf, `enableShaderCache` is now `gl.enableShaderCache`
   - New settings.conf options: `log.level`, `log.toStdout`, `log.file`, `log.timestampTags`, `log.levelTags`, `window.resizable`, `window.x`, `window.y`, `vsync`, `gl.debugOutput`, `SDL2.path`, `SDL2Image.path`
+- **Rendering**
+  - Breaking change: renderer and post-processing settings are now in render.conf, `enableShaderCache` is now `gl.enableShaderCache`
 - **Extensions**
   - Breaking change: `dagon:audio` settings are now in audio.conf.
 
