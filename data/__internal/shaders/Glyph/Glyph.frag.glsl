@@ -2,7 +2,6 @@
 
 uniform sampler2D glyphTexture;
 uniform vec4 glyphColor;
-uniform vec2 resolution;
 
 in vec2 texCoord;
 

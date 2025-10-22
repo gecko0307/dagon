@@ -209,7 +209,6 @@ final class Font: Owner
     GLint modelViewMatrixLoc;
     GLint projectionMatrixLoc;
 
-    GLint resolutionLoc;
     GLint glyphPositionLoc;
     GLint glyphScaleLoc;
     GLint glyphTexcoordScaleLoc;
@@ -343,7 +342,6 @@ final class Font: Owner
             modelViewMatrixLoc = glGetUniformLocation(shaderProgram, "modelViewMatrix");
             projectionMatrixLoc = glGetUniformLocation(shaderProgram, "projectionMatrix");
 
-            resolutionLoc = glGetUniformLocation(shaderProgram, "resolution");
             glyphPositionLoc = glGetUniformLocation(shaderProgram, "glyphPosition");
             glyphScaleLoc = glGetUniformLocation(shaderProgram, "glyphScale");
             glyphTexcoordScaleLoc = glGetUniformLocation(shaderProgram, "glyphTexcoordScale");
@@ -523,7 +521,6 @@ final class Font: Owner
         
         glUseProgram(shaderProgram);
 
-        glUniform2fv(resolutionLoc, 1, state.resolution.arrayof.ptr);
         glUniformMatrix4fv(modelViewMatrixLoc, 1, GL_FALSE, state.modelViewMatrix.arrayof.ptr);
         glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, state.projectionMatrix.arrayof.ptr);
         glUniform4fv(glyphColorLoc, 1, color.arrayof.ptr);

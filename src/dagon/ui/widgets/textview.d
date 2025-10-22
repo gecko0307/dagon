@@ -284,8 +284,8 @@ class TextViewVisual: Owner, Drawable
         
         glEnable(GL_SCISSOR_TEST);
         glScissor(x, y, 
-            cast(int)(width * state.pixelRatio),
-            cast(int)(height * state.pixelRatio));
+            cast(int)round(width * state.pixelRatio),
+            cast(int)round(height * state.pixelRatio));
         
         font.beginRender(state, color);
 
