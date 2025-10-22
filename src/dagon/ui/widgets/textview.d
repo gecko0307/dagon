@@ -280,10 +280,12 @@ class TextViewVisual: Owner, Drawable
         
         Vector3f pos = state.modelViewMatrix.translation;
         int x = cast(int)pos.x;
-        int y = cast(int)(state.resolution.y - pos.y - height);
+        int y = cast(int)(state.resolution.y - pos.y - height * state.pixelRatio);
         
         glEnable(GL_SCISSOR_TEST);
-        glScissor(x, y, width, height);
+        glScissor(x, y, 
+            cast(int)(width * state.pixelRatio),
+            cast(int)(height * state.pixelRatio));
         
         font.beginRender(state, color);
 
@@ -293,8 +295,8 @@ class TextViewVisual: Owner, Drawable
         int ch;
         do
         {
-            float gx = cast(float)paddingLeft + xShift;
-            float gy = font.height + yShift - cast(float)scrollY;
+            float gx = ceil(cast(float)paddingLeft + xShift);
+            float gy = ceil(font.height + yShift - cast(float)scrollY);
             
             ch = dec.decodeNext();
             if (ch == 0 || ch == UTF8_END || ch == UTF8_ERROR) break;
@@ -302,7 +304,7 @@ class TextViewVisual: Owner, Drawable
             if (code == '\n')
             {
                 xShift = 0.0f;
-                yShift += font.height * lineHeight;
+                yShift += ceil(font.height * lineHeight);
             }
             else
             {

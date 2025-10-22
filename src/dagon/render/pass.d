@@ -203,6 +203,8 @@ abstract class RenderPass: EventListener
             state.frustum = Frustum(state.projectionMatrix * state.viewMatrix);
 
             state.resolution = Vector2f(view.width, view.height);
+            state.pixelRatio = pipeline.eventManager.application.pixelRatio;
+            
             state.zNear = view.zNear;
             state.zFar = view.zFar;
 

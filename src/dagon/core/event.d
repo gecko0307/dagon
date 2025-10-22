@@ -750,10 +750,10 @@ class EventManager: Owner
                     break;
 
                 case SDL_MOUSEMOTION:
-                    mouseX = cast(int)(event.motion.x * application.pixelRatio);
-                    mouseY = cast(int)(event.motion.y * application.pixelRatio);
-                    mouseRelX = cast(int)(event.motion.xrel * application.pixelRatio);
-                    mouseRelY = cast(int)(event.motion.yrel * application.pixelRatio);
+                    mouseX = event.motion.x;
+                    mouseY = event.motion.y;
+                    mouseRelX = event.motion.xrel;
+                    mouseRelY = event.motion.yrel;
                     break;
 
                 case SDL_MOUSEBUTTONDOWN:

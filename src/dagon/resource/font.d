@@ -42,10 +42,10 @@ class FontAsset: Asset
     Font font;
     ubyte[] buffer;
 
-    this(uint height, Owner o)
+    this(uint height, float pixelRatio, Owner o)
     {
         super(o);
-        font = New!Font(height, this);
+        font = New!Font(height, pixelRatio, this);
     }
 
     ~this()

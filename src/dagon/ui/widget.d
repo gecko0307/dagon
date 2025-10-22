@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.ui.widget;
 
+import std.math;
 import std.algorithm: canFind;
 
 import dlib.core.memory;
@@ -122,18 +123,28 @@ class UIManager: EventListener
     
     bool mouseOver(Entity e)
     {
-        float x = e.positionAbsolute.x;
-        float y = e.positionAbsolute.y;
-        float w = e.scaling.x;
-        float h = e.scaling.y;
+        Vector3f posAbs = e.positionAbsolute;
+        Vector3f scalAbs = e.scalingAsolute;
+        float x = posAbs.x;
+        float y = posAbs.y;
+        float w = scalAbs.x;
+        float h = scalAbs.y;
+        x /= eventManager.application.pixelRatio;
+        y /= eventManager.application.pixelRatio;
+        w /= eventManager.application.pixelRatio;
+        h /= eventManager.application.pixelRatio;
         return mouseInRect(x, y, w, h);
     }
     
     bool mouseOverRegion(Entity e, float rx, float ry, float rw, float rh)
     {
-        float x = e.positionAbsolute.x + rx;
-        float y = e.positionAbsolute.y + ry;
-        return mouseInRect(x, y, rw, rh);
+        Vector3f posAbs = e.positionAbsolute;
+        Vector3f scalAbs = e.scalingAsolute;
+        float x = posAbs.x;
+        float y = posAbs.y;
+        x /= eventManager.application.pixelRatio;
+        y /= eventManager.application.pixelRatio;
+        return mouseInRect(x + rx, y + ry, rw, rh);
     }
     
     bool isWidgetVisibleAtPoint(UIWidget widget, int x, int y)
@@ -257,6 +268,8 @@ class UIWidget: EventListener, Updateable
     Font font;
     int width = 100;
     int height = 100;
+    int _x = 0;
+    int _y = 0;
     bool fitToParent = false;
     Color4f color = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
     Color4f backgroundFocusedColor = Color4f(0.0f, 0.0f, 0.0f, 0.0f);
@@ -314,30 +327,46 @@ class UIWidget: EventListener, Updateable
     
     void x(int px) @property
     {
-        entity.position.x = px;
+        _x = px;
     }
     
-    int x() @property
+    ref int x() @property
     {
-        return cast(int)entity.position.x;
+        return _x;
     }
     
     void y(int py) @property
     {
-        entity.position.y = py;
+        _y = py;
     }
     
-    int y() @property
+    ref int y() @property
     {
-        return cast(int)entity.position.y;
+        return _y;
+    }
+    
+    int absoluteX() @property
+    {
+        if (parent)
+            return parent.absoluteX + _x;
+        else
+            return _x;
+    }
+    
+    int absoluteY() @property
+    {
+        if (parent)
+            return parent.absoluteY + _y;
+        else
+            return _y;
     }
     
     bool pointIn(float px, float py)
     {
         return pointInRect(
             px, py,
-            entity.positionAbsolute.x,
-            entity.positionAbsolute.y,
+            absoluteX,
+            absoluteY,
             width, height);
     }
     
@@ -357,6 +386,17 @@ class UIWidget: EventListener, Updateable
     {
         processEvents();
         
+        float pixelRatio = ui.eventManager.application.pixelRatio;
+        if (entity.parent is null)
+        {
+            entity.scaling = Vector3f(pixelRatio, pixelRatio, 1.0f);
+            entity.position = Vector3f(ceil(_x * pixelRatio), ceil(_y * pixelRatio), 0.0f);
+        }
+        else
+        {
+            entity.position = Vector3f(_x, _y, 0.0f);
+        }
+        
         if (fitToParent)
         {
             if (parent)
@@ -367,8 +407,8 @@ class UIWidget: EventListener, Updateable
             }
             else
             {
-                width = ui.eventManager.drawableWidth;
-                height = ui.eventManager.drawableHeight;
+                width = ui.eventManager.windowWidth;
+                height = ui.eventManager.windowHeight;
                 background.scaling = Vector3f(width, height, 1.0f);
             }
         }

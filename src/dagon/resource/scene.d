@@ -231,7 +231,7 @@ class Scene: EventListener
         }
         else
         {
-            fontAsset = New!FontAsset(height, assetManager);
+            fontAsset = New!FontAsset(height, application.pixelRatio, assetManager);
             addAsset(fontAsset, filename, preload);
         }
         return fontAsset;

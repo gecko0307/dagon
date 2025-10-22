@@ -2,6 +2,7 @@
 
 uniform sampler2D glyphTexture;
 uniform vec4 glyphColor;
+uniform vec2 resolution;
 
 in vec2 texCoord;
 
@@ -9,6 +10,7 @@ layout (location = 0) out vec4 fragColor;
 
 void main()
 {
-    vec4 t = texture(glyphTexture, texCoord);
+    vec2 uv = texCoord;
+    vec4 t = texture(glyphTexture, uv);
     fragColor = vec4(t.rrr, t.g) * glyphColor;
 }

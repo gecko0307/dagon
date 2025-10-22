@@ -27,9 +27,12 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.render.hud;
 
+import std.math;
+
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.image.color;
+import dlib.math.matrix;
 
 import dagon.core.bindings;
 import dagon.core.event;
@@ -78,7 +81,12 @@ class PassHUD: RenderPass
             {
                 state.layer = entity.layer;
 
-                state.modelViewMatrix = state.viewMatrix * entity.absoluteTransformation;
+                Matrix4x4f modelMatrix = entity.absoluteTransformation;
+                modelMatrix.a14 = ceil(modelMatrix.a14);
+                modelMatrix.a24 = ceil(modelMatrix.a24);
+                modelMatrix.a34 = ceil(modelMatrix.a34);
+                modelMatrix.a44 = 1.0f;
+                state.modelViewMatrix = state.viewMatrix * modelMatrix;
                 state.normalMatrix = state.modelViewMatrix.inverse.transposed;
                 state.opacity = entity.opacity;
 

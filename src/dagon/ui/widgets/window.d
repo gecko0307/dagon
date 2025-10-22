@@ -27,6 +27,8 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.ui.widgets.window;
 
+import std.math;
+
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.math.vector;
@@ -75,16 +77,16 @@ class Window: UIWidget
         background.position.y = headerHeight;
         background.scaling.y = height - headerHeight;
         
+        content = New!UIWidget(ui, this);
+        content.width = width;
+        content.height = height - headerHeight;
+        content.y = headerHeight;
+        
         header = ui.addElement(entity);
         header.scaling = Vector3f(width, headerHeight, 1.0f);
         header.drawable = ui.rectangle;
         header.material = ui.addMaterial();
         header.material.baseColorFactor = headerFocusedColor;
-        
-        content = New!UIWidget(ui, this);
-        content.width = width;
-        content.height = height - headerHeight;
-        content.y = headerHeight;
     }
     
     bool mouseOverRightBorder()
@@ -204,8 +206,8 @@ class Window: UIWidget
             int dragY = eventManager.mouseY - prevMouseY;
             prevMouseX = eventManager.mouseX;
             prevMouseY = eventManager.mouseY;
-            entity.position.x += dragX;
-            entity.position.y += dragY;
+            x += dragX;
+            y += dragY;
         }
         
         if (!dragging && resizeable)

@@ -566,6 +566,14 @@ class Entity: Owner, Updateable
     {
         scaling += s;
     }
+    
+    Vector3f scalingAsolute()
+    {
+        if (parent)
+            return parent.scalingAsolute * scaling;
+        else
+            return scaling;
+    }
 
     /// Scales the entity along the local X axis.
     void scaleX(float s)

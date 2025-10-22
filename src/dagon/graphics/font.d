@@ -39,7 +39,7 @@ DEALINGS IN THE SOFTWARE.
 module dagon.graphics.font;
 
 import std.stdio;
-
+import std.math;
 import std.string;
 import std.ascii;
 import std.utf;
@@ -54,6 +54,7 @@ import dlib.filesystem.stdfs;
 import dlib.container.dict;
 import dlib.text.utf8;
 import dlib.math.vector;
+import dlib.math.utils;
 import dlib.image.color;
 import dlib.text.str;
 
@@ -109,8 +110,9 @@ class FontManager: Owner
         
         if (application.freetypePresent)
         {
-            sans = addFont("sans", application.defaultFontSans, application.defaultFontSize);
-            monospace = addFont("sans", application.defaultFontMonospace, application.defaultFontSize);
+            uint fontSize = application.defaultFontSize;
+            sans = addFont("sans", application.defaultFontSans, fontSize);
+            monospace = addFont("sans", application.defaultFontMonospace, fontSize);
         }
         else
         {
@@ -135,7 +137,7 @@ class FontManager: Owner
     {
         if (application.freetypePresent)
         {
-            Font font = New!Font(height, this);
+            Font font = New!Font(height, application.pixelRatio, this);
             font.ftLibrary = application.ftLibrary;
             font.createFromFile(filename);
             font.prepareVAO();
@@ -174,6 +176,9 @@ final class Font: Owner
     
     /// Font size in pixels.
     float height;
+    
+    /// Pixel ratio for High DPI text rendering
+    float pixelRatio;
 
     protected:
 
@@ -204,6 +209,7 @@ final class Font: Owner
     GLint modelViewMatrixLoc;
     GLint projectionMatrixLoc;
 
+    GLint resolutionLoc;
     GLint glyphPositionLoc;
     GLint glyphScaleLoc;
     GLint glyphTexcoordScaleLoc;
@@ -227,10 +233,11 @@ final class Font: Owner
      *   height = em height (font size) in pixels
      *   owner = Owner object.
      */
-    this(uint height, Owner owner)
+    this(uint height, float pixelRatio, Owner owner)
     {
         super(owner);
-        this.height = height;
+        this.height = ceil(height * pixelRatio);
+        this.pixelRatio = pixelRatio;
 
         vertices[0] = Vector2f(0, 1);
         vertices[1] = Vector2f(0, 0);
@@ -275,7 +282,8 @@ final class Font: Owner
         if (FT_New_Memory_Face(ftLibrary, buffer.ptr, cast(uint)buffer.length, 0, &ftFace))
             exitWithError("FT_New_Face failed (there is probably a problem with your font file)");
 
-        FT_Set_Char_Size(ftFace, cast(int)height << 6, cast(int)height << 6, 96, 96);
+        int h = cast(int)height;
+        FT_Set_Char_Size(ftFace, h << 6, h << 6, 96, 96);
     }
 
     /// Creates a font object from memory buffer.
@@ -335,6 +343,7 @@ final class Font: Owner
             modelViewMatrixLoc = glGetUniformLocation(shaderProgram, "modelViewMatrix");
             projectionMatrixLoc = glGetUniformLocation(shaderProgram, "projectionMatrix");
 
+            resolutionLoc = glGetUniformLocation(shaderProgram, "resolution");
             glyphPositionLoc = glGetUniformLocation(shaderProgram, "glyphPosition");
             glyphScaleLoc = glGetUniformLocation(shaderProgram, "glyphScale");
             glyphTexcoordScaleLoc = glGetUniformLocation(shaderProgram, "glyphTexcoordScale");
@@ -467,11 +476,15 @@ final class Font: Owner
         float texWidth = cast(float)glyph.width;
         float texHeight = cast(float)glyph.height;
 
-        float x = 0.5f / texWidth + chWidth / texWidth;
-        float y = 0.5f / texHeight + chHeight / texHeight;
+        float x = clamp(0.5f / texWidth + chWidth / texWidth, 0.0f, 1.0f);
+        float y = clamp(0.5f / texHeight + chHeight / texHeight, 0.0f, 1.0f);
 
-        Vector2f glyphPosition = Vector2f(xShift + bitmapGlyph.left, yShift - bitmapGlyph.top);
-        Vector2f glyphScale = Vector2f(bitmap.width, bitmap.rows);
+        Vector2f glyphPosition = Vector2f(
+            xShift + bitmapGlyph.left / pixelRatio,
+            yShift / pixelRatio - bitmapGlyph.top / pixelRatio);
+        Vector2f glyphScale = Vector2f(
+            ceil(cast(float)bitmap.width / pixelRatio),
+            ceil(cast(float)bitmap.rows / pixelRatio));
         Vector2f glyphTexcoordScale = Vector2f(x, y);
 
         glUniform2fv(glyphPositionLoc, 1, glyphPosition.arrayof.ptr);
@@ -482,7 +495,7 @@ final class Font: Owner
         glDrawElements(GL_TRIANGLES, cast(uint)indices.length * 3, GL_UNSIGNED_INT, cast(void*)0);
         glBindVertexArray(0);
 
-        xShift = glyph.advanceX >> 6;
+        xShift = (glyph.advanceX >> 6) / pixelRatio;
 
         glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -508,6 +521,7 @@ final class Font: Owner
         
         glUseProgram(shaderProgram);
 
+        glUniform2fv(resolutionLoc, 1, state.resolution.arrayof.ptr);
         glUniformMatrix4fv(modelViewMatrixLoc, 1, GL_FALSE, state.modelViewMatrix.arrayof.ptr);
         glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, state.projectionMatrix.arrayof.ptr);
         glUniform4fv(glyphColorLoc, 1, color.arrayof.ptr);

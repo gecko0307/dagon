@@ -1210,7 +1210,7 @@ class Application: EventListener, Updateable
         error = glGetError();
         if (error != GL_NO_ERROR)
         {
-            logDebug("OpenGL error %s: %s", error, GLErrorStrings[error]);
+            logDebug("OpenGL error ", error, ": ", GLErrorStrings[error]);
         }
     }
 

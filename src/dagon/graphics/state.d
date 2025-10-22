@@ -78,6 +78,9 @@ struct GraphicsState
 
     /// Output resolution (viewport width, height).
     Vector2f resolution;
+    
+    ///
+    float pixelRatio;
 
     /// Near clipping plane.
     float zNear;
@@ -203,6 +206,7 @@ struct GraphicsState
         gbufferMask = 1.0f;
 
         resolution = Vector2f(0.0f, 0.0f);
+        pixelRatio = 1.0f;
         zNear = 0.0f;
         zFar = 0.0f;
 
