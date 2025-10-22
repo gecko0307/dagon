@@ -229,20 +229,13 @@ class TextView: UIWidget
         if (visual.height < visual.textHeight)
         {
             scrollbar.position.y = clamp(scrollbar.position.y, 0.0f, maxScrollbarY);
-            visual.scrollY = cast(int)lerp(minScrollY, maxScrollY, scrollbar.position.y / maxScrollbarY);
+            visual.scrollY = cast(int)lerp(minScrollY, maxScrollY, scrollbar.position.y / ui.eventManager.application.pixelRatio / maxScrollbarY);
         }
         else
         {
             scrollbar.position.y = 0.0f;
             visual.scrollY = 0;
         }
-        
-        /*
-        if (hover && !ui.mouseOver(scrollbar))
-            cursor = Cursor.IBeam;
-        else
-            cursor = Cursor.Default;
-        */
     }
 }
 
@@ -299,7 +292,7 @@ class TextViewVisual: Owner, Drawable
         do
         {
             float gx = ceil(cast(float)paddingLeft + xShift);
-            float gy = ceil(font.height + yShift - cast(float)scrollY);
+            float gy = ceil(font.height + yShift - cast(float)scrollY * pixelRatio);
             
             ch = dec.decodeNext();
             if (ch == 0 || ch == UTF8_END || ch == UTF8_ERROR) break;
