@@ -384,8 +384,8 @@ class EventManager: Owner
         
         window = app.window;
 
-        windowWidth = app.width;
-        windowHeight = app.height;
+        windowWidth = app.drawableWidth;
+        windowHeight = app.drawableHeight;
         
         SDL_GetWindowPosition(window, &windowX, &windowY);
         

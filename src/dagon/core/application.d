@@ -443,6 +443,12 @@ class Application: EventListener, Updateable
     ///
     bool windowHighDPI = false;
     
+    ///
+    int drawableWidth;
+    
+    ///
+    int drawableHeight;
+    
     /// Fullscreen or windowed.
     bool fullscreen = false;
     
@@ -715,6 +721,9 @@ class Application: EventListener, Updateable
         logInfo("SDL_Image version: ", sdlImageVersion.major, ".", sdlImageVersion.minor, ".", sdlImageVersion.patch);
 
         // Init SDL
+        if (windowHighDPI)
+            SDL_SetHint(SDL_HINT_WINDOWS_DPI_SCALING, "1");
+        
         if (SDL_Init(SDL_INIT_EVERYTHING) == -1)
             exitWithError("Failed to init SDL: " ~ to!string(SDL_GetError()));
 
@@ -764,10 +773,13 @@ class Application: EventListener, Updateable
             windowFlags |= SDL_WINDOW_RESIZABLE;
         if (windowHighDPI)
             windowFlags |= SDL_WINDOW_ALLOW_HIGHDPI;
-
+        
         window = SDL_CreateWindow(toStringz(windowTitle), windowX, windowY, width, height, windowFlags);
         if (window is null)
             exitWithError("Failed to create window: " ~ to!string(SDL_GetError()));
+        
+        SDL_GL_GetDrawableSize(window, &drawableWidth, &drawableHeight);
+        logInfo("Window drawable size: ", drawableWidth, "x", drawableHeight);
 
         glcontext = SDL_GL_CreateContext(window);
         if (glcontext is null)
