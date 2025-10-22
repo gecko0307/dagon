@@ -53,6 +53,7 @@ Features
 * Water rendering. Realistic ocean shader with Gerstner waves
 * Post-processing (FXAA, SSAO, DoF, lens distortion, motion blur, glow, color grading)
 * Simplified render pipeline for casual-style graphics. Retro rendering support: pixelization and vertex snapping
+* High DPI support
 * Tween engine for simple animation. Delayed function calls
 * Keyboard, mouse and joystick input. Input manager with abstract bindings and file-based configuration
 * Unicode text input
