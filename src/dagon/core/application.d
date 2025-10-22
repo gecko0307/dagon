@@ -440,6 +440,9 @@ class Application: EventListener, Updateable
     ///
     bool windowResizable = true;
     
+    ///
+    bool windowHighDPI = false;
+    
     /// Fullscreen or windowed.
     bool fullscreen = false;
     
@@ -759,6 +762,8 @@ class Application: EventListener, Updateable
         uint windowFlags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
         if (windowResizable)
             windowFlags |= SDL_WINDOW_RESIZABLE;
+        if (windowHighDPI)
+            windowFlags |= SDL_WINDOW_ALLOW_HIGHDPI;
 
         window = SDL_CreateWindow(toStringz(windowTitle), windowX, windowY, width, height, windowFlags);
         if (window is null)
@@ -1015,6 +1020,9 @@ class Application: EventListener, Updateable
         if ("window.resizable" in config.props)
             windowResizable = cast(bool)config.props["window.resizable"].toUInt;
         
+        if ("window.highDPI" in config.props)
+            windowHighDPI = cast(bool)config.props["window.highDPI"].toUInt;
+        
         if ("window.title" in config.props)
             windowTitle = config.props["window.title"].toString;
         else if ("windowTitle" in config.props)
@@ -1050,7 +1058,7 @@ class Application: EventListener, Updateable
         if ("gl.debugOutput" in config.props)
             enableDebugOutput = cast(bool)config.props["gl.debugOutput"].toUInt;
         
-        // Font settings
+        // Font manager settings
         if ("font.sans" in config.props)
             defaultFontSans = config.props["font.sans"].toString;
         if ("font.monospace" in config.props)
