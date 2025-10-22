@@ -476,17 +476,19 @@ final class Font: Owner
         float texWidth = cast(float)glyph.width;
         float texHeight = cast(float)glyph.height;
 
-        float x = clamp(0.5f / texWidth + chWidth / texWidth, 0.0f, 1.0f);
-        float y = clamp(0.5f / texHeight + chHeight / texHeight, 0.0f, 1.0f);
+        float x = 0.5f / texWidth + chWidth / texWidth;
+        float y = 0.5f / texHeight + chHeight / texHeight;
 
-        Vector2f glyphPosition = Vector2f(
+        Vector2f glyphPosition, glyphScale, glyphTexcoordScale;
+
+        glyphPosition = Vector2f(
             xShift + bitmapGlyph.left / pixelRatio,
             yShift / pixelRatio - bitmapGlyph.top / pixelRatio);
-        Vector2f glyphScale = Vector2f(
-            ceil(cast(float)bitmap.width / pixelRatio),
-            ceil(cast(float)bitmap.rows / pixelRatio));
-        Vector2f glyphTexcoordScale = Vector2f(x, y);
-
+        glyphScale = Vector2f(
+            cast(float)bitmap.width / pixelRatio,
+            cast(float)bitmap.rows / pixelRatio);
+        glyphTexcoordScale = Vector2f(x, y);
+        
         glUniform2fv(glyphPositionLoc, 1, glyphPosition.arrayof.ptr);
         glUniform2fv(glyphScaleLoc, 1, glyphScale.arrayof.ptr);
         glUniform2fv(glyphTexcoordScaleLoc, 1, glyphTexcoordScale.arrayof.ptr);
@@ -495,8 +497,8 @@ final class Font: Owner
         glDrawElements(GL_TRIANGLES, cast(uint)indices.length * 3, GL_UNSIGNED_INT, cast(void*)0);
         glBindVertexArray(0);
 
-        xShift = (glyph.advanceX >> 6) / pixelRatio;
-
+        xShift = cast(float)(glyph.advanceX >> 6) / pixelRatio;
+        
         glBindTexture(GL_TEXTURE_2D, 0);
 
         return xShift;

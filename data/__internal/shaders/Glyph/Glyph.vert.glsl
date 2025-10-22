@@ -18,12 +18,12 @@ void main()
 {
     texCoord = va_Texcoord * glyphTexcoordScale;
     vec4 glyphPos = modelViewMatrix * vec4(glyphPosition + va_Vertex * glyphScale, 0.0, 1.0);
-    glyphPos.x = ceil(glyphPos.x);
-    glyphPos.y = ceil(glyphPos.y);
-    glyphPos.z = ceil(glyphPos.z);
+    //glyphPos.x = ceil(glyphPos.x);
+    //glyphPos.y = ceil(glyphPos.y);
+    //glyphPos.z = ceil(glyphPos.z);
     vec4 pos = projectionMatrix * glyphPos;
     vec4 vertex = pos;
-    vertex.x = floor(resolution.x * vertex.x) / resolution.x;
-    vertex.y = floor(resolution.y * vertex.y) / resolution.y;
+    //vertex.x = floor(resolution.x * vertex.x) / resolution.x;
+    //vertex.y = floor(resolution.y * vertex.y) / resolution.y;
     gl_Position = vertex;
 }
