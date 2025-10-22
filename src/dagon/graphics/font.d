@@ -109,8 +109,8 @@ class FontManager: Owner
         
         if (application.freetypePresent)
         {
-            sans = addFont("sans", "data/__internal/fonts/LiberationSans-Regular.ttf", 10);
-            monospace = addFont("sans", "data/__internal/fonts/LiberationMono-Regular.ttf", 10);
+            sans = addFont("sans", application.defaultFontSans, application.defaultFontSize);
+            monospace = addFont("sans", application.defaultFontMonospace, application.defaultFontSize);
         }
         else
         {

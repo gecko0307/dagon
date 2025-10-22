@@ -455,6 +455,15 @@ class Application: EventListener, Updateable
     ///
     bool enableShaderCache = false;
     
+    ///
+    string defaultFontSans = "data/__internal/fonts/LiberationSans-Regular.ttf";
+    
+    ///
+    string defaultFontMonospace = "data/__internal/fonts/LiberationMono-Regular.ttf";
+    
+    ///
+    uint defaultFontSize = 10;
+    
     /// Pointer to the main SDL window created by the Application.
     SDL_Window* window = null;
     
@@ -799,7 +808,8 @@ class Application: EventListener, Updateable
         GLint numExtensions;
         glGetIntegerv(GL_NUM_EXTENSIONS, &numExtensions);
         _extensions = New!(string[])(numExtensions);
-        for (GLint i = 0; i < numExtensions; i++) {
+        for (GLint i = 0; i < numExtensions; i++)
+        {
             _extensions[i] = glGetStringi(GL_EXTENSIONS, i).to!string;
         }
         logInfo("GL_ARB_texture_compression_bptc: ", isExtensionSupported("GL_ARB_texture_compression_bptc"));
@@ -1039,6 +1049,14 @@ class Application: EventListener, Updateable
             enableShaderCache = cast(bool)(config.props["gl.enableShaderCache"].toUInt);
         if ("gl.debugOutput" in config.props)
             enableDebugOutput = cast(bool)config.props["gl.debugOutput"].toUInt;
+        
+        // Font settings
+        if ("font.sans" in config.props)
+            defaultFontSans = config.props["font.sans"].toString;
+        if ("font.monospace" in config.props)
+            defaultFontMonospace = config.props["font.monospace"].toString;
+        if ("font.size" in config.props)
+            defaultFontSize = config.props["font.size"].toUInt;
     }
 
     /// Destructor. Cleans up resources and shuts down SDL.

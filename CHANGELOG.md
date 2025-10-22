@@ -2,7 +2,8 @@ Dagon 0.33.0 - TBD
 ------------------
 - **Core**
   - Reworked settings.conf handling code in `Application`. Now each VFS entry can have its own settings.conf file overriding a default one in the executable directory. Also default settings.conf is now loaded before initializing other systems, which allows, in particular, to override logger settings from the beginning
-  - New settings.conf options: `log.enabled`, `log.level`, `log.toStdout`, `log.file`, `log.timestampTags`, `log.levelTags`, `appDataFolder`, `window.resizable`, `window.x`, `window.y`, `vsync`, `stepFrequency`, `gl.debugOutput`, `SDL2.path`, `SDL2Image.path`
+  - New settings.conf options: `log.enabled`, `log.level`, `log.toStdout`, `log.file`, `log.timestampTags`, `log.levelTags`, `appDataFolder`, `window.resizable`, `window.x`, `window.y`, `vsync`, `stepFrequency`, `gl.debugOutput`, `font.sans`, `font.monospace`, `font.size`, `SDL2.path`, `SDL2Image.path`, `FreeType.path`
+  - `windowWidth`, `windowHeight`, `windowTitle` are deprecated, use `window.width`, `window.height`, `window.title`
 - **Rendering**
   - Breaking change: renderer and post-processing settings are now in render.conf, `enableShaderCache` is now `gl.enableShaderCache`
 - **Extensions**

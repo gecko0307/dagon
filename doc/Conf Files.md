@@ -48,6 +48,9 @@ Built in *.conf files are fully reserved for Dagon's internal mechanisms, and it
 * `locale` - locale that should be loaded. This option overrides automatically selected locale based on system language and region. For example, `locale: "en_US";` means that application will try load `locales/en_US.lang` file and will ignore system language
 * `gl.debugOutput` - `0` or `1`, force disable or enable OpenGL debug output. Default is `1` in debug builds, `0` in release builds. This option is ignored if `logLevel` is higher than `"debug"`
 * `gl.enableShaderCache` - `0` or `1`, cache compiled shader binaries to files for reuse instead of compiling shaders on each run. Disabled by default. This is an experimental feature, use with care
+* `font.sans` - path to the default sans font. Default is `"data/__internal/fonts/LiberationSans-Regular.ttf"`
+* `font.monospace` - path to the default monospace font. Default is `"data/__internal/fonts/LiberationMono-Regular.ttf"`
+* `font.size` - default sans/monospace font size. Default is `10`
 * `SDL2.path` - path to SDL2 shared library. If empty string specified, the path is automatically determined by the library loader. If `"auto"` specified (default case), `"SDL2.dll"` is used under Windows, and `"libSDL2-2.0.so.0"` is used under Linux
 * `SDL2.path.windows` - path to SDL2 shared library under Windows, overrides `SDL2.path`. If empty string specified, the path is automatically determined by the library loader. If `"auto"` specified, `"SDL2.dll"` is used
 * `SDL2.path.linux` - path to SDL2 shared library under Linux, overrides `SDL2.path`. If empty string specified, the path is automatically determined by the library loader. If `"auto"` specified, `"libSDL2-2.0.so.0"` is used
