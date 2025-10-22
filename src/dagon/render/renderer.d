@@ -96,7 +96,7 @@ class Renderer: Owner
     this(EventManager eventManager, Owner owner)
     {
         super(owner);
-        view = New!RenderView(0, 0, eventManager.windowWidth, eventManager.windowHeight, this);
+        view = New!RenderView(0, 0, eventManager.drawableWidth, eventManager.drawableHeight, this);
         pipeline = New!RenderPipeline(eventManager, this);
     }
 

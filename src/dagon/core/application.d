@@ -423,10 +423,10 @@ class Application: EventListener, Updateable
     FTVersion ftVersion;
     
     /// Application window width.
-    uint width;
+    uint windowWidth;
     
     /// Application window height.
-    uint height;
+    uint windowHeight;
     
     /// Application window X-coordinate.
     int windowX = SDL_WINDOWPOS_CENTERED;
@@ -542,8 +542,8 @@ class Application: EventListener, Updateable
     this(uint winWidth, uint winHeight, bool fullscreen, string windowTitle, string[] args, string appDataFolderName = ".dagon")
     {
         // Initialize with hardcoded parameters
-        this.width = winWidth;
-        this.height = winHeight;
+        this.windowWidth = winWidth;
+        this.windowHeight = winHeight;
         this.fullscreen = fullscreen;
         this.windowTitle = windowTitle;
         this.args = args;
@@ -733,10 +733,10 @@ class Application: EventListener, Updateable
         SDL_Rect desktopBounds;
         SDL_GetDisplayBounds(0, &desktopBounds);
         
-        if (width == 0)
-            width = desktopBounds.w;
-        if (height == 0)
-            height = desktopBounds.h;
+        if (windowWidth == 0)
+            windowWidth = desktopBounds.w;
+        if (windowHeight == 0)
+            windowHeight = desktopBounds.h;
         
         _imageFileFormatSupported[ImageFileFormat.PNG] = true;
         _imageFileFormatSupported[ImageFileFormat.JPEG] = true;
@@ -777,15 +777,14 @@ class Application: EventListener, Updateable
         if (windowHighDPI)
             windowFlags |= SDL_WINDOW_ALLOW_HIGHDPI;
         
-        logInfo("Window size: ", width, "x", height);
-        
-        window = SDL_CreateWindow(toStringz(windowTitle), windowX, windowY, width, height, windowFlags);
+        window = SDL_CreateWindow(toStringz(windowTitle), windowX, windowY, windowWidth, windowHeight, windowFlags);
         if (window is null)
             exitWithError("Failed to create window: " ~ to!string(SDL_GetError()));
         
         SDL_GL_GetDrawableSize(window, &drawableWidth, &drawableHeight);
+        logInfo("Drawable size: ", drawableWidth, "x", drawableHeight);
         
-        pixelRatio = cast(float)drawableHeight / cast(float)height;
+        pixelRatio = cast(float)drawableHeight / cast(float)windowHeight;
         logInfo("Pixel ratio: ", pixelRatio);
 
         glcontext = SDL_GL_CreateContext(window);
@@ -1003,19 +1002,19 @@ class Application: EventListener, Updateable
         
         // Window settings
         if ("window.width" in config.props)
-            width = config.props["window.width"].toUInt;
+            windowWidth = config.props["window.width"].toUInt;
         else if ("windowWidth" in config.props)
         {
             logWarning("\"windowWidth\" is deprecated, use \"window.width\" instead");
-            width = config.props["windowWidth"].toUInt;
+            windowWidth = config.props["windowWidth"].toUInt;
         }
         
         if ("window.height" in config.props)
-            height = config.props["window.height"].toUInt;
+            windowHeight = config.props["window.height"].toUInt;
         else if ("windowHeight" in config.props)
         {
             logWarning("\"windowHeight\" is deprecated, use \"window.height\" instead");
-            height = config.props["windowHeight"].toUInt;
+            windowHeight = config.props["windowHeight"].toUInt;
         }
         
         if ("window.x" in config.props)
@@ -1170,12 +1169,6 @@ class Application: EventListener, Updateable
             exit();
         }
     }
-    
-    override void onResize(int width, int height)
-    {
-        this.width = width;
-        this.height = height;
-    }
 
     /**
      * Called every frame to update application logic.
@@ -1253,13 +1246,16 @@ class Application: EventListener, Updateable
      */
     SuperImage takeScreenshot()
     {
-        ubyte[] data = New!(ubyte[])(width * height * 3);
-        glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, data.ptr);
-        SuperImage img = unmanagedImage(width, height, 3, 8);
+        ubyte[] data = New!(ubyte[])(drawableWidth * drawableHeight * 3);
+        glReadPixels(0, 0, drawableWidth, drawableHeight, GL_RGB, GL_UNSIGNED_BYTE, data.ptr);
+        SuperImage img = unmanagedImage(drawableWidth, drawableHeight, 3, 8);
         auto outputData = img.data;
-        for (uint y = 0; y < height; y++)
+        for (uint y = 0; y < drawableHeight; y++)
         {
-            memcpy(&outputData[(height - 1 - y) * width * 3], &data[y * width * 3], width * 3);
+            memcpy(
+                &outputData[(drawableHeight - 1 - y) * drawableWidth * 3], 
+                &data[y * drawableWidth * 3],
+                drawableWidth * 3);
         }
         return img;
     }

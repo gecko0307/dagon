@@ -60,7 +60,6 @@ import dagon.ui.widget;
 class TextView: UIWidget
 {
   public:
-    string text = "";
     float scrollSpeed = 15.0f;
     Color4f textColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
     Color4f scrollbarColor = Color4f(1.0f, 1.0f, 1.0f, 0.75f);
@@ -71,6 +70,8 @@ class TextView: UIWidget
     TextViewVisual visual;
     
    protected:
+    string _text = "";
+    
     Entity textViewEntity;
     Entity scrollbar;
     
@@ -88,7 +89,7 @@ class TextView: UIWidget
         
         textViewEntity = ui.addElement(entity);
         visual = New!TextViewVisual(ui.fontManager.sans, this);
-        visual.text = text;
+        visual.text = _text;
         visual.color = textColor;
         textViewEntity.drawable = visual;
         
@@ -101,6 +102,12 @@ class TextView: UIWidget
         height = 240;
         x = 0;
         y = 0;
+    }
+    
+    void text(string s) @property
+    {
+        _text = s;
+        visual.text = _text;
     }
     
     void font(Font f) @property
@@ -116,7 +123,7 @@ class TextView: UIWidget
     Vector2f glyphPosition(size_t index)
     {
         return visual.font.glyphPosition(
-            text, index,
+            _text, index,
             visual.width - visual.font.height * 2 - paddingRight,
             visual.font.height * visual.lineHeight);
     }
@@ -163,7 +170,6 @@ class TextView: UIWidget
         
         scrollbar.material.baseColorFactor = scrollbarColor;
         
-        visual.text = text;
         visual.color = textColor;
         visual.paddingLeft = paddingLeft;
         visual.paddingRight = paddingRight;

@@ -318,10 +318,16 @@ class EventManager: Owner
     uint displayHeight;
     
     /// Application's main window width.
-    uint windowWidth;
+    int windowWidth;
     
     /// Application's main window height.
-    uint windowHeight;
+    int windowHeight;
+    
+    /// Application's main window drawable width.
+    int drawableWidth;
+    
+    /// Application's main window drawable height.
+    int drawableHeight;
     
     /// Application's main window's X-coordinate.
     int windowX = 0;
@@ -383,9 +389,12 @@ class EventManager: Owner
         application = app;
         
         window = app.window;
-
-        windowWidth = app.drawableWidth;
-        windowHeight = app.drawableHeight;
+        
+        windowWidth = app.windowWidth;
+        windowHeight = app.windowHeight;
+        
+        drawableWidth = app.drawableWidth;
+        drawableHeight = app.drawableHeight;
         
         SDL_GetWindowPosition(window, &windowX, &windowY);
         
@@ -741,10 +750,10 @@ class EventManager: Owner
                     break;
 
                 case SDL_MOUSEMOTION:
-                    mouseX = event.motion.x;
-                    mouseY = event.motion.y;
-                    mouseRelX = event.motion.xrel;
-                    mouseRelY = event.motion.yrel;
+                    mouseX = cast(int)(event.motion.x * application.pixelRatio);
+                    mouseY = cast(int)(event.motion.y * application.pixelRatio);
+                    mouseRelX = cast(int)(event.motion.xrel * application.pixelRatio);
+                    mouseRelY = cast(int)(event.motion.yrel * application.pixelRatio);
                     break;
 
                 case SDL_MOUSEBUTTONDOWN:
@@ -920,9 +929,14 @@ class EventManager: Owner
                     {
                         windowWidth = event.window.data1;
                         windowHeight = event.window.data2;
+                        SDL_GL_GetDrawableSize(window, &drawableWidth, &drawableHeight);
+                        application.windowWidth = windowWidth;
+                        application.windowHeight = windowHeight;
+                        application.drawableWidth = drawableWidth;
+                        application.drawableHeight = drawableHeight;
                         e = Event(EventType.Resize);
-                        e.width = windowWidth;
-                        e.height = windowHeight;
+                        e.width = drawableWidth;
+                        e.height = drawableHeight;
                         addEvent(e);
                     }
                     else if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)

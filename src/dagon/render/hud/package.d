@@ -120,7 +120,7 @@ class HUDRenderer: Renderer
     {
         super(eventManager, owner);
 
-        setViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
+        setViewport(0, 0, eventManager.drawableWidth, eventManager.drawableHeight);
         view.projection = OrthoScreen;
 
         passHUD = New!PassHUD(pipeline);

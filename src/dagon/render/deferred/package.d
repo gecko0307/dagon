@@ -117,7 +117,7 @@ class DeferredRenderer: Renderer
     {
         super(eventManager, owner);
         
-        outputBuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, FrameBufferFormat.RGBA16F, true, this);
+        outputBuffer = New!Framebuffer(eventManager.drawableWidth, eventManager.drawableHeight, FrameBufferFormat.RGBA16F, true, this);
         
         gbuffer = New!GBuffer(view.width, view.height, outputBuffer, this);
         
@@ -126,8 +126,8 @@ class DeferredRenderer: Renderer
         passBackground = New!PassBackground(pipeline, gbuffer);
         passBackground.view = view;
         
-        terrainNormalBuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, FrameBufferFormat.RGBA16F, false, this);
-        terrainTexcoordBuffer = New!Framebuffer(eventManager.windowWidth, eventManager.windowHeight, FrameBufferFormat.RGB32F, false, this);
+        terrainNormalBuffer = New!Framebuffer(eventManager.drawableWidth, eventManager.drawableHeight, FrameBufferFormat.RGBA16F, false, this);
+        terrainTexcoordBuffer = New!Framebuffer(eventManager.drawableWidth, eventManager.drawableHeight, FrameBufferFormat.RGB32F, false, this);
         passTerrain = New!PassTerrain(pipeline, gbuffer, terrainNormalBuffer, terrainTexcoordBuffer);
         passTerrain.view = view;
         

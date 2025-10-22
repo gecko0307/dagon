@@ -144,10 +144,10 @@ class Game: Application
         presentRenderer = New!PresentRenderer(eventManager, postProcessingRenderer.outputBuffer, this);
         hudRenderer = New!HUDRenderer(eventManager, this);
         
-        renderer.setViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
-        postProcessingRenderer.setViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
-        presentRenderer.setViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
-        hudRenderer.setViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
+        renderer.setViewport(0, 0, drawableWidth, drawableHeight);
+        postProcessingRenderer.setViewport(0, 0, drawableWidth, drawableHeight);
+        presentRenderer.setViewport(0, 0, drawableWidth, drawableHeight);
+        hudRenderer.setViewport(0, 0, drawableWidth, drawableHeight);
         
         // Default renderer configuration
         if ("ssao.enabled" in rendererConfig.props)
@@ -340,12 +340,16 @@ class Game: Application
         }
     }
     
-    void resize(int width, int height)
+    void resizeRenderers(int width, int height)
     {
-        if (renderer) renderer.setViewport(0, 0, width, height);
-        if (postProcessingRenderer) postProcessingRenderer.setViewport(0, 0, width, height);
-        if (presentRenderer) presentRenderer.setViewport(0, 0, width, height);
-        if (hudRenderer) hudRenderer.setViewport(0, 0, width, height);
+        if (renderer)
+            renderer.setViewport(0, 0, drawableWidth, drawableHeight);
+        if (postProcessingRenderer)
+            postProcessingRenderer.setViewport(0, 0, drawableWidth, drawableHeight);
+        if (presentRenderer)
+            presentRenderer.setViewport(0, 0, drawableWidth, drawableHeight);
+        if (hudRenderer)
+            hudRenderer.setViewport(0, 0, drawableWidth, drawableHeight);
     }
     
     /**
@@ -357,11 +361,11 @@ class Game: Application
      */
     override void onResize(int width, int height)
     {
-        super.onResize(width, height);
         if (dynamicViewport)
-            resize(width, height);
+            resizeRenderers(width, height);
     }
     
+    /// Returns OpenGL texture object of the presented frame
     GLuint frameTexture() @property
     {
         return presentRenderer.inputBuffer.colorTexture;

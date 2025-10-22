@@ -45,8 +45,8 @@ class FullscreenMediaView: UIWidget
     this(UIManager ui, UIWidget parent = null)
     {
         super(ui, parent);
-        width = eventManager.windowWidth;
-        height = eventManager.windowHeight;
+        width = eventManager.drawableWidth;
+        height = eventManager.drawableHeight;
         x = 0;
         y = 0;
         

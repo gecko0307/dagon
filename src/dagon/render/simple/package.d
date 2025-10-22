@@ -61,8 +61,8 @@ class SimpleRenderer: Renderer
         super(eventManager, owner);
         
         outputBuffer = New!Framebuffer(
-            eventManager.windowWidth / outputBufferRatio,
-            eventManager.windowHeight / outputBufferRatio,
+            eventManager.drawableWidth / outputBufferRatio,
+            eventManager.drawableHeight / outputBufferRatio,
             FrameBufferFormat.RGBA16F, true, this);
         
         clearPass = New!SimpleClearPass(pipeline);

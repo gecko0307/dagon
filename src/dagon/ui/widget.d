@@ -112,10 +112,12 @@ class UIManager: EventListener
     
     bool mouseInRect(float x, float y, float w, float h)
     {
-        return eventManager.mouseX >= x &&
-               eventManager.mouseX < (x + w) &&
-               eventManager.mouseY >= y &&
-               eventManager.mouseY < (y + h);
+        int mx = eventManager.mouseX;
+        int my = eventManager.mouseY;
+        return mx  >= x &&
+               mx  < (x + w) &&
+               my >= y &&
+               my < (y + h);
     }
     
     bool mouseOver(Entity e)
@@ -354,20 +356,27 @@ class UIWidget: EventListener, Updateable
     void update(Time t)
     {
         processEvents();
+        
         if (fitToParent)
         {
             if (parent)
             {
                 width = parent.width;
                 height = parent.height;
+                background.scaling = Vector3f(width, height, 1.0f);
             }
             else
             {
-                width = ui.eventManager.windowWidth;
-                height = ui.eventManager.windowHeight;
+                width = ui.eventManager.drawableWidth;
+                height = ui.eventManager.drawableHeight;
+                background.scaling = Vector3f(width, height, 1.0f);
             }
         }
-        background.scaling = Vector3f(width, height, 1.0f);
+        else
+        {
+            background.scaling = Vector3f(width, height, 1.0f);
+        }
+        
         if (focused)
             background.material.baseColorFactor = backgroundFocusedColor;
         else

@@ -65,7 +65,7 @@ class Console: UIWidget
     this(UIManager ui, UIWidget parent)
     {
         super(ui, parent);
-        width = ui.scene.application.width;
+        width = ui.scene.application.drawableWidth;
         height = 30;
         
         backgroundFocusedColor = Color4f(0.1f, 0.1f, 0.1f, 0.9f);
@@ -95,7 +95,7 @@ class Console: UIWidget
     
     override void onResize(int w, int h)
     {
-        width = ui.scene.application.width;
+        width = ui.scene.application.drawableWidth;
     }
     
     protected void encode()
