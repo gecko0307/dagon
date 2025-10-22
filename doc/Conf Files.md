@@ -26,6 +26,7 @@ Built in *.conf files are fully reserved for Dagon's internal mechanisms, and it
 
 `settings.conf` contains engine settings recognozed by the `Application` class. If the file doesn't exist, the engine will print a warning and run with default settings.
 
+* `log.enabled` - `0` or `1`, disables or enables the logger. Default is `1`
 * `log.level` - minimum verbosity level of the logger. Default is `"debug"` in debug builds and `"info"` in release builds. Supported options are:
   * `"debug"` - debug mode, prints all messages
   * `"info"` - prints informational messages, warnings and errors
@@ -35,12 +36,14 @@ Built in *.conf files are fully reserved for Dagon's internal mechanisms, and it
 * `log.timestampTags` - `0` or `1`, disables or enables timestamps in log messages. Default is `0`
 * `log.levelTags` - `0` or `1`, disables or enables level tags in log messages. Default is `1`
 * `log.file` - enables logging to file, specifying the filename. File output for the logger is disabled by default
+* `appDataFolder` - game data folder name in `APPDATA` directory (`HOME` under Linux). These value override default one hardcoded in the application
 * `window.width`, `window.height` - size of the game window. These values override default ones hardcoded in the application
 * `window.resizable` - `0` or `1`, allow the user to resize the window or not (in windowed mode). Default is `1`
 * `window.x`, `window.y` - window position (in windowed mode). If not specified, the window is centered on the screen
 * `window.title` - window title text. This value overrides default one hardcoded in the application
 * `fullscreen` - `0` or `1`, run in windowed or fullscreen mode. This value overrides default one hardcoded in the application
 * `vsync` - `0` for immediate buffer swap; `1` for synchronization with the vertical retrace; `-1` for adaptive vsync. Default is `1`
+* `stepFrequency` - number of logic update cycles per second. This can be set to `auto` to synchronize updates with the display refresh rate. Default is `60`
 * `hideConsole` - `0` or `1`, show or hide the console window. It is convenient to leave it when debugging the game and hide it for end users. Default is `0`
 * `locale` - locale that should be loaded. This option overrides automatically selected locale based on system language and region. For example, `locale: "en_US";` means that application will try load `locales/en_US.lang` file and will ignore system language
 * `gl.debugOutput` - `0` or `1`, force disable or enable OpenGL debug output. Default is `1` in debug builds, `0` in release builds. This option is ignored if `logLevel` is higher than `"debug"`

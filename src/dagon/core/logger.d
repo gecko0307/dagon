@@ -74,6 +74,7 @@ enum LogLevel: uint
  * Options for log output configuration.
  *
  * Members:
+ *   enabled         = If true, logging is enabled.
  *   printToStdout   = If true, log to standard output.
  *   printToFile     = If true, log to a file.
  *   printToBuffer   = If true, log to buffer.
@@ -84,6 +85,7 @@ enum LogLevel: uint
  */
 struct LogOutputOptions
 {
+    bool enabled;
     bool printToStdout;
     bool printToFile;
     bool printToBuffer;
@@ -98,6 +100,7 @@ __gshared LogLevel logLevel = LogLevel.All;
 
 /// Global log output options
 __gshared LogOutputOptions logOutputOptions = {
+    enabled: true,
     printToStdout: true,
     printToFile: false,
     printToBuffer: false,
@@ -173,7 +176,7 @@ string defaultDateTimePrinter()
  */
 void log(A...)(LogLevel level, A args)
 {
-    if (level < logLevel)
+    if (!logOutputOptions.enabled || level < logLevel)
         return;
     
     string timestamp;

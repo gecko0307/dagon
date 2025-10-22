@@ -365,6 +365,9 @@ class Application: EventListener, Updateable
     ///
     string sdlImageLibraryPath = "auto";
     
+    ///
+    string freetypeLibraryPath = "auto";
+    
     /// Global VFS that all resource loaders should use.
     VirtualFileSystem vfs;
     
@@ -442,6 +445,9 @@ class Application: EventListener, Updateable
     
     ///
     int vsync = 1;
+    
+    ///
+    uint stepFrequency = 60;
     
     ///
     bool enableDebugOutput = false;
@@ -523,7 +529,7 @@ class Application: EventListener, Updateable
         
         debug
         {
-            this.enableDebugOutput = true;
+            logOutputOptions.enabled = true;
             this.logLevel = LogLevel.Debug;
         }
         
@@ -606,6 +612,9 @@ class Application: EventListener, Updateable
             
             if (sdlImageLibraryPath == "auto")
                 sdlImageLibraryPath = "libSDL2_image-2.0.so";
+            
+            if (freetypeLibraryPath == "auto")
+                freetypeLibraryPath = "";
         }
         else version(Windows)
         {
@@ -614,6 +623,9 @@ class Application: EventListener, Updateable
             
             if (sdlImageLibraryPath == "auto")
                 sdlImageLibraryPath = "SDL2_image.dll";
+            
+            if (freetypeLibraryPath == "auto")
+                freetypeLibraryPath = "";
         }
         
         if (sdlLibraryPath.length)
@@ -650,8 +662,10 @@ class Application: EventListener, Updateable
             }
         }
         
-        // TODO: freetypeLibraryPath
-        loadedFTSupport = loadFreeType();
+        if (freetypeLibraryPath.length)
+            loadedFTSupport = loadFreeType(freetypeLibraryPath.toStringz);
+        else
+            loadedFTSupport = loadFreeType();
         
         if (loadedFTSupport != ftSupport)
         {
@@ -699,8 +713,6 @@ class Application: EventListener, Updateable
             width = desktopBounds.w;
         if (height == 0)
             height = desktopBounds.h;
-        
-        
         
         _imageFileFormatSupported[ImageFileFormat.PNG] = true;
         _imageFileFormatSupported[ImageFileFormat.JPEG] = true;
@@ -847,7 +859,10 @@ class Application: EventListener, Updateable
         }
         
         // Create cadencer
-        cadencer = New!Cadencer(this, 60, this);
+        if (stepFrequency == 0)
+            stepFrequency = displayRefreshRate(60);
+        logInfo("Step frequency: ", stepFrequency, " Hz");
+        cadencer = New!Cadencer(this, stepFrequency, this);
         
         // Init FreeType and the font manager
         if (freetypePresent)
@@ -890,10 +905,10 @@ class Application: EventListener, Updateable
     
     protected void updateSettings()
     {
-        // TODO: appDataFolderName
-        // TODO: VFS settings
-        
         // Logger settings
+        if ("log.enabled" in config.props)
+            logOutputOptions.enabled = cast(bool)config.props["log.enabled"].toUInt;
+        
         if ("log.level" in config.props)
         {
             string logLevelStr = config.props["log.level"].toString;
@@ -921,17 +936,26 @@ class Application: EventListener, Updateable
         if ("log.levelTags" in config.props)
             logOutputOptions.printLogLevel = cast(bool)config.props["log.levelTags"].toUInt;
         
+        if ("appDataFolder")
+            appDataFolderName = config.props["appDataFolder"].toString;
+        
+        // TODO: VFS settings
+        
         // Library settings
         if ("SDL2.path" in config.props)
             sdlLibraryPath = config.props["SDL2.path"].toString;
-        if ("SDL2Image.Path" in config.props)
+        if ("SDL2Image.path" in config.props)
             sdlLibraryPath = config.props["SDL2Image.path"].toString;
+        if ("FreeType.path" in config.props)
+            freetypeLibraryPath = config.props["FreeType.path"].toString;
         version(Windows)
         {
             if ("SDL2.path.windows" in config.props)
                 sdlLibraryPath = config.props["SDL2.path.windows"].toString;
             if ("SDL2Image.path.windows" in config.props)
                 sdlImageLibraryPath = config.props["SDL2Image.path.windows"].toString;
+            if ("FreeType.path.windows" in config.props)
+                freetypeLibraryPath = config.props["FreeType.path.windows"].toString;
         }
         else version(linux)
         {
@@ -939,6 +963,8 @@ class Application: EventListener, Updateable
                 sdlLibraryPath = config.props["SDL2.path.linux"].toString;
             if ("SDL2Image.path.linux" in config.props)
                 sdlImageLibraryPath = config.props["SDL2Image.path.linux"].toString;
+            if ("FreeType.path.linux" in config.props)
+                freetypeLibraryPath = config.props["FreeType.path.linux"].toString;
         }
         
         // Window settings
@@ -996,9 +1022,19 @@ class Application: EventListener, Updateable
                     showConsoleWindow(false);
         }
         
-        // Graphics API settings
+        // Graphics settings
         if ("vsync" in config.props)
             vsync = config.props["vsync"].toInt;
+        if ("stepFrequency" in config.props)
+        {
+            if (config.props["stepFrequency"].type == DPropType.Number)
+                stepFrequency = config.props["stepFrequency"].toUInt;
+            else if (config.props["stepFrequency"].type == DPropType.String)
+            {
+                if (config.props["stepFrequency"].toString == "auto")
+                    stepFrequency = 0; // same as display refresh rate
+            }
+        }
         if ("gl.enableShaderCache" in config.props)
             enableShaderCache = cast(bool)(config.props["gl.enableShaderCache"].toUInt);
         if ("gl.debugOutput" in config.props)
