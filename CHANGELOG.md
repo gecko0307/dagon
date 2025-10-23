@@ -1,3 +1,9 @@
+Dagon 0.33.1 - TBD
+- **Core**
+  - If `windowWidth` and `windowHeight` are both zero, and `fullscreen` is on, Dagon now automatically determines fullscreen resolution for switching the video mode
+- **Game**
+  - Fix `LoadingScreen` class, add background image support.
+
 Dagon 0.33.0 - 23 Oct, 2025
 ---------------------------
 - **Core**
