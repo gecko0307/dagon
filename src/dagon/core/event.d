@@ -220,12 +220,10 @@ class EventManager: Owner
      * so for emitting custom events, outboxEventQueue should be used.
      */
     Event[maxNumEvents] inboxEventQueue;
-    
     alias eventQueue = inboxEventQueue;
     
     /// Number of events in the inbox queue.
     uint numInboxEvents;
-    
     alias numEvents = numInboxEvents;
     
     /**
@@ -349,9 +347,6 @@ class EventManager: Owner
     
     /// A maximum that controller axis value is clamped to (for normalization in 0..1 range).
     int controllerAxisThreshold = 32639;
-    
-    deprecated("use controllerAxisThreshold instead")
-    alias joystickAxisThreshold = controllerAxisThreshold;
     
     /// Current controller vibration support.
     bool controllerHasRumble = false;

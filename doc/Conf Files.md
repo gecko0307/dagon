@@ -36,7 +36,12 @@ Built in *.conf files are fully reserved for Dagon's internal mechanisms, and it
 * `log.timestampTags` - `0` or `1`, disables or enables timestamps in log messages. Default is `0`
 * `log.levelTags` - `0` or `1`, disables or enables level tags in log messages. Default is `1`
 * `log.file` - enables logging to file, specifying the filename. File output for the logger is disabled by default
-* `appDataFolder` - game data folder name in `APPDATA` directory (`HOME` under Linux). These value override default one hardcoded in the application
+* `vfs.appDataFolder` - game data folder name in `APPDATA` directory (`HOME` under Linux). These value override default one hardcoded in the application
+* `vfs.appDataFolder.windows` - overrides `vfs.appDataFolder` under Windows
+* `vfs.appDataFolder.linux` - overrides `vfs.appDataFolder` under Linux
+* `vfs.mount` - additional paths to mount in the VFS, separated by semicolon (`"my/path;my/another/path"`)
+* `vfs.mount.windows` - overrides `vfs.mount` under Windows
+* `vfs.mount.linux` - overrides `vfs.mount` under Linux
 * `window.width`, `window.height` - size of the game window. These values override default ones hardcoded in the application
 * `window.resizable` - `0` or `1`, allow the user to resize the window or not (in windowed mode). Default is `1`
 * `window.x`, `window.y` - window position (in windowed mode). If not specified, the window is centered on the screen
@@ -48,16 +53,26 @@ Built in *.conf files are fully reserved for Dagon's internal mechanisms, and it
 * `hideConsole` - `0` or `1`, show or hide the console window. It is convenient to leave it when debugging the game and hide it for end users. Default is `0`
 * `locale` - locale that should be loaded. This option overrides automatically selected locale based on system language and region. For example, `locale: "en_US";` means that application will try load `locales/en_US.lang` file and will ignore system language
 * `gl.debugOutput` - `0` or `1`, force disable or enable OpenGL debug output. Default is `1` in debug builds, `0` in release builds. This option is ignored if `logLevel` is higher than `"debug"`
-* `gl.enableShaderCache` - `0` or `1`, cache compiled shader binaries to files for reuse instead of compiling shaders on each run. Disabled by default. This is an experimental feature, use with care
+* `gl.shaderCache.enabled` - `0` or `1`, cache compiled shader binaries to files for reuse instead of compiling shaders on each run. Disabled by default. This is an experimental feature, use with care
+* `gl.shaderCache.path` - path to a folder for storing cached shader binaries. Default is `"data/__internal/shader_cache"`
+* `gl.shaderCache.path.windows` - overrides `gl.shaderCache.path` under Windows
+* `gl.shaderCache.path.linux` - overrides `gl.shaderCache.linux` under Windows
 * `font.sans` - path to the default sans font. Default is `"data/__internal/fonts/LiberationSans-Regular.ttf"`
+* `font.sans.windows` - overrides `vfs.sans` under Windows
+* `font.sans.linux` - overrides `vfs.sans` under Linux
 * `font.monospace` - path to the default monospace font. Default is `"data/__internal/fonts/LiberationMono-Regular.ttf"`
+* `font.monospace.windows` - overrides `vfs.sans` under Windows
+* `font.monospace.linux` - overrides `vfs.sans` under Linux
 * `font.size` - default sans/monospace font size. Default is `10`
 * `SDL2.path` - path to SDL2 shared library. If empty string specified, the path is automatically determined by the library loader. If `"auto"` specified (default case), `"SDL2.dll"` is used under Windows, and `"libSDL2-2.0.so.0"` is used under Linux
 * `SDL2.path.windows` - path to SDL2 shared library under Windows, overrides `SDL2.path`. If empty string specified, the path is automatically determined by the library loader. If `"auto"` specified, `"SDL2.dll"` is used
 * `SDL2.path.linux` - path to SDL2 shared library under Linux, overrides `SDL2.path`. If empty string specified, the path is automatically determined by the library loader. If `"auto"` specified, `"libSDL2-2.0.so.0"` is used
 * `SDL2Image.path` - path to SDL2_Image shared library. If empty string specified, the path is automatically determined by the library loader. If `"auto"` specified (default case), `"SDL2_Image.dll"` is used under Windows, and `"libSDL2_image-2.0.so"` is used under Linux
 * `SDL2Image.path.windows` - path to SDL2_Image shared library under Windows, overrides `SDL2Image.path`. If empty string specified, the path is automatically determined by the library loader. If `"auto"` specified, `"SDL2_Image.dll"` is used
-* `SDL2Image.path.linux` - path to SDL2_Image shared library under Linux, overrides `SDL2Image.path`. If empty string specified, the path is automatically determined by the library loader. If `"auto"` specified, `"libSDL2_image-2.0.so"` is used.
+* `SDL2Image.path.linux` - path to SDL2_Image shared library under Linux, overrides `SDL2Image.path`. If empty string specified, the path is automatically determined by the library loader. If `"auto"` specified, `"libSDL2_image-2.0.so"` is used
+* `events.keyRepeat` - enable repeated triggering of "key down" events when user presses and holds a key. This is generally only useful for text input in GUI applications. Default is `0`
+* `events.controllerAxisThreshold` - defines maximum value of controller axis for normalization. Default is `32639`
+* `events.graphicsTablet.enabled` - `0` or `1`, disable or enable graphics tablet events (if device is available). Default is `1`.
 
 ## render.conf
 

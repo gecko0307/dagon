@@ -116,7 +116,7 @@ class FontManager: Owner
         }
         else
         {
-            logError("Failed to load default fonts");
+            logError("Failed to load default fonts: FreeType is not available");
         }
     }
     

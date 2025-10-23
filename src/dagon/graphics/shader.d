@@ -79,17 +79,18 @@ class ShaderCache: Owner
     StdFileSystem fs;
     
     /// Cache folder path.
-    string cacheFolder = "data/__internal/shader_cache";
+    string cacheFolder;
     
     /// Whether the shader cache is enabled.
     bool enabled = false;
     
     /// Constructor.
-    this(VirtualFileSystem vfs, Owner owner)
+    this(VirtualFileSystem vfs, string cacheFolder, Owner owner)
     {
         super(owner);
         this.vfs = vfs;
         fs = vfs.stdfs;
+        this.cacheFolder = cacheFolder;
         fs.createDir(cacheFolder, true);
     }
     

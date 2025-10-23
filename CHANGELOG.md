@@ -2,14 +2,15 @@ Dagon 0.33.0 - TBD
 ------------------
 - **Core**
   - Reworked settings.conf handling code in `Application`. Now each VFS entry can have its own settings.conf file overriding a default one in the executable directory. Also default settings.conf is now loaded before initializing other systems, which allows, in particular, to override logger settings from the beginning
-  - New settings.conf options: `log.enabled`, `log.level`, `log.toStdout`, `log.file`, `log.timestampTags`, `log.levelTags`, `appDataFolder`, `window.resizable`, `window.x`, `window.y`, `window.hiDPI`, `vsync`, `stepFrequency`, `gl.debugOutput`, `font.sans`, `font.monospace`, `font.size`, `SDL2.path`, `SDL2Image.path`, `FreeType.path`. Config options `windowWidth`, `windowHeight`, `windowTitle` are deprecated - use `window.width`, `window.height`, `window.title`
+  - New settings.conf options: `log.enabled`, `log.level`, `log.toStdout`, `log.file`, `log.timestampTags`, `log.levelTags`, `vfs.appDataFolder`, `vfs.mount`, `window.resizable`, `window.x`, `window.y`, `window.hiDPI`, `vsync`, `stepFrequency`, `gl.debugOutput`, `gl.shaderCache.path`, `font.sans`, `font.monospace`, `font.size`, `SDL2.path`, `SDL2Image.path`, `FreeType.path`, `events.keyRepeat`, `events.controllerAxisThreshold`, `events.graphicsTablet.enabled`
+  - Config options `windowWidth`, `windowHeight`, `windowTitle` are deprecated - use `window.width`, `window.height`, `window.title`
   - Breaking change: `Application.width` is now `Application.windowWidth`, `Application.height` is now `Application.windowHeight`
   - New `Application` properties: `args`, `logLevel`, `appDataFolderName`, `sdlLibraryPath`, `sdlImageLibraryPath`, `freetypeLibraryPath`, `windowTitle`, `windowResizable`, `windowHighDPI`, `drawableWidth`, `drawableHeight`, `pixelRatio`, `vsync`, `stepFrequency`, `enableDebugOutput`, `enableShaderCache`, `defaultFontSans`, `defaultFontMonospace`, `defaultFontSize`
   - New `EventManager` properties: `drawableWidth`, `drawableHeight`
   - Fix crash when Wintab library is not present
 - **Rendering**
   - High DPI rendering support
-  - Breaking change: renderer and post-processing settings are now in render.conf, `enableShaderCache` is now `gl.enableShaderCache`
+  - Breaking change: renderer and post-processing settings are now in render.conf, `enableShaderCache` is now `gl.shaderCache.enabled`
 - **Extensions**
   - Breaking change: `dagon:audio` settings are now in audio.conf.
 

@@ -360,6 +360,9 @@ class Application: EventListener, Updateable
     /// The application folder name (used under the HOME or APPDATA directory).
     string appDataFolderName;
     
+    /// Additional VFS mount paths defined in settings.conf.
+    string customMountPaths;
+    
     /// Path to the SDL2 library.
     string sdlLibraryPath = "auto";
     
@@ -525,6 +528,9 @@ class Application: EventListener, Updateable
     /// Shader cache.
     ShaderCache shaderCache;
     
+    /// Shader cache path.
+    string shaderCachePath = "data/__internal/shader_cache";
+    
     protected
     {
         EventManager _eventManager;
@@ -603,12 +609,17 @@ class Application: EventListener, Updateable
         logInfo("System locale: ", locale);
         logInfo("Selected locale: ", userLocale);
         
-        // Mount additional directories to the VFS
+        // Mount directories to the VFS
         mount(this.directory);
         if (appDataFolderName.length > 0)
         {
             vfs.mountAppDataDirectory(appDataFolderName);
-            logInfo("VFS: mounted ", vfs.appDataPath);
+            logInfo("VFS: mount ", vfs.appDataPath);
+        }
+        if (customMountPaths.length > 0)
+        {
+            foreach(i, path; customMountPaths.split(';'))
+                mount(path);
         }
         _vfs = vfs;
         
@@ -796,6 +807,7 @@ class Application: EventListener, Updateable
         pixelRatio = cast(float)drawableHeight / cast(float)windowHeight;
         logInfo("Pixel ratio: ", pixelRatio);
 
+        // Create OpenGL context
         glcontext = SDL_GL_CreateContext(window);
         if (glcontext is null)
             exitWithError("Failed to create OpenGL context: " ~ to!string(SDL_GetError()));
@@ -808,19 +820,22 @@ class Application: EventListener, Updateable
         if (isOpenGLLoaded())
         {
             if (loadedGLSupport < GLSupport.gl43)
-            {
                 exitWithError("Dagon requires OpenGL 4.3, but it seems that your graphics card does not support it");
-            }
         }
         else
-        {
             exitWithError("Failed to load OpenGL functions. Please, update graphics card driver and make sure it supports OpenGL 4.3");
-        }
         
         setFullscreen(fullscreen);
 
+        // Create event manager
         _eventManager = New!EventManager(this);
         super(_eventManager, null);
+        if ("events.keyRepeat" in config.props)
+            _eventManager.enableKeyRepeat = cast(bool)config.props["events.keyRepeat"].toUInt;
+        if ("events.controllerAxisThreshold" in config.props)
+            _eventManager.controllerAxisThreshold = config.props["events.controllerAxisThreshold"].toUInt;
+        if ("events.graphicsTablet.enabled" in config.props)
+            _eventManager.graphicsTablet.enabled = cast(bool)config.props["events.graphicsTablet.enabled"].toUInt;
 
         // Initialize OpenGL
         glVersion = String(glGetString(GL_VERSION));
@@ -889,6 +904,8 @@ class Application: EventListener, Updateable
         logInfo("GL_MAX_COMPUTE_WORK_GROUP_SIZE: ", maxWorkGroups);
         
         // Debug output
+        if ("gl.debugOutput" in config.props)
+            enableDebugOutput = cast(bool)config.props["gl.debugOutput"].toUInt;
         if (enableDebugOutput)
         {
             if (hasKHRDebug)
@@ -906,7 +923,7 @@ class Application: EventListener, Updateable
         logInfo("Step frequency: ", stepFrequency, " Hz");
         cadencer = New!Cadencer(this, stepFrequency, this);
         
-        // Init FreeType and the font manager
+        // Init FreeType and create a font manager
         if (freetypePresent)
         {
             if (FT_Init_FreeType(&ftLibrary))
@@ -920,14 +937,29 @@ class Application: EventListener, Updateable
                 logInfo("FreeType version: ", ftVersion.major, ".", ftVersion.minor, ".", ftVersion.patch);
             }
         }
-        
         fontManager = New!FontManager(this);
         
         // Init shader cache
-        shaderCache = New!ShaderCache(vfs, this);
+        if ("gl.shaderCache.enabled" in config.props)
+            enableShaderCache = cast(bool)(config.props["gl.shaderCache.enabled"].toUInt);
+        if ("gl.shaderCache.path" in config.props)
+            shaderCachePath = config.props["gl.shaderCache.path"].toString;
+        version(Windows)
+        {
+            if ("gl.shaderCache.path.windows" in config.props)
+                shaderCachePath = config.props["gl.shaderCache.path.windows"].toString;
+        }
+        else version(linux)
+        {
+            if ("gl.shaderCache.path.linux" in config.props)
+                shaderCachePath = config.props["gl.shaderCache.path.linux"].toString;
+        }
+        shaderCache = New!ShaderCache(vfs, shaderCachePath, this);
         shaderCache.enabled = enableShaderCache;
-        logInfo("Shader cache enabled: ", shaderCache.enabled);
         _globalShaderCache = shaderCache;
+        logInfo("Shader cache enabled: ", shaderCache.enabled);
+        if (shaderCache.enabled)
+            logInfo("Shader cache path: ", shaderCachePath);
         
         // Get cursors
         // TODO: support custom cursors
@@ -967,21 +999,33 @@ class Application: EventListener, Updateable
         
         if ("log.toStdout" in config.props)
             logOutputOptions.printToStdout = cast(bool)config.props["log.toStdout"].toUInt;
-        
         if ("log.file" in config.props)
             if (config.props["log.file"].type == DPropType.String)
                 setLogFilename(config.props["log.file"].toString);
-        
         if ("log.timestampTags" in config.props)
             logOutputOptions.printTimestamp = cast(bool)config.props["log.timestampTags"].toUInt;
-        
         if ("log.levelTags" in config.props)
             logOutputOptions.printLogLevel = cast(bool)config.props["log.levelTags"].toUInt;
         
-        if ("appDataFolder")
-            appDataFolderName = config.props["appDataFolder"].toString;
-        
-        // TODO: VFS settings
+        // VFS settings
+        if ("vfs.appDataFolder" in config.props)
+            appDataFolderName = config.props["vfs.appDataFolder"].toString;
+        if ("vfs.mount" in config.props)
+            customMountPaths = config.props["vfs.mount"].toString;
+        version(Windows)
+        {
+            if ("vfs.appDataFolder.windows" in config.props)
+                appDataFolderName = config.props["vfs.appDataFolder.windows"].toString;
+            if ("vfs.mount.windows" in config.props)
+                customMountPaths = config.props["vfs.mount.windows"].toString;
+        }
+        else version(linux)
+        {
+            if ("vfs.appDataFolder.linux" in config.props)
+                appDataFolderName = config.props["vfs.appDataFolder.linux"].toString;
+            if ("vfs.mount.linux" in config.props)
+                customMountPaths = config.props["vfs.mount.linux"].toString;
+        }
         
         // Library settings
         if ("SDL2.path" in config.props)
@@ -1021,7 +1065,6 @@ class Application: EventListener, Updateable
             }
             windowWidth = config.props["windowWidth"].toUInt;
         }
-        
         if ("window.height" in config.props)
             windowHeight = config.props["window.height"].toUInt;
         else if ("windowHeight" in config.props)
@@ -1069,16 +1112,6 @@ class Application: EventListener, Updateable
             windowTitle = config.props["windowTitle"].toString;
         }
         
-        if ("locale" in config.props)
-            userLocale = config.props["locale"].toString;
-        version(Windows)
-        {
-            if ("hideConsole" in config.props)
-                if (config.props["hideConsole"].toUInt)
-                    showConsoleWindow(false);
-        }
-        
-        // Graphics settings
         if ("vsync" in config.props)
             vsync = config.props["vsync"].toInt;
         if ("stepFrequency" in config.props)
@@ -1091,16 +1124,38 @@ class Application: EventListener, Updateable
                     stepFrequency = 0; // same as display refresh rate
             }
         }
-        if ("gl.enableShaderCache" in config.props)
-            enableShaderCache = cast(bool)(config.props["gl.enableShaderCache"].toUInt);
-        if ("gl.debugOutput" in config.props)
-            enableDebugOutput = cast(bool)config.props["gl.debugOutput"].toUInt;
+        
+        version(Windows)
+        {
+            if ("hideConsole" in config.props)
+                if (config.props["hideConsole"].toUInt)
+                    showConsoleWindow(false);
+        }
+        
+        // Locale settings
+        if ("locale" in config.props)
+            userLocale = config.props["locale"].toString;
+        
         
         // Font manager settings
         if ("font.sans" in config.props)
             defaultFontSans = config.props["font.sans"].toString;
         if ("font.monospace" in config.props)
             defaultFontMonospace = config.props["font.monospace"].toString;
+        version(Windows)
+        {
+            if ("font.sans.windows" in config.props)
+                defaultFontSans = config.props["font.sans.windows"].toString;
+            if ("font.sans.monospace" in config.props)
+                defaultFontMonospace = config.props["font.sans.monospace"].toString;
+        }
+        else version(linux)
+        {
+            if ("font.sans.linux" in config.props)
+                defaultFontSans = config.props["font.sans.linux"].toString;
+            if ("font.sans.linux" in config.props)
+                defaultFontMonospace = config.props["font.sans.linux"].toString;
+        }
         if ("font.size" in config.props)
             defaultFontSize = config.props["font.size"].toUInt;
     }
@@ -1345,7 +1400,7 @@ class Application: EventListener, Updateable
     void mount(ReadOnlyFileSystem fs)
     {
         vfs.mount(fs);
-        logInfo("VFS: mounted a filesystem");
+        logInfo("VFS: mount a filesystem");
     }
     
     /// Mounts the specified directory to the virtual file system.
@@ -1354,9 +1409,9 @@ class Application: EventListener, Updateable
         // TODO: create folder if needed
         vfs.mount(dirName);
         if (dirName == ".")
-            logInfo("VFS: mounted working directory");
+            logInfo("VFS: mount working directory");
         else
-            logInfo("VFS: mounted ", dirName);
+            logInfo("VFS: mount ", dirName);
     }
     
     /// Opens file stream for reading from the virtual file system.
