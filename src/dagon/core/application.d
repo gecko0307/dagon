@@ -84,6 +84,16 @@ version(Windows)
     }
 }
 
+struct DagonVersion
+{
+    uint major;
+    uint minor;
+    uint patch;
+}
+
+immutable DagonVersion dagonVersion = DagonVersion(0, 33, 0);
+immutable string dagonVersionString = "0.33.0";
+
 /**
  * Immediately terminates the application,
  * printing an optional fatal error to the logger.
@@ -606,6 +616,7 @@ class Application: EventListener, Updateable
         }
         initConfigPath.free();
         
+        logInfo("Dagon ", dagonVersionString);
         logInfo("System locale: ", locale);
         logInfo("Selected locale: ", userLocale);
         
