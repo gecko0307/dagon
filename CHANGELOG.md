@@ -8,6 +8,7 @@ Dagon 0.33.0 - TBD
   - New `Application` properties: `args`, `logLevel`, `appDataFolderName`, `sdlLibraryPath`, `sdlImageLibraryPath`, `freetypeLibraryPath`, `windowTitle`, `windowResizable`, `windowHighDPI`, `drawableWidth`, `drawableHeight`, `pixelRatio`, `vsync`, `stepFrequency`, `enableDebugOutput`, `enableShaderCache`, `defaultFontSans`, `defaultFontMonospace`, `defaultFontSize`
   - New `EventManager` properties: `drawableWidth`, `drawableHeight`
   - Fix crash when Wintab library is not present
+  - Dagon version info is now available (`dagon.core.dagonVersion` and `dagon.core.dagonVersionString`)
 - **Rendering**
   - High DPI rendering support
   - Breaking change: renderer and post-processing settings are now in render.conf
