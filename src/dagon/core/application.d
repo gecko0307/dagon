@@ -1198,6 +1198,8 @@ class Application: EventListener, Updateable
         
         if (vfs)
             Delete(vfs);
+        
+        logInfo("Exit Dagon application");
     }
     
     /**
