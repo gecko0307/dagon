@@ -137,7 +137,7 @@ class Game: Application
         {
             rendererConfig.fromFile(fs, "render.conf");
         }
-        
+
         deferredRenderer = New!DeferredRenderer(eventManager, this);
         renderer = deferredRenderer;
         postProcessingRenderer = New!PostProcRenderer(eventManager, deferredRenderer.outputBuffer, deferredRenderer.gbuffer, this);
@@ -303,7 +303,7 @@ class Game: Application
             sceneForDeletion = null;
         }
         
-        if (currentScene)
+        if (currentScene && renderer)
         {
             currentScene.update(t);
             
@@ -318,9 +318,9 @@ class Game: Application
             
             hudRenderer.scene = currentScene;
             hudRenderer.update(t);
+            
+            postProcessingRenderer.inputBuffer = renderer.outputBuffer;
         }
-        
-        postProcessingRenderer.inputBuffer = renderer.outputBuffer;
     }
 
     /// Called every frame to render the current scene.
@@ -328,7 +328,7 @@ class Game: Application
     {
         if (currentScene)
         {
-            if (currentScene.canRender)
+            if (currentScene.canRender && renderer)
             {
                 renderer.render();
                 postProcessingRenderer.render();
@@ -368,7 +368,10 @@ class Game: Application
     /// Returns OpenGL texture object of the presented frame
     GLuint frameTexture() @property
     {
-        return presentRenderer.inputBuffer.colorTexture;
+        if (presentRenderer)
+            return presentRenderer.inputBuffer.colorTexture;
+        else
+            return 0;
     }
     
     /**
