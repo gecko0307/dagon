@@ -30,7 +30,7 @@ DEALINGS IN THE SOFTWARE.
  *
  * Description:
  * The `dagon.game.loadingscreen` module defines the `LoadingScreen` class,
- * which displays a progress bar during asset or scene loading.
+ * which displays a a splash image and a progress bar during scene loading.
  *
  * Copyright: Timur Gafarov 2019-2025
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
@@ -54,24 +54,40 @@ import dagon.graphics.state;
 import dagon.graphics.entity;
 import dagon.graphics.shapes;
 import dagon.graphics.material;
+import dagon.graphics.texture;
 import dagon.render.hud;
 
 /**
- * Displays a loading progress bar on the screen during asset or scene loading.
+ * Displays a splash image and a loading progress bar on the screen during scene loading.
  */
 class LoadingScreen: EventListener
 {
-    /// The application object.
+    protected:
     Application app;
-
-    /// The quad shape representing the progress bar.
-    ShapeQuad progressBarShape;
+    ShapeQuad quad;
+    HUDShader hudShader;
+    Texture _backgroundTexture;
+    float backgroundAspectRatio = 0.0f;
+    GraphicsState state;
+    float prevProgress = 0.0f;
+    float fakeProgress = 0.0f;
+    
+    public:
+    
+    /// The entity for the background image.
+    Entity background;
 
     /// The entity for the progress bar.
-    Entity progressBarEntity;
-
-    /// The HUD shader used for rendering.
-    HUDShader hudShader;
+    Entity progressbar;
+    
+    /// Progressbar width (in physical pixels).
+    float progressbarWidth = 320.0f;
+    
+    /// Progressbar height (in physical pixels).
+    float progressbarHeight = 10.0f;
+    
+    /// Is progressbar centered on screen.
+    bool progressbarCentered = true;
 
     /**
      * Constructs a loading screen for the given application.
@@ -84,13 +100,40 @@ class LoadingScreen: EventListener
     {
         super(app.eventManager, owner);
         this.app = app;
-        progressBarShape = New!ShapeQuad(this);
-        progressBarEntity = New!Entity(this);
-        progressBarEntity.drawable = progressBarShape;
+        
+        quad = New!ShapeQuad(this);
         hudShader = New!HUDShader(this);
-        progressBarEntity.material = New!Material(this);
-        progressBarEntity.material.baseColorFactor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
-        progressBarEntity.material.useCulling = false;
+        
+        background = New!Entity(this);
+        background.drawable = quad;
+        background.material = New!Material(this);
+        background.material.baseColorFactor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
+        background.material.useCulling = false;
+        
+        progressbar = New!Entity(this);
+        progressbar.drawable = quad;
+        progressbar.material = New!Material(this);
+        progressbar.material.baseColorFactor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+        progressbar.material.useCulling = false;
+    }
+    
+    /// Sets background color.
+    void backgroundColor(Color4f backgroundColor) @property
+    {
+        background.material.baseColorFactor = backgroundColor;
+        _backgroundTexture = null;
+        background.material.baseColorTexture = null;
+    }
+    
+    /// Sets background texture.
+    void backgroundTexture(Texture backgroundTexture) @property
+    {
+        _backgroundTexture = backgroundTexture;
+        backgroundAspectRatio =
+            cast(float)_backgroundTexture.width / 
+            cast(float)_backgroundTexture.height;
+        background.material.baseColorTexture = _backgroundTexture;
+        background.material.baseColorFactor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     /**
@@ -102,50 +145,97 @@ class LoadingScreen: EventListener
      */
     void update(Time t, float progress)
     {
-        float maxWidth = eventManager.windowWidth * 0.33f;
-        float x = (eventManager.windowWidth - maxWidth) * 0.5f;
-        float y = eventManager.windowHeight * 0.5f - 10;
-        float w = progress * maxWidth;
-        progressBarEntity.position = Vector3f(x, y, 0);
-        progressBarEntity.scaling = Vector3f(w, 10, 1);
-        progressBarEntity.update(t);
+        float screenWidth = eventManager.drawableWidth;
+        float screenHeight = eventManager.drawableHeight;
+        
+        if (progressbar)
+        {
+            if (progress == prevProgress)
+                fakeProgress += 0.1f * t.delta;
+            else
+            {
+                fakeProgress = progress;
+                prevProgress = progress;
+            }
+            
+            float progWidth = fakeProgress * progressbarWidth;
+            progressbar.scaling = Vector3f(progWidth, progressbarHeight, 1.0f);
+            if (progressbarCentered)
+            {
+                progressbar.position = Vector3f(
+                    (screenWidth - progressbarWidth) * 0.5f,
+                    (screenHeight - progressbarHeight) * 0.5f, 0);
+            }
+            progressbar.update(t);
+        }
+        
+        if (background)
+        {
+            float bgWidth = screenWidth;
+            float bgHeight = screenHeight;
+            if (_backgroundTexture)
+            {
+                // Cover with the background respecting texture aspect ratio
+                if (screenWidth > screenHeight)
+                {
+                    bgWidth = screenWidth;
+                    bgHeight = bgWidth / backgroundAspectRatio;
+                }
+                else
+                {
+                    bgHeight = screenHeight;
+                    bgWidth = bgHeight * backgroundAspectRatio;
+                }
+            }
+            background.scaling = Vector3f(bgWidth, bgHeight, 1);
+            background.position = Vector3f(
+                (screenWidth - bgWidth) * 0.5f,
+                (screenHeight - bgHeight) * 0.5f, 0);
+            background.update(t);
+        }
     }
 
-    /// Renders the loading screen and progress bar.
+    /// Renders the loading screen.
     void render()
     {
-        GraphicsState state;
+        glScissor(0, 0, eventManager.drawableWidth, eventManager.drawableHeight);
+        glViewport(0, 0, eventManager.drawableWidth, eventManager.drawableHeight);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        if (background)
+            render(background);
+        if (progressbar)
+            render(progressbar);
+    }
+    
+    protected void render(Entity entity)
+    {
         state.reset();
-        state.modelViewMatrix = progressBarEntity.absoluteTransformation;
-        state.projectionMatrix = orthoMatrix(0.0f, eventManager.windowWidth, eventManager.windowHeight, 0.0f, 0.0f, 1000.0f);
+        state.modelViewMatrix = entity.absoluteTransformation;
+        state.projectionMatrix = orthoMatrix(0.0f, eventManager.drawableWidth, eventManager.drawableHeight, 0.0f, 0.0f, 1000.0f);
         state.invProjectionMatrix = state.projectionMatrix.inverse;
-        state.resolution = Vector2f(eventManager.windowWidth, eventManager.windowHeight);
+        state.resolution = Vector2f(eventManager.drawableWidth, eventManager.drawableHeight);
         state.zNear = 0.0f;
         state.zFar = 1000.0f;
 
-        glScissor(0, 0, eventManager.windowWidth, eventManager.windowHeight);
-        glViewport(0, 0, eventManager.windowWidth, eventManager.windowHeight);
-
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        state.modelViewMatrix = state.viewMatrix * progressBarEntity.absoluteTransformation;
+        state.modelViewMatrix = state.viewMatrix * entity.absoluteTransformation;
         state.normalMatrix = state.modelViewMatrix.inverse.transposed;
         state.shader = hudShader;
 
-        if (progressBarEntity.material)
-            progressBarEntity.material.bind(&state);
+        if (entity.material)
+            entity.material.bind(&state);
 
         hudShader.bind();
         hudShader.bindParameters(&state);
 
-        if (progressBarEntity.drawable)
-            progressBarEntity.drawable.render(&state);
+        if (entity.drawable)
+            entity.drawable.render(&state);
 
         hudShader.unbindParameters(&state);
         hudShader.unbind();
 
-        if (progressBarEntity.material)
-            progressBarEntity.material.unbind(&state);
+        if (entity.material)
+            entity.material.unbind(&state);
     }
 }
