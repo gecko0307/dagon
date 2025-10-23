@@ -91,7 +91,7 @@ Recognozed by the `Game` class, applied to the `Game.deferredRenderer` and `Game
 * `glow.threshold` - 
 * `glow.intensity` - 
 * `glow.radius` - 
-* `hdr.tonemapper` - tonemapping operator used to compress HDR to LDR. Supported options are:
+* `hdr.tonemapper` - tonemapping operator used to compress HDR to LDR. Default is `"ACES"`. Supported options are:
   * `"None"`
   * `"Reinhard"`
   * `"Reinhard2"`
