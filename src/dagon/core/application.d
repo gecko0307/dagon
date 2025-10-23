@@ -761,13 +761,26 @@ class Application: EventListener, Updateable
         if (SDL_Init(SDL_INIT_EVERYTHING) == -1)
             exitWithError("Failed to init SDL: " ~ to!string(SDL_GetError()));
 
-        SDL_Rect desktopBounds;
-        SDL_GetDisplayBounds(0, &desktopBounds);
-        
-        if (windowWidth == 0)
-            windowWidth = desktopBounds.w;
-        if (windowHeight == 0)
-            windowHeight = desktopBounds.h;
+        if (fullscreen)
+        {
+            SDL_DisplayMode displayMode;
+            SDL_GetCurrentDisplayMode(0, &displayMode);
+            
+            if (windowWidth == 0)
+                windowWidth = displayMode.w;
+            if (windowHeight == 0)
+                windowHeight = displayMode.h;
+        }
+        else
+        {
+            SDL_Rect desktopBounds;
+            SDL_GetDisplayBounds(0, &desktopBounds);
+            
+            if (windowWidth == 0)
+                windowWidth = desktopBounds.w;
+            if (windowHeight == 0)
+                windowHeight = desktopBounds.h;
+        }
         
         _imageFileFormatSupported[ImageFileFormat.PNG] = true;
         _imageFileFormatSupported[ImageFileFormat.JPEG] = true;
