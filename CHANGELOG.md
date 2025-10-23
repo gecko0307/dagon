@@ -1,5 +1,5 @@
-Dagon 0.33.0 - TBD
-------------------
+Dagon 0.33.0 - 23 Oct, 2025
+---------------------------
 - **Core**
   - Reworked settings.conf handling code in `Application`. Now each VFS entry can have its own settings.conf file overriding a default one in the executable directory. Also default settings.conf is now loaded before initializing other systems, which allows, in particular, to override logger settings from the beginning
   - New settings.conf options: `log.enabled`, `log.level`, `log.toStdout`, `log.file`, `log.timestampTags`, `log.levelTags`, `vfs.appDataFolder`, `vfs.mount`, `window.resizable`, `window.x`, `window.y`, `window.hiDPI`, `vsync`, `stepFrequency`, `gl.debugOutput`, `gl.shaderCache.path`, `font.sans`, `font.monospace`, `font.size`, `SDL2.path`, `SDL2Image.path`, `FreeType.path`, `events.keyRepeat`, `events.controllerAxisThreshold`, `events.graphicsTablet.enabled`
