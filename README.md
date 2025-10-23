@@ -37,6 +37,7 @@ Features
 * Textures in PNG, JPEG, WebP, AVIF, DDS, KTX, KTX2, HDR, SVG and many other formats
 * GPU-based texture resizing
 * Video support using [libVLC](https://www.videolan.org/vlc/libvlc.html). Screen-aligned 2D video playback and video textures on 3D meshes. Equirectangular 360° video support
+* Runs in windowed, fullscreen and borderless fullscreen modes
 * HiDPI support
 * Hybrid rendering pipeline: deferred for opaque materials, forward for transparent materials and materials with custom shaders
 * Physically based rendering (PBR)
