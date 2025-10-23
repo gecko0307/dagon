@@ -40,7 +40,7 @@ Built in *.conf files are fully reserved for Dagon's internal mechanisms, and it
 * `window.width`, `window.height` - size of the game window. These values override default ones hardcoded in the application
 * `window.resizable` - `0` or `1`, allow the user to resize the window or not (in windowed mode). Default is `1`
 * `window.x`, `window.y` - window position (in windowed mode). If not specified, the window is centered on the screen
-* `window.highDPI` - `0` or `1`, hints that the application is high DPI aware. If enabled, the actual drawable area of the window will be larger than the window itself (by multiplier available as `Application.pixelRatio`). Default is `0`
+* `window.hiDPI` - `0` or `1`, hints that the application is hiDPI-aware. If enabled, the actual drawable area of the window will be larger than the window itself (by multiplier available as `Application.pixelRatio`) on appropriate displays. Default is `0`
 * `window.title` - window title text. This value overrides default one hardcoded in the application
 * `fullscreen` - `0` or `1`, run in windowed or fullscreen mode. This value overrides default one hardcoded in the application
 * `vsync` - `0` for immediate buffer swap; `1` for synchronization with the vertical retrace; `-1` for adaptive vsync. Default is `1`

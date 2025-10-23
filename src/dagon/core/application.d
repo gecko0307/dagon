@@ -339,6 +339,7 @@ ShaderCache globalShaderCache()
  * refresh rate, switching console window, etc.).
  * By itself, `Application` doesn't render anything and doesn't contain game logic. To make a game,
  * inherit from `Application` and override `onUpdate` and `onRender`.
+ * All `Application` properties are meant to be read-only! Modify at your own risk.
  */
 class Application: EventListener, Updateable
 {
@@ -356,16 +357,16 @@ class Application: EventListener, Updateable
     /// Absolute directory containing the executable.
     string directory;
     
-    ///
+    /// The application folder name (used under the HOME or APPDATA directory).
     string appDataFolderName;
     
-    ///
+    /// Path to the SDL2 library.
     string sdlLibraryPath = "auto";
     
-    ///
+    /// Path to the SDL2_Image library.
     string sdlImageLibraryPath = "auto";
     
-    ///
+    /// Path to the FreeType library.
     string freetypeLibraryPath = "auto";
     
     /// Global VFS that all resource loaders should use.
@@ -375,7 +376,7 @@ class Application: EventListener, Updateable
     Configuration config;
     
     /**
-     * Loaded SDL API version. This is not an actual SDL library version!
+     * Loaded SDL API support version. This is not an actual SDL library version!
      * Dagon assumes SDLSupport.v2_30, but this is not a strict requirement,
      * the engine will continue running even if 2.30 fails to load.
      * To check actually loaded library version, use `sdlVersion`.
@@ -383,7 +384,7 @@ class Application: EventListener, Updateable
     SDLSupport loadedSDLSupport;
     
     /**
-     * Loaded SDL_Image API version. This is not an actual SDL_Image library version!
+     * Loaded SDL_Image API support version. This is not an actual SDL_Image library version!
      * Dagon assumes SDLImageSupport.v2_8, but this is not a strict requirement,
      * the engine will continue running even if 2.8 fails to load.
      * To check actually loaded library version, use `sdlImageVersion`.
@@ -391,13 +392,13 @@ class Application: EventListener, Updateable
     SDLImageSupport loadedSDLImageSupport;
     
     /**
-     * Loaded OpenGL API version.
+     * Loaded OpenGL API support version.
      * Dagon requires at least GLSupport.gl43 and will not run on a lower version.
      */
     GLSupport loadedGLSupport;
     
     /**
-     * Loaded FreeType API version. This is not an actual FreeType library version!
+     * Loaded FreeType API support version. This is not an actual FreeType library version!
      * Dagon assumes FTSupport.v2_8, but this is not a strict requirement,
      * the engine will continue running even if 2.8 fails to load.
      * To check actually loaded library version, use `ftVersion`.
@@ -434,46 +435,46 @@ class Application: EventListener, Updateable
     /// Application window Y-coordinate.
     int windowY = SDL_WINDOWPOS_CENTERED;
     
-    ///
+    /// Application window title.
     string windowTitle;
     
-    ///
+    /// Can the user resize the window.
     bool windowResizable = true;
     
-    ///
-    bool windowHighDPI = false;
+    /// Is the window HiDPI-aware.
+    bool windowHiDPI = false;
     
-    ///
+    /// Actual drawable area width of the window.
     int drawableWidth;
     
-    ///
+    /// Actual drawable area height of the window.
     int drawableHeight;
     
-    ///
+    /// Ratio of the resolution in physical pixels to the resolution in logical pixels.
     float pixelRatio = 1.0f;
     
     /// Fullscreen or windowed.
     bool fullscreen = false;
     
-    ///
+    /// Vertical synchronization mode.
     int vsync = 1;
     
-    ///
+    /// Update frequency in Hz.
     uint stepFrequency = 60;
     
-    ///
+    /// Is OpenGL debug output enabled.
     bool enableDebugOutput = false;
     
-    ///
+    /// Is shader binary cache enabled.
     bool enableShaderCache = false;
     
-    ///
+    /// Path to the default sans font (for the built-in font manager).
     string defaultFontSans = "data/__internal/fonts/LiberationSans-Regular.ttf";
     
-    ///
+    /// Path to the default monospace font (for the built-in font manager).
     string defaultFontMonospace = "data/__internal/fonts/LiberationMono-Regular.ttf";
     
-    ///
+    /// Default font size (for the built-in font manager).
     uint defaultFontSize = 10;
     
     /// Pointer to the main SDL window created by the Application.
@@ -481,8 +482,6 @@ class Application: EventListener, Updateable
     
     /// OpenGL context.
     SDL_GLContext glcontext;
-    
-    private EventManager _eventManager;
     
     /// Main loop runner. Calls `Application.update` with a given fixed frequency (60 Hz by default).
     Cadencer cadencer;
@@ -526,7 +525,17 @@ class Application: EventListener, Updateable
     /// Shader cache.
     ShaderCache shaderCache;
     
-    protected SDL_Cursor*[12] cursor;
+    protected
+    {
+        EventManager _eventManager;
+        SDL_Cursor*[12] cursor;
+        
+        uint screenNum = 0;
+        
+        bool warnedAboutWindowWidth = false;
+        bool warnedAboutWindowHeight = false;
+        bool warnedAboutWindowTitle = false;
+    }
 
     /**
      * Constructs the application, initializes SDL, OpenGL, and related subsystems.
@@ -724,7 +733,7 @@ class Application: EventListener, Updateable
         logInfo("SDL_Image version: ", sdlImageVersion.major, ".", sdlImageVersion.minor, ".", sdlImageVersion.patch);
 
         // Init SDL
-        if (windowHighDPI)
+        if (windowHiDPI)
             SDL_SetHint(SDL_HINT_WINDOWS_DPI_SCALING, "1");
         
         if (SDL_Init(SDL_INIT_EVERYTHING) == -1)
@@ -774,7 +783,7 @@ class Application: EventListener, Updateable
         uint windowFlags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
         if (windowResizable)
             windowFlags |= SDL_WINDOW_RESIZABLE;
-        if (windowHighDPI)
+        if (windowHiDPI)
             windowFlags |= SDL_WINDOW_ALLOW_HIGHDPI;
         
         window = SDL_CreateWindow(toStringz(windowTitle), windowX, windowY, windowWidth, windowHeight, windowFlags);
@@ -1005,7 +1014,11 @@ class Application: EventListener, Updateable
             windowWidth = config.props["window.width"].toUInt;
         else if ("windowWidth" in config.props)
         {
-            logWarning("\"windowWidth\" is deprecated, use \"window.width\" instead");
+            if (!warnedAboutWindowWidth)
+            {
+                logWarning("\"windowWidth\" is deprecated, use \"window.width\" instead");
+                warnedAboutWindowWidth = true;
+            }
             windowWidth = config.props["windowWidth"].toUInt;
         }
         
@@ -1013,7 +1026,11 @@ class Application: EventListener, Updateable
             windowHeight = config.props["window.height"].toUInt;
         else if ("windowHeight" in config.props)
         {
-            logWarning("\"windowHeight\" is deprecated, use \"window.height\" instead");
+            if (!warnedAboutWindowHeight)
+            {
+                logWarning("\"windowHeight\" is deprecated, use \"window.height\" instead");
+                warnedAboutWindowHeight = true;
+            }
             windowHeight = config.props["windowHeight"].toUInt;
         }
         
@@ -1038,14 +1055,17 @@ class Application: EventListener, Updateable
         if ("window.resizable" in config.props)
             windowResizable = cast(bool)config.props["window.resizable"].toUInt;
         
-        if ("window.highDPI" in config.props)
-            windowHighDPI = cast(bool)config.props["window.highDPI"].toUInt;
+        if ("window.hiDPI" in config.props)
+            windowHiDPI = cast(bool)config.props["window.hiDPI"].toUInt;
         
         if ("window.title" in config.props)
             windowTitle = config.props["window.title"].toString;
         else if ("windowTitle" in config.props)
         {
-            logWarning("\"windowTitle\" is deprecated, use \"window.title\" instead");
+            if (!warnedAboutWindowTitle)
+            {
+                logWarning("\"windowTitle\" is deprecated, use \"window.title\" instead");
+            }
             windowTitle = config.props["windowTitle"].toString;
         }
         
@@ -1162,6 +1182,7 @@ class Application: EventListener, Updateable
             SDL_SetWindowFullscreen(window, 0);
     }
 
+    /// User event handler.
     override void onUserEvent(int code)
     {
         if (code == DagonEvent.Exit)
@@ -1235,8 +1256,6 @@ class Application: EventListener, Updateable
     {
         eventManager.exit();
     }
-    
-    protected uint screenNum = 0;
     
     /**
      * Takes a screenshot of the current framebuffer and returns it as a SuperImage.

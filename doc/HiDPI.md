@@ -1,9 +1,9 @@
 # HiDPI Rendering
 
-Dagon natively supports HiDPI (aka Retina) displays. These are displays with high pixel density (usually 240 DPI or higher). Normal rendering will appear blurry on such screens; the renderer should take pixel density into account and provide output larger than the target window. To enable HiDPI-awareness, use `window.highDPI` option in `settings.conf`:
+Dagon natively supports HiDPI (aka Retina) displays. These are displays with high pixel density (usually 240 DPI or higher). Normal rendering will appear blurry on such screens; the renderer should take pixel density into account and provide output larger than the target window. To enable HiDPI-awareness, use `window.hiDPI` option in `settings.conf`:
 
 ```
-window.highDPI = 1;
+window.hiDPI = 1;
 ```
 
 This will create a window with an actual drawable area larger than the window itself (by multiplier available as `Application.pixelRatio`).
