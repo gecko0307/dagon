@@ -59,6 +59,47 @@ import dagon.core.messaging;
 import dagon.core.graphicstablet;
 
 /**
+ * Maximum number of supported controllers.
+ */
+enum MAX_CONTROLLERS = 4;
+
+///
+enum GameInputDeviceType
+{
+    Undefined,
+    Controller,
+    Joystick
+}
+
+///
+struct GameInputDevice
+{
+    /// SDL device index.
+    uint index;
+    
+    /// Device type.
+    GameInputDeviceType type;
+    
+    /// Opened controller, if any.
+    SDL_GameController* controller = null;
+    
+    /// Opened joystick, if any.
+    SDL_Joystick* joystick = null;
+    
+    ///
+    bool mappingPresent = false;
+    
+    /// A maximum that controller axis value is clamped to (for normalization in 0..1 range).
+    int axisThreshold = 32639;
+    
+    /// Vibration support.
+    bool hasRumble = false;
+    
+    /// Device name.
+    string name;
+}
+
+/**
  * All supported event types in Dagon.
  */
 enum EventType
@@ -116,7 +157,8 @@ struct Event
     int controllerButton;
     int controllerAxis;
     float controllerAxisValue;
-    int controllerDeviceIndex = -1;
+    int deviceIndex = -1;
+    GameInputDeviceType deviceType;
     int x;
     int y;
     int width;
@@ -191,11 +233,6 @@ interface InputDevice
 }
 
 /**
- * Maximum number of supported controllers.
- */
-enum MAX_CONTROLLERS = 1;
-
-/**
  * Manages event polling, event queue and input state.
  *
  * Description:
@@ -232,7 +269,7 @@ class EventManager: Owner
     Event[maxNumEvents] outboxEventQueue;
     
     /// Number of events in the outbox queue.
-    uint numOutboxEvents;
+    uint numOutboxEvents = 0;
     
     /// Used by Application to indicate activity. Set to false to stop the main loop.
     bool running = true;
@@ -256,22 +293,22 @@ class EventManager: Owner
     bool[255] mouseButtonDown = false;
     
     /// Joystick button is currently pressed/released.
-    bool[255] joystickButtonPressed = false;
+    bool[255][MAX_CONTROLLERS] joystickButtonPressed = false;
     
     /// Joystick button went up this frame (valid only if `trackUpDownState` is true).
-    bool[255] joystickButtonUp = false;
+    bool[255][MAX_CONTROLLERS] joystickButtonUp = false;
     
     /// Joystick button went down this frame (valid only if `trackUpDownState` is true).
-    bool[255] joystickButtonDown = false;
+    bool[255][MAX_CONTROLLERS] joystickButtonDown = false;
     
     /// Controller button is currently pressed/released.
-    bool[255] controllerButtonPressed = false;
+    bool[255][MAX_CONTROLLERS] controllerButtonPressed = false;
     
     /// Controller button went up this frame (valid only if `trackUpDownState` is true).
-    bool[255] controllerButtonUp = false;
+    bool[255][MAX_CONTROLLERS] controllerButtonUp = false;
     
     /// Controller button went down this frame (valid only if `trackUpDownState` is true).
-    bool[255] controllerButtonDown = false;
+    bool[255][MAX_CONTROLLERS] controllerButtonDown = false;
     
     /// Whether to update up/down states for keys and buttons.
     bool trackUpDownState = false;
@@ -282,10 +319,10 @@ class EventManager: Owner
         bool needToResetKeyDown = false;
         bool needToResetMouseUp = false;
         bool needToResetMouseDown = false;
-        bool needToResetJoystickUp = false;
-        bool needToResetJoystickDown = false;
-        bool needToResetControllerUp = false;
-        bool needToResetControllerDown = false;
+        bool[MAX_CONTROLLERS] needToResetJoystickUp = false;
+        bool[MAX_CONTROLLERS] needToResetJoystickDown = false;
+        bool[MAX_CONTROLLERS] needToResetControllerUp = false;
+        bool[MAX_CONTROLLERS] needToResetControllerDown = false;
     }
     
     /// Mouse pointer's X-coordinate relative to the window.
@@ -339,23 +376,53 @@ class EventManager: Owner
     /// Window manager info obtained from SDL.
     SDL_SysWMinfo wmInfo;
     
-    /// Last opened controller, if any.
-    SDL_GameController* controller = null; // TODO: support multiple controllers
+    /// Opened controllers/joysticks.
+    GameInputDevice[MAX_CONTROLLERS] gameInputDevices;
     
-    /// Last opened joystick, if any.
-    SDL_Joystick* joystick = null;
+    ///
+    uint numGameInputDevices = 0;
+    
+    /// Get currently opened controller by device index.
+    SDL_GameController* controller(uint deviceIndex)
+    {
+        if (deviceIndex < gameInputDevices.length)
+            return gameInputDevices[deviceIndex].controller;
+        else
+            return null;
+    }
+    
+    /// Get currently opened joystick by device index.
+    SDL_Joystick* joystick(uint deviceIndex)
+    {
+        if (deviceIndex < gameInputDevices.length)
+            return gameInputDevices[deviceIndex].joystick;
+        else
+            return null;
+    }
     
     /// A maximum that controller axis value is clamped to (for normalization in 0..1 range).
     int controllerAxisThreshold = 32639;
     
-    /// Current controller vibration support.
-    bool controllerHasRumble = false;
+    /// Controller vibration support.
+    bool controllerHasRumble(uint deviceIndex)
+    {
+        if (deviceIndex < gameInputDevices.length)
+            return gameInputDevices[deviceIndex].hasRumble;
+        else
+            return false;
+    }
     
-    /// Current controller name.
-    string controllerName;
+    /// Get controller name.
+    string controllerName(uint deviceIndex)
+    {
+        if (deviceIndex < gameInputDevices.length)
+            return gameInputDevices[deviceIndex].name;
+        else
+            return "";
+    }
     
-    /// Current joystick name.
-    string joystickName;
+    /// Get joystick name.
+    alias joystickName = controllerName;
     
     /// Configurable input manager.
     InputManager inputManager;
@@ -403,12 +470,9 @@ class EventManager: Owner
         
         if (exists("gamecontrollerdb.txt"))
             SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
-
-        if (SDL_NumJoysticks() > 0)
-        {
-            gameControllerOpen(0);
-        }
-
+        
+        numGameInputDevices = SDL_NumJoysticks();
+        
         inputManager = New!InputManager(this);
         
         messageBroker = New!MessageBroker(this);
@@ -526,82 +590,90 @@ class EventManager: Owner
      * Params:
      *   deviceIndex = The device index to open.
      */
-    void gameControllerOpen(uint deviceIndex)
+    GameInputDevice* gameInputDeviceOpen(uint deviceIndex)
     {
+        gameInputDeviceClose(deviceIndex);
+        GameInputDevice* device = &gameInputDevices[deviceIndex];
+        device.index = deviceIndex;
+        
         if (SDL_IsGameController(deviceIndex))
         {
-            if (joystick)
-                SDL_JoystickClose(joystick);
-            
-            if (controller)
-                SDL_GameControllerClose(controller);
-            
-            controller = SDL_GameControllerOpen(deviceIndex);
-            
-            auto name = SDL_GameControllerName(controller);
+            device.type = GameInputDeviceType.Controller;
+            device.controller = SDL_GameControllerOpen(deviceIndex);
+            auto name = SDL_GameControllerName(device.controller);
             if (name)
             {
-                controllerName = name.to!string;
-                logInfo("Game controller: ", controllerName);
+                device.name = name.to!string;
+                logInfo("Game controller: ", device.name);
             }
             
-            if (SDL_GameControllerMapping(controller) is null)
+            if (SDL_GameControllerMapping(device.controller))
+                device.mappingPresent = true;
+            else
+            {
+                device.mappingPresent = false;
                 logWarning("No mapping found for controller!");
-
+            }
+            
             SDL_GameControllerEventState(SDL_ENABLE);
-            
-            joystick = SDL_GameControllerGetJoystick(controller);
-            
-            controllerHasRumble = cast(bool)SDL_GameControllerHasRumble(controller);
+            device.joystick = SDL_GameControllerGetJoystick(device.controller);
+            device.axisThreshold = controllerAxisThreshold;
+            device.hasRumble = cast(bool)SDL_GameControllerHasRumble(device.controller);
         }
         else
         {
-            if (joystick)
-                SDL_JoystickClose(joystick);
-            
-            joystick = SDL_JoystickOpen(deviceIndex);
-            
-            auto name = SDL_JoystickName(joystick);
+            device.type = GameInputDeviceType.Joystick;
+            device.joystick = SDL_JoystickOpen(deviceIndex);
+            auto name = SDL_JoystickName(device.joystick);
             if (name)
             {
-                joystickName = name.to!string;
-                logInfo("Joystick: ", joystickName);
+                device.name = name.to!string;
+                logInfo("Joystick: ", device.name);
             }
+            device.controller = null;
+            device.axisThreshold = controllerAxisThreshold;
+            device.mappingPresent = false;
+            device.hasRumble = false;
         }
+        
+        return device;
     }
     
     /**
-     * Closes the game controller or joystick at the specified device index.
-     *
-     * Params:
-     *   deviceIndex = The device index to close.
+     * Closes the game controller or joystick.
      */
-    void gameControllerClose(uint deviceIndex)
+    void gameInputDeviceClose(uint deviceIndex)
     {
-        if (joystick)
-        {
-            SDL_JoystickClose(joystick);
-            joystickName = "";
-        }
+        GameInputDevice* device = &gameInputDevices[deviceIndex];
         
-        if (controller)
+        if (device.type == GameInputDeviceType.Joystick)
         {
-            SDL_GameControllerClose(controller);
-            controllerName = "";
-            controllerHasRumble = false;
+            if (device.joystick)
+                SDL_JoystickClose(device.joystick);
+        }
+        else if (device.type == GameInputDeviceType.Controller)
+        {
+            if (device.controller)
+                SDL_GameControllerClose(device.controller);
         }
     }
 
     /// Returns true if a game controller is available.
     bool gameControllerAvailable()
     {
-        return (controller !is null);
+        foreach(ref device; gameInputDevices)
+            if (device.controller !is null)
+                return true;
+        return false;
     }
 
     /// Returns true if a joystick is available.
     bool joystickAvailable()
     {
-        return (joystick !is null);
+        foreach(ref device; gameInputDevices)
+            if (device.joystick !is null)
+                return true;
+        return false;
     }
 
     /**
@@ -612,9 +684,16 @@ class EventManager: Owner
      * Returns:
      *   Normalized axis value in [-1, 1].
      */
-    float gameControllerAxis(int axis)
+    float gameControllerAxis(uint deviceIndex, int axis)
     {
-        int axisVal = SDL_GameControllerGetAxis(controller, cast(SDL_GameControllerAxis)axis);
+        if (deviceIndex >= gameInputDevices.length)
+            return 0.0f;
+
+        auto contr = gameInputDevices[deviceIndex].controller;
+        if (contr is null)
+            return 0.0f;
+        
+        int axisVal = SDL_GameControllerGetAxis(contr, cast(SDL_GameControllerAxis)axis);
         return cast(float)clamp(axisVal, -controllerAxisThreshold, controllerAxisThreshold) / 
                cast(float)controllerAxisThreshold;
     }
@@ -627,15 +706,18 @@ class EventManager: Owner
      * Returns:
      *   Normalized axis value in [-1, 1].
      */
-    float joystickAxis(int axis)
+    float joystickAxis(uint deviceIndex, int axis)
     {
-        int axisVal = 0;
-        if (joystick)
-            axisVal = SDL_JoystickGetAxis(joystick, axis);
-        else if (controller)
-            axisVal = SDL_GameControllerGetAxis(controller, cast(SDL_GameControllerAxis)axis);
-        else
+        if (deviceIndex >= gameInputDevices.length)
             return 0.0f;
+        auto device = gameInputDevices[deviceIndex];
+        int axisVal = 0;
+        auto joy = device.joystick;
+        auto contr = device.controller;
+        if (joy)
+            axisVal = SDL_JoystickGetAxis(joy, axis);
+        else if (contr)
+            axisVal = SDL_GameControllerGetAxis(contr, cast(SDL_GameControllerAxis)axis);
         
         return cast(float)clamp(axisVal, -controllerAxisThreshold, controllerAxisThreshold) / 
                cast(float)controllerAxisThreshold;
@@ -649,10 +731,13 @@ class EventManager: Owner
      *   hiFreg = High frequency rumble intensity.
      *   duration = Duration in seconds.
      */
-    void gameControllerRumble(uint lowFreq, uint hiFreg, float duration)
+    void gameControllerRumble(uint deviceIndex, uint lowFreq, uint hiFreg, float duration)
     {
-        if (controllerHasRumble)
-            SDL_GameControllerRumble(controller,
+        if (deviceIndex >= gameInputDevices.length)
+            return;
+        auto device = gameInputDevices[deviceIndex];
+        if (device.controller && device.hasRumble)
+            SDL_GameControllerRumble(device.controller,
                 cast(ushort)clamp(lowFreq, 0, ushort.max),
                 cast(ushort)clamp(hiFreg, 0, ushort.max),
                 cast(uint)(duration * 1000.0f));
@@ -787,86 +872,104 @@ class EventManager: Owner
                     break;
 
                 case SDL_JOYBUTTONDOWN:
-                    if(joystick is null) break;
+                    uint deviceIndex = event.cdevice.which;
                     if (event.jbutton.state == SDL_PRESSED)
                     {
                         e = Event(EventType.JoystickButtonDown);
-                        joystickButtonPressed[event.jbutton.button] = true;
-                        
-                        if (trackUpDownState)
+                        if (deviceIndex < MAX_CONTROLLERS)
                         {
-                            joystickButtonDown[event.jbutton.button] = true;
-                            needToResetJoystickDown = true;
+                            joystickButtonPressed[deviceIndex][event.jbutton.button] = true;
+                            if (trackUpDownState)
+                            {
+                                joystickButtonDown[deviceIndex][event.jbutton.button] = true;
+                                needToResetJoystickDown[deviceIndex] = true;
+                            }
                         }
                     }
                     else if (event.jbutton.state == SDL_RELEASED)
                     {
                         e = Event(EventType.JoystickButtonUp);
-                        joystickButtonPressed[event.jbutton.button] = false;
-                        
-                        if (trackUpDownState)
+                        if (deviceIndex < MAX_CONTROLLERS)
                         {
-                            joystickButtonUp[event.jbutton.button] = true;
-                            needToResetJoystickUp = true;
+                            joystickButtonPressed[deviceIndex][event.jbutton.button] = false;
+                            if (trackUpDownState)
+                            {
+                                joystickButtonUp[deviceIndex][event.jbutton.button] = true;
+                                needToResetJoystickUp[deviceIndex] = true;
+                            }
                         }
                     }
                     e.joystickButton = event.jbutton.button;
+                    e.deviceIndex = deviceIndex;
                     addEvent(e);
                     break;
 
                 case SDL_JOYBUTTONUP:
-                    if(joystick is null) break;
+                    uint deviceIndex = event.cdevice.which;
                     if (event.jbutton.state == SDL_PRESSED)
                     {
                         e = Event(EventType.JoystickButtonDown);
-                        joystickButtonPressed[event.jbutton.button] = true;
-                        
-                        if (trackUpDownState)
+                        if (deviceIndex < MAX_CONTROLLERS)
                         {
-                            joystickButtonDown[event.jbutton.button] = true;
-                            needToResetJoystickDown = true;
+                            joystickButtonPressed[deviceIndex][event.jbutton.button] = true;
+                            if (trackUpDownState)
+                            {
+                                joystickButtonDown[deviceIndex][event.jbutton.button] = true;
+                                needToResetJoystickDown[deviceIndex] = true;
+                            }
                         }
                     }
                     else if (event.jbutton.state == SDL_RELEASED)
                     {
                         e = Event(EventType.JoystickButtonUp);
-                        joystickButtonPressed[event.jbutton.button] = false;
-                        
-                        if (trackUpDownState)
+                        if (deviceIndex < MAX_CONTROLLERS)
                         {
-                            joystickButtonUp[event.jbutton.button] = true;
-                            needToResetJoystickUp = true;
+                            joystickButtonPressed[deviceIndex][event.jbutton.button] = false;
+                            if (trackUpDownState)
+                            {
+                                joystickButtonUp[deviceIndex][event.jbutton.button] = true;
+                                needToResetJoystickUp[deviceIndex] = true;
+                            }
                         }
                     }
                     e.joystickButton = event.jbutton.button;
+                    e.deviceIndex = deviceIndex;
                     addEvent(e);
                     break;
 
                 case SDL_CONTROLLERBUTTONDOWN:
-                    controllerButtonPressed[event.cbutton.button] = true;
-                    
-                    if (trackUpDownState)
+                    uint deviceIndex = event.cdevice.which;
+                    if (deviceIndex < MAX_CONTROLLERS)
                     {
-                        controllerButtonDown[event.cbutton.button] = true;
-                        needToResetControllerDown = true;
+                        controllerButtonPressed[deviceIndex][event.cbutton.button] = true;
+                        if (trackUpDownState)
+                        {
+                            controllerButtonDown[deviceIndex][event.cbutton.button] = true;
+                            needToResetControllerDown[deviceIndex] = true;
+                        }
                     }
-
+                    
                     e = Event(EventType.ControllerButtonDown);
                     e.controllerButton = event.cbutton.button;
+                    e.deviceIndex = deviceIndex;
                     addEvent(e);
                     break;
 
                 case SDL_CONTROLLERBUTTONUP:
-                    controllerButtonPressed[event.cbutton.button] = false;
-                    
-                    if (trackUpDownState)
+                    uint deviceIndex = event.cdevice.which;
+                    if (deviceIndex < MAX_CONTROLLERS)
                     {
-                        controllerButtonUp[event.cbutton.button] = true;
-                        needToResetControllerUp = true;
+                        controllerButtonPressed[deviceIndex][event.cbutton.button] = false;
+                        if (trackUpDownState)
+                        {
+                            controllerButtonUp[deviceIndex][event.cbutton.button] = true;
+                            needToResetControllerUp[deviceIndex] = true;
+                        }
                     }
-
+                    
                     e = Event(EventType.ControllerButtonUp);
                     e.controllerButton = event.cbutton.button;
+                    e.deviceIndex = deviceIndex;
                     addEvent(e);
                     break;
 
@@ -875,13 +978,15 @@ class EventManager: Owner
                     e = Event(EventType.JoystickAxisMotion);
                     e.joystickAxis = event.caxis.axis;
                     int axisValue = event.caxis.value;
-                    if (joystick)
+                    auto joy = joystick(event.cdevice.which);
+                    if (joy)
                     {
-                        axisValue = SDL_JoystickGetAxis(joystick, e.joystickAxis);
+                        axisValue = SDL_JoystickGetAxis(joy, e.joystickAxis);
                     }
                     e.joystickAxisValue =
                         cast(float)clamp(axisValue, -controllerAxisThreshold, controllerAxisThreshold) / 
                         cast(float)controllerAxisThreshold;
+                    e.deviceIndex = event.cdevice.which;
                     addEvent(e);
                     break;
 
@@ -890,33 +995,42 @@ class EventManager: Owner
                     e = Event(EventType.ControllerAxisMotion);
                     e.controllerAxis = event.caxis.axis;
                     int axisValue = event.caxis.value;
-                    if (controller)
+                    auto contr = controller(event.cdevice.which);
+                    if (contr)
                     {
                         if (e.controllerAxis == 0)
-                            axisValue = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY);
+                            axisValue = SDL_GameControllerGetAxis(contr, SDL_CONTROLLER_AXIS_LEFTY);
                         if (e.controllerAxis == 1)
-                            axisValue = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX);
+                            axisValue = SDL_GameControllerGetAxis(contr, SDL_CONTROLLER_AXIS_LEFTX);
                     }
                     e.controllerAxisValue =
                         cast(float)clamp(axisValue, -controllerAxisThreshold, controllerAxisThreshold) / 
                         cast(float)controllerAxisThreshold;
+                    e.deviceIndex = event.cdevice.which;
                     addEvent(e);
                     break;
 
                 case SDL_CONTROLLERDEVICEADDED:
                     e = Event(EventType.ControllerAdd);
-                    e.controllerDeviceIndex = event.cdevice.which;
+                    e.deviceIndex = event.cdevice.which;
                     if (event.cdevice.which < MAX_CONTROLLERS)
-                        gameControllerOpen(event.cdevice.which);
+                    {
+                        auto device = gameInputDeviceOpen(event.cdevice.which);
+                        e.deviceType = device.type;
+                    }
                     addEvent(e);
+                    numGameInputDevices = SDL_NumJoysticks();
                     break;
 
                 case SDL_CONTROLLERDEVICEREMOVED:
                     e = Event(EventType.ControllerRemove);
-                    e.controllerDeviceIndex = event.cdevice.which;
+                    e.deviceIndex = event.cdevice.which;
                     if (event.cdevice.which < MAX_CONTROLLERS)
-                        gameControllerClose(event.cdevice.which);
+                    {
+                        gameInputDeviceClose(event.cdevice.which);
+                    }
                     addEvent(e);
+                    numGameInputDevices = SDL_NumJoysticks();
                     break;
 
                 case SDL_WINDOWEVENT:
@@ -1067,28 +1181,31 @@ class EventManager: Owner
             needToResetMouseDown = false;
         }
         
-        if (needToResetJoystickUp)
+        for (uint i = 0; i < MAX_CONTROLLERS; i++)
         {
-            joystickButtonUp[] = false;
-            needToResetJoystickUp = false;
-        }
-        
-        if (needToResetJoystickDown)
-        {
-            joystickButtonDown[] = false;
-            needToResetJoystickDown = false;
-        }
-        
-        if (needToResetControllerUp)
-        {
-            controllerButtonUp[] = false;
-            needToResetControllerUp = false;
-        }
-        
-        if (needToResetControllerDown)
-        {
-            controllerButtonDown[] = false;
-            needToResetControllerDown = false;
+            if (needToResetJoystickUp[i])
+            {
+                joystickButtonUp[i][] = false;
+                needToResetJoystickUp[i] = false;
+            }
+            
+            if (needToResetJoystickDown[i])
+            {
+                joystickButtonDown[i][] = false;
+                needToResetJoystickDown[i] = false;
+            }
+            
+            if (needToResetControllerUp[i])
+            {
+                controllerButtonUp[i][] = false;
+                needToResetControllerUp[i] = false;
+            }
+            
+            if (needToResetControllerDown[i])
+            {
+                controllerButtonDown[i][] = false;
+                needToResetControllerDown[i] = false;
+            }
         }
     }
 }
@@ -1149,28 +1266,28 @@ abstract class EventDispatcher: Owner
                 if (enableInputEvents) onMouseWheel(e.mouseWheelX, e.mouseWheelY);
                 break;
             case EventType.JoystickButtonDown:
-                if (enableInputEvents) onJoystickButtonDown(e.joystickButton);
+                if (enableInputEvents) onJoystickButtonDown(e.deviceIndex, e.joystickButton);
                 break;
             case EventType.JoystickButtonUp:
-                if (enableInputEvents) onJoystickButtonUp(e.joystickButton);
+                if (enableInputEvents) onJoystickButtonUp(e.deviceIndex, e.joystickButton);
                 break;
             case EventType.JoystickAxisMotion:
-                if (enableInputEvents) onJoystickAxisMotion(e.joystickAxis, e.joystickAxisValue);
+                if (enableInputEvents) onJoystickAxisMotion(e.deviceIndex, e.joystickAxis, e.joystickAxisValue);
                 break;
             case EventType.ControllerButtonDown:
-                if (enableInputEvents) onControllerButtonDown(e.controllerButton);
+                if (enableInputEvents) onControllerButtonDown(e.deviceIndex, e.controllerButton);
                 break;
             case EventType.ControllerButtonUp:
-                if (enableInputEvents) onControllerButtonUp(e.controllerButton);
+                if (enableInputEvents) onControllerButtonUp(e.deviceIndex, e.controllerButton);
                 break;
             case EventType.ControllerAxisMotion:
-                if (enableInputEvents) onControllerAxisMotion(e.controllerAxis, e.controllerAxisValue);
+                if (enableInputEvents) onControllerAxisMotion(e.deviceIndex, e.controllerAxis, e.controllerAxisValue);
                 break;
             case EventType.ControllerAdd:
-                if (enableInputEvents) onControllerAdd(e.controllerDeviceIndex);
+                onControllerAdd(e.deviceIndex, e.deviceType);
                 break;
             case EventType.ControllerRemove:
-                if (enableInputEvents) onControllerRemove(e.controllerDeviceIndex);
+                onControllerRemove(e.deviceIndex);
                 break;
             case EventType.PenMotion:
                 if (enableInputEvents) onPenMotion(e.x, e.y, e.pressure);
@@ -1233,25 +1350,25 @@ abstract class EventDispatcher: Owner
     void onMouseWheel(int x, int y) {}
 
     /// Called when a joystick button is pressed.
-    void onJoystickButtonDown(int button) {}
+    void onJoystickButtonDown(uint deviceIndex, int button) {}
 
     /// Called when a joystick button is released.
-    void onJoystickButtonUp(int button) {}
+    void onJoystickButtonUp(uint deviceIndex, int button) {}
     
     /// Called when a joystick axis is moved.
-    void onJoystickAxisMotion(int axis, float value) {}
+    void onJoystickAxisMotion(uint deviceIndex, int axis, float value) {}
 
     /// Called when a controller button is pressed.
-    void onControllerButtonDown(int button) {}
+    void onControllerButtonDown(uint deviceIndex, int button) {}
 
     /// Called when a controller button is released.
-    void onControllerButtonUp(int button) {}
+    void onControllerButtonUp(uint deviceIndex, int button) {}
 
     /// Called when a controller axis is moved.
-    void onControllerAxisMotion(int axis, float value) {}
+    void onControllerAxisMotion(uint deviceIndex, int axis, float value) {}
 
     /// Called when a controller is added.
-    void onControllerAdd(uint deviceIndex) {}
+    void onControllerAdd(uint deviceIndex, GameInputDeviceType deviceType) {}
 
     /// Called when a controller is removed.
     void onControllerRemove(uint deviceIndex) {}

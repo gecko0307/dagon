@@ -395,7 +395,8 @@ class InputManager
                 break;
 
             case BindingType.GamepadButton:
-                if (eventManager.controllerButtonPressed[binding.button]) return true;
+                // TODO support multiple controllers
+                if (eventManager.controllerButtonPressed[0][binding.button]) return true;
                 break;
 
             default:
@@ -455,7 +456,8 @@ class InputManager
                     break;
 
                 case BindingType.GamepadButton:
-                    if (eventManager.controllerButtonUp[binding.button]) return true;
+                    // TODO support multiple controllers
+                    if (eventManager.controllerButtonUp[0][binding.button]) return true;
                     break;
 
                 default:
@@ -495,7 +497,8 @@ class InputManager
                     break;
 
                 case BindingType.GamepadButton:
-                    if (eventManager.controllerButtonDown[binding.button]) return true;
+                    // TODO support multiple controllers
+                    if (eventManager.controllerButtonDown[0][binding.button]) return true;
                     break;
 
                 default:
@@ -541,7 +544,8 @@ class InputManager
 
                 case BindingType.GamepadAxis:
                     if (eventManager.gameControllerAvailable)
-                        value = eventManager.gameControllerAxis(binding.axis);
+                        // TODO support multiple controllers
+                        value = eventManager.gameControllerAxis(0, binding.axis);
                     break;
 
                 case BindingType.VirtualAxis:

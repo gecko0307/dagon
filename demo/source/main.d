@@ -53,9 +53,9 @@ class TestScene: Scene
     override void onMouseButtonDown(int button) { }
     override void onMouseButtonUp(int button) { }
     override void onMouseWheel(int x, int y) { }
-    override void onControllerButtonDown(int btn) { }
-    override void onControllerButtonUp(int btn) { }
-    override void onControllerAxisMotion(int axis, float value) { }
+    override void onControllerButtonDown(uint deviceIndex, int btn) { }
+    override void onControllerButtonUp(uint deviceIndex, int btn) { }
+    override void onControllerAxisMotion(uint deviceIndex, int axis, float value) { }
     override void onResize(int width, int height) { }
     override void onFocusLoss() { }
     override void onFocusGain() { }
