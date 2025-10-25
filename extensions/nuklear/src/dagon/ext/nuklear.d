@@ -496,14 +496,7 @@ class NuklearGUI: Owner, Updateable, Drawable
     {
         return addFont(font.buffer.ptr, font.buffer.length, height, range);
     }
-/*
-    NKFont* addFont(string filename, float height = 13, const(NKRune[]) range = fontDefaultGlyphRanges)
-    {
-        import std.file;
-        ubyte[] buffer = cast(ubyte[])std.file.read(filename);
-        return addFont(buffer.ptr, buffer.length, height, range);
-    }
-*/
+
     NKFont* addFont(ubyte* buffer, ulong len, float height = 13, const(NKRune[]) range = fontDefaultGlyphRanges)
     {
         nk_font_config cfg = nk_font_config_(0);
@@ -540,8 +533,6 @@ class NuklearGUI: Owner, Updateable, Drawable
 
         return nkfont;
     }
-
-    //deprecated("No need to call generateFontAtlas()") void generateFontAtlas() {}
 
     NKFont* getFont(uint index)
     {
