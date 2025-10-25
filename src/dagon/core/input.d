@@ -211,6 +211,29 @@ class InputManager
         Delete(config);
     }
     
+    int mouseButtonCodeFromName(string name)
+    {
+        switch(name)
+        {
+            case "left": return MB_LEFT;
+            case "middle": return MB_MIDDLE;
+            case "right": return MB_RIGHT;
+            case "x1": return MB_X1;
+            case "x2": return MB_X2;
+            default: return -1;
+        }
+    }
+    
+    int mouseAxisCodeFromName(string name)
+    {
+        switch(name)
+        {
+            case "x": return 0;
+            case "y": return 1;
+            default: return -1;
+        }
+    }
+    
     /**
      * Parses a single binding from a lexer.
      *
@@ -302,6 +325,12 @@ class InputManager
                         }
                         result = cast(int)SDL_GetScancodeFromName(svalue.ptr);
                         break;
+                    case BindingType.MouseButton:
+                        result = mouseButtonCodeFromName(lexeme);
+                        break;
+                    case BindingType.MouseAxis:
+                        result = mouseAxisCodeFromName(lexeme);
+                        break;
                     case BindingType.GamepadAxis:
                         result = cast(int)SDL_GameControllerGetAxisFromString(svalue.ptr);
                         break;
@@ -368,7 +397,7 @@ class InputManager
      */
     void addBindings(string name, string value)
     {
-        auto lexer = New!Lexer(value, ["_", ",", "(", ")", "[", "]"]);
+        auto lexer = New!Lexer(value, ["_", ",", "+", "(", ")", "[", "]"]);
         lexer.ignoreWhitespaces = true;
 
         while(true)

@@ -4,6 +4,7 @@ Dagon 0.34.0 - TBD
   - Breaking change: `EvenManager` now supports multiple controllers (up to 4). Controller/joystick event handlers of `EventListener` now accept `deviceIndex` as the first argument
   - Breaking change: `EventListener.onControllerAdd` event handler now accepts `GameInputDeviceType` as the second argument
   - Breaking change: `+` in key bindings (in input.conf) is now `_`. E.g., `right_ctrl`
+  - Symbolic names for mouse bindings (in input.conf): `mb_left`, `mb_middle`, `mb_right`, `mb_x1`, `mb_x2`, `ma_x`, `ma_y`
   - If `windowWidth` and `windowHeight` are both zero, and `fullscreen` is on, Dagon now automatically determines fullscreen resolution for switching the video mode
 - **Game**
   - Fix `LoadingScreen` class, add background image support.
