@@ -3,6 +3,7 @@ Dagon 0.34.0 - TBD
 - **Core**
   - Breaking change: `EvenManager` now supports multiple controllers (up to 4). Controller/joystick event handlers of `EventListener` now accept `deviceIndex` as the first argument. `InputManager` still supports only the first plugged controller
   - Breaking change: `EventListener.onControllerAdd` event handler now accepts `GameInputDeviceType` as the second argument
+  - Breaking change: `+` in key bindings (in input.conf) is now `_`. E.g., `right_ctrl`
   - If `windowWidth` and `windowHeight` are both zero, and `fullscreen` is on, Dagon now automatically determines fullscreen resolution for switching the video mode
 - **Game**
   - Fix `LoadingScreen` class, add background image support.

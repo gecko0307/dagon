@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2025 Mateusz Muszyński
+Copyright (c) 2019-2025 Mateusz Muszyński, Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -34,9 +34,9 @@ DEALINGS IN THE SOFTWARE.
  * and the `InputManager` class, which allows mapping named actions to keyboard, 
  * mouse, and gamepad inputs, as well as querying button and axis states.
  *
- * Copyright: Mateusz Muszyński 2019-2025
+ * Copyright: Mateusz Muszyński, Timur Gafarov 2019-2025
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
- * Authors: Mateusz Muszyński
+ * Authors: Mateusz Muszyński, Timur Gafarov
  */
 module dagon.core.input;
 
@@ -96,32 +96,36 @@ struct Binding
 {
     /// The type of the binding.
     BindingType type;
+    
+    /// Controller device index in `EventManager`.
+    uint deviceIndex = 0;
+    
     union
     {
         /// Keyboard key code.
         int key;
-
+        
         /// Mouse or gamepad button code.
         int button;
-
+        
         /// Mouse or gamepad axis index.
         int axis;
-
+        
         private struct Vaxis
         {
             /// Type for positive direction.
             BindingType typePos;
-
+            
             /// Code for positive direction.
             int pos;
-
+            
             /// Type for negative direction.
             BindingType typeNeg;
-
+            
             /// Code for negative direction.
             int neg;
         }
-
+        
         /// Virtual axis data.
         Vaxis vaxis;
     }
@@ -165,14 +169,14 @@ class InputManager
 {
     /// The event manager used for input state.
     EventManager eventManager;
-
+    
     /// Dictionary mapping action names to arrays of bindings.
     alias Bindings = Array!Binding;
     Dict!(Bindings, string) bindings;
-
+    
     /// The configuration object for input bindings.
     Configuration config;
-
+    
     /**
      * Constructs an InputManager and loads input bindings from "input.conf".
      *
@@ -183,19 +187,19 @@ class InputManager
     {
         eventManager = em;
         bindings = dict!(Bindings, string)();
-
+        
         config = New!Configuration(null);
         if (!config.fromFile(eventManager.application.vfs, "input.conf"))
         {
             logWarning("No \"input.conf\" found");
         }
-
+        
         foreach(name, value; config.props.props)
         {
             addBindings(name, value.data);
         }
     }
-
+    
     /// Destructor. Frees all bindings and configuration resources.
     ~this()
     {
@@ -206,7 +210,7 @@ class InputManager
         Delete(bindings);
         Delete(config);
     }
-
+    
     /**
      * Parses a single binding from a lexer.
      *
@@ -215,23 +219,26 @@ class InputManager
      * Returns:
      *   The parsed Binding.
      */
-    private Binding parseBinding(Lexer lexer)
+    private Binding parseBinding(Lexer lexer, string input)
     {
         // Binding format consist of device type and name(or number)
         // coresponding to button or axis of this device
         // eg. kb_up, kb_w, ma_0, mb_1, gb_a, gb_x, ga_leftx, ga_lefttrigger
-        // kb -> keybaord, by name
+        // kb -> keyboard, by name
         // ma -> mouse axis, by number
         // mb -> mouse button, by number
-        // ga -> gamepad axis, by name
-        // gb -> gamepad button, by name
+        // ga -> gamepad 0 axis, by name
+        // ga[N] -> gamepad N axis, by name
+        // gb -> gamepad 0 button, by name
+        // gb[N] -> gamepad N button, by name
         // va -> virtual axis, special syntax: va(kb_up, kb_down)
-
+        
         BindingType type = BindingType.None;
+        uint deviceIndex = 0;
         int result = -1;
-
+        
         auto lexeme = lexer.getLexeme();
-
+        
         switch(lexeme)
         {
             case "kb": type = BindingType.Keyboard; break;
@@ -240,71 +247,106 @@ class InputManager
             case "ga": type = BindingType.GamepadAxis; break;
             case "gb": type = BindingType.GamepadButton; break;
             case "va": type = BindingType.VirtualAxis; break;
-
             default: goto fail;
         }
-
+        
         lexeme = lexer.getLexeme();
-
+        
+        if (type == BindingType.GamepadAxis || type == BindingType.GamepadButton)
+        {
+            // Parse device index (optional)
+            if (lexeme == "[")
+            {
+                lexeme = lexer.getLexeme();
+                if (lexeme.isNumeric)
+                    deviceIndex = to!uint(lexeme);
+                else
+                    goto fail;
+                
+                lexeme = lexer.getLexeme();
+                
+                if (lexeme != "]")
+                    goto fail;
+                
+                lexeme = lexer.getLexeme();
+            }
+        }
+        
         if (type != BindingType.VirtualAxis)
         {
             if (lexeme != "_")
                 goto fail;
-
+            
             lexeme = lexer.getLexeme();
-
-            if(lexeme.isNumeric)
+            
+            if (lexeme.isNumeric)
             {
                 result = to!int(lexeme);
             }
             else
             {
                 String svalue = String(lexeme);
-                replaceInArray(svalue.data.data, '+', ' ');
-                const(char)* cvalue = svalue.ptr;
                 switch(type)
                 {
-                    case BindingType.Keyboard:      result = cast(int)SDL_GetScancodeFromName(cvalue); break;
-                    case BindingType.GamepadAxis:   result = cast(int)SDL_GameControllerGetAxisFromString(cvalue); break;
-                    case BindingType.GamepadButton: result = cast(int)SDL_GameControllerGetButtonFromString(cvalue); break;
-                    default: break;
+                    case BindingType.Keyboard:
+                        if (lexer.position <= input.length - 1)
+                        {
+                            // Support underscore-separated key names, like right_ctrl
+                            if (input[lexer.position] == '_')
+                            {
+                                lexeme = lexer.getLexeme();
+                                lexeme = lexer.getLexeme();
+                                svalue ~= " ";
+                                svalue ~= lexeme;
+                            }
+                        }
+                        result = cast(int)SDL_GetScancodeFromName(svalue.ptr);
+                        break;
+                    case BindingType.GamepadAxis:
+                        result = cast(int)SDL_GameControllerGetAxisFromString(svalue.ptr);
+                        break;
+                    case BindingType.GamepadButton:
+                        result = cast(int)SDL_GameControllerGetButtonFromString(svalue.ptr);
+                        break;
+                    default:
+                        break;
                 }
-
+                
                 svalue.free();
             }
-
+            
             if (type != BindingType.None || result > 0)
-                return Binding(type, result);
+                return Binding(type, deviceIndex, result);
         }
         else
         {
             // Virtual axis
             if (lexeme != "(")
                 goto fail;
-
-            Binding pos = parseBinding(lexer);
-
+            
+            Binding pos = parseBinding(lexer, input);
+            
             if (pos.type != BindingType.Keyboard &&
                pos.type != BindingType.MouseButton &&
                pos.type != BindingType.GamepadButton)
                 goto fail;
-
+            
             lexeme = lexer.getLexeme();
             if (lexeme != ",")
                 goto fail;
-
-            Binding neg = parseBinding(lexer);
-
+            
+            Binding neg = parseBinding(lexer, input);
+            
             if (neg.type != BindingType.Keyboard &&
                neg.type != BindingType.MouseButton &&
                neg.type != BindingType.GamepadButton)
                 goto fail;
-
+            
             lexeme = lexer.getLexeme();
-
+            
             if (lexeme != ")")
                 goto fail;
-
+            
             Binding bind = Binding(type);
             bind.vaxis.typePos = pos.type;
             bind.vaxis.pos = pos.key;
@@ -312,9 +354,9 @@ class InputManager
             bind.vaxis.neg = neg.key;
             return bind;
         }
-
+        
     fail:
-        return Binding(BindingType.None, -1);
+        return Binding(BindingType.None, 0, -1);
     }
 
     /**
@@ -326,18 +368,18 @@ class InputManager
      */
     void addBindings(string name, string value)
     {
-        auto lexer = New!Lexer(value, ["_", ",", "(", ")"]);
+        auto lexer = New!Lexer(value, ["_", ",", "(", ")", "[", "]"]);
         lexer.ignoreWhitespaces = true;
 
         while(true)
         {
-            Binding b = parseBinding(lexer);
+            Binding b = parseBinding(lexer, value);
             if (b.type == BindingType.None && b.key == -1)
             {
-                writefln("Error: wrong binding format \"%s\"", value);
+                logError("Error: wrong binding format \"", value, "\"");
                 break;
             }
-
+            
             if (auto binding = name in bindings)
             {
                 binding.insertBack(b);
@@ -348,11 +390,11 @@ class InputManager
                 binds.insertBack(b);
                 bindings[name] = binds;
             }
-
+            
             auto lexeme = lexer.getLexeme();
             if (lexeme == ",")
                 continue;
-
+            
             if (lexeme == "")
                 break;
         }
@@ -387,22 +429,25 @@ class InputManager
         switch(binding.type)
         {
             case BindingType.Keyboard:
-                if (eventManager.keyPressed[binding.key]) return true;
+                if (eventManager.keyPressed[binding.key])
+                    return true;
                 break;
-
+            
             case BindingType.MouseButton:
-                if (eventManager.mouseButtonPressed[binding.button]) return true;
+                if (eventManager.mouseButtonPressed[binding.button])
+                    return true;
                 break;
-
+            
             case BindingType.GamepadButton:
-                // TODO support multiple controllers
-                if (eventManager.controllerButtonPressed[0][binding.button]) return true;
+                if (binding.deviceIndex < MAX_CONTROLLERS)
+                    if (eventManager.controllerButtonPressed[binding.deviceIndex][binding.button])
+                        return true;
                 break;
-
+        
             default:
                 break;
         }
-
+        
         return false;
     }
 
@@ -419,12 +464,13 @@ class InputManager
         auto b = name in bindings;
         if (!b)
             return false;
-
-        for(int i = 0; i < b.length; i++)
+        
+        for (int i = 0; i < b.length; i++)
         {
-            if (getButton((*b)[i])) return true;
+            if (getButton((*b)[i]))
+                return true;
         }
-
+        
         return false;
     }
 
@@ -441,25 +487,28 @@ class InputManager
         auto b = name in bindings;
         if (!b)
             return false;
-
+        
         for(int i = 0; i < b.length; i++)
         {
             auto binding = (*b)[i];
             switch(binding.type)
             {
                 case BindingType.Keyboard:
-                    if (eventManager.keyUp[binding.key]) return true;
+                    if (eventManager.keyUp[binding.key])
+                        return true;
                     break;
-
+                
                 case BindingType.MouseButton:
-                    if (eventManager.mouseButtonUp[binding.button]) return true;
+                    if (eventManager.mouseButtonUp[binding.button])
+                        return true;
                     break;
-
+                
                 case BindingType.GamepadButton:
-                    // TODO support multiple controllers
-                    if (eventManager.controllerButtonUp[0][binding.button]) return true;
+                    if (binding.deviceIndex < MAX_CONTROLLERS)
+                        if (eventManager.controllerButtonUp[binding.deviceIndex][binding.button])
+                            return true;
                     break;
-
+                
                 default:
                     break;
             }
@@ -481,31 +530,34 @@ class InputManager
         auto b = name in bindings;
         if (!b)
             return false;
-
+        
         for(int i = 0; i < b.length; i++)
         {
             auto binding = (*b)[i];
-
+            
             switch(binding.type)
             {
                 case BindingType.Keyboard:
-                    if (eventManager.keyDown[binding.key]) return true;
+                    if (eventManager.keyDown[binding.key])
+                        return true;
                     break;
-
+                
                 case BindingType.MouseButton:
-                    if (eventManager.mouseButtonDown[binding.button]) return true;
+                    if (eventManager.mouseButtonDown[binding.button])
+                        return true;
                     break;
-
+                
                 case BindingType.GamepadButton:
-                    // TODO support multiple controllers
-                    if (eventManager.controllerButtonDown[0][binding.button]) return true;
+                    if (binding.deviceIndex < MAX_CONTROLLERS)
+                        if (eventManager.controllerButtonDown[binding.deviceIndex][binding.button])
+                            return true;
                     break;
-
+                
                 default:
                     break;
             }
         }
-
+        
         return false;
     }
 
@@ -524,15 +576,15 @@ class InputManager
         auto b = name in bindings;
         if (!b)
             return false;
-
+        
         float result = 0.0f;
         float aresult = 0.0f; // absolute result
-
+        
         for(int i = 0; i < b.length; i++)
         {
             auto binding = (*b)[i];
             float value = 0.0f;
-
+            
             switch(binding.type)
             {
                 case BindingType.MouseAxis:
@@ -541,22 +593,26 @@ class InputManager
                     else if (binding.axis == 1)
                         value = eventManager.mouseRelY / (eventManager.windowHeight * 0.5f);
                     break;
-
+                
                 case BindingType.GamepadAxis:
                     if (eventManager.gameControllerAvailable)
-                        // TODO support multiple controllers
-                        value = eventManager.gameControllerAxis(0, binding.axis);
+                    {
+                        if (binding.deviceIndex < MAX_CONTROLLERS)
+                            value = eventManager.gameControllerAxis(binding.deviceIndex, binding.axis);
+                    }
                     break;
-
+                
                 case BindingType.VirtualAxis:
                     value  = getButton(*cast(Binding*)(&binding.vaxis.typePos)) ?  1.0f : 0.0f;
                     value += getButton(*cast(Binding*)(&binding.vaxis.typeNeg)) ? -1.0f : 0.0f;
                     break;
-
+                
                 default:
                     break;
             }
+            
             float avalue = abs(value);
+            
             if (avalue > aresult)
             {
                 result = value;
