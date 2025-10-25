@@ -91,8 +91,8 @@ struct DagonVersion
     uint patch;
 }
 
-immutable DagonVersion dagonVersion = DagonVersion(0, 33, 0);
-immutable string dagonVersionString = "0.33.0";
+immutable DagonVersion dagonVersion = DagonVersion(0, 34, 0);
+immutable string dagonVersionString = "0.34.0";
 
 /**
  * Immediately terminates the application,
