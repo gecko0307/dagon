@@ -5,7 +5,7 @@ Compute shaders are special GPU programs designed for general-purpose computatio
 ## Key Concepts
 
 ### ComputeProgram
-A `ComputeProgram` represents a compiled compute shader. It plays the same role as `ShaderProgram` for rendering shaders (vertex/fragment), but contains only one stage: the compute stage. You pass the GLSL source code of your compute shader to it, it compiles and links the program. Later, you attach it to a `ComputeShader` object to actually run computations.
+A `ComputeProgram` represents a compiled compute shader. It plays the same role as `ShaderProgram` for vertex/fragment shaders, but contains only one stage: the compute stage. You pass the GLSL source code of your compute shader to it, it compiles and links the program. Later, you attach it to a `ComputeShader` object to actually run computations.
 
 This separation lets you manage shader sources, recompile them, or share them between multiple `ComputeShader` specializations.
 

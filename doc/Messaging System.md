@@ -13,7 +13,7 @@ Features:
 
 ## Use Cases
 Some typical use cases include
-- Networking. The network client should make requests in a background thread, enabling smooth gameplay even with a slow Internet connection
+- Networking. The network client should make requests in a background thread
 - Audio. If you build your own audio engine, it should also work in a dedicated thread, so that the sound output won't suffer from FPS drops
 - Heavy I/O tasks such as reading/writing files, which can be offloaded to `Worker` services to avoid blocking the main loop
 - AI agents running heavy computations (e.g., A* pathfinding, decision trees) can also operate in background threads without blocking the game loop.
