@@ -105,8 +105,8 @@ interact: "kb_e";
 Binding definition format consists of device type and name (or number) coresponding to button or axis of this device.
 
 - `kb` - keyboard (`kb_up`, `kb_w`, etc.)
-- `ma` - mouse axis (`ma_0`, etc.)
-- `mb` - mouse button (`mb_1`, etc.)
+- `ma` - mouse axis (`ma_x`, `ma_y`)
+- `mb` - mouse button (`mb_left`, `mb_right`, etc.)
 - `ga` - gamepad axis (`ga_leftx`, `ga_lefttrigger`, etc.)
 - `gb` - gamepad button (`gb_a`, `gb_x`, etc.)
 - `va` - virtual axis, has special syntax, for example: `va(kb_up, kb_down)`
