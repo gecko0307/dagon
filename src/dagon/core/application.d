@@ -382,6 +382,9 @@ class Application: EventListener, Updateable
     /// Path to the FreeType library.
     string freetypeLibraryPath = "auto";
     
+    /// Path to the folder containing translation files.
+    string localePath = "locale";
+    
     /// Global VFS that all resource loaders should use.
     VirtualFileSystem vfs;
     
@@ -1157,9 +1160,10 @@ class Application: EventListener, Updateable
         }
         
         // Locale settings
+        if ("localePath" in config.props)
+            localePath = config.props["localePath"].toString;
         if ("locale" in config.props)
             userLocale = config.props["locale"].toString;
-        
         
         // Font manager settings
         if ("font.sans" in config.props)

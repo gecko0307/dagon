@@ -51,7 +51,8 @@ Built in *.conf files are fully reserved for Dagon's internal mechanisms, and it
 * `vsync` - `0` for immediate buffer swap; `1` for synchronization with the vertical retrace; `-1` for adaptive vsync. Default is `1`
 * `stepFrequency` - number of logic update cycles per second. This can be set to `auto` to synchronize updates with the display refresh rate. Default is `60`
 * `hideConsole` - `0` or `1`, show or hide the console window. It is convenient to leave it when debugging the game and hide it for end users. Default is `0`
-* `locale` - locale that should be loaded. This option overrides automatically selected locale based on system language and region. For example, `locale: "en_US";` means that application will try load `locales/en_US.lang` file and will ignore system language
+* `localesPath` - path to the folder containing translation files. Default is `"locale"`
+* `locale` - locale that should be loaded. This option overrides automatically selected locale based on system language and region. For example, `locale: "en_US";` means that application will try load `locale/en_US.lang` file and will ignore system language
 * `gl.debugOutput` - `0` or `1`, force disable or enable OpenGL debug output. Default is `1` in debug builds, `0` in release builds. This option is ignored if `logLevel` is higher than `"debug"`
 * `gl.shaderCache.enabled` - `0` or `1`, cache compiled shader binaries to files for reuse instead of compiling shaders on each run. Disabled by default. This is an experimental feature, use with care
 * `gl.shaderCache.path` - path to a folder for storing cached shader binaries. Default is `"data/__internal/shader_cache"`

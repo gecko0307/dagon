@@ -57,6 +57,8 @@ import dagon.core.vfs;
  */
 class Translation: Owner
 {
+    protected string localePath;
+    
     /// Dictionary of localized strings.
     Configuration dictionary;
     
@@ -74,6 +76,7 @@ class Translation: Owner
     {
         super(owner);
         vfs = app.vfs;
+        localePath = app.localePath;
         dictionary = New!Configuration(this);
     }
     
@@ -93,7 +96,7 @@ class Translation: Owner
         string dirSeparator = "/";
         version(Windows)
             dirSeparator = "\\";
-        String localeFilename = "locale";
+        String localeFilename = localePath;
         localeFilename ~= dirSeparator;
         localeFilename ~= locale;
         localeFilename ~= ".lang";

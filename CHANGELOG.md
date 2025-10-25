@@ -6,6 +6,7 @@ Dagon 0.34.0 - TBD
   - Breaking change: `+` in key bindings (in input.conf) is now `_`. E.g., `right_ctrl`
   - Symbolic names for mouse bindings (in input.conf): `mb_left`, `mb_middle`, `mb_right`, `mb_x1`, `mb_x2`, `ma_x`, `ma_y`
   - If `windowWidth` and `windowHeight` are both zero, and `fullscreen` is on, Dagon now automatically determines fullscreen resolution for switching the video mode
+  - New settings.conf option: `localePath`
 - **Game**
   - Fix `LoadingScreen` class, add background image support.
 
