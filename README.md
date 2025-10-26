@@ -43,9 +43,10 @@ Features
 * Physically based rendering (PBR)
 * HDR rendering with many tonemapping operators, including Reinhard, Hable/Uncharted, Unreal, ACES, Filmic, AgX, and Khronos PBR Neutral
 * HDRI environment maps. Equirectangular HDRI to cubemap conversion. GPU-based cubemap prefiltering with GGX BRDF and importance sampling. Loading prebaked cubemaps from DDS or KTX files
-* Directional lights with cascaded shadow mapping and volumetric scattering
+* Directional lights with cascaded shadow mapping
 * Spherical and tube area lights with dual paraboloid shadow mapping
 * Spot lights with perspective shadow mapping
+* Volumetric light scattering
 * Local environment probes with box-projected cube mapping for approximated interior GI
 * Normal/parallax mapping, parallax occlusion mapping
 * Deferred decals with normal mapping and PBR material properties
