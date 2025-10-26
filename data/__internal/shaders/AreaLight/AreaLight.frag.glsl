@@ -35,6 +35,7 @@ uniform float lightSpecular;
 uniform float lightDiffuse;
 
 uniform bool lightScattering;
+uniform float lightScatteringDensity;
 
 uniform mat4 shadowMatrix;
 uniform sampler2DShadow shadowTexture;
@@ -329,8 +330,8 @@ void main()
         float c = dot(OC, OC) - scatteringRadius * scatteringRadius;
         float discriminant = b * b - c;
         float thickness = -b + sqrt(discriminant); // distance to the front face of the volume along the eye vector
-        float scattering = pow(clamp(thickness / (scatteringRadius * 2.0), 0.0, 1.0), 16.0);
-        radiance += toLinear(lightColor.rgb) * scattering * 0.2;
+        float falloff = pow(clamp(thickness / (scatteringRadius * 2.0), 0.0, 1.0), 16.0);
+        radiance += toLinear(lightColor.rgb) * falloff * lightScatteringDensity;
     }
     
     // Fog

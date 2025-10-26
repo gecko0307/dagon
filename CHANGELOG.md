@@ -7,6 +7,8 @@ Dagon 0.34.0 - TBD
   - Symbolic names for mouse bindings (in input.conf): `mb_left`, `mb_middle`, `mb_right`, `mb_x1`, `mb_x2`, `ma_x`, `ma_y`
   - If `windowWidth` and `windowHeight` are both zero, and `fullscreen` is on, Dagon now automatically determines fullscreen resolution for switching the video mode
   - New settings.conf options: `localePath`, `window.maximized`, `window.minimized`, `window.borderless`, `fullscreenWindowed`
+- **Rendering**
+  - Experimental support for spherical volumetric scattering for area lights
 - **Game**
   - Fix `LoadingScreen` class, add background image support.
 

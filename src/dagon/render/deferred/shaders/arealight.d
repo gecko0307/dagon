@@ -84,6 +84,7 @@ class AreaLightShader: Shader
     ShaderParameter!Vector3f lightSpotDirection;
     
     ShaderParameter!int lightScattering;
+    ShaderParameter!float lightScatteringDensity;
     
     ShaderSubroutine lightRadianceSubroutine;
     GLuint lightRadianceSubroutineAreaSphere,
@@ -146,6 +147,7 @@ class AreaLightShader: Shader
         lightSpotDirection = createParameter!Vector3f("lightSpotDirection");
         
         lightScattering = createParameter!int("lightScattering");
+        lightScatteringDensity = createParameter!float("lightScatteringDensity");
         
         lightRadianceSubroutine = createParameterSubroutine("lightRadiance", ShaderType.Fragment);
         lightRadianceSubroutineAreaSphere = lightRadianceSubroutine.getIndex("lightRadianceAreaSphere");
@@ -238,6 +240,7 @@ class AreaLightShader: Shader
             lightSpecular = light.specular;
             
             lightScattering = light.scatteringEnabled;
+            lightScatteringDensity = light.mediumDensity;
             
             if (light.type == LightType.AreaSphere)
             {
