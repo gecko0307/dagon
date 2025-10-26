@@ -64,7 +64,7 @@ class PassLight: RenderPass
         super(pipeline);
         this.gbuffer = gbuffer;
         screenSurface = New!ScreenSurface(this);
-        lightVolume = New!ShapeSphere(1.0f, 8, 4, false, this);
+        lightVolume = New!ShapeSphere(1.0f, 8, 8, false, this);
         sunLightShader = New!SunLightShader(this);
         areaLightShader = New!AreaLightShader(this);
     }

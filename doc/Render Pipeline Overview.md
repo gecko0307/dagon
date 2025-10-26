@@ -33,19 +33,25 @@ Dagon supports spherical and tube area lights. Spherical area lights can be seen
 
 Dagon's deferred renderer treats all point lights as area lights - if the light has zero radius and length, it becomes classic point light.
 
-### Cascaded shadow maps
+### Volumetric Light
+
+Dagon supports physically-based raymarched volumetric scattering effect for parallel lights, which is also known as "god rays". It simulates scattering of direct sun light in the atmosphere, given the assumption that the air contains aerosols, such as haze or dust - referred to as the medium in the underlying theory. The denser the medium, the more pronounced the sun rays appear.
+
+This effect is supported only for sun-type lights. If a shadow map is assigned, the implementation integrates optical depth using Monte Carlo raymarched sampling of the shadow map along the view ray for each pixel in the framebuffer (otherwise the optical depth is assumed to be 1.0). The resulting value is then used to compute anisotropic Mie scattering, approximated with Henyey–Greenstein phase function. Anisotropy parameter of the function (`g`) is controlled with `Light.scattering` property: `g = 1.0 - Light.scattering`. Aerosol density is defined by `Light.mediumDensity`.
+
+### Cascaded Shadow Maps (CSM)
 
 Cascaded shadow maps are the most popular technique to render plausible quality shadows for a parallel light source at any distance from the viewer. Several shadow maps (cascades) are used with different projection sizes. First cascade covers a relatively small area in front of the viewer, so nearest shadows have the best quality. Next cascade cover larger area and hence is less detailed, and so on. Key point is that distant shadows occupy much less space on screen so that aliasing artifacts become negligible. The result is a smooth decrease of shadow detalization as the distance increases.
 
 Dagon uses 3 cascades placed in order of increasing distance from the camera. Because cascades have the same resolution, Dagon passes them in one texture unit as an array texture of `sampler2DArrayShadow` sampler type. To access it in GLSL via `texture` function, you should use 4-vector XYZW where XY are texture coordinates, Z is a cascade index (0, 1 or 2), and W is a fragment depth (reference value). Look into `shadowLookup` function in standard shaders to learn how things work.
 
-### Dual-Paraboloid Shadow Maps
+### Perspective Shadow Maps (PSM)
 
-Dual-paraboloid shadow maps are an optimized method for rendering and sampling shadows for omnidirectional light sources (in Dagon, these are spherical and tube area lights). Straightforward shadowing technique for such lights is a depth cube map, rendered from 6 directions around the light source. Paraboloid projection allows to use only 2 depth maps, each covering a half-space around the light source. Same projection is then used to convert eye-space coordinates to depth texture coordinates to sample the map for an arbitrary point. The trade-off is singularity artifacts at the border between half-spaces, but they are usually negligible.
+Perspective shadow mapping is used for spot lights. PSM consists of a single depth map which is rendered using a perspective matrix that represents spot light's field of view, as if it was a camera. Same matrix is then used to convert eye-space coordinates to depth texture coordinates to sample the map for an arbitrary point in the scene. PSM is the simplest and therefore very efficient shadowing technique; it also adds a great portion of realism to night scenes (such as in horror games).
 
-### Perspective Shadow Maps
+### Dual-Paraboloid Shadow Maps (DPSM)
 
-TODO
+Dual-paraboloid shadow maps are an optimized technique for rendering and sampling shadows for omnidirectional light sources (in Dagon, these are spherical and tube area lights). Straightforward shadowing technique for such lights is a depth cube map, rendered from 6 directions around the light source. Paraboloid projection allows to use only 2 depth maps, each covering a half-space around the light source. Same projection is then used to convert eye-space coordinates to depth texture coordinates to sample the map for an arbitrary point. The trade-off is singularity artifacts at the border between half-spaces, but they are usually negligible.
 
 ### HDR
 

@@ -91,7 +91,7 @@ subroutine(srtShadow) float shadowMapCascaded(in vec3 pos, in vec3 N)
 
 subroutine uniform srtShadow shadowMap;
 
-// Mie scaterring approximated with Henyey-Greenstein phase function.
+// Mie scattering approximated with Henyey-Greenstein phase function.
 float scattering(float lightDotView)
 {
     float result = 1.0 - lightScatteringG * lightScatteringG;
@@ -163,10 +163,9 @@ void main()
     // Clip background surfaces
     radiance *= col.a;
     
-    float scattFactor = 0.0;
     if (lightScattering)
     {
-        float accumScatter = 1.0;
+        float opticalDepth = 1.0;
         
         if (lightScatteringShadow)
         {
@@ -178,16 +177,16 @@ void main()
             vec3 currentPosition = startPosition;
             float invSamples = 1.0 / float(lightScatteringSamples);
             float offset = hash((texCoord * 467.759 + time) * eyePos.z);
-            accumScatter = 0.0;
+            opticalDepth = 0.0;
             for (float i = 0; i < float(lightScatteringSamples); i+=1.0)
             {
-                accumScatter += shadowLookup(shadowTextureArray, 1.0, shadowMatrix2 * vec4(currentPosition, 1.0), vec2(0.0));
+                opticalDepth += shadowLookup(shadowTextureArray, 1.0, shadowMatrix2 * vec4(currentPosition, 1.0), vec2(0.0));
                 currentPosition += rayDirection * (stepSize - offset * lightScatteringMaxRandomStepOffset);
             }
-            accumScatter *= invSamples;
+            opticalDepth *= invSamples;
         }
         
-        scattFactor = clamp(accumScatter * scattering(dot(-L, E)) * lightScatteringDensity, 0.0, 1.0);
+        float scattFactor = clamp(opticalDepth * scattering(dot(-L, E)) * lightScatteringDensity, 0.0, 1.0);
         radiance = mix(radiance, toLinear(lightColor.rgb) * lightEnergy, scattFactor);
     }
     

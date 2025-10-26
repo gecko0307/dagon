@@ -34,10 +34,14 @@ uniform vec3 lightSpotDirection;
 uniform float lightSpecular;
 uniform float lightDiffuse;
 
+uniform bool lightScattering;
+
 uniform mat4 shadowMatrix;
 uniform sampler2DShadow shadowTexture;
 uniform sampler2DArrayShadow shadowTextureArray;
 uniform float shadowResolution;
+
+in vec3 lightVolumeEyePos;
 
 layout(location = 0) out vec4 fragColor;
 
@@ -130,7 +134,9 @@ subroutine(srtLightRadiance) vec3 lightRadianceAreaSphere(
     float denominator = 4.0 * max(dot(N, E), 0.0) * NL;
     vec3 specular = numerator / max(denominator, 0.001);
     
-    vec3 incomingLight = toLinear(lightColor.rgb) * attenuation;
+    vec3 lightColorLinear = toLinear(lightColor.rgb);
+    
+    vec3 incomingLight = lightColorLinear * attenuation;
     vec3 radiance = (diffuse * lightDiffuse + specular * lightSpecular * NL) * incomingLight;
 
     return radiance;
@@ -289,15 +295,11 @@ subroutine(srtShadow) float shadowMapDualParaboloid(in vec3 worldPos)
 
 subroutine uniform srtShadow shadowMap;
 
-
 void main()
 {
     vec2 texCoord = gl_FragCoord.xy / resolution;
     
     vec4 col = texture(colorBuffer, texCoord);
-    
-    if (col.a < 1.0)
-        discard;
     
     vec3 albedo = toLinear(col.rgb);
     
@@ -317,8 +319,22 @@ void main()
     
     vec3 radiance = lightRadiance(eyePos, N, E, albedo, roughness, metallic, subsurface, occlusion) * shadow;
     
+    if (lightScattering)
+    {
+        float scatteringRadius = lightRadius * 0.9;
+        vec3 L = lightVolumeEyePos - lightPosition;
+        vec3 backFace = lightPosition + normalize(L) * scatteringRadius;
+        vec3 OC = backFace - lightPosition;
+        float b = dot(OC, E);
+        float c = dot(OC, OC) - scatteringRadius * scatteringRadius;
+        float discriminant = b * b - c;
+        float thickness = -b + sqrt(discriminant); // distance to the front face of the volume along the eye vector
+        float scattering = pow(clamp(thickness / (scatteringRadius * 2.0), 0.0, 1.0), 16.0);
+        radiance += toLinear(lightColor.rgb) * scattering * 0.2;
+    }
+    
     // Fog
-    float linearDepth = abs(eyePos.z);
+    float linearDepth = abs(lightVolumeEyePos.z);
     float fogFactor = clamp((fogEnd - linearDepth) / (fogEnd - fogStart), 0.0, 1.0);
     radiance *= fogFactor;
     

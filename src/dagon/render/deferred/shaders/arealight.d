@@ -83,6 +83,8 @@ class AreaLightShader: Shader
     ShaderParameter!float lightSpotCosInnerCutoff;
     ShaderParameter!Vector3f lightSpotDirection;
     
+    ShaderParameter!int lightScattering;
+    
     ShaderSubroutine lightRadianceSubroutine;
     GLuint lightRadianceSubroutineAreaSphere,
            lightRadianceSubroutineAreaTube,
@@ -142,6 +144,8 @@ class AreaLightShader: Shader
         lightSpotCosCutoff = createParameter!float("lightSpotCosCutoff");
         lightSpotCosInnerCutoff = createParameter!float("lightSpotCosInnerCutoff");
         lightSpotDirection = createParameter!Vector3f("lightSpotDirection");
+        
+        lightScattering = createParameter!int("lightScattering");
         
         lightRadianceSubroutine = createParameterSubroutine("lightRadiance", ShaderType.Fragment);
         lightRadianceSubroutineAreaSphere = lightRadianceSubroutine.getIndex("lightRadianceAreaSphere");
@@ -232,6 +236,8 @@ class AreaLightShader: Shader
             lightAreaRadius = light.radius;
             lightDiffuse = light.diffuse;
             lightSpecular = light.specular;
+            
+            lightScattering = light.scatteringEnabled;
             
             if (light.type == LightType.AreaSphere)
             {
