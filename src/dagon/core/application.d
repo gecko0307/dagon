@@ -344,7 +344,7 @@ ShaderCache globalShaderCache()
  *
  * Description:
  * This class wraps dynamic library binding, SDL window creation, OpenGL context initialization and
- * information querying, event management, and the main game loop. It also handles basic configuration
+ * information querying, event management, and the main game loop. It also handles configuration
  * via `settings.conf` file and provides a number of helper methods (taking screenshots, querying display
  * refresh rate, switching console window, etc.).
  * By itself, `Application` doesn't render anything and doesn't contain game logic. To make a game,
@@ -451,14 +451,23 @@ class Application: EventListener, Updateable
     /// Application window Y-coordinate.
     int windowY = SDL_WINDOWPOS_CENTERED;
     
-    /// Application window title.
-    string windowTitle;
+    /// Is the window initially maximized.
+    bool windowMaximized = false;
+    
+    /// Is the window initially minimizied.
+    bool windowMinimized = false;
     
     /// Can the user resize the window.
     bool windowResizable = true;
     
+    /// Is the window borderless.
+    bool windowBorderless = false;
+    
     /// Is the window HiDPI-aware.
     bool windowHiDPI = false;
+    
+    /// Application window title.
+    string windowTitle;
     
     /// Actual drawable area width of the window.
     int drawableWidth;
@@ -821,12 +830,24 @@ class Application: EventListener, Updateable
         uint windowFlags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
         if (windowResizable)
             windowFlags |= SDL_WINDOW_RESIZABLE;
+        if (windowMaximized)
+            windowFlags |= SDL_WINDOW_MAXIMIZED;
+        if (windowMinimized)
+            windowFlags |= SDL_WINDOW_MINIMIZED;
+        if (windowBorderless)
+            windowFlags |= SDL_WINDOW_BORDERLESS;
         if (windowHiDPI)
             windowFlags |= SDL_WINDOW_ALLOW_HIGHDPI;
         
         window = SDL_CreateWindow(toStringz(windowTitle), windowX, windowY, windowWidth, windowHeight, windowFlags);
         if (window is null)
             exitWithError("Failed to create window: " ~ to!string(SDL_GetError()));
+        
+        int createdWindowWidth, createdWindowHeight;
+        SDL_GetWindowSize(window, &createdWindowWidth, &createdWindowHeight);
+        windowWidth = createdWindowWidth;
+        windowHeight = createdWindowHeight;
+        logInfo("Window size: ", windowWidth, "x", windowHeight);
         
         SDL_GL_GetDrawableSize(window, &drawableWidth, &drawableHeight);
         logInfo("Drawable size: ", drawableWidth, "x", drawableHeight);
@@ -1083,26 +1104,8 @@ class Application: EventListener, Updateable
         // Window settings
         if ("window.width" in config.props)
             windowWidth = config.props["window.width"].toUInt;
-        else if ("windowWidth" in config.props)
-        {
-            if (!warnedAboutWindowWidth)
-            {
-                logWarning("\"windowWidth\" is deprecated, use \"window.width\" instead");
-                warnedAboutWindowWidth = true;
-            }
-            windowWidth = config.props["windowWidth"].toUInt;
-        }
         if ("window.height" in config.props)
             windowHeight = config.props["window.height"].toUInt;
-        else if ("windowHeight" in config.props)
-        {
-            if (!warnedAboutWindowHeight)
-            {
-                logWarning("\"windowHeight\" is deprecated, use \"window.height\" instead");
-                warnedAboutWindowHeight = true;
-            }
-            windowHeight = config.props["windowHeight"].toUInt;
-        }
         
         if ("window.x" in config.props)
         {
@@ -1119,24 +1122,36 @@ class Application: EventListener, Updateable
                 windowY = SDL_WINDOWPOS_CENTERED;
         }
         
-        if ("fullscreen" in config.props)
-            fullscreen = cast(bool)(config.props["fullscreen"].toUInt);
+        if ("window.maximized" in config.props)
+            windowMaximized = cast(bool)(config.props["window.maximized"].toUInt);
+        
+        if ("window.minimized" in config.props)
+            windowMinimized = cast(bool)(config.props["window.minimized"].toUInt);
         
         if ("window.resizable" in config.props)
             windowResizable = cast(bool)config.props["window.resizable"].toUInt;
+        
+        if ("window.borderless" in config.props)
+            windowBorderless = cast(bool)(config.props["window.borderless"].toUInt);
         
         if ("window.hiDPI" in config.props)
             windowHiDPI = cast(bool)config.props["window.hiDPI"].toUInt;
         
         if ("window.title" in config.props)
             windowTitle = config.props["window.title"].toString;
-        else if ("windowTitle" in config.props)
+        
+        if ("fullscreen" in config.props)
+            fullscreen = cast(bool)(config.props["fullscreen"].toUInt);
+        
+        if ("fullscreenWindowed" in config.props)
         {
-            if (!warnedAboutWindowTitle)
+            if (config.props["fullscreenWindowed"].toUInt)
             {
-                logWarning("\"windowTitle\" is deprecated, use \"window.title\" instead");
+                fullscreen = false;
+                windowWidth = 0;
+                windowHeight = 0;
+                windowBorderless = true;
             }
-            windowTitle = config.props["windowTitle"].toString;
         }
         
         if ("vsync" in config.props)
