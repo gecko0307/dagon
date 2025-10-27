@@ -34,9 +34,6 @@ uniform vec3 lightSpotDirection;
 uniform float lightSpecular;
 uniform float lightDiffuse;
 
-uniform bool lightScattering;
-uniform float lightScatteringDensity;
-
 uniform mat4 shadowMatrix;
 uniform sampler2DShadow shadowTexture;
 uniform sampler2DArrayShadow shadowTextureArray;
@@ -319,24 +316,6 @@ void main()
     float shadow = shadowMap(worldPos);
     
     vec3 radiance = lightRadiance(eyePos, N, E, albedo, roughness, metallic, subsurface, occlusion) * shadow;
-    
-    if (lightScattering)
-    {
-        float scatteringRadius = lightRadius * 0.9;
-        vec3 L = lightVolumeEyePos - lightPosition;
-        vec3 backFace = lightPosition + normalize(L) * scatteringRadius;
-        vec3 OC = backFace - lightPosition;
-        float b = dot(OC, E);
-        float c = dot(OC, OC) - scatteringRadius * scatteringRadius;
-        float discriminant = b * b - c;
-        // Distance to the front face of the volume along the eye vector
-        float thickness = max(0.0, -b + sqrt(discriminant));
-        thickness = clamp(thickness, 0.0, lightRadius * 2.0);
-        float falloff = pow(clamp(thickness / (scatteringRadius * 2.0), 0.0, 1.0), 16.0);
-        // Mitigate "ghosting" artifact when light is behind the camera
-        falloff *= 1.0 - clamp(lightPosition.z, 0.0, 1.0);
-        radiance += toLinear(lightColor.rgb) * falloff * lightScatteringDensity;
-    }
     
     // Fog
     float linearDepth = abs(lightVolumeEyePos.z);

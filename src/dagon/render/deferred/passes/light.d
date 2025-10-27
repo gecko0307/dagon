@@ -46,6 +46,7 @@ import dagon.render.framebuffer;
 import dagon.render.deferred.gbuffer;
 import dagon.render.deferred.shaders.sunlight;
 import dagon.render.deferred.shaders.arealight;
+import dagon.render.deferred.shaders.volumetricscattering;
 
 class PassLight: RenderPass
 {
@@ -54,10 +55,12 @@ class PassLight: RenderPass
     ShapeSphere lightVolume;
     SunLightShader sunLightShader;
     AreaLightShader areaLightShader;
+    VolumetricScatteringShader volumetricScatteringShader;
     Framebuffer outputBuffer;
     Framebuffer occlusionBuffer;
     EntityGroup groupSunLights;
     EntityGroup groupAreaLights;
+    bool volumetricScatteringEnabled = false;
 
     this(RenderPipeline pipeline, GBuffer gbuffer)
     {
@@ -67,6 +70,7 @@ class PassLight: RenderPass
         lightVolume = New!ShapeSphere(1.0f, 8, 8, false, this);
         sunLightShader = New!SunLightShader(this);
         areaLightShader = New!AreaLightShader(this);
+        volumetricScatteringShader = New!VolumetricScatteringShader(this);
     }
 
     override void render()
@@ -123,15 +127,11 @@ class PassLight: RenderPass
                     if (light.shining)
                     {
                         state.light = light;
-
-                        state.modelMatrix =
-                            translationMatrix(light.positionAbsolute) *
-                            scaleMatrix(Vector3f(light.volumeRadius, light.volumeRadius, light.volumeRadius));
-
+                        light.updateVolumeTransformation();
+                        state.modelMatrix = light.volumeTransformation;
                         state.modelViewMatrix = state.viewMatrix * state.modelMatrix;
-
                         state.normalMatrix = state.modelViewMatrix.inverse.transposed;
-
+                        
                         areaLightShader.bindParameters(&state);
                         lightVolume.render(&state);
                         areaLightShader.unbindParameters(&state);
@@ -139,7 +139,31 @@ class PassLight: RenderPass
                 }
             }
             areaLightShader.unbind();
-
+            
+            if (volumetricScatteringEnabled)
+            {
+                volumetricScatteringShader.bind();
+                foreach(entity; groupAreaLights)
+                {
+                    Light light = cast(Light)entity;
+                    if (light)
+                    {
+                        if (light.shining && light.scatteringEnabled)
+                        {
+                            state.light = light;
+                            state.modelMatrix = light.volumeTransformation;
+                            state.modelViewMatrix = state.viewMatrix * state.modelMatrix;
+                            state.normalMatrix = state.modelViewMatrix.inverse.transposed;
+                            
+                            volumetricScatteringShader.bindParameters(&state);
+                            lightVolume.render(&state);
+                            volumetricScatteringShader.unbindParameters(&state);
+                        }
+                    }
+                }
+                volumetricScatteringShader.unbind();
+            }
+            
             glCullFace(GL_BACK);
             glDisable(GL_CULL_FACE);
 

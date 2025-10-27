@@ -158,6 +158,9 @@ class Light: Entity
 
     /// Specular lighting factor.
     float specular;
+    
+    ///
+    Matrix4x4f volumeTransformation;
 
     /**
      * Constructs a new light with default parameters.
@@ -188,6 +191,7 @@ class Light: Entity
         scatteringUseShadow = false;
         diffuse = 1.0f;
         specular = 1.0f;
+        volumeTransformation = Matrix4x4f.identity;
     }
     
     /**
@@ -211,5 +215,12 @@ class Light: Entity
         }
         
         return _shadowMap;
+    }
+    
+    void updateVolumeTransformation()
+    {
+        volumeTransformation =
+            translationMatrix(positionAbsolute) *
+            scaleMatrix(Vector3f(volumeRadius, volumeRadius, volumeRadius));
     }
 }
