@@ -195,6 +195,18 @@ struct GraphicsState
     
     /// Normalized local time (0.0 .. 1.0).
     float localTime;
+    
+    /// Custom parameter 1.
+    float custom1;
+    
+    /// Custom parameter 2.
+    float custom2;
+    
+    /// Custom parameter 3.
+    float custom3;
+    
+    /// Custom parameter 4.
+    float custom4;
 
     /**
      * Resets all fields of the graphics state to their default values.

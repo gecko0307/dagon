@@ -27,6 +27,7 @@ uniform float lightEnergy;
 uniform float lightScatteringDensity;
 
 uniform bool lightVolumeCulling;
+uniform float lightCameraDistanceParam;
 
 in vec3 lightVolumeEyePos;
 
@@ -76,9 +77,9 @@ void main()
 
     if (lightVolumeCulling)
     {
-        // Rendering front faces, smoothly occlude with geometry
+        // Smoothly occlude with geometry
         float geomFalloff = clamp(abs(eyePos.z) - abs(lightVolumeEyePos.z), 0.0, geomOcclusionDistance) / geomOcclusionDistance;
-        falloff *= geomFalloff;
+        falloff *= mix(1.0, geomFalloff, lightCameraDistanceParam);
     }
 
     // Mitigate "ghosting" artifact when light is behind the camera

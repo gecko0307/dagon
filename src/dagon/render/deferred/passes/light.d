@@ -34,6 +34,7 @@ import dlib.core.ownership;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;
+import dlib.math.utils;
 
 import dagon.core.bindings;
 import dagon.graphics.screensurface;
@@ -156,7 +157,9 @@ class PassLight: RenderPass
                             state.normalMatrix = state.modelViewMatrix.inverse.transposed;
                             
                             Vector3f lightPosW = light.positionAbsolute;
-                            if ((state.cameraPosition - lightPosW).lengthsqr < light.volumeRadius * light.volumeRadius)
+                            float sqrCamDist = (state.cameraPosition - lightPosW).lengthsqr;
+                            float sqrRadius = light.volumeRadius * light.volumeRadius;
+                            if (sqrCamDist < sqrRadius)
                             {
                                 // The camera is inside the volume
                                 glCullFace(GL_FRONT);
@@ -168,6 +171,8 @@ class PassLight: RenderPass
                                 glCullFace(GL_BACK);
                                 state.cullBackfaces = true;
                             }
+                            
+                            state.custom1 = (clamp(sqrCamDist, sqrRadius, sqrRadius * 2.0) - sqrRadius) / sqrRadius;
                             
                             volumetricScatteringShader.bindParameters(&state);
                             lightVolume.render(&state);
