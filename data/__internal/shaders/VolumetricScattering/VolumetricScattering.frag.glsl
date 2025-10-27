@@ -26,6 +26,8 @@ uniform float lightEnergy;
 
 uniform float lightScatteringDensity;
 
+uniform bool lightVolumeCulling;
+
 in vec3 lightVolumeEyePos;
 
 layout(location = 0) out vec4 fragColor;
@@ -44,18 +46,44 @@ void main()
     vec3 E = normalize(-eyePos);
     
     float scatteringRadius = lightRadius * 0.9;
-    vec3 L = lightVolumeEyePos - lightPosition;
-    vec3 backFace = lightPosition + normalize(L) * scatteringRadius;
-    vec3 OC = backFace - lightPosition;
-    float b = dot(OC, E);
-    float c = dot(OC, OC) - scatteringRadius * scatteringRadius;
-    float discriminant = b * b - c;
-    // Distance to the front face of the volume along the eye vector
-    float thickness = max(0.0, -b + sqrt(discriminant));
+
+    // Ray from the camera through this pixel in eye space.
+    // Origin at O = (0,0,0), direction D points from camera to the sample point.
+    vec3 O = vec3(0.0);
+    vec3 D = normalize(eyePos); // camera -> fragment
+    vec3 C = lightPosition;     // sphere center in eye space
+    float r = scatteringRadius;
+
+    // Solve quadratic: |O + t D - C|^2 = r^2
+    vec3 OC = O - C; // = -C
+    float b = 2.0 * dot(D, OC);
+    float c = dot(OC, OC) - r * r;
+    float discriminant = b * b - 4.0 * c;
+    float thickness = 0.0;
+    if (discriminant > 0.0)
+    {
+        float sqrtD = sqrt(discriminant);
+        float t0 = (-b - sqrtD) * 0.5;
+        float t1 = (-b + sqrtD) * 0.5;
+        thickness = max(0.0, t1 - t0);
+    }
+
+    const float falloffPower = 8.0;
+    const float geomOcclusionDistance = 5.0;
+
     thickness = clamp(thickness, 0.0, lightRadius * 2.0);
-    float falloff = pow(clamp(thickness / (scatteringRadius * 2.0), 0.0, 1.0), 16.0);
+    float falloff = pow(clamp(thickness / (scatteringRadius * 2.0), 0.0, 1.0), falloffPower);
+
+    if (lightVolumeCulling)
+    {
+        // Rendering front faces, smoothly occlude with geometry
+        float geomFalloff = clamp(abs(eyePos.z) - abs(lightVolumeEyePos.z), 0.0, geomOcclusionDistance) / geomOcclusionDistance;
+        falloff *= geomFalloff;
+    }
+
     // Mitigate "ghosting" artifact when light is behind the camera
     falloff *= 1.0 - clamp(lightPosition.z, 0.0, 1.0);
+
     vec3 radiance = toLinear(lightColor.rgb) * falloff * lightScatteringDensity;
     
     // Fog

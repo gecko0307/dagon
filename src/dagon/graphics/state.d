@@ -157,6 +157,9 @@ struct GraphicsState
     /// If `true`, enables face culling.
     bool culling;
     
+    /// false - cull back faces, true - cull front faces.
+    bool cullBackfaces;
+    
     /// Opacity value for alpha blending.
     float opacity;
 

@@ -71,6 +71,7 @@ class VolumetricScatteringShader: Shader
     ShaderParameter!float lightEnergy;
     ShaderParameter!float lightRadius;
     
+    ShaderParameter!int lightVolumeCulling;
     ShaderParameter!float lightScatteringDensity;
     
     ShaderParameter!int colorBuffer;
@@ -108,6 +109,7 @@ class VolumetricScatteringShader: Shader
         lightEnergy = createParameter!float("lightEnergy");
         lightRadius = createParameter!float("lightRadius");
         
+        lightVolumeCulling = createParameter!int("lightVolumeCulling");
         lightScatteringDensity = createParameter!float("lightScatteringDensity");
         
         colorBuffer = createParameter!int("colorBuffer");
@@ -153,8 +155,9 @@ class VolumetricScatteringShader: Shader
         if (state.light)
         {
             auto light = state.light;
-            lightPosition = light.positionAbsolute * state.viewMatrix;
-            lightPositionWorld = light.positionAbsolute;
+            Vector3f lightPosW = light.positionAbsolute;
+            lightPosition = lightPosW * state.viewMatrix;
+            lightPositionWorld = lightPosW;
             lightColor = light.color;
             lightEnergy = light.energy;
             lightRadius = light.volumeRadius;
@@ -167,6 +170,7 @@ class VolumetricScatteringShader: Shader
             lightEnergy = 1.0f;
             lightRadius = 0.0f;
         }
+        lightVolumeCulling = state.cullBackfaces;
         
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);

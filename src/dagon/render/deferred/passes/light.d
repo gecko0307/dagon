@@ -155,6 +155,20 @@ class PassLight: RenderPass
                             state.modelViewMatrix = state.viewMatrix * state.modelMatrix;
                             state.normalMatrix = state.modelViewMatrix.inverse.transposed;
                             
+                            Vector3f lightPosW = light.positionAbsolute;
+                            if ((state.cameraPosition - lightPosW).lengthsqr < light.volumeRadius * light.volumeRadius)
+                            {
+                                // The camera is inside the volume
+                                glCullFace(GL_FRONT);
+                                state.cullBackfaces = false;
+                            }
+                            else
+                            {
+                                // The camera is outside the volume
+                                glCullFace(GL_BACK);
+                                state.cullBackfaces = true;
+                            }
+                            
                             volumetricScatteringShader.bindParameters(&state);
                             lightVolume.render(&state);
                             volumetricScatteringShader.unbindParameters(&state);
