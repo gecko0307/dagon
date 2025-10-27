@@ -70,7 +70,6 @@ void main()
     }
 
     const float falloffPower = 8.0;
-    const float geomOcclusionDistance = 5.0;
 
     thickness = clamp(thickness, 0.0, lightRadius * 2.0);
     float falloff = pow(clamp(thickness / (scatteringRadius * 2.0), 0.0, 1.0), falloffPower);
@@ -78,7 +77,7 @@ void main()
     if (lightVolumeCulling)
     {
         // Smoothly occlude with geometry
-        float geomFalloff = clamp(abs(eyePos.z) - abs(lightVolumeEyePos.z), 0.0, geomOcclusionDistance) / geomOcclusionDistance;
+        float geomFalloff = clamp(abs(eyePos.z) - abs(lightVolumeEyePos.z), 0.0, scatteringRadius) / scatteringRadius;
         falloff *= mix(1.0, geomFalloff, lightCameraDistanceParam);
     }
 

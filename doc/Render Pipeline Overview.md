@@ -33,11 +33,13 @@ Dagon supports spherical and tube area lights. Spherical area lights can be seen
 
 Dagon's deferred renderer treats all point lights as area lights - if the light has zero radius and length, it becomes classic point light.
 
-### Volumetric Light
+### Volumetric Light Scattering
 
-Dagon supports physically-based raymarched volumetric scattering effect for parallel lights, which is also known as "god rays". It simulates scattering of direct sun light in the atmosphere, given the assumption that the air contains aerosols, such as haze or dust - referred to as the medium in the underlying theory. The denser the medium, the more pronounced the sun rays appear.
+Dagon supports physically-based raymarched anisotropic volumetric scattering effect, which is also known as "god rays". It simulates scattering of direct sun light in the atmosphere, given the assumption that the air contains aerosols, such as haze or dust - referred to as the medium in the underlying theory. The denser the medium, the more pronounced the sun rays appear.
 
-This effect is supported only for sun-type lights. If a shadow map is assigned, the implementation integrates optical depth using Monte Carlo raymarched sampling of the shadow map along the view ray for each pixel in the framebuffer (otherwise the optical depth is assumed to be 1.0). The resulting value is then used to compute anisotropic Mie scattering, approximated with Henyey–Greenstein phase function. Anisotropy parameter of the function (`g`) is controlled with `Light.scattering` property: `g = 1.0 - Light.scattering`. Aerosol density is defined by `Light.mediumDensity`.
+If a shadow map is assigned, the implementation integrates optical depth using Monte Carlo raymarched sampling of the shadow map along the view ray for each pixel in the framebuffer (otherwise the optical depth is assumed to be 1.0). The resulting value is then used to compute anisotropic Mie scattering, approximated with Henyey-Greenstein phase function. Anisotropy parameter of the function (`g`) is controlled with `Light.scattering` property: `g = 1.0 - Light.scattering`. Aerosol density is defined by `Light.mediumDensity`.
+
+For omnidirectional lights, isotropic scattering is computed via analitical solution for light bounding spheres. This results in a smooth radial blending of the emitted light with the surrounding environment.
 
 ### Cascaded Shadow Maps (CSM)
 

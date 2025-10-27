@@ -46,7 +46,7 @@ Features
 * Directional lights with cascaded shadow mapping
 * Spherical and tube area lights with dual paraboloid shadow mapping
 * Spot lights with perspective shadow mapping
-* Volumetric light scattering
+* Volumetric light scattering (isotropic for area lights, anisotropic for directional lights)
 * Local environment probes with box-projected cube mapping for approximated interior GI
 * Normal/parallax mapping, parallax occlusion mapping
 * Deferred decals with normal mapping and PBR material properties
