@@ -1,5 +1,5 @@
-Dagon 0.34.0 - TBD
-------------------
+Dagon 0.34.0 - 28 Oct, 2025
+---------------------------
 - **Core**
   - Breaking change: `EvenManager` now supports multiple controllers (up to 4). Controller/joystick event handlers of `EventListener` now accept `deviceIndex` as the first argument
   - Breaking change: `EventListener.onControllerAdd` event handler now accepts `GameInputDeviceType` as the second argument
