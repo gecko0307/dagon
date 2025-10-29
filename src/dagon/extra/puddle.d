@@ -35,6 +35,7 @@ import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
+import dlib.math.utils;
 import dlib.image.color;
 import dlib.text.str;
 
@@ -46,7 +47,6 @@ import dagon.graphics.texture;
 import dagon.graphics.terrain;
 import dagon.resource.asset;
 import dagon.resource.texture;
-import dagon.extra.utils;
 
 /*
  * Same as dagon.extra.water, but adapted for using as a terrain material layer

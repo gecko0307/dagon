@@ -36,6 +36,7 @@ import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
+import dlib.math.utils;
 import dlib.image.color;
 import dlib.text.str;
 
@@ -49,7 +50,6 @@ import dagon.graphics.csm;
 import dagon.render.deferred.gbuffer;
 import dagon.resource.asset;
 import dagon.resource.texture;
-import dagon.extra.utils;
 
 /*
  * Animated water shader with rain ripples
