@@ -37,7 +37,7 @@ class TestScene: Scene
         }
     }
     
-    override void onControllerButtonDown(int btn)
+    override void onControllerButtonDown(uint deviceIndex, int btn)
     {
         if (btn == GB_A)
         {
@@ -45,7 +45,7 @@ class TestScene: Scene
         }
     }
     
-    override void onControllerButtonUp(int btn)
+    override void onControllerButtonUp(uint deviceIndex, int btn)
     {
         if (btn == GB_A)
         {
@@ -53,7 +53,7 @@ class TestScene: Scene
         }
     }
     
-    override void onControllerAxisMotion(int axis, float value)
+    override void onControllerAxisMotion(uint deviceIndex, int axis, float value)
     {
         if (axis == GA_LEFTX)
         {
