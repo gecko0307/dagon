@@ -567,10 +567,10 @@ class Entity: Owner, Updateable
         scaling += s;
     }
     
-    Vector3f scalingAsolute()
+    Vector3f scalingAbsolute()
     {
         if (parent)
-            return parent.scalingAsolute * scaling;
+            return parent.scalingAbsolute * scaling;
         else
             return scaling;
     }

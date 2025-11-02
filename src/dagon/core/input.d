@@ -85,6 +85,36 @@ enum BindingType
     VirtualAxis
 }
 
+struct VirtualAxisBinding
+{
+    /// The type of the binding.
+    BindingType type;
+    
+    /// Controller device index in `EventManager`.
+    uint deviceIndex = 0;
+    
+    union
+    {
+        /// Keyboard key code.
+        int key;
+        
+        /// Mouse or gamepad button code.
+        int button;
+        
+        /// Mouse or gamepad axis index.
+        int axis;
+    }
+}
+
+struct Vaxis
+{
+    // Binding for the positive end of the axis.
+    VirtualAxisBinding positive;
+    
+    // Binding for the negative end of the axis.
+    VirtualAxisBinding negative;
+}
+
 /**
  * Represents a single input binding.
  *
@@ -110,25 +140,10 @@ struct Binding
         
         /// Mouse or gamepad axis index.
         int axis;
-        
-        private struct Vaxis
-        {
-            /// Type for positive direction.
-            BindingType typePos;
-            
-            /// Code for positive direction.
-            int pos;
-            
-            /// Type for negative direction.
-            BindingType typeNeg;
-            
-            /// Code for negative direction.
-            int neg;
-        }
-        
-        /// Virtual axis data.
-        Vaxis vaxis;
     }
+    
+    /// Virtual axis data.
+    Vaxis vaxis;
 }
 
 /**
@@ -377,10 +392,15 @@ class InputManager
                 goto fail;
             
             Binding bind = Binding(type);
-            bind.vaxis.typePos = pos.type;
-            bind.vaxis.pos = pos.key;
-            bind.vaxis.typeNeg = neg.type;
-            bind.vaxis.neg = neg.key;
+            
+            bind.vaxis.positive.type = pos.type;
+            bind.vaxis.positive.deviceIndex = pos.deviceIndex;
+            bind.vaxis.positive.key = pos.key;
+            
+            bind.vaxis.negative.type = neg.type;
+            bind.vaxis.negative.deviceIndex = neg.deviceIndex;
+            bind.vaxis.negative.key = neg.key;
+            
             return bind;
         }
         
@@ -454,6 +474,33 @@ class InputManager
      *   `true` if pressed, `false` otherwise.
      */
     bool getButton(Binding binding)
+    {
+        switch(binding.type)
+        {
+            case BindingType.Keyboard:
+                if (eventManager.keyPressed[binding.key])
+                    return true;
+                break;
+            
+            case BindingType.MouseButton:
+                if (eventManager.mouseButtonPressed[binding.button])
+                    return true;
+                break;
+            
+            case BindingType.GamepadButton:
+                if (binding.deviceIndex < MAX_CONTROLLERS)
+                    if (eventManager.controllerButtonPressed[binding.deviceIndex][binding.button])
+                        return true;
+                break;
+        
+            default:
+                break;
+        }
+        
+        return false;
+    }
+    
+    bool getButton(VirtualAxisBinding binding)
     {
         switch(binding.type)
         {
@@ -632,8 +679,8 @@ class InputManager
                     break;
                 
                 case BindingType.VirtualAxis:
-                    value  = getButton(*cast(Binding*)(&binding.vaxis.typePos)) ?  1.0f : 0.0f;
-                    value += getButton(*cast(Binding*)(&binding.vaxis.typeNeg)) ? -1.0f : 0.0f;
+                    value  = getButton(binding.vaxis.positive) ?  1.0f : 0.0f;
+                    value += getButton(binding.vaxis.negative) ? -1.0f : 0.0f;
                     break;
                 
                 default:

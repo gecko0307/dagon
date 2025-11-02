@@ -124,7 +124,7 @@ class UIManager: EventListener
     bool mouseOver(Entity e)
     {
         Vector3f posAbs = e.positionAbsolute;
-        Vector3f scalAbs = e.scalingAsolute;
+        Vector3f scalAbs = e.scalingAbsolute;
         float x = posAbs.x;
         float y = posAbs.y;
         float w = scalAbs.x;
@@ -139,7 +139,7 @@ class UIManager: EventListener
     bool mouseOverRegion(Entity e, float rx, float ry, float rw, float rh)
     {
         Vector3f posAbs = e.positionAbsolute;
-        Vector3f scalAbs = e.scalingAsolute;
+        Vector3f scalAbs = e.scalingAbsolute;
         float x = posAbs.x;
         float y = posAbs.y;
         x /= eventManager.application.pixelRatio;
