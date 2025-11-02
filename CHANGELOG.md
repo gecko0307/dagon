@@ -1,3 +1,8 @@
+Dagon 0.34.1 - 02 Nov, 2025
+---------------------------
+- **Core**
+  - Fix bug with broken virtual axis processing in `InputManager`.
+
 Dagon 0.34.0 - 28 Oct, 2025
 ---------------------------
 - **Core**
