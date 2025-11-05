@@ -32,3 +32,6 @@ __dummy.html
 
 # Test applications
 tests/
+
+#
+platform/
