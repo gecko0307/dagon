@@ -29,8 +29,7 @@ DEALINGS IN THE SOFTWARE.
  * Defines key codes and button codes for keyboard, mouse, and game controllers.
  *
  * The `dagon.core.keycodes` module provides symbolic constants for all supported
- * keyboard keys (based on SDL scancodes), mouse buttons, and gamepad buttons and axes,
- * enabling consistent input handling across platforms.
+ * keyboard keys (based on SDL scancodes), mouse buttons, and gamepad buttons and axes.
  *
  * Copyright: Timur Gafarov 2017-2025
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
@@ -44,7 +43,7 @@ import dagon.core.bindings;
  * Keyboard key codes (based on SDL scancodes).
  *
  * Description:
- * These constants map to physical keyboard keys
+ * These constants map to physical keyboard scancodes
  * and are used for input binding and event handling.
  */
 enum

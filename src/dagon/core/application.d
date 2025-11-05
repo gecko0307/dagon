@@ -339,6 +339,26 @@ ShaderCache globalShaderCache()
     return _globalShaderCache;
 }
 
+private struct TimerData
+{
+    Application application;
+    size_t index;
+    int id;
+    int userEventCode;
+    bool periodic;
+    bool active;
+}
+
+private extern(C) uint sdlTimerCallback(uint interval, void* param) nothrow
+{
+    TimerData* td = cast(TimerData*)param;
+    td.application.completeTimer(td.index);
+    if (td.periodic)
+        return interval;
+    else
+        return 0;
+}
+
 /**
  * Base class to inherit application object from.
  *
@@ -563,6 +583,14 @@ class Application: EventListener, Updateable
         bool warnedAboutWindowWidth = false;
         bool warnedAboutWindowHeight = false;
         bool warnedAboutWindowTitle = false;
+        
+        TimerData[1024] timers;
+        size_t _numTimers = 0;
+    }
+    
+    size_t numTimers()
+    {
+        return _numTimers;
     }
 
     /**
@@ -769,6 +797,8 @@ class Application: EventListener, Updateable
         // Init SDL
         if (windowHiDPI)
             SDL_SetHint(SDL_HINT_WINDOWS_DPI_SCALING, "1");
+        
+        //SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, "1");
         
         if (SDL_Init(SDL_INIT_EVERYTHING) == -1)
             exitWithError("Failed to init SDL: " ~ to!string(SDL_GetError()));
@@ -1526,6 +1556,65 @@ class Application: EventListener, Updateable
         HWND hwnd()
         {
             return eventManager.wmInfo.info.win.window;
+        }
+    }
+    
+    ///
+    int setTimer(double duration, int userCode, bool periodic = false)
+    {
+        if (_numTimers == timers.length)
+        {
+            logError("Maximum timers count reached");
+            return 0;
+        }
+        
+        size_t index = timers.length;
+        for (size_t i = 0; i < timers.length; i++)
+        {
+            if (!timers[i].active)
+                index = i;
+        }
+        
+        if (index >= timers.length)
+        {
+            logError("Maximum timers count reached");
+            return 0;
+        }
+        
+        TimerData* td = &timers[index];
+        uint interval = cast(uint)(duration * 1000);
+        *td = TimerData(this, index, 0, userCode, periodic, true);
+        td.id = SDL_AddTimer(interval, &sdlTimerCallback, td);
+        if (td.id > 0)
+            _numTimers++;
+        else
+            td.active = false;
+        logInfo("Timer ID: ", td.id);
+        return td.id;
+    }
+    
+    ///
+    bool cancelTimer(int id)
+    {
+        if (id)
+            return cast(bool)SDL_RemoveTimer(id);
+        else
+            return false;
+    }
+    
+    void completeTimer(size_t index) nothrow
+    {
+        TimerData* td = &timers[index];
+        Event e;
+        e.type = EventType.Timer;
+        e.userCode = td.userEventCode;
+        e.timerID = td.id;
+        eventManager.queueEvent(e);
+        if (!td.periodic)
+        {
+            SDL_RemoveTimer(td.id);
+            td.active = false;
+            _numTimers--;
         }
     }
 }

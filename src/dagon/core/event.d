@@ -131,6 +131,7 @@ enum EventType
     Log,
     Message,
     Task,
+    Timer,
     UserEvent
 }
 
@@ -169,6 +170,7 @@ struct Event
     float pressure;
     LogLevel logLevel;
     int domain;
+    int timerID;
     string filename;
     string message;
     string sender;
@@ -344,7 +346,7 @@ class EventManager: Owner
     double deltaTime = 0.0;
     
     /// Time in milliseconds since the last `updateTimer` call.
-    uint deltaTimeMs = 0;
+    ulong deltaTimeMs = 0;
     
     /// Width of the screen.
     uint displayWidth;
@@ -1088,12 +1090,12 @@ class EventManager: Owner
         messageBroker.update();
     }
 
-    protected int lastTime = 0;
+    protected ulong lastTime = 0;
 
     /// Updates the internal timer and computes delta time.
     void updateTimer()
     {
-        int currentTime = SDL_GetTicks();
+        ulong currentTime = SDL_GetTicks64();
         auto elapsedTime = currentTime - lastTime;
         lastTime = currentTime;
         deltaTimeMs = elapsedTime;
@@ -1323,6 +1325,9 @@ abstract class EventDispatcher: Owner
                     if (e.recipient.length == 0 || e.recipient == address)
                         onTask(e.domain, e.sender, e.callback, e.payload);
                 break;
+            case EventType.Timer:
+                onTimerEvent(e.timerID, e.userCode);
+                break;
             case EventType.UserEvent:
                 onUserEvent(e.userCode);
                 break;
@@ -1402,6 +1407,9 @@ abstract class EventDispatcher: Owner
     
     /// Called when a task event is received.
     void onTask(int domain, string sender, TaskCallback callback, void* payload) {}
+    
+    /// Called when a timer event is received.
+    void onTimerEvent(int timerID, int userCode) {}
 
     /// Called when a user event is received.
     void onUserEvent(int code) {}
