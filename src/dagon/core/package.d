@@ -94,6 +94,9 @@ public
 
     /// Utilities for compiling and linking OpenGL shaders.
     import dagon.core.shaderloader;
+    
+    /// Information about the running platform and operating system.
+    import dagon.core.sysinfo;
 
     /// Time management, frame timing, and fixed-step scheduling.
     import dagon.core.time;

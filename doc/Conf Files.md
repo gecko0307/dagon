@@ -45,7 +45,7 @@ Built in *.conf files are fully reserved for Dagon's internal mechanisms, and it
 * `window.width`, `window.height` - size of the game window. These values override default ones hardcoded in the application
 * `window.x`, `window.y` - window position (in non-maximized windowed mode). If not specified, the window is centered on the screen
 * `window.resizable` - `0` or `1`, allow the user to resize the window or not (in windowed mode). Default is `1`
-* `window.maximized` - `0` or `1`, maximize the window initially. If enabled, `window.width` and `window.height` are ignored and determined automatically. Default is `0`
+* `window.maximized` - `0` or `1`, maximize the window initially. If enabled, `window.width` and `window.height` are ignored. Default is `0`
 * `window.minimized` - `0` or `1`, minimize the window initially. Default is `0`
 * `window.borderless` - `0` or `1`, enables or disables window decoration. Default is `0`
 * `window.hiDPI` - `0` or `1`, hints that the application is hiDPI-aware. If enabled, the actual drawable area of the window will be larger than the window itself (by multiplier available as `Application.pixelRatio`) on appropriate displays. Default is `0`
@@ -54,6 +54,7 @@ Built in *.conf files are fully reserved for Dagon's internal mechanisms, and it
 * `fullscreenWindowed` - `0` or `1`, enables "windowed fullscreen" mode. The application runs in a borderless screen-sized window, which allows for easy switching to other applications. Default is `0`
 * `vsync` - `0` for immediate buffer swap; `1` for synchronization with the vertical retrace; `-1` for adaptive vsync. Default is `1`
 * `stepFrequency` - number of logic update cycles per second. This can be set to `auto` to synchronize updates with the display refresh rate. Default is `60`
+* `maxTimersCount` - maximum number of simultaneous timers. Default is `1024`. `0` is treated as a default number
 * `hideConsole` - `0` or `1`, show or hide the console window. It is convenient to leave it when debugging the game and hide it for end users. Default is `0`
 * `localesPath` - path to the folder containing translation files. Default is `"locale"`
 * `locale` - locale that should be loaded. This option overrides automatically selected locale based on system language and region. For example, `locale: "en_US";` means that application will try load `locale/en_US.lang` file and will ignore system language

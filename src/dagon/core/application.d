@@ -63,6 +63,7 @@ import dagon.core.logger;
 import dagon.core.vfs;
 import dagon.core.props;
 import dagon.core.config;
+import dagon.core.sysinfo;
 import dagon.core.locale;
 import dagon.core.i18n;
 
@@ -459,6 +460,9 @@ class Application: EventListener, Updateable
     /// Actually used FreeType library version.
     FTVersion ftVersion;
     
+    /// System information.
+    SysInfo systemInfo;
+    
     /// Application window width.
     uint windowWidth;
     
@@ -506,6 +510,9 @@ class Application: EventListener, Updateable
     
     /// Update frequency in Hz.
     uint stepFrequency = 60;
+    
+    /// Maximum simultaneous timers.
+    uint maxTimersCount = 1024;
     
     /// Is OpenGL debug output enabled.
     bool enableDebugOutput = false;
@@ -584,11 +591,11 @@ class Application: EventListener, Updateable
         bool warnedAboutWindowHeight = false;
         bool warnedAboutWindowTitle = false;
         
-        TimerData[1024] timers;
+        TimerData[] timers;
         size_t _numTimers = 0;
     }
     
-    size_t numTimers()
+    size_t numActiveTimers()
     {
         return _numTimers;
     }
@@ -656,7 +663,13 @@ class Application: EventListener, Updateable
         }
         initConfigPath.free();
         
+        // Get system info
+        sysInfo(&systemInfo);
+        
         logInfo("Dagon ", dagonVersionString);
+        logInfo("CPU architecture: ", systemInfo.architecture);
+        logInfo("CPU cores: ", systemInfo.numProcessors);
+        logInfo("OS: ", systemInfo.osName, " ", systemInfo.osVersion);
         logInfo("System locale: ", locale);
         logInfo("Selected locale: ", userLocale);
         
@@ -995,11 +1008,13 @@ class Application: EventListener, Updateable
                 logWarning("GL_KHR_debug is not supported, debug output is not available");
         }
         
-        // Create cadencer
+        // Create cadencer and timers pool
         if (stepFrequency == 0)
             stepFrequency = displayRefreshRate(60);
         logInfo("Step frequency: ", stepFrequency, " Hz");
         cadencer = New!Cadencer(this, stepFrequency, this);
+        logInfo("Maximum timers count: ", maxTimersCount);
+        timers = New!(TimerData[])(maxTimersCount);
         
         // Init FreeType and create a font manager
         if (freetypePresent)
@@ -1196,6 +1211,15 @@ class Application: EventListener, Updateable
                     stepFrequency = 0; // same as display refresh rate
             }
         }
+        if ("maxTimersCount" in config.props)
+        {
+            if (config.props["maxTimersCount"].type == DPropType.Number)
+            {
+                maxTimersCount = config.props["maxTimersCount"].toUInt;
+                if (maxTimersCount == 0)
+                    maxTimersCount = 1024;
+            }
+        }
         
         version(Windows)
         {
@@ -1260,6 +1284,9 @@ class Application: EventListener, Updateable
         
         if (vfs)
             Delete(vfs);
+        
+        if (timers.length)
+            Delete(timers);
         
         logInfo("Exit Dagon application");
     }
