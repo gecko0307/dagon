@@ -1,8 +1,187 @@
 module main;
 
 import std.file;
+import std.path;
 import dagon;
 import gscript;
+
+class GsOpaqueObject(T): GsObject
+{
+    T wrappedObject;
+    
+    this(T wrappedObject)
+    {
+        this.wrappedObject = wrappedObject;
+    }
+    
+    GsDynamic get(string key)
+    {
+        return GsDynamic();
+    }
+    
+    void set(string key, GsDynamic value)
+    {
+        // No-op
+    }
+    
+    bool contains(string key)
+    {
+        return false;
+    }
+    
+    void setPrototype(GsObject)
+    {
+        // No-op
+    }
+}
+
+class GsAsset: GsObject
+{
+    GsVirtualMachine vm;
+    Asset asset;
+    
+    this(GsVirtualMachine vm, Asset asset)
+    {
+        this.vm = vm;
+        this.asset = asset;
+    }
+    
+    GsDynamic get(string key)
+    {
+        switch(key)
+        {
+            case "mesh":
+                if (auto objAsset = cast(OBJAsset)asset)
+                {
+                    auto obj = vm.heap.create!GsDrawable(objAsset.mesh);
+                    return GsDynamic(obj);
+                }
+                else
+                    return GsDynamic();
+                break;
+            default:
+                return GsDynamic();
+        }
+    }
+    
+    void set(string key, GsDynamic value)
+    {
+        // No-op
+    }
+    
+    bool contains(string key)
+    {
+        switch(key)
+        {
+            case "mesh":
+                return true;
+            default:
+                return false;
+        }
+    }
+    
+    void setPrototype(GsObject)
+    {
+        // No-op
+    }
+}
+
+class GsDrawable: GsObject
+{
+    Drawable drawable;
+    
+    this(Drawable drawable)
+    {
+        this.drawable = drawable;
+    }
+    
+    GsDynamic get(string key)
+    {
+        return GsDynamic();
+    }
+    
+    void set(string key, GsDynamic value)
+    {
+        // No-op
+    }
+    
+    bool contains(string key)
+    {
+        return false;
+    }
+    
+    void setPrototype(GsObject)
+    {
+        // No-op
+    }
+}
+
+class GsEntity: GsObject
+{
+    Entity entity;
+    
+    this(Entity entity)
+    {
+        this.entity = entity;
+    }
+    
+    GsDynamic get(string key)
+    {
+        switch(key)
+        {
+            case "drawable":
+                return GsDynamic(entity.drawable);
+                break;
+            default:
+                return GsDynamic();
+        }
+    }
+    
+    void set(string key, GsDynamic value)
+    {
+        switch(key)
+        {
+            case "drawable":
+                entity.drawable = (cast(GsDrawable)value.asObject).drawable;
+                break;
+            case "position":
+                if (value.type == GsDynamicType.Vector)
+                {
+                    auto v = value.asVector;
+                    entity.position.x = v.x;
+                    entity.position.y = v.y;
+                    entity.position.z = v.z;
+                }
+                else if (value.type == GsDynamicType.Array)
+                {
+                    auto arr = value.asArray;
+                    if (arr.length > 0 && arr[0].type == GsDynamicType.Number) entity.position.x = arr[0].asNumber;
+                    if (arr.length > 1 && arr[1].type == GsDynamicType.Number) entity.position.y = arr[1].asNumber;
+                    if (arr.length > 2 && arr[2].type == GsDynamicType.Number) entity.position.z = arr[2].asNumber;
+                }
+                break;
+            default:
+                break;
+        }
+    }
+    
+    bool contains(string key)
+    {
+        switch(key)
+        {
+            case "drawable":
+                return true;
+                break;
+            default:
+                return false;
+        }
+    }
+    
+    void setPrototype(GsObject)
+    {
+        // No-op
+    }
+}
 
 class CoreScene: Scene, GsObject
 {
@@ -19,6 +198,8 @@ class CoreScene: Scene, GsObject
         this.game = game;
         address = "CoreScene";
         storage = dict!(GsDynamic, string);
+        set("addAsset", GsDynamic(&vmAddAsset));
+        set("addEntity", GsDynamic(&vmAddEntity));
         scriptCallArgs[0] = GsDynamic(this);
     }
     
@@ -66,6 +247,37 @@ class CoreScene: Scene, GsObject
         // No-op
     }
     
+    GsDynamic vmAddAsset(GsDynamic[] args)
+    {
+        auto filename = args[1].toString;
+        string assetFileExt = filename.extension;
+        if (assetFileExt == ".obj" || assetFileExt == ".OBJ")
+        {
+            auto asset = addOBJAsset(filename);
+            auto obj = game.vm.heap.create!GsAsset(game.vm, asset);
+            return GsDynamic(obj);
+        }
+        else
+        {
+            logError("Unsupported asset file type: \"", assetFileExt, "\"");
+            return GsDynamic();
+        }
+    }
+    
+    GsDynamic vmAddEntity(GsDynamic[] args)
+    {
+        Entity parent = null;
+        if (args.length >= 2)
+        {
+            auto parentObj = cast(GsEntity)args[1].asObject;
+            if (parentObj)
+                parent = parentObj.entity;
+        }
+        auto entity = addEntity(parent);
+        auto obj = game.vm.heap.create!(GsEntity)(entity);
+        return GsDynamic(obj);
+    }
+    
     void triggerScriptEvent(string name, GsDynamic[] args)
     {
         GsDynamic* eventHandler = name in storage;
@@ -78,8 +290,6 @@ class CoreScene: Scene, GsObject
 
     override void beforeLoad()
     {
-        aOBJSuzanne = addOBJAsset("assets/suzanne.obj");
-        
         triggerScriptEvent("onBeforeLoad", scriptCallArgs[0..1]);
     }
 
@@ -244,6 +454,11 @@ class CoreGame: Game
         
         vm = New!GsVirtualMachine(this);
         vm.set("log", GsDynamic(&vmLog));
+        vm.set("logDebug", GsDynamic(&vmLogDebug));
+        vm.set("logInfo", GsDynamic(&vmLogInfo));
+        vm.set("logWarning", GsDynamic(&vmLogWarning));
+        vm.set("logError", GsDynamic(&vmLogError));
+        vm.set("logFatalError", GsDynamic(&vmLogFatalError));
         vm.set("send", GsDynamic(&vmSend));
         vm.set("scene", GsDynamic(coreScene));
         
@@ -261,6 +476,41 @@ class CoreGame: Game
         auto logLevel = cast(LogLevel)cast(uint)args[1].asNumber;
         auto message = args[2].toString;
         log(logLevel, message);
+        return GsDynamic();
+    }
+    
+    GsDynamic vmLogDebug(GsDynamic[] args)
+    {
+        auto message = args[1].toString;
+        logDebug(message);
+        return GsDynamic();
+    }
+    
+    GsDynamic vmLogInfo(GsDynamic[] args)
+    {
+        auto message = args[1].toString;
+        logInfo(message);
+        return GsDynamic();
+    }
+    
+    GsDynamic vmLogWarning(GsDynamic[] args)
+    {
+        auto message = args[1].toString;
+        logWarning(message);
+        return GsDynamic();
+    }
+    
+    GsDynamic vmLogError(GsDynamic[] args)
+    {
+        auto message = args[1].toString;
+        logError(message);
+        return GsDynamic();
+    }
+    
+    GsDynamic vmLogFatalError(GsDynamic[] args)
+    {
+        auto message = args[1].toString;
+        logFatalError(message);
         return GsDynamic();
     }
     

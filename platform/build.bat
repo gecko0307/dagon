@@ -1,2 +1,2 @@
-dub build --build=release-nobounds
+dub build
 gs -c -i scripts/main.gs
