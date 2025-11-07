@@ -119,10 +119,17 @@ class GsDrawable: GsObject
 class GsEntity: GsObject
 {
     Entity entity;
+    Dict!(GsDynamic, string) storage;
     
     this(Entity entity)
     {
         this.entity = entity;
+        storage = dict!(GsDynamic, string);
+    }
+    
+    ~this()
+    {
+        Delete(storage);
     }
     
     GsDynamic get(string key)
@@ -133,7 +140,11 @@ class GsEntity: GsObject
                 return GsDynamic(entity.drawable);
                 break;
             default:
-                return GsDynamic();
+                auto v = key in storage;
+                if (v)
+                    return *v;
+                else
+                    return GsDynamic();
         }
     }
     
@@ -161,6 +172,7 @@ class GsEntity: GsObject
                 }
                 break;
             default:
+                storage[key] = value;
                 break;
         }
     }
@@ -173,7 +185,10 @@ class GsEntity: GsObject
                 return true;
                 break;
             default:
-                return false;
+                if ((key in storage) !is null)
+                    return true;
+                else
+                    return false;
         }
     }
     
@@ -305,9 +320,6 @@ class CoreScene: Scene, GsObject
         sun.energy = 10.0f;
         sun.pitch(-45.0f);
         sun.shadowMap.resize(1024);
-        
-        auto ePlane = addEntity();
-        ePlane.drawable = New!ShapePlane(10, 10, 1, assetManager);
         
         triggerScriptEvent("onAfterLoad", scriptCallArgs[0..1]);
     }
@@ -459,6 +471,7 @@ class CoreGame: Game
         vm.set("logWarning", GsDynamic(&vmLogWarning));
         vm.set("logError", GsDynamic(&vmLogError));
         vm.set("logFatalError", GsDynamic(&vmLogFatalError));
+        vm.set("queueUserEvent", GsDynamic(&vmQueueUserEvent));
         vm.set("send", GsDynamic(&vmSend));
         vm.set("scene", GsDynamic(coreScene));
         
@@ -511,6 +524,13 @@ class CoreGame: Game
     {
         auto message = args[1].toString;
         logFatalError(message);
+        return GsDynamic();
+    }
+    
+    GsDynamic vmQueueUserEvent(GsDynamic[] args)
+    {
+        int code = cast(int)args[1].asNumber;
+        eventManager.queueUserEvent(code);
         return GsDynamic();
     }
     
