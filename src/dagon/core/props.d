@@ -240,7 +240,10 @@ class Properties: Owner
         {
             output ~= k;
             output ~= ": ";
-            output ~= v.data;
+            if (v.type == DPropType.String)
+                output ~= "\"" ~ v.data ~ "\"";
+            else
+                output ~= v.data;
             output ~= ";\n";
         }
         return output;

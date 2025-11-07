@@ -1,3 +1,7 @@
+const persistent = global.addPersistentStorage("data.conf");
+print persistent.foo;
+persistent.foo = "bar";
+
 const assets = {};
 let eSuzanne;
 

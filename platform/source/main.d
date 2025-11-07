@@ -2,6 +2,7 @@ module main;
 
 import std.file;
 import std.path;
+import std.conv;
 import dagon;
 import gscript;
 
@@ -190,6 +191,71 @@ class GsEntity: GsObject
                 else
                     return false;
         }
+    }
+    
+    void setPrototype(GsObject)
+    {
+        // No-op
+    }
+}
+
+class GsPersistent: GsObject
+{
+    PersistentStorage storage;
+    
+    this(PersistentStorage storage)
+    {
+        this.storage = storage;
+    }
+    
+    GsDynamic get(string key)
+    {
+        DProperty prop = storage.props[key];
+        switch(prop.type)
+        {
+            case DPropType.Undefined:
+                return GsDynamic();
+            case DPropType.Number:
+                return GsDynamic(prop.toDouble);
+            case DPropType.Vector:
+                return GsDynamic(prop.toVector4f);
+            case DPropType.String:
+                return GsDynamic(prop.toString);
+            default:
+                return GsDynamic();
+        }
+    }
+    
+    void set(string key, GsDynamic value)
+    {
+        bool changed = false;
+        switch(value.type)
+        {
+            case GsDynamicType.Number:
+                storage.props.set(DPropType.Number, key, value.asNumber.to!string);
+                changed = true;
+                break;
+            case GsDynamicType.Vector:
+                storage.props.set(DPropType.Vector, key, value.asVector.to!string);
+                changed = true;
+                break;
+            case GsDynamicType.String:
+                storage.props.set(DPropType.String, key, value.asString);
+                changed = true;
+                break;
+            default:
+                break;
+        }
+        if (changed)
+            storage.save();
+    }
+    
+    bool contains(string key)
+    {
+        if (key in storage.props)
+            return true;
+        else
+            return false;
     }
     
     void setPrototype(GsObject)
@@ -474,6 +540,7 @@ class CoreGame: Game
         vm.set("queueUserEvent", GsDynamic(&vmQueueUserEvent));
         vm.set("send", GsDynamic(&vmSend));
         vm.set("scene", GsDynamic(coreScene));
+        vm.set("addPersistentStorage", GsDynamic(&vmAddPersistentStorage));
         
         ubyte[] code = cast(ubyte[])std.file.read("scripts/main.gsc");
         scriptProgram = loadBytecode(code);
@@ -540,6 +607,14 @@ class CoreGame: Game
         auto message = args[2].asString;
         queueMessage(recipient, message, null, 1);
         return GsDynamic();
+    }
+    
+    GsDynamic vmAddPersistentStorage(GsDynamic[] args)
+    {
+        string filename = args[1].asString;
+        auto storage = New!PersistentStorage(vfs, filename, this);
+        auto obj = vm.heap.create!GsPersistent(storage);
+        return GsDynamic(obj);
     }
 }
 
