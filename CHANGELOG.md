@@ -3,7 +3,8 @@ Dagon 0.35.0 - TBD
 - **Core**
   - Global timer functionality. New methods `Application.setTimer`, `Application.cancelTimer`. When the timer expires, it triggers a `Timer` type event (that can be catched by `onTimerEvent` handler) and yields an application-specific user code. Maximum number of simultaneous timers is defined via config (1024 by default)
   - New settings.conf option: `maxTimersCount`
-  - New module `dagon.core.sysinfo`.
+  - New module `dagon.core.sysinfo`
+  - Fix `Properties.serialize`.
 
 Dagon 0.34.1 - 02 Nov, 2025
 ---------------------------
