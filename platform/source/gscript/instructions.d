@@ -94,7 +94,12 @@ enum GsInstructionType: ubyte
     JMPPOP_IF = 57,     // pop and conditional jump if true
     JMPPOP_IF_NOT = 58, // pop and conditional jump if false
     TYPE = 59,          // pop a value and push its type
-    RAISE = 60          
+    RAISE = 60,         // pop a value and terminate the current thread, saving the value to thread's yield slot
+    VEC1 = 61,          // pop a value, make a vector from it, and push the vector
+    VEC2 = 62,          // pop two values, make a vector from them, and push the vector
+    VEC3 = 63,          // pop three values, make a vector from them, and push the vector
+    VEC4 = 64,          // pop four values, make a vector from them, and push the vector
+    VEC0 = 65,          // push a zero vector
 }
 
 enum GsOperandType: ubyte

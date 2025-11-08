@@ -62,6 +62,30 @@ struct GsVector
     float z;
     float w;
     
+    this(double x, double y, double z, double w)
+    {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.w = w;
+    }
+    
+    this(double x, double y, double z)
+    {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.w = 0.0f;
+    }
+    
+    this(double x, double y)
+    {
+        this.x = x;
+        this.y = y;
+        this.z = 0.0f;
+        this.w = 0.0f;
+    }
+    
     this(Vector4f v)
     {
         x = v.x;
@@ -92,6 +116,44 @@ struct GsVector
         y = s;
         z = s;
         w = s;
+    }
+    
+    this(double s)
+    {
+        x = s;
+        y = s;
+        z = s;
+        w = s;
+    }
+    
+    GsVector opBinary(string op: "+")(GsVector v)
+    {
+        return GsVector(x + v.x, y + v.y, z + v.z, w + v.w);
+    }
+    
+    GsVector opBinary(string op: "-")(GsVector v)
+    {
+        return GsVector(x - v.x, y - v.y, z - v.z, w - v.w);
+    }
+    
+    GsVector opBinary(string op: "*")(GsVector v)
+    {
+        return GsVector(x * v.x, y * v.y, z * v.z, w * v.w);
+    }
+    
+    GsVector opBinary(string op: "/")(GsVector v)
+    {
+        return GsVector(x / v.x, y / v.y, z / v.z, w / v.w);
+    }
+    
+    GsVector opUnary(string op: "-")()
+    {
+        return GsVector(-x, -y, -z, -w);
+    }
+    
+    GsVector opUnary(string op: "+")()
+    {
+        return this;
     }
 }
 

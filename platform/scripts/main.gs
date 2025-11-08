@@ -1,5 +1,5 @@
 const persistent = global.addPersistentStorage("data.conf");
-print persistent.foo;
+print persistent;
 persistent.foo = "bar";
 
 const assets = {};
@@ -14,7 +14,7 @@ global.scene.onAfterLoad = func(scene)
 {
     eSuzanne = scene.addEntity();
     eSuzanne.drawable = assets.suzanne.mesh;
-    eSuzanne.position = [0, 1, 0];
+    eSuzanne.position = vector(0, 1, 0);
     eSuzanne.name = "Suzanne";
 };
 
