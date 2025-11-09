@@ -546,6 +546,7 @@ class CoreGame: Game
         scriptProgram = loadBytecode(code);
         if (scriptProgram.length)
         {
+            logInfo(scriptProgram);
             vm.load(scriptProgram);
             vm.run();
         }

@@ -62,7 +62,7 @@ enum GsInstructionType: ubyte
     JMP_IF_NOT = 25,   // conditional jump if false
     INDEX_GET = 26,    // INDEX_GET          - gets an element of an array
     INDEX_SET = 27,    // INDEX_SET          - sets an element of an array
-    LENGTH = 28,       // LENGTH             - pop array and push its length
+    LENGTH = 28,       // LENGTH             - pop array/vector and push its length
     PRINT = 29,        // PRINT              - print the top value on the stack
     HALT = 30,         // HALT               - stop execution
     CALL = 31,         // CALL N             - pop a subroutine name/function/delegate and call it using N arguments
@@ -100,6 +100,25 @@ enum GsInstructionType: ubyte
     VEC3 = 63,          // pop three values, make a vector from them, and push the vector
     VEC4 = 64,          // pop four values, make a vector from them, and push the vector
     VEC0 = 65,          // push a zero vector
+    ABS = 66,           // pop a value and push its unsigned equivalent
+    FLOOR = 67,         // pop a value and push floor(value)
+    CEIL = 68,          // pop a value and push ceil(value)
+    ROUND = 69,         // pop a value and push round(value)
+    SIGN = 70,          // pop a value and push 1.0 if it is positive, or -1.0 if it is negative
+    SQRT = 71,          // pop a value and push sqrt(value)
+    SIN = 72,           // pop a value and push sin(value)
+    COS = 73,           // pop a value and push cos(value)
+    TAN = 74,           // pop a value and push tan(value)
+    ATAN2 = 75,         // pop a value and push atan2(value)
+    RANDOM = 76,        // push a random number in 0..1 range
+    MIN = 77,           // pop two values and push smallest one
+    MAX = 78,           // pop two values and push largest one
+    CLAMP = 79,         // pop three values x, xmin, xmax and push clamp(x, xmin, xmax)
+    LERP = 80,          // pop three values mi, ma, t and push lerp(mi, ma, t)
+    VNORM = 81,         // pop a vector and push its normal
+    VDOT = 82,          // pop two vectors and push their dot-product
+    VCROSS = 83,        // pop two vectors and push their cross-product
+    VDIST = 84          // pop two vectors and push the distance between them
 }
 
 enum GsOperandType: ubyte

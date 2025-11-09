@@ -62,6 +62,21 @@ struct GsVector
     float z;
     float w;
     
+    Vector2f toVector2f()
+    {
+        return Vector2f(x, y);
+    }
+    
+    Vector3f toVector3f()
+    {
+        return Vector3f(x, y, z);
+    }
+    
+    Vector4f toVector4f()
+    {
+        return Vector4f(x, y, z, w);
+    }
+    
     this(double x, double y, double z, double w)
     {
         this.x = x;

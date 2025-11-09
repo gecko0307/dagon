@@ -47,6 +47,7 @@ import gscript.stdlib.lib;
 import gscript.stdlib.str;
 import gscript.stdlib.io;
 import gscript.stdlib.time;
+import gscript.math;
 
 interface GsObject
 {
@@ -1084,6 +1085,8 @@ class GsVirtualMachine: Owner, GsObject
                             tr.push(GsDynamic(param.asArray.length));
                         else if (param.type == GsDynamicType.String)
                             tr.push(GsDynamic(param.asString.length));
+                        else if (param.type == GsDynamicType.Vector)
+                            tr.push(GsDynamic(param.asVector.toVector3f.length));
                         else if (param.type == GsDynamicType.Null)
                             tr.push(GsDynamic(0.0));
                         else
@@ -1207,14 +1210,10 @@ class GsVirtualMachine: Owner, GsObject
                                     {
                                         GsLibrary lib = cast(GsLibrary)firstArgument.asObject;
                                         if (lib)
-                                        {
                                             internalCall(lib, tr, funcName, func.owner, numParams);
-                                                break;
-                                        }
                                         else
-                                        {
                                             fatality("Attempting to call function \"%s\" with a non-library object");
-                                        }
+                                        break;
                                     }
                                 }
                                 
@@ -1679,16 +1678,25 @@ class GsVirtualMachine: Owner, GsObject
                     case GsInstructionType.VEC1:
                         auto e1 = tr.pop();
                         if (e1.type != GsDynamicType.Number)
+                        {
                             fatality("Cannot make a vector from %s", e1.type);
+                            break;
+                        }
                         tr.push(GsDynamic(GsVector(e1.asNumber)));
                         break;
                     case GsInstructionType.VEC2:
                         auto e2 = tr.pop();
                         auto e1 = tr.pop();
                         if (e1.type != GsDynamicType.Number)
+                        {
                             fatality("Cannot make a vector from %s", e1.type);
+                            break;
+                        }
                         if (e2.type != GsDynamicType.Number)
+                        {
                             fatality("Cannot make a vector from %s", e2.type);
+                            break;
+                        }
                         tr.push(GsDynamic(GsVector(e1.asNumber, e2.asNumber)));
                         break;
                     case GsInstructionType.VEC3:
@@ -1696,11 +1704,20 @@ class GsVirtualMachine: Owner, GsObject
                         auto e2 = tr.pop();
                         auto e1 = tr.pop();
                         if (e1.type != GsDynamicType.Number)
+                        {
                             fatality("Cannot make a vector from %s", e1.type);
+                            break;
+                        }
                         if (e2.type != GsDynamicType.Number)
+                        {
                             fatality("Cannot make a vector from %s", e2.type);
+                            break;
+                        }
                         if (e3.type != GsDynamicType.Number)
+                        {
                             fatality("Cannot make a vector from %s", e3.type);
+                            break;
+                        }
                         tr.push(GsDynamic(GsVector(e1.asNumber, e2.asNumber, e3.asNumber)));
                         break;
                     case GsInstructionType.VEC4:
@@ -1709,14 +1726,258 @@ class GsVirtualMachine: Owner, GsObject
                         auto e2 = tr.pop();
                         auto e1 = tr.pop();
                         if (e1.type != GsDynamicType.Number)
+                        {
                             fatality("Cannot make a vector from %s", e1.type);
+                            break;
+                        }
                         if (e2.type != GsDynamicType.Number)
+                        {
                             fatality("Cannot make a vector from %s", e2.type);
+                            break;
+                        }
                         if (e3.type != GsDynamicType.Number)
+                        {
                             fatality("Cannot make a vector from %s", e3.type);
+                            break;
+                        }
                         if (e4.type != GsDynamicType.Number)
+                        {
                             fatality("Cannot make a vector from %s", e4.type);
+                            break;
+                        }
                         tr.push(GsDynamic(GsVector(e1.asNumber, e2.asNumber, e3.asNumber, e4.asNumber)));
+                        break;
+                    case GsInstructionType.ABS:
+                        auto v = tr.pop();
+                        if (v.type != GsDynamicType.Number)
+                        {
+                            fatality("Unsupported argument type for \"abs\": %s", v.type);
+                            break;
+                        }
+                        tr.push(GsDynamic(abs(v.asNumber)));
+                        break;
+                    case GsInstructionType.FLOOR:
+                        auto v = tr.pop();
+                        if (v.type != GsDynamicType.Number)
+                        {
+                            fatality("Unsupported argument type for \"floor\": %s", v.type);
+                            break;
+                        }
+                        tr.push(GsDynamic(floor(v.asNumber)));
+                        break;
+                    case GsInstructionType.CEIL:
+                        auto v = tr.pop();
+                        if (v.type != GsDynamicType.Number)
+                        {
+                            fatality("Unsupported argument type for \"ceil\": %s", v.type);
+                            break;
+                        }
+                        tr.push(GsDynamic(ceil(v.asNumber)));
+                        break;
+                    case GsInstructionType.ROUND:
+                        auto v = tr.pop();
+                        if (v.type != GsDynamicType.Number)
+                        {
+                            fatality("Unsupported argument type for \"round\": %s", v.type);
+                            break;
+                        }
+                        tr.push(GsDynamic(round(v.asNumber)));
+                        break;
+                    case GsInstructionType.SIGN:
+                        auto v = tr.pop();
+                        if (v.type != GsDynamicType.Number)
+                        {
+                            fatality("Unsupported argument type for \"sign\": %s", v.type);
+                            break;
+                        }
+                        tr.push(GsDynamic(sign(v.asNumber)));
+                        break;
+                    case GsInstructionType.SQRT:
+                        auto v = tr.pop();
+                        if (v.type != GsDynamicType.Number)
+                        {
+                            fatality("Unsupported argument type for \"sqrt\": %s", v.type);
+                            break;
+                        }
+                        tr.push(GsDynamic(sqrt(v.asNumber)));
+                        break;
+                    case GsInstructionType.SIN:
+                        auto v = tr.pop();
+                        if (v.type != GsDynamicType.Number)
+                        {
+                            fatality("Unsupported argument type for \"sin\": %s", v.type);
+                            break;
+                        }
+                        tr.push(GsDynamic(sin(v.asNumber)));
+                        break;
+                    case GsInstructionType.COS:
+                        auto v = tr.pop();
+                        if (v.type != GsDynamicType.Number)
+                        {
+                            fatality("Unsupported argument type for \"cos\": %s", v.type);
+                            break;
+                        }
+                        tr.push(GsDynamic(cos(v.asNumber)));
+                        break;
+                    case GsInstructionType.TAN:
+                        auto v = tr.pop();
+                        if (v.type != GsDynamicType.Number)
+                        {
+                            fatality("Unsupported argument type for \"tan\": %s", v.type);
+                            break;
+                        }
+                        tr.push(GsDynamic(tan(v.asNumber)));
+                        break;
+                    case GsInstructionType.ATAN2:
+                        auto x = tr.pop();
+                        auto y = tr.pop();
+                        if (y.type != GsDynamicType.Number)
+                        {
+                            fatality("Unsupported argument type for \"atan2\": %s", y.type);
+                            break;
+                        }
+                        if (x.type != GsDynamicType.Number)
+                        {
+                            fatality("Unsupported argument type for \"atan2\": %s", x.type);
+                            break;
+                        }
+                        tr.push(GsDynamic(atan2(y.asNumber, x.asNumber)));
+                        break;
+                    case GsInstructionType.RANDOM:
+                        tr.push(GsDynamic(uniform(0.0, 1.0)));
+                        break;
+                    case GsInstructionType.MIN:
+                        auto b = tr.pop();
+                        auto a = tr.pop();
+                        if (a.type != GsDynamicType.Number)
+                        {
+                            fatality("Unsupported argument type for \"min\": %s", a.type);
+                            break;
+                        }
+                        if (b.type != GsDynamicType.Number)
+                        {
+                            fatality("Unsupported argument type for \"min\": %s", b.type);
+                            break;
+                        }
+                        tr.push(GsDynamic(min(a.asNumber, b.asNumber)));
+                        break;
+                    case GsInstructionType.MAX:
+                        auto b = tr.pop();
+                        auto a = tr.pop();
+                        if (a.type != GsDynamicType.Number)
+                        {
+                            fatality("Unsupported argument type for \"max\": %s", a.type);
+                            break;
+                        }
+                        if (b.type != GsDynamicType.Number)
+                        {
+                            fatality("Unsupported argument type for \"max\": %s", b.type);
+                            break;
+                        }
+                        tr.push(GsDynamic(max(a.asNumber, b.asNumber)));
+                        break;
+                    case GsInstructionType.CLAMP:
+                        auto ma = tr.pop();
+                        auto mi = tr.pop();
+                        auto v = tr.pop();
+                        if (v.type != GsDynamicType.Number)
+                        {
+                            fatality("Unsupported argument type for \"clamp\": %s", v.type);
+                            break;
+                        }
+                        if (mi.type != GsDynamicType.Number)
+                        {
+                            fatality("Unsupported argument type for \"clamp\": %s", mi.type);
+                            break;
+                        }
+                        if (ma.type != GsDynamicType.Number)
+                        {
+                            fatality("Unsupported argument type for \"clamp\": %s", ma.type);
+                            break;
+                        }
+                        tr.push(GsDynamic(clamp(v.asNumber, mi.asNumber, ma.asNumber)));
+                        break;
+                    case GsInstructionType.LERP:
+                        auto t = tr.pop();
+                        auto ma = tr.pop();
+                        auto mi = tr.pop();
+                        if (mi.type != GsDynamicType.Number)
+                        {
+                            fatality("Unsupported argument type for \"lerp\": %s", mi.type);
+                            break;
+                        }
+                        if (ma.type != GsDynamicType.Number)
+                        {
+                            fatality("Unsupported argument type for \"lerp\": %s", ma.type);
+                            break;
+                        }
+                        if (t.type != GsDynamicType.Number)
+                        {
+                            fatality("Unsupported argument type for \"clamp\": %s", t.type);
+                            break;
+                        }
+                        tr.push(GsDynamic(lerp(mi.asNumber, ma.asNumber, t.asNumber)));
+                        break;
+                    case GsInstructionType.VNORM:
+                        auto v = tr.pop();
+                        if (v.type != GsDynamicType.Vector)
+                        {
+                            fatality("Unsupported argument type for \"normalize\": %s", v.type);
+                            break;
+                        }
+                        auto vec = v.asVector.toVector4f;
+                        tr.push(GsDynamic(GsVector(vec.normalized)));
+                        break;
+                    case GsInstructionType.VDOT:
+                        auto v2 = tr.pop();
+                        auto v1 = tr.pop();
+                        if (v1.type != GsDynamicType.Vector)
+                        {
+                            fatality("Unsupported argument type for \"dot\": %s", v1.type);
+                            break;
+                        }
+                        if (v2.type != GsDynamicType.Vector)
+                        {
+                            fatality("Unsupported argument type for \"dot\": %s", v2.type);
+                            break;
+                        }
+                        auto vec1 = v1.asVector.toVector3f;
+                        auto vec2 = v2.asVector.toVector3f;
+                        tr.push(GsDynamic(dot(vec1, vec2)));
+                        break;
+                    case GsInstructionType.VCROSS:
+                        auto v2 = tr.pop();
+                        auto v1 = tr.pop();
+                        if (v1.type != GsDynamicType.Vector)
+                        {
+                            fatality("Unsupported argument type for \"cross\": %s", v1.type);
+                            break;
+                        }
+                        if (v2.type != GsDynamicType.Vector)
+                        {
+                            fatality("Unsupported argument type for \"cross\": %s", v2.type);
+                            break;
+                        }
+                        auto vec1 = v1.asVector.toVector3f;
+                        auto vec2 = v2.asVector.toVector3f;
+                        tr.push(GsDynamic(GsVector(cross(vec1, vec2))));
+                        break;
+                    case GsInstructionType.VDIST:
+                        auto v2 = tr.pop();
+                        auto v1 = tr.pop();
+                        if (v1.type != GsDynamicType.Vector)
+                        {
+                            fatality("Unsupported argument type for \"distance\": %s", v1.type);
+                            break;
+                        }
+                        if (v2.type != GsDynamicType.Vector)
+                        {
+                            fatality("Unsupported argument type for \"distance\": %s", v2.type);
+                            break;
+                        }
+                        auto vec1 = v1.asVector.toVector3f;
+                        auto vec2 = v2.asVector.toVector3f;
+                        tr.push(GsDynamic(distance(vec1, vec2)));
                         break;
                     case GsInstructionType.HALT:
                         tr.finalize();
