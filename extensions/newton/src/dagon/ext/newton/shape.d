@@ -128,8 +128,8 @@ class NewtonCapsuleShape: NewtonCollisionShape
     this(float radius, float height, NewtonPhysicsWorld world)
     {
         super(world);
-        this.radius1 = radius1;
-        this.radius2 = radius2;
+        this.radius1 = radius;
+        this.radius2 = radius;
         this.height = height;
         newtonCollision = NewtonCreateCapsule(world.newtonWorld, radius1, radius2, height, 0, null);
         NewtonCollisionSetUserData(newtonCollision, cast(void*)this);

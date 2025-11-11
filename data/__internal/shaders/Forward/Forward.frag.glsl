@@ -429,8 +429,8 @@ void main()
     }
     
     float reflectedLuminance = clamp(dot(reflected, vec3(0.2125, 0.7154, 0.0721)), 0.0, 1.0);
-    float fr = clamp(fresnel(dot(N, E), 0.04), 0.0, 1.0);
-    float alpha = stateOpacity * mix(mix(diff.a * materialOpacity, 1.0, fr), 1.0, reflectedLuminance);
+    float alphaFresnel = clamp(fresnel(dot(N, E), 0.04), 0.0, 1.0);
+    float alpha = stateOpacity * mix(mix(diff.a * materialOpacity, 1.0, alphaFresnel), 1.0, reflectedLuminance);
     
     // Velocity
     vec2 posScreen = (currPosition.xy / currPosition.w) * 0.5 + 0.5;
