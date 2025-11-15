@@ -498,6 +498,35 @@ class GLTFAsset: Asset, TriangleSet
                         textures.insertBack(texture);
                     }
                 }
+                else if ("extensions" in te)
+                {
+                    auto extensions = te["extensions"].asObject;
+                    if ("EXT_texture_webp" in extensions)
+                    {
+                        auto extWebP = extensions["EXT_texture_webp"].asObject;
+                        
+                        if ("source" in extWebP)
+                        {
+                            uint imageIndex = cast(uint)extWebP["source"].asNumber;
+                            TextureAsset img;
+                            if (imageIndex < images.length)
+                                img = images[imageIndex];
+                            else
+                                logError("Can't create texture for nonexistent image ", imageIndex);
+                            
+                            if (img !is null)
+                            {
+                                Texture texture = img.texture;
+                                textures.insertBack(texture);
+                            }
+                            else
+                            {
+                                Texture texture;
+                                textures.insertBack(texture);
+                            }
+                        }
+                    }
+                }
                 
                 // TODO: sampler
                 
@@ -1390,6 +1419,7 @@ string nameFromMimeType(string mime)
     {
         case "image/jpeg": name = "undefined.jpg"; break;
         case "image/png": name = "undefined.png"; break;
+        case "image/webp": name = "undefined.webp"; break;
         case "image/tga": name = "undefined.tga"; break;
         case "image/targa": name = "undefined.tga"; break;
         case "image/bmp": name = "undefined.bmp"; break;

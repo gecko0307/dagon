@@ -174,6 +174,32 @@ class NewtonMeshShape: NewtonCollisionShape
         
         NewtonMeshDestroy(nmesh);
     }
+    
+    this(TriangleSet triangleSet, Matrix4x4f transformationMatrix, NewtonPhysicsWorld world)
+    {
+        super(world);
+        NewtonMesh* nmesh = NewtonMeshCreate(world.newtonWorld);
+        NewtonMeshBeginBuild(nmesh);
+        Matrix4x4f normalMatrix = transformationMatrix.inverse.transposed;
+        foreach(triangle; triangleSet)
+        foreach(i, p; triangle.v)
+        {
+            Vector3f v = p * transformationMatrix;
+            Vector4f n = Vector4f(triangle.n[i]);
+            n.w = 0.0f;
+            n = n * normalMatrix;
+            NewtonMeshAddPoint(nmesh, v.x, v.y, v.z);
+            NewtonMeshAddNormal(nmesh, n.x, n.y, n.z);
+            //NewtonMeshAddUV0(mesh, uv.x, uv.y);
+        }
+        NewtonMeshEndBuild(nmesh);
+        NewtonMeshTriangulate(nmesh);
+        
+        newtonCollision = NewtonCreateTreeCollisionFromMesh(world.newtonWorld, nmesh, 0);
+        NewtonCollisionSetUserData(newtonCollision, cast(void*)this);
+        
+        NewtonMeshDestroy(nmesh);
+    }
 }
 
 class NewtonConvexHullShape: NewtonCollisionShape

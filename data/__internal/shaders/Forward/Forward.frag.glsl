@@ -40,6 +40,8 @@ uniform mat4 shadowMatrix3;
 
 uniform int textureMappingMode;
 
+uniform float blurMask;
+
 #include <gamma.glsl>
 #include <matcap.glsl>
 #include <cotangentFrame.glsl>
@@ -436,7 +438,6 @@ void main()
     vec2 posScreen = (currPosition.xy / currPosition.w) * 0.5 + 0.5;
     vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;
     vec2 screenVelocity = posScreen - prevPosScreen;
-    const float blurMask = 1.0;
     
     fragColor = vec4(radiance, alpha);
     fragVelocity = vec4(screenVelocity, blurMask, 0.0);
