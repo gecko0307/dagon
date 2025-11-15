@@ -84,15 +84,15 @@ Built in *.conf files are fully reserved for Dagon's internal mechanisms, and it
 
 Recognozed by the `Game` class, applied to the `Game.deferredRenderer` and `Game.postProcessingRenderer`.
 
-* `brdf.file` - 
-* `fxaa.enabled` - `0` or `1`
-* `ssao.enabled` - `0` or `1`
-* `ssao.samples` - 
-* `ssao.radius` - 
-* `ssao.power` - 
-* `ssao.denoise` - 
-* `ssao.occlusionBufferDetail` - 
-* `glow.enabled` - `0` or `1`
+* `brdf.file` - path to the default BRDF lookup texture. Default is `"data/__internal/textures/brdf.dds"`
+* `fxaa.enabled` - `0` or `1`, disable or enable FXAA anti-aliasing filter. Default is `0`
+* `ssao.enabled` - `0` or `1`, disable or enable screen-space ambient occlusion (in deferred renderer). Default is `0`
+* `ssao.samples` - number of SSAO integration samples per pixel. Default is `16`
+* `ssao.radius` - maximum radius of occlusion detection for SSAO. Default is `0.2`
+* `ssao.power` - SSAO power. The greater is power, the more pronounced is the occlusion effect. Default is `4.0`
+* `ssao.denoise` - a number between `0.0` and `1.0` that interpolates between unfiltered (noisy) and denoised occlusion data. A simple bilateral filter is used to denoise. Default is `1.0`
+* `ssao.occlusionBufferDetail` - a number between `0.0` and `1.0` that indicates a uniform scale of the occlusion buffer resolution. For example, `0.5` will give 1/4 of the main framebuffer. This is useful as a quality/performance tradeoff on low-end machines. Default is `1.0`
+* `glow.enabled` - `0` or `1`, disable or enable glow filter. Default is `0`
 * `glow.viewScale` - 
 * `glow.threshold` - 
 * `glow.intensity` - 
@@ -110,17 +110,17 @@ Recognozed by the `Game` class, applied to the `Game.deferredRenderer` and `Game
   * `"AgX_Punchy"`
   * `"KhronosPBRNeutral"`
 * `hdr.exposure` - exposure value to adjust brightness
-* `motionBlur.enabled` - `0` or `1`
+* `motionBlur.enabled` - `0` or `1`, disable or enable motion blur filter. Default is `0`
 * `motionBlur.samples` - 
 * `motionBlur.framerate` - 
 * `motionBlur.randomness` - 
 * `motionBlur.minDistance` - 
 * `motionBlur.maxDistance` - 
 * `motionBlur.radialBlurAmount` - 
-* `lensDistortion.enabled` - `0` or `1`
+* `lensDistortion.enabled` - `0` or `1`, disable or enable lens distortion filter. Default is `0`
 * `lensDistortion.scale` - 
 * `lensDistortion.dispersion` - 
-* `dof.enabled` - `0` or `1`
+* `dof.enabled` - `0` or `1`, disable or enable depth of field filter. Default is `0`
 * `dof.autofocus` - 
 * `dof.focalDepth` - 
 * `dof.focalLength` - 
@@ -130,10 +130,10 @@ Recognozed by the `Game` class, applied to the `Game.deferredRenderer` and `Game
 * `dof.nearDistance` - 
 * `dof.farStart` - 
 * `dof.farDistance` - 
-* `lut.enabled` - `0` or `1`
+* `lut.enabled` - `0` or `1`, disable or enable color LUT filter. Default is `0`
 * `lut.file` - 
-* `pixelization.enabled` - `0` or `1`, disable or enable pixelization filter
-* `pixelization.pixelSize` - screen-space pixel size for pixelization filter.
+* `pixelization.enabled` - `0` or `1`, disable or enable pixelization filter. Default is `0`
+* `pixelization.pixelSize` - screen-space pixel size for pixelization filter. Default is `1`.
 
 ### audio.conf
 
