@@ -1,10 +1,18 @@
-Dagon 0.35.0 - TBD
-------------------
+Dagon 0.35.0 - 15 Nov, 2025
+---------------------------
 - **Core**
-  - Global timer functionality. New methods `Application.setTimer`, `Application.cancelTimer`. When the timer expires, it triggers a `Timer` type event (that can be catched by `onTimerEvent` handler) and yields an application-specific user code. Maximum number of simultaneous timers is defined via config (1024 by default)
+  - Global timer functionality. New methods `Application.setTimer`, `Application.cancelTimer`. When the timer expires, it triggers a `Timer` type event (that can be catched by `onTimerEvent` handler) and yields an application-specific user code. Maximum number of simultaneous timers can be changed via config (1024 by default)
   - New settings.conf option: `maxTimersCount`
   - New module `dagon.core.sysinfo`
-  - Fix `Properties.serialize`.
+  - Fix `Properties.serialize`
+- **Assets**
+  - WebP textures support in glTF loader (`EXT_texture_webp` extension)
+- **Rendering**
+  - Support `blurMask` in forward shader
+- **Extensions**
+  - `NewtonMeshShape` now can be constructed with a transformation matrix that is applied to all mesh vertices
+- **Platform**
+  - Dagon now includes Dagon Platform - a stand-alone game creation suite based on GScript3 language. It is not finished yet, only the most basic features are exposed to the scripting engine at the moment.
 
 Dagon 0.34.1 - 02 Nov, 2025
 ---------------------------
