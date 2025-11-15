@@ -93,7 +93,7 @@ struct DagonVersion
 }
 
 immutable DagonVersion dagonVersion = DagonVersion(0, 34, 0);
-immutable string dagonVersionString = "0.34.0";
+immutable string dagonVersionString = "0.35.1";
 
 /**
  * Immediately terminates the application,
