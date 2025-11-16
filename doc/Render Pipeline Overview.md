@@ -27,7 +27,7 @@ There are some disadvantages as well:
 
 ### Area Lights
 
-Area lights provide more realistic and physically correct approximation of real-world lights than traditional point light sources. An area light is a polygonal or volumetric shape that emits light from its surface. Such lights are useful to represent ball lamps, fluorescent tubes, LED panels, etc.
+Area lights provide more realistic and physically correct approximation of real-world lights than traditional point light sources. An area light is a volumetric shape that emits light from its surface. Such lights are useful to represent ball lamps and fluorescent tubes.
 
 Dagon supports spherical and tube area lights. Spherical area lights can be seen as direct generalization of point lights. They have a position and a radius. For a given point on a surface, instead of a vector to the center of the light, a vector to the closest point on a sphere is used to evaluate BRDF. Then the lighting is computed as usual using preferred BRDF such as GGX. Tube area lights are basically the same, but have also a length.
 
