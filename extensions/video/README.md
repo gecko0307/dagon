@@ -8,7 +8,7 @@ The extension depends on `libvlccore.dll` and `libvlc.dll` (`libvlccore.so.9`, `
 
 ## Usage
 
-Simple use case - fullscreen video (for title screens, cutscenes, etc.):
+Simple use case - fullscreen video (for splash screens, cutscenes, etc.):
 
 ```d
 import dagon;

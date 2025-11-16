@@ -1,4 +1,10 @@
-# Newton Documentation
+# Newton Dynamics
+
+[Newton Dynamics](https://github.com/MADEAPPS/newton-dynamics) is an Open Source real-time physics engine by Julio Jerez and Alain Suero. It provides great performance and stability, and it's C API makes possible to integrate it into any game engine. Dagon uses Newton 3.14.
+
+Newton wrapper in Dagon is implemented in dagon:newton extension, which makes creating physical worlds very easy. See Tutorial 10 for basic usage of the extension.
+
+All native Newton functions are available for direct use. Unfortunately, there isn't much official documentation on them.
 
 ## World
 
