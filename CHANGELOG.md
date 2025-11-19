@@ -1,3 +1,7 @@
+Dagon 0.35.1 - 20 Nov, 2025
+---------------------------
+A tiny patch to bump engine version in `dagon.core.application`.
+
 Dagon 0.35.0 - 15 Nov, 2025
 ---------------------------
 - **Core**
