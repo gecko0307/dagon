@@ -40,6 +40,7 @@ public
     import bindbc.sdl;
     import bindbc.opengl;
     import bindbc.freetype;
+    import dagon.core.wintab;
 }
 
 // S3TC formats

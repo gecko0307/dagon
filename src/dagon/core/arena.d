@@ -64,10 +64,9 @@ struct AllocationMark
 /**
  * Arena is an owned allocator that pre-allocates memory in large blocks
  * (buffers) and distributes it in chunks on demand.
- * It never frees its buffers; they are freed at once on Arena destruction.
- * The whole Arena can be reset and reused without freeing.
- * This allows for efficient memory management for many small objects,
- * such as strings.
+ * It never frees its buffers; they are freed at once on object destruction.
+ * The whole Arena can be reset and reused without freeing, which allows
+ * for efficient memory management for many small objects, such as strings.
  *
  * Arena supports:
  * - allocating class instances, structures, arrays and strings
@@ -86,6 +85,7 @@ class Arena: Owner
     
     public:
     
+    /// Array of allocated objects.
     Array!Object objects;
     
     /**

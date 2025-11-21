@@ -29,9 +29,10 @@ DEALINGS IN THE SOFTWARE.
  * Generic applicaton class and corresponding utility functions
  *
  * Description:
- * The `dagon.core.application` module provides the base `Application` class and related functionality
- * for creating and managing a Dagon-based application. This includes SDL window and OpenGL context 
- * management, event handling, functions for error handling, taking screenshots and others.
+ * The `dagon.core.application` module provides the base `Application` class
+ * and related functionality for creating and managing a Dagon-based application.
+ * This includes SDL window and OpenGL context management, event handling,
+ * functions for error handling, taking screenshots and others.
  *
  * Copyright: Timur Gafarov 2017-2025.
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
@@ -88,6 +89,7 @@ version(Windows)
     }
 }
 
+/// Structure that represents Dagon version number.
 struct DagonVersion
 {
     uint major;
@@ -95,7 +97,10 @@ struct DagonVersion
     uint patch;
 }
 
+/// Engine version number as a read-only structure.
 immutable DagonVersion dagonVersion = DagonVersion(0, 36, 0);
+
+/// Engine version number as a read-only string.
 immutable string dagonVersionString = "0.36.0";
 
 /**
@@ -377,6 +382,7 @@ private extern(C) uint sdlTimerCallback(uint interval, void* param) nothrow
  */
 class Application: EventListener, Updateable
 {
+    ///
     protected string configFilename = "settings.conf";
     
     /// Initial log level.
@@ -597,14 +603,9 @@ class Application: EventListener, Updateable
         TimerData[] timers;
         size_t _numTimers = 0;
     }
-    
-    size_t numActiveTimers()
-    {
-        return _numTimers;
-    }
 
     /**
-     * Constructs the application, initializes SDL, OpenGL, and related subsystems.
+     * Constructs the application, initializes SDL, OpenGL, and related core subsystems.
      *
      * Params:
      *   winWidth = Window width in pixels.
@@ -814,8 +815,6 @@ class Application: EventListener, Updateable
         if (windowHiDPI)
             SDL_SetHint(SDL_HINT_WINDOWS_DPI_SCALING, "1");
         
-        //SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, "1");
-        
         if (SDL_Init(SDL_INIT_EVERYTHING) == -1)
             exitWithError("Failed to init SDL: " ~ to!string(SDL_GetError()));
 
@@ -896,7 +895,7 @@ class Application: EventListener, Updateable
         logInfo("Window size: ", windowWidth, "x", windowHeight);
         
         SDL_GL_GetDrawableSize(window, &drawableWidth, &drawableHeight);
-        logInfo("Drawable size: ", drawableWidth, "x", drawableHeight);
+        logInfo("Window drawable size: ", drawableWidth, "x", drawableHeight);
         
         pixelRatio = cast(float)drawableHeight / cast(float)windowHeight;
         logInfo("Pixel ratio: ", pixelRatio);
@@ -1073,6 +1072,7 @@ class Application: EventListener, Updateable
         cursor[Cursor.Hand] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
     }
     
+    /// 
     protected void updateSettings()
     {
         // Logger settings
@@ -1589,7 +1589,7 @@ class Application: EventListener, Updateable
         }
     }
     
-    ///
+    /// Creates a new timer and returns it's ID.
     int setTimer(double duration, int userCode, bool periodic = false)
     {
         if (_numTimers == timers.length)
@@ -1623,7 +1623,7 @@ class Application: EventListener, Updateable
         return td.id;
     }
     
-    ///
+    /// Cancels a timer.
     bool cancelTimer(int id)
     {
         if (id)
@@ -1632,6 +1632,13 @@ class Application: EventListener, Updateable
             return false;
     }
     
+    /// Returns the number of currently active timers.
+    size_t numActiveTimers()
+    {
+        return _numTimers;
+    }
+    
+    /// 
     void completeTimer(size_t index) nothrow
     {
         TimerData* td = &timers[index];
