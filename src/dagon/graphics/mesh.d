@@ -58,11 +58,26 @@ import dagon.graphics.drawable;
  */
 enum VertexAttrib
 {
+    /// Vertices - array of float[3].
     Vertices = 0,
+    
+    /// Normals - array of float[3].
     Normals = 1,
+    
+    /// Texture coordinates - array of float[2].
     Texcoords = 2,
+    
+    /// Bone indices - array of uint[4].
     Bones = 3,
-    Weights = 4
+    
+    /// Bone weights - array of float[4].
+    Weights = 4,
+    
+    /// Second texture coordinates - array of float[2].
+    Texcoords2 = 5,
+    
+    /// Per-vertex colors - array of float[4].
+    Colors = 6
 }
 
 /**
