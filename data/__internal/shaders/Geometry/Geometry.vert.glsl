@@ -5,6 +5,7 @@ layout (location = 1) in vec3 va_Normal;
 layout (location = 2) in vec2 va_Texcoord;
 layout (location = 3) in uvec4 va_Bones;
 layout (location = 4) in vec4 va_Weights;
+layout (location = 5) in vec2 va_Texcoord2;
 
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
@@ -20,6 +21,7 @@ uniform mat4 boneMatrices[128];
 out vec3 eyeNormal;
 out vec3 eyePosition;
 out vec2 texCoord;
+out vec2 texCoord2;
 
 out vec4 currPosition;
 out vec4 prevPosition;
@@ -60,6 +62,9 @@ void main()
     eyeNormal = (normalMatrix * modelNormal).xyz;
     
     texCoord = (textureMatrix * vec3(va_Texcoord, 1.0)).xy;
+    
+    // TODO: lightmapping support
+    texCoord2 = texCoord;
     
     currPosition = projectionMatrix * eyePosHmg;
     prevPosition = projectionMatrix * prevModelViewMatrix * modelPosHmg;

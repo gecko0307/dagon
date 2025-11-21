@@ -341,6 +341,8 @@ class GeometryShader: Shader
         parallaxScale = mat.parallaxScale;
         parallaxBias = mat.parallaxBias;
         
+        // TODO: pass lightmap via GL_TEXTURE5
+        
         glActiveTexture(GL_TEXTURE0);
 
         super.bindParameters(state);
@@ -361,9 +363,12 @@ class GeometryShader: Shader
 
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, 0);
+
+        //glActiveTexture(GL_TEXTURE4);
+        //glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE0);
     }

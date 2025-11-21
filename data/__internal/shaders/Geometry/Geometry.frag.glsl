@@ -3,6 +3,7 @@
 in vec3 eyeNormal;
 in vec3 eyePosition;
 in vec2 texCoord;
+in vec2 texCoord2;
 
 in vec4 currPosition;
 in vec4 prevPosition;
@@ -246,6 +247,7 @@ void main()
         metallic(uv),
         subsurface(uv),
         0.0);
+    // TODO: lightmapping support
     fragEmission = vec4(toLinear(emission(uv)), 1.0);
     fragVelocity = vec4(velocity, blurMask, 1.0);
 }
