@@ -31,10 +31,8 @@ DEALINGS IN THE SOFTWARE.
  * Description:
  * The `dagon.game.game` module defines the `Game` class, which serves
  * as a basic template for creating a game application using Dagon's built-in
- * rendering and resource management systems. The `Game` class provides
- * deferred renderer, post-processing renderer, methods for managing scenes,
- * and handles window resize event for correctly updating all render
- * targets.
+ * renderers. The `Game` class provides deferred renderer and post-processing renderer,
+ * and handles window resize event for correctly updating all render targets.
  *
  * Copyright: Timur Gafarov 2019-2025
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
@@ -58,12 +56,12 @@ import dagon.core.application;
 import dagon.graphics.state;
 import dagon.graphics.entity;
 import dagon.resource.scene;
-import dagon.resource.asset;
 import dagon.render.renderer;
 import dagon.render.deferred;
 import dagon.render.postproc;
 import dagon.render.present;
 import dagon.render.hud;
+import dagon.game.basegame;
 
 /**
  * Main game class for Dagon applications.
@@ -73,17 +71,8 @@ import dagon.render.hud;
  * of `Application` and provides a framework for creating games
  * that use Dagon's deferred renderer.
  */
-class Game: Application
+class Game: BaseGame
 {
-    /// Global asset manager.
-    AssetManager assetManager;
-    
-    /// The dictionary of scenes, mapping scene objects to their names.
-    Dict!(Scene, string) scenes;
-
-    /// The current scene being processed and rendered.
-    Scene currentScene;
-
     /// The configuration object for storing user-defined renderer settings.
     Configuration rendererConfig;
 
@@ -110,8 +99,6 @@ class Game: Application
     /// If `true`, the viewport will be resized dynamically with the application window.
     bool dynamicViewport = true;
     
-    Scene sceneForDeletion = null;
-
     /**
      * Constructs a new game instance.
      *
@@ -126,11 +113,6 @@ class Game: Application
     this(uint w, uint h, bool fullscreen, string title, string[] args, string appFolder = ".dagon")
     {
         super(w, h, fullscreen, title, args, appFolder);
-        
-        assetManager = New!AssetManager(eventManager, vfs, this);
-        assetManager.application = this;
-        
-        scenes = dict!(Scene, string);
         
         rendererConfig = New!Configuration(this);
         foreach(fs; vfs.mounted)
@@ -283,12 +265,6 @@ class Game: Application
         }
     }
     
-    /// Destructor for the `Game` class.
-    ~this()
-    {
-        Delete(scenes);
-    }
-
     /**
      * Called every frame to update game logic.
      *
@@ -297,16 +273,10 @@ class Game: Application
      */
     override void onUpdate(Time t)
     {
-        if (sceneForDeletion)
-        {
-            deleteOwnedObject(sceneForDeletion);
-            sceneForDeletion = null;
-        }
+        super.onUpdate(t);
         
-        if (currentScene && renderer)
+        if (renderer && currentScene)
         {
-            currentScene.update(t);
-            
             renderer.scene = currentScene;
             renderer.update(t);
             
@@ -322,7 +292,7 @@ class Game: Application
             postProcessingRenderer.inputBuffer = renderer.outputBuffer;
         }
     }
-
+    
     /// Called every frame to render the current scene.
     override void onRender()
     {
@@ -372,36 +342,5 @@ class Game: Application
             return presentRenderer.inputBuffer.colorTexture;
         else
             return 0;
-    }
-    
-    /**
-     * Sets current scene to the specified scene object.
-     * Params:
-     *   scene = `Scene` object.
-     *   releaseCurrent = if `true`, the current scene will be deleted after the switch.
-     */
-    void setCurrentScene(Scene scene, bool releaseCurrent = false)
-    {
-        if (releaseCurrent && currentScene)
-        {
-            sceneForDeletion = currentScene;
-        }
-        
-        currentScene = scene;
-        currentScene.onResize(eventManager.windowWidth, eventManager.windowHeight);
-        if (currentScene.loaded)
-            currentScene.onReset();
-    }
-    
-    /**
-     * Sets current scene to the specified scene name.
-     * Params:
-     *   name = name of an existing scene in `scenes` dictionary.
-     *   releaseCurrent = if `true`, the current scene will be deleted after the switch.
-     */
-    void setCurrentScene(string name, bool releaseCurrent = false)
-    {
-        if (name in scenes)
-            setCurrentScene(scenes[name], releaseCurrent);
     }
 }

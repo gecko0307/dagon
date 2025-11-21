@@ -39,6 +39,7 @@ module dagon.game;
 
 public
 {
+    import dagon.game.basegame;
     import dagon.game.game;
     import dagon.game.loadingscreen;
 }

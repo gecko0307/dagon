@@ -78,10 +78,13 @@ version(Windows)
     import core.sys.windows.windows;
     import dagon.core.wintab;
     
+    enum CP_UTF8 = 65001;
+    
     static this()
-    { 
-        SetConsoleCP(65001);
-        SetConsoleOutputCP(65001);
+    {
+        // Set console code page to UTF-8
+        SetConsoleCP(CP_UTF8);
+        SetConsoleOutputCP(CP_UTF8);
     }
 }
 
