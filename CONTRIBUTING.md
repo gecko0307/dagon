@@ -1,12 +1,12 @@
 # Contributing Guidelines
 
-####  Bug reporting 
+#### Bug reporting 
 
 Open an issue at [GitHub issue tracker](https://github.com/gecko0307/dagon/issues). Before doing that, ensure the bug was not already reported or fixed in `master` branch. Describe a problem and, if necessary, provide minimal code needed to reproduce it.
 
 Note that macOS compatibility issues are not considered bugs. Dagon uses OpenGL and doesn't support macOS where OpenGL is deprecated.
 
-####  Bug fixing 
+#### Bug fixing 
 
 Open a new GitHub pull request with your patch. Provide a description of the problem and solution. Follow our [code style](#code-style-and-standards).
 
@@ -26,7 +26,7 @@ Adding new external dependencies should be avoided as much as possible. Only GC-
 
 `master` branch is a development branch for the next release. When release is ready, a release branch is created from `master` (for example, `dev_0.10`). Release branches are not merged back into `master`, they are used to fix bugs and make minor updates.
 
-####  Code style and standards 
+#### Code style and standards 
 
 Dagon follows [D style](https://dlang.org/dstyle.html). Essential rules are the following:
 * Use spaces instead of tabs. Each indentation level is 4 spaces
