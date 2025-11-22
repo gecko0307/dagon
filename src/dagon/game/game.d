@@ -120,11 +120,11 @@ class Game: BaseGame
             rendererConfig.fromFile(fs, "render.conf");
         }
 
-        deferredRenderer = New!DeferredRenderer(eventManager, this);
+        deferredRenderer = New!DeferredRenderer(this, this);
         renderer = deferredRenderer;
-        postProcessingRenderer = New!PostProcRenderer(eventManager, deferredRenderer.outputBuffer, deferredRenderer.gbuffer, this);
-        presentRenderer = New!PresentRenderer(eventManager, postProcessingRenderer.outputBuffer, this);
-        hudRenderer = New!HUDRenderer(eventManager, this);
+        postProcessingRenderer = New!PostProcRenderer(this, deferredRenderer.outputBuffer, deferredRenderer.gbuffer, this);
+        presentRenderer = New!PresentRenderer(this, postProcessingRenderer.outputBuffer, this);
+        hudRenderer = New!HUDRenderer(this, this);
         
         renderer.setViewport(0, 0, drawableWidth, drawableHeight);
         postProcessingRenderer.setViewport(0, 0, drawableWidth, drawableHeight);

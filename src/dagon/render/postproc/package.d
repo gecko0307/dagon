@@ -30,6 +30,7 @@ module dagon.render.postproc;
 import dlib.core.memory;
 import dlib.core.ownership;
 
+import dagon.core.application;
 import dagon.core.event;
 import dagon.core.time;
 import dagon.core.bindings;
@@ -185,9 +186,11 @@ class PostProcRenderer: Renderer
     
     bool useLinearFilter = true;
 
-    this(EventManager eventManager, Framebuffer inputBuffer, GBuffer gbuffer, Owner owner)
+    this(Application application, Framebuffer inputBuffer, GBuffer gbuffer, Owner owner)
     {
-        super(eventManager, owner);
+        super(application, owner);
+        
+        EventManager eventManager = application.eventManager;
 
         this.inputBuffer = inputBuffer;
 

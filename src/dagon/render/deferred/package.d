@@ -31,6 +31,7 @@ import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.core.stream;
 
+import dagon.core.application;
 import dagon.core.event;
 import dagon.core.time;
 import dagon.graphics.texture;
@@ -113,9 +114,11 @@ class DeferredRenderer: Renderer
         return _occlusionBufferDetail;
     }
     
-    this(EventManager eventManager, Owner owner)
+    this(Application application, Owner owner)
     {
-        super(eventManager, owner);
+        super(application, owner);
+        
+        EventManager eventManager = application.eventManager;
         
         outputBuffer = New!Framebuffer(eventManager.drawableWidth, eventManager.drawableHeight, FrameBufferFormat.RGBA16F, true, this);
         

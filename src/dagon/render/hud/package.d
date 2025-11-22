@@ -34,6 +34,7 @@ import dlib.core.ownership;
 import dlib.image.color;
 import dlib.math.matrix;
 
+import dagon.core.application;
 import dagon.core.bindings;
 import dagon.core.event;
 import dagon.core.time;
@@ -124,9 +125,11 @@ class HUDRenderer: Renderer
 {
     PassHUD passHUD;
 
-    this(EventManager eventManager, Owner owner)
+    this(Application application, Owner owner)
     {
-        super(eventManager, owner);
+        super(application, owner);
+        
+        EventManager eventManager = application.eventManager;
 
         setViewport(0, 0, eventManager.drawableWidth, eventManager.drawableHeight);
         view.projection = OrthoScreen;

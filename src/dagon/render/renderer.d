@@ -42,6 +42,7 @@ module dagon.render.renderer;
 import dlib.core.memory;
 import dlib.core.ownership;
 
+import dagon.core.application;
 import dagon.core.event;
 import dagon.core.time;
 import dagon.graphics.camera;
@@ -90,12 +91,13 @@ class Renderer: Owner
      * Constructs a renderer with the given event manager and owner.
      *
      * Params:
-     *   eventManager = The event manager for event processing.
-     *   owner        = Owner object.
+     *   application = Application object.
+     *   owner       = Owner object.
      */
-    this(EventManager eventManager, Owner owner)
+    this(Application application, Owner owner)
     {
         super(owner);
+        EventManager eventManager = application.eventManager;
         view = New!RenderView(0, 0, eventManager.drawableWidth, eventManager.drawableHeight, this);
         pipeline = New!RenderPipeline(eventManager, this);
     }

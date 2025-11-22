@@ -35,6 +35,7 @@ import dlib.container.array;
 import dlib.image.color;
 import dlib.math.vector;
 
+import dagon.core.application;
 import dagon.core.event;
 import dagon.core.bindings;
 import dagon.core.logger;
@@ -56,9 +57,11 @@ class SimpleRenderer: Renderer
     SimpleBackgroundPass backgroundPass;
     SimpleSpatialPass defaultLayerPass;
     
-    this(EventManager eventManager, Owner owner)
+    this(Application application, Owner owner)
     {
-        super(eventManager, owner);
+        super(application, owner);
+        
+        EventManager eventManager = application.eventManager;
         
         outputBuffer = New!Framebuffer(
             eventManager.drawableWidth / outputBufferRatio,

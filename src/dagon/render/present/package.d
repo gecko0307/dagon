@@ -30,6 +30,7 @@ module dagon.render.present;
 import dlib.core.memory;
 import dlib.core.ownership;
 
+import dagon.core.application;
 import dagon.core.event;
 import dagon.core.time;
 import dagon.core.bindings;
@@ -47,9 +48,9 @@ class PresentRenderer: Renderer
     bool pixelization = false;
     float pixelSize = 1.0f;
 
-    this(EventManager eventManager, Framebuffer inputBuffer, Owner owner)
+    this(Application application, Framebuffer inputBuffer, Owner owner)
     {
-        super(eventManager, owner);
+        super(application, owner);
 
         this._inputBuffer = inputBuffer;
         passPresent = New!PresentPass(pipeline);
