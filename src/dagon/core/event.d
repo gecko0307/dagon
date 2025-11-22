@@ -55,6 +55,7 @@ import dagon.core.bindings;
 import dagon.core.application;
 import dagon.core.input;
 import dagon.core.logger;
+import dagon.core.arena;
 import dagon.core.messaging;
 import dagon.core.graphicstablet;
 
@@ -132,6 +133,7 @@ enum EventType
     Message,
     Task,
     Timer,
+    HardwareSpecific,
     UserEvent
 }
 
@@ -224,6 +226,7 @@ Event taskEvent(string sender, string recipient, TaskCallback callback, void* pa
 
 /**
  * Interface for input event emitters.
+ * Implementations of this interface can generate events using `EventManager.addEvent` method.
  */
 interface InputDevice
 {
@@ -432,6 +435,15 @@ class EventManager: Owner
     /// Message broker for distributing messages and scheduling tasks.
     MessageBroker messageBroker;
     
+    /**
+     * Temporary heap allocator to create short-living objects for custom events.
+     * tmpHeap is invalidated each step when there are no more pending outbox events.
+     * It is mostly used to create payload data which should be immediately byte-copied 
+     * when event is dispatched.
+     */
+    Arena tmpHeap;
+    
+    ///
     protected Array!InputDevice inputDevices;
     
     /// `PenMotion` events emitter.
@@ -484,6 +496,8 @@ class EventManager: Owner
             addInputDevice(graphicsTablet);
         else
             logWarning("Graphics tablet is not available");
+        
+        tmpHeap = New!Arena(4 * 1024, this);
     }
 
     /// Destructor. Cleans up resources.
@@ -535,8 +549,6 @@ class EventManager: Owner
         }
     }
 
-    deprecated("use queueEvent instead") alias addUserEvent = queueEvent;
-
     /**
      * Generates a file change event for the given filename.
      *
@@ -549,24 +561,22 @@ class EventManager: Owner
         e.filename = filename;
         queueEvent(e);
     }
-    
-    deprecated("use queueFileChangeEvent instead") alias generateFileChangeEvent = queueFileChangeEvent;
 
     /**
      * Generates a user event with the given code.
      *
      * Params:
      *   code = User event code.
+     *   payload = Pointer to arbitrary data, can be null.
      */
-    void queueUserEvent(int code) nothrow
+    void queueUserEvent(int code, void* payload = null) nothrow
     {
         Event e = Event(EventType.UserEvent);
         e.userCode = code;
+        e.payload = payload;
         queueEvent(e);
     }
-    
-    deprecated("use queueUserEvent instead") alias generateUserEvent = queueUserEvent;
-    
+
     /**
      * Prints to the logger asynchronically using the event queue.
      * This method is also useful to log from nothrow functions,
@@ -583,8 +593,7 @@ class EventManager: Owner
         e.message = message;
         queueEvent(e);
     }
-    
-    deprecated("use queueLogEvent instead") alias asyncLog = queueLogEvent;
+
     
     /**
      * Opens a game controller or joystick at the specified device index.
@@ -749,6 +758,9 @@ class EventManager: Owner
     void update()
     {
         numEvents = 0;
+
+        if (numOutboxEvents == 0)
+            tmpHeap.reset();
 
         mouseRelX = 0;
         mouseRelY = 0;
@@ -1328,8 +1340,11 @@ abstract class EventDispatcher: Owner
             case EventType.Timer:
                 onTimerEvent(e.timerID, e.userCode);
                 break;
+            case EventType.HardwareSpecific:
+                onHardwareSpecificEvent(e.deviceIndex, e.userCode, e.payload);
+                break;
             case EventType.UserEvent:
-                onUserEvent(e.userCode);
+                onUserEvent(e.userCode, e.payload);
                 break;
             default:
                 break;
@@ -1410,9 +1425,12 @@ abstract class EventDispatcher: Owner
     
     /// Called when a timer event is received.
     void onTimerEvent(int timerID, int userCode) {}
+    
+    /// Called when a hardware specific event is received from a custom InputDevice.
+    void onHardwareSpecificEvent(uint deviceIndex, int code, void* payload) {}
 
     /// Called when a user event is received.
-    void onUserEvent(int code) {}
+    void onUserEvent(int code, void* payload) {}
 }
 
 /**
@@ -1446,14 +1464,15 @@ abstract class EventListener: EventDispatcher
     }
 
     /**
-     * Queues a user event with the given code.
+     * Queues a user event with the given code and payload pointer.
      *
      * Params:
      *   code = User event code.
+     *   payload = Optional pointer to arbitrary data to be passed with the event.
      */
-    protected void generateUserEvent(int code)
+    protected void generateUserEvent(int code, void* payload = null)
     {
-        eventManager.queueUserEvent(code);
+        eventManager.queueUserEvent(code, payload);
     }
     
     /**

@@ -1343,7 +1343,7 @@ class Application: EventListener, Updateable
     }
 
     /// User event handler.
-    override void onUserEvent(int code)
+    override void onUserEvent(int code, void* payload)
     {
         if (code == DagonEvent.Exit)
         {
