@@ -4,6 +4,8 @@ Dagon 0.36.0 - TBD
   - Breaking change: `EventDispatcher.onUserEvent` now accepts payload pointer
   - `EventType.HardwareSpecific` for custom input hardware events
   - `EventManager.tmpHeap` for temporary allocations in the event system
+- **Rendering**
+  - Breaking change: `Renderer` now accepts `Application` instead of `EventManager` in constructor
 - **Game**
   - `dagon.game.basegame`. A new `BaseGame` class that extends `Application` with scene management only. `Game` extends `BaseGame` with built-in rendering functionality.
 

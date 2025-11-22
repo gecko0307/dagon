@@ -514,6 +514,9 @@ class Application: EventListener, Updateable
     /// Fullscreen or windowed.
     bool fullscreen = false;
     
+    /// VR headset mode.
+    bool stereoRendering = false;
+    
     /// Vertical synchronization mode.
     int vsync = 1;
     
@@ -894,7 +897,14 @@ class Application: EventListener, Updateable
         windowHeight = createdWindowHeight;
         logInfo("Window size: ", windowWidth, "x", windowHeight);
         
-        SDL_GL_GetDrawableSize(window, &drawableWidth, &drawableHeight);
+        if (stereoRendering)
+        {
+            // TODO: make configurable
+            drawableWidth = 1080;
+            drawableHeight = 1080;
+        }
+        else
+            SDL_GL_GetDrawableSize(window, &drawableWidth, &drawableHeight);
         logInfo("Window drawable size: ", drawableWidth, "x", drawableHeight);
         
         pixelRatio = cast(float)drawableHeight / cast(float)windowHeight;
@@ -1201,6 +1211,9 @@ class Application: EventListener, Updateable
                 windowBorderless = true;
             }
         }
+        
+        if ("stereoRendering" in config.props)
+            stereoRendering = cast(bool)config.props["stereoRendering"].toUInt;
         
         if ("vsync" in config.props)
             vsync = config.props["vsync"].toInt;

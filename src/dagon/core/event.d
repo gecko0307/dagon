@@ -1052,11 +1052,14 @@ class EventManager: Owner
                     {
                         windowWidth = event.window.data1;
                         windowHeight = event.window.data2;
-                        SDL_GL_GetDrawableSize(window, &drawableWidth, &drawableHeight);
                         application.windowWidth = windowWidth;
                         application.windowHeight = windowHeight;
-                        application.drawableWidth = drawableWidth;
-                        application.drawableHeight = drawableHeight;
+                        if (!application.stereoRendering)
+                        {
+                            SDL_GL_GetDrawableSize(window, &drawableWidth, &drawableHeight);
+                            application.drawableWidth = drawableWidth;
+                            application.drawableHeight = drawableHeight;
+                        }
                         e = Event(EventType.Resize);
                         e.width = windowWidth;
                         e.height = windowHeight;
