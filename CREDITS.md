@@ -21,6 +21,7 @@ Dagon and its extensions depend on the following libraries:
 * [libktx](https://github.com/KhronosGroup/KTX-Software)
 * [Newton Game Dynamics](https://github.com/MADEAPPS/newton-dynamics)
 * [Open Asset Import Library (Assimp)](https://github.com/assimp/assimp)
+* [OpenVR](https://github.com/ValveSoftware/openvr)
 * [PhysFS](https://github.com/icculus/physfs)
 * [SoLoud](https://github.com/jarikomppa/soloud)
 * [libVLC](https://images.videolan.org/vlc/libvlc.html)
