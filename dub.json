@@ -68,6 +68,7 @@
         "extensions/ktx",
         "extensions/newton",
         "extensions/nuklear",
+        "extensions/openvr",
         "extensions/physfs",
         "extensions/video",
         "init-exec"

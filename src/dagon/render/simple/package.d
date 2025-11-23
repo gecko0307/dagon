@@ -145,6 +145,8 @@ class SimpleBackgroundPass: RenderPass
     {
         if (group)
         {
+            updateState();
+            
             glScissor(0, 0, pipeline.outputBuffer.width, pipeline.outputBuffer.height);
             glViewport(0, 0, pipeline.outputBuffer.width, pipeline.outputBuffer.height);
 
@@ -234,6 +236,8 @@ class SimpleSpatialPass: RenderPass
     {
         if (group && visible)
         {
+            updateState();
+            
             glScissor(0, 0, pipeline.outputBuffer.width, pipeline.outputBuffer.height);
             glViewport(0, 0, pipeline.outputBuffer.width, pipeline.outputBuffer.height);
             

@@ -83,6 +83,7 @@ class RenderPipeline: EventListener
     /// Enables debug rendering features.
     bool debugMode = false;
     
+    /// Output frame buffer for the pipeline passes.
     Framebuffer outputBuffer;
 
     /**
