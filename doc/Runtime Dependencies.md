@@ -2,7 +2,7 @@
 
 ## Core Engine
 
-Dagon requires at least OpenGL 4.0, SDL2 2.30, SDL2_Image 2.8 and FreeType. OpenGL library is usually provided by graphics card manufacturer. SDL2 and SDL2_Image can be obtained from the [official site](https://www.libsdl.org/), compiled from source or installed with a package manager such as APT.
+Dagon requires at least OpenGL 4.3, SDL2 2.30, SDL2_Image 2.8 and FreeType. OpenGL library is usually provided by graphics card manufacturer. SDL2 and SDL2_Image can be obtained from the [official site](https://www.libsdl.org/), compiled from source or installed with a package manager such as APT.
 
 Under Linux, if you want to use local libraries from application's working directory rather than from the system, add the following to your `dub.json`:
 
@@ -91,6 +91,12 @@ Compiling from source:
 2. Download [KTX-Software 4.4.0](https://github.com/KhronosGroup/KTX-Software/releases/tag/v4.4.0)
 3. Inside the KTX-Software source directory, create `build` directory. Inside it, run `cmake ..`
 4. Under Linux, run `make`. Under Windows, open and build generated Visual Studio project.
+
+## dagon:openvr
+
+dagon:openvr extension requires [OpenVR](https://github.com/ValveSoftware/openvr) 2.12 client library. It can be installed system-wide or placed to the project's folder.
+
+dagon:openvr requires `openvr_api.dll` under Windows and `libopenvr_api.so` under Linux. On 64-bit platforms, Dagon provides a prebuilt libopenvr_api library, which is automatically copied to your project after compilation (if you are building with DUB). Binaries are contained in the official OpenVR repository, so it is usually no need to compile them from source.
 
 ## dagon:physfs
 

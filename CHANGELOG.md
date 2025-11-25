@@ -7,7 +7,9 @@ Dagon 0.36.0 - TBD
 - **Rendering**
   - Breaking change: `Renderer` now accepts `Application` instead of `EventManager` in constructor
 - **Game**
-  - `dagon.game.basegame`. A new `BaseGame` class that extends `Application` with scene management only. `Game` extends `BaseGame` with built-in rendering functionality.
+  - `dagon.game.basegame`. A new `BaseGame` class that extends `Application` with scene management only. `Game` extends `BaseGame` with built-in rendering functionality
+- **Extensions**
+  - New extension `dagon:openvr`.
 
 Dagon 0.35.1 - 20 Nov, 2025
 ---------------------------

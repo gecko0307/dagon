@@ -3255,55 +3255,65 @@ struct VR_IVRSpatialAnchors_FnTable
     EVRSpatialAnchorError (OPENVR_FNTABLE_CALLTYPE *GetSpatialAnchorPose)(SpatialAnchorHandle_t unHandle, ETrackingUniverseOrigin eOrigin, struct SpatialAnchorPose_t * pPoseOut);
     EVRSpatialAnchorError (OPENVR_FNTABLE_CALLTYPE *GetSpatialAnchorDescriptor)(SpatialAnchorHandle_t unHandle, char * pchDescriptorOut, uint32_t * punDescriptorBufferLenInOut);
 };
+*/
 
 struct VR_IVRDebug_FnTable
 {
-    EVRDebugError (OPENVR_FNTABLE_CALLTYPE *EmitVrProfilerEvent)(char * pchMessage);
-    EVRDebugError (OPENVR_FNTABLE_CALLTYPE *BeginVrProfilerEvent)(VrProfilerEventHandle_t * pHandleOut);
-    EVRDebugError (OPENVR_FNTABLE_CALLTYPE *FinishVrProfilerEvent)(VrProfilerEventHandle_t hHandle, char * pchMessage);
-    uint32_t (OPENVR_FNTABLE_CALLTYPE *DriverDebugRequest)(TrackedDeviceIndex_t unDeviceIndex, char * pchRequest, char * pchResponseBuffer, uint32_t unResponseBufferSize);
+    extern(System) nothrow @nogc:
+    
+    EVRDebugError function(const(char)* pchMessage) EmitVrProfilerEvent;
+    EVRDebugError function(VrProfilerEventHandle_t * pHandleOut) BeginVrProfilerEvent;
+    EVRDebugError function(VrProfilerEventHandle_t hHandle, const(char)* pchMessage) FinishVrProfilerEvent;
+    uint function(TrackedDeviceIndex_t unDeviceIndex, const(char)* pchRequest, char* pchResponseBuffer, uint unResponseBufferSize) DriverDebugRequest;
 };
 
 struct VR_IVRIPCResourceManagerClient_FnTable
 {
-    bool (OPENVR_FNTABLE_CALLTYPE *NewSharedVulkanImage)(uint32_t nImageFormat, uint32_t nWidth, uint32_t nHeight, bool bRenderable, bool bMappable, bool bComputeAccess, uint32_t unMipLevels, uint32_t unArrayLayerCount, SharedTextureHandle_t * pSharedHandle);
-    bool (OPENVR_FNTABLE_CALLTYPE *NewSharedVulkanBuffer)(uint32_t nSize, uint32_t nUsageFlags, SharedTextureHandle_t * pSharedHandle);
-    bool (OPENVR_FNTABLE_CALLTYPE *NewSharedVulkanSemaphore)(bool bCounting, SharedTextureHandle_t * pSharedHandle);
-    bool (OPENVR_FNTABLE_CALLTYPE *RefResource)(SharedTextureHandle_t hSharedHandle, uint64_t * pNewIpcHandle);
-    bool (OPENVR_FNTABLE_CALLTYPE *UnrefResource)(SharedTextureHandle_t hSharedHandle);
-    bool (OPENVR_FNTABLE_CALLTYPE *GetDmabufFormats)(uint32_t * pOutFormatCount, uint32_t * pOutFormats);
-    bool (OPENVR_FNTABLE_CALLTYPE *GetDmabufModifiers)(EVRApplicationType eApplicationType, uint32_t unDRMFormat, uint32_t * pOutModifierCount, uint64_t * pOutModifiers);
-    bool (OPENVR_FNTABLE_CALLTYPE *ImportDmabuf)(EVRApplicationType eApplicationType, DmabufAttributes_t * pDmabufAttributes, SharedTextureHandle_t * pSharedHandle);
-    bool (OPENVR_FNTABLE_CALLTYPE *ReceiveSharedFd)(uint64_t ulIpcHandle, int * pOutFd);
-    void (OPENVR_FNTABLE_CALLTYPE *DestructIVRIPCResourceManagerClient)();
+    extern(System) nothrow @nogc:
+    
+    bool function(uint nImageFormat, uint nWidth, uint nHeight, bool bRenderable, bool bMappable, bool bComputeAccess, uint unMipLevels, uint unArrayLayerCount, SharedTextureHandle_t* pSharedHandle) NewSharedVulkanImage;
+    bool function(uint nSize, uint nUsageFlags, SharedTextureHandle_t* pSharedHandle) NewSharedVulkanBuffer;
+    bool function(bool bCounting, SharedTextureHandle_t* pSharedHandle) NewSharedVulkanSemaphore;
+    bool function(SharedTextureHandle_t hSharedHandle, ulong* pNewIpcHandle) RefResource;
+    bool function(SharedTextureHandle_t hSharedHandle) UnrefResource;
+    bool function(uint* pOutFormatCount, uint* pOutFormats) GetDmabufFormats;
+    bool function(EVRApplicationType eApplicationType, uint unDRMFormat, uint* pOutModifierCount, ulong* pOutModifiers) GetDmabufModifiers;
+    bool function(EVRApplicationType eApplicationType, DmabufAttributes_t* pDmabufAttributes, SharedTextureHandle_t* pSharedHandle) ImportDmabuf;
+    bool function(ulong ulIpcHandle, int* pOutFd) ReceiveSharedFd;
+    void function() DestructIVRIPCResourceManagerClient;
 };
 
 struct VR_IVRProperties_FnTable
 {
-    ETrackedPropertyError (OPENVR_FNTABLE_CALLTYPE *ReadPropertyBatch)(PropertyContainerHandle_t ulContainerHandle, struct PropertyRead_t * pBatch, uint32_t unBatchEntryCount);
-    ETrackedPropertyError (OPENVR_FNTABLE_CALLTYPE *WritePropertyBatch)(PropertyContainerHandle_t ulContainerHandle, struct PropertyWrite_t * pBatch, uint32_t unBatchEntryCount);
-    char * (OPENVR_FNTABLE_CALLTYPE *GetPropErrorNameFromEnum)(ETrackedPropertyError error);
-    PropertyContainerHandle_t (OPENVR_FNTABLE_CALLTYPE *TrackedDeviceToPropertyContainer)(TrackedDeviceIndex_t nDevice);
+    extern(System) nothrow @nogc:
+    
+    ETrackedPropertyError function(PropertyContainerHandle_t ulContainerHandle, PropertyRead_t* pBatch, uint unBatchEntryCount) ReadPropertyBatch;
+    ETrackedPropertyError function(PropertyContainerHandle_t ulContainerHandle, PropertyWrite_t* pBatch, uint unBatchEntryCount) WritePropertyBatch;
+    const(char)* function(ETrackedPropertyError error) GetPropErrorNameFromEnum;
+    PropertyContainerHandle_t function(TrackedDeviceIndex_t nDevice) TrackedDeviceToPropertyContainer;
 };
 
 struct VR_IVRPaths_FnTable
 {
-    ETrackedPropertyError (OPENVR_FNTABLE_CALLTYPE *ReadPathBatch)(PropertyContainerHandle_t ulRootHandle, struct PathRead_t * pBatch, uint32_t unBatchEntryCount);
-    ETrackedPropertyError (OPENVR_FNTABLE_CALLTYPE *WritePathBatch)(PropertyContainerHandle_t ulRootHandle, struct PathWrite_t * pBatch, uint32_t unBatchEntryCount);
-    ETrackedPropertyError (OPENVR_FNTABLE_CALLTYPE *StringToHandle)(PathHandle_t * pHandle, char * pchPath);
-    ETrackedPropertyError (OPENVR_FNTABLE_CALLTYPE *HandleToString)(PathHandle_t pHandle, char * pchBuffer, uint32_t unBufferSize, uint32_t * punBufferSizeUsed);
+    extern(System) nothrow @nogc:
+    
+    ETrackedPropertyError function(PropertyContainerHandle_t ulRootHandle, PathRead_t* pBatch, uint unBatchEntryCount) ReadPathBatch;
+    ETrackedPropertyError function(PropertyContainerHandle_t ulRootHandle, PathWrite_t* pBatch, uint unBatchEntryCount) WritePathBatch;
+    ETrackedPropertyError function(PathHandle_t* pHandle, const(char)* pchPath) StringToHandle;
+    ETrackedPropertyError function(PathHandle_t pHandle, char* pchBuffer, uint unBufferSize, uint* punBufferSizeUsed) HandleToString;
 };
 
 struct VR_IVRBlockQueue_FnTable
 {
-    EBlockQueueError (OPENVR_FNTABLE_CALLTYPE *Create)(PropertyContainerHandle_t * pulQueueHandle, char * pchPath, uint32_t unBlockDataSize, uint32_t unBlockHeaderSize, uint32_t unBlockCount, uint32_t unFlags);
-    EBlockQueueError (OPENVR_FNTABLE_CALLTYPE *Connect)(PropertyContainerHandle_t * pulQueueHandle, char * pchPath);
-    EBlockQueueError (OPENVR_FNTABLE_CALLTYPE *Destroy)(PropertyContainerHandle_t ulQueueHandle);
-    EBlockQueueError (OPENVR_FNTABLE_CALLTYPE *AcquireWriteOnlyBlock)(PropertyContainerHandle_t ulQueueHandle, PropertyContainerHandle_t * pulBlockHandle, void ** ppvBuffer);
-    EBlockQueueError (OPENVR_FNTABLE_CALLTYPE *ReleaseWriteOnlyBlock)(PropertyContainerHandle_t ulQueueHandle, PropertyContainerHandle_t ulBlockHandle);
-    EBlockQueueError (OPENVR_FNTABLE_CALLTYPE *WaitAndAcquireReadOnlyBlock)(PropertyContainerHandle_t ulQueueHandle, PropertyContainerHandle_t * pulBlockHandle, void ** ppvBuffer, EBlockQueueReadType eReadType, uint32_t unTimeoutMs);
-    EBlockQueueError (OPENVR_FNTABLE_CALLTYPE *AcquireReadOnlyBlock)(PropertyContainerHandle_t ulQueueHandle, PropertyContainerHandle_t * pulBlockHandle, void ** ppvBuffer, EBlockQueueReadType eReadType);
-    EBlockQueueError (OPENVR_FNTABLE_CALLTYPE *ReleaseReadOnlyBlock)(PropertyContainerHandle_t ulQueueHandle, PropertyContainerHandle_t ulBlockHandle);
-    EBlockQueueError (OPENVR_FNTABLE_CALLTYPE *QueueHasReader)(PropertyContainerHandle_t ulQueueHandle, bool * pbHasReaders);
+    extern(System) nothrow @nogc:
+    
+    EBlockQueueError function(PropertyContainerHandle_t* pulQueueHandle, const(char)* pchPath, uint unBlockDataSize, uint unBlockHeaderSize, uint unBlockCount, uint unFlags) Create;
+    EBlockQueueError function(PropertyContainerHandle_t* pulQueueHandle, const(char)* pchPath) Connect;
+    EBlockQueueError function(PropertyContainerHandle_t ulQueueHandle) Destroy;
+    EBlockQueueError function(PropertyContainerHandle_t ulQueueHandle, PropertyContainerHandle_t* pulBlockHandle, void** ppvBuffer) AcquireWriteOnlyBlock;
+    EBlockQueueError function(PropertyContainerHandle_t ulQueueHandle, PropertyContainerHandle_t ulBlockHandle) ReleaseWriteOnlyBlock;
+    EBlockQueueError function(PropertyContainerHandle_t ulQueueHandle, PropertyContainerHandle_t* pulBlockHandle, void** ppvBuffer, EBlockQueueReadType eReadType, uint unTimeoutMs) WaitAndAcquireReadOnlyBlock;
+    EBlockQueueError function(PropertyContainerHandle_t ulQueueHandle, PropertyContainerHandle_t* pulBlockHandle, void** ppvBuffer, EBlockQueueReadType eReadType) AcquireReadOnlyBlock;
+    EBlockQueueError function(PropertyContainerHandle_t ulQueueHandle, PropertyContainerHandle_t ulBlockHandle) ReleaseReadOnlyBlock;
+    EBlockQueueError function(PropertyContainerHandle_t ulQueueHandle, bool* pbHasReaders) QueueHasReader;
 };
-*/
