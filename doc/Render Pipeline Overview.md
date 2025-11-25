@@ -4,13 +4,13 @@ This is a brief description of Dagon's graphics tech.
 
 ### Pipeline
 
-Render pipeline is a heart of any 3D visualization. Pipeline describes the sequence of operations for transforming 3D data into a 2D image displayed on a screen. It is typically divided into several conceptual stages, involving both CPU and GPU processing. In Dagon, "pipeline" term refers to `dagon.render.pipeline.Pipeline` class, an abstraction that manages a sequence of `RenderPass` objects. A pass binds a render target, a shader with corresponding parameters, prepares a `GraphicsState` structure and finally makes a series of draw calls for a certain subset of entities in the scene.
+Render pipeline is a heart of any 3D visualization. Pipeline describes the sequence of operations for transforming 3D data into a 2D image displayed on a screen. It is typically divided into several conceptual stages, involving both CPU and GPU processing. In Dagon, "pipeline" term refers to `dagon.render.pipeline.Pipeline` class, an abstraction that manages a sequence of `RenderPass` objects. A pass binds a render target, a shader with corresponding parameters, prepares a `GraphicsState` structure and finally makes a series of draw calls for a certain subset of entities in the scene. Each pass groups objects by their function in the rendering domain.
 
 Dagon features a hybrid renderer that combines both deferred (see below) and forward pipelines. There is also an alternative simple renderer for NPR, retro and casual-styled graphics.
 
 ### Deferred Rendering
 
-Deferred rendering is one of the two major techniques in rasterization. It breaks rendering into two main phases - geometry pass and light pass. First all visible geometry is rasterized into a set of fragment attribute buffers (often collectively called a G-buffer), which include depth buffer, normal buffer, color buffer, etc. Then a desired number of light volumes are rasterized into a final radiance buffer. A light shader calculates radiance for a given fragment based on light's properties and G-buffer values corresponding to that fragment. 
+Deferred rendering is one of the two major techniques in rasterization. It breaks rendering into two main phases - geometry pass and light pass. First all visible geometry is rasterized into a set of fragment attribute buffers (often collectively called a G-buffer), which include depth buffer, normal buffer, color buffer, etc. Then a desired number of light volumes are rasterized into a final radiance buffer. A light shader calculates radiance for a given fragment based on light's properties and G-buffer values corresponding to that fragment.
 
 Deferred rendering has the following advantages over forward rendering:
 * No hardcoded limit on light number. Usually the number of lights is limited only by GPU fillrate, not some fixed maximum.

@@ -16,7 +16,7 @@ NewtonCharacterController character = eCharacter.makeCharacter(world, 1.8f, 0.45
 
 It is advisable to construct the simulation in such a way that these values closely match the real world.
 
-The character's collision shape is composed of two bounding spheres one on top of another. They are automatically placed to match given height, so it is not recommended to set the radius substantially larger than 1/4 of the height. Recommended radius is 0.4-0.5 for a normal human height 1.6-1.8.
+The character's collision shape is composed of two bounding spheres one on top of another. They are automatically placed to match given height, so it is not recommended to set the radius substantially larger than 1/4 of the height. Recommended radius is 0.4-0.5 for an average human height 1.6-1.8.
 
 The origin of the controlled entity matches character's feet point.
 
@@ -48,7 +48,7 @@ Note that in this example `directionHorizontal` is used instead of `direction`, 
 
 `character.updateVelocity()` should be called when all the control logics is done. This method applies a velocity change to the rigid body to produce the kinematic movement.
 
-The character's underlying rigid body interacts with other dynamic bodies in the world: the character can walk over boxes, etc. But it will not react to collision impacts from other bodies.
+The character's underlying rigid body interacts with other dynamic bodies in the world: the character can walk over boxes, etc. But it will not react to dynamic collision impacts from other bodies (there will be no energy conservation).
 
 To correctly sync the camera with the character, you can make it child of `eCharacter` and place at the character's local `eyePoint`:
 
