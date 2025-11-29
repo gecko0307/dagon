@@ -4,6 +4,7 @@ Dagon 0.36.0 - TBD
   - Breaking change: `EventDispatcher.onUserEvent` now accepts payload pointer
   - `EventType.HardwareSpecific` for custom input hardware events
   - `EventManager.tmpHeap` for temporary allocations in the event system
+  - Fix `vfs.appDataFolder` config property
 - **Rendering**
   - Breaking change: `Renderer` now accepts `Application` instead of `EventManager` in constructor
 - **Game**
