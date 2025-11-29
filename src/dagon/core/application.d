@@ -682,9 +682,9 @@ class Application: EventListener, Updateable
         
         // Mount directories to the VFS
         mount(this.directory);
-        if (appDataFolderName.length > 0)
+        if (this.appDataFolderName.length > 0)
         {
-            vfs.mountAppDataDirectory(appDataFolderName);
+            vfs.mountAppDataDirectory(this.appDataFolderName);
             logInfo("VFS: mount ", vfs.appDataPath);
         }
         if (customMountPaths.length > 0)
