@@ -490,7 +490,7 @@ class CoreScene: Scene, GsObject
         triggerScriptEvent("onDropFile", scriptCallArgs[0..2]);
     }
     
-    override void onUserEvent(int code)
+    override void onUserEvent(int code, void* payload)
     {
         scriptCallArgs[1] = GsDynamic(code);
         triggerScriptEvent("onUserEvent", scriptCallArgs[0..2]);

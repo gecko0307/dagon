@@ -27,6 +27,6 @@ DEALINGS IN THE SOFTWARE.
 
 module gscript.arena;
 
-public import dagon.core.arena;
+public import dlib.memory.arena;
 
 alias GsArena = Arena;
