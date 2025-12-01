@@ -6,6 +6,7 @@ import std.file: getcwd, mkdir, write;
 string appD = import("app.d");
 string sceneD = import("scene.d");
 string settingsConf = import("settings.conf");
+string renderConf = import("render.conf");
 string inputConf = import("input.conf");
 string enUSLang = import("en_US.lang");
 
@@ -24,6 +25,9 @@ void main(string[] args)
     
     string settingsConfPath = buildPath(cwd, "settings.conf");
     write(settingsConfPath, settingsConf);
+    
+    string renderConfPath = buildPath(cwd, "render.conf");
+    write(renderConfPath, renderConf);
     
     string inputConfPath = buildPath(cwd, "input.conf");
     write(inputConfPath, inputConf);
