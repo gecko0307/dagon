@@ -65,12 +65,34 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li class="tree-view collapsed">
 						<div class="package ">
+							<a href="../../../dagon/compute.html">compute</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/compute/resample.html">resample</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/compute/shader.html">shader</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
 							<a href="../../../dagon/core.html">core</a>
 						</div>
 				<ul class="tree-view">
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/core/application.html">application</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/arena.html">arena</a>
 						</div>
 					</li>
 					<li>
@@ -85,12 +107,22 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../../dagon/core/dialogs.html">dialogs</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../dagon/core/dxgiformat.html">dxgiformat</a>
 						</div>
 					</li>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/core/event.html">event</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/graphicstablet.html">graphicstablet</a>
 						</div>
 					</li>
 					<li>
@@ -120,6 +152,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../../dagon/core/mappedlist.html">mappedlist</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../dagon/core/messaging.html">messaging</a>
 						</div>
 					</li>
@@ -131,6 +168,16 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/core/props.html">props</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/shaderloader.html">shaderloader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/sysinfo.html">sysinfo</a>
 						</div>
 					</li>
 					<li>
@@ -160,6 +207,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<a href="../../../dagon/game.html">game</a>
 						</div>
 				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/game/basegame.html">basegame</a>
+						</div>
+					</li>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/game/game.html">game</a>
@@ -275,11 +327,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/graphics/shader.html">shader</a>
-						</div>
-					</li>
-					<li>
-						<div class="module ">
-							<a href="../../../dagon/graphics/shaderloader.html">shaderloader</a>
 						</div>
 					</li>
 					<li>
@@ -517,7 +564,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 		</nav>
 		<div id="main-contents">
 			<div>
-				<h1>Class LoadingScreen</h1><p>Displays a loading progress bar on the screen during asset or scene loading.
+				<h1>Class LoadingScreen</h1><p>Displays a splash image and a loading progress bar on the screen during scene loading.
 </p>
 				<div class="prototype">
 					<code class="lang-d">
@@ -553,30 +600,37 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
-								<a href="../../../dagon/game/loadingscreen/LoadingScreen.app.html" class="public"><code>app</code></a>
+								<a href="../../../dagon/game/loadingscreen/LoadingScreen.background.html" class="public"><code>background</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/core/application/Application.html"><span class="typ">Application</span></a></code></td><td>The application object.
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/entity/Entity.html"><span class="typ">Entity</span></a></code></td><td>The entity for the background image.
 </td>
 						</tr>
 						<tr>
 							<td>
-								<a href="../../../dagon/game/loadingscreen/LoadingScreen.hudShader.html" class="public"><code>hudShader</code></a>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dagon<wbr/></span><span class="pun">.</span><span class="pln">render<wbr/></span><span class="pun">.</span><span class="pln">hud<wbr/></span><span class="pun">.</span><span class="pln">shaders<wbr/></span><span class="pun">.</span><span class="pln">hud<wbr/></span><span class="pun">.</span><span class="typ">HUDShader</span></code></td><td>The HUD shader used for rendering.
-</td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../dagon/game/loadingscreen/LoadingScreen.progressBarEntity.html" class="public"><code>progressBarEntity</code></a>
+								<a href="../../../dagon/game/loadingscreen/LoadingScreen.progressbar.html" class="public"><code>progressbar</code></a>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/entity/Entity.html"><span class="typ">Entity</span></a></code></td><td>The entity for the progress bar.
 </td>
 						</tr>
 						<tr>
 							<td>
-								<a href="../../../dagon/game/loadingscreen/LoadingScreen.progressBarShape.html" class="public"><code>progressBarShape</code></a>
+								<a href="../../../dagon/game/loadingscreen/LoadingScreen.progressbarCentered.html" class="public"><code>progressbarCentered</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/shapes/ShapeQuad.html"><span class="typ">ShapeQuad</span></a></code></td><td>The quad shape representing the progress bar.
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Is progressbar centered on screen.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/game/loadingscreen/LoadingScreen.progressbarHeight.html" class="public"><code>progressbarHeight</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Progressbar height (in physical pixels).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/game/loadingscreen/LoadingScreen.progressbarWidth.html" class="public"><code>progressbarWidth</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Progressbar width (in physical pixels).
 </td>
 						</tr>
 						<tr>
@@ -616,6 +670,28 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 					</table>
 				</section>
+				<section><h2>Properties</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Type</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/game/loadingscreen/LoadingScreen.backgroundColor.html" class="public property"><code>backgroundColor</code></a><span class="tableEntryAnnotation">[set]</span>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">image<wbr/></span><span class="pun">.</span><span class="pln">color<wbr/></span><span class="pun">.</span><span class="typ">Color4f</span></code></td><td>Sets background color.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/game/loadingscreen/LoadingScreen.backgroundTexture.html" class="public property"><code>backgroundTexture</code></a><span class="tableEntryAnnotation">[set]</span>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/texture/Texture.html"><span class="typ">Texture</span></a></code></td><td>Sets background texture.
+</td>
+						</tr>
+					</table>
+				</section>
 				<section><h2>Methods</h2>
 					<table>
 						<col class="caption"/>
@@ -629,7 +705,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								</a>
 								<span class="tableEntryAnnotation">()</span>
 							</td>
-							<td>Renders the loading screen and progress bar.
+							<td>Renders the loading screen.
 </td>
 						</tr>
 						<tr>
@@ -647,7 +723,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/event/EventDispatcher.onControllerAdd.html" class="public inherited">
 									<code>onControllerAdd</code>
 								</a>
-								<span class="tableEntryAnnotation">(deviceIndex)</span>
+								<span class="tableEntryAnnotation">(deviceIndex, deviceType)</span>
 							</td>
 							<td>Called when a controller is added.
 </td>
@@ -657,7 +733,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/event/EventDispatcher.onControllerAxisMotion.html" class="public inherited">
 									<code>onControllerAxisMotion</code>
 								</a>
-								<span class="tableEntryAnnotation">(axis, value)</span>
+								<span class="tableEntryAnnotation">(deviceIndex, axis, value)</span>
 							</td>
 							<td>Called when a controller axis is moved.
 </td>
@@ -667,7 +743,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/event/EventDispatcher.onControllerButtonDown.html" class="public inherited">
 									<code>onControllerButtonDown</code>
 								</a>
-								<span class="tableEntryAnnotation">(button)</span>
+								<span class="tableEntryAnnotation">(deviceIndex, button)</span>
 							</td>
 							<td>Called when a controller button is pressed.
 </td>
@@ -677,7 +753,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/event/EventDispatcher.onControllerButtonUp.html" class="public inherited">
 									<code>onControllerButtonUp</code>
 								</a>
-								<span class="tableEntryAnnotation">(button)</span>
+								<span class="tableEntryAnnotation">(deviceIndex, button)</span>
 							</td>
 							<td>Called when a controller button is released.
 </td>
@@ -734,10 +810,20 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onHardwareSpecificEvent.html" class="public inherited">
+									<code>onHardwareSpecificEvent</code>
+								</a>
+								<span class="tableEntryAnnotation">(deviceIndex, code, payload)</span>
+							</td>
+							<td>Called when a hardware specific event is received from a custom InputDevice.
+</td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/core/event/EventDispatcher.onJoystickAxisMotion.html" class="public inherited">
 									<code>onJoystickAxisMotion</code>
 								</a>
-								<span class="tableEntryAnnotation">(axis, value)</span>
+								<span class="tableEntryAnnotation">(deviceIndex, axis, value)</span>
 							</td>
 							<td>Called when a joystick axis is moved.
 </td>
@@ -747,7 +833,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/event/EventDispatcher.onJoystickButtonDown.html" class="public inherited">
 									<code>onJoystickButtonDown</code>
 								</a>
-								<span class="tableEntryAnnotation">(button)</span>
+								<span class="tableEntryAnnotation">(deviceIndex, button)</span>
 							</td>
 							<td>Called when a joystick button is pressed.
 </td>
@@ -757,7 +843,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/event/EventDispatcher.onJoystickButtonUp.html" class="public inherited">
 									<code>onJoystickButtonUp</code>
 								</a>
-								<span class="tableEntryAnnotation">(button)</span>
+								<span class="tableEntryAnnotation">(deviceIndex, button)</span>
 							</td>
 							<td>Called when a joystick button is released.
 </td>
@@ -884,10 +970,20 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onTimerEvent.html" class="public inherited">
+									<code>onTimerEvent</code>
+								</a>
+								<span class="tableEntryAnnotation">(timerID, userCode)</span>
+							</td>
+							<td>Called when a timer event is received.
+</td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/core/event/EventDispatcher.onUserEvent.html" class="public inherited">
 									<code>onUserEvent</code>
 								</a>
-								<span class="tableEntryAnnotation">(code)</span>
+								<span class="tableEntryAnnotation">(code, payload)</span>
 							</td>
 							<td>Called when a user event is received.
 </td>
@@ -917,9 +1013,9 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/event/EventListener.generateUserEvent.html" class="protected inherited">
 									<code>generateUserEvent</code>
 								</a>
-								<span class="tableEntryAnnotation">(code)</span>
+								<span class="tableEntryAnnotation">(code, payload)</span>
 							</td>
-							<td>Queues a user event with the given code.
+							<td>Queues a user event with the given code and payload pointer.
 </td>
 						</tr>
 						<tr>

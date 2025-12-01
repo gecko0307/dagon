@@ -63,6 +63,23 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 				</ul>
 					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../dagon/compute.html">compute</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/compute/resample.html">resample</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/compute/shader.html">shader</a>
+						</div>
+					</li>
+				</ul>
+					</li>
 					<li class="tree-view ">
 						<div class="package ">
 							<a href="../../../dagon/core.html">core</a>
@@ -71,6 +88,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module selected">
 							<a href="../../../dagon/core/application.html">application</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/arena.html">arena</a>
 						</div>
 					</li>
 					<li>
@@ -85,12 +107,22 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../../dagon/core/dialogs.html">dialogs</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../dagon/core/dxgiformat.html">dxgiformat</a>
 						</div>
 					</li>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/core/event.html">event</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/graphicstablet.html">graphicstablet</a>
 						</div>
 					</li>
 					<li>
@@ -120,6 +152,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../../dagon/core/mappedlist.html">mappedlist</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../dagon/core/messaging.html">messaging</a>
 						</div>
 					</li>
@@ -131,6 +168,16 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/core/props.html">props</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/shaderloader.html">shaderloader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/sysinfo.html">sysinfo</a>
 						</div>
 					</li>
 					<li>
@@ -160,6 +207,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<a href="../../../dagon/game.html">game</a>
 						</div>
 				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/game/basegame.html">basegame</a>
+						</div>
+					</li>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/game/game.html">game</a>
@@ -275,11 +327,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/graphics/shader.html">shader</a>
-						</div>
-					</li>
-					<li>
-						<div class="module ">
-							<a href="../../../dagon/graphics/shaderloader.html">shaderloader</a>
 						</div>
 					</li>
 					<li>
@@ -541,7 +588,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								</a>
 								<span class="tableEntryAnnotation">(winWidth, winHeight, fullscreen, windowTitle, args, appDataFolderName)</span>
 							</td>
-							<td>Constructs the application, initializes SDL, OpenGL, and related subsystems.
+							<td>Constructs the application, initializes SDL, OpenGL, and related core subsystems.
 </td>
 						</tr>
 					</table>
@@ -551,6 +598,20 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						<col class="caption"/>
 						<tr>
 							<th>Name</th><th>Type</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.appDataFolderName.html" class="public"><code>appDataFolderName</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>The application folder name (used under the HOME or APPDATA directory).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.args.html" class="public"><code>args</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span><span class="pun">[]</span></code></td><td>Command line arguments.
+</td>
 						</tr>
 						<tr>
 							<td>
@@ -568,6 +629,34 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/core/application/Application.customMountPaths.html" class="public"><code>customMountPaths</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Additional VFS mount paths defined in settings.conf.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.defaultFontMonospace.html" class="public"><code>defaultFontMonospace</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Path to the default monospace font (for the built-in font manager).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.defaultFontSans.html" class="public"><code>defaultFontSans</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Path to the default sans font (for the built-in font manager).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.defaultFontSize.html" class="public"><code>defaultFontSize</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Default font size (for the built-in font manager).
+</td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/core/application/Application.directory.html" class="public"><code>directory</code></a>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Absolute directory containing the executable.
@@ -575,9 +664,44 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/core/application/Application.drawableHeight.html" class="public"><code>drawableHeight</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td><td>Actual drawable area height of the window.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.drawableWidth.html" class="public"><code>drawableWidth</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td><td>Actual drawable area width of the window.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.enableDebugOutput.html" class="public"><code>enableDebugOutput</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Is OpenGL debug output enabled.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.enableShaderCache.html" class="public"><code>enableShaderCache</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Is shader binary cache enabled.
+</td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/core/application/Application.fontManager.html" class="public"><code>fontManager</code></a>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/font/FontManager.html"><span class="typ">FontManager</span></a></code></td><td>Object that loads and registers fonts.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.freetypeLibraryPath.html" class="public"><code>freetypeLibraryPath</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Path to the FreeType library.
 </td>
 						</tr>
 						<tr>
@@ -598,7 +722,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<td>
 								<a href="../../../dagon/core/application/Application.ftVersion.html" class="public"><code>ftVersion</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dagon<wbr/></span><span class="pun">.</span><span class="pln">core<wbr/></span><span class="pun">.</span><span class="pln">application<wbr/></span><span class="pun">.</span><span class="typ">FTVersion</span></code></td><td>Actually used FreeType library version.
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/core/application/FTVersion.html"><span class="typ">FTVersion</span></a></code></td><td>Actually used FreeType library version.
 </td>
 						</tr>
 						<tr>
@@ -638,16 +762,9 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
-								<a href="../../../dagon/core/application/Application.height.html" class="public"><code>height</code></a>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Application window height;
-</td>
-						</tr>
-						<tr>
-							<td>
 								<a href="../../../dagon/core/application/Application.loadedFTSupport.html" class="public"><code>loadedFTSupport</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">bindbc<wbr/></span><span class="pun">.</span><span class="pln">freetype<wbr/></span><span class="pun">.</span><span class="pln">config<wbr/></span><span class="pun">.</span><span class="typ">FTSupport</span></code></td><td>Loaded FreeType API version. This is not an actual FreeType library version!
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">bindbc<wbr/></span><span class="pun">.</span><span class="pln">freetype<wbr/></span><span class="pun">.</span><span class="pln">config<wbr/></span><span class="pun">.</span><span class="typ">FTSupport</span></code></td><td>Loaded FreeType API support version. This is not an actual FreeType library version!
  Dagon assumes FTSupport.v2_8, but this is not a strict requirement,
  the engine will continue running even if 2.8 fails to load.
  To check actually loaded library version, use <code class="lang-d"><a href="../../../dagon/core/application/Application.ftVersion.html"><span class="pln">ftVersion</span></a></code>.
@@ -657,15 +774,15 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<td>
 								<a href="../../../dagon/core/application/Application.loadedGLSupport.html" class="public"><code>loadedGLSupport</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">bindbc<wbr/></span><span class="pun">.</span><span class="pln">opengl<wbr/></span><span class="pun">.</span><span class="pln">config<wbr/></span><span class="pun">.</span><span class="typ">GLSupport</span></code></td><td>Loaded OpenGL API version.
- Dagon requires at least GLSupport.gl40 and will not run on a lower version.
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">bindbc<wbr/></span><span class="pun">.</span><span class="pln">opengl<wbr/></span><span class="pun">.</span><span class="pln">config<wbr/></span><span class="pun">.</span><span class="typ">GLSupport</span></code></td><td>Loaded OpenGL API support version.
+ Dagon requires at least GLSupport.gl43 and will not run on a lower version.
 </td>
 						</tr>
 						<tr>
 							<td>
 								<a href="../../../dagon/core/application/Application.loadedSDLImageSupport.html" class="public"><code>loadedSDLImageSupport</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">sdl_image<wbr/></span><span class="pun">.</span><span class="typ">SDLImageSupport</span></code></td><td>Loaded SDL_Image API version. This is not an actual SDL_Image library version!
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">sdl_image<wbr/></span><span class="pun">.</span><span class="typ">SDLImageSupport</span></code></td><td>Loaded SDL_Image API support version. This is not an actual SDL_Image library version!
  Dagon assumes SDLImageSupport.v2_8, but this is not a strict requirement,
  the engine will continue running even if 2.8 fails to load.
  To check actually loaded library version, use <code class="lang-d"><a href="../../../dagon/core/application/Application.sdlImageVersion.html"><span class="pln">sdlImageVersion</span></a></code>.
@@ -675,7 +792,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<td>
 								<a href="../../../dagon/core/application/Application.loadedSDLSupport.html" class="public"><code>loadedSDLSupport</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">bindbc<wbr/></span><span class="pun">.</span><span class="pln">sdl<wbr/></span><span class="pun">.</span><span class="pln">config<wbr/></span><span class="pun">.</span><span class="typ">SDLSupport</span></code></td><td>Loaded SDL API version. This is not an actual SDL library version!
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">bindbc<wbr/></span><span class="pun">.</span><span class="pln">sdl<wbr/></span><span class="pun">.</span><span class="pln">config<wbr/></span><span class="pun">.</span><span class="typ">SDLSupport</span></code></td><td>Loaded SDL API support version. This is not an actual SDL library version!
  Dagon assumes SDLSupport.v2_30, but this is not a strict requirement,
  the engine will continue running even if 2.30 fails to load.
  To check actually loaded library version, use <code class="lang-d"><a href="../../../dagon/core/application/Application.sdlVersion.html"><span class="pln">sdlVersion</span></a></code>.
@@ -690,6 +807,20 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/core/application/Application.localePath.html" class="public"><code>localePath</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Path to the folder containing translation files.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.logLevel.html" class="public"><code>logLevel</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/core/logger/LogLevel.html"><span class="typ">LogLevel</span></a></code></td><td>Initial log level.
+</td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/core/application/Application.maxTextureAnisotropy.html" class="public"><code>maxTextureAnisotropy</code></a>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Maximum supported level of anisotropic texture filtering.
@@ -698,9 +829,44 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/core/application/Application.maxTimersCount.html" class="public"><code>maxTimersCount</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Maximum simultaneous timers.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.maxWorkGroups.html" class="public"><code>maxWorkGroups</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span><span class="pun">[</span><span class="lit">3</span><span class="pun">]</span></code></td><td>Maximum number of workgroups per compute dispatch.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.maxWorkGroupSize.html" class="public"><code>maxWorkGroupSize</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span><span class="pun">[</span><span class="lit">3</span><span class="pun">]</span></code></td><td>Maximum size of a single workgorup in a compute shader.
+</td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/core/application/Application.path.html" class="public"><code>path</code></a>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Full path of the executable (not CWD!).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.pixelRatio.html" class="public"><code>pixelRatio</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Ratio of the resolution in physical pixels to the resolution in logical pixels.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.sdlImageLibraryPath.html" class="public"><code>sdlImageLibraryPath</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Path to the SDL2_Image library.
 </td>
 						</tr>
 						<tr>
@@ -719,9 +885,51 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/core/application/Application.sdlLibraryPath.html" class="public"><code>sdlLibraryPath</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Path to the SDL2 library.
+</td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/core/application/Application.sdlVersion.html" class="public"><code>sdlVersion</code></a>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">bindbc<wbr/></span><span class="pun">.</span><span class="pln">sdl<wbr/></span><span class="pun">.</span><span class="pln">config<wbr/></span><span class="pun">.</span><span class="typ">SDL_version</span></code></td><td>Actually used SDL library version.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.shaderCache.html" class="public"><code>shaderCache</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/shader/ShaderCache.html"><span class="typ">ShaderCache</span></a></code></td><td>Shader cache.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.shaderCachePath.html" class="public"><code>shaderCachePath</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Shader cache path.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.stepFrequency.html" class="public"><code>stepFrequency</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Update frequency in Hz.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.stereoRendering.html" class="public"><code>stereoRendering</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>VR headset mode.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.systemInfo.html" class="public"><code>systemInfo</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/core/sysinfo/SysInfo.html"><span class="typ">SysInfo</span></a></code></td><td>System information.
 </td>
 						</tr>
 						<tr>
@@ -747,9 +955,9 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
-								<a href="../../../dagon/core/application/Application.width.html" class="public"><code>width</code></a>
+								<a href="../../../dagon/core/application/Application.vsync.html" class="public"><code>vsync</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Application window width;
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td><td>Vertical synchronization mode.
 </td>
 						</tr>
 						<tr>
@@ -757,6 +965,76 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/application/Application.window.html" class="public"><code>window</code></a>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">sdl<wbr/></span><span class="pun">.</span><span class="pln">video<wbr/></span><span class="pun">.</span><span class="typ">SDL_Window</span><span class="pun">*</span></code></td><td>Pointer to the main SDL window created by the Application.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.windowBorderless.html" class="public"><code>windowBorderless</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Is the window borderless.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.windowHeight.html" class="public"><code>windowHeight</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Application window height.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.windowHiDPI.html" class="public"><code>windowHiDPI</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Is the window HiDPI-aware.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.windowMaximized.html" class="public"><code>windowMaximized</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Is the window initially maximized.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.windowMinimized.html" class="public"><code>windowMinimized</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Is the window initially minimizied.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.windowResizable.html" class="public"><code>windowResizable</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Can the user resize the window.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.windowTitle.html" class="public"><code>windowTitle</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Application window title.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.windowWidth.html" class="public"><code>windowWidth</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Application window width.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.windowX.html" class="public"><code>windowX</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td><td>Application window X-coordinate.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.windowY.html" class="public"><code>windowY</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td><td>Application window Y-coordinate.
 </td>
 						</tr>
 						<tr>
@@ -811,6 +1089,16 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/core/application/Application.cancelTimer.html" class="public">
+									<code>cancelTimer</code>
+								</a>
+								<span class="tableEntryAnnotation">(id)</span>
+							</td>
+							<td>Cancels a timer.
+</td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/core/application/Application.centerWindow.html" class="public">
 									<code>centerWindow</code>
 								</a>
@@ -828,6 +1116,15 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							</td>
 							<td>Checks for OpenGL errors and logs them.
 </td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.completeTimer.html" class="public">
+									<code>completeTimer</code>
+								</a>
+								<span class="tableEntryAnnotation">(index)</span>
+							</td>
+							<td></td>
 						</tr>
 						<tr>
 							<td>
@@ -921,6 +1218,16 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/core/application/Application.numActiveTimers.html" class="public">
+									<code>numActiveTimers</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Returns the number of currently active timers.
+</td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/core/application/Application.onRender.html" class="public">
 									<code>onRender</code>
 								</a>
@@ -937,6 +1244,16 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<span class="tableEntryAnnotation">(t)</span>
 							</td>
 							<td>Called every frame to update application logic.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.onUserEvent.html" class="public">
+									<code>onUserEvent</code>
+								</a>
+								<span class="tableEntryAnnotation">(code, payload)</span>
+							</td>
+							<td>User event handler.
 </td>
 						</tr>
 						<tr>
@@ -978,6 +1295,16 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<span class="tableEntryAnnotation">(mode)</span>
 							</td>
 							<td>Switches fullscreen mode.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.setTimer.html" class="public">
+									<code>setTimer</code>
+								</a>
+								<span class="tableEntryAnnotation">(duration, userCode, periodic)</span>
+							</td>
+							<td>Creates a new timer and returns it's ID.
 </td>
 						</tr>
 						<tr>
@@ -1036,7 +1363,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/event/EventDispatcher.onControllerAdd.html" class="public inherited">
 									<code>onControllerAdd</code>
 								</a>
-								<span class="tableEntryAnnotation">(deviceIndex)</span>
+								<span class="tableEntryAnnotation">(deviceIndex, deviceType)</span>
 							</td>
 							<td>Called when a controller is added.
 </td>
@@ -1046,7 +1373,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/event/EventDispatcher.onControllerAxisMotion.html" class="public inherited">
 									<code>onControllerAxisMotion</code>
 								</a>
-								<span class="tableEntryAnnotation">(axis, value)</span>
+								<span class="tableEntryAnnotation">(deviceIndex, axis, value)</span>
 							</td>
 							<td>Called when a controller axis is moved.
 </td>
@@ -1056,7 +1383,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/event/EventDispatcher.onControllerButtonDown.html" class="public inherited">
 									<code>onControllerButtonDown</code>
 								</a>
-								<span class="tableEntryAnnotation">(button)</span>
+								<span class="tableEntryAnnotation">(deviceIndex, button)</span>
 							</td>
 							<td>Called when a controller button is pressed.
 </td>
@@ -1066,7 +1393,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/event/EventDispatcher.onControllerButtonUp.html" class="public inherited">
 									<code>onControllerButtonUp</code>
 								</a>
-								<span class="tableEntryAnnotation">(button)</span>
+								<span class="tableEntryAnnotation">(deviceIndex, button)</span>
 							</td>
 							<td>Called when a controller button is released.
 </td>
@@ -1123,10 +1450,20 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onHardwareSpecificEvent.html" class="public inherited">
+									<code>onHardwareSpecificEvent</code>
+								</a>
+								<span class="tableEntryAnnotation">(deviceIndex, code, payload)</span>
+							</td>
+							<td>Called when a hardware specific event is received from a custom InputDevice.
+</td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/core/event/EventDispatcher.onJoystickAxisMotion.html" class="public inherited">
 									<code>onJoystickAxisMotion</code>
 								</a>
-								<span class="tableEntryAnnotation">(axis, value)</span>
+								<span class="tableEntryAnnotation">(deviceIndex, axis, value)</span>
 							</td>
 							<td>Called when a joystick axis is moved.
 </td>
@@ -1136,7 +1473,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/event/EventDispatcher.onJoystickButtonDown.html" class="public inherited">
 									<code>onJoystickButtonDown</code>
 								</a>
-								<span class="tableEntryAnnotation">(button)</span>
+								<span class="tableEntryAnnotation">(deviceIndex, button)</span>
 							</td>
 							<td>Called when a joystick button is pressed.
 </td>
@@ -1146,7 +1483,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/event/EventDispatcher.onJoystickButtonUp.html" class="public inherited">
 									<code>onJoystickButtonUp</code>
 								</a>
-								<span class="tableEntryAnnotation">(button)</span>
+								<span class="tableEntryAnnotation">(deviceIndex, button)</span>
 							</td>
 							<td>Called when a joystick button is released.
 </td>
@@ -1273,12 +1610,12 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
-								<a href="../../../dagon/core/event/EventDispatcher.onUserEvent.html" class="public inherited">
-									<code>onUserEvent</code>
+								<a href="../../../dagon/core/event/EventDispatcher.onTimerEvent.html" class="public inherited">
+									<code>onTimerEvent</code>
 								</a>
-								<span class="tableEntryAnnotation">(code)</span>
+								<span class="tableEntryAnnotation">(timerID, userCode)</span>
 							</td>
-							<td>Called when a user event is received.
+							<td>Called when a timer event is received.
 </td>
 						</tr>
 						<tr>
@@ -1306,9 +1643,9 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/event/EventListener.generateUserEvent.html" class="protected inherited">
 									<code>generateUserEvent</code>
 								</a>
-								<span class="tableEntryAnnotation">(code)</span>
+								<span class="tableEntryAnnotation">(code, payload)</span>
 							</td>
-							<td>Queues a user event with the given code.
+							<td>Queues a user event with the given code and payload pointer.
 </td>
 						</tr>
 						<tr>
@@ -1344,11 +1681,12 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</table>
 				</section><section><h2>Description</h2>
 <p>This class wraps dynamic library binding, SDL window creation, OpenGL context initialization and
- information querying, event management, and the main game loop. It also handles basic configuration
+ information querying, event management, and the main game loop. It also handles configuration
  via <code class="lang-d"><span class="pln">settings<wbr/></span><span class="pun">.</span><span class="pln">conf</span></code> file and provides a number of helper methods (taking screenshots, querying display
  refresh rate, switching console window, etc.).
  By itself, <code class="lang-d"><span class="typ">Application</span></code> doesn't render anything and doesn't contain game logic. To make a game,
  inherit from <code class="lang-d"><span class="typ">Application</span></code> and override <code class="lang-d"><a href="../../../dagon/core/application/Application.onUpdate.html"><span class="pln">onUpdate</span></a></code> and <code class="lang-d"><a href="../../../dagon/core/application/Application.onRender.html"><span class="pln">onRender</span></a></code>.
+ All <code class="lang-d"><span class="typ">Application</span></code> properties are meant to be read-only! Modify at your own risk.
 </p>
 </section>
 

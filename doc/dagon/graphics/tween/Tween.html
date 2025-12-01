@@ -65,12 +65,34 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li class="tree-view collapsed">
 						<div class="package ">
+							<a href="../../../dagon/compute.html">compute</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/compute/resample.html">resample</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/compute/shader.html">shader</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
 							<a href="../../../dagon/core.html">core</a>
 						</div>
 				<ul class="tree-view">
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/core/application.html">application</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/arena.html">arena</a>
 						</div>
 					</li>
 					<li>
@@ -85,12 +107,22 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../../dagon/core/dialogs.html">dialogs</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../dagon/core/dxgiformat.html">dxgiformat</a>
 						</div>
 					</li>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/core/event.html">event</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/graphicstablet.html">graphicstablet</a>
 						</div>
 					</li>
 					<li>
@@ -120,6 +152,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../../dagon/core/mappedlist.html">mappedlist</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../dagon/core/messaging.html">messaging</a>
 						</div>
 					</li>
@@ -131,6 +168,16 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/core/props.html">props</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/shaderloader.html">shaderloader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/sysinfo.html">sysinfo</a>
 						</div>
 					</li>
 					<li>
@@ -160,6 +207,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<a href="../../../dagon/game.html">game</a>
 						</div>
 				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/game/basegame.html">basegame</a>
+						</div>
+					</li>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/game/game.html">game</a>
@@ -275,11 +327,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/graphics/shader.html">shader</a>
-						</div>
-					</li>
-					<li>
-						<div class="module ">
-							<a href="../../../dagon/graphics/shaderloader.html">shaderloader</a>
 						</div>
 					</li>
 					<li>
@@ -619,9 +666,44 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/graphics/tween/Tween.fromColor.html" class="public"><code>fromColor</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">image<wbr/></span><span class="pun">.</span><span class="pln">color<wbr/></span><span class="pun">.</span><span class="typ">Color4f</span></code></td><td>Start color value of the animation.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/tween/Tween.fromFloat.html" class="public"><code>fromFloat</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Start float value of the animation.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/tween/Tween.fromVector.html" class="public"><code>fromVector</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">vector<wbr/></span><span class="pun">.</span><span class="typ">Vector</span>!(float,3)</code></td><td>Start vector value of the animation.
+</td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/graphics/tween/Tween.isPlaying.html" class="public"><code>isPlaying</code></a>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If true, the tween is playing.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/tween/Tween.onComplete.html" class="public"><code>onComplete</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">void</span> <span class="kwd">delegate</span><span class="pun">(</span><a href="../../../dagon/graphics/tween/Tween.html"><span class="typ">Tween</span></a><span class="pun">*</span><span class="pun">)</span></code></td><td>A delegate that should be called when the tween is completed.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/tween/Tween.onRepeat.html" class="public"><code>onRepeat</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">void</span> <span class="kwd">delegate</span><span class="pun">(</span><a href="../../../dagon/graphics/tween/Tween.html"><span class="typ">Tween</span></a><span class="pun">*</span><span class="pun">)</span></code></td><td>A delegate that should be called on each tween repeat.
 </td>
 						</tr>
 						<tr>
@@ -643,6 +725,27 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/graphics/tween/Tween.time.html" class="public"><code>time</code></a>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">double</span></code></td><td>Current time in the tween.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/tween/Tween.toColor.html" class="public"><code>toColor</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">image<wbr/></span><span class="pun">.</span><span class="pln">color<wbr/></span><span class="pun">.</span><span class="typ">Color4f</span></code></td><td>End color value of the animation.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/tween/Tween.toFloat.html" class="public"><code>toFloat</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>End float value of the animation.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/tween/Tween.toVector.html" class="public"><code>toVector</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">vector<wbr/></span><span class="pun">.</span><span class="typ">Vector</span>!(float,3)</code></td><td>End vector value of the animation.
 </td>
 						</tr>
 						<tr>

@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="UTF-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
-		<title>Variable EventManager.controller</title>
+		<title>Function EventManager.controller</title>
 		<link rel="stylesheet" href="../../../css/style.min.css"/>
 		<script type="text/javascript" src="../../../js/script.min.js"></script>
 	</head>
@@ -63,6 +63,23 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 				</ul>
 					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../dagon/compute.html">compute</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/compute/resample.html">resample</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/compute/shader.html">shader</a>
+						</div>
+					</li>
+				</ul>
+					</li>
 					<li class="tree-view ">
 						<div class="package ">
 							<a href="../../../dagon/core.html">core</a>
@@ -71,6 +88,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/core/application.html">application</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/arena.html">arena</a>
 						</div>
 					</li>
 					<li>
@@ -85,12 +107,22 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../../dagon/core/dialogs.html">dialogs</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../dagon/core/dxgiformat.html">dxgiformat</a>
 						</div>
 					</li>
 					<li>
 						<div class="module selected">
 							<a href="../../../dagon/core/event.html">event</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/graphicstablet.html">graphicstablet</a>
 						</div>
 					</li>
 					<li>
@@ -120,6 +152,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../../dagon/core/mappedlist.html">mappedlist</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../dagon/core/messaging.html">messaging</a>
 						</div>
 					</li>
@@ -131,6 +168,16 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/core/props.html">props</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/shaderloader.html">shaderloader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/sysinfo.html">sysinfo</a>
 						</div>
 					</li>
 					<li>
@@ -160,6 +207,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<a href="../../../dagon/game.html">game</a>
 						</div>
 				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/game/basegame.html">basegame</a>
+						</div>
+					</li>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/game/game.html">game</a>
@@ -275,11 +327,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/graphics/shader.html">shader</a>
-						</div>
-					</li>
-					<li>
-						<div class="module ">
-							<a href="../../../dagon/graphics/shaderloader.html">shaderloader</a>
 						</div>
 					</li>
 					<li>
@@ -517,24 +564,15 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 		</nav>
 		<div id="main-contents">
 			<div>
-				<h1>Variable EventManager.controller</h1><p>Last opened controller, if any.
+				<h1>Function EventManager.controller</h1><p>Get currently opened SDL controller by device index.
 </p>
 				<div class="prototype">
 					<code class="lang-d">
 						<div class="single-prototype">
-				<span class="kwd">class</span> <a href="../../../dagon/core/event/EventManager.html"><span class="typ">EventManager</span></a>
+				<span class="pln">sdl<wbr/></span><span class="pun">.</span><span class="pln">gamecontroller<wbr/></span><span class="pun">.</span><span class="typ">SDL_GameController</span><span class="pun">*</span> <span class="pln">controller</span><span class="pun">(</span>
+				<br/>&nbsp;&nbsp;<span class="typ">uint</span> <span class="pln">deviceIndex</span>
 				<br/>
-				<span class="pun">
-					{
-					<br/>
-				</span>
-				&nbsp;&nbsp;<span class="com">// ...</span>
-				<br/>
-				&nbsp;&nbsp;<span class="pln">sdl<wbr/></span><span class="pun">.</span><span class="pln">gamecontroller<wbr/></span><span class="pun">.</span><span class="typ">SDL_GameController</span><span class="pun">*</span> <span class="pln">controller</span> <span class="pun">=</span> <span class="kwd">null</span><span class="pun">;</span>
-				<br/>
-				&nbsp;&nbsp;<span class="com">// ...</span>
-				<br/>
-				<span class="pun">}</span>
+				<span class="pun">)</span><span class="pun">;</span>
 						</div>
 					</code>
 				</div>

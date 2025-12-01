@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
+		<title>Module dagon.compute.resample</title>
+		<link rel="stylesheet" href="../../css/style.min.css"/>
+		<script type="text/javascript" src="../../js/script.min.js"></script>
+	</head>
+	<body onload="setupDdox();">
+		<header></header>
+		<nav id="main-nav">
+			<div>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<form action="#" method="GET">
+						<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();" autofocus/>
+					</form>
+					<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../";
+document.getElementById('symbolSearchPane').style.display = 'block';</script>
+				</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../dagon.html">dagon</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">collision
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/contact.html">contact</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/geometry.html">geometry</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/gjk.html">gjk</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/jss.html">jss</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/mpr.html">mpr</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/collision/shape.html">shape</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../dagon/compute.html">compute</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module selected">
+							<a href="../../dagon/compute/resample.html">resample</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/compute/shader.html">shader</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../dagon/core.html">core</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/application.html">application</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/arena.html">arena</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/bindings.html">bindings</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/config.html">config</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/dialogs.html">dialogs</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/dxgiformat.html">dxgiformat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/event.html">event</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/graphicstablet.html">graphicstablet</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/i18n.html">i18n</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/input.html">input</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/keycodes.html">keycodes</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/locale.html">locale</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/logger.html">logger</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/mappedlist.html">mappedlist</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/messaging.html">messaging</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/persistent.html">persistent</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/props.html">props</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/shaderloader.html">shaderloader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/sysinfo.html">sysinfo</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/time.html">time</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/vfs.html">vfs</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/vkformat.html">vkformat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/wintab.html">wintab</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../dagon/game.html">game</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../dagon/game/basegame.html">basegame</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/game/game.html">game</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/game/loadingscreen.html">loadingscreen</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../dagon/graphics.html">graphics</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/billboard.html">billboard</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/camera.html">camera</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/components.html">components</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/csm.html">csm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/dpsm.html">dpsm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/drawable.html">drawable</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/entity.html">entity</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/environment.html">environment</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/font.html">font</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/heightmap.html">heightmap</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/light.html">light</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/lod.html">lod</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/material.html">material</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/mesh.html">mesh</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/opensimplex.html">opensimplex</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/particles.html">particles</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/pose.html">pose</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/psm.html">psm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/screensurface.html">screensurface</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/shader.html">shader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/shadowmap.html">shadowmap</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/shapes.html">shapes</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/state.html">state</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/terrain.html">terrain</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/texproc.html">texproc</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/texture.html">texture</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/tween.html">tween</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/updateable.html">updateable</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/graphics/world.html">world</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../dagon/render.html">render</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../dagon/render/framebuffer.html">framebuffer</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/render/pass.html">pass</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/render/pipeline.html">pipeline</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/render/renderer.html">renderer</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/render/view.html">view</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../dagon/resource.html">resource</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../dagon/resource/gltf.html">gltf</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../dagon/resource/gltf/accessor.html">accessor</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/resource/gltf/animation.html">animation</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/resource/gltf/buffer.html">buffer</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/resource/gltf/bufferview.html">bufferview</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/resource/gltf/decoder.html">decoder</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/resource/gltf/mesh.html">mesh</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/resource/gltf/meshprimitive.html">meshprimitive</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/resource/gltf/node.html">node</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/resource/gltf/skin.html">skin</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/resource/asset.html">asset</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/resource/binary.html">binary</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/resource/boxfs.html">boxfs</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/resource/dds.html">dds</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/resource/entity.html">entity</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/resource/image.html">image</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/resource/material.html">material</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/resource/obj.html">obj</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/resource/scene.html">scene</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/resource/sdlimage.html">sdlimage</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/resource/text.html">text</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/resource/texture.html">texture</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../dagon/ui.html">ui</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../dagon/ui/firstpersonview.html">firstpersonview</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/ui/freeview.html">freeview</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/ui/textline.html">textline</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/extra.html">extra</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+				</ul>
+			</div>
+			<p id="main-nav-footer">
+				Built with<a href="https://github.com/MartinNowak/scod">scod</a>
+			</p>
+		</nav>
+		<div id="main-contents">
+			<div>
+				<h1>Module dagon.compute.resample</h1><p>GPU-based texture resizing through compute shader.
+</p><section><p>This module provides a compute shader wrapper for resizing RGBA8 textures
+ using GPU acceleration.
+</p>
+</section>
+<section></section>
+				<section>
+					<h2>Classes</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="ResampleShader" class="public" href="../../dagon/compute/resample/ResampleShader.html">ResampleShader</a>
+								</code>
+							</td>
+							<td>RGBA8 texture resizing shader.
+</td>
+						</tr>
+					</table>
+				</section>
+			</div>
+			<footer>
+				<div id="license-info">
+					
+				</div>
+			</footer>
+		</div>
+	</body>
+</html>

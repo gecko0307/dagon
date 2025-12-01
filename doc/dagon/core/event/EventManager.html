@@ -63,6 +63,23 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 				</ul>
 					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../dagon/compute.html">compute</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/compute/resample.html">resample</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/compute/shader.html">shader</a>
+						</div>
+					</li>
+				</ul>
+					</li>
 					<li class="tree-view ">
 						<div class="package ">
 							<a href="../../../dagon/core.html">core</a>
@@ -71,6 +88,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/core/application.html">application</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/arena.html">arena</a>
 						</div>
 					</li>
 					<li>
@@ -85,12 +107,22 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../../dagon/core/dialogs.html">dialogs</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../dagon/core/dxgiformat.html">dxgiformat</a>
 						</div>
 					</li>
 					<li>
 						<div class="module selected">
 							<a href="../../../dagon/core/event.html">event</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/graphicstablet.html">graphicstablet</a>
 						</div>
 					</li>
 					<li>
@@ -120,6 +152,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../../dagon/core/mappedlist.html">mappedlist</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../dagon/core/messaging.html">messaging</a>
 						</div>
 					</li>
@@ -131,6 +168,16 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/core/props.html">props</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/shaderloader.html">shaderloader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/sysinfo.html">sysinfo</a>
 						</div>
 					</li>
 					<li>
@@ -160,6 +207,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<a href="../../../dagon/game.html">game</a>
 						</div>
 				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/game/basegame.html">basegame</a>
+						</div>
+					</li>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/game/game.html">game</a>
@@ -275,11 +327,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/graphics/shader.html">shader</a>
-						</div>
-					</li>
-					<li>
-						<div class="module ">
-							<a href="../../../dagon/graphics/shaderloader.html">shaderloader</a>
 						</div>
 					</li>
 					<li>
@@ -561,13 +608,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
-								<a href="../../../dagon/core/event/EventManager.controller.html" class="public"><code>controller</code></a>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">sdl<wbr/></span><span class="pun">.</span><span class="pln">gamecontroller<wbr/></span><span class="pun">.</span><span class="typ">SDL_GameController</span><span class="pun">*</span></code></td><td>Last opened controller, if any.
-</td>
-						</tr>
-						<tr>
-							<td>
 								<a href="../../../dagon/core/event/EventManager.controllerAxisThreshold.html" class="public"><code>controllerAxisThreshold</code></a>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td><td>A maximum that controller axis value is clamped to (for normalization in 0..1 range).
@@ -577,35 +617,21 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<td>
 								<a href="../../../dagon/core/event/EventManager.controllerButtonDown.html" class="public"><code>controllerButtonDown</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span><span class="pun">[</span><span class="lit">255</span><span class="pun">]</span></code></td><td>Controller button went down this frame (valid only if <code class="lang-d"><a href="../../../dagon/core/event/EventManager.trackUpDownState.html"><span class="pln">trackUpDownState</span></a></code> is true).
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span><span class="pun">[</span><span class="lit">255</span><span class="pun">]</span><span class="pun">[</span><span class="lit">4</span><span class="pun">]</span></code></td><td>Controller button went down this frame (valid only if <code class="lang-d"><a href="../../../dagon/core/event/EventManager.trackUpDownState.html"><span class="pln">trackUpDownState</span></a></code> is true).
 </td>
 						</tr>
 						<tr>
 							<td>
 								<a href="../../../dagon/core/event/EventManager.controllerButtonPressed.html" class="public"><code>controllerButtonPressed</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span><span class="pun">[</span><span class="lit">255</span><span class="pun">]</span></code></td><td>Controller button is currently pressed/released.
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span><span class="pun">[</span><span class="lit">255</span><span class="pun">]</span><span class="pun">[</span><span class="lit">4</span><span class="pun">]</span></code></td><td>Controller button is currently pressed/released.
 </td>
 						</tr>
 						<tr>
 							<td>
 								<a href="../../../dagon/core/event/EventManager.controllerButtonUp.html" class="public"><code>controllerButtonUp</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span><span class="pun">[</span><span class="lit">255</span><span class="pun">]</span></code></td><td>Controller button went up this frame (valid only if <code class="lang-d"><a href="../../../dagon/core/event/EventManager.trackUpDownState.html"><span class="pln">trackUpDownState</span></a></code> is true).
-</td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../dagon/core/event/EventManager.controllerHasRumble.html" class="public"><code>controllerHasRumble</code></a>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Current controller vibration support.
-</td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../dagon/core/event/EventManager.controllerName.html" class="public"><code>controllerName</code></a>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Current controller name.
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span><span class="pun">[</span><span class="lit">255</span><span class="pun">]</span><span class="pun">[</span><span class="lit">4</span><span class="pun">]</span></code></td><td>Controller button went up this frame (valid only if <code class="lang-d"><a href="../../../dagon/core/event/EventManager.trackUpDownState.html"><span class="pln">trackUpDownState</span></a></code> is true).
 </td>
 						</tr>
 						<tr>
@@ -619,7 +645,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<td>
 								<a href="../../../dagon/core/event/EventManager.deltaTimeMs.html" class="public"><code>deltaTimeMs</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Time in milliseconds since the last <code class="lang-d"><a href="../../../dagon/core/event/EventManager.updateTimer.html"><span class="pln">updateTimer</span></a></code> call.
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">ulong</span></code></td><td>Time in milliseconds since the last <code class="lang-d"><a href="../../../dagon/core/event/EventManager.updateTimer.html"><span class="pln">updateTimer</span></a></code> call.
 </td>
 						</tr>
 						<tr>
@@ -638,6 +664,20 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/core/event/EventManager.drawableHeight.html" class="public"><code>drawableHeight</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td><td>Application's main window drawable height.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventManager.drawableWidth.html" class="public"><code>drawableWidth</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td><td>Application's main window drawable width.
+</td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/core/event/EventManager.enableKeyRepeat.html" class="public"><code>enableKeyRepeat</code></a>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Switch key repeat.
@@ -645,9 +685,16 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/core/event/EventManager.gameInputDevices.html" class="public"><code>gameInputDevices</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/core/event/GameInputDevice.html"><span class="typ">GameInputDevice</span></a><span class="pun">[</span><span class="lit">4</span><span class="pun">]</span></code></td><td>Opened controllers/joysticks.
+</td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/core/event/EventManager.graphicsTablet.html" class="public"><code>graphicsTablet</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dagon<wbr/></span><span class="pun">.</span><span class="pln">core<wbr/></span><span class="pun">.</span><span class="pln">graphicstablet<wbr/></span><span class="pun">.</span><span class="typ">GraphicsTablet</span></code></td><td><code class="lang-d"><span class="typ">PenMotion</span></code> events emitter.
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/core/graphicstablet/GraphicsTablet.html"><span class="typ">GraphicsTablet</span></a></code></td><td><code class="lang-d"><span class="typ">PenMotion</span></code> events emitter.
 </td>
 						</tr>
 						<tr>
@@ -668,37 +715,23 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
-								<a href="../../../dagon/core/event/EventManager.joystick.html" class="public"><code>joystick</code></a>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">sdl<wbr/></span><span class="pun">.</span><span class="pln">joystick<wbr/></span><span class="pun">.</span><span class="typ">SDL_Joystick</span><span class="pun">*</span></code></td><td>Last opened joystick, if any.
-</td>
-						</tr>
-						<tr>
-							<td>
 								<a href="../../../dagon/core/event/EventManager.joystickButtonDown.html" class="public"><code>joystickButtonDown</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span><span class="pun">[</span><span class="lit">255</span><span class="pun">]</span></code></td><td>Joystick button went down this frame (valid only if <code class="lang-d"><a href="../../../dagon/core/event/EventManager.trackUpDownState.html"><span class="pln">trackUpDownState</span></a></code> is true).
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span><span class="pun">[</span><span class="lit">255</span><span class="pun">]</span><span class="pun">[</span><span class="lit">4</span><span class="pun">]</span></code></td><td>Joystick button went down this frame (valid only if <code class="lang-d"><a href="../../../dagon/core/event/EventManager.trackUpDownState.html"><span class="pln">trackUpDownState</span></a></code> is true).
 </td>
 						</tr>
 						<tr>
 							<td>
 								<a href="../../../dagon/core/event/EventManager.joystickButtonPressed.html" class="public"><code>joystickButtonPressed</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span><span class="pun">[</span><span class="lit">255</span><span class="pun">]</span></code></td><td>Joystick button is currently pressed/released.
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span><span class="pun">[</span><span class="lit">255</span><span class="pun">]</span><span class="pun">[</span><span class="lit">4</span><span class="pun">]</span></code></td><td>Joystick button is currently pressed/released.
 </td>
 						</tr>
 						<tr>
 							<td>
 								<a href="../../../dagon/core/event/EventManager.joystickButtonUp.html" class="public"><code>joystickButtonUp</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span><span class="pun">[</span><span class="lit">255</span><span class="pun">]</span></code></td><td>Joystick button went up this frame (valid only if <code class="lang-d"><a href="../../../dagon/core/event/EventManager.trackUpDownState.html"><span class="pln">trackUpDownState</span></a></code> is true).
-</td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../dagon/core/event/EventManager.joystickName.html" class="public"><code>joystickName</code></a>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Current joystick name.
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span><span class="pun">[</span><span class="lit">255</span><span class="pun">]</span><span class="pun">[</span><span class="lit">4</span><span class="pun">]</span></code></td><td>Joystick button went up this frame (valid only if <code class="lang-d"><a href="../../../dagon/core/event/EventManager.trackUpDownState.html"><span class="pln">trackUpDownState</span></a></code> is true).
 </td>
 						</tr>
 						<tr>
@@ -780,6 +813,13 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/core/event/EventManager.numGameInputDevices.html" class="public"><code>numGameInputDevices</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Number of recognized controllers/joysticks.
+</td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/core/event/EventManager.numInboxEvents.html" class="public"><code>numInboxEvents</code></a>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Number of events in the inbox queue.
@@ -815,6 +855,16 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/core/event/EventManager.tmpHeap.html" class="public"><code>tmpHeap</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">memory<wbr/></span><span class="pun">.</span><span class="pln">arena<wbr/></span><span class="pun">.</span><span class="typ">Arena</span></code></td><td>Temporary heap allocator to create short-living objects for custom events.
+ tmpHeap is invalidated each step when there are no more pending outbox events.
+ It is mostly used to create payload data which should be immediately byte-copied
+ when event is dispatched.
+</td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/core/event/EventManager.trackUpDownState.html" class="public"><code>trackUpDownState</code></a>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Whether to update up/down states for keys and buttons.
@@ -838,14 +888,14 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<td>
 								<a href="../../../dagon/core/event/EventManager.windowHeight.html" class="public"><code>windowHeight</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Application's main window height.
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td><td>Application's main window height.
 </td>
 						</tr>
 						<tr>
 							<td>
 								<a href="../../../dagon/core/event/EventManager.windowWidth.html" class="public"><code>windowWidth</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Application's main window width.
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td><td>Application's main window width.
 </td>
 						</tr>
 						<tr>
@@ -909,6 +959,36 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/core/event/EventManager.controller.html" class="public">
+									<code>controller</code>
+								</a>
+								<span class="tableEntryAnnotation">(deviceIndex)</span>
+							</td>
+							<td>Get currently opened SDL controller by device index.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventManager.controllerHasRumble.html" class="public">
+									<code>controllerHasRumble</code>
+								</a>
+								<span class="tableEntryAnnotation">(deviceIndex)</span>
+							</td>
+							<td>Controller vibration support.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventManager.controllerName.html" class="public">
+									<code>controllerName</code>
+								</a>
+								<span class="tableEntryAnnotation">(deviceIndex)</span>
+							</td>
+							<td>Get controller name.
+</td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/core/event/EventManager.exit.html" class="public">
 									<code>exit</code>
 								</a>
@@ -932,25 +1012,35 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/event/EventManager.gameControllerAxis.html" class="public">
 									<code>gameControllerAxis</code>
 								</a>
-								<span class="tableEntryAnnotation">(axis)</span>
+								<span class="tableEntryAnnotation">(deviceIndex, axis)</span>
 							</td>
 							<td>Gets the normalized value of a game controller axis.
 </td>
 						</tr>
 						<tr>
 							<td>
-								<a href="../../../dagon/core/event/EventManager.gameControllerClose.html" class="public">
-									<code>gameControllerClose</code>
+								<a href="../../../dagon/core/event/EventManager.gameControllerRumble.html" class="public">
+									<code>gameControllerRumble</code>
 								</a>
-								<span class="tableEntryAnnotation">(deviceIndex)</span>
+								<span class="tableEntryAnnotation">(deviceIndex, lowFreq, hiFreg, duration)</span>
 							</td>
-							<td>Closes the game controller or joystick at the specified device index.
+							<td>Triggers controller rumble (vibration) if supported.
 </td>
 						</tr>
 						<tr>
 							<td>
-								<a href="../../../dagon/core/event/EventManager.gameControllerOpen.html" class="public">
-									<code>gameControllerOpen</code>
+								<a href="../../../dagon/core/event/EventManager.gameInputDeviceClose.html" class="public">
+									<code>gameInputDeviceClose</code>
+								</a>
+								<span class="tableEntryAnnotation">(deviceIndex)</span>
+							</td>
+							<td>Closes the game controller or joystick.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventManager.gameInputDeviceOpen.html" class="public">
+									<code>gameInputDeviceOpen</code>
 								</a>
 								<span class="tableEntryAnnotation">(deviceIndex)</span>
 							</td>
@@ -959,12 +1049,12 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
-								<a href="../../../dagon/core/event/EventManager.gameControllerRumble.html" class="public">
-									<code>gameControllerRumble</code>
+								<a href="../../../dagon/core/event/EventManager.joystick.html" class="public">
+									<code>joystick</code>
 								</a>
-								<span class="tableEntryAnnotation">(lowFreq, hiFreg, duration)</span>
+								<span class="tableEntryAnnotation">(deviceIndex)</span>
 							</td>
-							<td>Triggers controller rumble (vibration) if supported.
+							<td>Get currently opened SDL joystick by device index.
 </td>
 						</tr>
 						<tr>
@@ -982,7 +1072,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/event/EventManager.joystickAxis.html" class="public">
 									<code>joystickAxis</code>
 								</a>
-								<span class="tableEntryAnnotation">(axis)</span>
+								<span class="tableEntryAnnotation">(deviceIndex, axis)</span>
 							</td>
 							<td>Gets the normalized value of a joystick axis.
 </td>
@@ -1024,7 +1114,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/event/EventManager.queueUserEvent.html" class="public">
 									<code>queueUserEvent</code>
 								</a>
-								<span class="tableEntryAnnotation">(code)</span>
+								<span class="tableEntryAnnotation">(code, payload)</span>
 							</td>
 							<td>Generates a user event with the given code.
 </td>
@@ -1097,6 +1187,23 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<span class="tableEntryAnnotation">()</span>
 							</td>
 							<td>Updates the internal timer and computes delta time.
+</td>
+						</tr>
+					</table>
+				</section>
+				<section><h2>Aliases</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventManager.joystickName.html" class="public">
+									<code>joystickName</code>
+								</a>
+							</td>
+							<td>Get joystick name.
 </td>
 						</tr>
 					</table>

@@ -1,10 +1,10 @@
 # Dagon Engine
 
-[Dagon](https://github.com/gecko0307/dagon) is an Open Source 3D game development framework based on OpenGL 4.0 core profile and SDL2. The goal of this project is to create a modern, easy to use, extensible 3D game engine for [D language](https://dlang.org/).
+[Dagon](https://github.com/gecko0307/dagon) is an Open Source 3D game development framework based on OpenGL 4.3 core profile and SDL2. The goal of this project is to create a modern, easy to use, extensible 3D game engine for [D language](https://dlang.org/).
 
 > Note: this project is not connected to Dagon engine by Senscape. Also not to be confused with Dagor engine by Gaijin Entertainment.
 
-Dagon uses modern graphics techniques and so requires a fairly powerful graphics card to run (at least Turing-based NVIDIA cards are recommended). The engine works on Windows and Linux, support for mobile and web platforms is not planned.
+Dagon uses computation-heavy graphics techniques and so requires a fairly powerful graphics card to run (Ampere-based NVIDIA GPUs are recommended for optimal performance). The engine is only desktop, support for mobile and web platforms is not planned.
 
 [![Sponza](https://blog.pixperfect.online/wp-content/uploads/2025/05/sponza.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/05/sponza.jpg?)
 
@@ -50,10 +50,9 @@ Dagon depends on the following shared libraries:
 * [cimgui](https://github.com/cimgui/cimgui) (optional)
 * [libktx](https://github.com/KhronosGroup/KTX-Software) (optional)
 * [PhysFS](https://github.com/icculus/physfs) (optional)
+* [SoLoud](https://github.com/jarikomppa/soloud) (optional)
 * [libVLC](https://www.videolan.org/vlc/libvlc.html) (optional)
 * [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear) (optional, deprecated)
-
-Mandatory dependencies are SDL and SDL_image, the others belong to the corresponding extensions.
 
 Runtime dependencies are automatically deployed on 64-bit Windows and Linux. On other platforms, you will have to install them manually. Read more [here](https://github.com/gecko0307/dagon/blob/master/doc/Runtime%20Dependencies.md).
 

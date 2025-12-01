@@ -65,12 +65,34 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li class="tree-view collapsed">
 						<div class="package ">
+							<a href="../../../dagon/compute.html">compute</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/compute/resample.html">resample</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/compute/shader.html">shader</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
 							<a href="../../../dagon/core.html">core</a>
 						</div>
 				<ul class="tree-view">
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/core/application.html">application</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/arena.html">arena</a>
 						</div>
 					</li>
 					<li>
@@ -85,12 +107,22 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../../dagon/core/dialogs.html">dialogs</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../dagon/core/dxgiformat.html">dxgiformat</a>
 						</div>
 					</li>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/core/event.html">event</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/graphicstablet.html">graphicstablet</a>
 						</div>
 					</li>
 					<li>
@@ -120,6 +152,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../../dagon/core/mappedlist.html">mappedlist</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../dagon/core/messaging.html">messaging</a>
 						</div>
 					</li>
@@ -131,6 +168,16 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/core/props.html">props</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/shaderloader.html">shaderloader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/sysinfo.html">sysinfo</a>
 						</div>
 					</li>
 					<li>
@@ -160,6 +207,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<a href="../../../dagon/game.html">game</a>
 						</div>
 				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/game/basegame.html">basegame</a>
+						</div>
+					</li>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/game/game.html">game</a>
@@ -275,11 +327,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/graphics/shader.html">shader</a>
-						</div>
-					</li>
-					<li>
-						<div class="module ">
-							<a href="../../../dagon/graphics/shaderloader.html">shaderloader</a>
 						</div>
 					</li>
 					<li>
@@ -567,6 +614,13 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/render/pipeline/RenderPipeline.outputBuffer.html" class="public"><code>outputBuffer</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/render/framebuffer/Framebuffer.html"><span class="typ">Framebuffer</span></a></code></td><td>Output frame buffer for the pipeline passes.
+</td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/render/pipeline/RenderPipeline.passes.html" class="public"><code>passes</code></a>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">container<wbr/></span><span class="pun">.</span><span class="pln">array<wbr/></span><span class="pun">.</span><span class="typ">Array</span>!(dagon.render.pass.RenderPass,32L)</code></td><td>Array of render passes in the pipeline.
@@ -660,7 +714,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/event/EventDispatcher.onControllerAdd.html" class="public inherited">
 									<code>onControllerAdd</code>
 								</a>
-								<span class="tableEntryAnnotation">(deviceIndex)</span>
+								<span class="tableEntryAnnotation">(deviceIndex, deviceType)</span>
 							</td>
 							<td>Called when a controller is added.
 </td>
@@ -670,7 +724,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/event/EventDispatcher.onControllerAxisMotion.html" class="public inherited">
 									<code>onControllerAxisMotion</code>
 								</a>
-								<span class="tableEntryAnnotation">(axis, value)</span>
+								<span class="tableEntryAnnotation">(deviceIndex, axis, value)</span>
 							</td>
 							<td>Called when a controller axis is moved.
 </td>
@@ -680,7 +734,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/event/EventDispatcher.onControllerButtonDown.html" class="public inherited">
 									<code>onControllerButtonDown</code>
 								</a>
-								<span class="tableEntryAnnotation">(button)</span>
+								<span class="tableEntryAnnotation">(deviceIndex, button)</span>
 							</td>
 							<td>Called when a controller button is pressed.
 </td>
@@ -690,7 +744,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/event/EventDispatcher.onControllerButtonUp.html" class="public inherited">
 									<code>onControllerButtonUp</code>
 								</a>
-								<span class="tableEntryAnnotation">(button)</span>
+								<span class="tableEntryAnnotation">(deviceIndex, button)</span>
 							</td>
 							<td>Called when a controller button is released.
 </td>
@@ -747,10 +801,20 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onHardwareSpecificEvent.html" class="public inherited">
+									<code>onHardwareSpecificEvent</code>
+								</a>
+								<span class="tableEntryAnnotation">(deviceIndex, code, payload)</span>
+							</td>
+							<td>Called when a hardware specific event is received from a custom InputDevice.
+</td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/core/event/EventDispatcher.onJoystickAxisMotion.html" class="public inherited">
 									<code>onJoystickAxisMotion</code>
 								</a>
-								<span class="tableEntryAnnotation">(axis, value)</span>
+								<span class="tableEntryAnnotation">(deviceIndex, axis, value)</span>
 							</td>
 							<td>Called when a joystick axis is moved.
 </td>
@@ -760,7 +824,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/event/EventDispatcher.onJoystickButtonDown.html" class="public inherited">
 									<code>onJoystickButtonDown</code>
 								</a>
-								<span class="tableEntryAnnotation">(button)</span>
+								<span class="tableEntryAnnotation">(deviceIndex, button)</span>
 							</td>
 							<td>Called when a joystick button is pressed.
 </td>
@@ -770,7 +834,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/event/EventDispatcher.onJoystickButtonUp.html" class="public inherited">
 									<code>onJoystickButtonUp</code>
 								</a>
-								<span class="tableEntryAnnotation">(button)</span>
+								<span class="tableEntryAnnotation">(deviceIndex, button)</span>
 							</td>
 							<td>Called when a joystick button is released.
 </td>
@@ -897,10 +961,20 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onTimerEvent.html" class="public inherited">
+									<code>onTimerEvent</code>
+								</a>
+								<span class="tableEntryAnnotation">(timerID, userCode)</span>
+							</td>
+							<td>Called when a timer event is received.
+</td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/core/event/EventDispatcher.onUserEvent.html" class="public inherited">
 									<code>onUserEvent</code>
 								</a>
-								<span class="tableEntryAnnotation">(code)</span>
+								<span class="tableEntryAnnotation">(code, payload)</span>
 							</td>
 							<td>Called when a user event is received.
 </td>
@@ -930,9 +1004,9 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/event/EventListener.generateUserEvent.html" class="protected inherited">
 									<code>generateUserEvent</code>
 								</a>
-								<span class="tableEntryAnnotation">(code)</span>
+								<span class="tableEntryAnnotation">(code, payload)</span>
 							</td>
-							<td>Queues a user event with the given code.
+							<td>Queues a user event with the given code and payload pointer.
 </td>
 						</tr>
 						<tr>

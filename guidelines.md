@@ -1,12 +1,12 @@
 # Contributing Guidelines
 
-##  Bug reporting 
+## Bug reporting 
 
 Open an issue at [GitHub issue tracker](https://github.com/gecko0307/dagon/issues). Before doing that, ensure the bug was not already reported or fixed in `master` branch. Describe a problem and, if necessary, provide minimal code needed to reproduce it.
 
 Note that macOS compatibility issues are not considered bugs. Dagon uses OpenGL and doesn't support macOS where OpenGL is deprecated.
 
-##  Bug fixing 
+## Bug fixing 
 
 Open a new GitHub pull request with your patch. Provide a description of the problem and solution. Follow our code style.
 
@@ -14,9 +14,9 @@ Open a new GitHub pull request with your patch. Provide a description of the pro
 
 New code should at least:
 * work under Windows and POSIX systems and provide platform-agnostic API
-* use OpenGL 4.0 and GLSL 4.00 (core profile)
+* use OpenGL 4.3 core profile and GLSL 4.00+
 * use [dlib](https://github.com/gecko0307/dlib) for game math, image decoding, file I/O and other tasks dlib was created for
-* follow our code style
+* follow our [code style](#code-style-and-standards)
 * use transparent dynamic memory allocations. Ideally the code should not allocate at all or rely on user for that. Garbage collector usage is not allowed. If dynamic allocations can't be avoided, they should be done with `dlib.core.memory`. All classes should use `dlib.core.ownership`
 * not violate copyright/licensing. When adapting third-party code, make sure that it is compatible with [Boost Software License 1.0](https://www.boost.org/LICENSE_1_0.txt).
 
@@ -26,7 +26,7 @@ Adding new external dependencies should be avoided as much as possible. Only GC-
 
 `master` branch is a development branch for the next release. When release is ready, a release branch is created from `master` (for example, `dev_0.10`). Release branches are not merged back into `master`, they are used to fix bugs and make minor updates.
 
-##  Code style and standards 
+## Code style and standards 
 
 Dagon follows [D style](https://dlang.org/dstyle.html). Essential rules are the following:
 * Use spaces instead of tabs. Each indentation level is 4 spaces

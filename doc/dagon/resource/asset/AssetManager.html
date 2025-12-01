@@ -65,12 +65,34 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li class="tree-view collapsed">
 						<div class="package ">
+							<a href="../../../dagon/compute.html">compute</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/compute/resample.html">resample</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/compute/shader.html">shader</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
 							<a href="../../../dagon/core.html">core</a>
 						</div>
 				<ul class="tree-view">
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/core/application.html">application</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/arena.html">arena</a>
 						</div>
 					</li>
 					<li>
@@ -85,12 +107,22 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../../dagon/core/dialogs.html">dialogs</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../dagon/core/dxgiformat.html">dxgiformat</a>
 						</div>
 					</li>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/core/event.html">event</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/graphicstablet.html">graphicstablet</a>
 						</div>
 					</li>
 					<li>
@@ -120,6 +152,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../../dagon/core/mappedlist.html">mappedlist</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../dagon/core/messaging.html">messaging</a>
 						</div>
 					</li>
@@ -131,6 +168,16 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/core/props.html">props</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/shaderloader.html">shaderloader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/sysinfo.html">sysinfo</a>
 						</div>
 					</li>
 					<li>
@@ -160,6 +207,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<a href="../../../dagon/game.html">game</a>
 						</div>
 				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/game/basegame.html">basegame</a>
+						</div>
+					</li>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/game/game.html">game</a>
@@ -275,11 +327,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/graphics/shader.html">shader</a>
-						</div>
-					</li>
-					<li>
-						<div class="module ">
-							<a href="../../../dagon/graphics/shaderloader.html">shaderloader</a>
 						</div>
 					</li>
 					<li>
@@ -528,6 +575,130 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 				</div>
 				<section></section>
 
+				<section><h2>Constructors</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/resource/asset/AssetManager.this.html" class="public">
+									<code>this</code>
+								</a>
+								<span class="tableEntryAnnotation">(emngr, vfs, owner)</span>
+							</td>
+							<td>Constructor.
+</td>
+						</tr>
+					</table>
+				</section>
+				<section><h2>Fields</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Type</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/resource/asset/AssetManager.application.html" class="public"><code>application</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/core/application/Application.html"><span class="typ">Application</span></a></code></td><td>The application object. Set by the scene that owns the <code class="lang-d"><a href="../../../dagon/resource/asset/AssetManager.html"><span class="typ">AssetManager</span></a></code>.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/resource/asset/AssetManager.assetsByFilename.html" class="public"><code>assetsByFilename</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">container<wbr/></span><span class="pun">.</span><span class="pln">dict<wbr/></span><span class="pun">.</span><span class="typ">Trie</span>!(dagon.resource.asset.Asset,string)</code></td><td>Dictionary of assets by filename.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/resource/asset/AssetManager.base64ImagePrefixes.html" class="public"><code>base64ImagePrefixes</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">container<wbr/></span><span class="pun">.</span><span class="pln">dict<wbr/></span><span class="pun">.</span><span class="typ">Trie</span>!(string,string)</code></td><td>Dictionary of default image filenames by MIME types.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/resource/asset/AssetManager.defaultTextureLoader.html" class="public"><code>defaultTextureLoader</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/resource/asset/DefaultTextureLoader.html"><span class="typ">DefaultTextureLoader</span></a></code></td><td>Default texture loader.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/resource/asset/AssetManager.eventManager.html" class="public"><code>eventManager</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/core/event/EventManager.html"><span class="typ">EventManager</span></a></code></td><td>Event manager.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/resource/asset/AssetManager.fs.html" class="public"><code>fs</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/core/vfs/VirtualFileSystem.html"><span class="typ">VirtualFileSystem</span></a></code></td><td>VFS to read files.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/resource/asset/AssetManager.hdrImageFactory.html" class="public"><code>hdrImageFactory</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">image<wbr/></span><span class="pun">.</span><span class="pln">hdri<wbr/></span><span class="pun">.</span><span class="typ">UnmanagedHDRImageFactory</span></code></td><td>HDR image factory to load Radiance/HDR files.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/resource/asset/AssetManager.imageFactory.html" class="public"><code>imageFactory</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">image<wbr/></span><span class="pun">.</span><span class="pln">unmanaged<wbr/></span><span class="pun">.</span><span class="typ">UnmanagedImageFactory</span></code></td><td>LDR image factory for the fallback image loading method.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/resource/asset/AssetManager.liveUpdate.html" class="public"><code>liveUpdate</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Is live reloading enabled for assets.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/resource/asset/AssetManager.liveUpdatePeriod.html" class="public"><code>liveUpdatePeriod</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">double</span></code></td><td>File status monitoring period in seconds.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/resource/asset/AssetManager.loadingThread.html" class="public"><code>loadingThread</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">core<wbr/></span><span class="pun">.</span><span class="pln">thread<wbr/></span><span class="pun">.</span><span class="typ">Thread</span></code></td><td>Asset loading thread.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/resource/asset/AssetManager.nextLoadingPercentage.html" class="public"><code>nextLoadingPercentage</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Loading percentage in 0..1 range.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/resource/asset/AssetManager.stdfs.html" class="public"><code>stdfs</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">filesystem<wbr/></span><span class="pun">.</span><span class="pln">stdfs<wbr/></span><span class="pun">.</span><span class="typ">StdFileSystem</span></code></td><td>Physical FS for low-lever access.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/resource/asset/AssetManager.textureLoaders.html" class="public"><code>textureLoaders</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">container<wbr/></span><span class="pun">.</span><span class="pln">dict<wbr/></span><span class="pun">.</span><span class="typ">Trie</span>!(dagon.resource.asset.TextureLoader,string)</code></td><td>Dictionary of texture loaders by file extension (including the dot).
+</td>
+						</tr>
+					</table>
+				</section>
 				<section><h2>Methods</h2>
 					<table>
 						<col class="caption"/>

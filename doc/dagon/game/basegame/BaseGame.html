@@ -1,0 +1,1743 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
+		<title>Class BaseGame</title>
+		<link rel="stylesheet" href="../../../css/style.min.css"/>
+		<script type="text/javascript" src="../../../js/script.min.js"></script>
+	</head>
+	<body onload="setupDdox();">
+		<header></header>
+		<nav id="main-nav">
+			<div>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<form action="#" method="GET">
+						<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();" autofocus/>
+					</form>
+					<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../../";
+document.getElementById('symbolSearchPane').style.display = 'block';</script>
+				</div>
+				<ul class="tree-view">
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../../dagon.html">dagon</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">collision
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/collision/contact.html">contact</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/collision/geometry.html">geometry</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/collision/gjk.html">gjk</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/collision/jss.html">jss</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/collision/mpr.html">mpr</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/collision/shape.html">shape</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../dagon/compute.html">compute</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/compute/resample.html">resample</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/compute/shader.html">shader</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../dagon/core.html">core</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/application.html">application</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/arena.html">arena</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/bindings.html">bindings</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/config.html">config</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/dialogs.html">dialogs</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/dxgiformat.html">dxgiformat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/event.html">event</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/graphicstablet.html">graphicstablet</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/i18n.html">i18n</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/input.html">input</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/keycodes.html">keycodes</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/locale.html">locale</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/logger.html">logger</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/mappedlist.html">mappedlist</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/messaging.html">messaging</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/persistent.html">persistent</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/props.html">props</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/shaderloader.html">shaderloader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/sysinfo.html">sysinfo</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/time.html">time</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/vfs.html">vfs</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/vkformat.html">vkformat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/wintab.html">wintab</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view ">
+						<div class="package ">
+							<a href="../../../dagon/game.html">game</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module selected">
+							<a href="../../../dagon/game/basegame.html">basegame</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/game/game.html">game</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/game/loadingscreen.html">loadingscreen</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../dagon/graphics.html">graphics</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/billboard.html">billboard</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/camera.html">camera</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/components.html">components</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/csm.html">csm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/dpsm.html">dpsm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/drawable.html">drawable</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/entity.html">entity</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/environment.html">environment</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/font.html">font</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/heightmap.html">heightmap</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/light.html">light</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/lod.html">lod</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/material.html">material</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/mesh.html">mesh</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/opensimplex.html">opensimplex</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/particles.html">particles</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/pose.html">pose</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/psm.html">psm</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/screensurface.html">screensurface</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/shader.html">shader</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/shadowmap.html">shadowmap</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/shapes.html">shapes</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/state.html">state</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/terrain.html">terrain</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/texproc.html">texproc</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/texture.html">texture</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/tween.html">tween</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/updateable.html">updateable</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/graphics/world.html">world</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../dagon/render.html">render</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/render/framebuffer.html">framebuffer</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/render/pass.html">pass</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/render/pipeline.html">pipeline</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/render/renderer.html">renderer</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/render/view.html">view</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../dagon/resource.html">resource</a>
+						</div>
+				<ul class="tree-view">
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../dagon/resource/gltf.html">gltf</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/accessor.html">accessor</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/animation.html">animation</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/buffer.html">buffer</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/bufferview.html">bufferview</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/decoder.html">decoder</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/mesh.html">mesh</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/meshprimitive.html">meshprimitive</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/node.html">node</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/gltf/skin.html">skin</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/asset.html">asset</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/binary.html">binary</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/boxfs.html">boxfs</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/dds.html">dds</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/entity.html">entity</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/image.html">image</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/material.html">material</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/obj.html">obj</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/scene.html">scene</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/sdlimage.html">sdlimage</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/text.html">text</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/resource/texture.html">texture</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li class="tree-view collapsed">
+						<div class="package ">
+							<a href="../../../dagon/ui.html">ui</a>
+						</div>
+				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/ui/firstpersonview.html">firstpersonview</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/ui/freeview.html">freeview</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/ui/textline.html">textline</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/extra.html">extra</a>
+						</div>
+					</li>
+				</ul>
+					</li>
+				</ul>
+			</div>
+			<p id="main-nav-footer">
+				Built with<a href="https://github.com/MartinNowak/scod">scod</a>
+			</p>
+		</nav>
+		<div id="main-contents">
+			<div>
+				<h1>Class BaseGame</h1><p>Basic game class for Dagon applications.
+</p>
+				<div class="prototype">
+					<code class="lang-d">
+						<div class="single-prototype">
+				<span class="kwd">class</span> <span class="typ">BaseGame</span><br>&nbsp;&nbsp;: <a href="../../../dagon/core/application/Application.html"><span class="typ">Application</span></a><span class="pun">;</span>
+						</div>
+					</code>
+				</div>
+				<section></section>
+
+				<section><h2>Constructors</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/game/basegame/BaseGame.this.html" class="public">
+									<code>this</code>
+								</a>
+								<span class="tableEntryAnnotation">(w, h, fullscreen, title, args, appFolder)</span>
+							</td>
+							<td>Constructs a new game instance.
+</td>
+						</tr>
+					</table>
+				</section>
+				<section><h2>Fields</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Type</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/game/basegame/BaseGame.assetManager.html" class="public"><code>assetManager</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/resource/asset/AssetManager.html"><span class="typ">AssetManager</span></a></code></td><td>Global asset manager.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/game/basegame/BaseGame.currentScene.html" class="public"><code>currentScene</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/resource/scene/Scene.html"><span class="typ">Scene</span></a></code></td><td>The current scene being processed and rendered.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/game/basegame/BaseGame.scenes.html" class="public"><code>scenes</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">container<wbr/></span><span class="pun">.</span><span class="pln">dict<wbr/></span><span class="pun">.</span><span class="typ">Trie</span>!(dagon.resource.scene.Scene,string)</code></td><td>The dictionary of scenes, mapping scene objects to their names.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.address.html" class="public inherited"><code>address</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Address of this dispatcher.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.appDataFolderName.html" class="public inherited"><code>appDataFolderName</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>The application folder name (used under the HOME or APPDATA directory).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.args.html" class="public inherited"><code>args</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span><span class="pun">[]</span></code></td><td>Command line arguments.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.cadencer.html" class="public inherited"><code>cadencer</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/core/time/Cadencer.html"><span class="typ">Cadencer</span></a></code></td><td>Main loop runner. Calls <code class="lang-d"><a href="../../../dagon/core/application/Application.update.html"><span class="typ">Application<wbr/></span><span class="pun">.</span><span class="pln">update</span></a></code> with a given fixed frequency (60 Hz by default).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.config.html" class="public inherited"><code>config</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/core/config/Configuration.html"><span class="typ">Configuration</span></a></code></td><td>The configuration object for storing user-defined settings.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.customMountPaths.html" class="public inherited"><code>customMountPaths</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Additional VFS mount paths defined in settings.conf.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.defaultFontMonospace.html" class="public inherited"><code>defaultFontMonospace</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Path to the default monospace font (for the built-in font manager).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.defaultFontSans.html" class="public inherited"><code>defaultFontSans</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Path to the default sans font (for the built-in font manager).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.defaultFontSize.html" class="public inherited"><code>defaultFontSize</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Default font size (for the built-in font manager).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.directory.html" class="public inherited"><code>directory</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Absolute directory containing the executable.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.drawableHeight.html" class="public inherited"><code>drawableHeight</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td><td>Actual drawable area height of the window.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.drawableWidth.html" class="public inherited"><code>drawableWidth</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td><td>Actual drawable area width of the window.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventListener.enabled.html" class="public inherited"><code>enabled</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If false, disables event processing.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.enableDebugOutput.html" class="public inherited"><code>enableDebugOutput</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Is OpenGL debug output enabled.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.enableShaderCache.html" class="public inherited"><code>enableShaderCache</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Is shader binary cache enabled.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventListener.eventManager.html" class="public inherited"><code>eventManager</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/core/event/EventManager.html"><span class="typ">EventManager</span></a></code></td><td>The event manager used for polling events.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.fontManager.html" class="public inherited"><code>fontManager</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/font/FontManager.html"><span class="typ">FontManager</span></a></code></td><td>Object that loads and registers fonts.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.freetypeLibraryPath.html" class="public inherited"><code>freetypeLibraryPath</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Path to the FreeType library.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.freetypePresent.html" class="public inherited"><code>freetypePresent</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>FreeType available or not.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.ftLibrary.html" class="public inherited"><code>ftLibrary</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">ft<wbr/></span><span class="pun">.</span><span class="pln">ft<wbr/></span><span class="pun">.</span><span class="typ">FT_LibraryRec</span><span class="pun">*</span></code></td><td>Handle to a FreeType library instance.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.ftVersion.html" class="public inherited"><code>ftVersion</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/core/application/FTVersion.html"><span class="typ">FTVersion</span></a></code></td><td>Actually used FreeType library version.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.fullscreen.html" class="public inherited"><code>fullscreen</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Fullscreen or windowed.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.glcontext.html" class="public inherited"><code>glcontext</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">void</span><span class="pun">*</span></code></td><td>OpenGL context.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.glRenderer.html" class="public inherited"><code>glRenderer</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">text<wbr/></span><span class="pun">.</span><span class="pln">str<wbr/></span><span class="pun">.</span><span class="typ">String</span></code></td><td>OpenGL renderer string (graphics card model) obtained from the graphics driver.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.glVendor.html" class="public inherited"><code>glVendor</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">text<wbr/></span><span class="pun">.</span><span class="pln">str<wbr/></span><span class="pun">.</span><span class="typ">String</span></code></td><td>OpenGL vendor string obtained from the graphics driver.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.glVersion.html" class="public inherited"><code>glVersion</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">text<wbr/></span><span class="pun">.</span><span class="pln">str<wbr/></span><span class="pun">.</span><span class="typ">String</span></code></td><td>OpenGL version string obtained from the graphics driver.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventListener.inputManager.html" class="public inherited"><code>inputManager</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/core/input/InputManager.html"><span class="typ">InputManager</span></a></code></td><td>The input manager for input state queries.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.loadedFTSupport.html" class="public inherited"><code>loadedFTSupport</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">bindbc<wbr/></span><span class="pun">.</span><span class="pln">freetype<wbr/></span><span class="pun">.</span><span class="pln">config<wbr/></span><span class="pun">.</span><span class="typ">FTSupport</span></code></td><td>Loaded FreeType API support version. This is not an actual FreeType library version!
+ Dagon assumes FTSupport.v2_8, but this is not a strict requirement,
+ the engine will continue running even if 2.8 fails to load.
+ To check actually loaded library version, use <code class="lang-d"><a href="../../../dagon/core/application/Application.ftVersion.html"><span class="pln">ftVersion</span></a></code>.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.loadedGLSupport.html" class="public inherited"><code>loadedGLSupport</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">bindbc<wbr/></span><span class="pun">.</span><span class="pln">opengl<wbr/></span><span class="pun">.</span><span class="pln">config<wbr/></span><span class="pun">.</span><span class="typ">GLSupport</span></code></td><td>Loaded OpenGL API support version.
+ Dagon requires at least GLSupport.gl43 and will not run on a lower version.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.loadedSDLImageSupport.html" class="public inherited"><code>loadedSDLImageSupport</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">sdl_image<wbr/></span><span class="pun">.</span><span class="typ">SDLImageSupport</span></code></td><td>Loaded SDL_Image API support version. This is not an actual SDL_Image library version!
+ Dagon assumes SDLImageSupport.v2_8, but this is not a strict requirement,
+ the engine will continue running even if 2.8 fails to load.
+ To check actually loaded library version, use <code class="lang-d"><a href="../../../dagon/core/application/Application.sdlImageVersion.html"><span class="pln">sdlImageVersion</span></a></code>.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.loadedSDLSupport.html" class="public inherited"><code>loadedSDLSupport</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">bindbc<wbr/></span><span class="pun">.</span><span class="pln">sdl<wbr/></span><span class="pun">.</span><span class="pln">config<wbr/></span><span class="pun">.</span><span class="typ">SDLSupport</span></code></td><td>Loaded SDL API support version. This is not an actual SDL library version!
+ Dagon assumes SDLSupport.v2_30, but this is not a strict requirement,
+ the engine will continue running even if 2.30 fails to load.
+ To check actually loaded library version, use <code class="lang-d"><a href="../../../dagon/core/application/Application.sdlVersion.html"><span class="pln">sdlVersion</span></a></code>.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.locale.html" class="public inherited"><code>locale</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>System locale (ISO 639 language + ISO 3166 region)
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.localePath.html" class="public inherited"><code>localePath</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Path to the folder containing translation files.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.logLevel.html" class="public inherited"><code>logLevel</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/core/logger/LogLevel.html"><span class="typ">LogLevel</span></a></code></td><td>Initial log level.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.maxTextureAnisotropy.html" class="public inherited"><code>maxTextureAnisotropy</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Maximum supported level of anisotropic texture filtering.
+ If anisotropic filtering is not supported, this is set to zero.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.maxTimersCount.html" class="public inherited"><code>maxTimersCount</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Maximum simultaneous timers.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.maxWorkGroups.html" class="public inherited"><code>maxWorkGroups</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span><span class="pun">[</span><span class="lit">3</span><span class="pun">]</span></code></td><td>Maximum number of workgroups per compute dispatch.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.maxWorkGroupSize.html" class="public inherited"><code>maxWorkGroupSize</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span><span class="pun">[</span><span class="lit">3</span><span class="pun">]</span></code></td><td>Maximum size of a single workgorup in a compute shader.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.path.html" class="public inherited"><code>path</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Full path of the executable (not CWD!).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.pixelRatio.html" class="public inherited"><code>pixelRatio</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Ratio of the resolution in physical pixels to the resolution in logical pixels.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.sdlImageLibraryPath.html" class="public inherited"><code>sdlImageLibraryPath</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Path to the SDL2_Image library.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.sdlImagePresent.html" class="public inherited"><code>sdlImagePresent</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>SDL_Image available or not.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.sdlImageVersion.html" class="public inherited"><code>sdlImageVersion</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">bindbc<wbr/></span><span class="pun">.</span><span class="pln">sdl<wbr/></span><span class="pun">.</span><span class="pln">config<wbr/></span><span class="pun">.</span><span class="typ">SDL_version</span></code></td><td>Actually used SDL_Image library version.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.sdlLibraryPath.html" class="public inherited"><code>sdlLibraryPath</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Path to the SDL2 library.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.sdlVersion.html" class="public inherited"><code>sdlVersion</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">bindbc<wbr/></span><span class="pun">.</span><span class="pln">sdl<wbr/></span><span class="pun">.</span><span class="pln">config<wbr/></span><span class="pun">.</span><span class="typ">SDL_version</span></code></td><td>Actually used SDL library version.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.shaderCache.html" class="public inherited"><code>shaderCache</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/shader/ShaderCache.html"><span class="typ">ShaderCache</span></a></code></td><td>Shader cache.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.shaderCachePath.html" class="public inherited"><code>shaderCachePath</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Shader cache path.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.stepFrequency.html" class="public inherited"><code>stepFrequency</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Update frequency in Hz.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.stereoRendering.html" class="public inherited"><code>stereoRendering</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>VR headset mode.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.systemInfo.html" class="public inherited"><code>systemInfo</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/core/sysinfo/SysInfo.html"><span class="typ">SysInfo</span></a></code></td><td>System information.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.translation.html" class="public inherited"><code>translation</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/core/i18n/Translation.html"><span class="typ">Translation</span></a></code></td><td>Loaded translation (from locale/*.lang file) based on selected locale.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.userLocale.html" class="public inherited"><code>userLocale</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>User-defined locale (ISO 639 language + ISO 3166 region). Overrides system locale.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.vfs.html" class="public inherited"><code>vfs</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/core/vfs/VirtualFileSystem.html"><span class="typ">VirtualFileSystem</span></a></code></td><td>Global VFS that all resource loaders should use.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.vsync.html" class="public inherited"><code>vsync</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td><td>Vertical synchronization mode.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.window.html" class="public inherited"><code>window</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">sdl<wbr/></span><span class="pun">.</span><span class="pln">video<wbr/></span><span class="pun">.</span><span class="typ">SDL_Window</span><span class="pun">*</span></code></td><td>Pointer to the main SDL window created by the Application.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.windowBorderless.html" class="public inherited"><code>windowBorderless</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Is the window borderless.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.windowHeight.html" class="public inherited"><code>windowHeight</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Application window height.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.windowHiDPI.html" class="public inherited"><code>windowHiDPI</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Is the window HiDPI-aware.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.windowMaximized.html" class="public inherited"><code>windowMaximized</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Is the window initially maximized.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.windowMinimized.html" class="public inherited"><code>windowMinimized</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Is the window initially minimizied.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.windowResizable.html" class="public inherited"><code>windowResizable</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Can the user resize the window.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.windowTitle.html" class="public inherited"><code>windowTitle</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Application window title.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.windowWidth.html" class="public inherited"><code>windowWidth</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Application window width.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.windowX.html" class="public inherited"><code>windowX</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td><td>Application window X-coordinate.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.windowY.html" class="public inherited"><code>windowY</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td><td>Application window Y-coordinate.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.wintabPresent.html" class="public inherited"><code>wintabPresent</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Wintab available or not.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.domain.html" class="protected inherited"><code>domain</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td><td>Addressing domain of this dispatcher.
+</td>
+						</tr>
+					</table>
+				</section>
+				<section><h2>Methods</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/game/basegame/BaseGame.onUpdate.html" class="public">
+									<code>onUpdate</code>
+								</a>
+								<span class="tableEntryAnnotation">(t)</span>
+							</td>
+							<td>Called every frame to update game logic.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/game/basegame/BaseGame.setCurrentScene.html" class="public">
+									<code>setCurrentScene</code>
+								</a>
+								<span class="tableEntryAnnotation">(scene, releaseCurrent)</span>
+							</td>
+							<td>Sets current scene to the specified scene object.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/game/basegame/BaseGame.setCurrentScene.html" class="public">
+									<code>setCurrentScene</code>
+								</a>
+								<span class="tableEntryAnnotation">(name, releaseCurrent)</span>
+							</td>
+							<td>Sets current scene to the specified scene name.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.cancelTimer.html" class="public inherited">
+									<code>cancelTimer</code>
+								</a>
+								<span class="tableEntryAnnotation">(id)</span>
+							</td>
+							<td>Cancels a timer.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.centerWindow.html" class="public inherited">
+									<code>centerWindow</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Centers the window on the screen.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.checkGLError.html" class="public inherited">
+									<code>checkGLError</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Checks for OpenGL errors and logs them.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.completeTimer.html" class="public inherited">
+									<code>completeTimer</code>
+								</a>
+								<span class="tableEntryAnnotation">(index)</span>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.displayRefreshRate.html" class="public inherited">
+									<code>displayRefreshRate</code>
+								</a>
+								<span class="tableEntryAnnotation">(fallbackRefreshRate)</span>
+							</td>
+							<td>Returns the display's refresh rate, or <code class="lang-d"><a href="../../../dagon/core/application/Application.displayRefreshRate.html#fallbackRefreshRate"><span class="pln">fallbackRefreshRate</span></a></code> if query fails.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.exit.html" class="public inherited">
+									<code>exit</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Terminates the application.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.fileExists.html" class="public inherited">
+									<code>fileExists</code>
+								</a>
+								<span class="tableEntryAnnotation">(filename)</span>
+							</td>
+							<td>Checks if a file exists in the VFS.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.fileStatus.html" class="public inherited">
+									<code>fileStatus</code>
+								</a>
+								<span class="tableEntryAnnotation">(filename)</span>
+							</td>
+							<td>Returns file status.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.frequencyToRefreshRate.html" class="public inherited">
+									<code>frequencyToRefreshRate</code>
+								</a>
+								<span class="tableEntryAnnotation">(fallbackRefreshRate)</span>
+							</td>
+							<td>Sets the cadencer frequency to the display's refresh rate.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.hwnd.html" class="public inherited">
+									<code>hwnd</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Windows-only: returns HWND of the application window.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.maximizeWindow.html" class="public inherited">
+									<code>maximizeWindow</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Maximizes the window.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.mount.html" class="public inherited">
+									<code>mount</code>
+								</a>
+								<span class="tableEntryAnnotation">(fs)</span>
+							</td>
+							<td>Mounts the specified ReadOnlyFileSystem to the virtual file system.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.mount.html" class="public inherited">
+									<code>mount</code>
+								</a>
+								<span class="tableEntryAnnotation">(dirName)</span>
+							</td>
+							<td>Mounts the specified directory to the virtual file system.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.numActiveTimers.html" class="public inherited">
+									<code>numActiveTimers</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Returns the number of currently active timers.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onControllerAdd.html" class="public inherited">
+									<code>onControllerAdd</code>
+								</a>
+								<span class="tableEntryAnnotation">(deviceIndex, deviceType)</span>
+							</td>
+							<td>Called when a controller is added.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onControllerAxisMotion.html" class="public inherited">
+									<code>onControllerAxisMotion</code>
+								</a>
+								<span class="tableEntryAnnotation">(deviceIndex, axis, value)</span>
+							</td>
+							<td>Called when a controller axis is moved.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onControllerButtonDown.html" class="public inherited">
+									<code>onControllerButtonDown</code>
+								</a>
+								<span class="tableEntryAnnotation">(deviceIndex, button)</span>
+							</td>
+							<td>Called when a controller button is pressed.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onControllerButtonUp.html" class="public inherited">
+									<code>onControllerButtonUp</code>
+								</a>
+								<span class="tableEntryAnnotation">(deviceIndex, button)</span>
+							</td>
+							<td>Called when a controller button is released.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onControllerRemove.html" class="public inherited">
+									<code>onControllerRemove</code>
+								</a>
+								<span class="tableEntryAnnotation">(deviceIndex)</span>
+							</td>
+							<td>Called when a controller is removed.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onDropFile.html" class="public inherited">
+									<code>onDropFile</code>
+								</a>
+								<span class="tableEntryAnnotation">(filename)</span>
+							</td>
+							<td>Called when a file is dropped onto the window.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onFileChange.html" class="public inherited">
+									<code>onFileChange</code>
+								</a>
+								<span class="tableEntryAnnotation">(filename)</span>
+							</td>
+							<td>Called when a file change is detected.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onFocusGain.html" class="public inherited">
+									<code>onFocusGain</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Called when the window gains focus.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onFocusLoss.html" class="public inherited">
+									<code>onFocusLoss</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Called when the window loses focus.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onHardwareSpecificEvent.html" class="public inherited">
+									<code>onHardwareSpecificEvent</code>
+								</a>
+								<span class="tableEntryAnnotation">(deviceIndex, code, payload)</span>
+							</td>
+							<td>Called when a hardware specific event is received from a custom InputDevice.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onJoystickAxisMotion.html" class="public inherited">
+									<code>onJoystickAxisMotion</code>
+								</a>
+								<span class="tableEntryAnnotation">(deviceIndex, axis, value)</span>
+							</td>
+							<td>Called when a joystick axis is moved.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onJoystickButtonDown.html" class="public inherited">
+									<code>onJoystickButtonDown</code>
+								</a>
+								<span class="tableEntryAnnotation">(deviceIndex, button)</span>
+							</td>
+							<td>Called when a joystick button is pressed.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onJoystickButtonUp.html" class="public inherited">
+									<code>onJoystickButtonUp</code>
+								</a>
+								<span class="tableEntryAnnotation">(deviceIndex, button)</span>
+							</td>
+							<td>Called when a joystick button is released.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onKeyDown.html" class="public inherited">
+									<code>onKeyDown</code>
+								</a>
+								<span class="tableEntryAnnotation">(key)</span>
+							</td>
+							<td>Called when a key is pressed.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onKeyUp.html" class="public inherited">
+									<code>onKeyUp</code>
+								</a>
+								<span class="tableEntryAnnotation">(key)</span>
+							</td>
+							<td>Called when a key is released.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onLocaleChange.html" class="public inherited">
+									<code>onLocaleChange</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Called when a user locale preferences have changed.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onMessage.html" class="public inherited">
+									<code>onMessage</code>
+								</a>
+								<span class="tableEntryAnnotation">(domain, sender, message, payload)</span>
+							</td>
+							<td>Called when a message event is received.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onMouseButtonDown.html" class="public inherited">
+									<code>onMouseButtonDown</code>
+								</a>
+								<span class="tableEntryAnnotation">(button)</span>
+							</td>
+							<td>Called when a mouse button is pressed.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onMouseButtonUp.html" class="public inherited">
+									<code>onMouseButtonUp</code>
+								</a>
+								<span class="tableEntryAnnotation">(button)</span>
+							</td>
+							<td>Called when a mouse button is released.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onMouseWheel.html" class="public inherited">
+									<code>onMouseWheel</code>
+								</a>
+								<span class="tableEntryAnnotation">(x, y)</span>
+							</td>
+							<td>Called when the mouse wheel is scrolled.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onPenMotion.html" class="public inherited">
+									<code>onPenMotion</code>
+								</a>
+								<span class="tableEntryAnnotation">(x, y, pressure)</span>
+							</td>
+							<td>Called when a pen (stilus) is moved over a graphics tablet.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onQuit.html" class="public inherited">
+									<code>onQuit</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Called when a quit event is received.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.onRender.html" class="public inherited">
+									<code>onRender</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Called every frame to render the scene.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onResize.html" class="public inherited">
+									<code>onResize</code>
+								</a>
+								<span class="tableEntryAnnotation">(width, height)</span>
+							</td>
+							<td>Called when the window is resized.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onTask.html" class="public inherited">
+									<code>onTask</code>
+								</a>
+								<span class="tableEntryAnnotation">(domain, sender, callback, payload)</span>
+							</td>
+							<td>Called when a task event is received.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onTextInput.html" class="public inherited">
+									<code>onTextInput</code>
+								</a>
+								<span class="tableEntryAnnotation">(code)</span>
+							</td>
+							<td>Called when text input is received.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onTimerEvent.html" class="public inherited">
+									<code>onTimerEvent</code>
+								</a>
+								<span class="tableEntryAnnotation">(timerID, userCode)</span>
+							</td>
+							<td>Called when a timer event is received.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.onUserEvent.html" class="public inherited">
+									<code>onUserEvent</code>
+								</a>
+								<span class="tableEntryAnnotation">(code, payload)</span>
+							</td>
+							<td>User event handler.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.openFile.html" class="public inherited">
+									<code>openFile</code>
+								</a>
+								<span class="tableEntryAnnotation">(filename)</span>
+							</td>
+							<td>Opens file stream for reading from the virtual file system.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.processEvent.html" class="public inherited">
+									<code>processEvent</code>
+								</a>
+								<span class="tableEntryAnnotation">(e, enableInputEvents)</span>
+							</td>
+							<td>Processes a single event, dispatching it to the appropriate handler.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventListener.processEvents.html" class="public inherited">
+									<code>processEvents</code>
+								</a>
+								<span class="tableEntryAnnotation">(enableInputEvents)</span>
+							</td>
+							<td>Processes all pending events, dispatching them to handler methods.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.run.html" class="public inherited">
+									<code>run</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Runs the main loop.
+ This will block the thread until the application terminates.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.setCursor.html" class="public inherited">
+									<code>setCursor</code>
+								</a>
+								<span class="tableEntryAnnotation">(cur)</span>
+							</td>
+							<td>Set mouse cursor
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.setFullscreen.html" class="public inherited">
+									<code>setFullscreen</code>
+								</a>
+								<span class="tableEntryAnnotation">(mode)</span>
+							</td>
+							<td>Switches fullscreen mode.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.setTimer.html" class="public inherited">
+									<code>setTimer</code>
+								</a>
+								<span class="tableEntryAnnotation">(duration, userCode, periodic)</span>
+							</td>
+							<td>Creates a new timer and returns it's ID.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.setWindowSize.html" class="public inherited">
+									<code>setWindowSize</code>
+								</a>
+								<span class="tableEntryAnnotation">(w, h)</span>
+							</td>
+							<td>Sets the window size.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.showConsoleWindow.html" class="public inherited">
+									<code>showConsoleWindow</code>
+								</a>
+								<span class="tableEntryAnnotation">(mode)</span>
+							</td>
+							<td>Switches console window visibility under Windows.
+ Under other OSes does nothing.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.takeScreenshot.html" class="public inherited">
+									<code>takeScreenshot</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Takes a screenshot of the current framebuffer and returns it as a SuperImage.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.takeScreenshot.html" class="public inherited">
+									<code>takeScreenshot</code>
+								</a>
+								<span class="tableEntryAnnotation">(path)</span>
+							</td>
+							<td>Takes a screenshot and saves it to the specified path (auto-incrementing filename).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.update.html" class="public inherited">
+									<code>update</code>
+								</a>
+								<span class="tableEntryAnnotation">(t)</span>
+							</td>
+							<td>Called on each animation frame (cadencer tick).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventListener.generateUserEvent.html" class="protected inherited">
+									<code>generateUserEvent</code>
+								</a>
+								<span class="tableEntryAnnotation">(code, payload)</span>
+							</td>
+							<td>Queues a user event with the given code and payload pointer.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventListener.queueLog.html" class="protected inherited">
+									<code>queueLog</code>
+								</a>
+								<span class="tableEntryAnnotation">(level, message)</span>
+							</td>
+							<td>Queues a log event.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventListener.queueMessage.html" class="protected inherited">
+									<code>queueMessage</code>
+								</a>
+								<span class="tableEntryAnnotation">(recipient, message, payload, domain)</span>
+							</td>
+							<td>Queues a message event.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventListener.queueTask.html" class="protected inherited">
+									<code>queueTask</code>
+								</a>
+								<span class="tableEntryAnnotation">(callback, payload, domain)</span>
+							</td>
+							<td>Queues a task event.
+</td>
+						</tr>
+					</table>
+				</section><section><h2>Description</h2>
+<p>The <code class="lang-d"><span class="typ">BaseGame</span></code> class is a subclass of <code class="lang-d"><span class="typ">Application</span></code>
+ that provides a framework for creating scene-based games.
+</p>
+</section>
+
+			</div>
+			<footer>
+				<div id="license-info">
+					<p>Timur Gafarov
+</p>
+<p>Timur Gafarov 2019-2025
+</p>
+<p><a href="https://boost.org/LICENSE_1_0.txt">Boost License 1.0</a>.
+</p>
+
+				</div>
+			</footer>
+		</div>
+	</body>
+</html>
