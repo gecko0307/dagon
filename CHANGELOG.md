@@ -1,3 +1,8 @@
+Dagon 0.36.2 - TBD
+------------------
+- **Misc**
+  - Update configs in init-exec template app.
+
 Dagon 0.36.1 - 1 Dec, 2025
 --------------------------
 - **Core**
