@@ -12,7 +12,8 @@ Dagon 0.36.0 - TBD
 - **Extensions**
   - New extension `dagon:openvr`
 - **Misc**
-  - Dagon now uses dlib 1.4.0.
+  - Dagon now uses dlib 1.4.0
+  - `dagon.core` is fully documented.
 
 Dagon 0.35.1 - 20 Nov, 2025
 ---------------------------
