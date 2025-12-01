@@ -1,5 +1,5 @@
-Dagon 0.36.0 - TBD
-------------------
+Dagon 0.36.0 - 1 Dec, 2025
+--------------------------
 - **Core**
   - Breaking change: `EventDispatcher.onUserEvent` now accepts payload pointer
   - `EventType.HardwareSpecific` for custom input hardware events
