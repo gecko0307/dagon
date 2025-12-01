@@ -548,6 +548,10 @@ WintabSupport loadWintab()
     return ret;
 }
 
+/**
+ * Loads Wintab library and returns supported version, which should be
+ * WintabSupport.v140 if the library is loaded correctly.
+ */
 WintabSupport loadWintab(const(char)* libName)
 {
     lib = load(libName);

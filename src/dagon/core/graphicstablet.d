@@ -28,6 +28,12 @@ DEALINGS IN THE SOFTWARE.
 /**
  * Graphics tablet frontend.
  *
+ * Description:
+ * The `dagon.core.graphicstablet` module provides the `GraphicsTablet` class
+ * that implements generic `InputDevice` interface for Wintab-compatible tablets.
+ * The device emits `EventType.PenMotion` events when the stilus touches the tablet.
+ * `GraphicsTablet` currently works only under Windows.
+ *
  * Copyright: Timur Gafarov 2025.
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Timur Gafarov
@@ -45,6 +51,7 @@ version(Windows)
     import core.sys.windows.windows;
     import dagon.core.wintab;
     
+    /// Alias for Wintab packet with all the data.
     alias TabletPacket = PACKET!PK_ALL;
 }
 else version(linux)
@@ -76,13 +83,16 @@ class GraphicsTablet: Owner, InputDevice
     
    public:
     
+    /// Disable to stop emitting events.
     bool enabled = true;
     
+    /// Constructor (doesn't call `initialze`).
     this(Owner owner)
     {
         super(owner);
     }
     
+    /// Initialize the tablet. Returns false on failure and true on success.
     bool initialize(EventManager eventManager)
     {
         if (!eventManager.application.wintabPresent)
@@ -127,6 +137,7 @@ class GraphicsTablet: Owner, InputDevice
         return initialized;
     }
     
+    /// Emits next pending event and returns true if there are more events to poll. Otherwise returns false.
     bool pollEvents()
     {
         if (!initialized || !enabled)

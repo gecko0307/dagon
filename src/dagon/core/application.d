@@ -146,10 +146,9 @@ enum ImageFileFormat
     DDS,
     KTX,
     JPG = JPEG,
-    WEBP = WebP
+    WEBP = WebP,
+    KTX2 = KTX
 }
-
-enum GL_FRAMEBUFFER_SRGB = 0x8DB9;
 
 enum string[GLenum] GLErrorStrings = [
     GL_NO_ERROR: "GL_NO_ERROR",
@@ -315,6 +314,7 @@ bool isExtensionSupported(string extName)
     return _extensions.canFind(extName);
 }
 
+/// Structure that represents FreeType version number.
 struct FTVersion
 {
     int major, minor, patch;
@@ -343,29 +343,33 @@ VirtualFileSystem globalVFS()
     return _vfs;
 }
 
+/// Returns global `ShaderCache` object.
 ShaderCache globalShaderCache()
 {
     return _globalShaderCache;
 }
 
-private struct TimerData
+private
 {
-    Application application;
-    size_t index;
-    int id;
-    int userEventCode;
-    bool periodic;
-    bool active;
-}
+    struct TimerData
+    {
+        Application application;
+        size_t index;
+        int id;
+        int userEventCode;
+        bool periodic;
+        bool active;
+    }
 
-private extern(C) uint sdlTimerCallback(uint interval, void* param) nothrow
-{
-    TimerData* td = cast(TimerData*)param;
-    td.application.completeTimer(td.index);
-    if (td.periodic)
-        return interval;
-    else
-        return 0;
+    extern(C) uint sdlTimerCallback(uint interval, void* param) nothrow
+    {
+        TimerData* td = cast(TimerData*)param;
+        td.application.completeTimer(td.index);
+        if (td.periodic)
+            return interval;
+        else
+            return 0;
+    }
 }
 
 /**
@@ -382,7 +386,6 @@ private extern(C) uint sdlTimerCallback(uint interval, void* param) nothrow
  */
 class Application: EventListener, Updateable
 {
-    ///
     protected string configFilename = "settings.conf";
     
     /// Initial log level.
@@ -1066,8 +1069,7 @@ class Application: EventListener, Updateable
         if (shaderCache.enabled)
             logInfo("Shader cache path: ", shaderCachePath);
         
-        // Get cursors
-        // TODO: support custom cursors
+        // Get cursors (TODO: support custom cursors)
         cursor[Cursor.Default] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
         cursor[Cursor.IBeam] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
         cursor[Cursor.Wait] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
@@ -1082,7 +1084,6 @@ class Application: EventListener, Updateable
         cursor[Cursor.Hand] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
     }
     
-    /// 
     protected void updateSettings()
     {
         // Logger settings

@@ -66,7 +66,7 @@ import dagon.core.graphicstablet;
  */
 enum MAX_CONTROLLERS = 4;
 
-///
+/// Enumeration of supported game input device types.
 enum GameInputDeviceType
 {
     Undefined,
@@ -74,7 +74,7 @@ enum GameInputDeviceType
     Joystick
 }
 
-///
+/// A structure that represents game input device.
 struct GameInputDevice
 {
     /// SDL device index.
@@ -386,10 +386,10 @@ class EventManager: Owner
     /// Opened controllers/joysticks.
     GameInputDevice[MAX_CONTROLLERS] gameInputDevices;
     
-    ///
+    /// Number of recognized controllers/joysticks.
     uint numGameInputDevices = 0;
     
-    /// Get currently opened controller by device index.
+    /// Get currently opened SDL controller by device index.
     SDL_GameController* controller(uint deviceIndex)
     {
         if (deviceIndex < gameInputDevices.length)
@@ -398,7 +398,7 @@ class EventManager: Owner
             return null;
     }
     
-    /// Get currently opened joystick by device index.
+    /// Get currently opened SDL joystick by device index.
     SDL_Joystick* joystick(uint deviceIndex)
     {
         if (deviceIndex < gameInputDevices.length)
@@ -445,7 +445,6 @@ class EventManager: Owner
      */
     Arena tmpHeap;
     
-    ///
     protected Array!InputDevice inputDevices;
     
     /// `PenMotion` events emitter.
@@ -595,7 +594,6 @@ class EventManager: Owner
         e.message = message;
         queueEvent(e);
     }
-
     
     /**
      * Opens a game controller or joystick at the specified device index.
@@ -1167,7 +1165,7 @@ class EventManager: Owner
         return SDL_SetRelativeMouseMode(cast(SDL_bool)mode);
     }
 
-     /// Returns the current window aspect ratio.
+    /// Returns the current window aspect ratio.
     float aspectRatio()
     {
         return cast(float)windowWidth / cast(float)windowHeight;

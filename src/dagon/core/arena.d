@@ -26,7 +26,8 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /** 
- * General-purpose region-based memory allocator.
+ * General-purpose region-based memory allocator. This module simply imports
+ * dlib.memory.arena for backward compatibility.
  *
  * Copyright: Timur Gafarov 2025.
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).

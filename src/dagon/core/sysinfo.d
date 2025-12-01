@@ -25,6 +25,18 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * Provides information about hardware and operating system.
+ *
+ * Description:
+ * The `dagon.core.sysinfo` module provides a cross-platform way to query
+ * system information, such as CPU architecture, RAM size, and operating system name.
+ *
+ * Copyright: Timur Gafarov 2022-2025
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.core.sysinfo;
 
 version(Windows) { version = _TP_Windows; }
@@ -38,6 +50,11 @@ version(NetBSD) { version = _TP_Unix_sysctl; }
 version(DragonFlyBSD) { version = _TP_Unix_sysctl; }
 version(BSD) { version = _TP_Unix_sysctl; }
 
+/**
+ * CPU architectures enumeration.
+ * Note that Dagon doesn't necessarily support all of them;
+ * the primary target is x64.
+ */
 enum ProcessorArchitecture
 {
     Unknown,
@@ -55,6 +72,9 @@ enum ProcessorArchitecture
     PPC64
 }
 
+/**
+ * System information structure.
+ */
 struct SysInfo
 {
     ulong totalMemory;

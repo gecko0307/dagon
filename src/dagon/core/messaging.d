@@ -30,9 +30,7 @@ DEALINGS IN THE SOFTWARE.
  * Messaging module.
  *
  * Description:
- * The `dagon.core.messaging` provides wait-free, single-producer single-consumer (SPSC)
- * event queues, messaging endpoints, threaded services, workers, and a message broker
- * for inter-thread communication and bidirectional messaging.
+ * The `dagon.core.messaging` provides a thread-safe messaging system.
  *
  * Copyright: Timur Gafarov 2025
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).

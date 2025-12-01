@@ -26,7 +26,8 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /** 
- * A list with string-mapped indices.
+ * A list with string-mapped indices. This module simply imports
+ * dlib.container.mappedlist for backward compatibility.
  *
  * Copyright: Timur Gafarov 2018-2025.
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).

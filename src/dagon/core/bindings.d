@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /**
- * Helper module that publicly imports OpenGL, SDL and Freetype bindings.
+ * Helper module that publicly imports OpenGL, SDL, Freetype and Wintab bindings.
  * Also provides a number of additional enums for OpenGL extensions.
  *
  * Copyright: Timur Gafarov 2019-2025.
@@ -42,6 +42,9 @@ public
     import bindbc.freetype;
     import dagon.core.wintab;
 }
+
+// sRGB framebiffer format
+enum GL_FRAMEBUFFER_SRGB = 0x8DB9;
 
 // S3TC formats
 enum GL_COMPRESSED_RGB_S3TC_DXT1_EXT = 0x83F0;  // DXT1/BC1_UNORM
