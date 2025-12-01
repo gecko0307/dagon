@@ -69,7 +69,7 @@ class World: Owner
     Matrix4x4f prevRootTransformation;
     
     /// Array of all entities in the world.
-    protected Array!Entity entities;
+    Array!Entity entities;
     
     /// Group of all spatial entities.
     EntityGroupSpatial spatial;
@@ -104,7 +104,7 @@ class World: Owner
     /// Group of probe entities.
     EntityGroupProbes probes;
 
-     /// Constructs a new world and initializes entity groups.
+    /// Constructs a new world and initializes entity groups.
     this(Owner owner)
     {
         super(owner);

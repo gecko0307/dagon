@@ -75,6 +75,7 @@ enum
     CMagenta = Color4f(1.0f, 0.0f, 1.0f, 1.0f)
 }
 
+/// Semantically universal "None" constant for various material properties.
 enum int None = 0;
 
 /// Shadow filter mode constants.

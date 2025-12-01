@@ -129,19 +129,32 @@ struct Tween
 
     union
     {
+        /// Start color value of the animation.
         Color4f fromColor;
+        
+        /// Start vector value of the animation.
         Vector3f fromVector;
+        
+        /// Start float value of the animation.
         float fromFloat;
     }
 
     union
     {
+        /// End color value of the animation.
         Color4f toColor;
+        
+        /// End vector value of the animation.
         Vector3f toVector;
+        
+        /// End float value of the animation.
         float toFloat;
     }
 
+    /// A delegate that should be called on each tween repeat.
     void delegate(Tween* thisTween) onRepeat;
+    
+    /// A delegate that should be called when the tween is completed.
     void delegate(Tween* thisTween) onComplete;
     
     /// Constructs a no-op tween that animates nothing.

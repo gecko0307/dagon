@@ -89,10 +89,16 @@ struct MonitorInfo
  */
 abstract class Asset: Owner
 {
+    /// File monitoring information for the asset.
     MonitorInfo monitorInfo;
+    
+    /// Is thread-safe phase of an asset loading is done.
     bool threadSafePartLoaded = false;
+    
+    /// Is thread-unsafe phase of an asset loading is done.
     bool threadUnsafePartLoaded = false;
 
+    /// Constructor.
     this(Owner owner)
     {
         super(owner);
@@ -130,8 +136,10 @@ abstract class Asset: Owner
  */
 abstract class TextureLoader: Owner
 {
+    /// Asset manager that is be used to load texture data.
     AssetManager assetManager;
     
+    /// Constructor.
     this(AssetManager assetManager)
     {
         super(assetManager);
@@ -163,9 +171,13 @@ abstract class TextureLoader: Owner
  */
 class DefaultTextureLoader: TextureLoader
 {
+    /// LDR image factory for the fallback image loading method.
     UnmanagedImageFactory ldrImageFactory;
+    
+    /// HDR image factory to load Radiance/HDR files.
     UnmanagedHDRImageFactory hdrImageFactory;
     
+    /// Constructor.
     this(AssetManager assetManager)
     {
         super(assetManager);
@@ -173,6 +185,7 @@ class DefaultTextureLoader: TextureLoader
         hdrImageFactory = New!UnmanagedHDRImageFactory();
     }
     
+    /// Destructor.
     ~this()
     {
         Delete(ldrImageFactory);
@@ -314,30 +327,51 @@ struct ImageFormatInfo
  */
 class AssetManager: Owner
 {
-    Application application; // set by the scene
+    /// The application object. Set by the scene that owns the `AssetManager`.
+    Application application;
+    
+    /// Dictionary of texture loaders by file extension (including the dot).
     Dict!(TextureLoader, string) textureLoaders;
+    
+    /// Default texture loader.
     DefaultTextureLoader defaultTextureLoader;
     
+    /// Dictionary of assets by filename.
     Dict!(Asset, string) assetsByFilename;
     
+    /// VFS to read files.
     VirtualFileSystem fs;
+    
+    /// Physical FS for low-lever access.
     StdFileSystem stdfs;
     
+    /// LDR image factory for the fallback image loading method.
     UnmanagedImageFactory imageFactory;
+    
+    /// HDR image factory to load Radiance/HDR files.
     UnmanagedHDRImageFactory hdrImageFactory;
+    
+    /// Asset loading thread.
     Thread loadingThread;
 
+    /// Is live reloading enabled for assets.
     bool liveUpdate = false;
+    
+    /// File status monitoring period in seconds.
     double liveUpdatePeriod = 5.0;
 
     protected double monitorTimer = 0.0;
 
+    /// Loading percentage in 0..1 range.
     float nextLoadingPercentage = 0.0f;
 
+    /// Event manager.
     EventManager eventManager;
     
+    /// Dictionary of default image filenames by MIME types.
     Dict!(string, string) base64ImagePrefixes;
 
+    /// Constructor.
     this(EventManager emngr, VirtualFileSystem vfs, Owner owner = null)
     {
         super(owner);
@@ -427,6 +461,7 @@ class AssetManager: Owner
         return result;
     }
 
+    /// Destructor.
     ~this()
     {
         Delete(textureLoaders);

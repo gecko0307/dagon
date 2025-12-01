@@ -79,7 +79,7 @@ struct GraphicsState
     /// Output resolution (viewport width, height).
     Vector2f resolution;
     
-    ///
+    /// Ratio of the logical pixel to physical pixels.
     float pixelRatio;
 
     /// Near clipping plane.

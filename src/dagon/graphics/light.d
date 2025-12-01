@@ -159,7 +159,7 @@ class Light: Entity
     /// Specular lighting factor.
     float specular;
     
-    ///
+    /// Combined translation and scaling based on position and radius of the light.
     Matrix4x4f volumeTransformation;
 
     /**
@@ -217,6 +217,7 @@ class Light: Entity
         return _shadowMap;
     }
     
+    /// Recalculates `volumeTransformation`.
     void updateVolumeTransformation()
     {
         volumeTransformation =

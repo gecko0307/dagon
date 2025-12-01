@@ -129,6 +129,27 @@ Documentation
 -------------
 HTML documentation can be generated from source code using ddox (`dub build -b ddox`). Be aware that documentation is currently incomplete.
 
+Documentation status:
+* [x] `dagon.core`
+* [x] `dagon.graphics`
+* [ ] `dagon.resource`
+* [ ] `dagon.render`
+* [ ] `dagon.game`
+* [ ] `dagon.ui`
+* [ ] `dagon.collision`
+* [ ] `dagon.compute`
+* [ ] `dagon.extra`
+* [ ] `dagon.ext.assimp`
+* [ ] `dagon.ext.audio`
+* [ ] `dagon.ext.imgui`
+* [ ] `dagon.ext.iqm`
+* [ ] `dagon.ext.ktx`
+* [ ] `dagon.ext.newton`
+* [ ] `dagon.ext.nuclear`
+* [ ] `dagon.ext.openvr`
+* [ ] `dagon.ext.physfs`
+* [ ] `dagon.ext.video`
+
 * [Tutorials](https://gecko0307.github.io/dagon/?p=tutorials) and corresponding [examples](https://github.com/gecko0307/dagon-tutorials)
 * [Online documentation (WIP)](https://gecko0307.github.io/dagon/doc/dagon.html)
 * [Wiki](https://github.com/gecko0307/dagon/wiki)

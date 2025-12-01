@@ -567,6 +567,7 @@ class Entity: Owner, Updateable
         scaling += s;
     }
     
+    /// Returns the absolute scaling vector.
     Vector3f scalingAbsolute()
     {
         if (parent)
