@@ -69,7 +69,6 @@ class BaseGame: Application
     /// The current scene being processed and rendered.
     Scene currentScene;
 
-    ///
     protected Scene sceneForDeletion = null;
 
     /**

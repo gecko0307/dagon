@@ -134,10 +134,10 @@ Documentation status:
 * [x] `dagon.graphics`
 * [ ] `dagon.resource`
 * [ ] `dagon.render`
-* [ ] `dagon.game`
+* [x] `dagon.game`
 * [ ] `dagon.ui`
 * [ ] `dagon.collision`
-* [ ] `dagon.compute`
+* [x] `dagon.compute`
 * [ ] `dagon.extra`
 * [ ] `dagon.ext.assimp`
 * [ ] `dagon.ext.audio`

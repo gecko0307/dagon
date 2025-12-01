@@ -448,7 +448,7 @@ class OBJAsset: Asset
         return true;
     }
 
-     /// Releases all resources associated with the asset.
+    /// Releases all resources associated with the asset.
     override void release()
     {
         clearOwnedObjects();

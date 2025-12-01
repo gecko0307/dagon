@@ -336,7 +336,7 @@ class TextureImage: SuperImage
         return c;
     }
     
-     /// Returns a duplicate of the image (not implemented).
+    /// Returns a duplicate of the image (not implemented).
     @property SuperImage dup()
     {
         // TODO
