@@ -229,7 +229,8 @@ final class Font: Owner
      * Constructor.
      *
      * Params:
-     *   height = em height (font size) in pixels
+     *   height = em height (font size) in pixels.
+     *   pixelRatio = target pixel ratio for HiDPI rendering.
      *   owner = Owner object.
      */
     this(uint height, float pixelRatio, Owner owner)
@@ -367,6 +368,7 @@ final class Font: Owner
         }
     }
 
+    /// Destructor. Frees all font resources and OpenGL objects.
     ~this()
     {
         vs.free();

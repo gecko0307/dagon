@@ -691,6 +691,7 @@ class EventManager: Owner
      * Gets the normalized value of a game controller axis.
      *
      * Params:
+     *   deviceIndex = Game input device index.
      *   axis = Axis index.
      * Returns:
      *   Normalized axis value in [-1, 1].
@@ -713,6 +714,7 @@ class EventManager: Owner
      * Gets the normalized value of a joystick axis.
      *
      * Params:
+     *   deviceIndex = Game input device index.
      *   axis = Axis index.
      * Returns:
      *   Normalized axis value in [-1, 1].
@@ -738,6 +740,7 @@ class EventManager: Owner
      * Triggers controller rumble (vibration) if supported.
      *
      * Params:
+     *   deviceIndex = Game input device index.
      *   lowFreq = Low frequency rumble intensity.
      *   hiFreg = High frequency rumble intensity.
      *   duration = Duration in seconds.
