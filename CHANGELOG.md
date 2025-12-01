@@ -10,7 +10,9 @@ Dagon 0.36.0 - TBD
 - **Game**
   - `dagon.game.basegame`. A new `BaseGame` class that extends `Application` with scene management only. `Game` extends `BaseGame` with built-in rendering functionality
 - **Extensions**
-  - New extension `dagon:openvr`.
+  - New extension `dagon:openvr`
+- **Misc**
+  - Dagon now uses dlib 1.4.0.
 
 Dagon 0.35.1 - 20 Nov, 2025
 ---------------------------

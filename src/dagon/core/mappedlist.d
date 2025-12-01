@@ -34,37 +34,4 @@ DEALINGS IN THE SOFTWARE.
  */
 module dagon.core.mappedlist;
 
-import dlib.core.ownership;
-import dlib.core.memory;
-import dlib.container.array;
-import dlib.container.dict;
-
-/// A list with string-mapped indices.
-class MappedList(T): Owner
-{
-    Array!T data;
-    Dict!(size_t, string) indices;
-
-    this(Owner owner)
-    {
-        super(owner);
-        indices = New!(Dict!(size_t, string))();
-    }
-
-    void set(string name, T val)
-    {
-        data.append(val);
-        indices[name] = data.length - 1;
-    }
-
-    T get(string name)
-    {
-        return data[indices[name]];
-    }
-
-    ~this()
-    {
-        data.free();
-        Delete(indices);
-    }
-}
+public import dlib.container.mappedlist;

@@ -46,51 +46,10 @@ import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.core.thread;
 import dlib.container.array;
+import dlib.container.spscqueue;
 
 import dagon.core.event;
 import dagon.core.logger;
-
-/**
- * Generic, wait-free single-producer single-consumer queue.
- *
- * Params:
- *   T = element type.
- *   capacity = Maximum number of elements in the queue.
- */
-struct SPSCQueue(T, size_t capacity)
-{
-    /// Circular buffer.
-    T[capacity] buffer;
-
-    /// Producer write index.
-    shared size_t head = 0; // producer writes here
-    
-    /// Consumer read index.
-    shared size_t tail = 0; // consumer reads here
-
-    /// Add an element to the queue. Returns false if full.
-    bool push(T value)
-    {
-        auto next = (head + 1) % capacity;
-        if (next == tail) // queue full
-            return false;
-
-        buffer[head] = value;
-        atomicStore!(MemoryOrder.rel)(head, next);
-        return true;
-    }
-
-    /// Remove an element from the queue. Returns false if empty.
-    bool pop(out T value)
-    {
-        if (tail == atomicLoad!(MemoryOrder.acq)(head))
-            return false; // empty
-
-        value = buffer[tail];
-        tail = (tail + 1) % capacity;
-        return true;
-    }
-}
 
 /**
  * Base class for senders/receivers with a lock-free inbox/outbox messaging.
