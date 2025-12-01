@@ -145,6 +145,7 @@ enum ImageFileFormat
     HDR,
     DDS,
     KTX,
+    SVG,
     JPG = JPEG,
     WEBP = WebP,
     KTX2 = KTX
@@ -862,6 +863,7 @@ class Application: EventListener, Updateable
                 sdlImagePresent = false;
             }
             
+            _imageFileFormatSupported[ImageFileFormat.SVG] = true;
             _imageFileFormatSupported[ImageFileFormat.TIFF] = (supportedFormatFlags & IMG_INIT_TIF) > 0;
             _imageFileFormatSupported[ImageFileFormat.WebP] = (supportedFormatFlags & IMG_INIT_WEBP) > 0;
             _imageFileFormatSupported[ImageFileFormat.JPEG_XL] = (supportedFormatFlags & IMG_INIT_JXL) > 0;

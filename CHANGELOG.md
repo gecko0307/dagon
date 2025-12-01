@@ -1,3 +1,10 @@
+Dagon 0.36.1 - 1 Dec, 2025
+--------------------------
+- **Core**
+  - Add `ImageFileFormat.SVG`
+- **Misc**
+  - Fix init-exec template app.
+
 Dagon 0.36.0 - 1 Dec, 2025
 --------------------------
 - **Core**
