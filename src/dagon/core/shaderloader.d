@@ -85,17 +85,14 @@ enum ShaderStage: ubyte
  */
 GLenum shaderStageToGLenum(ShaderStage stage)
 {
-    final switch (stage) with(ShaderStage)
+    final switch(stage) with(ShaderStage)
     {
         case vertex:      return GL_VERTEX_SHADER;
         case tessControl: return GL_TESS_CONTROL_SHADER;
         case tessEval:    return GL_TESS_EVALUATION_SHADER;
         case geometry:    return GL_GEOMETRY_SHADER;
         case fragment:    return GL_FRAGMENT_SHADER;
-    static if (glSupport >= GLSupport.gl43)
         case compute:     return GL_COMPUTE_SHADER;
-    else
-        case compute:     return 0;
     }
 }
 

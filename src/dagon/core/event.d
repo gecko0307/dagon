@@ -47,15 +47,17 @@ import std.stdio;
 import std.ascii;
 import std.conv;
 import std.file;
+
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.math.utils;
 import dlib.container.array;
+import dlib.memory.arena;
+
 import dagon.core.bindings;
 import dagon.core.application;
 import dagon.core.input;
 import dagon.core.logger;
-import dagon.core.arena;
 import dagon.core.messaging;
 import dagon.core.graphicstablet;
 
