@@ -18,6 +18,37 @@ class MyGame: Game
 }
 ```
 
-TODO
+In your scene create a sound and play it:
+
+```d
+class SoundScene: Scene
+{
+    MyGame game;
+    AudioManager audio;
+    Wav sound;
+    
+    this(MyGame game)
+    {
+        super(game);
+        this.game = game;
+        this.audio = game.audioManager;
+    }
+    
+    override void beforeLoad()
+    {
+        sound = audio.loadSound("assets/sounds/sound.wav");
+    }
+    
+    override void afterLoad()
+    {
+        audio.play(sound);
+    }
+    
+    override void onUpdate(Time t)
+    {
+        audio.update(t);
+    }
+}
+```
 
 [Browse source code for this tutorial](https://github.com/gecko0307/dagon-tutorials/tree/master/t19-3d-sound)
