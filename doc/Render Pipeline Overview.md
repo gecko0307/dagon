@@ -71,6 +71,12 @@ Perspective shadow mapping is used for spot lights. PSM consists of a single dep
 
 Dual-paraboloid shadow maps are an optimized technique for rendering and sampling shadows for omnidirectional light sources (in Dagon, these are spherical and tube area lights). Straightforward shadowing technique for such lights is a depth cube map, rendered from 6 directions around the light source. Paraboloid projection allows to use only 2 depth maps, each covering a half-space around the light source. Same projection is then used to convert eye-space coordinates to depth texture coordinates to sample the map for an arbitrary point. The trade-off is singularity artifacts at the border between half-spaces, but they are usually negligible.
 
+### Image-Based Lighting
+
+IBL is a standard technique in games to achieve approximated global illumination in a very computationally inexpensive way, which works best in outdoor scenes. The "infinitely far" environment of a scene (such as the sky and the surrounding landscape) is pre-baked into the HDR environment map at different roughness levels. The data is stored in mip levels of the map. Pre-filtering allows a system to quickly fetch the appropriate specular lobe, avoiding integration that cannot be done efficiently in real time.
+
+Dagon supports both cube maps and equirectangular environment maps. The most tricky part of the technique is the pre-filtering phase, which can be done with external tools, or directly in the engine. Dagon implements pre-filtering via importance samping of the map by the van der Corput-Hammersley distribution on a hemisphere. The computation is GPU-accelerated, and usually is very fast.
+
 ### Subsurface Scattering
 
 Dagon's deferred pipeline supports subsurface scattering based on Hanrahan-Krueger approximation of isotropic BSSRDF, like in the famous Disney/Principled BRDF.
