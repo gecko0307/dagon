@@ -2,8 +2,6 @@
 
 This is a brief description of Dagon's graphics tech.
 
-### Pipeline
-
 Render pipeline is a heart of any 3D visualization. Pipeline describes the sequence of operations for transforming 3D data into a 2D image displayed on a screen. It is typically divided into several conceptual stages, involving both CPU and GPU processing. In Dagon, "pipeline" term refers to `dagon.render.pipeline.Pipeline` class, an abstraction that manages a sequence of `RenderPass` objects. A pass binds a render target, a shader with corresponding parameters, prepares a `GraphicsState` structure and finally makes a series of draw calls for a certain subset of entities in the scene. Each pass groups objects by their function in the rendering domain.
 
 Dagon features a hybrid renderer that combines both deferred (see below) and forward pipelines. There is also an alternative simple renderer for NPR, retro and casual-styled graphics.
