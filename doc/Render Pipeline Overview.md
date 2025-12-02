@@ -25,9 +25,11 @@ There are some disadvantages as well:
 * Less material variety. In classic deferred renderer BRDF is defined by light volume shaders, so we can have different BRDFs per light, but not per material. This limitation is less critical if a renderer uses PBR principles (albedo, roughness and metallic maps, microfacet BRDF, image-based lighting, etc.). PBR, which is de-facto standard way of defining materials nowadays, allows greater variety of common materials, such as colored metals, shiny and rough dielectrics, and any combinations of them on the same surface. PBR extension of a deferred renderer comes at additional VRAM cost, but the outcome is very good. Again, objects with custom BRDFs (which you actually don't have too much in typical situations) can be rendered in forward mode.
 * Deferred shading is incompatible with MSAA. Common workaround is to use post-process antialiasing (FXAA, TAA, SMAA).
 
-### GGX BRDF
+### PBR
 
-Dagon utilizes physically-based microfacet BRDF for all lights. GGX is based on the Cook-Torrance specular model and combines normal distrbution term (D), Smith geometric shadowing-masking (G) term, and Fresnel term (F).
+Dagon implements idiomatic PBR (metallic/roughness workflow) based on the theory described in excellent [learnopengl.com PBR article](https://learnopengl.com/PBR/Theory). It utilizes physically-based GGX microfacet BRDF for all lights.
+
+GGX is based on the Cook-Torrance specular model and combines normal distrbution term (D), Smith geometric shadowing-masking (G) term, and Fresnel term (F).
 
 Specular radiance equation:
 
