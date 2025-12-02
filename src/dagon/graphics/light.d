@@ -120,34 +120,34 @@ class Light: Entity
     /// The type of this light.
     LightType type;
 
-    /**
-     * If `true`, enables shadow casting for this light.
-     * Shadows are supported only for `Sun` lights at the moment.
-     */
+    /// If `true`, enables shadow casting for this light.
     bool shadowEnabled;
 
-    /**
-     * If `true`, enables volumetric scattering for this light.
-     * Volumetric scattering is supported only for `Sun` lights at the moment.
-     */
+    /// If `true`, enables volumetric scattering for this light.
     bool scatteringEnabled;
 
-    /// Volumetric scattering intensity.
+    /**
+     * Henyey-Greenstein anisotropy parameter for volumetric scattering
+     * (supported only for Sun lights). `g = 1.0 - Light.scattering`
+     */
     float scattering;
 
     /// Medium density for volumetric scattering.
     float mediumDensity;
 
-    /// Number of samples for scattering calculations.
+    /**
+     * Number of samples for Monte-Carlo integration of the optical depth.
+     * Supported only for Sun lights, and only if `scatteringUseShadow` is enabled.
+     */
     uint scatteringSamples;
 
     /**
-     * Maximum random step offset used for Monte-Carlo sampling
-     * when using shadow in volumetric scattering.
+     * Maximum random step offset used for Monte-Carlo integration of the optical depth.
+     * Supported only for Sun lights, and only if `scatteringUseShadow` is enabled.
      */
     float scatteringMaxRandomStepOffset;
 
-    /// If `true`, scattering uses shadow information.
+    /// If `true`, scattering takes shadow information into account.
     bool scatteringUseShadow;
 
     /// The shadow map object for this light (if enabled).
