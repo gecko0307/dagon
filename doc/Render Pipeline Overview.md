@@ -32,7 +32,7 @@ GGX is based on the Cook-Torrance specular model and combines normal distrbution
 Specular radiance equation:
 
 ```
-Ls = (D * G * F) / (4 * NE * NL)
+Ls = (D * G * F) / (4 * NV * NL)
 ```
 
 Diffuse radiance equation:
@@ -75,7 +75,7 @@ Dual-paraboloid shadow maps are an optimized technique for rendering and samplin
 
 IBL is a standard technique in games to achieve approximated global illumination in a very computationally inexpensive way, which works best in outdoor scenes. The "infinitely far" environment of a scene (such as the sky and the surrounding landscape) is pre-baked into the HDR environment map at different roughness levels. The data is stored in mip levels of the map. Pre-filtering allows a system to quickly fetch the appropriate specular lobe, avoiding integration that cannot be done efficiently in real time.
 
-Dagon supports both cube maps and equirectangular environment maps. The most tricky part of the technique is the pre-filtering phase, which can be done with external tools, or directly in the engine. Dagon implements pre-filtering via importance samping of the map by the van der Corput-Hammersley distribution on a hemisphere. The computation is GPU-accelerated, and usually is very fast.
+Dagon supports both cube maps and equirectangular environment maps. The most tricky part of the technique is the pre-filtering phase, which can be done with external tools, or directly in the engine. Dagon implements pre-filtering via importance samping of the map by the van der Corput-Hammersley distribution on a hemisphere ([«Real Shading in Unreal Engine 4»](https://cdn2.unrealengine.com/Resources/files/2013SiggraphPresentationsNotes-26915738.pdf), Brian Karis, Epic Games, SIGGRAPH 2013). The computation is GPU-accelerated, and usually is very fast.
 
 ### Subsurface Scattering
 
