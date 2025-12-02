@@ -27,7 +27,7 @@ There are some disadvantages as well:
 
 Dagon implements idiomatic PBR (metallic/roughness workflow) based on the theory described in excellent [learnopengl.com PBR article](https://learnopengl.com/PBR/Theory). It utilizes physically-based GGX microfacet BRDF for all lights.
 
-GGX is based on the Cook-Torrance specular model and combines normal distrbution term (D), Smith geometric shadowing-masking (G) term, and Fresnel term (F).
+GGX is based on the Cook-Torrance specular model and combines normal distrbution term (D), Smith geometric shadowing-masking term (G), and Fresnel term (F).
 
 Specular radiance equation:
 
