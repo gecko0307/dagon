@@ -135,25 +135,25 @@ Documentation
 HTML documentation can be generated from source code using ddox (`dub build -b ddox`). Be aware that documentation is currently incomplete.
 
 Documentation status:
-* [x] `dagon.core`
-* [x] `dagon.graphics`
-* [ ] `dagon.resource`
-* [ ] `dagon.render`
-* [x] `dagon.game`
-* [ ] `dagon.ui`
-* [ ] `dagon.collision`
-* [x] `dagon.compute`
-* [ ] `dagon.extra`
-* [ ] `dagon.ext.assimp`
-* [ ] `dagon.ext.audio`
-* [ ] `dagon.ext.imgui`
-* [ ] `dagon.ext.iqm`
-* [ ] `dagon.ext.ktx`
-* [ ] `dagon.ext.newton`
-* [ ] `dagon.ext.nuclear`
-* [ ] `dagon.ext.openvr`
-* [ ] `dagon.ext.physfs`
-* [ ] `dagon.ext.video`
+* ✔️ `dagon.core`
+* ✔️ `dagon.graphics`
+* ⏳ `dagon.resource`
+* ⏳ `dagon.render`
+* ✔️ `dagon.game`
+* ⏳ `dagon.ui`
+* ❌ `dagon.collision`
+* ✔️ `dagon.compute`
+* ❌ `dagon.extra`
+* ❌ `dagon.ext.assimp`
+* ❌ `dagon.ext.audio`
+* ❌ `dagon.ext.imgui`
+* ❌ `dagon.ext.iqm`
+* ❌ `dagon.ext.ktx`
+* ❌ `dagon.ext.newton`
+* ❌ `dagon.ext.nuclear`
+* ❌ `dagon.ext.openvr`
+* ❌ `dagon.ext.physfs`
+* ❌ `dagon.ext.video`
 
 License
 -------
