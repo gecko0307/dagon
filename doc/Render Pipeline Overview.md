@@ -25,11 +25,27 @@ There are some disadvantages as well:
 * Less material variety. In classic deferred renderer BRDF is defined by light volume shaders, so we can have different BRDFs per light, but not per material. This limitation is less critical if a renderer uses PBR principles (albedo, roughness and metallic maps, microfacet BRDF, image-based lighting, etc.). PBR, which is de-facto standard way of defining materials nowadays, allows greater variety of common materials, such as colored metals, shiny and rough dielectrics, and any combinations of them on the same surface. PBR extension of a deferred renderer comes at additional VRAM cost, but the outcome is very good. Again, objects with custom BRDFs (which you actually don't have too much in typical situations) can be rendered in forward mode.
 * Deferred shading is incompatible with MSAA. Common workaround is to use post-process antialiasing (FXAA, TAA, SMAA).
 
+### GGX BRDF
+
+Dagon utilizes physically-based microfacet BRDF for all lights. GGX is based on the Cook-Torrance specular model and combines normal distrbution term (D), Smith geometric shadowing-masking (G) term, and Fresnel term (F).
+
+Specular radiance equation:
+
+```
+Ls = (D * G * F) / (4 * NE * NL)
+```
+
+Diffuse radiance equation:
+
+```
+Ld = 1/PI * albedo * (1 - F) * NL * occlusion * (1 - metallic)
+```
+
 ### Area Lights
 
 Area lights provide more realistic and physically correct approximation of real-world lights than traditional point light sources. An area light is a volumetric shape that emits light from its surface. Such lights are useful to represent ball lamps and fluorescent tubes.
 
-Dagon supports spherical and tube area lights. Spherical area lights can be seen as direct generalization of point lights. They have a position and a radius. For a given point on a surface, instead of a vector to the center of the light, a vector to the closest point on a sphere is used to evaluate BRDF. Then the lighting is computed as usual using preferred BRDF such as GGX. Tube area lights are basically the same, but have also a length.
+Dagon supports spherical and tube area lights. Spherical area lights can be seen as direct generalization of point lights. They have a position and a radius. For a given point on a surface, instead of a vector to the center of the light, a vector to the closest point on a sphere is used to evaluate BRDF. Then the lighting is computed as usual using GGX BRDF. Tube area lights are basically the same, but have also a length.
 
 Dagon's deferred renderer treats all point lights as area lights - if the light has zero radius and length, it becomes classic point light.
 
@@ -39,7 +55,7 @@ Dagon supports physically-based raymarched anisotropic volumetric scattering eff
 
 If a shadow map is assigned, the implementation integrates optical depth using Monte Carlo raymarched sampling of the shadow map along the view ray for each pixel in the framebuffer (otherwise the optical depth is assumed to be 1.0). The resulting value is then used to compute anisotropic Mie scattering, approximated with Henyey-Greenstein phase function. Anisotropy parameter of the function (`g`) is controlled with `Light.scattering` property: `g = 1.0 - Light.scattering`. Aerosol density is defined by `Light.mediumDensity`.
 
-For omnidirectional lights, isotropic scattering is computed via analitical solution for light bounding spheres. This results in a smooth radial blending of the emitted light with the surrounding environment.
+For omnidirectional lights, isotropic scattering is computed via analitical solution for light bounding spheres. This results in a smooth radial blending of the emitted light with the surrounding environment. The effect looks like glow or bloom post-processing filter, but it is visible even if the light source itself is outside of the screen space.
 
 ### Cascaded Shadow Maps (CSM)
 
@@ -54,6 +70,10 @@ Perspective shadow mapping is used for spot lights. PSM consists of a single dep
 ### Dual-Paraboloid Shadow Maps (DPSM)
 
 Dual-paraboloid shadow maps are an optimized technique for rendering and sampling shadows for omnidirectional light sources (in Dagon, these are spherical and tube area lights). Straightforward shadowing technique for such lights is a depth cube map, rendered from 6 directions around the light source. Paraboloid projection allows to use only 2 depth maps, each covering a half-space around the light source. Same projection is then used to convert eye-space coordinates to depth texture coordinates to sample the map for an arbitrary point. The trade-off is singularity artifacts at the border between half-spaces, but they are usually negligible.
+
+### Subsurface Scattering
+
+Dagon's deferred pipeline supports subsurface scattering based on Hanrahan-Krueger approximation of isotropic BSSRDF, like in the famous Disney/Principled BRDF.
 
 ### HDR
 
