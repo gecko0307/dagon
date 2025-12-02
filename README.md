@@ -127,6 +127,11 @@ Known Bugs and Limitations
 
 Documentation
 -------------
+* [API documentation (WIP)](https://gecko0307.github.io/dagon/doc/dagon.html)
+* [Tutorials](https://gecko0307.github.io/dagon/?p=tutorials) and corresponding [examples](https://github.com/gecko0307/dagon-tutorials)
+* [Wiki](https://github.com/gecko0307/dagon/wiki)
+* [FAQ](https://github.com/gecko0307/dagon/wiki/FAQ).
+
 HTML documentation can be generated from source code using ddox (`dub build -b ddox`). Be aware that documentation is currently incomplete.
 
 Documentation status:
@@ -149,11 +154,6 @@ Documentation status:
 * [ ] `dagon.ext.openvr`
 * [ ] `dagon.ext.physfs`
 * [ ] `dagon.ext.video`
-
-* [Tutorials](https://gecko0307.github.io/dagon/?p=tutorials) and corresponding [examples](https://github.com/gecko0307/dagon-tutorials)
-* [Online documentation (WIP)](https://gecko0307.github.io/dagon/doc/dagon.html)
-* [Wiki](https://github.com/gecko0307/dagon/wiki)
-* [FAQ](https://github.com/gecko0307/dagon/wiki/FAQ).
 
 License
 -------
