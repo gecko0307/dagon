@@ -78,3 +78,7 @@ Dagon's deferred pipeline supports subsurface scattering based on Hanrahan-Krueg
 ### HDR
 
 Dagon's renderer outputs radiance into a floating-point frame buffer without clamping the values to 0..1 range, so the buffer contains greater luminance information compared to traditional integer frame buffer. The final image that is visible on screen is a result of an additional tone mapping pass, which applies a non-linear luminance compression to the incoming values. Very dark and very bright pixels are compressed more, and pixels of a medium brightness are compressed less. Dagon supports all popular tone mapping operators: Reinhard, Reinhard2, Hable, Uncharted, Unreal, Filmic, ACES, AgX, AgX_Punchy, and Khronos PBR Neutral.
+
+### Post-Processing
+
+Dagon provides a cinematic post-processing stack that supports various filters such as glow, depth of field, motion blur, lens distortion, anti-aliasing, and LUT color grading.
