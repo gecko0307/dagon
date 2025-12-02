@@ -31,10 +31,13 @@ import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.math.matrix;
 
+import dagon.core.application;
 import dagon.core.event;
 import dagon.core.time;
+import dagon.core.logger;
 import dagon.graphics.camera;
 import dagon.resource.scene;
+import dagon.render.stereorenderer;
 import dagon.render.framebuffer;
 import dagon.render.view;
 import dagon.render.pipeline;
@@ -74,81 +77,66 @@ class StereoRenderView: RenderView
     }
 }
 
-class StereoRenderer: Owner
+class SimpleStereoRenderer: StereoRenderer
 {
     OpenVRManager ovr;
     
-    RenderPipeline pipeline;
-    
     uint width = 1080;
     uint height = 1080;
-    Framebuffer leftEyeBuffer;
-    Framebuffer rightEyeBuffer;
-    
-    StereoRenderView leftEyeView;
-    StereoRenderView rightEyeView;
     
     SimpleClearPass clearPass;
     SimpleBackgroundPass backgroundPass;
     SimpleSpatialPass spatialPass;
     
-    this(OpenVRManager ovr, EventManager eventManager, Owner owner)
+    this(OpenVRManager ovr, Application application, Owner owner)
     {
-        super(owner);
+        super(application, owner);
         
         this.ovr = ovr;
         
-        pipeline = New!RenderPipeline(eventManager, this);
-        
-        leftEyeView = New!StereoRenderView(ovr, EVREye.Left, 0, 0, width, height, this);
-        rightEyeView = New!StereoRenderView(ovr, EVREye.Right, 0, 0, width, height, this);
-        
+        viewLeft = New!StereoRenderView(ovr, EVREye.Left, 0, 0, width, height, this);
+        viewRight = New!StereoRenderView(ovr, EVREye.Right, 0, 0, width, height, this);
+       
+        logInfo(pipeline);
         clearPass = New!SimpleClearPass(pipeline);
-        clearPass.view = leftEyeView;
+        clearPass.view = viewLeft;
         
         backgroundPass = New!SimpleBackgroundPass(pipeline);
-        backgroundPass.view = leftEyeView;
+        backgroundPass.view = viewLeft;
         
         spatialPass = New!SimpleSpatialPass(pipeline);
         spatialPass.layer = 0;
-        spatialPass.view = leftEyeView;
+        spatialPass.view = viewLeft;
     }
     
-    void scene(Scene s)
+    override void scene(Scene s)
     {
         backgroundPass.group = s.world.background;
         spatialPass.group = s.world.spatial;
         pipeline.environment = s.environment;
     }
     
-    void update(Time t)
-    {
-        pipeline.update(t);
-    }
-    
-    void activeCameras(Camera leftEyeCamera, Camera rightEyeCamera)
-    {
-        leftEyeView.camera = leftEyeCamera;
-        rightEyeView.camera = rightEyeCamera;
-    }
-    
-    void render()
+    override void render()
     {
         if (!ovr.headsetAvailable)
             return;
-        else if (leftEyeBuffer is null && rightEyeBuffer is null)
+        
+        if (outputBufferLeft is null && outputBufferRight is null)
         {
             width = ovr.recommendedRenderTargetWidth;
             height = ovr.recommendedRenderTargetHeight;
-            leftEyeView.resize(width, height);
-            rightEyeView.resize(width, height);
-            leftEyeBuffer = New!Framebuffer(width, height, FrameBufferFormat.RGBA8, true, this);
-            rightEyeBuffer = New!Framebuffer(width, height, FrameBufferFormat.RGBA8, true, this);
+            viewLeft.resize(width, height);
+            viewRight.resize(width, height);
+            outputBufferLeft = New!Framebuffer(width, height, FrameBufferFormat.RGBA8, true, this);
+            outputBufferRight = New!Framebuffer(width, height, FrameBufferFormat.RGBA8, true, this);
         }
         
-        renderEye(leftEyeBuffer, leftEyeView);
-        renderEye(rightEyeBuffer, rightEyeView);
-        ovr.setTextures(leftEyeBuffer.colorTexture(), rightEyeBuffer.colorTexture());
+        renderEye(outputBufferLeft, viewLeft);
+        renderEye(outputBufferRight, viewRight);
+        
+        ovr.setTextures(
+            outputBufferLeft.colorTexture(),
+            outputBufferRight.colorTexture());
         ovr.submit();
         
         // TODO: render eye buffers in the window

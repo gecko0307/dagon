@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2025 Timur Gafarov
+Copyright (c) 2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,29 +25,70 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-/**
- * The main entry point for Dagon's rendering system.
- *
- * Description:
- * The `dagon.render` module publicly imports all core rendering modules.
- *
- * Copyright: Timur Gafarov 2019-2025
- * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
- * Authors: Timur Gafarov
- */
-module dagon.render;
+module dagon.render.stereorenderer;
 
-public
+import dlib.core.memory;
+import dlib.core.ownership;
+
+import dagon.core.application;
+import dagon.core.event;
+import dagon.core.time;
+import dagon.graphics.camera;
+import dagon.render.view;
+import dagon.render.pipeline;
+import dagon.render.framebuffer;
+import dagon.resource.scene;
+
+/**
+ * High-level stereo renderer abstraction.
+ */
+class StereoRenderer: Owner
 {
-    import dagon.render.framebuffer;
-    import dagon.render.pass;
-    import dagon.render.pipeline;
-    import dagon.render.view;
-    import dagon.render.renderer;
-    import dagon.render.stereorenderer;
-    import dagon.render.deferred;
-    import dagon.render.simple;
-    import dagon.render.postproc;
-    import dagon.render.present;
-    import dagon.render.hud;
+    RenderView viewLeft;
+    RenderView viewRight;
+
+    RenderPipeline pipeline;
+
+    Framebuffer outputBufferLeft;
+    Framebuffer outputBufferRight;
+
+    void activeCameraLeft(Camera camera)
+    {
+        viewLeft.camera = camera;
+    }
+
+    Camera activeCameraLeft()
+    {
+        return viewLeft.camera;
+    }
+
+    void activeCameraRight(Camera camera)
+    {
+        viewRight.camera = camera;
+    }
+
+    Camera activeCameraRight()
+    {
+        return viewRight.camera;
+    }
+    
+    this(Application application, Owner owner)
+    {
+        super(owner);
+        EventManager eventManager = application.eventManager;
+        pipeline = New!RenderPipeline(eventManager, this);
+    }
+    
+    void scene(Scene scene)
+    {
+    }
+    
+    void update(Time t)
+    {
+        pipeline.update(t);
+    }
+
+    void render()
+    {
+    }
 }
