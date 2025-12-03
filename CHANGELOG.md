@@ -1,7 +1,11 @@
-Dagon 0.36.2 - TBD
+Dagon 0.37.0 - TBD
 ------------------
 - **Misc**
-  - Update configs in init-exec template app.
+  - Update configs in init-exec template app
+- **Rendering**
+  - New module `dagon.render.stereorenderer` with `StereoRenderer` base class
+- **Extensions**
+  - `dagon:openvr`: `StereoRenderer` is now `SimpleStereoRenderer`.
 
 Dagon 0.36.1 - 1 Dec, 2025
 --------------------------
