@@ -37,31 +37,20 @@ import dagon.graphics.camera;
 import dagon.render.view;
 import dagon.render.pipeline;
 import dagon.render.framebuffer;
+import dagon.render.renderer;
 import dagon.resource.scene;
 
 /**
  * High-level stereo renderer abstraction.
  */
-class StereoRenderer: Owner
+class StereoRenderer: Renderer
 {
-    RenderView headView;
+    alias headView = view;
     RenderView viewLeft;
     RenderView viewRight;
 
-    RenderPipeline pipeline;
-
     Framebuffer outputBufferLeft;
     Framebuffer outputBufferRight;
-    
-    void activeCamera(Camera camera)
-    {
-        headView.camera = camera;
-    }
-    
-    Camera activeCamera()
-    {
-        return headView.camera;
-    }
 
     void activeCameraLeft(Camera camera)
     {
@@ -85,21 +74,6 @@ class StereoRenderer: Owner
     
     this(Application application, Owner owner)
     {
-        super(owner);
-        EventManager eventManager = application.eventManager;
-        pipeline = New!RenderPipeline(eventManager, this);
-    }
-    
-    void scene(Scene scene)
-    {
-    }
-    
-    void update(Time t)
-    {
-        pipeline.update(t);
-    }
-
-    void render()
-    {
+        super(application, owner);
     }
 }
