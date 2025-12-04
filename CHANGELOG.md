@@ -3,7 +3,7 @@ Dagon 0.37.0 - TBD
 - **Misc**
   - Update configs in init-exec template app
 - **Rendering**
-  - New module `dagon.render.stereorenderer` with `StereoRenderer` base class
+  - New module `dagon.render.stereorenderer` with `StereoRenderer` base class that extends `Renderer` for VR
 - **Extensions**
   - `dagon:openvr`: `StereoRenderer` is now `SimpleStereoRenderer`.
 
