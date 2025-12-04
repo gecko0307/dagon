@@ -56,9 +56,12 @@ class SunLightShader: Shader
     ShaderParameter!Matrix4x4f invViewMatrix;
     ShaderParameter!Matrix4x4f projectionMatrix;
     ShaderParameter!Matrix4x4f invProjectionMatrix;
+    ShaderParameter!Matrix4x4f shadowViewMatrix;
     ShaderParameter!Vector2f resolution;
     ShaderParameter!float zNear;
     ShaderParameter!float zFar;
+    
+    ShaderParameter!int useShadowViewMatrix;
     
     ShaderParameter!Color4f fogColor;
     ShaderParameter!float fogStart;
@@ -95,6 +98,8 @@ class SunLightShader: Shader
            shadowMapSubroutineNone;
     
    public:
+    bool shadowMapVRModeEnabled = false;
+    
     this(Owner owner)
     {
         vs = Shader.load("data/__internal/shaders/SunLight/SunLight.vert.glsl");
@@ -117,9 +122,12 @@ class SunLightShader: Shader
         invViewMatrix = createParameter!Matrix4x4f("invViewMatrix");
         projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
         invProjectionMatrix = createParameter!Matrix4x4f("invProjectionMatrix");
+        shadowViewMatrix = createParameter!Matrix4x4f("shadowViewMatrix");
         resolution = createParameter!Vector2f("resolution");
         zNear = createParameter!float("zNear");
         zFar = createParameter!float("zFar");
+        
+        useShadowViewMatrix = createParameter!int("useShadowViewMatrix");
         
         fogColor = createParameter!Color4f("fogColor");
         fogStart = createParameter!float("fogStart");
@@ -171,6 +179,7 @@ class SunLightShader: Shader
         invViewMatrix = &state.invViewMatrix;
         projectionMatrix = &state.projectionMatrix;
         invProjectionMatrix = &state.invProjectionMatrix;
+        shadowViewMatrix = &state.shadowViewMatrix;
         resolution = state.resolution;
         zNear = state.zNear;
         zFar = state.zFar;
@@ -260,6 +269,8 @@ class SunLightShader: Shader
                 shadowMatrix2 = &csm.area[1].shadowMatrix;
                 shadowMatrix3 = &csm.area[2].shadowMatrix;
                 shadowMapSubroutine.index = shadowMapSubroutineCascaded;
+                
+                useShadowViewMatrix = shadowMapVRModeEnabled;
             }
             else
             {
@@ -270,6 +281,8 @@ class SunLightShader: Shader
                 shadowMatrix2 = &defaultShadowMatrix;
                 shadowMatrix3 = &defaultShadowMatrix;
                 shadowMapSubroutine.index = shadowMapSubroutineNone;
+                
+                useShadowViewMatrix = false;
             }
         }
 

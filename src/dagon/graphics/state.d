@@ -112,6 +112,9 @@ struct GraphicsState
     /// Inverse projection matrix.
     Matrix4x4f invProjectionMatrix;
 
+    /// 
+    Matrix4x4f shadowViewMatrix;
+
     /// Combined model-view matrix.
     Matrix4x4f modelViewMatrix;
 

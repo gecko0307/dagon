@@ -36,6 +36,8 @@ import dagon.core.event;
 import dagon.core.time;
 import dagon.core.logger;
 import dagon.graphics.camera;
+import dagon.graphics.light;
+import dagon.graphics.csm;
 import dagon.resource.scene;
 import dagon.render.stereorenderer;
 import dagon.render.framebuffer;
@@ -43,6 +45,7 @@ import dagon.render.view;
 import dagon.render.pipeline;
 import dagon.render.pass;
 import dagon.render.simple;
+import dagon.render.deferred;
 
 import dagon.ext.openvr;
 
@@ -97,7 +100,6 @@ class SimpleStereoRenderer: StereoRenderer
         viewLeft = New!StereoRenderView(ovr, EVREye.Left, 0, 0, width, height, this);
         viewRight = New!StereoRenderView(ovr, EVREye.Right, 0, 0, width, height, this);
        
-        logInfo(pipeline);
         clearPass = New!SimpleClearPass(pipeline);
         clearPass.view = viewLeft;
         
@@ -148,6 +150,173 @@ class SimpleStereoRenderer: StereoRenderer
         clearPass.view = view;
         backgroundPass.view = view;
         spatialPass.view = view;
+        outputBuffer.bind();
+        pipeline.outputBuffer = outputBuffer;
+        pipeline.render();
+        outputBuffer.unbind();
+    }
+}
+
+class DeferredStereoRenderer: StereoRenderer
+{
+    OpenVRManager ovr;
+    
+    uint width = 1080;
+    uint height = 1080;
+    
+    GBuffer gbufferLeft;
+    GBuffer gbufferRight;
+    
+    //Framebuffer terrainNormalBuffer;
+    //Framebuffer terrainTexcoordBuffer;
+    
+    RenderPipeline commonPipeline;
+    
+    PassShadow passShadow;
+    PassBackground passBackground;
+    //PassTerrain passTerrain;
+    PassGeometry passStaticGeometry;
+    PassDecal passDecal;
+    PassGeometry passDynamicGeometry;
+    //PassOcclusion passOcclusion;
+    //FilterPass passOcclusionDenoise;
+    PassEnvironment passEnvironment;
+    PassEnvironmentProbe passEnvironmentProbe;
+    PassLight passLight;
+    PassEmission passEmission;
+    PassForward passForward;
+    PassParticles passParticles;
+    
+    this(OpenVRManager ovr, Application application, Owner owner)
+    {
+        super(application, owner);
+        
+        this.ovr = ovr;
+        
+        headView = New!RenderView(0, 0, width, height, this);
+        viewLeft = New!StereoRenderView(ovr, EVREye.Left, 0, 0, width, height, this);
+        viewRight = New!StereoRenderView(ovr, EVREye.Right, 0, 0, width, height, this);
+        
+        commonPipeline = New!RenderPipeline(application.eventManager, this);
+        passShadow = New!PassShadow(commonPipeline);
+        passBackground = New!PassBackground(pipeline, null);
+        passStaticGeometry = New!PassGeometry(pipeline, null);
+        passDecal = New!PassDecal(pipeline, null);
+        passDynamicGeometry = New!PassGeometry(pipeline, null);
+        passEnvironment = New!PassEnvironment(pipeline, null);
+        passEnvironmentProbe = New!PassEnvironmentProbe(pipeline, null);
+        passLight = New!PassLight(pipeline, null);
+        passEmission = New!PassEmission(pipeline, null);
+        passForward = New!PassForward(pipeline, null);
+        passParticles = New!PassParticles(pipeline, null);
+    }
+    
+    override void scene(Scene s)
+    {
+        passShadow.group = s.world.spatial;
+        passShadow.lightGroup = s.world.lights;
+        passBackground.group = s.world.background;
+        passStaticGeometry.group = s.world.spatialOpaqueStatic;
+        passDecal.group = s.world.decals;
+        passDynamicGeometry.group = s.world.spatialOpaqueDynamic;
+        passEnvironmentProbe.group = s.world.probes;
+        passLight.groupSunLights = s.world.sunLights;
+        passLight.groupAreaLights = s.world.areaLights;
+        passForward.group = s.world.spatialTransparent;
+        passParticles.group = s.world.spatial;
+        
+        commonPipeline.environment = s.environment;
+        pipeline.environment = s.environment;
+    }
+    
+    override void update(Time t)
+    {
+        passShadow.camera = activeCamera;
+        commonPipeline.update(t);
+        pipeline.update(t);
+    }
+    
+    override void render()
+    {
+        if (!ovr.headsetAvailable)
+            return;
+        
+        if (outputBufferLeft is null && outputBufferRight is null)
+        {
+            //width = ovr.recommendedRenderTargetWidth;
+            //height = ovr.recommendedRenderTargetHeight;
+            headView.resize(width, height);
+            viewLeft.resize(width, height);
+            viewRight.resize(width, height);
+            outputBufferLeft = New!Framebuffer(width, height, FrameBufferFormat.RGBA16F, true, this);
+            outputBufferRight = New!Framebuffer(width, height, FrameBufferFormat.RGBA16F, true, this);
+            gbufferLeft = New!GBuffer(width, height, outputBufferLeft, this);
+            gbufferRight = New!GBuffer(width, height, outputBufferRight, this);
+        }
+        
+        commonPipeline.render();
+        renderEye(outputBufferLeft, gbufferLeft, viewLeft);
+        renderEye(outputBufferRight, gbufferRight, viewRight);
+        
+        ovr.setTextures(
+            outputBufferLeft.colorTexture(),
+            outputBufferRight.colorTexture());
+        ovr.submit();
+        
+        // TODO: render eye buffers to the window
+    }
+    
+    /// Render the pipeline for an individual eye
+    void renderEye(Framebuffer outputBuffer, GBuffer gbuffer, RenderView view)
+    {
+        passBackground.view = view;
+        passBackground.gbuffer = gbuffer;
+        passBackground.updateState();
+        
+        passStaticGeometry.view = view;
+        passStaticGeometry.gbuffer = gbuffer;
+        passStaticGeometry.updateState();
+        
+        passDecal.view = view;
+        passDecal.gbuffer = gbuffer;
+        passDecal.updateState();
+        
+        passDynamicGeometry.view = view;
+        passDynamicGeometry.gbuffer = gbuffer;
+        passDynamicGeometry.updateState();
+        
+        passEnvironment.view = view;
+        passEnvironment.outputBuffer = outputBuffer;
+        passEnvironment.gbuffer = gbuffer;
+        passEnvironment.updateState();
+        
+        passEnvironmentProbe.view = view;
+        passEnvironmentProbe.outputBuffer = outputBuffer;
+        passEnvironmentProbe.gbuffer = gbuffer;
+        passEnvironmentProbe.updateState();
+        
+        passLight.view = view;
+        passLight.outputBuffer = outputBuffer;
+        passLight.gbuffer = gbuffer;
+        passLight.updateState();
+        passLight.state.shadowViewMatrix = headView.viewMatrix();
+        passLight.sunLightShader.shadowMapVRModeEnabled = true;
+        
+        passEmission.view = view;
+        passEmission.outputBuffer = outputBuffer;
+        passEmission.gbuffer = gbuffer;
+        passEmission.updateState();
+        
+        passForward.view = view;
+        passForward.outputBuffer = outputBuffer;
+        passForward.gbuffer = gbuffer;
+        passForward.updateState();
+        
+        passParticles.view = view;
+        passParticles.outputBuffer = outputBuffer;
+        passParticles.gbuffer = gbuffer;
+        passParticles.updateState();
+        
         outputBuffer.bind();
         pipeline.outputBuffer = outputBuffer;
         pipeline.render();

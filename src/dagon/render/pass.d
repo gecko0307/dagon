@@ -200,6 +200,8 @@ abstract class RenderPass: EventListener
             state.projectionMatrix = view.projectionMatrix();
             state.invProjectionMatrix = state.projectionMatrix.inverse;
             
+            state.shadowViewMatrix = state.viewMatrix;
+            
             state.frustum = Frustum(state.projectionMatrix * state.viewMatrix);
 
             state.resolution = Vector2f(view.width, view.height);

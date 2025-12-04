@@ -15,8 +15,11 @@ uniform vec2 resolution;
 uniform mat4 viewMatrix;
 uniform mat4 invViewMatrix;
 uniform mat4 invProjectionMatrix;
+uniform mat4 shadowViewMatrix;
 uniform float zNear;
 uniform float zFar;
+
+uniform bool useShadowViewMatrix;
 
 uniform vec4 fogColor;
 uniform float fogStart;
@@ -106,7 +109,8 @@ void main()
     vec3 albedo = toLinear(col.rgb);
     
     float depth = texture(depthBuffer, texCoord).x;
-    vec3 eyePos = unproject(invProjectionMatrix, vec3(texCoord, depth));
+    vec3 clipPos = vec3(texCoord, depth);
+    vec3 eyePos = unproject(invProjectionMatrix, clipPos);
     vec3 worldPos = (invViewMatrix * vec4(eyePos, 1.0)).xyz;
     vec3 N = normalize(texture(normalBuffer, texCoord).rgb);
     vec3 E = normalize(-eyePos);
@@ -121,7 +125,12 @@ void main()
     
     vec3 f0 = mix(vec3(0.04), albedo, metallic);
 
-    float shadow = shadowMap(eyePos, N);
+    vec3 shadowEyePos;
+    if (useShadowViewMatrix)
+        shadowEyePos = (shadowViewMatrix * vec4(worldPos, 1.0)).xyz;
+    else
+        shadowEyePos = eyePos;
+    float shadow = shadowMap(shadowEyePos, N);
     
     vec3 radiance = vec3(0.0);
 

@@ -298,23 +298,26 @@ class CascadedShadowMap: ShadowMap
     override void update(Time t)
     {
         if (camera)
+            updateCascadesForCamera(camera);
+    }
+    
+    void updateCascadesForCamera(Camera cam)
+    {
+        Vector3f cameraDirection = -cam.directionAbsolute;
+        Vector3f round(Vector3f a, float resolution)
         {
-            Vector3f cameraDirection = -camera.directionAbsolute;
-            Vector3f round(Vector3f a, float resolution)
-            {
-                return Vector3f(a.x - fmod(a.x, resolution), a.y - fmod(a.y, resolution), a.z - fmod(a.z, resolution));
-            }
-            
-            float res1 = projectionSize[0] / shadowMapResolution * 5;
-            area[0].position = round(camera.positionAbsolute + cameraDirection * (projectionSize[0]  * 0.48f - 1.0f), res1);
-            area[0].update(light, camera);
-            
-            foreach(i; 1..projectionSize.length)
-            {
-                auto res = projectionSize[i] / shadowMapResolution * (i == 1? 10 : 100);
-                area[i].position = round(camera.positionAbsolute + cameraDirection * projectionSize[i] * 0.5f, res);
-                area[i].update(light, camera);
-            }
+            return Vector3f(a.x - fmod(a.x, resolution), a.y - fmod(a.y, resolution), a.z - fmod(a.z, resolution));
+        }
+        
+        float res1 = projectionSize[0] / shadowMapResolution * 5;
+        area[0].position = round(cam.positionAbsolute + cameraDirection * (projectionSize[0]  * 0.48f - 1.0f), res1);
+        area[0].update(light, cam);
+        
+        foreach(i; 1..projectionSize.length)
+        {
+            auto res = projectionSize[i] / shadowMapResolution * (i == 1? 10 : 100);
+            area[i].position = round(cam.positionAbsolute + cameraDirection * projectionSize[i] * 0.5f, res);
+            area[i].update(light, cam);
         }
     }
 }

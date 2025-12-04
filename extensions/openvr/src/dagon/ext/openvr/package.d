@@ -235,6 +235,28 @@ class OpenVRManager: Owner
     }
 }
 
+class HeadViewComponent: EntityComponent
+{
+    OpenVRManager ovr;
+    
+    this(OpenVRManager ovr, Entity hostEntity)
+    {
+        super(ovr.application.eventManager, hostEntity);
+        this.ovr = ovr;
+    }
+    
+    override void update(Time time)
+    {
+        processEvents();
+        
+        entity.prevTransformation = entity.transformation;
+        entity.transformation = ovr.headTransform;
+        entity.invTransformation = entity.transformation.inverse;
+        
+        entity.updateAbsoluteTransformation();
+    }
+}
+
 class EyeViewComponent: EntityComponent
 {
     OpenVRManager ovr;

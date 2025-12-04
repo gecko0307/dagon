@@ -44,6 +44,7 @@ import dagon.resource.scene;
  */
 class StereoRenderer: Owner
 {
+    RenderView headView;
     RenderView viewLeft;
     RenderView viewRight;
 
@@ -51,6 +52,16 @@ class StereoRenderer: Owner
 
     Framebuffer outputBufferLeft;
     Framebuffer outputBufferRight;
+    
+    void activeCamera(Camera camera)
+    {
+        headView.camera = camera;
+    }
+    
+    Camera activeCamera()
+    {
+        return headView.camera;
+    }
 
     void activeCameraLeft(Camera camera)
     {
