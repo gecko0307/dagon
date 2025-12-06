@@ -206,6 +206,16 @@ class NewtonPhysicsWorld: Owner
         NewtonDestroy(newtonWorld);
     }
     
+    void threadsCount(uint numThreads) @property
+    {
+        NewtonSetThreadsCount(newtonWorld, numThreads);
+    }
+    
+    uint threadsCount() @property
+    {
+        return NewtonGetThreadsCount(newtonWorld);
+    }
+    
     int createGroupId()
     {
         return NewtonMaterialCreateGroupID(newtonWorld);

@@ -77,7 +77,7 @@ class FirstPersonViewComponent: EntityComponent
     float axisSensitivity = 2.0f;
     
     /// Lower threshold of controller axis value.
-    float axisDeadzone = 0.075f;
+    float axisDeadzone = 0.0f;
     
     /// Maximum pitch angle (degrees).
     float pitchLimitMax = 60.0f;
