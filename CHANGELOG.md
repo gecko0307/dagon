@@ -4,8 +4,11 @@ Dagon 0.37.0 - TBD
   - Update configs in init-exec template app
 - **Rendering**
   - New module `dagon.render.stereorenderer` with `StereoRenderer` base class that extends `Renderer` for VR
+- **UI**
+  - `FirstPersonViewComponent.axisDeadzone` is now zero by default
 - **Extensions**
-  - `dagon:openvr`: `StereoRenderer` is now `SimpleStereoRenderer`.
+  - `dagon:openvr`: `StereoRenderer` is now `SimpleStereoRenderer`
+  - `dagon:newton`: new property `NewtonPhysicsWorld.threadsCount`.
 
 Dagon 0.36.1 - 1 Dec, 2025
 --------------------------
