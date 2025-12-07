@@ -1,5 +1,5 @@
-Dagon 0.37.0 - TBD
-------------------
+Dagon 0.36.2 - 7 Dec, 2025
+--------------------------
 - **Misc**
   - Update configs in init-exec template app
 - **Rendering**
