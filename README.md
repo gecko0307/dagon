@@ -19,7 +19,7 @@ Screenshots
 
 [![Space](https://blog.pixperfect.online/wp-content/uploads/2025/05/space.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/05/space.jpg)
 
-[![Chillwave Drive](https://blog.pixperfect.online/wp-content/uploads/2025/11/chillwave-drive-02.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/11/chillwave-drive-02.jpg)
+[![Chillwave Drive](https://blog.pixperfect.online/wp-content/uploads/2025/12/chillwave_drive_twilight.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/12/chillwave_drive_twilight.jpg)
 
 [![Ocean](https://blog.pixperfect.online/wp-content/uploads/2025/08/ocean5.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/08/ocean5.jpg)
 
@@ -98,7 +98,7 @@ Runtime Dependencies
 --------------------
 * [SDL](https://www.libsdl.org) 2.32.4.0
 * [SDL_Image](https://github.com/libsdl-org/SDL_image) 2.8.8.0
-* [Freetype](https://www.freetype.org) 2.8.1 for text rendering
+* [FreeType](https://www.freetype.org) 2.8.1 for text rendering
 * [libwebp](https://chromium.googlesource.com/webm/libwebp) for WebP support (optional)
 * [libtiff](https://libtiff.gitlab.io/libtiff/) for TIFF support (optional)
 * [libavif](https://github.com/AOMediaCodec/libavif) for AVIF support (optional)
