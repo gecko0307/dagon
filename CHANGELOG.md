@@ -1,3 +1,11 @@
+Dagon 0.37.0 - TBD
+------------------
+- **Core**
+  - Enable smooth line rendering by default (`GL_LINE_SMOOTH`)
+- **UI**
+  - `dagon.ui.axes` - drawables that render 3D axes for object manipulation UI
+  - `dagon.ui.shaders.gizmo` - a solid color shader for use with UI overlay.
+
 Dagon 0.36.2 - 7 Dec, 2025
 --------------------------
 - **Misc**

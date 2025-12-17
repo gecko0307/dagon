@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2025 Timur Gafarov
+Copyright (c) 2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -24,32 +24,49 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+module dagon.ui.shaders.gizmo;
 
-/**
- * The main entry point for Dagon's user interface components.
- *
- * Description:
- * The `dagon.ui` package publicly imports all core UI modules, including
- * first-person and free camera controls, font, and drawable text line class.
- *
- * Copyright: Timur Gafarov 2019-2025
- * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
- * Authors: Timur Gafarov
- */
-module dagon.ui;
+import dlib.core.memory;
+import dlib.core.ownership;
+import dlib.math.matrix;
+import dlib.text.str;
 
-public
+import dagon.graphics.shader;
+import dagon.graphics.state;
+
+class GizmoShader: Shader
 {
-    import dagon.ui.axes;
-    import dagon.ui.firstpersonview;
-    import dagon.ui.freeview;
-    import dagon.ui.textline;
-    import dagon.ui.widget;
-    import dagon.ui.widgets.console;
-    import dagon.ui.widgets.fullscreenmediaview;
-    import dagon.ui.widgets.label;
-    import dagon.ui.widgets.textinput;
-    import dagon.ui.widgets.textview;
-    import dagon.ui.widgets.window;
-    import dagon.ui.shaders.gizmo;
+   protected:
+    String vs, fs;
+    
+    ShaderParameter!Matrix4x4f modelViewMatrix;
+    ShaderParameter!Matrix4x4f projectionMatrix;
+
+   public:
+    
+    this(Owner owner)
+    {
+        vs = Shader.load("data/__internal/shaders/Gizmo/Gizmo.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/Gizmo/Gizmo.frag.glsl");
+
+        auto myProgram = New!ShaderProgram(vs, fs, this);
+        super(myProgram, owner);
+        
+        modelViewMatrix = createParameter!Matrix4x4f("modelViewMatrix");
+        projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
+    }
+
+    ~this()
+    {
+        vs.free();
+        fs.free();
+    }
+
+    override void bindParameters(GraphicsState* state)
+    {
+        modelViewMatrix = &state.modelViewMatrix;
+        projectionMatrix = &state.projectionMatrix;
+
+        super.bindParameters(state);
+    }
 }

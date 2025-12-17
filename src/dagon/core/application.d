@@ -979,6 +979,7 @@ class Application: EventListener, Updateable
         glEnable(GL_POLYGON_OFFSET_FILL);
         glCullFace(GL_BACK);
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+        glEnable(GL_LINE_SMOOTH);
         
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         SDL_GL_SwapWindow(window);

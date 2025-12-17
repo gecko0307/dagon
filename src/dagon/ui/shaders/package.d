@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2025 Timur Gafarov
+Copyright (c) 2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -24,32 +24,9 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-
-/**
- * The main entry point for Dagon's user interface components.
- *
- * Description:
- * The `dagon.ui` package publicly imports all core UI modules, including
- * first-person and free camera controls, font, and drawable text line class.
- *
- * Copyright: Timur Gafarov 2019-2025
- * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
- * Authors: Timur Gafarov
- */
-module dagon.ui;
+module dagon.ui.shaders;
 
 public
 {
-    import dagon.ui.axes;
-    import dagon.ui.firstpersonview;
-    import dagon.ui.freeview;
-    import dagon.ui.textline;
-    import dagon.ui.widget;
-    import dagon.ui.widgets.console;
-    import dagon.ui.widgets.fullscreenmediaview;
-    import dagon.ui.widgets.label;
-    import dagon.ui.widgets.textinput;
-    import dagon.ui.widgets.textview;
-    import dagon.ui.widgets.window;
     import dagon.ui.shaders.gizmo;
 }
