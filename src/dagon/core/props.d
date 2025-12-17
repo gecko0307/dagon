@@ -446,14 +446,16 @@ bool parseProperties(string input, Properties props)
     }
 
     bool res = true;
-    auto lexer = New!Lexer(input, [":", ";", "\"", "[", "]", ","]);
+    auto lexer = New!Lexer(input, [":", ";", "\"", "[", "]", ",", "//"]);
 
-    lexer.ignoreNewlines = true;
+    lexer.ignoreNewlines = false;
 
     Expect expect = Expect.PropName;
     string propName;
     Array!char propValue;
     DPropType propType;
+    
+    bool isSingleLineComment = false;
 
     while(true)
     {
@@ -470,6 +472,22 @@ bool parseProperties(string input, Properties props)
 
         if (isWhiteStr(lexeme) && expect != Expect.String)
             continue;
+
+        if (lexeme == "\n")
+        {
+            isSingleLineComment = false;
+            continue;
+        }
+        else if (isSingleLineComment)
+        {
+            continue;
+        }
+        
+        if (lexeme == "//")
+        {
+            isSingleLineComment = true;
+            continue;
+        }
 
         if (expect == Expect.PropName)
         {

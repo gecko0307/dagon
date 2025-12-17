@@ -1,6 +1,7 @@
 Dagon 0.37.0 - TBD
 ------------------
 - **Core**
+  - Single-line comments support in *.conf files (lines beginning with `//` are ignored)
   - Enable smooth line rendering by default (`GL_LINE_SMOOTH`)
 - **UI**
   - `dagon.ui.axes` - drawables that render 3D axes for object manipulation UI
