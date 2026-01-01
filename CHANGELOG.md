@@ -2,10 +2,13 @@ Dagon 0.37.0 - TBD
 ------------------
 - **Core**
   - Single-line comments support in *.conf files (lines beginning with `//` are ignored)
+  - `true` and `false` tokens support in *.conf files (interpreted as `1` and `0`).
   - Enable smooth line rendering by default (`GL_LINE_SMOOTH`)
 - **UI**
   - `dagon.ui.axes` - drawables that render 3D axes for object manipulation UI
   - `dagon.ui.shaders.gizmo` - a solid color shader for use with UI overlay.
+- **Misc**
+  - Dagon now uses dlib 1.4.1.
 
 Dagon 0.36.2 - 7 Dec, 2025
 --------------------------

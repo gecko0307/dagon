@@ -1,4 +1,4 @@
-Copyright (c) 2016-2025 Timur Gafarov, Rafał Ziemniewski, Mateusz Muszyński,
+Copyright (c) 2016-2026 Timur Gafarov, Rafał Ziemniewski, Mateusz Muszyński,
 Denis Feklushkin, dayllenger, Konstantin Menshikov, Björn Roberg, Isaac S.,
 Adrien Allard, Dennis Korpel, Vadim Lopatin, Ilya Lemeshko, Vlad Davydov.
 
