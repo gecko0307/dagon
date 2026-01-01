@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2016-2025 Timur Gafarov
+Copyright (c) 2016-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -469,10 +469,7 @@ bool parseProperties(string input, Properties props)
             }
             break;
         }
-
-        if (isWhiteStr(lexeme) && expect != Expect.String)
-            continue;
-
+        
         if (lexeme == "\n")
         {
             isSingleLineComment = false;
@@ -482,6 +479,9 @@ bool parseProperties(string input, Properties props)
         {
             continue;
         }
+
+        if (isWhiteStr(lexeme) && expect != Expect.String)
+            continue;
         
         if (lexeme == "//")
         {
@@ -539,6 +539,18 @@ bool parseProperties(string input, Properties props)
                 propType = DPropType.Vector;
                 expect = Expect.Vector;
                 propValue.append(lexeme);
+            }
+            else if (lexeme == "false")
+            {
+                propType = DPropType.Number;
+                propValue.append("0");
+                expect = Expect.Semicolon;
+            }
+            else if (lexeme == "true")
+            {
+                propType = DPropType.Number;
+                propValue.append("1");
+                expect = Expect.Semicolon;
             }
             else
             {
