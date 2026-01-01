@@ -6,6 +6,6 @@
 		"bindbc-loader": "1.1.4",
 		"bindbc-opengl": "1.1.1",
 		"bindbc-sdl": "1.5.2",
-		"dlib": "1.4.0"
+		"dlib": "1.4.1"
 	}
 }
