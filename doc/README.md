@@ -1,5 +1,5 @@
 # Dagon
-Dagon is a 3D game engine for D language based on OpenGL 4.0 and SDL2. It features deferred HDR renderer, PBR materials, an event manager, scene manager, asset manager, and entity-component model. 
+Dagon is a 3D game engine for D language based on OpenGL 4.0 and SDL2. It features deferred HDR renderer, PBR materials, an event manager, scene manager, asset manager, and entity-component model.
 
 ## Project Goals
 1. Replacing DGL as an engine for [Electronvolt](https://github.com/gecko0307/electronvolt). This means that Dagon is mainly targeted to first person action games, but nothing stops you from using it in a game of any genre.
@@ -18,7 +18,7 @@ Read more [here](https://github.com/gecko0307/dagon/blob/master/doc/Architecture
 Dagon heavily relies on [dlib](https://github.com/gecko0307/dlib). It is used everywhere in the engine, from memory management and vector math to file I/O and image decoding. Actually, as stated earlier, Dagon's secondary goal is to promote dlib and demonstrate its features.
 
 ## Memory Management
-Dagon mostly avoids using the garbage collector and manages all of its data manually with `New` and `Delete` functions. You are also expected to do so. You still can use garbage collected data in Dagon, but this may result in weird bugs, so you are strongly recommended to do things our way. Most part of the engine is built around dlib's ownership model - every object belongs to some other object (owner), and deleting the owner will delete all of its owned objects. This allows semi-automatic memory management - you have to manually delete only root owner, which usually is an `Application` object. When creating objects, it is recommended to make scene's `assetManager` their owner.
+Dagon mostly avoids using the garbage collector and manages all of its data manually with `New` and `Delete` functions. You are also expected to do so. You still can use garbage collected data in Dagon, but this may result in weird bugs, so you are strongly recommended to do things our way. Most part of the engine is built around dlib's ownership model–every object belongs to some other object (owner), and deleting the owner will delete all of its owned objects. This allows semi-automatic memory management–you have to manually delete only root owner, which usually is an `Application` object. When creating objects, it is recommended to make scene's `assetManager` their owner.
 
 ## Creating Assets
 Dagon is a framework-style engine, meaning that it is controlled programmatically and doesn't provide you with an editor. How you will build your scenes is up to you. You can build them manually by loading models one by one in your code, create your own scene format, or export glTF scenes from a 3D editor of your choise. We recommend [Blender](https://www.blender.org/) as an external editor.
