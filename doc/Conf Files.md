@@ -200,7 +200,7 @@ interact: "kb_e";
 
 Supported key names:
 - `kb_a` .. `kb_z`, `kb_0` .. `kb_9`
-- `kb_-`, `kb_=`, `kb_[`, `kb_]`, `kb_\`, `kb_#`, `kb_;`, `kb_'`, `kb_``````, `kb_,`, `kb_.`, `kb_/`
+- `kb_-`, `kb_=`, `kb_[`, `kb_]`, `kb_\`, `kb_#`, `kb_;`, `kb_'`, `kb_&#96;`, `kb_,`, `kb_.`, `kb_/`
 - `kb_return`, `kb_escape`, `kb_backspace`, `kb_delete`, `kb_tab`, `kb_space`, `kb_capsLock`
 - `kb_f1` .. `kb_f24`
 - `kb_printscreen`, `kb_scrolllock`, `kb_numlock`, `kb_pause`, `kb_insert`, `kb_home`, `kb_pageup`, `kb_pagedown`, `kb_end`
