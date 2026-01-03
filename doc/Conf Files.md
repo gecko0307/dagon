@@ -18,11 +18,15 @@ vectorOption: [0.5, 1.0, 1.0];
 stringOption: "Some text";
 ```
 
+Lines beginning with double slash (`//`) are treated as comments and ignored.
+
+## Built-in Conf Files
+
 Dagon has a number of built-in *.conf files (`settings.conf`, `render.conf`, `input.conf`, `audio.conf`) that are loaded from each VFS-mounted path. User-defined *.conf files (in APPDATA and custom paths) override root ones (in executable directory).
 
 Built-in *.conf files are fully reserved for Dagon's internal mechanisms, and it is not recommended to use them for storing game-specific settings. The engine doesn't modify them, so you can implement a visual configurator in your game that modifies these files.
 
-## settings.conf
+### settings.conf
 
 `settings.conf` contains engine settings recognozed by the `Application` class. If the file doesn't exist, the engine will print a warning and run with default settings.
 
@@ -80,7 +84,7 @@ Built-in *.conf files are fully reserved for Dagon's internal mechanisms, and it
 * `events.controllerAxisThreshold` - defines maximum value of controller axis for normalization. Default is `32639`
 * `events.graphicsTablet.enabled` - `0` or `1`, disable or enable graphics tablet events (if device is available). Default is `1`.
 
-## render.conf
+### render.conf
 
 Recognozed by the `Game` class, applied to the `Game.deferredRenderer` and `Game.postProcessingRenderer`.
 
@@ -168,7 +172,7 @@ Recognized by the `AudioManager` class of the dagon:audio extension.
 * `sfx.volume` - a number in 0.0..1.0 range. Sound effects volume (for sounds created as `SoundClass.SFX`). Default is `0.5`
 * `multimediaKeysEnabled` - `0` or `1`. Use multimedia keys found on some keyboards to control the active playlist. Note that audio players often hijack multimedia keypresses, in which cases they are not detected by Dagon. Default is `1`
 
-## input.conf
+### input.conf
 
 `input.conf` contains input bindings recognozed by the `InputManager` class.
 
