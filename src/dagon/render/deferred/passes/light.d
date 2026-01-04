@@ -172,6 +172,7 @@ class PassLight: RenderPass
                                 state.cullBackfaces = true;
                             }
                             
+                            // lightCameraDistanceParam in the shader
                             state.custom1 = (clamp(sqrCamDist, sqrRadius, sqrRadius * 2.0) - sqrRadius) / sqrRadius;
                             
                             volumetricScatteringShader.bindParameters(&state);

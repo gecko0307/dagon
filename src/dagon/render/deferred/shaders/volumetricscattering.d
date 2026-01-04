@@ -71,6 +71,11 @@ class VolumetricScatteringShader: Shader
     ShaderParameter!float lightEnergy;
     ShaderParameter!float lightRadius;
     
+    ShaderParameter!int lightIsSpot;
+    ShaderParameter!float lightSpotCosCutoff;
+    ShaderParameter!float lightSpotCosInnerCutoff;
+    ShaderParameter!Vector3f lightSpotDirection;
+    
     ShaderParameter!int lightVolumeCulling;
     ShaderParameter!float lightCameraDistanceParam;
     
@@ -110,6 +115,11 @@ class VolumetricScatteringShader: Shader
         lightColor = createParameter!Color4f("lightColor");
         lightEnergy = createParameter!float("lightEnergy");
         lightRadius = createParameter!float("lightRadius");
+        
+        lightIsSpot = createParameter!int("lightIsSpot");
+        lightSpotCosCutoff = createParameter!float("lightSpotCosCutoff");
+        lightSpotCosInnerCutoff = createParameter!float("lightSpotCosInnerCutoff");
+        lightSpotDirection = createParameter!Vector3f("lightSpotDirection");
         
         lightVolumeCulling = createParameter!int("lightVolumeCulling");
         lightCameraDistanceParam = createParameter!float("lightCameraDistanceParam");
@@ -166,6 +176,20 @@ class VolumetricScatteringShader: Shader
             lightEnergy = light.energy;
             lightRadius = light.volumeRadius;
             lightScatteringDensity = light.mediumDensity;
+            
+            if (light.type == LightType.Spot)
+            {
+                lightIsSpot = 1;
+                lightSpotCosCutoff = cos(degtorad(light.spotOuterCutoff));
+                lightSpotCosInnerCutoff = cos(degtorad(light.spotInnerCutoff));
+                Vector4f lightDirHg = Vector4f(light.directionAbsolute);
+                lightDirHg.w = 0.0;
+                lightSpotDirection = (lightDirHg * state.viewMatrix).xyz;
+            }
+            else
+            {
+                lightIsSpot = 0;
+            }
         }
         else
         {
@@ -173,6 +197,7 @@ class VolumetricScatteringShader: Shader
             lightColor = Color4f(0.0f, 0.0f, 0.0f, 0.0f);
             lightEnergy = 1.0f;
             lightRadius = 0.0f;
+            lightIsSpot = 0;
         }
         lightVolumeCulling = state.cullBackfaces;
         lightCameraDistanceParam = state.custom1;

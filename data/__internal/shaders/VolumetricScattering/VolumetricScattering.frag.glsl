@@ -29,6 +29,11 @@ uniform float lightScatteringDensity;
 uniform bool lightVolumeCulling;
 uniform float lightCameraDistanceParam;
 
+uniform bool lightIsSpot;
+uniform float lightSpotCosCutoff;
+uniform float lightSpotCosInnerCutoff;
+uniform vec3 lightSpotDirection;
+
 in vec3 lightVolumeEyePos;
 
 layout(location = 0) out vec4 fragColor;
@@ -55,24 +60,32 @@ void main()
     vec3 C = lightPosition;     // sphere center in eye space
     float r = scatteringRadius;
 
-    // Solve quadratic: |O + t D - C|^2 = r^2
+    // Solve quadratic: (O + tD - C)^2 = r^2
     vec3 OC = O - C; // = -C
     float b = 2.0 * dot(D, OC);
     float c = dot(OC, OC) - r * r;
     float discriminant = b * b - 4.0 * c;
     float thickness = 0.0;
+    float sqrtD = 0.0;
+    float t0 = 0.0;
+    float t1 = 0.0;
     if (discriminant > 0.0)
     {
-        float sqrtD = sqrt(discriminant);
-        float t0 = (-b - sqrtD) * 0.5;
-        float t1 = (-b + sqrtD) * 0.5;
+        sqrtD = sqrt(discriminant);
+        t0 = (-b - sqrtD) * 0.5;
+        t1 = (-b + sqrtD) * 0.5;
         thickness = max(0.0, t1 - t0);
     }
 
-    const float falloffPower = 8.0;
-
     thickness = clamp(thickness, 0.0, lightRadius * 2.0);
+    
+    const float falloffPower = 8.0;
     float falloff = pow(clamp(thickness / (scatteringRadius * 2.0), 0.0, 1.0), falloffPower);
+
+    if (lightIsSpot)
+    {
+        // TODO
+    }
 
     if (lightVolumeCulling)
     {
