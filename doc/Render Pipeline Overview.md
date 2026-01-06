@@ -8,7 +8,7 @@ Dagon features a hybrid renderer that combines both deferred (see below) and for
 
 ### Deferred Rendering
 
-Deferred rendering is one of the two major techniques in rasterization. It breaks rendering into two main phases - geometry pass and light pass. First all visible geometry is rasterized into a set of fragment attribute buffers (often collectively called a G-buffer), which include depth buffer, normal buffer, color buffer, etc. Then a desired number of light volumes are rasterized into a final radiance buffer. A light shader calculates radiance for a given fragment based on light's properties and G-buffer values corresponding to that fragment.
+Deferred rendering is one of the two major techniques in rasterization. It breaks rendering into two main phases - geometry pass and light pass. First all visible geometry is rasterized into a set of fragment attribute buffers (often collectively called a G-buffer), which include depth buffer, normal buffer, color buffer, etc. Then a desired number of light bounding volumes are rasterized into a final radiance buffer. A light shader calculates radiance for a given fragment based on light's properties and G-buffer values corresponding to that fragment.
 
 Deferred rendering has the following advantages over forward rendering:
 * No hardcoded limit on light number. Usually the number of lights is limited only by GPU fillrate, not some fixed maximum.
@@ -51,11 +51,11 @@ Dagon's deferred renderer treats all point lights as area lights - if the light 
 
 ### Volumetric Light Scattering
 
-Dagon supports physically-based raymarched anisotropic volumetric scattering effect, which is also known as "god rays". It simulates scattering of direct sun light in the atmosphere, given the assumption that the air contains aerosols, such as haze or dust - referred to as the medium in the underlying theory. The denser the medium, the more pronounced the sun rays appear.
+Dagon's lighting workflow supports volumetric effects. This technique simulates scattering of light in the atmosphere, given the assumption that the air contains aerosols, such as haze or dust - referred to as the medium in the underlying theory. The denser the medium, the more pronounced the effect. For a sun light, this technique is also known as "god rays". If a shadow map is assigned, the implementation integrates optical depth using Monte Carlo raymarched sampling of the shadow map along the view ray for each pixel in the framebuffer (otherwise the optical depth is assumed to be 1.0). The resulting value is then used to compute anisotropic Mie scattering, approximated with Henyey-Greenstein phase function. Anisotropy parameter of the function (`g`) is controlled with `Light.scattering` property: `g = 1.0 - Light.scattering`. Aerosol density is defined by `Light.mediumDensity`.
 
-If a shadow map is assigned, the implementation integrates optical depth using Monte Carlo raymarched sampling of the shadow map along the view ray for each pixel in the framebuffer (otherwise the optical depth is assumed to be 1.0). The resulting value is then used to compute anisotropic Mie scattering, approximated with Henyey-Greenstein phase function. Anisotropy parameter of the function (`g`) is controlled with `Light.scattering` property: `g = 1.0 - Light.scattering`. Aerosol density is defined by `Light.mediumDensity`.
+For omnidirectional lights, isotropic scattering is computed via analitical optical depth solution for the light's bounding sphere. This results in smooth radial blending of the emitted light with the surrounding environment. The effect looks like glow post-processing filter, but it is visible even if the light source itself is outside of the screen space.
 
-For omnidirectional lights, isotropic scattering is computed via analitical solution for light bounding spheres. This results in a smooth radial blending of the emitted light with the surrounding environment. The effect looks like glow or bloom post-processing filter, but it is visible even if the light source itself is outside of the screen space.
+For spot lights, optical depth is integrated by raymarching over a cone volume defined by light direction and outer/inner angles.
 
 ### Cascaded Shadow Maps (CSM)
 

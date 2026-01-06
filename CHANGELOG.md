@@ -4,6 +4,8 @@ Dagon 0.37.0 - TBD
   - Single-line comments support in *.conf files (lines beginning with `//` are ignored)
   - `true` and `false` tokens support in *.conf files (interpreted as `1` and `0`).
   - Enable smooth line rendering by default (`GL_LINE_SMOOTH`)
+- **Rendering**
+  - Volumetric scattering for spot lights
 - **UI**
   - `dagon.ui.axes` - drawables that render 3D axes for object manipulation UI
   - `dagon.ui.shaders.gizmo` - a solid color shader for use with UI overlay
