@@ -80,6 +80,7 @@ class VolumetricScatteringShader: Shader
     ShaderParameter!float lightCameraDistanceParam;
     
     ShaderParameter!float lightScatteringDensity;
+    ShaderParameter!int lightScatteringSamples;
     
     ShaderParameter!int colorBuffer;
     ShaderParameter!int depthBuffer;
@@ -125,6 +126,7 @@ class VolumetricScatteringShader: Shader
         lightCameraDistanceParam = createParameter!float("lightCameraDistanceParam");
         
         lightScatteringDensity = createParameter!float("lightScatteringDensity");
+        lightScatteringSamples = createParameter!int("lightScatteringSamples");
         
         colorBuffer = createParameter!int("colorBuffer");
         depthBuffer = createParameter!int("depthBuffer");
@@ -176,13 +178,14 @@ class VolumetricScatteringShader: Shader
             lightEnergy = light.energy;
             lightRadius = light.volumeRadius;
             lightScatteringDensity = light.mediumDensity;
+            lightScatteringSamples = light.scatteringSamples;
             
             if (light.type == LightType.Spot)
             {
                 lightIsSpot = 1;
                 lightSpotCosCutoff = cos(degtorad(light.spotOuterCutoff));
                 lightSpotCosInnerCutoff = cos(degtorad(light.spotInnerCutoff));
-                Vector4f lightDirHg = Vector4f(light.directionAbsolute);
+                Vector4f lightDirHg = Vector4f(-light.directionAbsolute);
                 lightDirHg.w = 0.0;
                 lightSpotDirection = (lightDirHg * state.viewMatrix).xyz;
             }

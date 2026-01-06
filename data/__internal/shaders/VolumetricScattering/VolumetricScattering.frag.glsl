@@ -1,5 +1,7 @@
 #version 400 core
 
+#define PI 3.14159265359
+
 uniform sampler2D colorBuffer;
 uniform sampler2D depthBuffer;
 uniform sampler2D normalBuffer;
@@ -25,6 +27,7 @@ uniform vec4 lightColor;
 uniform float lightEnergy;
 
 uniform float lightScatteringDensity;
+uniform int lightScatteringSamples;
 
 uniform bool lightVolumeCulling;
 uniform float lightCameraDistanceParam;
@@ -40,6 +43,7 @@ layout(location = 0) out vec4 fragColor;
 
 #include <unproject.glsl>
 #include <gamma.glsl>
+#include <hash.glsl>
 
 void main()
 {
@@ -58,46 +62,65 @@ void main()
     vec3 O = vec3(0.0);
     vec3 D = normalize(eyePos); // camera -> fragment
     vec3 C = lightPosition;     // sphere center in eye space
-    float r = scatteringRadius;
 
     // Solve quadratic: (O + tD - C)^2 = r^2
-    vec3 OC = O - C; // = -C
+    vec3 OC = -C; // O - C
     float b = 2.0 * dot(D, OC);
-    float c = dot(OC, OC) - r * r;
+    float c = dot(OC, OC) - scatteringRadius * scatteringRadius;
     float discriminant = b * b - 4.0 * c;
-    float thickness = 0.0;
-    float sqrtD = 0.0;
+    float volumeThickness = 0.0;
     float t0 = 0.0;
     float t1 = 0.0;
     if (discriminant > 0.0)
     {
-        sqrtD = sqrt(discriminant);
-        t0 = (-b - sqrtD) * 0.5;
-        t1 = (-b + sqrtD) * 0.5;
-        thickness = max(0.0, t1 - t0);
+        float sqrtD = sqrt(discriminant);
+        float root1 = (-b - sqrtD) * 0.5;
+        float root2 = (-b + sqrtD) * 0.5;
+        t0 = min(root1, root2);
+        t1 = max(root1, root2);
+        volumeThickness = max(0.0, t1 - t0);
     }
 
-    thickness = clamp(thickness, 0.0, lightRadius * 2.0);
+    volumeThickness = clamp(volumeThickness, 0.0, scatteringRadius * 2.0);
     
-    const float falloffPower = 8.0;
-    float falloff = pow(clamp(thickness / (scatteringRadius * 2.0), 0.0, 1.0), falloffPower);
+    // TODO: make uniform
+    const float radialFalloffPower = 8.0;
+    
+    float opticalDepth = pow(clamp(volumeThickness / (scatteringRadius * 2.0), 0.0, 1.0), radialFalloffPower);
 
     if (lightIsSpot)
     {
-        // TODO
+        // Ray-march a spot light cone
+        float stepSize = volumeThickness / float(lightScatteringSamples);
+        float totalScattering = 0.0;
+        
+        float offset = hash((texCoord * 467.759) * eyePos.z);
+
+        for (int i = 0; i < lightScatteringSamples; i++)
+        {
+            float t = max(0.0, t0) + (float(i) + offset) * stepSize;
+            vec3 P = O + D * t;
+            vec3 L = P - C;
+            float distToLight = length(L);
+            vec3 Ldir = L / distToLight;
+            float cosAngle = dot(Ldir, lightSpotDirection);
+            totalScattering += smoothstep(lightSpotCosCutoff, lightSpotCosInnerCutoff, cosAngle);
+        }
+
+        opticalDepth *= totalScattering / float(lightScatteringSamples);
     }
 
     if (lightVolumeCulling)
     {
         // Smoothly occlude with geometry
-        float geomFalloff = clamp(abs(eyePos.z) - abs(lightVolumeEyePos.z), 0.0, scatteringRadius) / scatteringRadius;
-        falloff *= mix(1.0, geomFalloff, lightCameraDistanceParam);
+        float geometryFactor = clamp(abs(eyePos.z) - abs(lightVolumeEyePos.z), 0.0, lightRadius) / lightRadius;
+        opticalDepth *= mix(1.0, geometryFactor, lightCameraDistanceParam);
     }
 
     // Mitigate "ghosting" artifact when light is behind the camera
-    falloff *= 1.0 - clamp(lightPosition.z, 0.0, 1.0);
+    opticalDepth *= 1.0 - clamp(lightPosition.z, 0.0, 1.0);
 
-    vec3 radiance = toLinear(lightColor.rgb) * falloff * lightScatteringDensity;
+    vec3 radiance = toLinear(lightColor.rgb) * opticalDepth * lightScatteringDensity * lightEnergy;
     
     // Fog
     float linearDepth = abs(lightVolumeEyePos.z);

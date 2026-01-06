@@ -137,7 +137,7 @@ class Light: Entity
 
     /**
      * Number of samples for Monte-Carlo integration of the optical depth.
-     * Supported only for Sun lights, and only if `scatteringUseShadow` is enabled.
+     * Supported only for Sun lights (if `scatteringUseShadow` is enabled) and for Spot lights.
      */
     uint scatteringSamples;
 
