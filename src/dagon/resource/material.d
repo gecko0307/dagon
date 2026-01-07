@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018-2025 Timur Gafarov
+Copyright (c) 2018-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -35,7 +35,7 @@ DEALINGS IN THE SOFTWARE.
  * `Material` objects. The module supports threaded loading, integration with
  * the asset manager, and property parsing via Dagon's property system.
  *
- * Copyright: Timur Gafarov 2018-2025
+ * Copyright: Timur Gafarov 2018-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Timur Gafarov
  */
@@ -100,21 +100,21 @@ class MaterialAsset: Asset
      * Loads the thread-safe part of the material asset (parses properties from text).
      *
      * Params:
-     *   filename = The material filename.
-     *   istrm    = Input stream for the material file.
-     *   fs       = File system.
-     *   mngr     = Asset manager.
+     *   filename     = The material filename.
+     *   istrm        = Input stream for the material file.
+     *   fs           = File system.
+     *   assetManager = Asset manager.
      * Returns:
      *   true if parsing succeeded, false otherwise.
      */
-    override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
+    override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager assetManager)
     {
-        material = New!Material(mngr);
+        material = New!Material(assetManager);
         text = readText(istrm);
-        props = New!Properties(mngr);
+        props = New!Properties(assetManager);
         if (parseProperties(text, props))
         {
-            setMaterialProperties(mngr);
+            setMaterialProperties(assetManager);
             return true;
         }
         else
@@ -137,11 +137,20 @@ class MaterialAsset: Asset
         return true;
     }
     
-    Texture getTexture(AssetManager mngr, string filename)
+    /**
+     * Retrieves a texture from an asset manager by the given filename.
+     *
+     * Params:
+     *   assetManager = AssetManager object.
+     *   filename     = filename of a texture.
+     * Returns:
+     *   Texture object or null if the asset doesn't exist.
+     */
+    Texture getTexture(AssetManager assetManager, string filename)
     {
-        if (filename in mngr.assetsByFilename)
+        if (filename in assetManager.assetsByFilename)
         {
-            TextureAsset textureAsset = cast(TextureAsset)mngr.assetsByFilename[filename];
+            TextureAsset textureAsset = cast(TextureAsset)assetManager.assetsByFilename[filename];
             if (textureAsset)
                 return textureAsset.texture;
             else
@@ -153,14 +162,14 @@ class MaterialAsset: Asset
         }
         else
         {
-            TextureAsset textureAsset = New!TextureAsset(mngr);
-            mngr.loadAssetThreadSafePart(textureAsset, filename);
+            TextureAsset textureAsset = New!TextureAsset(assetManager);
+            assetManager.loadAssetThreadSafePart(textureAsset, filename);
             textureAssets[filename] = textureAsset;
             return textureAsset.texture;
         }
     }
     
-    void setMaterialProperties(AssetManager mngr)
+    protected void setMaterialProperties(AssetManager assetManager)
     {
         if ("name" in props)
             material.name = props["name"].toString;
@@ -169,14 +178,14 @@ class MaterialAsset: Asset
         {
             auto baseColor = props["baseColor"];
             if (baseColor.type == DPropType.String)
-                material.baseColorTexture = getTexture(mngr, baseColor.toString);
+                material.baseColorTexture = getTexture(assetManager, baseColor.toString);
             else if (baseColor.type == DPropType.Vector)
                 material.baseColorFactor = baseColor.toColor4f;
         }
         if ("baseColorTexture" in props)
         {
             string filename = props["baseColorTexture"].toString;
-            material.baseColorTexture = getTexture(mngr, filename);
+            material.baseColorTexture = getTexture(assetManager, filename);
         }
         if ("baseColorFactor" in props)
         {
@@ -186,7 +195,7 @@ class MaterialAsset: Asset
         if ("roughnessMetallicTexture" in props)
         {
             auto roughnessMetallic = props["roughnessMetallicTexture"];
-            material.roughnessMetallicTexture = getTexture(mngr, roughnessMetallic.toString);
+            material.roughnessMetallicTexture = getTexture(assetManager, roughnessMetallic.toString);
         }
         if ("roughnessFactor" in props)
         {
@@ -201,14 +210,14 @@ class MaterialAsset: Asset
         {
             auto normal = props["normal"];
             if (normal.type == DPropType.String)
-                material.normalTexture = getTexture(mngr, normal.toString);
+                material.normalTexture = getTexture(assetManager, normal.toString);
             else if (normal.type == DPropType.Vector)
                 material.normalFactor = normal.toVector3f;
         }
         if ("normalTexture" in props)
         {
             string filename = props["normalTexture"].toString;
-            material.normalTexture = getTexture(mngr, filename);
+            material.normalTexture = getTexture(assetManager, filename);
         }
         if ("normalFactor" in props)
         {
@@ -219,14 +228,14 @@ class MaterialAsset: Asset
         {
             auto emission = props["emission"];
             if (emission.type == DPropType.String)
-                material.emissionTexture = getTexture(mngr, emission.toString);
+                material.emissionTexture = getTexture(assetManager, emission.toString);
             else if (emission.type == DPropType.Vector)
                 material.emissionFactor = emission.toColor4f;
         }
         if ("emissionTexture" in props)
         {
             string filename = props["emissionTexture"].toString;
-            material.emissionTexture = getTexture(mngr, filename);
+            material.emissionTexture = getTexture(assetManager, filename);
         }
         if ("emissionFactor" in props)
         {

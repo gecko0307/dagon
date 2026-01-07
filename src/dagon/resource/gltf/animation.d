@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2025 Denis Feklushkin, Timur Gafarov
+Copyright (c) 2025-2026 Denis Feklushkin, Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -26,14 +26,14 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /**
- * GLTF 2.0 animation.
+ * glTF 2.0 animation.
  *
  * Description:
  * The `dagon.resource.gltf.animation` module defines classes for representing
- * and evaluating GLTF animation samplers, channels, and animation clips.
+ * and evaluating glTF animation samplers, channels, and animation clips.
  * Animation playback, blending, and update logic are included.
  *
- * Copyright: Denis Feklushkin, Timur Gafarov 2025
+ * Copyright: Denis Feklushkin, Timur Gafarov 2025-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Denis Feklushkin, Timur Gafarov
  */
@@ -62,7 +62,7 @@ import dagon.resource.gltf.node;
 import dagon.resource.gltf.skin;
 
 /**
- * Interpolation types supported by GLTF animation samplers.
+ * Interpolation types supported by glTF animation samplers.
  */
 enum InterpolationType: string
 {
@@ -82,7 +82,7 @@ enum TRSType: string
 }
 
 /**
- * Represents a GLTF animation sampler, which defines keyframe times,
+ * Represents a glTF animation sampler, which defines keyframe times,
  * values, and interpolation.
  */
 class GLTFAnimationSampler: Owner
@@ -99,6 +99,12 @@ class GLTFAnimationSampler: Owner
     /// Application-specific data.
     JSONObject extras;
     
+    /**
+     * Constructs a new glTF animation sampler.
+     *
+     * Params:
+     *   owner = Owner object.
+     */
     this(Owner o)
     {
         super(o);
@@ -170,7 +176,7 @@ class GLTFAnimationSampler: Owner
 }
 
 /**
- * Represents a GLTF animation channel, which targets a node and property (TRS).
+ * Represents a glTF animation channel, which targets a node and property (TRS).
  */
 class GLTFAnimationChannel: Owner
 {
@@ -186,6 +192,12 @@ class GLTFAnimationChannel: Owner
     /// Application-specific data.
     JSONObject extras;
 
+    /**
+     * Constructs a new glTF animation channel.
+     *
+     * Params:
+     *   owner = Owner object.
+     */
     this(Owner o)
     {
         super(o);
@@ -193,7 +205,7 @@ class GLTFAnimationChannel: Owner
 }
 
 /**
- * Represents a GLTF animation clip, containing samplers and channels.
+ * Represents a glTF animation clip, containing samplers and channels.
  */
 class GLTFAnimation: Owner
 {
@@ -209,11 +221,18 @@ class GLTFAnimation: Owner
     /// Application-specific data.
     JSONObject extras;
 
+    /**
+     * Constructs a new glTF animation.
+     *
+     * Params:
+     *   owner = Owner object.
+     */
     this(Owner o)
     {
         super(o);
     }
     
+    /// Destructor. Releases samplers and channels arrays.
     ~this()
     {
         samplers.free();
@@ -235,7 +254,7 @@ class GLTFAnimation: Owner
 }
 
 /**
- * `Entity`` component for playing a GLTF animation on an entity.
+ * `Entity` component for playing a glTF animation on an entity.
  */
 class GLTFAnimationComponent: EntityComponent
 {
@@ -248,13 +267,22 @@ class GLTFAnimationComponent: EntityComponent
     /// True if the animation is playing.
     bool playing;
 
-    this(EventManager em, Entity e, GLTFAnimation animation, bool playing = false)
+    /**
+     * Constructs a new glTF animation component and attaches it to the given entity.
+     *
+     * Params:
+     *   eventManager = The event manager.
+     *   hostEntity   = The entity to attach to.
+     *   animation    = glTF animation.
+     *   playing      = Initial playback state.
+     */
+    this(EventManager eventManager, Entity hostEntity, GLTFAnimation animation, bool playing = false)
     {
-        super(em, e);
+        super(eventManager, hostEntity);
         this.animation = animation;
         this.time = Time(0.0, 0.0);
         this.playing = playing;
-        e.transformMode = TransformMode.Matrix;
+        hostEntity.transformMode = TransformMode.Matrix;
     }
     
     /// Starts animation playback.
@@ -331,7 +359,7 @@ class GLTFAnimationComponent: EntityComponent
 }
 
 /**
- * GPU skinning pose for a GLTF skin and animation.
+ * GPU skinning pose for a glTF skin and animation.
  */
 class GLTFPose: Pose
 {
@@ -340,7 +368,14 @@ class GLTFPose: Pose
 
     /// The animation to play.
     GLTFAnimation animation;
-    
+
+    /**
+     * Constructs a new glTF pose.
+     *
+     * Params:
+     *   skin  = glTF skin.
+     *   owner = Owner object.
+     */
     this(GLTFSkin skin, Owner o)
     {
         super(o);
@@ -354,6 +389,7 @@ class GLTFPose: Pose
         }
     }
     
+    /// Destructor. Releases bone matrices array.
     ~this()
     {
         if (boneMatrices.length)
@@ -492,6 +528,7 @@ class GLTFBlendedPose: Pose
     /// Blend speed.
     float blendSpeed = 0.0f;
 
+    /// 
     float previousBlendSpeed = 0.0f;
 
     /// Duration of the current animation.
@@ -500,6 +537,13 @@ class GLTFBlendedPose: Pose
     /// Playback mode (loop or once).
     PlayMode playMode = PlayMode.Loop;
     
+    /**
+     * Constructs a new glTF blended pose.
+     *
+     * Params:
+     *   skin  = glTF skin.
+     *   owner = Owner object.
+     */
     this(GLTFSkin skin, Owner owner)
     {
         super(owner);
@@ -516,6 +560,7 @@ class GLTFBlendedPose: Pose
         }
     }
     
+    /// Destructor. Releases bone matrices array.
     ~this()
     {
         if (boneMatrices.length)

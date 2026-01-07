@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2025 Timur Gafarov, Denis Feklushkin
+Copyright (c) 2021-2026 Timur Gafarov, Denis Feklushkin
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -37,7 +37,7 @@ DEALINGS IN THE SOFTWARE.
  * functions for converting JSON values to Dagon math types, and for querying
  * loaded GLTF resources by names.
  *
- * Copyright: Timur Gafarov, Denis Feklushkin 2021-2025
+ * Copyright: Timur Gafarov, Denis Feklushkin 2021-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Timur Gafarov, Denis Feklushkin
  */
@@ -162,7 +162,7 @@ uint asUint(JSONValue value)
 }
 
 /**
- * Asset class for loading and managing GLTF 2.0 resources.
+ * Asset class for loading GLTF 2.0 models and querying their resources.
  *
  * Description:
  * Loads buffers, buffer views, accessors, images, textures,
@@ -172,27 +172,63 @@ uint asUint(JSONValue value)
  */
 class GLTFAsset: Asset, TriangleSet
 {
+    /// Asset manager that is used to load external resources of the asset.
     AssetManager assetManager;
-    String str;
-    JSONDocument doc;
-    Array!GLTFBuffer buffers;
-    Array!GLTFBufferView bufferViews;
-    Array!GLTFAccessor accessors;
-    Array!GLTFMesh meshes;
-    Array!TextureAsset images;
-    Array!Texture textures;
-    Array!Material materials;
-    Array!GLTFNode nodes;
-    Array!GLTFSkin skins;
-    Array!GLTFAnimation animations;
-    Array!GLTFScene scenes;
-    Entity rootEntity;
     
+    /// Unmanaged string that stores glTF source file.
+    String str;
+    
+    /// JSON document that stores the structure of the glTF file.
+    JSONDocument doc;
+    
+    /// Array of buffers.
+    Array!GLTFBuffer buffers;
+    
+    /// Array of buffer views.
+    Array!GLTFBufferView bufferViews;
+    
+    /// Array of accessors.
+    Array!GLTFAccessor accessors;
+    
+    /// Array of meshes.
+    Array!GLTFMesh meshes;
+    
+    /// Array of images.
+    Array!TextureAsset images;
+    
+    /// Array of textures.
+    Array!Texture textures;
+    
+    /// Array of materials.
+    Array!Material materials;
+    
+    /// Array of nodes.
+    Array!GLTFNode nodes;
+    
+    /// Array of skins.
+    Array!GLTFSkin skins;
+    
+    /// Array of animations.
+    Array!GLTFAnimation animations;
+    
+    /// Array of scenes.
+    Array!GLTFScene scenes;
+    
+    /// Entity that stores all glTF nodes.
+    Entity rootEntity;
+
+    /**
+     * Constructs a new glTF asset.
+     *
+     * Params:
+     *   owner = Owner object.
+     */
     this(Owner o)
     {
         super(o);
     }
     
+    /// Destructor. Releases all resources.
     ~this()
     {
         release();
@@ -202,17 +238,17 @@ class GLTFAsset: Asset, TriangleSet
      * Loads the thread-safe part of the GLTF asset (parsing JSON, loading buffers, images, etc.).
      *
      * Params:
-     *   filename = The GLTF filename.
-     *   istrm    = Input stream for the GLTF file.
-     *   fs       = File system.
-     *   mngr     = Asset manager.
+     *   filename     = The GLTF filename.
+     *   istrm        = Input stream for the GLTF file.
+     *   fs           = File system.
+     *   assetManager = Asset manager.
      * Returns:
      *   true if loading succeeded.
      */
-    override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
+    override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager assetManager)
     {
         version(GLTFDebug) logDebug("Loading ", filename);
-        assetManager = mngr;
+        this.assetManager = assetManager;
         rootEntity = New!Entity(this);
         string rootDir = dirName(filename);
         str = String(istrm);

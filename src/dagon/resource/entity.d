@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018-2025 Timur Gafarov
+Copyright (c) 2018-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -28,10 +28,11 @@ DEALINGS IN THE SOFTWARE.
 /**
  * Provides an entity asset class.
  *
+ * Description:
  * The `dagon.resource.entity` module provides the `EntityAsset` class that
  * loads an `Entity` object from file.
  *
- * Copyright: Copyright (c) 2018-2025 Timur Gafarov
+ * Copyright: Copyright (c) 2018-2026 Timur Gafarov
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Timur Gafarov
  */
@@ -65,7 +66,7 @@ class EntityAsset: Asset
     Entity entity;
 
     /**
-     * Constructs an `EntityAsset` with the given owner.
+     * Constructs an `EntityAsset`.
      *
      * Params:
      *   owner = The owner object.

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2025 Timur Gafarov
+Copyright (c) 2017-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,6 +25,17 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Provides a font asset class.
+ *
+ * Description:
+ * The `dagon.resource.font` module provides the `FontAsset` class that
+ * loads a `Font` object from file.
+ *
+ * Copyright: Copyright (c) 2017-2026 Timur Gafarov
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.resource.font;
 
 import dlib.core.memory;
@@ -37,22 +48,48 @@ import dagon.core.logger;
 import dagon.graphics.font;
 import dagon.resource.asset;
 
+/**
+ * An `Asset` specialization that loads a `Font` object from file.
+ */
 class FontAsset: Asset
 {
+    /// The loaded font object.
     Font font;
+    
+    /// Memory buffer for storing font data, typically for use with FreeType.
     ubyte[] buffer;
 
+    /**
+     * Constructs an `FontAsset`.
+     *
+     * Params:
+     *   height = em height (font size) in pixels.
+     *   pixelRatio = target pixel ratio for HiDPI rendering.
+     *   owner = The owner object.
+     */
     this(uint height, float pixelRatio, Owner o)
     {
         super(o);
         font = New!Font(height, pixelRatio, this);
     }
 
+    /// Destructor. Releases all associated resources.
     ~this()
     {
         release();
     }
 
+    /**
+     * Loads the thread-safe part of the font asset from a file.
+     *
+     * Params:
+     *   filename = The asset file name.
+     *   istrm    = Input stream for the asset file.
+     *   fs       = File system used for loading.
+     *   mngr     = Asset manager.
+     * Returns:
+     *   `true` if the asset was loaded successfully, `false` otherwise.
+     */
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager assetManager)
     {
         if (assetManager.application.ftLibrary)
@@ -72,6 +109,12 @@ class FontAsset: Asset
         }
     }
 
+    /**
+     * Loads the thread-unsafe part of the font asset.
+     *
+     * Returns:
+     *   `true` if successful, `false` otherwise.
+     */
     override bool loadThreadUnsafePart()
     {
         if (font.ftLibrary)
@@ -84,6 +127,7 @@ class FontAsset: Asset
             return false;
     }
 
+    /// Releases all resources associated with this font asset.
     override void release()
     {
         if (buffer.length)
