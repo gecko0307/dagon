@@ -789,7 +789,7 @@ class Shader: Owner
             auto sp = cast(ShaderSubroutine)parameters.get(name);
             if (sp is null)
             {
-                logWarning("Type mismatch for shader parameter \"%s\"", name);
+                logWarning(this.classinfo.name, ": type mismatch for shader parameter \"%s\"", name);
                 return null;
             }
             sp.shaderType = shaderType;
@@ -812,7 +812,7 @@ class Shader: Owner
             auto sp = cast(ShaderSubroutine)parameters.get(name);
             if (sp is null)
             {
-                logWarning("Type mismatch for shader parameter \"%s\"", name);
+                logWarning(this.classinfo.name, ": type mismatch for shader parameter \"%s\"", name);
                 return null;
             }
             sp.shaderType = shaderType;
@@ -837,7 +837,7 @@ class Shader: Owner
             auto sp = cast(ShaderParameter!T)parameters.get(name);
             if (sp is null)
             {
-                logWarning("Type mismatch for shader parameter \"%s\"", name);
+                logWarning(this.classinfo.name, ": type mismatch for shader parameter \"%s\"", name);
                 return null;
             }
             return sp;
@@ -858,7 +858,7 @@ class Shader: Owner
             auto sp = cast(UniformBlockParameter!T)parameters.get(name);
             if (sp is null)
             {
-                logWarning("Type mismatch for shader parameter \"%s\"", name);
+                logWarning(this.classinfo.name, ": type mismatch for shader parameter \"%s\"", name);
                 return null;
             }
             return sp;
@@ -879,7 +879,7 @@ class Shader: Owner
             auto sp = cast(ShaderParameter!T)parameters.get(name);
             if (sp is null)
             {
-                logWarning("Type mismatch for shader parameter \"%s\"", name);
+                logWarning(this.classinfo.name, ": type mismatch for shader parameter \"%s\"", name);
                 return null;
             }
 
@@ -903,7 +903,7 @@ class Shader: Owner
             auto sp = cast(ShaderParameter!T)parameters.get(name);
             if (sp is null)
             {
-                logWarning("Type mismatch for shader parameter \"%s\"", name);
+                logWarning(this.classinfo.name, ": type mismatch for shader parameter \"%s\"", name);
                 return null;
             }
 
@@ -926,7 +926,7 @@ class Shader: Owner
             auto sp = cast(ShaderParameter!T)parameters.get(name);
             if (sp is null)
             {
-                logWarning("Type mismatch for shader parameter \"%s\"", name);
+                logWarning(this.classinfo.name, ": type mismatch for shader parameter \"%s\"", name);
                 return null;
             }
 
@@ -950,7 +950,7 @@ class Shader: Owner
         }
         else
         {
-            logWarning("Unknown shader parameter \"%s\"", name);
+            logWarning(this.classinfo.name, ": unknown shader parameter \"%s\"", name);
             return null;
         }
     }
@@ -963,7 +963,7 @@ class Shader: Owner
             auto sp = cast(ShaderParameter!T)parameters.get(name);
             if (sp is null)
             {
-                logWarning("Type mismatch for shader parameter \"%s\"", name);
+                logWarning(this.classinfo.name, ": type mismatch for shader parameter \"%s\"", name);
                 return T.init;
             }
 
@@ -974,7 +974,7 @@ class Shader: Owner
         }
         else
         {
-            logWarning("Unknown shader parameter \"%s\"", name);
+            logWarning(this.classinfo.name, ": unknown shader parameter \"%s\"", name);
             return T.init;
         }
     }
@@ -985,7 +985,7 @@ class Shader: Owner
         if (validationEnabled)
         {
             if (!program.validate())
-                exitWithError("Shader program validation failed");
+                exitWithError(this.classinfo.name ~ ": program validation failed");
         }
     }
 
