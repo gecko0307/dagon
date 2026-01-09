@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018-2025 Timur Gafarov
+Copyright (c) 2018-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -293,7 +293,7 @@ class WaterShader: Shader
         glBindTexture(GL_TEXTURE_2D, gbuffer.depthTexture);
         depthBuffer = 0;
 
-        // Ripple parameters
+        // Texture 1 - ripple parameters
         glActiveTexture(GL_TEXTURE1);
         rippleTexture.bind();
         pRippleTexture = 1;
@@ -304,7 +304,7 @@ class WaterShader: Shader
         float rippleTimesW = frac((state.time.elapsed * 1.13 + 0.7) * 1.6);
         pRippleTimes = Vector4f(rippleTimesX, rippleTimesY, rippleTimesZ, rippleTimesW);
 
-        // Environment
+        // Textures 2 and 3 - environment maps
         if (state.environment)
         {
             fogColor = state.environment.fogColor;
@@ -314,21 +314,41 @@ class WaterShader: Shader
 
             if (state.environment.ambientMap)
             {
-                glActiveTexture(GL_TEXTURE2);
-                state.environment.ambientMap.bind();
                 if (state.environment.ambientMap.isCubemap)
                 {
-                    ambientTextureCube = 2;
+                    glActiveTexture(GL_TEXTURE2);
+                    glBindTexture(GL_TEXTURE_2D, 0);
+                    ambientTexture = 2;
+                    
+                    glActiveTexture(GL_TEXTURE3);
+                    state.environment.ambientMap.bind();
+                    ambientTextureCube = 3;
+                    
                     ambientSubroutine.index = ambientSubroutineCubemap;
                 }
                 else
                 {
+                    glActiveTexture(GL_TEXTURE2);
+                    state.environment.ambientMap.bind();
                     ambientTexture = 2;
+                    
+                    glActiveTexture(GL_TEXTURE3);
+                    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+                    ambientTextureCube = 3;
+                    
                     ambientSubroutine.index = ambientSubroutineEquirectangularMap;
                 }
             }
             else
             {
+                glActiveTexture(GL_TEXTURE2);
+                glBindTexture(GL_TEXTURE_2D, 0);
+                ambientTexture = 2;
+                
+                glActiveTexture(GL_TEXTURE3);
+                glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+                ambientTextureCube = 3;
+                
                 ambientVector = state.environment.ambientColor;
                 ambientSubroutine.index = ambientSubroutineColor;
             }
@@ -340,19 +360,28 @@ class WaterShader: Shader
             fogEnd = 1000.0f;
             ambientEnergy = 1.0f;
             ambientVector = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
+            
+            glActiveTexture(GL_TEXTURE2);
+            glBindTexture(GL_TEXTURE_2D, 0);
+            ambientTexture = 2;
+            
+            glActiveTexture(GL_TEXTURE3);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+            ambientTextureCube = 3;
+            
             ambientSubroutine.index = ambientSubroutineColor;
         }
 
-        // Shadow map
+        // Texture 4 - shadow map
         if (sun)
         {
             if (sun.shadowEnabled)
             {
                 CascadedShadowMap csm = cast(CascadedShadowMap)state.light.shadowMap;
                 
-                glActiveTexture(GL_TEXTURE3);
+                glActiveTexture(GL_TEXTURE4);
                 glBindTexture(GL_TEXTURE_2D_ARRAY, csm.depthTexture);
-                shadowTextureArray = 3;
+                shadowTextureArray = 4;
                 shadowResolution = cast(float)csm.resolution;
                 shadowMatrix1 = &csm.area[0].shadowMatrix;
                 shadowMatrix2 = &csm.area[1].shadowMatrix;
@@ -361,9 +390,9 @@ class WaterShader: Shader
             }
             else
             {
-                glActiveTexture(GL_TEXTURE3);
+                glActiveTexture(GL_TEXTURE4);
                 glBindTexture(GL_TEXTURE_2D_ARRAY, defaultShadowTexture);
-                shadowTextureArray = 3;
+                shadowTextureArray = 4;
                 shadowMatrix1 = &defaultShadowMatrix;
                 shadowMatrix2 = &defaultShadowMatrix;
                 shadowMatrix3 = &defaultShadowMatrix;
@@ -372,23 +401,23 @@ class WaterShader: Shader
         }
         else
         {
-            glActiveTexture(GL_TEXTURE3);
+            glActiveTexture(GL_TEXTURE4);
             glBindTexture(GL_TEXTURE_2D_ARRAY, defaultShadowTexture);
-            shadowTextureArray = 3;
+            shadowTextureArray = 4;
             shadowMatrix1 = &defaultShadowMatrix;
             shadowMatrix2 = &defaultShadowMatrix;
             shadowMatrix3 = &defaultShadowMatrix;
             shadowMapSubroutine.index = shadowMapSubroutineNone;
         }
 
-        // Normal maps
-        glActiveTexture(GL_TEXTURE4);
-        normalTexture1.bind();
-        pNormalTexture1 = 4;
-
+        // Texture 5 and 6 - normal maps
         glActiveTexture(GL_TEXTURE5);
+        normalTexture1.bind();
+        pNormalTexture1 = 5;
+
+        glActiveTexture(GL_TEXTURE6);
         normalTexture2.bind();
-        pNormalTexture2 = 5;
+        pNormalTexture2 = 6;
 
         time = cast(float)state.time.elapsed;
 
@@ -407,14 +436,17 @@ class WaterShader: Shader
 
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, 0);
-
+        
         glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        glActiveTexture(GL_TEXTURE6);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glActiveTexture(GL_TEXTURE0);

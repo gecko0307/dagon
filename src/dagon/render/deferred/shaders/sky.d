@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2025 Timur Gafarov
+Copyright (c) 2017-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -121,26 +121,46 @@ class SkyShader: Shader
         linearize = !mat.linearColor;
         energy = mat.emissionEnergy;
 
-        // Diffuse
-        glActiveTexture(GL_TEXTURE4);
+        // Sky color texture
         if (mat.baseColorTexture)
         {
             if (mat.baseColorTexture.isCubemap)
             {
+                glActiveTexture(GL_TEXTURE4);
+                glBindTexture(GL_TEXTURE_2D, 0);
+                envTexture = 4;
+                
+                glActiveTexture(GL_TEXTURE5);
                 mat.baseColorTexture.bind();
-                envTextureCube = 4;
+                envTextureCube = 5;
+                
                 environmentSubroutine.index = environmentSubroutineCubemap;
             }
             else
             {
+                glActiveTexture(GL_TEXTURE4);
                 mat.baseColorTexture.bind();
                 envTexture = 4;
+                
+                glActiveTexture(GL_TEXTURE5);
+                glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+                envTextureCube = 5;
+                
                 environmentSubroutine.index = environmentSubroutineTexture;
             }
         }
         else
         {
+            glActiveTexture(GL_TEXTURE4);
+            glBindTexture(GL_TEXTURE_2D, 0);
+            envTexture = 4;
+            
+            glActiveTexture(GL_TEXTURE5);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+            envTextureCube = 5;
+            
             envColor = mat.baseColorFactor;
+            
             environmentSubroutine.index = environmentSubroutineColor;
         }
 
@@ -155,6 +175,8 @@ class SkyShader: Shader
 
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, 0);
+        
+        glActiveTexture(GL_TEXTURE5);
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
         glActiveTexture(GL_TEXTURE0);
