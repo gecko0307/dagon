@@ -70,7 +70,7 @@ glTF models in Dagon are stored in a data structure separate from the usual scen
 
 ## Animation
 
-If the model contains skins and animation, they are not applied autimatically and require some ground work:
+If the model contains skins and animation, they are not applied automatically and require some ground work:
 
 ```d
 auto charNode = model.node("character");
