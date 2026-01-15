@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2025 Timur Gafarov
+Copyright (c) 2025-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -28,17 +28,165 @@ DEALINGS IN THE SOFTWARE.
 
 module dagon.collision.collision;
 
-import dagon.collision.contact;
-import dagon.collision.mpr;
-import dagon.collision.shape;
+import dlib.core.memory;
+import dlib.core.ownership;
+import dlib.container.array;
+import dlib.math.vector;
 
-/// Detects collision between two convex shapes.
-bool shapeVsShape(CollisionShape shape1, CollisionShape shape2, out Contact contact)
+import dlib.geometry.sphere;
+import dlib.geometry.obb;
+import dlib.geometry.plane;
+import dlib.geometry.intersection;
+
+import dagon.core.event;
+import dagon.core.time;
+import dagon.graphics.entity;
+
+interface Collider
 {
-    if (mprTest(shape1, shape2, contact))
+    bool active();
+    void active(bool v);
+    Intersection intersectSphere(Sphere* sphere);
+    void update(Time t);
+}
+
+class PlaneCollider: Owner, Collider
+{
+    Plane plane;
+    protected bool _active = true;
+    
+    this(Vector3f center, Vector3f normal, Owner owner)
     {
-        contact.fact = true;
-        return true;
+        super(owner);
+        plane.fromPointAndNormal(center, normal);
     }
-    else return false;
+    
+    override Intersection intersectSphere(Sphere* sphere)
+    {
+        return intrSphereVsPlane(*sphere, plane);
+    }
+    
+    void update(Time t)
+    {
+        
+    }
+    
+    bool active()
+    {
+        return _active;
+    }
+    
+    void active(bool v)
+    {
+        _active = v;
+    }
+}
+
+abstract class ColliderComponent: EntityComponent, Collider
+{
+    protected bool _active = true;
+    
+    this(EventManager eventManager, Entity hostEntity)
+    {
+        super(eventManager, hostEntity);
+    }
+    
+    bool active()
+    {
+        return _active;
+    }
+    
+    void active(bool v)
+    {
+        _active = v;
+    }
+    
+    override void update(Time t)
+    {
+        
+    }
+}
+
+class BoxCollider: ColliderComponent
+{
+    OBB obb;
+    
+    this(EventManager eventManager, Entity hostEntity, Vector3f extents)
+    {
+        super(eventManager, hostEntity);
+        obb = OBB(hostEntity.positionAbsolute, extents);
+        obb.transform = entity.absoluteTransformation;
+    }
+    
+    override void update(Time t)
+    {
+        obb.transform = entity.absoluteTransformation;
+    }
+    
+    override Intersection intersectSphere(Sphere* sphere)
+    {
+        return intrSphereVsOBB(*sphere, obb);
+    }
+}
+
+class CollisionManager: EntityComponent
+{
+    Array!Collider colliders;
+    float boundingSphereRadius = 1.0f;
+    bool onGround = false;
+    Vector3f groundPosition = Vector3f(0.0f, 0.0f, 0.0f);
+    Vector3f upVector = Vector3f(0.0f, 1.0f, 0.0f);
+    float groundDetectionThreshold = 0.8f;
+    
+    this(EventManager eventManager, Entity hostEntity, float boundingSphereRadius)
+    {
+        super(eventManager, hostEntity);
+        this.boundingSphereRadius = boundingSphereRadius;
+    }
+    
+    ~this()
+    {
+        colliders.free();
+    }
+    
+    Collider addCollider(Collider collider)
+    {
+        colliders.append(collider);
+        return collider;
+    }
+    
+    BoxCollider addBoxCollider(Entity hostEntity, Vector3f extents)
+    {
+        BoxCollider boxCollider = New!BoxCollider(eventManager, hostEntity, extents);
+        colliders.append(boxCollider);
+        return boxCollider;
+    }
+    
+    override void update(Time t)
+    {
+        if (entity is null)
+            return;
+        
+        onGround = false;
+        
+        Sphere sphereCollider = Sphere(entity.position, boundingSphereRadius);
+        foreach(collider; colliders.data)
+        {
+            if (collider.active)
+            {
+                collider.update(t);
+                Intersection isec = collider.intersectSphere(&sphereCollider);
+                if (isec.fact)
+                {
+                    entity.position += isec.normal * isec.penetrationDepth;
+                    sphereCollider.center = entity.position;
+                    
+                    if (dot(isec.normal, upVector) > groundDetectionThreshold)
+                        onGround = true;
+                }
+            }
+        }
+        
+        entity.updateTransformation();
+    }
 }

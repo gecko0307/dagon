@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2025 Timur Gafarov
+Copyright (c) 2025-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -25,18 +25,20 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-module dagon.collision;
 
-public
+module dagon.collision.convex;
+
+import dagon.collision.contact;
+import dagon.collision.mpr;
+import dagon.collision.shape;
+
+/// Detects collision between two convex shapes.
+bool shapeVsShape(CollisionShape shape1, CollisionShape shape2, out Contact contact)
 {
-    import dagon.collision.bvh;
-    import dagon.collision.collision;
-    import dagon.collision.contact;
-    import dagon.collision.convex;
-    import dagon.collision.geometry;
-    import dagon.collision.gjk;
-    import dagon.collision.jss;
-    import dagon.collision.mpr;
-    import dagon.collision.raycast;
-    import dagon.collision.shape;
+    if (mprTest(shape1, shape2, contact))
+    {
+        contact.fact = true;
+        return true;
+    }
+    else return false;
 }
