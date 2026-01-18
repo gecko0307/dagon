@@ -42,7 +42,7 @@ import dagon.core.event;
 import dagon.core.time;
 import dagon.graphics.entity;
 
-interface Collider
+interface StaticCollider
 {
     bool active();
     void active(bool v);
@@ -50,15 +50,37 @@ interface Collider
     void update(Time t);
 }
 
-class PlaneCollider: Owner, Collider
+class CollisionWorld: Owner
+{
+    Array!StaticCollider staticColliders;
+    
+    this(Owner owner)
+    {
+        super(owner);
+    }
+    
+    ~this()
+    {
+        staticColliders.free();
+    }
+    
+    StaticCollider addStaticCollider(StaticCollider collider)
+    {
+        staticColliders.append(collider);
+        return collider;
+    }
+}
+
+class PlaneCollider: Owner, StaticCollider
 {
     Plane plane;
     protected bool _active = true;
     
-    this(Vector3f center, Vector3f normal, Owner owner)
+    this(CollisionWorld world, Vector3f center, Vector3f normal, Owner owner)
     {
         super(owner);
         plane.fromPointAndNormal(center, normal);
+        world.addStaticCollider(this);
     }
     
     override Intersection intersectSphere(Sphere* sphere)
@@ -82,13 +104,14 @@ class PlaneCollider: Owner, Collider
     }
 }
 
-abstract class ColliderComponent: EntityComponent, Collider
+abstract class ColliderComponent: EntityComponent, StaticCollider
 {
     protected bool _active = true;
     
-    this(EventManager eventManager, Entity hostEntity)
+    this(EventManager eventManager, CollisionWorld world, Entity hostEntity)
     {
         super(eventManager, hostEntity);
+        world.addStaticCollider(this);
     }
     
     bool active()
@@ -111,9 +134,9 @@ class BoxCollider: ColliderComponent
 {
     OBB obb;
     
-    this(EventManager eventManager, Entity hostEntity, Vector3f extents)
+    this(EventManager eventManager, CollisionWorld world, Entity hostEntity, Vector3f extents)
     {
-        super(eventManager, hostEntity);
+        super(eventManager, world, hostEntity);
         obb = OBB(hostEntity.positionAbsolute, extents);
         obb.transform = entity.absoluteTransformation;
     }
@@ -129,37 +152,20 @@ class BoxCollider: ColliderComponent
     }
 }
 
-class CollisionManager: EntityComponent
+class DynamicCollider: EntityComponent
 {
-    Array!Collider colliders;
+    CollisionWorld world;
     float boundingSphereRadius = 1.0f;
     bool onGround = false;
     Vector3f groundPosition = Vector3f(0.0f, 0.0f, 0.0f);
     Vector3f upVector = Vector3f(0.0f, 1.0f, 0.0f);
     float groundDetectionThreshold = 0.8f;
     
-    this(EventManager eventManager, Entity hostEntity, float boundingSphereRadius)
+    this(EventManager eventManager, CollisionWorld world, Entity hostEntity, float boundingSphereRadius)
     {
         super(eventManager, hostEntity);
+        this.world = world;
         this.boundingSphereRadius = boundingSphereRadius;
-    }
-    
-    ~this()
-    {
-        colliders.free();
-    }
-    
-    Collider addCollider(Collider collider)
-    {
-        colliders.append(collider);
-        return collider;
-    }
-    
-    BoxCollider addBoxCollider(Entity hostEntity, Vector3f extents)
-    {
-        BoxCollider boxCollider = New!BoxCollider(eventManager, hostEntity, extents);
-        colliders.append(boxCollider);
-        return boxCollider;
     }
     
     override void update(Time t)
@@ -170,7 +176,7 @@ class CollisionManager: EntityComponent
         onGround = false;
         
         Sphere sphereCollider = Sphere(entity.position, boundingSphereRadius);
-        foreach(collider; colliders.data)
+        foreach(collider; world.staticColliders.data)
         {
             if (collider.active)
             {
