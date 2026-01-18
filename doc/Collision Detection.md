@@ -2,7 +2,7 @@
 
 ## Overview
 
-Collision detection and response in games are very complex tasks. There is no universal algorithm for them, since each game mechanic has its own requirements for collision detection accuracy and performance. For example, an arcade platformer usually tolerates a simplistic collision model consisting of basic shapes such as spheres and axis-aligned boxes, while a complex physics-based game like racing simulator requires precise ray casting and collision detection of convex geometry with arbitrary meshes.
+Collision detection and response in games are very complex topics. There is no universal algorithm for them, since each game mechanic has its own requirements for collision detection accuracy and performance. For example, an arcade platformer usually tolerates a simplistic collision model consisting of basic shapes such as spheres and axis-aligned boxes, while a complex physics-based game like racing simulator requires precise ray casting and collision detection of convex geometry with arbitrary meshes.
 
 All approaches have a lot in common. The basic principle of any CD algorithm is to output four data fields:
 - Intersection fact—true or false;
@@ -14,7 +14,7 @@ The most efficient CD algorithms deal with convex shapes due to their convenient
 
 Convex CD is largely based on the theory formulated by Hermann Minkowski. Specifically, intersection between convex sets A and B occurs if and only if the origin belongs to the Minkowski difference of A and B: `A ⊕ -B`. The Gilbert-Johnson-Keerthi (GJK) algorithm is a classic application of this theory, efficiently finding the distance between convex shapes by searching for the point in the Minkowski difference closest to the origin; if that distance is zero, they intersect.
 
-Dagon's `collision` package implements a number of popular CD algorithms, including GJK and Minkowski Portal Refinement (MPR), which is generally more numerically stable. The package also provides a simple sphere-based CD framework (`dagon.collision.collision`) that easily integrates with Dagon's ECS.
+Dagon's `collision` package implements two popular CD algorithms generalized for arbitrary convex shape: GJK and MPR (Minkowski Portal Refinement), which is generally more numerically stable. The package also provides a simple sphere-based CD framework (`dagon.collision.collision`) that easily integrates with Dagon's ECS.
 
 Collision response is a process of resolving collisions, which is necessary for rigid body mechanics widely used in games to approximate real-world behaviour. Physically-based collision solver is the heart of a dynamics engine; if you want your objects to behave as realistically as possible in real time, you need that. However, in many games you can get by using a simplified (usually, position-based) form of collision response. Instead of tracking velocities and impulses and caching contacts, like in a full-featured physics engine, you can simply iterate through all collisions and translate the object by penetration depth along each intersection normal. This works perfectly for kinematic movement models where Newton's first law of motion does not hold (inertia is not taken into account), which is commonly seen in game genres where characters are expected to move fully predictably at constant speeds, platformers and RPGs being typical examples. That being said, nothing stops you from including dynamic characteristics such as mass in your kinematic system if you need them.
 
@@ -87,4 +87,6 @@ override void onUpdate(Time t)
 
 ## Raycasting
 
-TODO
+Raycasting is a special case of collision detection where the algorithm detects intersections of rays (usually directed line segments) with geometric shapes. This family of algorithms is useful for motion prediction of fast-moving objects such as projectiles, 3D interaction algorithms (ray picking), visibility checking for implementing AI agents, and many other tasks.
+
+Raycasting can also be generalized for any convex shape using simplex method analogous to the GJK. Dagon implements such a function `rayVsShape` in `dagon.collision.raycast`.
