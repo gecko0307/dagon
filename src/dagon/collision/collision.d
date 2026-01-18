@@ -158,6 +158,7 @@ class DynamicCollider: EntityComponent
     float boundingSphereRadius = 1.0f;
     bool onGround = false;
     Vector3f groundPosition = Vector3f(0.0f, 0.0f, 0.0f);
+    Vector3f groundNormal = Vector3f(0.0f, 1.0f, 0.0f);
     Vector3f upVector = Vector3f(0.0f, 1.0f, 0.0f);
     float groundDetectionThreshold = 0.8f;
     
@@ -187,8 +188,12 @@ class DynamicCollider: EntityComponent
                     entity.position += isec.normal * isec.penetrationDepth;
                     sphereCollider.center = entity.position;
                     
-                    if (dot(isec.normal, upVector) > groundDetectionThreshold)
+                    if (!onGround && dot(isec.normal, upVector) > groundDetectionThreshold)
+                    {
                         onGround = true;
+                        groundPosition = isec.point;
+                        groundNormal = isec.normal;
+                    }
                 }
             }
         }
