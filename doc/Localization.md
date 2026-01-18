@@ -1,6 +1,6 @@
 # Localization
 
-Dagon provides a simple mechanism to localize applications: instead of printing strings directly, get a translation to the current language using `Application.translation.get` function:
+Dagon provides a simple mechanism to localize text in application. Instead of printing strings directly, get a translation to the current language using `Application.translation.get` function:
 
 ```d
 string textForOutput = app.translation.get("HelloWorld");

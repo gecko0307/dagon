@@ -6,7 +6,7 @@ Collision detection (CD) and collision response (CR) in games are very complex t
 
 All approaches have a lot in common. The basic principle of any CD algorithm is to output four data fields:
 - Intersection fact—true or false;
-- Intersection point (a point at the second shape's surface where intersection normal is defined);
+- Intersection point—a point at the second shape's surface where intersection normal is defined;
 - Intersection normal—the unit vector representing the direction of the shortest translation required to separate the shapes. It is perpendicular to the surface of the second shape at the intersection point;
 - Penetration depth along the normal—that is, the shortest overlap distance between the shapes' surfaces.
 
