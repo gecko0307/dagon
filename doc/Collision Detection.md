@@ -12,7 +12,7 @@ All approaches have a lot in common. The basic principle of any CD algorithm is 
 
 The most efficient CD algorithms deal with convex shapes due to their convenient geometric properties. Convex shape is a closed figure in which any line segment connecting two points stays entirely within the figure. For 3D geometry, these include ellipsoid, prism, cylinder and many others, including irregular polygonal convex shapes.
 
-Convex CD is largely based on theory formulated by Hermann Minkowski. Specifically, intersection between convex sets A and B occurs if and only if the origin belongs to the Minkowski difference of A and B: `A ⊕ -B`. The Gilbert-Johnson-Keerthi (GJK) algorithm is a classic application of this theory, efficiently finding the distance between convex shapes by searching for the point in the Minkowski difference closest to the origin; if that distance is zero, they intersect.
+Convex CD is largely based on the theory formulated by Hermann Minkowski. Specifically, intersection between convex sets A and B occurs if and only if the origin belongs to the Minkowski difference of A and B: `A ⊕ -B`. The Gilbert-Johnson-Keerthi (GJK) algorithm is a classic application of this theory, efficiently finding the distance between convex shapes by searching for the point in the Minkowski difference closest to the origin; if that distance is zero, they intersect.
 
 Dagon's `collision` package implements a number of popular CD algorithms, including GJK and Minkowski Portal Refinement (MPR), which is generally more numerically stable. The package also provides a simple sphere-based CD framework (`dagon.collision.collision`) that easily integrates with Dagon's ECS.
 

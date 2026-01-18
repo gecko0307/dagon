@@ -7,7 +7,7 @@ Dagon 0.37.0 - TBD
 - **Rendering**
   - Volumetric scattering for spot lights
 - **Collision**
-  - `dagon.collision.collision` module now provides a simple collision and response system for Entities
+  - `dagon.collision.collision` module now provides a simple kinematic collision and response system for Entities
 - **UI**
   - `dagon.ui.axes` - drawables that render 3D axes for object manipulation UI
   - `dagon.ui.shaders.gizmo` - a solid color shader for use with UI overlay
