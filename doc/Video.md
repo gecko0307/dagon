@@ -8,9 +8,9 @@ The extension depends on `libvlccore.dll` and `libvlc.dll` (`libvlccore.so.9`, `
 
 ## Usage
 
-dagon:video provides two classes - `VideoManager` and `Video`. The underlying `Texture` object is available as `Video.texture` property. To open a video, call `Video.open`, to start playing - `Video.play`.
+dagon:video provides two classes: `VideoManager` and `Video`. The underlying `Texture` object is available as `Video.texture` property. To open a video, call `Video.open`, to start playing—`Video.play`.
 
-Simple use case - fullscreen video (for splash screens, cutscenes, etc.):
+Simple use case—fullscreen video (for splash screens, cutscenes, etc.):
 
 ```d
 import dagon;

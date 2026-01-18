@@ -10,19 +10,24 @@ Conf file consists of key-value pairs separated by semicolon:
 optionName: optionValue;
 ```
 
-optionValue can be a number, a vector (an array), or a double-quoted string:
+optionValue can be a number, a boolean value, a vector (an array), or a double-quoted string:
 
 ```
 numberOption: 10;
+boolOption: true;
 vectorOption: [0.5, 1.0, 1.0];
 stringOption: "Some text";
 ```
 
-Lines beginning with double slash (`//`) are treated as comments and ignored.
+Lines beginning with double slash (`//`) are treated as comments and ignored:
+
+```
+// Some comment
+```
 
 ## Built-in Conf Files
 
-Dagon has a number of built-in *.conf files (`settings.conf`, `render.conf`, `input.conf`, `audio.conf`) that are loaded from each VFS-mounted path. User-defined *.conf files (in APPDATA and custom paths) override root ones (in executable directory).
+Dagon recognizes a number of built-in *.conf files (`settings.conf`, `render.conf`, `input.conf`, `audio.conf`) that are loaded from each VFS-mounted path. User-defined *.conf files (in APPDATA and custom paths) override root ones (in executable directory).
 
 Built-in *.conf files are fully reserved for Dagon's internal mechanisms, and it is not recommended to use them for storing game-specific settings. The engine doesn't modify them, so you can implement a visual configurator in your game that modifies these files.
 

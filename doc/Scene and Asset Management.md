@@ -1,6 +1,6 @@
 # Scene and Asset Management
 
-Most user-defined logic happen in `Scene` objects. Each `Scene` stores its own collection of assets (game resources such as models and textures). `Game` object orchestrates scenes and allows to switch them using `Game.setCurrentScene` method, optionally deleting the current running scene from memory. This way, your game doesn't need to preload all of its resources in advance and can be as big as you want - break the game into multiple levels (or zones) and only load a portion of the world at a time.
+Most user-defined logic happen in `Scene` objects. Each `Scene` stores its own collection of assets (game resources such as models and textures). `Game` object orchestrates scenes and allows to switch them using `Game.setCurrentScene` method, optionally deleting the current running scene from memory. This way, your game doesn't need to preload all of its resources in advance and can be as big as you want—break the game into multiple levels (or zones) and only load a portion of the world at a time.
 
 ## Scenes
 
@@ -24,7 +24,7 @@ class MyGame: Game
 
 ```
 
-In a more complex scenario, scene creation is deferred to the moment when it is needed, and when the user quits the scene, it is deleted. You should not directly delete the scene while it is running using `Delete` function because there will be no synchronization in that case - use `Game.setCurrentScene` instead. If the optional `releaseCurrent` argument is set to `true`, the current scene will be safely deleted at the next loop iteration:
+In a more complex scenario, scene creation is deferred to the moment when it is needed, and when the user quits the scene, it is deleted. You should not directly delete the scene while it is running using `Delete` function because there will be no synchronization in that case—use `Game.setCurrentScene` instead. If the optional `releaseCurrent` argument is set to `true`, the current scene will be safely deleted at the next loop iteration:
 
 ```d
 class MyScene1: Scene

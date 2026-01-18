@@ -21,7 +21,7 @@ You usually subclass `ComputeShader` to define your own GPU task (for example, `
 ### Workgroup
 A workgroup is the fundamental unit of parallel execution. Each workgroup contains a fixed number of shader invocations (threads). The size of a workgroup (e.g. `local_size_x = 16, local_size_y = 16`) is defined in the shader code itself. Inside a workgroup, invocations can share data through shared memory and synchronize using barriers.
 
-Tuning the workgroup size is important for performance — it should align well with your GPU's hardware thread scheduler. A shader writer defines the work group size explicitly in GLSL code. Dagon automatically queries this and helps you dispatch the correct number of groups.
+Tuning the workgroup size is important for performance—it should align well with your GPU's hardware thread scheduler. A shader writer defines the work group size explicitly in GLSL code. Dagon automatically queries this and helps you dispatch the correct number of groups.
 
 ### Compute Space
 The compute space is the 3D grid of workgroups that maps to the data. Think of it as a box equially divided into small cells. Each invocation can query its position in this space via built-in variables like `gl_GlobalInvocationID`. You can map this space directly onto a 2D texture, a 3D voxel field, or just a flat buffer of data. For example, a blur filter might use compute space matching the width and height of the target image.
