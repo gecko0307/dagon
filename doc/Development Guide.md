@@ -6,7 +6,7 @@ Dagon is fully modular: most of its components can be replaced with custom ones.
 
 ## Memory Management
 
-Dagon mostly avoids using the garbage collector and manages all of its data manually with `New` and `Delete` functions. You are also expected to do so. You still can use garbage collected data in Dagon, but this may result in weird bugs, so you are strongly recommended to do things our way. Most part of the engine is built around dlib's ownership model — every object belongs to some other object (owner), and deleting the owner will delete all of its owned objects. This allows semi-automatic memory management — you have to manually delete only root owner, which usually is an `Application` or `Game` object.
+Dagon mostly avoids using the garbage collector and manages all of its data manually with `New` and `Delete` functions. You are also expected to do so. You still can use garbage collected data in Dagon, but this may result in weird bugs, so you are strongly recommended to do things our way. Most part of the engine is built around dlib's ownership model—every object belongs to some other object (owner), and deleting the owner will delete all of its owned objects. This allows semi-automatic memory management — you have to manually delete only root owner, which usually is an `Application` or `Game` object.
 
 ```d
 class MyClass: Owner
@@ -33,9 +33,9 @@ void main()
 
 Note that the global allocator should be set strictly at the start of the application, before creating a `Game` object.
 
-Internally, `MmapPool` uses `mmap` on POSIX systems and `VirtualAlloc` on Windows to reserve large contiguous memory regions directly from the operating system. This avoids typical fragmentation issues of `malloc`, and makes allocation almost as fast as incrementing a pointer. However, it does not support individual deallocations — memory is freed per-region, not per-object. Technically, it is most efficient when you preallocate lots of data in advance and free the memory in batch. `MmapPool` is not suitable for frequently creating and destroying short-living objects.
+Internally, `MmapPool` uses `mmap` on POSIX systems and `VirtualAlloc` on Windows to reserve large contiguous memory regions directly from the operating system. This avoids typical fragmentation issues of `malloc`, and makes allocation almost as fast as incrementing a pointer. However, it does not support individual deallocations—memory is freed per-region, not per-object. Technically, it is most efficient when you preallocate lots of data in advance and free the memory in batch. `MmapPool` is not suitable for frequently creating and destroying short-living objects.
 
-Another advantage of region-based allocation is cache-friendliness. Since `MmapPool` allocates memory in large chunks, objects are typically placed close to each other in memory. This greatly improves spatial locality, which helps CPU caches work more efficiently. As a result, iteration-heavy systems may experience noticeable performance gains — simply because memory accesses are faster.
+Another advantage of region-based allocation is cache-friendliness. Since `MmapPool` allocates memory in large chunks, objects are typically placed close to each other in memory. This greatly improves spatial locality, which helps CPU caches work more efficiently. As a result, iteration-heavy systems may experience noticeable performance gains—simply because memory accesses are faster.
 
 ## Memory profiling
 
@@ -54,7 +54,7 @@ void main()
 
 ## Error Handling
 
-Exceptions are common mean of error handling, but we recommend against using them. They tend to increase code complexity, they are hard to manage properly, and they make applications crash too often. In D they are also tied to OOP and garbage collector. We recommend a simpler alternative — Go-style error tuples. They can be easily constructed using `Compound` type:
+Exceptions are common mean of error handling, but we recommend against using them. They tend to increase code complexity, they are hard to manage properly, and they make applications crash too often. In D they are also tied to OOP and garbage collector. We recommend a simpler alternative—Go-style error tuples. They can be easily constructed using `Compound` type:
 
 ```d
 import dlib.core.compound;
@@ -103,7 +103,7 @@ Compound!(Data, string) doSomething()
 
 ## Containers
 
-Dagon uses containers from dlib, which provides GC-free alternatives to D's native dynamic and associative arrays — `dlib.container.array` and `dlib.container.dict`, respectively.
+Dagon uses containers from dlib, which provides GC-free alternatives to D's native dynamic and associative arrays—`dlib.container.array` and `dlib.container.dict`, respectively.
 
 ```d
 import dlib.container.array;
@@ -129,7 +129,7 @@ Delete(d);
 
 ## Strings
 
-While Dagon mostly relies on the standard `string` type, there're also cases when dlib's `String` type is used — for example, when parsing data or constructing new strings in runtime. `String` is designed to be mutable and it doesn't use GC. It is filly compatible with the native `string` type.
+While Dagon mostly relies on the standard `string` type, there're also cases when dlib's `String` type is used—for example, when parsing data or constructing new strings in runtime. `String` is designed to be mutable and it doesn't use GC. It is filly compatible with the native `string` type.
 
 ```d
 import dlib.text.str;

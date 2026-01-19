@@ -24,7 +24,7 @@ Dagon mostly avoids using the garbage collector and manages all of its data manu
 Dagon is a framework-style engine, meaning that it is controlled programmatically and doesn't provide you with an editor. How you will build your scenes is up to you. You can build them manually by loading models one by one in your code, create your own scene format, or export glTF scenes from a 3D editor of your choise. We recommend [Blender](https://www.blender.org/) as an external editor.
 
 ## Extending
-Dagon is written with extendability in mind, so you can easily add your own drawable objects, entity components, shaders and asset loaders. Drawable can be anything you want - you can manually create meshes and animate them. With components you can dynamically attach custom data and functionality to game entities. Materials can use custom GLSL shaders and parameters, and your asset loaders help Dagon understand files that you want to load from disk - these can be 3D models, levels, save files, etc.
+Dagon is written with extendability in mind, so you can easily add your own drawable objects, entity components, shaders and asset loaders. Drawable can be anything you want—you can manually create meshes and animate them. With components you can dynamically attach custom data and functionality to game entities. Materials can use custom GLSL shaders and parameters, and your asset loaders help Dagon understand files that you want to load from disk—these can be 3D models, levels, save files, etc.
 
 ## Further reading
 - [FAQ](https://github.com/gecko0307/dagon/blob/master/doc/FAQ.md)
