@@ -4,17 +4,17 @@
 
 Collision detection (CD) and collision response (CR) in games are very complex topics. There is no universal algorithm for them, since each game mechanic has its own requirements for collision detection accuracy and performance. For example, an arcade platformer usually tolerates a simplistic collision model consisting of basic shapes such as spheres and axis-aligned boxes, while a complex physics-based game like racing simulator requires precise ray casting and collision detection of convex geometry with arbitrary meshes.
 
-All approaches have a lot in common. The basic principle of any CD algorithm is to output four data fields:
+All approaches have a lot in common. The basic principle of a CD algorithm is to output four data fields (usually combined into one Contact structure) for intersecting shapes A and B:
 - Intersection fact—true or false;
-- Intersection point—a point at the second shape's surface where intersection normal is defined;
-- Intersection normal—the unit vector representing the direction of the shortest translation required to separate the shapes. It is perpendicular to the surface of the second shape at the intersection point;
-- Penetration depth along the normal—that is, the shortest overlap distance between the shapes' surfaces.
+- Contact point—a midpoint between the closest surface points of A and B;
+- Contact normal—the unit vector pointing from B toward A along the shortest separation direction;
+- Penetration depth (along the normal)—the shortest overlap distance between the shapes' surfaces.
 
 The most efficient CD algorithms (both 2D and 3D) deal with convex shapes due to their convenient geometric properties. Convex shape is a closed figure in which any line segment connecting two points stays entirely within the figure. For 3D geometry, these include ellipsoid, prism, cylinder, capsule and many others, including irregular polygonal convex shapes.
 
 Convex CD is largely based on the theory formulated by Hermann Minkowski. Specifically, intersection between convex sets A and B occurs if and only if the origin belongs to the Minkowski difference of A and B: `A ⊕ -B`. The Gilbert-Johnson-Keerthi (GJK) algorithm is a classic application of this theory, efficiently finding the distance between convex shapes by searching for the point in the Minkowski difference closest to the origin; if that distance is zero, they intersect.
 
-Dagon's `collision` package implements two popular CD algorithms generalized for arbitrary convex shape: GJK and MPR (Minkowski Portal Refinement), which is generally more numerically stable. The package also provides a simple sphere-based collision framework (`dagon.collision.collision`) that easily integrates with Dagon's ECS, allowing to attach static and dynamic colliders to entities.
+Dagon's `collision` package implements MPR (Minkowski Portal Refinement), which is generally more numerically stable algorithm than GJK. The package also provides a simple sphere-based collision framework (`dagon.collision.collision`) that easily integrates with Dagon's ECS, allowing to attach static and dynamic colliders to entities.
 
 Note: in CD/CR terminology, "geometric shape", "geometry", and "collider" are often used interchangeably to describe an invisible volume that is attached to a visible object and represents it in the collision system. Non-convex objects are usually represented as convex hulls or rigid structures of convex primitives.
 

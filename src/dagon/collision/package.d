@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2025 Timur Gafarov
+Copyright (c) 2025-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -34,7 +34,6 @@ public
     import dagon.collision.contact;
     import dagon.collision.convex;
     import dagon.collision.geometry;
-    import dagon.collision.gjk;
     import dagon.collision.jss;
     import dagon.collision.mpr;
     import dagon.collision.raycast;

@@ -96,7 +96,7 @@ bool rayVsShape(
             if (v_dot_r >= 0)
                 break;
 
-            hitDistance  = hitDistance - v_dot_w / v_dot_r;
+            hitDistance = hitDistance - v_dot_w / v_dot_r;
             hitPoint  = rayStart + rayDir * hitDistance;
             hitNormal = v;
             
