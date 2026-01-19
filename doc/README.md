@@ -1,5 +1,5 @@
 # Dagon
-Dagon is a 3D game engine for D language based on OpenGL 4.0 and SDL2. It features deferred HDR renderer, PBR materials, an event manager, scene manager, asset manager, and entity-component model.
+Dagon is a 3D game engine for D language based on OpenGL 4.3 and SDL2. It features deferred HDR renderer, PBR materials, an event manager, scene manager, asset manager, and entity-component model.
 
 ## Project Goals
 1. Replacing DGL as an engine for [Electronvolt](https://github.com/gecko0307/electronvolt). This means that Dagon is mainly targeted to first person action games, but nothing stops you from using it in a game of any genre.
