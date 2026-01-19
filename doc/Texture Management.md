@@ -1,3 +1,0 @@
-# Texture Management
-
-TODO
