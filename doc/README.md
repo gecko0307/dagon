@@ -10,7 +10,7 @@ Dagon is a 3D game engine for D language based on OpenGL 4.3 and SDL2. It featur
 Dagon is named after a god from H. P. Lovecraft's Cthulhu Mythos pantheon. This name was choosen in accordance with the community tradition of naming D projects using words beginning with 'd'.
 
 ## Architecture
-Dagon is a hierarchical component-based engine. At the root of the hierarchy there is an `Application` object. It can store one or multiple `Scene` objects. Each scene has its own assets, logics, event system, etc. Scene stores `Entity` objects which are basic building blocks of the game world. `Entity` can be transformed, animated and rendered.
+Dagon is a hierarchical component-based framework. At the root of the hierarchy there is an `Application` object. It can store one or multiple `Scene` objects. Each scene has its own assets, logics, event system, etc. Scene stores `Entity` objects which are basic building blocks of the game world. `Entity` can be transformed, animated and rendered.
 
 Read more [here](https://github.com/gecko0307/dagon/blob/master/doc/Architecture.md).
 
