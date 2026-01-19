@@ -137,7 +137,7 @@ HTML documentation can be generated from source code using ddox (`dub build -b d
 Documentation status:
 * ✔️ [dagon.core](https://gecko0307.github.io/dagon/doc/dagon/core.html)
 * ✔️ [dagon.graphics](https://gecko0307.github.io/dagon/doc/dagon/graphics.html)
-* ⏳ [dagon.resource](https://gecko0307.github.io/dagon/doc/dagon/resource.html)
+* ✔️ [dagon.resource](https://gecko0307.github.io/dagon/doc/dagon/resource.html)
 * ⏳ [dagon.render](https://gecko0307.github.io/dagon/doc/dagon/render.html)
 * ✔️ [dagon.game](https://gecko0307.github.io/dagon/doc/dagon/game.html)
 * ⏳ [dagon.ui](https://gecko0307.github.io/dagon/doc/dagon/ui.html)
