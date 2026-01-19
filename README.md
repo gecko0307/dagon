@@ -80,7 +80,7 @@ Features
 
 Getting Started
 ---------------
-The recommended way to start using Dagon is creating a game template with `dub init`. Create an empty directory for the project, cd to it and run the following:
+The recommended way to start using Dagon is to generate a game template with `dub init`. Create an empty directory for the project, cd to it and run the following:
 ```
 dub init --type=dagon
 dub build
