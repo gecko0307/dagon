@@ -127,3 +127,5 @@ dagon:audio requires `soloud.dll` under Windows and `libsoloud.so` under Linux. 
 dagon:video extension requires [libVLC](https://www.videolan.org/vlc/libvlc.html) 3.0.21. It can be installed system-wide or placed to the project's folder.
 
 dagon:video requires `libvlccore.dll` and `libvlc.dll` under Windows and `libvlccore.so.9`, `libvlc.so` and `libidn.so.11` under Linux. On 64-bit platforms, Dagon provides prebuilt librares, which are automatically copied to your project after compilation (if you are building with DUB). Also a number of plugins are necessary for libVLC to work properly. They are stored in `plugins` folder under Windows and `plugins_linux` folder under Linux.
+
+If you ship runtime dependencies with your application, it is advisable to include corresponding licenses (from `license` folder) to the distribution.
