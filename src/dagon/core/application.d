@@ -71,6 +71,7 @@ import dagon.core.i18n;
 import dagon.graphics.updateable;
 import dagon.graphics.font;
 import dagon.graphics.shader;
+import dagon.graphics.texture;
 
 version(Windows)
 {
@@ -1434,8 +1435,16 @@ class Application: EventListener, Updateable
         eventManager.exit();
     }
     
+    /// Copies the current framebuffer to a texture. Texture must be the same size as the framebuffer.
+    void takeScreenshot(Texture texture)
+    {
+        glBindTexture(GL_TEXTURE_2D, texture.texture);
+        glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, drawableWidth, drawableHeight);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+    
     /**
-     * Takes a screenshot of the current framebuffer and returns it as a SuperImage.
+     * Takes a screenshot of the current framebuffer and returns it as an unmanaged SuperImage.
      *
      * Returns:
      *   The screenshot image.
