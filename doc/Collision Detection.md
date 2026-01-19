@@ -12,9 +12,7 @@ All approaches have a lot in common. The basic principle of a CD algorithm is to
 
 The most efficient CD algorithms (both 2D and 3D) deal with convex shapes due to their convenient geometric properties. Convex shape is a closed figure in which any line segment connecting two points stays entirely within the figure. For 3D geometry, these include ellipsoid, prism, cylinder, capsule and many others, including irregular polygonal convex shapes.
 
-Convex CD is largely based on the theory formulated by Hermann Minkowski. Specifically, intersection between convex sets A and B occurs if and only if the origin belongs to the Minkowski difference of A and B: `A ⊕ -B`. The Gilbert-Johnson-Keerthi (GJK) algorithm is a classic application of this theory, efficiently finding the distance between convex shapes by searching for the point in the Minkowski difference closest to the origin; if that distance is zero, they intersect.
-
-Dagon's `collision` package implements MPR (Minkowski Portal Refinement), which is generally more numerically stable algorithm than GJK. The package also provides a simple sphere-based collision framework (`dagon.collision.collision`) that easily integrates with Dagon's ECS, allowing to attach static and dynamic colliders to entities.
+Convex CD is largely based on the theory formulated by Hermann Minkowski. Specifically, intersection between convex sets A and B occurs if and only if the origin belongs to the Minkowski difference of A and B: `A ⊕ -B`. The Gilbert-Johnson-Keerthi (GJK) algorithm is a classic application of this theory, efficiently finding the distance between convex shapes by searching for the point in the Minkowski difference closest to the origin; if that distance is zero, they intersect. Dagon's `collision` package implements MPR (Minkowski Portal Refinement), which is generally more numerically stable algorithm than GJK. The package also provides a simple sphere-based collision framework (`dagon.collision.collision`) that easily integrates with Dagon's ECS, allowing to attach static and dynamic colliders to entities.
 
 Note: in CD/CR terminology, "geometric shape", "geometry", and "collider" are often used interchangeably to describe an invisible volume that is attached to a visible object and represents it in the collision system. Non-convex objects are usually represented as convex hulls or rigid structures of convex primitives.
 
@@ -48,7 +46,7 @@ override void afterLoad()
 }
 ```
 
-Now the character collider will react to collisions with the cube and apply kinematic response. Character's movement is entirely on user side. For example, to implement basic character controller with jumping, you can do the following:
+Now the character collider will react to collisions with the cube and apply kinematic response. Character's movement is entirely on user side. For example, to implement basic movement controller with jumping, you can do the following:
 
 ```d
 float verticalSpeed = 0.0f;
