@@ -96,9 +96,9 @@ dub build --compiler=ldc2 --build=release-nobounds
 
 Runtime Dependencies
 --------------------
-* [SDL](https://www.libsdl.org) 2.32.4.0
-* [SDL_Image](https://github.com/libsdl-org/SDL_image) 2.8.8.0
-* [FreeType](https://www.freetype.org) 2.8.1 for text rendering
+* [SDL](https://www.libsdl.org) 2.32.4.0 (required)
+* [SDL_Image](https://github.com/libsdl-org/SDL_image) 2.8.8.0 (required)
+* [FreeType](https://www.freetype.org) 2.8.1 for text rendering (required)
 * [libwebp](https://chromium.googlesource.com/webm/libwebp) for WebP support (optional)
 * [libtiff](https://libtiff.gitlab.io/libtiff/) for TIFF support (optional)
 * [libavif](https://github.com/AOMediaCodec/libavif) for AVIF support (optional)
