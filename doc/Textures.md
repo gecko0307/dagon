@@ -1,6 +1,6 @@
 # Textures
 
-A texture is a raster image used for per-pixel data sampling in shaders. Textures usually store surface properties such as color, normals, roughness, and other, used as inputs to the render pipeline. Dagon supports 1D, 2D and 3D textures and cube map textures. Textures can be decoded from image files such as PNG or JPEG, or loaded directly from container formats (DDS, KTX).
+A texture is a raster image used for per-pixel data sampling in shaders. Textures usually store surface properties such as color, normals, roughness, and other, which are inputs to the render pipeline. Dagon supports 1D, 2D and 3D textures and cube map textures. Textures can be decoded from image files such as PNG or JPEG, or loaded directly from container formats (DDS, KTX).
 
 ## Pixel Formats
 
