@@ -1,4 +1,4 @@
-# Material
+# Materials
 
 Material in Dagon is a description of entity's surface properties. Dagon implements physically based rendering (PBR) and follows roughness/metallic workflow for materials.
 

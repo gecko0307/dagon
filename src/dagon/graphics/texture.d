@@ -1584,7 +1584,7 @@ bool vkFormatToGLFormat(VkFormat vkFormat, out TextureFormat tf)
  * Params:
  *   internalFormat = OpenGL internal format.
  * Returns:
- *   corresoinding Vulkan texture format, or VkFormat.UNDEFINED if conversion fails.
+ *   corresponding Vulkan texture format, or VkFormat.UNDEFINED if conversion fails.
  */
 VkFormat glFormatToVkFormat(GLenum internalFormat)
 {
