@@ -1,5 +1,5 @@
-Dagon 0.37.0 - TBD
-------------------
+Dagon 0.37.0 - 21 Jan, 2026
+---------------------------
 - **Core**
   - `Application.takeScreenshot` overload that copies the current framebuffer to a texture
   - Single-line comments support in *.conf files (lines beginning with `//` are ignored)
