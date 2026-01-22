@@ -101,7 +101,7 @@ Note that in this example `directionHorizontal` is used instead of `direction`, 
 
 ## NewtonCharacterController
 
-More generic solution that fits classic first person shooters and games with realistic interactivity, provided by `dagon:newton` extension. Best choice if the character should be able to interact with rigid bodies. 
+More generic solution that fits classic first person shooters and games with realistic interactivity, provided by `dagon:newton` extension. Best choice if the character should be able to interact with rigid bodies: for example, the character can push boxes and walk over them, which adds great portion of fun and can be used in numerous creative ways in the game design. Note that it will not react to dynamic collision impacts from other bodies (there will be no energy conservation).
 
 ```d
 Entity eCharacter = addEntity();
@@ -146,8 +146,6 @@ void characterControls()
 ```
 
 `character.updateVelocity()` should be called when all the control logics is done. This method applies a velocity change to the rigid body to produce the kinematic movement.
-
-The character's underlying rigid body interacts with other dynamic bodies in the world: the character can walk over boxes, etc. But it will not react to dynamic collision impacts from other bodies (there will be no energy conservation).
 
 To correctly sync the camera with the character, you can make it child of `eCharacter` and place at the character's local `eyePoint`:
 
