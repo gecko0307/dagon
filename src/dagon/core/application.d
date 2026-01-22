@@ -34,7 +34,7 @@ DEALINGS IN THE SOFTWARE.
  * This includes SDL window and OpenGL context management, event handling,
  * functions for error handling, taking screenshots and others.
  *
- * Copyright: Timur Gafarov 2017-2025.
+ * Copyright: Timur Gafarov 2017-2026.
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Timur Gafarov
  */
@@ -147,9 +147,20 @@ enum ImageFileFormat
     DDS,
     KTX,
     SVG,
+    GIF,
+    QOI,
+    PNM,
+    XCF,
+    XPM,
+    PCX,
+    LBM,
     JPG = JPEG,
     WEBP = WebP,
-    KTX2 = KTX
+    KTX2 = KTX,
+    TIF = TIFF,
+    PPM = PNM,
+    PGM = PNM,
+    PBM = PNM
 }
 
 enum string[GLenum] GLErrorStrings = [
@@ -797,6 +808,7 @@ class Application: EventListener, Updateable
             }
         }
         
+        // Init Wintab
         version(Windows)
         {
             // TODO: wintabLibraryPath
@@ -847,6 +859,7 @@ class Application: EventListener, Updateable
                 windowHeight = desktopBounds.h;
         }
         
+        // Init SDL_Image
         _imageFileFormatSupported[ImageFileFormat.PNG] = true;
         _imageFileFormatSupported[ImageFileFormat.JPEG] = true;
         _imageFileFormatSupported[ImageFileFormat.BMP] = true;
@@ -856,7 +869,9 @@ class Application: EventListener, Updateable
         
         if (sdlImagePresent)
         {
-            int desiredFormatFlags = IMG_INIT_JPG | IMG_INIT_PNG | IMG_INIT_TIF | IMG_INIT_WEBP | IMG_INIT_JXL | IMG_INIT_AVIF;
+            int desiredFormatFlags = 
+                IMG_INIT_JPG | IMG_INIT_PNG | IMG_INIT_TIF |
+                IMG_INIT_WEBP | IMG_INIT_JXL | IMG_INIT_AVIF;
             int supportedFormatFlags = IMG_Init(desiredFormatFlags);
             if (supportedFormatFlags == 0)
             {
@@ -869,8 +884,16 @@ class Application: EventListener, Updateable
             _imageFileFormatSupported[ImageFileFormat.WebP] = (supportedFormatFlags & IMG_INIT_WEBP) > 0;
             _imageFileFormatSupported[ImageFileFormat.JPEG_XL] = (supportedFormatFlags & IMG_INIT_JXL) > 0;
             _imageFileFormatSupported[ImageFileFormat.AVIF] = (supportedFormatFlags & IMG_INIT_AVIF) > 0;
+            _imageFileFormatSupported[ImageFileFormat.GIF] = true;
+            _imageFileFormatSupported[ImageFileFormat.QOI] = true;
+            _imageFileFormatSupported[ImageFileFormat.PNM] = true;
+            _imageFileFormatSupported[ImageFileFormat.XCF] = true;
+            _imageFileFormatSupported[ImageFileFormat.XPM] = true;
+            _imageFileFormatSupported[ImageFileFormat.PCX] = true;
+            _imageFileFormatSupported[ImageFileFormat.LBM] = true;
         }
 
+        // Set OpenGL context attributes
         SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -881,6 +904,7 @@ class Application: EventListener, Updateable
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
         
+        // Create SDL window
         uint windowFlags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
         if (windowResizable)
             windowFlags |= SDL_WINDOW_RESIZABLE;
@@ -921,11 +945,10 @@ class Application: EventListener, Updateable
         if (glcontext is null)
             exitWithError("Failed to create OpenGL context: " ~ to!string(SDL_GetError()));
         SDL_GL_MakeCurrent(window, glcontext);
-        
         SDL_GL_SetSwapInterval(vsync);
         
+        // Load OpenGL functions
         loadedGLSupport = loadOpenGL();
-        
         if (isOpenGLLoaded())
         {
             if (loadedGLSupport < GLSupport.gl43)
@@ -946,7 +969,7 @@ class Application: EventListener, Updateable
         if ("events.graphicsTablet.enabled" in config.props)
             _eventManager.graphicsTablet.enabled = cast(bool)config.props["events.graphicsTablet.enabled"].toUInt;
 
-        // Initialize OpenGL
+        // Get OpenGL info strings
         glVersion = String(glGetString(GL_VERSION));
         glVendor = String(glGetString(GL_VENDOR));
         glRenderer = String(glGetString(GL_RENDERER));

@@ -37,7 +37,7 @@ DEALINGS IN THE SOFTWARE.
  * `EventManager` is single-threaded. For multi-threaded event/message passing,
  * use `MessageBroker`.
  *
- * Copyright: Timur Gafarov, Mateusz Muszyński 2014-2025
+ * Copyright: Timur Gafarov, Mateusz Muszyński 2014-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Timur Gafarov, Mateusz Muszyński
  */
