@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2025 Timur Gafarov
+Copyright (c) 2017-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -99,10 +99,10 @@ struct DagonVersion
 }
 
 /// Engine version number as a read-only structure.
-immutable DagonVersion dagonVersion = DagonVersion(0, 37, 0);
+immutable DagonVersion dagonVersion = DagonVersion(0, 38, 0);
 
 /// Engine version number as a read-only string.
-immutable string dagonVersionString = "0.37.0";
+immutable string dagonVersionString = "0.38.0";
 
 /**
  * Immediately terminates the application,

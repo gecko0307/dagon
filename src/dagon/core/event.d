@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2025 Timur Gafarov, Mateusz Muszyński
+Copyright (c) 2014-2026 Timur Gafarov, Mateusz Muszyński
 
 Boost Software License - Version 1.0 - August 17th, 2003
 

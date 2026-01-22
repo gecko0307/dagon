@@ -1,9 +1,14 @@
+Dagon 0.38.0 - TBD
+------------------
+- **Core**
+  - SDL haptic API support (`GameInputDevice.haptic`).
+
 Dagon 0.37.0 - 21 Jan, 2026
 ---------------------------
 - **Core**
   - `Application.takeScreenshot` overload that copies the current framebuffer to a texture
   - Single-line comments support in *.conf files (lines beginning with `//` are ignored)
-  - `true` and `false` tokens support in *.conf files (interpreted as `1` and `0`).
+  - `true` and `false` tokens support in *.conf files (interpreted as `1` and `0`)
   - Enable smooth line rendering by default (`GL_LINE_SMOOTH`)
 - **Rendering**
   - Volumetric scattering for spot lights
