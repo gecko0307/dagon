@@ -1,7 +1,8 @@
 Dagon 0.38.0 - TBD
 ------------------
 - **Core**
-  - SDL haptic API support (`GameInputDevice.haptic`).
+  - SDL haptic API support (`GameInputDevice.haptic`)
+  - More formats added to `ImageFileFormat` structure.
 
 Dagon 0.37.0 - 21 Jan, 2026
 ---------------------------
