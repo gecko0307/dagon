@@ -8,7 +8,7 @@ Dagon provides two distinct methods to implement character kinematics: native co
 
 Dagon's collision framework is for games with basic interactivity (first-person adventures, puzzles, platformers and such). It doesn't provide physically-correct behaviour, but aims stability and predictable results.
 
-With this method, the character is represented with a single sphere that reacts to collisions with static colliders. The framework has no notion of mass and velocity. It is designed in such way that most of the movement logic is on user side: to make the character move, you just update its position, via `Entity.translate` or any other method. For example, to implement basic character controller with jumping, you can do the following:
+With this method, the character is represented with a single sphere that reacts to collisions with static objects. The framework has no notion of mass and velocity. It is designed in such way that most of the movement logic is on user side: to make the character move, you just update its position, via `Entity.translate` or any other method. For example, to implement basic character controller with jumping, you can do the following:
 
 ```d
 CollisionWorld world;
