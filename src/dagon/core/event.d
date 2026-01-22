@@ -89,6 +89,9 @@ struct GameInputDevice
     /// Opened joystick, if any.
     SDL_Joystick* joystick = null;
     
+    /// Opened haptic (force feedback) device, if any.
+    SDL_Haptic* haptic = null;
+    
     ///
     bool mappingPresent = false;
     
@@ -630,6 +633,7 @@ class EventManager: Owner
             device.joystick = SDL_GameControllerGetJoystick(device.controller);
             device.axisThreshold = controllerAxisThreshold;
             device.hasRumble = cast(bool)SDL_GameControllerHasRumble(device.controller);
+            device.haptic = SDL_HapticOpenFromJoystick(device.joystick);
         }
         else
         {
@@ -644,7 +648,11 @@ class EventManager: Owner
             device.controller = null;
             device.axisThreshold = controllerAxisThreshold;
             device.mappingPresent = false;
-            device.hasRumble = false;
+            device.haptic = SDL_HapticOpenFromJoystick(device.joystick);
+            if (device.haptic)
+                device.hasRumble = (SDL_HapticRumbleInit(device.haptic) != 0);
+            else
+                device.hasRumble = false;
         }
         
         return device;
@@ -751,10 +759,12 @@ class EventManager: Owner
             return;
         auto device = gameInputDevices[deviceIndex];
         if (device.controller && device.hasRumble)
+        {
             SDL_GameControllerRumble(device.controller,
                 cast(ushort)clamp(lowFreq, 0, ushort.max),
                 cast(ushort)clamp(hiFreg, 0, ushort.max),
                 cast(uint)(duration * 1000.0f));
+        }
     }
 
     /// Polls and processes all pending events.
