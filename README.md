@@ -2,11 +2,11 @@
 
 Feature-rich, easy to use, extensible 3D game development framework for [D language](https://dlang.org/) based on OpenGL 4.3 core profile and SDL2. Works on Windows and Linux.
 
-> Note: this project is not connected to Dagon engine by Senscape.
-
 Dagon uses computation-heavy graphics techniques and so requires a fairly powerful graphics card to run (Ampere-based NVIDIA GPUs are recommended for optimal performance). The engine is only desktop, support for mobile and web platforms is not planned.
 
 If you like Dagon, support its development on [Patreon](https://www.patreon.com/gecko0307) or [Liberapay](https://liberapay.com/gecko0307). You can also make a one-time donation via [NOWPayments](https://nowpayments.io/donation/gecko0307). I appreciate any support. Thanks in advance!
+
+> Note: this project is not connected to Dagon engine by Senscape.
 
 [![GitHub Actions CI Status](https://github.com/gecko0307/dagon/workflows/CI/badge.svg)](https://github.com/gecko0307/dagon/actions?query=workflow%3ACI)
 [![DUB Package](https://img.shields.io/dub/v/dagon.svg)](https://code.dlang.org/packages/dagon)
