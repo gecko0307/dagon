@@ -10,12 +10,12 @@ A list of supported event types:
 
 ### Keyboard
 - `KeyDown`, `KeyUp` - keyboard key pressed/released. Reports key codes (via `Event.key`) defined as `KEY_*` constants in `dagon.core.keycodes` (equivalent to `SDL_Scancode`)
-- `TextInput` - alphanumeric keyboard is used to type text. This event respects system-wide keyboard layout and reports a 32-bit Unicode codepoint (via `Event.unicode`)
+- `TextInput` - alphanumeric keyboard is used to type text. This event respects the input register and system-wide keyboard layout, reporting a 32-bit Unicode codepoint (via `Event.unicode`). Text input event will repeat if the key is pressed and held for a period of time. Note that `KeyDown` event is also triggered for alphanumeric keys, but only once unless `EventManager.enableKeyRepeat` is set
 
 ### Mouse
 - `MouseMotion` - mouse cursor is moved inside an application window. This event doesn't propagate to the listeners - instead, it updates `EventManager.mouseX` and `EventManager.mouseY`, mouse pointer coordinates relative to the window
-- `MouseButtonDown`, `MouseButtonUp` - mouse button pressed/released. Reports mouse button codes (via `Event.button`) defined as `MB_*` constants in `dagon.core.keycodes` (equivalent to `SDL_MouseButtonFlags`)
-- `MouseWheel` - mouse wheel scrolled. Reports scroll delta via `Event.mouseWheelX`, `Event.mouseWheelY`. Ordinary mouse wheel affects Y-coordinate, and the side wheel (present in some professional mice) affects X-coordinate
+- `MouseButtonDown`, `MouseButtonUp` - mouse button pressed/released. Reports mouse button codes (via `Event.button`) defined as `MB_*` constants in `dagon.core.keycodes` (equivalent to `SDL_MouseButtonFlags`). Standard buttons are `MB_LEFT` (1), `MB_MIDDLE` (2), `MB_RIGHT` (3). Some mice also have additional side-mounted buttons `MB_X1` (4) and `MB_X2` (5)
+- `MouseWheel` - mouse wheel scrolled. Reports scroll delta via `Event.mouseWheelX`, `Event.mouseWheelY`. Ordinary mouse wheel affects Y-axis, and the side wheel (present in some professional mice) affects X-axis. The X-axis has positive delta when scrolling left, and a negative delta when scrolling right. The Y-axis has positive delta when scrolling up and negative delta for scrolling down
 
 ### Gamepad
 - `ControllerAdd` - controller plugged in. Reports `Event.deviceIndex` and `Event.deviceType`
@@ -24,6 +24,9 @@ A list of supported event types:
 - `ControllerAxisMotion` - controller axis moved. Reports `Event.deviceIndex`, an axis type (via `Event.controllerAxis`) defined as `GA_*` constants in `dagon.core.keycodes` (equivalent to `SDL_GameControllerAxis`), and an axis value (via `Event.controllerAxisValue`) as floating-point in -1..1 range. SDL reports axis values as integers - Dagon normalizes them, so that these values can be used properly in further calculations. You can fine-tune normalization by changing `EventManager.controllerAxisThreshold` (32639 by default), though this is usually not needed for most devices
 - `JoystickButtonDown`, `JoystickButtonUp` - joystick button pressed/released. Reports `Event.deviceIndex` and a button number (via `Event.joystickButton`)
 - `JoystickAxisMotion` - joystick axis moved. Reports `Event.deviceIndex`, an axis index (via `Event.joystickAxis`), and an axis value (via `Event.joystickAxisValue`) as floating-point in -1..1 range. SDL reports axis values as integers - Dagon normalizes them, so that these values can be used properly in further calculations. You can fine-tune normalization by changing `EventManager.controllerAxisThreshold` (32639 by default), though this is usually not needed for most devices
+
+### Graphics Tablet
+- `PenMotion` - a pen (stilus) is moved over a graphics tablet. Reports `Event.x`, `Event.y`, `Event.pressure`. Only works if Wintab-compliant graphics tablet is detected in the system. This feature is currently Windows-only
 
 ### Window
 - `Resize` - window is resized. Reports new size as `Event.width`, `Event.height`
@@ -42,7 +45,7 @@ A list of supported event types:
 
 ### Misc
 - `HardwareSpecific` - an event specific to an `InputDevice` implementation. It allows to extend the event system with custom hardware; see below
-- `Log` - an asynchronous log event. It doesn't propagate to the listeners - instead, it is immediately handled by the `EventManager` itself
+- `Log` - an asynchronous log event. It doesn't propagate to the listeners; instead, it is immediately handled by the `EventManager` itself
 - `Cancelled` - event is obsolete and should be ignored (special status for internal use). Cancelled events don't propagate to the listeners.
 
 ## Joysticks vs Controllers
@@ -55,10 +58,32 @@ Controller is a joystick that SDL recognizes as a "standard gamepad" (XInput, Du
 
 Dagon supports up to 4 simultaneously plugged controllers/joysticks.
 
-## Event System Heap
-
-TODO
-
 ## Custom Hardware Events
+
+If your application needs compatibility with a non-standard input device unsupported by SDL, you can write your own driver for it that integrates with the event system. It should be a class that implements the `InputDevice` interface:
+
+```d
+class MyDeviceDriver: InputDevice
+{
+    EventManager eventManager;
+    
+    bool initialize(EventManager eventManager)
+    {
+        this.eventManager = eventManager;
+        
+        // Initialize the device. Return false on failure and true on success
+    }
+    
+    bool pollEvents()
+    {
+        // Emit next pending event using `eventManager.addEvent`.
+        // Return true if there are more events to poll, otherwise return false
+    }
+}
+```
+
+Then register the class in the event manager using `addInputDevice` method.
+
+## Event System Heap
 
 TODO
