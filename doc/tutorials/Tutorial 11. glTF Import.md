@@ -1,4 +1,4 @@
-# Tutorial 11. Exporting Assets from Blender
+# Tutorial 11. glTF Import
 
 Since Dagon 0.12, the recommended asset format for using with Dagon is [glTF](https://www.khronos.org/gltf/), a JSON-based scene description accompanied by a binary file that stores raw data such as vertex buffers.
 
