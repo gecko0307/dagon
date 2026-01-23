@@ -441,8 +441,8 @@ extern(C) @nogc nothrow
     alias int function(int* aObjHandle, const(ubyte)* aMem, uint aLength, int aCopy, int aTakeOwnership) da_Wav_loadMemEx;
     alias int function(int* aObjHandle, int* aFile) da_Wav_loadFile;
     alias int function(int* aObjHandle, ubyte* aMem, uint aLength, float aSamplerate, uint aChannels) da_Wav_loadRawWave8Ex;
-    alias int function(int* aObjHandle, short[] aMem, uint aLength, float aSamplerate, uint aChannels) da_Wav_loadRawWave16Ex;
-    alias int function(int* aObjHandle, float[] aMem, uint aLength, float aSamplerate, uint aChannels, int aCopy, int aTakeOwnership) da_Wav_loadRawWaveEx;
+    alias int function(int* aObjHandle, short* aMem, uint aLength, float aSamplerate, uint aChannels) da_Wav_loadRawWave16Ex;
+    alias int function(int* aObjHandle, float* aMem, uint aLength, float aSamplerate, uint aChannels, int aCopy, int aTakeOwnership) da_Wav_loadRawWaveEx;
     alias double function(int* aObjHandle) da_Wav_getLength;
     alias void function(int* aObjHandle, float aVolume) da_Wav_setVolume;
     alias void function(int* aObjHandle, int aLoop) da_Wav_setLooping;

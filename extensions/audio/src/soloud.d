@@ -2331,12 +2331,12 @@ public struct Wav
         return Wav_loadRawWave8Ex(objhandle, aMem, aLength, aSamplerate, aChannels);
     }
 
-    public int loadRawWave16(short[] aMem, uint aLength, float aSamplerate = 44100.0f, uint aChannels = 1)
+    public int loadRawWave16(short* aMem, uint aLength, float aSamplerate = 44100.0f, uint aChannels = 1)
     {
         return Wav_loadRawWave16Ex(objhandle, aMem, aLength, aSamplerate, aChannels);
     }
 
-    public int loadRawWave(float[] aMem, uint aLength, float aSamplerate = 44100.0f, uint aChannels = 1, int aCopy = false, int aTakeOwnership = true)
+    public int loadRawWave(float* aMem, uint aLength, float aSamplerate = 44100.0f, uint aChannels = 1, int aCopy = false, int aTakeOwnership = true)
     {
         return Wav_loadRawWaveEx(objhandle, aMem, aLength, aSamplerate, aChannels, aCopy, aTakeOwnership);
     }

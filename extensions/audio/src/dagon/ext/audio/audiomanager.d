@@ -302,6 +302,13 @@ class AudioManager: EventListener
         options[SoundClass.Music].volume = volume;
     }
     
+    Wav createSound(short[] buffer, size_t len, float sampleRate, uint numChannels)
+    {
+        Wav sound = Wav.create();
+        sound.loadRawWave16(buffer.ptr, cast(uint)len, sampleRate, numChannels);
+        return sound;
+    }
+    
     Wav loadSound(string filename)
     {
         Wav sound = Wav.create();
