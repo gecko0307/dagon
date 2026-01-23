@@ -821,9 +821,7 @@ class Application: EventListener, Updateable
                     wintabPresent = true;
                 }
                 else
-                {
-                    logError("Wintab library is not found");
-                }
+                    logWarning("Wintab library is not found");
             }
         }
         
