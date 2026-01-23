@@ -28,7 +28,7 @@ Dagon is written with extendability in mind, so you can easily add your own draw
 
 ## Further reading
 - [FAQ](https://github.com/gecko0307/dagon/blob/master/doc/FAQ.md)
-- [Tutorials](https://github.com/gecko0307/dagon/wiki/Tutorials)
+- [Tutorials](https://github.com/gecko0307/dagon/blob/master/doc/tutorials)
 - [Installing Runtime Dependencies](https://github.com/gecko0307/dagon/blob/master/doc/Runtime%20Dependencies.md)
 - [Application Architecture](https://github.com/gecko0307/dagon/blob/master/doc/Architecture.md)
 - [Render Pipeline Overview](https://github.com/gecko0307/dagon/blob/master/doc/Render%20Pipeline%20Overview.md)
