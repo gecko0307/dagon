@@ -74,11 +74,12 @@ If the model contains skins and animation, they are not applied automatically an
 
 ```d
 auto charNode = model.node("character");
-charPose = New!GLTFPose(charNode.skin, assetManager);
+auto charPose = New!GLTFPose(charNode.skin, assetManager);
 charPose.animation = model.animation("walk");
 
 Entity character = charNode.entity;
 character.pose = charPose;
+
 charPose.play();
 ```
 

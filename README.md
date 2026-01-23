@@ -128,7 +128,8 @@ Known Bugs and Limitations
 Documentation
 -------------
 * [API documentation (WIP)](https://gecko0307.github.io/dagon/doc/dagon.html)
-* [Tutorials](https://gecko0307.github.io/dagon/?p=tutorials) and corresponding [examples](https://github.com/gecko0307/dagon-tutorials)
+* [Specifications](https://github.com/gecko0307/dagon/blob/master/doc/)
+* [Tutorials](https://github.com/gecko0307/dagon/blob/master/doc/tutorials) and corresponding [examples](https://github.com/gecko0307/dagon-tutorials)
 * [Wiki](https://github.com/gecko0307/dagon/wiki)
 * [FAQ](https://github.com/gecko0307/dagon/wiki/FAQ).
 
