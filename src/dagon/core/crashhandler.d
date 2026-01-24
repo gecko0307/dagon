@@ -143,7 +143,7 @@ version(Windows)
         }
     }
     
-    string exceptionName(DWORD code)
+    private string exceptionName(DWORD code)
     {
         switch(code)
         {
