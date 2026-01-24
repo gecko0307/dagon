@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2025 Timur Gafarov
+Copyright (c) 2017-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -250,7 +250,7 @@ class DefaultTextureLoader: TextureLoader
         }
         
         // Use dlib.image
-        ubyte[] data = New!(ubyte[])(istrm.size);
+        ubyte[] data = New!(ubyte[])(cast(size_t)istrm.size);
         istrm.fillArray(data);
         ArrayStream arrStrm = New!ArrayStream(data);
         Compound!(SuperImage, string) res;

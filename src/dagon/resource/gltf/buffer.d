@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2025 Timur Gafarov
+Copyright (c) 2021-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -84,7 +84,7 @@ class GLTFBuffer: Owner
      */
     void fromArray(ubyte[] arr)
     {
-        array = New!(ubyte[])(arr.length);
+        array = New!(ubyte[])(cast(size_t)arr.length);
         array[] = arr[];
     }
     
@@ -99,7 +99,7 @@ class GLTFBuffer: Owner
         if (istrm is null)
             return;
         
-        array = New!(ubyte[])(istrm.size);
+        array = New!(ubyte[])(cast(size_t)istrm.size);
         if (!istrm.fillArray(array))
         {
             logError("Failed to read the buffer");

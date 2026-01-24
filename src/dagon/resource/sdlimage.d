@@ -111,7 +111,7 @@ enum ConversionHint
  */
 bool loadImageViaSDLImage(InputStream istrm, string extension, TextureAsset asset)
 {
-    size_t dataSize = istrm.size;
+    size_t dataSize = cast(size_t)istrm.size;
     ubyte[] data = New!(ubyte[])(dataSize);
     istrm.readBytes(data.ptr, dataSize);
     
