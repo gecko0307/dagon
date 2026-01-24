@@ -177,8 +177,11 @@ version(Windows)
         
         return EXCEPTION_EXECUTE_HANDLER;
     }
-    
-    static this()
+}
+
+static this()
+{
+    version(Windows)
     {
         SetUnhandledExceptionFilter(&windowsCrashHandler);
     }
