@@ -46,7 +46,7 @@
         "allowWarnings"
     ],
     
-    "libs-windows": ["user32", "comdlg32"],
+    "libs-windows": ["user32", "comdlg32", "Dbghelp"],
     
     "configurations": [
         {

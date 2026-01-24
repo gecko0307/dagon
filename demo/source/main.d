@@ -6,6 +6,7 @@ class TestScene: Scene
 {
     MyGame game;
     OBJAsset aOBJSuzanne;
+    Entity s;
 
     this(MyGame game)
     {
@@ -44,6 +45,8 @@ class TestScene: Scene
         
         auto ePlane = addEntity();
         ePlane.drawable = New!ShapePlane(10, 10, 1, assetManager);
+        
+        s.position = Vector3f(0, 1, 0);
     }
     
     override void onUpdate(Time t) { }

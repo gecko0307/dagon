@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020-2025 Timur Gafarov
+Copyright (c) 2020-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -34,6 +34,7 @@ import dlib.core.ownership;
 import dlib.image.color;
 
 import dagon.core.bindings;
+import dagon.core.logger;
 import dagon.graphics.entity;
 import dagon.graphics.shader;
 import dagon.graphics.terrain;
@@ -80,7 +81,7 @@ class PassForward: RenderPass
 
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (status != GL_FRAMEBUFFER_COMPLETE)
-            writeln(status);
+            logError("PassForward framebuffer is not complete (status ", status, ")");
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }

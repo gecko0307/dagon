@@ -57,6 +57,7 @@ import dlib.image;
 import dlib.filesystem;
 import dlib.text.str;
 
+public import dagon.core.crashhandler;
 import dagon.core.bindings;
 import dagon.core.event;
 import dagon.core.time;
@@ -103,23 +104,6 @@ immutable DagonVersion dagonVersion = DagonVersion(0, 38, 0);
 
 /// Engine version number as a read-only string.
 immutable string dagonVersionString = "0.38.0";
-
-/**
- * Immediately terminates the application,
- * printing an optional fatal error to the logger.
- *
- * Params:
- *   message = Optional error message to log before exiting.
- */
-void exitWithError(string message = "")
-{
-    if (message.length)
-    {
-        logFatalError(message);
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", message.toStringz, null);
-    }
-    core.stdc.stdlib.exit(1);
-}
 
 /**
  * Reserved event codes for Dagon applications.
