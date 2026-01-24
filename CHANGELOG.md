@@ -1,6 +1,7 @@
 Dagon 0.38.0 - TBD
 ------------------
 - **Core**
+  - SEH exception handling under Windows (`dagon.core.crashhandler`)
   - SDL haptic API support (`GameInputDevice.haptic`)
   - More formats added to `ImageFileFormat` structure.
 
