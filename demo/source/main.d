@@ -2,13 +2,6 @@ module main;
 
 import dagon;
 
-extern(C) uint crashTimer(uint interval, void* param) nothrow
-{
-    int* p = null;
-    *p = 123;
-    return interval;
-}
-
 class TestScene: Scene
 {
     MyGame game;
@@ -52,17 +45,6 @@ class TestScene: Scene
         
         auto ePlane = addEntity();
         ePlane.drawable = New!ShapePlane(10, 10, 1, assetManager);
-        
-        //SDL_AddTimer(1000, &crashTimer, null);
-        
-        auto renderer = SDL_CreateRenderer(game.window, -1, 0);
-
-        SDL_RenderCopy(
-            renderer,
-            cast(SDL_Texture*)0x1,
-            null,
-            null
-        );
     }
     
     override void onUpdate(Time t) { }
