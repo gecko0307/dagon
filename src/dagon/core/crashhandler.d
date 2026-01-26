@@ -50,6 +50,8 @@ import dagon.core.bindings;
 /**
  * Immediately terminates the application,
  * printing an optional fatal error to the logger.
+ * If an error message is specified, it will be
+ * shown in a modal message box.
  *
  * Params:
  *   message = Optional error message to log before exiting.
@@ -119,16 +121,8 @@ version(Windows)
             int numFrames = 0;
             for (numFrames = 0; numFrames < MAX_FRAMES; numFrames++)
             {
-                if (!StackWalk64(
-                    IMAGE_FILE_MACHINE_AMD64,
-                    process,
-                    thread,
-                    &frame,
-                    ctx,
-                    null,
-                    &SymFunctionTableAccess64,
-                    &SymGetModuleBase64,
-                    null))
+                if (!StackWalk64(IMAGE_FILE_MACHINE_AMD64, process, thread,
+                        &frame, ctx, null, &SymFunctionTableAccess64, &SymGetModuleBase64, null))
                 {
                     break;
                 }
