@@ -78,8 +78,8 @@ Features
 * 2D/3D sound. Various audio formats support including WAV, MP3, OGG/Vorbis, FLAC. Stereo, 5.1, 7.1 support
 * VR support (in development).
 
-Getting Started
----------------
+Usage
+-----
 The recommended way to start using Dagon is to generate a game template with `dub init`. Create an empty directory for the project, cd to it and run the following:
 ```
 dub init --type=dagon
@@ -92,6 +92,14 @@ It is strongly recommended to use [LDC](https://github.com/ldc-developers/ldc) a
 
 ```
 dub build --compiler=ldc2 --build=release-nobounds
+```
+
+To use Dagon repository directly instead of a release (for example, to modify the engine), you can clone it with Git and specify the local path to the `dagon` dependency in your `dub.json`:
+
+```
+"dependencies": {
+    "dagon": { "path": "path/to/your/dagon/copy" }
+}
 ```
 
 Runtime Dependencies
