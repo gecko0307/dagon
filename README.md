@@ -59,7 +59,7 @@ Features
 * Tween engine for simple animation. Delayed function calls
 * Input from keyboard, mouse and up to 4 gamepads. Input manager with abstract bindings and file-based configuration
 * Unicode text input
-* Graphics tablet input
+* Graphics tablet input (Windows-only)
 * Ownership memory model
 * Entity-component model
 * Fast arena allocator
