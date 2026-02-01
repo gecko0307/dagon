@@ -1000,7 +1000,7 @@ class Application: EventListener, Updateable
             maxTextureAnisotropy = 8.0f;
             float queriedValue = maxTextureAnisotropy;
             glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &queriedValue);
-            maxTextureAnisotropy = (queriedValue > maxTextureAnisotropy) ? maxTextureAnisotropy : queriedValue;
+            maxTextureAnisotropy = queriedValue;
             logInfo("GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT: ", maxTextureAnisotropy);
         }
         else
