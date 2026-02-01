@@ -5,6 +5,9 @@ Dagon 0.38.0 - TBD
   - SDL haptic API support (`GameInputDevice.haptic` property)
   - If Wintab library is not present, the engine now logs a warning instead of an error
   - More formats added to `ImageFileFormat` structure (GIF, QOI, PNM, XCF, XPM, PCX, LBM)
+  - Fix `Application.maxTextureAnisotropy` initialization
+- **Graphics components**
+  - New write-only property `Texture.lodBias`
 - **Extensions**
   - `dagon:audio`:
     - fixed some function signatures in SoLoud binding
