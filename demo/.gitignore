@@ -40,3 +40,6 @@ __dummy.html
 # Standard assets
 data/__internal/
 gamecontrollerdb.txt
+
+# Log file
+demo.log

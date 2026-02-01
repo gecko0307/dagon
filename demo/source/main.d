@@ -6,7 +6,6 @@ class TestScene: Scene
 {
     MyGame game;
     OBJAsset aOBJSuzanne;
-    Entity s;
 
     this(MyGame game)
     {
