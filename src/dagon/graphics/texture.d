@@ -1244,6 +1244,13 @@ class Texture: Owner
         }
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     }
+    
+    void lodBias(float bias) @property
+    {
+        bind();
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, bias);
+        unbind();
+    }
 }
 
 /**
