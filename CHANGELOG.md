@@ -1,9 +1,16 @@
 Dagon 0.38.0 - TBD
 ------------------
 - **Core**
-  - SEH exception handling under Windows (`dagon.core.crashhandler`)
-  - SDL haptic API support (`GameInputDevice.haptic`)
-  - More formats added to `ImageFileFormat` structure.
+  - SEH exception handling under Windows with stack tracing in x86_64 debug builds (`dagon.core.crashhandler`)
+  - SDL haptic API support (`GameInputDevice.haptic` property)
+  - If Wintab library is not present, the engine now logs a warning instead of an error
+  - More formats added to `ImageFileFormat` structure (GIF, QOI, PNM, XCF, XPM, PCX, LBM)
+- **Extensions**
+  - `dagon:audio`:
+    - fixed some function signatures in SoLoud binding
+    - `AudioManageraudio.createSound` overload for raw 16-bit signed sample buffers
+- **Misc**
+  - Fixed compilation for x86.
 
 Dagon 0.37.0 - 21 Jan, 2026
 ---------------------------
