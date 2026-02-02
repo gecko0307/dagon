@@ -202,6 +202,7 @@ class DeferredRenderer: Renderer
             brdf.createFromBuffer(brdfTextureBuffer, false);
             brdf.useMipmapFiltering = false;
             brdf.enableRepeat(false);
+            brdf.useAnisotropicFiltering = false;
             Delete(brdfTextureBuffer.data);
         }
     }

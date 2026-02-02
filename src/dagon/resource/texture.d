@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2025 Timur Gafarov
+Copyright (c) 2017-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -34,7 +34,7 @@ DEALINGS IN THE SOFTWARE.
  * threaded loading, conversion options, persistent buffers, and integration
  * with the virtual file system.
  *
- * Copyright: Timur Gafarov 2017-2025
+ * Copyright: Timur Gafarov 2017-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Timur Gafarov
  */
@@ -86,6 +86,9 @@ struct ConversionOptions
  */
 class TextureAsset: Asset
 {
+    /// Asset manager that the asset is loaded by.
+    AssetManager assetManager;
+    
     /// The GPU texture object.
     Texture texture;
     
@@ -161,7 +164,11 @@ class TextureAsset: Asset
         if (loaded)
             return true;
         
+        this.assetManager = assetManager;
+        
+        texture.useAnisotropicFiltering = assetManager.application.useAnisotropicFiltering;
         texture.maxAnisotropy = assetManager.application.maxTextureAnisotropy;
+        texture.anisotropy = assetManager.application.defaultTextureAnisotropy;
         
         this.filename = filename;
         this.extension = filename.extension.toLower;
@@ -210,8 +217,10 @@ class TextureAsset: Asset
                 texture.createFromBuffer3D(buffer, resolution3D);
             else
                 texture.createFromBuffer(buffer, generateMipmaps);
+            
             if (!persistent)
                 releaseBuffer();
+            
             if (texture.valid)
                 return true;
             else
@@ -223,8 +232,10 @@ class TextureAsset: Asset
                 texture.createFromImage3D(image, resolution3D);
             else
                 texture.createFromImage(image, generateMipmaps);
+            
             if (!persistent)
                 releaseBuffer();
+            
             if (texture.valid)
                 return true;
             else

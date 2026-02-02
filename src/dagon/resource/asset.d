@@ -680,7 +680,7 @@ class AssetManager: Owner
         bool res = true;
         foreach(filename, asset; assetsByFilename)
         {
-            if (asset.threadSafePartLoaded)
+            if (asset.threadSafePartLoaded && !asset.threadUnsafePartLoaded)
             {
                 res = asset.loadThreadUnsafePart();
                 asset.threadUnsafePartLoaded = res;

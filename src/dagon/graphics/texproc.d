@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022-2025 Timur Gafarov
+Copyright (c) 2022-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -28,7 +28,7 @@ DEALINGS IN THE SOFTWARE.
 /**
  * Provides utilities for GPU-accelerated texture processing.
  *
- * Copyright: Timur Gafarov 2022-2025
+ * Copyright: Timur Gafarov 2022-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Timur Gafarov
  */
@@ -306,6 +306,7 @@ class CubemapGeneratorShader: Shader
         glActiveTexture(GL_TEXTURE0);
         setParameter("envmap", cast(int)0);
         envmap.bind();
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.0f);
         
         Matrix4x4f pixelToWorldMatrix = cubeFaceMatrix(cubeFace);
         setParameter("pixelToWorldMatrix", pixelToWorldMatrix);
@@ -425,6 +426,10 @@ Texture generateCubemap(uint resolution, Texture inputEnvmap, Owner owner)
  */
 class CubemapPrefilterShader: Shader
 {
+   protected:
+    String vs, fs;
+    
+   public:
     Texture cubemap;
     CubeFace cubeFace;
     float roughness = 0.5f;
@@ -451,8 +456,8 @@ class CubemapPrefilterShader: Shader
     {
         this.cubemap = cubemap;
         
-        string vs = Shader.load("data/__internal/shaders/CubemapPrefilter/CubemapPrefilter.vert.glsl");
-        string fs = Shader.load("data/__internal/shaders/CubemapPrefilter/CubemapPrefilter.frag.glsl");
+        vs = Shader.load("data/__internal/shaders/CubemapPrefilter/CubemapPrefilter.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/CubemapPrefilter/CubemapPrefilter.frag.glsl");
         auto shaderProgram = New!ShaderProgram(vs, fs, this);
         super(shaderProgram, owner);
         
@@ -463,6 +468,12 @@ class CubemapPrefilterShader: Shader
         envmapUniform = createParameter!int("envmap");
         inputThresholdUniform = createParameter!float("inputThreshold");
         inputScaleUniform = createParameter!float("inputScale");
+    }
+    
+    ~this()
+    {
+        vs.free();
+        fs.free();
     }
     
     /**

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2024 Timur Gafarov
+Copyright (c) 2019-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -341,7 +341,9 @@ class PostProcRenderer: Renderer
         if (lutAsset is null)
         {
             lutAsset = New!TextureAsset(assetManager);
+            lutAsset.generateMipmaps = false;
             assetManager.preloadAsset(lutAsset, filename);
+            lutAsset.texture.useAnisotropicFiltering = false;
         }
         
         defaultColorLookupTable = lutAsset.texture;

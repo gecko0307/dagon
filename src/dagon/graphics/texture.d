@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2025 Timur Gafarov
+Copyright (c) 2017-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -34,7 +34,7 @@ DEALINGS IN THE SOFTWARE.
  * and uncompressed formats, mipmapping, filtering, and OpenGL resource management.
  * The module also includes utility functions for texture format conversion.
  *
- * Copyright: Timur Gafarov 2017-2025
+ * Copyright: Timur Gafarov 2017-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Timur Gafarov
  */
@@ -388,15 +388,15 @@ class Texture: Owner
     TextureFormat format;
     TextureSize size;
     bool generateMipmaps;
-    uint mipLevels;
+    uint mipLevels = 1;
     GLint minFilter = GL_LINEAR;
     GLint magFilter = GL_LINEAR;
     GLint wrapS = GL_REPEAT;
     GLint wrapT = GL_REPEAT;
     GLint wrapR = GL_REPEAT;
     bool useAnisotropicFiltering = false;
-    float anisotropy = 0.0f;
-    float maxAnisotropy = 0.0f; // This is usually set automatically from Application.maxTexture.Anisotropy
+    float anisotropy = 1.0f;
+    float maxAnisotropy = 1.0f; // This is usually set automatically from Application.maxTexture.Anisotropy
     
     /**
      * Constructs a new texture object.
@@ -1048,8 +1048,6 @@ class Texture: Owner
                 glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, wrapS);
                 glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, wrapT);
                 glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, wrapR);
-                if (useAnisotropicFiltering)
-                    glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
             }
             else if (dimension == TextureDimension.D1)
             {
@@ -1068,8 +1066,10 @@ class Texture: Owner
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, wrapR);
-                if (useAnisotropicFiltering)
+                if (useAnisotropicFiltering && mipLevels > 1)
                     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
+                else
+                    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.0f);
             }
             else if (dimension == TextureDimension.D3)
             {
@@ -1094,8 +1094,6 @@ class Texture: Owner
             glBindTexture(GL_TEXTURE_2D, 0);
         else if (dimension == TextureDimension.D3)
             glBindTexture(GL_TEXTURE_3D, 0);
-        if (useAnisotropicFiltering)
-            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 0.0f);
     }
     
     /// Returns the width of the texture.

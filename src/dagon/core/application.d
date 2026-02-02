@@ -56,6 +56,7 @@ import dlib.core.stream;
 import dlib.image;
 import dlib.filesystem;
 import dlib.text.str;
+import dlib.math.utils;
 
 public import dagon.core.crashhandler;
 import dagon.core.bindings;
@@ -560,10 +561,21 @@ class Application: EventListener, Updateable
     String glRenderer;
     
     /**
-     * Maximum supported level of anisotropic texture filtering.
-     * If anisotropic filtering is not supported, this is set to zero.
+     * Is anisotropic filtering enabled by default for textures.
+     * If anisotropic filtering is not supported, this is set to false.
      */
-    float maxTextureAnisotropy = 8.0f;
+    bool useAnisotropicFiltering = false;
+    
+    /**
+     * Maximum supported level of anisotropic texture filtering.
+     * If anisotropic filtering is not supported, this is set to 1.0.
+     */
+    float maxTextureAnisotropy = 16.0f;
+    
+    /**
+     * Default level of anisotropic filtering for textures.
+     */
+    float defaultTextureAnisotropy = 1.0f;
     
     /// Maximum number of workgroups per compute dispatch.
     int[3] maxWorkGroups;
@@ -997,15 +1009,25 @@ class Application: EventListener, Updateable
         
         if (anisotropicFilteringSupported)
         {
-            maxTextureAnisotropy = 8.0f;
-            float queriedValue = maxTextureAnisotropy;
-            glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &queriedValue);
-            maxTextureAnisotropy = queriedValue;
-            logInfo("GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT: ", maxTextureAnisotropy);
+            if ("gl.anisotropicFiltering" in config.props)
+                useAnisotropicFiltering = cast(bool)config.props["gl.anisotropicFiltering"].toUInt;
+            
+            if ("gl.defaultTextureAnisotropy" in config.props)
+                defaultTextureAnisotropy = clamp(config.props["gl.defaultTextureAnisotropy"].toFloat, 1.0f, 16.0f);
+            else
+                defaultTextureAnisotropy = 1.0f;
+            
+            float queriedMaxAnisotropy = maxTextureAnisotropy;
+            glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &queriedMaxAnisotropy);
+            logInfo("GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT: ", queriedMaxAnisotropy);
+            if (queriedMaxAnisotropy < maxTextureAnisotropy)
+                maxTextureAnisotropy = queriedMaxAnisotropy;
         }
         else
         {
-            maxTextureAnisotropy = 0.0f;
+            useAnisotropicFiltering = false;
+            maxTextureAnisotropy = 1.0f;
+            defaultTextureAnisotropy = 1.0f;
         }
         
         glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &maxWorkGroups[0]);
