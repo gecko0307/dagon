@@ -7,6 +7,6 @@
 		"bindbc-opengl": "1.1.1",
 		"bindbc-sdl": "1.5.2",
 		"dagon": {"path":".."},
-		"dlib": "1.4.0"
+		"dlib": "1.4.1"
 	}
 }
