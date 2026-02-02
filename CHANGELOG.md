@@ -5,15 +5,20 @@ Dagon 0.38.0 - TBD
   - SDL haptic API support (`GameInputDevice.haptic` property)
   - If Wintab library is not present, the engine now logs a warning instead of an error
   - More formats added to `ImageFileFormat` structure (GIF, QOI, PNM, XCF, XPM, PCX, LBM)
-  - Fixed `Application.maxTextureAnisotropy` initialization
+  - Global anisotropic filtering options in settings.conf (`gl.anisotropicFiltering`, `gl.defaultTextureAnisotropy`)
+  - Some anisotropy-related fixes
 - **Graphics components**
   - New write-only property `Texture.lodBias`
+  - Fix memory leak in `CubemapPrefilterShader`
+- **Assets**
+  - New property `TextureAsset.assetManager`
 - **Extensions**
   - `dagon:audio`:
     - Fixed some function signatures in SoLoud binding
     - `AudioManageraudio.createSound` overload for raw 16-bit signed sample buffers
 - **Misc**
-  - Fixed compilation for x86.
+  - Fixed compilation for x86
+  - `window.hiDPI` is now enabled in all default conf files.
 
 Dagon 0.37.0 - 21 Jan, 2026
 ---------------------------
