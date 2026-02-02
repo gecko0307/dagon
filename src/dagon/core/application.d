@@ -1009,19 +1009,19 @@ class Application: EventListener, Updateable
         
         if (anisotropicFilteringSupported)
         {
-            if ("gl.anisotropicFiltering" in config.props)
-                useAnisotropicFiltering = cast(bool)config.props["gl.anisotropicFiltering"].toUInt;
-            
-            if ("gl.defaultTextureAnisotropy" in config.props)
-                defaultTextureAnisotropy = clamp(config.props["gl.defaultTextureAnisotropy"].toFloat, 1.0f, 16.0f);
-            else
-                defaultTextureAnisotropy = 1.0f;
-            
             float queriedMaxAnisotropy = maxTextureAnisotropy;
             glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &queriedMaxAnisotropy);
             logInfo("GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT: ", queriedMaxAnisotropy);
             if (queriedMaxAnisotropy < maxTextureAnisotropy)
                 maxTextureAnisotropy = queriedMaxAnisotropy;
+            
+            if ("gl.anisotropicFiltering" in config.props)
+                useAnisotropicFiltering = cast(bool)config.props["gl.anisotropicFiltering"].toUInt;
+            
+            if ("gl.defaultTextureAnisotropy" in config.props)
+                defaultTextureAnisotropy = clamp(config.props["gl.defaultTextureAnisotropy"].toFloat, 1.0f, maxTextureAnisotropy);
+            else
+                defaultTextureAnisotropy = 1.0f;
         }
         else
         {

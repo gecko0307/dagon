@@ -68,6 +68,8 @@ Built-in *.conf files are fully reserved for Dagon's internal mechanisms, and it
 * `localesPath` - path to the folder containing translation files. Default is `"locale"`
 * `locale` - locale that should be loaded. This option overrides automatically selected locale based on system language and region. For example, `locale: "en_US";` means that application will try load `locale/en_US.lang` file and will ignore system language
 * `gl.debugOutput` - `0` or `1`, force disable or enable OpenGL debug output. Default is `1` in debug builds, `0` in release builds. This option is ignored if `logLevel` is higher than `"debug"`
+* `gl.anisotropicFiltering` - `0` or `1`, disable or enable anisotropic filtering by default for all textures loaded using the asset manager. Default is `0`
+* `gl.defaultTextureAnisotropy` - default anisotropic filtering level for all textures loaded using the asset manager. The value is clamped between `1.0` and the maximum anisotropy supported by hardware. If anisotropic filtering is not supported, this is set to `1.0`. Default is `1.0`
 * `gl.shaderCache.enabled` - `0` or `1`, cache compiled shader binaries to files for reuse instead of compiling shaders on each run. Disabled by default. This is an experimental feature, use with care
 * `gl.shaderCache.path` - path to a folder for storing cached shader binaries. Default is `"data/__internal/shader_cache"`
 * `gl.shaderCache.path.windows` - overrides `gl.shaderCache.path` under Windows
