@@ -3,6 +3,7 @@ Dagon 0.38.0 - TBD
 - **Core**
   - SEH exception handling under Windows with stack tracing in x86_64 debug builds (`dagon.core.crashhandler`)
   - SDL haptic API support (`GameInputDevice.haptic` property)
+  - New function `dagon.core.dialogs.showMessage`
   - If Wintab library is not present, the engine now logs a warning instead of an error
   - More formats added to `ImageFileFormat` structure (GIF, QOI, PNM, XCF, XPM, PCX, LBM)
   - Global anisotropic filtering options in settings.conf (`gl.anisotropicFiltering`, `gl.defaultTextureAnisotropy`)
