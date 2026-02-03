@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2025 Timur Gafarov
+Copyright (c) 2025-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -33,7 +33,7 @@ DEALINGS IN THE SOFTWARE.
  * dialogs to open and save a file. Under Linux they use Zenity (for GNOME)
  * or kdialog (for KDE).
  *
- * Copyright: Timur Gafarov 2025
+ * Copyright: Timur Gafarov 2025-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Timur Gafarov
  */
@@ -49,6 +49,14 @@ version(Windows)
     import core.sys.windows.windows;
     import std.conv;
     import std.utf: toUTF16z;
+}
+
+import dagon.core.bindings;
+
+/// Bessage box.
+void showMessage(string title, string message)
+{
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title.toStringz, message.toStringz, null);
 }
 
 /// File open dialog.

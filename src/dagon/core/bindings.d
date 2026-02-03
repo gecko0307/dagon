@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2025 Timur Gafarov
+Copyright (c) 2019-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -29,7 +29,7 @@ DEALINGS IN THE SOFTWARE.
  * Helper module that publicly imports OpenGL, SDL, Freetype and Wintab bindings.
  * Also provides a number of additional enums for OpenGL extensions.
  *
- * Copyright: Timur Gafarov 2019-2025.
+ * Copyright: Timur Gafarov 2019-2026.
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Timur Gafarov
  */
@@ -43,7 +43,7 @@ public
     import dagon.core.wintab;
 }
 
-// sRGB framebiffer format
+// sRGB framebuffer format
 enum GL_FRAMEBUFFER_SRGB = 0x8DB9;
 
 // S3TC formats

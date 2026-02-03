@@ -572,9 +572,7 @@ class Application: EventListener, Updateable
      */
     float maxTextureAnisotropy = 16.0f;
     
-    /**
-     * Default level of anisotropic filtering for textures.
-     */
+    /// Default level of anisotropic filtering for textures.
     float defaultTextureAnisotropy = 1.0f;
     
     /// Maximum number of workgroups per compute dispatch.
