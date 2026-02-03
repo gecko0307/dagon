@@ -1,6 +1,7 @@
 Dagon 0.38.0 - TBD
 ------------------
 - **Core**
+  - `dagon.core.dxt`, fast DXT1/DXT5 texture compressor (D port of RygsDXTc)
   - SEH exception handling under Windows with stack tracing in x86_64 debug builds (`dagon.core.crashhandler`)
   - SDL haptic API support (`GameInputDevice.haptic` property)
   - New function `dagon.core.dialogs.showMessage`
