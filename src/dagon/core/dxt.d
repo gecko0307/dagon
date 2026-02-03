@@ -26,6 +26,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * Fast DXT1/DXT5 texture encoder based on RygsDXTc.
  *
+ * Description:
+ * Provides `dxtCompress` function that converts RGBA8 texture to DXT1 or DXT5.
+ *
  * Copyright: Fabian Giesen, Yann Collet
  * License: $(LINK2 http://www.opensource.org/licenses/bsd-license.php, 2-Clause BSD License).
  * Authors: Fabian Giesen, Yann Collet
@@ -998,6 +1001,8 @@ void rygCompress(ubyte* dst, ubyte* src, int w, int h, int isDxt5)
     }
 }
 
+alias dxtCompress = rygCompress;
+
 void rygCompressYCoCg(ubyte* dst, ubyte* src, int w, int h)
 {
     ubyte[64] block;
@@ -1015,6 +1020,8 @@ void rygCompressYCoCg(ubyte* dst, ubyte* src, int w, int h)
         }
     }
 }
+
+alias dxtCompressYCoCg = rygCompressYCoCg;
 
 private void stbgl__compress(ubyte* p, ubyte* rgba, int w, int h, int isDxt5)
 {
