@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2025 Timur Gafarov
+Copyright (c) 2019-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -33,7 +33,7 @@ DEALINGS IN THE SOFTWARE.
  * configuration, event handling, input, key codes, locale detection, logging,
  * persistent key-value storage, property system, time management and virtual file system.
  *
- * Copyright: Timur Gafarov 2019-2025
+ * Copyright: Timur Gafarov 2019-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Timur Gafarov
  */
@@ -58,6 +58,9 @@ public
     
     /// DirectX image format enumerations.
     import dagon.core.dxgiformat;
+    
+    /// DXT1/DXT5 compressor.
+    import dagon.core.dxt;
 
     /// Event types, event manager, and event listener base class.
     import dagon.core.event;
