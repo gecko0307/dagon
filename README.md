@@ -96,12 +96,10 @@ It is strongly recommended to use [LDC](https://github.com/ldc-developers/ldc) a
 dub build --compiler=ldc2 --build=release-nobounds
 ```
 
-To use Dagon repository directly instead of a release (for example, to modify the engine), you can clone it with Git and specify the local path to the `dagon` dependency in your `dub.json`:
+To use Dagon repository directly instead of a release (for example, to modify the engine), you can clone it with Git and specify the local path to the `dagon` dependency in your `dub.json` or `dub.selections.json`:
 
 ```
-"dependencies": {
-    "dagon": { "path": "path/to/your/dagon/copy" }
-}
+"dagon": { "path": "path/to/your/dagon/copy" }
 ```
 
 Runtime Dependencies
