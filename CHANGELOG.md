@@ -16,6 +16,7 @@ Dagon 0.38.0 - TBD
 - **Assets**
   - On-the-fly texture compression support. If `TextureAsset.compress` is set to `true` the loader will convert RGB8/RGBA8 texture to DXT1 or DXT5, respectively. The mip chain is automatically generated, if not loaded from the source file
   - New properties `TextureAsset.compress`, `TextureAsset.assetManager`
+  - Basic DDS exporter (`dagon.resource.dds.saveDDS`)
 - **Extensions**
   - `dagon:audio`:
     - Fixed some function signatures in SoLoud binding
