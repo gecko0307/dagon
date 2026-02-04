@@ -58,6 +58,7 @@ import dlib.filesystem.filesystem;
 
 import dagon.core.bindings;
 import dagon.core.logger;
+import dagon.core.dxt;
 import dagon.graphics.texture;
 import dagon.resource.asset;
 
@@ -71,6 +72,9 @@ struct ConversionOptions
 
     /// Target height (optional).
     uint height;
+
+    /// Compress to DXT1 (for RGB texture) or DXT5 (for RGBA texture).
+    bool compress;
 
     /// Loader-specific hint value.
     int hint;
@@ -139,6 +143,7 @@ class TextureAsset: Asset
         texture = New!Texture(this);
         conversion.width = 0;
         conversion.height = 0;
+        conversion.compress = false;
         conversion.hint = 0;
     }
 
@@ -213,6 +218,57 @@ class TextureAsset: Asset
         
         if (buffer.data.length)
         {
+            if (conversion.compress)
+            {
+                if (buffer.format.target == GL_TEXTURE_2D &&
+                    buffer.format.format == GL_RGB &&
+                    buffer.format.internalFormat == GL_RGB8)
+                {
+                    // Compress to DXT1
+                    logInfo("Compressing ", filename, " to DXT1/BC1");
+                    // TODO: generate mip chain
+                    const blockSize = 8;
+                    uint dataSize =
+                        ((buffer.size.width + 3) / 4) * 
+                        ((buffer.size.height + 3) / 4) *
+                        blockSize;
+                    ubyte[] dstBuffer = New!(ubyte[])(dataSize);
+                    dxtCompress(dstBuffer.ptr, buffer.data.ptr, buffer.size.width, buffer.size.height, 0);
+                    releaseBuffer();
+                    buffer.data = dstBuffer;
+                    buffer.format.internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+                    buffer.format.blockSize = blockSize;
+                }
+                else
+                if (buffer.format.target == GL_TEXTURE_2D &&
+                    buffer.format.format == GL_RGBA &&
+                    buffer.format.internalFormat == GL_RGBA8)
+                {
+                    // Compress to DXT5
+                    logInfo("Compressing ", filename, " to DXT5/BC3");
+                    // TODO: generate mip chain
+                    const blockSize = 16;
+                    uint dataSize =
+                        ((buffer.size.width + 3) / 4) * 
+                        ((buffer.size.height + 3) / 4) *
+                        blockSize;
+                    ubyte[] dstBuffer = New!(ubyte[])(dataSize);
+                    dxtCompress(dstBuffer.ptr, buffer.data.ptr, buffer.size.width, buffer.size.height, 1);
+                    releaseBuffer();
+                    buffer.data = dstBuffer;
+                    buffer.format.internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+                    buffer.format.blockSize = blockSize;
+                }
+                else
+                {
+                    logWarning(
+                        filename, ": ",
+                        "texture compression for target ", buffer.format.target,
+                        " and internal format ", buffer.format.internalFormat,
+                        " is not supported");
+                }
+            }
+            
             if (loadAs3D && buffer.format.target != GL_TEXTURE_3D)
                 texture.createFromBuffer3D(buffer, resolution3D);
             else
@@ -228,6 +284,9 @@ class TextureAsset: Asset
         }
         else if (image !is null)
         {
+            if (conversion.compress)
+                logWarning("Texture compression for SuperImage source is not supported");
+            
             if (loadAs3D)
                 texture.createFromImage3D(image, resolution3D);
             else
