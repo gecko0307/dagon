@@ -46,6 +46,7 @@ import std.algorithm;
 import dlib.core.memory;
 import dlib.core.stream;
 import dlib.image.io.utils;
+import dlib.math.utils;
 
 import dagon.core.bindings;
 import dagon.core.dxgiformat;
@@ -457,7 +458,7 @@ bool loadDDS(InputStream istrm, TextureBuffer* buffer)
         if (hdr.caps2 & DDSCaps2.CUBEMAP_ALLFACES)
             isCubemap = true;
         else
-            return error("loadDDS error: incomplete cubemap");
+            return error("loadDDS error: incomplete cubemaps are not supported");
     }
     
     version(DDSDebug) logDebug("hasMipmaps: ", hasMipmaps);
@@ -510,7 +511,7 @@ bool loadDDS(InputStream istrm, TextureBuffer* buffer)
  * Data must be already compressed to DXT1, DXT3, or DXT5.
  *
  * Params:
- *   output  = Output stream to write the file.
+ *   output = Output stream to write the file.
  *   buffer = Input texture buffer.
  * Returns:
  *   `true` if saving succeeded, `false` otherwise.
@@ -529,18 +530,25 @@ bool saveDDS(OutputStream output, TextureBuffer* buffer)
     if (isCompressed)
     {
         header.flags |= DDSHeaderFlags.LINEARSIZE;
-        header.pitch = cast(uint)buffer.data.length;
+        
+        auto blocksH = max2(1, (buffer.size.width + 3) / 4);
+        auto blocksV = max2(1, (buffer.size.height + 3) / 4);
+        auto topLevelSize = blocksH * blocksV * buffer.format.blockSize;
+        header.pitch = topLevelSize;
     }
     else
     {
         header.flags |= DDSHeaderFlags.PITCH;
         header.pitch = buffer.format.pixelSize * buffer.size.width;
     }
+    if (buffer.mipLevels > 1)
+    {
+        header.flags |= DDSHeaderFlags.MIPMAPCOUNT;
+    }
     header.height = buffer.size.height;
     header.width = buffer.size.width;
     header.depth = 0;
-    // TODO: support mip levels
-    header.mipMapLevels = 1;
+    header.mipMapLevels = buffer.mipLevels;
     header.alphaBitDepth = 0;
     header.reserved = 0;
     header.surface = 0;
@@ -567,6 +575,11 @@ bool saveDDS(OutputStream output, TextureBuffer* buffer)
     header.format.blueMask = 0;
     header.format.alphaMask = 0;
     header.caps = DDSCaps.TEXTURE;
+    if (buffer.mipLevels > 1)
+    {
+        header.caps |= DDSCaps.COMPLEX | DDSCaps.MIPMAP;
+    }
+    // TODO: support cubemaps (DDSCaps2.CUBEMAP | DDSCaps2.CUBEMAP_ALLFACES)
     header.caps2 = 0;
     header.caps3 = 0;
     header.caps4 = 0;
