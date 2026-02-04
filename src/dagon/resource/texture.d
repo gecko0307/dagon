@@ -44,6 +44,7 @@ import std.stdio;
 import std.string;
 import std.path;
 import std.conv;
+import std.math;
 
 import dlib.core.memory;
 import dlib.core.ownership;
@@ -55,6 +56,7 @@ import dlib.image.hdri;
 import dlib.image.io;
 import dlib.image.unmanaged;
 import dlib.filesystem.filesystem;
+import dlib.math.utils;
 
 import dagon.core.bindings;
 import dagon.core.logger;
@@ -73,11 +75,14 @@ struct ConversionOptions
     /// Target height (optional).
     uint height;
 
-    /// Compress to DXT1 (for RGB texture) or DXT5 (for RGBA texture).
-    bool compress;
-
     /// Loader-specific hint value.
     int hint;
+}
+
+enum TextureCompressionFormat
+{
+    DXT1 = 0,
+    DXT5 = 1
 }
 
 /**
@@ -110,11 +115,14 @@ class TextureAsset: Asset
     /// If `true`, keep `buffer.data` after sending to GPU.
     bool persistent = false;
     
-    /// Set to `true` in the loader if `buffer.data` refers to `image.data` (to prevent double-free)
+    /// Set to `true` in the loader if `buffer.data` refers to `image.data` (to prevent double-free).
     bool bufferDataIsImageData = false;
     
-    /// If `true`, generate mip levels.
+    /// If `true`, generate mip levels. This is skipped if mip levels are already present in the file.
     bool generateMipmaps = true;
+    
+    /// Compress to DXT1 (for RGB texture) or DXT5 (for RGBA texture).
+    bool compress = false;
     
     /// If true, the input image will be interpreted as 3D texture.
     bool loadAs3D = false;
@@ -143,7 +151,6 @@ class TextureAsset: Asset
         texture = New!Texture(this);
         conversion.width = 0;
         conversion.height = 0;
-        conversion.compress = false;
         conversion.hint = 0;
     }
 
@@ -218,7 +225,9 @@ class TextureAsset: Asset
         
         if (buffer.data.length)
         {
-            if (conversion.compress)
+            bool genMipmaps = this.generateMipmaps;
+            
+            if (compress)
             {
                 if (buffer.format.target == GL_TEXTURE_2D &&
                     buffer.format.format == GL_RGB &&
@@ -226,18 +235,8 @@ class TextureAsset: Asset
                 {
                     // Compress to DXT1
                     logInfo("Compressing ", filename, " to DXT1/BC1");
-                    // TODO: generate mip chain
-                    const blockSize = 8;
-                    uint dataSize =
-                        ((buffer.size.width + 3) / 4) * 
-                        ((buffer.size.height + 3) / 4) *
-                        blockSize;
-                    ubyte[] dstBuffer = New!(ubyte[])(dataSize);
-                    dxtCompress(dstBuffer.ptr, buffer.data.ptr, buffer.size.width, buffer.size.height, 0);
-                    releaseBuffer();
-                    buffer.data = dstBuffer;
-                    buffer.format.internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-                    buffer.format.blockSize = blockSize;
+                    compressTexture(TextureCompressionFormat.DXT1);
+                    genMipmaps = false;
                 }
                 else
                 if (buffer.format.target == GL_TEXTURE_2D &&
@@ -246,18 +245,8 @@ class TextureAsset: Asset
                 {
                     // Compress to DXT5
                     logInfo("Compressing ", filename, " to DXT5/BC3");
-                    // TODO: generate mip chain
-                    const blockSize = 16;
-                    uint dataSize =
-                        ((buffer.size.width + 3) / 4) * 
-                        ((buffer.size.height + 3) / 4) *
-                        blockSize;
-                    ubyte[] dstBuffer = New!(ubyte[])(dataSize);
-                    dxtCompress(dstBuffer.ptr, buffer.data.ptr, buffer.size.width, buffer.size.height, 1);
-                    releaseBuffer();
-                    buffer.data = dstBuffer;
-                    buffer.format.internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-                    buffer.format.blockSize = blockSize;
+                    compressTexture(TextureCompressionFormat.DXT5);
+                    genMipmaps = false;
                 }
                 else
                 {
@@ -272,7 +261,7 @@ class TextureAsset: Asset
             if (loadAs3D && buffer.format.target != GL_TEXTURE_3D)
                 texture.createFromBuffer3D(buffer, resolution3D);
             else
-                texture.createFromBuffer(buffer, generateMipmaps);
+                texture.createFromBuffer(buffer, genMipmaps);
             
             if (!persistent)
                 releaseBuffer();
@@ -284,13 +273,13 @@ class TextureAsset: Asset
         }
         else if (image !is null)
         {
-            if (conversion.compress)
+            if (compress)
                 logWarning("Texture compression for SuperImage source is not supported");
             
             if (loadAs3D)
                 texture.createFromImage3D(image, resolution3D);
             else
-                texture.createFromImage(image, generateMipmaps);
+                texture.createFromImage(image, this.generateMipmaps);
             
             if (!persistent)
                 releaseBuffer();
@@ -330,6 +319,113 @@ class TextureAsset: Asset
         
         loaded = false;
     }
+    
+    protected void compressTexture(TextureCompressionFormat compressionFormat)
+    {
+        uint width = buffer.size.width;
+        uint height = buffer.size.height;
+        uint numChannels = buffer.format.numChannels;
+        uint pSize = buffer.format.pixelSize;
+        uint mipLevels;
+        
+        uint blockSize;
+        uint newInternalFormat;
+        if (compressionFormat == TextureCompressionFormat.DXT1)
+        {
+            blockSize = 8;
+            newInternalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+        }
+        else if (compressionFormat == TextureCompressionFormat.DXT5)
+        {
+            blockSize = 16;
+            newInternalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+        }
+        
+        ubyte[] compressedTextureBuffer;
+        
+        if (generateMipmaps)
+        {
+            mipLevels = 1 + cast(uint)floor(log2(cast(double)max2(width, height)));
+            
+            size_t mipChainSize = 0;
+            size_t compressedMipChainSize = 0;
+            uint w = width;
+            uint h = height;
+            foreach (level; 0..mipLevels)
+            {
+                mipChainSize += w * h * numChannels;
+                auto blocksH = (w + 3) / 4;
+                auto blocksV = (h + 3) / 4;
+                size_t alignedLevelSize = alignUp(blocksH * blocksV * blockSize, 4);
+                
+                compressedMipChainSize += alignedLevelSize;
+                w = max2(1, w / 2);
+                h = max2(1, h / 2);
+            }
+            
+            ubyte[] mipChainBuffer = New!(ubyte[])(mipChainSize);
+            ubyte[] compressedMipChainBuffer = New!(ubyte[])(compressedMipChainSize);
+            
+            uint levelWidth = width;
+            uint levelHeight = height;
+            uint prevLevelWidth = levelWidth;
+            uint prevLevelHeight = levelHeight;
+            
+            size_t offset = 0;
+            size_t offsetCompressed = 0;
+
+            ubyte[] levelSourceBuffer = buffer.data;
+            foreach (level; 0..mipLevels)
+            {
+                size_t levelSize = levelWidth * levelHeight * numChannels;
+                ubyte[] levelBufferSlice;
+                
+                if (level > 0)
+                {
+                    levelBufferSlice = mipChainBuffer[offset..offset + levelSize];
+                    downsampleBox2x2(levelSourceBuffer, prevLevelWidth, prevLevelHeight, numChannels, levelBufferSlice);
+                    offset += levelSize;
+                }
+                else
+                {
+                    levelBufferSlice = levelSourceBuffer[offset..offset + levelSize];
+                    offset += levelSize;
+                }
+                
+                auto blocksH = max2(1, (levelWidth + 3) / 4);
+                auto blocksV = max2(1, (levelHeight + 3) / 4);
+                auto levelSizeCompressed = alignUp(blocksH * blocksV * blockSize, 4);
+                ubyte[] levelCompDst = compressedMipChainBuffer[offsetCompressed..offsetCompressed + levelSizeCompressed];
+                dxtCompress(levelCompDst.ptr, levelBufferSlice.ptr, levelWidth, levelHeight, compressionFormat);
+                offsetCompressed += levelSizeCompressed;
+                
+                prevLevelWidth = levelWidth;
+                prevLevelHeight = levelHeight;
+                
+                levelWidth = max2(1, levelWidth / 2);
+                levelHeight = max2(1, levelHeight / 2);
+                
+                levelSourceBuffer = levelBufferSlice;
+            }
+            
+            Delete(mipChainBuffer);
+            
+            compressedTextureBuffer = compressedMipChainBuffer;
+        }
+        else
+        {
+            mipLevels = 1;
+            uint compressedDataSize = ((width + 3) / 4) * ((height + 3) / 4) * blockSize;
+            compressedTextureBuffer = New!(ubyte[])(compressedDataSize);
+            dxtCompress(compressedTextureBuffer.ptr, buffer.data.ptr, width, height, compressionFormat);
+        }
+        
+        releaseBuffer();
+        buffer.data = compressedTextureBuffer;
+        buffer.format.internalFormat = newInternalFormat;
+        buffer.format.blockSize = blockSize;
+        buffer.mipLevels = mipLevels;
+    }
 }
 
 /**
@@ -354,4 +450,51 @@ TextureAsset textureAsset(AssetManager assetManager, string filename)
         assetManager.preloadAsset(asset, filename);
     }
     return asset;
+}
+
+void downsampleBox2x2(
+    ubyte[] src,
+    uint srcW,
+    uint srcH,
+    uint channels, // 3 = RGB8, 4 = RGBA8
+    ubyte[] dst)
+{
+    uint dstW = srcW > 1 ? srcW / 2 : 1;
+    uint dstH = srcH > 1 ? srcH / 2 : 1;
+    
+    foreach (y; 0..dstH)
+    {
+        int srcY0 = y * 2;
+        int srcY1 = (srcY0 + 1 < srcH) ? srcY0 + 1 : srcY0;
+
+        foreach (x; 0..dstW)
+        {
+            int srcX0 = x * 2;
+            int srcX1 = (srcX0 + 1 < srcW) ? srcX0 + 1 : srcX0;
+
+            int dstIndex = (y * dstW + x) * channels;
+
+            int i00 = (srcY0 * srcW + srcX0) * channels;
+            int i10 = (srcY0 * srcW + srcX1) * channels;
+            int i01 = (srcY1 * srcW + srcX0) * channels;
+            int i11 = (srcY1 * srcW + srcX1) * channels;
+
+            foreach (c; 0..channels)
+            {
+                uint sum =
+                    src[i00 + c] +
+                    src[i10 + c] +
+                    src[i01 + c] +
+                    src[i11 + c];
+
+                // Average: (sum + 2) / 4
+                dst[dstIndex + c] = cast(ubyte)((sum + 2) >> 2);
+            }
+        }
+    }
+}
+
+size_t alignUp(size_t value, size_t alignment)
+{
+    return (value + alignment - 1) & ~(alignment - 1);
 }

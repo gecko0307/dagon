@@ -225,7 +225,6 @@ class DefaultTextureLoader: TextureLoader
             if (loaded)
             {
                 asset.bufferDataIsImageData = false;
-                asset.generateMipmaps = true;
                 return compound(true, "");
             }
             else
@@ -242,7 +241,6 @@ class DefaultTextureLoader: TextureLoader
             if (loaded)
             {
                 asset.bufferDataIsImageData = false;
-                asset.generateMipmaps = true;
                 return compound(true, "");
             }
             else
@@ -287,7 +285,6 @@ class DefaultTextureLoader: TextureLoader
                 size_t bufferSize = asset.image.data.length;
                 asset.buffer.data = asset.image.data;
                 asset.bufferDataIsImageData = true;
-                asset.generateMipmaps = true;
                 result = compound(true, "");
             }
             else

@@ -649,8 +649,8 @@ class Texture: Owner
                         uint imageSize = ((w + 3) / 4) * ((h + 3) / 4) * format.blockSize;
                         glCompressedTexImage2D(cubeFace, mipLevel, format.internalFormat, w, h, 0, imageSize, cast(void*)(buffer.ptr + offset));
                         offset += imageSize;
-                        w /= 2;
-                        h /= 2;
+                        w = max2(1, w / 2);
+                        h = max2(1, h / 2);
                         if (offset > buffer.length)
                         {
                             logError("Incomplete texture buffer");
@@ -689,8 +689,8 @@ class Texture: Owner
                         uint alignedSize = ((w * pSize + 3) & ~3) * h;
                         glTexImage2D(cubeFace, mipLevel, format.internalFormat, w, h, 0, format.format, format.pixelType, cast(void*)(buffer.ptr + offset));
                         offset += alignedSize;
-                        w /= 2;
-                        h /= 2;
+                        w = max2(1, w / 2);
+                        h = max2(1, h / 2);
                         if (offset > buffer.length)
                         {
                             logError("Incomplete texture buffer");
@@ -758,7 +758,7 @@ class Texture: Owner
                     glCompressedTexImage1D(GL_TEXTURE_1D, mipLevel, format.internalFormat, w, 0, imageSize, cast(void*)(buffer.ptr + offset));
                     
                     offset += imageSize;
-                    w /= 2;
+                    w = max2(1, w / 2);
                 }
             }
         }
@@ -818,8 +818,8 @@ class Texture: Owner
                     uint imageSize = ((w + blockWidth - 1) / blockWidth) * ((h + blockHeight - 1) / blockHeight) * format.blockSize;
                     glCompressedTexImage2D(GL_TEXTURE_2D, mipLevel, format.internalFormat, w, h, 0, imageSize, cast(void*)(buffer.ptr + offset));
                     offset += imageSize;
-                    w /= 2;
-                    h /= 2;
+                    w = max2(1, w / 2);
+                    h = max2(1, h / 2);
                     if (offset > buffer.length)
                     {
                         logError("Incomplete texture buffer");
@@ -855,8 +855,8 @@ class Texture: Owner
                     uint alignedSize = ((w * pSize + 3) & ~3) * h;
                     glTexImage2D(GL_TEXTURE_2D, mipLevel, format.internalFormat, w, h, 0, format.format, format.pixelType, cast(void*)(buffer.ptr + offset));
                     offset += alignedSize;
-                    w /= 2;
-                    h /= 2;
+                    w = max2(1, w / 2);
+                    h = max2(1, h / 2);
                     if (offset > buffer.length)
                     {
                         logError("Incomplete texture buffer");
@@ -930,9 +930,9 @@ class Texture: Owner
                     uint imageSize = sliceSize * d;
                     glTexImage3D(GL_TEXTURE_3D, mipLevel, format.internalFormat, w, h, d, 0, format.format, format.pixelType, cast(void*)(buffer.ptr + offset));
                     offset += imageSize;
-                    w /= 2;
-                    h /= 2;
-                    d /= 2;
+                    w = max2(1, w / 2);
+                    h = max2(1, h / 2);
+                    d = max2(1, h / 2);
                     if (offset > buffer.length)
                     {
                         logError("Incomplete texture buffer");
