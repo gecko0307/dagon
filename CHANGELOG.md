@@ -11,9 +11,11 @@ Dagon 0.38.0 - TBD
   - Some anisotropy-related fixes
 - **Graphics components**
   - New write-only property `Texture.lodBias`
+  - Fix incorrect mip chain uploading for NPOT textures
   - Fix memory leak in `CubemapPrefilterShader`
 - **Assets**
-  - New property `TextureAsset.assetManager`
+  - On-the-fly texture compression support. If `TextureAsset.compress` is set to `true` the loader will convert RGB8/RGBA8 texture to DXT1 or DXT5, respectively. The mip chain is automatically generated, if not loaded from the source file
+  - New properties `TextureAsset.compress`, `TextureAsset.assetManager`
 - **Extensions**
   - `dagon:audio`:
     - Fixed some function signatures in SoLoud binding

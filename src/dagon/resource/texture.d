@@ -225,7 +225,7 @@ class TextureAsset: Asset
         
         if (buffer.data.length)
         {
-            bool genMipmaps = this.generateMipmaps;
+            bool genMipmaps = this.generateMipmaps && (buffer.mipLevels == 1);
             
             if (compress)
             {
@@ -343,7 +343,7 @@ class TextureAsset: Asset
         
         ubyte[] compressedTextureBuffer;
         
-        if (generateMipmaps)
+        if (generateMipmaps && buffer.mipLevels == 1)
         {
             mipLevels = 1 + cast(uint)floor(log2(cast(double)max2(width, height)));
             
