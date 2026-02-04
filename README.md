@@ -42,7 +42,7 @@ Features
 * HiDPI support
 * Hybrid rendering pipeline: deferred for opaque materials, forward for transparent materials and materials with custom shaders
 * Physically based rendering (PBR)
-* HDR rendering with many tonemapping operators, including Reinhard, Hable/Uncharted, Unreal, ACES, Filmic, AgX, and Khronos PBR Neutral
+* HDR rendering with all industry-standard tonemapping operators, including Reinhard, Hable/Uncharted, Unreal, ACES, Uchimura, AgX and Khronos PBR Neutral
 * HDRI environment maps. Equirectangular HDRI to cubemap conversion. GPU-based cubemap prefiltering with GGX BRDF and importance sampling. Loading prebaked cubemaps from DDS or KTX files
 * Directional lights with cascaded shadow mapping
 * Spherical and tube area lights with dual paraboloid shadow mapping
