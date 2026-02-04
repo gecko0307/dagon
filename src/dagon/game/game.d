@@ -206,6 +206,8 @@ class Game: BaseGame
                 postProcessingRenderer.tonemapper = Tonemapper.AgX_Punchy;
             else if (tonemapper == "KhronosPBRNeutral")
                 postProcessingRenderer.tonemapper = Tonemapper.KhronosPBRNeutral;
+            else if (tonemapper == "Uchimura")
+                postProcessingRenderer.tonemapper = Tonemapper.Uchimura;
             else
                 logError("Unknown tonemapper: \"", tonemapper, "\"");
         }

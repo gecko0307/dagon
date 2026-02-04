@@ -54,7 +54,8 @@ enum Tonemapper
     Unreal = 6,
     AgX_Base = 7,
     AgX_Punchy = 8,
-    KhronosPBRNeutral = 9
+    KhronosPBRNeutral = 9,
+    Uchimura = 10
 }
 
 class TonemapShader: Shader

@@ -11,6 +11,11 @@ in vec2 texCoord;
 out vec4 fragColor;
 
 /*
+ * tonemapReinhard and tonemapReinhard2 are based on a function by Erik Reinhard et al,
+ * "Photographic Tone Reproduction for Digital Images"
+ *
+ * tonemapUnreal is based on a function from Unreal 3
+ *
  * tonemapHable is based on a function by John Hable
  * http://filmicworlds.com/blog/filmic-tonemapping-operators
  *
@@ -25,6 +30,9 @@ out vec4 fragColor;
  *
  * tonemapPBRNeutral is based on code by Khronos Group
  * https://github.com/KhronosGroup/ToneMapping
+ *
+ * tonemapUchimura is based on a function by Hajime Uchimura
+ * https://www.desmos.com/calculator/gslcdxvipg
  */
 
 vec3 hableFunc(vec3 x)
@@ -53,6 +61,12 @@ vec3 tonemapReinhard(vec3 color)
     return color / (color + vec3(1.0));
 }
 
+vec3 tonemapReinhard2(vec3 color)
+{
+    const float L_white = 4.0;
+    return (color * (vec3(1.0) + color / (L_white * L_white))) / (vec3(1.0) + color);
+}
+
 vec3 tonemapACES(vec3 x)
 {
     const float a = 2.51;
@@ -68,12 +82,6 @@ vec3 tonemapFilmic(vec3 color)
     vec3 x = max(vec3(0.0), color - 0.004);
     vec3 result = (x * (6.2 * x + 0.5)) / (x * (6.2 * x + 1.7) + 0.06);
     return pow(result, vec3(2.2));
-}
-
-vec3 tonemapReinhard2(vec3 color)
-{
-    const float L_white = 4.0;
-    return (color * (vec3(1.0) + color / (L_white * L_white))) / (vec3(1.0) + color);
 }
 
 vec3 tonemapUnreal(vec3 color)
@@ -127,7 +135,6 @@ vec3 agxLook(vec3 color, int look)
 
     // Rec. 2020 luminance coefficients
     const vec3 lw = vec3(0.2626983, 0.6780088, 0.0592929);
-    //const vec3 lw = vec3(0.2126, 0.7152, 0.0722);
 
     float luma = dot(color, lw);
 
@@ -219,11 +226,41 @@ vec3 tonemapPBRNeutral(vec3 color)
     return mix(color, newPeak * vec3(1.0, 1.0, 1.0), g);
 }
 
+vec3 tonemapUchimura(vec3 x)
+{
+    const float P = 1.0;  // max display brightness
+    const float a = 1.0;  // contrast
+    const float m = 0.22; // linear section start
+    const float l = 0.4;  // linear section length
+    const float c = 1.33; // black
+    const float b = 0.0;  // pedestal
+    
+    float l0 = ((P - m) * l) / a;
+    float L0 = m - m / a;
+    float L1 = m + (1.0 - m) / a;
+    float S0 = m + l0;
+    float S1 = m + a * l0;
+    float C2 = (a * P) / (P - S1);
+    float CP = -C2 / P;
+
+    vec3 w0 = vec3(1.0 - smoothstep(0.0, m, x));
+    vec3 w2 = vec3(step(m + l0, x));
+    vec3 w1 = vec3(1.0 - w0 - w2);
+
+    vec3 T = vec3(m * pow(x / m, vec3(c)) + b);
+    vec3 S = vec3(P - (P - S1) * exp(CP * (x - S0)));
+    vec3 L = vec3(m + a * (x - m));
+
+    return T * w0 + L * w1 + S * w2;
+}
+
 void main()
 {
     vec3 res = texture(colorBuffer, texCoord).rgb * exposure;
     
-    if (tonemapper == 9)
+    if (tonemapper == 10)
+        res = tonemapUchimura(res);
+    else if (tonemapper == 9)
         res = tonemapPBRNeutral(res);
     else if (tonemapper == 8)
         res = tonemapAgX(res, AGX_LOOK_PUNCHY);

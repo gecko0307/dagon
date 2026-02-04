@@ -69,7 +69,7 @@ Built-in *.conf files are fully reserved for Dagon's internal mechanisms, and it
 * `locale` - locale that should be loaded. This option overrides automatically selected locale based on system language and region. For example, `locale: "en_US";` means that application will try load `locale/en_US.lang` file and will ignore system language
 * `gl.debugOutput` - `0` or `1`, force disable or enable OpenGL debug output. Default is `1` in debug builds, `0` in release builds. This option is ignored if `logLevel` is higher than `"debug"`
 * `gl.anisotropicFiltering` - `0` or `1`, disable or enable anisotropic filtering by default for all textures loaded using the asset manager. Default is `0`
-* `gl.defaultTextureAnisotropy` - default anisotropic filtering level for all textures loaded using the asset manager. The value is clamped between `1.0` and the maximum anisotropy supported by hardware. If anisotropic filtering is not supported, this is set to `1.0`. Default is `1.0`
+* `gl.defaultTextureAnisotropy` - default anisotropic filtering level for all textures loaded using the asset manager. The value is clamped between `1.0` and the maximum anisotropy supported by hardware (`"auto"`). If anisotropic filtering is not supported, this is set to `1.0`. Default is `1.0`
 * `gl.shaderCache.enabled` - `0` or `1`, cache compiled shader binaries to files for reuse instead of compiling shaders on each run. Disabled by default. This is an experimental feature, use with care
 * `gl.shaderCache.path` - path to a folder for storing cached shader binaries. Default is `"data/__internal/shader_cache"`
 * `gl.shaderCache.path.windows` - overrides `gl.shaderCache.path` under Windows
@@ -105,21 +105,20 @@ Recognozed by the `Game` class, applied to the `Game.deferredRenderer` and `Game
 * `ssao.occlusionBufferDetail` - a number between `0.0` and `1.0` that indicates a uniform scale of the occlusion buffer resolution. For example, `0.5` will give 1/4 of the main framebuffer. This is useful as a quality/performance tradeoff on low-end machines. Default is `1.0`
 * `glow.enabled` - `0` or `1`, disable or enable glow filter. Default is `0`
 * `glow.viewScale` - a number between `0.0` and `1.0` that indicates a uniform scale of the glow buffer resolution. For example, `0.5` will give 1/4 of the main framebuffer. This is useful as a quality/performance tradeoff on low-end machines. Default is `1.0`
-* `glow.threshold` - 
-* `glow.intensity` - 
-* `glow.radius` - 
+* `glow.threshold` - minimum luminance that gives the glow effect. Default is `0.8`
+* `glow.intensity` - brightness of the glow effect. Default is `0.2`
+* `glow.radius` - radius of the glow blur. Default is `5`
 * `hdr.tonemapper` - tonemapping operator used to compress HDR to LDR. Default is `"ACES"`. Supported options are:
-  * `"None"`
-  * `"Reinhard"`
-  * `"Reinhard2"`
-  * `"Hable"`
-  * `"Uncharted"`
-  * `"ACES"`
-  * `"Filmic"`
-  * `"Unreal"`
-  * `"AgX_Base"`
-  * `"AgX_Punchy"`
-  * `"KhronosPBRNeutral"`
+  * `"None"` - tonemapping is not applied
+  * `"Unreal"` - tonemapper from Unreal 3
+  * `"Reinhard"` - ["Photographic Tone Reproduction for Digital Images"](https://www-old.cs.utah.edu/docs/techreports/2002/pdf/UUCS-02-001.pdf), Erik Reinhard et al, 2002, Equation 3
+  * `"Reinhard2"` - ["Photographic Tone Reproduction for Digital Images"](https://www-old.cs.utah.edu/docs/techreports/2002/pdf/UUCS-02-001.pdf), Erik Reinhard et al, 2002, Equation 4
+  * `"Hable"`/"Uncharted"` - ["Filmic Tonemapping Operators"]("http://filmicworlds.com/blog/filmic-tonemapping-operators"), John Hable, 2010, formula by John Hable (Uncharted 2)
+  * `"Filmic"` - ["Filmic Tonemapping Operators"]("http://filmicworlds.com/blog/filmic-tonemapping-operators"), John Hable, 2010, formula by Jim Hejl and Richard Burgess-Dawson
+  * `"ACES"` - ["ACES Filmic Tone Mapping Curve"](https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve), Krzysztof Narkowicz, 2016
+  * `"Uchimura"` - ["HDR Theory and Practice"](https://www.slideshare.net/nikuque/hdr-theory-and-practicce-jp), Hajime Uchimura, 2017
+  * `"AgX_Base"`, `"AgX_Punchy"` - AgX tonemapper from Blender 4.0+ and Filament
+  * `"KhronosPBRNeutral"` - [Neutral Tone Mapping for PBR Color Accuracy](https://dl.acm.org/doi/fullHtml/10.1145/3641233.3664313), Emmett Lalish 2024
 * `hdr.exposure` - exposure value to adjust brightness
 * `motionBlur.enabled` - `0` or `1`, disable or enable motion blur filter. Default is `0`
 * `motionBlur.samples` - 
