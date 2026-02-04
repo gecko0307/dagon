@@ -4,7 +4,7 @@ A texture is a raster image used for per-pixel data sampling in shaders. Texture
 
 ## Pixel Formats
 
-Understanding pixel formats is crusial for dealing with textures in games. Dagon supports many formats, including block-compressed ones, but each image file format supports its own subset.
+Understanding pixel formats is crusial for dealing with textures in games. Dagon supports many pixel formats, including block-compressed ones, but each image file format supports only its own subset.
 
 Popular uncompressed pixel formats include:
 - RGBA8 - 4 channels, 8 bits per channel
