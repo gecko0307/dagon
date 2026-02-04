@@ -118,7 +118,7 @@ Recognozed by the `Game` class, applied to the `Game.deferredRenderer` and `Game
   * `"ACES"` - ["ACES Filmic Tone Mapping Curve"](https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve), Krzysztof Narkowicz, 2016
   * `"Uchimura"` - ["HDR Theory and Practice"](https://www.slideshare.net/nikuque/hdr-theory-and-practicce-jp), Hajime Uchimura, 2017
   * `"AgX_Base"`, `"AgX_Punchy"` - AgX tonemapper from Blender 4.0+ and Filament
-  * `"KhronosPBRNeutral"` - [Neutral Tone Mapping for PBR Color Accuracy](https://dl.acm.org/doi/fullHtml/10.1145/3641233.3664313), Emmett Lalish 2024
+  * `"KhronosPBRNeutral"` - [Neutral Tone Mapping for PBR Color Accuracy](https://dl.acm.org/doi/fullHtml/10.1145/3641233.3664313), Emmett Lalish, 2024
 * `hdr.exposure` - exposure value to adjust brightness
 * `motionBlur.enabled` - `0` or `1`, disable or enable motion blur filter. Default is `0`
 * `motionBlur.samples` - 
@@ -141,7 +141,7 @@ Recognozed by the `Game` class, applied to the `Game.deferredRenderer` and `Game
 * `dof.farStart` - 
 * `dof.farDistance` - 
 * `lut.enabled` - `0` or `1`, disable or enable color LUT filter. Default is `0`
-* `lut.file` - 
+* `lut.file` - path to the LUT file
 * `pixelization.enabled` - `0` or `1`, disable or enable pixelization filter. Default is `0`
 * `pixelization.pixelSize` - screen-space pixel size for pixelization filter. Default is `1`.
 
