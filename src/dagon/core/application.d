@@ -1002,6 +1002,7 @@ class Application: EventListener, Updateable
         
         enumerateCompressedTextureFormats();
         
+        // Init texture anisotropy parameters
         bool anisotropicFilteringSupported = isExtensionSupported("GL_EXT_texture_filter_anisotropic");
         logInfo("GL_EXT_texture_filter_anisotropic: ", anisotropicFilteringSupported);
         
@@ -1017,7 +1018,20 @@ class Application: EventListener, Updateable
                 useAnisotropicFiltering = cast(bool)config.props["gl.anisotropicFiltering"].toUInt;
             
             if ("gl.defaultTextureAnisotropy" in config.props)
-                defaultTextureAnisotropy = clamp(config.props["gl.defaultTextureAnisotropy"].toFloat, 1.0f, maxTextureAnisotropy);
+            {
+                auto anisoProp = config.props["gl.defaultTextureAnisotropy"];
+                if (anisoProp.type == DPropType.String)
+                {
+                    if (anisoProp.toString == "auto")
+                        defaultTextureAnisotropy = maxTextureAnisotropy;
+                    else
+                        defaultTextureAnisotropy = 1.0f;
+                }
+                else if (anisoProp.type == DPropType.Number)
+                    defaultTextureAnisotropy = clamp(anisoProp.toFloat, 1.0f, maxTextureAnisotropy);
+                else
+                    defaultTextureAnisotropy = 1.0f;
+            }
             else
                 defaultTextureAnisotropy = 1.0f;
         }
