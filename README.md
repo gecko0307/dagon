@@ -41,21 +41,21 @@ Features
 * Runs in windowed, fullscreen and borderless fullscreen modes
 * HiDPI support
 * Hybrid rendering pipeline: deferred for opaque materials, forward for transparent materials and materials with custom shaders
-* Physically based rendering (PBR)
+* Physically based rendering (PBR) with GGX microfacet BRDF. Metallic-roughness workflow
 * HDR rendering with all industry-standard tonemapping operators, including Reinhard, Hable/Uncharted, Unreal, ACES, Uchimura, AgX and Khronos PBR Neutral
-* HDRI environment maps. Equirectangular HDRI to cubemap conversion. GPU-based cubemap prefiltering with GGX BRDF and importance sampling. Loading prebaked cubemaps from DDS or KTX files
+* HDRI environment maps. Equirectangular HDRI to cubemap conversion. GPU-based cubemap prefiltering with importance sampling. Loading prebaked cubemaps from DDS or KTX files
 * Directional lights with cascaded shadow mapping
 * Spherical and tube area lights with dual paraboloid shadow mapping
 * Spot lights with perspective shadow mapping
-* Volumetric light scattering for all light types. Henyey-Greenstein scattering anisotropy for directional lights
+* Volumetric light scattering support for all light types. Henyey-Greenstein scattering anisotropy for directional lights
 * Local environment probes with box-projected cube mapping for approximated interior GI
-* Normal/parallax mapping, parallax occlusion mapping
+* Normal mapping, parallax mapping, parallax occlusion mapping
 * Deferred decals with normal mapping and PBR material properties
-* Dynamic skydome with sun and day/night cycle
+* Built-in Rayleight sky shader
 * Particle system with force fields. Blended particles, soft particles, shaded particles with normal map support, particle shadows
 * Terrain rendering. Procedural terrain using OpenSimplex noise or any custom height field. Deferred texturing for terrains
 * Water rendering. Realistic ocean shader with Gerstner waves
-* Post-processing (FXAA, SSAO, DoF, lens distortion, motion blur, glow, color grading)
+* Cinematic post-processing (depth of field, lens distortion, motion blur, glow, LUT color grading)
 * Simplified render pipeline for casual-style graphics. Retro rendering support: pixelization and vertex snapping
 * Tween engine for simple animation. Delayed function calls
 * Input from keyboard, mouse and up to 4 gamepads. Input manager with abstract bindings and file-based configuration
@@ -68,8 +68,8 @@ Features
 * Microservices and worker threads for running tasks in background, so that they don't block the main game loop
 * Asynchronous thread-safe messaging. Use the message broker built into the event system to communicate between threads and the main loop
 * Built-in camera logics for easy navigation: freeview and first person views
-* Collision detection using MPR algorithm, raycasting
-* Rigid body physics extension that uses [Newton Dynamics](http://newtondynamics.com). Built-in character controller
+* Collision detection using MPR algorithm, raycasting, simple kinematic collision response system
+* Rigid body physics using [Newton Dynamics](http://newtondynamics.com). Built-in character controller
 * Orthographic projection support. Screen-aligned rendering. Sprites and billboards. Create 2D/2.5D/isometric games with ease
 * UTF-8 text rendering using TTF fonts via [FreeType](https://freetype.org/)
 * Internationalization support
