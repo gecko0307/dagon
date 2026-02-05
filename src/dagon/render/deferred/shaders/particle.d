@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2025 Timur Gafarov
+Copyright (c) 2019-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -328,7 +328,7 @@ class ParticleShader: Shader
             
             ambientVector = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
             
-            setParameterSubroutine("ambient", ShaderType.Fragment, "ambientColor");
+            ambientSubroutine.index = ambientSubroutineColor;
         }
 
         super.bindParameters(state);

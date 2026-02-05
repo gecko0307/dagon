@@ -901,7 +901,7 @@ class Shader: Owner
     }
 
     /// Sets a subroutine parameter with a specific subroutine name.
-    ShaderSubroutine setParameterSubroutine(string name, ShaderType shaderType, string subroutineName)
+    deprecated ShaderSubroutine setParameterSubroutine(string name, ShaderType shaderType, string subroutineName)
     {
         if (name in parameters.indices)
         {

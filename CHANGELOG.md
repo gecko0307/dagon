@@ -1,3 +1,10 @@
+Dagon 0.39.0 - TBD
+------------------
+- **Core**
+  - `ShaderParameterArray` for passing uniform arrays
+  - New method `Shader.createParameterArray`
+  - `Shader.setParameter`, `Shader.setParameterRef`, `Shader.setParameterCallback`, `Shader.setParameterSubroutine`, `Shader.getParameterValue` are now deprecated. It is recommended to work with parameter objects directly.
+
 Dagon 0.38.0 - 5 Feb, 2026
 --------------------------
 - **Core**
