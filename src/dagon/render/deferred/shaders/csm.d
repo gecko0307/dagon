@@ -83,7 +83,7 @@ class CascadedShadowShader: Shader
         opacity = createParameter!float("opacity");
         textureMatrix = createParameter!Matrix3x3f("textureMatrix");
         skinned = createParameter!int("skinned");
-        // TODO: ShaderParameter specialization for uniform arrays
+        // TODO: use ShaderParameterArray
         boneMatricesLocation = glGetUniformLocation(prog.program, "boneMatrices[0]");
         
         diffuseTexture = createParameter!int("diffuseTexture");

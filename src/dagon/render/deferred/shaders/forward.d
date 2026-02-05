@@ -182,7 +182,7 @@ class ForwardShader: Shader
         viewSize = createParameter!Vector2f("viewSize");
         
         skinned = createParameter!int("skinned");
-        // TODO: ShaderParameter specialization for uniform arrays
+        // TODO: use ShaderParameterArray
         boneMatricesLocation = glGetUniformLocation(prog.program, "boneMatrices[0]");
         
         sunDirection = createParameter!Vector3f("sunDirection");

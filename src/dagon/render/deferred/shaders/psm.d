@@ -71,7 +71,7 @@ class PerspectiveShadowShader: Shader
         projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
         
         skinned = createParameter!int("skinned");
-        // TODO: ShaderParameter specialization for uniform arrays
+        // TODO: use ShaderParameterArray
         boneMatricesLocation = glGetUniformLocation(prog.program, "boneMatrices[0]");
     }
 

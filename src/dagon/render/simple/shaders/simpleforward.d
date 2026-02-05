@@ -154,6 +154,7 @@ class SimpleForwardShader: Shader
         alphaTestThreshold = createParameter!float("alphaTestThreshold");
         
         skinned = createParameter!int("skinned");
+        // TODO: use ShaderParameterArray
         boneMatricesLocation = glGetUniformLocation(prog.program, "boneMatrices[0]");
         
         sunDirection = createParameter!Vector3f("sunDirection");

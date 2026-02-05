@@ -76,7 +76,7 @@ class DualParaboloidShadowShader: Shader
         direction = createParameter!float("direction");
         
         skinned = createParameter!int("skinned");
-        // TODO: ShaderParameter specialization for uniform arrays
+        // TODO: use ShaderParameterArray
         boneMatricesLocation = glGetUniformLocation(prog.program, "boneMatrices[0]");
     }
 
