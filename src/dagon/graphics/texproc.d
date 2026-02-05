@@ -63,7 +63,34 @@ import dagon.graphics.screensurface;
  */
 class TextureCombinerShader: Shader
 {
+   protected:
     String vs, fs;
+    
+    ShaderParameter!int texChannel0;
+    ShaderParameter!float valueChannel0;
+    ShaderSubroutine channel0;
+    GLuint channel0Texture;
+    GLuint channel0Value;
+    
+    ShaderParameter!int texChannel1;
+    ShaderParameter!float valueChannel1;
+    ShaderSubroutine channel1;
+    GLuint channel1Texture;
+    GLuint channel1Value;
+    
+    ShaderParameter!int texChannel2;
+    ShaderParameter!float valueChannel2;
+    ShaderSubroutine channel2;
+    GLuint channel2Texture;
+    GLuint channel2Value;
+    
+    ShaderParameter!int texChannel3;
+    ShaderParameter!float valueChannel3;
+    ShaderSubroutine channel3;
+    GLuint channel3Texture;
+    GLuint channel3Value;
+    
+   public:
     Texture[4] channels;
     
     /**
@@ -82,6 +109,30 @@ class TextureCombinerShader: Shader
         super(myProgram, owner);
         
         this.channels[] = channels[];
+        
+        texChannel0 = createParameter!int("texChannel0");
+        valueChannel0 = createParameter!float("valueChannel0");
+        channel0 = createParameterSubroutine("channel0", ShaderType.Fragment);
+        channel0Texture = channel0.getIndex("channel0Texture");
+        channel0Value = channel0.getIndex("channel0Value");
+        
+        texChannel1 = createParameter!int("texChannel1");
+        valueChannel1 = createParameter!float("valueChannel1");
+        channel1 = createParameterSubroutine("channel1", ShaderType.Fragment);
+        channel1Texture = channel0.getIndex("channel1Texture");
+        channel1Value = channel0.getIndex("channel1Value");
+        
+        texChannel2 = createParameter!int("texChannel2");
+        valueChannel2 = createParameter!float("valueChannel2");
+        channel2 = createParameterSubroutine("channel2", ShaderType.Fragment);
+        channel2Texture = channel0.getIndex("channel2Texture");
+        channel2Value = channel0.getIndex("channel2Value");
+        
+        texChannel3 = createParameter!int("texChannel3");
+        valueChannel3 = createParameter!float("valueChannel3");
+        channel3 = createParameterSubroutine("channel3", ShaderType.Fragment);
+        channel3Texture = channel0.getIndex("channel3Texture");
+        channel3Value = channel0.getIndex("channel3Value");
     }
     
     /// Destructor. Releases shader source resources.
@@ -101,62 +152,62 @@ class TextureCombinerShader: Shader
     {
         // Channel0
         glActiveTexture(GL_TEXTURE0);
-        setParameter("texChannel0", cast(int)0);
-        setParameter("valueChannel0", 0.0f);
+        texChannel0 = 0;
+        valueChannel0 = 0.0f;
         if (channels[0])
         {
             channels[0].bind();
-            setParameterSubroutine("channel0", ShaderType.Fragment, "channel0Texture");
+            channel0.index = channel0Texture;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("channel0", ShaderType.Fragment, "channel0Value");
+            channel0.index = channel0Value;
         }
         
         // Channel1
         glActiveTexture(GL_TEXTURE1);
-        setParameter("texChannel1", cast(int)1);
-        setParameter("valueChannel1", 0.0f);
+        texChannel1 = 1;
+        valueChannel1 = 0.0f;
         if (channels[1])
         {
             channels[1].bind();
-            setParameterSubroutine("channel1", ShaderType.Fragment, "channel1Texture");
+            channel1.index = channel1Texture;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("channel1", ShaderType.Fragment, "channel1Value");
+            channel1.index = channel1Value;
         }
         
         // Channel2
         glActiveTexture(GL_TEXTURE2);
-        setParameter("texChannel2", cast(int)2);
-        setParameter("valueChannel2", 0.0f);
+        texChannel2 = 2;
+        valueChannel2 = 0.0f;
         if (channels[2])
         {
             channels[2].bind();
-            setParameterSubroutine("channel2", ShaderType.Fragment, "channel2Texture");
+            channel2.index = channel2Texture;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("channel2", ShaderType.Fragment, "channel2Value");
+            channel2.index = channel2Value;
         }
         
         // Channel3
         glActiveTexture(GL_TEXTURE3);
-        setParameter("texChannel3", cast(int)3);
-        setParameter("valueChannel3", 0.0f);
+        texChannel3 = 3;
+        valueChannel3 = 0.0f;
         if (channels[3])
         {
             channels[3].bind();
-            setParameterSubroutine("channel3", ShaderType.Fragment, "channel3Texture");
+            channel3.index = channel3Texture;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            setParameterSubroutine("channel3", ShaderType.Fragment, "channel3Value");
+            channel3.index = channel3Value;
         }
         
         glActiveTexture(GL_TEXTURE0);
@@ -266,7 +317,13 @@ Texture combineTextures(uint w, uint h, Texture[4] channels, Owner owner)
  */
 class CubemapGeneratorShader: Shader
 {
+   protected:
     String vs, fs;
+    
+    ShaderParameter!int envmapTexture;
+    ShaderParameter!Matrix4x4f pixelToWorldMatrix;
+    
+   public:
     Texture envmap;
     CubeFace cubeFace;
     
@@ -286,6 +343,9 @@ class CubemapGeneratorShader: Shader
         super(myProgram, owner);
         
         this.envmap = envmap;
+        
+        envmapTexture = createParameter!int("envmap");
+        pixelToWorldMatrix = createParameter!Matrix4x4f("pixelToWorldMatrix");
     }
     
     /// Destructor. Releases shader source resources.
@@ -304,12 +364,10 @@ class CubemapGeneratorShader: Shader
     override void bindParameters(GraphicsState* state)
     {
         glActiveTexture(GL_TEXTURE0);
-        setParameter("envmap", cast(int)0);
+        envmapTexture = 0;
         envmap.bind();
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.0f);
         
-        Matrix4x4f pixelToWorldMatrix = cubeFaceMatrix(cubeFace);
-        setParameter("pixelToWorldMatrix", pixelToWorldMatrix);
+        pixelToWorldMatrix = cubeFaceMatrix(cubeFace);
         
         super.bindParameters(state);
     }

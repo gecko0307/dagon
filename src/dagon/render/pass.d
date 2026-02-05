@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2025 Timur Gafarov
+Copyright (c) 2019-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -34,7 +34,7 @@ DEALINGS IN THE SOFTWARE.
  * `FallbackShader` class, a simple shader used as a default when no material
  * or shader is specified.
  *
- * Copyright: Timur Gafarov 2019-2025
+ * Copyright: Timur Gafarov 2019-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Timur Gafarov
  */
@@ -70,8 +70,17 @@ import dagon.render.view;
  */
 class FallbackShader: Shader
 {
+   protected:
     String vs, fs;
+    
+    ShaderParameter!Matrix4x4f modelViewMatrix;
+    ShaderParameter!Matrix4x4f projectionMatrix;
+    ShaderParameter!Matrix4x4f normalMatrix;
+    ShaderParameter!Matrix4x4f viewMatrix;
+    ShaderParameter!Matrix4x4f invViewMatrix;
 
+   public:
+    
     /**
      * Constructs the fallback shader and loads its source code.
      *
@@ -85,6 +94,12 @@ class FallbackShader: Shader
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
+        
+        modelViewMatrix = createParameter!Matrix4x4f("modelViewMatrix");
+        projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
+        normalMatrix = createParameter!Matrix4x4f("normalMatrix");
+        viewMatrix = createParameter!Matrix4x4f("viewMatrix");
+        invViewMatrix = createParameter!Matrix4x4f("invViewMatrix");
     }
 
     /// Destructor. Frees shader source strings.
@@ -102,11 +117,11 @@ class FallbackShader: Shader
      */
     override void bindParameters(GraphicsState* state)
     {
-        setParameter("modelViewMatrix", state.modelViewMatrix);
-        setParameter("projectionMatrix", state.projectionMatrix);
-        setParameter("normalMatrix", state.normalMatrix);
-        setParameter("viewMatrix", state.viewMatrix);
-        setParameter("invViewMatrix", state.invViewMatrix);
+        modelViewMatrix = state.modelViewMatrix;
+        projectionMatrix = state.projectionMatrix;
+        normalMatrix = state.normalMatrix;
+        viewMatrix = state.viewMatrix;
+        invViewMatrix = state.invViewMatrix;
 
         super.bindParameters(state);
     }

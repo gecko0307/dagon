@@ -68,7 +68,7 @@ class GeometryShader: Shader
     ShaderParameter!int gammaCorrect;
     
     ShaderParameter!int skinned;
-    GLint boneMatricesLocation;
+    ShaderParameterArray!Matrix4x4f boneMatrices;
     
     ShaderParameter!int diffuseTexture;
     ShaderParameter!Color4f diffuseVector;
@@ -141,8 +141,7 @@ class GeometryShader: Shader
         gammaCorrect = createParameter!int("gammaCorrect");
         
         skinned = createParameter!int("skinned");
-        // TODO: ShaderParameter specialization for uniform arrays
-        boneMatricesLocation = glGetUniformLocation(prog.program, "boneMatrices[0]");
+        boneMatrices = createParameterArray!Matrix4x4f("boneMatrices[0]");
         
         diffuseTexture = createParameter!int("diffuseTexture");
         diffuseVector = createParameter!Color4f("diffuseVector");
@@ -221,10 +220,7 @@ class GeometryShader: Shader
             Pose pose = state.pose;
             if (pose.boneMatrices.length)
             {
-                int numBones = cast(int)pose.boneMatrices.length;
-                if (numBones > 128)
-                    numBones = 128;
-                glUniformMatrix4fv(boneMatricesLocation, numBones, GL_FALSE, pose.boneMatrices[0].arrayof.ptr);
+                boneMatrices = pose.boneMatrices;
                 skinned = true;
             }
             else

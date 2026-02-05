@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2018-2025 Timur Gafarov
+Copyright (c) 2018-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -32,7 +32,7 @@ DEALINGS IN THE SOFTWARE.
  * OpenGL shader programs, uniform, subroutine and UBO parameters, and binding logic.
  * The module also includes `ShaderProgram` for program compilation/linking.
  *
- * Copyright: Timur Gafarov 2018-2025
+ * Copyright: Timur Gafarov 2018-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Timur Gafarov
  */
@@ -625,6 +625,102 @@ class ShaderParameter(T): BaseShaderParameter
 }
 
 /**
+ * Represents a shader uniform array parameter of type `T[]`.
+ */
+class ShaderParameterArray(T): BaseShaderParameter
+    if (is(T == bool) ||
+        is(T == int) ||
+        is(T == float) ||
+        is(T == Vector2f) ||
+        is(T == Vector3f) ||
+        is(T == Vector4f) ||
+        is(T == Color4f) ||
+        is(T == Matrix4x4f) ||
+        is(T == Matrix3x3f))
+{
+    /// Parameter value.
+    T[] value;
+    
+    /// Creates a parameter with a default value.
+    this(Shader shader, string name)
+    {
+        super(shader, name);
+        initUniform();
+    }
+    
+    /// Creates a parameter with a specific value.
+    this(Shader shader, string name, T[] value)
+    {
+        super(shader, name);
+        this.value = value;
+        initUniform();
+    }
+    
+    /// Sets the parameter value.
+    void set(T[] v)
+    {
+        value = v;
+    }
+    
+    /// Assigns a value to the parameter.
+    void opAssign(T[] v)
+    {
+        value = v;
+    }
+    
+    /// Initializes the uniform location.
+    final override void initUniform()
+    {
+        location = glGetUniformLocation(shader.program.program, toStringz(name));
+    }
+    
+    /// Binds the parameter value to the shader.
+    override void bind()
+    {
+        if (value.length == 0)
+            return;
+        
+        static if (is(T == bool) || is(T == int))
+        {
+            glUniform1iv(location, cast(GLsizei)value.length, cast(GLint*)value[0].ptr);
+        }
+        else static if (is(T == float))
+        {
+            glUniform1fv(location, cast(GLsizei)value.length, value[0].ptr);
+        }
+        else static if (is(T == Vector2f))
+        {
+            glUniform2fv(location, cast(GLsizei)value.length, value[0].arrayof.ptr);
+        }
+        else static if (is(T == Vector3f))
+        {
+            glUniform3fv(location, cast(GLsizei)value.length, value[0].arrayof.ptr);
+        }
+        else static if (is(T == Vector4f))
+        {
+            glUniform4fv(location, cast(GLsizei)value.length, value[0].arrayof.ptr);
+        }
+        else static if (is(T == Color4f))
+        {
+            glUniform4fv(location, cast(GLsizei)value.length, value[0].arrayof.ptr);
+        }
+        else static if (is(T == Matrix4x4f))
+        {
+            glUniformMatrix4fv(location, cast(GLsizei)value.length, GL_FALSE, value[0].arrayof.ptr);
+        }
+        else static if (is(T == Matrix3x3f))
+        {
+            glUniformMatrix3fv(location, cast(GLsizei)value.length, GL_FALSE, value[0].arrayof.ptr);
+        }
+    }
+
+    /// Unbinds the parameter (no-op).
+    override void unbind()
+    {
+    }
+}
+
+/**
  * Represents a std140 uniform block parameter (UBO) of type `T`
  * for passing arrays of structures to shaders.
  */
@@ -849,6 +945,27 @@ class Shader: Owner
             return sp;
         }
     }
+    
+    /// Creates a uniform array parameter of type `T`.
+    ShaderParameterArray!T createParameterArray(T)(string name)
+    {
+        if (name in parameters.indices)
+        {
+            auto sp = cast(ShaderParameterArray!T)parameters.get(name);
+            if (sp is null)
+            {
+                logWarning(this.classinfo.name, ": type mismatch for shader parameter \"%s\"", name);
+                return null;
+            }
+            return sp;
+        }
+        else
+        {
+            auto sp = New!(ShaderParameterArray!T)(this, name);
+            parameters.set(name, sp);
+            return sp;
+        }
+    }
 
     /// Creates a uniform block parameter of type `T`.
     UniformBlockParameter!T createBlockParameter(T)(string name, uint length, uint location)
@@ -872,7 +989,7 @@ class Shader: Owner
     }
 
     /// Sets a uniform parameter of type `T` to a value.
-    ShaderParameter!T setParameter(T)(string name, T val)
+    deprecated ShaderParameter!T setParameter(T)(string name, T val)
     {
         if (name in parameters.indices)
         {
@@ -896,7 +1013,7 @@ class Shader: Owner
     }
 
     /// Sets a uniform parameter of type `T` to a reference.
-    ShaderParameter!T setParameterRef(T)(string name, ref T val)
+    deprecated ShaderParameter!T setParameterRef(T)(string name, ref T val)
     {
         if (name in parameters.indices)
         {
@@ -919,7 +1036,7 @@ class Shader: Owner
     }
 
     /// Sets a uniform parameter of type `T` to a callback.
-    ShaderParameter!T setParameterCallback(T)(string name, T delegate() val)
+    deprecated ShaderParameter!T setParameterCallback(T)(string name, T delegate() val)
     {
         if (name in parameters.indices)
         {
@@ -956,7 +1073,7 @@ class Shader: Owner
     }
 
     /// Gets the value of a parameter by name.
-    T getParameterValue(T)(string name)
+    deprecated T getParameterValue(T)(string name)
     {
         if (name in parameters.indices)
         {
