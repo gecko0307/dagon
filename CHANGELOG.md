@@ -4,7 +4,9 @@ Dagon 0.39.0 - TBD
   - New built-in meshes `ShapeCapsule`, `ShapeTorus`
   - `ShaderParameterArray` for passing uniform arrays
   - New method `Shader.createParameterArray`
-  - `Shader.setParameter`, `Shader.setParameterRef`, `Shader.setParameterCallback`, `Shader.setParameterSubroutine`, `Shader.getParameterValue` are now deprecated. It is recommended to work with parameter objects directly.
+  - `Shader.setParameter`, `Shader.setParameterRef`, `Shader.setParameterCallback`, `Shader.setParameterSubroutine`, `Shader.getParameterValue` are now deprecated. It is recommended to work with parameter objects directly
+- **Assets**
+  - Uncompressed RGB8 and RGBA8 textures support in DDS exporter.
 
 Dagon 0.38.0 - 5 Feb, 2026
 --------------------------
