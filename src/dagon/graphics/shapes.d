@@ -30,7 +30,7 @@ DEALINGS IN THE SOFTWARE.
  *
  * Description:
  * The `dagon.graphics.shapes` module defines mesh and drawable classes
- * for common shapes: plane, quad, box, sphere, disk, cylinder, cone and capsule.
+ * for common shapes: plane, quad, box, sphere, disk, cylinder, cone, capsule and torus.
  * These shapes are useful for prototyping, debugging, and as building blocks
  * for more complex geometry. All shapes are constructed with configurable
  * parameters and support rendering via the engine's mesh and drawable interfaces.
@@ -935,4 +935,100 @@ class ShapeCapsule: Mesh
     }
 }
 
-// TODO: ShapeTorus
+/**
+ * A mesh representing a torus.
+ */
+class ShapeTorus: Mesh
+{
+    /**
+     * Constructs a `ShapeTorus`.
+     *
+     * Params:
+     *   majorRadius = Distance from the torus center to the tube center.
+     *   minorRadius = Radius of the tube.
+     *   majorSegments = Number of segments around the major circle.
+     *   minorSegments = Number of segments around the minor circle (tube).
+     *   owner = Owner object.
+     */
+    this(float majorRadius, float minorRadius, uint majorSegments, uint minorSegments, Owner owner)
+    {
+        super(owner);
+        
+        uint numVertices = (majorSegments + 1) * (minorSegments + 1);
+        uint numTriangles = majorSegments * minorSegments * 2;
+        
+        vertices = New!(Vector3f[])(numVertices);
+        normals = New!(Vector3f[])(numVertices);
+        texcoords = New!(Vector2f[])(numVertices);
+        indices = New!(uint[3][])(numTriangles);
+        
+        float majorStep = (2.0f * PI) / majorSegments;
+        float minorStep = (2.0f * PI) / minorSegments;
+        
+        uint vi = 0;
+        
+        // Generate vertices
+        for(uint major = 0; major <= majorSegments; major++)
+        {
+            float majorAngle = majorStep * major;
+            float majorCos = cos(majorAngle);
+            float majorSin = sin(majorAngle);
+            
+            for(uint minor = 0; minor <= minorSegments; minor++)
+            {
+                float minorAngle = minorStep * minor;
+                float minorCos = cos(minorAngle);
+                float minorSin = sin(minorAngle);
+                
+                float tubeDistance = majorRadius + minorRadius * minorCos;
+                
+                vertices[vi] = Vector3f(
+                    tubeDistance * majorCos,
+                    minorRadius * minorSin,
+                    tubeDistance * majorSin
+                );
+                
+                normals[vi] = Vector3f(
+                    minorCos * majorCos,
+                    minorSin,
+                    minorCos * majorSin
+                ).normalized;
+                
+                texcoords[vi] = Vector2f(
+                    cast(float)major / majorSegments,
+                    cast(float)minor / minorSegments
+                );
+                
+                vi++;
+            }
+        }
+        
+        // Generate indices
+        uint ti = 0;
+        uint verticesPerMajor = minorSegments + 1;
+        
+        for(uint major = 0; major < majorSegments; major++)
+        {
+            for(uint minor = 0; minor < minorSegments; minor++)
+            {
+                uint a = major * verticesPerMajor + minor;
+                uint b = a + 1;
+                uint c = (major + 1) * verticesPerMajor + minor;
+                uint d = c + 1;
+                
+                indices[ti][0] = a;
+                indices[ti][1] = b;
+                indices[ti][2] = c;
+                ti++;
+                
+                indices[ti][0] = b;
+                indices[ti][1] = d;
+                indices[ti][2] = c;
+                ti++;
+            }
+        }
+        
+        dataReady = true;
+        prepareVAO();
+    }
+}
