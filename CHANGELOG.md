@@ -29,7 +29,7 @@ Dagon 0.38.0 - 5 Feb, 2026
 - **Extensions**
   - `dagon:audio`:
     - Fixed some function signatures in SoLoud binding
-    - `AudioManageraudio.createSound` overload for raw 16-bit signed sample buffers
+    - `AudioManager.createSound` overload for raw 16-bit signed sample buffers
 - **Misc**
   - Fixed compilation for x86
   - `window.hiDPI` is now enabled in all default conf files.
