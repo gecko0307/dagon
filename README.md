@@ -4,6 +4,8 @@ Feature-rich, easy to use, extensible desktop game development framework for [D 
 
 Dagon uses computation-heavy graphics techniques and so requires a fairly powerful graphics card to run (Ampere-based NVIDIA GPUs are recommended for optimal performance).
 
+Dagon is perpetual beta, meaning that the core feature set is implemented and usable, but API is continually evolving, and there is no "stable" release yet.
+
 If you like Dagon, support its development on [Patreon](https://www.patreon.com/gecko0307) or [Liberapay](https://liberapay.com/gecko0307). You can also make a one-time donation via [NOWPayments](https://nowpayments.io/donation/gecko0307). I appreciate any support. Thanks in advance!
 
 > Note: this project is not connected to Dagon engine by Senscape.
