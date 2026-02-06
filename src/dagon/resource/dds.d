@@ -418,6 +418,7 @@ bool loadDDS(InputStream istrm, TextureBuffer* buffer)
     }
     
     TextureFormat format;
+    bool formatDetected = false;
     
     DXGIFormat fmt;
     if (hdr.format.flags & DDPF.FOURCC)
@@ -436,23 +437,32 @@ bool loadDDS(InputStream istrm, TextureBuffer* buffer)
     {
         if (hdr.format.bpp == 32)
             fmt = DXGIFormat.R8G8B8A8_UNORM;
+        else if (hdr.format.bpp == 24)
+        {
+            // Special case, DXGI doesn't define RGB8
+            format.internalFormat = GL_RGB8;
+            format.format = GL_RGB;
+            format.type = GL_UNSIGNED_BYTE;
+            formatDetected = true;
+        }
         else if (hdr.format.bpp == 16)
             fmt = DXGIFormat.R8G8_UNORM;
         else if (hdr.format.bpp == 8)
             fmt = DXGIFormat.R8_UNORM;
     }
     
-    version(DDSDebug) logDebug("format: ", fmt);
-    
-    if (!dxgiFormatToGLFormat(fmt, format))
-        return error("loadDDS error: unsupported resource format");
+    if (!formatDetected)
+    {
+        version(DDSDebug) logDebug("format: ", fmt);
+        if (!dxgiFormatToGLFormat(fmt, format))
+            return error("loadDDS error: unsupported resource format");
+    }
     
     bool hasMipmaps = cast(bool)(hdr.flags & DDSHeaderFlags.MIPMAPCOUNT);
-    
     bool isComplex = cast(bool)(hdr.caps & DDSCaps.COMPLEX);
     bool isVolume = cast(bool)(hdr.caps2 & DDSCaps2.VOLUME);
-    
     bool isCubemap = false;
+    
     if (hdr.caps2 & DDSCaps2.CUBEMAP)
     {
         if (hdr.caps2 & DDSCaps2.CUBEMAP_ALLFACES)
