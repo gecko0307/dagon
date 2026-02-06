@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2025 Timur Gafarov
+Copyright (c) 2017-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -30,13 +30,12 @@ DEALINGS IN THE SOFTWARE.
  *
  * Description:
  * The `dagon.graphics.shapes` module defines mesh and drawable classes
- * for common shapes such as planes, quads, boxes, spheres, disks,
- * cylinders, and cones. These shapes are useful for prototyping, debugging,
- * and as building blocks for more complex geometry. All shapes are constructed
- * with configurable parameters and support rendering via the engine's mesh and
- * drawable interfaces.
+ * for common shapes: plane, quad, box, sphere, disk, cylinder, cone and capsule.
+ * These shapes are useful for prototyping, debugging, and as building blocks
+ * for more complex geometry. All shapes are constructed with configurable
+ * parameters and support rendering via the engine's mesh and drawable interfaces.
  *
- * Copyright: Timur Gafarov 2017-2025
+ * Copyright: Timur Gafarov 2017-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Timur Gafarov
  */
@@ -52,6 +51,8 @@ import dlib.container.array;
 import dagon.core.bindings;
 import dagon.graphics.drawable;
 import dagon.graphics.mesh;
+
+private enum HALF_PI = PI * 0.5f;
 
 /**
  * A mesh representing a grid plane in the XZ plane.
@@ -293,8 +294,6 @@ class ShapeBox: Mesh
     }
 }
 
-private enum HALF_PI = PI * 0.5f;
-
 /**
  * A mesh representing a UV sphere.
  */
@@ -322,7 +321,7 @@ class ShapeSphere: Mesh
      *   invNormals = If `true`, normals are inverted (inside-out sphere).
      *   owner      = Owner object.
      */
-    this(float radius, int slices, int stacks, bool invNormals, Owner owner)
+    this(float radius, uint slices, uint stacks, bool invNormals, Owner owner)
     {
         super(owner);
 
@@ -769,5 +768,171 @@ class ShapeCone: Mesh
     }
 }
 
-// TODO: ShapeCapsule
+/**
+ * A mesh representing a capsule (cylinder with hemispherical caps).
+ */
+class ShapeCapsule: Mesh
+{
+    /**
+     * Constructs a `ShapeCapsule`.
+     *
+     * Params:
+     *   radius = Cap radius.
+     *   height = Height of a cylinder without the caps (total height is `height + 2 * radius`).
+     *   slices = Number of segments around the circumference.
+     *   stacks = Number of segments for the hemisphere caps.
+     *   owner  = Owner object.
+     */
+    this(float radius, float height, uint slices, uint stacks, Owner owner)
+    {
+        super(owner);
+        
+        uint verticesPerStack = slices + 1;
+        uint numVertices = (stacks + 1) * verticesPerStack * 2 + 2 * verticesPerStack;
+        uint numTriangles = stacks * slices * 4 + slices * 2;
+        
+        vertices = New!(Vector3f[])(numVertices);
+        normals = New!(Vector3f[])(numVertices);
+        texcoords = New!(Vector2f[])(numVertices);
+        indices = New!(uint[3][])(numTriangles);
+        
+        float cylinderHalfHeight = height * 0.5f;
+        float angleStep = (2.0f * PI) / slices;
+        float stackStep = HALF_PI / stacks;
+        
+        uint vi = 0;
+        uint ti = 0;
+        
+        // Top hemisphere
+        for(uint st = 0; st <= stacks; st++)
+        {
+            float stackAngle = HALF_PI - stackStep * st;
+            float stackRadius = cos(stackAngle);
+            float y = sin(stackAngle);
+            
+            for(uint sl = 0; sl <= slices; sl++)
+            {
+                float angle = angleStep * sl;
+                float x = cos(angle) * stackRadius;
+                float z = sin(angle) * stackRadius;
+                
+                vertices[vi] = Vector3f(x, y + cylinderHalfHeight, z) * radius;
+                normals[vi] = Vector3f(x, y, z).normalized;
+                texcoords[vi] = Vector2f(cast(float)sl / slices, cast(float)st / stacks);
+                vi++;
+            }
+        }
+        
+        // Bottom hemisphere
+        for(uint st = 0; st <= stacks; st++)
+        {
+            float stackAngle = -HALF_PI + stackStep * st;
+            float stackRadius = cos(stackAngle);
+            float y = sin(stackAngle);
+            
+            for(uint sl = 0; sl <= slices; sl++)
+            {
+                float angle = angleStep * sl;
+                float x = cos(angle) * stackRadius;
+                float z = sin(angle) * stackRadius;
+                
+                vertices[vi] = Vector3f(x, y - cylinderHalfHeight, z) * radius;
+                normals[vi] = Vector3f(x, y, z).normalized;
+                texcoords[vi] = Vector2f(cast(float)sl / slices, 1.0f - cast(float)st / stacks);
+                vi++;
+            }
+        }
+        
+        // Cylinder side
+        for(uint st = 0; st < 2; st++)
+        {
+            float y = (st == 0) ? cylinderHalfHeight : -cylinderHalfHeight;
+            
+            for(uint sl = 0; sl <= slices; sl++)
+            {
+                float angle = angleStep * sl;
+                float x = cos(angle);
+                float z = sin(angle);
+                
+                vertices[vi] = Vector3f(x, y, z) * radius;
+                normals[vi] = Vector3f(x, 0.0f, z).normalized;
+                texcoords[vi] = Vector2f(cast(float)sl / slices, st);
+                vi++;
+            }
+        }
+        
+        // Top hemisphere indices
+        for(uint st = 0; st < stacks; st++)
+        {
+            for(uint sl = 0; sl < slices; sl++)
+            {
+                uint a = st * verticesPerStack + sl;
+                uint b = a + 1;
+                uint c = (st + 1) * verticesPerStack + sl;
+                uint d = c + 1;
+                
+                indices[ti][0] = a;
+                indices[ti][1] = b;
+                indices[ti][2] = c;
+                ti++;
+                
+                indices[ti][0] = b;
+                indices[ti][1] = d;
+                indices[ti][2] = c;
+                ti++;
+            }
+        }
+        
+        uint bottomHemiStart = (stacks + 1) * verticesPerStack;
+        
+        // Bottom hemisphere indices
+        for(uint st = 0; st < stacks; st++)
+        {
+            for(uint sl = 0; sl < slices; sl++)
+            {
+                uint a = bottomHemiStart + st * verticesPerStack + sl;
+                uint b = a + 1;
+                uint c = bottomHemiStart + (st + 1) * verticesPerStack + sl;
+                uint d = c + 1;
+                
+                indices[ti][0] = a;
+                indices[ti][1] = c;
+                indices[ti][2] = b;
+                ti++;
+                
+                indices[ti][0] = b;
+                indices[ti][1] = c;
+                indices[ti][2] = d;
+                ti++;
+            }
+        }
+        
+        // Cylinder indices
+        uint cylinderStart = (stacks + 1) * verticesPerStack * 2;
+        uint topCylinder = cylinderStart;
+        uint botCylinder = cylinderStart + verticesPerStack;
+        
+        for(uint sl = 0; sl < slices; sl++)
+        {
+            uint a = topCylinder + sl;
+            uint b = a + 1;
+            uint c = botCylinder + sl;
+            uint d = c + 1;
+            
+            indices[ti][0] = a;
+            indices[ti][1] = b;
+            indices[ti][2] = c;
+            ti++;
+            
+            indices[ti][0] = b;
+            indices[ti][1] = d;
+            indices[ti][2] = c;
+            ti++;
+        }
+        
+        dataReady = true;
+        prepareVAO();
+    }
+}
+
 // TODO: ShapeTorus

@@ -1,6 +1,7 @@
 Dagon 0.39.0 - TBD
 ------------------
 - **Graphics components**
+  - New built-in mesh `ShapeCapsule`
   - `ShaderParameterArray` for passing uniform arrays
   - New method `Shader.createParameterArray`
   - `Shader.setParameter`, `Shader.setParameterRef`, `Shader.setParameterCallback`, `Shader.setParameterSubroutine`, `Shader.getParameterValue` are now deprecated. It is recommended to work with parameter objects directly.
