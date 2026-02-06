@@ -432,7 +432,7 @@ bool loadDDS(InputStream istrm, TextureBuffer* buffer)
             fmt = resourceFormatFromFourCC(hdr.format.fourCC);
         }
     }
-    else if (hdr.flags & DDSHeaderFlags.DEPTH)
+    else if (hdr.format.flags & DDPF.RGB)
     {
         if (hdr.format.bpp == 32)
             fmt = DXGIFormat.R8G8B8A8_UNORM;
@@ -508,7 +508,7 @@ bool loadDDS(InputStream istrm, TextureBuffer* buffer)
 
 /**
  * Saves a texture to DDS file.
- * Data must be already compressed to DXT1, DXT3, or DXT5.
+ * Supports uncompressed and S3TC-compressed textures.
  *
  * Params:
  *   output = Output stream to write the file.
@@ -527,10 +527,10 @@ bool saveDDS(OutputStream output, TextureBuffer* buffer)
     header.flags =
         DDSHeaderFlags.CAPS | DDSHeaderFlags.HEIGHT |
         DDSHeaderFlags.WIDTH | DDSHeaderFlags.PIXELFORMAT;
+    
     if (isCompressed)
     {
         header.flags |= DDSHeaderFlags.LINEARSIZE;
-        
         auto blocksH = max2(1, (buffer.size.width + 3) / 4);
         auto blocksV = max2(1, (buffer.size.height + 3) / 4);
         auto topLevelSize = blocksH * blocksV * buffer.format.blockSize;
@@ -541,10 +541,12 @@ bool saveDDS(OutputStream output, TextureBuffer* buffer)
         header.flags |= DDSHeaderFlags.PITCH;
         header.pitch = buffer.format.pixelSize * buffer.size.width;
     }
+    
     if (buffer.mipLevels > 1)
     {
         header.flags |= DDSHeaderFlags.MIPMAPCOUNT;
     }
+    
     header.height = buffer.size.height;
     header.width = buffer.size.width;
     header.depth = 0;
@@ -552,33 +554,65 @@ bool saveDDS(OutputStream output, TextureBuffer* buffer)
     header.alphaBitDepth = 0;
     header.reserved = 0;
     header.surface = 0;
+    
     header.format.size = 32;
-    header.format.flags = DDPF.FOURCC;
-    switch (buffer.format.internalFormat)
+    
+    if (isCompressed)
     {
-        case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
-            header.format.fourCC = FOURCC_DXT1;
-            break;
-        case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
-            header.format.fourCC = FOURCC_DXT3;
-            break;
-        case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
-            header.format.fourCC = FOURCC_DXT5;
-            break;
-        default:
-            logError("saveDDS: unsupported texture internal format ", buffer.format.internalFormat);
-            return false;
+        header.format.flags = DDPF.FOURCC;
+        
+        switch (buffer.format.internalFormat)
+        {
+            case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+                header.format.fourCC = FOURCC_DXT1;
+                break;
+            case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+                header.format.fourCC = FOURCC_DXT3;
+                break;
+            case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+                header.format.fourCC = FOURCC_DXT5;
+                break;
+            default:
+                logError("saveDDS: unsupported texture internal format ", buffer.format.internalFormat);
+                return false;
+        }
+        
+        header.format.bpp = 0;
+        header.format.redMask = 0;
+        header.format.greenMask = 0;
+        header.format.blueMask = 0;
+        header.format.alphaMask = 0;
     }
-    header.format.bpp = 0;
-    header.format.redMask = 0;
-    header.format.greenMask = 0;
-    header.format.blueMask = 0;
-    header.format.alphaMask = 0;
+    else if (buffer.format.internalFormat == GL_RGB8)
+    {
+        header.format.flags = DDPF.RGB;
+        header.format.bpp = 24;
+        header.format.redMask   = 0x000000FF;
+        header.format.greenMask = 0x0000FF00;
+        header.format.blueMask  = 0x00FF0000;
+        header.format.alphaMask = 0x00000000;
+    }
+    else if (buffer.format.internalFormat == GL_RGBA8)
+    {
+        header.format.flags = DDPF.RGB | DDPF.ALPHAPIXELS;
+        header.format.bpp = 32;
+        header.format.redMask   = 0x000000FF;
+        header.format.greenMask = 0x0000FF00;
+        header.format.blueMask  = 0x00FF0000;
+        header.format.alphaMask = 0xFF000000;
+    }
+    else
+    {
+        logError("saveDDS: unsupported texture internal format ", buffer.format.internalFormat);
+        return false;
+    }
+    
     header.caps = DDSCaps.TEXTURE;
     if (buffer.mipLevels > 1)
     {
         header.caps |= DDSCaps.COMPLEX | DDSCaps.MIPMAP;
     }
+    
     // TODO: support cubemaps (DDSCaps2.CUBEMAP | DDSCaps2.CUBEMAP_ALLFACES)
     header.caps2 = 0;
     header.caps3 = 0;
