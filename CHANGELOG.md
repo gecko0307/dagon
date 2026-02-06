@@ -11,7 +11,7 @@ Dagon 0.39.0 - TBD
 Dagon 0.38.0 - 5 Feb, 2026
 --------------------------
 - **Core**
-  - `dagon.core.dxt`, fast DXT1/DXT5 texture compressor (D port of RygsDXTc)
+  - `dagon.core.dxt`, fast DXT1/DXT5 texture compressor (D port of [RygsDXTc](https://github.com/Cyan4973/RygsDXTc))
   - SEH exception handling under Windows with stack tracing in x86_64 debug builds (`dagon.core.crashhandler`)
   - SDL haptic API support (`GameInputDevice.haptic` property)
   - New function `dagon.core.dialogs.showMessage`
