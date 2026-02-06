@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2025 Timur Gafarov
+Copyright (c) 2025-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -55,7 +55,7 @@ class PerspectiveShadowShader: Shader
     ShaderParameter!Matrix4x4f projectionMatrix;
     
     ShaderParameter!int skinned;
-    GLint boneMatricesLocation;
+    ShaderParameterArray!Matrix4x4f boneMatrices;
     
    public:
     
@@ -71,8 +71,7 @@ class PerspectiveShadowShader: Shader
         projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
         
         skinned = createParameter!int("skinned");
-        // TODO: use ShaderParameterArray
-        boneMatricesLocation = glGetUniformLocation(prog.program, "boneMatrices[0]");
+        boneMatrices = createParameterArray!Matrix4x4f("boneMatrices[0]");
     }
 
     ~this()
@@ -91,11 +90,7 @@ class PerspectiveShadowShader: Shader
             Pose pose = state.pose;
             if (pose.boneMatrices.length)
             {
-                int numBones = cast(int)pose.boneMatrices.length;
-                if (numBones > 128)
-                    numBones = 128;
-                glUniformMatrix4fv(boneMatricesLocation, numBones, GL_FALSE, pose.boneMatrices[0].arrayof.ptr);
-                
+                boneMatrices = pose.boneMatrices;
                 skinned = true;
             }
             else

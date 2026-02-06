@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2025 Timur Gafarov
+Copyright (c) 2019-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -58,7 +58,7 @@ class CascadedShadowShader: Shader
     ShaderParameter!float opacity;
     ShaderParameter!Matrix3x3f textureMatrix;
     ShaderParameter!int skinned;
-    GLint boneMatricesLocation;
+    ShaderParameterArray!Matrix4x4f boneMatrices;
     
     ShaderParameter!int diffuseTexture;
     ShaderParameter!Color4f diffuseVector;
@@ -83,8 +83,7 @@ class CascadedShadowShader: Shader
         opacity = createParameter!float("opacity");
         textureMatrix = createParameter!Matrix3x3f("textureMatrix");
         skinned = createParameter!int("skinned");
-        // TODO: use ShaderParameterArray
-        boneMatricesLocation = glGetUniformLocation(prog.program, "boneMatrices[0]");
+        boneMatrices = createParameterArray!Matrix4x4f("boneMatrices[0]");
         
         diffuseTexture = createParameter!int("diffuseTexture");
         diffuseVector = createParameter!Color4f("diffuseVector");
@@ -117,11 +116,7 @@ class CascadedShadowShader: Shader
             Pose pose = state.pose;
             if (pose.boneMatrices.length)
             {
-                int numBones = cast(int)pose.boneMatrices.length;
-                if (numBones > 128)
-                    numBones = 128;
-                glUniformMatrix4fv(boneMatricesLocation, numBones, GL_FALSE, pose.boneMatrices[0].arrayof.ptr);
-                
+                boneMatrices = pose.boneMatrices;
                 skinned = true;
             }
             else
