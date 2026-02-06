@@ -440,9 +440,9 @@ bool loadDDS(InputStream istrm, TextureBuffer* buffer)
         else if (hdr.format.bpp == 24)
         {
             // Special case, DXGI doesn't define RGB8
-            format.internalFormat = GL_RGB8;
             format.format = GL_RGB;
-            format.type = GL_UNSIGNED_BYTE;
+            format.internalFormat = GL_RGB8;
+            format.pixelType = GL_UNSIGNED_BYTE;
             formatDetected = true;
         }
         else if (hdr.format.bpp == 16)
