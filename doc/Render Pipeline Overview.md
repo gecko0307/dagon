@@ -85,15 +85,15 @@ Dagon's deferred pipeline supports subsurface scattering based on Hanrahan-Krueg
 
 Dagon's renderer outputs radiance into a floating-point frame buffer without clamping the values to 0..1 range, so the buffer contains greater luminance information compared to traditional integer frame buffer. The final image that is visible on screen is a result of an additional tone mapping pass, which applies a non-linear luminance compression to the incoming values. Very dark and very bright pixels are compressed more, and pixels of a medium brightness are compressed less. Dagon supports all popular tone mapping operators:
 
-* `"Unreal"` - tonemapper from Unreal 3
-* `"Reinhard"` - ["Photographic Tone Reproduction for Digital Images"](https://www-old.cs.utah.edu/docs/techreports/2002/pdf/UUCS-02-001.pdf), Erik Reinhard et al, 2002, Equation 3
-* `"Reinhard2"` - ["Photographic Tone Reproduction for Digital Images"](https://www-old.cs.utah.edu/docs/techreports/2002/pdf/UUCS-02-001.pdf), Erik Reinhard et al, 2002, Equation 4
-* `"Hable"`/"Uncharted"` - ["Filmic Tonemapping Operators"](http://filmicworlds.com/blog/filmic-tonemapping-operators), John Hable, 2010, formula by John Hable (Uncharted 2)
-* `"Filmic"` - ["Filmic Tonemapping Operators"](http://filmicworlds.com/blog/filmic-tonemapping-operators), John Hable, 2010, formula by Jim Hejl and Richard Burgess-Dawson
-* `"ACES"` - ["ACES Filmic Tone Mapping Curve"](https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve), Krzysztof Narkowicz, 2016
-* `"Uchimura"` - ["HDR Theory and Practice"](https://www.slideshare.net/nikuque/hdr-theory-and-practicce-jp), Hajime Uchimura, 2017
-* `"AgX_Base"`, `"AgX_Punchy"` - AgX tonemapper from Blender 4.0+ and Filament
-* `"KhronosPBRNeutral"` - [Neutral Tone Mapping for PBR Color Accuracy](https://dl.acm.org/doi/fullHtml/10.1145/3641233.3664313), Emmett Lalish, 2024.
+* Unreal - tonemapper from Unreal 3
+* Reinhard - ["Photographic Tone Reproduction for Digital Images"](https://www-old.cs.utah.edu/docs/techreports/2002/pdf/UUCS-02-001.pdf), Erik Reinhard et al, 2002, Equation 3
+* Reinhard2 - ["Photographic Tone Reproduction for Digital Images"](https://www-old.cs.utah.edu/docs/techreports/2002/pdf/UUCS-02-001.pdf), Erik Reinhard et al, 2002, Equation 4
+* Hable/Uncharted - ["Filmic Tonemapping Operators"](http://filmicworlds.com/blog/filmic-tonemapping-operators), John Hable, 2010, formula by John Hable (Uncharted 2)
+* Filmic - ["Filmic Tonemapping Operators"](http://filmicworlds.com/blog/filmic-tonemapping-operators), John Hable, 2010, formula by Jim Hejl and Richard Burgess-Dawson
+* ACES - ["ACES Filmic Tone Mapping Curve"](https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve), Krzysztof Narkowicz, 2016
+* Uchimura - ["HDR Theory and Practice"](https://www.slideshare.net/nikuque/hdr-theory-and-practicce-jp), Hajime Uchimura, 2017
+* AgX_Base, AgX_Punchy - AgX tonemapper from Blender 4.0+ and Filament
+* KhronosPBRNeutral - [Neutral Tone Mapping for PBR Color Accuracy](https://dl.acm.org/doi/fullHtml/10.1145/3641233.3664313), Emmett Lalish, 2024.
 
 ### Post-Processing
 

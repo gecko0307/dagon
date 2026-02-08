@@ -114,7 +114,7 @@ Recognozed by the `Game` class, applied to the `Game.deferredRenderer` and `Game
   * `"Unreal"` - tonemapper from Unreal 3
   * `"Reinhard"` - ["Photographic Tone Reproduction for Digital Images"](https://www-old.cs.utah.edu/docs/techreports/2002/pdf/UUCS-02-001.pdf), Erik Reinhard et al, 2002, Equation 3
   * `"Reinhard2"` - ["Photographic Tone Reproduction for Digital Images"](https://www-old.cs.utah.edu/docs/techreports/2002/pdf/UUCS-02-001.pdf), Erik Reinhard et al, 2002, Equation 4
-  * `"Hable"`/"Uncharted"` - ["Filmic Tonemapping Operators"](http://filmicworlds.com/blog/filmic-tonemapping-operators), John Hable, 2010, formula by John Hable (Uncharted 2)
+  * `"Hable"`/`"Uncharted"` - ["Filmic Tonemapping Operators"](http://filmicworlds.com/blog/filmic-tonemapping-operators), John Hable, 2010, formula by John Hable (Uncharted 2)
   * `"Filmic"` - ["Filmic Tonemapping Operators"](http://filmicworlds.com/blog/filmic-tonemapping-operators), John Hable, 2010, formula by Jim Hejl and Richard Burgess-Dawson
   * `"ACES"` - ["ACES Filmic Tone Mapping Curve"](https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve), Krzysztof Narkowicz, 2016
   * `"Uchimura"` - ["HDR Theory and Practice"](https://www.slideshare.net/nikuque/hdr-theory-and-practicce-jp), Hajime Uchimura, 2017
