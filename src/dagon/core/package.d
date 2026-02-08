@@ -53,6 +53,9 @@ public
     /// Configuration management and property loading.
     import dagon.core.config;
     
+    /// Cursor-related functionality.
+    import dagon.core.cursor;
+    
     /// Cross-platform native dialogs.
     import dagon.core.dialogs;
     

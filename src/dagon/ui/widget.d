@@ -68,7 +68,7 @@ class UIManager: EventListener
     bool focused = false;
     
   protected:
-    Cursor currentCursor = Cursor.Default;
+    SystemCursor currentCursor = SystemCursor.Default;
     bool cursorFreezed = false;
     
    public:
@@ -217,13 +217,13 @@ class UIManager: EventListener
         }
     }
     
-    void freezeCursor(Cursor cur)
+    void freezeCursor(SystemCursor cur)
     {
         scene.application.setCursor(cur);
         cursorFreezed = true;
     }
     
-    void unfreezeCursor(Cursor cur = Cursor.Default)
+    void unfreezeCursor(SystemCursor cur = SystemCursor.Default)
     {
         scene.application.setCursor(cur);
         cursorFreezed = false;
@@ -235,12 +235,12 @@ class UIManager: EventListener
         captureMouse = false;
         focused = false;
         bool cursorChanged = false;
-        Cursor newCursor = Cursor.Default;
+        SystemCursor newCursor = SystemCursor.Default;
         foreach(widget; widgets)
         {
             widget.update(t);
             captureMouse = captureMouse || widget.captureMouse;
-            if (!cursorChanged && widget.cursor != Cursor.Default)
+            if (!cursorChanged && widget.cursor != SystemCursor.Default)
             {
                 newCursor = widget.cursor;
                 cursorChanged = true;
@@ -277,7 +277,7 @@ class UIWidget: EventListener, Updateable
     bool focused = false;
     bool captureMouse = false;
     bool hover = false;
-    Cursor cursor = Cursor.Default;
+    SystemCursor cursor = SystemCursor.Default;
     
     this(UIManager ui, UIWidget parent = null)
     {

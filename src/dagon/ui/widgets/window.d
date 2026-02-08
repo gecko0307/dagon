@@ -119,7 +119,7 @@ class Window: UIWidget
             if (focused && ui.mouseOver(header))
             {
                 dragging = true;
-                ui.freezeCursor(Cursor.SizeAll);
+                ui.freezeCursor(SystemCursor.SizeAll);
             }
             
             if (resizeable)
@@ -131,17 +131,17 @@ class Window: UIWidget
                 {
                     resizingHorizontal = true;
                     resizingVertical = true;
-                    ui.freezeCursor(Cursor.SizeNWSE);
+                    ui.freezeCursor(SystemCursor.SizeNWSE);
                 }
                 else if (hoverRight)
                 {
                     resizingHorizontal = true;
-                    ui.freezeCursor(Cursor.SizeWE);
+                    ui.freezeCursor(SystemCursor.SizeWE);
                 }
                 else if (hoverBottom)
                 {
                     resizingVertical = true;
-                    ui.freezeCursor(Cursor.SizeNS);
+                    ui.freezeCursor(SystemCursor.SizeNS);
                 }
             }
             prevMouseX = eventManager.mouseX;
@@ -182,22 +182,22 @@ class Window: UIWidget
             if (resizeable)
             {
                 if (mouseOverBottomRightCorner())
-                    cursor = Cursor.SizeNWSE;
+                    cursor = SystemCursor.SizeNWSE;
                 else if (mouseOverRightBorder())
-                    cursor = Cursor.SizeWE;
+                    cursor = SystemCursor.SizeWE;
                 else if (mouseOverBottomBorder())
-                    cursor = Cursor.SizeNS;
+                    cursor = SystemCursor.SizeNS;
                 else
-                    cursor = Cursor.Default;
+                    cursor = SystemCursor.Default;
             }
             else
-                cursor = Cursor.Default;
+                cursor = SystemCursor.Default;
         }
         else
         {
             captureMouse = dragging || resizingHorizontal || resizingVertical;
             hover = false;
-            cursor = Cursor.Default;
+            cursor = SystemCursor.Default;
         }
         
         if (focused && dragging)

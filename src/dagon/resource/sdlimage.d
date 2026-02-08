@@ -97,6 +97,25 @@ enum ConversionHint
 }
 
 /**
+ * Loads an image from an input stream using SDL2_Image.
+ *
+ * Params:
+ *   istrm     = Input stream containing the image data.
+ * Returns:
+ *   Pointer to SDL_Surface if loading succeeded, null otherwise.
+ */
+SDL_Surface* loadImageViaSDLImage(InputStream istrm)
+{
+    size_t dataSize = cast(size_t)istrm.size;
+    ubyte[] data = New!(ubyte[])(dataSize);
+    istrm.readBytes(data.ptr, dataSize);
+    SDL_RWops* rw = SDL_RWFromConstMem(data.ptr, cast(int)dataSize);
+    SDL_Surface* surface = IMG_Load_RW(rw, 1);
+    Delete(data);
+    return surface;
+}
+
+/**
  * Loads an image from an input stream using SDL2_Image and fills a `TextureAsset`.
  * Handles resizing (for SVG) and pixel format conversion, if needed.
  * Creates `asset.image` if the image format is compatible with `dlib.image`.

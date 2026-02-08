@@ -69,6 +69,7 @@ import dagon.core.config;
 import dagon.core.sysinfo;
 import dagon.core.locale;
 import dagon.core.i18n;
+public import dagon.core.cursor;
 
 import dagon.graphics.updateable;
 import dagon.graphics.font;
@@ -139,6 +140,7 @@ enum ImageFileFormat
     XPM,
     PCX,
     LBM,
+    ICO,
     JPG = JPEG,
     WEBP = WebP,
     KTX2 = KTX,
@@ -316,23 +318,6 @@ bool isExtensionSupported(string extName)
 struct FTVersion
 {
     int major, minor, patch;
-}
-
-/// Supported cursor types.
-enum Cursor: uint
-{
-    Default = 0,
-    IBeam = 1,
-    Wait = 2,
-    Crosshair = 3,
-    WaitArrow = 4,
-    SizeNWSE = 5,
-    SizeNESW = 6,
-    SizeWE = 7,
-    SizeNS = 8,
-    SizeAll = 9,
-    No = 10,
-    Hand = 11
 }
 
 /// Returns VFS used by the Application.
@@ -605,7 +590,7 @@ class Application: EventListener, Updateable
     protected
     {
         EventManager _eventManager;
-        SDL_Cursor*[12] cursor;
+        SDL_Cursor*[12] cursors;
         
         uint screenNum = 0;
         
@@ -851,7 +836,7 @@ class Application: EventListener, Updateable
                 windowHeight = desktopBounds.h;
         }
         
-        // Init SDL_Image
+        // Init SDL_Image and supported image formats table
         _imageFileFormatSupported[ImageFileFormat.PNG] = true;
         _imageFileFormatSupported[ImageFileFormat.JPEG] = true;
         _imageFileFormatSupported[ImageFileFormat.BMP] = true;
@@ -883,6 +868,23 @@ class Application: EventListener, Updateable
             _imageFileFormatSupported[ImageFileFormat.XPM] = true;
             _imageFileFormatSupported[ImageFileFormat.PCX] = true;
             _imageFileFormatSupported[ImageFileFormat.LBM] = true;
+            _imageFileFormatSupported[ImageFileFormat.ICO] = true;
+        }
+        else
+        {
+            _imageFileFormatSupported[ImageFileFormat.SVG] = false;
+            _imageFileFormatSupported[ImageFileFormat.TIFF] = false;
+            _imageFileFormatSupported[ImageFileFormat.WebP] = false;
+            _imageFileFormatSupported[ImageFileFormat.JPEG_XL] = false;
+            _imageFileFormatSupported[ImageFileFormat.AVIF] = false;
+            _imageFileFormatSupported[ImageFileFormat.GIF] = false;
+            _imageFileFormatSupported[ImageFileFormat.QOI] = false;
+            _imageFileFormatSupported[ImageFileFormat.PNM] = false;
+            _imageFileFormatSupported[ImageFileFormat.XCF] = false;
+            _imageFileFormatSupported[ImageFileFormat.XPM] = false;
+            _imageFileFormatSupported[ImageFileFormat.PCX] = false;
+            _imageFileFormatSupported[ImageFileFormat.LBM] = false;
+            _imageFileFormatSupported[ImageFileFormat.ICO] = false;
         }
 
         // Set OpenGL context attributes
@@ -1112,19 +1114,19 @@ class Application: EventListener, Updateable
         if (shaderCache.enabled)
             logInfo("Shader cache path: ", shaderCachePath);
         
-        // Get cursors (TODO: support custom cursors)
-        cursor[Cursor.Default] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
-        cursor[Cursor.IBeam] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
-        cursor[Cursor.Wait] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
-        cursor[Cursor.Crosshair] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_CROSSHAIR);
-        cursor[Cursor.WaitArrow] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAITARROW);
-        cursor[Cursor.SizeNWSE] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE);
-        cursor[Cursor.SizeNESW] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW);
-        cursor[Cursor.SizeWE] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEWE);
-        cursor[Cursor.SizeNS] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENS);
-        cursor[Cursor.SizeAll] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL);
-        cursor[Cursor.No] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO);
-        cursor[Cursor.Hand] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
+        // Get system cursors
+        cursors[SystemCursor.Default] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+        cursors[SystemCursor.IBeam] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
+        cursors[SystemCursor.Wait] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
+        cursors[SystemCursor.Crosshair] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_CROSSHAIR);
+        cursors[SystemCursor.WaitArrow] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAITARROW);
+        cursors[SystemCursor.SizeNWSE] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE);
+        cursors[SystemCursor.SizeNESW] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW);
+        cursors[SystemCursor.SizeWE] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEWE);
+        cursors[SystemCursor.SizeNS] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENS);
+        cursors[SystemCursor.SizeAll] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL);
+        cursors[SystemCursor.No] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO);
+        cursors[SystemCursor.Hand] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
     }
     
     protected void updateSettings()
@@ -1324,12 +1326,12 @@ class Application: EventListener, Updateable
 
         SDL_GL_DeleteContext(glcontext);
         
-        foreach(i, cur; cursor)
+        foreach(i, cur; cursors)
         {
             if (cur)
             {
                 SDL_FreeCursor(cur);
-                cursor[i] = null;
+                cursors[i] = null;
             }
         }
         
@@ -1375,13 +1377,42 @@ class Application: EventListener, Updateable
         SDL_MaximizeWindow(window);
     }
     
-    /// Set mouse cursor
-    void setCursor(Cursor cur)
+    /// Sets mouse cursor to a standard cursor.
+    void setCursor(SystemCursor sysCursor)
     {
-        if (cur < cursor.length)
+        if (sysCursor < cursors.length)
         {
-            if (cursor[cur])
-                SDL_SetCursor(cursor[cur]);
+            if (cursors[sysCursor])
+                SDL_SetCursor(cursors[sysCursor]);
+        }
+    }
+    
+    /// Loads a custom cursor from an image.
+    Cursor loadCursor(string filename, uint hotspotX, uint hotspotY)
+    {
+        InputStream istrm = openFile(filename);
+        auto cursor = New!Cursor(istrm, hotspotX, hotspotY, this);
+        Delete(istrm);
+        return cursor;
+    }
+    
+    /// Sets mouse cursor to a custom cursor.
+    void setCursor(Cursor cursor)
+    {
+        if (cursor.cursor)
+            SDL_SetCursor(cursor.cursor);
+    }
+    
+    /// Replace standard cursor with a custom one.
+    void replaceCursor(SystemCursor sysCursor, Cursor cursor)
+    {
+        if (sysCursor < cursors.length)
+        {
+            if (cursor.cursor)
+            {
+                cursors[sysCursor] = cursor.cursor;
+                SDL_SetCursor(cursor.cursor);
+            }
         }
     }
     
