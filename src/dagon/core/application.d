@@ -314,6 +314,17 @@ bool isExtensionSupported(string extName)
     return _extensions.canFind(extName);
 }
 
+struct FramebufferFormat
+{
+    GLint redBits;
+    GLint greenBits;
+    GLint blueBits;
+    GLint alphaBits;
+    GLint depthBits;
+    GLint stencilBits;
+    GLint encoding;
+}
+
 /// Structure that represents FreeType version number.
 struct FTVersion
 {
@@ -458,6 +469,24 @@ class Application: EventListener, Updateable
     /// System information.
     SysInfo systemInfo;
     
+    /// Number of video displays in the system.
+    uint displayCount;
+    
+    /// Display index for the application window.
+    uint displayIndex = 0;
+    
+    /// Selected video display width.
+    uint displayWidth;
+    
+    /// Selected video display height.
+    uint displayHeight;
+    
+    /// Width of the desktop area represented by the selected display.
+    uint desktopWidth;
+    
+    /// Height of the desktop area represented by the selected display.
+    uint desktopHeight;
+    
     /// Application window width.
     uint windowWidth;
     
@@ -506,6 +535,9 @@ class Application: EventListener, Updateable
     /// Vertical synchronization mode.
     int vsync = 1;
     
+    /// Display refresh rate in Hz.
+    uint refreshRate = 60;
+    
     /// Update frequency in Hz.
     uint stepFrequency = 60;
     
@@ -544,6 +576,9 @@ class Application: EventListener, Updateable
     
     /// OpenGL renderer string (graphics card model) obtained from the graphics driver.
     String glRenderer;
+    
+    /// Default framebuffer format.
+    FramebufferFormat framebufferFormat;
     
     /**
      * Is anisotropic filtering enabled by default for textures.
@@ -603,7 +638,7 @@ class Application: EventListener, Updateable
     }
 
     /**
-     * Constructs the application, initializes SDL, OpenGL, and related core subsystems.
+     * Creates and configures the application, initializes SDL, SDL_Image, OpenGL, FreeType and related core subsystems.
      *
      * Params:
      *   winWidth = Window width in pixels.
@@ -658,7 +693,7 @@ class Application: EventListener, Updateable
             Delete(istrm);
             if (config.fromString(initConfig))
             {
-                updateSettings();
+                updateCoreSettings();
                 configFileFound = true;
             }
             Delete(initConfig);
@@ -696,7 +731,7 @@ class Application: EventListener, Updateable
             {
                 if (config.fromFile(fs, configFilename))
                 {
-                    updateSettings();
+                    updateCoreSettings();
                     configFileFound = true;
                 }
             }
@@ -706,30 +741,54 @@ class Application: EventListener, Updateable
             logWarning("No \"", configFilename, "\" found");
         
         // Load selected translation
+        if ("localePath" in config.props)
+            localePath = config.props["localePath"].toString;
+        if ("locale" in config.props)
+            userLocale = config.props["locale"].toString;
         translation = New!Translation(this, this);
         translation.load("en_US");
         if (userLocale != "en_US")
             translation.load(userLocale);
         
         // Load shared libraries
-        version(linux)
+        if ("SDL2.path" in config.props)
+            sdlLibraryPath = config.props["SDL2.path"].toString;
+        if ("SDL2Image.path" in config.props)
+            sdlLibraryPath = config.props["SDL2Image.path"].toString;
+        if ("FreeType.path" in config.props)
+            freetypeLibraryPath = config.props["FreeType.path"].toString;
+        version(Windows)
         {
-            if (sdlLibraryPath == "auto")
-                sdlLibraryPath = "libSDL2-2.0.so.0";
+            if ("SDL2.path.windows" in config.props)
+                sdlLibraryPath = config.props["SDL2.path.windows"].toString;
+            if ("SDL2Image.path.windows" in config.props)
+                sdlImageLibraryPath = config.props["SDL2Image.path.windows"].toString;
+            if ("FreeType.path.windows" in config.props)
+                freetypeLibraryPath = config.props["FreeType.path.windows"].toString;
             
-            if (sdlImageLibraryPath == "auto")
-                sdlImageLibraryPath = "libSDL2_image-2.0.so";
-            
-            if (freetypeLibraryPath == "auto")
-                freetypeLibraryPath = "";
-        }
-        else version(Windows)
-        {
             if (sdlLibraryPath == "auto")
                 sdlLibraryPath = "SDL2.dll";
             
             if (sdlImageLibraryPath == "auto")
                 sdlImageLibraryPath = "SDL2_image.dll";
+            
+            if (freetypeLibraryPath == "auto")
+                freetypeLibraryPath = "";
+        }
+        else version(linux)
+        {
+            if ("SDL2.path.linux" in config.props)
+                sdlLibraryPath = config.props["SDL2.path.linux"].toString;
+            if ("SDL2Image.path.linux" in config.props)
+                sdlImageLibraryPath = config.props["SDL2Image.path.linux"].toString;
+            if ("FreeType.path.linux" in config.props)
+                freetypeLibraryPath = config.props["FreeType.path.linux"].toString;
+            
+            if (sdlLibraryPath == "auto")
+                sdlLibraryPath = "libSDL2-2.0.so.0";
+            
+            if (sdlImageLibraryPath == "auto")
+                sdlImageLibraryPath = "libSDL2_image-2.0.so";
             
             if (freetypeLibraryPath == "auto")
                 freetypeLibraryPath = "";
@@ -809,31 +868,119 @@ class Application: EventListener, Updateable
         logInfo("SDL_Image version: ", sdlImageVersion.major, ".", sdlImageVersion.minor, ".", sdlImageVersion.patch);
 
         // Init SDL
+        if ("window.hiDPI" in config.props)
+            windowHiDPI = cast(bool)config.props["window.hiDPI"].toUInt;
+        
         if (windowHiDPI)
             SDL_SetHint(SDL_HINT_WINDOWS_DPI_SCALING, "1");
         
         if (SDL_Init(SDL_INIT_EVERYTHING) == -1)
             exitWithError("Failed to init SDL: " ~ to!string(SDL_GetError()));
 
-        if (fullscreen)
+        int numDisplays = SDL_GetNumVideoDisplays();
+        if (numDisplays < 0)
         {
-            SDL_DisplayMode displayMode;
-            SDL_GetCurrentDisplayMode(0, &displayMode);
-            
-            if (windowWidth == 0)
-                windowWidth = displayMode.w;
-            if (windowHeight == 0)
-                windowHeight = displayMode.h;
+            displayCount = 0;
+            logError("SDL_GetNumVideoDisplays failed");
         }
         else
         {
-            SDL_Rect desktopBounds;
-            SDL_GetDisplayBounds(0, &desktopBounds);
-            
+            displayCount = cast(uint)numDisplays;
+        }
+        
+        // Window settings
+        if ("window.display" in config.props)
+        {
+            displayIndex = config.props["window.display"].toUInt;
+            if (displayCount > 0)
+            {
+                if (displayIndex >= displayCount)
+                    displayIndex = displayCount - 1;
+            }
+            else
+                displayIndex = 0;
+        }
+        else
+            displayIndex = 0;
+        
+        if ("window.width" in config.props)
+            windowWidth = config.props["window.width"].toUInt;
+        if ("window.height" in config.props)
+            windowHeight = config.props["window.height"].toUInt;
+        
+        if ("window.x" in config.props)
+        {
+            if (config.props["window.x"].type == DPropType.Number)
+                windowX = config.props["window.x"].toInt;
+            else if (displayIndex > 0)
+                windowX = SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex);
+            else
+                windowX = SDL_WINDOWPOS_CENTERED;
+        }
+        if ("window.y" in config.props)
+        {
+            if (config.props["window.y"].type == DPropType.Number)
+                windowY = config.props["window.y"].toInt;
+            else if (displayIndex > 0)
+                windowY = SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex);
+            else
+                windowY = SDL_WINDOWPOS_CENTERED;
+        }
+        
+        if ("window.maximized" in config.props)
+            windowMaximized = cast(bool)(config.props["window.maximized"].toUInt);
+        
+        if ("window.minimized" in config.props)
+            windowMinimized = cast(bool)(config.props["window.minimized"].toUInt);
+        
+        if ("window.resizable" in config.props)
+            windowResizable = cast(bool)config.props["window.resizable"].toUInt;
+        
+        if ("window.borderless" in config.props)
+            windowBorderless = cast(bool)(config.props["window.borderless"].toUInt);
+        
+        if ("window.title" in config.props)
+            windowTitle = config.props["window.title"].toString;
+        
+        if ("fullscreen" in config.props)
+            fullscreen = cast(bool)(config.props["fullscreen"].toUInt);
+        
+        if ("fullscreenWindowed" in config.props)
+        {
+            if (config.props["fullscreenWindowed"].toUInt)
+            {
+                fullscreen = false;
+                windowWidth = 0;
+                windowHeight = 0;
+                windowBorderless = true;
+            }
+        }
+
+        SDL_DisplayMode displayMode;
+        SDL_GetCurrentDisplayMode(displayIndex, &displayMode);
+        displayWidth = displayMode.w;
+        displayHeight = displayMode.h;
+        
+        SDL_Rect desktopBounds;
+        SDL_GetDisplayBounds(displayIndex, &desktopBounds);
+        desktopWidth = desktopBounds.w;
+        desktopHeight = desktopBounds.h;
+
+        if (fullscreen)
+        {
+            // Normal fullscreen
             if (windowWidth == 0)
-                windowWidth = desktopBounds.w;
+                windowWidth = displayWidth;
             if (windowHeight == 0)
-                windowHeight = desktopBounds.h;
+                windowHeight = displayHeight;
+        }
+        else
+        {
+            // Windowed fullscreen
+            if (windowWidth == 0)
+                windowWidth = desktopWidth;
+            if (windowHeight == 0)
+                windowHeight = desktopHeight;
         }
         
         // Init SDL_Image and supported image formats table
@@ -894,6 +1041,7 @@ class Application: EventListener, Updateable
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+        SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
@@ -915,12 +1063,20 @@ class Application: EventListener, Updateable
         if (window is null)
             exitWithError("Failed to create window: " ~ to!string(SDL_GetError()));
         
+        logInfo("Number of displays: ", displayCount);
+        
+        displayIndex = SDL_GetWindowDisplayIndex(window);
+        logInfo("Selected display index: ", displayIndex);
+        logInfo("Display resolution: ", displayWidth, "x", displayHeight);
+        
         int createdWindowWidth, createdWindowHeight;
         SDL_GetWindowSize(window, &createdWindowWidth, &createdWindowHeight);
         windowWidth = createdWindowWidth;
         windowHeight = createdWindowHeight;
         logInfo("Window size: ", windowWidth, "x", windowHeight);
         
+        if ("stereoRendering" in config.props)
+            stereoRendering = cast(bool)config.props["stereoRendering"].toUInt;
         if (stereoRendering)
         {
             // TODO: make configurable
@@ -939,6 +1095,10 @@ class Application: EventListener, Updateable
         if (glcontext is null)
             exitWithError("Failed to create OpenGL context: " ~ to!string(SDL_GetError()));
         SDL_GL_MakeCurrent(window, glcontext);
+        
+        if ("vsync" in config.props)
+            vsync = config.props["vsync"].toInt;
+        
         SDL_GL_SetSwapInterval(vsync);
         
         // Load OpenGL functions
@@ -970,6 +1130,23 @@ class Application: EventListener, Updateable
         logInfo("OpenGL version: ", glVersion);
         logInfo("OpenGL vendor: ", glVendor);
         logInfo("OpenGL renderer: ", glRenderer);
+        
+        // Get default framebuffer format
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_BACK_LEFT, GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE, &framebufferFormat.redBits);
+        glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_BACK_LEFT, GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE, &framebufferFormat.greenBits);
+        glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_BACK_LEFT, GL_FRAMEBUFFER_ATTACHMENT_BLUE_SIZE, &framebufferFormat.blueBits);
+        glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_BACK_LEFT, GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE, &framebufferFormat.alphaBits);
+        glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_DEPTH, GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE, &framebufferFormat.depthBits);
+        glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_STENCIL, GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE, &framebufferFormat.stencilBits);
+        glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_BACK_LEFT, GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING, &framebufferFormat.encoding);
+        logInfo("Back buffer format: ",
+            "R", framebufferFormat.redBits,
+            "G", framebufferFormat.greenBits,
+            "B", framebufferFormat.blueBits,
+            "A", framebufferFormat.alphaBits, " ",
+            framebufferFormat.encoding == GL_SRGB ? "sRGB" : "linear");
+        logInfo("Depth/stencil buffer format: ", "depth ", framebufferFormat.depthBits, ", stencil ", framebufferFormat.stencilBits);
         
         // Get OpenGL limits
         glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &_maxTextureUnits);
@@ -1069,10 +1246,32 @@ class Application: EventListener, Updateable
         }
         
         // Create cadencer and timers pool
+        if ("stepFrequency" in config.props)
+        {
+            if (config.props["stepFrequency"].type == DPropType.Number)
+                stepFrequency = config.props["stepFrequency"].toUInt;
+            else if (config.props["stepFrequency"].type == DPropType.String)
+            {
+                if (config.props["stepFrequency"].toString == "auto")
+                    stepFrequency = 0; // same as display refresh rate
+            }
+        }
+        refreshRate = displayRefreshRate(60);
         if (stepFrequency == 0)
-            stepFrequency = displayRefreshRate(60);
+            stepFrequency = refreshRate;
+        logInfo("Display refresh rate: ", refreshRate, " Hz");
         logInfo("Step frequency: ", stepFrequency, " Hz");
         cadencer = New!Cadencer(this, stepFrequency, this);
+        
+        if ("maxTimersCount" in config.props)
+        {
+            if (config.props["maxTimersCount"].type == DPropType.Number)
+            {
+                maxTimersCount = config.props["maxTimersCount"].toUInt;
+                if (maxTimersCount == 0)
+                    maxTimersCount = 1024;
+            }
+        }
         logInfo("Maximum timers count: ", maxTimersCount);
         timers = New!(TimerData[])(maxTimersCount);
         
@@ -1090,6 +1289,26 @@ class Application: EventListener, Updateable
                 logInfo("FreeType version: ", ftVersion.major, ".", ftVersion.minor, ".", ftVersion.patch);
             }
         }
+        if ("font.sans" in config.props)
+            defaultFontSans = config.props["font.sans"].toString;
+        if ("font.monospace" in config.props)
+            defaultFontMonospace = config.props["font.monospace"].toString;
+        version(Windows)
+        {
+            if ("font.sans.windows" in config.props)
+                defaultFontSans = config.props["font.sans.windows"].toString;
+            if ("font.sans.monospace" in config.props)
+                defaultFontMonospace = config.props["font.sans.monospace"].toString;
+        }
+        else version(linux)
+        {
+            if ("font.sans.linux" in config.props)
+                defaultFontSans = config.props["font.sans.linux"].toString;
+            if ("font.sans.linux" in config.props)
+                defaultFontMonospace = config.props["font.sans.linux"].toString;
+        }
+        if ("font.size" in config.props)
+            defaultFontSize = config.props["font.size"].toUInt;
         fontManager = New!FontManager(this);
         
         // Init shader cache
@@ -1127,9 +1346,16 @@ class Application: EventListener, Updateable
         cursors[SystemCursor.SizeAll] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL);
         cursors[SystemCursor.No] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO);
         cursors[SystemCursor.Hand] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
+        
+        version(Windows)
+        {
+            if ("hideConsole" in config.props)
+                if (config.props["hideConsole"].toUInt)
+                    showConsoleWindow(false);
+        }
     }
     
-    protected void updateSettings()
+    protected void updateCoreSettings()
     {
         // Logger settings
         if ("log.enabled" in config.props)
@@ -1178,145 +1404,6 @@ class Application: EventListener, Updateable
             if ("vfs.mount.linux" in config.props)
                 customMountPaths = config.props["vfs.mount.linux"].toString;
         }
-        
-        // Library settings
-        if ("SDL2.path" in config.props)
-            sdlLibraryPath = config.props["SDL2.path"].toString;
-        if ("SDL2Image.path" in config.props)
-            sdlLibraryPath = config.props["SDL2Image.path"].toString;
-        if ("FreeType.path" in config.props)
-            freetypeLibraryPath = config.props["FreeType.path"].toString;
-        version(Windows)
-        {
-            if ("SDL2.path.windows" in config.props)
-                sdlLibraryPath = config.props["SDL2.path.windows"].toString;
-            if ("SDL2Image.path.windows" in config.props)
-                sdlImageLibraryPath = config.props["SDL2Image.path.windows"].toString;
-            if ("FreeType.path.windows" in config.props)
-                freetypeLibraryPath = config.props["FreeType.path.windows"].toString;
-        }
-        else version(linux)
-        {
-            if ("SDL2.path.linux" in config.props)
-                sdlLibraryPath = config.props["SDL2.path.linux"].toString;
-            if ("SDL2Image.path.linux" in config.props)
-                sdlImageLibraryPath = config.props["SDL2Image.path.linux"].toString;
-            if ("FreeType.path.linux" in config.props)
-                freetypeLibraryPath = config.props["FreeType.path.linux"].toString;
-        }
-        
-        // Window settings
-        if ("window.width" in config.props)
-            windowWidth = config.props["window.width"].toUInt;
-        if ("window.height" in config.props)
-            windowHeight = config.props["window.height"].toUInt;
-        
-        if ("window.x" in config.props)
-        {
-            if (config.props["window.x"].type == DPropType.Number)
-                windowX = config.props["window.x"].toInt;
-            else
-                windowX = SDL_WINDOWPOS_CENTERED;
-        }
-        if ("window.y" in config.props)
-        {
-            if (config.props["window.y"].type == DPropType.Number)
-                windowY = config.props["window.y"].toInt;
-            else
-                windowY = SDL_WINDOWPOS_CENTERED;
-        }
-        
-        if ("window.maximized" in config.props)
-            windowMaximized = cast(bool)(config.props["window.maximized"].toUInt);
-        
-        if ("window.minimized" in config.props)
-            windowMinimized = cast(bool)(config.props["window.minimized"].toUInt);
-        
-        if ("window.resizable" in config.props)
-            windowResizable = cast(bool)config.props["window.resizable"].toUInt;
-        
-        if ("window.borderless" in config.props)
-            windowBorderless = cast(bool)(config.props["window.borderless"].toUInt);
-        
-        if ("window.hiDPI" in config.props)
-            windowHiDPI = cast(bool)config.props["window.hiDPI"].toUInt;
-        
-        if ("window.title" in config.props)
-            windowTitle = config.props["window.title"].toString;
-        
-        if ("fullscreen" in config.props)
-            fullscreen = cast(bool)(config.props["fullscreen"].toUInt);
-        
-        if ("fullscreenWindowed" in config.props)
-        {
-            if (config.props["fullscreenWindowed"].toUInt)
-            {
-                fullscreen = false;
-                windowWidth = 0;
-                windowHeight = 0;
-                windowBorderless = true;
-            }
-        }
-        
-        if ("stereoRendering" in config.props)
-            stereoRendering = cast(bool)config.props["stereoRendering"].toUInt;
-        
-        if ("vsync" in config.props)
-            vsync = config.props["vsync"].toInt;
-        if ("stepFrequency" in config.props)
-        {
-            if (config.props["stepFrequency"].type == DPropType.Number)
-                stepFrequency = config.props["stepFrequency"].toUInt;
-            else if (config.props["stepFrequency"].type == DPropType.String)
-            {
-                if (config.props["stepFrequency"].toString == "auto")
-                    stepFrequency = 0; // same as display refresh rate
-            }
-        }
-        if ("maxTimersCount" in config.props)
-        {
-            if (config.props["maxTimersCount"].type == DPropType.Number)
-            {
-                maxTimersCount = config.props["maxTimersCount"].toUInt;
-                if (maxTimersCount == 0)
-                    maxTimersCount = 1024;
-            }
-        }
-        
-        version(Windows)
-        {
-            if ("hideConsole" in config.props)
-                if (config.props["hideConsole"].toUInt)
-                    showConsoleWindow(false);
-        }
-        
-        // Locale settings
-        if ("localePath" in config.props)
-            localePath = config.props["localePath"].toString;
-        if ("locale" in config.props)
-            userLocale = config.props["locale"].toString;
-        
-        // Font manager settings
-        if ("font.sans" in config.props)
-            defaultFontSans = config.props["font.sans"].toString;
-        if ("font.monospace" in config.props)
-            defaultFontMonospace = config.props["font.monospace"].toString;
-        version(Windows)
-        {
-            if ("font.sans.windows" in config.props)
-                defaultFontSans = config.props["font.sans.windows"].toString;
-            if ("font.sans.monospace" in config.props)
-                defaultFontMonospace = config.props["font.sans.monospace"].toString;
-        }
-        else version(linux)
-        {
-            if ("font.sans.linux" in config.props)
-                defaultFontSans = config.props["font.sans.linux"].toString;
-            if ("font.sans.linux" in config.props)
-                defaultFontMonospace = config.props["font.sans.linux"].toString;
-        }
-        if ("font.size" in config.props)
-            defaultFontSize = config.props["font.size"].toUInt;
     }
 
     /// Destructor. Cleans up resources and shuts down SDL.

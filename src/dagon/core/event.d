@@ -478,10 +478,8 @@ class EventManager: Owner
         
         SDL_GetWindowPosition(window, &windowX, &windowY);
         
-        SDL_DisplayMode displayMode;
-        SDL_GetCurrentDisplayMode(0, &displayMode);
-        displayWidth = displayMode.w;
-        displayHeight = displayMode.h;
+        displayWidth = app.displayWidth;
+        displayHeight = app.displayHeight;
         
         SDL_VERSION(&wmInfo.version_);
         SDL_GetWindowWMInfo(window, &wmInfo);
