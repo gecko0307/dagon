@@ -51,6 +51,7 @@ Built-in *.conf files are fully reserved for Dagon's internal mechanisms, and it
 * `vfs.mount` - additional paths to mount in the VFS, separated by semicolon (`"my/path;my/another/path"`)
 * `vfs.mount.windows` - overrides `vfs.mount` under Windows
 * `vfs.mount.linux` - overrides `vfs.mount` under Linux
+* `window.display` - the index of the display on which the game window should be displayed (in multi-display configurations). Default is `0`
 * `window.width`, `window.height` - size of the game window. These values override default ones hardcoded in the application
 * `window.x`, `window.y` - window position (in non-maximized windowed mode). If not specified, the window is centered on the screen
 * `window.resizable` - `0` or `1`, allow the user to resize the window or not (in windowed mode). Default is `1`
@@ -70,7 +71,7 @@ Built-in *.conf files are fully reserved for Dagon's internal mechanisms, and it
 * `gl.debugOutput` - `0` or `1`, force disable or enable OpenGL debug output. Default is `1` in debug builds, `0` in release builds. This option is ignored if `logLevel` is higher than `"debug"`
 * `gl.anisotropicFiltering` - `0` or `1`, disable or enable anisotropic filtering by default for all textures loaded using the asset manager. Default is `0`
 * `gl.defaultTextureAnisotropy` - default anisotropic filtering level for all textures loaded using the asset manager. The value is clamped between `1.0` and the maximum anisotropy supported by hardware (`"auto"`). If anisotropic filtering is not supported, this is set to `1.0`. Default is `1.0`
-* `gl.shaderCache.enabled` - `0` or `1`, cache compiled shader binaries to files for reuse instead of compiling shaders on each run. Disabled by default. This is an experimental feature, use with care
+* `gl.shaderCache.enabled` - `0` or `1`, cache compiled shader binaries to files for reuse instead of compiling shaders on each run. Default is `0`. This is an experimental feature, use with care
 * `gl.shaderCache.path` - path to a folder for storing cached shader binaries. Default is `"data/__internal/shader_cache"`
 * `gl.shaderCache.path.windows` - overrides `gl.shaderCache.path` under Windows
 * `gl.shaderCache.path.linux` - overrides `gl.shaderCache.linux` under Windows

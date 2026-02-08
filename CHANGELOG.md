@@ -3,6 +3,8 @@ Dagon 0.39.0 - TBD
 - **Core**
   - Breaking change: `Cursor` enum is now `SystemCursor`. `Cursor` is now a class that represents custom SDL cursor
   - Support loading custom application cursors from image files. New methods `Application.loadCursor`, `Application.replaceCursor`
+  - New properties `Application.displayCount`, `Application.displayIndex`, `Application.displayWidth`, `Application.displayHeight`, `Application.desktopWidth`, `Application.desktopHeight`, `Application.refreshRate`, `Application.framebufferFormat`
+  - `window.display` option in `settings.conf`
 - **Graphics components**
   - New built-in meshes `ShapeCapsule`, `ShapeTorus`
   - `ShaderParameterArray` for passing uniform arrays
