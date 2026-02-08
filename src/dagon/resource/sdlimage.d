@@ -59,7 +59,7 @@ import dagon.resource.image;
 immutable string[] sdlImageFormats = [
     ".bmp", ".gif", ".jpg", ".jpeg", ".lbm", ".pcx", ".png",
     ".pnm", ".ppm", ".pgm", ".pbm", ".qoi", ".tga", ".xcf", ".xpm",
-    ".tif", ".tiff", ".webp", ".avif", ".jxl", ".svg"
+    ".tif", ".tiff", ".webp", ".avif", ".jxl", ".svg", ".ico"
 ];
 
 /// List of OpenGL internal formats supported by `dlib.image`.
