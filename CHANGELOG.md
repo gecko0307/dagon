@@ -1,3 +1,8 @@
+Dagon 0.40.0 - TBD
+------------------
+- **Post-processing**
+  - `PostProcRenderer` was redesigned to use fewer VRAM and less hard-coded buffer swapping logics.
+
 Dagon 0.39.0 - 13 Feb, 2026
 ---------------------------
 - **Core**
