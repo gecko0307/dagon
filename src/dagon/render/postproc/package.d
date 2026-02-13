@@ -108,22 +108,19 @@ class DoubleBuffer: Framebuffer
 
 class PostProcRenderer: Renderer
 {
-    public:
+  public:
 
     Framebuffer inputBuffer;
     Framebuffer outputBuffer;
 
-    protected:
-
-    DoubleBuffer ldrDoubleBuffer;
-
-    Framebuffer ldrBuffer1;
-    Framebuffer ldrBuffer2;
+  protected:
+    
+    DoubleBuffer hdrDoubleBuffer;
 
     Framebuffer hdrBuffer1;
     Framebuffer hdrBuffer2;
+    
     Framebuffer hdrBuffer3;
-    Framebuffer hdrBuffer4;
 
     RenderView viewHalf;
     BlurPass passBlur;
@@ -150,7 +147,7 @@ class PostProcRenderer: Renderer
     bool _motionBlurEnabled = false;
     bool _glowEnabled = false;
 
-    public:
+  public:
 
     float glowViewScale = 0.33f;
 
@@ -196,40 +193,42 @@ class PostProcRenderer: Renderer
 
         viewHalf = New!RenderView(0, 0, cast(uint)(view.width * glowViewScale), cast(uint)(view.height * glowViewScale), this);
 
-        ldrBuffer1 = New!Framebuffer(view.width, view.height, FrameBufferFormat.RGBA8, true, this);
-        ldrBuffer2 = New!Framebuffer(view.width, view.height, FrameBufferFormat.RGBA8, true, this);
-        ldrDoubleBuffer = New!DoubleBuffer(ldrBuffer1, ldrBuffer2, this);
-
         hdrBuffer1 = New!Framebuffer(viewHalf.width, viewHalf.height, FrameBufferFormat.RGBA16F, true, this);
         hdrBuffer2 = New!Framebuffer(viewHalf.width, viewHalf.height, FrameBufferFormat.RGBA16F, true, this);
-
+        
         hdrBuffer3 = New!Framebuffer(view.width, view.height, FrameBufferFormat.RGBA16F, true, this);
-        hdrBuffer4 = New!Framebuffer(view.width, view.height, FrameBufferFormat.RGBA16F, true, this);
+        hdrDoubleBuffer = New!DoubleBuffer(hdrBuffer3, inputBuffer, this);
 
         dofShader = New!DepthOfFieldShader(this);
         dofShader.gbuffer = gbuffer;
         passDoF = New!FilterPass(pipeline, dofShader);
         passDoF.view = view;
-        passDoF.inputBuffer = inputBuffer;
-        passDoF.outputBuffer = hdrBuffer3;
+        passDoF.inputBuffer = hdrDoubleBuffer;
+        passDoF.outputBuffer = hdrDoubleBuffer;
 
         motionBlurShader = New!MotionBlurShader(this);
         motionBlurShader.gbuffer = gbuffer;
         passMotionBlur = New!FilterPass(pipeline, motionBlurShader);
         passMotionBlur.view = view;
-        passMotionBlur.inputBuffer = passDoF.outputBuffer;
-        passMotionBlur.outputBuffer = hdrBuffer4;
+        passMotionBlur.inputBuffer = hdrDoubleBuffer;
+        passMotionBlur.outputBuffer = hdrDoubleBuffer;
+
+        lensDistortionShader = New!LensDistortionShader(this);
+        passLensDistortion = New!FilterPass(pipeline, lensDistortionShader);
+        passLensDistortion.view = view;
+        passLensDistortion.inputBuffer = hdrDoubleBuffer;
+        passLensDistortion.outputBuffer = hdrDoubleBuffer;
 
         brightPassShader = New!BrightPassShader(this);
         brightPassShader.luminanceThreshold = glowThreshold;
         passBrightPass = New!FilterPass(pipeline, brightPassShader);
         passBrightPass.view = viewHalf;
-        passBrightPass.inputBuffer = passMotionBlur.outputBuffer;
-        passBrightPass.outputBuffer = hdrBuffer1;
+        passBrightPass.inputBuffer = hdrDoubleBuffer;
+        passBrightPass.outputBuffer = hdrBuffer2;
 
         passBlur = New!BlurPass(pipeline);
         passBlur.view = viewHalf;
-        passBlur.inputBuffer = passBrightPass.outputBuffer;
+        passBlur.inputBuffer = hdrBuffer2;
         passBlur.outputBuffer = hdrBuffer1;
         passBlur.outputBuffer2 = hdrBuffer2;
         passBlur.radius = glowRadius;
@@ -239,35 +238,28 @@ class PostProcRenderer: Renderer
         glowShader.intensity = glowIntensity;
         passGlow = New!FilterPass(pipeline, glowShader);
         passGlow.view = view;
-        passGlow.inputBuffer = passMotionBlur.outputBuffer;
-        passGlow.outputBuffer = hdrBuffer3;
+        passGlow.inputBuffer = hdrDoubleBuffer;
+        passGlow.outputBuffer = hdrDoubleBuffer;
 
         tonemapShader = New!TonemapShader(this);
         passTonemap = New!FilterPass(pipeline, tonemapShader);
         passTonemap.view = view;
-        passTonemap.inputBuffer = passGlow.outputBuffer;
-        passTonemap.outputBuffer = ldrDoubleBuffer;
+        passTonemap.inputBuffer = hdrDoubleBuffer;
+        passTonemap.outputBuffer = hdrDoubleBuffer;
 
         fxaaShader = New!FXAAShader(this);
         passFXAA = New!FilterPass(pipeline, fxaaShader);
         passFXAA.view = view;
-        passFXAA.inputBuffer = ldrDoubleBuffer;
-        passFXAA.outputBuffer = ldrDoubleBuffer;
-
-        lensDistortionShader = New!LensDistortionShader(this);
-        passLensDistortion = New!FilterPass(pipeline, lensDistortionShader);
-        passLensDistortion.view = view;
-        passLensDistortion.inputBuffer = ldrDoubleBuffer;
-        passLensDistortion.outputBuffer = ldrDoubleBuffer;
-        passLensDistortion.active = false;
+        passFXAA.inputBuffer = hdrDoubleBuffer;
+        passFXAA.outputBuffer = hdrDoubleBuffer;
 
         lutShader = New!LUTShader(this);
         passLUT = New!FilterPass(pipeline, lutShader);
         passLUT.view = view;
-        passLUT.inputBuffer = ldrDoubleBuffer;
-        passLUT.outputBuffer = ldrDoubleBuffer;
+        passLUT.inputBuffer = hdrDoubleBuffer;
+        passLUT.outputBuffer = hdrDoubleBuffer;
 
-        outputBuffer = ldrDoubleBuffer;
+        outputBuffer = hdrDoubleBuffer;
     }
 
     void depthOfFieldEnabled(bool mode) @property
@@ -394,47 +386,8 @@ class PostProcRenderer: Renderer
         if (outputBuffer)
             outputBuffer.bind();
         
-        if (!_dofEnabled)
-        {
-            passMotionBlur.inputBuffer = inputBuffer;
-        }
-        else
-        {
-            passMotionBlur.inputBuffer = passDoF.outputBuffer;
-        }
-        
-        if (!_motionBlurEnabled)
-        {
-            if (_dofEnabled)
-            {
-                passBrightPass.inputBuffer = passDoF.outputBuffer;
-                passGlow.inputBuffer = passDoF.outputBuffer;
-            }
-            else
-            {
-                passBrightPass.inputBuffer = inputBuffer;
-                passGlow.inputBuffer = inputBuffer;
-            }
-        }
-        else
-        {
-            passBrightPass.inputBuffer = passMotionBlur.outputBuffer;
-            passGlow.inputBuffer = passMotionBlur.outputBuffer;
-        }
-        
-        if (!_glowEnabled)
-        {
-            if (_motionBlurEnabled)
-                passTonemap.inputBuffer = passMotionBlur.outputBuffer;
-            else if (_dofEnabled)
-                passTonemap.inputBuffer = passDoF.outputBuffer;
-            else
-                passTonemap.inputBuffer = inputBuffer;
-        }
-        else
-        {
-            passTonemap.inputBuffer = passGlow.outputBuffer;
-        }
+        hdrDoubleBuffer.readBuffer = inputBuffer;
+        hdrDoubleBuffer.writeBuffer = hdrBuffer3;
         
         foreach(pass; pipeline.passes.data)
         {
@@ -455,7 +408,10 @@ class PostProcRenderer: Renderer
                     }
                 }
                 pass.render();
-                ldrDoubleBuffer.swap();
+                
+                if (filterPass)
+                    if (filterPass.outputBuffer is hdrDoubleBuffer)
+                        hdrDoubleBuffer.swap();
             }
         }
 
@@ -469,12 +425,8 @@ class PostProcRenderer: Renderer
 
         viewHalf.resize(cast(uint)(view.width * glowViewScale), cast(uint)(view.height * glowViewScale));
 
-        ldrBuffer1.resize(view.width, view.height);
-        ldrBuffer2.resize(view.width, view.height);
-
         hdrBuffer1.resize(viewHalf.width, viewHalf.height);
         hdrBuffer2.resize(viewHalf.width, viewHalf.height);
         hdrBuffer3.resize(view.width, view.height);
-        hdrBuffer4.resize(view.width, view.height);
     }
 }

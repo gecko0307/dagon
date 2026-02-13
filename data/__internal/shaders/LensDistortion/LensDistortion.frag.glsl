@@ -55,7 +55,7 @@ void main()
     vec2 uv = texCoord * scale + (1.0 - scale) * 0.5;
 
     vec3 sumcol = vec3(0.0);
-    vec3 sumw = vec3(0.0);	
+    vec3 sumw = vec3(0.0);
     for(int i = 0; i < num_iter; ++i)
     {
         float t = float(i) * reci_num_iter_f;
