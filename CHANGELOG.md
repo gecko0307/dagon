@@ -1,5 +1,5 @@
-Dagon 0.39.0 - TBD
-------------------
+Dagon 0.39.0 - 13 Feb, 2026
+---------------------------
 - **Core**
   - Breaking change: `Cursor` enum is now `SystemCursor`. `Cursor` is now a class that represents custom SDL cursor
   - Support loading custom application cursors from image files. New methods `Application.loadCursor`, `Application.replaceCursor`
