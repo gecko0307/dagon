@@ -35,6 +35,7 @@ import dagon.core.event;
 import dagon.core.time;
 import dagon.core.bindings;
 import dagon.graphics.texture;
+import dagon.graphics.shader;
 import dagon.resource.scene;
 import dagon.resource.asset;
 import dagon.resource.texture;
@@ -204,23 +205,14 @@ class PostProcRenderer: Renderer
 
         dofShader = New!DepthOfFieldShader(this);
         dofShader.gbuffer = gbuffer;
-        passDoF = New!FilterPass(pipeline, dofShader);
-        passDoF.view = view;
-        passDoF.inputBuffer = hdrDoubleBuffer;
-        passDoF.outputBuffer = hdrDoubleBuffer;
+        passDoF = addFilterPass(dofShader);
 
         motionBlurShader = New!MotionBlurShader(this);
         motionBlurShader.gbuffer = gbuffer;
-        passMotionBlur = New!FilterPass(pipeline, motionBlurShader);
-        passMotionBlur.view = view;
-        passMotionBlur.inputBuffer = hdrDoubleBuffer;
-        passMotionBlur.outputBuffer = hdrDoubleBuffer;
+        passMotionBlur = addFilterPass(motionBlurShader);
 
         lensDistortionShader = New!LensDistortionShader(this);
-        passLensDistortion = New!FilterPass(pipeline, lensDistortionShader);
-        passLensDistortion.view = view;
-        passLensDistortion.inputBuffer = hdrDoubleBuffer;
-        passLensDistortion.outputBuffer = hdrDoubleBuffer;
+        passLensDistortion = addFilterPass(lensDistortionShader);
 
         brightPassShader = New!BrightPassShader(this);
         brightPassShader.luminanceThreshold = glowThreshold;
@@ -239,38 +231,30 @@ class PostProcRenderer: Renderer
         glowShader = New!GlowShader(this);
         glowShader.blurredBuffer = passBlur.outputBuffer;
         glowShader.intensity = glowIntensity;
-        passGlow = New!FilterPass(pipeline, glowShader);
-        passGlow.view = view;
-        passGlow.inputBuffer = hdrDoubleBuffer;
-        passGlow.outputBuffer = hdrDoubleBuffer;
+        passGlow = addFilterPass(glowShader);
 
         tonemapShader = New!TonemapShader(this);
-        passTonemap = New!FilterPass(pipeline, tonemapShader);
-        passTonemap.view = view;
-        passTonemap.inputBuffer = hdrDoubleBuffer;
-        passTonemap.outputBuffer = hdrDoubleBuffer;
-
+        passTonemap = addFilterPass(tonemapShader);
+        
         fxaaShader = New!FXAAShader(this);
-        passFXAA = New!FilterPass(pipeline, fxaaShader);
-        passFXAA.view = view;
-        passFXAA.inputBuffer = hdrDoubleBuffer;
-        passFXAA.outputBuffer = hdrDoubleBuffer;
-        
-        colorGradingShader = New!ColorGradingShader(this);
-        passColorGrading = New!FilterPass(pipeline, colorGradingShader);
-        passColorGrading.view = view;
-        passColorGrading.inputBuffer = hdrDoubleBuffer;
-        passColorGrading.outputBuffer = hdrDoubleBuffer;
-        
-        sharpeningShader = New!SharpeningShader(this);
-        passSharpening = New!FilterPass(pipeline, sharpeningShader);
-        passSharpening.view = view;
-        passSharpening.inputBuffer = hdrDoubleBuffer;
-        passSharpening.outputBuffer = hdrDoubleBuffer;
+        passFXAA = addFilterPass(fxaaShader);
 
-        // TODO: support custom filters
+        colorGradingShader = New!ColorGradingShader(this);
+        passColorGrading = addFilterPass(colorGradingShader);
+
+        sharpeningShader = New!SharpeningShader(this);
+        passSharpening = addFilterPass(sharpeningShader);
 
         outputBuffer = hdrDoubleBuffer;
+    }
+    
+    FilterPass addFilterPass(Shader shader)
+    {
+        auto filterPass = New!FilterPass(pipeline, shader);
+        filterPass.view = view;
+        filterPass.inputBuffer = hdrDoubleBuffer;
+        filterPass.outputBuffer = hdrDoubleBuffer;
+        return filterPass;
     }
 
     void depthOfFieldEnabled(bool mode) @property
