@@ -1,7 +1,9 @@
 Dagon 0.40.0 - TBD
 ------------------
 - **Post-processing**
-  - `PostProcRenderer` was redesigned to use fewer VRAM and less hard-coded buffer swapping logics.
+  - Sharpening filter based on FidelityFX CAS (`sharpening.enabled` and `sharpening.strength` in render.conf)
+  - Improved SSAO noise reduction filter, adding support for depth-aware weighting, which eliminates halo artifacts at close distances (`ssao.denoiseDepthAware` in render.conf)
+  - The whole post-processing pipeline was redesigned to use fewer VRAM and less hard-coded buffer swapping logics.
 
 Dagon 0.39.0 - 13 Feb, 2026
 ---------------------------
