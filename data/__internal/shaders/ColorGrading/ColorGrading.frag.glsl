@@ -1,19 +1,22 @@
 #version 400 core
 
-uniform bool enabled;
+uniform bool useLUT;
 
 uniform sampler2D colorBuffer;
 
-uniform sampler2D colorTableSimple;
+uniform sampler2D colorTableGPUImage;
 uniform sampler3D colorTableHald;
 
-// 0 = simple, 1 = Hald
+// 0 = GPUImage, 1 = Hald
 uniform int lookupMode;
+
+uniform mat4 colorMatrix;
 
 in vec2 texCoord;
 out vec4 fragColor;
 
-vec3 lookupColor(sampler2D lookupTable, vec3 textureColor)
+// Based on Brad Larson's GPUImage3
+vec3 lookupGPUImage(sampler2D lookupTable, vec3 textureColor)
 {
     textureColor = clamp(textureColor, 0.0, 1.0);
 
@@ -49,15 +52,24 @@ vec3 lookupHald(sampler3D lookupTable, vec3 textureColor)
 
 void main()
 {
-    vec3 res = texture(colorBuffer, texCoord).rgb;
+    vec3 rgb = texture(colorBuffer, texCoord).rgb;
     
-    if (enabled)
+    if (useLUT)
     {
+        // LUT color grading
         if (lookupMode == 1)
-            res = lookupHald(colorTableHald, res);
+            rgb = lookupHald(colorTableHald, rgb);
         else
-            res = lookupColor(colorTableSimple, res);
+            rgb = lookupGPUImage(colorTableGPUImage, rgb);
+        
+        rgb = pow(rgb, vec3(2.2));
+    }
+    else
+    {
+        // Matrix-based color correction
+        rgb = pow(rgb, vec3(2.2));
+        rgb = (colorMatrix * vec4(rgb, 1.0)).rgb;
     }
     
-    fragColor = vec4(res, 1.0);
+    fragColor = vec4(rgb, 1.0);
 }

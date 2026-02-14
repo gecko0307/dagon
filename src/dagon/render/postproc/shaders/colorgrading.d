@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2025 Timur Gafarov
+Copyright (c) 2019-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.postproc.shaders.lut;
+module dagon.render.postproc.shaders.colorgrading;
 
 import std.stdio;
 
@@ -35,6 +35,7 @@ import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
+import dlib.math.utils;
 import dlib.image.color;
 import dlib.text.str;
 
@@ -44,41 +45,93 @@ import dagon.graphics.state;
 import dagon.graphics.texture;
 import dagon.render.framebuffer;
 
-class LUTShader: Shader
+class ColorGradingShader: Shader
 {
    protected:
     String vs, fs;
     
     ShaderParameter!Vector2f viewSize;
     ShaderParameter!int colorBuffer;
-    ShaderParameter!int lutEnabled;
-    ShaderParameter!int colorTableSimple;
+    ShaderParameter!int useLUT;
+    ShaderParameter!int colorTableGPUImage;
     ShaderParameter!int colorTableHald;
     ShaderParameter!int lookupMode;
+    ShaderParameter!Matrix4x4f ccColorMatrix;
+    
+    Vector3f colorOffset;
+    Matrix4x4f brightnessMatrix;
+    Matrix4x4f contrastMatrix;
+    Matrix4x4f saturationMatrix;
 
    public:
     Texture colorLookupTable;
+    bool lutEnabled = true;
+    Matrix4x4f colorMatrix;
 
     this(Owner owner)
     {
-        vs = Shader.load("data/__internal/shaders/LUT/LUT.vert.glsl");
-        fs = Shader.load("data/__internal/shaders/LUT/LUT.frag.glsl");
+        vs = Shader.load("data/__internal/shaders/ColorGrading/ColorGrading.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/ColorGrading/ColorGrading.frag.glsl");
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
         
         viewSize = createParameter!Vector2f("viewSize");
         colorBuffer = createParameter!int("colorBuffer");
-        lutEnabled = createParameter!int("enabled");
-        colorTableSimple = createParameter!int("colorTableSimple");
+        useLUT = createParameter!int("useLUT");
+        colorTableGPUImage = createParameter!int("colorTableGPUImage");
         colorTableHald = createParameter!int("colorTableHald");
         lookupMode = createParameter!int("lookupMode");
+        ccColorMatrix = createParameter!Matrix4x4f("colorMatrix");
+        
+        colorOffset = Vector3f(0.0f, 0.0f, 0.0f);
+        brightnessMatrix = Matrix4x4f.identity;
+        contrastMatrix = Matrix4x4f.identity;
+        saturationMatrix = Matrix4x4f.identity;
+        colorMatrix = Matrix4x4f.identity;
     }
 
     ~this()
     {
         vs.free();
         fs.free();
+    }
+    
+    void brightness(float b)
+    {
+        brightnessMatrix = matrixf(
+            1, 0, 0, b,
+            0, 1, 0, b,
+            0, 0, 1, b,
+            0, 0, 0, 1);
+        
+        colorMatrix = brightnessMatrix * contrastMatrix * saturationMatrix;
+    }
+
+    void contrast(float c)
+    {
+        float t = (1.0f - c) * 0.5f;
+        contrastMatrix = matrixf(
+            c, 0, 0, t,
+            0, c, 0, t,
+            0, 0, c, t,
+            0, 0, 0, 1);
+        
+        colorMatrix = brightnessMatrix * contrastMatrix * saturationMatrix;
+    }
+
+    void saturation(float s)
+    {
+        Vector3f lum = vec3(0.2126f, 0.7152f, 0.0722f);
+        
+        saturationMatrix = matrixf(
+            lum.x * (1.0f - s) + s, lum.y * (1.0f - s),     lum.z * (1.0f - s),     0.0f,
+            lum.x * (1.0f - s),     lum.y * (1.0f - s) + s, lum.z * (1.0f - s),     0.0f,
+            lum.x * (1.0f - s),     lum.y * (1.0f - s),     lum.z * (1.0f - s) + s, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f
+        );
+        
+        colorMatrix = brightnessMatrix * contrastMatrix * saturationMatrix;
     }
 
     override void bindParameters(GraphicsState* state)
@@ -93,8 +146,8 @@ class LUTShader: Shader
         // Textures 1, 2 - lookup table
         if (colorLookupTable)
         {
-            lutEnabled = true;
-            colorTableSimple = 1;
+            useLUT = lutEnabled;
+            colorTableGPUImage = 1;
             colorTableHald = 2;
             
             if (colorLookupTable.format.target == GL_TEXTURE_3D)
@@ -120,9 +173,11 @@ class LUTShader: Shader
         }
         else
         {
-            lutEnabled = false;
+            useLUT = false;
         }
-
+        
+        ccColorMatrix = colorMatrix;
+        
         glActiveTexture(GL_TEXTURE0);
 
         super.bindParameters(state);

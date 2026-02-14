@@ -31,12 +31,12 @@ public
 {
     import dagon.render.postproc.shaders.blur;
     import dagon.render.postproc.shaders.brightpass;
+    import dagon.render.postproc.shaders.colorgrading;
     import dagon.render.postproc.shaders.denoise;
     import dagon.render.postproc.shaders.dof;
     import dagon.render.postproc.shaders.fxaa;
     import dagon.render.postproc.shaders.glow;
     import dagon.render.postproc.shaders.lensdistortion;
-    import dagon.render.postproc.shaders.lut;
     import dagon.render.postproc.shaders.motionblur;
     import dagon.render.postproc.shaders.sharpening;
     import dagon.render.postproc.shaders.tonemap;

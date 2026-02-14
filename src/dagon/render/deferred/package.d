@@ -34,6 +34,7 @@ import dlib.core.stream;
 import dagon.core.application;
 import dagon.core.event;
 import dagon.core.time;
+import dagon.core.logger;
 import dagon.graphics.texture;
 import dagon.resource.scene;
 import dagon.resource.dds;

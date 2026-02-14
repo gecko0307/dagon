@@ -24,6 +24,6 @@ void main()
     }
     
     vec4 coutput = texture(colorBuffer, uv);
-    fragColor = vec4(coutput.rgb, 1.0);
+    fragColor = vec4(pow(coutput.rgb, vec3(1.0 / 2.2)), 1.0);
     gl_FragDepth = texture(depthBuffer, uv).r;
 }

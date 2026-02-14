@@ -119,7 +119,6 @@ class PostProcRenderer: Renderer
 
     Framebuffer hdrBuffer1;
     Framebuffer hdrBuffer2;
-    
     Framebuffer hdrBuffer3;
 
     RenderView viewHalf;
@@ -133,7 +132,7 @@ class PostProcRenderer: Renderer
     TonemapShader tonemapShader;
     FXAAShader fxaaShader;
     SharpeningShader sharpeningShader;
-    LUTShader lutShader;
+    ColorGradingShader colorGradingShader;
 
     FilterPass passDoF;
     FilterPass passMotionBlur;
@@ -143,7 +142,7 @@ class PostProcRenderer: Renderer
     FilterPass passTonemap;
     FilterPass passFXAA;
     FilterPass passSharpening;
-    FilterPass passLUT;
+    FilterPass passColorGrading;
 
     bool _dofEnabled = false;
     bool _motionBlurEnabled = false;
@@ -257,17 +256,19 @@ class PostProcRenderer: Renderer
         passFXAA.inputBuffer = hdrDoubleBuffer;
         passFXAA.outputBuffer = hdrDoubleBuffer;
         
+        colorGradingShader = New!ColorGradingShader(this);
+        passColorGrading = New!FilterPass(pipeline, colorGradingShader);
+        passColorGrading.view = view;
+        passColorGrading.inputBuffer = hdrDoubleBuffer;
+        passColorGrading.outputBuffer = hdrDoubleBuffer;
+        
         sharpeningShader = New!SharpeningShader(this);
         passSharpening = New!FilterPass(pipeline, sharpeningShader);
         passSharpening.view = view;
         passSharpening.inputBuffer = hdrDoubleBuffer;
         passSharpening.outputBuffer = hdrDoubleBuffer;
 
-        lutShader = New!LUTShader(this);
-        passLUT = New!FilterPass(pipeline, lutShader);
-        passLUT.view = view;
-        passLUT.inputBuffer = hdrDoubleBuffer;
-        passLUT.outputBuffer = hdrDoubleBuffer;
+        // TODO: support custom filters
 
         outputBuffer = hdrDoubleBuffer;
     }
@@ -322,13 +323,28 @@ class PostProcRenderer: Renderer
         return passLensDistortion.active;
     }
 
+    void brightness(float b) @property
+    {
+        colorGradingShader.brightness = b;
+    }
+    
+    void contrast(float c) @property
+    {
+        colorGradingShader.contrast = c;
+    }
+    
+    void saturation(float s) @property
+    {
+        colorGradingShader.saturation = s;
+    }
+
     void lutEnabled(bool mode) @property
     {
-        passLUT.active = mode;
+        colorGradingShader.lutEnabled = mode;
     }
     bool lutEnabled() @property
     {
-        return passLUT.active;
+        return colorGradingShader.lutEnabled;
     }
     
     void sharpeningEnabled(bool mode) @property
@@ -393,10 +409,10 @@ class PostProcRenderer: Renderer
         lensDistortionShader.scale = lensDistortionScale;
         lensDistortionShader.dispersion = lensDistortionDispersion;
         
-        lutShader.colorLookupTable = colorLookupTable;
-        if (lutShader.colorLookupTable)
+        colorGradingShader.colorLookupTable = colorLookupTable;
+        if (colorGradingShader.colorLookupTable)
         {
-            lutShader.colorLookupTable.useMipmapFiltering = false;
+            colorGradingShader.colorLookupTable.useMipmapFiltering = false;
         }
         
         sharpeningShader.sharpening = sharpening;

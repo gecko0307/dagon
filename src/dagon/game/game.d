@@ -248,6 +248,13 @@ class Game: BaseGame
             }
         }
         
+        if ("cc.brightness" in rendererConfig.props)
+            postProcessingRenderer.brightness = rendererConfig.props["cc.brightness"].toFloat;
+        if ("cc.contrast" in rendererConfig.props)
+            postProcessingRenderer.contrast = rendererConfig.props["cc.contrast"].toFloat;
+        if ("cc.saturation" in rendererConfig.props)
+            postProcessingRenderer.saturation = rendererConfig.props["cc.saturation"].toFloat;
+        
         if ("sharpening.enabled" in rendererConfig.props)
             postProcessingRenderer.sharpeningEnabled = cast(bool)(rendererConfig.props["sharpening.enabled"].toUInt);
         if ("sharpening.strength" in rendererConfig.props)
