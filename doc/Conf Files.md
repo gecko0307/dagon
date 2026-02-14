@@ -103,6 +103,7 @@ Recognozed by the `Game` class, applied to the `Game.deferredRenderer` and `Game
 * `ssao.radius` - maximum radius of occlusion detection for SSAO. Default is `0.2`
 * `ssao.power` - SSAO power. The greater is power, the more pronounced is the occlusion effect. Default is `4.0`
 * `ssao.denoise` - a number between `0.0` and `1.0` that interpolates between unfiltered (noisy) and denoised occlusion data. A simple bilateral filter is used to denoise. Default is `1.0`
+* `ssao.denoiseDepthAware` - 
 * `ssao.occlusionBufferDetail` - a number between `0.0` and `1.0` that indicates a uniform scale of the occlusion buffer resolution. For example, `0.5` will give 1/4 of the main framebuffer. This is useful as a quality/performance tradeoff on low-end machines. Default is `1.0`
 * `glow.enabled` - `0` or `1`, disable or enable glow filter. Default is `0`
 * `glow.viewScale` - a number between `0.0` and `1.0` that indicates a uniform scale of the glow buffer resolution. For example, `0.5` will give 1/4 of the main framebuffer. This is useful as a quality/performance tradeoff on low-end machines. Default is `1.0`
@@ -141,6 +142,8 @@ Recognozed by the `Game` class, applied to the `Game.deferredRenderer` and `Game
 * `dof.nearDistance` - 
 * `dof.farStart` - 
 * `dof.farDistance` - 
+* `sharpening.enabled` - 
+* `sharpening.strength` - 
 * `lut.enabled` - `0` or `1`, disable or enable color LUT filter. Default is `0`
 * `lut.file` - path to the LUT file
 * `pixelization.enabled` - `0` or `1`, disable or enable pixelization filter. Default is `0`
