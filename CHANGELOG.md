@@ -1,9 +1,10 @@
 Dagon 0.40.0 - TBD
 ------------------
 - **Post-processing**
+  - Post-processing pipeline was optimized to use linear color as much as possible, fewer VRAM and less hard-coded buffer swapping logics. Custom filters are now supported via `PostProcRenderer.addFilterPass`
   - Sharpening filter based on FidelityFX CAS (`sharpening.enabled` and `sharpening.strength` in render.conf)
   - Improved SSAO noise reduction filter, adding support for depth-aware weighting, which eliminates halo artifacts at close distances (`ssao.denoiseDepthAware` in render.conf)
-  - The whole post-processing pipeline was redesigned to use fewer VRAM and less hard-coded buffer swapping logics.
+  - Color grading filter now supports simple brightness/contrast/saturation adjustment (`cc.brightness`, `cc.contrast`, `cc.saturation` in render.conf). If LUT is used, color adjustment is overridden with color lookup.
 
 Dagon 0.39.0 - 13 Feb, 2026
 ---------------------------
