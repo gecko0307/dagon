@@ -1,8 +1,7 @@
-# Dagon Authors and Contributors
+# Credits
+
+## Authors and contributors
 * Core engine, Newton extension, IQM extension, KTX extension, Assimp extension, PhysFS extension, audio extension, video extension - [Timur Gafarov aka gecko0307](https://github.com/gecko0307)
-* Wintab binding - [Vadim Lopatin aka buggins](https://github.com/buggins)
-* DXT1/DXT5 compressor - [Fabian Giesen](https://github.com/rygorous), [Yann Collet](https://github.com/Cyan4973)
-* ImGui extension (ImGuiOpenGLBackend) - [Joshua T. Fisher aka playmer](https://github.com/playmer), [LunaTheFoxgirl](https://github.com/LunaTheFoxgirl)
 * Input manager, Nuklear extension - [Mateusz Muszyński aka Timu5](https://github.com/Timu5)
 * Terrain rendering, OpenSimplex noise generator - Rafał Ziemniewski
 * Shader loader - [Viktor M. aka dayllenger](https://github.com/dayllenger)
@@ -10,6 +9,11 @@
 * Asset manager improvements - [Konstantin Menshikov aka MANKEYYENAME](https://github.com/MANKEYYENAME)
 * OBJ group parser - [Vlad Davydov aka Tynuk](https://github.com/Tynukua)
 * Bugfixes - [Björn Roberg aka roobie](https://github.com/roobie), [Isaac S.](https://github.com/isaacs-dev), [Adrien Allard aka Tichau](https://github.com/Tichau), [Ilya Lemeshko aka ijet](https://github.com/my-ijet), [Dennis Korpel aka dkorpel](https://github.com/dkorpel), [Robert Schadek aka burner](https://github.com/burner)
+
+## Adapted code
+* Wintab binding - [Vadim Lopatin aka buggins](https://github.com/buggins)
+* DXT1/DXT5 compressor - [Fabian Giesen](https://github.com/rygorous), [Yann Collet](https://github.com/Cyan4973)
+* ImGui extension (ImGuiOpenGLBackend) - [Joshua T. Fisher aka playmer](https://github.com/playmer), [LunaTheFoxgirl](https://github.com/LunaTheFoxgirl)
 
 ## Third-party products
 Dagon and its extensions depend on the following libraries:
