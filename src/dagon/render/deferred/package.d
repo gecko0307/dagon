@@ -79,6 +79,7 @@ class DeferredRenderer: Renderer
     float ssaoRadius = 0.2f;
     float ssaoPower = 5.0f;
     float ssaoDenoise = 1.0f;
+    bool ssaoDenoiseDepthAware = true;
     
     void ssaoEnabled(bool mode) @property
     {
@@ -146,7 +147,7 @@ class DeferredRenderer: Renderer
         occlusionView = New!RenderView(0, 0, cast(uint)(view.width * _occlusionBufferDetail), cast(uint)(view.height * _occlusionBufferDetail), this);
         passOcclusion = New!PassOcclusion(pipeline, gbuffer);
         passOcclusion.view = occlusionView;
-        occlusionNoisyBuffer = New!Framebuffer(occlusionView.width, occlusionView.height, FrameBufferFormat.R8, false, this);
+        occlusionNoisyBuffer = New!Framebuffer(occlusionView.width, occlusionView.height, FrameBufferFormat.RG8, false, this);
         passOcclusion.outputBuffer = occlusionNoisyBuffer;
         
         denoiseShader = New!DenoiseShader(this);
@@ -233,6 +234,7 @@ class DeferredRenderer: Renderer
         passOcclusion.ssaoShader.radius = ssaoRadius;
         passOcclusion.ssaoShader.power = ssaoPower;
         denoiseShader.factor = ssaoDenoise;
+        denoiseShader.depthAware = ssaoDenoiseDepthAware;
         
         super.update(t);
     }

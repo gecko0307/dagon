@@ -65,7 +65,7 @@ class FilterPass: RenderPass
 
             state.colorTexture = inputBuffer.colorTexture;
             state.depthTexture = inputBuffer.depthTexture;
-            
+
             state.minFilter = minFilter;
             state.magFilter = magFilter;
 

@@ -142,6 +142,8 @@ class Game: BaseGame
             deferredRenderer.ssaoPower = rendererConfig.props["ssao.power"].toFloat;
         if ("ssao.denoise" in rendererConfig.props)
             deferredRenderer.ssaoDenoise = rendererConfig.props["ssao.denoise"].toFloat;
+        if ("ssao.denoiseDepthAware" in rendererConfig.props)
+            deferredRenderer.ssaoDenoiseDepthAware = cast(bool)(rendererConfig.props["ssao.denoiseDepthAware"].toUInt);
         if ("ssao.occlusionBufferDetail" in rendererConfig.props)
             deferredRenderer.occlusionBufferDetail = rendererConfig.props["ssao.occlusionBufferDetail"].toFloat;
         
@@ -245,6 +247,11 @@ class Game: BaseGame
                 postProcessingRenderer.loadDefaultLUT(assetManager, lutFilename);
             }
         }
+        
+        if ("sharpening.enabled" in rendererConfig.props)
+            postProcessingRenderer.sharpeningEnabled = cast(bool)(rendererConfig.props["sharpening.enabled"].toUInt);
+        if ("sharpening.strength" in rendererConfig.props)
+            postProcessingRenderer.sharpening = rendererConfig.props["sharpening.strength"].toFloat;
         
         if ("pixelization.enabled" in rendererConfig.props)
             presentRenderer.pixelization = cast(bool)(rendererConfig.props["pixelization.enabled"].toUInt);

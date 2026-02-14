@@ -83,5 +83,5 @@ void main()
     
     occlusion = mix(occlusion, 1.0, clamp(-eyePos.z / 100.0, 0.0, 1.0));
     
-    fragColor = vec4(vec3(occlusion), 1.0);
+    fragColor = vec4(occlusion, -eyePos.z, 1.0, 1.0);
 }

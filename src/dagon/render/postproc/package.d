@@ -129,18 +129,20 @@ class PostProcRenderer: Renderer
     BrightPassShader brightPassShader;
     GlowShader glowShader;
     MotionBlurShader motionBlurShader;
+    LensDistortionShader lensDistortionShader;
     TonemapShader tonemapShader;
     FXAAShader fxaaShader;
-    LensDistortionShader lensDistortionShader;
+    SharpeningShader sharpeningShader;
     LUTShader lutShader;
 
     FilterPass passDoF;
     FilterPass passMotionBlur;
+    FilterPass passLensDistortion;
     FilterPass passBrightPass;
     FilterPass passGlow;
     FilterPass passTonemap;
     FilterPass passFXAA;
-    FilterPass passLensDistortion;
+    FilterPass passSharpening;
     FilterPass passLUT;
 
     bool _dofEnabled = false;
@@ -180,6 +182,8 @@ class PostProcRenderer: Renderer
 
     Texture defaultColorLookupTable;
     Texture colorLookupTable;
+    
+    float sharpening = 0.5f;
     
     bool useLinearFilter = true;
 
@@ -252,6 +256,12 @@ class PostProcRenderer: Renderer
         passFXAA.view = view;
         passFXAA.inputBuffer = hdrDoubleBuffer;
         passFXAA.outputBuffer = hdrDoubleBuffer;
+        
+        sharpeningShader = New!SharpeningShader(this);
+        passSharpening = New!FilterPass(pipeline, sharpeningShader);
+        passSharpening.view = view;
+        passSharpening.inputBuffer = hdrDoubleBuffer;
+        passSharpening.outputBuffer = hdrDoubleBuffer;
 
         lutShader = New!LUTShader(this);
         passLUT = New!FilterPass(pipeline, lutShader);
@@ -321,6 +331,15 @@ class PostProcRenderer: Renderer
         return passLUT.active;
     }
     
+    void sharpeningEnabled(bool mode) @property
+    {
+        passSharpening.active = mode;
+    }
+    bool sharpeningEnabled() @property
+    {
+        return passSharpening.active;
+    }
+    
     void loadDefaultLUT(AssetManager assetManager, string filename)
     {
         if (defaultColorLookupTable)
@@ -379,6 +398,8 @@ class PostProcRenderer: Renderer
         {
             lutShader.colorLookupTable.useMipmapFiltering = false;
         }
+        
+        sharpeningShader.sharpening = sharpening;
     }
 
     override void render()

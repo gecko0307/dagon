@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2026 Timur Gafarov
+Copyright (c) 2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dagon.render.postproc.shaders.denoise;
+module dagon.render.postproc.shaders.sharpening;
 
 import std.stdio;
 
@@ -42,33 +42,32 @@ import dagon.core.bindings;
 import dagon.graphics.shader;
 import dagon.graphics.state;
 
-class DenoiseShader: Shader
+class SharpeningShader: Shader
 {
    protected:
     String vs, fs;
     
     ShaderParameter!Vector2f viewSize;
-    ShaderParameter!float denoiseFactor;
+    ShaderParameter!int sharpeningEnabled;
+    ShaderParameter!float sharpeningFactor;
     ShaderParameter!int colorBuffer;
-    ShaderParameter!int depthAwareDenoise;
 
    public:
     bool enabled = true;
-    bool depthAware = true;
-    float factor = 0.5f;
+    float sharpening = 0.5f;
 
     this(Owner owner)
     {
-        vs = Shader.load("data/__internal/shaders/Denoise/Denoise.vert.glsl");
-        fs = Shader.load("data/__internal/shaders/Denoise/Denoise.frag.glsl");
+        vs = Shader.load("data/__internal/shaders/Sharpening/Sharpening.vert.glsl");
+        fs = Shader.load("data/__internal/shaders/Sharpening/Sharpening.frag.glsl");
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
-        
+
         viewSize = createParameter!Vector2f("viewSize");
-        denoiseFactor = createParameter!float("factor");
+        sharpeningEnabled = createParameter!int("enabled");
+        sharpeningFactor = createParameter!float("sharpening");
         colorBuffer = createParameter!int("colorBuffer");
-        depthAwareDenoise = createParameter!int("depthAware");
     }
 
     ~this()
@@ -80,8 +79,8 @@ class DenoiseShader: Shader
     override void bindParameters(GraphicsState* state)
     {
         viewSize = state.resolution;
-        denoiseFactor = factor;
-        depthAwareDenoise = depthAware;
+        sharpeningEnabled = enabled;
+        sharpeningFactor = sharpening;
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);

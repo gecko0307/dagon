@@ -50,6 +50,7 @@ vec3 lookupHald(sampler3D lookupTable, vec3 textureColor)
 void main()
 {
     vec3 res = texture(colorBuffer, texCoord).rgb;
+    
     if (enabled)
     {
         if (lookupMode == 1)
@@ -57,5 +58,6 @@ void main()
         else
             res = lookupColor(colorTableSimple, res);
     }
+    
     fragColor = vec4(res, 1.0);
 }
