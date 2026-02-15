@@ -13,6 +13,8 @@ Used when `RenderView.projection = Perspective`. Perspective projection in Dagon
 
 Unlike photography and cinema, 3D graphics does not have a standard frame size that determines the optical characteristics of the camera. Games are expected to run at different resolutions, and this affects what user sees on the screen. One of the challenges with virtual cameras is maintaining a consistent user experience across different resolutions. Dagon uses Hor+ (horizontal plus) scaling method, where the vertical FOV of the camera is fixed (programmed in the game), while the horizontal FOV depends on the aspect ratio of the rendering resolution. A wider aspect ratio results in a larger FOV. This method favors wide and ultrawide screens, ensuring that they display more content on the sides rather than cropping the image vertically (Ver-).
 
+Based on the above considerations, `Camera.fov` in Dagon represents vertical FOV angle. It can be even animated to create the "dolly zoom" effect.
+
 ## Orthographic View
 
 Used when `RenderView.projection = Ortho`. The orthographic projection displays objects without perspective distortion (parallel lines remain parallel on screen). It is mostly used for isometric games.
