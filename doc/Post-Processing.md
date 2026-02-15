@@ -52,7 +52,7 @@ Micro 4:3: 0.015 mm
 Medium Format (6x4.5): 0.05 mm
 ```
 
-* `dof.pentagonBokeh` -
+* `dof.pentagonBokeh` - if set to `true`, pentagon-shaped aperture will be simulated instead of a circular aperture. Default is `false`
 * `dof.pentagonBokehFeather` -
 * `dof.manual` -
 * `dof.nearStart` -
