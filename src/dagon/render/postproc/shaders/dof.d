@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2025 Timur Gafarov
+Copyright (c) 2021-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -65,6 +65,10 @@ class DepthOfFieldShader: Shader
     ShaderParameter!float dofFarStart;
     ShaderParameter!float dofFarDistance;
     
+    ShaderParameter!float dofCoC;
+    ShaderParameter!int dofPentagon;
+    ShaderParameter!float dofFeather;
+    
     ShaderParameter!int colorBuffer;
     ShaderParameter!int depthBuffer;
 
@@ -72,15 +76,19 @@ class DepthOfFieldShader: Shader
     bool enabled = true;
     
     bool autofocus = true; // Focus to screen center
-    float focalDepth = 1.5; // Focal distance value in meters when autofocus is false
-    float focalLength = 5.0; // Focal length in mm
-    float fStop = 2.0; // F-stop value
+    float focalDepth = 1.5f; // Focal distance value in meters when autofocus is false
+    float focalLength = 20.0f; // Focal length in mm
+    float fStop = 16.0f; // F-stop value
     
     bool manual = false; // Manual DoF calculation
-    float nearStart = 1.0; // Near DoF blur start
-    float nearDistance = 2.0; // Near DoF blur falloff distance
-    float farStart = 1.0; // Far DoF blur start
-    float farDistance = 3.0; // Far DoF blur falloff distance
+    float nearStart = 1.0f; // Near DoF blur start
+    float nearDistance = 2.0f; // Near DoF blur falloff distance
+    float farStart = 1.0f; // Far DoF blur start
+    float farDistance = 3.0f; // Far DoF blur falloff distance
+    
+    float circleOfConfusion = 0.03f; // Circle of confusion size in mm (35mm film = 0.03mm)
+    bool pentagonBokeh = false; // Use pentagon as bokeh shape
+    float pentagonBokehFeather = 0.4f; // Pentagon shape feather
 
     GBuffer gbuffer;
 
@@ -108,6 +116,10 @@ class DepthOfFieldShader: Shader
         dofNearDistance = createParameter!float("nearDistance");
         dofFarStart = createParameter!float("farStart");
         dofFarDistance = createParameter!float("farDistance");
+        
+        dofCoC = createParameter!float("CoC");
+        dofPentagon = createParameter!int("pentagon");
+        dofFeather = createParameter!float("feather");
         
         colorBuffer = createParameter!int("colorBuffer");
         depthBuffer = createParameter!int("depthBuffer");
@@ -138,6 +150,10 @@ class DepthOfFieldShader: Shader
         dofNearDistance = nearDistance;
         dofFarStart = farStart;
         dofFarDistance = farDistance;
+        
+        dofCoC = circleOfConfusion;
+        dofPentagon = pentagonBokeh;
+        dofFeather = pentagonBokehFeather;
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);

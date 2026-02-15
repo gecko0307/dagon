@@ -23,14 +23,9 @@ uniform float zFar;
 uniform mat4 invProjectionMatrix;
 
 uniform bool autofocus; // use autofocus in shader?
-uniform float focalDepth; // focal distance value in meters, but you may use autofocus option
+uniform float focalDepth; // focal distance in meters for manual focus
 uniform float focalLength; // focal length in mm
 uniform float fstop; // f-stop value
-
-const bool showFocus = false; //show debug focus point and focal range (red = focal point, green = focal range)
-
-const int samples = 4; // samples on the first ring
-const int rings = 5; // ring count
 
 uniform bool manual; //manual dof calculation
 uniform float nearStart; // near dof blur start
@@ -38,7 +33,12 @@ uniform float nearDistance; // near dof blur falloff distance
 uniform float farStart; // far dof blur start
 uniform float farDistance; // far dof blur falloff distance
 
-const float CoC = 0.03; // circle of confusion size in mm (35mm film = 0.03mm)
+uniform float CoC = 0.03; // circle of confusion size in mm (35mm film = 0.03mm)
+
+const bool showFocus = false; //show debug focus point and focal range (red = focal point, green = focal range)
+
+const int samples = 4; // samples on the first ring
+const int rings = 5; // ring count
 
 const vec2 focus = vec2(0.5, 0.5); // autofocus point on screen (0.0, 0.0 - left lower corner, 1.0, 1.0 - upper right)
 const float maxblur = 2.0; //clamp value of max blur (0.0 = no blur, 1.0 default)
@@ -53,13 +53,11 @@ const bool depthblur = false; // blur the depth buffer?
 const float dbsize = 1.25; // depthblursize
 
 /*
-next part is experimental
-not looking good with small sample and ring count
-looks okay starting from samples = 4, rings = 4
-*/
-
-const bool pentagon = false; // use pentagon as bokeh shape?
-const float feather = 0.4; // pentagon shape feather
+ * Next part is experimental. Not looking good with small sample and ring count.
+ * Looks okay starting from samples = 4, rings = 4
+ */
+uniform bool pentagon; // use pentagon as bokeh shape?
+uniform float feather; // pentagon shape feather
 
 in vec2 texCoord;
 out vec4 fragColor;

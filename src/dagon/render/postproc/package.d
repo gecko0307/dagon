@@ -171,14 +171,17 @@ class PostProcRenderer: Renderer
     
     bool autofocus = true;
     float focalDepth = 1.5f;
-    float focalLength = 5.0f;
-    float fStop = 2.0f;
+    float focalLength = 20.0f;
+    float fStop = 16.0f;
     
     bool dofManual = false;
     float dofNearStart = 1.0f;
     float dofNearDistance = 2.0f;
     float dofFarStart = 1.0f;
     float dofFarDistance = 3.0f;
+    float dofCircleOfConfusion = 0.03f;
+    bool dofPentagonBokeh = false;
+    float dofPentagonBokehFeather = 0.4f;
 
     Texture defaultColorLookupTable;
     Texture colorLookupTable;
@@ -381,6 +384,9 @@ class PostProcRenderer: Renderer
         dofShader.nearDistance = dofNearDistance;
         dofShader.farStart = dofFarStart;
         dofShader.farDistance = dofFarDistance;
+        dofShader.circleOfConfusion = dofCircleOfConfusion;
+        dofShader.pentagonBokeh = dofPentagonBokeh;
+        dofShader.pentagonBokehFeather = dofPentagonBokehFeather;
         
         motionBlurShader.samples = motionBlurSamples;
         motionBlurShader.currentFramerate = 60.0f;

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2025 Timur Gafarov
+Copyright (c) 2019-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -34,7 +34,7 @@ DEALINGS IN THE SOFTWARE.
  * renderers. The `Game` class provides deferred renderer and post-processing renderer,
  * and handles window resize event for correctly updating all render targets.
  *
- * Copyright: Timur Gafarov 2019-2025
+ * Copyright: Timur Gafarov 2019-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Timur Gafarov
  */
@@ -236,6 +236,12 @@ class Game: BaseGame
             postProcessingRenderer.dofFarStart = rendererConfig.props["dof.farStart"].toFloat;
         if ("dof.farDistance" in rendererConfig.props)
             postProcessingRenderer.dofFarDistance = rendererConfig.props["dof.farDistance"].toFloat;
+        if ("dof.circleOfConfusion" in rendererConfig.props)
+            postProcessingRenderer.dofCircleOfConfusion = rendererConfig.props["dof.circleOfConfusion"].toFloat;
+        if ("dof.pentagonBokeh" in rendererConfig.props)
+            postProcessingRenderer.dofPentagonBokeh = cast(bool)(rendererConfig.props["dof.pentagonBokeh"].toUInt);
+        if ("dof.pentagonBokehFeather" in rendererConfig.props)
+            postProcessingRenderer.dofPentagonBokehFeather = rendererConfig.props["dof.pentagonBokehFeather"].toFloat;
         
         if ("lut.enabled" in rendererConfig.props)
             postProcessingRenderer.lutEnabled = cast(bool)(rendererConfig.props["lut.enabled"].toUInt);
