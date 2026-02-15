@@ -170,7 +170,7 @@ class PostProcRenderer: Renderer
     float lensDistortionDispersion = 0.1f;
     
     bool autofocus = true;
-    float focalDepth = 1.5f;
+    float focalDepth = 1.0f;
     float focalLength = 20.0f;
     float fStop = 16.0f;
     

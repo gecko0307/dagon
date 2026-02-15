@@ -16,9 +16,9 @@ Depth of field is an optical effect of a camera lens. Objects at a specific foca
 
 Depth of field parameters:
 
-* `dof.focalDepth` -
-* `dof.autofocus` -
-* `dof.focalLength` - the distance between the lens's optical center and the sensor when focused at infinity. Measured in millimeters. Default is `20`.
+* `dof.autofocus` - automatically determine focal depth based on distance to the point in the middle of the screen. If this is set to `false`, `dof.focalDepth` is used. Default is `true`
+* `dof.focalDepth` - the distance between the sensor (focal plane) and the subject. Used only in manual focusing mode. Default is `1.0`
+* `dof.focalLength` - the distance between the lens's center and the sensor when focused at infinity. Measured in millimeters. Default is `20`.
 
 Focal length determines the field of view according to:
 
