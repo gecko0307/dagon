@@ -115,6 +115,13 @@ enum DagonEvent
     Exit = -1
 }
 
+enum ColorSpace
+{
+    Gamma22 = 0,
+    sRGB = 1,
+    LinearRGB = 2
+}
+
 /**
  * Supported image formats
  */
@@ -579,6 +586,9 @@ class Application: EventListener, Updateable
     
     /// Default framebuffer format.
     FramebufferFormat framebufferFormat;
+    
+    ///
+    ColorSpace outputColorSpace = ColorSpace.Gamma22;
     
     /**
      * Is anisotropic filtering enabled by default for textures.
@@ -1310,6 +1320,22 @@ class Application: EventListener, Updateable
         if ("font.size" in config.props)
             defaultFontSize = config.props["font.size"].toUInt;
         fontManager = New!FontManager(this);
+        
+        // Init output color space
+        // TODO: support linear output
+        if ("gl.outputColorSpace" in config.props)
+        {
+            string outputColorSpaceStr = config.props["gl.outputColorSpace"].toString;
+            if (outputColorSpaceStr == "sRGB")
+                outputColorSpace = ColorSpace.sRGB;
+            else if (outputColorSpaceStr == "Gamma22")
+                outputColorSpace = ColorSpace.Gamma22;
+            else
+                outputColorSpace = ColorSpace.Gamma22;
+        }
+        logInfo("Output color space: ", outputColorSpace);
+        if (outputColorSpace == ColorSpace.sRGB)
+            globalShaderDefine("DAGON_SRGB_OUTPUT", "1");
         
         // Init shader cache
         if ("gl.shaderCache.enabled" in config.props)

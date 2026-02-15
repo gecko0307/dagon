@@ -786,6 +786,29 @@ class UniformBlockParameter(T): BaseShaderParameter if (isStd140Compliant!T)
     }
 }
 
+// TODO: don't use GC
+private __gshared string[string] globalShaderDefines;
+private string globalShaderDefinesString = "\n";
+
+/**
+ * Global shader macro define.
+ * To use in GLSL, add #include <dagon>
+ */
+void globalShaderDefine(string defineName, string defineValue)
+{
+    globalShaderDefines[defineName] =  defineValue;
+    
+    globalShaderDefinesString = "";
+    foreach(name, value; globalShaderDefines)
+    {
+        globalShaderDefinesString ~= "#define ";
+        globalShaderDefinesString ~= name;
+        globalShaderDefinesString ~= " ";
+        globalShaderDefinesString ~= value;
+        globalShaderDefinesString ~= "\n";
+    }
+}
+
 /**
  * Basic shader class.
  *
@@ -820,7 +843,7 @@ class Shader: Owner
         this.program = program;
         this.parameters = New!(MappedList!BaseShaderParameter)(this);
     }
-
+    
     /// Loads shader source code from a file, supporting `#include` directives.
     static String load(string filename)
     {
@@ -836,7 +859,9 @@ class Shader: Owner
         Delete(istrm);
 
         string includePath = "data/__internal/shaders/include/";
+        
         String outputText;
+        
         foreach(line; lineSplitter(inputText))
         {
             auto s = line.strip;
@@ -845,19 +870,29 @@ class Shader: Owner
                 char[64] buf;
                 if (sscanf(s.ptr, "#include <%s>", buf.ptr) == 1)
                 {
-                    string includeFilename = cast(string)buf[0..strlen(buf.ptr)-1];
-                    String includeFullPath = includePath;
-                    includeFullPath ~= includeFilename;
-                    if (fs.exists(includeFullPath))
+                    string includeName = cast(string)buf[0..strlen(buf.ptr)-1];
+                    if (includeName == "dagon")
                     {
-                        istrm = fs.openForInput(includeFullPath.toString);
-                        string includeText = readText(istrm);
-                        Delete(istrm);
-                        outputText ~= includeText;
-                        outputText ~= "\n";
-                        Delete(includeText);
+                        foreach(name, value; globalShaderDefines)
+                        {
+                            outputText ~= globalShaderDefinesString;
+                        }
                     }
-                    includeFullPath.free();
+                    else
+                    {
+                        String includeFullPath = includePath;
+                        includeFullPath ~= includeName;
+                        if (fs.exists(includeFullPath))
+                        {
+                            istrm = fs.openForInput(includeFullPath.toString);
+                            string includeText = readText(istrm);
+                            Delete(istrm);
+                            outputText ~= includeText;
+                            outputText ~= "\n";
+                            Delete(includeText);
+                        }
+                        includeFullPath.free();
+                    }
                 }
                 else
                 {

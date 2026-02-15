@@ -1,5 +1,7 @@
 #version 400 core
 
+#include <dagon>
+
 uniform sampler2D colorBuffer;
 uniform sampler2D depthBuffer;
 
@@ -12,7 +14,7 @@ in vec2 texCoord;
 
 layout(location = 0) out vec4 fragColor;
 
-#ifdef SRGB_OUTPUT
+#ifdef DAGON_SRGB_OUTPUT
 vec3 sRGB(vec3 v)
 {
     return mix(12.92 * v, 1.055 * pow(v, vec3(0.41666)) - 0.055, lessThan(vec3(0.0031308), v));
@@ -32,7 +34,7 @@ void main()
     
     vec4 color = texture(colorBuffer, uv);
     
-    #ifdef SRGB_OUTPUT
+    #ifdef DAGON_SRGB_OUTPUT
         fragColor = vec4(sRGB(color.rgb), 1.0);
     #else
         fragColor = vec4(pow(color.rgb, vec3(1.0 / 2.2)), 1.0);
