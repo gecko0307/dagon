@@ -134,11 +134,14 @@ Recognozed by the `Game` class, applied to the `Game.deferredRenderer` and `Game
 * `lensDistortion.scale` - 
 * `lensDistortion.dispersion` - 
 * `dof.enabled` - `0` or `1`, disable or enable depth of field filter. Default is `0`
-* `dof.autofocus` - 
+* `dof.autofocus` - `0` or `1`
 * `dof.focalDepth` - 
-* `dof.focalLength` - 
-* `dof.fStop` - 
-* `dof.manual` - 
+* `dof.focalLength` - the distance between the lens's optical center and the sensor when focused at infinity. Measured in millimeters. Default is `20`
+* `dof.fStop` - the relative aperture of the lens, controls the depth of field. Default is `16` (f/16)
+* `dof.circleOfConfusion` - the maximum diameter of a blur spot on an image that the human eye still perceives as sharp. Measured in millimeters. Default is `0.03`
+* `dof.pentagonBokeh` - `0` or `1`
+* `dof.pentagonBokehFeather` - 
+* `dof.manual` - `0` or `1`
 * `dof.nearStart` - 
 * `dof.nearDistance` - 
 * `dof.farStart` - 

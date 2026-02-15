@@ -14,6 +14,54 @@ Most of the filters work in linear RGB color space, which ensures physically cor
 
 Depth of field is an optical effect of a camera lens. Objects at a specific focal distance remain sharp, while closer or farther objects become increasingly blurred. Dagon implements realistic bokeh-style DoF based on the code by Martins Upitis which uses a circle-of-confusion mask calculated from the depth buffer. It supports both automatic and manual focus.
 
+Depth of field parameters:
+
+* `dof.focalDepth` -
+* `dof.autofocus` -
+* `dof.focalLength` - the distance between the lens's optical center and the sensor when focused at infinity. Measured in millimeters. Default is `20`.
+
+Focal length determines the field of view according to:
+
+```
+FOV = 2 arctan(d / 2f)
+```
+
+where `f` is the focal length, and `d` is the width of the frame for horizontal FOV, or height for vertical FOV.
+
+In computer graphics, the FOV and focal length of a virtual camera are defined relative to a chosen virtual sensor size and are independent of render resolution. Once the sensor format is fixed, the relationship between FOV and focal length becomes constant, so precomputed values may be used instead of evaluating the formula at runtime. Given 36x24 full-frame format, vertical FOV angles for common lenses are the following:
+
+```
+12 mm -> 90.0°
+14 mm -> 81.2°
+16 mm -> 73.9°
+20 mm -> 61.9°
+24 mm -> 53.1°
+35 mm -> 37.8°
+50 mm -> 27.0°
+```
+
+* `dof.fStop` - the relative aperture of the lens, controls the depth of field. Default is `16` (f/16).
+
+Smaller values (f/1.4, f/2.0) correspond to a larger aperture and shallower depth of field. Larger values (f/16, f/32) correspond to a smaller aperture and deeper depth of field.
+
+* `dof.circleOfConfusion` - the maximum diameter of a blur spot on an image that the human eye still perceives as sharp. Measured in millimeters. Default is `0.03`.
+
+Standard CoC sizes by sensor type (approximate):
+
+* Full Frame 35mm: 0.029..0.03 mm
+* APS-C Canon: 0.019 mm
+* APS-C Nikon/Sony/Pentax: 0.02 mm
+* Micro 4:3: 0.015 mm
+* Medium Format (6x4.5): 0.05 mm
+
+* `dof.pentagonBokeh` -
+* `dof.pentagonBokehFeather` -
+* `dof.manual` -
+* `dof.nearStart` -
+* `dof.nearDistance` -
+* `dof.farStart` -
+* `dof.farDistance` -
+
 ## Motion Blur
 
 Motion blur simulates the streaking of moving objects or the camera during exposure. Dagon implements velocity-based motion blur, using Monte Carlo sampling based on a per-pixel motion vector buffer computed from camera and object movement.
@@ -49,8 +97,8 @@ If LUT is used, `cc` parameters are ignored, and color adjustment is overridden 
 
 Dagon supports two LUT formats that differ in the 3D-to-2D encoding method they use.
 
-* **GPUImage LUT** - TODO
-* **Hald CLUT** - TODO
+* **GPUImage LUT** -
+* **Hald CLUT** -
 
 ## Sharpening
 
