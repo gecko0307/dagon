@@ -53,7 +53,12 @@ Note: Dagon sets up OpenGL to use 4-byte alignment when reading pixel rows.
 
 ## sRGB vs Linear Color
 
-TODO
+Dagon primarily works with two color spaces:
+
+* **Linear RGB**: a color space which values are proportional to actual physical light intensity.
+* **sRGB**: a gamma-encoded color space for display output. Dagon performs color space conversions automatically where required.
+
+Base color (diffuse) textures are always treated as sRGB images. Non-color raster data (such as normal maps and roughness/metallic maps) is always treated as linear.
 
 ## HDR Textures
 

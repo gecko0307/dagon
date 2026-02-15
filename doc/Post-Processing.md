@@ -6,10 +6,6 @@ Dagon provides a simple built-in post-processing pipeline, `PostProcRenderer`, t
 
 Most of the filters work in linear RGB color space, which ensures physically correct color arythmetics.
 
-**Linear RGB**: a color space which values are proportional to actual physical light intensity.
-
-**sRGB**: a gamma-encoded color space for display output. Dagon performs color space conversions automatically where required.
-
 ## Depth of Field
 
 Depth of field is an optical effect of a camera lens. Objects at a specific focal distance remain sharp, while closer or farther objects become increasingly blurred. Dagon implements realistic bokeh-style DoF based on the code by Martins Upitis which uses a circle-of-confusion mask calculated from the depth buffer. It supports both automatic and manual focus.

@@ -1,6 +1,6 @@
 # Camera and View
 
-Dagon provides a virtual camera system for both perspective and orthographic views. The camera simulates real-world optical principles while remaining fully resolution-independent for interactive applications.
+A virtual camera is necessary to abstractize the way the renderer projects 3D vertices to the 2D screen plane. Like many other engines, Dagon provides such a system, supporting both perspective and orthographic projections.
 
 The engine differentiates between a `Camera` and a `RenderView`:
 
