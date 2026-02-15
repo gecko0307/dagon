@@ -115,11 +115,10 @@ enum DagonEvent
     Exit = -1
 }
 
-enum ColorSpace
+enum ColorProfile
 {
     Gamma22 = 0,
-    sRGB = 1,
-    LinearRGB = 2
+    sRGB = 1
 }
 
 /**
@@ -588,7 +587,7 @@ class Application: EventListener, Updateable
     FramebufferFormat framebufferFormat;
     
     ///
-    ColorSpace outputColorSpace = ColorSpace.Gamma22;
+    ColorProfile outputColorProfile = ColorProfile.Gamma22;
     
     /**
      * Is anisotropic filtering enabled by default for textures.
@@ -1321,20 +1320,19 @@ class Application: EventListener, Updateable
             defaultFontSize = config.props["font.size"].toUInt;
         fontManager = New!FontManager(this);
         
-        // Init output color space
-        // TODO: support linear output
-        if ("gl.outputColorSpace" in config.props)
+        // Init output color profile
+        if ("gl.outputColorProfile" in config.props)
         {
-            string outputColorSpaceStr = config.props["gl.outputColorSpace"].toString;
-            if (outputColorSpaceStr == "sRGB")
-                outputColorSpace = ColorSpace.sRGB;
-            else if (outputColorSpaceStr == "Gamma22")
-                outputColorSpace = ColorSpace.Gamma22;
+            string outputColorProfileStr = config.props["gl.outputColorProfile"].toString;
+            if (outputColorProfileStr == "sRGB")
+                outputColorProfile = ColorProfile.sRGB;
+            else if (outputColorProfileStr == "Gamma22")
+                outputColorProfile = ColorProfile.Gamma22;
             else
-                outputColorSpace = ColorSpace.Gamma22;
+                outputColorProfile = ColorProfile.Gamma22;
         }
-        logInfo("Output color space: ", outputColorSpace);
-        if (outputColorSpace == ColorSpace.sRGB)
+        logInfo("Output color profile: ", outputColorProfile);
+        if (outputColorProfile == ColorProfile.sRGB)
             globalShaderDefine("DAGON_SRGB_OUTPUT", "1");
         
         // Init shader cache

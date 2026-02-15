@@ -1,5 +1,9 @@
 Dagon 0.40.0 - TBD
 ------------------
+- **Core**
+  - `Application.outputColorProfile`. Controlled via `gl.outputColorProfile` in settings.conf. Supported values are `Gamma22` (default) and `sRGB`. This setting affects the color encoding function in the presentation shader
+- **Graphics components**
+  - Internal GLSL macro defines for global engine settings (`globalShaderDefine` function). To use them in shaders, add `#include <dagon>`
 - **Post-processing**
   - Post-processing pipeline was optimized to use linear color as much as possible, fewer VRAM and less hard-coded buffer swapping logics. Custom filters are now supported via `PostProcRenderer.addFilterPass`
   - Sharpening filter based on FidelityFX CAS (`sharpening.enabled` and `sharpening.strength` in render.conf)
