@@ -5,8 +5,9 @@ Dagon 0.40.0 - TBD
 - **Graphics components**
   - Internal GLSL macro defines for global engine settings (`globalShaderDefine` function). To use them in shaders, add `#include <dagon>`
 - **Post-processing**
-  - Post-processing pipeline was optimized to use linear color as much as possible, fewer VRAM and less hard-coded buffer swapping logics. Custom filters are now supported via `PostProcRenderer.addFilterPass`
+  - Post-processing pipeline was optimized to use linear color as much as possible, less VRAM and less hard-coded buffer swapping logics. Custom filters are now supported via `PostProcRenderer.addFilterPass`
   - Sharpening filter based on FidelityFX CAS (`sharpening.enabled` and `sharpening.strength` in render.conf)
+  - New DoF parameters: `dof.circleOfConfusion`, `dof.pentagonBokeh`, `dof.pentagonBokehFeather` in render.conf
   - Improved SSAO noise reduction filter, adding support for depth-aware weighting, which eliminates halo artifacts at close distances (`ssao.denoiseDepthAware` in render.conf)
   - Color grading filter now supports simple brightness/contrast/saturation adjustment (`cc.brightness`, `cc.contrast`, `cc.saturation` in render.conf). If LUT is used, color adjustment is overridden with color lookup.
 
