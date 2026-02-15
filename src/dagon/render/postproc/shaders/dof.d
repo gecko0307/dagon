@@ -76,7 +76,7 @@ class DepthOfFieldShader: Shader
     bool enabled = true;
     
     bool autofocus = true; // Focus to screen center
-    float focalDepth = 1.5f; // Focal distance value in meters when autofocus is false
+    float focalDepth = 1.0f; // Focal distance value in meters when autofocus is false
     float focalLength = 20.0f; // Focal length in mm
     float fStop = 16.0f; // F-stop value
     
