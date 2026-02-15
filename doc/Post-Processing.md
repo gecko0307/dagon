@@ -48,11 +48,13 @@ Smaller values (f/1.4, f/2.0) correspond to a larger aperture and shallower dept
 
 Standard CoC sizes by sensor type (approximate):
 
-* Full Frame 35mm: 0.029..0.03 mm
-* APS-C Canon: 0.019 mm
-* APS-C Nikon/Sony/Pentax: 0.02 mm
-* Micro 4:3: 0.015 mm
-* Medium Format (6x4.5): 0.05 mm
+```
+Full Frame 35mm: 0.029..0.03 mm
+APS-C Canon: 0.019 mm
+APS-C Nikon/Sony/Pentax: 0.02 mm
+Micro 4:3: 0.015 mm
+Medium Format (6x4.5): 0.05 mm
+```
 
 * `dof.pentagonBokeh` -
 * `dof.pentagonBokehFeather` -
