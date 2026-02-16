@@ -35,6 +35,7 @@ import dagon.core.event;
 import dagon.core.time;
 import dagon.core.bindings;
 import dagon.graphics.texture;
+import dagon.graphics.lut;
 import dagon.graphics.shader;
 import dagon.resource.scene;
 import dagon.resource.asset;
@@ -363,7 +364,8 @@ class PostProcRenderer: Renderer
         {
             lutAsset = New!TextureAsset(assetManager);
             lutAsset.generateMipmaps = false;
-            lutAsset.loadAs3DLUT = true;
+            lutAsset.lutFormat = LUTFormat.GPUImage;
+            lutAsset.resolution3D = 64;
             assetManager.preloadAsset(lutAsset, filename);
             lutAsset.texture.useAnisotropicFiltering = false;
         }

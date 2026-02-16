@@ -125,11 +125,8 @@ class TextureAsset: Asset
     /// Compress to DXT1 (for RGB texture) or DXT5 (for RGBA texture).
     bool compress = false;
     
-    /// If true, the input image will be interpreted as 3D texture.
-    bool loadAs3D = false;
-    
-    /// If true, the input image will be interpreted as GPUImage LUT and converted to 3D texture.
-    bool loadAs3DLUT = false;
+    /// 
+    LUTFormat lutFormat = LUTFormat.Undefined;
     
     /// Resolution when loading 3D texture from 2D image.
     uint resolution3D = 0;
@@ -184,10 +181,12 @@ class TextureAsset: Asset
         
         texture.maxAnisotropy = assetManager.application.maxTextureAnisotropy;
         
-        if (!loadAs3DLUT && !loadAs3D)
+        if (lutFormat != LUTFormat.Undefined)
         {
             texture.useAnisotropicFiltering = assetManager.application.useAnisotropicFiltering;
             texture.anisotropy = assetManager.application.defaultTextureAnisotropy;
+            generateMipmaps = false;
+            compress = false;
         }
         
         this.filename = filename;
@@ -269,10 +268,10 @@ class TextureAsset: Asset
             }
             else
             {
-                if (loadAs3D && buffer.format.target != GL_TEXTURE_3D)
+                if (lutFormat == LUTFormat.Hald && buffer.format.target != GL_TEXTURE_3D)
                     texture.createFromBuffer3D(buffer, resolution3D);
-                else if (loadAs3DLUT && buffer.format.target != GL_TEXTURE_3D)
-                    convertGPUImageLUTto3DLUT(buffer, texture);
+                else if (lutFormat == LUTFormat.GPUImage && buffer.format.target != GL_TEXTURE_3D)
+                    convertGPUImageLUTto3DTexture(buffer, texture);
                 else
                     texture.createFromBuffer(buffer, genMipmaps);
             }
@@ -290,8 +289,9 @@ class TextureAsset: Asset
             if (compress)
                 logWarning("Texture compression for SuperImage source is not supported");
             
-            if (loadAs3D)
+            if (lutFormat == LUTFormat.Hald)
                 texture.createFromImage3D(image, resolution3D);
+            // TODO: support LUTFormat.GPUImage
             else
                 texture.createFromImage(image, this.generateMipmaps);
             
@@ -466,12 +466,7 @@ TextureAsset textureAsset(AssetManager assetManager, string filename)
     return asset;
 }
 
-void downsampleBox2x2(
-    ubyte[] src,
-    uint srcW,
-    uint srcH,
-    uint channels, // 3 = RGB8, 4 = RGBA8
-    ubyte[] dst)
+void downsampleBox2x2(ubyte[] src, uint srcW, uint srcH, uint channels, ubyte[] dst)
 {
     uint dstW = srcW > 1 ? srcW / 2 : 1;
     uint dstH = srcH > 1 ? srcH / 2 : 1;

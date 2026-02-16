@@ -34,7 +34,14 @@ import dagon.core.bindings;
 import dagon.core.logger;
 import dagon.graphics.texture;
 
-void convertGPUImageLUTto3DLUT(TextureBuffer lut, Texture lutTexture)
+enum LUTFormat
+{
+    Undefined = 0,
+    GPUImage = 1,
+    Hald = 2
+}
+
+void convertGPUImageLUTto3DTexture(TextureBuffer lut, Texture lutTexture)
 {
     if (lut.size.width != 512 || lut.size.height != 512)
     {
@@ -97,9 +104,9 @@ void convertGPUImageLUTto3DLUT(TextureBuffer lut, Texture lutTexture)
     Delete(lut3D.data);
 }
 
-Texture convertGPUImageLUTto3DLUT(TextureBuffer lut, Owner textureOwner = null)
+Texture convertGPUImageLUTto3DTexture(TextureBuffer lut, Owner textureOwner = null)
 {
     Texture lutTexture = New!Texture(textureOwner);
-    convertGPUImageLUTto3DLUT(lut, lutTexture);
+    convertGPUImageLUTto3DTexture(lut, lutTexture);
     return lutTexture;
 }
