@@ -152,7 +152,7 @@ Recognozed by the `Game` class, applied to the `Game.deferredRenderer` and `Game
 * `cc.contrast` - 
 * `cc.saturation` - 
 * `lut.enabled` - `0` or `1`, disable or enable LUT color grading. Default is `0`
-* `lut.file` - path to the LUT file. GPUImage 512x512 format is used for LUTs
+* `lut.file` - path to the LUT file. GPUImage 512x512 format is used for LUTs. The loaded LUT is automatically converted to 3D texture for more efficient sampling in the shader
 * `pixelization.enabled` - `0` or `1`, disable or enable pixelization filter. Default is `0`
 * `pixelization.pixelSize` - screen-space pixel size for pixelization filter. Default is `1`.
 
