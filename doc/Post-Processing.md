@@ -10,8 +10,9 @@ Most of the filters work in linear RGB color space, which ensures physically cor
 
 Depth of field is an optical effect of a camera lens. Objects at a specific focal distance remain sharp, while closer or farther objects become increasingly blurred. Dagon implements realistic bokeh-style DoF based on the code by Martins Upitis which uses a circle-of-confusion mask calculated from the depth buffer. It supports both automatic and manual focus.
 
-Depth of field parameters:
+Depth of field parameters (for render.conf):
 
+* `dof.enabled` - enabled or disables depth of field. Default is `false`
 * `dof.autofocus` - automatically determine focal depth based on distance to the point in the middle of the screen. If this is set to `false`, `dof.focalDepth` is used. Default is `true`
 * `dof.focalDepth` - the distance between the back focal plane (sensor) and the front focal plane (main focal point). Used only in manual focusing mode. Measured in meters. Default is `1.0`
 * `dof.focalLength` - f, the distance between the lens and the back focal plane when focused at infinity. Measured in millimeters. Default is `20`.
@@ -64,13 +65,35 @@ Medium Format (6x4.5): 0.05 mm
 
 Motion blur simulates the streaking of moving objects or the camera during exposure. Dagon implements velocity-based motion blur, using Monte Carlo sampling based on a per-pixel motion vector buffer computed from camera and object movement.
 
+Motion blur parameters (for render.conf):
+
+* `motionBlur.enabled` - enabled or disables motion blur. Default is `false`
+* `motionBlur.samples` -
+* `motionBlur.framerate` -
+* `motionBlur.randomness` -
+* `motionBlur.minDistance` -
+* `motionBlur.maxDistance` -
+* `motionBlur.radialBlurAmount` -
+
 ## Lens Distortion
 
 Lens distortion simulates optical imperfections of a lens such as barrel distortion and chromatic aberration. Dagon implements an efficient and visually plausible lens distortion filter based on code by Jaume Sanchez Elias from [Wagner](https://github.com/spite/Wagner) composer.
 
+Lens distortion parameters (for render.conf):
+
+* `lensDistortion.enabled` - enabled or disables motion blur. Default is `false`
+* `lensDistortion.scale` - 
+* `lensDistortion.dispersion` -
+
 ## Glow
 
-Glow (or bloom) enhances bright areas of the image, simulating light scattering in a lens. Dagon implements a threshold + blur approach, isolating bright regions, blurring them, and blending them back to the original scene. It uses [multipass separable Gaussian blur implementation](https://github.com/Experience-Monks/glsl-fast-gaussian-blur) by Matt DesLauriers, an extremely optimized algorithm that allows large blur radii.
+Glow (sometimes called bloom) is used to emphasize bright areas of the image, simulating light scattering/bleeding in an optical system. Dagon implements a threshold + blur approach, isolating bright regions, blurring them, and blending them back with the original scene. It uses [multipass separable Gaussian blur implementation](https://github.com/Experience-Monks/glsl-fast-gaussian-blur) by Matt DesLauriers, an extremely optimized algorithm that allows large blur radii.
+
+* `glow.enabled` - enabled or disables glow. Default is `false`
+* `glow.viewScale` -
+* `glow.threshold` -
+* `glow.intensity` -
+* `glow.radius` -
 
 ## Tonemap
 

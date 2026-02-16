@@ -209,13 +209,16 @@ class PostProcRenderer: Renderer
         dofShader = New!DepthOfFieldShader(this);
         dofShader.gbuffer = gbuffer;
         passDoF = addFilterPass(dofShader);
+        depthOfFieldEnabled = false;
 
         motionBlurShader = New!MotionBlurShader(this);
         motionBlurShader.gbuffer = gbuffer;
         passMotionBlur = addFilterPass(motionBlurShader);
+        motionBlurEnabled = false;
 
         lensDistortionShader = New!LensDistortionShader(this);
         passLensDistortion = addFilterPass(lensDistortionShader);
+        lensDistortionEnabled = false;
 
         brightPassShader = New!BrightPassShader(this);
         brightPassShader.luminanceThreshold = glowThreshold;
@@ -235,18 +238,22 @@ class PostProcRenderer: Renderer
         glowShader.blurredBuffer = passBlur.outputBuffer;
         glowShader.intensity = glowIntensity;
         passGlow = addFilterPass(glowShader);
+        glowEnabled = false;
 
         tonemapShader = New!TonemapShader(this);
         passTonemap = addFilterPass(tonemapShader);
         
         fxaaShader = New!FXAAShader(this);
         passFXAA = addFilterPass(fxaaShader);
+        fxaaEnabled = false;
 
         colorGradingShader = New!ColorGradingShader(this);
         passColorGrading = addFilterPass(colorGradingShader);
+        lutEnabled = false;
 
         sharpeningShader = New!SharpeningShader(this);
         passSharpening = addFilterPass(sharpeningShader);
+        sharpeningEnabled = false;
 
         outputBuffer = hdrDoubleBuffer;
     }
