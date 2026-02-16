@@ -22,7 +22,7 @@
 * Sharpening shader is based on AMD's [FidelityFX™ CAS](https://gpuopen.com/fidelityfx-cas/)
 * Cubemap prefiltering shader is based on the code by [Joey de Vries](https://learnopengl.com/)
 * Hammersley point set calculation is based on the radical inverse function by [Holger Dammertz](http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html)
-* Reinhard tonemapper is based on the function by Erik Reinhard et al, "Photographic Tone Reproduction for Digital Images"
+* Reinhard tonemapper is based on the function by Erik Reinhard et al, ["Photographic Tone Reproduction for Digital Images"](https://www-old.cs.utah.edu/docs/techreports/2002/pdf/UUCS-02-001.pdf)
 * Unreal tonemapper is based on the function from Unreal 3
 * Hable tonemapper is based on the function by [John Hable](http://filmicworlds.com/blog/filmic-tonemapping-operators)
 * ACES tonemapper is based on the function by [Krzysztof Narkowicz](https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve)
