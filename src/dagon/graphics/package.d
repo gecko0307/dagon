@@ -54,6 +54,7 @@ public
     import dagon.graphics.heightmap;
     import dagon.graphics.light;
     import dagon.graphics.lod;
+    import dagon.graphics.lut;
     import dagon.graphics.material;
     import dagon.graphics.mesh;
     import dagon.graphics.opensimplex;

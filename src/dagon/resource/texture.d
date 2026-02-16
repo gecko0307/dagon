@@ -62,6 +62,7 @@ import dagon.core.bindings;
 import dagon.core.logger;
 import dagon.core.dxt;
 import dagon.graphics.texture;
+import dagon.graphics.lut;
 import dagon.resource.asset;
 
 /**
@@ -127,6 +128,9 @@ class TextureAsset: Asset
     /// If true, the input image will be interpreted as 3D texture.
     bool loadAs3D = false;
     
+    /// If true, the input image will be interpreted as GPUImage LUT and converted to 3D texture.
+    bool loadAs3DLUT = false;
+    
     /// Resolution when loading 3D texture from 2D image.
     uint resolution3D = 0;
     
@@ -178,9 +182,13 @@ class TextureAsset: Asset
         
         this.assetManager = assetManager;
         
-        texture.useAnisotropicFiltering = assetManager.application.useAnisotropicFiltering;
         texture.maxAnisotropy = assetManager.application.maxTextureAnisotropy;
-        texture.anisotropy = assetManager.application.defaultTextureAnisotropy;
+        
+        if (!loadAs3DLUT && !loadAs3D)
+        {
+            texture.useAnisotropicFiltering = assetManager.application.useAnisotropicFiltering;
+            texture.anisotropy = assetManager.application.defaultTextureAnisotropy;
+        }
         
         this.filename = filename;
         this.extension = filename.extension.toLower;
@@ -256,12 +264,18 @@ class TextureAsset: Asset
                         " and internal format ", buffer.format.internalFormat,
                         " is not supported");
                 }
-            }
-            
-            if (loadAs3D && buffer.format.target != GL_TEXTURE_3D)
-                texture.createFromBuffer3D(buffer, resolution3D);
-            else
+                
                 texture.createFromBuffer(buffer, genMipmaps);
+            }
+            else
+            {
+                if (loadAs3D && buffer.format.target != GL_TEXTURE_3D)
+                    texture.createFromBuffer3D(buffer, resolution3D);
+                else if (loadAs3DLUT && buffer.format.target != GL_TEXTURE_3D)
+                    convertGPUImageLUTto3DLUT(buffer, texture);
+                else
+                    texture.createFromBuffer(buffer, genMipmaps);
+            }
             
             if (!persistent)
                 releaseBuffer();

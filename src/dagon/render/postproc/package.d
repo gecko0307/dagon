@@ -242,7 +242,7 @@ class PostProcRenderer: Renderer
 
         tonemapShader = New!TonemapShader(this);
         passTonemap = addFilterPass(tonemapShader);
-        
+
         fxaaShader = New!FXAAShader(this);
         passFXAA = addFilterPass(fxaaShader);
         fxaaEnabled = false;
@@ -363,6 +363,7 @@ class PostProcRenderer: Renderer
         {
             lutAsset = New!TextureAsset(assetManager);
             lutAsset.generateMipmaps = false;
+            lutAsset.loadAs3DLUT = true;
             assetManager.preloadAsset(lutAsset, filename);
             lutAsset.texture.useAnisotropicFiltering = false;
         }
