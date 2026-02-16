@@ -13,8 +13,8 @@ Depth of field is an optical effect of a camera lens. Objects at a specific foca
 Depth of field parameters:
 
 * `dof.autofocus` - automatically determine focal depth based on distance to the point in the middle of the screen. If this is set to `false`, `dof.focalDepth` is used. Default is `true`
-* `dof.focalDepth` - the distance between the sensor (focal plane) and the subject. Used only in manual focusing mode. Default is `1.0`
-* `dof.focalLength` - the distance between the lens's center and the sensor when focused at infinity. Measured in millimeters. Default is `20`.
+* `dof.focalDepth` - the distance between the back focal plane (sensor) and the front focal plane (main focal point). Used only in manual focusing mode. Measured in meters. Default is `1.0`
+* `dof.focalLength` - f, the distance between the lens and the back focal plane when focused at infinity. Measured in millimeters. Default is `20`.
 
 Focal length determines the field of view according to:
 
@@ -52,13 +52,13 @@ Micro 4:3: 0.015 mm
 Medium Format (6x4.5): 0.05 mm
 ```
 
+* `dof.manual` - manual depth of field mode. When this mode is enabled, physically-based parameters (`fStop`, `focalLength`, `circleOfConfusion`) are ignored, and the range of distance in a scene that appears sharp is controlled using parameters below. `focalDepth` and `autofocus` are still respected. Default is `false`
+* `dof.nearStart` - near-side sharpness threshold (distance from the front focal plane opposite the view direction at which focus begins to decrease)
+* `dof.nearDistance` - the distance at which near-side focus blur reaches its maximum
+* `dof.farStart` - far-side sharpness threshold (distance from the front focal plane in the view direction at which focus begins to decrease)
+* `dof.farDistance` - the distance at which far-side focus blur reaches its maximum.
 * `dof.pentagonBokeh` - if set to `true`, pentagon-shaped aperture will be simulated instead of a circular aperture. Default is `false`
-* `dof.pentagonBokehFeather` -
-* `dof.manual` -
-* `dof.nearStart` -
-* `dof.nearDistance` -
-* `dof.farStart` -
-* `dof.farDistance` -
+* `dof.pentagonBokehFeather` - feathering (smoothing) factor of pentagon-shaped bokeh edges. Default is `0.4`
 
 ## Motion Blur
 

@@ -35,7 +35,6 @@ float ssao(in vec2 tcoord, in vec2 uv, in vec3 p, in vec3 cnorm)
 {
     float depth = texture(depthBuffer, tcoord + uv).x;
     vec3 pos = unproject(invProjectionMatrix, vec3(tcoord + uv, depth));
-    
     vec3 diff = pos - p;
     float l = length(diff);
     vec3 v = diff / l;
@@ -46,7 +45,7 @@ float ssao(in vec2 tcoord, in vec2 uv, in vec3 p, in vec3 cnorm)
 
 float spiralSSAO(vec2 uv, vec3 p, vec3 n, float rad)
 {
-    float goldenAngle = 2.4;
+    const float goldenAngle = 2.4;
     float ao = 0.0;
     float inv = 1.0 / float(ssaoSamples);
     float radius = 0.0;
@@ -63,7 +62,9 @@ float spiralSSAO(vec2 uv, vec3 p, vec3 n, float rad)
         ao += ssao(uv, spiralUV * radius, p, n);
         rotatePhase += goldenAngle;
     }
+    
     ao *= inv;
+    
     return ao;
 }
 

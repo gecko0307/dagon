@@ -97,7 +97,7 @@ float penta(vec2 coords) //pentagonal shape
     return clamp( inorout, 0.0, 1.0 );
 }
 
-float bdepth(vec2 coords) // blurring depth
+float blurDepth(vec2 coords)
 {
     float d = 0.0;
     float kernel[9];
@@ -179,7 +179,7 @@ void main()
         float depth = linearize(texture(depthBuffer, texCoord.xy).x);
         if (depthblur)
         {
-            depth = linearize(bdepth(texCoord.xy));
+            depth = linearize(blurDepth(texCoord.xy));
         }
         
         // focal plane calculation
@@ -193,7 +193,7 @@ void main()
         float blur = 0.0;
         if (manual)
         {    
-            float a = depth-fDepth; // focal plane
+            float a = depth - fDepth; // signed distance from focal plane to the subject
             float b = (a - farStart) / farDistance; // far DoF
             float c = (-a - nearStart) / nearDistance; // near Dof
             blur = (a > 0.0)? b : c;
@@ -241,7 +241,7 @@ void main()
                     }
                     col += color(texCoord.xy + vec2(pw * w, ph * h), blur) * 
                            mix(1.0, (float(i)) / (float(rings)), bias) * p;
-                    s += 1.0*mix(1.0, (float(i)) / (float(rings)), bias) * p;
+                    s += 1.0 * mix(1.0, (float(i)) / (float(rings)), bias) * p;
                 }
             }
             col /= s; //divide by sample count
