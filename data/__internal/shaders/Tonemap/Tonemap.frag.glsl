@@ -11,27 +11,27 @@ in vec2 texCoord;
 out vec4 fragColor;
 
 /*
- * tonemapReinhard and tonemapReinhard2 are based on a function by Erik Reinhard et al,
+ * tonemapReinhard and tonemapReinhard2 are based on the function by Erik Reinhard et al,
  * "Photographic Tone Reproduction for Digital Images"
  *
- * tonemapUnreal is based on a function from Unreal 3
+ * tonemapUnreal is based on the function from Unreal 3
  *
- * tonemapHable is based on a function by John Hable
+ * tonemapHable is based on the function by John Hable
  * http://filmicworlds.com/blog/filmic-tonemapping-operators
  *
- * tonemapACES is based on a function by Krzysztof Narkowicz
+ * tonemapACES is based on the function by Krzysztof Narkowicz
  * https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve
  *
- * tonemapFilmic is based on a function by Jim Hejl and Richard Burgess-Dawson
+ * tonemapFilmic is based on the function by Jim Hejl and Richard Burgess-Dawson
  * http://filmicworlds.com/blog/filmic-tonemapping-operators
  *
- * tonemapAgX is based on code by Don McCurdy, which in turn is based on Blender and Filament implementations
+ * tonemapAgX is based on the code by Don McCurdy, which in turn is based on Blender and Filament implementations
  * https://github.com/mrdoob/three.js/pull/27618
  *
- * tonemapPBRNeutral is based on code by Khronos Group
+ * tonemapPBRNeutral is based on the code by Khronos Group
  * https://github.com/KhronosGroup/ToneMapping
  *
- * tonemapUchimura is based on a function by Hajime Uchimura
+ * tonemapUchimura is based on the function by Hajime Uchimura
  * https://www.desmos.com/calculator/gslcdxvipg
  */
 

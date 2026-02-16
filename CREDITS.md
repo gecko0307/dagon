@@ -14,6 +14,22 @@
 * Wintab binding - [Vadim Lopatin aka buggins](https://github.com/buggins)
 * DXT1/DXT5 compressor - [Fabian Giesen](https://github.com/rygorous), [Yann Collet](https://github.com/Cyan4973)
 * ImGui extension (ImGuiOpenGLBackend) - [Joshua T. Fisher aka playmer](https://github.com/playmer), [LunaTheFoxgirl](https://github.com/LunaTheFoxgirl)
+* SSAO implementation is based on the code by [Reinder Nijhoff](https://www.shadertoy.com/view/Ms33WB)
+* FXAA implementation is based on the code by [JeGX](http://www.geeks3d.com/20110405/fxaa-fast-approximate-anti-aliasing-demo-glsl-opengl-test-radeon-geforce)
+* Optimized separable Gaussian blur - [Matt DesLauriers](https://github.com/Experience-Monks)
+* Depth of field effect - [Martins Upitis](https://github.com/martinsh)
+* Lens distortion effect - [Jaume Sanchez](https://github.com/spite)
+* Sharpening shader is based on AMD's [FidelityFX™ CAS](https://gpuopen.com/fidelityfx-cas/)
+* Cubemap prefiltering shader is based on the code by [Joey de Vries](https://learnopengl.com/)
+* Hammersley point set calculation is based on the radical inverse function by [Holger Dammertz](http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html)
+* Reinhard tonemapper is based on the function by Erik Reinhard et al, "Photographic Tone Reproduction for Digital Images"
+* Unreal tonemapper is based on the function from Unreal 3
+* Hable tonemapper is based on the function by [John Hable](http://filmicworlds.com/blog/filmic-tonemapping-operators)
+* ACES tonemapper is based on the function by [Krzysztof Narkowicz](https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve)
+* Filmic tonemapper is based on the function by [Jim Hejl and Richard Burgess-Dawson](http://filmicworlds.com/blog/filmic-tonemapping-operators)
+* AgX tonemapper is based on the code by [Don McCurdy](https://github.com/mrdoob), which in turn is based on Blender and Filament implementations
+* Khronos PBR Neutral tonemapper is based on the code by [Khronos Group](https://github.com/KhronosGroup/ToneMapping)
+* Uchimura tonemapper is based on the function by [Hajime Uchimura](https://www.desmos.com/calculator/gslcdxvipg)
 
 ## Third-party products
 Dagon and its extensions depend on the following libraries:
