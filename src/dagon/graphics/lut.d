@@ -38,7 +38,8 @@ enum LUTFormat
 {
     Undefined = 0,
     GPUImage = 1,
-    Hald = 2
+    Hald = 2,
+    Texture3D = 3
 }
 
 void convertGPUImageLUTto3DTexture(TextureBuffer lut, Texture lutTexture)

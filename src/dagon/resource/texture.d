@@ -263,18 +263,21 @@ class TextureAsset: Asset
                         " and internal format ", buffer.format.internalFormat,
                         " is not supported");
                 }
-                
-                texture.createFromBuffer(buffer, genMipmaps);
             }
-            else
+            
+            if (buffer.format.target == GL_TEXTURE_3D)
             {
-                if (lutFormat == LUTFormat.Hald && buffer.format.target != GL_TEXTURE_3D)
-                    texture.createFromBuffer3D(buffer, resolution3D);
-                else if (lutFormat == LUTFormat.GPUImage && buffer.format.target != GL_TEXTURE_3D)
-                    convertGPUImageLUTto3DTexture(buffer, texture);
-                else
-                    texture.createFromBuffer(buffer, genMipmaps);
+                if (lutFormat != LUTFormat.Texture3D)
+                    lutFormat = LUTFormat.Texture3D;
+                resolution3D = buffer.size.width;
             }
+
+            if (lutFormat == LUTFormat.Hald && buffer.format.target != GL_TEXTURE_3D)
+                texture.createFromBuffer3D(buffer, resolution3D);
+            else if (lutFormat == LUTFormat.GPUImage && buffer.format.target != GL_TEXTURE_3D)
+                convertGPUImageLUTto3DTexture(buffer, texture);
+            else
+                texture.createFromBuffer(buffer, genMipmaps);
             
             if (!persistent)
                 releaseBuffer();

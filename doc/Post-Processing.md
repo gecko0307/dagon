@@ -121,6 +121,8 @@ Dagon supports two LUT formats that differ in the 3D-to-2D encoding method they 
 * **GPUImage LUT** -
 * **Hald CLUT** -
 
+It is also possible to load 3D texture 
+
 ## Sharpening
 
 Sharpening enhances perceived detail by increasing local contrast. Dagon imlements CAS (Contrast Adaptive Sharpening).
