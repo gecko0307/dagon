@@ -368,6 +368,11 @@ class PostProcRenderer: Renderer
             lutAsset.resolution3D = 64;
             assetManager.preloadAsset(lutAsset, filename);
             lutAsset.texture.useAnisotropicFiltering = false;
+            lutAsset.texture.minFilter = GL_LINEAR;
+            lutAsset.texture.magFilter = GL_LINEAR;
+            lutAsset.texture.wrapS = GL_CLAMP_TO_EDGE;
+            lutAsset.texture.wrapT = GL_CLAMP_TO_EDGE;
+            lutAsset.texture.wrapR = GL_CLAMP_TO_EDGE;
         }
         
         defaultColorLookupTable = lutAsset.texture;
