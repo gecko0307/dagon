@@ -11,6 +11,7 @@ A list of supported event types:
 ### Keyboard
 - `KeyDown`, `KeyUp` - keyboard key pressed/released. Reports key codes (via `Event.key`) defined as `KEY_*` constants in `dagon.core.keycodes` (equivalent to `SDL_Scancode`)
 - `TextInput` - alphanumeric keyboard is used to type text. This event respects the input register and system-wide keyboard layout, reporting a 32-bit Unicode codepoint (via `Event.unicode`). Text input event will repeat if the key is pressed and held for a period of time. Note that `KeyDown` event is also triggered for alphanumeric keys, but only once unless `EventManager.enableKeyRepeat` is set
+- `KeyboardLayoutChange` - system keyboard layout switched
 
 ### Mouse
 - `MouseMotion` - mouse cursor is moved inside an application window. This event doesn't propagate to the listeners - instead, it updates `EventManager.mouseX` and `EventManager.mouseY`, mouse pointer coordinates relative to the window

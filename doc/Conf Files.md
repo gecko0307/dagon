@@ -19,6 +19,8 @@ vectorOption: [0.5, 1.0, 1.0];
 stringOption: "Some text";
 ```
 
+Boolean `false` is the same as number `0`, `true` is the same as `1`.
+
 Lines beginning with double slash (`//`) are treated as comments and ignored:
 
 ```
@@ -139,20 +141,20 @@ Recognozed by the `Game` class, applied to the `Game.deferredRenderer` and `Game
 * `dof.focalLength` - the distance between the lens's optical center and the sensor when focused at infinity. Measured in millimeters. Default is `20`
 * `dof.fStop` - the relative aperture of the lens, controls the depth of field. Default is `16` (f/16)
 * `dof.circleOfConfusion` - the maximum diameter of a blur spot on an image that the human eye still perceives as sharp. Measured in millimeters. Default is `0.03`
-* `dof.pentagonBokeh` - `0` or `1`
-* `dof.pentagonBokehFeather` - 
-* `dof.manual` - `0` or `1`
-* `dof.nearStart` - 
-* `dof.nearDistance` - 
-* `dof.farStart` - 
-* `dof.farDistance` - 
+* `dof.pentagonBokeh` - `0` or `1`, use pentagon-shaped aperture instead of a circular aperture. Default is `0`
+* `dof.pentagonBokehFeather` - a number between `0.0` and `1.0`, feathering (smoothing) factor of pentagon-shaped bokeh edges. Default is `0.4`
+* `dof.manual` - `0` or `1`, use manual depth of field mode. Default is `0`
+* `dof.nearStart` - near-side sharpness threshold
+* `dof.nearDistance` - the distance at which near-side focus blur reaches its maximum
+* `dof.farStart` - far-side sharpness threshold
+* `dof.farDistance` - the distance at which far-side focus blur reaches its maximum
 * `sharpening.enabled` - 
 * `sharpening.strength` - 
-* `cc.brightness` - 
-* `cc.contrast` - 
-* `cc.saturation` - 
+* `cc.brightness` - scales overall lightness of a scene. `0.0` is identity brightness, negative values make the image darker, positive values make the image brighter. Default is `0.0`
+* `cc.contrast` - adjusts difference between dark and bright regions. `1.0` is identity contrast, smaller values decrease contrast, larger values increase contrast. Default is `1.0`
+* `cc.saturation` - scales color intensity. `1.0` is identity saturation, smaller values desaturate the image (`0.0` gives monochrome look), larger values oversaturate the image. Default is `1.0`
 * `lut.enabled` - `0` or `1`, disable or enable LUT color grading. Default is `0`
-* `lut.file` - path to the LUT file. GPUImage 512x512 format is used for LUTs. The loaded LUT is automatically converted to 3D texture for more efficient sampling in the shader
+* `lut.file` - path to the LUT file. Supported formats are GPUImage 512x512 and DDS 3D texture. The loaded LUT is automatically converted to 3D texture for more efficient sampling in the shader
 * `pixelization.enabled` - `0` or `1`, disable or enable pixelization filter. Default is `0`
 * `pixelization.pixelSize` - screen-space pixel size for pixelization filter. Default is `1`.
 

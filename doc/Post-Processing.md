@@ -108,9 +108,9 @@ Anti-aliasing is a filter for smoothing jagged polygon edges. Dagon implements F
 Color grading is a set of operations that adjust the brightness, contrast, saturation, and color balance of a scene. Dagon supports basic color adjustment parameters that are combined into a single color correction matrix which is passed to the shader to linearly transform input color data. Alternatively, color grading can be done using a LUT (lookup table), a 3D texture that maps RGB values to adjusted color space. This is a very flexible approach that allows to "bake" color modifications using any external image editor.
 
 Color adjustment is controlled with the following render.conf parameters:
-* `cc.brightness` - scales overall lightness of a scene. `0.0` is identity brightness (unchanged), negative values make the image darker, positive values make the image brighter;
-* `cc.contrast` - adjusts difference between dark and bright regions. `1.0` is identity contrast (unchanged), smaller values decrease contrast, larger values increase contrast;
-* `cc.saturation` - scales color intensity. `1.0` is identity saturation, smaller values desaturate the image (`0.0` gives monochrome look), larger values oversaturate the image;
+* `cc.brightness` - scales overall lightness of a scene. `0.0` is identity brightness, negative values make the image darker, positive values make the image brighter. Default is `0.0`;
+* `cc.contrast` - adjusts difference between dark and bright regions. `1.0` is identity contrast, smaller values decrease contrast, larger values increase contrast. Default is `1.0`;
+* `cc.saturation` - scales color intensity. `1.0` is identity saturation, smaller values desaturate the image (`0.0` gives monochrome look), larger values oversaturate the image. Default is `1.0`;
 
 If LUT is used, `cc` parameters are ignored, and color adjustment is overridden with color lookup from a texture.
 * `lut.enabled` - disables or enables LUT color grading
@@ -124,6 +124,11 @@ Dagon supports two LUT formats that differ in the 3D-to-2D encoding method they 
 ## Sharpening
 
 Sharpening enhances perceived detail by increasing local contrast. Dagon imlements CAS (Contrast Adaptive Sharpening).
+
+Sharpening parameters (for render.conf):
+
+* `sharpening.enabled` - 
+* `sharpening.strength` - 
 
 ## Presentation
 
