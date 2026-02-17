@@ -34,6 +34,8 @@ Dagon 0.39.0 - 13 Feb, 2026
 - **Assets**
   - Uncompressed RGB8 and RGBA8 textures support in DDS exporter, uncompressed RGB8 textures support in DDS loader
   - `loadImageViaSDLImage` overload that returns `SDL_Surface*`.
+- **Misc**
+  - Demo applications are now licensed under the [Unlicense](https://unlicense.org/).
 
 Dagon 0.38.0 - 5 Feb, 2026
 --------------------------
