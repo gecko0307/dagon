@@ -543,8 +543,12 @@ bool saveDDS(OutputStream output, TextureBuffer* buffer)
         header.flags |= DDSHeaderFlags.LINEARSIZE;
         auto blocksH = max2(1, (buffer.size.width + 3) / 4);
         auto blocksV = max2(1, (buffer.size.height + 3) / 4);
-        auto topLevelSize = blocksH * blocksV * buffer.format.blockSize;
-        header.pitch = topLevelSize;
+        auto sliceSize  = blocksH * blocksV * buffer.format.blockSize;
+        
+        if (buffer.format.target == GL_TEXTURE_3D)
+            header.pitch = sliceSize * buffer.size.depth;
+        else
+            header.pitch = sliceSize;
     }
     else
     {
@@ -566,6 +570,11 @@ bool saveDDS(OutputStream output, TextureBuffer* buffer)
     header.surface = 0;
     
     header.format.size = 32;
+    
+    bool writeDXT10Header = false;
+    DDSHeaderDXT10 dx10;
+    dx10.miscFlag = 0;
+    dx10.miscFlags2 = 0;
     
     if (isCompressed)
     {
@@ -611,6 +620,20 @@ bool saveDDS(OutputStream output, TextureBuffer* buffer)
         header.format.blueMask  = 0x00FF0000;
         header.format.alphaMask = 0xFF000000;
     }
+    else if (buffer.format.internalFormat == GL_RGBA16F)
+    {
+        header.format.flags = DDPF.FOURCC;
+        header.format.fourCC = FOURCC_DX10;
+        dx10.dxgiFormat = DXGIFormat.R16G16B16A16_FLOAT;
+        writeDXT10Header = true;
+    }
+    else if (buffer.format.internalFormat == GL_RGBA32F)
+    {
+        header.format.flags = DDPF.FOURCC;
+        header.format.fourCC = FOURCC_DX10;
+        dx10.dxgiFormat = DXGIFormat.R32G32B32A32_FLOAT;
+        writeDXT10Header = true;
+    }
     else
     {
         logError("saveDDS: unsupported texture internal format ", buffer.format.internalFormat);
@@ -618,19 +641,62 @@ bool saveDDS(OutputStream output, TextureBuffer* buffer)
     }
     
     header.caps = DDSCaps.TEXTURE;
+    header.caps2 = 0;
+    header.caps3 = 0;
+    header.caps4 = 0;
+    
     if (buffer.mipLevels > 1)
     {
         header.caps |= DDSCaps.COMPLEX | DDSCaps.MIPMAP;
     }
     
-    // TODO: support cubemaps (DDSCaps2.CUBEMAP | DDSCaps2.CUBEMAP_ALLFACES)
-    header.caps2 = 0;
-    header.caps3 = 0;
-    header.caps4 = 0;
+    if (buffer.format.target == GL_TEXTURE_CUBE_MAP)
+    {
+        header.caps |= DDSCaps.COMPLEX;
+        
+        if (buffer.format.cubeFaces == CubeFaceBit.All)
+            header.caps2 |= DDSCaps2.CUBEMAP | DDSCaps2.CUBEMAP_ALLFACES;
+        else
+        {
+            logError("saveDDS: saving incomplete cubemaps is not supported yet");
+            return false;
+        }
+    }
+    else if (buffer.format.target == GL_TEXTURE_3D)
+    {
+        header.flags |= DDSHeaderFlags.DEPTH;
+        header.depth = buffer.size.depth;
+        header.caps2 |= DDSCaps2.VOLUME;
+    }
+    
+    if (buffer.format.target == GL_TEXTURE_1D)
+        dx10.resourceDimension = D3D10ResourceDimension.Texture1D;
+    else if (buffer.format.target == GL_TEXTURE_2D)
+        dx10.resourceDimension = D3D10ResourceDimension.Texture2D;
+    else if (buffer.format.target == GL_TEXTURE_3D)
+        dx10.resourceDimension = D3D10ResourceDimension.Texture3D;
+    else if (buffer.format.target == GL_TEXTURE_CUBE_MAP)
+    {
+        dx10.resourceDimension = D3D10ResourceDimension.Texture2D;
+        dx10.miscFlag = D3D10ResourceMisc.TextureCube;
+    }
+    
+    dx10.arraySize = 1;
     
     output.writeArray(ddsMagic);
     output.writeArray((cast(ubyte*)&header)[0..DDSHeader.sizeof]);
+    if (writeDXT10Header)
+        output.writeArray((cast(ubyte*)&dx10)[0..DDSHeaderDXT10.sizeof]);
     output.writeArray(buffer.data);
     
     return true;
+}
+
+bool saveDDS(OutputStream output, Texture texture)
+{
+    TextureBuffer textureBuffer = downloadTexture(texture);
+    bool res = saveDDS(output, &textureBuffer);
+    if (textureBuffer.data.length)
+        Delete(textureBuffer.data);
+    return res;
 }

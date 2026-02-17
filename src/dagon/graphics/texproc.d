@@ -603,7 +603,7 @@ void prefilterCubemap(Texture inputCubemap, Texture outputCubemap)
             
             shader.cubeFace = cubeFace;
             shader.roughness = cast(float)mipLevel / (cast(float)outputCubemap.mipLevels - 1.0f);
-            shader.roughness = min(0.9f, shader.roughness * shader.roughness);
+            shader.roughness = min(1.0f, shader.roughness * shader.roughness);
             shader.inputMipLevel = 0;
             
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, cubeFace, outputCubemap.texture, mipLevel);
