@@ -115,6 +115,7 @@ enum EventType
     KeyUp,
     TextInput,
     LocaleChange,
+    KeyboardLayoutChange,
     MouseMotion,
     MouseButtonDown,
     MouseButtonUp,
@@ -1094,6 +1095,11 @@ class EventManager: Owner
                     addEvent(e);
                     break;
 
+                case SDL_KEYMAPCHANGED:
+                    e = Event(EventType.KeyboardLayoutChange);
+                    addEvent(e);
+                    break;
+
                 case SDL_QUIT:
                     exit();
                     e = Event(EventType.Quit);
@@ -1341,6 +1347,9 @@ abstract class EventDispatcher: Owner
             case EventType.DropFile:
                 if (enableInputEvents) onDropFile(e.filename);
                 break;
+            case EventType.KeyboardLayoutChange:
+                if (enableInputEvents) onKeyboardLayoutChange();
+                break;
             case EventType.Message:
                 if (e.domain * domain >= 0) // if domains are same
                     if (e.recipient.length == 0 || e.recipient == address)
@@ -1430,6 +1439,9 @@ abstract class EventDispatcher: Owner
 
     /// Called when a file is dropped onto the window.
     void onDropFile(string filename) {}
+
+    /// Called when the user switches system keyboard layout.
+    void onKeyboardLayoutChange() {}
 
     /// Called when a message event is received.
     void onMessage(int domain, string sender, string message, void* payload) {}
