@@ -1683,8 +1683,8 @@ VkFormat glFormatToVkFormat(GLenum internalFormat)
 }
 
 /**
- * Reads a texture object from VRAM and returns its data and metadata as TextureBuffer.
- * The function supports 1D/2D/3D textures and cubemaps, compressed and uncompressed.
+ * Reads a texture object from VRAM and returns it as TextureBuffer.
+ * Supports 1D/2D/3D textures and cubemaps, compressed and uncompressed.
  */
 TextureBuffer downloadTexture(Texture texture)
 {
@@ -1699,11 +1699,42 @@ TextureBuffer downloadTexture(Texture texture)
     tb.size = texture.size;
     tb.mipLevels = texture.mipLevels;
 
-    ubyte[] outData;
-    size_t totalSize = 0;
+    ubyte[] data;
+    size_t bufferSize = 0;
 
     if (tb.format.target == GL_TEXTURE_CUBE_MAP)
     {
+        // Calculate buffer size
+        foreach(face; EnumMembers!CubeFace)
+        {
+            GLenum faceTarget = cast(GLenum)face;
+            for (uint level = 0; level < tb.mipLevels; ++level)
+            {
+                GLint mipWidth = 0, mipHeight = 0;
+                glGetTexLevelParameteriv(faceTarget, level, GL_TEXTURE_WIDTH, &mipWidth);
+                glGetTexLevelParameteriv(faceTarget, level, GL_TEXTURE_HEIGHT, &mipHeight);
+
+                if (tb.format.blockSize > 0)
+                {
+                    uint imageSize =
+                        ((cast(uint)mipWidth + 3) / 4) *
+                        ((cast(uint)mipHeight + 3) / 4) *
+                        tb.format.blockSize;
+                    
+                    bufferSize += imageSize;
+                }
+                else
+                {
+                    bufferSize += mipWidth * mipHeight * tb.format.pixelSize;
+                }
+            }
+        }
+        
+        if (bufferSize > 0)
+            data = New!(ubyte[])(bufferSize);
+        
+        // Fill the buffer
+        size_t offset = 0;
         foreach(face; EnumMembers!CubeFace)
         {
             GLenum faceTarget = cast(GLenum)face;
@@ -1716,119 +1747,114 @@ TextureBuffer downloadTexture(Texture texture)
 
                 if (tb.format.blockSize > 0)
                 {
-                    uint imageSize = ((cast(uint)mipWidth + 3) / 4) * ((cast(uint)mipHeight + 3) / 4) * tb.format.blockSize;
-                    totalSize += imageSize;
-                }
-                else
-                {
-                    totalSize += mipWidth * mipHeight * tb.format.pixelSize;
-                }
-            }
-        }
-
-        // allocate buffer once
-        if (totalSize > 0)
-            outData = New!(ubyte[])(totalSize);
-
-        // fill buffer
-        size_t offset = 0;
-        foreach(face; EnumMembers!CubeFace)
-        {
-            GLenum faceTarget = cast(GLenum)face;
-            for (uint level = 0; level < tb.mipLevels; ++level)
-            {
-                GLint ww = 0, hh = 0;
-                glGetTexLevelParameteriv(faceTarget, level, GL_TEXTURE_WIDTH, &ww);
-                glGetTexLevelParameteriv(faceTarget, level, GL_TEXTURE_HEIGHT, &hh);
-                if (ww == 0 || hh == 0) break;
-
-                if (tb.format.blockSize > 0)
-                {
-                    uint imageSize = ((cast(uint)ww + 3) / 4) * ((cast(uint)hh + 3) / 4) * tb.format.blockSize;
+                    uint imageSize =
+                        ((cast(uint)mipWidth + 3) / 4) *
+                        ((cast(uint)mipHeight + 3) / 4) *
+                        tb.format.blockSize;
+                    
                     if (imageSize > 0)
                     {
-                        glGetCompressedTexImage(faceTarget, cast(GLint)level, cast(void*) (outData.ptr + offset));
+                        glGetCompressedTexImage(
+                            faceTarget,
+                            cast(GLint)level,
+                            cast(void*)(data.ptr + offset));
                         offset += imageSize;
                     }
                 }
                 else
                 {
-                    uint size = ww * hh * tb.format.pixelSize;
+                    uint size = mipWidth * mipHeight * tb.format.pixelSize;
+                    
                     if (size > 0)
                     {
-                        glGetTexImage(faceTarget, cast(GLint)level, tb.format.format, tb.format.pixelType, cast(void*)(outData.ptr + offset));
+                        glGetTexImage(
+                            faceTarget,
+                            cast(GLint)level,
+                            tb.format.format,
+                            tb.format.pixelType,
+                            cast(void*)(data.ptr + offset));
                         offset += size;
                     }
                 }
             }
         }
     }
-
-    /*
-    else
+    else // 1D, 2D, or 3D texture
     {
         for (uint level = 0; level < tb.mipLevels; ++level)
         {
-            GLint ww = 0, hh = 1, dd = 1;
-            glGetTexLevelParameteriv(tb.format.target, cast(GLint)level, GL_TEXTURE_WIDTH, &ww);
-            glGetTexLevelParameteriv(tb.format.target, cast(GLint)level, GL_TEXTURE_HEIGHT, &hh);
-            glGetTexLevelParameteriv(tb.format.target, cast(GLint)level, GL_TEXTURE_DEPTH, &dd);
-            if (ww == 0) break;
+            GLint mipWidth = 0, mipHeight = 0, mipDepth = 0;
+            glGetTexLevelParameteriv(tb.format.target, cast(GLint)level, GL_TEXTURE_WIDTH, &mipWidth);
+            glGetTexLevelParameteriv(tb.format.target, cast(GLint)level, GL_TEXTURE_HEIGHT, &mipHeight);
+            glGetTexLevelParameteriv(tb.format.target, cast(GLint)level, GL_TEXTURE_DEPTH, &mipDepth);
 
             if (tb.format.blockSize > 0)
             {
-                // compressed 2D only
-                uint imageSize = ((cast(uint)ww + 3) / 4) * ((cast(uint)hh + 3) / 4) * tb.format.blockSize;
-                totalSize += imageSize;
+                uint imageSize =
+                    ((cast(uint)mipWidth  + 3) / 4) *
+                    ((cast(uint)mipHeight + 3) / 4) *
+                    ((cast(uint)mipDepth  + 3) / 4) *
+                    tb.format.blockSize;
+                
+                bufferSize += imageSize;
             }
             else
             {
-                uint pSize = tb.format.pixelSize;
-                uint rowSize = (cast(uint)ww * pSize + 3) & ~3;
-                uint imageSize = rowSize * cast(uint)hh * cast(uint)dd;
-                totalSize += imageSize;
+                bufferSize += mipWidth * mipHeight * mipDepth * tb.format.pixelSize;
             }
         }
 
         // allocate buffer
-        if (totalSize > 0)
-            outData = New!(ubyte[])(totalSize);
+        if (bufferSize > 0)
+            data = New!(ubyte[])(bufferSize);
 
         // now read into buffer
         size_t offset = 0;
         for (uint level = 0; level < tb.mipLevels; ++level)
         {
-            GLint ww = 0, hh = 1, dd = 1;
-            glGetTexLevelParameteriv(tb.format.target, cast(GLint)level, GL_TEXTURE_WIDTH, &ww);
-            glGetTexLevelParameteriv(tb.format.target, cast(GLint)level, GL_TEXTURE_HEIGHT, &hh);
-            glGetTexLevelParameteriv(tb.format.target, cast(GLint)level, GL_TEXTURE_DEPTH, &dd);
-            if (ww == 0) break;
+            GLint mipWidth = 0, mipHeight = 0, mipDepth = 0;
+            glGetTexLevelParameteriv(tb.format.target, cast(GLint)level, GL_TEXTURE_WIDTH, &mipWidth);
+            glGetTexLevelParameteriv(tb.format.target, cast(GLint)level, GL_TEXTURE_HEIGHT, &mipHeight);
+            glGetTexLevelParameteriv(tb.format.target, cast(GLint)level, GL_TEXTURE_DEPTH, &mipDepth);
 
             if (tb.format.blockSize > 0)
             {
-                uint imageSize = ((cast(uint)ww + 3) / 4) * ((cast(uint)hh + 3) / 4) * tb.format.blockSize;
+                uint imageSize =
+                    ((cast(uint)mipWidth  + 3) / 4) *
+                    ((cast(uint)mipHeight + 3) / 4) *
+                    ((cast(uint)mipDepth  + 3) / 4) *
+                    tb.format.blockSize;
+                
                 if (imageSize > 0)
                 {
-                    glGetCompressedTexImage(tb.format.target, cast(GLint)level, cast(void*)(outData.ptr + offset));
+                    glGetCompressedTexImage(
+                        tb.format.target,
+                        cast(GLint)level,
+                        cast(void*)(data.ptr + offset));
+                    
                     offset += imageSize;
                 }
             }
             else
             {
-                uint pSize = tb.format.pixelSize;
-                uint rowSize = (cast(uint)ww * pSize + 3) & ~3;
-                uint imageSize = rowSize * cast(uint)hh * cast(uint)dd;
+                uint imageSize = mipWidth * mipHeight * mipDepth * tb.format.pixelSize;
+                
                 if (imageSize > 0)
                 {
-                    glGetTexImage(tb.format.target, cast(GLint)level, tb.format.format, tb.format.pixelType, cast(void*)(outData.ptr + offset));
+                    glGetTexImage(
+                        tb.format.target,
+                        cast(GLint)level,
+                        tb.format.format,
+                        tb.format.pixelType,
+                        cast(void*)(data.ptr + offset));
+                    
                     offset += imageSize;
                 }
             }
         }
     }
-    */
 
-    tb.data = outData;
+    tb.data = data;
 
     texture.unbind();
     

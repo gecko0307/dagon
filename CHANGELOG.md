@@ -4,6 +4,7 @@ Dagon 0.40.0 - TBD
   - `Application.outputColorProfile`. Controlled via `gl.outputColorProfile` in settings.conf. Supported values are `Gamma22` (default) and `sRGB`. This setting affects the color encoding function in the presentation shader
 - **Graphics components**
   - Internal GLSL macro defines for global engine settings (`globalShaderDefine` function). To use them in shaders, add `#include <dagon>`
+  - New function `downloadTexture` for retrieving textures from VRAM
   - New module `dagon.graphics.lut` for LUT-related functionality. New function `convertGPUImageLUTto3DTexture`
 - **Post-processing**
   - Post-processing pipeline was optimized to use linear color as much as possible, less VRAM and less hard-coded buffer swapping logics. Custom filters are now supported via `PostProcRenderer.addFilterPass`
@@ -13,6 +14,7 @@ Dagon 0.40.0 - TBD
   - GPUImage LUT is now automatically converted to 3D texture for more efficient sampling in the shader
   - Color grading filter now supports simple brightness/contrast/saturation adjustment (`cc.brightness`, `cc.contrast`, `cc.saturation` in render.conf). If LUT is used, color adjustment is overridden with color lookup
 - **Assets**
+  - Cubemaps and 3D textures support in DDS exporter
   - New property `TextureAsset.lutFormat`
   - Breaking change: `TextureAsset.loadAs3D` property is removed. The same semantics is achieved with `TextureAsset.lutFormat = LUTFormat.Hald;`.
 
