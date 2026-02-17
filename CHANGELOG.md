@@ -3,6 +3,7 @@ Dagon 0.40.0 - TBD
 - **Core**
   - New event type `EventType.KeyboardLayoutChange`. New event handler `onKeyboardLayoutChange`
   - `Application.outputColorProfile`. Controlled via `gl.outputColorProfile` in settings.conf. Supported values are `Gamma22` (default) and `sRGB`. This setting affects the color encoding function in the presentation shader
+  - Fix `DProperty.toMatrix3x3f` and `DProperty.toMatrix4x4f`
 - **Graphics components**
   - Internal GLSL macro defines for global engine settings (`globalShaderDefine` function). To use them in shaders, add `#include <dagon>`
   - New function `downloadTexture` for retrieving textures from VRAM
@@ -13,7 +14,7 @@ Dagon 0.40.0 - TBD
   - New DoF parameters: `dof.circleOfConfusion`, `dof.pentagonBokeh`, `dof.pentagonBokehFeather` in render.conf
   - Improved SSAO noise reduction filter, adding support for depth-aware weighting, which eliminates halo artifacts at close distances (`ssao.denoiseDepthAware` in render.conf)
   - GPUImage LUT is now automatically converted to 3D texture for more efficient sampling in the shader
-  - Color grading filter now supports brightness/contrast/saturation adjustment (`cc.brightness`, `cc.contrast`, `cc.saturation` in render.conf). If LUT is used, color adjustment is overridden with color lookup
+  - Color grading filter now supports brightness/contrast/saturation adjustment (`cc.brightness`, `cc.contrast`, `cc.saturation` in render.conf). Also `cc.colorMatrix` can be used to directly specify a linear color transform (4x4 row-major matrix). If LUT is used, color adjustment is overridden with color lookup
 - **Assets**
   - Cubemaps and 3D textures support in DDS exporter
   - New property `TextureAsset.lutFormat`

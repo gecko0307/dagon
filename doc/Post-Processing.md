@@ -111,7 +111,7 @@ Color adjustment is controlled with the following render.conf parameters:
 * `cc.brightness` - scales overall lightness of a scene. `0.0` is identity brightness, negative values make the image darker, positive values make the image brighter. Default is `0.0`;
 * `cc.contrast` - adjusts difference between dark and bright regions. `1.0` is identity contrast, smaller values decrease contrast, larger values increase contrast. Default is `1.0`;
 * `cc.saturation` - scales color intensity. `1.0` is identity saturation, smaller values desaturate the image (`0.0` gives monochrome look), larger values oversaturate the image. Default is `1.0`;
-* `cc.colorMatrix` - 4x4 matrix that overrides brightness/contrast/saturation, if specified. Directly used to transform the input color. For example, the following matrix applies a sepia filter:
+* `cc.colorMatrix` - 4x4 row-major color correction matrix that overrides brightness/contrast/saturation, if specified. Directly used to transform the input color. For example, the following matrix applies a sepia filter:
 
 ```
 cc.colorMatrix: [
@@ -122,7 +122,7 @@ cc.colorMatrix: [
 ];
 ```
 
-Alternatively, color grading can be done using a LUT (lookup table), a 3D texture that maps RGB values to adjusted color space. This is a very flexible approach that allows to "bake" color modifications using any external image editor. If LUT is used, `cc.*` parameters are ignored, and color adjustment is overridden with color lookup from a texture.
+Alternatively, color grading can be done using a LUT (lookup table), a 3D texture that maps RGB values to adjusted color space. This is a very flexible approach that allows to "bake" non-linear color modifications using any external image editor. If LUT is used, `cc.*` parameters are ignored, and color adjustment is overridden with color lookup from a texture.
 
 * `lut.enabled` - disables or enables LUT color grading
 * `lut.file` - path to the LUT file, usually a lossless image that encodes a 3D color space. This parameter supports DDS 3D texture and GPUImage LUT (see below). The loaded LUT is automatically converted to 3D texture, enabling efficient trilinear sampling in the shader
