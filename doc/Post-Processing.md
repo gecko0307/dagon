@@ -114,14 +114,12 @@ Color adjustment is controlled with the following render.conf parameters:
 
 If LUT is used, `cc` parameters are ignored, and color adjustment is overridden with color lookup from a texture.
 * `lut.enabled` - disables or enables LUT color grading
-* `lut.file` - path to the LUT file, usually a lossless image that encodes a 3D color space. Currently this parameter supports only GPUImage format LUTs (see below). The loaded LUT is automatically converted to 3D texture for more efficient sampling in the shader
+* `lut.file` - path to the LUT file, usually a lossless image that encodes a 3D color space. This parameter supports DDS 3D texture and GPUImage LUT (see below). The loaded LUT is automatically converted to 3D texture for more efficient sampling in the shader
 
 Dagon supports two LUT formats that differ in the 3D-to-2D encoding method they use.
 
 * **GPUImage LUT** -
 * **Hald CLUT** -
-
-It is also possible to load 3D texture 
 
 ## Sharpening
 
