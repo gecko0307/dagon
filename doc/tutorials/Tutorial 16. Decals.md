@@ -8,6 +8,6 @@ Decal materials support additional textures: normal, roughness, metallic, and em
 
 Due to the screen-space nature of the technique, it is not possible to directly restrict which objects are affected by decals (you don't want a character to walk through the decal projection box and suddenly have the decal appear on the character). Dagon solves this by differentiating static and dynamic entities in the scene. The engine first renders all entities with `dynamic` property set to `false`, then runs the decal projection pass, and then renders all entities with `dynamic` property set to `true`.
 
-It's worth nothing that deferred decals only work in the deferred stage of the rendering and are not compatible with forward-mode geometry (with blended materials or custom shaders).
+It's worth noting that deferred decals only work in the deferred stage of the rendering and are not compatible with forward-mode geometry (with blended materials or custom shaders).
 
 TODO: example code

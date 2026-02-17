@@ -29,6 +29,7 @@ module dagon.render.postproc;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.math.matrix;
 
 import dagon.core.application;
 import dagon.core.event;
@@ -331,6 +332,11 @@ class PostProcRenderer: Renderer
     void saturation(float s) @property
     {
         colorGradingShader.saturation = s;
+    }
+    
+    void colorMatrix(Matrix4x4f m) @property
+    {
+        colorGradingShader.colorMatrix = m;
     }
 
     void lutEnabled(bool mode) @property

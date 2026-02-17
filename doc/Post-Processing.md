@@ -105,21 +105,37 @@ Anti-aliasing is a filter for smoothing jagged polygon edges. Dagon implements F
 
 ## Color Grading
 
-Color grading is a set of operations that adjust the brightness, contrast, saturation, and color balance of a scene. Dagon supports basic color adjustment parameters that are combined into a single color correction matrix which is passed to the shader to linearly transform input color data. Alternatively, color grading can be done using a LUT (lookup table), a 3D texture that maps RGB values to adjusted color space. This is a very flexible approach that allows to "bake" color modifications using any external image editor.
+Color grading is a set of operations that adjust the brightness, contrast, saturation, and color balance of a scene. Dagon supports basic color adjustment parameters that are combined into a single color correction matrix which is passed to the shader to linearly transform input color data.
 
 Color adjustment is controlled with the following render.conf parameters:
 * `cc.brightness` - scales overall lightness of a scene. `0.0` is identity brightness, negative values make the image darker, positive values make the image brighter. Default is `0.0`;
 * `cc.contrast` - adjusts difference between dark and bright regions. `1.0` is identity contrast, smaller values decrease contrast, larger values increase contrast. Default is `1.0`;
 * `cc.saturation` - scales color intensity. `1.0` is identity saturation, smaller values desaturate the image (`0.0` gives monochrome look), larger values oversaturate the image. Default is `1.0`;
+* `cc.colorMatrix` - 4x4 matrix that overrides brightness/contrast/saturation, if specified. Directly used to transform the input color. For example, the following matrix applies a sepia filter:
 
-If LUT is used, `cc` parameters are ignored, and color adjustment is overridden with color lookup from a texture.
+```
+cc.colorMatrix: [
+    0.393, 0.769, 0.189, 0,
+    0.349, 0.686, 0.168, 0,
+    0.272, 0.534, 0.131, 0,
+    0,     0,     0,     1
+];
+```
+
+Alternatively, color grading can be done using a LUT (lookup table), a 3D texture that maps RGB values to adjusted color space. This is a very flexible approach that allows to "bake" color modifications using any external image editor. If LUT is used, `cc.*` parameters are ignored, and color adjustment is overridden with color lookup from a texture.
+
 * `lut.enabled` - disables or enables LUT color grading
-* `lut.file` - path to the LUT file, usually a lossless image that encodes a 3D color space. This parameter supports DDS 3D texture and GPUImage LUT (see below). The loaded LUT is automatically converted to 3D texture for more efficient sampling in the shader
+* `lut.file` - path to the LUT file, usually a lossless image that encodes a 3D color space. This parameter supports DDS 3D texture and GPUImage LUT (see below). The loaded LUT is automatically converted to 3D texture, enabling efficient trilinear sampling in the shader
 
-Dagon supports two LUT formats that differ in the 3D-to-2D encoding method they use.
+Dagon supports three LUT formats that differ in the 3D-to-2D encoding method they use:
 
-* **GPUImage LUT** -
-* **Hald CLUT** -
+* **GPUImage LUT** - format based on [GPUImage](https://github.com/BradLarson/GPUImage) workflow. This is 512x512 image that encodes 64x64x64 color array by slicing along B-channel, where each 64x64 slice encodes an RG plane. Slices are tiled from left to right, from top to bottom. This is a very size-efficient way to store a LUT, giving the best lossless compression in PNG. The drawback is that it requires a special lookup function in the shader, or should be converted to 3D texture in advance. Dagon automatically does this conversion for LUTs specified in render.conf;
+* **Hald CLUT** - 3D texture linearly packed into 2D image row by row, starting from the first RG plane (where B = 0). This is also usually 512x512 image that encodes 64x64x64 color array. Hald CLUT compresses a bit worse than GPUImage LUT, but its advantage is that it doesn't require any runtime conversion and is directly uploaded to VRAM. **Currently this format is not supported for render.conf** (should be loaded manually in the game code);
+* **DDS 3D texture** - a 3D texture stored in DDS container format. It doesn't require conversion and stored as uncompressed raw data, which makes it the fastest to load, but heaviest in file size.
+
+GPUImage LUT and Hald CLUT can be easily created in any image editor that supports color grading (like Photoshop or GIMP). First, take a reference screenshot of the game in its unmodified colors. Open the screenshot in an editor. Extend the image canvas horizontally and place the identity LUT beside the screenshot (you can use identity GPUImage LUT from Dagon's data folder, `data/__internal/textures/lut.png`). Merge layers together and perform color adjustments: brightness, contrast, saturation, color temperature, RGB curves, etc. Note that color correction must be performed for each pixel independently of the others; filters based on convolution or any operations that depend on neighboring pixels are not compatible with LUT-based workflow
+
+When you are happy with the result, crop the edited LUT and save it. It's worth noting that LUTs should always be stored in a lossless format. PNG is usually the best choice.
 
 ## Sharpening
 

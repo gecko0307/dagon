@@ -13,7 +13,7 @@ Dagon 0.40.0 - TBD
   - New DoF parameters: `dof.circleOfConfusion`, `dof.pentagonBokeh`, `dof.pentagonBokehFeather` in render.conf
   - Improved SSAO noise reduction filter, adding support for depth-aware weighting, which eliminates halo artifacts at close distances (`ssao.denoiseDepthAware` in render.conf)
   - GPUImage LUT is now automatically converted to 3D texture for more efficient sampling in the shader
-  - Color grading filter now supports simple brightness/contrast/saturation adjustment (`cc.brightness`, `cc.contrast`, `cc.saturation` in render.conf). If LUT is used, color adjustment is overridden with color lookup
+  - Color grading filter now supports brightness/contrast/saturation adjustment (`cc.brightness`, `cc.contrast`, `cc.saturation` in render.conf). If LUT is used, color adjustment is overridden with color lookup
 - **Assets**
   - Cubemaps and 3D textures support in DDS exporter
   - New property `TextureAsset.lutFormat`

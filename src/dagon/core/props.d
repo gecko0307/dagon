@@ -45,6 +45,8 @@ module dagon.core.props;
 import std.stdio;
 import std.ascii;
 import std.conv;
+import std.string;
+
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.container.array;
@@ -176,7 +178,20 @@ struct DProperty
     Matrix3x3f toMatrix3x3f() const
     {
         if (data.length)
-            return Matrix3x3f(data);
+        {
+            float m1, m2, m3;
+            float m4, m5, m6;
+            float m7, m8, m9;
+            sscanf(data.toStringz, "[%f, %f, %f, %f, %f, %f, %f, %f, %f]",
+                &m1, &m2, &m3,
+                &m4, &m5, &m6,
+                &m7, &m8, &m9);
+            return matrixf(
+                m1, m2, m3,
+                m4, m5, m6,
+                m7, m8, m9
+            );
+        }
         else
             return Matrix3x3f.identity;
     }
@@ -185,7 +200,23 @@ struct DProperty
     Matrix4x4f toMatrix4x4f() const
     {
         if (data.length)
-            return Matrix4x4f(data);
+        {
+            float m1,  m2,  m3,  m4;
+            float m5,  m6,  m7,  m8;
+            float m9,  m10, m11, m12;
+            float m13, m14, m15, m16;
+            sscanf(data.toStringz, "[%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f]",
+                &m1,  &m2,  &m3,  &m4,
+                &m5,  &m6,  &m7,  &m8,
+                &m9,  &m10, &m11, &m12,
+                &m13, &m14, &m15, &m16);
+            return matrixf(
+                m1,  m2,  m3,  m4,
+                m5,  m6,  m7,  m8,
+                m9,  m10, m11, m12,
+                m13, m14, m15, m16
+            );
+        }
         else
             return Matrix4x4f.identity;
     }

@@ -260,6 +260,8 @@ class Game: BaseGame
             postProcessingRenderer.contrast = rendererConfig.props["cc.contrast"].toFloat;
         if ("cc.saturation" in rendererConfig.props)
             postProcessingRenderer.saturation = rendererConfig.props["cc.saturation"].toFloat;
+        if ("cc.colorMatrix" in rendererConfig.props)
+            postProcessingRenderer.colorMatrix = rendererConfig.props["cc.colorMatrix"].toMatrix4x4f;
         
         if ("sharpening.enabled" in rendererConfig.props)
             postProcessingRenderer.sharpeningEnabled = cast(bool)(rendererConfig.props["sharpening.enabled"].toUInt);
