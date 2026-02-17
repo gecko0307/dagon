@@ -1,6 +1,7 @@
 Dagon 0.40.0 - TBD
 ------------------
 - **Core**
+  - New event type `EventType.KeyboardLayoutChange`. New event handler `onKeyboardLayoutChange`
   - `Application.outputColorProfile`. Controlled via `gl.outputColorProfile` in settings.conf. Supported values are `Gamma22` (default) and `sRGB`. This setting affects the color encoding function in the presentation shader
 - **Graphics components**
   - Internal GLSL macro defines for global engine settings (`globalShaderDefine` function). To use them in shaders, add `#include <dagon>`
