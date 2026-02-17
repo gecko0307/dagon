@@ -517,12 +517,12 @@ bool loadDDS(InputStream istrm, TextureBuffer* buffer)
 }
 
 /**
- * Saves a texture to DDS file.
+ * Saves a TextureBuffer to DDS file.
  * Supports uncompressed and S3TC-compressed textures.
  *
  * Params:
  *   output = Output stream to write the file.
- *   buffer = Input texture buffer.
+ *   buffer = Pointer to the input TextureBuffer.
  * Returns:
  *   `true` if saving succeeded, `false` otherwise.
  */
@@ -692,6 +692,16 @@ bool saveDDS(OutputStream output, TextureBuffer* buffer)
     return true;
 }
 
+/**
+ * Saves a texture to DDS file.
+ * Supports uncompressed and S3TC-compressed textures.
+ *
+ * Params:
+ *   output = Output stream to write the file.
+ *   texture = Input Texture object.
+ * Returns:
+ *   `true` if saving succeeded, `false` otherwise.
+ */
 bool saveDDS(OutputStream output, Texture texture)
 {
     TextureBuffer textureBuffer = downloadTexture(texture);
