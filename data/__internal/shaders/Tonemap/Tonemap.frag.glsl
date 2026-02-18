@@ -25,7 +25,8 @@ out vec4 fragColor;
  * tonemapFilmic is based on the function by Jim Hejl and Richard Burgess-Dawson
  * http://filmicworlds.com/blog/filmic-tonemapping-operators
  *
- * tonemapAgX is based on the code by Don McCurdy, which in turn is based on Blender and Filament implementations
+ * tonemapAgX is based on the code by Don McCurdy,
+ * which in turn is based on Blender and Filament implementations
  * https://github.com/mrdoob/three.js/pull/27618
  *
  * tonemapPBRNeutral is based on the code by Khronos Group
@@ -33,6 +34,9 @@ out vec4 fragColor;
  *
  * tonemapUchimura is based on the function by Hajime Uchimura
  * https://www.desmos.com/calculator/gslcdxvipg
+ *
+ * tonemapLottes is based on the function by Timothy Lottes,
+ * "Advanced Techniques and Optimization of HDR Color Pipelines"
  */
 
 vec3 hableFunc(vec3 x)
@@ -74,7 +78,7 @@ vec3 tonemapACES(vec3 x)
     const float c = 2.43;
     const float d = 0.59;
     const float e = 0.14;
-    return clamp((x * (a * x + b)) / (x * (c * x + d ) + e), 0.0, 1.0);
+    return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);
 }
 
 vec3 tonemapFilmic(vec3 color)
@@ -254,11 +258,31 @@ vec3 tonemapUchimura(vec3 x)
     return T * w0 + L * w1 + S * w2;
 }
 
+vec3 tonemapLottes(vec3 x)
+{
+    const vec3 a = vec3(1.6);
+    const vec3 d = vec3(0.977);
+    const vec3 hdrMax = vec3(8.0);
+    const vec3 midIn = vec3(0.18);
+    const vec3 midOut = vec3(0.267);
+
+    const vec3 b =
+        (-pow(midIn, a) + pow(hdrMax, a) * midOut) /
+        ((pow(hdrMax, a * d) - pow(midIn, a * d)) * midOut);
+    const vec3 c =
+        (pow(hdrMax, a * d) * pow(midIn, a) - pow(hdrMax, a) * pow(midIn, a * d) * midOut) /
+        ((pow(hdrMax, a * d) - pow(midIn, a * d)) * midOut);
+
+    return pow(x, a) / (pow(x, a * d) * b + c);
+}
+
 void main()
 {
     vec3 res = texture(colorBuffer, texCoord).rgb * exposure;
     
-    if (tonemapper == 10)
+    if (tonemapper == 11)
+        res = tonemapLottes(res);
+    else if (tonemapper == 10)
         res = tonemapUchimura(res);
     else if (tonemapper == 9)
         res = tonemapPBRNeutral(res);

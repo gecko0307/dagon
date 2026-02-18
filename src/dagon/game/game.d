@@ -210,6 +210,8 @@ class Game: BaseGame
                 postProcessingRenderer.tonemapper = Tonemapper.KhronosPBRNeutral;
             else if (tonemapper == "Uchimura")
                 postProcessingRenderer.tonemapper = Tonemapper.Uchimura;
+            else if (tonemapper == "Lottes")
+                postProcessingRenderer.tonemapper = Tonemapper.Lottes;
             else
                 logError("Unknown tonemapper: \"", tonemapper, "\"");
         }

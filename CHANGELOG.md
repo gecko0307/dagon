@@ -10,6 +10,7 @@ Dagon 0.40.0 - TBD
   - New module `dagon.graphics.lut` for LUT-related functionality. New function `convertGPUImageLUTto3DTexture`
 - **Post-processing**
   - Post-processing pipeline was optimized to use linear color as much as possible, less VRAM and less hard-coded buffer swapping logics. Custom filters are now supported via `PostProcRenderer.addFilterPass`
+  - Lotte tonemapper
   - Sharpening filter based on FidelityFX CAS (`sharpening.enabled` and `sharpening.strength` in render.conf)
   - New DoF parameters: `dof.circleOfConfusion`, `dof.pentagonBokeh`, `dof.pentagonBokehFeather` in render.conf
   - Improved SSAO noise reduction filter, adding support for depth-aware weighting, which eliminates halo artifacts at close distances (`ssao.denoiseDepthAware` in render.conf)
@@ -54,7 +55,7 @@ Dagon 0.38.0 - 5 Feb, 2026
   - New write-only property `Texture.lodBias`
   - Fix incorrect mip chain uploading for NPOT textures
   - Fix memory leak in `CubemapPrefilterShader`
-- **Rendering**
+- **Post-processing**
   - Uchimura tonemapper
 - **Assets**
   - On-the-fly texture compression support. If `TextureAsset.compress` is set to `true` the loader will convert RGB8/RGBA8 texture to DXT1 or DXT5, respectively. The mip chain is automatically generated, if not loaded from the source file
