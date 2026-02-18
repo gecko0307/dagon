@@ -113,9 +113,12 @@ Tonemap parameters (for render.conf):
   * `"Lottes"` - "Advanced Techniques and Optimization of HDR Color Pipelines", Timothy Lottes, 2016
   * `"AgX_Base"`, `"AgX_Punchy"` - AgX tonemapper from Blender 4.0+ and Filament
   * `"KhronosPBRNeutral"` - [Neutral Tone Mapping for PBR Color Accuracy](https://dl.acm.org/doi/fullHtml/10.1145/3641233.3664313), Emmett Lalish, 2024.
-* `hdr.exposure` - applies 
-
-This 
+* `hdr.exposure` - 
+* `hdr.autoexposure` -
+* `hdr.keyValue` - 
+* `hdr.exposureAdaptationSpeed` -
+* `hdr.vignette` - 
+* `hdr.vignetteStrength` -
 
 ## Anti-aliasing
 

@@ -126,6 +126,11 @@ Recognozed by the `Game` class, applied to the `Game.deferredRenderer` and `Game
   * `"AgX_Base"`, `"AgX_Punchy"` - AgX tonemapper from Blender 4.0+ and Filament
   * `"KhronosPBRNeutral"` - [Neutral Tone Mapping for PBR Color Accuracy](https://dl.acm.org/doi/fullHtml/10.1145/3641233.3664313), Emmett Lalish, 2024
 * `hdr.exposure` - exposure value to adjust brightness
+* `hdr.autoexposure` -
+* `hdr.keyValue` - 
+* `hdr.exposureAdaptationSpeed` -
+* `hdr.vignette` - 
+* `hdr.vignetteStrength` -
 * `motionBlur.enabled` - `0` or `1`, disable or enable motion blur filter. Default is `0`
 * `motionBlur.samples` - 
 * `motionBlur.framerate` - 
