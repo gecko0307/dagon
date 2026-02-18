@@ -254,6 +254,7 @@ class PostProcRenderer: Renderer
         passLuminance.inputBuffer = hdrDoubleBuffer;
 
         tonemapShader = New!TonemapShader(this);
+        tonemapShader.averageLuminancePtr = &passLuminance.averageLuminance;
         passTonemap = addFilterPass(tonemapShader);
 
         fxaaShader = New!FXAAShader(this);
@@ -496,8 +497,5 @@ class PostProcRenderer: Renderer
         hdrBuffer1.resize(viewHalf.width, viewHalf.height);
         hdrBuffer2.resize(viewHalf.width, viewHalf.height);
         hdrBuffer3.resize(view.width, view.height);
-        
-        if (passLuminance.outputBuffer)
-            passLuminance.outputBuffer.resize(w / 2, h / 2);
     }
 }

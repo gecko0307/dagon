@@ -81,6 +81,7 @@ class TonemapShader: Shader
     Tonemapper tonemapper = Tonemapper.ACES;
     float exposure = 1.0f;
     float keyValue = 0.5f;
+    float* averageLuminancePtr = null;
     float minLuminance = 0.1f;
     float maxLuminance = 100000.0f;
     bool autoexposure = false;
@@ -123,19 +124,11 @@ class TonemapShader: Shader
         
         tExposure = exposure;
         
-        glActiveTexture(GL_TEXTURE0);
-        if (autoexposure && luminanceBuffer)
+        if (autoexposure && averageLuminancePtr)
         {
-            // TODO: move this elswhere
-            glBindTexture(GL_TEXTURE_2D, luminanceBuffer.colorTexture);
-            glGenerateMipmap(GL_TEXTURE_2D);
-            float averageLuminance = 0.0f;
-            int maxLodLevel = cast(int)log2(cast(float)max2(luminanceBuffer.width, luminanceBuffer.height));
-            glGetTexImage(GL_TEXTURE_2D, maxLodLevel, GL_RED, GL_FLOAT, &averageLuminance);
-            
-            if (!isNaN(averageLuminance))
+            if (!isNaN(*averageLuminancePtr))
             {
-                float targetExposure = keyValue * (1.0f / clamp(averageLuminance, minLuminance, maxLuminance));
+                float targetExposure = keyValue * (1.0f / clamp(*averageLuminancePtr, minLuminance, maxLuminance));
                 float exposureDelta = targetExposure - exposure;
                 exposure += exposureDelta * exposureAdaptationSpeed * state.time.delta;
             }

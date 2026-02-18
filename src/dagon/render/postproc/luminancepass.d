@@ -28,9 +28,12 @@ DEALINGS IN THE SOFTWARE.
 module dagon.render.postproc.luminancepass;
 
 import std.stdio;
+import std.math;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.math.vector;
+import dlib.math.utils;
 
 import dagon.core.bindings;
 import dagon.graphics.screensurface;
@@ -42,11 +45,16 @@ import dagon.render.postproc.shaders.luminance;
 
 class LuminancePass: RenderPass
 {
+    uint width = 32;
+    uint height = 32;
+    uint maxLodLevel = 0;
     Framebuffer inputBuffer;
     Framebuffer outputBuffer;
     ScreenSurface screenSurface;
     LuminanceShader shader;
     GLenum minFilter, magFilter;
+    
+    float averageLuminance = 0.0f;
 
     this(RenderPipeline pipeline)
     {
@@ -55,16 +63,22 @@ class LuminancePass: RenderPass
         shader = New!LuminanceShader(this);
         minFilter = GL_LINEAR;
         magFilter = GL_LINEAR;
+        maxLodLevel = cast(uint)log2(cast(float)max2(width, height));
     }
 
     override void render()
     {
         if (outputBuffer is null)
-            outputBuffer = New!Framebuffer(view.width / 2, view.height / 2, FrameBufferFormat.R16F, false, this);
+        {
+            outputBuffer = New!Framebuffer(width, height, FrameBufferFormat.R16F, false, this);
+            maxLodLevel = cast(uint)log2(cast(float)max2(width, height));
+        }
         
-        if (inputBuffer && view)
+        if (inputBuffer)
         {
             outputBuffer.bind();
+            
+            state.resolution = Vector2f(width, height);
 
             state.colorTexture = inputBuffer.colorTexture;
             state.depthTexture = inputBuffer.depthTexture;
@@ -72,8 +86,8 @@ class LuminancePass: RenderPass
             state.minFilter = minFilter;
             state.magFilter = magFilter;
 
-            glScissor(view.x, view.y, view.width, view.height);
-            glViewport(view.x, view.y, view.width, view.height);
+            glScissor(0, 0, width, height);
+            glViewport(0, 0, width, height);
 
             glDisable(GL_DEPTH_TEST);
             shader.bind();
@@ -84,6 +98,12 @@ class LuminancePass: RenderPass
             glEnable(GL_DEPTH_TEST);
 
             outputBuffer.unbind();
+            
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, outputBuffer.colorTexture);
+            glGenerateMipmap(GL_TEXTURE_2D);
+            glGetTexImage(GL_TEXTURE_2D, maxLodLevel, GL_RED, GL_FLOAT, &averageLuminance);
+            glBindTexture(GL_TEXTURE_2D, 0);
         }
     }
 }
