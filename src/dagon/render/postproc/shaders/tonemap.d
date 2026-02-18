@@ -122,8 +122,6 @@ class TonemapShader: Shader
         useVignette = vignette;
         vigStrength = vignetteStrength;
         
-        tExposure = exposure;
-        
         if (autoexposure && averageLuminancePtr)
         {
             if (!isNaN(*averageLuminancePtr))
@@ -134,12 +132,14 @@ class TonemapShader: Shader
             }
         }
         
+        tExposure = exposure;
+        
         // Texture 0 - color buffer
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, state.minFilter);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, state.magFilter);
         colorBuffer = 0;
-        tExposure = exposure;
 
         // Texture 1 - depth buffer
         glActiveTexture(GL_TEXTURE1);
