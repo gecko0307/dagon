@@ -10,7 +10,7 @@ Dagon 0.40.0 - TBD
   - New module `dagon.graphics.lut` for LUT-related functionality. New function `convertGPUImageLUTto3DTexture`
 - **Post-processing**
   - Post-processing pipeline was optimized to use linear color as much as possible, less VRAM and less hard-coded buffer swapping logics. Custom filters are now supported via `PostProcRenderer.addFilterPass`
-  - Lotte tonemapper
+  - Lottes tonemapper
   - Sharpening filter based on FidelityFX CAS (`sharpening.enabled` and `sharpening.strength` in render.conf)
   - New DoF parameters: `dof.circleOfConfusion`, `dof.pentagonBokeh`, `dof.pentagonBokehFeather` in render.conf
   - Improved SSAO noise reduction filter, adding support for depth-aware weighting, which eliminates halo artifacts at close distances (`ssao.denoiseDepthAware` in render.conf)

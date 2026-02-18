@@ -122,6 +122,7 @@ Recognozed by the `Game` class, applied to the `Game.deferredRenderer` and `Game
   * `"Filmic"` - ["Filmic Tonemapping Operators"](http://filmicworlds.com/blog/filmic-tonemapping-operators), John Hable, 2010, formula by Jim Hejl and Richard Burgess-Dawson
   * `"ACES"` - ["ACES Filmic Tone Mapping Curve"](https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve), Krzysztof Narkowicz, 2016
   * `"Uchimura"` - ["HDR Theory and Practice"](https://www.slideshare.net/nikuque/hdr-theory-and-practicce-jp), Hajime Uchimura, 2017
+  * `"Lottes"` - "Advanced Techniques and Optimization of HDR Color Pipelines", Timothy Lottes, 2016
   * `"AgX_Base"`, `"AgX_Punchy"` - AgX tonemapper from Blender 4.0+ and Filament
   * `"KhronosPBRNeutral"` - [Neutral Tone Mapping for PBR Color Accuracy](https://dl.acm.org/doi/fullHtml/10.1145/3641233.3664313), Emmett Lalish, 2024
 * `hdr.exposure` - exposure value to adjust brightness
