@@ -17,7 +17,7 @@ Dagon 0.40.0 - TBD
   - GPUImage LUT is now automatically converted to 3D texture for more efficient sampling in the shader
   - Color grading filter now supports brightness/contrast/saturation adjustment (`cc.brightness`, `cc.contrast`, `cc.saturation` in render.conf). Also `cc.colorMatrix` can be used to directly specify a linear color transform (4x4 row-major matrix). If LUT is used, color adjustment is overridden with color lookup
 - **Assets**
-  - Cubemaps and 3D textures support in DDS exporter
+  - Cubemaps, 3D textures and RGTC texture compression support in DDS exporter
   - New property `TextureAsset.lutFormat`
   - Breaking change: `TextureAsset.loadAs3D` property is removed. The same semantics is achieved with `TextureAsset.lutFormat = LUTFormat.Hald;`.
 
