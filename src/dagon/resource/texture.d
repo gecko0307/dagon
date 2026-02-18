@@ -180,11 +180,13 @@ class TextureAsset: Asset
         this.assetManager = assetManager;
         
         texture.maxAnisotropy = assetManager.application.maxTextureAnisotropy;
+        texture.useAnisotropicFiltering = assetManager.application.useAnisotropicFiltering;
+        texture.anisotropy = assetManager.application.defaultTextureAnisotropy;
         
         if (lutFormat != LUTFormat.Undefined)
         {
-            texture.useAnisotropicFiltering = assetManager.application.useAnisotropicFiltering;
-            texture.anisotropy = assetManager.application.defaultTextureAnisotropy;
+            texture.useAnisotropicFiltering = false;
+            texture.anisotropy = 0.0f;
             generateMipmaps = false;
             compress = false;
         }

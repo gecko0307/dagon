@@ -289,19 +289,34 @@ uint makeFourCC(char ch0, char ch1, char ch2, char ch3)
         ((cast(uint)ch0)       & 0x000000FF);
 }
 
+// Common FourCC codes
 enum FOURCC_DXT1 = makeFourCC('D', 'X', 'T', '1');
+enum FOURCC_DXT2 = makeFourCC('D', 'X', 'T', '2');
 enum FOURCC_DXT3 = makeFourCC('D', 'X', 'T', '3');
+enum FOURCC_DXT4 = makeFourCC('D', 'X', 'T', '4');
 enum FOURCC_DXT5 = makeFourCC('D', 'X', 'T', '5');
-enum FOURCC_DX10 = makeFourCC('D', 'X', '1', '0');
-
 enum FOURCC_BC4U = makeFourCC('B', 'C', '4', 'U');
 enum FOURCC_BC4S = makeFourCC('B', 'C', '4', 'S');
-enum FOURCC_ATI2 = makeFourCC('A', 'T', 'I', '2');
+enum FOURCC_BC5U = makeFourCC('B', 'C', '5', 'U');
 enum FOURCC_BC5S = makeFourCC('B', 'C', '5', 'S');
+enum FOURCC_ATI1 = makeFourCC('A', 'T', 'I', '1'); // Same as BC4U
+enum FOURCC_ATI2 = makeFourCC('A', 'T', 'I', '2'); // BC5U with red and green swapped
+enum FOURCC_BC6H = makeFourCC('B', 'C', '6', 'H');
+enum FOURCC_BC7L = makeFourCC('B', 'C', '7', 'L');
+enum FOURCC_BC70 = makeFourCC('B', 'C', '7', '\0');
+enum FOURCC_ZOLA = makeFourCC('Z', 'O', 'L', 'A');
+enum FOURCC_CTX1 = makeFourCC('C', 'T', 'X', '1');
 enum FOURCC_RGBG = makeFourCC('R', 'G', 'B', 'G');
 enum FOURCC_GRGB = makeFourCC('G', 'R', 'G', 'B');
-
-enum FOURCC_DXT2 = makeFourCC('D', 'X', 'T', '2');
+enum FOURCC_UYVY = makeFourCC('U', 'Y', 'V', 'Y');
+enum FOURCC_YUY2 = makeFourCC('Y', 'U', 'Y', '2');
+enum FOURCC_AEXP = makeFourCC('A', 'E', 'X', 'P');
+enum FOURCC_RXGB = makeFourCC('R', 'X', 'G', 'B');
+enum FOURCC_YCOCG = makeFourCC('Y', 'C', 'G', '1');
+enum FOURCC_YCOCG_SCALED = makeFourCC('Y', 'C', 'G', '2');
+enum FOURCC_A2XY = makeFourCC('A', '2', 'X', 'Y');
+enum FOURCC_A2D5 = makeFourCC('A', '2', 'D', '5');
+enum FOURCC_DX10 = makeFourCC('D', 'X', '1', '0');
 
 /**
  * Maps a FourCC code to a `DXGIFormat`.
@@ -318,12 +333,16 @@ DXGIFormat resourceFormatFromFourCC(uint fourCC)
     switch(fourCC)
     {
         case FOURCC_DXT1: format = DXGIFormat.BC1_UNORM; break;
+        case FOURCC_DXT2: format = DXGIFormat.BC2_UNORM; break;
         case FOURCC_DXT3: format = DXGIFormat.BC2_UNORM; break;
+        case FOURCC_DXT4: format = DXGIFormat.BC3_UNORM; break;
         case FOURCC_DXT5: format = DXGIFormat.BC3_UNORM; break;
         case FOURCC_BC4U: format = DXGIFormat.BC4_UNORM; break;
         case FOURCC_BC4S: format = DXGIFormat.BC4_SNORM; break;
-        case FOURCC_ATI2: format = DXGIFormat.BC5_UNORM; break;
+        case FOURCC_BC5U: format = DXGIFormat.BC5_UNORM; break;
         case FOURCC_BC5S: format = DXGIFormat.BC5_SNORM; break;
+        case FOURCC_ATI1: format = DXGIFormat.BC4_UNORM; break;
+        case FOURCC_ATI2: format = DXGIFormat.BC5_UNORM; break;
         case FOURCC_RGBG: format = DXGIFormat.R8G8_B8G8_UNORM; break;
         case FOURCC_GRGB: format = DXGIFormat.G8R8_G8B8_UNORM; break;
         case 36:          format = DXGIFormat.R16G16B16A16_UNORM; break;
@@ -590,6 +609,18 @@ bool saveDDS(OutputStream output, TextureBuffer* buffer)
                 break;
             case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
                 header.format.fourCC = FOURCC_DXT5;
+                break;
+            case GL_COMPRESSED_RED_RGTC1:
+                header.format.fourCC = FOURCC_BC4U;
+                break;
+            case GL_COMPRESSED_SIGNED_RED_RGTC1:
+                header.format.fourCC = FOURCC_BC4S;
+                break;
+            case GL_COMPRESSED_RG_RGTC2:
+                header.format.fourCC = FOURCC_BC5U;
+                break;
+            case GL_COMPRESSED_SIGNED_RG_RGTC2:
+                header.format.fourCC = FOURCC_BC5S;
                 break;
             default:
                 logError("saveDDS: unsupported texture internal format ", buffer.format.internalFormat);
