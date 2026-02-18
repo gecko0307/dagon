@@ -6,6 +6,8 @@ uniform sampler2D colorBuffer;
 
 uniform int tonemapper;
 uniform float exposure;
+uniform bool useVignette;
+uniform float vignetteStrength;
 
 in vec2 texCoord;
 out vec4 fragColor;
@@ -278,7 +280,17 @@ vec3 tonemapLottes(vec3 x)
 
 void main()
 {
-    vec3 res = texture(colorBuffer, texCoord).rgb * exposure;
+    vec3 res = texture(colorBuffer, texCoord).rgb;
+    
+    if (useVignette)
+    {
+        vec2 uv = texCoord *(1.0 - texCoord.yx);
+        float vignette = uv.x * uv.y * 15.0;
+        vignette = pow(vignette, 0.25);
+        res = mix(res, res * vignette, vignetteStrength);
+    }
+    
+    res *= exposure;
     
     if (tonemapper == 11)
         res = tonemapLottes(res);

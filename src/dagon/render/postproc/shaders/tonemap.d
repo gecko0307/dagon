@@ -28,6 +28,7 @@ DEALINGS IN THE SOFTWARE.
 module dagon.render.postproc.shaders.tonemap;
 
 import std.stdio;
+import std.math;
 
 import dlib.core.memory;
 import dlib.core.ownership;
@@ -35,12 +36,14 @@ import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.interpolation;
+import dlib.math.utils;
 import dlib.image.color;
 import dlib.text.str;
 
 import dagon.core.bindings;
 import dagon.graphics.shader;
 import dagon.graphics.state;
+import dagon.render.framebuffer;
 
 enum Tonemapper
 {
@@ -70,11 +73,21 @@ class TonemapShader: Shader
     ShaderParameter!float tExposure;
     ShaderParameter!int colorBuffer;
     ShaderParameter!int depthBuffer;
+    ShaderParameter!int useVignette;
+    ShaderParameter!float vigStrength;
 
    public:
     bool enabled = true;
     Tonemapper tonemapper = Tonemapper.ACES;
     float exposure = 1.0f;
+    float keyValue = 0.5f;
+    float minLuminance = 0.1f;
+    float maxLuminance = 100000.0f;
+    bool autoexposure = false;
+    float exposureAdaptationSpeed = 2.0f;
+    Framebuffer luminanceBuffer;
+    bool vignette = false;
+    float vignetteStrength = 1.0f;
 
     this(Owner owner)
     {
@@ -90,6 +103,8 @@ class TonemapShader: Shader
         tExposure = createParameter!float("exposure");
         colorBuffer = createParameter!int("colorBuffer");
         depthBuffer = createParameter!int("depthBuffer");
+        useVignette = createParameter!int("useVignette");
+        vigStrength = createParameter!float("vignetteStrength");
     }
 
     ~this()
@@ -103,14 +118,35 @@ class TonemapShader: Shader
         viewSize = state.resolution;
         tEnabled = enabled;
         tTonemapper = cast(int)tonemapper;
+        useVignette = vignette;
+        vigStrength = vignetteStrength;
+        
         tExposure = exposure;
-
-        // Texture 0 - color buffer
+        
         glActiveTexture(GL_TEXTURE0);
+        if (autoexposure && luminanceBuffer)
+        {
+            // TODO: move this elswhere
+            glBindTexture(GL_TEXTURE_2D, luminanceBuffer.colorTexture);
+            glGenerateMipmap(GL_TEXTURE_2D);
+            float averageLuminance = 0.0f;
+            int maxLodLevel = cast(int)log2(cast(float)max2(luminanceBuffer.width, luminanceBuffer.height));
+            glGetTexImage(GL_TEXTURE_2D, maxLodLevel, GL_RED, GL_FLOAT, &averageLuminance);
+            
+            if (!isNaN(averageLuminance))
+            {
+                float targetExposure = keyValue * (1.0f / clamp(averageLuminance, minLuminance, maxLuminance));
+                float exposureDelta = targetExposure - exposure;
+                exposure += exposureDelta * exposureAdaptationSpeed * state.time.delta;
+            }
+        }
+        
+        // Texture 0 - color buffer
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, state.minFilter);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, state.magFilter);
         colorBuffer = 0;
+        tExposure = exposure;
 
         // Texture 1 - depth buffer
         glActiveTexture(GL_TEXTURE1);

@@ -59,7 +59,7 @@ Medium Format (6x4.5): 0.05 mm
 * `dof.farStart` - far-side sharpness threshold (distance from the front focal plane in the view direction at which focus begins to decrease)
 * `dof.farDistance` - the distance at which far-side focus blur reaches its maximum.
 * `dof.pentagonBokeh` - if set to `true`, pentagon-shaped aperture will be simulated instead of a circular aperture. Default is `false`
-* `dof.pentagonBokehFeather` - feathering (smoothing) factor of pentagon-shaped bokeh edges. Default is `0.4`
+* `dof.pentagonBokehFeather` - feathering (smoothing) factor of pentagon-shaped bokeh edges. Default is `0.4`.
 
 ## Motion Blur
 
@@ -97,7 +97,25 @@ Glow (sometimes called bloom) is used to emphasize bright areas of the image, si
 
 ## Tonemap
 
-Tonemapping converts high-dynamic-range (HDR) color values to low-dynamic-range (LDR) color values suitable for displays. Dagon supports all industry-standard tonemapping operators, including Reinhard, Hable/Uncharted, Unreal, ACES, Uchimura, AgX and Khronos PBR Neutral.
+Tonemapping filter converts high-dynamic-range (HDR) color values to low-dynamic-range (LDR) color values suitable for displays. Dagon supports all industry-standard tonemapping operators.
+
+Tonemap parameters (for render.conf):
+
+* `hdr.tonemapper` - tonemapping operator used to compress HDR to LDR. Default is `"ACES"`. Supported options are:
+  * `"None"` - tonemapping is not applied
+  * `"Unreal"` - tonemapper from Unreal 3
+  * `"Reinhard"` - ["Photographic Tone Reproduction for Digital Images"](https://www-old.cs.utah.edu/docs/techreports/2002/pdf/UUCS-02-001.pdf), Erik Reinhard et al, 2002, Equation 3
+  * `"Reinhard2"` - ["Photographic Tone Reproduction for Digital Images"](https://www-old.cs.utah.edu/docs/techreports/2002/pdf/UUCS-02-001.pdf), Erik Reinhard et al, 2002, Equation 4
+  * `"Hable"`/`"Uncharted"` - ["Filmic Tonemapping Operators"](http://filmicworlds.com/blog/filmic-tonemapping-operators), John Hable, 2010, formula by John Hable (Uncharted 2)
+  * `"Filmic"` - ["Filmic Tonemapping Operators"](http://filmicworlds.com/blog/filmic-tonemapping-operators), John Hable, 2010, formula by Jim Hejl and Richard Burgess-Dawson
+  * `"ACES"` - ["ACES Filmic Tone Mapping Curve"](https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve), Krzysztof Narkowicz, 2016
+  * `"Uchimura"` - ["HDR Theory and Practice"](https://www.slideshare.net/nikuque/hdr-theory-and-practicce-jp), Hajime Uchimura, 2017
+  * `"Lottes"` - "Advanced Techniques and Optimization of HDR Color Pipelines", Timothy Lottes, 2016
+  * `"AgX_Base"`, `"AgX_Punchy"` - AgX tonemapper from Blender 4.0+ and Filament
+  * `"KhronosPBRNeutral"` - [Neutral Tone Mapping for PBR Color Accuracy](https://dl.acm.org/doi/fullHtml/10.1145/3641233.3664313), Emmett Lalish, 2024.
+* `hdr.exposure` - applies 
+
+This 
 
 ## Anti-aliasing
 
@@ -125,7 +143,7 @@ cc.colorMatrix: [
 Alternatively, color grading can be done using a LUT (lookup table), a 3D texture that maps RGB values to adjusted color space. This is a very flexible approach that allows to "bake" non-linear color modifications using any external image editor. If LUT is used, `cc.*` parameters are ignored, and color adjustment is overridden with color lookup from a texture.
 
 * `lut.enabled` - disables or enables LUT color grading
-* `lut.file` - path to the LUT file, usually a lossless image that encodes a 3D color space. This parameter supports DDS 3D texture and GPUImage LUT (see below). The loaded LUT is automatically converted to 3D texture, enabling efficient trilinear sampling in the shader
+* `lut.file` - path to the LUT file, usually a lossless image that encodes a 3D color space. This parameter supports DDS 3D texture and GPUImage LUT (see below). The loaded LUT is automatically converted to 3D texture, enabling efficient trilinear sampling in the shader.
 
 Dagon supports three LUT formats that differ in the 3D-to-2D encoding method they use:
 

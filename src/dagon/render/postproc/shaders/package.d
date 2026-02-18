@@ -37,6 +37,7 @@ public
     import dagon.render.postproc.shaders.fxaa;
     import dagon.render.postproc.shaders.glow;
     import dagon.render.postproc.shaders.lensdistortion;
+    import dagon.render.postproc.shaders.luminance;
     import dagon.render.postproc.shaders.motionblur;
     import dagon.render.postproc.shaders.sharpening;
     import dagon.render.postproc.shaders.tonemap;

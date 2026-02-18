@@ -217,6 +217,16 @@ class Game: BaseGame
         }
         if ("hdr.exposure" in rendererConfig.props)
             postProcessingRenderer.exposure = rendererConfig.props["hdr.exposure"].toFloat;
+        if ("hdr.autoexposure" in rendererConfig.props)
+            postProcessingRenderer.autoexposure = cast(bool)(rendererConfig.props["hdr.autoexposure"].toUInt);
+        if ("hdr.keyValue" in rendererConfig.props)
+            postProcessingRenderer.keyValue = rendererConfig.props["hdr.keyValue"].toFloat;
+        if ("hdr.exposureAdaptationSpeed" in rendererConfig.props)
+            postProcessingRenderer.exposureAdaptationSpeed = rendererConfig.props["hdr.exposureAdaptationSpeed"].toFloat;
+        if ("hdr.vignette" in rendererConfig.props)
+            postProcessingRenderer.vignette = cast(bool)(rendererConfig.props["hdr.vignette"].toUInt);
+        if ("hdr.vignetteStrength" in rendererConfig.props)
+            postProcessingRenderer.vignetteStrength = rendererConfig.props["hdr.vignetteStrength"].toFloat;
         
         if ("dof.enabled" in rendererConfig.props)
             postProcessingRenderer.depthOfFieldEnabled = cast(bool)(rendererConfig.props["dof.enabled"].toUInt);

@@ -50,6 +50,7 @@ import dagon.render.deferred.gbuffer;
 public
 {
     import dagon.render.postproc.blurpass;
+    import dagon.render.postproc.luminancepass;
     import dagon.render.postproc.filterpass;
     import dagon.render.postproc.shaders;
 }
@@ -126,6 +127,7 @@ class PostProcRenderer: Renderer
 
     RenderView viewHalf;
     BlurPass passBlur;
+    LuminancePass passLuminance;
 
     DepthOfFieldShader dofShader;
     BrightPassShader brightPassShader;
@@ -160,6 +162,11 @@ class PostProcRenderer: Renderer
     int glowRadius = 5;
     Tonemapper tonemapper = Tonemapper.ACES;
     float exposure = 1.0f;
+    bool autoexposure = false;
+    float keyValue = 0.5f;
+    float exposureAdaptationSpeed = 2.0f;
+    bool vignette = false;
+    float vignetteStrength = 1.0f;
 
     uint motionBlurSamples = 16;
     uint motionBlurFramerate = 24;
@@ -241,6 +248,10 @@ class PostProcRenderer: Renderer
         glowShader.intensity = glowIntensity;
         passGlow = addFilterPass(glowShader);
         glowEnabled = false;
+
+        passLuminance = New!LuminancePass(pipeline);
+        passLuminance.view = view;
+        passLuminance.inputBuffer = hdrDoubleBuffer;
 
         tonemapShader = New!TonemapShader(this);
         passTonemap = addFilterPass(tonemapShader);
@@ -393,8 +404,17 @@ class PostProcRenderer: Renderer
         glowShader.intensity = glowIntensity;
         passBlur.radius = glowRadius;
         
+        passLuminance.active = autoexposure;
+        
         tonemapShader.tonemapper = tonemapper;
-        tonemapShader.exposure = exposure;
+        if (!autoexposure)
+            tonemapShader.exposure = exposure;
+        tonemapShader.autoexposure = autoexposure;
+        tonemapShader.keyValue = keyValue;
+        tonemapShader.exposureAdaptationSpeed = exposureAdaptationSpeed;
+        tonemapShader.luminanceBuffer = passLuminance.outputBuffer;
+        tonemapShader.vignette = vignette;
+        tonemapShader.vignetteStrength = vignetteStrength;
         
         dofShader.autofocus = autofocus;
         dofShader.focalDepth = focalDepth;
@@ -476,5 +496,8 @@ class PostProcRenderer: Renderer
         hdrBuffer1.resize(viewHalf.width, viewHalf.height);
         hdrBuffer2.resize(viewHalf.width, viewHalf.height);
         hdrBuffer3.resize(view.width, view.height);
+        
+        if (passLuminance.outputBuffer)
+            passLuminance.outputBuffer.resize(w / 2, h / 2);
     }
 }
