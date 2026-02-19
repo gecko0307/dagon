@@ -183,6 +183,11 @@ class Game: BaseGame
         if ("lensDistortion.dispersion" in rendererConfig.props)
             postProcessingRenderer.lensDistortionDispersion = rendererConfig.props["lensDistortion.dispersion"].toFloat;
         
+        if ("filmGrain.enabled" in rendererConfig.props)
+            postProcessingRenderer.filmGrainEnabled = cast(bool)(rendererConfig.props["filmGrain.enabled"].toUInt);
+        if ("filmGrain.colored" in rendererConfig.props)
+            postProcessingRenderer.filmGrainColored = cast(bool)(rendererConfig.props["filmGrain.colored"].toUInt);
+        
         if ("hdr.tonemapper" in rendererConfig.props)
         {
             string tonemapper = rendererConfig.props["hdr.tonemapper"].toString;

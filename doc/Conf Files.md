@@ -125,12 +125,15 @@ Recognozed by the `Game` class, applied to the `Game.deferredRenderer` and `Game
   * `"Lottes"` - "Advanced Techniques and Optimization of HDR Color Pipelines", Timothy Lottes, 2016
   * `"AgX_Base"`, `"AgX_Punchy"` - AgX tonemapper from Blender 4.0+ and Filament
   * `"KhronosPBRNeutral"` - [Neutral Tone Mapping for PBR Color Accuracy](https://dl.acm.org/doi/fullHtml/10.1145/3641233.3664313), Emmett Lalish, 2024
-* `hdr.exposure` - exposure value to adjust brightness
-* `hdr.autoexposure` -
-* `hdr.keyValue` - 
-* `hdr.exposureAdaptationSpeed` -
-* `hdr.vignette` - 
-* `hdr.vignetteStrength` -
+* `hdr.exposure` - exposure value for manual brightness adjustment. Default is `1.0`
+* `hdr.autoexposure` -`0` or `1`, disable or enable autoexposure. If enabled, the engine will automatically determine exposure based on average luminance of a scene. Default is `0`
+* `hdr.keyValue` -  target average luminance for autoexposure. Higher values give brighter scene. Default is `0.5`
+* `hdr.exposureAdaptationSpeed` - rate of exposure change over time. `1.0` corresponds to full exposure adjustment over one second. Default is `2.0`
+* `vignette.enabled` - `0` or `1`, disable or enable vignetting. Default is `0`
+* `vignette.strength` - 
+* `vignette.size` - 
+* `vignette.roundness` - 
+* `vignette.feathering` - 
 * `motionBlur.enabled` - `0` or `1`, disable or enable motion blur filter. Default is `0`
 * `motionBlur.samples` - 
 * `motionBlur.framerate` - 
@@ -154,7 +157,9 @@ Recognozed by the `Game` class, applied to the `Game.deferredRenderer` and `Game
 * `dof.nearDistance` - the distance at which near-side focus blur reaches its maximum
 * `dof.farStart` - far-side sharpness threshold
 * `dof.farDistance` - the distance at which far-side focus blur reaches its maximum
-* `sharpening.enabled` - 
+* `filmGrain.enabled` -`0` or `1`, disable or enable film grain filter. Default is `0`
+* `filmGrain.colored` -`0` or `1`
+* `sharpening.enabled` -`0` or `1`
 * `sharpening.strength` - 
 * `cc.brightness` - scales overall lightness of a scene. `0.0` is identity brightness, negative values make the image darker, positive values make the image brighter. Default is `0.0`
 * `cc.contrast` - adjusts difference between dark and bright regions. `1.0` is identity contrast, smaller values decrease contrast, larger values increase contrast. Default is `1.0`

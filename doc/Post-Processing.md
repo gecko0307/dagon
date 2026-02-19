@@ -125,12 +125,24 @@ Tonemap parameters (for render.conf):
   * `"Lottes"` - "Advanced Techniques and Optimization of HDR Color Pipelines", Timothy Lottes, 2016
   * `"AgX_Base"`, `"AgX_Punchy"` - AgX tonemapper from Blender 4.0+ and Filament
   * `"KhronosPBRNeutral"` - [Neutral Tone Mapping for PBR Color Accuracy](https://dl.acm.org/doi/fullHtml/10.1145/3641233.3664313), Emmett Lalish, 2024.
-* `hdr.exposure` - 
-* `hdr.autoexposure` -
-* `hdr.keyValue` - 
-* `hdr.exposureAdaptationSpeed` -
 
-## Anti-aliasing
+The same filter is also responsible for exposure compensation. This is a procedure that adapts HDR image to a desirable luminance range, ensuring highlights and shadows are properly exposed.
+
+* `hdr.exposure` - exposure value for manual compensation. Default is `1.0`
+* `hdr.autoexposure` - if enabled, the engine will automatically determine exposure compensation based on average luminance of a scene. Default is `false`
+* `hdr.keyValue` - target average luminance for autoexposure. Higher values give brighter scene. Default is `0.5`
+* `hdr.exposureAdaptationSpeed` - rate of exposure change over time. `1.0` corresponds to full exposure adjustment over one second. Default is `2.0`.
+
+## Film Grain
+
+Film grain is an artifact of a photographic media, a random optical texture caused by small particles being present on the physical film. Simulation of this effect is useful for achieving a retro look.
+
+Film grain parameters (for render.conf):
+
+* `filmGrain.enabled` - 
+* `filmGrain.colored` - 
+
+## Anti-Aliasing
 
 Anti-aliasing is a filter for smoothing jagged polygon edges. Dagon implements FXAA (Fast Approximate Anti-Aliasing), one of the most efficient AA algorithms.
 
@@ -180,3 +192,6 @@ Sharpening parameters (for render.conf):
 ## Presentation
 
 Final step after all filters is presentation, blitting the result into the backbuffer. This step includes gamma correction and optional pixelization procedure (to achieve a funny retro-style look).
+
+* `pixelization.enabled` - 
+* `pixelization.pixelSize` - 

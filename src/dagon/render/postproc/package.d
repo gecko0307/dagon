@@ -135,6 +135,7 @@ class PostProcRenderer: Renderer
     GlowShader glowShader;
     MotionBlurShader motionBlurShader;
     LensDistortionShader lensDistortionShader;
+    FilmGrainShader filmGrainShader;
     TonemapShader tonemapShader;
     FXAAShader fxaaShader;
     SharpeningShader sharpeningShader;
@@ -145,6 +146,7 @@ class PostProcRenderer: Renderer
     FilterPass passLensDistortion;
     FilterPass passBrightPass;
     FilterPass passGlow;
+    FilterPass passFilmGrain;
     FilterPass passTonemap;
     FilterPass passFXAA;
     FilterPass passSharpening;
@@ -161,11 +163,14 @@ class PostProcRenderer: Renderer
     float glowThreshold = 0.8f;
     float glowIntensity = 0.2f;
     int glowRadius = 5;
+    
     Tonemapper tonemapper = Tonemapper.ACES;
+    
     float exposure = 1.0f;
     bool autoexposure = false;
     float keyValue = 0.5f;
     float exposureAdaptationSpeed = 2.0f;
+    
     bool vignette = false;
     float vignetteStrength = 1.0f;
     Vector2f vignetteSize = Vector2f(0.5f, 0.3f);
@@ -195,6 +200,8 @@ class PostProcRenderer: Renderer
     float dofCircleOfConfusion = 0.03f;
     bool dofPentagonBokeh = false;
     float dofPentagonBokehFeather = 0.4f;
+    
+    bool filmGrainColored = false;
 
     Texture defaultColorLookupTable;
     Texture colorLookupTable;
@@ -273,6 +280,10 @@ class PostProcRenderer: Renderer
         passSharpening = addFilterPass(sharpeningShader);
         sharpeningEnabled = false;
 
+        filmGrainShader = New!FilmGrainShader(this);
+        passFilmGrain = addFilterPass(filmGrainShader);
+        filmGrainEnabled = false;
+
         outputBuffer = hdrDoubleBuffer;
     }
     
@@ -315,6 +326,15 @@ class PostProcRenderer: Renderer
     bool glowEnabled() @property
     {
         return _glowEnabled;
+    }
+
+    void filmGrainEnabled(bool mode) @property
+    {
+        passFilmGrain.active = mode;
+    }
+    bool filmGrainEnabled() @property
+    {
+        return passFilmGrain.active;
     }
 
     void fxaaEnabled(bool mode) @property
@@ -447,6 +467,8 @@ class PostProcRenderer: Renderer
         
         lensDistortionShader.scale = lensDistortionScale;
         lensDistortionShader.dispersion = lensDistortionDispersion;
+        
+        filmGrainShader.colored = filmGrainColored;
         
         colorGradingShader.colorLookupTable = colorLookupTable;
         if (colorGradingShader.colorLookupTable)

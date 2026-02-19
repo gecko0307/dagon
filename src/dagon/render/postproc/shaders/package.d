@@ -34,6 +34,7 @@ public
     import dagon.render.postproc.shaders.colorgrading;
     import dagon.render.postproc.shaders.denoise;
     import dagon.render.postproc.shaders.dof;
+    import dagon.render.postproc.shaders.filmgrain;
     import dagon.render.postproc.shaders.fxaa;
     import dagon.render.postproc.shaders.glow;
     import dagon.render.postproc.shaders.lensdistortion;
