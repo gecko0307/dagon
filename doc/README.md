@@ -9,6 +9,13 @@ Dagon is a 3D game engine for D language based on OpenGL 4.3 and SDL2. It featur
 ## The Name
 Dagon is named after a god from H. P. Lovecraft's Cthulhu Mythos pantheon. This name was choosen in accordance with the community tradition of naming D projects using words beginning with 'd'.
 
+## System Requirements
+The recommended system requirements (for Full HD rendering at 60 fps):
+- CPU: Intel Core i3
+- RAM: application-dependent
+- GPU: GeForce RTX family, 6-8 Gb VRAM
+- OS: Windows 10 or higher, Linux.
+
 ## Architecture
 Dagon is a hierarchical component-based framework. At the root of the hierarchy there is an `Application` object. It can store one or multiple `Scene` objects. Each scene has its own assets, logics, event system, etc. Scene stores `Entity` objects which are basic building blocks of the game world. `Entity` can be transformed, animated and rendered.
 
