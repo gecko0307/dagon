@@ -86,6 +86,7 @@ class TestScene: Scene
     override void onFocusLoss() { }
     override void onFocusGain() { }
     override void onDropFile(string filename) { }
+    override void onKeyboardLayoutChange() { }
     override void onUserEvent(int code, void* payload) { }
     override void onQuit() { }
 }
