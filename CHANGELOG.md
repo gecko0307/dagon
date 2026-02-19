@@ -14,6 +14,7 @@ Dagon 0.40.0 - 19 Feb, 2026
   - Vignette effect (`vignette.enabled`, `vignette.strength`, `vignette.size`, `vignette.roundness`, `vignette.feathering` in render.conf)
   - Lottes tonemapper
   - Sharpening filter based on FidelityFX CAS (`sharpening.enabled` and `sharpening.strength` in render.conf)
+  - Film grain filter (`filmGrain.enabled` and `filmGrain.colored` in render.conf)
   - New DoF parameters: `dof.circleOfConfusion`, `dof.pentagonBokeh`, `dof.pentagonBokehFeather` in render.conf
   - Improved SSAO noise reduction filter, adding support for depth-aware weighting, which eliminates halo artifacts at close distances (`ssao.denoiseDepthAware` in render.conf)
   - GPUImage LUT is now automatically converted to 3D texture for more efficient sampling in the shader

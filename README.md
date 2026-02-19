@@ -57,7 +57,7 @@ Features
 * Particle system with force fields. Blended particles, soft particles, shaded particles with normal map support, particle shadows
 * Terrain rendering. Procedural terrain using OpenSimplex noise or any custom height field. Deferred texturing for terrains
 * Water rendering. Realistic ocean shader with Gerstner waves
-* Cinematic post-processing (depth of field, lens distortion, motion blur, glow, vignetting, color correction, LUT, contrast adaptive sharpening). Custom post-processing filters support
+* Cinematic post-processing (depth of field, lens distortion, motion blur, glow, vignetting, film grain, color correction, LUT, contrast adaptive sharpening). Custom post-processing filters support
 * Simplified render pipeline for casual-style graphics. Retro rendering support: pixelization and vertex snapping
 * Tween engine for simple animation. Delayed function calls
 * Input from keyboard, mouse and up to 4 gamepads. Input manager with abstract bindings and file-based configuration
