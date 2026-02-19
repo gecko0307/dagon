@@ -3,7 +3,7 @@ Dagon 0.40.0 - TBD
 - **Core**
   - New event type `EventType.KeyboardLayoutChange`. New event handler `onKeyboardLayoutChange`
   - `Application.outputColorProfile`. Controlled via `gl.outputColorProfile` in settings.conf. Supported values are `Gamma22` (default) and `sRGB`. This setting affects the color encoding function in the presentation shader
-  - Fix `DProperty.toMatrix3x3f` and `DProperty.toMatrix4x4f`
+  - Fixed `DProperty.toMatrix3x3f` and `DProperty.toMatrix4x4f`, added `DProperty.toVector2f`
 - **Graphics components**
   - Internal GLSL macro defines for global engine settings (`globalShaderDefine` function). To use them in shaders, add `#include <dagon>`
   - New function `downloadTexture` for retrieving textures from VRAM
@@ -11,7 +11,7 @@ Dagon 0.40.0 - TBD
 - **Post-processing**
   - Post-processing pipeline was optimized to use linear color as much as possible, less VRAM and less hard-coded buffer swapping logics. Custom filters are now supported via `PostProcRenderer.addFilterPass`
   - Autoexposure support in tonemapping shader (`hdr.autoexposure`, `hdr.keyValue`, `hdr.exposureAdaptationSpeed` in render.conf)
-  - Vignette support tonemapping shader (`hdr.vignette`, `hdr.vignetteStrength` in render.conf)
+  - Vignette effect (`vignette.enabled`, `vignette.strength`, `vignette.size`, `vignette.roundness`, `vignette.feathering` in render.conf)
   - Lottes tonemapper
   - Sharpening filter based on FidelityFX CAS (`sharpening.enabled` and `sharpening.strength` in render.conf)
   - New DoF parameters: `dof.circleOfConfusion`, `dof.pentagonBokeh`, `dof.pentagonBokehFeather` in render.conf
