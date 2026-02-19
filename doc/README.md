@@ -11,10 +11,11 @@ Dagon is named after a god from H. P. Lovecraft's Cthulhu Mythos pantheon. This 
 
 ## System Requirements
 The recommended system requirements (for Full HD rendering at 60 fps):
-- CPU: Intel Core i3
-- RAM: application-dependent
-- GPU: GeForce RTX family, 6-8 Gb VRAM
-- OS: Windows 10 or higher, Linux.
+- CPU: Intel Core i3-10100 / AMD Ryzen 3 3100
+- RAM: application-dependent, usually 8 Gb minimum
+- GPU: GeForce RTX 30 / Radeon RX 6000 series
+- VRAM: 8 Gb
+- OS: 64-bit Windows 10 or higher / Linux.
 
 ## Architecture
 Dagon is a hierarchical component-based framework. At the root of the hierarchy there is an `Application` object. It can store one or multiple `Scene` objects. Each scene has its own assets, logics, event system, etc. Scene stores `Entity` objects which are basic building blocks of the game world. `Entity` can be transformed, animated and rendered.
