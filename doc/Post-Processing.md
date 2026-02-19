@@ -4,7 +4,7 @@ Post-processing is a series of per-pixel operations (filters) applied to the fra
 
 Dagon provides a simple built-in post-processing pipeline, `PostProcRenderer`, that includes a stack of common filters, which can be enabled and disabled individually, via render.conf file or in the application code. It is also possible to add custom filters.
 
-Most of the filters work in linear RGB color space, which ensures physically correct color arythmetics.
+Most of the filters work in linear RGB color space, which ensures physically correct color arythmetics. Dagon's working space is Rec. 709 linear RGB.
 
 ## Depth of Field
 
@@ -95,6 +95,18 @@ Glow (sometimes called bloom) is used to emphasize bright areas of the image, si
 * `glow.intensity` -
 * `glow.radius` -
 
+## Vignetting
+
+Vignetting is the reduction of an image's brightness at the periphery compared to the center.
+
+Vignetting parameters (for render.conf):
+
+* `vignette.enabled` -
+* `vignette.strength` -
+* `vignette.size` - the size of the vignette in the form [width / 2, height / 2]. To make a vignette that starts fading in halfway between the center and edges of UV space you would pass in `[0.25, 0.25]`
+* `vignette.roundness` - how round the vignette will be. A value from `0` to `1` where `1` is perfectly round (forming a circle or oval) and `0` is not round at all (forming a square or rectangle)
+* `vignette.feathering` - UV distance at which the vignette stops fading in. The vignette will start fading in at the edge of the values provided by size, and will be fully faded in at `[size.x + feathering, size.y + feathering]`. A value of zero results in a hard edge.
+
 ## Tonemap
 
 Tonemapping filter converts high-dynamic-range (HDR) color values to low-dynamic-range (LDR) color values suitable for displays. Dagon supports all industry-standard tonemapping operators.
@@ -117,8 +129,6 @@ Tonemap parameters (for render.conf):
 * `hdr.autoexposure` -
 * `hdr.keyValue` - 
 * `hdr.exposureAdaptationSpeed` -
-* `hdr.vignette` - 
-* `hdr.vignetteStrength` -
 
 ## Anti-aliasing
 

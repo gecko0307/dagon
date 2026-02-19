@@ -223,10 +223,17 @@ class Game: BaseGame
             postProcessingRenderer.keyValue = rendererConfig.props["hdr.keyValue"].toFloat;
         if ("hdr.exposureAdaptationSpeed" in rendererConfig.props)
             postProcessingRenderer.exposureAdaptationSpeed = rendererConfig.props["hdr.exposureAdaptationSpeed"].toFloat;
-        if ("hdr.vignette" in rendererConfig.props)
-            postProcessingRenderer.vignette = cast(bool)(rendererConfig.props["hdr.vignette"].toUInt);
-        if ("hdr.vignetteStrength" in rendererConfig.props)
-            postProcessingRenderer.vignetteStrength = rendererConfig.props["hdr.vignetteStrength"].toFloat;
+        
+        if ("vignette.enabled" in rendererConfig.props)
+            postProcessingRenderer.vignette = cast(bool)(rendererConfig.props["vignette.enabled"].toUInt);
+        if ("vignette.strength" in rendererConfig.props)
+            postProcessingRenderer.vignetteStrength = rendererConfig.props["vignette.strength"].toFloat;
+        if ("vignette.size" in rendererConfig.props)
+            postProcessingRenderer.vignetteSize = rendererConfig.props["vignette.size"].toVector2f;
+        if ("vignette.roundness" in rendererConfig.props)
+            postProcessingRenderer.vignetteRoundness = rendererConfig.props["vignette.roundness"].toFloat;
+        if ("vignette.feathering" in rendererConfig.props)
+            postProcessingRenderer.vignetteFeathering = rendererConfig.props["vignette.feathering"].toFloat;
         
         if ("dof.enabled" in rendererConfig.props)
             postProcessingRenderer.depthOfFieldEnabled = cast(bool)(rendererConfig.props["dof.enabled"].toUInt);

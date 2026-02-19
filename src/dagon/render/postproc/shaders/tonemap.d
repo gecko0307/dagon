@@ -75,6 +75,7 @@ class TonemapShader: Shader
     ShaderParameter!int depthBuffer;
     ShaderParameter!int useVignette;
     ShaderParameter!float vigStrength;
+    ShaderParameter!Vector4f vigParams;
 
    public:
     bool enabled = true;
@@ -89,6 +90,9 @@ class TonemapShader: Shader
     Framebuffer luminanceBuffer;
     bool vignette = false;
     float vignetteStrength = 1.0f;
+    Vector2f vignetteSize = Vector2f(0.5f, 0.3f);
+    float vignetteRoundness = 1.0f;
+    float vignetteFeathering = 0.4f;
 
     this(Owner owner)
     {
@@ -106,6 +110,7 @@ class TonemapShader: Shader
         depthBuffer = createParameter!int("depthBuffer");
         useVignette = createParameter!int("useVignette");
         vigStrength = createParameter!float("vignetteStrength");
+        vigParams = createParameter!Vector4f("vignetteParams");
     }
 
     ~this()
@@ -121,6 +126,7 @@ class TonemapShader: Shader
         tTonemapper = cast(int)tonemapper;
         useVignette = vignette;
         vigStrength = vignetteStrength;
+        vigParams = Vector4f(vignetteSize.x, vignetteSize.y, vignetteRoundness, vignetteFeathering);
         
         if (autoexposure && averageLuminancePtr)
         {

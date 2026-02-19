@@ -29,6 +29,7 @@ module dagon.render.postproc;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.math.vector;
 import dlib.math.matrix;
 
 import dagon.core.application;
@@ -167,6 +168,9 @@ class PostProcRenderer: Renderer
     float exposureAdaptationSpeed = 2.0f;
     bool vignette = false;
     float vignetteStrength = 1.0f;
+    Vector2f vignetteSize = Vector2f(0.5f, 0.3f);
+    float vignetteRoundness = 1.0f;
+    float vignetteFeathering = 0.4f;
 
     uint motionBlurSamples = 16;
     uint motionBlurFramerate = 24;
@@ -416,6 +420,9 @@ class PostProcRenderer: Renderer
         tonemapShader.luminanceBuffer = passLuminance.outputBuffer;
         tonemapShader.vignette = vignette;
         tonemapShader.vignetteStrength = vignetteStrength;
+        tonemapShader.vignetteSize = vignetteSize;
+        tonemapShader.vignetteRoundness = vignetteRoundness;
+        tonemapShader.vignetteFeathering = vignetteFeathering;
         
         dofShader.autofocus = autofocus;
         dofShader.focalDepth = focalDepth;

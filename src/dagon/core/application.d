@@ -1330,7 +1330,10 @@ class Application: EventListener, Updateable
             else if (outputColorProfileStr == "Gamma22")
                 outputColorProfile = ColorProfile.Gamma22;
             else
+            {
+                logError("Unsupported output color profile: ", outputColorProfileStr);
                 outputColorProfile = ColorProfile.Gamma22;
+            }
         }
         logInfo("Output color profile: ", outputColorProfile);
         if (outputColorProfile == ColorProfile.sRGB)

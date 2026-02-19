@@ -147,6 +147,15 @@ struct DProperty
             return false;
     }
 
+    /// Returns the property value as a Vector2f.
+    Vector2f toVector2f() const
+    {
+        if (data.length)
+            return Vector2f(data);
+        else
+            return Vector2f();
+    }
+
     /// Returns the property value as a Vector3f.
     Vector3f toVector3f() const
     {
