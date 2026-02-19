@@ -287,6 +287,8 @@ float sdSquare(vec2 point, float width)
     return min(max(d.x,d.y), 0.0) + length(max(d, 0.0));
 }
 
+// Function by Tyler Lindberg
+// https://github.com/TyLindberg/glsl-vignette
 float vignette(vec2 uv, vec2 size, float roundness, float smoothness)
 {
     // Center UVs

@@ -30,8 +30,10 @@
 * AgX tonemapper is based on the code by [Don McCurdy](https://github.com/mrdoob), which in turn is based on Blender and Filament implementations
 * Khronos PBR Neutral tonemapper is based on the code by [Khronos Group](https://github.com/KhronosGroup/ToneMapping)
 * Uchimura tonemapper is based on the function by [Hajime Uchimura](https://www.desmos.com/calculator/gslcdxvipg)
+* Lottes tonemapper is based on the function by Timothy Lottes ("Advanced Techniques and Optimization of HDR Color Pipelines")
+* Vignette shader by [Tyler Lindberg](https://github.com/TyLindberg)
 
-## Third-party products
+## Third-party libraries
 Dagon and its extensions depend on the following libraries:
 * [Simple DirectMedia Layer (SDL)](https://www.libsdl.org/)
 * [SDL_Image](https://github.com/libsdl-org/SDL_image)
