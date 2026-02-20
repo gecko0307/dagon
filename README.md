@@ -17,9 +17,9 @@ If you like Dagon, support its development on [Patreon](https://www.patreon.com/
 
 Screenshots
 -----------
-[![Sponza](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated.jpg)]https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated.jpg)
+[![Sponza](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated.jpg)
 
-[![Sponza](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated1.jpg)]https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated1.jpg)
+[![Sponza](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated1.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated1.jpg)
 
 [![Space](https://blog.pixperfect.online/wp-content/uploads/2025/05/space.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/05/space.jpg)
 
