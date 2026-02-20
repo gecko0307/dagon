@@ -1,5 +1,7 @@
 Dagon 0.41.0 - TBD
 ------------------
+- **Core**
+  - New output color profiles: Linear (`gl.outputColorProfile = "Linear"`) and Gamma 2.4 (`gl.outputColorProfile = "Gamma24"`)
 - **Extensions**
   - `dagon:newton`:
     - Kinematic bodies support (`NewtonPhysicsWorld.createKinematicBody`, `makeKinematicBody`)
