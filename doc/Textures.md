@@ -35,6 +35,10 @@ Not all features supported by each format are available to Dagon applications. D
 - Embedded color profiles (all data is treated as either sRGB or linear, depending on usage context)
 - EXIF metadata.
 
+## Container Formats: DDS vs KTX
+
+TODO
+
 ## Pixel Formats
 
 Understanding pixel formats is crusial for dealing with textures in games. Dagon supports many pixel formats, including block-compressed ones, but each image file format supports only its own subset.
