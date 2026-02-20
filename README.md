@@ -17,15 +17,13 @@ If you like Dagon, support its development on [Patreon](https://www.patreon.com/
 
 Screenshots
 -----------
-[![Sponza](https://blog.pixperfect.online/wp-content/uploads/2025/05/sponza.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/05/sponza.jpg)
+[![Sponza](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated.jpg)]https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated.jpg)
+
+[![Sponza](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated1.jpg)]https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated1.jpg)
 
 [![Space](https://blog.pixperfect.online/wp-content/uploads/2025/05/space.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/05/space.jpg)
 
 [![Chillwave Drive](https://blog.pixperfect.online/wp-content/uploads/2025/12/chillwave_drive_twilight.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/12/chillwave_drive_twilight.jpg)
-
-[![Ocean](https://blog.pixperfect.online/wp-content/uploads/2025/08/ocean5.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/08/ocean5.jpg)
-
-[![Forest](https://blog.pixperfect.online/wp-content/uploads/2025/05/forest.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/05/forest.jpg)
 
 [![Eevee vs Dagon](https://blog.pixperfect.online/wp-content/uploads/2025/05/eevee_vs_dagon.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/05/eevee_vs_dagon.jpg)
 
