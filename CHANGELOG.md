@@ -1,7 +1,8 @@
-Dagon 0.41.1 - TBD
+Dagon 0.41.0 - TBD
 ------------------
 - **Extensions**
   - `dagon:newton`:
+    - Kinematic bodies support (`NewtonPhysicsWorld.createKinematicBody`, `makeKinematicBody`)
     - Fix character stucking in the walls while jumping by disabling friction completely.
 
 Dagon 0.40.0 - 19 Feb, 2026
