@@ -193,7 +193,7 @@ class NewtonPhysicsWorld: Owner
         kinematicGroupId = createGroupId();
         sensorGroupId = createGroupId();
         NewtonMaterialSetDefaultElasticity(newtonWorld, defaultGroupId, kinematicGroupId, 0.0f);
-        NewtonMaterialSetDefaultFriction(newtonWorld, defaultGroupId, kinematicGroupId, 0.5f, 0.0f);
+        NewtonMaterialSetDefaultFriction(newtonWorld, defaultGroupId, kinematicGroupId, 0.0f, 0.0f);
         NewtonMaterialSetCollisionCallback(newtonWorld, sensorGroupId, defaultGroupId, null, &newtonSensorContactsProcess);
         NewtonMaterialSetCollisionCallback(newtonWorld, kinematicGroupId, sensorGroupId, &newtonSensorOnAABBOverlapCancelCallback, null);
         NewtonMaterialSetCollisionCallback(newtonWorld, kinematicGroupId, defaultGroupId, null, &newtonKinematicContactsProcess);
