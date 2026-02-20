@@ -71,6 +71,8 @@ class NewtonRigidBody: Owner
 {
     NewtonPhysicsWorld world;
     NewtonBody* newtonBody;
+    NewtonRigidBodyType bodyType;
+    NewtonCollisionShape collisionShape;
     int materialGroupId;
     bool dynamic = false;
     float mass;
@@ -101,6 +103,8 @@ class NewtonRigidBody: Owner
         super(owner);
 
         this.world = world;
+        
+        this.bodyType = bodyType;
 
         if (bodyType == NewtonRigidBodyType.Kinematic)
             newtonBody = NewtonCreateKinematicBody(world.newtonWorld, shape.newtonCollision, transformation.arrayof.ptr);
@@ -116,6 +120,7 @@ class NewtonRigidBody: Owner
         else
             this.mass = 0.0f;
         
+        this.collisionShape = shape;
         NewtonBodySetMassProperties(newtonBody, mass, shape.newtonCollision);
         NewtonBodySetForceAndTorqueCallback(newtonBody, &newtonBodyForceCallback);
         
@@ -129,12 +134,6 @@ class NewtonRigidBody: Owner
     
     void defaultContactCallback(NewtonRigidBody, NewtonRigidBody, const void*)
     {
-    }
-    
-    void setCollisionShape(NewtonCollisionShape shape)
-    {
-        if (shape.newtonCollision)
-            NewtonBodySetCollision(newtonBody, shape.newtonCollision);
     }
 
     void update(double dt)
@@ -165,6 +164,17 @@ class NewtonRigidBody: Owner
         return materialGroupId;
     }
     
+    void setCollisionShape(NewtonCollisionShape shape)
+    {
+        if (shape.newtonCollision)
+            NewtonBodySetCollision(newtonBody, shape.newtonCollision);
+    }
+    
+    void setCollisionScale(float sx, float sy, float sz)
+    {
+        NewtonBodySetCollisionScale(newtonBody, sx, sy, sz);
+    }
+    
     Vector3f worldCenterOfMass() @property
     {
         Vector3f centerOfMass;
@@ -175,6 +185,18 @@ class NewtonRigidBody: Owner
     void centerOfMass(Vector3f center) @property
     {
         NewtonBodySetCentreOfMass(newtonBody, center.arrayof.ptr);
+    }
+    
+    void setMassMatrix(float mass, float Ixx, float Iyy, float Izz)
+    {
+        this.mass = mass;
+        NewtonBodySetMassMatrix(newtonBody, mass, Ixx, Iyy, Izz);
+    }
+    
+    void setMassProperties(NewtonCollisionShape shape, float mass)
+    {
+        this.mass = mass;
+        NewtonBodySetMassProperties(newtonBody, mass, shape.newtonCollision);
     }
     
     void addForce(Vector3f f)
@@ -215,6 +237,18 @@ class NewtonRigidBody: Owner
         return v;
     }
     
+    void angularVelocity(Vector3f w) @property
+    {
+        NewtonBodySetOmega(newtonBody, w.arrayof.ptr);
+    }
+    
+    Vector3f angularVelocity() @property
+    {
+        Vector3f w;
+        NewtonBodyGetOmega(newtonBody, w.arrayof.ptr);
+        return w;
+    }
+    
     Vector3f pointVelocity(Vector3f worldPoint)
     {
         Vector3f v;
@@ -228,9 +262,98 @@ class NewtonRigidBody: Owner
         return pointVelocity(worldPoint);
     }
     
+    Vector3f acceleration() @property
+    {
+        Vector3f acc;
+        NewtonBodyGetAcceleration(newtonBody, acc.arrayof.ptr);
+        return acc;
+    }
+    
     void addImpulse(Vector3f deltaVelocity, Vector3f impulsePoint, double dt)
     {
         NewtonBodyAddImpulse(newtonBody, deltaVelocity.arrayof.ptr, impulsePoint.arrayof.ptr, dt);
+    }
+    
+    void linearDamping(float damping) @property
+    {
+        NewtonBodySetLinearDamping(newtonBody, damping);
+    }
+    
+    float linearDamping() @property
+    {
+        return NewtonBodyGetLinearDamping(newtonBody);
+    }
+    
+    void angularDamping(Vector3f damping) @property
+    {
+        NewtonBodySetAngularDamping(newtonBody, damping.arrayof.ptr);
+    }
+    
+    Vector3f angularDamping() @property
+    {
+        Vector3f damping;
+        NewtonBodyGetAngularDamping(newtonBody, damping.arrayof.ptr);
+        return damping;
+    }
+    
+    void simulationState(bool state) @property
+    {
+        NewtonBodySetSimulationState(newtonBody, state);
+    }
+    
+    bool simulationState() @property
+    {
+        return cast(bool)NewtonBodyGetSimulationState(newtonBody);
+    }
+    
+    void collidable(bool mode) @property
+    {
+        NewtonBodySetCollidable(newtonBody, mode);
+    }
+    
+    bool collidable() @property
+    {
+        return cast(bool)NewtonBodyGetCollidable(newtonBody);
+    }
+    
+    void sleepState(bool state) @property
+    {
+        NewtonBodySetSleepState(newtonBody, state);
+    }
+    
+    bool sleepState() @property
+    {
+        return cast(bool)NewtonBodyGetSleepState(newtonBody);
+    }
+    
+    void autoSleep(bool mode) @property
+    {
+        NewtonBodySetAutoSleep(newtonBody, mode);
+    }
+    
+    bool autoSleep() @property
+    {
+        return cast(bool)NewtonBodyGetAutoSleep(newtonBody);
+    }
+    
+    void freezeState(bool state) @property
+    {
+        NewtonBodySetFreezeState(newtonBody, state);
+    }
+    
+    bool freezeState() @property
+    {
+        return cast(bool)NewtonBodyGetFreezeState(newtonBody);
+    }
+    
+    void gyroscopicTorque(bool mode) @property
+    {
+        NewtonBodySetGyroscopicTorque(newtonBody, mode);
+    }
+    
+    bool gyroscopicTorque() @property
+    {
+        return cast(bool)NewtonBodyGetGyroscopicTorque(newtonBody);
     }
     
     void onSensorCollision(NewtonRigidBody otherBody)
