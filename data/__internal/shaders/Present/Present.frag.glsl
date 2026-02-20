@@ -14,7 +14,7 @@ in vec2 texCoord;
 
 layout(location = 0) out vec4 fragColor;
 
-#ifdef DAGON_SRGB_OUTPUT
+#if DAGON_OUTPUT_COLOR_PROFILE == DAGON_COLOR_PROFILE_SRGB
 vec3 sRGB(vec3 v)
 {
     return mix(12.92 * v, 1.055 * pow(v, vec3(0.41666)) - 0.055, lessThan(vec3(0.0031308), v));
@@ -34,8 +34,14 @@ void main()
     
     vec4 color = texture(colorBuffer, uv);
     
-    #ifdef DAGON_SRGB_OUTPUT
+    #if DAGON_OUTPUT_COLOR_PROFILE == DAGON_COLOR_PROFILE_SRGB
         fragColor = vec4(sRGB(color.rgb), 1.0);
+    #elif DAGON_OUTPUT_COLOR_PROFILE == DAGON_COLOR_PROFILE_LINEAR
+        fragColor = vec4(color.rgb, 1.0);
+    #elif DAGON_OUTPUT_COLOR_PROFILE == DAGON_COLOR_PROFILE_GAMMA24
+        fragColor = vec4(pow(color.rgb, vec3(1.0 / 2.4)), 1.0);
+    #elif DAGON_OUTPUT_COLOR_PROFILE == DAGON_COLOR_PROFILE_GAMMA22
+        fragColor = vec4(pow(color.rgb, vec3(1.0 / 2.2)), 1.0);
     #else
         fragColor = vec4(pow(color.rgb, vec3(1.0 / 2.2)), 1.0);
     #endif

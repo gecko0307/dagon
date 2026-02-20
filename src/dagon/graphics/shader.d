@@ -809,6 +809,13 @@ void globalShaderDefine(string defineName, string defineValue)
     }
 }
 
+immutable string globalShaderConstants = "
+#define DAGON_COLOR_PROFILE_GAMMA22 0
+#define DAGON_COLOR_PROFILE_SRGB 1
+#define DAGON_COLOR_PROFILE_LINEAR 2
+#define DAGON_COLOR_PROFILE_GAMMA24 3
+";
+
 /**
  * Basic shader class.
  *
@@ -873,6 +880,7 @@ class Shader: Owner
                     string includeName = cast(string)buf[0..strlen(buf.ptr)-1];
                     if (includeName == "dagon")
                     {
+                        outputText ~= globalShaderConstants;
                         foreach(name, value; globalShaderDefines)
                         {
                             outputText ~= globalShaderDefinesString;

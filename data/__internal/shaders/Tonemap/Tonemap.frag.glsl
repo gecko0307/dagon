@@ -345,7 +345,7 @@ void main()
     else if (tonemapper == 1)
         res = tonemapReinhard(res);
     
-    // Gamma-correction
+    // Gamma-correction (next filters work in gamma space)
     res = pow(res, vec3(1.0 / 2.2));
     
     fragColor = vec4(res, 1.0);

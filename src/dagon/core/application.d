@@ -118,7 +118,9 @@ enum DagonEvent
 enum ColorProfile
 {
     Gamma22 = 0,
-    sRGB = 1
+    sRGB = 1,
+    Linear = 2,
+    Gamma24 = 3,
 }
 
 /**
@@ -320,6 +322,7 @@ bool isExtensionSupported(string extName)
     return _extensions.canFind(extName);
 }
 
+/// OpenGL backbuffer pixel format info.
 struct FramebufferFormat
 {
     GLint redBits;
@@ -583,10 +586,13 @@ class Application: EventListener, Updateable
     /// OpenGL renderer string (graphics card model) obtained from the graphics driver.
     String glRenderer;
     
+    ///
+    bool hdrOutput = false;
+    
     /// Default framebuffer format.
     FramebufferFormat framebufferFormat;
     
-    ///
+    /// Color space used for back buffer output.
     ColorProfile outputColorProfile = ColorProfile.Gamma22;
     
     /**
@@ -1044,13 +1050,18 @@ class Application: EventListener, Updateable
         }
 
         // Set OpenGL context attributes
+        if ("window.HDROutput" in config.props)
+            hdrOutput = cast(bool)(config.props["window.HDROutput"].toUInt);
         SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
-        SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
+        if (hdrOutput)
+            SDL_GL_SetAttribute(SDL_GL_FLOATBUFFERS, 1);
+        else
+            SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
@@ -1329,6 +1340,10 @@ class Application: EventListener, Updateable
                 outputColorProfile = ColorProfile.sRGB;
             else if (outputColorProfileStr == "Gamma22")
                 outputColorProfile = ColorProfile.Gamma22;
+            else if (outputColorProfileStr == "Linear")
+                outputColorProfile = ColorProfile.Linear;
+            else if (outputColorProfileStr == "Gamma24")
+                outputColorProfile = ColorProfile.Gamma24;
             else
             {
                 logError("Unsupported output color profile: ", outputColorProfileStr);
@@ -1336,8 +1351,16 @@ class Application: EventListener, Updateable
             }
         }
         logInfo("Output color profile: ", outputColorProfile);
-        if (outputColorProfile == ColorProfile.sRGB)
-            globalShaderDefine("DAGON_SRGB_OUTPUT", "1");
+        if (outputColorProfile == ColorProfile.Gamma22)
+            globalShaderDefine("DAGON_OUTPUT_COLOR_PROFILE", "0");
+        else if (outputColorProfile == ColorProfile.sRGB)
+            globalShaderDefine("DAGON_OUTPUT_COLOR_PROFILE", "1");
+        else if (outputColorProfile == ColorProfile.Linear)
+            globalShaderDefine("DAGON_OUTPUT_COLOR_PROFILE", "2");
+        else if (outputColorProfile == ColorProfile.Gamma24)
+            globalShaderDefine("DAGON_OUTPUT_COLOR_PROFILE", "3");
+        if (hdrOutput)
+            globalShaderDefine("DAGON_HDR_OUTPUT", "1");
         
         // Init shader cache
         if ("gl.shaderCache.enabled" in config.props)
