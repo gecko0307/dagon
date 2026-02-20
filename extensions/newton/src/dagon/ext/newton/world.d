@@ -235,7 +235,7 @@ class NewtonPhysicsWorld: Owner
 
     NewtonRigidBody createDynamicBody(NewtonCollisionShape shape, float mass)
     {
-        NewtonRigidBody b = New!NewtonRigidBody(shape, mass, this, this);
+        NewtonRigidBody b = New!NewtonRigidBody(NewtonRigidBodyType.Dynamic, shape, mass, this, this);
         b.dynamic = true;
         // TODO: store a list of bodies
         return b;
@@ -243,8 +243,17 @@ class NewtonPhysicsWorld: Owner
 
     NewtonRigidBody createStaticBody(NewtonCollisionShape shape)
     {
-        auto b = createDynamicBody(shape, 0.0f);
+        NewtonRigidBody b = New!NewtonRigidBody(NewtonRigidBodyType.Static, shape, 0.0f, this, this);
         b.dynamic = false;
+        // TODO: store a list of bodies
+        return b;
+    }
+    
+    NewtonRigidBody createKinematicBody(NewtonCollisionShape shape, float mass)
+    {
+        NewtonRigidBody b = New!NewtonRigidBody(NewtonRigidBodyType.Kinematic, shape, mass, this, this);
+        b.dynamic = true;
+        // TODO: store a list of bodies
         return b;
     }
 

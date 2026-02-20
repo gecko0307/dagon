@@ -60,6 +60,13 @@ extern(C)
     }
 }
 
+enum NewtonRigidBodyType
+{
+    Static = 0,
+    Dynamic = 1,
+    Kinematic = 2
+}
+
 class NewtonRigidBody: Owner
 {
     NewtonPhysicsWorld world;
@@ -89,16 +96,26 @@ class NewtonRigidBody: Owner
         return sensor;
     }
 
-    this(NewtonCollisionShape shape, float mass, NewtonPhysicsWorld world, Owner o)
+    this(NewtonRigidBodyType bodyType, NewtonCollisionShape shape, float mass, NewtonPhysicsWorld world, Owner owner)
     {
-        super(o);
+        super(owner);
 
         this.world = world;
 
-        newtonBody = NewtonCreateDynamicBody(world.newtonWorld, shape.newtonCollision, transformation.arrayof.ptr);
+        if (bodyType == NewtonRigidBodyType.Kinematic)
+            newtonBody = NewtonCreateKinematicBody(world.newtonWorld, shape.newtonCollision, transformation.arrayof.ptr);
+        else
+            newtonBody = NewtonCreateDynamicBody(world.newtonWorld, shape.newtonCollision, transformation.arrayof.ptr);
+        
         NewtonBodySetUserData(newtonBody, cast(void*)this);
+        
         this.groupId = world.defaultGroupId;
-        this.mass = mass;
+        
+        if (bodyType != NewtonRigidBodyType.Static)
+            this.mass = mass;
+        else
+            this.mass = 0.0f;
+        
         NewtonBodySetMassProperties(newtonBody, mass, shape.newtonCollision);
         NewtonBodySetForceAndTorqueCallback(newtonBody, &newtonBodyForceCallback);
         
@@ -277,5 +294,11 @@ NewtonBodyController makeStaticBody(Entity entity, NewtonPhysicsWorld world, New
 NewtonBodyController makeDynamicBody(Entity entity, NewtonPhysicsWorld world, NewtonCollisionShape collisionShape, float mass)
 {
     auto rigidBody = world.createDynamicBody(collisionShape, mass);
+    return New!NewtonBodyController(world.eventManager, entity, rigidBody);
+}
+
+NewtonBodyController makeKinematicBody(Entity entity, NewtonPhysicsWorld world, NewtonCollisionShape collisionShape, float mass)
+{
+    auto rigidBody = world.createKinematicBody(collisionShape, mass);
     return New!NewtonBodyController(world.eventManager, entity, rigidBody);
 }
