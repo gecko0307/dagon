@@ -29,7 +29,7 @@ Dagon supports all popular image formats via SDL_Image, libktx and built-in deco
 
 Not all features supported by each format are available to Dagon applications. Dagon's texture system is not an image editor backend, it was mainly designed as a lightweight and efficient intermediary for decoding and uploading images to VRAM, not manipulating them. For example, Dagon doesn't support:
 - Animated images (frame-by-frame animation is usually implemented by offsetting texture coordinates on a spritesheet which is independent of image format)
-- Multi-layered images
+- Multi-layered images (XCF layers are merged into one image)
 - In-memory indexed formats (all images are usually converted to RGBA8)
 - Vector images (SVG images are rasterized)
 - Embedded color profiles (all data is treated as either sRGB or linear, depending on usage context)

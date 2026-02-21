@@ -392,6 +392,9 @@ class AssetManager: Owner
         registerTextureLoader(".qoi", defaultTextureLoader);
         registerTextureLoader(".xpm", defaultTextureLoader);
         registerTextureLoader(".svg", defaultTextureLoader);
+        registerTextureLoader(".lbm", defaultTextureLoader);
+        registerTextureLoader(".xcf", defaultTextureLoader);
+        registerTextureLoader(".ico", defaultTextureLoader);
         
         assetsByFilename = New!(Dict!(Asset, string));
         
@@ -416,7 +419,7 @@ class AssetManager: Owner
         base64ImagePrefixes["data:image/ktx;base64,"] = "image.ktx";
         base64ImagePrefixes["data:image/svg+xml;base64,"] = "image.svg";
         base64ImagePrefixes["data:image/vnd-ms.dds;base64,"] = "image.dds";
-        base64ImagePrefixes["data:image/image/vnd.radiance;base64,"] = "image.hdr";
+        base64ImagePrefixes["data:image/vnd.radiance;base64,"] = "image.hdr";
         base64ImagePrefixes["data:image/x-targa;base64,"] = "image.tga";
         base64ImagePrefixes["data:image/x-tga;base64,"] = "image.tga";
         base64ImagePrefixes["data:image/x-ms-bmp;base64,"] = "image.bmp";
@@ -427,6 +430,10 @@ class AssetManager: Owner
         base64ImagePrefixes["data:image/x-tif;base64,"] = "image.tif";
         base64ImagePrefixes["data:image/x-xcf;base64,"] = "image.xcf";
         base64ImagePrefixes["data:image/jxl;base64,"] = "image.jxl";
+        base64ImagePrefixes["data:image/x-ilbm;base64,"] = "image.lbm";
+        base64ImagePrefixes["data:image/vnd.microsoft.icon;base64,"] = "image.ico";
+        base64ImagePrefixes["data:image/x-icon;base64,"] = "image.ico";
+        base64ImagePrefixes["data:image/x-portable-anymap;base64,"] = "image.pnm";
     }
     
     /**
