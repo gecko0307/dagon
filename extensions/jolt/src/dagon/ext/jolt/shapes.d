@@ -28,6 +28,7 @@ module dagon.ext.jolt.shapes;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.container.array;
 import dlib.math.vector;
 import dlib.math.quaternion;
 
@@ -188,14 +189,40 @@ class JoltMeshShape: JoltShape
             indices[i] = tri;
         }
         
-        JPH_MeshShapeSettings* meshShapeSettings = JPH_MeshShapeSettings_Create2(
+        JPH_MeshShapeSettings* settings = JPH_MeshShapeSettings_Create2(
             mesh.vertices.ptr,
             cast(uint)mesh.vertices.length,
             indices.ptr,
             cast(uint)indices.length);
-        meshShape = JPH_MeshShapeSettings_CreateShape(meshShapeSettings);
+        meshShape = JPH_MeshShapeSettings_CreateShape(settings);
         shape = cast(JPH_Shape*)meshShape;
-        JPH_ShapeSettings_Destroy(cast(JPH_ShapeSettings*)meshShapeSettings);
+        JPH_ShapeSettings_Destroy(cast(JPH_ShapeSettings*)settings);
         Delete(indices);
+    }
+    
+    this(TriangleSet triangleSet, Owner owner)
+    {
+        super(owner);
+        
+        Array!JPH_Triangle tris;
+        
+        foreach(triangle; triangleSet)
+        {
+            JPH_Triangle tri = {
+                v1: triangle.v[0],
+                v2: triangle.v[1],
+                v3: triangle.v[2],
+                materialIndex: 0
+            };
+            
+            tris.append(tri);
+        }
+        
+        JPH_MeshShapeSettings* settings = JPH_MeshShapeSettings_Create(
+            tris.data.ptr, cast(uint)tris.length);
+        meshShape = JPH_MeshShapeSettings_CreateShape(settings);
+        shape = cast(JPH_Shape*)meshShape;
+        JPH_ShapeSettings_Destroy(cast(JPH_ShapeSettings*)settings);
+        tris.free();
     }
 }
