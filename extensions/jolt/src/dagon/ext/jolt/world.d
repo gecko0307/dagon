@@ -84,6 +84,7 @@ class JoltPhysicsWorld: Owner, Updateable
         
         objectVsBroadPhaseLayerFilter = JPH_ObjectVsBroadPhaseLayerFilterTable_Create(broadPhaseLayerInterfaceTable, 2, objectLayerPairFilterTable, 2);
         
+        // TODO: store settings in physics.conf
         JPH_PhysicsSystemSettings settings = {
             maxBodies: 65536,
             numBodyMutexes: 0,
