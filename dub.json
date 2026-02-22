@@ -65,6 +65,7 @@
         "extensions/exformats",
         "extensions/imgui",
         "extensions/iqm",
+        "extensions/jolt",
         "extensions/ktx",
         "extensions/newton",
         "extensions/nuklear",

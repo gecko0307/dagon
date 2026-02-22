@@ -1,0 +1,16 @@
+{
+    "name": "jolt",
+    "importPaths": [
+        "src"
+    ],
+    "sourcePaths": [
+        "src"
+    ],
+    "dependencies": {
+        "dagon": "*"
+    },
+    
+    "copyFiles-windows-x86_64": [
+        "lib/windows-x64/*"
+    ]
+}
