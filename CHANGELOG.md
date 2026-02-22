@@ -5,6 +5,7 @@ Dagon 0.41.0 - TBD
 - **Graphics components**
   - New property `Entity.autoUpdateTransformation`
 - **Extensions**
+  - `dagon:jolt` - experimental [Jolt Physics](https://github.com/jrouwe/JoltPhysics) integration
   - `dagon:newton`:
     - Kinematic bodies support (`NewtonPhysicsWorld.createKinematicBody`, `makeKinematicBody`)
     - New properties for `NewtonRigidBody`: `bodyType`, `collisionShape`, `angularVelocity`, `acceleration`, `linearDamping`, `angularDamping`, `simulationState`, `collidable`, `sleepState`, `autoSleep`, `freezeState`, `gyroscopicTorque`. New methods `setMassMatrix`, `setMassProperties`
