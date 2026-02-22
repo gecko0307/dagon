@@ -70,6 +70,7 @@ Features
 * Built-in camera logics for easy navigation: freeview and first person views
 * Collision detection using MPR algorithm, raycasting, simple kinematic collision response system
 * Rigid body physics using [Newton Dynamics](http://newtondynamics.com). Built-in character controller
+* [Jolt Physics](https://github.com/jrouwe/JoltPhysics) integration (in development)
 * Orthographic projection support. Screen-aligned rendering. Sprites and billboards. Create 2D/2.5D/isometric games with ease
 * UTF-8 text rendering using TTF fonts via [FreeType](https://freetype.org/)
 * Internationalization support
