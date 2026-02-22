@@ -133,7 +133,7 @@ class JoltCharacterController: EntityComponent
         JPH_CharacterVirtual_SetLinearVelocity(characterVirtual, &velocity);
         
         JPH_ExtendedUpdateSettings extendedUpdateSettings = {
-            stickToFloorStepDown: Vector3f(0.0f, 0.0f, 0.0f),
+            stickToFloorStepDown: Vector3f(0.0f, -0.01f, 0.0f),
             walkStairsStepUp: Vector3f(0.0f, 0.4f, 0.0f),
             walkStairsMinStepForward: 0.02f,
             walkStairsStepForwardTest: 0.15f,
