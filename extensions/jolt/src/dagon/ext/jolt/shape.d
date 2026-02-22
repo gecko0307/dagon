@@ -29,9 +29,11 @@ module dagon.ext.jolt.shape;
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.math.vector;
+import dlib.math.quaternion;
 
 import bindbc.joltc;
 
+import dagon.graphics.mesh;
 import dagon.ext.jolt.shape;
 
 abstract class JoltShape: Owner
@@ -53,5 +55,65 @@ class JoltBoxShape: JoltShape
         super(owner);
         boxShape = JPH_BoxShape_Create(&halfExtents, JPH_DEFAULT_CONVEX_RADIUS);
         shape = cast(JPH_Shape*)boxShape;
+    }
+}
+
+class JoltCapsuleShape: JoltShape
+{
+    JPH_CapsuleShape* capsuleShape;
+    
+    this(float cylinderHeight, float radius, Owner owner)
+    {
+        super(owner);
+        capsuleShape = JPH_CapsuleShape_Create(0.5f * cylinderHeight, radius);
+        shape = cast(JPH_Shape*)capsuleShape;
+    }
+}
+
+class RotatedTranslatedShape: JoltShape
+{
+    JoltShape baseShape;
+    JPH_RotatedTranslatedShape* rotatedTranslatedShape;
+    
+    this(JoltShape baseShape, Vector3f position, Quaternionf rotation, Owner owner)
+    {
+        super(owner);
+        this.baseShape = baseShape;
+        rotatedTranslatedShape = JPH_RotatedTranslatedShape_Create(&position, &rotation, baseShape.shape);
+        shape = cast(JPH_Shape*)rotatedTranslatedShape;
+    }
+}
+
+class JoltMeshShape: JoltShape
+{
+    JPH_MeshShape* meshShape;
+    
+    this(Mesh mesh, Owner owner)
+    {
+        super(owner);
+        
+        JPH_IndexedTriangle[] indices = New!(JPH_IndexedTriangle[])(mesh.indices.length);
+        foreach(size_t i, ref index; mesh.indices)
+        {
+            JPH_IndexedTriangle tri = {
+                i1: index[0],
+                i2: index[1],
+                i3: index[2],
+                materialIndex: 0,
+                userData: 0
+            };
+            
+            indices[i] = tri;
+        }
+        
+        JPH_MeshShapeSettings* meshShapeSettings = JPH_MeshShapeSettings_Create2(
+            mesh.vertices.ptr,
+            cast(uint)mesh.vertices.length,
+            indices.ptr,
+            cast(uint)indices.length);
+        meshShape = JPH_MeshShapeSettings_CreateShape(meshShapeSettings);
+        shape = cast(JPH_Shape*)meshShape;
+        JPH_ShapeSettings_Destroy(cast(JPH_ShapeSettings*)meshShapeSettings);
+        Delete(indices);
     }
 }

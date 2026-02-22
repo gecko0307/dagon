@@ -1082,6 +1082,12 @@ alias f_JPH_CharacterBase_GetGroundUserData = ulong function(JPH_CharacterBase* 
 
 // JPH_Character
 alias f_JPH_CharacterSettings_Init = void function(JPH_CharacterSettings* settings);
+alias f_JPH_Character_Create = JPH_Character* function(
+    const(JPH_CharacterSettings)* settings,
+    const(JPH_RVec3)* position,
+    const(JPH_Quat)* rotation,
+    ulong userData,
+    JPH_PhysicsSystem* system);
 alias f_JPH_Character_AddToPhysicsSystem = void function(JPH_Character* character, JPH_Activation activationMode, bool lockBodies);
 alias f_JPH_Character_RemoveFromPhysicsSystem = void function(JPH_Character* character, bool lockBodies);
 alias f_JPH_Character_Activate = void function(JPH_Character* character, bool lockBodies);

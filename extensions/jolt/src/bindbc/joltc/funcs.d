@@ -874,6 +874,7 @@ __gshared
     f_JPH_CharacterBase_GetGroundUserData JPH_CharacterBase_GetGroundUserData;
     
     f_JPH_CharacterSettings_Init JPH_CharacterSettings_Init;
+    f_JPH_Character_Create JPH_Character_Create;
     f_JPH_Character_AddToPhysicsSystem JPH_Character_AddToPhysicsSystem;
     f_JPH_Character_RemoveFromPhysicsSystem JPH_Character_RemoveFromPhysicsSystem;
     f_JPH_Character_Activate JPH_Character_Activate;
