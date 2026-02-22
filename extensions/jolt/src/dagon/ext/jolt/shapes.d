@@ -45,6 +45,18 @@ abstract class JoltShape: Owner
     }
 }
 
+class JoltSphereShape: JoltShape
+{
+    JPH_SphereShape* sphereShape;
+    
+    this(float radius, Owner owner)
+    {
+        super(owner);
+        sphereShape = JPH_SphereShape_Create(radius);
+        shape = cast(JPH_Shape*)sphereShape;
+    }
+}
+
 class JoltBoxShape: JoltShape
 {
     JPH_BoxShape* boxShape;
@@ -57,6 +69,19 @@ class JoltBoxShape: JoltShape
     }
 }
 
+class JoltPlaneShape: JoltShape
+{
+    JPH_PlaneShape* planeShape;
+    
+    this(Vector3f normal, float distance, float halfExtent, Owner owner)
+    {
+        super(owner);
+        JPH_Plane plane = JPH_Plane(normal, distance);
+        planeShape = JPH_PlaneShape_Create(&plane, null, halfExtent);
+        shape = cast(JPH_Shape*)planeShape;
+    }
+}
+
 class JoltCapsuleShape: JoltShape
 {
     JPH_CapsuleShape* capsuleShape;
@@ -64,8 +89,20 @@ class JoltCapsuleShape: JoltShape
     this(float cylinderHeight, float radius, Owner owner)
     {
         super(owner);
-        capsuleShape = JPH_CapsuleShape_Create(0.5f * cylinderHeight, radius);
+        capsuleShape = JPH_CapsuleShape_Create(cylinderHeight * 0.5f, radius);
         shape = cast(JPH_Shape*)capsuleShape;
+    }
+}
+
+class JoltCylinderShape: JoltShape
+{
+    JPH_CylinderShape* cylinderShape;
+    
+    this(float height, float radius, Owner owner)
+    {
+        super(owner);
+        cylinderShape = JPH_CylinderShape_Create(height * 0.5f, radius);
+        shape = cast(JPH_Shape*)cylinderShape;
     }
 }
 
