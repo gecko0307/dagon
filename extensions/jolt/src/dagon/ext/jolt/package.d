@@ -32,6 +32,6 @@ public
     import dagon.ext.jolt.jolt;
     import dagon.ext.jolt.world;
     import dagon.ext.jolt.bodycontroller;
-    import dagon.ext.jolt.shape;
+    import dagon.ext.jolt.shapes;
     import dagon.ext.jolt.character;
 }

@@ -24,7 +24,7 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-module dagon.ext.jolt.shape;
+module dagon.ext.jolt.shapes;
 
 import dlib.core.memory;
 import dlib.core.ownership;
@@ -34,7 +34,6 @@ import dlib.math.quaternion;
 import bindbc.joltc;
 
 import dagon.graphics.mesh;
-import dagon.ext.jolt.shape;
 
 abstract class JoltShape: Owner
 {

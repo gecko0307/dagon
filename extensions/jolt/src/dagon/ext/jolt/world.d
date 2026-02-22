@@ -37,7 +37,7 @@ import dagon.graphics.entity;
 import bindbc.joltc;
 
 import dagon.ext.jolt.bodycontroller;
-import dagon.ext.jolt.shape;
+import dagon.ext.jolt.shapes;
 
 enum JoltObjectLayer: JPH_ObjectLayer
 {
