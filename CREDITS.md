@@ -42,7 +42,8 @@ Dagon and its extensions depend on the following libraries:
 * [libtiff](https://gitlab.com/libtiff/libtiff)
 * [libwebp](https://chromium.googlesource.com/webm/libwebp)
 * [libktx](https://github.com/KhronosGroup/KTX-Software)
-* [Newton Game Dynamics](https://github.com/MADEAPPS/newton-dynamics)
+* [Newton Game Dynamics](https://github.com/MADEAPPS/newton-dynamics) via [joltc](https://github.com/amerkoleci/joltc) wrapper
+* [Jolt Physics](https://github.com/jrouwe/JoltPhysics)
 * [Open Asset Import Library (Assimp)](https://github.com/assimp/assimp)
 * [OpenVR](https://github.com/ValveSoftware/openvr)
 * [PhysFS](https://github.com/icculus/physfs)
