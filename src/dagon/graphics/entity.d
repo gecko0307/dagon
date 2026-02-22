@@ -242,6 +242,9 @@ class Entity: Owner, Updateable
     
     /// Optional pose (for skinning).
     Pose pose;
+    
+    ///
+    bool autoUpdateTransformation = true;
 
    protected:
 
@@ -428,7 +431,8 @@ class Entity: Owner, Updateable
             tween.update(t.delta);
         }
 
-        updateTransformation();
+        if (autoUpdateTransformation)
+            updateTransformation();
 
         foreach(c; components)
         {
