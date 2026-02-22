@@ -94,6 +94,20 @@ class JoltCapsuleShape: JoltShape
     }
 }
 
+class JoltTaperedCapsuleShape: JoltShape
+{
+    JPH_TaperedCapsuleShape* taperedCapsuleShape;
+    
+    this(float cylinderHeight, float topRadius, float bottomRadius, Owner owner)
+    {
+        super(owner);
+        auto settings = JPH_TaperedCapsuleShapeSettings_Create(cylinderHeight * 0.5f, topRadius, bottomRadius);
+        taperedCapsuleShape = JPH_TaperedCapsuleShapeSettings_CreateShape(settings);
+        shape = cast(JPH_Shape*)taperedCapsuleShape;
+        JPH_ShapeSettings_Destroy(cast(JPH_ShapeSettings*)settings);
+    }
+}
+
 class JoltCylinderShape: JoltShape
 {
     JPH_CylinderShape* cylinderShape;
@@ -103,6 +117,38 @@ class JoltCylinderShape: JoltShape
         super(owner);
         cylinderShape = JPH_CylinderShape_Create(height * 0.5f, radius);
         shape = cast(JPH_Shape*)cylinderShape;
+    }
+}
+
+class JoltTaperedCylinderShape: JoltShape
+{
+    JPH_TaperedCylinderShape* taperedCylinderShape;
+    
+    this(float cylinderHeight, float topRadius, float bottomRadius, Owner owner)
+    {
+        super(owner);
+        auto settings = JPH_TaperedCylinderShapeSettings_Create(cylinderHeight * 0.5f, topRadius, bottomRadius, JPH_DEFAULT_CONVEX_RADIUS, null);
+        taperedCylinderShape = JPH_TaperedCylinderShapeSettings_CreateShape(settings);
+        shape = cast(JPH_Shape*)taperedCylinderShape;
+        JPH_ShapeSettings_Destroy(cast(JPH_ShapeSettings*)settings);
+    }
+}
+
+class JoltConvexHullShape: JoltShape
+{
+    JPH_ConvexHullShape* convexHullShape;
+    
+    this(Vector3f[] points, Owner owner)
+    {
+        super(owner);
+        
+        JPH_ConvexHullShapeSettings* settings =
+            JPH_ConvexHullShapeSettings_Create(points.ptr, cast(uint)points.length, JPH_DEFAULT_CONVEX_RADIUS);
+        
+        convexHullShape = JPH_ConvexHullShapeSettings_CreateShape(settings);
+        
+        shape = cast(JPH_Shape*)convexHullShape;
+        JPH_ShapeSettings_Destroy(cast(JPH_ShapeSettings*)settings);
     }
 }
 
