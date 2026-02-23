@@ -56,15 +56,17 @@ class JoltCharacterController: EntityComponent
     
     JPH_GroundState groundState;
     
-    Vector3f movementVelocity = Vector3f(0.0f, 0.0f, 0.0f);
-    float jumpSpeed = 10.0f;
     float gravity = -30.0f;
     
-    protected float verticalSpeed = 0.0f;
-    protected bool jumped = false;
+   protected:
+    Vector3f movementVelocity = Vector3f(0.0f, 0.0f, 0.0f);
+    float jumpSpeed = 10.0f;
+    float verticalSpeed = 0.0f;
+    bool jumped = false;
     
     JPH_CharacterContactListener* contactListener;
     
+   public:
     this(EventManager eventManager, JoltPhysicsWorld physicsWorld, Entity entity, float height, float radius, float mass)
     {
         super(eventManager, entity);
@@ -88,10 +90,20 @@ class JoltCharacterController: EntityComponent
             cast(ulong)cast(void*)this,
             physicsWorld.physicsSystem);
         
-        JPH_CharacterVirtual_SetMass(characterVirtual, mass);
-        JPH_CharacterVirtual_SetMaxStrength(characterVirtual, 10000.0f);
+        this.mass = mass;
+        this.maxStrength = 10000.0f;
         
         entity.autoUpdateTransformation = false;
+    }
+    
+    void mass(float m) @property
+    {
+        JPH_CharacterVirtual_SetMass(characterVirtual, m);
+    }
+    
+    void maxStrength(float force) @property
+    {
+        JPH_CharacterVirtual_SetMaxStrength(characterVirtual, force);
     }
     
     void move(Vector3f velocity)

@@ -417,6 +417,17 @@ class Entity: Owner, Updateable
             parent.updateTransformationBottomUp();
         updateTransformation();
     }
+    
+    /**
+     * Instantly change entity position.
+     * This method resets previous transformation to prevent blinking with motion blur enabled.
+     */
+    void teleport(Vector3f pos)
+    {
+        prevTransformation = transformation;
+        prevAbsoluteTransformation = absoluteTransformation;
+        position = pos;
+    }
 
     /**
      * Updates the entity and its components for the current frame.

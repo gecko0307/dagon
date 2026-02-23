@@ -28,6 +28,8 @@ module dagon.ext.jolt.world;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.math.vector;
+import dlib.math.quaternion;
 
 import dagon.core.event;
 import dagon.core.time;
@@ -107,6 +109,33 @@ class JoltPhysicsWorld: Owner, Updateable
     JoltBodyController addDynamicBody(Entity entity, JoltShape shape)
     {
         return New!JoltBodyController(eventManager, this, entity, JoltBodyType.Dynamic, shape);
+    }
+    
+    bool raycast(Vector3f rayFrom, Vector3f rayTo, out Vector3f hitPosition, out Vector3f hitNormal, out JoltBodyController hitBody)
+    {
+        auto query = JPH_PhysicsSystem_GetNarrowPhaseQuery(physicsSystem);
+        JPH_RayCastResult castResult;
+        Vector3f rayDirection = rayTo - rayFrom;
+        bool hit = JPH_NarrowPhaseQuery_CastRay(query, &rayFrom, &rayDirection, &castResult, null, null, null);
+        if (hit)
+        {
+            auto bodyID = castResult.bodyID;
+            hitBody = cast(JoltBodyController)cast(void*)JPH_BodyInterface_GetUserData(bodyInterface, bodyID);
+            Vector3f hitPos = rayFrom + rayDirection * castResult.fraction;
+            hitPosition = hitPos;
+            auto shape = JPH_BodyInterface_GetShape(bodyInterface, bodyID);
+            hitPos = hitPos * hitBody.invTransformation;
+            Vector3f hitNorm;
+            JPH_Shape_GetSurfaceNormal(shape, castResult.subShapeID2, &hitPos, &hitNorm);
+            Quaternionf bodyRotation;
+            JPH_BodyInterface_GetRotation(bodyInterface, bodyID, &bodyRotation);
+            hitNormal = hitNorm * bodyRotation.toMatrix3x3;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
     
     void update(Time t)

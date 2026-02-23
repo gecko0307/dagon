@@ -78,7 +78,8 @@ class JoltBodyController: EntityComponent
             shape.shape,
             &entity.position,
             &entity.rotation,
-            motionType,layer);
+            motionType,
+            layer);
         rigidBody = JPH_BodyInterface_CreateAndAddBody(
             physicsWorld.bodyInterface,
             bodySettings,
@@ -87,6 +88,11 @@ class JoltBodyController: EntityComponent
         
         if (bodyType == JoltBodyType.Dynamic)
             entity.autoUpdateTransformation = false;
+        
+        JPH_BodyInterface_SetUserData(
+            physicsWorld.bodyInterface,
+            rigidBody,
+            cast(ulong)cast(void*)this);
     }
     
     ~this()
@@ -97,6 +103,16 @@ class JoltBodyController: EntityComponent
     void friction(float f) @property
     {
         JPH_BodyInterface_SetFriction(physicsWorld.bodyInterface, rigidBody, f);
+    }
+    
+    Matrix4x4f transformation() @property
+    {
+        return entity.transformation;
+    }
+    
+    Matrix4x4f invTransformation() @property
+    {
+        return entity.invTransformation;
     }
     
     override void update(Time t)
