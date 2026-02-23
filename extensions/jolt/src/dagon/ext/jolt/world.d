@@ -55,6 +55,19 @@ enum JoltBroadPhaseLayer: JPH_BroadPhaseLayer
     NumLayers = 2
 }
 
+extern(C) bool raycastBodyFilterCallback(void* userData, JPH_BodyID bodyID)
+{
+    JoltPhysicsWorld world = cast(JoltPhysicsWorld)userData;
+    JoltBodyController bodyController =
+        cast(JoltBodyController)cast(void*)JPH_BodyInterface_GetUserData(world.bodyInterface, bodyID);
+    return bodyController.raycastable;
+}
+
+extern(C) bool raycastLockedBodyFilterCallback(void* userData, const(JPH_Body)* bodyID)
+{
+    return true;
+}
+
 class JoltPhysicsWorld: Owner, Updateable
 {
     EventManager eventManager;
@@ -66,6 +79,13 @@ class JoltPhysicsWorld: Owner, Updateable
     
     JPH_PhysicsSystem* physicsSystem;
     JPH_BodyInterface* bodyInterface;
+    
+    JPH_BodyFilter* raycastBodyFilter;
+    
+    JPH_BodyFilter_Procs raycastBodyFilterProcs = {
+        ShouldCollide: &raycastBodyFilterCallback,
+        ShouldCollideLocked: &raycastLockedBodyFilterCallback
+    };
     
     this(EventManager eventManager, Owner owner)
     {
@@ -99,6 +119,23 @@ class JoltPhysicsWorld: Owner, Updateable
         
         physicsSystem = JPH_PhysicsSystem_Create(&settings);
         bodyInterface = JPH_PhysicsSystem_GetBodyInterface(physicsSystem);
+        
+        raycastBodyFilter = JPH_BodyFilter_Create(cast(void*)this);
+        JPH_BodyFilter_SetProcs(&raycastBodyFilterProcs);
+        import dagon.core.logger;
+        logInfo(raycastBodyFilter);
+    }
+    
+    void gravity(Vector3f g) @property
+    {
+        JPH_PhysicsSystem_SetGravity(physicsSystem, &g);
+    }
+    
+    Vector3f gravity() @property
+    {
+        Vector3f g;
+        JPH_PhysicsSystem_GetGravity(physicsSystem, &g);
+        return g;
     }
     
     JoltBodyController addStaticBody(Entity entity, JoltShape shape)
@@ -116,7 +153,7 @@ class JoltPhysicsWorld: Owner, Updateable
         auto query = JPH_PhysicsSystem_GetNarrowPhaseQuery(physicsSystem);
         JPH_RayCastResult castResult;
         Vector3f rayDirection = rayTo - rayFrom;
-        bool hit = JPH_NarrowPhaseQuery_CastRay(query, &rayFrom, &rayDirection, &castResult, null, null, null);
+        bool hit = JPH_NarrowPhaseQuery_CastRay(query, &rayFrom, &rayDirection, &castResult, null, null, raycastBodyFilter);
         if (hit)
         {
             auto bodyID = castResult.bodyID;
@@ -145,6 +182,7 @@ class JoltPhysicsWorld: Owner, Updateable
     
     ~this()
     {
+        JPH_BodyFilter_Destroy(raycastBodyFilter);
         JPH_PhysicsSystem_Destroy(physicsSystem);
         JPH_JobSystem_Destroy(jobSystem);
     }
