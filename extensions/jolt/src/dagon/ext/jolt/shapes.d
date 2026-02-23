@@ -136,6 +136,20 @@ class JoltTaperedCylinderShape: JoltShape
     }
 }
 
+class JoltConeShape: JoltShape
+{
+    JPH_TaperedCylinderShape* coneShape;
+    
+    this(float height, float radius, Owner owner)
+    {
+        super(owner);
+        auto settings = JPH_TaperedCylinderShapeSettings_Create(height * 0.5f, 0.0f, radius, JPH_DEFAULT_CONVEX_RADIUS, null);
+        coneShape = JPH_TaperedCylinderShapeSettings_CreateShape(settings);
+        shape = cast(JPH_Shape*)coneShape;
+        JPH_ShapeSettings_Destroy(cast(JPH_ShapeSettings*)settings);
+    }
+}
+
 class JoltConvexHullShape: JoltShape
 {
     JPH_ConvexHullShape* convexHullShape;
@@ -154,7 +168,7 @@ class JoltConvexHullShape: JoltShape
     }
 }
 
-class RotatedTranslatedShape: JoltShape
+class JoltRotatedTranslatedShape: JoltShape
 {
     JoltShape baseShape;
     JPH_RotatedTranslatedShape* rotatedTranslatedShape;
@@ -165,6 +179,20 @@ class RotatedTranslatedShape: JoltShape
         this.baseShape = baseShape;
         rotatedTranslatedShape = JPH_RotatedTranslatedShape_Create(&position, &rotation, baseShape.shape);
         shape = cast(JPH_Shape*)rotatedTranslatedShape;
+    }
+}
+
+class JoltScaledShape: JoltShape
+{
+    JoltShape baseShape;
+    JPH_ScaledShape* scaledShape;
+    
+    this(JoltShape baseShape, Vector3f scale, Owner owner)
+    {
+        super(owner);
+        this.baseShape = baseShape;
+        scaledShape = JPH_ScaledShape_Create(baseShape.shape, &scale);
+        shape = cast(JPH_Shape*)scaledShape;
     }
 }
 
@@ -294,5 +322,91 @@ class JoltHeightmapShape: JoltShape
     {
         Delete(samples);
         Delete(materialIndices);
+    }
+}
+
+struct JoltCompoundShapeElement
+{
+    JoltShape shape;
+    Vector3f position;
+    Quaternionf rotation;
+}
+
+class JoltCompoundShape: JoltShape
+{
+    JPH_StaticCompoundShape* staticCompoundShape;
+    
+    this(JoltCompoundShapeElement[] elements, Owner owner)
+    {
+        super(owner);
+        
+        auto settings = JPH_StaticCompoundShapeSettings_Create();
+        foreach(ref element; elements)
+        {
+            JPH_CompoundShapeSettings_AddShape2(
+                cast(JPH_CompoundShapeSettings*)settings,
+                &element.position,
+                &element.rotation,
+                element.shape.shape,
+                0);
+        }
+        
+        staticCompoundShape = JPH_StaticCompoundShape_Create(settings);
+        shape = cast(JPH_Shape*)staticCompoundShape;
+        
+        JPH_ShapeSettings_Destroy(cast(JPH_ShapeSettings*)settings);
+    }
+}
+
+class JoltMutableCompoundShape: JoltShape
+{
+    JoltCompoundShapeElement[] elements;
+    JPH_MutableCompoundShape* mutableCompoundShape;
+    
+    this(JoltCompoundShapeElement[] elements, Owner owner)
+    {
+        super(owner);
+        
+        this.elements = elements;
+        
+        auto settings = JPH_MutableCompoundShapeSettings_Create();
+        foreach(ref element; elements)
+        {
+            JPH_CompoundShapeSettings_AddShape2(
+                cast(JPH_CompoundShapeSettings*)settings,
+                &element.position,
+                &element.rotation,
+                element.shape.shape,
+                0);
+        }
+        
+        mutableCompoundShape = JPH_MutableCompoundShape_Create(settings);
+        shape = cast(JPH_Shape*)mutableCompoundShape;
+        
+        JPH_ShapeSettings_Destroy(cast(JPH_ShapeSettings*)settings);
+    }
+    
+    void setElement(uint index, JoltCompoundShapeElement newElement)
+    {
+        JPH_MutableCompoundShape_ModifyShape2(
+            mutableCompoundShape,
+            index,
+            &newElement.position,
+            &newElement.rotation,
+            newElement.shape.shape);
+    }
+    
+    void setElementTransformation(uint index, Vector3f position, Quaternionf rotation)
+    {
+        JPH_MutableCompoundShape_ModifyShape(
+            mutableCompoundShape,
+            index,
+            &position,
+            &rotation);
+    }
+    
+    void adjustCenterOfMass()
+    {
+        JPH_MutableCompoundShape_AdjustCenterOfMass(mutableCompoundShape);
     }
 }

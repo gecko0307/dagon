@@ -48,7 +48,7 @@ import dagon.ext.jolt.shapes;
 class JoltCharacterController: EntityComponent
 {
     JoltPhysicsWorld physicsWorld;
-    RotatedTranslatedShape standingShape;
+    JoltRotatedTranslatedShape standingShape;
     JPH_CharacterVirtual* characterVirtual;
     Vector3f velocity = Vector3f(0.0f, 0.0f, 0.0f);
     
@@ -76,7 +76,7 @@ class JoltCharacterController: EntityComponent
         auto capsuleShape = New!JoltCapsuleShape((height - radius * 2.0f) * 0.5f, radius, this);
         
         Vector3f capsuleOffset = Vector3f(0.0f, height * 0.5f, 0.0f);
-        standingShape = New!RotatedTranslatedShape(capsuleShape, capsuleOffset, Quaternionf.identity, this);
+        standingShape = New!JoltRotatedTranslatedShape(capsuleShape, capsuleOffset, Quaternionf.identity, this);
         
         characterSettings.base.shape = standingShape.shape;
         characterSettings.base.supportingVolume = JPH_Plane(Vector3f(0.0f, 1.0f, 0.0f), -radius);

@@ -39,8 +39,25 @@ private extern(C) void joltTraceCallback(const(char)* message)
 
 private __gshared bool joltInitialized = false;
 
+__gshared JoltSupport joltSupport;
+
 bool joltInit()
 {
+    joltSupport = loadJolt();
+    debug
+    {
+        import loader = bindbc.loader.sharedlib;
+        import std.conv;
+        foreach(info; loader.errors)
+            logError(info.error.to!string, " ", info.message.to!string);
+    }
+    
+    if (joltSupport == JoltSupport.noLibrary)
+    {
+        logError("Jolt library is not found");
+        return false;
+    }
+    
     if (!JPH_Init())
     {
         logError("JPH_Init failed");
