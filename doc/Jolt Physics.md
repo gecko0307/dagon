@@ -4,7 +4,7 @@
 
 ## Comparison with Newton
 
-dagon:jolt is designed in a very similar way as dagon:newton to ensure easy migration.
+dagon:jolt is designed in a very similar way to dagon:newton to ensure easy migration.
 
 ### World
 
