@@ -35,6 +35,7 @@ import dlib.math.quaternion;
 import bindbc.joltc;
 
 import dagon.graphics.mesh;
+import dagon.graphics.heightmap;
 
 abstract class JoltShape: Owner
 {
@@ -224,5 +225,74 @@ class JoltMeshShape: JoltShape
         shape = cast(JPH_Shape*)meshShape;
         JPH_ShapeSettings_Destroy(cast(JPH_ShapeSettings*)settings);
         tris.free();
+    }
+}
+
+class JoltHeightmapShape: JoltShape
+{
+    uint resolution;
+    float[] samples;
+    ubyte[] materialIndices;
+    JPH_HeightFieldShape* heightFieldShape;
+    
+    /**
+     * Constructs a height map shape from a given abstract Heightmap.
+     * A height map is defined by offset + scale * (x, samples[y * resolution + x], y)
+     * where x and y are integers in the [0, resolution - 1].
+     *
+     * Parameters:
+     *  - heightmap: Heightmap interface implementation.
+     *  - resolution: Number of samples per side. Resolution/blockSize must be a power of 2 (minimally 2).
+     *  - blockSize: The heightfield is divided in blocks of blockSize * blockSize * 2 triangles.
+     *  - offset: The offset of a height map geometry.
+     *  - scale: The scale of a height map geometry.
+     *  - owner: The owner object.
+     */
+    this(Heightmap heightmap, uint resolution, uint blockSize, Vector3f offset, Vector3f scale, Owner owner)
+    {
+        super(owner);
+        
+        this.resolution = resolution;
+        
+        samples = New!(float[])(resolution * resolution);
+        
+        uint indicesResilution = resolution - 1;
+        materialIndices = New!(ubyte[])(indicesResilution * indicesResilution);
+        
+        foreach(x; 0..resolution)
+        foreach(z; 0..resolution)
+        {
+            float y = heightmap.getHeight(
+                cast(float)x / cast(float)(resolution - 1),
+                cast(float)z / cast(float)(resolution - 1));
+            samples[z * resolution + x] = y;
+        }
+        
+        foreach(x; 0..indicesResilution)
+        foreach(z; 0..indicesResilution)
+        {
+            materialIndices[z * (indicesResilution - 1) + x] = 0;
+        }
+        
+        auto settings = JPH_HeightFieldShapeSettings_Create(
+            samples.ptr,
+            &offset,
+            &scale,
+            resolution,
+            materialIndices.ptr);
+        JPH_HeightFieldShapeSettings_SetBlockSize(settings, blockSize);
+        JPH_HeightFieldShapeSettings_SetMinHeightValue(settings, 0.0f);
+        JPH_HeightFieldShapeSettings_SetMaxHeightValue(settings, 1.0f);
+        
+        heightFieldShape = JPH_HeightFieldShapeSettings_CreateShape(settings);
+        shape = cast(JPH_Shape*)heightFieldShape;
+        
+        JPH_ShapeSettings_Destroy(cast(JPH_ShapeSettings*)settings);
+    }
+    
+    ~this()
+    {
+        Delete(samples);
+        Delete(materialIndices);
     }
 }
