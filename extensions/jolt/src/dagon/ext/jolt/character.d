@@ -63,6 +63,8 @@ class JoltCharacterController: EntityComponent
     protected float verticalSpeed = 0.0f;
     protected bool jumped = false;
     
+    JPH_CharacterContactListener* contactListener;
+    
     this(EventManager eventManager, JoltPhysicsWorld physicsWorld, Entity entity, float height, float radius, float mass)
     {
         super(eventManager, entity);
@@ -125,6 +127,15 @@ class JoltCharacterController: EntityComponent
         {
             verticalAcceleration = gravity;
             jumped = false;
+        }
+        
+        uint numContacts = JPH_CharacterVirtual_GetNumActiveContacts(characterVirtual);
+        JPH_CharacterVirtualContact contact;
+        foreach(uint i; 0..numContacts)
+        {
+            JPH_CharacterVirtual_GetActiveContact(characterVirtual, i, &contact);
+            if (contact.hadCollision && dot(contact.contactNormal, Vector3f(0.0f, -1.0f, 0.0f)) > 0.5f)
+                verticalSpeed = 0.0f;
         }
         
         verticalSpeed += verticalAcceleration * t.delta;
