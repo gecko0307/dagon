@@ -21,6 +21,8 @@ Screenshots
 
 [![Sponza](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated1.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated1.jpg)
 
+[![Sponza](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated3.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated3.jpg)
+
 [![Space](https://blog.pixperfect.online/wp-content/uploads/2025/05/space.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/05/space.jpg)
 
 [![Chillwave Drive](https://blog.pixperfect.online/wp-content/uploads/2025/12/chillwave_drive_twilight.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/12/chillwave_drive_twilight.jpg)
