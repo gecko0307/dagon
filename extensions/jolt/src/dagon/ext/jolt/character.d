@@ -96,6 +96,18 @@ class JoltCharacterController: EntityComponent
         entity.autoUpdateTransformation = false;
     }
     
+    void position(Vector3f pos) @property
+    {
+        JPH_CharacterVirtual_SetPosition(characterVirtual, &pos);
+    }
+    
+    Vector3f position() @property
+    {
+        Vector3f pos;
+        JPH_CharacterVirtual_GetPosition(characterVirtual, &pos);
+        return pos;
+    }
+    
     void mass(float m) @property
     {
         JPH_CharacterVirtual_SetMass(characterVirtual, m);

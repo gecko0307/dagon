@@ -55,17 +55,20 @@ enum JoltBroadPhaseLayer: JPH_BroadPhaseLayer
     NumLayers = 2
 }
 
-extern(C) bool raycastBodyFilterCallback(void* userData, JPH_BodyID bodyID)
+extern(C)
 {
-    JoltPhysicsWorld world = cast(JoltPhysicsWorld)userData;
-    JoltBodyController bodyController =
-        cast(JoltBodyController)cast(void*)JPH_BodyInterface_GetUserData(world.bodyInterface, bodyID);
-    return bodyController.raycastable;
-}
+    bool raycastBodyFilterCallback(void* userData, JPH_BodyID bodyID)
+    {
+        JoltPhysicsWorld world = cast(JoltPhysicsWorld)userData;
+        JoltBodyController bodyController =
+            cast(JoltBodyController)cast(void*)JPH_BodyInterface_GetUserData(world.bodyInterface, bodyID);
+        return bodyController.raycastable;
+    }
 
-extern(C) bool raycastLockedBodyFilterCallback(void* userData, const(JPH_Body)* bodyID)
-{
-    return true;
+    bool raycastLockedBodyFilterCallback(void* userData, const(JPH_Body)* bodyID)
+    {
+        return true;
+    }
 }
 
 class JoltPhysicsWorld: Owner, Updateable
@@ -122,8 +125,6 @@ class JoltPhysicsWorld: Owner, Updateable
         
         raycastBodyFilter = JPH_BodyFilter_Create(cast(void*)this);
         JPH_BodyFilter_SetProcs(&raycastBodyFilterProcs);
-        import dagon.core.logger;
-        logInfo(raycastBodyFilter);
     }
     
     void gravity(Vector3f g) @property
