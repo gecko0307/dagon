@@ -4,6 +4,12 @@
 
 ## Comparison with Newton
 
+dagon:jolt is designed in a very similar way as dagon:newton to ensure easy migration.
+
+### World
+
+dagon:jolt provides `JoltPhysicsWorld`, an equivalent to `NewtonPhysicsWorld`.
+
 ### Shapes
 
 Shapes are organized in the same way as in Newton: all shapes are specializations of an abstract base class. Jolt supports almost all shape types of Newton, plus a number of additional types.
@@ -27,3 +33,15 @@ Shapes are organized in the same way as in Newton: all shapes are specialization
 | `NewtonHeightmapShape`            | `JoltHeightmapShape`         |
 | n/a                               | `JoltRotatedTranslatedShape` |
 | n/a                               | `JoltScaledShape`            |
+
+### Bodies
+
+In dagon:jolt there's no distinction between a rigid body wrapper and a body controller, they are combined into one `JoltBodyController`. Body controllers for Entities are created using `JoltPhysicsWorld.addStaticBody` and `JoltPhysicsWorld.addDynamicBody`.
+
+### Character Controller
+
+TODO
+
+### Constraints
+
+TODO
