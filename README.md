@@ -116,6 +116,7 @@ Runtime Dependencies
 * [libavif](https://github.com/AOMediaCodec/libavif) for AVIF support (optional)
 * [Assimp](https://github.com/assimp/assimp) for additional 3D formats support (optional)
 * [Newton Dynamics](https://github.com/MADEAPPS/newton-dynamics) 3.14 for rigid body simulation (optional)
+* [Jolt Physics](https://github.com/jrouwe/JoltPhysics) via [joltc](https://github.com/amerkoleci/joltc) wrapper (optional)
 * [cimgui](https://github.com/cimgui/cimgui) (optional)
 * [libktx](https://github.com/KhronosGroup/KTX-Software) (optional)
 * [PhysFS](https://github.com/icculus/physfs) (optional)
