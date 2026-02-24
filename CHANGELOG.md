@@ -2,7 +2,8 @@ Dagon 0.41.0 - TBD
 ------------------
 - **Core**
   - Fix core timer stuttering
-  - Vsync is now disabled by default. When it is enabled, the core timer synchronizes with the SDL timer
+  - Vsync is now disabled by default
+  - Breaking change: `stepFrequency` is now `updatesPerSecond`, both in `Application` and settings.conf
   - New output color profiles: Linear (`gl.outputColorProfile = "Linear"`) and Gamma 2.4 (`gl.outputColorProfile = "Gamma24"`)
 - **Graphics components**
   - New property `Entity.autoUpdateTransformation`

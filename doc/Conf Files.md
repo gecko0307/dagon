@@ -65,7 +65,7 @@ Built-in *.conf files are fully reserved for Dagon's internal mechanisms, and it
 * `fullscreen` - `0` or `1`, run in windowed or fullscreen mode. This value overrides default one hardcoded in the application
 * `fullscreenWindowed` - `0` or `1`, enables "windowed fullscreen" mode. The application runs in a borderless screen-sized window, which allows for easy switching to other applications. Default is `0`
 * `vsync` - `0` for immediate buffer swap; `1` for synchronization with the vertical retrace; `-1` for adaptive vsync. Default is `1`
-* `stepFrequency` - number of logic update cycles per second. This can be set to `auto` or `0` to synchronize updates with the display refresh rate. Default is `60`
+* `updatesPerSecond` - number of logic updates per second (UPS). This can be set to `auto` or `0` to synchronize updates with the display refresh rate. Default is `60`
 * `maxTimersCount` - maximum number of simultaneous timers. Default is `1024`. `0` is treated as a default number
 * `hideConsole` - `0` or `1`, show or hide the console window. It is convenient to leave it when debugging the game and hide it for end users. Default is `0`
 * `localesPath` - path to the folder containing translation files. Default is `"locale"`

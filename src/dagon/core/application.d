@@ -547,8 +547,8 @@ class Application: EventListener, Updateable
     /// Display refresh rate in Hz.
     uint refreshRate = 60;
     
-    /// Update frequency in Hz.
-    uint stepFrequency = 60;
+    /// Number of logic updates per second.
+    uint updatesPerSecond = 60;
     
     /// Maximum simultaneous timers.
     uint maxTimersCount = 1024;
@@ -1267,22 +1267,22 @@ class Application: EventListener, Updateable
         }
         
         // Create cadencer and timers pool
-        if ("stepFrequency" in config.props)
+        if ("updatesPerSecond" in config.props)
         {
-            if (config.props["stepFrequency"].type == DPropType.Number)
-                stepFrequency = config.props["stepFrequency"].toUInt;
-            else if (config.props["stepFrequency"].type == DPropType.String)
+            if (config.props["updatesPerSecond"].type == DPropType.Number)
+                updatesPerSecond = config.props["updatesPerSecond"].toUInt;
+            else if (config.props["updatesPerSecond"].type == DPropType.String)
             {
-                if (config.props["stepFrequency"].toString == "auto")
-                    stepFrequency = 0; // same as display refresh rate
+                if (config.props["updatesPerSecond"].toString == "auto")
+                    updatesPerSecond = 0; // same as display refresh rate
             }
         }
         refreshRate = displayRefreshRate(60);
-        if (stepFrequency == 0)
-            stepFrequency = refreshRate;
+        if (updatesPerSecond == 0)
+            updatesPerSecond = refreshRate;
         logInfo("Display refresh rate: ", refreshRate, " Hz");
-        logInfo("Step frequency: ", stepFrequency, " Hz");
-        cadencer = New!Cadencer(this, stepFrequency, this);
+        logInfo("Updates per second: ", updatesPerSecond, " Hz");
+        cadencer = New!Cadencer(this, updatesPerSecond, this);
         
         if ("maxTimersCount" in config.props)
         {
