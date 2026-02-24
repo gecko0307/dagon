@@ -1,6 +1,7 @@
 Dagon 0.41.0 - TBD
 ------------------
 - **Core**
+  - Fix core timer stuttering
   - New output color profiles: Linear (`gl.outputColorProfile = "Linear"`) and Gamma 2.4 (`gl.outputColorProfile = "Gamma24"`)
 - **Graphics components**
   - New property `Entity.autoUpdateTransformation`
