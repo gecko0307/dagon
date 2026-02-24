@@ -35,7 +35,7 @@ import dlib.math.quaternion;
 import bindbc.joltc;
 
 import dagon.ext.jolt.world;
-import dagon.ext.jolt.bodycontroller;
+import dagon.ext.jolt.rigidbody;
 
 abstract class JoltConstraint: Owner
 {
@@ -71,7 +71,7 @@ class JoltPointConstraint: JoltConstraint
 {
     JPH_PointConstraint* pointConstraint;
     
-    this(JoltPhysicsWorld world, JoltBodyController body1, JoltBodyController body2, Vector3f worldPoint, Owner owner)
+    this(JoltPhysicsWorld world, JoltRigidBody body1, JoltRigidBody body2, Vector3f worldPoint, Owner owner)
     {
         super(owner);
         
@@ -86,7 +86,7 @@ class JoltPointConstraint: JoltConstraint
         world.addConstraint(this);
     }
     
-    this(JoltPhysicsWorld world, JoltBodyController body1, JoltBodyController body2, Vector3f localPoint1, Vector3f localPoint2, Owner owner)
+    this(JoltPhysicsWorld world, JoltRigidBody body1, JoltRigidBody body2, Vector3f localPoint1, Vector3f localPoint2, Owner owner)
     {
         super(owner);
         

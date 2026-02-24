@@ -24,7 +24,7 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-module dagon.ext.jolt.bodycontroller;
+module dagon.ext.jolt.rigidbody;
 
 import dlib.core.memory;
 import dlib.core.ownership;
@@ -48,7 +48,7 @@ enum JoltBodyType
     Dynamic = 1
 }
 
-class JoltBodyController: EntityComponent
+class JoltRigidBody: EntityComponent
 {
     JoltPhysicsWorld physicsWorld;
     JPH_Body* rigidBody;

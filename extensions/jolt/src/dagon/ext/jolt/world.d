@@ -38,7 +38,7 @@ import dagon.graphics.entity;
 
 import bindbc.joltc;
 
-import dagon.ext.jolt.bodycontroller;
+import dagon.ext.jolt.rigidbody;
 import dagon.ext.jolt.shape;
 import dagon.ext.jolt.constraint;
 
@@ -61,8 +61,7 @@ extern(C)
     bool raycastBodyFilterCallback(void* userData, JPH_BodyID bodyID)
     {
         JoltPhysicsWorld world = cast(JoltPhysicsWorld)userData;
-        JoltBodyController bodyController =
-            cast(JoltBodyController)cast(void*)JPH_BodyInterface_GetUserData(world.bodyInterface, bodyID);
+        JoltRigidBody bodyController = cast(JoltRigidBody)cast(void*)JPH_BodyInterface_GetUserData(world.bodyInterface, bodyID);
         return bodyController.raycastable;
     }
 
@@ -140,17 +139,17 @@ class JoltPhysicsWorld: Owner, Updateable
         return g;
     }
     
-    JoltBodyController addStaticBody(Entity entity, JoltShape shape)
+    JoltRigidBody addStaticBody(Entity entity, JoltShape shape)
     {
-        return New!JoltBodyController(eventManager, this, entity, JoltBodyType.Static, shape, 0.0f);
+        return New!JoltRigidBody(eventManager, this, entity, JoltBodyType.Static, shape, 0.0f);
     }
     
-    JoltBodyController addDynamicBody(Entity entity, JoltShape shape, float mass)
+    JoltRigidBody addDynamicBody(Entity entity, JoltShape shape, float mass)
     {
-        return New!JoltBodyController(eventManager, this, entity, JoltBodyType.Dynamic, shape, mass);
+        return New!JoltRigidBody(eventManager, this, entity, JoltBodyType.Dynamic, shape, mass);
     }
     
-    bool raycast(Vector3f rayFrom, Vector3f rayTo, out Vector3f hitPosition, out Vector3f hitNormal, out JoltBodyController hitBody)
+    bool raycast(Vector3f rayFrom, Vector3f rayTo, out Vector3f hitPosition, out Vector3f hitNormal, out JoltRigidBody hitBody)
     {
         auto query = JPH_PhysicsSystem_GetNarrowPhaseQuery(physicsSystem);
         JPH_RayCastResult castResult;
@@ -159,7 +158,7 @@ class JoltPhysicsWorld: Owner, Updateable
         if (hit)
         {
             auto bodyID = castResult.bodyID;
-            hitBody = cast(JoltBodyController)cast(void*)JPH_BodyInterface_GetUserData(bodyInterface, bodyID);
+            hitBody = cast(JoltRigidBody)cast(void*)JPH_BodyInterface_GetUserData(bodyInterface, bodyID);
             Vector3f hitPos = rayFrom + rayDirection * castResult.fraction;
             hitPosition = hitPos;
             auto shape = JPH_BodyInterface_GetShape(bodyInterface, bodyID);

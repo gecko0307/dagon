@@ -31,7 +31,7 @@ public
     import bindbc.joltc;
     import dagon.ext.jolt.jolt;
     import dagon.ext.jolt.world;
-    import dagon.ext.jolt.bodycontroller;
+    import dagon.ext.jolt.rigidbody;
     import dagon.ext.jolt.shape;
     import dagon.ext.jolt.constraint;
     import dagon.ext.jolt.character;

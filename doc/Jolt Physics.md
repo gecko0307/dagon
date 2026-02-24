@@ -36,7 +36,7 @@ Shapes are organized in the same way as in Newton: all shapes are specialization
 
 ### Bodies
 
-In dagon:jolt there's no distinction between a rigid body wrapper and a body controller, they are combined into one `JoltBodyController`. Body controllers for Entities are created using `JoltPhysicsWorld.addStaticBody` and `JoltPhysicsWorld.addDynamicBody`.
+In dagon:jolt there's no distinction between a rigid body wrapper and a body controller, they are combined into one `JoltRigidBody`. Body controllers for Entities are created using `JoltPhysicsWorld.addStaticBody` and `JoltPhysicsWorld.addDynamicBody`.
 
 ### Character Controller
 
