@@ -54,7 +54,12 @@ class ConstraintMotor: Owner
         settings.maxTorqueLimit = 0.0f;
     }
     
-    // TODO
+    void angularVelocity(float w) @property
+    {
+        JoltHingeConstraint hinge = cast(JoltHingeConstraint)constraint;
+        if (hinge)
+            JPH_HingeConstraint_SetTargetAngularVelocity(hinge.hingeConstraint, w);
+    }
 }
 
 abstract class JoltConstraint: Owner
@@ -83,8 +88,7 @@ abstract class JoltConstraint: Owner
     
     void enabled(bool mode) @property
     {
-        if (constraint)
-            JPH_Constraint_SetEnabled(constraint, mode);
+        JPH_Constraint_SetEnabled(constraint, mode);
     }
 }
 
@@ -184,12 +188,25 @@ class JoltHingeConstraint: JoltConstraint
         settings.limitsSpringSettings.damping = damping;
         settings.maxFrictionTorque = maxFrictionTorque;
         
-        if (motor is null)
-            motor = New!ConstraintMotor(this);
-        this.motor = motor;
-        this.motor.constraint = this;
+        if (motor)
+        {
+            settings.motorSettings = motor.settings;
+            this.motor = motor;
+            this.motor.constraint = this;
+        }
+        else
+        {
+            settings.motorSettings.springSettings.mode = JPH_SpringMode.StiffnessAndDamping;
+            settings.motorSettings.springSettings.frequencyOrStiffness = 0.0f;
+            settings.motorSettings.springSettings.damping = 0.0f;
+            settings.motorSettings.minForceLimit = 0.0f;
+            settings.motorSettings.maxForceLimit = 0.0f;
+            settings.motorSettings.minTorqueLimit = 0.0f;
+            settings.motorSettings.maxTorqueLimit = 0.0f;
+        }
         
         hingeConstraint = JPH_HingeConstraint_Create(&settings, body1.rigidBody, body2.rigidBody);
+        JPH_HingeConstraint_SetMotorState(hingeConstraint, JPH_MotorState.Velocity);
         constraint = cast(JPH_Constraint*)hingeConstraint;
         
         world.addConstraint(this);
