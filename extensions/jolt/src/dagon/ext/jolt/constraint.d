@@ -37,8 +37,29 @@ import bindbc.joltc;
 import dagon.ext.jolt.world;
 import dagon.ext.jolt.rigidbody;
 
+class ConstraintMotor: Owner
+{
+    JoltConstraint constraint;
+    JPH_MotorSettings settings;
+    
+    this(Owner owner)
+    {
+        super(owner);
+        settings.springSettings.mode = JPH_SpringMode.StiffnessAndDamping;
+        settings.springSettings.frequencyOrStiffness = 0.0f;
+        settings.springSettings.damping = 0.0f;
+        settings.minForceLimit = 0.0f;
+        settings.maxForceLimit = 0.0f;
+        settings.minTorqueLimit = 0.0f;
+        settings.maxTorqueLimit = 0.0f;
+    }
+    
+    // TODO
+}
+
 abstract class JoltConstraint: Owner
 {
+    ConstraintMotor motor;
     JPH_Constraint* constraint;
     
     this(Owner owner)
@@ -71,21 +92,6 @@ class JoltPointConstraint: JoltConstraint
 {
     JPH_PointConstraint* pointConstraint;
     
-    this(JoltPhysicsWorld world, JoltRigidBody body1, JoltRigidBody body2, Vector3f worldPoint, Owner owner)
-    {
-        super(owner);
-        
-        JPH_PointConstraintSettings settings;
-        JPH_PointConstraintSettings_Init(&settings);
-        settings.space = JPH_ConstraintSpace.WorldSpace;
-        settings.point1 = worldPoint;
-        settings.point2 = worldPoint;
-        pointConstraint = JPH_PointConstraint_Create(&settings, body1.rigidBody, body2.rigidBody);
-        constraint = cast(JPH_Constraint*)pointConstraint;
-        
-        world.addConstraint(this);
-    }
-    
     this(JoltPhysicsWorld world, JoltRigidBody body1, JoltRigidBody body2, Vector3f localPoint1, Vector3f localPoint2, Owner owner)
     {
         super(owner);
@@ -105,36 +111,6 @@ class JoltPointConstraint: JoltConstraint
 class JoltDistanceConstraint: JoltConstraint
 {
     JPH_DistanceConstraint* distanceConstraint;
-    
-    this(
-        JoltPhysicsWorld world,
-        JoltRigidBody body1,
-        JoltRigidBody body2,
-        Vector3f worldPoint,
-        float minDistance,
-        float maxDistance,
-        float stiffness,
-        float damping,
-        Owner owner)
-    {
-        super(owner);
-        
-        JPH_DistanceConstraintSettings settings;
-        JPH_DistanceConstraintSettings_Init(&settings);
-        settings.space = JPH_ConstraintSpace.WorldSpace;
-        settings.point1 = worldPoint;
-        settings.point2 = worldPoint;
-        settings.minDistance = minDistance;
-        settings.maxDistance = maxDistance;
-        settings.limitsSpringSettings.mode = JPH_SpringMode.StiffnessAndDamping;
-        settings.limitsSpringSettings.frequencyOrStiffness = stiffness;
-        settings.limitsSpringSettings.damping = damping;
-        
-        distanceConstraint = JPH_DistanceConstraint_Create(&settings, body1.rigidBody, body2.rigidBody);
-        constraint = cast(JPH_Constraint*)distanceConstraint;
-        
-        world.addConstraint(this);
-    }
     
     this(
         JoltPhysicsWorld world,
@@ -163,6 +139,58 @@ class JoltDistanceConstraint: JoltConstraint
         
         distanceConstraint = JPH_DistanceConstraint_Create(&settings, body1.rigidBody, body2.rigidBody);
         constraint = cast(JPH_Constraint*)distanceConstraint;
+        
+        world.addConstraint(this);
+    }
+}
+
+class JoltHingeConstraint: JoltConstraint
+{
+    JPH_HingeConstraint* hingeConstraint;
+    
+    this(
+        JoltPhysicsWorld world,
+        JoltRigidBody body1,
+        JoltRigidBody body2,
+        Vector3f localPoint1,
+        Vector3f localAxis1,
+        Vector3f localNormal1,
+        Vector3f localPoint2,
+        Vector3f localAxis2,
+        Vector3f localNormal2,
+        float minAngle,
+        float maxAngle,
+        float stiffness,
+        float damping,
+        float maxFrictionTorque,
+        ConstraintMotor motor,
+        Owner owner)
+    {
+        super(owner);
+        
+        JPH_HingeConstraintSettings settings;
+        JPH_HingeConstraintSettings_Init(&settings);
+        settings.space = JPH_ConstraintSpace.LocalToBodyCOM;
+        settings.point1 = localPoint1;
+        settings.hingeAxis1 = localAxis1;
+        settings.normalAxis1 = localNormal1;
+        settings.point2 = localPoint2;
+        settings.hingeAxis2 = localAxis2;
+        settings.normalAxis2 = localNormal2;
+        settings.limitsMin = minAngle;
+        settings.limitsMax = maxAngle;
+        settings.limitsSpringSettings.mode = JPH_SpringMode.StiffnessAndDamping;
+        settings.limitsSpringSettings.frequencyOrStiffness = stiffness;
+        settings.limitsSpringSettings.damping = damping;
+        settings.maxFrictionTorque = maxFrictionTorque;
+        
+        if (motor is null)
+            motor = New!ConstraintMotor(this);
+        this.motor = motor;
+        this.motor.constraint = this;
+        
+        hingeConstraint = JPH_HingeConstraint_Create(&settings, body1.rigidBody, body2.rigidBody);
+        constraint = cast(JPH_Constraint*)hingeConstraint;
         
         world.addConstraint(this);
     }
