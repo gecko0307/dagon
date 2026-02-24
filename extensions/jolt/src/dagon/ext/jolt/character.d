@@ -129,6 +129,8 @@ class JoltCharacterController: EntityComponent
         jumped = true;
     }
     
+    // TODO: crouch
+    
     override void update(Time t)
     {
         JPH_CharacterBase_GetUp(cast(JPH_CharacterBase*)characterVirtual, &up);
