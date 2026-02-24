@@ -148,10 +148,10 @@ class Cadencer: Owner
             elapsedTime += t.delta;
             fpsTimeCounter += t.delta;
             
-            while (elapsedTime > timeStep)
+            if (elapsedTime >= timeStep)
             {
                 updateable.update(Time(timeStep, t.elapsed));
-                elapsedTime = elapsedTime - timeStep;
+                elapsedTime -= timeStep;
                 fpsCounter++;
             }
         }

@@ -1608,7 +1608,6 @@ class Application: EventListener, Updateable
         onUpdate(t);
         onRender();
         debug checkGLError();
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         SDL_GL_SwapWindow(window);
     }
 
