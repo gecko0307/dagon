@@ -542,7 +542,7 @@ class Application: EventListener, Updateable
     bool stereoRendering = false;
     
     /// Vertical synchronization mode.
-    int vsync = 1;
+    int vsync = 0;
     
     /// Display refresh rate in Hz.
     uint refreshRate = 60;

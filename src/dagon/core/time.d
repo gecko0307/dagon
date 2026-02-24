@@ -86,7 +86,7 @@ class Cadencer: Owner
     public:
     
     ///
-    bool vsync = true;
+    bool vsync = false;
 
     /// Current frames per second.
     int fps = 0;
@@ -138,7 +138,7 @@ class Cadencer: Owner
     {
         if (vsync)
         {
-            fpsTimeCounter += t.delta;
+            fpsTimeCounter += timeStep;
             
             updateable.update(Time(timeStep, t.elapsed));
             fpsCounter++;
