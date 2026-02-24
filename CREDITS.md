@@ -1,7 +1,7 @@
 # Credits
 
 ## Authors and contributors
-* Core engine, Newton extension, IQM extension, KTX extension, Assimp extension, PhysFS extension, audio extension, video extension - [Timur Gafarov aka gecko0307](https://github.com/gecko0307)
+* Core engine, Newton extension, Jolt extension, IQM extension, KTX extension, Assimp extension, PhysFS extension, audio extension, video extension - [Timur Gafarov aka gecko0307](https://github.com/gecko0307)
 * Input manager, Nuklear extension - [Mateusz Muszyński aka Timu5](https://github.com/Timu5)
 * Terrain rendering, OpenSimplex noise generator - Rafał Ziemniewski
 * Shader loader - [Viktor M. aka dayllenger](https://github.com/dayllenger)
@@ -42,8 +42,8 @@ Dagon and its extensions depend on the following libraries:
 * [libtiff](https://gitlab.com/libtiff/libtiff)
 * [libwebp](https://chromium.googlesource.com/webm/libwebp)
 * [libktx](https://github.com/KhronosGroup/KTX-Software)
-* [Newton Game Dynamics](https://github.com/MADEAPPS/newton-dynamics) via [joltc](https://github.com/amerkoleci/joltc) wrapper
-* [Jolt Physics](https://github.com/jrouwe/JoltPhysics)
+* [Newton Game Dynamics](https://github.com/MADEAPPS/newton-dynamics)
+* [Jolt Physics](https://github.com/jrouwe/JoltPhysics) via [joltc](https://github.com/amerkoleci/joltc) wrapper
 * [Open Asset Import Library (Assimp)](https://github.com/assimp/assimp)
 * [OpenVR](https://github.com/ValveSoftware/openvr)
 * [PhysFS](https://github.com/icculus/physfs)
