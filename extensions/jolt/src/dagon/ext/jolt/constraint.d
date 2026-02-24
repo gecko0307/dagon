@@ -101,3 +101,69 @@ class JoltPointConstraint: JoltConstraint
         world.addConstraint(this);
     }
 }
+
+class JoltDistanceConstraint: JoltConstraint
+{
+    JPH_DistanceConstraint* distanceConstraint;
+    
+    this(
+        JoltPhysicsWorld world,
+        JoltRigidBody body1,
+        JoltRigidBody body2,
+        Vector3f worldPoint,
+        float minDistance,
+        float maxDistance,
+        float stiffness,
+        float damping,
+        Owner owner)
+    {
+        super(owner);
+        
+        JPH_DistanceConstraintSettings settings;
+        JPH_DistanceConstraintSettings_Init(&settings);
+        settings.space = JPH_ConstraintSpace.WorldSpace;
+        settings.point1 = worldPoint;
+        settings.point2 = worldPoint;
+        settings.minDistance = minDistance;
+        settings.maxDistance = maxDistance;
+        settings.limitsSpringSettings.mode = JPH_SpringMode.StiffnessAndDamping;
+        settings.limitsSpringSettings.frequencyOrStiffness = stiffness;
+        settings.limitsSpringSettings.damping = damping;
+        
+        distanceConstraint = JPH_DistanceConstraint_Create(&settings, body1.rigidBody, body2.rigidBody);
+        constraint = cast(JPH_Constraint*)distanceConstraint;
+        
+        world.addConstraint(this);
+    }
+    
+    this(
+        JoltPhysicsWorld world,
+        JoltRigidBody body1,
+        JoltRigidBody body2,
+        Vector3f localPoint1,
+        Vector3f localPoint2,
+        float minDistance,
+        float maxDistance,
+        float stiffness,
+        float damping,
+        Owner owner)
+    {
+        super(owner);
+        
+        JPH_DistanceConstraintSettings settings;
+        JPH_DistanceConstraintSettings_Init(&settings);
+        settings.space = JPH_ConstraintSpace.LocalToBodyCOM;
+        settings.point1 = localPoint1;
+        settings.point2 = localPoint2;
+        settings.minDistance = minDistance;
+        settings.maxDistance = maxDistance;
+        settings.limitsSpringSettings.mode = JPH_SpringMode.StiffnessAndDamping;
+        settings.limitsSpringSettings.frequencyOrStiffness = stiffness;
+        settings.limitsSpringSettings.damping = damping;
+        
+        distanceConstraint = JPH_DistanceConstraint_Create(&settings, body1.rigidBody, body2.rigidBody);
+        constraint = cast(JPH_Constraint*)distanceConstraint;
+        
+        world.addConstraint(this);
+    }
+}
