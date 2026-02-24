@@ -84,6 +84,9 @@ class Cadencer: Owner
     Updateable updateable;
     
     public:
+    
+    ///
+    bool vsync = true;
 
     /// Current frames per second.
     int fps = 0;
@@ -133,15 +136,25 @@ class Cadencer: Owner
      */
     void update(Time t)
     {
-        elapsedTime += t.delta;
-        fpsTimeCounter += t.delta;
-        
-        if (elapsedTime >= timeStep)
+        if (vsync)
         {
+            fpsTimeCounter += t.delta;
+            
             updateable.update(Time(timeStep, t.elapsed));
-            //elapsedTime = 0.0;
-            elapsedTime = elapsedTime - timeStep;
             fpsCounter++;
+        }
+        else
+        {
+            elapsedTime += t.delta;
+            fpsTimeCounter += t.delta;
+            
+            if (elapsedTime >= timeStep)
+            {
+                updateable.update(Time(timeStep, t.elapsed));
+                //elapsedTime = 0.0;
+                elapsedTime = elapsedTime - timeStep;
+                fpsCounter++;
+            }
         }
         
         if (fpsTimeCounter >= 1.0) // 1 sec interval

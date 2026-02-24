@@ -1283,6 +1283,7 @@ class Application: EventListener, Updateable
         logInfo("Display refresh rate: ", refreshRate, " Hz");
         logInfo("Step frequency: ", stepFrequency, " Hz");
         cadencer = New!Cadencer(this, stepFrequency, this);
+        cadencer.vsync = (vsync != 0);
         
         if ("maxTimersCount" in config.props)
         {
@@ -1607,6 +1608,7 @@ class Application: EventListener, Updateable
         onUpdate(t);
         onRender();
         debug checkGLError();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         SDL_GL_SwapWindow(window);
     }
 

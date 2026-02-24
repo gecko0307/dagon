@@ -456,6 +456,8 @@ class EventManager: Owner
     
     /// Event dispatching hook. Provide your delegate to receive SDL events directly.
     void delegate(SDL_Event* event) onProcessEvent;
+    
+    protected ulong lastTime = 0;
 
     /**
      * Constructs an EventManager for the given `Application`.
@@ -501,6 +503,8 @@ class EventManager: Owner
             logWarning("Graphics tablet is not available");
         
         tmpHeap = New!Arena(4 * 1024, this);
+        
+        lastTime = SDL_GetTicks64();
     }
 
     /// Destructor. Cleans up resources.
@@ -1122,16 +1126,13 @@ class EventManager: Owner
         messageBroker.update();
     }
 
-    protected ulong lastTime = 0;
-
     /// Updates the internal timer and computes delta time.
     void updateTimer()
     {
         ulong currentTime = SDL_GetTicks64();
-        auto elapsedTime = currentTime - lastTime;
+        deltaTimeMs = currentTime - lastTime;
         lastTime = currentTime;
-        deltaTimeMs = elapsedTime;
-        deltaTime = cast(double)(elapsedTime) * 0.001;
+        deltaTime = cast(double)(deltaTimeMs) * 0.001;
     }
 
     /**
