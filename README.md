@@ -164,6 +164,7 @@ Documentation status:
 * ❌ `dagon.ext.iqm`
 * ❌ `dagon.ext.ktx`
 * ❌ `dagon.ext.newton`
+* ❌ `dagon.ext.jolt`
 * ❌ `dagon.ext.nuclear`
 * ❌ `dagon.ext.openvr`
 * ❌ `dagon.ext.physfs`
