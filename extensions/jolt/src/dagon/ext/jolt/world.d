@@ -39,7 +39,8 @@ import dagon.graphics.entity;
 import bindbc.joltc;
 
 import dagon.ext.jolt.bodycontroller;
-import dagon.ext.jolt.shapes;
+import dagon.ext.jolt.shape;
+import dagon.ext.jolt.constraint;
 
 enum JoltObjectLayer: JPH_ObjectLayer
 {
@@ -141,12 +142,12 @@ class JoltPhysicsWorld: Owner, Updateable
     
     JoltBodyController addStaticBody(Entity entity, JoltShape shape)
     {
-        return New!JoltBodyController(eventManager, this, entity, JoltBodyType.Static, shape);
+        return New!JoltBodyController(eventManager, this, entity, JoltBodyType.Static, shape, 0.0f);
     }
     
-    JoltBodyController addDynamicBody(Entity entity, JoltShape shape)
+    JoltBodyController addDynamicBody(Entity entity, JoltShape shape, float mass)
     {
-        return New!JoltBodyController(eventManager, this, entity, JoltBodyType.Dynamic, shape);
+        return New!JoltBodyController(eventManager, this, entity, JoltBodyType.Dynamic, shape, mass);
     }
     
     bool raycast(Vector3f rayFrom, Vector3f rayTo, out Vector3f hitPosition, out Vector3f hitNormal, out JoltBodyController hitBody)
@@ -174,6 +175,16 @@ class JoltPhysicsWorld: Owner, Updateable
         {
             return false;
         }
+    }
+    
+    void addConstraint(JoltConstraint constraint)
+    {
+        JPH_PhysicsSystem_AddConstraint(physicsSystem, constraint.constraint);
+    }
+    
+    void removeConstraint(JoltConstraint constraint)
+    {
+        JPH_PhysicsSystem_RemoveConstraint(physicsSystem, constraint.constraint);
     }
     
     void update(Time t)

@@ -40,7 +40,7 @@ import dagon.graphics.entity;
 import bindbc.joltc;
 
 import dagon.ext.jolt.world;
-import dagon.ext.jolt.shapes;
+import dagon.ext.jolt.shape;
 
 enum JoltBodyType
 {
@@ -51,12 +51,14 @@ enum JoltBodyType
 class JoltBodyController: EntityComponent
 {
     JoltPhysicsWorld physicsWorld;
-    JPH_BodyID rigidBody;
+    JPH_Body* rigidBody;
+    JPH_BodyID bodyID;
     JoltBodyType bodyType;
     JoltShape shape;
+    float mass;
     bool raycastable = true;
     
-    this(EventManager eventManager, JoltPhysicsWorld physicsWorld, Entity entity, JoltBodyType bodyType, JoltShape shape)
+    this(EventManager eventManager, JoltPhysicsWorld physicsWorld, Entity entity, JoltBodyType bodyType, JoltShape shape, float mass)
     {
         super(eventManager, entity);
         this.physicsWorld = physicsWorld;
@@ -76,16 +78,26 @@ class JoltBodyController: EntityComponent
             motionType = JPH_MotionType.Dynamic;
             layer = JoltObjectLayer.Moving;
         }
+        
         JPH_BodyCreationSettings* bodySettings = JPH_BodyCreationSettings_Create3(
             shape.shape,
             &entity.position,
             &entity.rotation,
             motionType,
             layer);
-        rigidBody = JPH_BodyInterface_CreateAndAddBody(
-            physicsWorld.bodyInterface,
-            bodySettings,
-            JPH_Activation.Activate);
+        
+        this.mass = mass;
+        JPH_MassProperties massProperties = {
+            mass: mass,
+            inertia: Matrix4x4f.identity
+        };
+        JPH_BodyCreationSettings_SetOverrideMassProperties(bodySettings, JPH_OverrideMassProperties.CalculateInertia);
+        JPH_BodyCreationSettings_SetMassPropertiesOverride(bodySettings, &massProperties);
+        
+        rigidBody = JPH_BodyInterface_CreateBody(physicsWorld.bodyInterface, bodySettings);
+        bodyID = JPH_Body_GetID(rigidBody);
+        JPH_BodyInterface_AddBody(physicsWorld.bodyInterface, bodyID, JPH_Activation.Activate);
+        
         JPH_BodyCreationSettings_Destroy(bodySettings);
         
         if (bodyType == JoltBodyType.Dynamic)
@@ -93,120 +105,120 @@ class JoltBodyController: EntityComponent
         
         JPH_BodyInterface_SetUserData(
             physicsWorld.bodyInterface,
-            rigidBody,
+            bodyID,
             cast(ulong)cast(void*)this);
     }
     
     ~this()
     {
-        JPH_BodyInterface_RemoveAndDestroyBody(physicsWorld.bodyInterface, rigidBody);
+        JPH_BodyInterface_RemoveAndDestroyBody(physicsWorld.bodyInterface, bodyID);
     }
     
     void friction(float f) @property
     {
-        JPH_BodyInterface_SetFriction(physicsWorld.bodyInterface, rigidBody, f);
+        JPH_BodyInterface_SetFriction(physicsWorld.bodyInterface, bodyID, f);
     }
     
     void position(Vector3f pos) @property
     {
-        JPH_BodyInterface_SetPosition(physicsWorld.bodyInterface, rigidBody, &pos, JPH_Activation.Activate);
+        JPH_BodyInterface_SetPosition(physicsWorld.bodyInterface, bodyID, &pos, JPH_Activation.Activate);
     }
     
     Vector3f position() @property
     {
         Vector3f pos;
-        JPH_BodyInterface_GetPosition(physicsWorld.bodyInterface, rigidBody, &pos);
+        JPH_BodyInterface_GetPosition(physicsWorld.bodyInterface, bodyID, &pos);
         return pos;
     }
     
     void rotation(Quaternionf rot) @property
     {
-        JPH_BodyInterface_SetRotation(physicsWorld.bodyInterface, rigidBody, &rot, JPH_Activation.Activate);
+        JPH_BodyInterface_SetRotation(physicsWorld.bodyInterface, bodyID, &rot, JPH_Activation.Activate);
     }
     
     Quaternionf rotation() @property
     {
         Quaternionf rot;
-        JPH_BodyInterface_GetRotation(physicsWorld.bodyInterface, rigidBody, &rot);
+        JPH_BodyInterface_GetRotation(physicsWorld.bodyInterface, bodyID, &rot);
         return rot;
     }
     
     Matrix4x4f transformation() @property
     {
         Matrix4x4f transform;
-        JPH_BodyInterface_GetWorldTransform(physicsWorld.bodyInterface, rigidBody, &transform);
+        JPH_BodyInterface_GetWorldTransform(physicsWorld.bodyInterface, bodyID, &transform);
         return transform;
     }
     
     Matrix4x4f invTransformation() @property
     {
         Matrix4x4f transform;
-        JPH_BodyInterface_GetWorldTransform(physicsWorld.bodyInterface, rigidBody, &transform);
+        JPH_BodyInterface_GetWorldTransform(physicsWorld.bodyInterface, bodyID, &transform);
         return transform.inverse;
     }
     
     void addForce(Vector3f force)
     {
-        JPH_BodyInterface_AddForce(physicsWorld.bodyInterface, rigidBody, &force);
+        JPH_BodyInterface_AddForce(physicsWorld.bodyInterface, bodyID, &force);
     }
     
     void addForceAtPos(Vector3f force, Vector3f pos)
     {
-        JPH_BodyInterface_AddForce2(physicsWorld.bodyInterface, rigidBody, &force, &pos);
+        JPH_BodyInterface_AddForce2(physicsWorld.bodyInterface, bodyID, &force, &pos);
     }
     
     void addTorque(Vector3f torque)
     {
-        JPH_BodyInterface_AddTorque(physicsWorld.bodyInterface, rigidBody, &torque);
+        JPH_BodyInterface_AddTorque(physicsWorld.bodyInterface, bodyID, &torque);
     }
     
     void velocity(Vector3f v) @property
     {
-        JPH_BodyInterface_SetLinearVelocity(physicsWorld.bodyInterface, rigidBody, &v);
+        JPH_BodyInterface_SetLinearVelocity(physicsWorld.bodyInterface, bodyID, &v);
     }
 
     Vector3f velocity() @property
     {
         Vector3f v;
-        JPH_BodyInterface_GetLinearVelocity(physicsWorld.bodyInterface, rigidBody, &v);
+        JPH_BodyInterface_GetLinearVelocity(physicsWorld.bodyInterface, bodyID, &v);
         return v;
     }
     
     void angularVelocity(Vector3f w) @property
     {
-        JPH_BodyInterface_SetAngularVelocity(physicsWorld.bodyInterface, rigidBody, &w);
+        JPH_BodyInterface_SetAngularVelocity(physicsWorld.bodyInterface, bodyID, &w);
     }
     
     Vector3f angularVelocity() @property
     {
         Vector3f w;
-        JPH_BodyInterface_GetAngularVelocity(physicsWorld.bodyInterface, rigidBody, &w);
+        JPH_BodyInterface_GetAngularVelocity(physicsWorld.bodyInterface, bodyID, &w);
         return w;
     }
     
     Vector3f pointVelocity(Vector3f worldPoint)
     {
         Vector3f v;
-        JPH_BodyInterface_GetPointVelocity(physicsWorld.bodyInterface, rigidBody, &worldPoint, &v);
+        JPH_BodyInterface_GetPointVelocity(physicsWorld.bodyInterface, bodyID, &worldPoint, &v);
         return v;
     }
     
     Vector3f localPointVelocity(Vector3f point)
     {
         Matrix4x4f transform;
-        JPH_BodyInterface_GetCenterOfMassTransform(physicsWorld.bodyInterface, rigidBody, &transform);
+        JPH_BodyInterface_GetCenterOfMassTransform(physicsWorld.bodyInterface, bodyID, &transform);
         Vector3f worldPoint = point * transform;
         return pointVelocity(worldPoint);
     }
     
     void addImpulse(Vector3f impulse, Vector3f point)
     {
-        JPH_BodyInterface_AddImpulse2(physicsWorld.bodyInterface, rigidBody, &impulse, &point);
+        JPH_BodyInterface_AddImpulse2(physicsWorld.bodyInterface, bodyID, &impulse, &point);
     }
     
     void moveKinematic(Vector3f pos, Quaternionf rot, float deltaTime)
     {
-        JPH_BodyInterface_MoveKinematic(physicsWorld.bodyInterface, rigidBody, &pos, &rot, deltaTime);
+        JPH_BodyInterface_MoveKinematic(physicsWorld.bodyInterface, bodyID, &pos, &rot, deltaTime);
     }
     
     override void update(Time t)
@@ -216,7 +228,7 @@ class JoltBodyController: EntityComponent
 
         JPH_BodyInterface_GetPositionAndRotation(
             physicsWorld.bodyInterface,
-            rigidBody,
+            bodyID,
             &entity.position,
             &entity.rotation);
         

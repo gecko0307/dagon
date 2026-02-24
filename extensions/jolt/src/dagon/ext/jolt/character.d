@@ -43,7 +43,7 @@ import dagon.graphics.entity;
 import bindbc.joltc;
 
 import dagon.ext.jolt.world;
-import dagon.ext.jolt.shapes;
+import dagon.ext.jolt.shape;
 
 class JoltCharacterController: EntityComponent
 {
