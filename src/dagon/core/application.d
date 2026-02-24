@@ -1283,7 +1283,6 @@ class Application: EventListener, Updateable
         logInfo("Display refresh rate: ", refreshRate, " Hz");
         logInfo("Step frequency: ", stepFrequency, " Hz");
         cadencer = New!Cadencer(this, stepFrequency, this);
-        cadencer.vsync = (vsync != 0);
         
         if ("maxTimersCount" in config.props)
         {
