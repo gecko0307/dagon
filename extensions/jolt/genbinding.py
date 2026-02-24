@@ -27,12 +27,6 @@ def typeToStr(type):
     if typeSpec == 'uint64_t':
         typeSpec = 'ulong'
     
-    """
-    quals = ''
-    if len(type.type_quals) >= 1 and type.type_quals[0]:
-        quals = ' '.join(type.type_quals[0]) + ' '
-    """
-    
     declarators = ''
     for d in type.declarators:
         if isinstance(d, int):
@@ -41,8 +35,6 @@ def typeToStr(type):
             declarators += d
         else:
             declarators += str(d)
-
-    # return quals + typeSpec + declarators
     
     quals = type.type_quals[0] if len(type.type_quals) >= 1 else []
     if 'const' in quals:
@@ -67,6 +59,7 @@ parser = CParser(
 funcs = parser.defs['functions']
 
 signatures = ''
+symbols = ''
 
 licenseBlock = '''
 /*
@@ -109,6 +102,15 @@ signatures += '''
 extern(C) @nogc nothrow:
 '''
 
+symbols += licenseBlock
+symbols += '''
+module bindbc.joltc.funcs;
+
+import bindbc.joltc.signatures;
+
+__gshared
+{'''
+
 funcNames = sorted(funcs.keys())
 
 currentGroup = None
@@ -121,6 +123,7 @@ for f in funcs:
         groupName = 'Misc'
     if groupName != currentGroup:
         signatures += f'\n// {groupName}\n'
+        symbols += f'\n    // {groupName}\n'
         currentGroup = groupName
     
     retType, args = funcs[f]
@@ -132,9 +135,27 @@ for f in funcs:
     aliasStr += ');'
     
     signatures += aliasStr + '\n'
-    
-    #TODO: write funcs.d
-    #binding += '    ' + aliasName + ' ' + f + ';' + '\n\n'
+    symbols += '    ' + aliasName + ' ' + f + ';' + '\n'
+
+# Manually add this for now
+signatures += '''
+version(JPH_DOUBLE_PRECISION)
+{
+    alias f_JPH_RMat4_Zero = void function(JPH_RMat4* result);
+    alias f_JPH_RMat4_Identity = void function(JPH_RMat4* result);
+    alias f_JPH_RMat4_Rotation = void function(JPH_RMat4* result, const(JPH_Quat)* rotation);
+    alias f_JPH_RMat4_Translation = void function(JPH_RMat4* result, const(JPH_RVec3)* translation);
+    alias f_JPH_RMat4_RotationTranslation = void function(JPH_RMat4* result, const(JPH_Quat)* rotation, const(JPH_RVec3)* translation);
+    alias f_JPH_RMat4_InverseRotationTranslation = void function(JPH_RMat4* result, const(JPH_Quat)* rotation, const(JPH_RVec3)* translation);
+    alias f_JPH_RMat4_Scale = void function(JPH_RMat4* result, const(JPH_Vec3)* scale);
+    alias f_JPH_RMat4_Inversed = void function(const(JPH_RMat4)* m, JPH_RMat4* result);
+}
+'''
+
+symbols += '}\n'
 
 headersFile = open('signatures.d', 'w')
 headersFile.write(signatures)
+
+funcsFile = open('funcs.d', 'w')
+funcsFile.write(symbols)

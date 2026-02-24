@@ -1,0 +1,4 @@
+# Generated binding modules
+types.d
+signatures.d
+funcs.d
