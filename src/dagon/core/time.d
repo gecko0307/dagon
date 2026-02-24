@@ -139,7 +139,8 @@ class Cadencer: Owner
         if (elapsedTime >= timeStep)
         {
             updateable.update(Time(timeStep, t.elapsed));
-            elapsedTime = 0.0;
+            //elapsedTime = 0.0;
+            elapsedTime = elapsedTime - timeStep;
             fpsCounter++;
         }
         
