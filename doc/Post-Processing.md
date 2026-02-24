@@ -129,7 +129,7 @@ Tonemap parameters (for render.conf):
 The same filter is also responsible for exposure compensation. This is a procedure that adapts HDR image to a desirable luminance range, ensuring highlights and shadows are properly exposed.
 
 * `hdr.exposure` - exposure value for manual compensation. Default is `1.0`
-* `hdr.autoexposure` - if enabled, the engine will automatically determine exposure compensation based on average luminance of a scene. Default is `false`
+* `hdr.autoexposure` - if enabled, the engine will automatically adjust exposure based on average luminance of a scene. Default is `false`
 * `hdr.keyValue` - target average luminance for autoexposure. Higher values give brighter scene. Default is `0.5`
 * `hdr.exposureAdaptationSpeed` - rate of exposure change over time. `1.0` corresponds to full exposure adjustment over one second. Default is `2.0`.
 
