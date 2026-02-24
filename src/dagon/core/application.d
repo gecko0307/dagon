@@ -107,14 +107,13 @@ immutable DagonVersion dagonVersion = DagonVersion(0, 41, 0);
 /// Engine version number as a read-only string.
 immutable string dagonVersionString = "0.41.0";
 
-/**
- * Reserved event codes for Dagon applications.
- */
+/// Internally reserved event codes.
 enum DagonEvent
 {
     Exit = -1
 }
 
+/// Supported color profiles.
 enum ColorProfile
 {
     Gamma22 = 0,
@@ -123,9 +122,7 @@ enum ColorProfile
     Gamma24 = 3,
 }
 
-/**
- * Supported image formats
- */
+/// Supported image formats.
 enum ImageFileFormat
 {
     Unknown,
@@ -332,6 +329,14 @@ struct FramebufferFormat
     GLint depthBits;
     GLint stencilBits;
     GLint encoding;
+}
+
+/// Vertical synchronization mode.
+enum VSyncMode: int
+{
+    Disabled = 0,
+    Enabled = 1,
+    Adaptive = -1
 }
 
 /// Structure that represents FreeType version number.
@@ -542,7 +547,7 @@ class Application: EventListener, Updateable
     bool stereoRendering = false;
     
     /// Vertical synchronization mode.
-    int vsync = 0;
+    VSyncMode vsync = VSyncMode.Enabled;
     
     /// Display refresh rate in Hz.
     uint refreshRate = 60;
@@ -1117,7 +1122,7 @@ class Application: EventListener, Updateable
         SDL_GL_MakeCurrent(window, glcontext);
         
         if ("vsync" in config.props)
-            vsync = config.props["vsync"].toInt;
+            vsync = cast(VSyncMode)config.props["vsync"].toInt;
         
         SDL_GL_SetSwapInterval(vsync);
         
