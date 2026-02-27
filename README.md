@@ -180,6 +180,7 @@ Jan Jurzitza (WebFreak), Daniel Laburthe, Rafał Ziemniewski, Kumar Sookram, Ale
 
 Made with Dagon
 ---------------
+* [Sponza Demo](https://github.com/gecko0307/dagon-sponza) - Crytek Sponza Atrium scene implemented using Dagon
 * [Electronvolt](https://github.com/gecko0307/electronvolt) - work-in-progress first person puzzle based on Dagon
 * [Chillwave Drive](https://github.com/gecko0307/chillwavedrive) - driving game demo written using Dagon, Newton Dynamics and SoLoud
 * [Dagoban](https://github.com/Timu5/dagoban) - a Sokoban clone
