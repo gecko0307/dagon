@@ -98,12 +98,12 @@ class JoltPhysicsWorld: Owner, Updateable
         
         jobSystem = JPH_JobSystemThreadPool_Create(null);
     
-        objectLayerPairFilterTable = JPH_ObjectLayerPairFilterTable_Create(2);
+        objectLayerPairFilterTable = JPH_ObjectLayerPairFilterTable_Create(JoltObjectLayer.NumLayers);
         JPH_ObjectLayerPairFilterTable_EnableCollision(objectLayerPairFilterTable, JoltObjectLayer.NonMoving, JoltObjectLayer.Moving);
         JPH_ObjectLayerPairFilterTable_EnableCollision(objectLayerPairFilterTable, JoltObjectLayer.Moving, JoltObjectLayer.NonMoving);
         JPH_ObjectLayerPairFilterTable_EnableCollision(objectLayerPairFilterTable, JoltObjectLayer.Moving, JoltObjectLayer.Moving);
         
-        broadPhaseLayerInterfaceTable = JPH_BroadPhaseLayerInterfaceTable_Create(2, 2);
+        broadPhaseLayerInterfaceTable = JPH_BroadPhaseLayerInterfaceTable_Create(JoltObjectLayer.NumLayers,JoltBroadPhaseLayer.NumLayers);
         JPH_BroadPhaseLayerInterfaceTable_MapObjectToBroadPhaseLayer(broadPhaseLayerInterfaceTable, JoltObjectLayer.NonMoving, JoltBroadPhaseLayer.NonMoving);
         JPH_BroadPhaseLayerInterfaceTable_MapObjectToBroadPhaseLayer(broadPhaseLayerInterfaceTable, JoltObjectLayer.Moving, JoltBroadPhaseLayer.Moving);
         
