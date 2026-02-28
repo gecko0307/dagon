@@ -168,6 +168,22 @@ class JoltConvexHullShape: JoltShape
     }
 }
 
+class JoltOffsetCenterOfMassShape: JoltShape
+{
+    JoltShape baseShape;
+    JPH_OffsetCenterOfMassShape* offsetCenterOfMassShape;
+    
+    this(JoltShape baseShape, Vector3f comOffset, Owner owner)
+    {
+        super(owner);
+        this.baseShape = baseShape;
+        auto settings = JPH_OffsetCenterOfMassShapeSettings_Create2(&comOffset, baseShape.shape);
+        offsetCenterOfMassShape = JPH_OffsetCenterOfMassShapeSettings_CreateShape(settings);
+        shape = cast(JPH_Shape*)offsetCenterOfMassShape;
+        JPH_ShapeSettings_Destroy(cast(JPH_ShapeSettings*)settings);
+    }
+}
+
 class JoltRotatedTranslatedShape: JoltShape
 {
     JoltShape baseShape;

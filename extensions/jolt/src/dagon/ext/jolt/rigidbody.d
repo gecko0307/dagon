@@ -221,6 +221,16 @@ class JoltRigidBody: EntityComponent
         JPH_BodyInterface_MoveKinematic(physicsWorld.bodyInterface, bodyID, &pos, &rot, deltaTime);
     }
     
+    void activate()
+    {
+        JPH_BodyInterface_ActivateBody(physicsWorld.bodyInterface, bodyID);
+    }
+    
+    void deactivate()
+    {
+        JPH_BodyInterface_DeactivateBody(physicsWorld.bodyInterface, bodyID);
+    }
+    
     override void update(Time t)
     {
         if (bodyType == JoltBodyType.Static)
