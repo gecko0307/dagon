@@ -92,6 +92,27 @@ abstract class JoltConstraint: Owner
     }
 }
 
+class JoltFixedConstraint: JoltConstraint
+{
+    JPH_FixedConstraint* fixedConstraint;
+    
+    this(JoltPhysicsWorld world, JoltRigidBody body1, JoltRigidBody body2, Owner owner)
+    {
+        super(owner);
+        
+        JPH_FixedConstraintSettings settings;
+        JPH_FixedConstraintSettings_Init(&settings);
+        
+        settings.space = JPH_ConstraintSpace.LocalToBodyCOM;
+        settings.autoDetectPoint = true;
+        
+        fixedConstraint = JPH_FixedConstraint_Create(&settings, body1.rigidBody, body2.rigidBody);
+        constraint = cast(JPH_Constraint*)fixedConstraint;
+        
+        world.addConstraint(this);
+    }
+}
+
 class JoltPointConstraint: JoltConstraint
 {
     JPH_PointConstraint* pointConstraint;

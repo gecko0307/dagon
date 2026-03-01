@@ -48,6 +48,11 @@ enum JoltBodyType
     Dynamic = 1
 }
 
+struct JoltBodySettings
+{
+    Matrix4x4f inertia;
+}
+
 class JoltRigidBody: EntityComponent
 {
     JoltPhysicsWorld physicsWorld;
@@ -58,7 +63,7 @@ class JoltRigidBody: EntityComponent
     float mass;
     bool raycastable = true;
     
-    this(EventManager eventManager, JoltPhysicsWorld physicsWorld, Entity entity, JoltBodyType bodyType, JoltShape shape, float mass)
+    this(EventManager eventManager, JoltPhysicsWorld physicsWorld, Entity entity, JoltBodyType bodyType, JoltShape shape, float mass, JoltBodySettings* settings = null)
     {
         super(eventManager, entity);
         this.physicsWorld = physicsWorld;
@@ -87,11 +92,21 @@ class JoltRigidBody: EntityComponent
             layer);
         
         this.mass = mass;
-        JPH_MassProperties massProperties = {
-            mass: mass,
-            inertia: Matrix4x4f.identity
-        };
-        JPH_BodyCreationSettings_SetOverrideMassProperties(bodySettings, JPH_OverrideMassProperties.CalculateInertia);
+        
+        JPH_MassProperties massProperties;
+        massProperties.mass = mass;
+        JPH_OverrideMassProperties overrideMassProps;
+        if (settings)
+        {
+            massProperties.inertia = settings.inertia;
+            overrideMassProps = JPH_OverrideMassProperties.MassAndInertiaProvided;
+        }
+        else
+        {
+            massProperties.inertia = Matrix4x4f.identity;
+            overrideMassProps = JPH_OverrideMassProperties.CalculateInertia;
+        }
+        JPH_BodyCreationSettings_SetOverrideMassProperties(bodySettings, overrideMassProps);
         JPH_BodyCreationSettings_SetMassPropertiesOverride(bodySettings, &massProperties);
         
         rigidBody = JPH_BodyInterface_CreateBody(physicsWorld.bodyInterface, bodySettings);

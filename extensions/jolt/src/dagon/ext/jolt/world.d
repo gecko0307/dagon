@@ -139,14 +139,14 @@ class JoltPhysicsWorld: Owner, Updateable
         return g;
     }
     
-    JoltRigidBody addStaticBody(Entity entity, JoltShape shape)
+    JoltRigidBody addStaticBody(Entity entity, JoltShape shape, JoltBodySettings* bodySettings = null)
     {
-        return New!JoltRigidBody(eventManager, this, entity, JoltBodyType.Static, shape, 0.0f);
+        return New!JoltRigidBody(eventManager, this, entity, JoltBodyType.Static, shape, 0.0f, bodySettings);
     }
     
-    JoltRigidBody addDynamicBody(Entity entity, JoltShape shape, float mass)
+    JoltRigidBody addDynamicBody(Entity entity, JoltShape shape, float mass, JoltBodySettings* bodySettings = null)
     {
-        return New!JoltRigidBody(eventManager, this, entity, JoltBodyType.Dynamic, shape, mass);
+        return New!JoltRigidBody(eventManager, this, entity, JoltBodyType.Dynamic, shape, mass, bodySettings);
     }
     
     bool raycast(Vector3f rayFrom, Vector3f rayTo, out Vector3f hitPosition, out Vector3f hitNormal, out JoltRigidBody hitBody)
