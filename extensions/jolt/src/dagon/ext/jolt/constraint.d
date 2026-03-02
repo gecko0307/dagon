@@ -233,3 +233,9 @@ class JoltHingeConstraint: JoltConstraint
         world.addConstraint(this);
     }
 }
+
+// TODO: JoltSliderConstraint
+// TODO: JoltConeConstraint
+// TODO: JoltSwingTwistConstraint
+// TODO: JoltSixDOFConstraint
+// TODO: JoltGearConstraint
