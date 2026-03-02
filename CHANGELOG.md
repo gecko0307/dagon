@@ -11,7 +11,10 @@ Dagon 0.41.0 - TBD
   - `dagon:newton`:
     - Kinematic bodies support (`NewtonPhysicsWorld.createKinematicBody`, `makeKinematicBody`)
     - New properties for `NewtonRigidBody`: `bodyType`, `collisionShape`, `angularVelocity`, `acceleration`, `linearDamping`, `angularDamping`, `simulationState`, `collidable`, `sleepState`, `autoSleep`, `freezeState`, `gyroscopicTorque`. New methods `setMassMatrix`, `setMassProperties`
-    - Fix character stucking in the walls while jumping by disabling friction completely.
+    - Fix character stucking in the walls while jumping by disabling friction completely
+  - `dagon:audio`:
+    - New method `AudioManager.setPlaySpeed`
+    - Optional volume parameter in `SoundComponent.play` methods.
 
 Dagon 0.40.0 - 19 Feb, 2026
 ---------------------------
