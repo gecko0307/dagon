@@ -480,6 +480,11 @@ class AudioManager: EventListener
             return false;
     }
     
+    void setPlaySpeed(int voice, float speed)
+    {
+        audio.setRelativePlaySpeed(voice, speed);
+    }
+    
     void update(Time time)
     {
         processEvents();

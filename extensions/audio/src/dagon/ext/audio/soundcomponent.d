@@ -61,7 +61,7 @@ class SoundComponent: EntityComponent
         this.audioManager = audioManager;
     }
     
-    int play(SoloudObject sound, uint soundClass)
+    int play(SoloudObject sound, uint soundClass, float volume = 1.0f)
     {
         if (!audioManager.enabled)
             return 0;
@@ -70,16 +70,16 @@ class SoundComponent: EntityComponent
         voice = audioManager.audio.play3d(sound, pos.x, pos.y, pos.z);
         audioManager.audio.set3dSourceVelocity(voice, velocity.x, velocity.y, velocity.z);
         audioManager.audio.setLooping(voice, looping);
-        audioManager.audio.setVolume(voice, audioManager.options[soundClass].volume);
+        audioManager.audio.setVolume(voice, audioManager.options[soundClass].volume * volume);
         audioManager.audio.set3dSourceMinMaxDistance(voice, minDistance, maxDistance);
         audioManager.audio.set3dSourceAttenuation(voice, attenuationModel, attenuationRolloffFactor);
         audioManager.audio.set3dSourceDopplerFactor(voice, dopplerFactor);
         return voice;
     }
     
-    int play(WavStream music)
+    int play(WavStream music, float volume = 1.0f)
     {
-        return play(music, SoundClass.Music);
+        return play(music, SoundClass.Music, volume);
     }
     
     int play(uint playlistTrack)
