@@ -1,5 +1,5 @@
-Dagon 0.41.0 - TBD
-------------------
+Dagon 0.41.0 - 2 Mar, 2026
+--------------------------
 - **Core**
   - Fix core timer stuttering
   - Breaking change: `stepFrequency` is now `updatesPerSecond`, both in `Application` and settings.conf

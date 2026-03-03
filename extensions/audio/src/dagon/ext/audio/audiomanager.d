@@ -480,9 +480,24 @@ class AudioManager: EventListener
             return false;
     }
     
+    void setVolume(int voice, float volume)
+    {
+        audio.setVolume(voice, volume);
+    }
+    
     void setPlaySpeed(int voice, float speed)
     {
         audio.setRelativePlaySpeed(voice, speed);
+    }
+    
+    void setMinMaxDistance(int voice, float minDistance, float maxDistance)
+    {
+        audio.set3dSourceMinMaxDistance(voice, minDistance, maxDistance);
+    }
+    
+    void setAttenuation(int voice, AttenuationModel attenuationModel, float attenuationRolloffFactor)
+    {
+        audio.set3dSourceAttenuation(voice, attenuationModel, attenuationRolloffFactor);
     }
     
     void update(Time time)

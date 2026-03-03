@@ -46,7 +46,11 @@ class SoundComponent: EntityComponent
 {
     AudioManager audioManager;
     PlaylistPlayer playlistPlayer;
+    uint soundClass;
     int voice;
+    float volume = 1.0f;
+    float targetVolume = 1.0f;
+    float volumeChangeDuration = 0.0f;
     bool looping = false;
     Vector3f velocity = Vector3f(0.0f, 0.0f, 0.0f);
     float minDistance = 1.0f;
@@ -70,6 +74,9 @@ class SoundComponent: EntityComponent
         voice = audioManager.audio.play3d(sound, pos.x, pos.y, pos.z);
         audioManager.audio.set3dSourceVelocity(voice, velocity.x, velocity.y, velocity.z);
         audioManager.audio.setLooping(voice, looping);
+        this.volume = volume;
+        this.targetVolume = volume;
+        this.soundClass = soundClass;
         audioManager.audio.setVolume(voice, audioManager.options[soundClass].volume * volume);
         audioManager.audio.set3dSourceMinMaxDistance(voice, minDistance, maxDistance);
         audioManager.audio.set3dSourceAttenuation(voice, attenuationModel, attenuationRolloffFactor);
@@ -77,18 +84,25 @@ class SoundComponent: EntityComponent
         return voice;
     }
     
-    int play(WavStream music, float volume = 1.0f)
+    int play(SoloudObject sound, float volume = 1.0f)
+    {
+        return play(sound, SoundClass.SFX, volume);
+    }
+    
+    int playMusic(WavStream music, float volume = 1.0f)
     {
         return play(music, SoundClass.Music, volume);
     }
     
-    int play(uint playlistTrack)
+    int playTrack(uint playlistTrack)
     {
         if (!audioManager.enabled)
             return 0;
         
         if (playlistPlayer is null)
             return 0;
+        
+        this.soundClass = SoundClass.Music;
         
         Vector3f pos = entity.positionAbsolute;
         playlistPlayer.positional = true;
@@ -107,9 +121,29 @@ class SoundComponent: EntityComponent
         return voice;
     }
     
+    void setVolumeSmooth(float targetVolume, float duration)
+    {
+        this.targetVolume = targetVolume;
+        this.volumeChangeDuration = duration;
+    }
+    
     override void update(Time time)
     {
+        if (volume < targetVolume)
+        {
+            volume += (1.0f / volumeChangeDuration) * time.delta;
+            if (volume > targetVolume)
+                volume = targetVolume;
+        }
+        else if (volume > targetVolume)
+        {
+            volume -= (1.0f / volumeChangeDuration) * time.delta;
+            if (volume < targetVolume)
+                volume = targetVolume;
+        }
+        
         Vector3f pos = entity.positionAbsolute;
+        audioManager.audio.setVolume(voice, audioManager.options[soundClass].volume * volume);
         audioManager.audio.set3dSourceParameters(voice, pos.x, pos.y, pos.z, velocity.x, velocity.y, velocity.z);
     }
 }
