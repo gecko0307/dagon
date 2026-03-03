@@ -53,6 +53,11 @@ struct JoltBodySettings
     Matrix4x4f inertia;
 }
 
+interface ContactListener
+{
+    void onContactAdded(JoltRigidBody body1, JoltRigidBody body2);
+}
+
 class JoltRigidBody: EntityComponent
 {
     JoltPhysicsWorld physicsWorld;
@@ -62,6 +67,7 @@ class JoltRigidBody: EntityComponent
     JoltShape shape;
     float mass;
     bool raycastable = true;
+    ContactListener contactListener;
     
     this(EventManager eventManager, JoltPhysicsWorld physicsWorld, Entity entity, JoltBodyType bodyType, JoltShape shape, float mass, JoltBodySettings* settings = null)
     {
@@ -195,7 +201,7 @@ class JoltRigidBody: EntityComponent
     Vector3f velocity() @property
     {
         Vector3f v;
-        JPH_BodyInterface_GetLinearVelocity(physicsWorld.bodyInterface, bodyID, &v);
+        JPH_Body_GetLinearVelocity(rigidBody, &v);
         return v;
     }
     
@@ -207,7 +213,7 @@ class JoltRigidBody: EntityComponent
     Vector3f angularVelocity() @property
     {
         Vector3f w;
-        JPH_BodyInterface_GetAngularVelocity(physicsWorld.bodyInterface, bodyID, &w);
+        JPH_Body_GetAngularVelocity(rigidBody, &w);
         return w;
     }
     
