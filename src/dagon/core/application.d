@@ -1572,7 +1572,13 @@ class Application: EventListener, Updateable
         else
             SDL_SetWindowFullscreen(window, 0);
     }
-
+    
+    bool isWindowFocused()
+    {
+        uint flags = SDL_GetWindowFlags(window);
+        return (flags & SDL_WINDOW_INPUT_FOCUS) != 0;
+    }
+    
     /// User event handler.
     override void onUserEvent(int code, void* payload)
     {

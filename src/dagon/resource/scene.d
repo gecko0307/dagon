@@ -411,6 +411,7 @@ class Scene: EventListener
                 loaded = true;
                 afterLoad();
                 onLoad(t, 1.0f);
+                SDL_RaiseWindow(application.window);
                 canRender = true;
             }
             else
