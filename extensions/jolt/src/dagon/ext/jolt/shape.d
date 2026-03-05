@@ -45,6 +45,12 @@ abstract class JoltShape: Owner
     {
         super(owner);
     }
+    
+    ~this()
+    {
+        if (shape)
+            JPH_Shape_Destroy(shape);
+    }
 }
 
 class JoltSphereShape: JoltShape

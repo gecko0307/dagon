@@ -135,6 +135,11 @@ class JoltRigidBody: EntityComponent
         JPH_BodyInterface_RemoveAndDestroyBody(physicsWorld.bodyInterface, bodyID);
     }
     
+    void setShape(JoltShape shape)
+    {
+        JPH_BodyInterface_SetShape(physicsWorld.bodyInterface, bodyID, shape.shape, true, JPH_Activation.Activate);
+    }
+    
     void friction(float f) @property
     {
         JPH_BodyInterface_SetFriction(physicsWorld.bodyInterface, bodyID, f);
