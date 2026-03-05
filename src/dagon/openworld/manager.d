@@ -50,7 +50,7 @@ class OpenWorldManager: Owner
     
     double stabilityDelay = 1.0;
     
-    void delegate(Vector3f offset) onTravelerWrap;
+    void delegate(Entity traveler, Vector3f offset) onTravelerWrap;
     
    protected:
     int lastOriginX = 0;
@@ -147,7 +147,7 @@ class OpenWorldManager: Owner
             Vector3f wrapOffset = Vector3f(-worldDeltaX, 0.0f, -worldDeltaZ) * chunkSize;
             
             if (onTravelerWrap)
-                onTravelerWrap(wrapOffset);
+                onTravelerWrap(traveler, wrapOffset);
             
             foreach(WorldChunk c; chunks)
             {

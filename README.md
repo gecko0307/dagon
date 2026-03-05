@@ -157,6 +157,7 @@ Documentation status:
 * ✔️ [dagon.game](https://gecko0307.github.io/dagon/doc/dagon/game.html)
 * ⏳ [dagon.ui](https://gecko0307.github.io/dagon/doc/dagon/ui.html)
 * ❌ `dagon.collision`
+* ❌ `dagon.openworld`
 * ✔️ [dagon.compute](https://gecko0307.github.io/dagon/doc/dagon/compute.html)
 * ❌ `dagon.extra`
 * ❌ `dagon.ext.assimp`

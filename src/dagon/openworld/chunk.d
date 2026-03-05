@@ -32,10 +32,10 @@ import dlib.math.vector;
 class WorldChunk: Owner
 {
     bool active;
-    int x;
-    int z;
+    uint x;
+    uint z;
     
-    this(int x, int z, bool active, Owner owner)
+    this(uint x, uint z, bool active, Owner owner)
     {
         super(owner);
         this.x = x;

@@ -600,7 +600,6 @@ class AssetManager: Owner
     /// Removes an asset by name.
     void removeAsset(string name)
     {
-        Delete(assetsByFilename[name]);
         assetsByFilename.remove(name);
     }
 
