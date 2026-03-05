@@ -71,6 +71,7 @@ Features
 * Asynchronous thread-safe messaging. Use the message broker built into the event system to communicate between threads and the main loop
 * Built-in camera logics for easy navigation: freeview and first person views
 * Collision detection using MPR algorithm, raycasting, simple kinematic collision response system
+* Chunk-based culling for managing large game worlds. Optional "floating origin" system to maintain high coordinate precision
 * Rigid body physics using [Newton Dynamics](http://newtondynamics.com). Built-in character controller
 * [Jolt Physics](https://github.com/jrouwe/JoltPhysics) integration (in development)
 * Orthographic projection support. Screen-aligned rendering. Sprites and billboards. Create 2D/2.5D/isometric games with ease
