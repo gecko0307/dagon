@@ -426,11 +426,11 @@ class GLTFAsset: Asset, TriangleSet
                 if ("uri" in im)
                 {
                     string uri = im["uri"].asString;
-                    TextureAsset textureAsset = New!TextureAsset(assetManager);
                     
                     ImageFormatInfo info = assetManager.detectBase64Image(uri);
                     if (info.format.length)
                     {
+                        TextureAsset textureAsset = New!TextureAsset(assetManager);
                         auto encoded = uri[info.prefix.length..$];
                         auto decodedLength = Base64.decodeLength(encoded.length);
                         auto array = New!(ubyte[])(decodedLength);
@@ -439,6 +439,7 @@ class GLTFAsset: Asset, TriangleSet
                         if (!res)
                             logError("Failed to load Base64-encoded image");
                         Delete(array);
+                        images.insertBack(textureAsset);
                     }
                     else
                     {
@@ -447,20 +448,35 @@ class GLTFAsset: Asset, TriangleSet
                         imgFilename ~= uri;
                         string assetFilename = imgFilename.toString;
                         
+                        TextureAsset textureAsset;
+                        
                         FileStat fstat;
                         if (fs.stat(assetFilename, fstat))
                         {
-                            bool res = assetManager.loadAssetThreadSafePart(textureAsset, assetFilename);
-                            if (!res)
-                                logError("Failed to load \"", imgFilename, "\"");
+                            TextureAsset existingAsset = cast(TextureAsset)assetManager.getAsset(assetFilename);
+                            if (existingAsset)
+                                textureAsset = existingAsset;
+                            else
+                            {
+                                textureAsset = New!TextureAsset(assetManager);
+                                // TODO: use arena for string allocation
+                                assetManager.addAsset(textureAsset, assetFilename.idup);
+                            }
+                            
+                            if (!textureAsset.threadSafePartLoaded)
+                            {
+                                textureAsset.threadSafePartLoaded = assetManager.loadAssetThreadSafePart(textureAsset, assetFilename);
+                                if (!textureAsset.threadSafePartLoaded)
+                                    logError("Failed to load \"", imgFilename, "\"");
+                            }
+                            
+                            images.insertBack(textureAsset);
                         }
                         else
                             logError("Image file \"", imgFilename, "\" not found");
                         
                         imgFilename.free();
                     }
-                    
-                    images.insertBack(textureAsset);
                 }
                 else if ("bufferView" in im)
                 {
@@ -1187,7 +1203,8 @@ class GLTFAsset: Asset, TriangleSet
         
         foreach(img; images)
         {
-            img.loadThreadUnsafePart();
+            if (!img.threadUnsafePartLoaded)
+                img.threadUnsafePartLoaded = img.loadThreadUnsafePart();
         }
         
         return true;
