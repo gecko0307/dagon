@@ -81,6 +81,9 @@ class FreeviewComponent: EntityComponent
     /// Sensitivity for mouse zoom.
     float mouseZoomSensibility;
     
+    ///
+    Entity targetEntity;
+    
     /// Camera target point.
     Vector3f target;
 
@@ -182,6 +185,12 @@ class FreeviewComponent: EntityComponent
     override void update(Time time)
     {
         processEvents();
+        
+        if (targetEntity)
+        {
+            target = -targetEntity.positionAbsolute;
+            smoothTarget = target;
+        }
         
         if (active)
         {

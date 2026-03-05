@@ -96,7 +96,11 @@ class JoltFixedConstraint: JoltConstraint
 {
     JPH_FixedConstraint* fixedConstraint;
     
-    this(JoltPhysicsWorld world, JoltRigidBody body1, JoltRigidBody body2, Owner owner)
+    this(
+        JoltPhysicsWorld world,
+        JoltRigidBody body1,
+        JoltRigidBody body2,
+        Owner owner)
     {
         super(owner);
         
@@ -117,7 +121,13 @@ class JoltPointConstraint: JoltConstraint
 {
     JPH_PointConstraint* pointConstraint;
     
-    this(JoltPhysicsWorld world, JoltRigidBody body1, JoltRigidBody body2, Vector3f localPoint1, Vector3f localPoint2, Owner owner)
+    this(
+        JoltPhysicsWorld world,
+        JoltRigidBody body1,
+        JoltRigidBody body2,
+        Vector3f localPoint1,
+        Vector3f localPoint2,
+        Owner owner)
     {
         super(owner);
         
