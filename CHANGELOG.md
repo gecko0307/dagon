@@ -1,3 +1,11 @@
+Dagon 0.42.0 - TBD
+------------------
+- **Core**
+  - New method `Application.isWindowFocused`
+- **Extensions**
+  - `dagon:audio`:
+    - New methods `AudioManager.setVolume`, `AudioManager.setMinMaxDistance`, `AudioManager.setAttenuation`, `SoundComponent.setVolumeSmooth`, `SoundComponent.playTrack`
+
 Dagon 0.41.0 - 2 Mar, 2026
 --------------------------
 - **Core**
