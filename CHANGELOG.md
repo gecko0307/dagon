@@ -5,8 +5,10 @@ Dagon 0.42.0 - TBD
 - **Open World**
   - New package `dagon.openworld`, basic functionality for chunk-based culling and world streaming which allows to build open world games
 - **Extensions**
+  - `dagon:jolt`:
+    - New method `JoltRigidBody.setShape`
   - `dagon:audio`:
-    - New methods `AudioManager.setVolume`, `AudioManager.setMinMaxDistance`, `AudioManager.setAttenuation`, `SoundComponent.setVolumeSmooth`, `SoundComponent.playTrack`
+    - New methods `AudioManager.setVolume`, `AudioManager.setMinMaxDistance`, `AudioManager.setAttenuation`, `SoundComponent.setVolumeSmooth`, `SoundComponent.playTrack`.
 
 Dagon 0.41.0 - 2 Mar, 2026
 --------------------------
