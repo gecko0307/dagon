@@ -57,4 +57,16 @@ class WorldChunk: Owner
     {
         //
     }
+    
+    void activate()
+    {
+        active = true;
+        onActivate();
+    }
+    
+    void deactivate()
+    {
+        active = false;
+        onDeactivate();
+    }
 }

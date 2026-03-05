@@ -428,6 +428,12 @@ class Entity: Owner, Updateable
         prevAbsoluteTransformation = absoluteTransformation;
         position = pos;
     }
+    
+    void resetPrevTransformation()
+    {
+        prevTransformation = transformation;
+        prevAbsoluteTransformation = absoluteTransformation;
+    }
 
     /**
      * Updates the entity and its components for the current frame.

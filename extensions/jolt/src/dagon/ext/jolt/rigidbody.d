@@ -72,6 +72,7 @@ class JoltRigidBody: EntityComponent
     this(EventManager eventManager, JoltPhysicsWorld physicsWorld, Entity entity, JoltBodyType bodyType, JoltShape shape, float mass, JoltBodySettings* settings = null)
     {
         super(eventManager, entity);
+        
         this.physicsWorld = physicsWorld;
         this.bodyType = bodyType;
         this.shape = shape;

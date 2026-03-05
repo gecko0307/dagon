@@ -65,6 +65,8 @@ class MotionBlurShader: Shader
     ShaderParameter!int colorBuffer;
     ShaderParameter!int depthBuffer;
     ShaderParameter!int velocityBuffer;
+    
+    bool firstFrame = true;
 
    public:
     bool enabled = true;
@@ -118,7 +120,7 @@ class MotionBlurShader: Shader
         zFar = state.zFar;
         invProjectionMatrix = state.invProjectionMatrix;
 
-        mbEnabled = enabled;
+        mbEnabled = !firstFrame && enabled; // To prevent blurring with initial velocities
         mbBlurScale = currentFramerate / shutterFramerate;
         mbSamples = samples;
         mbOffsetRandomCoef = offsetRandomCoefficient;
@@ -150,6 +152,8 @@ class MotionBlurShader: Shader
         glActiveTexture(GL_TEXTURE0);
 
         super.bindParameters(state);
+        
+        firstFrame = false;
     }
 
     override void unbindParameters(GraphicsState* state)
