@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2025 Timur Gafarov
+Copyright (c) 2019-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -300,7 +300,10 @@ class Scene: EventListener
     {
         Camera c = New!Camera(world);
         if (parent)
+        {
             c.setParent(parent);
+            c.updateTransformationBottomUp();
+        }
         return c;
     }
 
