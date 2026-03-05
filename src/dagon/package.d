@@ -46,7 +46,7 @@ DEALINGS IN THE SOFTWARE.
  *
  * - $(LINK2 dagon/game.html, dagon.game) - base functionality for building a game
  *
- * - $(LINK2 dagon/openworld.html, dagon.openworld) - basic functionality for building open world games
+ * - $(LINK2 dagon/openworld.html, dagon.openworld) - basic functionality for chunk-based culling and world streaming
  *
  * - $(LINK2 dagon/ui.html, dagon.ui) - UI components and tools
  *

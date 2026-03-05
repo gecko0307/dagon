@@ -2,6 +2,8 @@ Dagon 0.42.0 - TBD
 ------------------
 - **Core**
   - New method `Application.isWindowFocused`
+- **Open World**
+  - New package `dagon.openworld`, basic functionality for chunk-based culling and world streaming which allows to build open world games
 - **Extensions**
   - `dagon:audio`:
     - New methods `AudioManager.setVolume`, `AudioManager.setMinMaxDistance`, `AudioManager.setAttenuation`, `SoundComponent.setVolumeSmooth`, `SoundComponent.playTrack`
