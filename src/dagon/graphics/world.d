@@ -164,9 +164,26 @@ class World: Owner
     }
 
     /// Adds an existing entity to the world.
-    void add(Entity e)
+    void add(Entity entity)
     {
-        entities.append(e);
+        entities.append(entity);
+    }
+    
+    ///
+    void remove(Entity entity)
+    {
+        int index = -1;
+        foreach(i, e; entities.data)
+        {
+            if (e is entity)
+            {
+                index = cast(int)i;
+                break;
+            }
+        }
+        
+        if (index >= 0)
+            entities.removeKey(cast(size_t)index);
     }
     
     /// Creates and adds a new entity, optionally with a parent.

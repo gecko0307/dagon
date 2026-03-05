@@ -482,7 +482,7 @@ class GLTFAsset: Asset, TriangleSet
                 {
                     uint bufferViewIndex = cast(uint)im["bufferView"].asNumber;
                     
-                    auto textureAsset = New!TextureAsset(this);
+                    auto textureAsset = New!TextureAsset(assetManager);
                     
                     if (bufferViewIndex < bufferViews.length)
                     {
@@ -499,7 +499,6 @@ class GLTFAsset: Asset, TriangleSet
                                 logError("Unsupported image MIME type ", mimeType);
                             else
                             {
-                                
                                 bool res = assetManager.loadAssetThreadSafePart(textureAsset, bv.slice, name);
                                 if (!res)
                                     logError("Failed to load image");
@@ -1249,8 +1248,8 @@ class GLTFAsset: Asset, TriangleSet
             deleteOwnedObject(me);
         meshes.free();
         
-        foreach(im; images)
-            deleteOwnedObject(im);
+        //foreach(im; images)
+        //    deleteOwnedObject(im);
         images.free();
         
         foreach(no; nodes)
@@ -1272,7 +1271,8 @@ class GLTFAsset: Asset, TriangleSet
         textures.free();
         materials.free();
         
-        Delete(doc);
+        if (doc)
+            Delete(doc);
         str.free();
     }
     

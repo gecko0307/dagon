@@ -263,10 +263,26 @@ class Scene: EventListener
     }
 
     /// Adds an existing entity to the world.
-    Entity useEntity(Entity e)
+    Entity useEntity(Entity e, bool useChildren = false)
     {
         world.add(e);
+        if (useChildren)
+        {
+            foreach(child; e.children)
+                useEntity(child, useChildren);
+        }
         return e;
+    }
+    
+    /// Removes an entity from the world without deleting it.
+    void removeEntity(Entity e, bool removeChildren = false)
+    {
+        world.remove(e);
+        if (removeChildren)
+        {
+            foreach(child; e.children)
+                removeEntity(child, removeChildren);
+        }
     }
 
     /// Creates and adds a new HUD entity (foreground layer), optionally with a parent.
