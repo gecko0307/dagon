@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2025 Mateusz Muszyński, Timur Gafarov
+Copyright (c) 2019-2026 Mateusz Muszyński, Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -34,7 +34,7 @@ DEALINGS IN THE SOFTWARE.
  * and the `InputManager` class, which allows mapping named actions to keyboard, 
  * mouse, and gamepad inputs, as well as querying button and axis states.
  *
- * Copyright: Mateusz Muszyński, Timur Gafarov 2019-2025
+ * Copyright: Mateusz Muszyński, Timur Gafarov 2019-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Mateusz Muszyński, Timur Gafarov
  */

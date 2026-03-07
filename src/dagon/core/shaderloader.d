@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2019-2025 dayllenger
+Copyright (c) 2019-2026 dayllenger
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -36,7 +36,7 @@ DEALINGS IN THE SOFTWARE.
  * shader stages, including vertex, tessellation control/evaluation, geometry,
  * fragment, and (if supported) compute shaders.
  *
- * Copyright: dayllenger 2019-2025
+ * Copyright: dayllenger 2019-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: dayllenger
  */

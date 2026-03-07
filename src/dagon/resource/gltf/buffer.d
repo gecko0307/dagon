@@ -35,7 +35,7 @@ DEALINGS IN THE SOFTWARE.
  * virtual file system), and base64-encoded strings. This enables support
  * for embedded, external, and base64 buffers in GLTF 2.0 files.
  *
- * Copyright: Timur Gafarov 2021-2025
+ * Copyright: Timur Gafarov 2021-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Timur Gafarov
  */

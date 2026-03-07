@@ -37,7 +37,7 @@ DEALINGS IN THE SOFTWARE.
  * threaded asset loading, progress callbacks, and hooks for custom loading
  * and update logic.
  *
- * Copyright: Timur Gafarov 2019-2025
+ * Copyright: Timur Gafarov 2019-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Timur Gafarov
  */

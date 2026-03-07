@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2025 Timur Gafarov
+Copyright (c) 2013-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -34,7 +34,7 @@ DEALINGS IN THE SOFTWARE.
  * for various convex geometric shapes used in collision detection.
  * Includes support for spheres, boxes, cylinders, cones, ellipsoids, capsules, and triangles.
  *
- * Copyright: Timur Gafarov 2013-2025
+ * Copyright: Timur Gafarov 2013-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Timur Gafarov
  */

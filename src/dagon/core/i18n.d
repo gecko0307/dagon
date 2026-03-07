@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2025 Timur Gafarov
+Copyright (c) 2025-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -34,7 +34,7 @@ DEALINGS IN THE SOFTWARE.
  * Localization is loaded into the `Translation` object and provides access to strings by keys.
  * Locales are loaded from `locale/<locale_code>.lang`, for example `locale/en_US.lang`.
  *
- * Copyright: Timur Gafarov 2025
+ * Copyright: Timur Gafarov 2025-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Timur Gafarov
  */

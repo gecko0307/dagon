@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018-2025 Rafał Ziemniewski, Timur Gafarov
+Copyright (c) 2018-2026 Rafał Ziemniewski, Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -34,7 +34,7 @@ DEALINGS IN THE SOFTWARE.
  * for managing terrain-specific material parameters and textures,
  * The module supports multi-layered materials with splat mapping.
  *
- * Copyright: Rafał Ziemniewski, Timur Gafarov 2018-2025
+ * Copyright: Rafał Ziemniewski, Timur Gafarov 2018-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Rafał Ziemniewski, Timur Gafarov
  */

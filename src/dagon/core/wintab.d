@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2016-2025 Vadim Lopatin, Timur Gafarov
+Copyright (c) 2016-2026 Vadim Lopatin, Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -30,7 +30,7 @@ DEALINGS IN THE SOFTWARE.
  * BindBC binding to Wintab (Wacom Tablet) API.
  * Based on Derelict-Wintab by Vadim Lopatin, BindBC port by Timur Gafarov.
  *
- * Copyright: Vadim Lopatin, Timur Gafarov 2016-2025.
+ * Copyright: Vadim Lopatin, Timur Gafarov 2016-2026.
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Vadim Lopatin, Timur Gafarov
  */

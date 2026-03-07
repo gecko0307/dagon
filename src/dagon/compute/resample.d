@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2025 Timur Gafarov
+Copyright (c) 2025-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -28,8 +28,13 @@ DEALINGS IN THE SOFTWARE.
 /**
  * GPU-based texture resizing through compute shader.
  *
+ * Description:
  * This module provides a compute shader wrapper for resizing RGBA8 textures
  * using GPU acceleration.
+ *
+ * Copyright: Timur Gafarov 2025-2026
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
  */
 module dagon.compute.resample;
 

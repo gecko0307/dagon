@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2025 Timur Gafarov
+Copyright (c) 2025-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -35,7 +35,7 @@ DEALINGS IN THE SOFTWARE.
  * TIFF, WEBP, AVIF, JXL, SVG, and more), and can handle pixel format conversion.
  * It also creates a `TextureImage` object for compatibility with `dlib.image``.
  *
- * Copyright: Timur Gafarov 2025
+ * Copyright: Timur Gafarov 2025-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Timur Gafarov
  */

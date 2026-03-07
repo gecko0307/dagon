@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018-2025 Rafał Ziemniewski
+Copyright (c) 2018-2026 Rafał Ziemniewski
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -35,7 +35,7 @@ DEALINGS IN THE SOFTWARE.
  * suitable for procedural texture, terrain, and effect generation, offering
  * smooth, tile-free results.
  *
- * Copyright: Rafał Ziemniewski 2018-2025
+ * Copyright: Rafał Ziemniewski 2018-2026
  * License: Boost Software License - Version 1.0
  * Authors: Rafał Ziemniewski
  */

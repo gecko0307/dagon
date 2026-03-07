@@ -36,7 +36,7 @@ DEALINGS IN THE SOFTWARE.
  * if available, or fall back to dlib.image. The asset manager supports mounting
  * directories and box files, and can detect and handle base64-encoded images.
  *
- * Copyright: Timur Gafarov 2017-2025
+ * Copyright: Timur Gafarov 2017-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Timur Gafarov
  */
