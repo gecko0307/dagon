@@ -200,7 +200,7 @@ subroutine(srtEmission) vec3 emissionColorValue(in vec2 uv)
 uniform sampler2D emissionTexture;
 subroutine(srtEmission) vec3 emissionColorTexture(in vec2 uv)
 {
-    return texture(emissionTexture, uv).rgb * energy;
+    return toLinear(texture(emissionTexture, uv).rgb) * emissionFactor.rgb * energy;
 }
 
 subroutine uniform srtEmission emission;
@@ -248,6 +248,6 @@ void main()
         subsurface(uv),
         0.0);
     // TODO: lightmapping support
-    fragEmission = vec4(toLinear(emission(uv)), 1.0);
+    fragEmission = vec4(emission(uv), 1.0);
     fragVelocity = vec4(velocity, blurMask, 1.0);
 }

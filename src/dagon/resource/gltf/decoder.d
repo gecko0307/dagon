@@ -709,6 +709,7 @@ class GLTFAsset: Asset, TriangleSet
                 if ("emissiveFactor" in ma)
                 {
                     Color4f emissiveFactor = ma["emissiveFactor"].asColor;
+                    emissiveFactor.a = 1.0f;
                     material.emissionFactor = emissiveFactor;
                 }
                 
@@ -1222,7 +1223,10 @@ class GLTFAsset: Asset, TriangleSet
                     if (material)
                     {
                         if (material.blendMode == Transparent)
+                        {
                             node.entity.transparent = true;
+                            node.entity.castShadow = false;
+                        }
                     }
                 }
             }

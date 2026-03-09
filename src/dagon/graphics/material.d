@@ -140,7 +140,7 @@ class Material: Owner
     /// Does the baseColor in linear RGB space (true), or in sRGB (false)
     bool linearColor = false;
 
-    /// Emission color factor. Used if `emissionTexture` is not specified
+    /// Emission factor. Multiplied with `emissionTexture` or used directly if `emissionTexture` is not specified
     Color4f emissionFactor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
 
     /// Tangent-space normal vector. Used if `normalTexture` is not specified
