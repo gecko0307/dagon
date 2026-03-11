@@ -55,6 +55,7 @@ import dlib.serialization.json;
 
 import dagon.core.bindings;
 import dagon.graphics.entity;
+import dagon.graphics.mesh;
 import dagon.resource.gltf.mesh;
 import dagon.resource.gltf.skin;
 import dagon.resource.gltf.accessor;
@@ -62,7 +63,7 @@ import dagon.resource.gltf.accessor;
 /**
  * Represents a node in a GLTF scene graph.
  */
-class GLTFNode: Owner
+class GLTFNode: Owner, TriangleSet
 {
     /// The index of the node in the GLTF file.
     size_t index;

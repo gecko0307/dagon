@@ -2,6 +2,8 @@ Dagon 0.42.0 - TBD
 ------------------
 - **Core**
   - New method `Application.isWindowFocused`
+- **Assets**
+  - `GLTFScene` and `GLTFNode` now implement `TriangleSet` interface
 - **Open World**
   - New package `dagon.openworld`, basic functionality for chunk-based culling and world streaming which allows to build open world games
 - **Extensions**

@@ -33,12 +33,13 @@ import dlib.geometry.triangle;
 import dlib.serialization.json;
 
 import dagon.core.bindings;
+import dagon.graphics.mesh;
 import dagon.resource.gltf.node;
 
 /**
  * Represents a GLTF scene, containing a set of root nodes.
  */
-class GLTFScene: Owner
+class GLTFScene: Owner, TriangleSet
 {
     /// Scene name.
     string name;
