@@ -50,11 +50,14 @@ import dlib.math.vector;
 import dlib.math.quaternion;
 import dlib.math.matrix;
 import dlib.math.transformation;
+import dlib.geometry.triangle;
 import dlib.serialization.json;
 
+import dagon.core.bindings;
 import dagon.graphics.entity;
 import dagon.resource.gltf.mesh;
 import dagon.resource.gltf.skin;
+import dagon.resource.gltf.accessor;
 
 /**
  * Represents a node in a GLTF scene graph.
@@ -177,6 +180,112 @@ class GLTFNode: Owner
         
         if (children.length)
             Delete(children);
+    }
+    
+    /**
+     * Applies a function for each triangle in the node's mesh.
+     *
+     * Params:
+     *   dg = Delegate to call for each triangle.
+     *   recursive = If true, recursively applies the function to each children of the node.
+     * Returns:
+     *   0 if completed, nonzero if interrupted.
+     */
+    int forEachTriangle(scope int delegate(Triangle t) dg, bool recursive = true)
+    {
+        int result = 0;
+        
+        if (mesh)
+        {
+            foreach(primitive; mesh.primitives)
+            {
+                GLTFAccessor pa = primitive.positionAccessor;
+                GLTFAccessor na = primitive.normalAccessor;
+                GLTFAccessor ia = primitive.indexAccessor;
+                
+                Vector3f* positions = cast(Vector3f*)(pa.bufferView.slice.ptr + pa.byteOffset);
+                size_t numPositions = pa.count;
+                
+                Vector3f* normals = cast(Vector3f*)(na.bufferView.slice.ptr + na.byteOffset);
+                size_t numNormals = na.count;
+                
+                ubyte* indicesStart = ia.bufferView.slice.ptr + ia.byteOffset;
+                size_t numTriangles = ia.count / 3;
+
+                size_t indexStride;
+                if (ia.componentType == GL_UNSIGNED_BYTE)
+                    indexStride = 1;
+                else if (ia.componentType == GL_UNSIGNED_SHORT)
+                    indexStride = 2;
+                else if (ia.componentType == GL_UNSIGNED_INT)
+                    indexStride = 4;
+                
+                foreach(i; 0..numTriangles)
+                {
+                    ubyte* ptr = indicesStart + i * 3 * indexStride;
+                    
+                    size_t[3] indices;
+                    if (ia.componentType == GL_UNSIGNED_BYTE)
+                    {
+                        indices[0] = ptr[0];
+                        indices[1] = ptr[1];
+                        indices[2] = ptr[2];
+                    }
+                    else if (ia.componentType == GL_UNSIGNED_SHORT)
+                    {
+                        indices[0] = *cast(ushort*)ptr;
+                        indices[1] = *cast(ushort*)(ptr+2);
+                        indices[2] = *cast(ushort*)(ptr+4);
+                        }
+                    else if (ia.componentType == GL_UNSIGNED_INT)
+                    {
+                        indices[0] = *cast(uint*)ptr;
+                        indices[1] = *cast(uint*)(ptr+4);
+                        indices[2] = *cast(uint*)(ptr+8);
+                    }
+
+                    auto mat = entity.absoluteTransformation;
+
+                    Triangle tri;
+                    tri.v[0] = positions[indices[0]] * mat;
+                    tri.v[1] = positions[indices[1]] * mat;
+                    tri.v[2] = positions[indices[2]] * mat;
+                    tri.n[0] = mat.rotate(normals[indices[0]]);
+                    tri.n[1] = mat.rotate(normals[indices[1]]);
+                    tri.n[2] = mat.rotate(normals[indices[2]]);
+                    tri.normal = (tri.n[0] + tri.n[1] + tri.n[2]) / 3.0f;
+                    
+                    result = dg(tri);
+                    if (result)
+                        return result;
+                }
+            }
+        }
+        
+        if (recursive)
+        {
+            foreach(child; children)
+            {
+                result = child.forEachTriangle(dg, true);
+                if (result)
+                    return result;
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Iterates over all triangles in the node's mesh.
+     *
+     * Params:
+     *   dg = Delegate to call for each triangle.
+     * Returns:
+     *   0 if completed, nonzero if interrupted.
+     */
+    int opApply(scope int delegate(Triangle t) dg)
+    {
+        return forEachTriangle(dg);
     }
 }
 

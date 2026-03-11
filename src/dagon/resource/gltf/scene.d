@@ -29,6 +29,7 @@ module dagon.resource.gltf.scene;
 
 import dlib.core.ownership;
 import dlib.container.array;
+import dlib.geometry.triangle;
 import dlib.serialization.json;
 
 import dagon.core.bindings;
@@ -56,5 +57,27 @@ class GLTFScene: Owner
     ~this()
     {
         nodes.free();
+    }
+    
+    /**
+     * Iterates over all triangles in the scene nodes.
+     *
+     * Params:
+     *   dg = Delegate to call for each triangle.
+     * Returns:
+     *   0 if completed, nonzero if interrupted.
+     */
+    int opApply(scope int delegate(Triangle t) dg)
+    {
+        int result = 0;
+        
+        foreach(node; nodes)
+        {
+            result = node.forEachTriangle(dg, true);
+            if (result)
+                return result;
+        }
+        
+        return result;
     }
 }

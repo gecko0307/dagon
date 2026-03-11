@@ -218,10 +218,10 @@ class ShapeBox: Mesh
      * Constructs a `ShapeBox` using extents as a vector.
      *
      * Params:
-     *   extents = Half-size along each axis.
-     *   owner   = Owner object.
+     *   halfExtents = Half-size along each axis.
+     *   owner       = Owner object.
      */
-    this(Vector3f extents, Owner owner)
+    this(Vector3f halfExtents, Owner owner)
     {
         super(owner);
 
@@ -230,8 +230,8 @@ class ShapeBox: Mesh
         texcoords = New!(Vector2f[])(24);
         indices = New!(uint[3][])(12);
 
-        Vector3f pmax = +extents;
-        Vector3f pmin = -extents;
+        Vector3f pmax = +halfExtents;
+        Vector3f pmin = -halfExtents;
 
         texcoords[0] = Vector2f(1, 0); normals[0] = Vector3f(0,0,1); vertices[0] = Vector3f(pmax.x, pmax.y, pmax.z);
         texcoords[1] = Vector2f(0, 0); normals[1] = Vector3f(0,0,1); vertices[1] = Vector3f(pmin.x, pmax.y, pmax.z);
@@ -280,7 +280,7 @@ class ShapeBox: Mesh
     }
 
     /**
-     * Constructs a `ShapeBox` using extents as separate components.
+     * Constructs a `ShapeBox` using half-extents as separate components.
      *
      * Params:
      *   hw    = Half-width.
