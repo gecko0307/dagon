@@ -54,6 +54,7 @@ To use Dagon repository directly instead of a release (for example, to modify th
 
 ```
 "dagon": { "path": "path/to/your/dagon/copy" }
+```
 
 ## Runtime Dependencies
 
