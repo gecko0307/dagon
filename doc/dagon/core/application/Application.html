@@ -43,11 +43,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
-							<a href="../../../dagon/collision/gjk.html">gjk</a>
-						</div>
-					</li>
-					<li>
-						<div class="module ">
 							<a href="../../../dagon/collision/jss.html">jss</a>
 						</div>
 					</li>
@@ -107,12 +102,22 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../../dagon/core/crashhandler.html">crashhandler</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../dagon/core/dialogs.html">dialogs</a>
 						</div>
 					</li>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/core/dxgiformat.html">dxgiformat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/dxt.html">dxt</a>
 						</div>
 					</li>
 					<li>
@@ -492,6 +497,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../../dagon/resource/font.html">font</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../dagon/resource/image.html">image</a>
 						</div>
 					</li>
@@ -532,6 +542,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<a href="../../../dagon/ui.html">ui</a>
 						</div>
 				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/ui/axes.html">axes</a>
+						</div>
+					</li>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/ui/firstpersonview.html">firstpersonview</a>
@@ -588,7 +603,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								</a>
 								<span class="tableEntryAnnotation">(winWidth, winHeight, fullscreen, windowTitle, args, appDataFolderName)</span>
 							</td>
-							<td>Constructs the application, initializes SDL, OpenGL, and related core subsystems.
+							<td>Creates and configures the application, initializes SDL, SDL_Image, OpenGL, FreeType and related core subsystems.
 </td>
 						</tr>
 					</table>
@@ -657,9 +672,58 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/core/application/Application.defaultTextureAnisotropy.html" class="public"><code>defaultTextureAnisotropy</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Default level of anisotropic filtering for textures.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.desktopHeight.html" class="public"><code>desktopHeight</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Height of the desktop area represented by the selected display.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.desktopWidth.html" class="public"><code>desktopWidth</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Width of the desktop area represented by the selected display.
+</td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/core/application/Application.directory.html" class="public"><code>directory</code></a>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Absolute directory containing the executable.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.displayCount.html" class="public"><code>displayCount</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Number of video displays in the system.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.displayHeight.html" class="public"><code>displayHeight</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Selected video display height.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.displayIndex.html" class="public"><code>displayIndex</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Display index for the application window.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.displayWidth.html" class="public"><code>displayWidth</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Selected video display width.
 </td>
 						</tr>
 						<tr>
@@ -695,6 +759,13 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/application/Application.fontManager.html" class="public"><code>fontManager</code></a>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/font/FontManager.html"><span class="typ">FontManager</span></a></code></td><td>Object that loads and registers fonts.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.framebufferFormat.html" class="public"><code>framebufferFormat</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/core/application/FramebufferFormat.html"><span class="typ">FramebufferFormat</span></a></code></td><td>Default framebuffer format.
 </td>
 						</tr>
 						<tr>
@@ -762,6 +833,12 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/core/application/Application.hdrOutput.html" class="public"><code>hdrOutput</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td></td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/core/application/Application.loadedFTSupport.html" class="public"><code>loadedFTSupport</code></a>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">bindbc<wbr/></span><span class="pun">.</span><span class="pln">freetype<wbr/></span><span class="pun">.</span><span class="pln">config<wbr/></span><span class="pun">.</span><span class="typ">FTSupport</span></code></td><td>Loaded FreeType API support version. This is not an actual FreeType library version!
@@ -824,7 +901,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/application/Application.maxTextureAnisotropy.html" class="public"><code>maxTextureAnisotropy</code></a>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Maximum supported level of anisotropic texture filtering.
- If anisotropic filtering is not supported, this is set to zero.
+ If anisotropic filtering is not supported, this is set to 1.0.
 </td>
 						</tr>
 						<tr>
@@ -850,6 +927,13 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/core/application/Application.outputColorProfile.html" class="public"><code>outputColorProfile</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/core/application/ColorProfile.html"><span class="typ">ColorProfile</span></a></code></td><td>Color space used for back buffer output.
+</td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/core/application/Application.path.html" class="public"><code>path</code></a>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Full path of the executable (not CWD!).
@@ -860,6 +944,13 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/application/Application.pixelRatio.html" class="public"><code>pixelRatio</code></a>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Ratio of the resolution in physical pixels to the resolution in logical pixels.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.refreshRate.html" class="public"><code>refreshRate</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Display refresh rate in Hz.
 </td>
 						</tr>
 						<tr>
@@ -913,13 +1004,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
-								<a href="../../../dagon/core/application/Application.stepFrequency.html" class="public"><code>stepFrequency</code></a>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Update frequency in Hz.
-</td>
-						</tr>
-						<tr>
-							<td>
 								<a href="../../../dagon/core/application/Application.stereoRendering.html" class="public"><code>stereoRendering</code></a>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>VR headset mode.
@@ -941,6 +1025,21 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/core/application/Application.updatesPerSecond.html" class="public"><code>updatesPerSecond</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Number of logic updates per second.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.useAnisotropicFiltering.html" class="public"><code>useAnisotropicFiltering</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Is anisotropic filtering enabled by default for textures.
+ If anisotropic filtering is not supported, this is set to false.
+</td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/core/application/Application.userLocale.html" class="public"><code>userLocale</code></a>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>User-defined locale (ISO 639 language + ISO 3166 region). Overrides system locale.
@@ -957,7 +1056,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<td>
 								<a href="../../../dagon/core/application/Application.vsync.html" class="public"><code>vsync</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td><td>Vertical synchronization mode.
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/core/application/VSyncMode.html"><span class="typ">VSyncMode</span></a></code></td><td>Vertical synchronization mode.
 </td>
 						</tr>
 						<tr>
@@ -1188,6 +1287,16 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/core/application/Application.loadCursor.html" class="public">
+									<code>loadCursor</code>
+								</a>
+								<span class="tableEntryAnnotation">(filename, hotspotX, hotspotY)</span>
+							</td>
+							<td>Loads a custom cursor from an image.
+</td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/core/application/Application.maximizeWindow.html" class="public">
 									<code>maximizeWindow</code>
 								</a>
@@ -1201,9 +1310,9 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/application/Application.mount.html" class="public">
 									<code>mount</code>
 								</a>
-								<span class="tableEntryAnnotation">(fs)</span>
+								<span class="tableEntryAnnotation">(dirName)</span>
 							</td>
-							<td>Mounts the specified ReadOnlyFileSystem to the virtual file system.
+							<td>Mounts the specified directory to the virtual file system.
 </td>
 						</tr>
 						<tr>
@@ -1211,9 +1320,9 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/application/Application.mount.html" class="public">
 									<code>mount</code>
 								</a>
-								<span class="tableEntryAnnotation">(dirName)</span>
+								<span class="tableEntryAnnotation">(fs)</span>
 							</td>
-							<td>Mounts the specified directory to the virtual file system.
+							<td>Mounts the specified ReadOnlyFileSystem to the virtual file system.
 </td>
 						</tr>
 						<tr>
@@ -1268,6 +1377,16 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/core/application/Application.replaceCursor.html" class="public">
+									<code>replaceCursor</code>
+								</a>
+								<span class="tableEntryAnnotation">(sysCursor, cursor)</span>
+							</td>
+							<td>Replace standard cursor with a custom one.
+</td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/core/application/Application.run.html" class="public">
 									<code>run</code>
 								</a>
@@ -1282,9 +1401,19 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/application/Application.setCursor.html" class="public">
 									<code>setCursor</code>
 								</a>
-								<span class="tableEntryAnnotation">(cur)</span>
+								<span class="tableEntryAnnotation">(cursor)</span>
 							</td>
-							<td>Set mouse cursor
+							<td>Sets mouse cursor to a custom cursor.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.setCursor.html" class="public">
+									<code>setCursor</code>
+								</a>
+								<span class="tableEntryAnnotation">(sysCursor)</span>
+							</td>
+							<td>Sets mouse cursor to a standard cursor.
 </td>
 						</tr>
 						<tr>
@@ -1333,9 +1462,19 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/core/application/Application.takeScreenshot.html" class="public">
 									<code>takeScreenshot</code>
 								</a>
+								<span class="tableEntryAnnotation">(texture)</span>
+							</td>
+							<td>Copies the current framebuffer to a texture. Texture must be the same size as the framebuffer.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/application/Application.takeScreenshot.html" class="public">
+									<code>takeScreenshot</code>
+								</a>
 								<span class="tableEntryAnnotation">()</span>
 							</td>
-							<td>Takes a screenshot of the current framebuffer and returns it as a SuperImage.
+							<td>Takes a screenshot of the current framebuffer and returns it as an unmanaged SuperImage.
 </td>
 						</tr>
 						<tr>
@@ -1486,6 +1625,16 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<span class="tableEntryAnnotation">(deviceIndex, button)</span>
 							</td>
 							<td>Called when a joystick button is released.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/core/event/EventDispatcher.onKeyboardLayoutChange.html" class="public inherited">
+									<code>onKeyboardLayoutChange</code>
+								</a>
+								<span class="tableEntryAnnotation">()</span>
+							</td>
+							<td>Called when the user switches system keyboard layout.
 </td>
 						</tr>
 						<tr>
@@ -1695,7 +1844,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 				<div id="license-info">
 					<p>Timur Gafarov
 </p>
-<p>Timur Gafarov 2017-2025.
+<p>Timur Gafarov 2017-2026.
 </p>
 <p><a href="https://boost.org/LICENSE_1_0.txt">Boost License 1.0</a>.
 </p>

@@ -43,11 +43,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
-							<a href="../../dagon/collision/gjk.html">gjk</a>
-						</div>
-					</li>
-					<li>
-						<div class="module ">
 							<a href="../../dagon/collision/jss.html">jss</a>
 						</div>
 					</li>
@@ -107,12 +102,22 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../dagon/core/crashhandler.html">crashhandler</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../dagon/core/dialogs.html">dialogs</a>
 						</div>
 					</li>
 					<li>
 						<div class="module ">
 							<a href="../../dagon/core/dxgiformat.html">dxgiformat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../dagon/core/dxt.html">dxt</a>
 						</div>
 					</li>
 					<li>
@@ -492,6 +497,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../dagon/resource/font.html">font</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../dagon/resource/image.html">image</a>
 						</div>
 					</li>
@@ -534,6 +544,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 				<ul class="tree-view">
 					<li>
 						<div class="module ">
+							<a href="../../dagon/ui/axes.html">axes</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../dagon/ui/firstpersonview.html">firstpersonview</a>
 						</div>
 					</li>
@@ -568,11 +583,10 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 </p><section></section>
 <section><section><h2>Description</h2>
 <p>The <code class="lang-d"><span class="pln">dagon<wbr/></span><span class="pun">.</span><span class="pln">graphics<wbr/></span><span class="pun">.</span><span class="pln">shapes</span></code> module defines mesh and drawable classes
- for common shapes such as planes, quads, boxes, spheres, disks,
- cylinders, and cones. These shapes are useful for prototyping, debugging,
- and as building blocks for more complex geometry. All shapes are constructed
- with configurable parameters and support rendering via the engine's mesh and
- drawable interfaces.
+ for common shapes: plane, quad, box, sphere, disk, cylinder, cone, capsule and torus.
+ These shapes are useful for prototyping, debugging, and as building blocks
+ for more complex geometry. All shapes are constructed with configurable
+ parameters and support rendering via the engine's mesh and drawable interfaces.
 </p>
 </section>
 </section>
@@ -590,6 +604,15 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								</code>
 							</td>
 							<td>A mesh representing a box (cuboid) with configurable extents.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="ShapeCapsule" class="public" href="../../dagon/graphics/shapes/ShapeCapsule.html">ShapeCapsule</a>
+								</code>
+							</td>
+							<td>A mesh representing a capsule (cylinder with hemispherical caps).
 </td>
 						</tr>
 						<tr>
@@ -646,6 +669,15 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<td>A mesh representing a UV sphere.
 </td>
 						</tr>
+						<tr>
+							<td>
+								<code>
+									<a id="ShapeTorus" class="public" href="../../dagon/graphics/shapes/ShapeTorus.html">ShapeTorus</a>
+								</code>
+							</td>
+							<td>A mesh representing a torus.
+</td>
+						</tr>
 					</table>
 				</section>
 			</div>
@@ -653,7 +685,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 				<div id="license-info">
 					<p>Timur Gafarov
 </p>
-<p>Timur Gafarov 2017-2025
+<p>Timur Gafarov 2017-2026
 </p>
 <p><a href="https://boost.org/LICENSE_1_0.txt">Boost License 1.0</a>.
 </p>

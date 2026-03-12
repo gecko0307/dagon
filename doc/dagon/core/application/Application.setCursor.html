@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="UTF-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
-		<title>Function Application.setCursor</title>
+		<title>Application.setCursor - multiple declarations</title>
 		<link rel="stylesheet" href="../../../css/style.min.css"/>
 		<script type="text/javascript" src="../../../js/script.min.js"></script>
 	</head>
@@ -39,11 +39,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/collision/geometry.html">geometry</a>
-						</div>
-					</li>
-					<li>
-						<div class="module ">
-							<a href="../../../dagon/collision/gjk.html">gjk</a>
 						</div>
 					</li>
 					<li>
@@ -107,12 +102,22 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../../dagon/core/crashhandler.html">crashhandler</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../dagon/core/dialogs.html">dialogs</a>
 						</div>
 					</li>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/core/dxgiformat.html">dxgiformat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/dxt.html">dxt</a>
 						</div>
 					</li>
 					<li>
@@ -492,6 +497,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../../dagon/resource/font.html">font</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../dagon/resource/image.html">image</a>
 						</div>
 					</li>
@@ -534,6 +544,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 				<ul class="tree-view">
 					<li>
 						<div class="module ">
+							<a href="../../../dagon/ui/axes.html">axes</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../dagon/ui/firstpersonview.html">firstpersonview</a>
 						</div>
 					</li>
@@ -564,13 +579,39 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 		</nav>
 		<div id="main-contents">
 			<div>
-				<h1>Function Application.setCursor</h1><p>Set mouse cursor
+				<h1>Application.setCursor - multiple declarations</h1>
+				<nav class="page-nav">
+					<ul>
+						<li>
+							<a href="#0">
+								Function <code>Application.setCursor</code>
+							</a>
+						</li>
+						<li>
+							<a href="#1">
+								Function <code>Application.setCursor</code>
+							</a>
+						</li>
+					</ul>
+				</nav><h2 id="0">Function Application.setCursor</h2><p>Sets mouse cursor to a custom cursor.
 </p>
 				<div class="prototype">
 					<code class="lang-d">
 						<div class="single-prototype">
 				<span class="typ">void</span> <span class="pln">setCursor</span><span class="pun">(</span>
-				<br/>&nbsp;&nbsp;<a href="../../../dagon/core/application/Cursor.html"><span class="typ">Cursor</span></a> <span class="pln">cur</span>
+				<br/>&nbsp;&nbsp;<span class="pln">dagon<wbr/></span><span class="pun">.</span><span class="pln">core<wbr/></span><span class="pun">.</span><span class="pln">cursor<wbr/></span><span class="pun">.</span><span class="typ">Cursor</span> <span class="pln">cursor</span>
+				<br/>
+				<span class="pun">)</span><span class="pun">;</span>
+						</div>
+					</code>
+				</div>
+				<h2 id="1">Function Application.setCursor</h2><p>Sets mouse cursor to a standard cursor.
+</p>
+				<div class="prototype">
+					<code class="lang-d">
+						<div class="single-prototype">
+				<span class="typ">void</span> <span class="pln">setCursor</span><span class="pun">(</span>
+				<br/>&nbsp;&nbsp;<span class="pln">dagon<wbr/></span><span class="pun">.</span><span class="pln">core<wbr/></span><span class="pun">.</span><span class="pln">cursor<wbr/></span><span class="pun">.</span><span class="typ">SystemCursor</span> <span class="pln">sysCursor</span>
 				<br/>
 				<span class="pun">)</span><span class="pun">;</span>
 						</div>
@@ -582,7 +623,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 				<div id="license-info">
 					<p>Timur Gafarov
 </p>
-<p>Timur Gafarov 2017-2025.
+<p>Timur Gafarov 2017-2026.
 </p>
 <p><a href="https://boost.org/LICENSE_1_0.txt">Boost License 1.0</a>.
 </p>

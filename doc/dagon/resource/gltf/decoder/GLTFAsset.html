@@ -43,11 +43,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
-							<a href="../../../../dagon/collision/gjk.html">gjk</a>
-						</div>
-					</li>
-					<li>
-						<div class="module ">
 							<a href="../../../../dagon/collision/jss.html">jss</a>
 						</div>
 					</li>
@@ -107,12 +102,22 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../../../dagon/core/crashhandler.html">crashhandler</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../../dagon/core/dialogs.html">dialogs</a>
 						</div>
 					</li>
 					<li>
 						<div class="module ">
 							<a href="../../../../dagon/core/dxgiformat.html">dxgiformat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../../dagon/core/dxt.html">dxt</a>
 						</div>
 					</li>
 					<li>
@@ -492,6 +497,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../../../dagon/resource/font.html">font</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../../dagon/resource/image.html">image</a>
 						</div>
 					</li>
@@ -534,6 +544,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 				<ul class="tree-view">
 					<li>
 						<div class="module ">
+							<a href="../../../../dagon/ui/axes.html">axes</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../../dagon/ui/firstpersonview.html">firstpersonview</a>
 						</div>
 					</li>
@@ -564,7 +579,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 		</nav>
 		<div id="main-contents">
 			<div>
-				<h1>Class GLTFAsset</h1><p>Asset class for loading and managing GLTF 2.0 resources.
+				<h1>Class GLTFAsset</h1><p>Asset class for loading GLTF 2.0 models and querying their resources.
 </p>
 				<div class="prototype">
 					<code class="lang-d">
@@ -575,11 +590,134 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 				</div>
 				<section></section>
 
+				<section><h2>Constructors</h2>
+					<table>
+						<col class="caption"/>
+						<tr>
+							<th>Name</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../dagon/resource/gltf/decoder/GLTFAsset.this.html" class="public">
+									<code>this</code>
+								</a>
+								<span class="tableEntryAnnotation">(o)</span>
+							</td>
+							<td>Constructs a new glTF asset.
+</td>
+						</tr>
+					</table>
+				</section>
 				<section><h2>Fields</h2>
 					<table>
 						<col class="caption"/>
 						<tr>
 							<th>Name</th><th>Type</th><th>Description</th>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../dagon/resource/gltf/decoder/GLTFAsset.accessors.html" class="public"><code>accessors</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">container<wbr/></span><span class="pun">.</span><span class="pln">array<wbr/></span><span class="pun">.</span><span class="typ">Array</span>!(dagon.resource.gltf.accessor.GLTFAccessor,32L)</code></td><td>Array of accessors.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../dagon/resource/gltf/decoder/GLTFAsset.animations.html" class="public"><code>animations</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">container<wbr/></span><span class="pun">.</span><span class="pln">array<wbr/></span><span class="pun">.</span><span class="typ">Array</span>!(dagon.resource.gltf.animation.GLTFAnimation,32L)</code></td><td>Array of animations.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../dagon/resource/gltf/decoder/GLTFAsset.assetManager.html" class="public"><code>assetManager</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../dagon/resource/asset/AssetManager.html"><span class="typ">AssetManager</span></a></code></td><td>Asset manager that is used to load external resources of the asset.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../dagon/resource/gltf/decoder/GLTFAsset.buffers.html" class="public"><code>buffers</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">container<wbr/></span><span class="pun">.</span><span class="pln">array<wbr/></span><span class="pun">.</span><span class="typ">Array</span>!(dagon.resource.gltf.buffer.GLTFBuffer,32L)</code></td><td>Array of buffers.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../dagon/resource/gltf/decoder/GLTFAsset.bufferViews.html" class="public"><code>bufferViews</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">container<wbr/></span><span class="pun">.</span><span class="pln">array<wbr/></span><span class="pun">.</span><span class="typ">Array</span>!(dagon.resource.gltf.bufferview.GLTFBufferView,32L)</code></td><td>Array of buffer views.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../dagon/resource/gltf/decoder/GLTFAsset.doc.html" class="public"><code>doc</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">serialization<wbr/></span><span class="pun">.</span><span class="pln">json<wbr/></span><span class="pun">.</span><span class="typ">JSONDocument</span></code></td><td>JSON document that stores the structure of the glTF file.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../dagon/resource/gltf/decoder/GLTFAsset.images.html" class="public"><code>images</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">container<wbr/></span><span class="pun">.</span><span class="pln">array<wbr/></span><span class="pun">.</span><span class="typ">Array</span>!(dagon.resource.texture.TextureAsset,32L)</code></td><td>Array of images.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../dagon/resource/gltf/decoder/GLTFAsset.materials.html" class="public"><code>materials</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">container<wbr/></span><span class="pun">.</span><span class="pln">array<wbr/></span><span class="pun">.</span><span class="typ">Array</span>!(dagon.graphics.material.Material,32L)</code></td><td>Array of materials.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../dagon/resource/gltf/decoder/GLTFAsset.meshes.html" class="public"><code>meshes</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">container<wbr/></span><span class="pun">.</span><span class="pln">array<wbr/></span><span class="pun">.</span><span class="typ">Array</span>!(dagon.resource.gltf.mesh.GLTFMesh,32L)</code></td><td>Array of meshes.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../dagon/resource/gltf/decoder/GLTFAsset.nodes.html" class="public"><code>nodes</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">container<wbr/></span><span class="pun">.</span><span class="pln">array<wbr/></span><span class="pun">.</span><span class="typ">Array</span>!(dagon.resource.gltf.node.GLTFNode,32L)</code></td><td>Array of nodes.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../dagon/resource/gltf/decoder/GLTFAsset.rootEntity.html" class="public"><code>rootEntity</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../dagon/graphics/entity/Entity.html"><span class="typ">Entity</span></a></code></td><td>Entity that stores all glTF nodes.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../dagon/resource/gltf/decoder/GLTFAsset.scenes.html" class="public"><code>scenes</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">container<wbr/></span><span class="pun">.</span><span class="pln">array<wbr/></span><span class="pun">.</span><span class="typ">Array</span>!(dagon.resource.gltf.scene.GLTFScene,32L)</code></td><td>Array of scenes.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../dagon/resource/gltf/decoder/GLTFAsset.skins.html" class="public"><code>skins</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">container<wbr/></span><span class="pun">.</span><span class="pln">array<wbr/></span><span class="pun">.</span><span class="typ">Array</span>!(dagon.resource.gltf.skin.GLTFSkin,32L)</code></td><td>Array of skins.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../dagon/resource/gltf/decoder/GLTFAsset.str.html" class="public"><code>str</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">text<wbr/></span><span class="pun">.</span><span class="pln">str<wbr/></span><span class="pun">.</span><span class="typ">String</span></code></td><td>Unmanaged string that stores glTF source file.
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../../dagon/resource/gltf/decoder/GLTFAsset.textures.html" class="public"><code>textures</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">container<wbr/></span><span class="pun">.</span><span class="pln">array<wbr/></span><span class="pun">.</span><span class="typ">Array</span>!(dagon.graphics.texture.Texture,32L)</code></td><td>Array of textures.
+</td>
 						</tr>
 						<tr>
 							<td>
@@ -625,7 +763,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../../dagon/resource/gltf/decoder/GLTFAsset.loadThreadSafePart.html" class="public">
 									<code>loadThreadSafePart</code>
 								</a>
-								<span class="tableEntryAnnotation">(filename, istrm, fs, mngr)</span>
+								<span class="tableEntryAnnotation">(filename, istrm, fs, assetManager)</span>
 							</td>
 							<td>Loads the thread-safe part of the GLTF asset (parsing JSON, loading buffers, images, etc.).
 </td>
@@ -734,7 +872,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 				<div id="license-info">
 					<p>Timur Gafarov, Denis Feklushkin
 </p>
-<p>Timur Gafarov, Denis Feklushkin 2021-2025
+<p>Timur Gafarov, Denis Feklushkin 2021-2026
 </p>
 <p><a href="https://boost.org/LICENSE_1_0.txt">Boost License 1.0</a>.
 </p>

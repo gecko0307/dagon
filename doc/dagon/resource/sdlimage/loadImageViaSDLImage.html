@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="UTF-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
-		<title>Function loadImageViaSDLImage</title>
+		<title>loadImageViaSDLImage - multiple declarations</title>
 		<link rel="stylesheet" href="../../../css/style.min.css"/>
 		<script type="text/javascript" src="../../../js/script.min.js"></script>
 	</head>
@@ -39,11 +39,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/collision/geometry.html">geometry</a>
-						</div>
-					</li>
-					<li>
-						<div class="module ">
-							<a href="../../../dagon/collision/gjk.html">gjk</a>
 						</div>
 					</li>
 					<li>
@@ -107,12 +102,22 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../../dagon/core/crashhandler.html">crashhandler</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../dagon/core/dialogs.html">dialogs</a>
 						</div>
 					</li>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/core/dxgiformat.html">dxgiformat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/dxt.html">dxt</a>
 						</div>
 					</li>
 					<li>
@@ -492,6 +497,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../../dagon/resource/font.html">font</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../dagon/resource/image.html">image</a>
 						</div>
 					</li>
@@ -534,6 +544,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 				<ul class="tree-view">
 					<li>
 						<div class="module ">
+							<a href="../../../dagon/ui/axes.html">axes</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../dagon/ui/firstpersonview.html">firstpersonview</a>
 						</div>
 					</li>
@@ -564,7 +579,43 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 		</nav>
 		<div id="main-contents">
 			<div>
-				<h1>Function loadImageViaSDLImage</h1><p>Loads an image from an input stream using SDL2_Image and fills a <code class="lang-d"><span class="typ">TextureAsset</span></code>.
+				<h1>loadImageViaSDLImage - multiple declarations</h1>
+				<nav class="page-nav">
+					<ul>
+						<li>
+							<a href="#0">
+								Function <code>loadImageViaSDLImage</code>
+							</a>
+						</li>
+						<li>
+							<a href="#1">
+								Function <code>loadImageViaSDLImage</code>
+							</a>
+						</li>
+					</ul>
+				</nav><h2 id="0">Function loadImageViaSDLImage</h2><p>Loads an image from an input stream using SDL2_Image.
+</p>
+				<div class="prototype">
+					<code class="lang-d">
+						<div class="single-prototype">
+				<span class="pln">sdl<wbr/></span><span class="pun">.</span><span class="pln">surface<wbr/></span><span class="pun">.</span><span class="typ">SDL_Surface</span><span class="pun">*</span> <span class="pln">loadImageViaSDLImage</span><span class="pun">(</span>
+				<br/>&nbsp;&nbsp;<span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">core<wbr/></span><span class="pun">.</span><span class="pln">stream<wbr/></span><span class="pun">.</span><span class="typ">InputStream</span> <span class="pln">istrm</span>
+				<br/>
+				<span class="pun">)</span><span class="pun">;</span>
+						</div>
+					</code>
+				</div>
+				<section></section>
+<section><h3>Parameters</h3>
+<table><col class="caption"><tr><th>Name</th><th>Description</th></tr>
+<tr><td id="istrm">istrm</td><td> Input stream containing the image data.</td></tr>
+</table>
+</section>
+<section><h3>Returns</h3>
+<p>Pointer to SDL_Surface if loading succeeded, null otherwise.
+</p>
+</section>
+<h2 id="1">Function loadImageViaSDLImage</h2><p>Loads an image from an input stream using SDL2_Image and fills a <code class="lang-d"><span class="typ">TextureAsset</span></code>.
  Handles resizing (for SVG) and pixel format conversion, if needed.
  Creates <code class="lang-d"><span class="pln">asset<wbr/></span><span class="pun">.</span><span class="pln">image</span></code> if the image format is compatible with <code class="lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">image</span></code>.
  This function is preferred by <code class="lang-d"><span class="typ">DefaultTextureLoader</span></code> if SDL2_Image is available.
@@ -582,14 +633,14 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</code>
 				</div>
 				<section></section>
-<section><h2>Parameters</h2>
+<section><h3>Parameters</h3>
 <table><col class="caption"><tr><th>Name</th><th>Description</th></tr>
 <tr><td id="istrm">istrm</td><td> Input stream containing the image data.</td></tr>
 <tr><td id="extension">extension</td><td> File extension including the dot (e.g., ".png", ".svg").</td></tr>
 <tr><td id="asset">asset</td><td> The texture asset to fill.</td></tr>
 </table>
 </section>
-<section><h2>Returns</h2>
+<section><h3>Returns</h3>
 <p>true if loading succeeded, false otherwise.
 </p>
 </section>
@@ -599,7 +650,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 				<div id="license-info">
 					<p>Timur Gafarov
 </p>
-<p>Timur Gafarov 2025
+<p>Timur Gafarov 2025-2026
 </p>
 <p><a href="https://boost.org/LICENSE_1_0.txt">Boost License 1.0</a>.
 </p>

@@ -43,11 +43,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
-							<a href="../../../dagon/collision/gjk.html">gjk</a>
-						</div>
-					</li>
-					<li>
-						<div class="module ">
 							<a href="../../../dagon/collision/jss.html">jss</a>
 						</div>
 					</li>
@@ -107,12 +102,22 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../../dagon/core/crashhandler.html">crashhandler</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../dagon/core/dialogs.html">dialogs</a>
 						</div>
 					</li>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/core/dxgiformat.html">dxgiformat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/dxt.html">dxt</a>
 						</div>
 					</li>
 					<li>
@@ -492,6 +497,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../../dagon/resource/font.html">font</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../dagon/resource/image.html">image</a>
 						</div>
 					</li>
@@ -532,6 +542,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<a href="../../../dagon/ui.html">ui</a>
 						</div>
 				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/ui/axes.html">axes</a>
+						</div>
+					</li>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/ui/firstpersonview.html">firstpersonview</a>
@@ -645,7 +660,8 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<td>
 								<a href="../../../dagon/graphics/light/Light.scattering.html" class="public"><code>scattering</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Volumetric scattering intensity.
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Henyey-Greenstein anisotropy parameter for volumetric scattering
+ (supported only for Sun lights). <code class="lang-d"><span class="pln">g </span><span class="pun">= </span><span class="lit">1.0 </span><span class="pun">- </span><span class="typ">Light<wbr/></span><span class="pun">.</span><span class="pln">scattering</span></code>
 </td>
 						</tr>
 						<tr>
@@ -653,29 +669,29 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/graphics/light/Light.scatteringEnabled.html" class="public"><code>scatteringEnabled</code></a>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If <code class="lang-d"><span class="kwd">true</span></code>, enables volumetric scattering for this light.
- Volumetric scattering is supported only for <code class="lang-d"><span class="typ">Sun</span></code> lights at the moment.
 </td>
 						</tr>
 						<tr>
 							<td>
 								<a href="../../../dagon/graphics/light/Light.scatteringMaxRandomStepOffset.html" class="public"><code>scatteringMaxRandomStepOffset</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Maximum random step offset used for Monte-Carlo sampling
- when using shadow in volumetric scattering.
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">float</span></code></td><td>Maximum random step offset used for Monte-Carlo integration of the optical depth.
+ Supported only for Sun lights, and only if <code class="lang-d"><a href="../../../dagon/graphics/light/Light.scatteringUseShadow.html"><span class="pln">scatteringUseShadow</span></a></code> is enabled.
 </td>
 						</tr>
 						<tr>
 							<td>
 								<a href="../../../dagon/graphics/light/Light.scatteringSamples.html" class="public"><code>scatteringSamples</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Number of samples for scattering calculations.
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Number of samples for Monte-Carlo integration of the optical depth.
+ Supported only for Sun lights (if <code class="lang-d"><a href="../../../dagon/graphics/light/Light.scatteringUseShadow.html"><span class="pln">scatteringUseShadow</span></a></code> is enabled) and for Spot lights.
 </td>
 						</tr>
 						<tr>
 							<td>
 								<a href="../../../dagon/graphics/light/Light.scatteringUseShadow.html" class="public"><code>scatteringUseShadow</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If <code class="lang-d"><span class="kwd">true</span></code>, scattering uses shadow information.
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If <code class="lang-d"><span class="kwd">true</span></code>, scattering takes shadow information into account.
 </td>
 						</tr>
 						<tr>
@@ -683,7 +699,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 								<a href="../../../dagon/graphics/light/Light.shadowEnabled.html" class="public"><code>shadowEnabled</code></a>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If <code class="lang-d"><span class="kwd">true</span></code>, enables shadow casting for this light.
- Shadows are supported only for <code class="lang-d"><span class="typ">Sun</span></code> lights at the moment.
 </td>
 						</tr>
 						<tr>
@@ -743,6 +758,12 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">math<wbr/></span><span class="pun">.</span><span class="pln">matrix<wbr/></span><span class="pun">.</span><span class="typ">Matrix</span>!(float,4L)</code></td><td>Final transformation matrix relative to world root.
 </td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/graphics/entity/Entity.autoUpdateTransformation.html" class="public inherited"><code>autoUpdateTransformation</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td></td>
 						</tr>
 						<tr>
 							<td>
@@ -1446,6 +1467,17 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/graphics/entity/Entity.teleport.html" class="public inherited">
+									<code>teleport</code>
+								</a>
+								<span class="tableEntryAnnotation">(pos)</span>
+							</td>
+							<td>Instantly change entity position.
+ This method resets previous transformation to prevent blinking with motion blur enabled.
+</td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/graphics/entity/Entity.translate.html" class="public inherited">
 									<code>translate</code>
 								</a>
@@ -1538,7 +1570,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 				<div id="license-info">
 					<p>Timur Gafarov
 </p>
-<p>Timur Gafarov 2017-2025
+<p>Timur Gafarov 2017-2026
 </p>
 <p><a href="https://boost.org/LICENSE_1_0.txt">Boost License 1.0</a>.
 </p>

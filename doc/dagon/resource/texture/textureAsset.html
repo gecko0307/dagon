@@ -43,11 +43,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
-							<a href="../../../dagon/collision/gjk.html">gjk</a>
-						</div>
-					</li>
-					<li>
-						<div class="module ">
 							<a href="../../../dagon/collision/jss.html">jss</a>
 						</div>
 					</li>
@@ -107,12 +102,22 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../../dagon/core/crashhandler.html">crashhandler</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../dagon/core/dialogs.html">dialogs</a>
 						</div>
 					</li>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/core/dxgiformat.html">dxgiformat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/core/dxt.html">dxt</a>
 						</div>
 					</li>
 					<li>
@@ -492,6 +497,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="../../../dagon/resource/font.html">font</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="../../../dagon/resource/image.html">image</a>
 						</div>
 					</li>
@@ -532,6 +542,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<a href="../../../dagon/ui.html">ui</a>
 						</div>
 				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="../../../dagon/ui/axes.html">axes</a>
+						</div>
+					</li>
 					<li>
 						<div class="module ">
 							<a href="../../../dagon/ui/firstpersonview.html">firstpersonview</a>
@@ -601,6 +616,13 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
+								<a href="../../../dagon/resource/texture/TextureAsset.assetManager.html" class="public"><code>assetManager</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/resource/asset/AssetManager.html"><span class="typ">AssetManager</span></a></code></td><td>Asset manager that the asset is loaded by.
+</td>
+						</tr>
+						<tr>
+							<td>
 								<a href="../../../dagon/resource/texture/TextureAsset.buffer.html" class="public"><code>buffer</code></a>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dagon/graphics/texture/TextureBuffer.html"><span class="typ">TextureBuffer</span></a></code></td><td>Temporary exchange buffer.
@@ -610,7 +632,14 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<td>
 								<a href="../../../dagon/resource/texture/TextureAsset.bufferDataIsImageData.html" class="public"><code>bufferDataIsImageData</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Set to <code class="lang-d"><span class="kwd">true</span></code> in the loader if <code class="lang-d"><span class="pln">buffer<wbr/></span><span class="pun">.</span><span class="pln">data</span></code> refers to <code class="lang-d"><span class="pln">image<wbr/></span><span class="pun">.</span><span class="pln">data</span></code> (to prevent double-free)
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Set to <code class="lang-d"><span class="kwd">true</span></code> in the loader if <code class="lang-d"><span class="pln">buffer<wbr/></span><span class="pun">.</span><span class="pln">data</span></code> refers to <code class="lang-d"><span class="pln">image<wbr/></span><span class="pun">.</span><span class="pln">data</span></code> (to prevent double-free).
+</td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/resource/texture/TextureAsset.compress.html" class="public"><code>compress</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Compress to DXT1 (for RGB texture) or DXT5 (for RGBA texture).
 </td>
 						</tr>
 						<tr>
@@ -638,7 +667,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<td>
 								<a href="../../../dagon/resource/texture/TextureAsset.generateMipmaps.html" class="public"><code>generateMipmaps</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If <code class="lang-d"><span class="kwd">true</span></code>, generate mip levels.
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If <code class="lang-d"><span class="kwd">true</span></code>, generate mip levels. This is skipped if mip levels are already present in the file.
 </td>
 						</tr>
 						<tr>
@@ -650,17 +679,16 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						</tr>
 						<tr>
 							<td>
-								<a href="../../../dagon/resource/texture/TextureAsset.loadAs3D.html" class="public"><code>loadAs3D</code></a>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>If true, the input image will be interpreted as 3D texture
-</td>
-						</tr>
-						<tr>
-							<td>
 								<a href="../../../dagon/resource/texture/TextureAsset.loaderOption.html" class="public"><code>loaderOption</code></a>
 							</td>
 							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Loader-specific option.
 </td>
+						</tr>
+						<tr>
+							<td>
+								<a href="../../../dagon/resource/texture/TextureAsset.lutFormat.html" class="public"><code>lutFormat</code></a>
+							</td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dagon<wbr/></span><span class="pun">.</span><span class="pln">graphics<wbr/></span><span class="pun">.</span><span class="pln">lut<wbr/></span><span class="pun">.</span><span class="typ">LUTFormat</span></code></td><td></td>
 						</tr>
 						<tr>
 							<td>
@@ -673,7 +701,8 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<td>
 								<a href="../../../dagon/resource/texture/TextureAsset.resolution3D.html" class="public"><code>resolution3D</code></a>
 							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td></td>
+							<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>Resolution when loading 3D texture from 2D image.
+</td>
 						</tr>
 						<tr>
 							<td>
@@ -764,7 +793,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 				<div id="license-info">
 					<p>Timur Gafarov
 </p>
-<p>Timur Gafarov 2017-2025
+<p>Timur Gafarov 2017-2026
 </p>
 <p><a href="https://boost.org/LICENSE_1_0.txt">Boost License 1.0</a>.
 </p>

@@ -43,11 +43,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
-							<a href="./dagon/collision/gjk.html">gjk</a>
-						</div>
-					</li>
-					<li>
-						<div class="module ">
 							<a href="./dagon/collision/jss.html">jss</a>
 						</div>
 					</li>
@@ -107,12 +102,22 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="./dagon/core/crashhandler.html">crashhandler</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="./dagon/core/dialogs.html">dialogs</a>
 						</div>
 					</li>
 					<li>
 						<div class="module ">
 							<a href="./dagon/core/dxgiformat.html">dxgiformat</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
+							<a href="./dagon/core/dxt.html">dxt</a>
 						</div>
 					</li>
 					<li>
@@ -492,6 +497,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</li>
 					<li>
 						<div class="module ">
+							<a href="./dagon/resource/font.html">font</a>
+						</div>
+					</li>
+					<li>
+						<div class="module ">
 							<a href="./dagon/resource/image.html">image</a>
 						</div>
 					</li>
@@ -532,6 +542,11 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 							<a href="./dagon/ui.html">ui</a>
 						</div>
 				<ul class="tree-view">
+					<li>
+						<div class="module ">
+							<a href="./dagon/ui/axes.html">axes</a>
+						</div>
+					</li>
 					<li>
 						<div class="module ">
 							<a href="./dagon/ui/firstpersonview.html">firstpersonview</a>
@@ -585,15 +600,6 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</td>
 					<td>
 						Convex geometry.
-
-					</td>
-				</tr>
-				<tr>
-					<td>
-						<a href="./dagon/collision/gjk.html">dagon.collision.gjk</a>
-					</td>
-					<td>
-						Gilbert-Johnson-Keerthi algorithm.
 
 					</td>
 				</tr>
@@ -682,6 +688,15 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 				</tr>
 				<tr>
 					<td>
+						<a href="./dagon/core/crashhandler.html">dagon.core.crashhandler</a>
+					</td>
+					<td>
+						Utility module for graceful error handling, mainly on Windows
+
+					</td>
+				</tr>
+				<tr>
+					<td>
 						<a href="./dagon/core/dialogs.html">dagon.core.dialogs</a>
 					</td>
 					<td>
@@ -696,6 +711,15 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					<td>
 						Defines DirectX Graphics Infrastructure image format enumerations.
  This module is for compatibility with DirectX-specific data structures.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/core/dxt.html">dagon.core.dxt</a>
+					</td>
+					<td>
+						Fast DXT1/DXT5 texture encoder based on RygsDXTc.
 
 					</td>
 				</tr>
@@ -1203,7 +1227,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						<a href="./dagon/resource/gltf/animation.html">dagon.resource.gltf.animation</a>
 					</td>
 					<td>
-						GLTF 2.0 animation.
+						glTF 2.0 animation.
 
 					</td>
 				</tr>
@@ -1317,6 +1341,15 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 				</tr>
 				<tr>
 					<td>
+						<a href="./dagon/resource/font.html">dagon.resource.font</a>
+					</td>
+					<td>
+						Provides a font asset class.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
 						<a href="./dagon/resource/gltf.html">dagon.resource.gltf</a>
 					</td>
 					<td>
@@ -1384,6 +1417,15 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 					</td>
 					<td>
 						Texture asset.
+
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="./dagon/ui/axes.html">dagon.ui.axes</a>
+					</td>
+					<td>
+						Drawables that render 3D axes for object manipulation UI.
 
 					</td>
 				</tr>
@@ -1491,7 +1533,7 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 						<a href="./dagon.html">dagon</a>
 					</td>
 					<td>
-						Dagon is a 3D game engine for D language based on OpenGL 4.0 and SDL2.
+						Dagon is a 3D game engine for D language based on OpenGL 4.3 and SDL2.
  It features deferred HDR renderer, PBR materials, an event manager,
  scene manager, asset manager, and entity-component model.
 
