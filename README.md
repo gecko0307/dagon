@@ -88,6 +88,7 @@ Usage
 Dagon works with [DUB](https://dub.pm/), the official package manager and build system for D.
 
 The recommended way to start using the engine is to generate a game template with `dub init`. Create an empty directory for the project, cd to it and run the following:
+
 ```
 dub init --type=dagon
 dub build
