@@ -237,7 +237,7 @@ class GLTFNode: Owner, TriangleSet
                         indices[0] = *cast(ushort*)ptr;
                         indices[1] = *cast(ushort*)(ptr+2);
                         indices[2] = *cast(ushort*)(ptr+4);
-                        }
+                    }
                     else if (ia.componentType == GL_UNSIGNED_INT)
                     {
                         indices[0] = *cast(uint*)ptr;

@@ -67,9 +67,9 @@ class FontAsset: Asset
      *   pixelRatio = target pixel ratio for HiDPI rendering.
      *   owner = The owner object.
      */
-    this(uint height, float pixelRatio, Owner o)
+    this(uint height, float pixelRatio, Owner owner)
     {
-        super(o);
+        super(owner);
         font = New!Font(height, pixelRatio, this);
     }
 
@@ -83,10 +83,10 @@ class FontAsset: Asset
      * Loads the thread-safe part of the font asset from a file.
      *
      * Params:
-     *   filename = The asset file name.
-     *   istrm    = Input stream for the asset file.
-     *   fs       = File system used for loading.
-     *   mngr     = Asset manager.
+     *   filename     = The asset file name.
+     *   istrm        = Input stream for the asset file.
+     *   fs           = File system used for loading.
+     *   assetManager = Asset manager.
      * Returns:
      *   `true` if the asset was loaded successfully, `false` otherwise.
      */

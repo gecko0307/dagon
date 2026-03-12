@@ -105,9 +105,9 @@ class GLTFAnimationSampler: Owner
      * Params:
      *   owner = Owner object.
      */
-    this(Owner o)
+    this(Owner owner)
     {
-        super(o);
+        super(owner);
     }
     
     /**
@@ -198,9 +198,9 @@ class GLTFAnimationChannel: Owner
      * Params:
      *   owner = Owner object.
      */
-    this(Owner o)
+    this(Owner owner)
     {
-        super(o);
+        super(owner);
     }
 }
 
@@ -227,9 +227,9 @@ class GLTFAnimation: Owner
      * Params:
      *   owner = Owner object.
      */
-    this(Owner o)
+    this(Owner owner)
     {
-        super(o);
+        super(owner);
     }
     
     /// Destructor. Releases samplers and channels arrays.
@@ -376,9 +376,9 @@ class GLTFPose: Pose
      *   skin  = glTF skin.
      *   owner = Owner object.
      */
-    this(GLTFSkin skin, Owner o)
+    this(GLTFSkin skin, Owner owner)
     {
-        super(o);
+        super(owner);
         this.skin = skin;
         
         if (skin.joints.length)

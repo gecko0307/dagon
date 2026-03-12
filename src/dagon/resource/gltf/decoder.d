@@ -223,9 +223,9 @@ class GLTFAsset: Asset, TriangleSet
      * Params:
      *   owner = Owner object.
      */
-    this(Owner o)
+    this(Owner owner)
     {
-        super(o);
+        super(owner);
     }
     
     /// Destructor. Releases all resources.
