@@ -18,7 +18,7 @@ The recommended system requirements (for Full HD rendering at 60 fps):
 - OS: 64-bit Windows 10 or higher / Linux.
 
 ## Architecture
-Dagon is a hierarchical component-based framework. At the root of the hierarchy there is an `Application` object. It can store one or multiple `Scene` objects. Each scene has its own assets, logics, event system, etc. Scene stores `Entity` objects which are basic building blocks of the game world. `Entity` can be transformed, animated and rendered.
+Dagon is a hierarchical component-based framework. At the root of the hierarchy there is an `Application` object. It can store one or multiple `Scene` objects. Each scene has its own assets, logics, event listeners, etc. Scene stores `Entity` objects which are basic building blocks of the game world. `Entity` can be transformed, animated and rendered.
 
 Read more [here](https://github.com/gecko0307/dagon/blob/master/doc/Architecture.md).
 
