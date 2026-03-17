@@ -1,5 +1,5 @@
-Dagon 0.42.0 - TBD
-------------------
+Dagon 0.42.0 - 17 Mar, 2026
+---------------------------
 - **Core**
   - New method `Application.isWindowFocused`
 - **Assets**
