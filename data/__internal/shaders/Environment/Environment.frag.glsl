@@ -98,7 +98,7 @@ void main()
     vec3 reflection = ambient(worldR, sqrt(roughness)) * reflectivity;
     vec3 F = clamp(fresnelRoughness(NE, f0, roughness), 0.0, 1.0);
     vec3 kD = (1.0 - F) * (1.0 - metallic);
-    vec2 brdf = haveAmbientBRDF? texture(ambientBRDF, vec2(NE, roughness)).rg : vec2(1.0, 0.0);
+    vec2 brdf = haveAmbientBRDF? texture(ambientBRDF, vec2(NE, 1.0 - roughness)).rg : vec2(1.0, 0.0);
     vec3 diffuse = kD * irradiance * albedo;
     vec3 specular = reflection * clamp(F * brdf.x + brdf.y, 0.0, 1.0);
     vec3 radiance = (diffuse + specular) * occlusion * ambientEnergy;
