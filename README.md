@@ -1,5 +1,7 @@
 > In 2026 Dagon is finally approaching its first stable release! 🎉 Version 1.0 will be the culmination of nearly 10 years of development and contributions from the awesome D community! There's a lot of exciting stuff coming up: check out [Dagon 2](https://github.com/gecko0307/dagon2), an in-development SDL3 port of the engine with Vulkan-based rendering.
 
+Dagon Engine
+------------
 <img align="left" alt="dagon logo" src="https://github.com/gecko0307/dagon/raw/master/logo/dagon-logo-320.png" width="100" style="vertical-align:top" />
 
 Feature-rich, easy to use, extensible desktop game development framework for [D language](https://dlang.org/) based on OpenGL 4.3 core profile and SDL2. Works on Windows and Linux.
