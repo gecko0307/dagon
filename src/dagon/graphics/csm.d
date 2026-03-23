@@ -188,7 +188,7 @@ class CascadedShadowMap: ShadowMap
     uint shadowMapResolution = 2048;
 
     /// Projection size for each cascade.
-    float[3] projectionSize = [10, 30, 1000]; //[20, 60, 400];
+    float[3] projectionSize = [10, 60, 500];
 
     /// Near plane for all cascades.
     float zStart = -10_000.0f;
