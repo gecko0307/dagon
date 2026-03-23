@@ -102,10 +102,10 @@ struct DagonVersion
 }
 
 /// Engine version number as a read-only structure.
-immutable DagonVersion dagonVersion = DagonVersion(0, 42, 0);
+immutable DagonVersion dagonVersion = DagonVersion(1, 0, 0);
 
 /// Engine version number as a read-only string.
-immutable string dagonVersionString = "0.42.0";
+immutable string dagonVersionString = "1.0.0";
 
 /// Internally reserved event codes.
 enum DagonEvent

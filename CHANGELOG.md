@@ -1,3 +1,10 @@
+Dagon 1.0.0-beta1 - RBD
+-----------------------
+- **Graphics components**
+  - Better default CSM projection sizes for quality shadows at close distances
+- **Rendering**
+  - Fix BRDF LUT sampling.
+
 Dagon 0.42.0 - 17 Mar, 2026
 ---------------------------
 - **Core**
