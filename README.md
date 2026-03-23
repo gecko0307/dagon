@@ -1,4 +1,4 @@
-> In 2026 Dagon is finally approaching its first stable release! 🎉 Version 1.0 will be the culmination of nearly 10 years of development and contributions from the awesome D community! There's a lot of exciting stuff coming up: check out [Dagon 2](https://github.com/gecko0307/dagon2), an in-development SDL3 port of the engine with Vulkan-based rendering.
+> In 2026 Dagon is finally approaching its first stable release! 🎉 Version 1.0 will be the culmination of nearly 10 years of development and lots of contributions from the awesome D community! There's a lot of exciting stuff coming up: check out [Dagon 2](https://github.com/gecko0307/dagon2), an in-development SDL3 port of the engine with Vulkan-based rendering.
 
 Dagon Engine
 ------------
