@@ -47,11 +47,11 @@ float spiralSSAO(vec2 uv, vec3 p, vec3 n, float rad)
 {
     const float goldenAngle = 2.4;
     float ao = 0.0;
-    float inv = 1.0 / float(ssaoSamples);
+    float invSamples = 1.0 / float(ssaoSamples);
     float radius = 0.0;
 
     float rotatePhase = hash(uv * 467.759) * 6.28;
-    float rStep = inv * rad;
+    float rStep = invSamples * rad;
     vec2 spiralUV;
 
     for (int i = 0; i < ssaoSamples; i++)
@@ -63,7 +63,7 @@ float spiralSSAO(vec2 uv, vec3 p, vec3 n, float rad)
         rotatePhase += goldenAngle;
     }
     
-    ao *= inv;
+    ao *= invSamples;
     
     return ao;
 }

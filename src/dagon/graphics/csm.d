@@ -149,6 +149,7 @@ class ShadowArea: Owner
      */
     void update(Light light, Camera camera)
     {
+        //position = camera.positionAbsolute - camera.directionAbsolute * projectionSize * 0.5f;
         invViewMatrix = translationMatrix(position) * light.rotationAbsolute.toMatrix4x4;
         viewMatrix = invViewMatrix.inverse;
         shadowMatrix = biasMatrix * projectionMatrix * viewMatrix * camera.invViewMatrix;
@@ -187,7 +188,7 @@ class CascadedShadowMap: ShadowMap
     uint shadowMapResolution = 2048;
 
     /// Projection size for each cascade.
-    float[3] projectionSize = [20, 60, 400];
+    float[3] projectionSize = [10, 30, 1000]; //[20, 60, 400];
 
     /// Near plane for all cascades.
     float zStart = -10_000.0f;
@@ -301,23 +302,26 @@ class CascadedShadowMap: ShadowMap
             updateCascadesForCamera(camera);
     }
     
+    ///
     void updateCascadesForCamera(Camera cam)
     {
         Vector3f cameraDirection = -cam.directionAbsolute;
-        Vector3f round(Vector3f a, float resolution)
-        {
-            return Vector3f(a.x - fmod(a.x, resolution), a.y - fmod(a.y, resolution), a.z - fmod(a.z, resolution));
-        }
         
         float res1 = projectionSize[0] / shadowMapResolution * 5;
-        area[0].position = round(cam.positionAbsolute + cameraDirection * (projectionSize[0]  * 0.48f - 1.0f), res1);
+        area[0].position = snapTo(cam.positionAbsolute + cameraDirection * (projectionSize[0]  * 0.48f - 1.0f), res1);
         area[0].update(light, cam);
         
         foreach(i; 1..projectionSize.length)
         {
             auto res = projectionSize[i] / shadowMapResolution * (i == 1? 10 : 100);
-            area[i].position = round(cam.positionAbsolute + cameraDirection * projectionSize[i] * 0.5f, res);
+            area[i].position = snapTo(cam.positionAbsolute + cameraDirection * projectionSize[i] * 0.5f, res);
             area[i].update(light, cam);
         }
     }
+}
+
+///
+Vector3f snapTo(Vector3f a, float resolution)
+{
+    return Vector3f(a.x - fmod(a.x, resolution), a.y - fmod(a.y, resolution), a.z - fmod(a.z, resolution));
 }
