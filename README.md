@@ -1,10 +1,10 @@
 <img align="left" alt="dagon logo" src="https://github.com/gecko0307/dagon/raw/master/logo/dagon-logo-320.png" width="100" style="vertical-align:top" />
 
+> In 2026 Dagon is finally approaching its first stable release! 🎉 Version 1.0 will be the culmination of nearly 10 years of development and contributions from the awesome D community! There's a lot of exciting stuff coming up: check out [Dagon 2](https://github.com/gecko0307/dagon2), an in-development SDL3 port of the engine with Vulkan-based rendering.
+
 Feature-rich, easy to use, extensible desktop game development framework for [D language](https://dlang.org/) based on OpenGL 4.3 core profile and SDL2. Works on Windows and Linux.
 
 Dagon uses computation-heavy graphics techniques and so requires a fairly powerful graphics card to run (Ampere-based NVIDIA GPUs are recommended for optimal performance).
-
-Dagon is perpetual beta, meaning that the core feature set is implemented and usable, but API is continually evolving, and there is no "stable" release yet.
 
 If you like Dagon, support its development on [Patreon](https://www.patreon.com/gecko0307) or [Liberapay](https://liberapay.com/gecko0307). You can also make a one-time donation via [NOWPayments](https://nowpayments.io/donation/gecko0307). I appreciate any support. Thanks in advance!
 
