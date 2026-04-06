@@ -6,8 +6,6 @@ Dagon Engine
 
 Feature-rich, easy to use, extensible desktop game development framework for [D language](https://dlang.org/) based on OpenGL 4.3 core profile and SDL2. Works on Windows and Linux.
 
-Dagon uses computation-heavy graphics techniques and so requires a fairly powerful graphics card to run (Ampere-based NVIDIA GPUs are recommended for optimal performance).
-
 If you like Dagon, support its development on [Patreon](https://www.patreon.com/gecko0307) or [Liberapay](https://liberapay.com/gecko0307). You can also make a one-time donation via [NOWPayments](https://nowpayments.io/donation/gecko0307). I appreciate any support. Thanks in advance!
 
 > Note: this project is not connected to Dagon engine by Senscape.
@@ -86,6 +84,15 @@ Features
 Features that are not production-ready yet:
 * Built-in UI toolkit (very basic, can be used only for simple debugging purposes)
 * OpenVR integration.
+
+System Requirements
+-------------------
+The recommended system requirements (for Full HD rendering at 60 fps):
+- CPU: Intel Core i3-10100 / AMD Ryzen 3 3100
+- RAM: application-dependent, usually 8 Gb minimum
+- GPU: GeForce RTX 30 / Radeon RX 6000 series
+- VRAM: 8 Gb
+- OS: 64-bit Windows 10 or higher / Linux.
 
 Usage
 -----
