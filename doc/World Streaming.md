@@ -112,7 +112,7 @@ class MeshChunk: WorldChunk
 
 Then in the scene class we can create `OpenWorldManager` and add some `MeshChunk`s:
 
-```
+```d
 enum float chunkSize = 100.0f;
 
 // 10x10 chunk map
@@ -133,7 +133,7 @@ chunk_0_0.activate();
 
 `onTravelerWrap` callback method is used to wrap character object's position when it crosses a border between chunks:
 
-```
+```d
 void onTravelerWrap(Entity traveler, Vector3f offset)
 {
     traveler.position += offset;
