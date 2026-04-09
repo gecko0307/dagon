@@ -89,7 +89,21 @@ JoltRigidBody boxBody = physicsWorld.addDynamicBody(eBox, box, boxMass);
 
 ### Constraints
 
-TODO
+| Newton                            | Jolt                         |
+|-----------------------------------|------------------------------|
+| `NewtonConstraint` (abstract)     | `JoltConstraint` (abstract)  |
+| n/a                               | `JoltFixedConstraint`        |
+| `NewtonBallConstraint`            | `JoltPointConstraint`        |
+| n/a                               | `JoltDistanceConstraint`     |
+| n/a                               | `JoltHingeConstraint`        |
+| `NewtonSliderConstraint`          | `JoltSliderConstraint`       |
+| n/a                               | `JoltConeConstraint`         |
+| n/a                               | `JoltSwingTwistConstraint`   |
+| `NewtonCorkscrewConstraint`       | n/a                          |
+| `NewtonUniversalConstraint`       | `JoltSixDOFConstraint`       |
+| `NewtonUpVectorConstraint`        | n/a                          |
+| n/a                               | `JoltGearConstraint`         |
+| `NewtonUserConstraint`            | n/a                          |
 
 ### Character Controller
 
