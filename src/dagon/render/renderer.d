@@ -88,7 +88,7 @@ class Renderer: Owner
     }
 
     /**
-     * Constructs a renderer with the given event manager and owner.
+     * Constructs a renderer with the given application and owner.
      *
      * Params:
      *   application = Application object.
