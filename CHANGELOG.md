@@ -1,3 +1,9 @@
+Dagon 1.0.0-beta2 - TBD
+-----------------------
+- **Extensions**
+  - `dagon:nuklear`:
+    - Fix regression bug.
+
 Dagon 1.0.0-beta1 - 10 Apr, 2026
 --------------------------------
 - **Graphics components**
