@@ -96,28 +96,22 @@ class JoltConstraintMotor: Owner
 struct JoltConstraintSettings
 {
     ///
-    Vector3f localPoint1;
+    Vector3f localPointBody1;
     
     ///
-    Vector3f localPoint2;
+    Vector3f localPointBody2;
     
     ///
-    Vector3f localAxis1;
+    Vector3f localAxisBody1;
     
     ///
-    Vector3f localAxis2;
+    Vector3f localAxisBody2;
     
     ///
-    Vector3f localNormal1;
+    Vector3f localNormalBody1;
     
     ///
-    Vector3f localNormal2;
-    
-    ///
-    float minDistance;
-    
-    ///
-    float maxDistance;
+    Vector3f localNormalBody2;
     
     ///
     float limitMin;
@@ -210,8 +204,8 @@ class JoltFixedConstraint: JoltConstraint
 /**
  * Point constraint. Ensures a local point of body1 occupies the same world-space position as a local point of body2.
  * Necessary ConstraintSettings fields:
- *   - localPoint1 - point in first body's local space.
- *   - localPoint2 - point in second body's local space.
+ *   - localPointBody1 - point in first body's local space.
+ *   - localPointBody2 - point in second body's local space.
  */
 class JoltPointConstraint: JoltConstraint
 {
@@ -230,8 +224,8 @@ class JoltPointConstraint: JoltConstraint
         JPH_PointConstraintSettings settings;
         JPH_PointConstraintSettings_Init(&settings);
         settings.space = JPH_ConstraintSpace.LocalToBodyCOM;
-        settings.point1 = constraintSettings.localPoint1;
-        settings.point2 = constraintSettings.localPoint2;
+        settings.point1 = constraintSettings.localPointBody1;
+        settings.point2 = constraintSettings.localPointBody2;
         pointConstraint = JPH_PointConstraint_Create(&settings, body1.rigidBody, body2.rigidBody);
         constraint = cast(JPH_Constraint*)pointConstraint;
         
@@ -243,10 +237,10 @@ class JoltPointConstraint: JoltConstraint
  * Distance constraint. Limits world-space distance between local point of body1 and local point of body2
  * using spring mechanics.
  * Necessary ConstraintSettings fields:
- *   - localPoint1 - point in first body's local space.
- *   - localPoint2 - point in second body's local space.
- *   - minDistance - minimum distance between bodies.
- *   - maxDistance - maximum distance between bodies.
+ *   - localPointBody1 - point in first body's local space.
+ *   - localPointBody2 - point in second body's local space.
+ *   - limitMin - minimum distance between bodies.
+ *   - limitMax - maximum distance between bodies.
  *   - stiffness -
  *   - damping -
  */
@@ -267,10 +261,10 @@ class JoltDistanceConstraint: JoltConstraint
         JPH_DistanceConstraintSettings settings;
         JPH_DistanceConstraintSettings_Init(&settings);
         settings.space = JPH_ConstraintSpace.LocalToBodyCOM;
-        settings.point1 = constraintSettings.localPoint1;
-        settings.point2 = constraintSettings.localPoint2;
-        settings.minDistance = constraintSettings.minDistance;
-        settings.maxDistance = constraintSettings.maxDistance;
+        settings.point1 = constraintSettings.localPointBody1;
+        settings.point2 = constraintSettings.localPointBody2;
+        settings.minDistance = constraintSettings.limitMin;
+        settings.maxDistance = constraintSettings.limitMax;
         settings.limitsSpringSettings.mode = JPH_SpringMode.StiffnessAndDamping;
         settings.limitsSpringSettings.frequencyOrStiffness = constraintSettings.stiffness;
         settings.limitsSpringSettings.damping = constraintSettings.damping;
@@ -287,12 +281,12 @@ class JoltDistanceConstraint: JoltConstraint
  * optionally limiting the angle range. This corresponds to real-world hinge or bearing.
  * Hinge can also be powered with a motor, meaning it will rotate with a given angular velocity.
  * Necessary ConstraintSettings fields:
- *   - localPoint1 - center of rotation in first body's local space.
- *   - localAxis1 - vector that determines axis of rotation in first body's local space.
- *   - localNormal1 - vector that determines zero-angle rotation about localAxis1 (in first body's local space). Should be perpendicular to localAxis1.
- *   - localPoint2 - center of rotation in second body's local space.
- *   - localAxis2 - vector that determines axis of rotation in second body's local space.
- *   - localNormal2 - vector that determines zero-angle rotation about localAxis2 (in second body's local space). Should be perpendicular to localAxis2.
+ *   - localPointBody1 - center of rotation in first body's local space.
+ *   - localAxisBody1 - vector that determines axis of rotation in first body's local space.
+ *   - localNormalBody1 - vector that determines zero-angle rotation about localAxis1 (in first body's local space). Should be perpendicular to localAxis1.
+ *   - localPointBody2 - center of rotation in second body's local space.
+ *   - localAxisBody2 - vector that determines axis of rotation in second body's local space.
+ *   - localNormalBody2 - vector that determines zero-angle rotation about localAxis2 (in second body's local space). Should be perpendicular to localAxis2.
  *   - limitMin - minimum rotation angle in radians. Should be in [-PI, 0] range.
  *   - limitMax - maximum rotation angle in radians. Should be in [0, PI] range.
  *   - stiffness - how easy it is to rotate the hinge. Higher values make the constraint stiffer.
@@ -317,12 +311,12 @@ class JoltHingeConstraint: JoltConstraint
         JPH_HingeConstraintSettings settings;
         JPH_HingeConstraintSettings_Init(&settings);
         settings.space = JPH_ConstraintSpace.LocalToBodyCOM;
-        settings.point1 = constraintSettings.localPoint1;
-        settings.hingeAxis1 = constraintSettings.localAxis1;
-        settings.normalAxis1 = constraintSettings.localNormal1;
-        settings.point2 = constraintSettings.localPoint2;
-        settings.hingeAxis2 = constraintSettings.localAxis2;
-        settings.normalAxis2 = constraintSettings.localNormal2;
+        settings.point1 = constraintSettings.localPointBody1;
+        settings.hingeAxis1 = constraintSettings.localAxisBody1;
+        settings.normalAxis1 = constraintSettings.localNormalBody1;
+        settings.point2 = constraintSettings.localPointBody2;
+        settings.hingeAxis2 = constraintSettings.localAxisBody2;
+        settings.normalAxis2 = constraintSettings.localNormalBody2;
         settings.limitsMin = constraintSettings.limitMin;
         settings.limitsMax = constraintSettings.limitMax;
         settings.limitsSpringSettings.mode = JPH_SpringMode.StiffnessAndDamping;
@@ -358,12 +352,12 @@ class JoltHingeConstraint: JoltConstraint
 /**
  * Slider (prismatic) constraint. Allows movement in only one axis (and no rotation).
  * Necessary ConstraintSettings fields:
- *   - localPoint1 - slider's initial position in first body's local space.
- *   - localAxis1 - vector that determines direction along which movement is possible (in first body's local space).
- *   - localNormal1 - 
- *   - localPoint2 - slider's initial position in second body's local space.
- *   - localAxis2 - vector that determines direction along which movement is possible (in second body's local space).
- *   - localNormal2 - 
+ *   - localPointBody1 - slider's initial position in first body's local space.
+ *   - localAxisBody1 - vector that determines direction along which movement is possible (in first body's local space).
+ *   - localNormalBody1 - 
+ *   - localPointBody2 - slider's initial position in second body's local space.
+ *   - localAxisBody2 - vector that determines direction along which movement is possible (in second body's local space).
+ *   - localNormalBody2 - 
  *   - limitMin - minimum sliding offset relative to initial position. Should be in [-float.max, 0] range.
  *   - limitMax - maximum sliding offset relative to initial position. Should be in [0, float.max] range.
  *   - stiffness - 
@@ -388,12 +382,12 @@ class JoltSliderConstraint: JoltConstraint
         JPH_SliderConstraintSettings settings;
         JPH_SliderConstraintSettings_Init(&settings);
         settings.space = JPH_ConstraintSpace.LocalToBodyCOM;
-        settings.point1 = constraintSettings.localPoint1;
-        settings.sliderAxis1 = constraintSettings.localAxis1;
-        settings.normalAxis1 = constraintSettings.localNormal1;
-        settings.point2 = constraintSettings.localPoint2;
-        settings.sliderAxis2 = constraintSettings.localAxis2;
-        settings.normalAxis2 = constraintSettings.localNormal2;
+        settings.point1 = constraintSettings.localPointBody1;
+        settings.sliderAxis1 = constraintSettings.localAxisBody1;
+        settings.normalAxis1 = constraintSettings.localNormalBody1;
+        settings.point2 = constraintSettings.localPointBody2;
+        settings.sliderAxis2 = constraintSettings.localAxisBody2;
+        settings.normalAxis2 = constraintSettings.localNormalBody2;
         settings.limitsMin = constraintSettings.limitMin;
         settings.limitsMax = constraintSettings.limitMax;
         settings.limitsSpringSettings.mode = JPH_SpringMode.StiffnessAndDamping;
@@ -426,7 +420,84 @@ class JoltSliderConstraint: JoltConstraint
     }
 }
 
-// TODO: JoltConeConstraint
-// TODO: JoltSwingTwistConstraint
+/**
+ * Cone constraint. Limits the relative motion between two objects within a cone.
+ * Necessary ConstraintSettings fields:
+ *   - localPointBody1 - 
+ *   - localAxisBody1 - 
+ *   - localPointBody2 - 
+ *   - localAxisBody2 - 
+ *   - limitMax - half of maximum angle between twist axis of body 1 and 2.
+ */
+class JoltConeConstraint: JoltConstraint
+{
+    /// Internal specialized Jolt constraint reference.
+    JPH_ConeConstraint* coneConstraint;
+    
+    this(
+        JoltPhysicsWorld world,
+        JoltRigidBody body1,
+        JoltRigidBody body2,
+        JoltConstraintSettings* constraintSettings,
+        Owner owner)
+    {
+        super(owner);
+        
+        JPH_ConeConstraintSettings settings;
+        JPH_ConeConstraintSettings_Init(&settings);
+        settings.space = JPH_ConstraintSpace.LocalToBodyCOM;
+        settings.point1 = constraintSettings.localPointBody1;
+        settings.twistAxis1 = constraintSettings.localAxisBody1;
+        settings.point2 = constraintSettings.localPointBody2;
+        settings.twistAxis2 = constraintSettings.localAxisBody2;
+        settings.halfConeAngle = constraintSettings.limitMax;
+        
+        coneConstraint = JPH_ConeConstraint_Create(&settings, body1.rigidBody, body2.rigidBody);
+        constraint = cast(JPH_Constraint*)coneConstraint;
+        
+        world.addConstraint(this);
+    }
+}
+
+/*
+// TODO
+class JoltSwingTwistConstraint: JoltConstraint
+{
+    /// Internal specialized Jolt constraint reference.
+    JPH_SwingTwistConstraint* swingTwistConstraint;
+    
+    this(
+        JoltPhysicsWorld world,
+        JoltRigidBody body1,
+        JoltRigidBody body2,
+        JoltConstraintSettings* constraintSettings,
+        Owner owner)
+    {
+        super(owner);
+        
+        JPH_SwingTwistConstraintSettings settings;
+        JPH_SwingTwistConstraintSettings_Init(&settings);
+        settings.space = JPH_ConstraintSpace.LocalToBodyCOM;
+        settings.position1 = constraintSettings.localPointBody1;
+        settings.twistAxis1 = constraintSettings.localAxisBody1;
+        settings.planeAxis1 = constraintSettings.localNormalBody1;
+        settings.position2 = constraintSettings.localPointBody2;
+        settings.twistAxis2 = constraintSettings.localAxisBody2;
+        settings.planeAxis2 = constraintSettings.localNormalBody2;
+        settings.swingType = JPH_SwingType.Cone;
+        //settings.normalHalfConeAngle = 
+        //settings.planeHalfConeAngle = 
+        //settings.twistMinAngle = 
+        //settings.twistMaxAngle = 
+        settings.maxFrictionTorque = constraintSettings.maxFrictionTorque;
+        
+        swingTwistConstraint = JPH_SwingTwistConstraint_Create(&settings, body1.rigidBody, body2.rigidBody);
+        constraint = cast(JPH_Constraint*)swingTwistConstraint;
+        
+        world.addConstraint(this);
+    }
+}
+*/
+
 // TODO: JoltSixDOFConstraint
 // TODO: JoltGearConstraint

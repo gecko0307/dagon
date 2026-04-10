@@ -89,6 +89,8 @@ JoltRigidBody boxBody = physicsWorld.addDynamicBody(eBox, box, boxMass);
 
 ### Constraints
 
+Constraints are special objects that restrict bodies' degrees of freedom in a specific way. Think of them as virtual analogues of real joints which are used to build complex mechanical structures from simple parts.
+
 | Newton                            | Jolt                         |
 |-----------------------------------|------------------------------|
 | `NewtonConstraint` (abstract)     | `JoltConstraint` (abstract)  |
@@ -98,11 +100,9 @@ JoltRigidBody boxBody = physicsWorld.addDynamicBody(eBox, box, boxMass);
 | n/a                               | `JoltHingeConstraint`        |
 | `NewtonSliderConstraint`          | `JoltSliderConstraint`       |
 | n/a                               | `JoltConeConstraint`         |
-| n/a                               | `JoltSwingTwistConstraint`   |
 | `NewtonCorkscrewConstraint`       | n/a                          |
 | `NewtonUniversalConstraint`       | `JoltSixDOFConstraint`       |
 | `NewtonUpVectorConstraint`        | n/a                          |
-| n/a                               | `JoltGearConstraint`         |
 | `NewtonUserConstraint`            | n/a                          |
 
 ### Character Controller
