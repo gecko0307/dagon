@@ -37,11 +37,16 @@ import bindbc.joltc;
 import dagon.ext.jolt.world;
 import dagon.ext.jolt.rigidbody;
 
-class ConstraintMotor: Owner
+///
+class JoltConstraintMotor: Owner
 {
+    ///
     JoltConstraint constraint;
+    
+    ///
     JPH_MotorSettings settings;
     
+    ///
     this(Owner owner)
     {
         super(owner);
@@ -54,6 +59,31 @@ class ConstraintMotor: Owner
         settings.maxTorqueLimit = 0.0f;
     }
     
+    ///
+    void position(float p) @property
+    {
+        JoltSliderConstraint slider = cast(JoltSliderConstraint)constraint;
+        if (slider)
+            JPH_SliderConstraint_SetTargetPosition(slider.sliderConstraint, p);
+    }
+    
+    ///
+    void angle(float a) @property
+    {
+        JoltHingeConstraint hinge = cast(JoltHingeConstraint)constraint;
+        if (hinge)
+            JPH_HingeConstraint_SetTargetAngle(hinge.hingeConstraint, a);
+    }
+    
+    ///
+    void velocity(float v) @property
+    {
+        JoltSliderConstraint slider = cast(JoltSliderConstraint)constraint;
+        if (slider)
+            JPH_SliderConstraint_SetTargetVelocity(slider.sliderConstraint, v);
+    }
+    
+    ///
     void angularVelocity(float w) @property
     {
         JoltHingeConstraint hinge = cast(JoltHingeConstraint)constraint;
@@ -62,9 +92,61 @@ class ConstraintMotor: Owner
     }
 }
 
+///
+struct JoltConstraintSettings
+{
+    ///
+    Vector3f localPoint1;
+    
+    ///
+    Vector3f localPoint2;
+    
+    ///
+    Vector3f localAxis1;
+    
+    ///
+    Vector3f localAxis2;
+    
+    ///
+    Vector3f localNormal1;
+    
+    ///
+    Vector3f localNormal2;
+    
+    ///
+    float minDistance;
+    
+    ///
+    float maxDistance;
+    
+    ///
+    float limitMin;
+    
+    ///
+    float limitMax;
+    
+    ///
+    float stiffness;
+    
+    ///
+    float damping;
+    
+    ///
+    float maxFrictionForce;
+    
+    ///
+    float maxFrictionTorque;
+}
+
+/**
+ * Abstract constraint class.
+ */
 abstract class JoltConstraint: Owner
 {
-    ConstraintMotor motor;
+    /// Constraint motor used with some constraint types.
+    JoltConstraintMotor motor;
+    
+    /// Internal abstract Jolt constraint reference.
     JPH_Constraint* constraint;
     
     this(Owner owner)
@@ -78,6 +160,7 @@ abstract class JoltConstraint: Owner
             JPH_Constraint_Destroy(constraint);
     }
     
+    /// Returns constraint's enabled/disabled state.
     bool enabled() @property
     {
         if (constraint)
@@ -86,16 +169,23 @@ abstract class JoltConstraint: Owner
             return false;
     }
     
+    /// Enables or disables constraint.
     void enabled(bool mode) @property
     {
         JPH_Constraint_SetEnabled(constraint, mode);
     }
 }
 
+/**
+ * Fixed constraint. Connects two bodies rigidly,
+ * removing all degrees of freedom.
+ */
 class JoltFixedConstraint: JoltConstraint
 {
+    /// Internal specialized Jolt constraint reference.
     JPH_FixedConstraint* fixedConstraint;
     
+    ///
     this(
         JoltPhysicsWorld world,
         JoltRigidBody body1,
@@ -117,16 +207,22 @@ class JoltFixedConstraint: JoltConstraint
     }
 }
 
+/**
+ * Point constraint. Ensures a local point of body1 occupies the same world-space position as a local point of body2.
+ * Necessary ConstraintSettings fields:
+ *   - localPoint1 - point in first body's local space.
+ *   - localPoint2 - point in second body's local space.
+ */
 class JoltPointConstraint: JoltConstraint
 {
+    /// Internal specialized Jolt constraint reference.
     JPH_PointConstraint* pointConstraint;
     
     this(
         JoltPhysicsWorld world,
         JoltRigidBody body1,
         JoltRigidBody body2,
-        Vector3f localPoint1,
-        Vector3f localPoint2,
+        JoltConstraintSettings* constraintSettings,
         Owner owner)
     {
         super(owner);
@@ -134,8 +230,8 @@ class JoltPointConstraint: JoltConstraint
         JPH_PointConstraintSettings settings;
         JPH_PointConstraintSettings_Init(&settings);
         settings.space = JPH_ConstraintSpace.LocalToBodyCOM;
-        settings.point1 = localPoint1;
-        settings.point2 = localPoint2;
+        settings.point1 = constraintSettings.localPoint1;
+        settings.point2 = constraintSettings.localPoint2;
         pointConstraint = JPH_PointConstraint_Create(&settings, body1.rigidBody, body2.rigidBody);
         constraint = cast(JPH_Constraint*)pointConstraint;
         
@@ -143,20 +239,27 @@ class JoltPointConstraint: JoltConstraint
     }
 }
 
+/**
+ * Distance constraint. Limits world-space distance between local point of body1 and local point of body2
+ * using spring mechanics.
+ * Necessary ConstraintSettings fields:
+ *   - localPoint1 - point in first body's local space.
+ *   - localPoint2 - point in second body's local space.
+ *   - minDistance - minimum distance between bodies.
+ *   - maxDistance - maximum distance between bodies.
+ *   - stiffness -
+ *   - damping -
+ */
 class JoltDistanceConstraint: JoltConstraint
 {
+    /// Internal specialized Jolt constraint reference.
     JPH_DistanceConstraint* distanceConstraint;
     
     this(
         JoltPhysicsWorld world,
         JoltRigidBody body1,
         JoltRigidBody body2,
-        Vector3f localPoint1,
-        Vector3f localPoint2,
-        float minDistance,
-        float maxDistance,
-        float stiffness,
-        float damping,
+        JoltConstraintSettings* constraintSettings,
         Owner owner)
     {
         super(owner);
@@ -164,13 +267,13 @@ class JoltDistanceConstraint: JoltConstraint
         JPH_DistanceConstraintSettings settings;
         JPH_DistanceConstraintSettings_Init(&settings);
         settings.space = JPH_ConstraintSpace.LocalToBodyCOM;
-        settings.point1 = localPoint1;
-        settings.point2 = localPoint2;
-        settings.minDistance = minDistance;
-        settings.maxDistance = maxDistance;
+        settings.point1 = constraintSettings.localPoint1;
+        settings.point2 = constraintSettings.localPoint2;
+        settings.minDistance = constraintSettings.minDistance;
+        settings.maxDistance = constraintSettings.maxDistance;
         settings.limitsSpringSettings.mode = JPH_SpringMode.StiffnessAndDamping;
-        settings.limitsSpringSettings.frequencyOrStiffness = stiffness;
-        settings.limitsSpringSettings.damping = damping;
+        settings.limitsSpringSettings.frequencyOrStiffness = constraintSettings.stiffness;
+        settings.limitsSpringSettings.damping = constraintSettings.damping;
         
         distanceConstraint = JPH_DistanceConstraint_Create(&settings, body1.rigidBody, body2.rigidBody);
         constraint = cast(JPH_Constraint*)distanceConstraint;
@@ -179,26 +282,34 @@ class JoltDistanceConstraint: JoltConstraint
     }
 }
 
+/**
+ * Hinge constraint. Connects two bodies on a single point and allows only a single axis of rotation,
+ * optionally limiting the angle range. This corresponds to real-world hinge or bearing.
+ * Hinge can also be powered with a motor, meaning it will rotate with a given angular velocity.
+ * Necessary ConstraintSettings fields:
+ *   - localPoint1 - center of rotation in first body's local space.
+ *   - localAxis1 - vector that determines axis of rotation in first body's local space.
+ *   - localNormal1 - vector that determines zero-angle rotation about localAxis1 (in first body's local space). Should be perpendicular to localAxis1.
+ *   - localPoint2 - center of rotation in second body's local space.
+ *   - localAxis2 - vector that determines axis of rotation in second body's local space.
+ *   - localNormal2 - vector that determines zero-angle rotation about localAxis2 (in second body's local space). Should be perpendicular to localAxis2.
+ *   - limitMin - minimum rotation angle in radians. Should be in [-PI, 0] range.
+ *   - limitMax - maximum rotation angle in radians. Should be in [0, PI] range.
+ *   - stiffness - how easy it is to rotate the hinge. Higher values make the constraint stiffer.
+ *   - damping - 
+ *   - maxFrictionTorque - maximum amount of torque (Nm) to apply as friction (when the constraint is not powered with a motor).
+ */
 class JoltHingeConstraint: JoltConstraint
 {
+    /// Internal specialized Jolt constraint reference.
     JPH_HingeConstraint* hingeConstraint;
     
     this(
         JoltPhysicsWorld world,
         JoltRigidBody body1,
         JoltRigidBody body2,
-        Vector3f localPoint1,
-        Vector3f localAxis1,
-        Vector3f localNormal1,
-        Vector3f localPoint2,
-        Vector3f localAxis2,
-        Vector3f localNormal2,
-        float minAngle,
-        float maxAngle,
-        float stiffness,
-        float damping,
-        float maxFrictionTorque,
-        ConstraintMotor motor,
+        JoltConstraintSettings* constraintSettings,
+        JoltConstraintMotor motor,
         Owner owner)
     {
         super(owner);
@@ -206,18 +317,18 @@ class JoltHingeConstraint: JoltConstraint
         JPH_HingeConstraintSettings settings;
         JPH_HingeConstraintSettings_Init(&settings);
         settings.space = JPH_ConstraintSpace.LocalToBodyCOM;
-        settings.point1 = localPoint1;
-        settings.hingeAxis1 = localAxis1;
-        settings.normalAxis1 = localNormal1;
-        settings.point2 = localPoint2;
-        settings.hingeAxis2 = localAxis2;
-        settings.normalAxis2 = localNormal2;
-        settings.limitsMin = minAngle;
-        settings.limitsMax = maxAngle;
+        settings.point1 = constraintSettings.localPoint1;
+        settings.hingeAxis1 = constraintSettings.localAxis1;
+        settings.normalAxis1 = constraintSettings.localNormal1;
+        settings.point2 = constraintSettings.localPoint2;
+        settings.hingeAxis2 = constraintSettings.localAxis2;
+        settings.normalAxis2 = constraintSettings.localNormal2;
+        settings.limitsMin = constraintSettings.limitMin;
+        settings.limitsMax = constraintSettings.limitMax;
         settings.limitsSpringSettings.mode = JPH_SpringMode.StiffnessAndDamping;
-        settings.limitsSpringSettings.frequencyOrStiffness = stiffness;
-        settings.limitsSpringSettings.damping = damping;
-        settings.maxFrictionTorque = maxFrictionTorque;
+        settings.limitsSpringSettings.frequencyOrStiffness = constraintSettings.stiffness;
+        settings.limitsSpringSettings.damping = constraintSettings.damping;
+        settings.maxFrictionTorque = constraintSettings.maxFrictionTorque;
         
         if (motor)
         {
@@ -244,7 +355,77 @@ class JoltHingeConstraint: JoltConstraint
     }
 }
 
-// TODO: JoltSliderConstraint
+/**
+ * Slider (prismatic) constraint. Allows movement in only one axis (and no rotation).
+ * Necessary ConstraintSettings fields:
+ *   - localPoint1 - slider's initial position in first body's local space.
+ *   - localAxis1 - vector that determines direction along which movement is possible (in first body's local space).
+ *   - localNormal1 - 
+ *   - localPoint2 - slider's initial position in second body's local space.
+ *   - localAxis2 - vector that determines direction along which movement is possible (in second body's local space).
+ *   - localNormal2 - 
+ *   - limitMin - minimum sliding offset relative to initial position. Should be in [-float.max, 0] range.
+ *   - limitMax - maximum sliding offset relative to initial position. Should be in [0, float.max] range.
+ *   - stiffness - 
+ *   - damping - 
+ *   - maxFrictionForce - maximum amount of friction force (N), when the constraint is not powered with a motor.
+ */
+class JoltSliderConstraint: JoltConstraint
+{
+    /// Internal specialized Jolt constraint reference.
+    JPH_SliderConstraint* sliderConstraint;
+    
+    this(
+        JoltPhysicsWorld world,
+        JoltRigidBody body1,
+        JoltRigidBody body2,
+        JoltConstraintSettings* constraintSettings,
+        JoltConstraintMotor motor,
+        Owner owner)
+    {
+        super(owner);
+        
+        JPH_SliderConstraintSettings settings;
+        JPH_SliderConstraintSettings_Init(&settings);
+        settings.space = JPH_ConstraintSpace.LocalToBodyCOM;
+        settings.point1 = constraintSettings.localPoint1;
+        settings.sliderAxis1 = constraintSettings.localAxis1;
+        settings.normalAxis1 = constraintSettings.localNormal1;
+        settings.point2 = constraintSettings.localPoint2;
+        settings.sliderAxis2 = constraintSettings.localAxis2;
+        settings.normalAxis2 = constraintSettings.localNormal2;
+        settings.limitsMin = constraintSettings.limitMin;
+        settings.limitsMax = constraintSettings.limitMax;
+        settings.limitsSpringSettings.mode = JPH_SpringMode.StiffnessAndDamping;
+        settings.limitsSpringSettings.frequencyOrStiffness = constraintSettings.stiffness;
+        settings.limitsSpringSettings.damping = constraintSettings.damping;
+        settings.maxFrictionForce = constraintSettings.maxFrictionForce;
+        
+        if (motor)
+        {
+            settings.motorSettings = motor.settings;
+            this.motor = motor;
+            this.motor.constraint = this;
+        }
+        else
+        {
+            settings.motorSettings.springSettings.mode = JPH_SpringMode.StiffnessAndDamping;
+            settings.motorSettings.springSettings.frequencyOrStiffness = 0.0f;
+            settings.motorSettings.springSettings.damping = 0.0f;
+            settings.motorSettings.minForceLimit = 0.0f;
+            settings.motorSettings.maxForceLimit = 0.0f;
+            settings.motorSettings.minTorqueLimit = 0.0f;
+            settings.motorSettings.maxTorqueLimit = 0.0f;
+        }
+        
+        sliderConstraint = JPH_SliderConstraint_Create(&settings, body1.rigidBody, body2.rigidBody);
+        JPH_SliderConstraint_SetMotorState(sliderConstraint, JPH_MotorState.Velocity);
+        constraint = cast(JPH_Constraint*)sliderConstraint;
+        
+        world.addConstraint(this);
+    }
+}
+
 // TODO: JoltConeConstraint
 // TODO: JoltSwingTwistConstraint
 // TODO: JoltSixDOFConstraint
