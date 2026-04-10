@@ -36,6 +36,7 @@ import dlib.math.quaternion;
 import dlib.math.transformation;
 import dlib.math.utils;
 
+import dagon.core.logger;
 import dagon.core.event;
 import dagon.core.time;
 import dagon.graphics.entity;
@@ -44,6 +45,7 @@ import bindbc.joltc;
 
 import dagon.ext.jolt.world;
 import dagon.ext.jolt.shape;
+import dagon.ext.jolt.rigidbody;
 
 class JoltCharacterController: EntityComponent
 {
@@ -65,13 +67,17 @@ class JoltCharacterController: EntityComponent
     float targetEyeHeight;
     float crouchSpeed;
     
+    Vector3f ceilingPosition = Vector3f(0.0f, 0.0f, 0.0f);
+    float maxRaycastDistance = 100.0f;
+    
    protected:
+    float halfHeight;
     Vector3f movementVelocity = Vector3f(0.0f, 0.0f, 0.0f);
     float jumpSpeed = 10.0f;
     float verticalSpeed = 0.0f;
     bool jumped = false;
     bool crouching = false;
-    
+    bool forcefullyCrouching = false;
     JPH_CharacterContactListener* contactListener;
     
    public:
@@ -101,6 +107,8 @@ class JoltCharacterController: EntityComponent
         
         this.mass = mass;
         this.maxStrength = 10000.0f;
+        
+        this.halfHeight = height * 0.5f;
         
         crouchEyeHeight = height * 0.5f;
         normalEyeHeight = height;
@@ -153,7 +161,7 @@ class JoltCharacterController: EntityComponent
                 JPH_CharacterVirtual_SetShape(characterVirtual, crouchingShape.shape, 0.1f, JoltBroadPhaseLayer.NonMoving, physicsWorld.physicsSystem, null, null);
                 crouching = true;
             }
-            else
+            else if (!forcefullyCrouching)
             {
                 JPH_CharacterVirtual_SetShape(characterVirtual, standingShape.shape, 0.1f, JoltBroadPhaseLayer.NonMoving, physicsWorld.physicsSystem, null, null);
                 crouching = false;
@@ -229,7 +237,14 @@ class JoltCharacterController: EntityComponent
         
         entity.prevAbsoluteTransformation = entity.prevTransformation;
         
-        // TODO: head raycast like in NewtonCharacterController
+        Vector3f raycastSource = entity.position;
+        raycastSource.y += halfHeight;
+        
+        forcefullyCrouching = false;
+        if (ceilingRaycast(raycastSource, raycastSource + Vector3f(0.0f, maxRaycastDistance, 0.0f)))
+        {
+            forcefullyCrouching = (ceilingPosition.y - raycastSource.y) <= halfHeight;
+        }
         
         if (crouching)
         {
@@ -237,9 +252,32 @@ class JoltCharacterController: EntityComponent
         }
         else
         {
-            targetEyeHeight = normalEyeHeight;
+            if (forcefullyCrouching)
+            {
+                targetEyeHeight = crouchEyeHeight;
+                crouch(true);
+            }
+            else
+            {
+                targetEyeHeight = normalEyeHeight;
+                crouch(false);
+            }
         }
         
         eyeHeight += (targetEyeHeight - eyeHeight) * crouchSpeed * t.delta;
+    }
+    
+    bool ceilingRaycast(Vector3f pstart, Vector3f pend)
+    {
+        Vector3f hitPosition;
+        Vector3f hitNormal;
+        JoltRigidBody hitBody;
+        if (physicsWorld.raycast(pstart, pend, hitPosition, hitNormal, hitBody))
+        {
+            ceilingPosition = hitPosition;
+            return true;
+        }
+        else
+            return false;
     }
 }
