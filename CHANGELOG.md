@@ -1,4 +1,4 @@
-Dagon 1.0.0-beta1 - 12 Apr, 2026
+Dagon 1.0.0-beta1 - 10 Apr, 2026
 --------------------------------
 - **Graphics components**
   - Better default CSM projection sizes for quality shadows at close distances
