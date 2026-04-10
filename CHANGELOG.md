@@ -1,9 +1,14 @@
-Dagon 1.0.0-beta1 - RBD
------------------------
+Dagon 1.0.0-beta1 - 12 Apr, 2026
+--------------------------------
 - **Graphics components**
   - Better default CSM projection sizes for quality shadows at close distances
 - **Rendering**
-  - Fix BRDF LUT sampling.
+  - Fix BRDF LUT sampling
+- **Extensions**
+  - `dagon:jolt`:
+    - New constraints: `JoltSliderConstraint`, `JoltConeConstraint`
+    - Constraint settings are now passed via `JoltConstraintSettings` structure
+    - `JoltCharacterController` now supports crouching.
 
 Dagon 0.42.0 - 17 Mar, 2026
 ---------------------------

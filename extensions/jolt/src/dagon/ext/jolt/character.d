@@ -49,6 +49,7 @@ class JoltCharacterController: EntityComponent
 {
     JoltPhysicsWorld physicsWorld;
     JoltRotatedTranslatedShape standingShape;
+    JoltRotatedTranslatedShape crouchingShape;
     JPH_CharacterVirtual* characterVirtual;
     Vector3f velocity = Vector3f(0.0f, 0.0f, 0.0f);
     
@@ -58,11 +59,18 @@ class JoltCharacterController: EntityComponent
     
     float gravity = -30.0f;
     
+    float crouchEyeHeight;
+    float normalEyeHeight;
+    float eyeHeight;
+    float targetEyeHeight;
+    float crouchSpeed;
+    
    protected:
     Vector3f movementVelocity = Vector3f(0.0f, 0.0f, 0.0f);
     float jumpSpeed = 10.0f;
     float verticalSpeed = 0.0f;
     bool jumped = false;
+    bool crouching = false;
     
     JPH_CharacterContactListener* contactListener;
     
@@ -75,10 +83,11 @@ class JoltCharacterController: EntityComponent
         JPH_CharacterVirtualSettings characterSettings;
         JPH_CharacterVirtualSettings_Init(&characterSettings);
         
-        auto capsuleShape = New!JoltCapsuleShape((height - radius * 2.0f) * 0.5f, radius, this);
+        auto standingCapsuleShape = New!JoltCapsuleShape((height - radius * 2.0f), radius, this);
+        auto crouchingSphereShape = New!JoltSphereShape(radius, this);
         
-        Vector3f capsuleOffset = Vector3f(0.0f, height * 0.5f, 0.0f);
-        standingShape = New!JoltRotatedTranslatedShape(capsuleShape, capsuleOffset, Quaternionf.identity, this);
+        standingShape = New!JoltRotatedTranslatedShape(standingCapsuleShape, Vector3f(0.0f, height * 0.5f, 0.0f), Quaternionf.identity, this);
+        crouchingShape = New!JoltRotatedTranslatedShape(crouchingSphereShape, Vector3f(0.0f, radius, 0.0f), Quaternionf.identity, this);
         
         characterSettings.base.shape = standingShape.shape;
         characterSettings.base.supportingVolume = JPH_Plane(Vector3f(0.0f, 1.0f, 0.0f), -radius);
@@ -92,6 +101,12 @@ class JoltCharacterController: EntityComponent
         
         this.mass = mass;
         this.maxStrength = 10000.0f;
+        
+        crouchEyeHeight = height * 0.5f;
+        normalEyeHeight = height;
+        eyeHeight = normalEyeHeight;
+        targetEyeHeight = eyeHeight;
+        crouchSpeed = 6.0f;
         
         entity.autoUpdateTransformation = false;
     }
@@ -129,7 +144,22 @@ class JoltCharacterController: EntityComponent
         jumped = true;
     }
     
-    // TODO: crouch
+    void crouch(bool mode) @property
+    {
+        if (crouching != mode && groundState == JPH_GroundState.OnGround)
+        {
+            if (mode)
+            {
+                JPH_CharacterVirtual_SetShape(characterVirtual, crouchingShape.shape, 0.1f, JoltBroadPhaseLayer.NonMoving, physicsWorld.physicsSystem, null, null);
+                crouching = true;
+            }
+            else
+            {
+                JPH_CharacterVirtual_SetShape(characterVirtual, standingShape.shape, 0.1f, JoltBroadPhaseLayer.NonMoving, physicsWorld.physicsSystem, null, null);
+                crouching = false;
+            }
+        }
+    }
     
     override void update(Time t)
     {
@@ -198,5 +228,18 @@ class JoltCharacterController: EntityComponent
         entity.invAbsoluteTransformation = entity.invTransformation;
         
         entity.prevAbsoluteTransformation = entity.prevTransformation;
+        
+        // TODO: head raycast like in NewtonCharacterController
+        
+        if (crouching)
+        {
+            targetEyeHeight = crouchEyeHeight;
+        }
+        else
+        {
+            targetEyeHeight = normalEyeHeight;
+        }
+        
+        eyeHeight += (targetEyeHeight - eyeHeight) * crouchSpeed * t.delta;
     }
 }

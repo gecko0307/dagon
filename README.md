@@ -73,7 +73,7 @@ Features
 * Collision detection using MPR algorithm, raycasting, simple kinematic collision response system
 * Chunk-based culling for managing large game worlds. Optional "floating origin" system to maintain high coordinate precision
 * Rigid body physics using [Newton Dynamics](http://newtondynamics.com). Built-in character controller
-* [Jolt Physics](https://github.com/jrouwe/JoltPhysics) integration (in development)
+* [Jolt Physics](https://github.com/jrouwe/JoltPhysics) integration
 * Orthographic projection support. Screen-aligned rendering. Sprites and billboards. Create 2D/2.5D/isometric games with ease
 * UTF-8 text rendering using TTF fonts via [FreeType](https://freetype.org/)
 * Internationalization support
