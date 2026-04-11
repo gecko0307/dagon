@@ -177,6 +177,11 @@ class JoltCharacterController: EntityComponent
         return crouching || forcefullyCrouching;
     }
     
+    bool onGround() @property
+    {
+        return (groundState == JPH_GroundState.OnGround && jumped == false);
+    }
+    
     override void update(Time t)
     {
         JPH_CharacterBase_GetUp(cast(JPH_CharacterBase*)characterVirtual, &up);
