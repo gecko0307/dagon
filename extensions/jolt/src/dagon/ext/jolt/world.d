@@ -204,7 +204,6 @@ class JoltPhysicsWorld: Owner, Updateable
             null, null, raycastBodyFilter, null);
         if (hit)
         {
-            //logInfo(transform.translation, " ", shapeCastContactPoint);
             hitPosition = shapeCastContactPoint;
             return true;
         }
