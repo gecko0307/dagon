@@ -29,8 +29,11 @@ module dagon.ext.jolt.world;
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.math.vector;
+import dlib.math.matrix;
+import dlib.math.transformation;
 import dlib.math.quaternion;
 
+import dagon.core.logger;
 import dagon.core.event;
 import dagon.core.time;
 import dagon.graphics.updateable;
@@ -69,6 +72,13 @@ extern(C)
     {
         return true;
     }
+    
+    float castShapeCollectorCallback(void* userData, const(JPH_ShapeCastResult)* result)
+    {
+        JoltPhysicsWorld world = cast(JoltPhysicsWorld)userData;
+        world.shapeCastContactPoint = result.contactPointOn1;
+        return 0.0f;
+    }
 }
 
 class JoltPhysicsWorld: Owner, Updateable
@@ -89,6 +99,8 @@ class JoltPhysicsWorld: Owner, Updateable
         ShouldCollide: &raycastBodyFilterCallback,
         ShouldCollideLocked: &raycastLockedBodyFilterCallback
     };
+    
+    Vector3f shapeCastContactPoint = Vector3f(0.0f, 0.0f, 0.0f);
     
     this(EventManager eventManager, Owner owner)
     {
@@ -168,6 +180,32 @@ class JoltPhysicsWorld: Owner, Updateable
             Quaternionf bodyRotation;
             JPH_BodyInterface_GetRotation(bodyInterface, bodyID, &bodyRotation);
             hitNormal = hitNorm * bodyRotation.toMatrix3x3;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    
+    bool shapeCast(JoltShape shape, Matrix4x4f transform, Vector3f direction, out Vector3f hitPosition)
+    {
+        shapeCastContactPoint = Vector3f(0.0f, 0.0f, 0.0f);
+        auto query = JPH_PhysicsSystem_GetNarrowPhaseQuery(physicsSystem);
+        JPH_ShapeCastSettings shapeCastSettings = {
+            backFaceModeTriangles: JPH_BackFaceMode.IgnoreBackFaces,
+            backFaceModeConvex: JPH_BackFaceMode.IgnoreBackFaces,
+            useShrunkenShapeAndConvexRadius: false,
+            returnDeepestPoint: false
+        };
+        Vector3f baseOffset = Vector3f(0.0f, 0.0f, 0.0f);
+        bool hit = JPH_NarrowPhaseQuery_CastShape(query, shape.shape, &transform, &direction, 
+            &shapeCastSettings, &baseOffset, &castShapeCollectorCallback, cast(void*)this,
+            null, null, raycastBodyFilter, null);
+        if (hit)
+        {
+            //logInfo(transform.translation, " ", shapeCastContactPoint);
+            hitPosition = shapeCastContactPoint;
             return true;
         }
         else

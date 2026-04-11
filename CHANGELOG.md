@@ -1,6 +1,8 @@
 Dagon 1.0.0-beta2 - TBD
 -----------------------
 - **Extensions**
+  - `dagon:jolt`:
+    - Improved crouching logic in `JoltCharacterController` (now uses convex cast instead of ray cast to detect ceiling height above the head)
   - `dagon:nuklear`:
     - Fix regression bug.
 
