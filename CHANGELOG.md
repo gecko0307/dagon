@@ -1,5 +1,5 @@
-Dagon 1.0.0-beta2 - TBD
------------------------
+Dagon 1.0.0-beta2 - 11 Apr, 2026
+--------------------------------
 - **Extensions**
   - `dagon:jolt`:
     - New method `JoltPhysicsWorld.shapeCast`
