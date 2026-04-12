@@ -346,15 +346,10 @@ class Emitter: EntityComponent
     {
         Vector3f posAbsolute = entity.positionAbsolute;
 
-        //if (initialPositionRandomRadius > 0.0f)
-        //{
-            float rx = initialPositionRandomRadii.x > 0.0f ? uniform(0.0f, initialPositionRandomRadii.x) : 0.0f;
-            float ry = initialPositionRandomRadii.y > 0.0f ? uniform(0.0f, initialPositionRandomRadii.y) : 0.0f;
-            float rz = initialPositionRandomRadii.z > 0.0f ? uniform(0.0f, initialPositionRandomRadii.z) : 0.0f;
-            p.position = posAbsolute + randomUnitVector3!float * Vector3f(rx, ry, rz);
-        //}
-        //else
-        //    p.position = posAbsolute;
+        float rx = initialPositionRandomRadii.x > 0.0f ? uniform(0.0f, initialPositionRandomRadii.x) : 0.0f;
+        float ry = initialPositionRandomRadii.y > 0.0f ? uniform(0.0f, initialPositionRandomRadii.y) : 0.0f;
+        float rz = initialPositionRandomRadii.z > 0.0f ? uniform(0.0f, initialPositionRandomRadii.z) : 0.0f;
+        p.position = posAbsolute + randomUnitVector3!float * Vector3f(rx, ry, rz);
 
         p.positionPrev = p.position;
 
