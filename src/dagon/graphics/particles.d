@@ -84,6 +84,7 @@ struct Particle
     Vector3f scale;
     float rotation;
     float rotationDirection;
+    float opacity;
     double lifetime;
     double time;
     bool move;
@@ -279,7 +280,7 @@ class Emitter: EntityComponent
     float rotationStep = 0.0f;
 
     /// Randomization factor for initial offset for emitted particles.
-    float initialPositionRandomRadius = 0.0f;
+    Vector3f initialPositionRandomRadii = Vector3f(0.0f, 0.0f, 0.0f);
 
     /// Minimum initial speed for emitted particles.
     float minInitialSpeed = 1.0f;
@@ -310,6 +311,9 @@ class Emitter: EntityComponent
 
     /// An entity that should be used for emitted particles instead of the quad (currently not supported).
     Entity particleEntity;
+    
+    ///
+    float fadeInDuration = 0.1f;
 
     /**
      * Constructs an emitter with a given number of particles.
@@ -342,13 +346,15 @@ class Emitter: EntityComponent
     {
         Vector3f posAbsolute = entity.positionAbsolute;
 
-        if (initialPositionRandomRadius > 0.0f)
-        {
-            float randomDist = uniform(0.0f, initialPositionRandomRadius);
-            p.position = posAbsolute + randomUnitVector3!float * randomDist;
-        }
-        else
-            p.position = posAbsolute;
+        //if (initialPositionRandomRadius > 0.0f)
+        //{
+            float rx = initialPositionRandomRadii.x > 0.0f ? uniform(0.0f, initialPositionRandomRadii.x) : 0.0f;
+            float ry = initialPositionRandomRadii.y > 0.0f ? uniform(0.0f, initialPositionRandomRadii.y) : 0.0f;
+            float rz = initialPositionRandomRadii.z > 0.0f ? uniform(0.0f, initialPositionRandomRadii.z) : 0.0f;
+            p.position = posAbsolute + randomUnitVector3!float * Vector3f(rx, ry, rz);
+        //}
+        //else
+        //    p.position = posAbsolute;
 
         p.positionPrev = p.position;
 
@@ -380,6 +386,8 @@ class Emitter: EntityComponent
         p.move = true;
         p.startColor = startColor;
         p.color = p.startColor;
+        p.opacity = 0.0f;
+        p.color.a = 0.0f;
     }
 }
 
@@ -507,6 +515,7 @@ class ParticleSystem: EntityComponent
     void updateParticle(Emitter e, ref Particle p, double dt)
     {
         p.time += dt;
+        p.opacity = clamp(p.time / e.fadeInDuration, 0.0f, 1.0f);
 
         float t = p.time / p.lifetime;
         p.color = lerp(e.startColor, e.endColor, t);
@@ -529,7 +538,7 @@ class ParticleSystem: EntityComponent
             p.position += p.velocity * dt;
         }
 
-        p.color.a = lerp(e.startColor.a, e.endColor.a, t);
+        p.color.a = lerp(e.startColor.a, e.endColor.a, t) * p.opacity;
     }
 
     /// Updates all particles and emitters.
