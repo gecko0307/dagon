@@ -318,7 +318,7 @@ void main()
     vec3 radiance = lightRadiance(eyePos, N, E, albedo, roughness, metallic, subsurface, occlusion) * shadow;
     
     // Fog
-    float linearDepth = abs(lightVolumeEyePos.z);
+    float linearDepth = abs(eyePos.z); //abs(lightVolumeEyePos.z);
     float fogFactor = clamp((fogEnd - linearDepth) / (fogEnd - fogStart), 0.0, 1.0);
     radiance *= fogFactor;
     

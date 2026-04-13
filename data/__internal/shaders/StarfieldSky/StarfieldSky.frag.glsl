@@ -45,7 +45,7 @@ uniform vec4 sunColor;
 
 uniform float localTime;
 
-const float sunEnergy = 100.0;
+uniform float sunEnergy;
 const float sunAngularDiameterCos = 0.9999;
 
 void main()

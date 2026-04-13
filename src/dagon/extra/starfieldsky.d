@@ -67,11 +67,14 @@ class StarfieldSkyShader: Shader
     ShaderParameter!Vector3f sunDirection;
     ShaderParameter!Color4f sunColor;
     
+    ShaderParameter!float ssSunEnergy;
+    
    public:
     Color4f spaceColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
     float starsThreshold = 0.995f;
     float starsBrightness = 8.0f;
     float starsTwinkleSpeed = 1.0f;
+    float sunEnergy = 100.0;
     
     Vector3f defaultSunDirection = Vector3f(-1.0f, -1.0f, -1.0f).normalized;
     Color4f defaultSunColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -103,6 +106,7 @@ class StarfieldSkyShader: Shader
         
         sunDirection = createParameter!Vector3f("sunDirection");
         sunColor = createParameter!Color4f("sunColor");
+        ssSunEnergy = createParameter!float("sunEnergy");
     }
 
     ~this()
@@ -127,6 +131,7 @@ class StarfieldSkyShader: Shader
         ssStarsThreshold = starsThreshold;
         ssStarsBrightness = starsBrightness;
         ssStarsTwinkleSpeed = starsTwinkleSpeed;
+        ssSunEnergy = sunEnergy;
         
         localTime = state.localTime;
         
