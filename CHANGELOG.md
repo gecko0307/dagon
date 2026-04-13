@@ -1,3 +1,8 @@
+Dagon 1.0.0 - TBD
+-----------------
+- **Graphics components**
+  - Particle system improvements.
+
 Dagon 1.0.0-beta2 - 11 Apr, 2026
 --------------------------------
 - **Extensions**
