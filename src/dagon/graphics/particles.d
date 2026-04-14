@@ -88,7 +88,6 @@ struct Particle
     double lifetime;
     double time;
     bool move;
-    bool active;
 }
 
 /**
@@ -218,7 +217,7 @@ class BlackHole: ForceField
             p.acceleration = Vector3f(0, 0, 0);
             p.velocity = Vector3f(0, 0, 0);
             p.time = p.lifetime;
-            p.active = false;
+            //p.active = false;
         }
         else
             p.acceleration += r * -g / (d * d);
@@ -330,6 +329,7 @@ class Emitter: EntityComponent
         particleSystem.addEmitter(this);
 
         particles = New!(Particle[])(numParticles);
+        
         foreach(ref p; particles)
         {
             resetParticle(p);
@@ -339,6 +339,21 @@ class Emitter: EntityComponent
     ~this()
     {
         Delete(particles);
+    }
+    
+    void reset()
+    {
+        foreach(ref p; particles)
+        {
+            resetParticle(p);
+            
+            // Randomize initial state
+            p.time = p.lifetime * uniform(0.0f, 1.0f);
+            p.opacity = clamp(p.time / fadeInDuration, 0.0f, 1.0f);
+            float t = p.time / p.lifetime;
+            p.color = lerp(startColor, endColor, t);
+            p.color.a = lerp(startColor.a, endColor.a, t) * p.opacity;
+        }
     }
 
     /// Resets a particle to its initial state.
@@ -368,11 +383,9 @@ class Emitter: EntityComponent
             p.lifetime = maxLifetime;
         p.gravityVector = Vector3f(0, -1, 0);
 
-        float s;
-        if (maxSize > maxSize)
-            s = uniform(maxSize, maxSize);
-        else
-            s = maxSize;
+        float s = maxSize;
+        if (maxSize > minSize)
+            s = lerp(minSize, maxSize, uniform(0.0f, 1.0f));
 
         p.rotation = uniform(0.0f, 2.0f * PI);
         p.rotationDirection = choice([1.0f, -1.0f]);
@@ -514,8 +527,8 @@ class ParticleSystem: EntityComponent
 
         float t = p.time / p.lifetime;
         p.color = lerp(e.startColor, e.endColor, t);
-        p.scale = p.scale + e.scaleStep * dt;
-        p.rotation = p.rotation + e.rotationStep * p.rotationDirection * dt;
+        p.scale += e.scaleStep * dt;
+        p.rotation += e.rotationStep * p.rotationDirection * dt;
 
         if (p.move)
         {
@@ -544,20 +557,14 @@ class ParticleSystem: EntityComponent
         foreach(e; emitters)
         foreach(ref p; e.particles)
         {
-            if (p.active)
+            if (p.time < p.lifetime)
             {
-                if (p.time < p.lifetime)
-                {
-                    updateParticle(e, p, t.delta);
-                    haveParticlesToDraw = true;
-                }
-                else
-                    p.active = false;
+                updateParticle(e, p, t.delta);
+                haveParticlesToDraw = true;
             }
             else if (e.emitting)
             {
                 e.resetParticle(p);
-                p.active = true;
             }
         }
     }
@@ -567,6 +574,8 @@ class ParticleSystem: EntityComponent
     {
         if (haveParticlesToDraw)
         {
+            glBindVertexArray(vao);
+            
             foreach(e; emitters)
             if (e.entity.visible)
             {
@@ -584,6 +593,8 @@ class ParticleSystem: EntityComponent
                     }
                 }
             }
+            
+            glBindVertexArray(0);
         }
     }
 
@@ -619,9 +630,9 @@ class ParticleSystem: EntityComponent
             stateLocal.shader.bindParameters(&stateLocal);
         }
 
-        glBindVertexArray(vao);
+        //glBindVertexArray(vao);
         glDrawElements(GL_TRIANGLES, cast(uint)indices.length * 3, GL_UNSIGNED_INT, cast(void*)0);
-        glBindVertexArray(0);
+        //glBindVertexArray(0);
 
         if (stateLocal.shader)
         {

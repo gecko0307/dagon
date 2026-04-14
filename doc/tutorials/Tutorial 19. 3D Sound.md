@@ -5,6 +5,8 @@ Starting from Dagon 0.32 a sound playback extension is provided, dagon:audio, wh
 Start with creating an `AudioManager` in your game class:
 
 ```d
+import dagon.ext.audio;
+
 class MyGame: Game
 {
     AudioManager audioManager;
