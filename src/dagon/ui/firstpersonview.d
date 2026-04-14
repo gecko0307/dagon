@@ -97,6 +97,9 @@ class FirstPersonViewComponent: EntityComponent
     /// Camera turn angle (degrees).
     float turn = 0.0f;
     
+    /// Camera roll angle (degrees).
+    float roll = 0.0f;
+    
     /// Vertical orientation quaternion.
     Quaternionf orientationV = Quaternionf.identity;
 
@@ -223,7 +226,8 @@ class FirstPersonViewComponent: EntityComponent
         orientationV = rotationQuaternion(Vector3f(1.0f, 0.0f, 0.0f), degtorad(pitch));
         orientationH = rotationQuaternion(Vector3f(0.0f, 1.0f, 0.0f), degtorad(turn));
         
-        Quaternionf orientation = baseOrientation * orientationH * orientationV;
+        Quaternionf orientation = baseOrientation * orientationH * orientationV *
+            rotationQuaternion(Vector3f(0.0f, 0.0f, 1.0f), degtorad(roll));
         
         entity.transformation =
             (translationMatrix(entity.position) *
