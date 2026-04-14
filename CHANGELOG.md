@@ -1,7 +1,15 @@
 Dagon 1.0.0 - TBD
 -----------------
+- **Render**
+  - Fix fog for area lights
 - **Graphics components**
-  - Particle system improvements.
+  - Particle system improvements:
+    - `Emitter.fadeInDuration`
+    - `Emitter.initialPositionRandomRadius` is now `Emitter.initialPositionRandomRadii` vector
+- **UI**
+  - `FirstPersonViewComponent.roll`
+- **Extra**
+  - `StarfieldSkyShader.sunEnergy`.
 
 Dagon 1.0.0-beta2 - 11 Apr, 2026
 --------------------------------
