@@ -69,7 +69,7 @@ class JoltCharacterController: EntityComponent
     
     Vector3f ceilingPosition = Vector3f(0.0f, 0.0f, 0.0f);
     float maxRaycastDistance = 100.0f;
-    float headMargin = 0.1f;
+    float headMargin = 0.0f;
     
    protected:
     JoltCapsuleShape standingCapsuleShape;

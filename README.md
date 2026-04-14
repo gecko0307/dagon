@@ -23,7 +23,7 @@ Screenshots
 
 [![Sponza](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated3.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated3.jpg)
 
-[![Ruins of hell](https://blog.pixperfect.online/wp-content/uploads/2026/04/ruins_of_hell2.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/04/ruins_of_hell2.jpg)
+[![Ruins of Hell](https://blog.pixperfect.online/wp-content/uploads/2026/04/ruins_of_hell3.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/04/ruins_of_hell3.jpg)
 
 [![Space](https://blog.pixperfect.online/wp-content/uploads/2025/05/space.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/05/space.jpg)
 
