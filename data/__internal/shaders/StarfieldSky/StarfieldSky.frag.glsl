@@ -35,7 +35,8 @@ float noise3d(vec3 x)
     return fract(xhash + yhash + zhash);
 }
 
-uniform vec4 spaceColor;
+uniform vec4 spaceColorZenith;
+uniform vec4 spaceColorHorizon;
 uniform float starsThreshold;
 uniform float starsBrightness;
 uniform float starsTwinkleSpeed;
@@ -50,9 +51,9 @@ const float sunAngularDiameterCos = 0.9999;
 
 void main()
 {
-    vec3 radiance = toLinear(spaceColor.rgb);
-    
     vec3 n = normalize(worldNormal);
+    float horizonFactor = 1.0 - clamp(dot(n, vec3(0.0, 1.0, 0.0)), 0.0, 1.0);
+    vec3 radiance = mix(toLinear(spaceColorZenith.rgb), toLinear(spaceColorHorizon.rgb), pow(horizonFactor, 16.0));
     
     float randomFactor = noise3d(n);
     float starsRadiance = (randomFactor >= starsThreshold)? pow((randomFactor - starsThreshold) / (1.0 - starsThreshold), starsBrightness) : 0.0;

@@ -57,7 +57,8 @@ class StarfieldSkyShader: Shader
     ShaderParameter!float gbufferMask;
     ShaderParameter!float blurMask;
     
-    ShaderParameter!Color4f ssSpaceColor;
+    ShaderParameter!Color4f ssSpaceColorZenith;
+    ShaderParameter!Color4f ssSpaceColorHorizon;
     ShaderParameter!float ssStarsThreshold;
     ShaderParameter!float ssStarsBrightness;
     ShaderParameter!float ssStarsTwinkleSpeed;
@@ -70,7 +71,8 @@ class StarfieldSkyShader: Shader
     ShaderParameter!float ssSunEnergy;
     
    public:
-    Color4f spaceColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
+    Color4f spaceColorZenith = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
+    Color4f spaceColorHorizon = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
     float starsThreshold = 0.995f;
     float starsBrightness = 8.0f;
     float starsTwinkleSpeed = 1.0f;
@@ -97,7 +99,8 @@ class StarfieldSkyShader: Shader
         gbufferMask = createParameter!float("gbufferMask");
         blurMask = createParameter!float("blurMask");
         
-        ssSpaceColor = createParameter!Color4f("spaceColor");
+        ssSpaceColorZenith = createParameter!Color4f("spaceColorZenith");
+        ssSpaceColorHorizon = createParameter!Color4f("spaceColorHorizon");
         ssStarsThreshold = createParameter!float("starsThreshold");
         ssStarsBrightness = createParameter!float("starsBrightness");
         ssStarsTwinkleSpeed = createParameter!float("starsTwinkleSpeed");
@@ -127,7 +130,8 @@ class StarfieldSkyShader: Shader
         gbufferMask = state.gbufferMask;
         blurMask = state.blurMask;
         
-        ssSpaceColor = spaceColor;
+        ssSpaceColorZenith = spaceColorZenith;
+        ssSpaceColorHorizon = spaceColorHorizon;
         ssStarsThreshold = starsThreshold;
         ssStarsBrightness = starsBrightness;
         ssStarsTwinkleSpeed = starsTwinkleSpeed;
