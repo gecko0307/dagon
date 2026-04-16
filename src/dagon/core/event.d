@@ -1091,6 +1091,12 @@ class EventManager: Owner
                         e = Event(EventType.FocusLoss);
                         addEvent(e);
                     }
+                    else if (event.window.event == SDL_WINDOWEVENT_CLOSE)
+                    {
+                        exit();
+                        e = Event(EventType.Quit);
+                        addEvent(e);
+                    }
                     break;
 
                 case SDL_DROPFILE:
