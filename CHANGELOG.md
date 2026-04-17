@@ -1,5 +1,7 @@
-Dagon 1.0.0 - TBD
------------------
+Dagon 1.0.0-beta3 - 17 Apr, 2026
+--------------------------------
+- **Core**
+  - Event manager now handles `SDL_WINDOWEVENT_CLOSE`
 - **Render**
   - Fix fog for area lights
 - **Graphics components**
@@ -7,9 +9,12 @@ Dagon 1.0.0 - TBD
     - `Emitter.fadeInDuration`
     - `Emitter.initialPositionRandomRadius` is now `Emitter.initialPositionRandomRadii` vector
 - **UI**
-  - `FirstPersonViewComponent.roll`
+  - New property `FirstPersonViewComponent.roll`
 - **Extra**
-  - `StarfieldSkyShader.sunEnergy`.
+  - New `StarfieldSkyShader` properties: `sunEnergy`, `spaceColorZenith`, `spaceColorHorizon`.
+- **Extensions**
+  - `dagon:jolt`:
+    - `JoltCharacterController.headMargin` is now zero by default.
 
 Dagon 1.0.0-beta2 - 11 Apr, 2026
 --------------------------------
