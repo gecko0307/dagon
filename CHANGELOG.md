@@ -6,7 +6,7 @@ Dagon 1.0.0-beta3 - TBD
   - Fix fog for area lights
 - **Graphics components**
   - Particle system improvements:
-    - `Emitter.fadeInDuration`
+    - New properties `Emitter.fadeInDuration`, `Emitter.gravity`
     - `Emitter.initialPositionRandomRadius` is now `Emitter.initialPositionRandomRadii` vector
 - **UI**
   - New property `FirstPersonViewComponent.roll`
