@@ -359,80 +359,88 @@ void main()
     float shadow = shadowMap(eyePosition, N);
     
     vec3 radiance = toLinear(emission(uv));
+    float alpha;
     
-    vec3 reflected = radiance;
-    
-    // Ambient light
+    if (shaded)
     {
-        vec3 irradiance = ambient(worldN, 0.99);
-        vec3 reflection = ambient(worldR, sqrt(r)) * s;
-        vec3 F = clamp(fresnelRoughness(dot(N, E), f0, r), 0.0, 1.0);
-        vec3 kD = (1.0 - F) * (1.0 - m);
-        vec2 brdf = haveAmbientBRDF? texture(ambientBRDF, vec2(dot(N, E), r)).rg : vec2(1.0, 0.0);
-        vec3 specular = reflection * clamp(F * brdf.x + brdf.y, 0.0, 1.0) * ambientEnergy;
-        radiance += kD * irradiance * ambientEnergy * albedo + specular;
-        reflected += specular;
-    }
-    
-    // Sun light
-    {
-        float NL = max(dot(N, L), 0.0);
-        vec3 H = normalize(E + L);
+        vec3 reflected = radiance;
         
-        float NDF = distributionGGX(N, H, r);
-        float G = geometrySmith(N, E, L, r);
-        vec3 F = fresnelRoughness(max(dot(H, E), 0.0), f0, r);
-        
-        vec3 kD = (1.0 - F) * (1.0 - m);
-        vec3 specular = (NDF * G *  F) / max(4.0 * max(dot(N, E), 0.0) * NL, 0.001);
-        
-        vec3 incomingLight = toLinear(sunColor.rgb) * sunEnergy;
-        vec3 diffuse = albedo * invPI;
-        
-        radiance += (kD * diffuse + specular * s) * NL * incomingLight * shadow;
-        reflected += specular * s * NL * incomingLight * shadow;
-    }
-    
-    // TODO: fixed number of area lights
-    
-    // Fog
-    float linearDepth = abs(eyePosition.z);
-    float fogFactor = clamp((fogEnd - linearDepth) / (fogEnd - fogStart), 0.0, 1.0);
-    radiance = mix(toLinear(fogColor.rgb), radiance, fogFactor);
-    reflected = mix(toLinear(fogColor.rgb), reflected, fogFactor);
-    
-    // Sun light scattering
-    if (sunScattering)
-    {
-        float accumScatter = 1.0;
-        
-        if (sunScatteringShadow)
+        // Ambient light
         {
-            vec3 startPosition = vec3(0.0);
-            vec3 rayVector = eyePosition;
-            float rayLength = length(rayVector);
-            vec3 rayDirection = rayVector / rayLength;
-            float stepSize = rayLength / float(sunScatteringSamples);
-            vec3 currentPosition = startPosition;
-            float invSamples = 1.0 / float(sunScatteringSamples);
-            float offset = hash((texCoord * 467.759 + time) * eyePosition.z);
-            accumScatter = 0.0;
-            for (float i = 0; i < float(sunScatteringSamples); i+=1.0)
-            {
-                accumScatter += shadowLookup(shadowTextureArray, 1.0, shadowMatrix2 * vec4(currentPosition, 1.0), vec2(0.0));
-                currentPosition += rayDirection * (stepSize - offset * sunScatteringMaxRandomStepOffset);
-            }
-            accumScatter *= invSamples;
+            vec3 irradiance = ambient(worldN, 0.99);
+            vec3 reflection = ambient(worldR, sqrt(r)) * s;
+            vec3 F = clamp(fresnelRoughness(dot(N, E), f0, r), 0.0, 1.0);
+            vec3 kD = (1.0 - F) * (1.0 - m);
+            vec2 brdf = haveAmbientBRDF? texture(ambientBRDF, vec2(dot(N, E), r)).rg : vec2(1.0, 0.0);
+            vec3 specular = reflection * clamp(F * brdf.x + brdf.y, 0.0, 1.0) * ambientEnergy;
+            radiance += kD * irradiance * ambientEnergy * albedo + specular;
+            reflected += specular;
         }
         
-        float scattFactor = clamp(accumScatter * scattering(dot(-L, E)) * sunScatteringDensity, 0.0, 1.0);
-        radiance = mix(radiance, toLinear(sunColor.rgb) * sunEnergy, scattFactor);
-        reflected = mix(reflected, toLinear(sunColor.rgb) * sunEnergy, scattFactor);
+        // Sun light
+        {
+            float NL = max(dot(N, L), 0.0);
+            vec3 H = normalize(E + L);
+            
+            float NDF = distributionGGX(N, H, r);
+            float G = geometrySmith(N, E, L, r);
+            vec3 F = fresnelRoughness(max(dot(H, E), 0.0), f0, r);
+            
+            vec3 kD = (1.0 - F) * (1.0 - m);
+            vec3 specular = (NDF * G *  F) / max(4.0 * max(dot(N, E), 0.0) * NL, 0.001);
+            
+            vec3 incomingLight = toLinear(sunColor.rgb) * sunEnergy;
+            vec3 diffuse = albedo * invPI;
+            
+            radiance += (kD * diffuse + specular * s) * NL * incomingLight * shadow;
+            reflected += specular * s * NL * incomingLight * shadow;
+        }
+        
+        // TODO: fixed number of area lights
+        
+        // Fog
+        float linearDepth = abs(eyePosition.z);
+        float fogFactor = clamp((fogEnd - linearDepth) / (fogEnd - fogStart), 0.0, 1.0);
+        radiance = mix(toLinear(fogColor.rgb), radiance, fogFactor);
+        reflected = mix(toLinear(fogColor.rgb), reflected, fogFactor);
+        
+        // Sun light scattering
+        if (sunScattering)
+        {
+            float accumScatter = 1.0;
+            
+            if (sunScatteringShadow)
+            {
+                vec3 startPosition = vec3(0.0);
+                vec3 rayVector = eyePosition;
+                float rayLength = length(rayVector);
+                vec3 rayDirection = rayVector / rayLength;
+                float stepSize = rayLength / float(sunScatteringSamples);
+                vec3 currentPosition = startPosition;
+                float invSamples = 1.0 / float(sunScatteringSamples);
+                float offset = hash((texCoord * 467.759 + time) * eyePosition.z);
+                accumScatter = 0.0;
+                for (float i = 0; i < float(sunScatteringSamples); i+=1.0)
+                {
+                    accumScatter += shadowLookup(shadowTextureArray, 1.0, shadowMatrix2 * vec4(currentPosition, 1.0), vec2(0.0));
+                    currentPosition += rayDirection * (stepSize - offset * sunScatteringMaxRandomStepOffset);
+                }
+                accumScatter *= invSamples;
+            }
+            
+            float scattFactor = clamp(accumScatter * scattering(dot(-L, E)) * sunScatteringDensity, 0.0, 1.0);
+            radiance = mix(radiance, toLinear(sunColor.rgb) * sunEnergy, scattFactor);
+            reflected = mix(reflected, toLinear(sunColor.rgb) * sunEnergy, scattFactor);
+        }
+        
+        float reflectedLuminance = clamp(dot(reflected, vec3(0.2125, 0.7154, 0.0721)), 0.0, 1.0);
+        float alphaFresnel = clamp(fresnel(dot(N, E), 0.04), 0.0, 1.0);
+        alpha = stateOpacity * mix(mix(diff.a * materialOpacity, 1.0, alphaFresnel), 1.0, reflectedLuminance);
     }
-    
-    float reflectedLuminance = clamp(dot(reflected, vec3(0.2125, 0.7154, 0.0721)), 0.0, 1.0);
-    float alphaFresnel = clamp(fresnel(dot(N, E), 0.04), 0.0, 1.0);
-    float alpha = stateOpacity * mix(mix(diff.a * materialOpacity, 1.0, alphaFresnel), 1.0, reflectedLuminance);
+    else
+    {
+        alpha = stateOpacity * diff.a * materialOpacity;
+    }
     
     // Velocity
     vec2 posScreen = (currPosition.xy / currPosition.w) * 0.5 + 0.5;

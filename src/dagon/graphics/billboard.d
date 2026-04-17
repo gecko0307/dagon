@@ -150,7 +150,7 @@ class Billboard: Owner, Drawable
             state.viewMatrix *
             translationMatrix(position) *
             state.invViewRotationMatrix *
-            rotationMatrix(Axis.z, rotation) *
+            rotationMatrix(Axis.z, degtorad(rotation)) *
             scaleMatrix(Vector3f(scaling.x, scaling.y, 1.0f));
         
         stateLocal.modelViewMatrix = modelViewMatrix;
