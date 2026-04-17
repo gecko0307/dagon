@@ -1,5 +1,5 @@
-Dagon 1.0.0-beta3 - 17 Apr, 2026
---------------------------------
+Dagon 1.0.0-beta3 - TBD
+-----------------------
 - **Core**
   - Event manager now handles `SDL_WINDOWEVENT_CLOSE`
 - **Render**
