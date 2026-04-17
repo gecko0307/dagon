@@ -313,6 +313,9 @@ class Emitter: EntityComponent
     
     ///
     float fadeInDuration = 0.1f;
+    
+    ///
+    Vector3f gravity = Vector3f(0.0f, 0.0f, 0.0f);
 
     /**
      * Constructs an emitter with a given number of particles.
@@ -533,6 +536,8 @@ class ParticleSystem: EntityComponent
         if (p.move)
         {
             p.acceleration = Vector3f(0, 0, 0);
+            
+            p.acceleration += e.gravity;
 
             foreach(ref ff; forceFields)
             {
