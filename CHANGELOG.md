@@ -3,6 +3,7 @@ Dagon 1.0.0-beta3 - TBD
 - **Core**
   - Event manager now handles `SDL_WINDOWEVENT_CLOSE`
 - **Render**
+  - `SkyShader` now supports alpha clipping for environment textures
   - Fix fog for area lights
 - **Graphics components**
   - Particle system improvements:
