@@ -21,24 +21,24 @@ in vec4 prevPosition;
 /*
  * Diffuse color
  */
-subroutine vec3 srtEnv(in vec3 dir);
+subroutine vec4 srtEnv(in vec3 dir);
 
 uniform vec4 envColor;
-subroutine(srtEnv) vec3 environmentColor(in vec3 dir)
+subroutine(srtEnv) vec4 environmentColor(in vec3 dir)
 {
-    return envColor.rgb;
+    return envColor;
 }
 
 uniform sampler2D envTexture;
-subroutine(srtEnv) vec3 environmentTexture(in vec3 dir)
+subroutine(srtEnv) vec4 environmentTexture(in vec3 dir)
 {
-    return texture(envTexture, envMapEquirect(dir)).rgb;
+    return texture(envTexture, envMapEquirect(dir));
 }
 
 uniform samplerCube envTextureCube;
-subroutine(srtEnv) vec3 environmentCubemap(in vec3 dir)
+subroutine(srtEnv) vec4 environmentCubemap(in vec3 dir)
 {
-    return texture(envTextureCube, dir).rgb;
+    return texture(envTextureCube, dir);
 }
 
 subroutine uniform srtEnv environment;
@@ -51,19 +51,21 @@ layout(location = 5) out vec4 fragRadiance;
 
 void main()
 {
-    vec3 color = environment(normalize(worldNormal));
+    vec4 color = environment(normalize(worldNormal));
+    if (color.a < 0.5)
+        discard;
     
     vec3 radiance;
     if (linearize)
-        radiance = toLinear(color) * energy;
+        radiance = toLinear(color.rgb) * energy;
     else
-        radiance = color * energy;
+        radiance = color.rgb * energy;
     
     vec2 posScreen = (currPosition.xy / currPosition.w) * 0.5 + 0.5;
     vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;
     vec2 velocity = posScreen - prevPosScreen;
     
-    fragColor = vec4(color, gbufferMask);
+    fragColor = vec4(color.rgb, gbufferMask);
     fragEmission = vec4(0.0, 0.0, 0.0, 1.0);
     fragVelocity = vec4(velocity, blurMask, 1.0);
     fragRadiance = vec4(radiance, 1.0);
