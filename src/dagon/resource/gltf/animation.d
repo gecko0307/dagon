@@ -496,7 +496,8 @@ struct TRS
 enum PlayMode
 {
     Loop,
-    Once
+    Once,
+    OnceAndStop
 }
 
 /**
@@ -749,6 +750,15 @@ class GLTFBlendedPose: Pose
                     blendAlpha = 0.0f;
                     blendSpeed = previousBlendSpeed;
                     playMode = PlayMode.Loop;
+                }
+                else if (playMode == PlayMode.OnceAndStop)
+                {
+                    nextAnimation = null;
+                    previousAnimation = animation;
+                    animationDuration = animation.duration;
+                    blendAlpha = 0.0f;
+                    blendSpeed = 0.0f;
+                    time.elapsed = animationDuration - t.delta;
                 }
             }
         }
