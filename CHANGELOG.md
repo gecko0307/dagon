@@ -2,6 +2,8 @@ Dagon 1.0.0-beta3 - TBD
 -----------------------
 - **Core**
   - Event manager now handles `SDL_WINDOWEVENT_CLOSE`
+- **Assets**
+  - New animation playback mode for `GLTFBlendedPose`: `PlayMode.OnceAndStop`
 - **Render**
   - `SkyShader` now supports alpha clipping for environment textures
   - Fix fog for area lights
@@ -14,6 +16,8 @@ Dagon 1.0.0-beta3 - TBD
 - **Extra**
   - New `StarfieldSkyShader` properties: `sunEnergy`, `spaceColorZenith`, `spaceColorHorizon`.
 - **Extensions**
+  - `dagon:audio`:
+    - `AudioManager.streamMusic` overload that creates a new `WavStream`
   - `dagon:jolt`:
     - `JoltCharacterController.headMargin` is now zero by default.
 
