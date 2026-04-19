@@ -283,7 +283,7 @@ class AudioManager: EventListener
     void logErrorCode(string filename, int code)
     {
         String errMsg = String(audio.getErrorString(code));
-        logError("Failed to load \"", filename, "\": ", errMsg);
+        logError("Error loading \"", filename, "\": ", errMsg);
         errMsg.free();
     }
     
