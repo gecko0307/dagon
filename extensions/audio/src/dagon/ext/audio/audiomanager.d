@@ -355,6 +355,13 @@ class AudioManager: EventListener
         return result == 0;
     }
     
+    WavStream streamMusic(string filename)
+    {
+        WavStream wavStream = WavStream.create();
+        streamMusic(wavStream, filename);
+        return wavStream;
+    }
+    
     bool loadTrackerMusic(ref Openmpt openmpt, string filename)
     {
         InputStream istrm = vfs.openForInput(filename);
