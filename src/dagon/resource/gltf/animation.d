@@ -538,6 +538,9 @@ class GLTFBlendedPose: Pose
     /// Playback mode (loop or once).
     PlayMode playMode = PlayMode.Loop;
     
+    ///
+    float timeScale = 1.0f;
+    
     /**
      * Constructs a new glTF blended pose.
      *
@@ -656,7 +659,7 @@ class GLTFBlendedPose: Pose
         if (anim !is animation)
         {
             nextAnimation = anim;
-            animationDuration = nextAnimation.duration;
+            animationDuration = nextAnimation.duration * timeScale;
             blendAlpha = 1.0f;
             blendSpeed = 0.0f;
             this.playMode = playMode;
@@ -679,7 +682,7 @@ class GLTFBlendedPose: Pose
             if (anim is null)
                 animationDuration = 0.0f;
             else
-                animationDuration = nextAnimation.duration;
+                animationDuration = nextAnimation.duration * timeScale;
             blendAlpha = 0.0f;
             blendSpeed = 1.0f / transitionDuration;
             this.playMode = playMode;
@@ -716,7 +719,7 @@ class GLTFBlendedPose: Pose
         
         if (playing)
         {
-            time.elapsed += t.delta;
+            time.elapsed += timeScale * t.delta;
             time.delta = t.delta;
             
             if (blendAlpha < 1.0f)
@@ -746,7 +749,7 @@ class GLTFBlendedPose: Pose
                     if (nextAnimation is null)
                         animationDuration = 0.0f;
                     else
-                        animationDuration = nextAnimation.duration;
+                        animationDuration = nextAnimation.duration * timeScale;
                     blendAlpha = 0.0f;
                     blendSpeed = previousBlendSpeed;
                     playMode = PlayMode.Loop;
@@ -755,7 +758,7 @@ class GLTFBlendedPose: Pose
                 {
                     nextAnimation = null;
                     previousAnimation = animation;
-                    animationDuration = animation.duration;
+                    animationDuration = animation.duration * timeScale;
                     blendAlpha = 0.0f;
                     blendSpeed = 0.0f;
                     time.elapsed = animationDuration - t.delta;
