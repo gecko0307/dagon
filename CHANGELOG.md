@@ -1,5 +1,5 @@
-Dagon 1.0.0-beta3 - TBD
------------------------
+Dagon 1.0.0-beta3 - 22 Apr, 2026
+--------------------------------
 - **Core**
   - New event type `CustomResize`
   - Event manager now handles `SDL_WINDOWEVENT_CLOSE`
