@@ -130,6 +130,7 @@ enum EventType
     ControllerRemove,
     PenMotion,
     Resize,
+    CustomResize,
     FocusLoss,
     FocusGain,
     Quit,
@@ -1336,6 +1337,9 @@ abstract class EventDispatcher: Owner
             case EventType.Resize:
                 onResize(e.width, e.height);
                 break;
+            case EventType.CustomResize:
+                onCustomResize(e.x, e.y, e.width, e.height);
+                break;
             case EventType.FocusLoss:
                 onFocusLoss();
                 break;
@@ -1428,6 +1432,9 @@ abstract class EventDispatcher: Owner
 
     /// Called when the window is resized.
     void onResize(int width, int height) {}
+    
+    /// 
+    void onCustomResize(int x, int y, int width, int height) {}
 
     /// Called when the window loses focus.
     void onFocusLoss() {}

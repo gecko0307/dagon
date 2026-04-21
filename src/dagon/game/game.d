@@ -358,16 +358,17 @@ class Game: BaseGame
         }
     }
     
-    void resizeRenderers(int width, int height)
+    /// 
+    void resizeRenderers(int x, int y, int width, int height)
     {
         if (renderer)
-            renderer.setViewport(0, 0, drawableWidth, drawableHeight);
+            renderer.setViewport(0, 0, width, height);
         if (postProcessingRenderer)
-            postProcessingRenderer.setViewport(0, 0, drawableWidth, drawableHeight);
+            postProcessingRenderer.setViewport(0, 0, width, height);
         if (presentRenderer)
-            presentRenderer.setViewport(0, 0, drawableWidth, drawableHeight);
+            presentRenderer.setViewport(x, y, width, height);
         if (hudRenderer)
-            hudRenderer.setViewport(0, 0, drawableWidth, drawableHeight);
+            hudRenderer.setViewport(x, y, width, height);
     }
     
     /**
@@ -380,7 +381,7 @@ class Game: BaseGame
     override void onResize(int width, int height)
     {
         if (dynamicViewport)
-            resizeRenderers(width, height);
+            resizeRenderers(0, 0, drawableWidth, drawableHeight);
     }
     
     /// Returns OpenGL texture object of the presented frame
