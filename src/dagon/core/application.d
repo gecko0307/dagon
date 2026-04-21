@@ -1573,6 +1573,14 @@ class Application: EventListener, Updateable
             SDL_SetWindowFullscreen(window, 0);
     }
     
+    ///
+    bool isWindowMinimized()
+    {
+        uint flags = SDL_GetWindowFlags(window);
+        return (flags & SDL_WINDOW_MINIMIZED) != 0;
+    }
+    
+    ///
     bool isWindowFocused()
     {
         uint flags = SDL_GetWindowFlags(window);
