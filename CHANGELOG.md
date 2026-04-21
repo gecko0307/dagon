@@ -1,9 +1,12 @@
 Dagon 1.0.0-beta3 - TBD
 -----------------------
 - **Core**
+  - New event type `CustomResize`
   - Event manager now handles `SDL_WINDOWEVENT_CLOSE`
+  - `Application.isWindowMinimized`
 - **Assets**
   - New animation playback mode for `GLTFBlendedPose`: `PlayMode.OnceAndStop`
+  - New property `GLTFBlendedPose.timeScale`
 - **Render**
   - `SkyShader` now supports alpha clipping for environment textures
   - Fix fog for area lights
