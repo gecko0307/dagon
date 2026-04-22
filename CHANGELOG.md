@@ -1,3 +1,8 @@
+Dagon 1.0.0 - TBD
+-----------------
+- **Graphics components**
+  - `Light.angularRadius` to simulate directional light disk.
+
 Dagon 1.0.0-beta3 - 22 Apr, 2026
 --------------------------------
 - **Core**
