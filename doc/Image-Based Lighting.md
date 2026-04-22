@@ -4,17 +4,19 @@ IBL is a rendering technique that approximates global illumination using environ
 
 ## Equirectangular Maps
 
-TODO
+Equirectangular mapping uses a single 2D image and spherical coordinate space to encode the environment. Equirectangular projection maps spherical coordinates to planar coordinates: meridians to vertical straight lines of constant spacing, and circles of latitude to horizontal straight lines of constant spacing. Consequently, it preserves high precision along the equator and introduces severe distortion at the poles. Most of the HDR environment maps available on the Internet use this format because of its simplicity and efficiency.
+
+Dagon allows to use equirectangular maps directly or convert them to cube maps. The latter option is preferable, because it allows to prefilter the cubemap, storing reflectance distributions for different roughness values in the mip chain. This gives highly realistic physically-based results (see below).
 
 ## Cube Maps
 
-TODO
+A cube map consists of 6 texture surfaces covering a cube around a world space point. This is the mainstream method to store in-game environment maps. A cube map can be pre-baked in an external tool and saved to DDS or KTX for direct uploading to VRAM, or generated in runtime from an equirectangular map.
 
 ## Diffuse IBL
 
 Diffuse IBL approximates global diffuse illumination using an irradiance map. It is computed by convolving the environment map with a Lambertian BRDF, giving a low-frequency lighting term for the scene.
 
-## Specular IBL. Split Sum Approximation
+## Specular IBL and the Split Sum Approximation
 
 Introduced by Brian Karis in Epic Games, split sum approximation is an industry-standard method to render image-based specular reflections. It splits the rendering equation into two precomputable parts: a pre-filtered environment map and a 2D lookup table, sometimes called a BRDF integration map or DFG (Distribution, Fresnel, Geometry). This red-green LUT outputs a scale (red channel) and an offset (green channel) for the Fresnel term for different roughness values and viewing angles.
 
@@ -29,7 +31,3 @@ Ls = reflection * (F * brdf.r + brdf.g)
 ```
 
 Dagon uses Smith DFG which is automatically loaded from `data/__internal/textures/brdf.dds`.
-
-## Usage
-
-TODO

@@ -21,4 +21,4 @@ Used when `RenderView.projection = Ortho`. The orthographic projection displays 
 
 ## Screen-Aligned Orthographic View
 
-Used when `RenderView.projection = OrthoScreen`. In this mode, the orthographic projection is built in such way that 1 scene unit corresponds to 1 logical pixel on the screen. It is used for 2D graphics, HUD and GUI overlays.
+Used when `RenderView.projection = OrthoScreen`. In this mode, the orthographic projection is built in such way that 1 scene unit corresponds to 1 pixel on the screen. It is used for 2D graphics, HUD and GUI overlays.

@@ -84,7 +84,3 @@ class MyDeviceDriver: InputDevice
 ```
 
 Then register the class in the event manager using `addInputDevice` method.
-
-## Event System Heap
-
-TODO
