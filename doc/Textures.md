@@ -47,7 +47,7 @@ Popular uncompressed pixel formats include:
 - RGBA32F – 4 channels, 32-bit floating-point per channel
 - RGBA16F – 4 channels, 16-bit floating-point per channel
 
-The most GPU-efficient format for color textures is RGBA8 (4 channels, 8 bits per channel). Dagon's image loader automatically converts from input format to RGBA8, if `ConversionHint.RGBA` is specified in `TextureAsset.conversion.hint` property. For storing textures in exotic or block-compressed formats, DDS and KTX containers can be used.
+The most GPU-efficient format for color textures is RGBA8. Dagon's image loader automatically converts from input format to RGBA8, if `ConversionHint.RGBA` is specified in `TextureAsset.conversion.hint` property. For storing textures in exotic or block-compressed formats, DDS and KTX containers can be used.
 
 Note: Dagon sets up OpenGL to use 4-byte alignment when reading pixel rows.
 
@@ -66,7 +66,7 @@ High dynamic range (HDR) textures store color data with a wider numeric range pe
 - RGBA16F – half-precision floating point, 16 bits per channel
 - RGBA32F – full-precision floating point, 32 bits per channel
 
-HDR textures are mainly used for storing linear color buffers, lightmaps and environment maps, intermediate render targets in post-processing pipelines. Dagon supports loading such textures from RGBE/Radiance HDR, DDS and KTX/KTX2 files.
+HDR textures are mainly used for storing linear color buffers, lightmaps, environment maps, and intermediate render targets in post-processing pipelines. Dagon supports loading such textures from RGBE/Radiance HDR, DDS and KTX/KTX2 files.
 
 ## Texture Compression
 
@@ -83,11 +83,11 @@ Compressed textures are typically loaded from DDS or KTX files.
 
 ## Container Formats: DDS vs KTX
 
-DDS and KTX are both industry-standard texture container formats. There is no much difference between the two from performance standpoint: in both cases, textures are typically stored in GPU-ready formats and can be uploaded with minimal processing. Both formats support 2D and 3D textures, skyboxes, and prebaked mipmaps.
+DDS and KTX are both industry-standard texture container formats. There is not much difference between the two from performance standpoint: in both cases, textures are typically stored in GPU-ready formats and can be uploaded with minimal processing. Both formats support 2D and 3D textures, skyboxes, and prebaked mipmaps.
 
 DDS (DirectDraw Surface) is a legacy container originating from Direct3D. It supports all Direct3D texture formats and is well-suited for classic DXTn/BCn compression. It is widely supported by texture compression and preprocessing tools.
 
-KTX (Khronos Texture) is a more modern container designed by the Khronos Group. It supports all Vulkan-compatible formats and maps cleanly to OpenGL as well. It fully supports BC1-BC7 and, additionally, next-gen compression schemes (Basis Universal and supercompression), reducing texture size on disk while still enabling fast loading. KTX support in tools is still rather scarse, though you'll most likely need only the reference converter, *ktx*.
+KTX (Khronos Texture) is a more modern container designed by the Khronos Group. It supports all Vulkan-compatible formats and maps cleanly to OpenGL as well. It fully supports BC1-BC7 and, additionally, next-gen compression schemes (Basis Universal and supercompression), reducing texture size on disk while still enabling efficient GPU upload. Basis Universal textures are transcoded at load time into a GPU-native compressed format (e.g., BCn, ASTC, ETC), which adds a small CPU cost but improves portability. KTX support in tools is still rather scarse, though you'll most likely need only the reference converter, *ktx*.
 
 Dagon includes native DDS importer and exporter with no external dependencies, while KTX/KTX2 support is implemented as an extension that depends on [libktx](https://github.com/khronosgroup/ktx-software).
 
