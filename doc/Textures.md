@@ -4,7 +4,7 @@ A texture is a raster image used for per-pixel data sampling in shaders. Texture
 
 ## Image File Formats
 
-Dagon supports all popular image formats via SDL_Image, libktx and built-in decoders:
+Dagon supports all popular image formats via SDL_Image, libktx and a number of built-in decoders:
 - **PNG** - lossless format, best for data exchange between different software
 - **JPEG** - lossy compression, best for large static images such as UI backgrounds and splash screens
 - **BMP** - standard lossless format on Windows, used by some old image editors
@@ -30,14 +30,10 @@ Dagon supports all popular image formats via SDL_Image, libktx and built-in deco
 Not all features supported by each format are available to Dagon applications. Dagon's texture system is not an image editor backend, it was mainly designed as a lightweight and efficient intermediary for decoding and uploading images to VRAM, not manipulating them. For example, Dagon doesn't support:
 - Animated images (frame-by-frame animation is usually implemented by offsetting texture coordinates on a spritesheet which is independent of image format)
 - Multi-layered images (XCF layers are merged into one image)
-- In-memory indexed formats (all images are usually converted to RGBA8, or use some GPU-native pixel format)
+- In-memory indexed formats (all images are usually converted to RGBA8, or use some other GPU-native pixel format)
 - Vector images (SVG images are rasterized)
 - Embedded color profiles (all data is treated as either sRGB or linear, depending on usage context)
 - EXIF metadata.
-
-## Container Formats: DDS vs KTX
-
-TODO
 
 ## Pixel Formats
 
@@ -84,6 +80,23 @@ Block-compressed formats reduce GPU memory usage and bandwidth. Dagon supports a
 - BPTC/BC7 – color + high-precision alpha, 8 bpp
 
 Compressed textures are typically loaded from DDS or KTX files.
+
+## Container Formats: DDS vs KTX
+
+DDS and KTX are both industry-standard texture container formats. There is no much difference between the two from performance standpoint: in both cases, textures are typically stored in GPU-ready formats and can be uploaded with minimal processing. Both formats support 2D and 3D textures, skyboxes, and prebaked mipmaps.
+
+DDS (DirectDraw Surface) is a legacy container originating from Direct3D. It supports all Direct3D texture formats and is well-suited for classic DXTn/BCn compression. It is widely supported by texture compression and preprocessing tools.
+
+KTX (Khronos Texture) is a more modern container designed by the Khronos Group. It supports all Vulkan-compatible formats and maps cleanly to OpenGL as well. It fully supports BC1-BC7 and, additionally, next-gen compression schemes (Basis Universal and supercompression), reducing texture size on disk while still enabling fast loading. KTX support in tools is still rather scarse, though you'll most likely need only the reference converter, *ktx*.
+
+Dagon includes native DDS importer and exporter with no external dependencies, while KTX/KTX2 support is implemented as an extension that depends on [libktx](https://github.com/khronosgroup/ktx-software).
+
+In practice, DDS remains a solid choice for traditional asset pipelines, especially when using BCn compression. It is usually faster to integrate and debug due to its simplicity and widespread support. KTX2, on the other hand, is more future-proof and useful to store textures in a size-efficient and fully platform-independent way.
+
+Some great tools to work with textures:
+- [Texture Tools Exporter](https://developer.nvidia.com/texture-tools-exporter) - compressor by NVIDIA, supports a lot of formats and works with both DDS and KTX. Includes mipmap generator, cubemap generator, and normal map generator
+- [KTX-Software](https://github.com/khronosgroup/ktx-software) - official set of tools from Khronos to work with KTX and KTX2
+- [IBLBaker](https://github.com/derkreature/IBLBaker) - a tool for environment map prefiltering.
 
 ## Cubemaps
 
