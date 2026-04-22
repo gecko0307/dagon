@@ -5,7 +5,7 @@ float distributionGGX(vec3 N, vec3 H, float roughness)
     float NdotH = max(dot(N, H), 0.0);
     float NdotH2 = NdotH * NdotH;
     float num = a2;
-    float denom = max(NdotH2 * (a2 - 1.0) + 1.0, 0.001);
+    float denom = max(NdotH2 * (a2 - 1.0) + 1.0, 0.00001);
     const float Pi = 3.14159265359;
     denom = Pi * denom * denom;
     return num / denom;

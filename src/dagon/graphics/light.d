@@ -94,6 +94,9 @@ class Light: Entity
 
     /// The color of the light.
     Color4f color;
+    
+    /// For sun light, specifies effective angular radius of the sun disk.
+    float angularRadius;
 
     /**
      * Attenuation radius of the light volume.
@@ -176,6 +179,7 @@ class Light: Entity
         shining = true;
         length = 1.0f;
         color = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+        angularRadius = 0.0f;
         volumeRadius = 1.0f;
         radius = 0.0f;
         energy = 1.0f;

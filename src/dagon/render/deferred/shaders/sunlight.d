@@ -70,6 +70,7 @@ class SunLightShader: Shader
     ShaderParameter!Vector3f lightDirection;
     ShaderParameter!Color4f lightColor;
     ShaderParameter!float lightEnergy;
+    ShaderParameter!float lightAngularRadius;
     ShaderParameter!int lightScattering;
     ShaderParameter!float lightScatteringG;
     ShaderParameter!float lightScatteringDensity;
@@ -136,6 +137,7 @@ class SunLightShader: Shader
         lightDirection = createParameter!Vector3f("lightDirection");
         lightColor = createParameter!Color4f("lightColor");
         lightEnergy = createParameter!float("lightEnergy");
+        lightAngularRadius = createParameter!float("lightAngularRadius");
         lightScattering = createParameter!int("lightScattering");
         lightScatteringG = createParameter!float("lightScatteringG");
         lightScatteringDensity = createParameter!float("lightScatteringDensity");
@@ -207,6 +209,7 @@ class SunLightShader: Shader
             lightDirection = (lightDirHg * state.viewMatrix).xyz;
             lightColor = light.color;
             lightEnergy = light.energy;
+            lightAngularRadius = light.angularRadius;
             lightScattering = light.scatteringEnabled;
             lightScatteringG = 1.0f - light.scattering;
             lightScatteringDensity = light.mediumDensity;
@@ -222,6 +225,7 @@ class SunLightShader: Shader
             lightDirection = (lightDirHg * state.viewMatrix).xyz;
             lightColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
             lightEnergy = 1.0f;
+            lightAngularRadius = 0.0f;
             lightScattering = 0;
             lightScatteringG = 0.0f;
             lightScatteringDensity = 0.0f;

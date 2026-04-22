@@ -28,6 +28,7 @@ uniform float fogEnd;
 uniform vec3 lightDirection;
 uniform vec4 lightColor;
 uniform float lightEnergy;
+uniform float lightAngularRadius;
 uniform bool lightScattering;
 uniform float lightScatteringG;
 uniform float lightScatteringDensity;
@@ -141,13 +142,16 @@ void main()
     float NE = max(dot(N, E), 0.0);
     vec3 H = normalize(E + L);
     float LH = max(dot(L, H), 0.0);
+    
+    // Simulate sun disk
+    roughness = max(roughness, lightAngularRadius); 
 
     float NDF = distributionGGX(N, H, roughness);
     float G = geometrySmith(N, E, L, roughness);
     vec3 F = fresnelRoughness(max(dot(H, E), 0.0), f0, roughness);
 
     vec3 kD = (1.0 - F);
-    vec3 specular = (NDF * G * F) / max(4.0 * max(dot(N, E), 0.0) * NL, 0.001);
+    vec3 specular = (NDF * G * F) / max(4.0 * max(dot(N, E), 0.0) * NL, 0.00001);
     
     vec3 incomingLight = toLinear(lightColor.rgb) * lightEnergy;
     
@@ -156,7 +160,7 @@ void main()
     // fss90 used to "flatten" retroreflection based on roughness
     float FL = schlickFresnel(NL);
     float FV = schlickFresnel(NE);
-    float fss90 = LH * LH * max(roughness, 0.001);
+    float fss90 = LH * LH * max(roughness, 0.00001);
     float fss = mix(1.0, fss90, FL) * mix(1.0, fss90, FV);
     float ss = 1.25 * (fss * (1.0 / max(NL + NE, 0.1) - 0.5) + 0.5);
     

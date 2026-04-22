@@ -245,8 +245,6 @@ subroutine(srtAmbient) vec3 ambientEquirectangularMap(in vec3 wN, in float perce
 {
     ivec2 envMapSize = textureSize(ambientTexture, 0);
     float resolution = float(max(envMapSize.x, envMapSize.y));
-    //float glossyExponent = 2.0 / pow(perceptualRoughness, 4.0) - 2.0;
-    //float lod = log2(resolution * sqrt(3.0)) - 0.5 * log2(glossyExponent + 1.0);
     float lod = log2(resolution) * perceptualRoughness;
     return textureLod(ambientTexture, envMapEquirect(wN), lod).rgb;
 }
@@ -256,8 +254,6 @@ subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float perceptualRoughn
 {
     ivec2 envMapSize = textureSize(ambientTextureCube, 0);
     float resolution = float(max(envMapSize.x, envMapSize.y));
-    //float glossyExponent = 2.0 / pow(perceptualRoughness, 4.0) - 2.0;
-    //float lod = log2(resolution * sqrt(3.0)) - 0.5 * log2(glossyExponent + 1.0);
     float lod = log2(resolution) * perceptualRoughness;
     return textureLod(ambientTextureCube, wN, lod).rgb;
 }
@@ -387,7 +383,7 @@ void main()
             vec3 F = fresnelRoughness(max(dot(H, E), 0.0), f0, r);
             
             vec3 kD = (1.0 - F) * (1.0 - m);
-            vec3 specular = (NDF * G *  F) / max(4.0 * max(dot(N, E), 0.0) * NL, 0.001);
+            vec3 specular = (NDF * G *  F) / max(4.0 * max(dot(N, E), 0.0) * NL, 0.00001);
             
             vec3 incomingLight = toLinear(sunColor.rgb) * sunEnergy;
             vec3 diffuse = albedo * invPI;
@@ -420,7 +416,7 @@ void main()
                 float invSamples = 1.0 / float(sunScatteringSamples);
                 float offset = hash((texCoord * 467.759 + time) * eyePosition.z);
                 accumScatter = 0.0;
-                for (float i = 0; i < float(sunScatteringSamples); i+=1.0)
+                for (float i = 0; i < float(sunScatteringSamples); i += 1.0)
                 {
                     accumScatter += shadowLookup(shadowTextureArray, 1.0, shadowMatrix2 * vec4(currentPosition, 1.0), vec2(0.0));
                     currentPosition += rayDirection * (stepSize - offset * sunScatteringMaxRandomStepOffset);

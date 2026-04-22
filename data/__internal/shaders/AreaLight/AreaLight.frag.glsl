@@ -98,12 +98,12 @@ subroutine(srtLightRadiance) vec3 lightRadianceAreaSphere(
 
     vec3 positionToLightSource = lightPosition - pos;
     float distanceToLight = length(positionToLightSource);
-    float attenuation = pow(clamp(1.0 - (distanceToLight / max(lightRadius, 0.001)), 0.0, 1.0), 4.0) * lightEnergy;
+    float attenuation = pow(clamp(1.0 - (distanceToLight / max(lightRadius, 0.00001)), 0.0, 1.0), 4.0) * lightEnergy;
 
     vec3 Lpt = normalize(positionToLightSource);
 
     vec3 centerToRay = dot(positionToLightSource, R) * R - positionToLightSource;
-    vec3 closestPoint = positionToLightSource + centerToRay * clamp(lightAreaRadius / max(length(centerToRay), 0.001), 0.0, 1.0);
+    vec3 closestPoint = positionToLightSource + centerToRay * clamp(lightAreaRadius / max(length(centerToRay), 0.00001), 0.0, 1.0);
     vec3 L = normalize(closestPoint);  
 
     float NL = max(dot(N, Lpt), 0.0);
@@ -122,7 +122,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceAreaSphere(
     // fss90 used to "flatten" retroreflection based on roughness
     float FL = schlickFresnel(NL);
     float FV = schlickFresnel(NE);
-    float fss90 = LH * LH * max(roughness, 0.001);
+    float fss90 = LH * LH * max(roughness, 0.00001);
     float fss = mix(1.0, fss90, FL) * mix(1.0, fss90, FV);
     float ss = 1.25 * (fss * (1.0 / max(NL + NE, 0.1) - 0.5) + 0.5);
     
@@ -130,7 +130,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceAreaSphere(
 
     vec3 numerator = NDF * G * F;
     float denominator = 4.0 * max(dot(N, E), 0.0) * NL;
-    vec3 specular = numerator / max(denominator, 0.001);
+    vec3 specular = numerator / max(denominator, 0.00001);
     
     vec3 lightColorLinear = toLinear(lightColor.rgb);
     
@@ -168,7 +168,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceAreaTube(
 
     vec3 positionToLightSource = (lightPosition + lightPosition2) * 0.5 - pos;
     float distanceToLight = length(positionToLightSource);
-    float attenuation = pow(clamp(1.0 - (distanceToLight / max(lightRadius, 0.001)), 0.0, 1.0), 4.0) * lightEnergy;
+    float attenuation = pow(clamp(1.0 - (distanceToLight / max(lightRadius, 0.00001)), 0.0, 1.0), 4.0) * lightEnergy;
 
     vec3 Lpt = normalize(positionToLightSource);
 
@@ -188,7 +188,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceAreaTube(
     // fss90 used to "flatten" retroreflection based on roughness
     float FL = schlickFresnel(NL);
     float FV = schlickFresnel(NE);
-    float fss90 = LH * LH * max(roughness, 0.001);
+    float fss90 = LH * LH * max(roughness, 0.00001);
     float fss = mix(1.0, fss90, FL) * mix(1.0, fss90, FV);
     float ss = 1.25 * (fss * (1.0 / max(NL + NE, 0.1) - 0.5) + 0.5);
     
@@ -196,7 +196,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceAreaTube(
     
     vec3 numerator = NDF * G * F;
     float denominator = 4.0 * max(dot(N, E), 0.0) * NL;
-    vec3 specular = numerator / max(denominator, 0.001);
+    vec3 specular = numerator / max(denominator, 0.00001);
     
     vec3 incomingLight = toLinear(lightColor.rgb) * attenuation;
     vec3 radiance = (diffuse * lightDiffuse + specular * lightSpecular * NL) * incomingLight;
@@ -221,7 +221,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceSpot(
     vec3 positionToLightSource = lightPosition - pos;
     float distanceToLight = length(positionToLightSource);
     vec3 L = normalize(positionToLightSource);
-    float attenuation = pow(clamp(1.0 - (distanceToLight / max(lightRadius, 0.001)), 0.0, 1.0), 2.0) * lightEnergy;
+    float attenuation = pow(clamp(1.0 - (distanceToLight / max(lightRadius, 0.00001)), 0.0, 1.0), 2.0) * lightEnergy;
 
     float spotCos = clamp(dot(L, normalize(lightSpotDirection)), 0.0, 1.0);
     float spotValue = smoothstep(lightSpotCosCutoff, lightSpotCosInnerCutoff, spotCos);
@@ -243,7 +243,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceSpot(
     // fss90 used to "flatten" retroreflection based on roughness
     float FL = schlickFresnel(NL);
     float FV = schlickFresnel(NE);
-    float fss90 = LH * LH * max(roughness, 0.001);
+    float fss90 = LH * LH * max(roughness, 0.00001);
     float fss = mix(1.0, fss90, FL) * mix(1.0, fss90, FV);
     float ss = 1.25 * (fss * (1.0 / max(NL + NE, 0.1) - 0.5) + 0.5);
     
@@ -251,7 +251,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceSpot(
 
     vec3 numerator = NDF * G * F;
     float denominator = 4.0 * max(dot(N, E), 0.0) * NL;
-    vec3 specular = numerator / max(denominator, 0.001);
+    vec3 specular = numerator / max(denominator, 0.00001);
     
     vec3 incomingLight = toLinear(lightColor.rgb) * attenuation;
     vec3 radiance = (diffuse * lightDiffuse + specular * lightSpecular * NL) * incomingLight;
@@ -286,7 +286,7 @@ subroutine(srtShadow) float shadowMapDualParaboloid(in vec3 worldPos)
     vec2 uv = dir.xy / (1.0 + abs(dir.z));
     uv = uv * 0.5 + 0.5;
     float layer = 1.0 - float(dir.z >= 0.0);
-    float z = distanceToLight / max(0.001, lightRadius) - bias;
+    float z = distanceToLight / max(0.00001, lightRadius) - bias;
     float shadow = texture(shadowTextureArray, vec4(uv, layer, z));
     return shadow;
 }
