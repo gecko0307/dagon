@@ -23,6 +23,7 @@ uniform bool shaded;
 uniform vec3 sunDirection;
 uniform vec4 sunColor;
 uniform float sunEnergy;
+uniform float sunAngularRadius;
 uniform bool sunScattering;
 uniform float sunScatteringG;
 uniform float sunScatteringDensity;
@@ -380,7 +381,7 @@ void main()
             
             float NDF = distributionGGX(N, H, r);
             float G = geometrySmith(N, E, L, r);
-            vec3 F = fresnelRoughness(max(dot(H, E), 0.0), f0, r);
+            vec3 F = fresnelRoughness(max(dot(H, E), 0.0), f0, max(r, sunAngularRadius));
             
             vec3 kD = (1.0 - F) * (1.0 - m);
             vec3 specular = (NDF * G *  F) / max(4.0 * max(dot(N, E), 0.0) * NL, 0.00001);

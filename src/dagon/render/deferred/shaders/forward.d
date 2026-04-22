@@ -74,6 +74,7 @@ class ForwardShader: Shader
     ShaderParameter!Vector3f sunDirection;
     ShaderParameter!Color4f sunColor;
     ShaderParameter!float sunEnergy;
+    ShaderParameter!float sunAngularRadius;
     ShaderParameter!float sunScatteringG;
     ShaderParameter!float sunScatteringDensity;
     ShaderParameter!int sunScattering;
@@ -187,6 +188,7 @@ class ForwardShader: Shader
         sunDirection = createParameter!Vector3f("sunDirection");
         sunColor = createParameter!Color4f("sunColor");
         sunEnergy = createParameter!float("sunEnergy");
+        sunAngularRadius = createParameter!float("sunAngularRadius");
         sunScatteringG = createParameter!float("sunScatteringG");
         sunScatteringDensity = createParameter!float("sunScatteringDensity");
         sunScattering = createParameter!int("sunScattering");
@@ -335,6 +337,7 @@ class ForwardShader: Shader
             sunDirection = (sunDirHg * state.viewMatrix).xyz;
             sunColor = sun.color;
             sunEnergy = sun.energy;
+            sunAngularRadius = sun.angularRadius;
             sunScatteringG = 1.0f - sun.scattering;
             sunScatteringDensity = sun.mediumDensity;
             sunScattering = sun.scatteringEnabled;
@@ -348,6 +351,7 @@ class ForwardShader: Shader
             sunDirection = (sunDirHg * state.viewMatrix).xyz;
             sunColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
             sunEnergy = 1.0f;
+            sunAngularRadius = 0.0f;
             sunScattering = false;
             sunScatteringG = 0.0f;
             sunScatteringDensity = 1.0f;
