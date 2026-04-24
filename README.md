@@ -79,14 +79,14 @@ Features
 
 Features that are not production-ready yet:
 * Built-in UI toolkit (very basic, can be used only for simple debugging purposes)
-* OpenVR integration.
+* OpenVR integration (partial, no deferred pipeline support).
 
 System Requirements
 -------------------
 The recommended system requirements (for Full HD rendering at 60 fps):
 - CPU: Intel Core i3-10100 / AMD Ryzen 3 3100
 - RAM: application-dependent, usually 8 Gb minimum
-- GPU: GeForce RTX 30 / Radeon RX 6000 series
+- GPU: OpenGL 4.3 capable, tested on GeForce RTX 30
 - VRAM: 8 Gb
 - OS: 64-bit Windows 10 or higher / Linux.
 
