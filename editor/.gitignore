@@ -1,0 +1,41 @@
+# Compiled Object files
+*.o
+*.obj
+
+# Compiled Static libraries
+*.a
+*.lib
+
+# Executables
+*.exe
+
+# Dub files
+.dub
+dub.selections.json
+
+# Dub test files
+__test__library__
+tests/
+
+# Documentation
+docs/
+docs.json
+__dummy.html
+
+# Coverage files
+*.lst
+
+# Debug info
+*.pdb
+
+# Backup files
+*~
+
+# Shared libraries
+*.dll
+*.so
+*.dylib
+
+# Standard assets
+data/__internal/
+gamecontrollerdb.txt
