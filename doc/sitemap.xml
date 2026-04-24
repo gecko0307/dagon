@@ -248,6 +248,8 @@
 <url><loc>http://127.0.0.1/dagon/core/application/Application.glVersion.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/application/Application.hdrOutput.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/application/Application.hwnd.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/application/Application.isWindowFocused.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/application/Application.isWindowMinimized.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/application/Application.loadCursor.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/application/Application.loadedFTSupport.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/application/Application.loadedGLSupport.html</loc></url>
@@ -321,6 +323,7 @@
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonDown.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonUp.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerRemove.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onCustomResize.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onDropFile.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFileChange.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFocusGain.html</loc></url>
@@ -393,6 +396,7 @@
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonDown.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonUp.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerRemove.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onCustomResize.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onDropFile.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFileChange.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFocusGain.html</loc></url>
@@ -431,6 +435,7 @@
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonDown.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonUp.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerRemove.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onCustomResize.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onDropFile.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFileChange.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFocusGain.html</loc></url>
@@ -623,6 +628,7 @@
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonDown.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonUp.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerRemove.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onCustomResize.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onDropFile.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFileChange.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFocusGain.html</loc></url>
@@ -678,6 +684,7 @@
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonDown.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonUp.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerRemove.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onCustomResize.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onDropFile.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFileChange.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFocusGain.html</loc></url>
@@ -719,6 +726,7 @@
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonDown.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonUp.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerRemove.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onCustomResize.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onDropFile.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFileChange.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFocusGain.html</loc></url>
@@ -912,6 +920,8 @@
 <url><loc>http://127.0.0.1/dagon/core/application/Application.hdrOutput.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/application/Application.hwnd.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventListener.inputManager.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/application/Application.isWindowFocused.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/application/Application.isWindowMinimized.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/application/Application.loadCursor.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/application/Application.loadedFTSupport.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/application/Application.loadedGLSupport.html</loc></url>
@@ -933,6 +943,7 @@
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonDown.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonUp.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerRemove.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onCustomResize.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onDropFile.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFileChange.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFocusGain.html</loc></url>
@@ -1021,6 +1032,7 @@
 <url><loc>http://127.0.0.1/dagon/game/game/Game.presentRenderer.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/game/game/Game.renderer.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/game/game/Game.rendererConfig.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/game/game/Game.resizeRenderers.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/game/game/Game.this.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.address.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/application/Application.appDataFolderName.html</loc></url>
@@ -1070,6 +1082,8 @@
 <url><loc>http://127.0.0.1/dagon/core/application/Application.hdrOutput.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/application/Application.hwnd.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventListener.inputManager.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/application/Application.isWindowFocused.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/application/Application.isWindowMinimized.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/application/Application.loadCursor.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/application/Application.loadedFTSupport.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/application/Application.loadedGLSupport.html</loc></url>
@@ -1091,6 +1105,7 @@
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonDown.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonUp.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerRemove.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onCustomResize.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onDropFile.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFileChange.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFocusGain.html</loc></url>
@@ -1188,6 +1203,7 @@
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonDown.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonUp.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerRemove.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onCustomResize.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onDropFile.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFileChange.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFocusGain.html</loc></url>
@@ -1338,6 +1354,7 @@
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonDown.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonUp.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerRemove.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onCustomResize.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onDropFile.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFileChange.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFocusGain.html</loc></url>
@@ -1384,6 +1401,7 @@
 <url><loc>http://127.0.0.1/dagon/graphics/csm/CascadedShadowMap.shadowMapResolution.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/graphics/csm/CascadedShadowMap.this.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/graphics/csm/CascadedShadowMap.update.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/graphics/csm/CascadedShadowMap.updateCascadesForCamera.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/graphics/csm/CascadedShadowMap.zEnd.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/graphics/csm/CascadedShadowMap.zStart.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/graphics/shadowmap/ShadowMap.enabled.html</loc></url>
@@ -1402,6 +1420,7 @@
 <url><loc>http://127.0.0.1/dagon/graphics/csm/ShadowArea.viewMatrix.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/graphics/csm/ShadowArea.zEnd.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/graphics/csm/ShadowArea.zStart.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/graphics/csm/snapTo.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/graphics/dpsm.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/graphics/dpsm/DualParaboloidShadowMap.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/graphics/dpsm/DualParaboloidShadowMap.depthTextureArray.html</loc></url>
@@ -1533,6 +1552,7 @@
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonDown.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonUp.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerRemove.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onCustomResize.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onDropFile.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFileChange.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFocusGain.html</loc></url>
@@ -1638,6 +1658,7 @@
 <url><loc>http://127.0.0.1/dagon/graphics/heightmap/OpenSimplexHeightmap.tiling.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/graphics/light.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/graphics/light/Light.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/graphics/light/Light.angularRadius.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/graphics/light/Light.color.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/graphics/light/Light.diffuse.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/graphics/light/Light.energy.html</loc></url>
@@ -1884,6 +1905,7 @@
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonDown.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonUp.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerRemove.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onCustomResize.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onDropFile.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFileChange.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFocusGain.html</loc></url>
@@ -1930,6 +1952,7 @@
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonDown.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonUp.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerRemove.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onCustomResize.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onDropFile.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFileChange.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFocusGain.html</loc></url>
@@ -1976,6 +1999,7 @@
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonDown.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonUp.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerRemove.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onCustomResize.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onDropFile.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFileChange.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFocusGain.html</loc></url>
@@ -2022,6 +2046,7 @@
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonDown.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonUp.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerRemove.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onCustomResize.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onDropFile.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFileChange.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFocusGain.html</loc></url>
@@ -2059,9 +2084,11 @@
 <url><loc>http://127.0.0.1/dagon/graphics/particles/Emitter.airFrictionDamping.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/graphics/particles/Emitter.emitting.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/graphics/particles/Emitter.endColor.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/graphics/particles/Emitter.fadeInDuration.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/graphics/particles/Emitter.gravity.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/graphics/particles/Emitter.initialDirection.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/graphics/particles/Emitter.initialDirectionRandomFactor.html</loc></url>
-<url><loc>http://127.0.0.1/dagon/graphics/particles/Emitter.initialPositionRandomRadius.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/graphics/particles/Emitter.initialPositionRandomRadii.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/graphics/particles/Emitter.material.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/graphics/particles/Emitter.maxInitialSpeed.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/graphics/particles/Emitter.maxLifetime.html</loc></url>
@@ -2086,6 +2113,7 @@
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonDown.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonUp.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerRemove.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onCustomResize.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onDropFile.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFileChange.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFocusGain.html</loc></url>
@@ -2134,6 +2162,7 @@
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonDown.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonUp.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerRemove.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onCustomResize.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onDropFile.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFileChange.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFocusGain.html</loc></url>
@@ -2197,6 +2226,7 @@
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonDown.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonUp.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerRemove.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onCustomResize.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onDropFile.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFileChange.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFocusGain.html</loc></url>
@@ -2241,6 +2271,7 @@
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonDown.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonUp.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerRemove.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onCustomResize.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onDropFile.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFileChange.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFocusGain.html</loc></url>
@@ -3069,6 +3100,7 @@
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonDown.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonUp.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerRemove.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onCustomResize.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onDropFile.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFileChange.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFocusGain.html</loc></url>
@@ -3120,6 +3152,7 @@
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonDown.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonUp.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerRemove.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onCustomResize.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onDropFile.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFileChange.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFocusGain.html</loc></url>
@@ -3230,6 +3263,7 @@
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonDown.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonUp.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerRemove.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onCustomResize.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onDropFile.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFileChange.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFocusGain.html</loc></url>
@@ -3286,6 +3320,7 @@
 <url><loc>http://127.0.0.1/dagon/resource/gltf/animation/GLTFBlendedPose.switchToAnimation.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/resource/gltf/animation/GLTFBlendedPose.switchToAnimation.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/resource/gltf/animation/GLTFBlendedPose.this.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/resource/gltf/animation/GLTFBlendedPose.timeScale.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/resource/gltf/animation/GLTFBlendedPose.update.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/graphics/pose/Pose.boneMatrices.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/graphics/pose/Pose.pause.html</loc></url>
@@ -3666,6 +3701,7 @@
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonDown.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonUp.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerRemove.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onCustomResize.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onDropFile.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFileChange.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFocusGain.html</loc></url>
@@ -3767,6 +3803,7 @@
 <url><loc>http://127.0.0.1/dagon/ui/firstpersonview/FirstPersonViewComponent.prevMouseY.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/ui/firstpersonview/FirstPersonViewComponent.reset.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/ui/firstpersonview/FirstPersonViewComponent.right.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/ui/firstpersonview/FirstPersonViewComponent.roll.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/ui/firstpersonview/FirstPersonViewComponent.strafeLeft.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/ui/firstpersonview/FirstPersonViewComponent.strafeRight.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/ui/firstpersonview/FirstPersonViewComponent.this.html</loc></url>
@@ -3785,6 +3822,7 @@
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonDown.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonUp.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerRemove.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onCustomResize.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onDropFile.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFileChange.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onHardwareSpecificEvent.html</loc></url>
@@ -3873,6 +3911,7 @@
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonDown.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerButtonUp.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onControllerRemove.html</loc></url>
+<url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onCustomResize.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onDropFile.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFileChange.html</loc></url>
 <url><loc>http://127.0.0.1/dagon/core/event/EventDispatcher.onFocusGain.html</loc></url>

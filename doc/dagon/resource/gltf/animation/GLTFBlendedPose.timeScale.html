@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="UTF-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
-		<title>Class GLTFAnimationChannel</title>
+		<title>Variable GLTFBlendedPose.timeScale</title>
 		<link rel="stylesheet" href="../../../../css/style.min.css"/>
 		<script type="text/javascript" src="../../../../js/script.min.js"></script>
 	</head>
@@ -579,70 +579,27 @@ document.getElementById('symbolSearchPane').style.display = 'block';</script>
 		</nav>
 		<div id="main-contents">
 			<div>
-				<h1>Class GLTFAnimationChannel</h1><p>Represents a glTF animation channel, which targets a node and property (TRS).
-</p>
+				<h1>Variable GLTFBlendedPose.timeScale</h1><p></p>
 				<div class="prototype">
 					<code class="lang-d">
 						<div class="single-prototype">
-				<span class="kwd">class</span> <span class="typ">GLTFAnimationChannel</span><br>&nbsp;&nbsp;: <span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">core<wbr/></span><span class="pun">.</span><span class="pln">ownership<wbr/></span><span class="pun">.</span><span class="typ">Owner</span><span class="pun">;</span>
+				<span class="kwd">class</span> <a href="../../../../dagon/resource/gltf/animation/GLTFBlendedPose.html"><span class="typ">GLTFBlendedPose</span></a>
+				<br/>
+				<span class="pun">
+					{
+					<br/>
+				</span>
+				&nbsp;&nbsp;<span class="com">// ...</span>
+				<br/>
+				&nbsp;&nbsp;<span class="typ">float</span> <span class="pln">timeScale</span> <span class="pun">=</span> <span class="lit">1.0F</span><span class="pun">;</span>
+				<br/>
+				&nbsp;&nbsp;<span class="com">// ...</span>
+				<br/>
+				<span class="pun">}</span>
 						</div>
 					</code>
 				</div>
 				
-				<section><h2>Constructors</h2>
-					<table>
-						<col class="caption"/>
-						<tr>
-							<th>Name</th><th>Description</th>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../../dagon/resource/gltf/animation/GLTFAnimationChannel.this.html" class="public">
-									<code>this</code>
-								</a>
-								<span class="tableEntryAnnotation">(owner)</span>
-							</td>
-							<td>Constructs a new glTF animation channel.
-</td>
-						</tr>
-					</table>
-				</section>
-				<section><h2>Fields</h2>
-					<table>
-						<col class="caption"/>
-						<tr>
-							<th>Name</th><th>Type</th><th>Description</th>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../../dagon/resource/gltf/animation/GLTFAnimationChannel.extras.html" class="public"><code>extras</code></a>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlib<wbr/></span><span class="pun">.</span><span class="pln">container<wbr/></span><span class="pun">.</span><span class="pln">dict<wbr/></span><span class="pun">.</span><span class="typ">Trie</span>!(dlib.serialization.json.JSONValue,string)</code></td><td>Application-specific data.
-</td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../../dagon/resource/gltf/animation/GLTFAnimationChannel.sampler.html" class="public"><code>sampler</code></a>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../dagon/resource/gltf/animation/GLTFAnimationSampler.html"><span class="typ">GLTFAnimationSampler</span></a></code></td><td>The animation sampler for this channel.
-</td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../../dagon/resource/gltf/animation/GLTFAnimationChannel.targetNode.html" class="public"><code>targetNode</code></a>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../dagon/resource/gltf/node/GLTFNode.html"><span class="typ">GLTFNode</span></a></code></td><td>The node being animated.
-</td>
-						</tr>
-						<tr>
-							<td>
-								<a href="../../../../dagon/resource/gltf/animation/GLTFAnimationChannel.targetPath.html" class="public"><code>targetPath</code></a>
-							</td>
-							<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../dagon/resource/gltf/animation/TRSType.html"><span class="typ">TRSType</span></a></code></td><td>The property being animated (translation, rotation, scale).
-</td>
-						</tr>
-					</table>
-				</section>
 			</div>
 			<footer>
 				<div id="license-info">
