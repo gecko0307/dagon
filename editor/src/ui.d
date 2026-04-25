@@ -184,7 +184,7 @@ class EditorUI: EventListener
                     if (!igCheckbox("Autofocus", &scene.game.postProcessingRenderer.autofocus))
                         igSliderFloat("Focal depth", &scene.game.postProcessingRenderer.focalDepth, 0.0f, 2.0f, "%.2f");
                     igSliderFloat("Focal length", &scene.game.postProcessingRenderer.focalLength, 0.0f, 10.0f, "%.2f");
-                    igSliderFloat("F-Stop", &scene.game.postProcessingRenderer.fStop, 0.0f, 2.0f, "%.2f");
+                    igSliderFloat("F-Stop", &scene.game.postProcessingRenderer.fStop, 0.0f, 32.0f, "%.2f");
                 }
                 
                 if (igCheckbox("Lens distortion", &scene.lensDistortionEnabled))
@@ -221,7 +221,8 @@ class EditorUI: EventListener
                     igSliderFloat("Radial blur", &scene.game.postProcessingRenderer.radialBlurAmount, 0.0f, 1.0f, "%.2f");
                 }
                 
-                if (igCombo_Str("Tonemapper", &scene.tonemapper, "None\0Reinhard\0Uncharted\0ACES\0Filmic\0Reinhard2\0Unreal\0"))
+                if (igCombo_Str("Tonemapper", &scene.tonemapper,
+                    "None\0Reinhard\0Uncharted\0ACES\0Filmic\0Reinhard2\0Unreal\0AgX Base\0AgX Punchy\0Khronos PBR Neutral\0Uchimura\0Lottes\0"))
                     scene.game.postProcessingRenderer.tonemapper = cast(Tonemapper)scene.tonemapper;
                 igSliderFloat("Exposure", &scene.game.postProcessingRenderer.exposure, 0.0f, 2.0f, "%.1f");
 
