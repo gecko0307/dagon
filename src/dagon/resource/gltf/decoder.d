@@ -614,7 +614,7 @@ class GLTFAsset: Asset, TriangleSet
                         if (baseColorFactor.a < 1.0f)
                             material.blendMode = Transparent;
                         
-                        material.baseColorFactor = baseColorFactor;
+                        material.baseColorFactor = baseColorFactor.toGamma;
                     }
                     
                     if (pbr && "baseColorTexture" in pbr)
