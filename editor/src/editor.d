@@ -143,7 +143,7 @@ class EditorScene: Scene
     bool glowEnabled = false;
     bool motionBlurEnabled = false;
     int glowRadius = 5;
-    int tonemapper = Tonemapper.Filmic;
+    int tonemapper = Tonemapper.AgX_Punchy;
     bool fxaaEnabled = true;
 
     this(Game game)
