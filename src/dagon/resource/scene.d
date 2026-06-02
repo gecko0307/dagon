@@ -387,6 +387,16 @@ class Scene: EventListener
     {
     }
     
+    /**
+     * Override to run custom logic each time step when the scene is paused.
+     *
+     * Params:
+     *   t = Frame timing information.
+     */
+    void onPauseUpdate(Time t)
+    {
+    }
+    
     /// Override to handle scene reset.
     void onReset()
     {
@@ -408,7 +418,10 @@ class Scene: EventListener
         processEvents(focused && loaded);
         
         if (paused)
+        {
+            onPauseUpdate(t);
             return;
+        }
         
         if (!startedLoading)
         {

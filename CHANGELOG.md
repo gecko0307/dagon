@@ -1,5 +1,7 @@
-Dagon 1.0.2 - TBD
+Dagon 1.1.0 - TBD
 -----------------
+- **Assets**
+  - `Scene.onPauseUpdate`
 - **Render**
   - Support UV transformation in HUD shader.
 
