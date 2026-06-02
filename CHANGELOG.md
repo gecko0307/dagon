@@ -1,7 +1,9 @@
-Dagon 1.0.1 - TBD
------------------
+Dagon 1.0.1 - 2 Jun, 2026
+-------------------------
 - **Assets**
-  - `baseColorFactor` from glTF is now converted to gamma space for storage.
+  - `baseColorFactor` from glTF is now converted to gamma space for storage
+- **Graphics components**
+  - Fix some error messages for the `Shader` class.
 
 Dagon 1.0.0 - 24 Apr, 2026
 --------------------------
