@@ -1,3 +1,8 @@
+Dagon 1.0.2 - TBD
+-----------------
+- **Render**
+  - Support UV transformation in HUD shader.
+
 Dagon 1.0.1 - 2 Jun, 2026
 -------------------------
 - **Assets**

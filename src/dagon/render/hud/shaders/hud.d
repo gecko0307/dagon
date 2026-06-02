@@ -54,6 +54,7 @@ class HUDShader: Shader
     ShaderParameter!Matrix4x4f viewMatrix;
     ShaderParameter!Matrix4x4f invViewMatrix;
     ShaderParameter!Matrix4x4f projectionMatrix;
+    ShaderParameter!Matrix3x3f textureMatrix;
     
     ShaderParameter!float opacity;
     
@@ -77,6 +78,7 @@ class HUDShader: Shader
         viewMatrix = createParameter!Matrix4x4f("viewMatrix");
         invViewMatrix = createParameter!Matrix4x4f("invViewMatrix");
         projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
+        textureMatrix = createParameter!Matrix3x3f("textureMatrix");
         
         opacity = createParameter!float("opacity");
         
@@ -102,6 +104,7 @@ class HUDShader: Shader
         viewMatrix = &state.viewMatrix;
         invViewMatrix = &state.invViewMatrix;
         projectionMatrix = &state.projectionMatrix;
+        textureMatrix = &mat.textureTransformation;
 
         opacity = mat.opacity * state.opacity;
 
