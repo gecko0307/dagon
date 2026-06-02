@@ -928,7 +928,7 @@ class Shader: Owner
             auto sp = cast(ShaderSubroutine)parameters.get(name);
             if (sp is null)
             {
-                logWarning(this.classinfo.name, ": type mismatch for shader parameter \"%s\"", name);
+                logError(this.classinfo.name, ": type mismatch for shader parameter \"", name, "\"");
                 return null;
             }
             sp.shaderType = shaderType;
@@ -951,7 +951,7 @@ class Shader: Owner
             auto sp = cast(ShaderSubroutine)parameters.get(name);
             if (sp is null)
             {
-                logWarning(this.classinfo.name, ": type mismatch for shader parameter \"%s\"", name);
+                logError(this.classinfo.name, ": type mismatch for shader parameter \"", name, "\"");
                 return null;
             }
             sp.shaderType = shaderType;
@@ -976,7 +976,7 @@ class Shader: Owner
             auto sp = cast(ShaderParameter!T)parameters.get(name);
             if (sp is null)
             {
-                logWarning(this.classinfo.name, ": type mismatch for shader parameter \"%s\"", name);
+                logError(this.classinfo.name, ": type mismatch for shader parameter \"", name, "\"");
                 return null;
             }
             return sp;
@@ -997,7 +997,7 @@ class Shader: Owner
             auto sp = cast(ShaderParameterArray!T)parameters.get(name);
             if (sp is null)
             {
-                logWarning(this.classinfo.name, ": type mismatch for shader parameter \"%s\"", name);
+                logError(this.classinfo.name, ": type mismatch for shader parameter \"", name, "\"");
                 return null;
             }
             return sp;
@@ -1018,7 +1018,7 @@ class Shader: Owner
             auto sp = cast(UniformBlockParameter!T)parameters.get(name);
             if (sp is null)
             {
-                logWarning(this.classinfo.name, ": type mismatch for shader parameter \"%s\"", name);
+                logError(this.classinfo.name, ": type mismatch for shader parameter \"", name, "\"");
                 return null;
             }
             return sp;
@@ -1039,7 +1039,7 @@ class Shader: Owner
             auto sp = cast(ShaderParameter!T)parameters.get(name);
             if (sp is null)
             {
-                logWarning(this.classinfo.name, ": type mismatch for shader parameter \"%s\"", name);
+                logError(this.classinfo.name, ": type mismatch for shader parameter \"", name, "\"");
                 return null;
             }
 
@@ -1063,7 +1063,7 @@ class Shader: Owner
             auto sp = cast(ShaderParameter!T)parameters.get(name);
             if (sp is null)
             {
-                logWarning(this.classinfo.name, ": type mismatch for shader parameter \"%s\"", name);
+                logError(this.classinfo.name, ": type mismatch for shader parameter \"", name, "\"");
                 return null;
             }
 
@@ -1086,7 +1086,7 @@ class Shader: Owner
             auto sp = cast(ShaderParameter!T)parameters.get(name);
             if (sp is null)
             {
-                logWarning(this.classinfo.name, ": type mismatch for shader parameter \"%s\"", name);
+                logError(this.classinfo.name, ": type mismatch for shader parameter \"", name, "\"");
                 return null;
             }
 
@@ -1110,7 +1110,7 @@ class Shader: Owner
         }
         else
         {
-            logWarning(this.classinfo.name, ": unknown shader parameter \"%s\"", name);
+            logError(this.classinfo.name, ": unknown shader parameter\"", name, "\"");
             return null;
         }
     }
@@ -1123,7 +1123,7 @@ class Shader: Owner
             auto sp = cast(ShaderParameter!T)parameters.get(name);
             if (sp is null)
             {
-                logWarning(this.classinfo.name, ": type mismatch for shader parameter \"%s\"", name);
+                logError(this.classinfo.name, ": type mismatch for shader parameter \"", name, "\"");
                 return T.init;
             }
 
@@ -1134,7 +1134,7 @@ class Shader: Owner
         }
         else
         {
-            logWarning(this.classinfo.name, ": unknown shader parameter \"%s\"", name);
+            logError(this.classinfo.name, ": unknown shader parameter\"", name, "\"");
             return T.init;
         }
     }
