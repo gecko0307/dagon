@@ -1,5 +1,5 @@
-Dagon 1.1.0 - TBD
------------------
+Dagon 1.0.2 - 3 Jun, 2026
+-------------------------
 - **Assets**
   - `Scene.onPauseUpdate`
 - **Render**
