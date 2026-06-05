@@ -1,3 +1,9 @@
+Dagon 1.1.0 - TBD
+-----------------
+- **Extensions**
+  - `dagon:jolt`:
+    - `JoltPhysicsWorld.collideShape`.
+
 Dagon 1.0.2 - 3 Jun, 2026
 -------------------------
 - **Assets**
