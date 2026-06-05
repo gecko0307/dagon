@@ -79,6 +79,12 @@ extern(C)
         world.shapeCastContactPoint = result.contactPointOn1;
         return 0.0f;
     }
+    
+    float collideShapeCollectorCallback(void* userData, const(JPH_CollideShapeResult)* result)
+    {
+        JoltPhysicsWorld world = cast(JoltPhysicsWorld)userData;
+        return 0.0f;
+    }
 }
 
 class JoltPhysicsWorld: Owner, Updateable
@@ -159,6 +165,19 @@ class JoltPhysicsWorld: Owner, Updateable
     JoltRigidBody addDynamicBody(Entity entity, JoltShape shape, float mass, JoltBodySettings* bodySettings = null)
     {
         return New!JoltRigidBody(eventManager, this, entity, JoltBodyType.Dynamic, shape, mass, bodySettings);
+    }
+    
+    bool collideShape(JoltShape shape, Vector3f position, Quaternionf rotation, Vector3f scale)
+    {
+        auto query = JPH_PhysicsSystem_GetNarrowPhaseQuery(physicsSystem);
+        Matrix4x4f comTransform = translationMatrix(position) * rotation.toMatrix4x4;
+        JPH_CollideShapeSettings settings;
+        Vector3f baseOffset = Vector3f(0.0f, 0.0f, 0.0f);
+        bool hit = JPH_NarrowPhaseQuery_CollideShape(
+            query, shape.shape, &scale, &comTransform, &settings, &baseOffset,
+            &collideShapeCollectorCallback, cast(void*)this,
+            null, null, null, null);
+        return hit;
     }
     
     bool raycast(Vector3f rayFrom, Vector3f rayTo, out Vector3f hitPosition, out Vector3f hitNormal, out JoltRigidBody hitBody)
