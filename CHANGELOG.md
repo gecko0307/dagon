@@ -1,5 +1,7 @@
 Dagon 1.1.0 - TBD
 -----------------
+- **Core**
+  - VSync is now disabled by default
 - **Extensions**
   - `dagon:jolt`:
     - `JoltPhysicsWorld.collideShape`.

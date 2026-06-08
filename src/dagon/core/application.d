@@ -547,7 +547,7 @@ class Application: EventListener, Updateable
     bool stereoRendering = false;
     
     /// Vertical synchronization mode.
-    VSyncMode vsync = VSyncMode.Enabled;
+    VSyncMode vsync = VSyncMode.Disabled;
     
     /// Display refresh rate in Hz.
     uint refreshRate = 60;
