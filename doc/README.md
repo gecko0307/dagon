@@ -50,12 +50,17 @@ Dagon is written with extendability in mind, so you can easily add your own draw
 - [Virtual File System](https://github.com/gecko0307/dagon/blob/master/doc/Virtual%20File%20System.md)
 - [Conf Files](https://github.com/gecko0307/dagon/blob/master/doc/Conf%20Files.md)
 
-### Advanced topics:
-- [Render Pipeline Overview](https://github.com/gecko0307/dagon/blob/master/doc/Render%20Pipeline%20Overview.md)
-- [HiDPI](https://github.com/gecko0307/dagon/blob/master/doc/HiDPI.md)
-- [Post-processing](https://github.com/gecko0307/dagon/blob/master/doc/Post-processing.md)
-- [Localization](https://github.com/gecko0307/dagon/blob/master/doc/Localization.md)
+### Intermediate topics:
 - [Collision Detection](https://github.com/gecko0307/dagon/blob/master/doc/Collision%20Detection.md)
+- [Render Pipeline Overview](https://github.com/gecko0307/dagon/blob/master/doc/Render%20Pipeline%20Overview.md)
+- [Image-Based Lighting](https://github.com/gecko0307/dagon/blob/master/doc/Image-Based%20Lighting.md)
+- [Tips for Achieving Good Visuals](https://github.com/gecko0307/dagon/blob/master/doc/Tips%20for%20Achieving%20Good%20Visuals.md)
+- [Post-processing](https://github.com/gecko0307/dagon/blob/master/doc/Post-processing.md)
+- [2D Graphics](https://github.com/gecko0307/dagon/blob/master/doc/2D%20Graphics.md)
+- [HiDPI](https://github.com/gecko0307/dagon/blob/master/doc/HiDPI.md)
+- [Localization](https://github.com/gecko0307/dagon/blob/master/doc/Localization.md)
+
+### Advanced topics:
 - [Jolt Physics](https://github.com/gecko0307/dagon/blob/master/doc/Jolt%20Physics.md)
 - [Compute Shaders](https://github.com/gecko0307/dagon/blob/master/doc/Compute%20Shaders.md)
 - [Multithreading and Messaging System](https://github.com/gecko0307/dagon/blob/master/doc/Messaging%20System.md)
