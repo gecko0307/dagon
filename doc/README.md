@@ -2,9 +2,8 @@
 Dagon is a 3D game engine for D language based on OpenGL 4.3 and SDL2. It features deferred HDR renderer, PBR materials, an event manager, scene manager, asset manager, and entity-component model.
 
 ## Project Goals
-1. Replacing DGL as an engine for [Electronvolt](https://github.com/gecko0307/electronvolt). This means that Dagon is mainly targeted to first person action games, but nothing stops you from using it in a game of any genre.
-2. Implementing a modern, easy to use, extendable 3D game engine for D due to the lack of such. We believe that D is an excellent language for game development and it deserves more attention in this domain.
-3. Creating a use case for [dlib](https://github.com/gecko0307/dlib) for educational purposes.
+1. Providing a modern, easy to use, extendable 3D game engine for D language. We believe that D is an excellent language for game development and it deserves a wider adoption in this domain.
+2. Creating a use case for [dlib](https://github.com/gecko0307/dlib) for educational purposes.
 
 ## The Name
 Dagon is named after a god from H. P. Lovecraft's Cthulhu Mythos pantheon. This name was choosen in accordance with the community tradition of naming D projects using words beginning with 'd'.
