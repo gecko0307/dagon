@@ -1,5 +1,5 @@
 {
-    "name": "DagonEditor",
+    "name": "dagon-editor",
     "description": "Dagon scene editor",
     "homepage": "https://gecko0307.github.io/dagon",
     "license": "BSL-1.0",
@@ -20,6 +20,7 @@
         "allowWarnings"
     ],
     "lflags-linux": ["-rpath=$$ORIGIN"],
+    "targetName": "DagonEditor",
     "postBuildCommands-windows": [
         "$PACKAGE_DIR\\bin/rcedit-x64 \"DagonEditor.exe\" --set-file-version \"1.0.0.0\" --set-product-version \"1.0.0\" --set-icon \"$PACKAGE_DIR\\res\\icon.ico\" --application-manifest \"$PACKAGE_DIR\\res\\dagon_editor.manifest\""
     ]

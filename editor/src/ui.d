@@ -152,10 +152,21 @@ class EditorUI: EventListener
         if (igBeginMenu("File"))
         {
             igMenuItem("New scene");
-            igMenuItem("Open...");
+            
+            if (igMenuItem("Open..."))
+            {
+                string filename = openFileDialog(["*.*"], "Select a scene file");
+                logDebug("TODO: open ", filename);
+            }
+            
             igMenuItem("Save");
             igMenuItem("Save as...");
-            igMenuItem("Exit");
+            
+            if (igMenuItem("Exit"))
+            {
+                application.exit();
+            }
+            
             igEndMenu();
         }
         igEndMainMenuBar();
