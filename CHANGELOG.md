@@ -1,5 +1,5 @@
-Dagon 1.1.0 - TBD
------------------
+Dagon 1.0.3 - 10 Jun, 2026
+--------------------------
 - **Core**
   - VSync is now disabled by default
 - **Extensions**
