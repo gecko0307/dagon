@@ -164,16 +164,6 @@ class Window: UIWidget
     {
         super.update(t);
         
-        background.position.y = headerHeight;
-        background.scaling.x = width;
-        background.scaling.y = height - headerHeight;
-        
-        header.scaling = Vector3f(width, headerHeight, 1.0f);
-        
-        content.width = width;
-        content.height = height - headerHeight;
-        content.y = headerHeight;
-        
         if (entity.visible && mouseOver())
         {
             captureMouse = true;
@@ -235,5 +225,15 @@ class Window: UIWidget
             header.material.baseColorFactor = headerFocusedColor;
         else
             header.material.baseColorFactor = headerUnfocusedColor;
+        
+        background.position.y = headerHeight;
+        background.scaling.x = width;
+        background.scaling.y = height - headerHeight;
+        
+        header.scaling = Vector3f(width, headerHeight, 1.0f);
+        
+        content.width = width;
+        content.height = height - headerHeight;
+        content.y = headerHeight;
     }
 }

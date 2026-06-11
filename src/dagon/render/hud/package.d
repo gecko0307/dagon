@@ -83,10 +83,10 @@ class PassHUD: RenderPass
                 state.layer = entity.layer;
 
                 Matrix4x4f modelMatrix = entity.absoluteTransformation;
-                modelMatrix.a14 = ceil(modelMatrix.a14);
-                modelMatrix.a24 = ceil(modelMatrix.a24);
-                modelMatrix.a34 = ceil(modelMatrix.a34);
-                modelMatrix.a44 = 1.0f;
+                //modelMatrix.a14 = ceil(modelMatrix.a14);
+                //modelMatrix.a24 = ceil(modelMatrix.a24);
+                //modelMatrix.a34 = ceil(modelMatrix.a34);
+                //modelMatrix.a44 = 1.0f;
                 state.modelViewMatrix = state.viewMatrix * modelMatrix;
                 state.normalMatrix = state.modelViewMatrix.inverse.transposed;
                 state.opacity = entity.opacity;
