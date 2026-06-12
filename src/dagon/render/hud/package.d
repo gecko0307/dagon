@@ -59,6 +59,8 @@ class PassHUD: RenderPass
         {
             glScissor(view.x, view.y, view.width, view.height);
             glViewport(view.x, view.y, view.width, view.height);
+            
+            state.environment = pipeline.environment;
 
             if (clear)
             {
@@ -144,5 +146,6 @@ class HUDRenderer: Renderer
     override void scene(Scene s)
     {
         passHUD.group = s.world.foreground;
+        pipeline.environment = s.environment;
     }
 }
