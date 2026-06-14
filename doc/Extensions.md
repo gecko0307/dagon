@@ -12,6 +12,7 @@ Available extensions:
 * `dagon:imgui` - immediate mode GUI extension that uses [Dear ImGui](https://github.com/ocornut/imgui) via [i2d-imgui](https://github.com/Inochi2D/i2d-imgui) dynamic binding
 * `dagon:iqm` - [IQM](http://sauerbraten.org/iqm/) model format loader and renderer
 * `dagon:ktx` - [KTX/KTX2](https://www.khronos.org/ktx/) textures support
+* `dagon:jolt` - rigid body physics simulation extension that uses [Jolt Physics](https://github.com/jrouwe/joltphysics) via [joltc](https://github.com/amerkoleci/joltc) wrapper
 * `dagon:newton` - rigid body physics simulation extension that uses [Newton Dynamics](https://newtondynamics.com/forum/newton.php) library via [bindbc-newton](https://github.com/gecko0307/bindbc-newton) dynamic binding
 * `dagon:nuklear` - immediate mode GUI extension that uses [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear) library via [bindbc-nuklear](https://github.com/Timu5/bindbc-nuklear) dynamic binding (deprecated, `dagon:imgui` recommended instead)
 * `dagon:openvr` - [OpenVR](https://github.com/ValveSoftware/openvr) integration

@@ -26,7 +26,7 @@ Position is an XYZ vector conventionally measured in meters.
 
 Rotation is stored as a [quaternion](https://en.wikipedia.org/wiki/Quaternion) (XYZW vector), however, it is possible to define rotations with more intuitive pitch-turn-roll system using `Entity.setRotation`, `Entity.pitch`, `Entity.turn`, `Entity.roll` methods. `setRotation` constructs an orientation quaternion with three given angles at once. `pitch`, `turn` and `roll` rotate the current quaternion about X, Y, or Z axes, respectively, by the given delta angle. Angles are measured in degrees.
 
-Note: while pitch-turn-roll approach is convenient for dynamic steering, quaternions are nice for pre-baked animation. You can use `slerp` function to interpolate between two quaternions and animate rotation using keyframe method, in the same way as position can be animated via `lerp`. This ensures a smooth, constant-speed transition along the shortest rotational path, avoiding the gimbal lock and jitter issues common with Euler angle interpolation.
+Note: while pitch-turn-roll approach is convenient for dynamic steering, quaternions are nice for pre-baked animation. You can use `slerp` function to interpolate between two quaternions and animate rotation using keyframe method, in the same way as position can be animated via `lerp`. This ensures a robust transition along the shortest rotational path, avoiding the gimbal lock and jitter issues common with Euler angle interpolation.
 
 Scaling is a unitless XYZ vector where 1.0 means identity scale, and 0.0 means infinitesimal scale. Dagon supports non-uniform scaling, but it may interfere with geometric logic in unexpected ways, and using it in 3D graphics is generally discouraged.
 
