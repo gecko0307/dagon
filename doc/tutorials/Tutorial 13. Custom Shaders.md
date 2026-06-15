@@ -171,7 +171,9 @@ override void bindParameters(GraphicsState* state)
 
 ## Subroutines
 
-TODO
+GLSL subroutines are a mechanism that allows you to dynamically change a shader's behavior at runtime. They work like function pointers. Instead of hardcoding which function to run, you define a subroutine type, write multiple subroutine functions, and assign the active function.
+
+TODO: subroutine example.
 
 ## Limitations
 
