@@ -156,6 +156,7 @@ class EditorUI: EventListener
         }
         
         renderMenu();
+        renderContent();
         renderSettings();
         renderProperties();
         renderAssetBrowser();
@@ -199,6 +200,16 @@ class EditorUI: EventListener
             igEndMenu();
         }
         igEndMainMenuBar();
+    }
+    
+    void renderContent()
+    {
+        if (igBegin("Scene content", null, ImGuiWindowFlags.NoCollapse))
+        {
+            if (igCollapsingHeader("Entities"))
+            {
+            }
+        }
     }
     
     void renderSettings()
