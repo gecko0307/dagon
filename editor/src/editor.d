@@ -197,26 +197,33 @@ class EditorScene: Scene
         freeview.zoomStiffness = 0.25f;
         game.renderer.activeCamera = camera;
         overlay.activeCamera = camera;
+        camera.name = "Camera";
 
         auto sun = addLight(LightType.Sun);
         sun.shadowEnabled = true;
         sun.energy = 10.0f;
         sun.angularRadius = 0.01f;
         sun.pitch(-45.0f);
+        sun.name = "Sun";
         
         auto matSuzanne = addMaterial();
         matSuzanne.baseColorFactor = Color4f(1.0, 0.2, 0.2, 1.0);
         matSuzanne.sun = sun;
+        
+        auto modelsRoot = addEntity();
+        modelsRoot.name = "ModelsRoot";
 
-        auto eSuzanne = addEntity();
+        auto eSuzanne = addEntity(modelsRoot);
         eSuzanne.drawable = aOBJSuzanne.mesh;
         eSuzanne.material = matSuzanne;
         eSuzanne.position = Vector3f(0, 1, 0);
+        eSuzanne.name = "Suzanne";
 
         selectedEntity = eSuzanne;
         
         auto ePlane = addEntity();
         ePlane.drawable = New!ShapePlane(10, 10, 1, assetManager);
+        ePlane.name = "Plane";
     }
     
     override void onUpdate(Time t)

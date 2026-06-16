@@ -122,6 +122,9 @@ enum TransformMode: int
 class Entity: Owner, Updateable
 {
    public:
+    /// Entity name.
+    string name;
+    
     /// The logical layer of this entity.
     EntityLayer layer = EntityLayer.Spatial;
 

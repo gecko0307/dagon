@@ -204,11 +204,55 @@ class EditorUI: EventListener
     
     void renderContent()
     {
-        if (igBegin("Scene content", null, ImGuiWindowFlags.NoCollapse))
+        if (igBegin("Inspector", null, ImGuiWindowFlags.NoCollapse))
         {
             if (igCollapsingHeader("Entities"))
             {
+                foreach(e; scene.world.entities)
+                {
+                    if (e.parent is null)
+                        renderEntitesTree(e, &selectedEntityNodeId, 1);
+                }
             }
+            
+            igEnd();
+        }
+    }
+    
+    uint selectedEntityNodeId = -1;
+    
+    void renderEntitesTree(Entity e, uint* selectedId, uint currentId)
+    {
+        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.OpenOnArrow;
+        
+        if (e.children.length == 0)
+            flags |= ImGuiTreeNodeFlags.Leaf;
+        
+        if (*selectedId == currentId)
+            flags |= ImGuiTreeNodeFlags.Selected;
+        
+        
+        bool isOpen = false;
+        if (e.name.length)
+            isOpen = igTreeNodeEx_Ptr(&currentId, flags, "%.*s", e.name.length, e.name.ptr);
+        else
+            isOpen = igTreeNodeEx_Str("<unnamed>", flags);
+        
+        if (igIsItemClicked() && !igIsItemToggledOpen())
+        {
+            selectedId = &currentId;
+            scene.selectedEntity = e;
+        }
+        
+        if (isOpen)
+        {
+            foreach(i, child; e.children)
+            {
+                uint nextId = currentId * 1000 + cast(uint)i;
+                renderEntitesTree(child, selectedId, nextId);
+            }
+            
+            igTreePop();
         }
     }
     
