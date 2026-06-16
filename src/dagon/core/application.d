@@ -1286,7 +1286,7 @@ class Application: EventListener, Updateable
         if (updatesPerSecond == 0)
             updatesPerSecond = refreshRate;
         logInfo("Display refresh rate: ", refreshRate, " Hz");
-        logInfo("Updates per second: ", updatesPerSecond, " Hz");
+        logInfo("Updates per second: ", updatesPerSecond);
         cadencer = New!Cadencer(this, updatesPerSecond, this);
         
         if ("maxTimersCount" in config.props)
