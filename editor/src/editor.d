@@ -138,6 +138,8 @@ class EditorScene: Scene
     Game game;
     FreeviewComponent freeview;
     InteractionOverlay overlay;
+    
+    LoadingScreen loadingScreen;
 
     TextureAsset aEnvmap;
     TextureAsset aBRDF;
@@ -162,6 +164,13 @@ class EditorScene: Scene
         
         overlay = New!InteractionOverlay(eventManager, this);
         overlay.gizmoMode = GizmoMode.Translation;
+        
+        auto splashTextureAsset = addTextureAsset("data/backgrounds/loading.jpg", true);
+        
+        loadingScreen = New!LoadingScreen(game, this);
+        loadingScreen.backgroundTexture = splashTextureAsset.texture;
+        loadingScreen.progressbarCentered = false;
+        onLoad(Time(0.0, 0.0), 0.0f);
     }
 
     override void beforeLoad()
@@ -171,6 +180,11 @@ class EditorScene: Scene
     
     override void onLoad(Time t, float progress)
     {
+        loadingScreen.progressbar.position = Vector3f(
+            (game.drawableWidth - loadingScreen.progressbarWidth) * 0.5f,
+            game.drawableHeight - 40.0f, 0);
+        loadingScreen.update(t, progress);
+        loadingScreen.render();
     }
     
     override void afterLoad()
