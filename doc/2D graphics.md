@@ -1,6 +1,6 @@
 # 2D Graphics
 
-Dagon is primarily a 3D engine, but it supports 2D rendering as well. 2D renderer is called HUD renderer, because it was created for drawing HUD elements on top of the rendered screen. It is also possible to make purely 2D games with it, in which cases it is recommended to use `Game2D` base game class.
+Dagon is primarily a 3D engine, but it supports 2D rendering as well. 2D renderer is called HUD renderer, because it was created for drawing HUD elements on top of the viewport. It is also possible to make purely 2D games with it, in which cases it is recommended to use `Game2D` base game class.
 
 ## HUD Objects
 
@@ -46,12 +46,12 @@ A spritesheet is a texture that contains multiple sub-images - sprites. Each spr
 
 Sprites can be used in both 2D and 3D games. `setSprite` accepts UV coordinates ranging from 0 to 1, so, to use pixels, you have to divide pixel values with the texture size.
 
-Let's say the crosshair is an upper-left 32x32 sub-image of a 512x512 texture:
+Let's say the crosshair is an upper-left 64x64 sub-image of a 1024x1024 texture:
 
 ```d
-Vector2f spritesheetSize = Vector2f(512, 512);
+Vector2f spritesheetSize = Vector2f(1024, 1024);
 crosshair.material.setSprite(
-    Vector2f(32, 32) / spritesheetSize,
+    Vector2f(64, 64) / spritesheetSize,
     Vector2f(0, 0) / spritesheetSize);
 ```
 
