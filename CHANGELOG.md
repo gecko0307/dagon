@@ -1,5 +1,7 @@
 Dagon 1.1.0 - TBD
 -----------------
+- **Render**
+  - Support framebuffer clearing in HUD renderer
 - **Collision**
   - 2D collision module, `dagon.collision.collision2d`.
 
