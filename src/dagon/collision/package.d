@@ -31,6 +31,7 @@ public
 {
     import dagon.collision.bvh;
     import dagon.collision.collision;
+    import dagon.collision.collision2d;
     import dagon.collision.contact;
     import dagon.collision.convex;
     import dagon.collision.geometry;

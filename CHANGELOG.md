@@ -1,3 +1,8 @@
+Dagon 1.1.0 - TBD
+-----------------
+- **Collision**
+  - 2D collision module, `dagon.collision.collision2d`.
+
 Dagon 1.0.3 - 10 Jun, 2026
 --------------------------
 - **Core**
