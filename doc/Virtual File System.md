@@ -5,10 +5,10 @@ In Dagon, all files are loaded using the built-in virtual file system (VFS). Its
 The VFS is managed by the `Application` class and is available as `Application.vfs` property.
 
 Key concept of the VFS is mounting. For a location to be accessed, it has to be mounted using `vfs.mount` method. File search is performed on a LIFO basis: the last mounted location has the highest priority. If the file is not found there, the previously mounted location is checked, and so on. The engine automatically mounts the following directories at the start:
-- Executable directory. This is always the last location to search;
-- The application data directory (`C:\Users\AppData\Roaming\<appDataFolder>` on Windows and `~\<appDataFolder>` on Linux).
+- Executable directory. This is always the last location to search. Not to be confused with a working directory! Working directory is not used by default becase of security reasons;
+- The application data directory (`C:\Users\<username>\AppData\Roaming\<appDataFolder>` on Windows and `~\<appDataFolder>` on Linux).
 
-`<appDataFolder>` is `.dagon` by default and can be overridden in the constructor of the class inherited from the `Game` or `Application`:
+`<appDataFolder>` is `.dagon` by default, defined in `settings.conf` and can be overridden in the constructor of the class inherited from the `Game` or `Application`:
 
 ```d
 class MyGame: Game
@@ -22,13 +22,13 @@ class MyGame: Game
 }
 ```
 
-You can mount any other locations, absolute or relative to the working directory.
+You can manually mount any other locations, absolute or relative to the working directory.
 
-The application data directory is not created by default, you can create it using `vfs.createAppDataDirectory` method. Its typical purpose is to keep user-specific game data, such as configuration files, saves, and mods. Because the application data directory overrides the executable directory, any game resource can be safely modified without compromising the integrity of the original resource. This, potentially, allows total conversions, provided that the game logic does not rely on hardcoded assumptions about the structure of its resources.
+The application data directory is not created by default, you can create it using `vfs.createAppDataDirectory` method. Its typical purpose is to keep user-specific game data, such as configuration files, saves, and mods. Because the application data directory overrides the executable directory, any game resource can be safely modified on a user level without compromising the integrity of the original resource. This, potentially, allows total conversions, provided that the game logic does not rely on hardcoded assumptions about the structure of its resources.
 
 ## Mounting custom file systems
 
-`vfs.mount` allows to mount any external storage system that implements `ReadOnlyFileSystem` interface. One use case for this is PhysFS integration which allows to load files from archives:
+`vfs.mount` allows to mount any external storage system that implements `ReadOnlyFileSystem` interface. One use case for this is [PhysFS](https://icculus.org/physfs/) integration which allows to load files from archives:
 
 ```d
 import dagon.ext.physfs;
