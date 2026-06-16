@@ -157,3 +157,46 @@ override void onUpdate(Time t)
     camera.position = character.eyePoint;
 }
 ```
+
+## JoltCharacterController
+
+If you use Jolt Physics instead of Newton, you can use `JoltCharacterController` which works in a very similar way:
+
+```d
+Entity eCharacter = addEntity();
+eCharacter.position = Vector3f(0, 1, 0);
+float characterHeight = 1.8f;
+NewtonCharacterController character = New!JoltCharacterController(eventManager, physicsWorld, eCharacter, characterHeight, 0.45f, 80.0f);
+character.normalEyeHeight = characterHeight - 0.15f;
+character.crouchEyeHeight = characterHeight * 0.5f;
+character.headMargin = -0.2f;
+```
+
+```d
+void characterControls()
+{
+    float walkSpeed = 3.0f;
+    float jumpSpeed = 3.0f;
+    
+    if (inputManager.getButton("left"))    character.move(firstPersonView.right * -walkSpeed);
+    if (inputManager.getButton("right"))   character.move(firstPersonView.right * walkSpeed);
+    if (inputManager.getButton("forward")) character.move(firstPersonView.directionHorizontal * -walkSpeed);
+    if (inputManager.getButton("back"))    character.move(firstPersonView.directionHorizontal * walkSpeed);
+    
+    if (inputManager.getButton("jump")) character.jump(jumpSpeed);
+    
+    if (inputManager.getButton("crouch"))
+        character.crouch(true);
+    else
+        character.crouch(false);
+    
+    character.updateVelocity();
+}
+```
+
+In contrast to Newton, Jolt uses a virtual character instead of a kinematic rigid body. In practice this doesn't make much difference from the gameplay standpoint, but usually improves stability and precision. Jolt's character controller is generally more robust than Newton's, especially when dealing with complex static geometry. `JoltCharacterController` uses a capsule instead of two spheres which is a lot better for small character radus.
+
+## Tips for Making Good Character-Based Games
+
+1. Always use velocity to move the character, don't modify position directly! Modifying position by hand breaks differentiability that is required for collision response to work properly. Position can be set only when the character should be instantly "teleported" instead of moving over time.
+2. Don't use scene's visual mesh for collision detection (except for low-poly worlds). Make a separate invisible collision mesh. Not only it will work faster, it will make the system much more stable.

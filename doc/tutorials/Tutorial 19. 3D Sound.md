@@ -53,4 +53,23 @@ class SoundScene: Scene
 }
 ```
 
+To play a spatial sound (which has a position in 3D space) there are two possible ways. A simpler method is to use `playAtPosition`:
+
+```d
+int voice = audio.playAtPosition(sound, Vector3f(1.0f, 2.0f, 3.0f));
+```
+
+Sound played this way can't change its position, so it can be more convenient to attach a sound source to Entity using a `SoundComponent`. The sound will automatically follow the Entity, which is especially useful for sources of continuous sound, such as speakers.
+
+```d
+SoundComponent soundComp = audio.addSoundTo(myEntity);
+soundComp.play(sound);
+```
+
+For 3D sound to work, you need a listener, an Entity that is used for spatial perception. This is usually the camera used for rendering:
+
+```d
+audio.listener = camera;
+```
+
 [Browse source code for this tutorial](https://github.com/gecko0307/dagon-tutorials/tree/master/t19-3d-sound)
