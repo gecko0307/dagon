@@ -211,7 +211,7 @@ class EditorUI: EventListener
                 foreach(e; scene.world.entities)
                 {
                     if (e.parent is null)
-                        renderEntitesTree(e, &selectedEntityNodeId, 1);
+                        renderEntitesTree(e);
                 }
             }
             
@@ -219,37 +219,29 @@ class EditorUI: EventListener
         }
     }
     
-    uint selectedEntityNodeId = -1;
-    
-    void renderEntitesTree(Entity e, uint* selectedId, uint currentId)
+    void renderEntitesTree(Entity entity)
     {
         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.OpenOnArrow;
         
-        if (e.children.length == 0)
-            flags |= ImGuiTreeNodeFlags.Leaf;
-        
-        if (*selectedId == currentId)
-            flags |= ImGuiTreeNodeFlags.Selected;
-        
+        if (entity.children.length == 0) flags |= ImGuiTreeNodeFlags.Leaf;
+        if (scene.selectedEntity == entity)  flags |= ImGuiTreeNodeFlags.Selected;
         
         bool isOpen = false;
-        if (e.name.length)
-            isOpen = igTreeNodeEx_Ptr(&currentId, flags, "%.*s", e.name.length, e.name.ptr);
+        if (entity.name.length)
+            isOpen = igTreeNodeEx_Ptr(cast(void*)entity, flags, "%.*s", entity.name.length, entity.name.ptr);
         else
-            isOpen = igTreeNodeEx_Str("<unnamed>", flags);
+            isOpen = igTreeNodeEx_Ptr(cast(void*)entity, flags, "<unnamed>");
         
         if (igIsItemClicked() && !igIsItemToggledOpen())
         {
-            selectedId = &currentId;
-            scene.selectedEntity = e;
+            scene.selectedEntity = entity;
         }
         
         if (isOpen)
         {
-            foreach(i, child; e.children)
+            foreach(i, child; entity.children)
             {
-                uint nextId = currentId * 1000 + cast(uint)i;
-                renderEntitesTree(child, selectedId, nextId);
+                renderEntitesTree(child);
             }
             
             igTreePop();
