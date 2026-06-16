@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2023 Timur Gafarov
+Copyright (c) 2023-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -26,6 +26,9 @@ DEALINGS IN THE SOFTWARE.
 */
 module editor;
 
+import std.json: JSONValue;
+import std.file: write;
+
 import dagon;
 import dagon.ext.imgui;
 import ui;
@@ -47,6 +50,7 @@ class InteractionOverlay: EventListener
     GizmoShader gizmoShader;
     GizmoMode gizmoMode = GizmoMode.Disabled;
     Vector3f gizmoPosition;
+    Quaternionf gizmoRotation;
     Matrix4x4f gizmoTransformation;
     bool visible = true;
     
@@ -62,6 +66,7 @@ class InteractionOverlay: EventListener
         
         gizmoShader = New!GizmoShader(this);
         gizmoPosition = Vector3f(0.0f, 0.0f, 0.0f);
+        gizmoRotation = Quaternionf.identity;
         gizmoTransformation = Matrix4x4f.identity;
     }
     
@@ -73,7 +78,8 @@ class InteractionOverlay: EventListener
     void updateGizmo(Time t)
     {
         gizmoTransformation = translationMatrix(gizmoPosition);
-        // TODO: gizmo rotation and scale
+        gizmoTransformation *= gizmoRotation.toMatrix4x4;
+        // TODO: gizmo scale
     }
     
     void update(Time t)
@@ -126,6 +132,9 @@ class InteractionOverlay: EventListener
 
 class EditorScene: Scene
 {
+    string name = "Scene";
+    uint fileVersion = 100;
+    
     Game game;
     FreeviewComponent freeview;
     InteractionOverlay overlay;
@@ -219,6 +228,21 @@ class EditorScene: Scene
     override void afterRender()
     {
         overlay.render();
+    }
+    
+    void save(string filename)
+    {
+        JSONValue root = [
+            "name": JSONValue(name),
+            "version": JSONValue(fileVersion)
+        ];
+        write(filename, root.toPrettyString());
+        logInfo("Scene saved to ", filename);
+    }
+    
+    void open(string filename)
+    {
+        logDebug("TODO: open ", filename);
     }
     
     override void onKeyDown(int key) { }

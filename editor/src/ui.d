@@ -63,6 +63,10 @@ class EditorUI: EventListener
     
     Texture iconFile;
     
+    string lastSaveFilename;
+    
+    char[256] sceneNameBuffer;
+    
     this(Application application, EditorScene scene, string[] args)
     {
         super(application.eventManager, application);
@@ -85,6 +89,20 @@ class EditorUI: EventListener
         igStyleColorsDark(null);
         ImGui_ImplSDL2_InitForOpenGL(application.window, application.glcontext);
         ImGuiOpenGLBackend.init("#version 400 core");
+        
+        sceneNameBuffer[] = 0;
+        sceneNameBuffer[0..scene.name.length] = scene.name;
+    }
+    
+    static extern(C) int nameInputCallback(ImGuiInputTextCallbackData* data)
+    {
+        EditorUI ui = cast(EditorUI)data.UserData;
+        if (ui is null)
+            return 0;
+        
+        ui.scene.name = cast(string)data.Buf[0..data.BufTextLen];
+        
+        return 0;
     }
     
     void onProcessEvent(SDL_Event* event)
@@ -155,12 +173,23 @@ class EditorUI: EventListener
             
             if (igMenuItem("Open..."))
             {
-                string filename = openFileDialog(["*.*"], "Select a scene file");
-                logDebug("TODO: open ", filename);
+                string filename = openFileDialog(["*.json"], "Select a scene file");
+                scene.open(filename);
             }
             
-            igMenuItem("Save");
-            igMenuItem("Save as...");
+            if (igMenuItem("Save"))
+            {
+                if (lastSaveFilename.length == 0)
+                    lastSaveFilename = saveFileDialog(["*.json"], "Save scene to a file");
+                
+                scene.save(lastSaveFilename);
+            }
+            
+            if (igMenuItem("Save as..."))
+            {
+                lastSaveFilename = saveFileDialog(["*.json"], "Save scene to a file");
+                scene.save(lastSaveFilename);
+            }
             
             if (igMenuItem("Exit"))
             {
@@ -174,8 +203,21 @@ class EditorUI: EventListener
     
     void renderSettings()
     {
-        if (igBegin("Settings", null, ImGuiWindowFlags.NoCollapse))
+        if (igBegin("Scene settings", null, ImGuiWindowFlags.NoCollapse))
         {
+            if (igCollapsingHeader("Main"))
+            {
+                if (igInputText("Name",
+                        sceneNameBuffer.ptr,
+                        sceneNameBuffer.length,
+                        ImGuiInputTextFlags.CallbackEdit,
+                        &nameInputCallback,
+                        cast(void*)this))
+                {
+                    
+                }
+            }
+            
             if (igCollapsingHeader("Post-processing"))
             {
                 if (igCheckbox("SSAO", &scene.ssaoEnabled))
@@ -240,6 +282,7 @@ class EditorUI: EventListener
                 if (igCheckbox("FXAA antialiasing", &scene.fxaaEnabled))
                     scene.game.postProcessingRenderer.fxaaEnabled = scene.fxaaEnabled;
             }
+            
             igEnd();
         }
     }
