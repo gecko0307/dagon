@@ -41,5 +41,6 @@ public
 {
     import dagon.game.basegame;
     import dagon.game.game;
+    import dagon.game.game2d;
     import dagon.game.loadingscreen;
 }

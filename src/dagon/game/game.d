@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /**
- * Core game logic for Dagon-based applications.
+ * Base class for 3D games.
  *
  * Description:
  * The `dagon.game.game` module defines the `Game` class, which serves
@@ -39,8 +39,6 @@ DEALINGS IN THE SOFTWARE.
  * Authors: Timur Gafarov
  */
 module dagon.game.game;
-
-import std.stdio;
 
 import dlib.core.memory;
 import dlib.core.ownership;
