@@ -1,7 +1,7 @@
 # Frequently Asked Questions
 
 ## Is this a full-fledged game production suite like Unity/UE/Godot?
-No, not at all. Dagon only provides a framework for building applications with 3D graphics. It abstracts a lot of complex tasks such as managing a window and handling user input, loading models and textures, 3D transformations, rendering, animation, sound and physics, but it doesn't include any tools such as a scene editor.
+No, not at all. Dagon only provides a framework for building applications with 3D/2D graphics. It abstracts a lot of complex tasks such as managing a window and handling user input, loading models and textures, doing transformations, rendering, animation, sound and physics, but it doesn't include any content creation tools such as a scene editor.
 
 ## Why Dagon doesn't support multiple graphics APIs?
 Support for multiple graphics backends (such as Direct3D + different versions of OpenGL + Metal + whatever) brings little benefit, but requires huge resources to implement and maintain. It also limits the GPU features that can be used by the application to a common denominator across all target platforms. Using multiple APIs won't make the engine faster and more reliable, won't add new features, but will increase code complexity and introduce too many otherwise unnecessary abstractions, which is something we would like to avoid.
