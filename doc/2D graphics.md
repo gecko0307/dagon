@@ -1,6 +1,6 @@
 # 2D Graphics
 
-Dagon is primarily a 3D engine, but it supports 2D rendering as well. 2D renderer is called HUD renderer, because it was created for drawing HUD elements on top of the rendered screen. It is also possible to make purely 2D games with it, although for such use cases Dagon may be an overkill.
+Dagon is primarily a 3D engine, but it supports 2D rendering as well. 2D renderer is called HUD renderer, because it was created for drawing HUD elements on top of the rendered screen. It is also possible to make purely 2D games with it, in which cases it is recommended to use `Game2D` base game class.
 
 ## HUD Objects
 
@@ -49,3 +49,9 @@ TODO
 Dagon provides a simple widget system for implementing a basic GUI in games. It is nowhere near as powerful as specialized GUI libraries such as ImGui, but can be to create buttons and menus.
 
 TODO: add a button widget example
+
+## 2D Applications
+
+It is perfectly viable to use Dagon for 2D games! If you don't need 3D graphics and only rely on `HUDRenderer`, we recommend to use `Game2D` class instead of usual `Game`.
+
+TODO: Game2D usage example
