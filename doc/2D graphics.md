@@ -42,11 +42,24 @@ eText.position = Vector3f(16.0f, 30.0f, 0.0f);
 
 ## Spritesheets
 
-TODO
+A spritesheet is a texture that contains multiple sub-images - sprites. Each sprite provides a texture for a quad that represents an object in a 2D world. This is achieved by transforming UV coordinates used to sample the texture. Dagon's material class provides a helper method `setSprite` for this task.
+
+Sprites can be used in both 2D and 3D games. `setSprite` accepts UV coordinates ranging from 0 to 1, so, to use pixels, you have to divide pixel values with the texture size.
+
+Let's say the crosshair is an upper-left 32x32 sub-image of a 512x512 texture:
+
+```d
+Vector2f spritesheetSize = Vector2f(512, 512);
+crosshair.material.setSprite(
+    Vector2f(32, 32) / spritesheetSize,
+    Vector2f(0, 0) / spritesheetSize);
+```
+
+To animate a sprite, you can change UV offset over time, incrementing by the frame width along the X-axis.
 
 ## Widgets
 
-Dagon provides a simple widget system for implementing a basic GUI in games. It is nowhere near as powerful as specialized GUI libraries such as ImGui, but can be to create buttons and menus.
+Dagon provides a built-in widget system for implementing a basic GUI in games. It is nowhere near as powerful as specialized GUI libraries such as ImGui, but can be used for simple tasks such as buttons and menus.
 
 TODO: add a button widget example
 
@@ -54,4 +67,13 @@ TODO: add a button widget example
 
 It is perfectly viable to use Dagon for 2D games! If you don't need 3D graphics and only rely on `HUDRenderer`, we recommend to use `Game2D` class instead of usual `Game`.
 
-TODO: Game2D usage example
+```d
+class MyGame: Game2D
+{
+    this(uint w, uint h, bool fullscreen, string title, string[] args)
+    {
+        super(w, h, fullscreen, title, args);
+        currentScene = New!TestScene(this);
+    }
+}
+```
