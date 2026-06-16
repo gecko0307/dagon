@@ -59,7 +59,7 @@ To animate a sprite, you can change UV offset over time, incrementing by the fra
 
 ## Widgets
 
-Dagon provides a built-in widget system for implementing a basic GUI in games. It is nowhere near as powerful as specialized GUI libraries such as ImGui, but can be used for simple tasks such as buttons and menus.
+Dagon provides a built-in widget system for implementing a basic GUI in games. It is nowhere near as powerful as specialized GUI libraries such as ImGui, but can be used for simple interactive elements such as buttons and menus.
 
 TODO: add a button widget example
 
