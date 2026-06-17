@@ -3,6 +3,7 @@ Dagon 1.1.0 - TBD
 - **Game**
   - 2D game module, `dagon.game.game2d`
 - **Render**
+  - Subroutines in built-in shaders were replaced with uniform branching due to AMD issues
   - Support framebuffer clearing in HUD renderer
 - **Graphics components**
   - New property `Entity.name`
