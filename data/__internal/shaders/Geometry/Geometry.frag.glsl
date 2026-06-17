@@ -156,9 +156,9 @@ void main()
     
     vec3 emission;
     if (emissionFunc == 1)
-        emission = texture(emissionTexture, uv).rgb * emissionFactor.rgb * energy;
+        emission = toLinear(texture(emissionTexture, uv).rgb) * toLinear(emissionFactor.rgb) * energy;
     else
-        emission = emissionFactor.rgb * energy;
+        emission = toLinear(emissionFactor.rgb) * energy;
     
     vec2 posScreen = (currPosition.xy / currPosition.w) * 0.5 + 0.5;
     vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;

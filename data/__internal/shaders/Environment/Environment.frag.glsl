@@ -103,7 +103,7 @@ void main()
     else
     {
         irradiance = toLinear(ambientVector.rgb);
-        reflection = irradiance;
+        reflection = irradiance * reflectivity;
     }
     
     vec3 F = clamp(fresnelRoughness(NE, f0, roughness), 0.0, 1.0);
