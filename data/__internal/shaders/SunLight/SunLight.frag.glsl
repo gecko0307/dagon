@@ -64,15 +64,8 @@ float schlickFresnel(float u)
     return m2 * m2 * m;
 }
 
-subroutine float srtShadow(in vec3 pos, in vec3 N);
-
-subroutine(srtShadow) float shadowMapNone(in vec3 pos, in vec3 N)
-{
-    return 1.0;
-}
-
 const float eyeSpaceNormalShift = 0.008;
-subroutine(srtShadow) float shadowMapCascaded(in vec3 pos, in vec3 N)
+float shadowMapCascaded(in vec3 pos, in vec3 N)
 {
     vec3 posShifted = pos + N * eyeSpaceNormalShift;
     vec4 shadowCoord1 = shadowMatrix1 * vec4(posShifted, 1.0);
@@ -93,7 +86,7 @@ subroutine(srtShadow) float shadowMapCascaded(in vec3 pos, in vec3 N)
     return s1;
 }
 
-subroutine uniform srtShadow shadowMap;
+uniform int shadowFunc;
 
 // Mie scattering approximated with Henyey-Greenstein phase function.
 float scattering(float lightDotView)
@@ -131,7 +124,9 @@ void main()
         shadowEyePos = (shadowViewMatrix * vec4(worldPos, 1.0)).xyz;
     else
         shadowEyePos = eyePos;
-    float shadow = shadowMap(shadowEyePos, N);
+    float shadow = 1.0;
+    if (shadowFunc == 1)
+        shadow = shadowMapCascaded(shadowEyePos, N);
     
     vec3 radiance = vec3(0.0);
 

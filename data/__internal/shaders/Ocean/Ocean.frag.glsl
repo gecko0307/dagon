@@ -41,16 +41,10 @@ uniform float fogEnd;
 
 uniform float ambientEnergy;
 
-subroutine vec3 srtAmbient(in vec3 wN, in float perceptualRoughness);
-
 uniform vec4 ambientVector;
-subroutine(srtAmbient) vec3 ambientColor(in vec3 wN, in float perceptualRoughness)
-{
-    return toLinear(ambientVector.rgb);
-}
 
 uniform sampler2D ambientTexture;
-subroutine(srtAmbient) vec3 ambientEquirectangularMap(in vec3 wN, in float perceptualRoughness)
+vec3 ambientEquirectangularMap(in vec3 wN, in float perceptualRoughness)
 {
     ivec2 envMapSize = textureSize(ambientTexture, 0);
     float resolution = float(max(envMapSize.x, envMapSize.y));
@@ -59,7 +53,7 @@ subroutine(srtAmbient) vec3 ambientEquirectangularMap(in vec3 wN, in float perce
 }
 
 uniform samplerCube ambientTextureCube;
-subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float perceptualRoughness)
+vec3 ambientCubemap(in vec3 wN, in float perceptualRoughness)
 {
     ivec2 envMapSize = textureSize(ambientTextureCube, 0);
     float resolution = float(max(envMapSize.x, envMapSize.y));
@@ -67,7 +61,7 @@ subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float perceptualRoughn
     return textureLod(ambientTextureCube, wN, lod).rgb;
 }
 
-subroutine uniform srtAmbient ambient;
+uniform int ambientFunc;
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec4 fragVelocity;
@@ -114,7 +108,14 @@ void main()
     diffuse += (1.0 - LE) * clamp(dot(N, E), 0.0, 1.0) * mix(vec3(0.0), scattering, height) + vec3(1.0) * foam2;
     const float f0 = 0.05;
     float fresnel = clamp(f0 + pow(1.0 - dot(N, E), fresnelPower), 0.0, 1.0);
-    vec3 reflection = mix(diffuse, ambient(worldR, 0.4), gloss);
+    vec3 ambient;
+    if (ambientFunc == 1)
+        ambient = ambientEquirectangularMap(worldR, 0.4);
+    else if (ambientFunc == 2)
+        ambient = ambientCubemap(worldR, 0.4);
+    else
+        ambient = toLinear(ambientVector.rgb);
+    vec3 reflection = mix(diffuse, ambient, gloss);
     vec3 radiance = mix(diffuse, reflection, fresnel) + toLinear(sunColor.rgb) * sunEnergy * specular;
     
     // Fog

@@ -55,33 +55,7 @@ float schlickFresnel(float u)
     return m2 * m2 * m;
 }
 
-/*
- * Light radiance subroutines
- */
-subroutine vec3 srtLightRadiance(
-    in vec3 pos, 
-    in vec3 N, 
-    in vec3 E, 
-    in vec3 albedo, 
-    in float roughness, 
-    in float metallic, 
-    in float subsurface,
-    in float occlusion);
-
-subroutine(srtLightRadiance) vec3 lightRadianceFallback(
-    in vec3 pos, 
-    in vec3 N, 
-    in vec3 E, 
-    in vec3 albedo, 
-    in float roughness, 
-    in float metallic, 
-    in float subsurface,
-    in float occlusion)
-{
-    return vec3(0.0);
-}
-
-subroutine(srtLightRadiance) vec3 lightRadianceAreaSphere(
+vec3 lightRadianceAreaSphere(
     in vec3 pos, 
     in vec3 N, 
     in vec3 E, 
@@ -140,7 +114,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceAreaSphere(
     return radiance;
 }
 
-subroutine(srtLightRadiance) vec3 lightRadianceAreaTube(
+vec3 lightRadianceAreaTube(
     in vec3 pos, 
     in vec3 N, 
     in vec3 E, 
@@ -204,7 +178,7 @@ subroutine(srtLightRadiance) vec3 lightRadianceAreaTube(
     return radiance;
 }
 
-subroutine(srtLightRadiance) vec3 lightRadianceSpot(
+vec3 lightRadianceSpot(
     in vec3 pos, 
     in vec3 N, 
     in vec3 E, 
@@ -259,16 +233,26 @@ subroutine(srtLightRadiance) vec3 lightRadianceSpot(
     return radiance;
 }
 
-subroutine uniform srtLightRadiance lightRadiance;
+uniform int lightRadianceFunc;
 
-subroutine float srtShadow(in vec3 pos);
 
-subroutine(srtShadow) float shadowMapNone(in vec3 worldPos)
+// TODO: make uniform
+const float dualParaboloidShadowbias = 0.01;
+
+float shadowMapDualParaboloid(in vec3 worldPos)
 {
-    return 1.0;
+    vec3 lightSpacePos = worldPos - lightPositionWorld;
+    float distanceToLight = length(lightSpacePos);
+    vec3 dir = normalize(lightSpacePos);
+    vec2 uv = dir.xy / (1.0 + abs(dir.z));
+    uv = uv * 0.5 + 0.5;
+    float layer = 1.0 - float(dir.z >= 0.0);
+    float z = distanceToLight / max(0.00001, lightRadius) - dualParaboloidShadowbias;
+    float shadow = texture(shadowTextureArray, vec4(uv, layer, z));
+    return shadow;
 }
 
-subroutine(srtShadow) float shadowMapPerspective(in vec3 worldPos)
+float shadowMapPerspective(in vec3 worldPos)
 {
     vec4 clipPos = shadowMatrix * vec4(worldPos, 1.0);
     vec3 ndc = clipPos.xyz / clipPos.w;
@@ -277,21 +261,8 @@ subroutine(srtShadow) float shadowMapPerspective(in vec3 worldPos)
     return shadow;
 }
 
-const float bias = 0.01;
-subroutine(srtShadow) float shadowMapDualParaboloid(in vec3 worldPos)
-{
-    vec3 lightSpacePos = worldPos - lightPositionWorld;
-    float distanceToLight = length(lightSpacePos);
-    vec3 dir = normalize(lightSpacePos);
-    vec2 uv = dir.xy / (1.0 + abs(dir.z));
-    uv = uv * 0.5 + 0.5;
-    float layer = 1.0 - float(dir.z >= 0.0);
-    float z = distanceToLight / max(0.00001, lightRadius) - bias;
-    float shadow = texture(shadowTextureArray, vec4(uv, layer, z));
-    return shadow;
-}
+uniform int shadowMapFunc;
 
-subroutine uniform srtShadow shadowMap;
 
 void main()
 {
@@ -313,12 +284,23 @@ void main()
     float subsurface = pbr.b;
     
     float occlusion = haveOcclusionBuffer? texture(occlusionBuffer, texCoord).r : 1.0;
-    float shadow = shadowMap(worldPos);
     
-    vec3 radiance = lightRadiance(eyePos, N, E, albedo, roughness, metallic, subsurface, occlusion) * shadow;
+    float shadow = 1.0;
+    if (shadowMapFunc == 1)
+        shadow = shadowMapDualParaboloid(worldPos);
+    else if (shadowMapFunc == 2)
+        shadow = shadowMapPerspective(worldPos);
+    
+    vec3 radiance = vec3(0.0);
+    if (lightRadianceFunc == 1)
+        radiance = lightRadianceAreaSphere(eyePos, N, E, albedo, roughness, metallic, subsurface, occlusion) * shadow;
+    else if (lightRadianceFunc == 2)
+        radiance = lightRadianceAreaTube(eyePos, N, E, albedo, roughness, metallic, subsurface, occlusion) * shadow;
+    else if (lightRadianceFunc == 3)
+        radiance = lightRadianceSpot(eyePos, N, E, albedo, roughness, metallic, subsurface, occlusion) * shadow;
     
     // Fog
-    float linearDepth = abs(eyePos.z); //abs(lightVolumeEyePos.z);
+    float linearDepth = abs(eyePos.z);
     float fogFactor = clamp((fogEnd - linearDepth) / (fogEnd - fogStart), 0.0, 1.0);
     radiance *= fogFactor;
     

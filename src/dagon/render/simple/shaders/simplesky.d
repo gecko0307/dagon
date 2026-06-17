@@ -61,11 +61,8 @@ class SimpleSkyShader: Shader
     ShaderParameter!int envTextureCube;
     ShaderParameter!int envTexture;
     ShaderParameter!Color4f envColor;
-    ShaderSubroutine environmentSubroutine;
-    GLuint environmentSubroutineCubemap,
-           environmentSubroutineTexture,
-           environmentSubroutineColor;
-
+    ShaderParameter!int envFunc;
+    
    public:
     this(Owner owner)
     {
@@ -88,10 +85,7 @@ class SimpleSkyShader: Shader
         envTextureCube = createParameter!int("envTextureCube");
         envTexture = createParameter!int("envTexture");
         envColor = createParameter!Color4f("envColor");
-        environmentSubroutine = createParameterSubroutine("environment", ShaderType.Fragment);
-        environmentSubroutineCubemap = environmentSubroutine.getIndex("environmentCubemap");
-        environmentSubroutineTexture = environmentSubroutine.getIndex("environmentTexture");
-        environmentSubroutineColor = environmentSubroutine.getIndex("environmentColor");
+        envFunc = createParameter!int("envFunc");
     }
 
     ~this()
@@ -127,7 +121,7 @@ class SimpleSkyShader: Shader
                 mat.baseColorTexture.bind();
                 envTextureCube = 5;
                 
-                environmentSubroutine.index = environmentSubroutineCubemap;
+                envFunc = 2;
             }
             else
             {
@@ -139,7 +133,7 @@ class SimpleSkyShader: Shader
                 glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
                 envTextureCube = 5;
                 
-                environmentSubroutine.index = environmentSubroutineTexture;
+                envFunc = 1;
             }
         }
         else
@@ -154,7 +148,7 @@ class SimpleSkyShader: Shader
             
             envColor = mat.baseColorFactor;
             
-            environmentSubroutine.index = environmentSubroutineColor;
+            envFunc = 0;
         }
 
         glActiveTexture(GL_TEXTURE0);

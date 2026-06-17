@@ -94,9 +94,7 @@ class SunLightShader: Shader
     ShaderParameter!Matrix4x4f shadowMatrix1;
     ShaderParameter!Matrix4x4f shadowMatrix2;
     ShaderParameter!Matrix4x4f shadowMatrix3;
-    ShaderSubroutine shadowMapSubroutine;
-    GLuint shadowMapSubroutineCascaded,
-           shadowMapSubroutineNone;
+    ShaderParameter!int shadowFunc;
     
    public:
     bool shadowMapVRModeEnabled = false;
@@ -105,12 +103,12 @@ class SunLightShader: Shader
     {
         vs = Shader.load("data/__internal/shaders/SunLight/SunLight.vert.glsl");
         fs = Shader.load("data/__internal/shaders/SunLight/SunLight.frag.glsl");
-
+        
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);
-
+        
         defaultShadowMatrix = Matrix4x4f.identity;
-
+        
         glGenTextures(1, &defaultShadowTexture);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D_ARRAY, defaultShadowTexture);
@@ -161,16 +159,14 @@ class SunLightShader: Shader
         shadowMatrix1 = createParameter!Matrix4x4f("shadowMatrix1");
         shadowMatrix2 = createParameter!Matrix4x4f("shadowMatrix2");
         shadowMatrix3 = createParameter!Matrix4x4f("shadowMatrix3");
-        shadowMapSubroutine = createParameterSubroutine("shadowMap", ShaderType.Fragment);
-        shadowMapSubroutineCascaded = shadowMapSubroutine.getIndex("shadowMapCascaded");
-        shadowMapSubroutineNone = shadowMapSubroutine.getIndex("shadowMapNone");
+        shadowFunc = createParameter!int("shadowFunc");
     }
 
     ~this()
     {
         if (glIsTexture(defaultShadowTexture))
             glDeleteTextures(1, &defaultShadowTexture);
-
+        
         vs.free();
         fs.free();
     }
@@ -185,7 +181,7 @@ class SunLightShader: Shader
         resolution = state.resolution;
         zNear = state.zNear;
         zFar = state.zFar;
-
+        
         // Environment
         if (state.environment)
         {
@@ -199,7 +195,7 @@ class SunLightShader: Shader
             fogStart = 0.0f;
             fogEnd = 1000.0f;
         }
-
+        
         // Light
         if (state.light)
         {
@@ -235,36 +231,36 @@ class SunLightShader: Shader
             lightDiffuse = 1.0f;
             lightSpecular = 1.0f;
         }
-
+        
         time = state.localTime;
-
+        
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, state.colorTexture);
         colorBuffer = 0;
-
+        
         // Texture 1 - depth buffer
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, state.depthTexture);
         depthBuffer = 1;
-
+        
         // Texture 2 - normal buffer
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, state.normalTexture);
         normalBuffer = 2;
-
+        
         // Texture 3 - pbr buffer
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, state.pbrTexture);
         pbrBuffer = 3;
-
+        
         // Texture 4 - shadow map
         if (state.light)
         {
             if (state.light.shadowEnabled)
             {
                 CascadedShadowMap csm = cast(CascadedShadowMap)state.light.shadowMap;
-
+                
                 glActiveTexture(GL_TEXTURE4);
                 glBindTexture(GL_TEXTURE_2D_ARRAY, csm.depthTexture);
                 shadowTextureArray = 4;
@@ -272,7 +268,7 @@ class SunLightShader: Shader
                 shadowMatrix1 = &csm.area[0].shadowMatrix;
                 shadowMatrix2 = &csm.area[1].shadowMatrix;
                 shadowMatrix3 = &csm.area[2].shadowMatrix;
-                shadowMapSubroutine.index = shadowMapSubroutineCascaded;
+                shadowFunc = 1;
                 
                 useShadowViewMatrix = shadowMapVRModeEnabled;
             }
@@ -284,12 +280,24 @@ class SunLightShader: Shader
                 shadowMatrix1 = &defaultShadowMatrix;
                 shadowMatrix2 = &defaultShadowMatrix;
                 shadowMatrix3 = &defaultShadowMatrix;
-                shadowMapSubroutine.index = shadowMapSubroutineNone;
+                shadowFunc = 0;
                 
                 useShadowViewMatrix = false;
             }
         }
-
+        else
+        {
+            glActiveTexture(GL_TEXTURE4);
+            glBindTexture(GL_TEXTURE_2D_ARRAY, defaultShadowTexture);
+            shadowTextureArray = 4;
+            shadowMatrix1 = &defaultShadowMatrix;
+            shadowMatrix2 = &defaultShadowMatrix;
+            shadowMatrix3 = &defaultShadowMatrix;
+            shadowFunc = 0;
+            
+            useShadowViewMatrix = false;
+        }
+        
         // Texture 5 - occlusion buffer
         glActiveTexture(GL_TEXTURE5);
         occlusionBuffer = 5;
@@ -303,9 +311,9 @@ class SunLightShader: Shader
             glBindTexture(GL_TEXTURE_2D, 0);
             haveOcclusionBuffer = false;
         }
-
+        
         glActiveTexture(GL_TEXTURE0);
-
+        
         super.bindParameters(state);
     }
 

@@ -99,15 +99,11 @@ class SimpleForwardShader: Shader
     
     ShaderParameter!int diffuseTexture;
     ShaderParameter!Color4f diffuseVector;
-    ShaderSubroutine diffuseSurbroutine;
-    GLuint diffuseSurbroutineColorTexture,
-           diffuseSurbroutineColorValue;
+    ShaderParameter!int diffuseFunc;
     
     ShaderParameter!int emissionTexture;
     ShaderParameter!Color4f emissionFactor;
-    ShaderSubroutine emissionSubroutine;
-    GLuint emissionSubroutineMap,
-           emissionSubroutineValue;
+    ShaderParameter!int emissionFunc;
     ShaderParameter!float energy;
     
     ShaderParameter!Vector3f sfShadowCenter;
@@ -172,15 +168,11 @@ class SimpleForwardShader: Shader
         
         diffuseTexture = createParameter!int("diffuseTexture");
         diffuseVector = createParameter!Color4f("diffuseVector");
-        diffuseSurbroutine = createParameterSubroutine("diffuse", ShaderType.Fragment);
-        diffuseSurbroutineColorTexture = diffuseSurbroutine.getIndex("diffuseColorTexture");
-        diffuseSurbroutineColorValue = diffuseSurbroutine.getIndex("diffuseColorValue");
+        diffuseFunc = createParameter!int("diffuseFunc");
         
         emissionTexture = createParameter!int("emissionTexture");
         emissionFactor = createParameter!Color4f("emissionFactor");
-        emissionSubroutine = createParameterSubroutine("emission", ShaderType.Fragment);
-        emissionSubroutineMap = emissionSubroutine.getIndex("emissionMap");
-        emissionSubroutineValue = emissionSubroutine.getIndex("emissionValue");
+        emissionFunc = createParameter!int("emissionFunc");
         energy = createParameter!float("energy");
         
         sfShadowCenter = createParameter!Vector3f("shadowCenter");
@@ -336,12 +328,12 @@ class SimpleForwardShader: Shader
         if (mat.baseColorTexture)
         {
             mat.baseColorTexture.bind();
-            diffuseSurbroutine.index = diffuseSurbroutineColorTexture;
+            diffuseFunc = 1;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            diffuseSurbroutine.index = diffuseSurbroutineColorValue;
+            diffuseFunc = 0;
         }
         
         // Emission
@@ -351,12 +343,12 @@ class SimpleForwardShader: Shader
         if (mat.emissionTexture)
         {
             mat.emissionTexture.bind();
-            emissionSubroutine.index = emissionSubroutineMap;
+            emissionFunc = 1;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            emissionSubroutine.index = emissionSubroutineValue;
+            emissionFunc = 0;
         }
         energy = mat.emissionEnergy;
         

@@ -60,10 +60,8 @@ class HUDShader: Shader
     
     ShaderParameter!int diffuseTexture;
     ShaderParameter!Color4f diffuseVector;
-    ShaderSubroutine diffuseSurbroutine;
-    GLuint diffuseSurbroutineColorTexture,
-           diffuseSurbroutineColorValue;
-
+    ShaderParameter!int diffuseFunc;
+    
    public:
     this(Owner owner)
     {
@@ -84,9 +82,7 @@ class HUDShader: Shader
         
         diffuseTexture = createParameter!int("diffuseTexture");
         diffuseVector = createParameter!Color4f("diffuseVector");
-        diffuseSurbroutine = createParameterSubroutine("diffuse", ShaderType.Fragment);
-        diffuseSurbroutineColorTexture = diffuseSurbroutine.getIndex("diffuseColorTexture");
-        diffuseSurbroutineColorValue = diffuseSurbroutine.getIndex("diffuseColorValue");
+        diffuseFunc = createParameter!int("diffuseFunc");
     }
 
     ~this()
@@ -115,12 +111,12 @@ class HUDShader: Shader
         if (mat.baseColorTexture)
         {
             mat.baseColorTexture.bind();
-            diffuseSurbroutine.index = diffuseSurbroutineColorTexture;
+            diffuseFunc = 1;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            diffuseSurbroutine.index = diffuseSurbroutineColorValue;
+            diffuseFunc = 0;
         }
 
         glActiveTexture(GL_TEXTURE0);

@@ -78,28 +78,20 @@ class ParticleShader: Shader
     
     ShaderParameter!int diffuseTexture;
     ShaderParameter!Color4f diffuseVector;
-    ShaderSubroutine diffuseSurbroutine;
-    GLuint diffuseSurbroutineColorTexture,
-           diffuseSurbroutineColorValue;
+    ShaderParameter!int diffuseFunc;
     
     ShaderParameter!int depthTexture;
     
     ShaderParameter!int normalTexture;
     ShaderParameter!Vector3f normalVector;
-    ShaderSubroutine normalSurbroutine;
-    GLuint normalSurbroutineMap,
-           normalSurbroutineFunctionHemisphere,
-           normalSurbroutineValue;
+    ShaderParameter!int normalFunc;
     ShaderParameter!int generateTBN;
     ShaderParameter!float normalYSign;
     
     ShaderParameter!int ambientTexture;
     ShaderParameter!int ambientTextureCube;
     ShaderParameter!Color4f ambientVector;
-    ShaderSubroutine ambientSubroutine;
-    GLuint ambientSubroutineCubemap,
-           ambientSubroutineEquirectangularMap,
-           ambientSubroutineColor;
+    ShaderParameter!int ambientFunc;
     
    public:
     this(Owner owner)
@@ -138,18 +130,13 @@ class ParticleShader: Shader
         
         diffuseTexture = createParameter!int("diffuseTexture");
         diffuseVector = createParameter!Color4f("diffuseVector");
-        diffuseSurbroutine = createParameterSubroutine("diffuse", ShaderType.Fragment);
-        diffuseSurbroutineColorTexture = diffuseSurbroutine.getIndex("diffuseColorTexture");
-        diffuseSurbroutineColorValue = diffuseSurbroutine.getIndex("diffuseColorValue");
+        diffuseFunc = createParameter!int("diffuseFunc");
         
         depthTexture = createParameter!int("depthTexture");
         
         normalTexture = createParameter!int("normalTexture");
         normalVector = createParameter!Vector3f("normalVector");
-        normalSurbroutine = createParameterSubroutine("normal", ShaderType.Fragment);
-        normalSurbroutineMap = normalSurbroutine.getIndex("normalMap");
-        normalSurbroutineFunctionHemisphere = normalSurbroutine.getIndex("normalFunctionHemisphere");
-        normalSurbroutineValue = normalSurbroutine.getIndex("normalValue");
+        normalFunc = createParameter!int("normalFunc");
         generateTBN = createParameter!int("generateTBN");
         normalYSign = createParameter!float("normalYSign");
         
@@ -157,10 +144,7 @@ class ParticleShader: Shader
         ambientTexture = createParameter!int("ambientTexture");
         ambientTextureCube = createParameter!int("ambientTextureCube");
         ambientVector = createParameter!Color4f("ambientVector");
-        ambientSubroutine = createParameterSubroutine("ambient", ShaderType.Fragment);
-        ambientSubroutineCubemap = ambientSubroutine.getIndex("ambientCubemap");
-        ambientSubroutineEquirectangularMap = ambientSubroutine.getIndex("ambientEquirectangularMap");
-        ambientSubroutineColor = ambientSubroutine.getIndex("ambientColor");
+        ambientFunc = createParameter!int("ambientFunc");
     }
 
     ~this()
@@ -221,12 +205,12 @@ class ParticleShader: Shader
         if (mat.baseColorTexture)
         {
             mat.baseColorTexture.bind();
-            diffuseSurbroutine.index = diffuseSurbroutineColorTexture;
+            diffuseFunc = 1;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            diffuseSurbroutine.index = diffuseSurbroutineColorValue;
+            diffuseFunc = 0;
         }
         
         // Texture 1 - depth texture (for soft particles)
@@ -241,16 +225,16 @@ class ParticleShader: Shader
         if (mat.normalTexture)
         {
             mat.normalTexture.bind();
-            normalSurbroutine.index = normalSurbroutineMap;
+            normalFunc = 1;
             generateTBN = true;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
             if (mat.sphericalNormal)
-                normalSurbroutine.index = normalSurbroutineFunctionHemisphere;
+                normalFunc = 2;
             else
-                normalSurbroutine.index = normalSurbroutineValue;
+                normalFunc = 0;
             generateTBN = false;
         }
         
@@ -283,7 +267,7 @@ class ParticleShader: Shader
                     ambientMap.bind();
                     ambientTextureCube = 5;
                     
-                    ambientSubroutine.index = ambientSubroutineCubemap;
+                    ambientFunc = 2;
                 }
                 else
                 {
@@ -295,7 +279,7 @@ class ParticleShader: Shader
                     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
                     ambientTextureCube = 5;
                     
-                    ambientSubroutine.index = ambientSubroutineEquirectangularMap;
+                    ambientFunc = 1;
                 }
             }
             else
@@ -308,7 +292,7 @@ class ParticleShader: Shader
                 glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
                 ambientTextureCube = 5;
                 
-                ambientSubroutine.index = ambientSubroutineColor;
+                ambientFunc = 0;
             }
         }
         else
@@ -328,7 +312,7 @@ class ParticleShader: Shader
             
             ambientVector = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
             
-            ambientSubroutine.index = ambientSubroutineColor;
+            ambientFunc = 0;
         }
 
         super.bindParameters(state);

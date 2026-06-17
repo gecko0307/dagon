@@ -2,34 +2,25 @@
 
 in vec2 texCoord;
 
-uniform float opacity;
-
 /*
  * Diffuse color
  */
-subroutine vec4 srtColor(in vec2 uv);
-
 uniform vec4 diffuseVector;
-subroutine(srtColor) vec4 diffuseColorValue(in vec2 uv)
-{
-    return diffuseVector;
-}
-
 uniform sampler2D diffuseTexture;
-subroutine(srtColor) vec4 diffuseColorTexture(in vec2 uv)
-{
-    return texture(diffuseTexture, uv);
-}
+uniform int diffuseFunc;
 
-subroutine uniform srtColor diffuse;
+uniform float opacity;
+uniform float clipThreshold;
 
 out vec4 fragColor;
 
 void main()
-{    
-    vec4 fragDiffuse = diffuse(texCoord);
+{
+    vec4 fragDiffuse = diffuseVector;
+    if (diffuseFunc == 1)
+        fragDiffuse = texture(diffuseTexture, texCoord);
     
-    if ((fragDiffuse.a * opacity) < 0.5)
+    if ((fragDiffuse.a * opacity) < clipThreshold)
         discard;
     
     fragColor = vec4(1.0, 1.0, 1.0, 1.0);

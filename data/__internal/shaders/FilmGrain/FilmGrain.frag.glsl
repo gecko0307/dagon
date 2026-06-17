@@ -77,7 +77,7 @@ float pnoise3D(in vec3 p)
     return n_xyz;
 }
 
-// 2d coordinate orientation thing
+// 2D coordinate orientation thing
 vec2 coordRot(in vec2 tc, in float angle)
 {
     float aspect = viewSize.x / viewSize.y;

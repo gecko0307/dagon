@@ -89,44 +89,28 @@ class ForwardShader: Shader
     
     ShaderParameter!int diffuseTexture;
     ShaderParameter!Color4f diffuseVector;
-    ShaderSubroutine diffuseSurbroutine;
-    GLuint diffuseSurbroutineColorTexture,
-           diffuseSurbroutineColorValue;
+    ShaderParameter!int diffuseFunc;
     
     ShaderParameter!int normalTexture;
     ShaderParameter!Vector3f normalVector;
-    ShaderSubroutine normalSurbroutine;
-    GLuint normalSurbroutineMap,
-           normalSurbroutineValue;
+    ShaderParameter!int normalFunc;
     ShaderParameter!int generateTBN;
     ShaderParameter!float normalYSign;
     
     ShaderParameter!int roughnessMetallicTexture;
     ShaderParameter!Color4f roughnessMetallicFactor;
-    ShaderSubroutine roughnessSubroutine;
-    ShaderSubroutine metallicSubroutine;
-    GLuint roughnessSubroutineMap,
-           roughnessSubroutineValue;
-    GLuint metallicSubroutineMap,
-           metallicSubroutineValue;
+    ShaderParameter!int roughnessMetallicFunc;
     
     ShaderParameter!int emissionTexture;
     ShaderParameter!Color4f emissionFactor;
-    ShaderSubroutine emissionSubroutine;
-    GLuint emissionSubroutineMap,
-           emissionSubroutineValue;
+    ShaderParameter!int emissionFunc;
     ShaderParameter!float energy;
     
     ShaderParameter!int heightTexture;
     ShaderParameter!float heightScalar;
-    ShaderSubroutine heightSubroutine;
-    GLuint heightSubroutineMap,
-           heightSubroutineValue;
+    ShaderParameter!int heightFunc;
     
-    ShaderSubroutine parallaxSubroutine;
-    GLuint parallaxSubroutineSimple,
-           parallaxSubroutineOcclusionMapping,
-           parallaxSubroutineNone;
+    ShaderParameter!int parallaxFunc;
     ShaderParameter!float parallaxScale;
     ShaderParameter!float parallaxBias;
     
@@ -138,19 +122,14 @@ class ForwardShader: Shader
     ShaderParameter!Color4f ambientVector;
     ShaderParameter!int ambientTexture;
     ShaderParameter!int ambientTextureCube;
-    ShaderSubroutine ambientSubroutine;
-    GLuint ambientSubroutineCubemap,
-           ambientSubroutineEquirectangularMap,
-           ambientSubroutineColor;
+    ShaderParameter!int ambientFunc;
     
     ShaderParameter!int shadowTextureArray;
     ShaderParameter!float shadowResolution;
     ShaderParameter!Matrix4x4f shadowMatrix1;
     ShaderParameter!Matrix4x4f shadowMatrix2;
     ShaderParameter!Matrix4x4f shadowMatrix3;
-    ShaderSubroutine shadowMapSubroutine;
-    GLuint shadowMapSubroutineCascaded,
-           shadowMapSubroutineNone;
+    ShaderParameter!int shadowFunc;
     
     ShaderParameter!int ambientBRDF;
     ShaderParameter!int haveAmbientBRDF;
@@ -205,44 +184,28 @@ class ForwardShader: Shader
         
         diffuseTexture = createParameter!int("diffuseTexture");
         diffuseVector = createParameter!Color4f("diffuseVector");
-        diffuseSurbroutine = createParameterSubroutine("diffuse", ShaderType.Fragment);
-        diffuseSurbroutineColorTexture = diffuseSurbroutine.getIndex("diffuseColorTexture");
-        diffuseSurbroutineColorValue = diffuseSurbroutine.getIndex("diffuseColorValue");
+        diffuseFunc = createParameter!int("diffuseFunc");
         
         normalTexture = createParameter!int("normalTexture");
         normalVector = createParameter!Vector3f("normalVector");
-        normalSurbroutine = createParameterSubroutine("normal", ShaderType.Fragment);
-        normalSurbroutineMap = normalSurbroutine.getIndex("normalMap");
-        normalSurbroutineValue = normalSurbroutine.getIndex("normalValue");
+        normalFunc = createParameter!int("normalFunc");
         generateTBN = createParameter!int("generateTBN");
         normalYSign = createParameter!float("normalYSign");
         
         roughnessMetallicTexture = createParameter!int("roughnessMetallicTexture");
         roughnessMetallicFactor = createParameter!Color4f("roughnessMetallicFactor");
-        roughnessSubroutine = createParameterSubroutine("roughness", ShaderType.Fragment);
-        roughnessSubroutineMap = roughnessSubroutine.getIndex("roughnessMap");
-        roughnessSubroutineValue = roughnessSubroutine.getIndex("roughnessValue");
-        metallicSubroutine = createParameterSubroutine("metallic", ShaderType.Fragment);
-        metallicSubroutineMap = metallicSubroutine.getIndex("metallicMap");
-        metallicSubroutineValue = metallicSubroutine.getIndex("metallicValue");
+        roughnessMetallicFunc = createParameter!int("roughnessMetallicFunc");
         
         emissionTexture = createParameter!int("emissionTexture");
         emissionFactor = createParameter!Color4f("emissionFactor");
-        emissionSubroutine = createParameterSubroutine("emission", ShaderType.Fragment);
-        emissionSubroutineMap = emissionSubroutine.getIndex("emissionMap");
-        emissionSubroutineValue = emissionSubroutine.getIndex("emissionValue");
+        emissionFunc = createParameter!int("emissionFunc");
         energy = createParameter!float("energy");
         
         heightTexture = createParameter!int("heightTexture");
         heightScalar = createParameter!float("heightScalar");
-        heightSubroutine = createParameterSubroutine("height", ShaderType.Fragment);
-        heightSubroutineMap = heightSubroutine.getIndex("heightMap");
-        heightSubroutineValue = heightSubroutine.getIndex("heightValue");
+        heightFunc = createParameter!int("heightFunc");
         
-        parallaxSubroutine = createParameterSubroutine("parallax", ShaderType.Fragment);
-        parallaxSubroutineSimple = parallaxSubroutine.getIndex("parallaxSimple");
-        parallaxSubroutineOcclusionMapping = parallaxSubroutine.getIndex("parallaxOcclusionMapping");
-        parallaxSubroutineNone = parallaxSubroutine.getIndex("parallaxNone");
+        parallaxFunc = createParameter!int("parallaxFunc");
         parallaxScale = createParameter!float("parallaxScale");
         parallaxBias = createParameter!float("parallaxBias");
         
@@ -254,19 +217,14 @@ class ForwardShader: Shader
         ambientVector = createParameter!Color4f("ambientVector");
         ambientTexture = createParameter!int("ambientTexture");
         ambientTextureCube = createParameter!int("ambientTextureCube");
-        ambientSubroutine = createParameterSubroutine("ambient", ShaderType.Fragment);
-        ambientSubroutineCubemap = ambientSubroutine.getIndex("ambientCubemap");
-        ambientSubroutineEquirectangularMap = ambientSubroutine.getIndex("ambientEquirectangularMap");
-        ambientSubroutineColor = ambientSubroutine.getIndex("ambientColor");
+        ambientFunc = createParameter!int("ambientFunc");
         
         shadowTextureArray = createParameter!int("shadowTextureArray");
         shadowResolution = createParameter!float("shadowResolution");
         shadowMatrix1 = createParameter!Matrix4x4f("shadowMatrix1");
         shadowMatrix2 = createParameter!Matrix4x4f("shadowMatrix2");
         shadowMatrix3 = createParameter!Matrix4x4f("shadowMatrix3");
-        shadowMapSubroutine = createParameterSubroutine("shadowMap", ShaderType.Fragment);
-        shadowMapSubroutineCascaded = shadowMapSubroutine.getIndex("shadowMapCascaded");
-        shadowMapSubroutineNone = shadowMapSubroutine.getIndex("shadowMapNone");
+        shadowFunc = createParameter!int("shadowFunc");
         
         ambientBRDF = createParameter!int("ambientBRDF");
         haveAmbientBRDF = createParameter!int("haveAmbientBRDF");
@@ -371,12 +329,12 @@ class ForwardShader: Shader
         if (mat.baseColorTexture)
         {
             mat.baseColorTexture.bind();
-            diffuseSurbroutine.index = diffuseSurbroutineColorTexture;
+            diffuseFunc = 1;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            diffuseSurbroutine.index = diffuseSurbroutineColorValue;
+            diffuseFunc = 0;
         }
 
         // Normal
@@ -386,13 +344,13 @@ class ForwardShader: Shader
         if (mat.normalTexture)
         {
             mat.normalTexture.bind();
-            normalSurbroutine.index = normalSurbroutineMap;
+            normalFunc = 1;
             generateTBN = true;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            normalSurbroutine.index = normalSurbroutineValue;
+            normalFunc = 0;
             generateTBN = false;
         }
         
@@ -408,14 +366,12 @@ class ForwardShader: Shader
         if (mat.roughnessMetallicTexture)
         {
             mat.roughnessMetallicTexture.bind();
-            roughnessSubroutine.index = roughnessSubroutineMap;
-            metallicSubroutine.index = metallicSubroutineMap;
+            roughnessMetallicFunc = 1;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            roughnessSubroutine.index = roughnessSubroutineValue;
-            metallicSubroutine.index = metallicSubroutineValue;
+            roughnessMetallicFunc = 0;
         }
         
         // Emission
@@ -425,12 +381,12 @@ class ForwardShader: Shader
         if (mat.emissionTexture)
         {
             mat.emissionTexture.bind();
-            emissionSubroutine.index = emissionSubroutineMap;
+            emissionFunc = 1;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            emissionSubroutine.index = emissionSubroutineValue;
+            emissionFunc = 0;
         }
         energy = mat.emissionEnergy;
         
@@ -447,21 +403,23 @@ class ForwardShader: Shader
         if (mat.heightTexture)
         {
             mat.heightTexture.bind();
-            heightSubroutine.index = heightSubroutineMap;
+            parallaxFunc = 1;
+            heightFunc = 1;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            heightSubroutine.index = heightSubroutineValue;
+            parallaxFunc = 1;
+            heightFunc = 0;
             parallaxMethod = ParallaxNone;
         }
         
         if (parallaxMethod == ParallaxSimple)
-            parallaxSubroutine.index = parallaxSubroutineSimple;
+            parallaxFunc = 1;
         else if (parallaxMethod == ParallaxOcclusionMapping)
-            parallaxSubroutine.index = parallaxSubroutineOcclusionMapping;
+            parallaxFunc = 2;
         else
-            parallaxSubroutine.index = parallaxSubroutineNone;
+            parallaxFunc = 0;
         
         parallaxScale = mat.parallaxScale;
         parallaxBias = mat.parallaxBias;
@@ -486,7 +444,7 @@ class ForwardShader: Shader
                     state.environment.ambientMap.bind();
                     ambientTextureCube = 6;
                     
-                    ambientSubroutine.index = ambientSubroutineCubemap;
+                    ambientFunc = 2;
                 }
                 else
                 {
@@ -498,7 +456,7 @@ class ForwardShader: Shader
                     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
                     ambientTextureCube = 6;
                     
-                    ambientSubroutine.index = ambientSubroutineEquirectangularMap;
+                    ambientFunc = 1;
                 }
             }
             else
@@ -513,7 +471,7 @@ class ForwardShader: Shader
                 
                 ambientVector = state.environment.ambientColor;
                 
-                ambientSubroutine.index = ambientSubroutineColor;
+                ambientFunc = 0;
             }
         }
         else
@@ -523,8 +481,7 @@ class ForwardShader: Shader
             fogEnd = 1000.0f;
             ambientEnergy = 1.0f;
             ambientVector = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
-            
-            ambientSubroutine.index = ambientSubroutineColor;
+            ambientFunc = 0;
         }
         
         // Shadow map
@@ -541,7 +498,7 @@ class ForwardShader: Shader
                 shadowMatrix1 = &csm.area[0].shadowMatrix;
                 shadowMatrix2 = &csm.area[1].shadowMatrix;
                 shadowMatrix3 = &csm.area[2].shadowMatrix;
-                shadowMapSubroutine.index = shadowMapSubroutineCascaded;
+                shadowFunc = 1;
             }
             else
             {
@@ -551,7 +508,7 @@ class ForwardShader: Shader
                 shadowMatrix1 = &defaultShadowMatrix;
                 shadowMatrix2 = &defaultShadowMatrix;
                 shadowMatrix3 = &defaultShadowMatrix;
-                shadowMapSubroutine.index = shadowMapSubroutineNone;
+                shadowFunc = 0;
             }
         }
         else
@@ -562,7 +519,7 @@ class ForwardShader: Shader
             shadowMatrix1 = &defaultShadowMatrix;
             shadowMatrix2 = &defaultShadowMatrix;
             shadowMatrix3 = &defaultShadowMatrix;
-            shadowMapSubroutine.index = shadowMapSubroutineNone;
+            shadowFunc = 0;
         }
         
         // Environment BRDF LUT

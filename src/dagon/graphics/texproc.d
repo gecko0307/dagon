@@ -68,27 +68,19 @@ class TextureCombinerShader: Shader
     
     ShaderParameter!int texChannel0;
     ShaderParameter!float valueChannel0;
-    ShaderSubroutine channel0;
-    GLuint channel0Texture;
-    GLuint channel0Value;
+    ShaderParameter!int channel0Func;
     
     ShaderParameter!int texChannel1;
     ShaderParameter!float valueChannel1;
-    ShaderSubroutine channel1;
-    GLuint channel1Texture;
-    GLuint channel1Value;
+    ShaderParameter!int channel1Func;
     
     ShaderParameter!int texChannel2;
     ShaderParameter!float valueChannel2;
-    ShaderSubroutine channel2;
-    GLuint channel2Texture;
-    GLuint channel2Value;
+    ShaderParameter!int channel2Func;
     
     ShaderParameter!int texChannel3;
     ShaderParameter!float valueChannel3;
-    ShaderSubroutine channel3;
-    GLuint channel3Texture;
-    GLuint channel3Value;
+    ShaderParameter!int channel3Func;
     
    public:
     Texture[4] channels;
@@ -112,27 +104,19 @@ class TextureCombinerShader: Shader
         
         texChannel0 = createParameter!int("texChannel0");
         valueChannel0 = createParameter!float("valueChannel0");
-        channel0 = createParameterSubroutine("channel0", ShaderType.Fragment);
-        channel0Texture = channel0.getIndex("channel0Texture");
-        channel0Value = channel0.getIndex("channel0Value");
+        channel0Func = createParameter!int("channel0Func");
         
         texChannel1 = createParameter!int("texChannel1");
         valueChannel1 = createParameter!float("valueChannel1");
-        channel1 = createParameterSubroutine("channel1", ShaderType.Fragment);
-        channel1Texture = channel0.getIndex("channel1Texture");
-        channel1Value = channel0.getIndex("channel1Value");
+        channel1Func = createParameter!int("channel1Func");
         
         texChannel2 = createParameter!int("texChannel2");
         valueChannel2 = createParameter!float("valueChannel2");
-        channel2 = createParameterSubroutine("channel2", ShaderType.Fragment);
-        channel2Texture = channel0.getIndex("channel2Texture");
-        channel2Value = channel0.getIndex("channel2Value");
+        channel2Func = createParameter!int("channel2Func");
         
         texChannel3 = createParameter!int("texChannel3");
         valueChannel3 = createParameter!float("valueChannel3");
-        channel3 = createParameterSubroutine("channel3", ShaderType.Fragment);
-        channel3Texture = channel0.getIndex("channel3Texture");
-        channel3Value = channel0.getIndex("channel3Value");
+        channel3Func = createParameter!int("channel3Func");
     }
     
     /// Destructor. Releases shader source resources.
@@ -157,12 +141,12 @@ class TextureCombinerShader: Shader
         if (channels[0])
         {
             channels[0].bind();
-            channel0.index = channel0Texture;
+            channel0Func = 1;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            channel0.index = channel0Value;
+            channel0Func = 0;
         }
         
         // Channel1
@@ -172,12 +156,12 @@ class TextureCombinerShader: Shader
         if (channels[1])
         {
             channels[1].bind();
-            channel1.index = channel1Texture;
+            channel1Func = 1;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            channel1.index = channel1Value;
+            channel1Func = 0;
         }
         
         // Channel2
@@ -187,12 +171,12 @@ class TextureCombinerShader: Shader
         if (channels[2])
         {
             channels[2].bind();
-            channel2.index = channel2Texture;
+            channel2Func = 1;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            channel2.index = channel2Value;
+            channel2Func = 0;
         }
         
         // Channel3
@@ -202,12 +186,12 @@ class TextureCombinerShader: Shader
         if (channels[3])
         {
             channels[3].bind();
-            channel3.index = channel3Texture;
+            channel3Func = 1;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            channel3.index = channel3Value;
+            channel3Func = 0;
         }
         
         glActiveTexture(GL_TEXTURE0);

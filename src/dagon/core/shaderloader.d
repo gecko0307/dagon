@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2019-2026 dayllenger
+Copyright (c) 2019-2026 dayllenger, Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -36,9 +36,9 @@ DEALINGS IN THE SOFTWARE.
  * shader stages, including vertex, tessellation control/evaluation, geometry,
  * fragment, and (if supported) compute shaders.
  *
- * Copyright: dayllenger 2019-2026
+ * Copyright: dayllenger, Timur Gafarov 2019-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
- * Authors: dayllenger
+ * Authors: dayllenger, Timur Gafarov
  */
 module dagon.core.shaderloader;
 
@@ -107,16 +107,16 @@ GLenum shaderStageToGLenum(ShaderStage stage)
  */
 GLuint compileShader(string source, const ShaderStage stage)
 {
-    // create a shader
+    // Create a shader
     GLuint shaderID = glCreateShader(shaderStageToGLenum(stage));
 
-    // compile the shader
+    // Compile the shader
     const char* csource = source.ptr;
     GLint length = cast(GLint)source.length;
     glShaderSource(shaderID, 1, &csource, &length);
     glCompileShader(shaderID);
 
-    // check the shader
+    // Check the shader
     if (!checkCompilation(shaderID, stage))
     {
         shaderID = 0;
@@ -136,24 +136,26 @@ GLuint compileShader(string source, const ShaderStage stage)
  */
 GLuint linkShaders(const GLuint[] shaderIDs...)
 {
-    // create and link program
+    // Create and link program
     GLuint programID = glCreateProgram();
     foreach(sh; shaderIDs)
         glAttachShader(programID, sh);
     glLinkProgram(programID);
 
-    // check the program
-    if (!checkLinking(programID))
-    {
-        programID = 0;
-        glDeleteProgram(programID);
-    }
+    // Check the program
+    bool linked = checkLinking(programID);
 
-    // delete the program parts
+    // Delete the program parts
     foreach(sh; shaderIDs)
     {
         glDetachShader(programID, sh);
         glDeleteShader(sh);
+    }
+    
+    if (!linked)
+    {
+        programID = 0;
+        glDeleteProgram(programID);
     }
 
     return programID;
@@ -172,14 +174,14 @@ enum logMaxLen = 1023;
  */
 bool checkCompilation(const GLuint shaderID, const ShaderStage stage)
 {
-    // get status
+    // Get status
     GLint status = GL_FALSE;
     glGetShaderiv(shaderID, GL_COMPILE_STATUS, &status);
     const bool ok = status != GL_FALSE;
     if (!ok)
         logError("Failed to compile ", stage, " shader");
     
-    // get log
+    // Get log
     GLint infolen;
     glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &infolen); // includes \0
     if (infolen > 1)
@@ -189,7 +191,7 @@ bool checkCompilation(const GLuint shaderID, const ShaderStage stage)
         infolen = min2(infolen - 1, logMaxLen);
         char[] s = stripRight(infobuffer[0..infolen]);
         
-        // it can be some warning
+        // It can be some warning
         logWarning(s);
     }
     return ok;
@@ -205,14 +207,14 @@ bool checkCompilation(const GLuint shaderID, const ShaderStage stage)
  */
 bool checkLinking(const GLuint programID)
 {
-    // get status
+    // Get status
     GLint status = GL_FALSE;
     glGetProgramiv(programID, GL_LINK_STATUS, &status);
     const bool ok = status != GL_FALSE;
     if (!ok)
         logError("Failed to link shaders");
     
-    // get log
+    // Get log
     GLint infolen;
     glGetProgramiv(programID, GL_INFO_LOG_LENGTH, &infolen); // includes \0
     if (infolen > 1)
@@ -222,7 +224,7 @@ bool checkLinking(const GLuint programID)
         infolen = min2(infolen - 1, logMaxLen);
         char[] s = stripRight(infobuffer[0..infolen]);
         
-        // it can be some warning
+        // It can be some warning
         logWarning(s);
     }
     return ok;

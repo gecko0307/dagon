@@ -55,83 +55,33 @@ uniform float blurMask;
 /*
  * Diffuse
  */
-subroutine vec4 srtColor(in vec2 uv);
-
 uniform vec4 diffuseVector;
-subroutine(srtColor) vec4 diffuseColorValue(in vec2 uv)
-{
-    return diffuseVector;
-}
-
 uniform sampler2D diffuseTexture;
-subroutine(srtColor) vec4 diffuseColorTexture(in vec2 uv)
-{
-    return texture(diffuseTexture, uv);
-}
-
-subroutine uniform srtColor diffuse;
+uniform int diffuseFunc;
 
 /*
  * Normal mapping
  */
-subroutine vec3 srtNormal(in vec2 uv, in float ysign, in mat3 tangentToEye);
-
 uniform vec3 normalVector;
-subroutine(srtNormal) vec3 normalValue(in vec2 uv, in float ysign, in mat3 tangentToEye)
-{
-    vec3 tN = normalVector;
-    tN.y *= ysign;
-    return normalize(tangentToEye * tN);
-}
-
 uniform sampler2D normalTexture;
-subroutine(srtNormal) vec3 normalMap(in vec2 uv, in float ysign, in mat3 tangentToEye)
-{
-    vec3 tN = normalize(texture(normalTexture, uv).rgb * 2.0 - 1.0);
-    tN.y *= ysign;
-    return normalize(tangentToEye * tN);
-}
-
-subroutine uniform srtNormal normal;
-
+uniform int normalFunc;
 uniform bool generateTBN;
 uniform float normalYSign;
-
 
 /*
  * Height mapping
  */
-subroutine float srtHeight(in vec2 uv);
-
 uniform float heightScalar;
-subroutine(srtHeight) float heightValue(in vec2 uv)
-{
-    return heightScalar;
-}
-
 uniform sampler2D heightTexture;
-subroutine(srtHeight) float heightMap(in vec2 uv)
-{
-    return texture(heightTexture, uv).r;
-}
-
-subroutine uniform srtHeight height;
-
+uniform int heightFunc;
 
 /*
  * Parallax mapping
  */
-subroutine vec2 srtParallax(in vec3 E, in vec2 uv, in float h);
-
 uniform float parallaxScale;
 uniform float parallaxBias;
 
-subroutine(srtParallax) vec2 parallaxNone(in vec3 E, in vec2 uv, in float h)
-{
-    return uv;
-}
-
-subroutine(srtParallax) vec2 parallaxSimple(in vec3 E, in vec2 uv, in float h)
+vec2 parallaxSimple(in vec3 E, in vec2 uv, in float h)
 {
     float currentHeight = h * parallaxScale + parallaxBias;
     return uv + (currentHeight * E.xy);
@@ -139,7 +89,7 @@ subroutine(srtParallax) vec2 parallaxSimple(in vec3 E, in vec2 uv, in float h)
 
 // Based on code written by Igor Dykhta (Sun and Black Cat)
 // http://sunandblackcat.com/tipFullView.php?topicid=28
-subroutine(srtParallax) vec2 parallaxOcclusionMapping(in vec3 E, in vec2 uv, in float h)
+vec2 parallaxOcclusionMapping(in vec3 E, in vec2 uv, in float h)
 {
     const float minLayers = 10.0;
     const float maxLayers = 15.0;
@@ -154,95 +104,38 @@ subroutine(srtParallax) vec2 parallaxOcclusionMapping(in vec3 E, in vec2 uv, in 
     {
         curLayerHeight += layerHeight;
         currentTextureCoords += dtex;
-        currentHeight = height(currentTextureCoords);
+        currentHeight = texture(heightTexture, currentTextureCoords).r;
     }
 
     vec2 prevTCoords = currentTextureCoords - dtex;
     float nextH = currentHeight - curLayerHeight;
-    float prevH = height(prevTCoords) - curLayerHeight + layerHeight;
+    float prevH = texture(heightTexture, prevTCoords).r - curLayerHeight + layerHeight;
     float weight = nextH / (nextH - prevH);
     return prevTCoords * weight + currentTextureCoords * (1.0 - weight);
 }
 
-subroutine uniform srtParallax parallax;
+uniform int parallaxFunc;
 
 /*
- * PBR
+ * Roughness/Metallic
  */
 uniform sampler2D roughnessMetallicTexture;
 uniform vec4 roughnessMetallicFactor;
-
-/*
- * Roughness
- */
-subroutine float srtRoughness(in vec2 uv);
-
-subroutine(srtRoughness) float roughnessValue(in vec2 uv)
-{
-    return roughnessMetallicFactor.g;
-}
-
-subroutine(srtRoughness) float roughnessMap(in vec2 uv)
-{
-    return texture(roughnessMetallicTexture, uv).g;
-}
-
-subroutine uniform srtRoughness roughness;
-
-
-/*
- * Metallic
- */
-subroutine float srtMetallic(in vec2 uv);
-
-subroutine(srtMetallic) float metallicValue(in vec2 uv)
-{
-    return roughnessMetallicFactor.b;
-}
-
-subroutine(srtMetallic) float metallicMap(in vec2 uv)
-{
-    return texture(roughnessMetallicTexture, uv).b;
-}
-
-subroutine uniform srtMetallic metallic;
-
+uniform int roughnessMetallicFunc;
 
 /*
  * Emission
  */
-subroutine vec3 srtEmission(in vec2 uv);
-
 uniform vec4 emissionFactor;
-subroutine(srtEmission) vec3 emissionValue(in vec2 uv)
-{
-    return emissionFactor.rgb * energy;
-}
-
 uniform sampler2D emissionTexture;
-subroutine(srtEmission) vec3 emissionMap(in vec2 uv)
-{
-    return texture(emissionTexture, uv).rgb * emissionFactor.rgb * energy;
-}
-
-subroutine uniform srtEmission emission;
-
+uniform int emissionFunc;
 
 /*
  * Ambient
  */
-uniform float ambientEnergy;
-
-subroutine vec3 srtAmbient(in vec3 wN, in float perceptualRoughness);
-
 uniform vec4 ambientVector;
-subroutine(srtAmbient) vec3 ambientColor(in vec3 wN, in float perceptualRoughness)
-{
-    return ambientVector.rgb;
-}
-
 uniform sampler2D ambientTexture;
-subroutine(srtAmbient) vec3 ambientEquirectangularMap(in vec3 wN, in float perceptualRoughness)
+vec3 ambientEquirectangularMap(in vec3 wN, in float perceptualRoughness)
 {
     ivec2 envMapSize = textureSize(ambientTexture, 0);
     float resolution = float(max(envMapSize.x, envMapSize.y));
@@ -251,7 +144,7 @@ subroutine(srtAmbient) vec3 ambientEquirectangularMap(in vec3 wN, in float perce
 }
 
 uniform samplerCube ambientTextureCube;
-subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float perceptualRoughness)
+vec3 ambientCubemap(in vec3 wN, in float perceptualRoughness)
 {
     ivec2 envMapSize = textureSize(ambientTextureCube, 0);
     float resolution = float(max(envMapSize.x, envMapSize.y));
@@ -259,21 +152,15 @@ subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float perceptualRoughn
     return textureLod(ambientTextureCube, wN, lod).rgb;
 }
 
-subroutine uniform srtAmbient ambient;
+uniform int ambientFunc;
 
+uniform float ambientEnergy;
 
 /*
  * Shadow
  */
-subroutine float srtShadow(in vec3 pos, in vec3 N);
-
-subroutine(srtShadow) float shadowMapNone(in vec3 pos, in vec3 N)
-{
-    return 1.0;
-}
-
 const float eyeSpaceNormalShift = 0.008;
-subroutine(srtShadow) float shadowMapCascaded(in vec3 pos, in vec3 N)
+float shadowMapCascaded(in vec3 pos, in vec3 N)
 {
     vec3 posShifted = pos + N * eyeSpaceNormalShift;
     vec4 shadowCoord1 = shadowMatrix1 * vec4(posShifted, 1.0);
@@ -294,12 +181,10 @@ subroutine(srtShadow) float shadowMapCascaded(in vec3 pos, in vec3 N)
     return s1;
 }
 
-subroutine uniform srtShadow shadowMap;
-
+uniform int shadowFunc;
 
 uniform sampler2D ambientBRDF;
 uniform bool haveAmbientBRDF;
-
 
 // Mie scaterring approximated with Henyey-Greenstein phase function.
 float scattering(float lightDotView)
@@ -308,7 +193,6 @@ float scattering(float lightDotView)
     result /= 4.0 * PI * pow(1.0 + sunScatteringG * sunScatteringG - (2.0 * sunScatteringG) * lightDotView, 1.5);
     return result;
 }
-
 
 uniform vec2 viewSize;
 
@@ -332,8 +216,17 @@ void main()
     {
         mat3 tangentToEye = cotangentFrame(N, eyePosition, texCoord);
         vec3 tE = normalize(E * tangentToEye);
-        uv = parallax(tE, texCoord, height(texCoord));
-        N = normal(uv, normalYSign, tangentToEye);
+        float height = texture(heightTexture, texCoord).r;
+        if (parallaxFunc == 1)
+            uv = parallaxSimple(tE, texCoord, height);
+        else if (parallaxFunc == 2)
+            uv = parallaxOcclusionMapping(tE, texCoord, height);
+        
+        N = normalVector;
+        if (normalFunc == 1)
+            N = normalize(texture(normalTexture, uv).rgb * 2.0 - 1.0);
+        N.y *= normalYSign;
+        N = normalize(tangentToEye * N);
     }
     
     vec3 R = reflect(E, N);
@@ -346,16 +239,30 @@ void main()
     
     vec3 L = sunDirection;
 
-    vec4 diff = diffuse(uv);
+    vec4 diff = diffuseVector;
+    if (diffuseFunc == 1)
+        diff = texture(diffuseTexture, uv);
+    
     vec3 albedo = toLinear(diff.rgb);
-    float r = roughness(uv);
-    float m = metallic(uv);
-    float s = 1.0;
-    vec3 f0 = mix(vec3(0.04), albedo, m);
     
-    float shadow = shadowMap(eyePosition, N);
+    vec4 roughnessMetallic = roughnessMetallicFactor;
+    if (roughnessMetallicFunc == 1)
+        roughnessMetallic = texture(roughnessMetallicTexture, uv);
+    float roughness = roughnessMetallic.g;
+    float metallic = roughnessMetallic.b;
+    vec3 f0 = mix(vec3(0.04), albedo, metallic);
     
-    vec3 radiance = toLinear(emission(uv));
+    float shadow = 1.0;
+    if (shadowFunc == 1)
+        shadow = shadowMapCascaded(eyePosition, N);
+    
+    vec3 emission;
+    if (emissionFunc == 1)
+        emission = texture(emissionTexture, uv).rgb * emissionFactor.rgb * energy;
+    else
+        emission = emissionFactor.rgb * energy;
+    
+    vec3 radiance = toLinear(emission);
     float alpha;
     
     if (shaded)
@@ -364,11 +271,28 @@ void main()
         
         // Ambient light
         {
-            vec3 irradiance = ambient(worldN, 0.99);
-            vec3 reflection = ambient(worldR, sqrt(r)) * s;
-            vec3 F = clamp(fresnelRoughness(dot(N, E), f0, r), 0.0, 1.0);
-            vec3 kD = (1.0 - F) * (1.0 - m);
-            vec2 brdf = haveAmbientBRDF? texture(ambientBRDF, vec2(dot(N, E), r)).rg : vec2(1.0, 0.0);
+            float perceptualRoughness = sqrt(roughness);
+            
+            vec3 irradiance, reflection;
+            if (ambientFunc == 1)
+            {
+                irradiance = ambientEquirectangularMap(worldN, 0.99);
+                reflection = ambientEquirectangularMap(worldR, perceptualRoughness);
+            }
+            else if (ambientFunc == 2)
+            {
+                irradiance = ambientCubemap(worldN, 0.99);
+                reflection = ambientCubemap(worldR, perceptualRoughness);
+            }
+            else
+            {
+                irradiance = toLinear(ambientVector.rgb);
+                reflection = irradiance;
+            }
+            
+            vec3 F = clamp(fresnelRoughness(dot(N, E), f0, roughness), 0.0, 1.0);
+            vec3 kD = (1.0 - F) * (1.0 - metallic);
+            vec2 brdf = haveAmbientBRDF? texture(ambientBRDF, vec2(dot(N, E), roughness)).rg : vec2(1.0, 0.0);
             vec3 specular = reflection * clamp(F * brdf.x + brdf.y, 0.0, 1.0) * ambientEnergy;
             radiance += kD * irradiance * ambientEnergy * albedo + specular;
             reflected += specular;
@@ -379,18 +303,18 @@ void main()
             float NL = max(dot(N, L), 0.0);
             vec3 H = normalize(E + L);
             
-            float NDF = distributionGGX(N, H, r);
-            float G = geometrySmith(N, E, L, r);
-            vec3 F = fresnelRoughness(max(dot(H, E), 0.0), f0, max(r, sunAngularRadius));
+            float NDF = distributionGGX(N, H, roughness);
+            float G = geometrySmith(N, E, L, roughness);
+            vec3 F = fresnelRoughness(max(dot(H, E), 0.0), f0, max(roughness, sunAngularRadius));
             
-            vec3 kD = (1.0 - F) * (1.0 - m);
+            vec3 kD = (1.0 - F) * (1.0 - metallic);
             vec3 specular = (NDF * G *  F) / max(4.0 * max(dot(N, E), 0.0) * NL, 0.00001);
             
             vec3 incomingLight = toLinear(sunColor.rgb) * sunEnergy;
             vec3 diffuse = albedo * invPI;
             
-            radiance += (kD * diffuse + specular * s) * NL * incomingLight * shadow;
-            reflected += specular * s * NL * incomingLight * shadow;
+            radiance += (kD * diffuse + specular) * NL * incomingLight * shadow;
+            reflected += specular * NL * incomingLight * shadow;
         }
         
         // TODO: fixed number of area lights

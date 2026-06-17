@@ -64,10 +64,7 @@ class EnvironmentShader: Shader
     ShaderParameter!Color4f ambientVector;
     ShaderParameter!int ambientTexture;
     ShaderParameter!int ambientTextureCube;
-    ShaderSubroutine ambientSubroutine;
-    GLuint ambientSubroutineCubemap,
-           ambientSubroutineEquirectangularMap,
-           ambientSubroutineColor;
+    ShaderParameter!int ambientFunc;
     
     ShaderParameter!int colorBuffer;
     ShaderParameter!int depthBuffer;
@@ -103,10 +100,7 @@ class EnvironmentShader: Shader
         ambientVector = createParameter!Color4f("ambientVector");
         ambientTexture = createParameter!int("ambientTexture");
         ambientTextureCube = createParameter!int("ambientTextureCube");
-        ambientSubroutine = createParameterSubroutine("ambient", ShaderType.Fragment);
-        ambientSubroutineCubemap = ambientSubroutine.getIndex("ambientCubemap");
-        ambientSubroutineEquirectangularMap = ambientSubroutine.getIndex("ambientEquirectangularMap");
-        ambientSubroutineColor = ambientSubroutine.getIndex("ambientColor");
+        ambientFunc = createParameter!int("ambientFunc");
         
         colorBuffer = createParameter!int("colorBuffer");
         depthBuffer = createParameter!int("depthBuffer");
@@ -174,7 +168,7 @@ class EnvironmentShader: Shader
                     state.environment.ambientMap.bind();
                     ambientTextureCube = 5;
                     
-                    ambientSubroutine.index = ambientSubroutineCubemap;
+                    ambientFunc = 2;
                 }
                 else
                 {
@@ -186,7 +180,7 @@ class EnvironmentShader: Shader
                     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
                     ambientTextureCube = 5;
                     
-                    ambientSubroutine.index = ambientSubroutineEquirectangularMap;
+                    ambientFunc = 1;
                 }
             }
             else
@@ -201,7 +195,7 @@ class EnvironmentShader: Shader
                 
                 ambientVector = state.environment.ambientColor;
                 
-                ambientSubroutine.index = ambientSubroutineColor;
+                ambientFunc = 0;
             }
         }
         else
@@ -220,7 +214,7 @@ class EnvironmentShader: Shader
             glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
             ambientTextureCube = 5;
             
-            ambientSubroutine.index = ambientSubroutineColor;
+            ambientFunc = 0;
         }
 
         // Texture 6 - occlusion buffer

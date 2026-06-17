@@ -100,20 +100,15 @@ class WaterShader: Shader
     ShaderParameter!Color4f ambientVector;
     ShaderParameter!int ambientTexture;
     ShaderParameter!int ambientTextureCube;
-    ShaderSubroutine ambientSubroutine;
-    GLuint ambientSubroutineCubemap,
-           ambientSubroutineEquirectangularMap,
-           ambientSubroutineColor;
-
+    ShaderParameter!int ambientFunc;
+    
     ShaderParameter!int shadowTextureArray;
     ShaderParameter!float shadowResolution;
     ShaderParameter!Matrix4x4f shadowMatrix1;
     ShaderParameter!Matrix4x4f shadowMatrix2;
     ShaderParameter!Matrix4x4f shadowMatrix3;
-    ShaderSubroutine shadowMapSubroutine;
-    GLuint shadowMapSubroutineCascaded,
-           shadowMapSubroutineNone;
-
+    ShaderParameter!int shadowFunc;
+    
     ShaderParameter!int pNormalTexture1;
     ShaderParameter!int pNormalTexture2;
     
@@ -182,19 +177,14 @@ class WaterShader: Shader
         ambientVector = createParameter!Color4f("ambientVector");
         ambientTexture = createParameter!int("ambientTexture");
         ambientTextureCube = createParameter!int("ambientTextureCube");
-        ambientSubroutine = createParameterSubroutine("ambient", ShaderType.Fragment);
-        ambientSubroutineCubemap = ambientSubroutine.getIndex("ambientCubemap");
-        ambientSubroutineEquirectangularMap = ambientSubroutine.getIndex("ambientEquirectangularMap");
-        ambientSubroutineColor = ambientSubroutine.getIndex("ambientColor");
+        ambientFunc = createParameter!int("ambientFunc");
         
         shadowTextureArray = createParameter!int("shadowTextureArray");
         shadowResolution = createParameter!float("shadowResolution");
         shadowMatrix1 = createParameter!Matrix4x4f("shadowMatrix1");
         shadowMatrix2 = createParameter!Matrix4x4f("shadowMatrix2");
         shadowMatrix3 = createParameter!Matrix4x4f("shadowMatrix3");
-        shadowMapSubroutine = createParameterSubroutine("shadowMap", ShaderType.Fragment);
-        shadowMapSubroutineCascaded = shadowMapSubroutine.getIndex("shadowMapCascaded");
-        shadowMapSubroutineNone = shadowMapSubroutine.getIndex("shadowMapNone");
+        shadowFunc = createParameter!int("shadowFunc");
         
         pNormalTexture1 = createParameter!int("normalTexture1");
         pNormalTexture2 = createParameter!int("normalTexture2");
@@ -324,7 +314,7 @@ class WaterShader: Shader
                     state.environment.ambientMap.bind();
                     ambientTextureCube = 3;
                     
-                    ambientSubroutine.index = ambientSubroutineCubemap;
+                    ambientFunc = 2;
                 }
                 else
                 {
@@ -336,7 +326,7 @@ class WaterShader: Shader
                     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
                     ambientTextureCube = 3;
                     
-                    ambientSubroutine.index = ambientSubroutineEquirectangularMap;
+                    ambientFunc = 1;
                 }
             }
             else
@@ -350,7 +340,8 @@ class WaterShader: Shader
                 ambientTextureCube = 3;
                 
                 ambientVector = state.environment.ambientColor;
-                ambientSubroutine.index = ambientSubroutineColor;
+                
+                ambientFunc = 0;
             }
         }
         else
@@ -369,7 +360,7 @@ class WaterShader: Shader
             glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
             ambientTextureCube = 3;
             
-            ambientSubroutine.index = ambientSubroutineColor;
+            ambientFunc = 0;
         }
 
         // Texture 4 - shadow map
@@ -386,7 +377,8 @@ class WaterShader: Shader
                 shadowMatrix1 = &csm.area[0].shadowMatrix;
                 shadowMatrix2 = &csm.area[1].shadowMatrix;
                 shadowMatrix3 = &csm.area[2].shadowMatrix;
-                shadowMapSubroutine.index = shadowMapSubroutineCascaded;
+                
+                shadowFunc = 1;
             }
             else
             {
@@ -396,7 +388,8 @@ class WaterShader: Shader
                 shadowMatrix1 = &defaultShadowMatrix;
                 shadowMatrix2 = &defaultShadowMatrix;
                 shadowMatrix3 = &defaultShadowMatrix;
-                shadowMapSubroutine.index = shadowMapSubroutineNone;
+                
+                shadowFunc = 0;
             }
         }
         else
@@ -407,7 +400,8 @@ class WaterShader: Shader
             shadowMatrix1 = &defaultShadowMatrix;
             shadowMatrix2 = &defaultShadowMatrix;
             shadowMatrix3 = &defaultShadowMatrix;
-            shadowMapSubroutine.index = shadowMapSubroutineNone;
+            
+            shadowFunc = 0;
         }
 
         // Texture 5 and 6 - normal maps

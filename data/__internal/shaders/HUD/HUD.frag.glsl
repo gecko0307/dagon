@@ -5,24 +5,11 @@
 in vec2 texCoord;
 
 /*
- * Diffuse color subroutines.
- * Used to switch color/texture.
+ * Diffuse color
  */
-subroutine vec4 srtColor(in vec2 uv);
-
 uniform vec4 diffuseVector;
-subroutine(srtColor) vec4 diffuseColorValue(in vec2 uv)
-{
-    return diffuseVector;
-}
-
 uniform sampler2D diffuseTexture;
-subroutine(srtColor) vec4 diffuseColorTexture(in vec2 uv)
-{
-    return textureLod(diffuseTexture, uv, 0.0);
-}
-
-subroutine uniform srtColor diffuse;
+uniform int diffuseFunc;
 
 uniform float opacity;
 
@@ -30,7 +17,9 @@ out vec4 fragColor;
 
 void main()
 {
-    vec4 color = diffuse(texCoord);
+    vec4 color = diffuseVector;
+    if (diffuseFunc == 1)
+        color = texture(diffuseTexture, texCoord);
     
     #if DAGON_OUTPUT_COLOR_PROFILE == DAGON_COLOR_PROFILE_SRGB
         fragColor = vec4(color.rgb, color.a * opacity);

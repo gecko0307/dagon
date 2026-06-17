@@ -849,6 +849,13 @@ class Shader: Owner
         super(owner);
         this.program = program;
         this.parameters = New!(MappedList!BaseShaderParameter)(this);
+        
+        if (program.program > 0)
+        {
+            debug logDebug(this.classinfo.name, ": program ", program.program);
+        }
+        else
+            logError(this.classinfo.name, ": invalid program");
     }
     
     /// Loads shader source code from a file, supporting `#include` directives.

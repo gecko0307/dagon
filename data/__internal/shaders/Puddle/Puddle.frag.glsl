@@ -52,21 +52,9 @@ vec3 computeRipple(vec2 uv, float currentTime, float weight)
 /*
  * Layer mask
  */
-subroutine float srtLayerMask(in vec2 uv);
-
 uniform float maskFactor;
-subroutine(srtLayerMask) float layerMaskValue(in vec2 uv)
-{
-    return maskFactor;
-}
-
 uniform sampler2D maskTexture;
-subroutine(srtLayerMask) float layerMaskTexture(in vec2 uv)
-{
-    return texture(maskTexture, uv).r;
-}
-
-subroutine uniform srtLayerMask layerMask;
+uniform int layerMaskFunc;
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec4 fragNormal;
@@ -87,7 +75,11 @@ void main()
     vec3 E = normalize(-eyePos);
     
     float gbufferMask = normalSample.a;
-    float mask = layerMask(terrTexCoord) * gbufferMask;
+    float mask;
+    if (layerMaskFunc == 1)
+        mask = texture(maskTexture, terrTexCoord).r * gbufferMask;
+    else
+        mask = maskFactor * gbufferMask;
     
     if (mask < clipThreshold)
         discard;

@@ -14,90 +14,41 @@ uniform mat3 textureMatrix;
 #include <cotangentFrame.glsl>
 
 /*
- * Diffuse color subroutines.
- * Used to switch color/texture.
+ * Diffuse color
  */
-subroutine vec4 srtColor(in vec2 uv);
-
 uniform vec4 diffuseVector;
-subroutine(srtColor) vec4 diffuseColorValue(in vec2 uv)
-{
-    return diffuseVector;
-}
-
 uniform sampler2D diffuseTexture;
-subroutine(srtColor) vec4 diffuseColorTexture(in vec2 uv)
-{
-    return texture(diffuseTexture, uv);
-}
-
-subroutine uniform srtColor diffuse;
-
+uniform int diffuseFunc;
 
 /*
- * Normal mapping subroutines.
+ * Normal
  */
-subroutine vec3 srtNormal(in vec2 uv, in float ysign, in mat3 tangentToEye);
-
 uniform vec3 normalVector;
-subroutine(srtNormal) vec3 normalValue(in vec2 uv, in float ysign, in mat3 tangentToEye)
-{
-    vec3 tN = normalVector;
-    tN.y *= ysign;
-    return normalize(tangentToEye * tN);
-}
-
 uniform sampler2D normalTexture;
-subroutine(srtNormal) vec3 normalMap(in vec2 uv, in float ysign, in mat3 tangentToEye)
-{
-    vec3 tN = normalize(texture(normalTexture, uv).rgb * 2.0 - 1.0);
-    tN.y *= ysign;
-    return normalize(tangentToEye * tN);
-}
-
-subroutine uniform srtNormal normal;
-
+uniform int normalFunc;
 
 /*
- * Height mapping subroutines.
+ * Height
  */
-subroutine float srtHeight(in vec2 uv);
-
 uniform float heightScalar;
-subroutine(srtHeight) float heightValue(in vec2 uv)
-{
-    return heightScalar;
-}
-
 uniform sampler2D heightTexture;
-subroutine(srtHeight) float heightMap(in vec2 uv)
-{
-    return texture(heightTexture, uv).r;
-}
-
-subroutine uniform srtHeight height;
-
+uniform int heightFunc;
 
 /*
  * Parallax mapping
  */
-subroutine vec2 srtParallax(in vec3 E, in vec2 uv, in float h);
-
 uniform float parallaxScale;
 uniform float parallaxBias;
 
-subroutine(srtParallax) vec2 parallaxNone(in vec3 E, in vec2 uv, in float h)
-{
-    return uv;
-}
-
-subroutine(srtParallax) vec2 parallaxSimple(in vec3 E, in vec2 uv, in float h)
+vec2 parallaxSimple(in vec3 E, in vec2 uv, in float h)
 {
     float currentHeight = h * parallaxScale + parallaxBias;
     return uv + (currentHeight * E.xy);
 }
 
-subroutine(srtParallax) vec2 parallaxOcclusionMapping(in vec3 E, in vec2 uv, in float h)
+// Based on code written by Igor Dykhta (Sun and Black Cat)
+// http://sunandblackcat.com/tipFullView.php?topicid=28
+vec2 parallaxOcclusionMapping(in vec3 E, in vec2 uv, in float h)
 {
     const float minLayers = 10.0;
     const float maxLayers = 15.0;
@@ -112,81 +63,32 @@ subroutine(srtParallax) vec2 parallaxOcclusionMapping(in vec3 E, in vec2 uv, in 
     {
         curLayerHeight += layerHeight;
         currentTextureCoords += dtex;
-        currentHeight = height(currentTextureCoords);
+        currentHeight = texture(heightTexture, currentTextureCoords).r;
     }
 
     vec2 prevTCoords = currentTextureCoords - dtex;
     float nextH = currentHeight - curLayerHeight;
-    float prevH = height(prevTCoords) - curLayerHeight + layerHeight;
+    float prevH = texture(heightTexture, prevTCoords).r - curLayerHeight + layerHeight;
     float weight = nextH / (nextH - prevH);
     return prevTCoords * weight + currentTextureCoords * (1.0 - weight);
 }
 
-subroutine uniform srtParallax parallax;
-
+uniform int parallaxFunc;
 
 /*
- * Roughness
+ * Roughness/Metallic
  */
 uniform sampler2D roughnessMetallicTexture;
 uniform vec4 roughnessMetallicFactor;
-
-subroutine float srtRoughness(in vec2 uv);
-
-uniform float roughnessScalar;
-subroutine(srtRoughness) float roughnessValue(in vec2 uv)
-{
-    return roughnessMetallicFactor.g;
-}
-
-subroutine(srtRoughness) float roughnessMap(in vec2 uv)
-{
-    return texture(roughnessMetallicTexture, uv).g;
-}
-
-subroutine uniform srtRoughness roughness;
-
-
-/*
- * Metallic
- */
-subroutine float srtMetallic(in vec2 uv);
-
-uniform float metallicScalar;
-subroutine(srtMetallic) float metallicValue(in vec2 uv)
-{
-    return roughnessMetallicFactor.b;
-}
-
-subroutine(srtMetallic) float metallicMap(in vec2 uv)
-{
-    return texture(roughnessMetallicTexture, uv).b;
-}
-
-subroutine uniform srtMetallic metallic;
-
+uniform int roughnessMetallicFunc;
 
 /*
  * Emission
  */
-subroutine vec4 srtEmission(in vec2 uv);
-
 uniform vec4 emissionFactor;
-subroutine(srtEmission) vec4 emissionColorValue(in vec2 uv)
-{
-    return emissionFactor;
-}
-
 uniform sampler2D emissionTexture;
-subroutine(srtEmission) vec4 emissionColorTexture(in vec2 uv)
-{
-    return texture(emissionTexture, uv);
-}
-
-subroutine uniform srtEmission emission;
-
+uniform int emissionFunc;
 uniform float emissionEnergy;
-
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec4 fragNormal;
@@ -222,18 +124,45 @@ void main()
     mat3 tangentToEye = cotangentFrame(N, eyePos, texCoord);
     vec3 tE = normalize(E * tangentToEye);
     
-    vec2 shiftedTexCoord = parallax(tE, texCoord, height(texCoord));
-    N = normal(shiftedTexCoord, -1.0, tangentToEye);
+    float height = heightScalar;
+    if (heightFunc == 1)
+        height = texture(heightTexture, texCoord).r;
     
-    vec4 diffuseColor = diffuse(shiftedTexCoord);
+    // Parallax mapping
+    if (parallaxFunc == 1)
+        texCoord = parallaxSimple(tE, texCoord, height);
+    else if (parallaxFunc == 2)
+        texCoord = parallaxOcclusionMapping(tE, texCoord, height);
+    
+    // Normal mapping
+    N = normalVector;
+    if (normalFunc == 1)
+        N = normalize(texture(normalTexture, texCoord).rgb * 2.0 - 1.0);
+    N.y *= -1.0;
+    N = normalize(tangentToEye * N);
+    
+    vec4 diffuseColor = diffuseVector;
+    if (diffuseFunc == 1)
+        diffuseColor = texture(diffuseTexture, texCoord);
     vec3 albedo = diffuseColor.rgb;
     
-    vec3 emiss = toLinear(emission(shiftedTexCoord).rgb) * emissionEnergy;
+    vec4 emission = emissionFactor;
+    if (emissionFunc == 1)
+        emission = texture(emissionTexture, texCoord);
+    vec3 emiss = toLinear(emission.rgb) * emissionEnergy;
+    
+    vec4 roughnessMetallic = roughnessMetallicFactor;
+    if (roughnessMetallicFunc == 1)
+        roughnessMetallic = texture(roughnessMetallicTexture, texCoord);
     
     const float specularity = 1.0;
     
     fragColor = vec4(albedo, diffuseColor.a);
     fragNormal = vec4(N, diffuseColor.a);
-    fragPBR = vec4(roughness(shiftedTexCoord), metallic(shiftedTexCoord), specularity, diffuseColor.a);
+    fragPBR = vec4(
+        roughnessMetallic.g,
+        roughnessMetallic.b,
+        specularity,
+        diffuseColor.a);
     fragEmission = vec4(emiss, diffuseColor.a);
 }

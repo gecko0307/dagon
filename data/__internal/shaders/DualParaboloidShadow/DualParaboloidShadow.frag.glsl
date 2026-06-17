@@ -13,6 +13,8 @@ void main()
     if (direction * clipZ < -0.01)
         discard;
     
+    // TODO: alpha clipping
+    
     fragColor = vec4(1.0, 1.0, 1.0, 1.0);
     gl_FragDepth = z;
 }

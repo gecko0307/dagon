@@ -74,10 +74,7 @@ class EnvironmentProbeShader: Shader
     ShaderParameter!Color4f ambientVector;
     ShaderParameter!int ambientTexture;
     ShaderParameter!int ambientTextureCube;
-    ShaderSubroutine ambientSubroutine;
-    GLuint ambientSubroutineCubemap,
-           ambientSubroutineEquirectangularMap,
-           ambientSubroutineColor;
+    ShaderParameter!int ambientFunc;
     
     ShaderParameter!int paramUseBoxProjection;
     ShaderParameter!Vector3f paramBoxExtents;
@@ -124,10 +121,7 @@ class EnvironmentProbeShader: Shader
         ambientVector = createParameter!Color4f("ambientVector");
         ambientTexture = createParameter!int("ambientTexture");
         ambientTextureCube = createParameter!int("ambientTextureCube");
-        ambientSubroutine = createParameterSubroutine("ambient", ShaderType.Fragment);
-        ambientSubroutineCubemap = ambientSubroutine.getIndex("ambientCubemap");
-        ambientSubroutineEquirectangularMap = ambientSubroutine.getIndex("ambientEquirectangularMap");
-        ambientSubroutineColor = ambientSubroutine.getIndex("ambientColor");
+        ambientFunc = createParameter!int("ambientFunc");
         
         paramUseBoxProjection = createParameter!int("useBoxProjection");
         paramBoxExtents = createParameter!Vector3f("boxExtents");
@@ -204,7 +198,7 @@ class EnvironmentProbeShader: Shader
                 mat.emissionTexture.bind();
                 ambientTextureCube = 5;
                 
-                ambientSubroutine.index = ambientSubroutineCubemap;
+                ambientFunc = 2;
             }
             else
             {
@@ -216,7 +210,7 @@ class EnvironmentProbeShader: Shader
                 glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
                 ambientTextureCube = 5;
                 
-                ambientSubroutine.index = ambientSubroutineEquirectangularMap;
+                ambientFunc = 1;
             }
         }
         else
@@ -231,7 +225,7 @@ class EnvironmentProbeShader: Shader
             glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
             ambientTextureCube = 5;
             
-            ambientSubroutine.index = ambientSubroutineColor;
+            ambientFunc = 0;
         }
         
         ambientEnergy = mat.emissionEnergy;

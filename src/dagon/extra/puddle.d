@@ -81,9 +81,7 @@ class PuddleShader: Shader
     
     ShaderParameter!int maskTexture;
     ShaderParameter!float maskFactor;
-    ShaderSubroutine layerMaskSubroutine;
-    GLuint layerMaskSubroutineTexture,
-           layerMaskSubroutineValue;
+    ShaderParameter!int layerMaskFunc;
     
     ShaderParameter!int pRippleTexture;
     ShaderParameter!Vector4f pRippleTimes;
@@ -136,9 +134,7 @@ class PuddleShader: Shader
         
         maskTexture = createParameter!int("maskTexture");
         maskFactor = createParameter!float("maskFactor");
-        layerMaskSubroutine = createParameterSubroutine("layerMask", ShaderType.Fragment);
-        layerMaskSubroutineTexture = layerMaskSubroutine.getIndex("layerMaskTexture");
-        layerMaskSubroutineValue = layerMaskSubroutine.getIndex("layerMaskValue");
+        layerMaskFunc = createParameter!int("layerMaskFunc");
         
         pRippleTexture = createParameter!int("rippleTexture");
         pRippleTimes = createParameter!Vector4f("rippleTimes");
@@ -206,12 +202,12 @@ class PuddleShader: Shader
         if (mat.maskTexture)
         {
             mat.maskTexture.bind();
-            layerMaskSubroutine.index = layerMaskSubroutineTexture;
+            layerMaskFunc = 1;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            layerMaskSubroutine.index = layerMaskSubroutineValue;
+            layerMaskFunc = 0;
         }
         
         // Ripples

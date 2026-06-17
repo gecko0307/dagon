@@ -18,31 +18,10 @@ in vec4 prevPosition;
 #include <envMapEquirect.glsl>
 #include <gamma.glsl>
 
-/*
- * Diffuse color
- */
-subroutine vec4 srtEnv(in vec3 dir);
-
 uniform vec4 envColor;
-subroutine(srtEnv) vec4 environmentColor(in vec3 dir)
-{
-    return envColor;
-}
-
 uniform sampler2D envTexture;
-subroutine(srtEnv) vec4 environmentTexture(in vec3 dir)
-{
-    return texture(envTexture, envMapEquirect(dir));
-}
-
 uniform samplerCube envTextureCube;
-subroutine(srtEnv) vec4 environmentCubemap(in vec3 dir)
-{
-    return texture(envTextureCube, dir);
-}
-
-subroutine uniform srtEnv environment;
-
+uniform int envFunc;
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 3) out vec4 fragEmission;
@@ -51,7 +30,16 @@ layout(location = 5) out vec4 fragRadiance;
 
 void main()
 {
-    vec4 color = environment(normalize(worldNormal));
+    vec3 wN = normalize(worldNormal);
+    
+    vec4 color;
+    if (envFunc == 1)
+        color = texture(envTexture, envMapEquirect(wN));
+    else if (envFunc == 2)
+        color = texture(envTextureCube, wN);
+    else
+        color = envColor;
+    
     if (color.a < 0.5)
         discard;
     

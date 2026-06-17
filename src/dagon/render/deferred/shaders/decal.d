@@ -64,47 +64,32 @@ class DecalShader: Shader
     ShaderParameter!Matrix3x3f textureMatrix;
     
     ShaderParameter!int depthTexture;
+    
     ShaderParameter!int diffuseTexture;
     ShaderParameter!Color4f diffuseVector;
-    ShaderSubroutine diffuseSubroutine;
-    GLuint diffuseSubroutineColorTexture,
-           diffuseSubroutineColorValue;
+    ShaderParameter!int diffuseFunc;
     
     ShaderParameter!int normalTexture;
     ShaderParameter!Vector3f normalVector;
-    ShaderSubroutine normalSubroutine;
-    GLuint normalSubroutineMap,
-           normalSubroutineValue;
+    ShaderParameter!int normalFunc;
     ShaderParameter!int generateTBN;
     ShaderParameter!float normalYSign;
     
     ShaderParameter!int heightTexture;
     ShaderParameter!float heightScalar;
-    ShaderSubroutine heightSubroutine;
-    GLuint heightSubroutineMap,
-           heightSubroutineValue;
+    ShaderParameter!int heightFunc;
     
-    ShaderSubroutine parallaxSubroutine;
-    GLuint parallaxSubroutineSimple,
-           parallaxSubroutineOcclusionMapping,
-           parallaxSubroutineNone;
     ShaderParameter!float parallaxScale;
     ShaderParameter!float parallaxBias;
+    ShaderParameter!int parallaxFunc;
     
     ShaderParameter!int roughnessMetallicTexture;
     ShaderParameter!Color4f roughnessMetallicFactor;
-    ShaderSubroutine roughnessSubroutine;
-    ShaderSubroutine metallicSubroutine;
-    GLuint roughnessSubroutineMap,
-           roughnessSubroutineValue;
-    GLuint metallicSubroutineMap,
-           metallicSubroutineValue;
+    ShaderParameter!int roughnessMetallicFunc;
     
     ShaderParameter!int emissionTexture;
     ShaderParameter!Color4f emissionFactor;
-    ShaderSubroutine emissionSubroutine;
-    GLuint emissionSubroutineColorTexture,
-           emissionSubroutineColorValue;
+    ShaderParameter!int emissionFunc;
     ShaderParameter!float emissionEnergy;
 
    public:
@@ -133,45 +118,29 @@ class DecalShader: Shader
         
         diffuseTexture = createParameter!int("diffuseTexture");
         diffuseVector = createParameter!Color4f("diffuseVector");
-        diffuseSubroutine = createParameterSubroutine("diffuse", ShaderType.Fragment);
-        diffuseSubroutineColorTexture = diffuseSubroutine.getIndex("diffuseColorTexture");
-        diffuseSubroutineColorValue = diffuseSubroutine.getIndex("diffuseColorValue");
+        diffuseFunc = createParameter!int("diffuseFunc");
         
         normalTexture = createParameter!int("normalTexture");
         normalVector = createParameter!Vector3f("normalVector");
-        normalSubroutine = createParameterSubroutine("normal", ShaderType.Fragment);
-        normalSubroutineMap = normalSubroutine.getIndex("normalMap");
-        normalSubroutineValue = normalSubroutine.getIndex("normalValue");
+        normalFunc = createParameter!int("normalFunc");
         generateTBN = createParameter!int("generateTBN");
         normalYSign = createParameter!float("normalYSign");
         
         heightTexture = createParameter!int("heightTexture");
         heightScalar = createParameter!float("heightScalar");
-        heightSubroutine = createParameterSubroutine("height", ShaderType.Fragment);
-        heightSubroutineMap = heightSubroutine.getIndex("heightMap");
-        heightSubroutineValue = heightSubroutine.getIndex("heightValue");
+        heightFunc = createParameter!int("heightFunc");
         
-        parallaxSubroutine = createParameterSubroutine("parallax", ShaderType.Fragment);
-        parallaxSubroutineSimple = parallaxSubroutine.getIndex("parallaxSimple");
-        parallaxSubroutineOcclusionMapping = parallaxSubroutine.getIndex("parallaxOcclusionMapping");
-        parallaxSubroutineNone = parallaxSubroutine.getIndex("parallaxNone");
+        parallaxFunc = createParameter!int("parallaxFunc");
         parallaxScale = createParameter!float("parallaxScale");
         parallaxBias = createParameter!float("parallaxBias");
         
         roughnessMetallicTexture = createParameter!int("roughnessMetallicTexture");
         roughnessMetallicFactor = createParameter!Color4f("roughnessMetallicFactor");
-        roughnessSubroutine = createParameterSubroutine("roughness", ShaderType.Fragment);
-        roughnessSubroutineMap = roughnessSubroutine.getIndex("roughnessMap");
-        roughnessSubroutineValue = roughnessSubroutine.getIndex("roughnessValue");
-        metallicSubroutine = createParameterSubroutine("metallic", ShaderType.Fragment);
-        metallicSubroutineMap = metallicSubroutine.getIndex("metallicMap");
-        metallicSubroutineValue = metallicSubroutine.getIndex("metallicValue");
+        roughnessMetallicFunc = createParameter!int("roughnessMetallicFunc");
         
         emissionTexture = createParameter!int("emissionTexture");
         emissionFactor = createParameter!Color4f("emissionFactor");
-        emissionSubroutine = createParameterSubroutine("emission", ShaderType.Fragment);
-        emissionSubroutineColorTexture = emissionSubroutine.getIndex("emissionColorTexture");
-        emissionSubroutineColorValue = emissionSubroutine.getIndex("emissionColorValue");
+        emissionFunc = createParameter!int("emissionFunc");
         emissionEnergy = createParameter!float("emissionEnergy");
     }
 
@@ -208,12 +177,12 @@ class DecalShader: Shader
         if (mat.baseColorTexture)
         {
             mat.baseColorTexture.bind();
-            diffuseSubroutine.index = diffuseSubroutineColorTexture;
+            diffuseFunc = 1;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            diffuseSubroutine.index = diffuseSubroutineColorValue;
+            diffuseFunc = 0;
         }
         
         if (!mat.outputColor)
@@ -228,13 +197,13 @@ class DecalShader: Shader
         if (mat.normalTexture)
         {
             mat.normalTexture.bind();
-            normalSubroutine.index = normalSubroutineMap;
+            normalFunc = 1;
             generateTBN = true;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            normalSubroutine.index = normalSubroutineValue;
+            normalFunc = 0;
             generateTBN = false;
         }
         
@@ -261,21 +230,21 @@ class DecalShader: Shader
         if (mat.heightTexture)
         {
             mat.heightTexture.bind();
-            heightSubroutine.index = heightSubroutineMap;
+            heightFunc = 1;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            heightSubroutine.index = heightSubroutineValue;
+            heightFunc = 0;
             parallaxMethod = ParallaxNone;
         }
         
         if (parallaxMethod == ParallaxSimple)
-            parallaxSubroutine.index = parallaxSubroutineSimple;
+            parallaxFunc = 1;
         else if (parallaxMethod == ParallaxOcclusionMapping)
-            parallaxSubroutine.index = parallaxSubroutineOcclusionMapping;
+            parallaxFunc = 2;
         else
-            parallaxSubroutine.index = parallaxSubroutineNone;
+            parallaxFunc = 0;
         
         parallaxScale = mat.parallaxScale;
         parallaxBias = mat.parallaxBias;
@@ -287,14 +256,12 @@ class DecalShader: Shader
         if (mat.roughnessMetallicTexture)
         {
             mat.roughnessMetallicTexture.bind();
-            roughnessSubroutine.index = roughnessSubroutineMap;
-            metallicSubroutine.index = metallicSubroutineMap;
+            roughnessMetallicFunc = 1;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            roughnessSubroutine.index = roughnessSubroutineValue;
-            metallicSubroutine.index = metallicSubroutineValue;
+            roughnessMetallicFunc = 0;
         }
         
         if (!mat.outputPBR)
@@ -309,12 +276,12 @@ class DecalShader: Shader
         if (mat.emissionTexture)
         {
             mat.emissionTexture.bind();
-            emissionSubroutine.index = emissionSubroutineColorTexture;
+            emissionFunc = 1;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            emissionSubroutine.index = emissionSubroutineColorValue;
+            emissionFunc = 0;
         }
         emissionEnergy = mat.emissionEnergy;
         

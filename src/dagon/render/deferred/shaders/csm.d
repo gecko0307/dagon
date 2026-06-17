@@ -56,16 +56,15 @@ class CascadedShadowShader: Shader
     ShaderParameter!Matrix4x4f normalMatrix;
     ShaderParameter!Matrix4x4f projectionMatrix;
     ShaderParameter!float opacity;
+    ShaderParameter!float clipThreshold;
     ShaderParameter!Matrix3x3f textureMatrix;
     ShaderParameter!int skinned;
     ShaderParameterArray!Matrix4x4f boneMatrices;
     
     ShaderParameter!int diffuseTexture;
     ShaderParameter!Color4f diffuseVector;
-    ShaderSubroutine diffuseSurbroutine;
-    GLuint diffuseSurbroutineColorTexture,
-           diffuseSurbroutineColorValue;
-
+    ShaderParameter!int diffuseFunc;
+    
    public:
     this(Owner owner)
     {
@@ -81,15 +80,14 @@ class CascadedShadowShader: Shader
         normalMatrix = createParameter!Matrix4x4f("normalMatrix");
         projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
         opacity = createParameter!float("opacity");
+        clipThreshold = createParameter!float("clipThreshold");
         textureMatrix = createParameter!Matrix3x3f("textureMatrix");
         skinned = createParameter!int("skinned");
         boneMatrices = createParameterArray!Matrix4x4f("boneMatrices[0]");
         
         diffuseTexture = createParameter!int("diffuseTexture");
         diffuseVector = createParameter!Color4f("diffuseVector");
-        diffuseSurbroutine = createParameterSubroutine("diffuse", ShaderType.Fragment);
-        diffuseSurbroutineColorTexture = diffuseSurbroutine.getIndex("diffuseColorTexture");
-        diffuseSurbroutineColorValue = diffuseSurbroutine.getIndex("diffuseColorValue");
+        diffuseFunc = createParameter!int("diffuseFunc");
     }
 
     ~this()
@@ -108,6 +106,7 @@ class CascadedShadowShader: Shader
         normalMatrix = &state.normalMatrix;
         projectionMatrix = &state.projectionMatrix;
         opacity = state.opacity * mat.opacity;
+        clipThreshold = mat.alphaTestThreshold;
         textureMatrix = &mat.textureTransformation;
         // TODO: mat.textureMappingMode;
         
@@ -136,12 +135,12 @@ class CascadedShadowShader: Shader
         if (mat.baseColorTexture)
         {
             mat.baseColorTexture.bind();
-            diffuseSurbroutine.index = diffuseSurbroutineColorTexture;
+            diffuseFunc = 1;
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, 0);
-            diffuseSurbroutine.index = diffuseSurbroutineColorValue;
+            diffuseFunc = 0;
         }
 
         super.bindParameters(state);

@@ -29,39 +29,29 @@ uniform bool useBoxProjection;
 #include <fresnel.glsl>
 #include <envMapEquirect.glsl>
 
-uniform float ambientEnergy;
-
-subroutine vec3 srtAmbient(in vec3 wN, in float perceptualRoughness);
-
 uniform vec4 ambientVector;
-subroutine(srtAmbient) vec3 ambientColor(in vec3 wN, in float perceptualRoughness)
-{
-    return toLinear(ambientVector.rgb);
-}
-
 uniform sampler2D ambientTexture;
-subroutine(srtAmbient) vec3 ambientEquirectangularMap(in vec3 wN, in float perceptualRoughness)
+
+vec3 ambientEquirectangularMap(in vec3 wN, in float perceptualRoughness)
 {
     ivec2 envMapSize = textureSize(ambientTexture, 0);
     float resolution = float(max(envMapSize.x, envMapSize.y));
-    //float glossyExponent = 2.0 / pow(roughness, 4.0) - 2.0;
-    //float lod = log2(size * sqrt(3.0)) - 0.5 * log2(glossyExponent + 1.0);
     float lod = log2(resolution) * perceptualRoughness;
     return textureLod(ambientTexture, envMapEquirect(wN), lod).rgb;
 }
 
 uniform samplerCube ambientTextureCube;
-subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float perceptualRoughness)
+vec3 ambientCubemap(in vec3 wN, in float perceptualRoughness)
 {
     ivec2 envMapSize = textureSize(ambientTextureCube, 0);
     float resolution = float(max(envMapSize.x, envMapSize.y));
-    //float glossyExponent = 2.0 / pow(roughness, 4.0) - 2.0;
-    //float lod = log2(size * sqrt(3.0)) - 0.5 * log2(glossyExponent + 1.0);
     float lod = log2(resolution) * perceptualRoughness;
     return textureLod(ambientTextureCube, wN, lod).rgb;
 }
 
-subroutine uniform srtAmbient ambient;
+uniform int ambientFunc;
+
+uniform float ambientEnergy;
 
 uniform sampler2D ambientBRDF;
 uniform bool haveAmbientBRDF;
@@ -133,12 +123,29 @@ void main()
     float occlusion = haveOcclusionBuffer? texture(occlusionBuffer, gbufTexCoord).r : 1.0;
     
     vec3 f0 = mix(vec3(0.04), albedo, metallic);
-
-    // Ambient light
-    vec3 irradiance = ambient(worldN, 0.8); // TODO: support separate irradiance map
+    
     float grazingReflectivity = pow(1.0 - NE, 5.0);
     float perceptualRoughness = mix(roughness, 0.0, grazingReflectivity);
-    vec3 reflection = ambient(worldR, perceptualRoughness);
+    
+    // Ambient light
+    // TODO: support separate irradiance map
+    vec3 irradiance, reflection;
+    if (ambientFunc == 1)
+    {
+        irradiance = ambientEquirectangularMap(worldN, 0.99);
+        reflection = ambientEquirectangularMap(worldR, perceptualRoughness);
+    }
+    else if (ambientFunc == 2)
+    {
+        irradiance = ambientCubemap(worldN, 0.99);
+        reflection = ambientCubemap(worldR, perceptualRoughness);
+    }
+    else
+    {
+        irradiance = toLinear(ambientVector.rgb);
+        reflection = irradiance;
+    }
+    
     vec3 F = clamp(fresnelRoughness(NE, f0, roughness), 0.0, 1.0);
     vec3 kD = (1.0 - F) * (1.0 - metallic);
     vec2 brdf = haveAmbientBRDF? texture(ambientBRDF, vec2(NE, roughness)).rg : vec2(1.0, 0.0);

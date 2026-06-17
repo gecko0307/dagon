@@ -83,20 +83,14 @@ class AreaLightShader: Shader
     ShaderParameter!float lightSpotCosInnerCutoff;
     ShaderParameter!Vector3f lightSpotDirection;
     
-    ShaderSubroutine lightRadianceSubroutine;
-    GLuint lightRadianceSubroutineAreaSphere,
-           lightRadianceSubroutineAreaTube,
-           lightRadianceSubroutineSpot,
-           lightRadianceSubroutineFallback;
+    ShaderParameter!int lightRadianceFunc;
     
     ShaderParameter!Matrix4x4f shadowMatrix;
     ShaderParameter!int shadowTexture;
     ShaderParameter!int shadowTextureArray;
     ShaderParameter!float shadowResolution;
-    ShaderSubroutine shadowMapSubroutine;
-    GLuint shadowMapSubroutinePerspective,
-           shadowMapSubroutineDualParaboloid,
-           shadowMapSubroutineNone;
+    
+    ShaderParameter!int shadowMapFunc;
     
     ShaderParameter!int colorBuffer;
     ShaderParameter!int depthBuffer;
@@ -143,20 +137,14 @@ class AreaLightShader: Shader
         lightSpotCosInnerCutoff = createParameter!float("lightSpotCosInnerCutoff");
         lightSpotDirection = createParameter!Vector3f("lightSpotDirection");
         
-        lightRadianceSubroutine = createParameterSubroutine("lightRadiance", ShaderType.Fragment);
-        lightRadianceSubroutineAreaSphere = lightRadianceSubroutine.getIndex("lightRadianceAreaSphere");
-        lightRadianceSubroutineAreaTube = lightRadianceSubroutine.getIndex("lightRadianceAreaTube");
-        lightRadianceSubroutineSpot = lightRadianceSubroutine.getIndex("lightRadianceSpot");
-        lightRadianceSubroutineFallback = lightRadianceSubroutine.getIndex("lightRadianceFallback");
+        lightRadianceFunc = createParameter!int("lightRadianceFunc");
         
         shadowMatrix = createParameter!Matrix4x4f("shadowMatrix");
         shadowTexture = createParameter!int("shadowTexture");
         shadowTextureArray = createParameter!int("shadowTextureArray");
         shadowResolution = createParameter!float("shadowResolution");
-        shadowMapSubroutine = createParameterSubroutine("shadowMap", ShaderType.Fragment);
-        shadowMapSubroutinePerspective = shadowMapSubroutine.getIndex("shadowMapPerspective");
-        shadowMapSubroutineDualParaboloid = shadowMapSubroutine.getIndex("shadowMapDualParaboloid");
-        shadowMapSubroutineNone = shadowMapSubroutine.getIndex("shadowMapNone");
+        
+        shadowMapFunc = createParameter!int("shadowMapFunc");
         
         glGenTextures(1, &defaultShadowTexture);
         glActiveTexture(GL_TEXTURE0);
@@ -235,12 +223,12 @@ class AreaLightShader: Shader
             
             if (light.type == LightType.AreaSphere)
             {
-                lightRadianceSubroutine.index = lightRadianceSubroutineAreaSphere;
+                lightRadianceFunc = 1;
             }
             else if (light.type == LightType.AreaTube)
             {
                 lightPosition2 = (light.positionAbsolute + light.directionAbsolute * light.length) * state.viewMatrix;
-                lightRadianceSubroutine.index = lightRadianceSubroutineAreaTube;
+                lightRadianceFunc = 2;
             }
             else if (light.type == LightType.Spot)
             {
@@ -249,16 +237,16 @@ class AreaLightShader: Shader
                 Vector4f lightDirHg = Vector4f(light.directionAbsolute);
                 lightDirHg.w = 0.0;
                 lightSpotDirection = (lightDirHg * state.viewMatrix).xyz;
-                lightRadianceSubroutine.index = lightRadianceSubroutineSpot;
+                lightRadianceFunc = 3;
             }
             else // unsupported light type
             {
-                lightRadianceSubroutine.index = lightRadianceSubroutineFallback;
+                lightRadianceFunc = 0;
             }
         }
         else
         {
-            lightRadianceSubroutine.index = lightRadianceSubroutineFallback;
+            lightRadianceFunc = 0;
             lightPosition = Vector3f(0.0f, 0.0f, 0.0f);
             lightColor = Color4f(0.0f, 0.0f, 0.0f, 0.0f);
             lightEnergy = 1.0f;
@@ -306,7 +294,7 @@ class AreaLightShader: Shader
                     shadowTexture = 5;
                     
                     shadowResolution = cast(float)psm.resolution;
-                    shadowMapSubroutine.index = shadowMapSubroutinePerspective;
+                    shadowMapFunc = 2;
                     
                     shadowMatrix = &psm.shadowMatrix;
                 }
@@ -323,7 +311,7 @@ class AreaLightShader: Shader
                     shadowTexture = 5;
                     
                     shadowResolution = cast(float)dpsm.resolution;
-                    shadowMapSubroutine.index = shadowMapSubroutineDualParaboloid;
+                    shadowMapFunc = 1;
                     
                     shadowMatrix = &defaultShadowMatrix;
                 }
@@ -338,7 +326,8 @@ class AreaLightShader: Shader
                 glBindTexture(GL_TEXTURE_2D, defaultShadowTexture);
                 shadowTexture = 5;
                 
-                shadowMapSubroutine.index = shadowMapSubroutineNone;
+                shadowResolution = 0.0f;
+                shadowMapFunc = 0;
                 
                 shadowMatrix = &defaultShadowMatrix;
             }

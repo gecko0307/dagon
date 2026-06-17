@@ -60,40 +60,16 @@ uniform int numFixedLights;
 /*
  * Diffuse
  */
-subroutine vec4 srtColor(in vec2 uv);
-
 uniform vec4 diffuseVector;
-subroutine(srtColor) vec4 diffuseColorValue(in vec2 uv)
-{
-    return diffuseVector;
-}
-
 uniform sampler2D diffuseTexture;
-subroutine(srtColor) vec4 diffuseColorTexture(in vec2 uv)
-{
-    return texture(diffuseTexture, uv);
-}
-
-subroutine uniform srtColor diffuse;
+uniform int diffuseFunc;
 
 /*
  * Emission
  */
-subroutine vec3 srtEmission(in vec2 uv);
-
 uniform vec4 emissionFactor;
-subroutine(srtEmission) vec3 emissionValue(in vec2 uv)
-{
-    return emissionFactor.rgb * energy;
-}
-
 uniform sampler2D emissionTexture;
-subroutine(srtEmission) vec3 emissionMap(in vec2 uv)
-{
-    return texture(emissionTexture, uv).rgb * emissionFactor.rgb * energy;
-}
-
-subroutine uniform srtEmission emission;
+uniform int emissionFunc;
 
 layout(location = 0) out vec4 fragColor;
 
@@ -108,7 +84,9 @@ void main()
     
     vec3 L = sunDirection;
     
-    vec4 color = diffuse(uv);
+    vec4 color = diffuseVector;
+    if (diffuseFunc == 1)
+        color = texture(diffuseTexture, uv);
     vec3 diffuseColor = toLinear(color.rgb);
     
     vec3 outputColor = diffuseColor;
@@ -217,7 +195,12 @@ void main()
         outputColor = mix(toLinear(fogColor.rgb), outputColor, fogFactor);
     }
     
-    outputColor += toLinear(emission(uv));
+    vec3 emission;
+    if (emissionFunc == 1)
+        emission = texture(emissionTexture, uv).rgb * emissionFactor.rgb * energy;
+    else
+        emission = emissionFactor.rgb * energy;
+    outputColor += toLinear(emission);
     
     fragColor = vec4(mix(outputColor, debugHighlightColor.rgb, debugHighlightCoef), outputAlpha);
 }

@@ -25,104 +25,40 @@ in vec2 texCoord;
 /*
  * Layer mask
  */
-subroutine float srtLayerMask(in vec2 uv);
-
 uniform float maskFactor;
-subroutine(srtLayerMask) float layerMaskValue(in vec2 uv)
-{
-    return maskFactor;
-}
-
 uniform sampler2D maskTexture;
-subroutine(srtLayerMask) float layerMaskTexture(in vec2 uv)
-{
-    return texture(maskTexture, uv).r;
-}
-
-subroutine uniform srtLayerMask layerMask;
-
+uniform int maskFunc;
 
 /*
  * Diffuse
  */
-subroutine vec4 srtColor(in vec2 uv);
-
 uniform vec4 diffuseVector;
-subroutine(srtColor) vec4 diffuseColorValue(in vec2 uv)
-{
-    return diffuseVector;
-}
-
 uniform sampler2D diffuseTexture;
-subroutine(srtColor) vec4 diffuseColorTexture(in vec2 uv)
-{
-    return texture(diffuseTexture, uv);
-}
-
-subroutine uniform srtColor diffuse;
-
+uniform int diffuseFunc;
 
 /*
- * Normal mapping
+ * Normal map
  */
-subroutine vec3 srtNormal(in vec2 uv, in float ysign, in mat3 tangentToEye);
-
 uniform vec3 normalVector;
-subroutine(srtNormal) vec3 normalValue(in vec2 uv, in float ysign, in mat3 tangentToEye)
-{
-    vec3 tN = normalVector;
-    tN.y *= ysign;
-    return normalize(tangentToEye * tN);
-}
-
 uniform sampler2D normalTexture;
-subroutine(srtNormal) vec3 normalMap(in vec2 uv, in float ysign, in mat3 tangentToEye)
-{
-    vec3 tN = normalize(texture(normalTexture, uv).rgb * 2.0 - 1.0);
-    tN.y *= ysign;
-    return normalize(tangentToEye * tN);
-}
-
-subroutine uniform srtNormal normal;
-
+uniform int normalFunc;
 uniform bool generateTBN;
 uniform float normalYSign;
 
-
 /*
- * Height mapping
+ * Height map
  */
-subroutine float srtHeight(in vec2 uv);
-
 uniform float heightScalar;
-subroutine(srtHeight) float heightValue(in vec2 uv)
-{
-    return heightScalar;
-}
-
 uniform sampler2D heightTexture;
-subroutine(srtHeight) float heightMap(in vec2 uv)
-{
-    return texture(heightTexture, uv).r;
-}
-
-subroutine uniform srtHeight height;
-
+uniform int heightFunc;
 
 /*
  * Parallax mapping
  */
-subroutine vec2 srtParallax(in vec3 E, in vec2 uv, in float h);
-
 uniform float parallaxScale;
 uniform float parallaxBias;
 
-subroutine(srtParallax) vec2 parallaxNone(in vec3 E, in vec2 uv, in float h)
-{
-    return uv;
-}
-
-subroutine(srtParallax) vec2 parallaxSimple(in vec3 E, in vec2 uv, in float h)
+vec2 parallaxSimple(in vec3 E, in vec2 uv, in float h)
 {
     float currentHeight = h * parallaxScale + parallaxBias;
     return uv + (currentHeight * E.xy);
@@ -130,7 +66,7 @@ subroutine(srtParallax) vec2 parallaxSimple(in vec3 E, in vec2 uv, in float h)
 
 // Based on code written by Igor Dykhta (Sun and Black Cat)
 // http://sunandblackcat.com/tipFullView.php?topicid=28
-subroutine(srtParallax) vec2 parallaxOcclusionMapping(in vec3 E, in vec2 uv, in float h)
+vec2 parallaxOcclusionMapping(in vec3 E, in vec2 uv, in float h)
 {
     const float minLayers = 10.0;
     const float maxLayers = 15.0;
@@ -145,81 +81,31 @@ subroutine(srtParallax) vec2 parallaxOcclusionMapping(in vec3 E, in vec2 uv, in 
     {
         curLayerHeight += layerHeight;
         currentTextureCoords += dtex;
-        currentHeight = height(currentTextureCoords);
+        currentHeight = texture(heightTexture, currentTextureCoords).r;
     }
 
     vec2 prevTCoords = currentTextureCoords - dtex;
     float nextH = currentHeight - curLayerHeight;
-    float prevH = height(prevTCoords) - curLayerHeight + layerHeight;
+    float prevH = texture(heightTexture, prevTCoords).r - curLayerHeight + layerHeight;
     float weight = nextH / (nextH - prevH);
     return prevTCoords * weight + currentTextureCoords * (1.0 - weight);
 }
 
-subroutine uniform srtParallax parallax;
-
+uniform int parallaxFunc;
 
 /*
- * PBR
+ * Roughness/Metallic
  */
 uniform sampler2D roughnessMetallicTexture;
 uniform vec4 roughnessMetallicFactor;
-
-/*
- * Roughness
- */
-subroutine float srtRoughness(in vec2 uv);
-
-subroutine(srtRoughness) float roughnessValue(in vec2 uv)
-{
-    return roughnessMetallicFactor.g;
-}
-
-subroutine(srtRoughness) float roughnessMap(in vec2 uv)
-{
-    return texture(roughnessMetallicTexture, uv).g;
-}
-
-subroutine uniform srtRoughness roughness;
-
-
-/*
- * Metallic
- */
-subroutine float srtMetallic(in vec2 uv);
-
-subroutine(srtMetallic) float metallicValue(in vec2 uv)
-{
-    return roughnessMetallicFactor.b;
-}
-
-subroutine(srtMetallic) float metallicMap(in vec2 uv)
-{
-    return texture(roughnessMetallicTexture, uv).b;
-}
-
-subroutine uniform srtMetallic metallic;
-
+uniform int roughnessMetallicFunc;
 
 /*
  * Emission
  */
-subroutine vec3 srtEmission(in vec2 uv);
-
 uniform vec4 emissionFactor;
-subroutine(srtEmission) vec3 emissionColorValue(in vec2 uv)
-{
-    return emissionFactor.rgb * energy;
-}
-
 uniform sampler2D emissionTexture;
-subroutine(srtEmission) vec3 emissionColorTexture(in vec2 uv)
-{
-    return texture(emissionTexture, uv).rgb * energy;
-}
-
-subroutine uniform srtEmission emission;
-
-//
+uniform int emissionFunc;
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec4 fragNormal;
@@ -235,7 +121,9 @@ void main()
     float depth = terrTexCoordSample.z;
     vec3 eyePos = unproject(invProjectionMatrix, vec3(texCoord, depth));
     
-    vec4 diff = diffuse(uv);
+    vec4 diff = diffuseVector;
+    if (diffuseFunc == 1)
+        diff = texture(diffuseTexture, uv);
     vec3 albedo = diff.rgb;
     
     vec4 normalSample = texture(terrainNormalBuffer, texCoord);
@@ -246,22 +134,47 @@ void main()
     {
         mat3 tangentToEye = cotangentFrame(N, eyePos, terrTexCoord);
         vec3 tE = normalize(E * tangentToEye);
-        uv = parallax(tE, uv, height(uv));
-        N = normal(uv, normalYSign, tangentToEye);
+        
+        float height = texture(heightTexture, uv).r;
+        if (parallaxFunc == 1)
+            uv = parallaxSimple(tE, uv, height);
+        else if (parallaxFunc == 2)
+            uv = parallaxOcclusionMapping(tE, uv, height);
+        
+        N = normalVector;
+        if (normalFunc == 1)
+            N = normalize(texture(normalTexture, uv).rgb * 2.0 - 1.0);
+        N.y *= normalYSign;
+        N = normalize(tangentToEye * N);
     }
     
     float gbufferMask = normalSample.a;
-    float mask = layerMask(terrTexCoord) * opacity * gbufferMask;
+    float mask = maskFactor;
+    if (maskFunc == 1)
+        mask = texture(maskTexture, terrTexCoord).r;
+    mask *= opacity * gbufferMask;
     
     if (mask < clipThreshold)
         discard;
     
+    vec4 roughnessMetallic = roughnessMetallicFactor;
+    if (roughnessMetallicFunc == 1)
+        roughnessMetallic = texture(roughnessMetallicTexture, uv);
+    float roughness = roughnessMetallic.g;
+    float metallic = roughnessMetallic.b;
+    
+    vec3 emission;
+    if (emissionFunc == 1)
+        emission = texture(emissionTexture, uv).rgb * energy;
+    else
+        emission = emissionFactor.rgb * energy;
+    
     fragColor = vec4(albedo, mask);
     fragNormal = vec4(N, mask);
     fragPBR = vec4(
-        max(roughness(uv), 0.0001),
-        metallic(uv),
+        max(roughness, 0.0001),
+        metallic,
         0.0,
         mask);
-    fragEmission = vec4(toLinear(emission(uv)), mask);
+    fragEmission = vec4(toLinear(emission), mask);
 }

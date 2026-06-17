@@ -28,18 +28,10 @@ in vec2 texCoord;
 #include <fresnel.glsl>
 #include <envMapEquirect.glsl>
 
-uniform float ambientEnergy;
-
-subroutine vec3 srtAmbient(in vec3 wN, in float perceptualRoughness);
-
 uniform vec4 ambientVector;
-subroutine(srtAmbient) vec3 ambientColor(in vec3 wN, in float perceptualRoughness)
-{
-    return toLinear(ambientVector.rgb);
-}
-
 uniform sampler2D ambientTexture;
-subroutine(srtAmbient) vec3 ambientEquirectangularMap(in vec3 wN, in float perceptualRoughness)
+
+vec3 ambientEquirectangularMap(in vec3 wN, in float perceptualRoughness)
 {
     ivec2 envMapSize = textureSize(ambientTexture, 0);
     float resolution = float(max(envMapSize.x, envMapSize.y));
@@ -48,7 +40,7 @@ subroutine(srtAmbient) vec3 ambientEquirectangularMap(in vec3 wN, in float perce
 }
 
 uniform samplerCube ambientTextureCube;
-subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float perceptualRoughness)
+vec3 ambientCubemap(in vec3 wN, in float perceptualRoughness)
 {
     ivec2 envMapSize = textureSize(ambientTextureCube, 0);
     float resolution = float(max(envMapSize.x, envMapSize.y));
@@ -56,7 +48,9 @@ subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float perceptualRoughn
     return textureLod(ambientTextureCube, wN, lod).rgb;
 }
 
-subroutine uniform srtAmbient ambient;
+uniform int ambientFunc;
+
+uniform float ambientEnergy;
 
 uniform sampler2D ambientBRDF;
 uniform bool haveAmbientBRDF;
@@ -94,8 +88,24 @@ void main()
     vec3 f0 = mix(vec3(0.04), albedo, metallic);
 
     // Ambient light
-    vec3 irradiance = ambient(worldN, 0.99); // TODO: support separate irradiance map
-    vec3 reflection = ambient(worldR, sqrt(roughness)) * reflectivity;
+    // TODO: support separate irradiance map
+    vec3 irradiance, reflection;
+    if (ambientFunc == 1)
+    {
+        irradiance = ambientEquirectangularMap(worldN, 0.99);
+        reflection = ambientEquirectangularMap(worldR, sqrt(roughness)) * reflectivity;
+    }
+    else if (ambientFunc == 2)
+    {
+        irradiance = ambientCubemap(worldN, 0.99);
+        reflection = ambientCubemap(worldR, sqrt(roughness)) * reflectivity;
+    }
+    else
+    {
+        irradiance = toLinear(ambientVector.rgb);
+        reflection = irradiance;
+    }
+    
     vec3 F = clamp(fresnelRoughness(NE, f0, roughness), 0.0, 1.0);
     vec3 kD = (1.0 - F) * (1.0 - metallic);
     vec2 brdf = haveAmbientBRDF? texture(ambientBRDF, vec2(NE, 1.0 - roughness)).rg : vec2(1.0, 0.0);

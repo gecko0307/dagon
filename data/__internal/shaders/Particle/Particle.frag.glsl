@@ -29,72 +29,25 @@ uniform float sunScatteringDensity;
 #include <envMapEquirect.glsl>
 
 /*
- * Diffuse color subroutines.
- * Used to switch color/texture.
+ * Diffuse color
  */
-subroutine vec4 srtColor(in vec2 uv);
-
 uniform vec4 diffuseVector;
-subroutine(srtColor) vec4 diffuseColorValue(in vec2 uv)
-{
-    return diffuseVector;
-}
-
 uniform sampler2D diffuseTexture;
-subroutine(srtColor) vec4 diffuseColorTexture(in vec2 uv)
-{
-    return texture(diffuseTexture, uv);
-}
-
-subroutine uniform srtColor diffuse;
+uniform int diffuseFunc;
 
 /*
- * Normal mapping subroutines.
+ * Normal mapping
  */
-subroutine vec3 srtNormal(in vec2 uv, in float ysign, in mat3 tangentToEye);
-
 uniform vec3 normalVector;
-subroutine(srtNormal) vec3 normalValue(in vec2 uv, in float ysign, in mat3 tangentToEye)
-{
-    vec3 tN = normalVector;
-    tN.y *= ysign;
-    return normalize(tangentToEye * tN);
-}
-
 uniform sampler2D normalTexture;
-subroutine(srtNormal) vec3 normalMap(in vec2 uv, in float ysign, in mat3 tangentToEye)
-{
-    vec3 tN = normalize(texture(normalTexture, uv).rgb * 2.0 - 1.0);
-    tN.y *= ysign;
-    return normalize(tangentToEye * tN);
-}
+uniform int normalFunc;
 
-subroutine(srtNormal) vec3 normalFunctionHemisphere(in vec2 uv, in float ysign, in mat3 tangentToEye)
-{
-    // Generate spherical tangent-space normal
-    vec2 p = uv * 2.0 - 1.0;
-    if (dot(p, p) >= 1.0)
-        p = normalize(p) * 0.999; // small bias to fight aliasing
-    float vz = sqrt(1.0 - p.x * p.x - p.y * p.y);
-    vec3 tN = vec3(p.x, p.y, vz);
-    return normalize(tangentToEye * tN);
-}
-
-subroutine uniform srtNormal normal;
-
-
-uniform float ambientEnergy;
-
-subroutine vec3 srtAmbient(in vec3 wN, in float roughness);
-
+/*
+ * Ambient mapping
+ */
 uniform vec4 ambientVector;
-subroutine(srtAmbient) vec3 ambientColor(in vec3 wN, in float roughness)
-{
-    return toLinear(ambientVector.rgb);
-}
-
 uniform sampler2D ambientTexture;
-subroutine(srtAmbient) vec3 ambientEquirectangularMap(in vec3 wN, in float roughness)
+vec3 ambientEquirectangularMap(in vec3 wN, in float roughness)
 {
     ivec2 envMapSize = textureSize(ambientTexture, 0);
     float size = float(max(envMapSize.x, envMapSize.y));
@@ -104,7 +57,7 @@ subroutine(srtAmbient) vec3 ambientEquirectangularMap(in vec3 wN, in float rough
 }
 
 uniform samplerCube ambientTextureCube;
-subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float roughness)
+vec3 ambientCubemap(in vec3 wN, in float roughness)
 {
     ivec2 envMapSize = textureSize(ambientTextureCube, 0);
     float size = float(max(envMapSize.x, envMapSize.y));
@@ -113,7 +66,9 @@ subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float roughness)
     return textureLod(ambientTextureCube, wN, lod).rgb;
 }
 
-subroutine uniform srtAmbient ambient;
+uniform int ambientFunc;
+
+uniform float ambientEnergy;
 
 
 // Mie scaterring approximated with Henyey-Greenstein phase function.
@@ -151,14 +106,40 @@ void main()
     
     vec3 N = normalize(-particlePosition);
     mat3 tangentToEye = cotangentFrame(N, eyePosition, texCoord);
-    N = normal(texCoord, -1.0, tangentToEye);
+    N = normalVector;
+    if (normalFunc == 1)
+    {
+        N = normalize(texture(normalTexture, texCoord).rgb * 2.0 - 1.0);
+        N.y *= -1.0;
+    }
+    else if (normalFunc == 2)
+    {
+        vec2 p = texCoord * 2.0 - 1.0;
+        if (dot(p, p) >= 1.0)
+            p = normalize(p) * 0.999; // small bias to fight aliasing
+        float vz = sqrt(1.0 - p.x * p.x - p.y * p.y);
+        N = vec3(p.x, p.y, vz);
+    }
+    else
+    {
+        N.y *= -1.0;
+    }
+    N = normalize(tangentToEye * N);
 
     vec3 worldN = N * mat3(viewMatrix);
     
     // Shading
+    vec3 ambient;
+    if (ambientFunc == 1)
+        ambient = ambientEquirectangularMap(worldN, 0.9);
+    else if (ambientFunc == 2)
+        ambient = ambientCubemap(worldN, 0.9);
+    else
+        ambient = toLinear(ambientVector.rgb);
+    
     const float wrapFactor = 0.5;
     vec3 radiance = shaded? 
-        ambient(worldN, 0.9) * ambientEnergy + 
+        ambient * ambientEnergy + 
         toLinear(sunColor.rgb) * max(dot(N, sunDirection) + wrapFactor, 0.0) / (1.0 + wrapFactor) * sunEnergy :
         vec3(1.0);
     
@@ -174,7 +155,10 @@ void main()
     const float softDistance = 3.0;
     float soft = alphaCutout? 1.0 : clamp((eyePosition.z - referenceEyePos.z) / softDistance, 0.0, 1.0);
     
-    vec4 diff = diffuse(texCoord);
+    vec4 diff = diffuseVector;
+    if (diffuseFunc == 1)
+        diff = texture(diffuseTexture, texCoord);
+    
     vec3 outColor = radiance * toLinear(diff.rgb) * toLinear(particleColor.rgb) * particleEnergy + scatteringRadiance;
     float outAlpha = diff.a * particleColor.a * particleAlpha * soft;
     

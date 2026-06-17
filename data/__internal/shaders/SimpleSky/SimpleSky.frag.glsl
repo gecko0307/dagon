@@ -13,41 +13,30 @@ in vec3 worldNormal;
 #include <envMapEquirect.glsl>
 #include <gamma.glsl>
 
-/*
- * Diffuse color
- */
-subroutine vec3 srtEnv(in vec3 dir);
-
 uniform vec4 envColor;
-subroutine(srtEnv) vec3 environmentColor(in vec3 dir)
-{
-    return envColor.rgb;
-}
-
 uniform sampler2D envTexture;
-subroutine(srtEnv) vec3 environmentTexture(in vec3 dir)
-{
-    return texture(envTexture, envMapEquirect(dir)).rgb;
-}
-
 uniform samplerCube envTextureCube;
-subroutine(srtEnv) vec3 environmentCubemap(in vec3 dir)
-{
-    return texture(envTextureCube, dir).rgb;
-}
-
-subroutine uniform srtEnv environment;
-
+uniform int envFunc;
 
 layout(location = 0) out vec4 fragColor;
 
 void main()
 {
-    vec3 color = environment(normalize(worldNormal));
+    vec3 wN = normalize(worldNormal);
+    
+    vec3 color;
+    if (envFunc == 1)
+        color = texture(envTexture, envMapEquirect(wN)).rgb;
+    else if (envFunc == 2)
+        color = texture(envTextureCube, wN).rgb;
+    else
+        color = envColor.rgb;
+    
     vec3 radiance;
     if (linearize)
         radiance = toLinear(color) * energy;
     else
         radiance = color * energy;
+    
     fragColor = vec4(radiance, 1.0);
 }

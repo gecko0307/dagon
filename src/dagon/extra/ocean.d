@@ -95,10 +95,7 @@ class OceanShader: Shader
     ShaderParameter!Color4f ambientVector;
     ShaderParameter!int ambientTexture;
     ShaderParameter!int ambientTextureCube;
-    ShaderSubroutine ambientSubroutine;
-    GLuint ambientSubroutineCubemap,
-           ambientSubroutineEquirectangularMap,
-           ambientSubroutineColor;
+    ShaderParameter!int ambientFunc;
     
     TextureAsset normalTexture1Asset;
     TextureAsset normalTexture2Asset;
@@ -167,10 +164,7 @@ class OceanShader: Shader
         ambientVector = createParameter!Color4f("ambientVector");
         ambientTexture = createParameter!int("ambientTexture");
         ambientTextureCube = createParameter!int("ambientTextureCube");
-        ambientSubroutine = createParameterSubroutine("ambient", ShaderType.Fragment);
-        ambientSubroutineCubemap = ambientSubroutine.getIndex("ambientCubemap");
-        ambientSubroutineEquirectangularMap = ambientSubroutine.getIndex("ambientEquirectangularMap");
-        ambientSubroutineColor = ambientSubroutine.getIndex("ambientColor");
+        ambientFunc = createParameter!int("ambientFunc");
     }
     
     ~this()
@@ -265,7 +259,7 @@ class OceanShader: Shader
                     state.environment.ambientMap.bind();
                     ambientTextureCube = 3;
                     
-                    ambientSubroutine.index = ambientSubroutineCubemap;
+                    ambientFunc = 2;
                 }
                 else
                 {
@@ -277,7 +271,7 @@ class OceanShader: Shader
                     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
                     ambientTextureCube = 3;
                     
-                    ambientSubroutine.index = ambientSubroutineEquirectangularMap;
+                    ambientFunc = 1;
                 }
             }
             else
@@ -292,7 +286,7 @@ class OceanShader: Shader
                 
                 ambientVector = state.environment.ambientColor;
                 
-                ambientSubroutine.index = ambientSubroutineColor;
+                ambientFunc = 0;
             }
         }
         else
@@ -311,7 +305,7 @@ class OceanShader: Shader
             glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
             ambientTextureCube = 3;
             
-            ambientSubroutine.index = ambientSubroutineColor;
+            ambientFunc = 0;
         }
         
         super.bindParameters(state);

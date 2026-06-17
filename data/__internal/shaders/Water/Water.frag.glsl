@@ -47,18 +47,10 @@ uniform sampler2D normalTexture2;
 /*
  * Ambient
  */
-uniform float ambientEnergy;
-
-subroutine vec3 srtAmbient(in vec3 wN, in float roughness);
-
 uniform vec4 ambientVector;
-subroutine(srtAmbient) vec3 ambientColor(in vec3 wN, in float roughness)
-{
-    return toLinear(ambientVector.rgb);
-}
 
 uniform sampler2D ambientTexture;
-subroutine(srtAmbient) vec3 ambientEquirectangularMap(in vec3 wN, in float roughness)
+vec3 ambientEquirectangularMap(in vec3 wN, in float roughness)
 {
     ivec2 envMapSize = textureSize(ambientTexture, 0);
     float size = float(max(envMapSize.x, envMapSize.y));
@@ -68,7 +60,7 @@ subroutine(srtAmbient) vec3 ambientEquirectangularMap(in vec3 wN, in float rough
 }
 
 uniform samplerCube ambientTextureCube;
-subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float roughness)
+vec3 ambientCubemap(in vec3 wN, in float roughness)
 {
     ivec2 envMapSize = textureSize(ambientTextureCube, 0);
     float size = float(max(envMapSize.x, envMapSize.y));
@@ -77,18 +69,15 @@ subroutine(srtAmbient) vec3 ambientCubemap(in vec3 wN, in float roughness)
     return textureLod(ambientTextureCube, wN, lod).rgb;
 }
 
-subroutine uniform srtAmbient ambient;
+uniform int ambientFunc;
 
+uniform float ambientEnergy;
 
-subroutine float srtShadow(in vec3 pos, in vec3 N);
-
-subroutine(srtShadow) float shadowMapNone(in vec3 pos, in vec3 N)
-{
-    return 1.0;
-}
-
+/*
+ * Shadow map
+ */
 const float eyeSpaceNormalShift = 0.008;
-subroutine(srtShadow) float shadowMapCascaded(in vec3 pos, in vec3 N)
+float shadowMapCascaded(in vec3 pos, in vec3 N)
 {
     vec3 posShifted = pos + N * eyeSpaceNormalShift;
     vec4 shadowCoord1 = shadowMatrix1 * vec4(posShifted, 1.0);
@@ -109,7 +98,7 @@ subroutine(srtShadow) float shadowMapCascaded(in vec3 pos, in vec3 N)
     return s1;
 }
 
-subroutine uniform srtShadow shadowMap;
+uniform int shadowFunc;
 
 
 // Mie scaterring approximated with Henyey-Greenstein phase function.
@@ -211,9 +200,20 @@ void main()
     
     // Light
     {
-        vec3 reflection = ambient(worldR, pow(fresnel, 2.0)) * ambientEnergy;
+        vec3 ambient;
+        if (ambientFunc == 1)
+            ambient = ambientEquirectangularMap(worldR, pow(fresnel, 2.0));
+        else if (ambientFunc == 2)
+            ambient = ambientCubemap(worldR, pow(fresnel, 2.0));
+        else
+            ambient = toLinear(ambientVector.rgb);
         
-        float shadow = shadowMap(eyePosition, N);
+        vec3 reflection = ambient * ambientEnergy;
+        
+        float shadow = 1.0;
+        if (shadowFunc == 1)
+            shadow = shadowMapCascaded(eyePosition, N);
+        
         float light = max(dot(N, L), 0.0);
     
         vec3 diffuseLight = toLinear(waterColor.rgb) * light * sunLight * shadow * alpha;
