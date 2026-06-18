@@ -9,7 +9,9 @@ Dagon 1.1.0 - TBD
   - New property `Entity.name`
   - Bounding boxes are now calculated for built-in shapes
 - **Collision**
-  - 2D collision module, `dagon.collision.collision2d`.
+  - 2D collision module (`dagon.collision.collision2d`)
+- **Editor**
+  - Started working on a scene editor for the engine.
 
 Dagon 1.0.3 - 10 Jun, 2026
 --------------------------
