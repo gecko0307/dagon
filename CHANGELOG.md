@@ -7,6 +7,7 @@ Dagon 1.1.0 - TBD
   - Support framebuffer clearing in HUD renderer
 - **Graphics components**
   - New property `Entity.name`
+  - Bounding boxes are now calculated for built-in shapes
 - **Collision**
   - 2D collision module, `dagon.collision.collision2d`.
 
