@@ -615,6 +615,9 @@ class Application: EventListener, Updateable
     /// Default level of anisotropic filtering for textures.
     float defaultTextureAnisotropy = 1.0f;
     
+    /// Maximum number of subroutines that can be declared and used within a single shader stage.
+    int maxSubroutines;
+    
     /// Maximum number of workgroups per compute dispatch.
     int[3] maxWorkGroups;
     
@@ -1247,6 +1250,10 @@ class Application: EventListener, Updateable
             defaultTextureAnisotropy = 1.0f;
         }
         
+        // Log OpenGL limits
+        glGetIntegerv(GL_MAX_SUBROUTINES, &maxSubroutines);
+        logInfo("GL_MAX_SUBROUTINES: ", maxSubroutines);
+        
         glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &maxWorkGroups[0]);
         glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &maxWorkGroups[1]);
         glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &maxWorkGroups[2]);
@@ -1257,7 +1264,7 @@ class Application: EventListener, Updateable
         glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &maxWorkGroups[2]);
         logInfo("GL_MAX_COMPUTE_WORK_GROUP_SIZE: ", maxWorkGroups);
         
-        // Debug output
+        // Initialize OpenGL debug output
         if ("gl.debugOutput" in config.props)
             enableDebugOutput = cast(bool)config.props["gl.debugOutput"].toUInt;
         if (enableDebugOutput)
