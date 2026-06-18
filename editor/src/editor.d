@@ -140,8 +140,6 @@ class EditorScene: Scene
         auto ePlane = addEntity();
         ePlane.drawable = New!ShapePlane(10, 10, 1, assetManager);
         ePlane.name = "Plane";
-        
-        selectEntity(eSuzanne);
     }
     
     override void onUpdate(Time t)
