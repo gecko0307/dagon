@@ -25,6 +25,13 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * Deferred rendering package.
+ *
+ * This module exposes the deferred renderer, including G-buffer
+ * and all the render passes used. It serves as the entry point for
+ * configuring the renderer and connecting scene data to the pipeline.
+ */
 module dagon.render.deferred;
 
 import dlib.core.memory;
@@ -47,6 +54,13 @@ public import dagon.render.deferred.gbuffer;
 import dagon.render.postproc.filterpass;
 import dagon.render.postproc.shaders.denoise;
 
+/**
+ * Deferred renderer implementation.
+ *
+ * The DeferredRenderer manages the shading pipeline, including
+ * shadow pre-pass, geometry pre-pass, IBL, lighting, occlusion, etc.
+ * It also owns the G-buffer and intermediate render targets.
+ */
 class DeferredRenderer: Renderer
 {
     Texture brdf;
@@ -82,6 +96,7 @@ class DeferredRenderer: Renderer
     float ssaoDenoise = 1.0f;
     bool ssaoDenoiseDepthAware = true;
     
+    /// Enables or disables screen-space ambient occlusion.
     void ssaoEnabled(bool mode) @property
     {
         _ssaoEnabled = mode;
@@ -99,11 +114,13 @@ class DeferredRenderer: Renderer
         }
     }
 
+    /// Returns screen-space ambient occlusion state.
     bool ssaoEnabled() @property
     {
         return _ssaoEnabled;
     }
     
+    /// Adjusts the resolution scale of the SSAO buffers.
     void occlusionBufferDetail(float value) @property
     {
         _occlusionBufferDetail = value;
@@ -111,11 +128,20 @@ class DeferredRenderer: Renderer
         occlusionNoisyBuffer.resize(occlusionView.width, occlusionView.height);
         occlusionBuffer.resize(occlusionView.width, occlusionView.height);
     }
+
+    /// Returns the resolution scale of the SSAO buffers.
     float occlusionBufferDetail() @property
     {
         return _occlusionBufferDetail;
     }
     
+    /**
+     * Creates the deferred renderer and initializes all render passes.
+     *
+     * Params:
+     *   application = The Application instance.
+     *   owner = Owner object.
+     */
     this(Application application, Owner owner)
     {
         super(application, owner);
@@ -188,6 +214,7 @@ class DeferredRenderer: Renderer
         passParticles.gbuffer = gbuffer;
     }
     
+    /// Loads the default BRDF lookup texture from a stream.
     void loadDefaultBRDF(InputStream istrm)
     {
         if (brdf)
@@ -209,6 +236,7 @@ class DeferredRenderer: Renderer
         }
     }
 
+    /// Assigns scene reference to all the render passes.
     override void scene(Scene s)
     {
         passShadow.group = s.world.spatial;
@@ -227,6 +255,7 @@ class DeferredRenderer: Renderer
         pipeline.environment = s.environment;
     }
 
+    /// Updates renderer state each frame.
     override void update(Time t)
     {
         passShadow.camera = activeCamera;
@@ -240,6 +269,7 @@ class DeferredRenderer: Renderer
         super.update(t);
     }
 
+    /// Resizes the renderer viewport and all associated buffers.
     override void setViewport(uint x, uint y, uint w, uint h)
     {
         super.setViewport(x, y, w, h);

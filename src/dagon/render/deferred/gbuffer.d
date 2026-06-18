@@ -25,6 +25,19 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * G-buffer abstraction for deferred rendering.
+ *
+ * Description:
+ * This module provides a lightweight wrapper around OpenGL framebuffer and
+ * texture attachments used for deferred shading. The GBuffer class owns
+ * render targets for color, depth, normal, material (PBR), emission, velocity,
+ * and radiance output.
+ *
+ * Copyright: Timur Gafarov 2019-2026
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.render.deferred.gbuffer;
 
 import std.stdio;
@@ -37,20 +50,53 @@ import dagon.core.bindings;
 import dagon.core.logger;
 import dagon.render.framebuffer;
 
+/**
+ * Manages the G-buffer attachments.
+ *
+ * The G-Buffer (Geometry buffer) is a set of fragment attribute buffers
+ * used to store screen-space geometry data in a deferred renderer.
+ */
 class GBuffer: Owner
 {
+    /// Current framebuffer width.
     uint width;
+
+    /// Current framebuffer height.
     uint height;
 
+    /// OpenGL framebuffer object handle.
     GLuint framebuffer;
+
+    /// Color render target.
     GLuint colorTexture = 0;
+
+    /// Depth-stencil render target.
     GLuint depthTexture = 0;
+
+    /// Eye-space normal render target.
     GLuint normalTexture = 0;
+
+    /// Roughness-Metallic render target.
     GLuint pbrTexture = 0;
+
+    /// Emission render target.
     GLuint emissionTexture = 0;
+
+    /// Screen-space velocity render target.
     GLuint velocityTexture = 0;
+
+    /// Radiance framebuffer that is also attached to this G-buffer.
     Framebuffer radiance;
     
+    /**
+     * Creates a new GBuffer for the given size and radiance target.
+     *
+     * Params:
+     *   w = Width of the G-buffer.
+     *   h = Height of the G-buffer.
+     *   radiance = Framebuffer used for radiance output.
+     *   owner = Owner object.
+     */
     this(uint w, uint h, Framebuffer radiance, Owner owner)
     {
         super(owner);
@@ -61,6 +107,12 @@ class GBuffer: Owner
         createFramebuffer();
     }
     
+    /**
+     * Initializes and configures the framebuffer and its texture attachments.
+     *
+     * Recreates the G-buffer textures and rebinds them to a new
+     * framebuffer object. It also validates framebuffer completeness.
+     */
     void createFramebuffer()
     {
         releaseFramebuffer();
@@ -155,6 +207,7 @@ class GBuffer: Owner
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
     
+    /// Releases the framebuffer and texture resources owned by this GBuffer.
     void releaseFramebuffer()
     {
         if (glIsFramebuffer(framebuffer))
@@ -179,21 +232,25 @@ class GBuffer: Owner
             glDeleteTextures(1, &velocityTexture);
     }
     
+    /// Destructor that ensures OpenGL resources are cleaned up.
     ~this()
     {
         releaseFramebuffer();
     }
     
+    /// Binds the G-buffer for drawing.
     void bind()
     {
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
     }
 
+    /// Unbinds any draw framebuffer and returns to the default framebuffer.
     void unbind()
     {
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     }
     
+    /// Clears all G-buffer attachments.
     void clear()
     {
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
@@ -214,6 +271,7 @@ class GBuffer: Owner
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     }
     
+    /// Resizes the G-buffer and recreates the framebuffer attachments.
     void resize(uint w, uint h)
     {
         width = w;

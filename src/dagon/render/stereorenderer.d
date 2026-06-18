@@ -46,32 +46,70 @@ import dagon.resource.scene;
 class StereoRenderer: Renderer
 {
     alias headView = view;
+    
+    /// Left eye render view.
     RenderView viewLeft;
+    
+    /// Right eye render view.
     RenderView viewRight;
 
+    /// Left eye output framebuffer.
     Framebuffer outputBufferLeft;
+    
+    /// Right eye output framebuffer.
     Framebuffer outputBufferRight;
 
+    /**
+     * Sets the left eye active camera for rendering.
+     *
+     * Params:
+     *   camera = The camera to use.
+     */
     void activeCameraLeft(Camera camera)
     {
         viewLeft.camera = camera;
     }
 
+    /**
+     * Returns the currently active left eye camera.
+     *
+     * Returns:
+     *   The active left eye camera.
+     */
     Camera activeCameraLeft()
     {
         return viewLeft.camera;
     }
 
+    /**
+     * Sets the right eye active camera for rendering.
+     *
+     * Params:
+     *   camera = The camera to use.
+     */
     void activeCameraRight(Camera camera)
     {
         viewRight.camera = camera;
     }
 
+    /**
+     * Returns the currently active right eye camera.
+     *
+     * Returns:
+     *   The active right eye camera.
+     */
     Camera activeCameraRight()
     {
         return viewRight.camera;
     }
-    
+
+    /**
+     * Constructs a stereo renderer with the given application and owner.
+     *
+     * Params:
+     *   application = Application object.
+     *   owner       = Owner object.
+     */
     this(Application application, Owner owner)
     {
         super(application, owner);
