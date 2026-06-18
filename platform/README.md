@@ -1,11 +1,11 @@
 # Dagon Platform
 
-Dagon Platform will be a simple stand-alone game runner based on Dagon and [GScript3](https://github.com/gecko0307/gscript3). It will be tightly integrated with the [editor](https://github.com/gecko0307/dagon/tree/master/editor), resulting in a beginner-friendly visual game creation suite. It is not finished yet, only the most basic features are exposed to the scripting engine at the moment.
+Dagon Platform will be a simple stand-alone game runner based on Dagon and [GScript3](https://github.com/gecko0307/gscript3) virtual machine. It will be tightly integrated with the [editor](https://github.com/gecko0307/dagon/tree/master/editor), resulting in a beginner-friendly visual game creation suite. It is not finished yet, only the most basic features are exposed to the scripting engine at the moment.
 
-Dagon Platform consists of a pre-made Dagon application that executes user-provided script (`scripts/main.gsc`). The main script should be compiled to bytecode using `gs` compiler:
+Dagon Platform consists of a pre-made Dagon application that executes user-provided script (`scripts/main.gsc`). The main script should be compiled to bytecode using `gscript` compiler:
 
 ```
-gs -c -i scripts/main.gs
+gscript -c -i scripts/main.gs
 ```
 
 The script works by registering custom event listeners to the `global.scene` object (or simply `scene` because `global` object is implicit). Events are basically the same as in `EventListener` in Dagon:
