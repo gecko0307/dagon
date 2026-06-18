@@ -113,6 +113,7 @@ class ShapePlane: Mesh
         }
 
         dataReady = true;
+        calcBoundingBox();
         prepareVAO();
     }
 }
@@ -276,6 +277,7 @@ class ShapeBox: Mesh
         indices[11][0] = 22; indices[11][1] = 23; indices[11][2] = 20;
 
         dataReady = true;
+        calcBoundingBox();
         prepareVAO();
     }
 
@@ -449,6 +451,7 @@ class ShapeSphere: Mesh
         daIndices.free();
 
         dataReady = true;
+        calcBoundingBox();
         prepareVAO();
     }
 }
@@ -508,6 +511,7 @@ class ShapeDisk: Mesh
         }
         
         dataReady = true;
+        calcBoundingBox();
         prepareVAO();
     }
 }
@@ -665,6 +669,7 @@ class ShapeCylinder: Mesh
         }
         
         dataReady = true;
+        calcBoundingBox();
         prepareVAO();
     }
 }
@@ -764,6 +769,7 @@ class ShapeCone: Mesh
         }
         
         dataReady = true;
+        calcBoundingBox();
         prepareVAO();
     }
 }
@@ -931,6 +937,7 @@ class ShapeCapsule: Mesh
         }
         
         dataReady = true;
+        calcBoundingBox();
         prepareVAO();
     }
 }
@@ -1029,6 +1036,7 @@ class ShapeTorus: Mesh
         }
         
         dataReady = true;
+        calcBoundingBox();
         prepareVAO();
     }
 }

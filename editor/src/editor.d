@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 */
 module editor;
 
+import std.algorithm;
 import std.json: JSONValue;
 import std.file: write;
 
@@ -159,6 +160,25 @@ class EditorScene: Scene
         selectedEntity = e;
         overlay.gizmoMode = GizmoMode.Translation;
         overlay.gizmoPosition = e.positionAbsolute;
+        if (e.drawable)
+        {
+            Mesh mesh = cast(Mesh)e.drawable;
+            if (mesh)
+            {
+                overlay.selectionBoundingBoxScale = mesh.boundingBox.size;
+                overlay.selectionBoundingBoxScale.x = max(overlay.selectionBoundingBoxScale.x, 0.1f);
+                overlay.selectionBoundingBoxScale.y = max(overlay.selectionBoundingBoxScale.y, 0.1f);
+                overlay.selectionBoundingBoxScale.z = max(overlay.selectionBoundingBoxScale.z, 0.1f);
+            }
+            else
+            {
+                overlay.selectionBoundingBoxScale = Vector3f(1.0f, 1.0f, 1.0f);
+            }
+        }
+        else
+        {
+            overlay.selectionBoundingBoxScale = Vector3f(1.0f, 1.0f, 1.0f);
+        }
     }
     
     void save(string filename)

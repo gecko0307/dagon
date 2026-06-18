@@ -42,11 +42,13 @@ class InteractionOverlay: EventListener
     EditorUI ui;
     GraphicsState state;
     RenderView view;
+    ShapeBoundingBox selectionBoundingBox;
     TranslationAxes translationAxes;
     GizmoShader gizmoShader;
     GizmoMode gizmoMode = GizmoMode.Disabled;
     Vector3f gizmoPosition;
     Matrix4x4f gizmoTransformation;
+    Vector3f selectionBoundingBoxScale;
     bool visible = true;
     
     this(EventManager eventManager, Owner owner)
@@ -57,11 +59,15 @@ class InteractionOverlay: EventListener
         
         view = New!RenderView(0, 0, eventManager.drawableWidth, eventManager.drawableHeight, this);
         
+        selectionBoundingBox = New!ShapeBoundingBox(this);
+        
         translationAxes = New!TranslationAxes(this);
         
         gizmoShader = New!GizmoShader(this);
         gizmoPosition = Vector3f(0.0f, 0.0f, 0.0f);
         gizmoTransformation = Matrix4x4f.identity;
+        
+        selectionBoundingBoxScale = Vector3f(1.0f, 1.0f, 1.0f);
     }
     
     void activeCamera(Camera camera) @property
@@ -69,15 +75,9 @@ class InteractionOverlay: EventListener
         view.camera = camera;
     }
     
-    void updateGizmo(Time t)
-    {
-        gizmoTransformation = translationMatrix(gizmoPosition);
-    }
-    
     void update(Time t)
     {
         processEvents();
-        updateGizmo(t);
     }
     
     void render()
@@ -98,11 +98,10 @@ class InteractionOverlay: EventListener
             view.setPosition(x, y);
         }
         
-        state.modelViewMatrix = gizmoTransformation * view.viewMatrix;
-        state.projectionMatrix = view.projectionMatrix;
-        
         glScissor(view.x, view.y, view.width, view.height);
         glViewport(view.x, view.y, view.width, view.height);
+        
+        Matrix4x4f viewMatrix = view.viewMatrix;
         
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
@@ -110,14 +109,152 @@ class InteractionOverlay: EventListener
         glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
         
         gizmoShader.bind();
+        
+        gizmoTransformation = translationMatrix(gizmoPosition);
+        
+        state.modelViewMatrix = viewMatrix * (gizmoTransformation * scaleMatrix(selectionBoundingBoxScale));
+        state.projectionMatrix = view.projectionMatrix;
+        gizmoShader.bindParameters(&state);
+        selectionBoundingBox.render(&state);
+        gizmoShader.unbindParameters(&state);
+        
+        state.modelViewMatrix = viewMatrix * gizmoTransformation;
+        state.projectionMatrix = view.projectionMatrix;
         gizmoShader.bindParameters(&state);
         if (gizmoMode == GizmoMode.Translation)
             translationAxes.render(&state);
         gizmoShader.unbindParameters(&state);
+        
         gizmoShader.unbind();
         
         glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
+    }
+}
+
+class ShapeBoundingBox: Owner, Drawable
+{
+    Vector3f[24] lineVertices = [
+        Vector3f(+1.0f, +1.0f, +1.0f),
+        Vector3f(-1.0f, +1.0f, +1.0f),
+        
+        Vector3f(+1.0f, -1.0f, +1.0f),
+        Vector3f(-1.0f, -1.0f, +1.0f),
+        
+        Vector3f(+1.0f, +1.0f, +1.0f),
+        Vector3f(+1.0f, -1.0f, +1.0f),
+        
+        Vector3f(-1.0f, +1.0f, +1.0f),
+        Vector3f(-1.0f, -1.0f, +1.0f),
+        
+        Vector3f(+1.0f, +1.0f, -1.0f),
+        Vector3f(-1.0f, +1.0f, -1.0f),
+        
+        Vector3f(+1.0f, -1.0f, -1.0f),
+        Vector3f(-1.0f, -1.0f, -1.0f),
+        
+        Vector3f(+1.0f, +1.0f, -1.0f),
+        Vector3f(+1.0f, -1.0f, -1.0f),
+        
+        Vector3f(-1.0f, +1.0f, -1.0f),
+        Vector3f(-1.0f, -1.0f, -1.0f),
+        
+        Vector3f(+1.0f, +1.0f, +1.0f),
+        Vector3f(+1.0f, +1.0f, -1.0f),
+        
+        Vector3f(-1.0f, +1.0f, +1.0f),
+        Vector3f(-1.0f, +1.0f, -1.0f),
+        
+        Vector3f(+1.0f, -1.0f, +1.0f),
+        Vector3f(+1.0f, -1.0f, -1.0f),
+        
+        Vector3f(-1.0f, -1.0f, +1.0f),
+        Vector3f(-1.0f, -1.0f, -1.0f)
+    ];
+    
+    Vector4f[24] lineColors = [
+        Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
+        Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
+        Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
+        Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
+        Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
+        Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
+        Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
+        Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
+        Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
+        Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
+        Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
+        Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
+        Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
+        Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
+        Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
+        Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
+        Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
+        Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
+        Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
+        Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
+        Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
+        Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
+        Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
+        Vector4f(1.0f, 1.0f, 1.0f, 1.0f)
+    ];
+    
+    GLuint linesVertexBuffer = 0;
+    GLuint linesColorBuffer = 0;
+    GLuint linesVertexArray = 0;
+    
+    bool dataReady = false;
+    bool canRender = false;
+    
+    this(Owner owner)
+    {
+        super(owner);
+    }
+    
+    ~this()
+    {
+    }
+    
+    void prepareVAO()
+    {
+        glGenBuffers(1, &linesVertexBuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, linesVertexBuffer);
+        glBufferData(GL_ARRAY_BUFFER, lineVertices.length * float.sizeof * 3, lineVertices.ptr, GL_STATIC_DRAW);
+        
+        glGenBuffers(1, &linesColorBuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, linesColorBuffer);
+        glBufferData(GL_ARRAY_BUFFER, lineColors.length * float.sizeof * 4, lineColors.ptr, GL_STATIC_DRAW);
+        
+        glGenVertexArrays(1, &linesVertexArray);
+        glBindVertexArray(linesVertexArray);
+        
+        glEnableVertexAttribArray(VertexAttrib.Vertices);
+        glBindBuffer(GL_ARRAY_BUFFER, linesVertexBuffer);
+        glVertexAttribPointer(VertexAttrib.Vertices, 3, GL_FLOAT, GL_FALSE, 0, null);
+        
+        glEnableVertexAttribArray(VertexAttrib.Colors);
+        glBindBuffer(GL_ARRAY_BUFFER, linesColorBuffer);
+        glVertexAttribPointer(VertexAttrib.Colors, 4, GL_FLOAT, GL_FALSE, 0, null);
+        
+        glBindVertexArray(0);
+        
+        canRender = true;
+    }
+    
+    void render(GraphicsState* state)
+    {
+        if (!dataReady)
+        {
+            prepareVAO();
+            dataReady = true;
+        }
+        
+        if (!canRender)
+            return;
+        
+        glBindVertexArray(linesVertexArray);
+        glDrawArrays(GL_LINES, 0, 24);
+        glBindVertexArray(0);
     }
 }
