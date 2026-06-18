@@ -31,104 +31,8 @@ import std.file: write;
 
 import dagon;
 import dagon.ext.imgui;
+import overlay;
 import ui;
-
-enum GizmoMode
-{
-    Disabled,
-    Translation,
-    Rotation,
-    Scale
-}
-
-class InteractionOverlay: EventListener
-{
-    EditorUI ui;
-    GraphicsState state;
-    RenderView view;
-    TranslationAxes translationAxes;
-    GizmoShader gizmoShader;
-    GizmoMode gizmoMode = GizmoMode.Disabled;
-    Vector3f gizmoPosition;
-    Quaternionf gizmoRotation;
-    Matrix4x4f gizmoTransformation;
-    bool visible = true;
-    
-    this(EventManager eventManager, Owner owner)
-    {
-        super(eventManager, owner);
-        
-        state.reset();
-        
-        view = New!RenderView(0, 0, eventManager.drawableWidth, eventManager.drawableHeight, this);
-        
-        translationAxes = New!TranslationAxes(this);
-        
-        gizmoShader = New!GizmoShader(this);
-        gizmoPosition = Vector3f(0.0f, 0.0f, 0.0f);
-        gizmoRotation = Quaternionf.identity;
-        gizmoTransformation = Matrix4x4f.identity;
-    }
-    
-    void activeCamera(Camera camera) @property
-    {
-        view.camera = camera;
-    }
-    
-    void updateGizmo(Time t)
-    {
-        gizmoTransformation = translationMatrix(gizmoPosition);
-        gizmoTransformation *= gizmoRotation.toMatrix4x4;
-        // TODO: gizmo scale
-    }
-    
-    void update(Time t)
-    {
-        processEvents();
-        updateGizmo(t);
-    }
-    
-    void render()
-    {
-        if (!visible)
-            return;
-        
-        if (gizmoMode == GizmoMode.Disabled)
-            return;
-        
-        if (ui)
-        {
-            int w = cast(int)ui.editorViewport.size.x;
-            int h = cast(int)ui.editorViewport.size.y;
-            int x = cast(int)ui.editorViewport.position.x;
-            int y = eventManager.drawableHeight - cast(int)ui.editorViewport.position.y - h;
-            view.resize(w, h);
-            view.setPosition(x, y);
-        }
-        
-        state.modelViewMatrix = gizmoTransformation * view.viewMatrix;
-        state.projectionMatrix = view.projectionMatrix;
-        
-        glScissor(view.x, view.y, view.width, view.height);
-        glViewport(view.x, view.y, view.width, view.height);
-        
-        glDisable(GL_DEPTH_TEST);
-        glDisable(GL_CULL_FACE);
-        glEnable(GL_BLEND);
-        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-        
-        gizmoShader.bind();
-        gizmoShader.bindParameters(&state);
-        if (gizmoMode == GizmoMode.Translation)
-            translationAxes.render(&state);
-        gizmoShader.unbindParameters(&state);
-        gizmoShader.unbind();
-        
-        glDisable(GL_BLEND);
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
-    }
-}
 
 class EditorScene: Scene
 {
@@ -163,7 +67,6 @@ class EditorScene: Scene
         this.game = game;
         
         overlay = New!InteractionOverlay(eventManager, this);
-        overlay.gizmoMode = GizmoMode.Translation;
         
         auto splashTextureAsset = addTextureAsset("data/backgrounds/loading.jpg", true);
         
@@ -232,12 +135,12 @@ class EditorScene: Scene
         eSuzanne.material = matSuzanne;
         eSuzanne.position = Vector3f(0, 1, 0);
         eSuzanne.name = "Suzanne";
-
-        selectedEntity = eSuzanne;
         
         auto ePlane = addEntity();
         ePlane.drawable = New!ShapePlane(10, 10, 1, assetManager);
         ePlane.name = "Plane";
+        
+        selectEntity(eSuzanne);
     }
     
     override void onUpdate(Time t)
@@ -249,6 +152,13 @@ class EditorScene: Scene
     override void afterRender()
     {
         overlay.render();
+    }
+    
+    void selectEntity(Entity e)
+    {
+        selectedEntity = e;
+        overlay.gizmoMode = GizmoMode.Translation;
+        overlay.gizmoPosition = e.positionAbsolute;
     }
     
     void save(string filename)

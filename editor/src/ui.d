@@ -206,7 +206,7 @@ class EditorUI: EventListener
     {
         if (igBegin("Inspector", null, ImGuiWindowFlags.NoCollapse))
         {
-            if (igCollapsingHeader("Entities"))
+            if (igCollapsingHeader("Entities", ImGuiTreeNodeFlags.DefaultOpen))
             {
                 foreach(e; scene.world.entities)
                 {
@@ -234,7 +234,7 @@ class EditorUI: EventListener
         
         if (igIsItemClicked() && !igIsItemToggledOpen())
         {
-            scene.selectedEntity = entity;
+            scene.selectEntity(entity);
         }
         
         if (isOpen)
@@ -352,7 +352,7 @@ class EditorUI: EventListener
                 }
             }
 
-            if (igCollapsingHeader("Transformation"))
+            if (igCollapsingHeader("Transformation", ImGuiTreeNodeFlags.DefaultOpen))
             {
                 if (scene.selectedEntity)
                 {
@@ -454,13 +454,14 @@ class EditorUI: EventListener
             if (igIsItemHovered() && igIsMouseDoubleClicked(ImGuiMouseButton.Left))
             {
                 writeln("Double click ", i);
+                // TODO:
                 // if item is folder, then change directory;
                 // if item is file, then apply it to current entity
             }
             else if (igIsItemClicked(ImGuiMouseButton.Right))
             {
                 writeln("Right click ", i);
-                // show menu
+                // TODO: show menu
             }
 
             igTextWrapped("Filename");
@@ -512,13 +513,14 @@ class EditorUI: EventListener
                 if (igIsItemHovered() && igIsMouseDoubleClicked(ImGuiMouseButton.Left))
                 {
                     writeln("Double click ", i);
+                    // TODO:
                     // if item is folder, then change directory;
                     // if item is file, then open file with system shell.
                 }
                 else if (igIsItemClicked(ImGuiMouseButton.Right))
                 {
                     writeln("Right click ", i);
-                    // show menu
+                    // TODO: show menu
                 }
 
                 igTextWrapped(filenames[i]);
