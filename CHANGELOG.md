@@ -2,6 +2,8 @@ Dagon 1.1.0 - TBD
 -----------------
 - **Game**
   - 2D game module, `dagon.game.game2d`
+- **Assets**
+  - New method `AssetManager.preloadExternalAsset`
 - **Render**
   - Subroutines in built-in shaders were replaced with uniform branching due to AMD issues
   - Support framebuffer clearing in HUD renderer
