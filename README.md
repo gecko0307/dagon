@@ -191,9 +191,13 @@ Jan Jurzitza (WebFreak), Daniel Laburthe, Rafał Ziemniewski, Kumar Sookram, Ale
 
 Made with Dagon
 ---------------
-* [Sponza Demo](https://github.com/gecko0307/dagon-sponza) - Crytek Sponza Atrium scene implemented using Dagon
-* [Electronvolt](https://github.com/gecko0307/electronvolt) - work-in-progress first person puzzle based on Dagon
-* [Chillwave Drive](https://github.com/gecko0307/chillwavedrive) - driving game demo written using Dagon, Newton Dynamics and SoLoud
+Games:
 * [Dagoban](https://github.com/Timu5/dagoban) - a Sokoban clone
+* [2048x2](https://github.com/gecko0307/2048x2) - a 2048 clone
 * [sacengine](https://github.com/tg-2/sacengine) - [Sacrifice](https://en.wikipedia.org/wiki/Sacrifice_(video_game)) engine reimplementation
 * [dagon-shooter](https://github.com/aferust/dagon-shooter) - a shooter game
+
+Demos:
+* [Ruins of Hell](https://github.com/gecko0307/ruins-of-hell) - first-person shooter demo
+* [Chillwave Drive](https://github.com/gecko0307/chillwavedrive) - driving game demo written using Dagon, Newton Dynamics and SoLoud
+* [Sponza Demo](https://github.com/gecko0307/dagon-sponza) - Crytek Sponza Atrium scene implemented using Dagon
