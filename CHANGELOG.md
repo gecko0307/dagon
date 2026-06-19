@@ -1,5 +1,5 @@
-Dagon 1.1.0 - TBD
------------------
+Dagon 1.1.0 - 19 Jun, 2026
+--------------------------
 - **Game**
   - 2D game module, `dagon.game.game2d`
 - **Assets**
