@@ -218,7 +218,7 @@ class Scene: EventListener
     /// Adds a binary asset by filename.
     alias addBinaryAsset = addAssetAs!BinaryAsset;
     
-    /// Adds a materia asset by filename.
+    /// Adds a material asset by filename.
     alias addMaterialAsset = addAssetAs!MaterialAsset;
     
     /// Adds a font asset by filename.

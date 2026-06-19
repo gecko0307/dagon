@@ -540,6 +540,20 @@ class AssetManager: Owner
         }
         return asset;
     }
+    
+    /// Preloads an asset (thread-safe and thread-unsafe parts) without adding it to dictionary.
+    Asset preloadExternalAsset(Asset asset, string filename)
+    {
+        asset.release();
+        asset.threadSafePartLoaded = false;
+        asset.threadUnsafePartLoaded = false;
+
+        asset.threadSafePartLoaded = loadAssetThreadSafePart(asset, filename);
+        if (asset.threadSafePartLoaded)
+            asset.threadUnsafePartLoaded = asset.loadThreadUnsafePart();
+
+        return asset;
+    }
 
     /// Preloads an asset (thread-safe and thread-unsafe parts).
     Asset preloadAsset(Asset asset, string name)
