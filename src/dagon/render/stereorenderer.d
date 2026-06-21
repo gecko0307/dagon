@@ -25,6 +25,18 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * A high-level stereo renderer abstraction for Dagon's rendering system.
+ *
+ * Description:
+ * The `dagon.render.stereorenderer` module defines the basic `StereoRenderer` class,
+ * which manages a stereo/VR render pipeline and serves as a base for creating
+ * custom renderers.
+ *
+ * Copyright: Timur Gafarov 2025-2026
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.render.stereorenderer;
 
 import dlib.core.memory;

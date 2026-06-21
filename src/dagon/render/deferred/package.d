@@ -63,31 +63,72 @@ import dagon.render.postproc.shaders.denoise;
  */
 class DeferredRenderer: Renderer
 {
+    /// BRDF LUT.
     Texture brdf;
     
+    /// Internal G-Buffer.
     GBuffer gbuffer;
+    
+    /// Shadow map render pass.
     PassShadow passShadow;
+    
+    /// Background render pass.
     PassBackground passBackground;
+    
+    /// Terrain render pass.
     PassTerrain passTerrain;
+    
+    /// Static geometry render pass.
     PassGeometry passStaticGeometry;
+    
+    /// Decal render pass.
     PassDecal passDecal;
+    
+    /// Dynamic geometry render pass.
     PassGeometry passDynamicGeometry;
+    
+    /// Ambient occlusion render pass.
     PassOcclusion passOcclusion;
+    
+    /// Occlusion denoise render pass.
     FilterPass passOcclusionDenoise;
+    
+    /// Environment lighting render pass.
     PassEnvironment passEnvironment;
+    
+    /// Environment probe render pass.
     PassEnvironmentProbe passEnvironmentProbe;
+    
+    /// Local lighting render pass.
     PassLight passLight;
+    
+    /// Emission render pass.
     PassEmission passEmission;
+    
+    /// Forward render pass.
     PassForward passForward;
+    
+    /// Particles render pass.
     PassParticles passParticles;
     
+    /// Normal buffer for terrain texturing passes.
     Framebuffer terrainNormalBuffer;
+    
+    /// Texcoord buffer for terrain texturing passes.
     Framebuffer terrainTexcoordBuffer;
     
+    /// Denoise shader.
     DenoiseShader denoiseShader;
+    
+    /// Occlusion pass render view.
     RenderView occlusionView;
+    
+    /// Raw ambient occlusion buffer.
     Framebuffer occlusionNoisyBuffer;
+    
+    /// Denoised ambient occlusion buffer.
     Framebuffer occlusionBuffer;
+    
     bool _ssaoEnabled = true;
     float _occlusionBufferDetail = 1.0f;
     int ssaoSamples = 20;
