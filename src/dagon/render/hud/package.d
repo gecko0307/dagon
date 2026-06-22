@@ -25,6 +25,19 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * HUD renderer.
+ *
+ * Description:
+ * `dagon.render.hud` module provides the HUD rendering pipeline for screen-space
+ * overlays, such as text, UI widgets, and other foreground elements.
+ * It exports the `PassHUD` render pass and `HUDRenderer` implementation
+ * used by the engine to draw screen-aligned entities.
+ *
+ * Copyright: Timur Gafarov 2019-2026
+ * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors: Timur Gafarov
+ */
 module dagon.render.hud;
 
 import std.math;
@@ -46,13 +59,26 @@ import dagon.render.pass;
 import dagon.render.view;
 public import dagon.render.hud.shaders;
 
+/**
+ * A render pass that draws HUD entities in screen space.
+*/
 class PassHUD: RenderPass
 {
+    /**
+     * Create a new HUD pass for the given render pipeline.
+     *
+     * Params:
+     *  pipeline = The render pipeline owning this pass.
+     *  group = Optional entity group for iterating over HUD entities.
+     */
     this(RenderPipeline pipeline, EntityGroup group = null)
     {
         super(pipeline, group);
     }
 
+    /**
+     * Render the HUD pass.
+     */
     override void render()
     {
         if (view && group)
@@ -126,10 +152,20 @@ class PassHUD: RenderPass
     }
 }
 
+/**
+ * A renderer for screen-aligned objects.
+ */
 class HUDRenderer: Renderer
 {
     PassHUD passHUD;
 
+    /**
+     * Construct a HUD renderer attached to the application.
+     *
+     * Params:
+     *   application = The Application instance.
+     *   owner = Owner object.
+     */
     this(Application application, Owner owner)
     {
         super(application, owner);
@@ -146,6 +182,10 @@ class HUDRenderer: Renderer
         passHUD.view = view;
     }
 
+    /**
+     * Update the HUD renderer for the given scene.
+     * Binds the foreground entity group and scene environment.
+     */
     override void scene(Scene s)
     {
         passHUD.group = s.world.foreground;
