@@ -52,6 +52,7 @@ Dagon is written with extendability in mind, so you can easily add your own draw
 - [Conf Files](https://github.com/gecko0307/dagon/blob/master/doc/Conf%20Files.md)
 - [Collision Detection](https://github.com/gecko0307/dagon/blob/master/doc/Collision%20Detection.md)
 - [Render Pipeline Overview](https://github.com/gecko0307/dagon/blob/master/doc/Render%20Pipeline%20Overview.md)
+- [Shaders](https://github.com/gecko0307/dagon/blob/master/doc/Shaders.md)
 - [Image-Based Lighting](https://github.com/gecko0307/dagon/blob/master/doc/Image-Based%20Lighting.md)
 - [Tips for Achieving Good Visuals](https://github.com/gecko0307/dagon/blob/master/doc/Tips%20for%20Achieving%20Good%20Visuals.md)
 - [Post-processing](https://github.com/gecko0307/dagon/blob/master/doc/Post-processing.md)
@@ -59,10 +60,10 @@ Dagon is written with extendability in mind, so you can easily add your own draw
 - [Localization](https://github.com/gecko0307/dagon/blob/master/doc/Localization.md)
 
 ### Advanced topics:
-- [Jolt Physics](https://github.com/gecko0307/dagon/blob/master/doc/Jolt%20Physics.md)
-- [Compute Shaders](https://github.com/gecko0307/dagon/blob/master/doc/Compute%20Shaders.md)
-- [Multithreading and Messaging System](https://github.com/gecko0307/dagon/blob/master/doc/Messaging%20System.md)
-- [World Streaming](https://github.com/gecko0307/dagon/blob/master/doc/World%20Streaming.md)
 - [Extensions](https://github.com/gecko0307/dagon/blob/master/doc/Extensions.md)
+- [Jolt Physics](https://github.com/gecko0307/dagon/blob/master/doc/Jolt%20Physics.md)
 - [Video Playback](https://github.com/gecko0307/dagon/blob/master/doc/Video.md)
+- [World Streaming](https://github.com/gecko0307/dagon/blob/master/doc/World%20Streaming.md)
+- [Multithreading and Messaging System](https://github.com/gecko0307/dagon/blob/master/doc/Messaging%20System.md)
+- [Compute Shaders](https://github.com/gecko0307/dagon/blob/master/doc/Compute%20Shaders.md)
 - [Development Guide](https://github.com/gecko0307/dagon/blob/master/doc/Development%20Guide.md)
