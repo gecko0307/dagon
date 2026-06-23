@@ -6,6 +6,6 @@ ImGui support is implemented as `dagon:imgui` extension.
 
 TODO: simple usage example.
 
-[Browse source code for this tutorial](https://github.com/gecko0307/dagon-tutorials/tree/master/t23-imgui)
+[Browse source code for this tutorial](https://github.com/gecko0307/dagon-tutorials/tree/master/t20-imgui)
 
 A real-world usage example is Dagon's in-development [editor](https://github.com/gecko0307/dagon/tree/master/editor). Most of its functionality isn't working yet, but it has a functioning multi-window interface with a render view integration and some editable scene properties.
