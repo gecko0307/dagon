@@ -839,10 +839,11 @@ class GLTFAsset: Asset, TriangleSet
                                 logError("Can't create indices for nonexistent accessor ", indicesAccessorIndex);
                         }
                         
+                        int materialIndex = -1;
                         Material material;
                         if ("material" in p)
                         {
-                            uint materialIndex = cast(uint)p["material"].asNumber;
+                            materialIndex = cast(int)p["material"].asNumber;
                             if (materialIndex < materials.length)
                                 material = materials[materialIndex];
                             else
@@ -869,6 +870,7 @@ class GLTFAsset: Asset, TriangleSet
                         pr.weights0Accessor = weights0Accessor;
                         pr.indexAccessor = indexAccessor;
                         pr.material = material;
+                        pr.materialIndex = materialIndex;
                         
                         me.primitives.insertBack(pr);
                     }
@@ -1353,6 +1355,7 @@ class GLTFAsset: Asset, TriangleSet
                         tri.n[1] = mat.rotate(normals[indices[1]]);
                         tri.n[2] = mat.rotate(normals[indices[2]]);
                         tri.normal = (tri.n[0] + tri.n[1] + tri.n[2]) / 3.0f;
+                        tri.materialIndex = primitive.materialIndex;
                         
                         result = dg(tri);
                         if (result)

@@ -60,7 +60,7 @@ extern(C)
             {
                 Vector3f p = Vector3f(hitContact[0], hitContact[1], hitContact[2]);
                 Vector3f n = Vector3f(hitNormal[0], hitNormal[1], hitNormal[2]);
-                return raycaster.onRayHit(b, p, n, intersectParam);
+                return raycaster.onRayHit(b, p, n, intersectParam, collisionID);
             }
             else
             {
@@ -169,7 +169,7 @@ interface NewtonRaycaster
      * above which Newton won't search anymore for intersection points.
      * For example, if t is returned, the engine immediately stops searching for new hits.
      */
-    float onRayHit(NewtonRigidBody nbody, Vector3f hitPoint, Vector3f hitNormal, float t);
+    float onRayHit(NewtonRigidBody nbody, Vector3f hitPoint, Vector3f hitNormal, float t, long id);
 }
 
 interface NewtonBodyEnumerator

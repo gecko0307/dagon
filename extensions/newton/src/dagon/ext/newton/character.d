@@ -162,7 +162,7 @@ class NewtonCharacterController: EntityComponent, NewtonRaycaster
         }
     }
     
-    float onRayHit(NewtonRigidBody nbody, Vector3f hitPoint, Vector3f hitNormal, float t)
+    float onRayHit(NewtonRigidBody nbody, Vector3f hitPoint, Vector3f hitNormal, float t, long id)
     {
         if (t < closestHitParam)
         {

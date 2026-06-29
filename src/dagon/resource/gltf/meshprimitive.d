@@ -81,6 +81,9 @@ class GLTFMeshPrimitive: Owner, Drawable
 
     /// Accessor for triangle indices.
     GLTFAccessor indexAccessor;
+    
+    ///
+    int materialIndex = -1;
 
     /// Material used for rendering this primitive.
     Material material;
