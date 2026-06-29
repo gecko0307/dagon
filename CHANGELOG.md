@@ -1,5 +1,5 @@
-Dagon 1.2.0 - TBD
------------------
+Dagon 1.1.1 - 29 Jun, 2026
+--------------------------
 - **Assets**
   - New property `GLTFMeshPrimitive.materialIndex` (as it appears in glTF file). It is passed to the outgoing `Triangle` structure when iterating faces with `GLTFAsset.opApply`, which allows to pass material data elsewhere. Main use case for this feature is accounting for face materials in collision detection and raycasting
 - **Extensions**
