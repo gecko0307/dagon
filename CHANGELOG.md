@@ -1,3 +1,10 @@
+Dagon 1.1.2 - 2 Jul, 2026
+-------------------------
+- **Core**
+  - Fix a severe bug in multi-controller logic of `EventManager`
+  - Fix game stuttering when using `InputManager` for controller axis query
+  - New properties `GameInputDevice.logic`, `GameInputDevice.instanceId`, `GameInputDevice.axisValue`.
+
 Dagon 1.1.1 - 29 Jun, 2026
 --------------------------
 - **Assets**
