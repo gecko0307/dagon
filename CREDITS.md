@@ -16,7 +16,7 @@
 * ImGui extension (ImGuiOpenGLBackend) - [Joshua T. Fisher aka playmer](https://github.com/playmer), [LunaTheFoxgirl](https://github.com/LunaTheFoxgirl)
 * SoLoud binding contains code by [Jari Komppa](https://github.com/jarikomppa)
 * SSAO implementation is based on the code by [Reinder Nijhoff](https://www.shadertoy.com/view/Ms33WB)
-* FXAA implementation is based on the code by [JeGX](http://www.geeks3d.com/20110405/fxaa-fast-approximate-anti-aliasing-demo-glsl-opengl-test-radeon-geforce)
+* FXAA 3.11 implementation is based on the code by Timothy Lottes
 * Optimized separable Gaussian blur - [Matt DesLauriers](https://github.com/Experience-Monks)
 * Depth of field effect - [Martins Upitis](https://github.com/martinsh)
 * Lens distortion effect - [Jaume Sanchez](https://github.com/spite)
