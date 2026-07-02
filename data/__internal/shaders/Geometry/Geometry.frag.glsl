@@ -15,6 +15,7 @@ uniform float gbufferMask;
 uniform float blurMask;
 uniform int textureMappingMode;
 uniform bool gammaCorrect;
+uniform float maxVelocity;
 
 #include <gamma.glsl>
 #include <matcap.glsl>
@@ -110,6 +111,12 @@ layout(location = 2) out vec4 fragPBR;
 layout(location = 3) out vec4 fragEmission;
 layout(location = 4) out vec4 fragVelocity;
 
+vec2 clampLength(vec2 v, float maxLen)
+{
+    float len = length(v);
+    return v * (min(len, maxLen) / max(len, 0.0001)); 
+}
+
 void main()
 {
     vec2 uv = texCoord;
@@ -162,7 +169,7 @@ void main()
     
     vec2 posScreen = (currPosition.xy / currPosition.w) * 0.5 + 0.5;
     vec2 prevPosScreen = (prevPosition.xy / prevPosition.w) * 0.5 + 0.5;
-    vec2 velocity = posScreen - prevPosScreen;
+    vec2 velocity = clampLength(posScreen - prevPosScreen, maxVelocity);
     
     fragColor = vec4(color, gbufferMask);
     fragNormal = vec4(N, 0.0);

@@ -63,6 +63,7 @@ class GeometryShader: Shader
     ShaderParameter!int textureMappingMode;
     ShaderParameter!float gbufferMask;
     ShaderParameter!float blurMask;
+    ShaderParameter!float blurMaxVelocity;
     ShaderParameter!int sphericalNormal;
     ShaderParameter!float clipThreshold;
     ShaderParameter!int gammaCorrect;
@@ -120,6 +121,7 @@ class GeometryShader: Shader
         textureMappingMode = createParameter!int("textureMappingMode");
         gbufferMask = createParameter!float("gbufferMask");
         blurMask = createParameter!float("blurMask");
+        blurMaxVelocity = createParameter!float("maxVelocity");
         sphericalNormal = createParameter!int("sphericalNormal");
         clipThreshold = createParameter!float("clipThreshold");
         gammaCorrect = createParameter!int("gammaCorrect");
@@ -179,6 +181,7 @@ class GeometryShader: Shader
         textureMappingMode = mat.textureMappingMode;
         gbufferMask = state.gbufferMask;
         blurMask = state.blurMask;
+        blurMaxVelocity = state.blurMaxVelocity;
         sphericalNormal = mat.sphericalNormal;
         clipThreshold = mat.alphaTestThreshold;
         gammaCorrect = mat.linearColor;

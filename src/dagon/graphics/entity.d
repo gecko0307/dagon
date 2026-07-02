@@ -180,6 +180,9 @@ class Entity: Owner, Updateable
     * the entity to the screen-space velocity buffer.
     */
     float blurMask = 1.0f;
+    
+    ///
+    float blurMaxVelocity = 1.0f;
 
    /**
     * If `true`, shader parameters will be bound automatically
