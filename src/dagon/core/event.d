@@ -77,11 +77,17 @@ enum GameInputDeviceType
 /// A structure that represents game input device.
 struct GameInputDevice
 {
+    /// Is a valid device is currently bound to this GameInputDevice slot.
+    bool active;
+    
     /// SDL device index.
     uint index;
     
     /// Device type.
     GameInputDeviceType type;
+    
+    /// Device instance ID.
+    SDL_JoystickID instanceId;
     
     /// Opened controller, if any.
     SDL_GameController* controller = null;
@@ -103,6 +109,9 @@ struct GameInputDevice
     
     /// Device name.
     string name;
+    
+    /// Raw axis values obtained from SDL event queue.
+    int[SDL_CONTROLLER_AXIS_MAX] axisValues;
 }
 
 /**
@@ -466,9 +475,9 @@ class EventManager: Owner
      * Params:
      *   app = application object.
      */
-    this(Application app)
+    this(Application app, Owner owner)
     {
-        super(app);
+        super(owner);
         
         application = app;
         
@@ -512,6 +521,13 @@ class EventManager: Owner
     ~this()
     {
         Delete(inputManager);
+        
+        for (int i = 0; i < MAX_CONTROLLERS; i++)
+        {
+            if (gameInputDevices[i].active)
+                gameInputDeviceClose(i);
+        }
+        
         inputDevices.free();
     }
 
@@ -612,17 +628,21 @@ class EventManager: Owner
     {
         gameInputDeviceClose(deviceIndex);
         GameInputDevice* device = &gameInputDevices[deviceIndex];
+        device.active = true;
         device.index = deviceIndex;
         
         if (SDL_IsGameController(deviceIndex))
         {
             device.type = GameInputDeviceType.Controller;
             device.controller = SDL_GameControllerOpen(deviceIndex);
+            device.joystick = SDL_GameControllerGetJoystick(device.controller);
+            device.instanceId = SDL_JoystickInstanceID(device.joystick);
+            
             auto name = SDL_GameControllerName(device.controller);
             if (name)
             {
                 device.name = name.to!string;
-                logInfo("Game controller: ", device.name);
+                logInfo("Opened controller ", deviceIndex, " (InstanceID ", device.instanceId, "): ", device.name);
             }
             
             if (SDL_GameControllerMapping(device.controller))
@@ -634,7 +654,6 @@ class EventManager: Owner
             }
             
             SDL_GameControllerEventState(SDL_ENABLE);
-            device.joystick = SDL_GameControllerGetJoystick(device.controller);
             device.axisThreshold = controllerAxisThreshold;
             device.hasRumble = cast(bool)SDL_GameControllerHasRumble(device.controller);
             device.haptic = SDL_HapticOpenFromJoystick(device.joystick);
@@ -643,11 +662,12 @@ class EventManager: Owner
         {
             device.type = GameInputDeviceType.Joystick;
             device.joystick = SDL_JoystickOpen(deviceIndex);
+            device.instanceId = SDL_JoystickInstanceID(device.joystick);
             auto name = SDL_JoystickName(device.joystick);
             if (name)
             {
                 device.name = name.to!string;
-                logInfo("Joystick: ", device.name);
+                logInfo("Opened joystick ", deviceIndex, " (InstanceID ", device.instanceId, "): ", device.name);
             }
             device.controller = null;
             device.axisThreshold = controllerAxisThreshold;
@@ -668,17 +688,39 @@ class EventManager: Owner
     void gameInputDeviceClose(uint deviceIndex)
     {
         GameInputDevice* device = &gameInputDevices[deviceIndex];
+        if (!device.active)
+            return;
+        
+        if (device.haptic)
+        {
+            SDL_HapticClose(device.haptic);
+            device.haptic = null;
+            device.hasRumble = false;
+        }
+        
+        device.axisValues[] = 0;
         
         if (device.type == GameInputDeviceType.Joystick)
         {
             if (device.joystick)
+            {
                 SDL_JoystickClose(device.joystick);
+                device.joystick = null;
+            }
+            logInfo("Closed joystick ", deviceIndex, " (InstanceID ", device.instanceId, "): ", device.name);
         }
         else if (device.type == GameInputDeviceType.Controller)
         {
             if (device.controller)
+            {
                 SDL_GameControllerClose(device.controller);
+                device.controller = null;
+                device.joystick = null;
+            }
+            logInfo("Closed controller ", deviceIndex, " (InstanceID ", device.instanceId, "): ", device.name);
         }
+        
+        device.active = false;
     }
 
     /// Returns true if a game controller is available.
@@ -710,14 +752,15 @@ class EventManager: Owner
      */
     float gameControllerAxis(uint deviceIndex, int axis)
     {
-        if (deviceIndex >= gameInputDevices.length)
+        if (deviceIndex >= gameInputDevices.length || axis >= SDL_CONTROLLER_AXIS_MAX)
             return 0.0f;
 
-        auto contr = gameInputDevices[deviceIndex].controller;
-        if (contr is null)
+        auto device = gameInputDevices[deviceIndex];
+        if (!device.active)
             return 0.0f;
         
-        int axisVal = SDL_GameControllerGetAxis(contr, cast(SDL_GameControllerAxis)axis);
+        int axisVal = device.axisValues[axis];
+        
         return cast(float)clamp(axisVal, -controllerAxisThreshold, controllerAxisThreshold) / 
                cast(float)controllerAxisThreshold;
     }
@@ -731,22 +774,7 @@ class EventManager: Owner
      * Returns:
      *   Normalized axis value in [-1, 1].
      */
-    float joystickAxis(uint deviceIndex, int axis)
-    {
-        if (deviceIndex >= gameInputDevices.length)
-            return 0.0f;
-        auto device = gameInputDevices[deviceIndex];
-        int axisVal = 0;
-        auto joy = device.joystick;
-        auto contr = device.controller;
-        if (joy)
-            axisVal = SDL_JoystickGetAxis(joy, axis);
-        else if (contr)
-            axisVal = SDL_GameControllerGetAxis(contr, cast(SDL_GameControllerAxis)axis);
-        
-        return cast(float)clamp(axisVal, -controllerAxisThreshold, controllerAxisThreshold) / 
-               cast(float)controllerAxisThreshold;
-    }
+    alias joystickAxis = gameControllerAxis;
     
     /**
      * Triggers controller rumble (vibration) if supported.
@@ -761,6 +789,7 @@ class EventManager: Owner
     {
         if (deviceIndex >= gameInputDevices.length)
             return;
+        
         auto device = gameInputDevices[deviceIndex];
         if (device.controller && device.hasRumble)
         {
@@ -903,7 +932,7 @@ class EventManager: Owner
                     break;
 
                 case SDL_JOYBUTTONDOWN:
-                    uint deviceIndex = event.cdevice.which;
+                    uint deviceIndex = event.jdevice.which; // Not cdevice!
                     if (event.jbutton.state == SDL_PRESSED)
                     {
                         e = Event(EventType.JoystickButtonDown);
@@ -936,7 +965,7 @@ class EventManager: Owner
                     break;
 
                 case SDL_JOYBUTTONUP:
-                    uint deviceIndex = event.cdevice.which;
+                    uint deviceIndex = event.jdevice.which; // Not cdevice!
                     if (event.jbutton.state == SDL_PRESSED)
                     {
                         e = Event(EventType.JoystickButtonDown);
@@ -969,7 +998,7 @@ class EventManager: Owner
                     break;
 
                 case SDL_CONTROLLERBUTTONDOWN:
-                    uint deviceIndex = event.cdevice.which;
+                    uint deviceIndex = event.jdevice.which; // Not cdevice!
                     if (deviceIndex < MAX_CONTROLLERS)
                     {
                         controllerButtonPressed[deviceIndex][event.cbutton.button] = true;
@@ -987,7 +1016,7 @@ class EventManager: Owner
                     break;
 
                 case SDL_CONTROLLERBUTTONUP:
-                    uint deviceIndex = event.cdevice.which;
+                    uint deviceIndex = event.jdevice.which; // Not cdevice!
                     if (deviceIndex < MAX_CONTROLLERS)
                     {
                         controllerButtonPressed[deviceIndex][event.cbutton.button] = false;
@@ -1005,48 +1034,48 @@ class EventManager: Owner
                     break;
 
                 case SDL_JOYAXISMOTION:
-                    // TODO: add state modification
                     e = Event(EventType.JoystickAxisMotion);
                     e.joystickAxis = event.caxis.axis;
                     int axisValue = event.caxis.value;
-                    auto joy = joystick(event.cdevice.which);
-                    if (joy)
+                    auto deviceIndex = event.jdevice.which;
+                    if (deviceIndex < MAX_CONTROLLERS)
                     {
-                        axisValue = SDL_JoystickGetAxis(joy, e.joystickAxis);
+                        if (gameInputDevices[deviceIndex].type == GameInputDeviceType.Joystick)
+                            gameInputDevices[deviceIndex].axisValues[e.joystickAxis] = axisValue;
                     }
+                    
                     e.joystickAxisValue =
                         cast(float)clamp(axisValue, -controllerAxisThreshold, controllerAxisThreshold) / 
                         cast(float)controllerAxisThreshold;
-                    e.deviceIndex = event.cdevice.which;
+                    e.deviceIndex = deviceIndex;
                     addEvent(e);
                     break;
 
                 case SDL_CONTROLLERAXISMOTION:
-                    // TODO: add state modification
                     e = Event(EventType.ControllerAxisMotion);
                     e.controllerAxis = event.caxis.axis;
                     int axisValue = event.caxis.value;
-                    auto contr = controller(event.cdevice.which);
-                    if (contr)
+                    auto deviceIndex = event.jdevice.which;
+                    if (deviceIndex < MAX_CONTROLLERS)
                     {
-                        if (e.controllerAxis == 0)
-                            axisValue = SDL_GameControllerGetAxis(contr, SDL_CONTROLLER_AXIS_LEFTY);
-                        if (e.controllerAxis == 1)
-                            axisValue = SDL_GameControllerGetAxis(contr, SDL_CONTROLLER_AXIS_LEFTX);
+                        if (gameInputDevices[deviceIndex].type == GameInputDeviceType.Controller)
+                            gameInputDevices[deviceIndex].axisValues[e.controllerAxis] = axisValue;
                     }
+                    
                     e.controllerAxisValue =
                         cast(float)clamp(axisValue, -controllerAxisThreshold, controllerAxisThreshold) / 
                         cast(float)controllerAxisThreshold;
-                    e.deviceIndex = event.cdevice.which;
+                    e.deviceIndex = deviceIndex;
                     addEvent(e);
                     break;
 
                 case SDL_CONTROLLERDEVICEADDED:
                     e = Event(EventType.ControllerAdd);
-                    e.deviceIndex = event.cdevice.which;
-                    if (event.cdevice.which < MAX_CONTROLLERS)
+                    auto deviceIndex = event.cdevice.which;
+                    e.deviceIndex = deviceIndex;
+                    if (deviceIndex < MAX_CONTROLLERS)
                     {
-                        auto device = gameInputDeviceOpen(event.cdevice.which);
+                        auto device = gameInputDeviceOpen(deviceIndex);
                         e.deviceType = device.type;
                     }
                     addEvent(e);
@@ -1055,10 +1084,11 @@ class EventManager: Owner
 
                 case SDL_CONTROLLERDEVICEREMOVED:
                     e = Event(EventType.ControllerRemove);
-                    e.deviceIndex = event.cdevice.which;
-                    if (event.cdevice.which < MAX_CONTROLLERS)
+                    auto deviceIndex = event.jdevice.which;
+                    e.deviceIndex = deviceIndex;
+                    if (deviceIndex < MAX_CONTROLLERS)
                     {
-                        gameInputDeviceClose(event.cdevice.which);
+                        gameInputDeviceClose(deviceIndex);
                     }
                     addEvent(e);
                     numGameInputDevices = SDL_NumJoysticks();

@@ -1142,7 +1142,7 @@ class Application: EventListener, Updateable
         setFullscreen(fullscreen);
 
         // Create event manager
-        _eventManager = New!EventManager(this);
+        _eventManager = New!EventManager(this, null);
         super(_eventManager, null);
         if ("events.keyRepeat" in config.props)
             _eventManager.enableKeyRepeat = cast(bool)config.props["events.keyRepeat"].toUInt;
@@ -1484,6 +1484,8 @@ class Application: EventListener, Updateable
                 cursors[i] = null;
             }
         }
+        
+        Delete(_eventManager);
         
         SDL_DestroyWindow(window);
         SDL_Quit();
