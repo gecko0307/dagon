@@ -43,7 +43,8 @@ vec3 fxaa_311(sampler2D screenTexture, vec2 uv, vec2 inverseScreenSize)
     float lumaRange = lumaMax - lumaMin;
     
     // If the luma variation is lower that a threshold (or if we are in a really dark area), we are not on an edge, don't perform any AA.
-    if (lumaRange < max(EDGE_THRESHOLD_MIN, lumaMax * EDGE_THRESHOLD_MAX)){
+    if (lumaRange < max(EDGE_THRESHOLD_MIN, lumaMax * EDGE_THRESHOLD_MAX))
+    {
         return colorCenter;
     }
     

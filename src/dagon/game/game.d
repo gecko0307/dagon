@@ -97,6 +97,9 @@ class Game: BaseGame
     /// If `true`, the viewport will be resized dynamically with the application window.
     bool dynamicViewport = true;
     
+    ///
+    uint sampleRatio = 2;
+    
     /**
      * Constructs a new game instance.
      *
@@ -124,8 +127,8 @@ class Game: BaseGame
         presentRenderer = New!PresentRenderer(this, postProcessingRenderer.outputBuffer, this);
         hudRenderer = New!HUDRenderer(this, this);
         
-        renderer.setViewport(0, 0, drawableWidth, drawableHeight);
-        postProcessingRenderer.setViewport(0, 0, drawableWidth, drawableHeight);
+        renderer.setViewport(0, 0, drawableWidth * sampleRatio, drawableHeight * sampleRatio);
+        postProcessingRenderer.setViewport(0, 0, drawableWidth * sampleRatio, drawableHeight * sampleRatio);
         presentRenderer.setViewport(0, 0, drawableWidth, drawableHeight);
         hudRenderer.setViewport(0, 0, drawableWidth, drawableHeight);
         
@@ -360,9 +363,9 @@ class Game: BaseGame
     void resizeRenderers(int x, int y, int width, int height)
     {
         if (renderer)
-            renderer.setViewport(0, 0, width, height);
+            renderer.setViewport(0, 0, width * sampleRatio, height * sampleRatio);
         if (postProcessingRenderer)
-            postProcessingRenderer.setViewport(0, 0, width, height);
+            postProcessingRenderer.setViewport(0, 0, width * sampleRatio, height * sampleRatio);
         if (presentRenderer)
             presentRenderer.setViewport(x, y, width, height);
         if (hudRenderer)

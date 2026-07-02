@@ -1691,6 +1691,7 @@ class Application: EventListener, Updateable
         glReadPixels(0, 0, drawableWidth, drawableHeight, GL_RGB, GL_UNSIGNED_BYTE, data.ptr);
         SuperImage img = unmanagedImage(drawableWidth, drawableHeight, 3, 8);
         auto outputData = img.data;
+        // Flip vertically
         for (uint y = 0; y < drawableHeight; y++)
         {
             memcpy(
@@ -1698,6 +1699,7 @@ class Application: EventListener, Updateable
                 &data[y * drawableWidth * 3],
                 drawableWidth * 3);
         }
+        Delete(data);
         return img;
     }
     
