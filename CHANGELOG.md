@@ -5,7 +5,7 @@ Dagon 1.2.0 - 2 Jul, 2026
   - Fix game stuttering when using `InputManager` for controller axis query
   - Fix memory leak in `Application.takeScreenshot`
   - Fix destructors order for `Application` internals
-  - New properties `GameInputDevice.logic`, `GameInputDevice.instanceId`, `GameInputDevice.axisValue`
+  - New properties `GameInputDevice.active`, `GameInputDevice.instanceId`, `GameInputDevice.axisValue`
 - **Rendering**
   - Supersampling suppport (`ss.sampleRatio` in render.conf)
 - **Post-processing**
