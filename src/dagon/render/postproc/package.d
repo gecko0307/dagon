@@ -163,6 +163,8 @@ class PostProcRenderer: Renderer
     float glowThreshold = 0.8f;
     float glowIntensity = 0.2f;
     int glowRadius = 5;
+    float normalizedRadius = 0.0f;
+    bool useNormalizedRadius = false;
     
     Tonemapper tonemapper = Tonemapper.ACES;
     
@@ -427,6 +429,10 @@ class PostProcRenderer: Renderer
 
         brightPassShader.luminanceThreshold = glowThreshold;
         glowShader.intensity = glowIntensity;
+        
+        if (useNormalizedRadius)
+            glowRadius = cast(int)(normalizedRadius * cast(float)pipeline.eventManager.drawableHeight);
+        
         passBlur.radius = glowRadius;
         
         passLuminance.active = autoexposure;

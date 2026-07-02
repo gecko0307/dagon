@@ -125,6 +125,7 @@ Event manager settings:
 
 Recognozed by the `Game` class, applied to the `Game.deferredRenderer` and `Game.postProcessingRenderer`.
 
+* `sampleRatio` - supersampling factor. `1` means original resolution, `2` means double resolution, and so on.
 * `brdf.file` - path to the default BRDF lookup texture. Default is `"data/__internal/textures/brdf.dds"`
 * `fxaa.enabled` - `0` or `1`, disable or enable FXAA anti-aliasing filter. Default is `0`
 * `ssao.enabled` - `0` or `1`, disable or enable screen-space ambient occlusion (in deferred renderer). Default is `0`
@@ -139,6 +140,7 @@ Recognozed by the `Game` class, applied to the `Game.deferredRenderer` and `Game
 * `glow.threshold` - minimum luminance that gives the glow effect. Default is `0.8`
 * `glow.intensity` - brightness of the glow effect. Default is `0.2`
 * `glow.radius` - radius of the glow blur. Default is `5`
+* `glow.normalizedRadius` - if present, the post-processing engine will determine blur radius dynamically based on the normalized value (`0.0`..`1.0`). This value is a fraction of the game window height. So, for example, for `0.005` at 1080p rendering actual blur radius will be 6
 * `hdr.tonemapper` - tonemapping operator used to compress HDR to LDR. Default is `"ACES"`. Supported options are:
   * `"None"` - tonemapping is not applied
   * `"Unreal"` - tonemapper from Unreal 3

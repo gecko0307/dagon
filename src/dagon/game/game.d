@@ -40,6 +40,8 @@ DEALINGS IN THE SOFTWARE.
  */
 module dagon.game.game;
 
+import std.algorithm;
+
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.core.stream;
@@ -98,7 +100,7 @@ class Game: BaseGame
     bool dynamicViewport = true;
     
     ///
-    uint sampleRatio = 2;
+    uint sampleRatio = 1;
     
     /**
      * Constructs a new game instance.
@@ -126,6 +128,10 @@ class Game: BaseGame
         postProcessingRenderer = New!PostProcRenderer(this, deferredRenderer.outputBuffer, deferredRenderer.gbuffer, this);
         presentRenderer = New!PresentRenderer(this, postProcessingRenderer.outputBuffer, this);
         hudRenderer = New!HUDRenderer(this, this);
+        
+        if ("sampleRatio" in rendererConfig.props)
+            sampleRatio = max(1, rendererConfig.props["sampleRatio"].toUInt);
+        logInfo("Sample ratio: ", sampleRatio);
         
         renderer.setViewport(0, 0, drawableWidth * sampleRatio, drawableHeight * sampleRatio);
         postProcessingRenderer.setViewport(0, 0, drawableWidth * sampleRatio, drawableHeight * sampleRatio);
@@ -173,6 +179,11 @@ class Game: BaseGame
             postProcessingRenderer.glowIntensity = rendererConfig.props["glow.intensity"].toFloat;
         if ("glow.radius" in rendererConfig.props)
             postProcessingRenderer.glowRadius = rendererConfig.props["glow.radius"].toUInt;
+        if ("glow.normalizedRadius" in rendererConfig.props)
+        {
+            postProcessingRenderer.normalizedRadius = rendererConfig.props["glow.normalizedRadius"].toFloat;
+            postProcessingRenderer.useNormalizedRadius = true;
+        }
         
         if ("fxaa.enabled" in rendererConfig.props)
             postProcessingRenderer.fxaaEnabled = cast(bool)(rendererConfig.props["fxaa.enabled"].toUInt);
