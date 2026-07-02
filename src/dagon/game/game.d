@@ -129,8 +129,8 @@ class Game: BaseGame
         presentRenderer = New!PresentRenderer(this, postProcessingRenderer.outputBuffer, this);
         hudRenderer = New!HUDRenderer(this, this);
         
-        if ("sampleRatio" in rendererConfig.props)
-            sampleRatio = max(1, rendererConfig.props["sampleRatio"].toUInt);
+        if ("ss.sampleRatio" in rendererConfig.props)
+            sampleRatio = max(1, rendererConfig.props["ss.sampleRatio"].toUInt);
         logInfo("Sample ratio: ", sampleRatio);
         
         renderer.setViewport(0, 0, drawableWidth * sampleRatio, drawableHeight * sampleRatio);

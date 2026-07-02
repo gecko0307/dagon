@@ -3,9 +3,14 @@ Dagon 1.2.0 - 2 Jul, 2026
 - **Core**
   - Fix a severe bug in multi-controller logic of `EventManager`
   - Fix game stuttering when using `InputManager` for controller axis query
+  - Fix memory leak in `Application.takeScreenshot`
+  - Fix destructors order for `Application` internals
   - New properties `GameInputDevice.logic`, `GameInputDevice.instanceId`, `GameInputDevice.axisValue`
+- **Rendering**
+  - Supersampling suppport (`ss.sampleRatio` in render.conf)
 - **Post-processing**
-  - FXAA 3.11.
+  - FXAA 3.11
+  - Resolution-independent glow radius (`glow.normalizedRadius` in render.conf). If specified, the post-processing pipeline will determine blur radius dynamically based on a fraction (`0.0`..`1.0`) of the game window's height. For example, for `0.005` at 1080p rendering actual blur radius will be 6 pixels.
 
 Dagon 1.1.1 - 29 Jun, 2026
 --------------------------
@@ -22,7 +27,7 @@ Dagon 1.1.0 - 19 Jun, 2026
   - 2D game module, `dagon.game.game2d`
 - **Assets**
   - New method `AssetManager.preloadExternalAsset`
-- **Render**
+- **Rendering**
   - Subroutines in built-in shaders were replaced with uniform branching due to AMD issues
   - Support framebuffer clearing in HUD renderer
 - **Graphics components**
@@ -45,7 +50,7 @@ Dagon 1.0.2 - 3 Jun, 2026
 -------------------------
 - **Assets**
   - `Scene.onPauseUpdate`
-- **Render**
+- **Rendering**
   - Support UV transformation in HUD shader.
 
 Dagon 1.0.1 - 2 Jun, 2026
@@ -69,7 +74,7 @@ Dagon 1.0.0-beta3 - 22 Apr, 2026
 - **Assets**
   - New animation playback mode for `GLTFBlendedPose`: `PlayMode.OnceAndStop`
   - New property `GLTFBlendedPose.timeScale`
-- **Render**
+- **Rendering**
   - `SkyShader` now supports alpha clipping for environment textures
   - Fix fog for area lights
 - **Graphics components**
