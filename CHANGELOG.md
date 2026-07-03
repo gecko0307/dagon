@@ -1,3 +1,8 @@
+Dagon 1.2.1 - 3 Jul, 2026
+-------------------------
+- **Graphics components**
+  - New property `Entity.blurMaxVelocity` for clamping screen-space motion vectors and, effectively, reduce motion blur for the entity.
+
 Dagon 1.2.0 - 2 Jul, 2026
 -------------------------
 - **Core**
