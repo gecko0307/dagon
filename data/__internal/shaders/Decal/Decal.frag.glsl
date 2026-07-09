@@ -155,14 +155,12 @@ void main()
     if (roughnessMetallicFunc == 1)
         roughnessMetallic = texture(roughnessMetallicTexture, texCoord);
     
-    const float specularity = 1.0;
-    
     fragColor = vec4(albedo, diffuseColor.a);
     fragNormal = vec4(N, diffuseColor.a);
     fragPBR = vec4(
         roughnessMetallic.g,
         roughnessMetallic.b,
-        specularity,
+        0.0, // TODO: SSS
         diffuseColor.a);
     fragEmission = vec4(emiss, diffuseColor.a);
 }

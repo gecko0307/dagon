@@ -172,12 +172,12 @@ void main()
     vec2 velocity = clampLength(posScreen - prevPosScreen, maxVelocity);
     
     fragColor = vec4(color, gbufferMask);
-    fragNormal = vec4(N, 0.0);
+    fragNormal = vec4(N, 1.0);
     fragPBR = vec4(
         max(roughness, 0.0001),
         metallic,
         subsurfaceFactor,
-        0.0);
+        1.0);
     // TODO: lightmapping support
     fragEmission = vec4(emission, 1.0);
     fragVelocity = vec4(velocity, blurMask, 1.0);
