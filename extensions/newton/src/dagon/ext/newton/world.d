@@ -203,6 +203,7 @@ class NewtonPhysicsWorld: Owner
     ~this()
     {
         NewtonDestroyAllBodies(newtonWorld);
+        clearOwnedObjects();
         NewtonMaterialDestroyAllGroupID(newtonWorld);
         NewtonDestroy(newtonWorld);
     }
