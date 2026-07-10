@@ -137,10 +137,12 @@ Recognozed by the `Game` class, applied to the `Game.deferredRenderer` and `Game
 * `ssao.occlusionBufferDetail` - a number between `0.0` and `1.0` that indicates a uniform scale of the occlusion buffer resolution. For example, `0.5` will give 1/4 of the main framebuffer. This is useful as a quality/performance tradeoff on low-end machines. Default is `1.0`
 * `glow.enabled` - `0` or `1`, disable or enable glow filter. Default is `0`
 * `glow.viewScale` - a number between `0.0` and `1.0` that indicates a uniform scale of the glow buffer resolution. For example, `0.5` will give 1/4 of the main framebuffer. This is useful as a quality/performance tradeoff on low-end machines. Default is `1.0`
-* `glow.threshold` - minimum luminance that gives the glow effect. Default is `0.8`
-* `glow.intensity` - brightness of the glow effect. Default is `0.2`
 * `glow.radius` - radius of the glow blur in pixels. Default is `5`
 * `glow.normalizedRadius` - resolution-independent blur radius. If present, the post-processing pipeline will ignore specified `glow.radius` and determine the radius dynamically based on a fraction (`0.0`..`1.0`) of the game window's height. For example, for `0.005` at 1080p rendering actual blur radius will be 6 pixels
+* `glow.threshold` - minimum luminance that gives the glow effect. Default is `0.8`
+* `glow.softKnee` - a number between `0.0` and `1.0`. Smoothness of luminance threshold, used to prevent hard clipping. Default is `0.5`
+* `glow.maxEnergy` - maximum light energy carried by the glow effect, used to prevent overly bright highlights. Default is `8.0`
+* `glow.intensity` - overall brightness of the glow effect. Default is `0.2`
 * `hdr.tonemapper` - tonemapping operator used to compress HDR to LDR. Default is `"ACES"`. Supported options are:
   * `"None"` - tonemapping is not applied
   * `"Unreal"` - tonemapper from Unreal 3

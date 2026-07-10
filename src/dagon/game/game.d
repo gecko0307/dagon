@@ -177,6 +177,10 @@ class Game: BaseGame
             postProcessingRenderer.glowThreshold = rendererConfig.props["glow.threshold"].toFloat;
         if ("glow.intensity" in rendererConfig.props)
             postProcessingRenderer.glowIntensity = rendererConfig.props["glow.intensity"].toFloat;
+        if ("glow.maxEnergy" in rendererConfig.props)
+            postProcessingRenderer.glowMaxEnergy = max(rendererConfig.props["glow.maxEnergy"].toFloat, 0.0f);
+        if ("glow.softKnee" in rendererConfig.props)
+            postProcessingRenderer.glowSoftKnee = clamp(rendererConfig.props["glow.softKnee"].toFloat, 0.0f, .10f);
         if ("glow.radius" in rendererConfig.props)
             postProcessingRenderer.glowRadius = rendererConfig.props["glow.radius"].toUInt;
         if ("glow.normalizedRadius" in rendererConfig.props)

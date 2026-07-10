@@ -162,6 +162,8 @@ class PostProcRenderer: Renderer
 
     float glowThreshold = 0.8f;
     float glowIntensity = 0.2f;
+    float glowMaxEnergy = 8.0f;
+    float glowSoftKnee = 0.5f;
     int glowRadius = 5;
     float normalizedRadius = 0.0f;
     bool useNormalizedRadius = false;
@@ -428,6 +430,9 @@ class PostProcRenderer: Renderer
         super.update(t);
 
         brightPassShader.luminanceThreshold = glowThreshold;
+        brightPassShader.maxEnergy = glowMaxEnergy;
+        brightPassShader.softKnee = glowSoftKnee;
+        
         glowShader.intensity = glowIntensity;
         
         if (useNormalizedRadius)

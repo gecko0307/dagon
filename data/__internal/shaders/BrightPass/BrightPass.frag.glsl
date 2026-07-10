@@ -1,32 +1,10 @@
-/*
-#version 400 core
-
-uniform sampler2D colorBuffer;
-uniform vec2 viewSize;
-
-uniform float luminanceThreshold;
-
-in vec2 texCoord;
-
-out vec4 fragColor;
-
-void main()
-{
-    vec3 res = texture(colorBuffer, texCoord).rgb;
-    float lum = dot(res, vec3(0.2126, 0.7152, 0.0722));
-    res = mix(vec3(0.0), res, float(lum >= luminanceThreshold));
-    fragColor = vec4(res, 1.0); 
-}
-*/
-
 #version 400 core
 
 uniform sampler2D colorBuffer;
 uniform vec2 viewSize;
 uniform float luminanceThreshold;
-
-const float softKnee = 0.5;
-const float maxIntensity = 8.0;
+uniform float softKnee;
+uniform float maxEnergy;
 
 in vec2 texCoord;
 
@@ -35,7 +13,7 @@ out vec4 fragColor;
 void main()
 {
     vec3 color = texture(colorBuffer, texCoord).rgb;
-    color = min(color, vec3(maxIntensity));
+    color = min(color, vec3(maxEnergy));
     float lum = dot(color, vec3(0.2126, 0.7152, 0.0722));
     
     // Soft knee formula

@@ -51,10 +51,14 @@ class BrightPassShader: Shader
     ShaderParameter!int brightpassEnabled;
     ShaderParameter!float brightpassLuminanceThreshold;
     ShaderParameter!int colorBuffer;
+    ShaderParameter!float brightpassSoftKnee;
+    ShaderParameter!float brightpassMaxEnergy;
 
    public:
     bool enabled = true;
     float luminanceThreshold = 1.0f;
+    float softKnee = 0.5f;
+    float maxEnergy = 8.0f;
     
     this(Owner owner)
     {
@@ -67,6 +71,8 @@ class BrightPassShader: Shader
         viewSize = createParameter!Vector2f("viewSize");
         brightpassEnabled = createParameter!int("enabled");
         brightpassLuminanceThreshold = createParameter!float("luminanceThreshold");
+        brightpassSoftKnee = createParameter!float("softKnee");
+        brightpassMaxEnergy = createParameter!float("maxEnergy");
         colorBuffer = createParameter!int("colorBuffer");
     }
 
@@ -81,6 +87,8 @@ class BrightPassShader: Shader
         viewSize = state.resolution;
         brightpassEnabled = enabled;
         brightpassLuminanceThreshold = luminanceThreshold;
+        brightpassSoftKnee = softKnee;
+        brightpassMaxEnergy = maxEnergy;
 
         // Texture 0 - color buffer
         glActiveTexture(GL_TEXTURE0);
