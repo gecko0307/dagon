@@ -119,6 +119,7 @@ class PostProcRenderer: Renderer
     Framebuffer outputBuffer;
 
   protected:
+    Application application;
     
     DoubleBuffer hdrDoubleBuffer;
 
@@ -217,6 +218,7 @@ class PostProcRenderer: Renderer
     this(Application application, Framebuffer inputBuffer, GBuffer gbuffer, Owner owner)
     {
         super(application, owner);
+        this.application = application;
         
         EventManager eventManager = application.eventManager;
 
@@ -436,7 +438,7 @@ class PostProcRenderer: Renderer
         glowShader.intensity = glowIntensity;
         
         if (useNormalizedRadius)
-            glowRadius = cast(int)(normalizedRadius * cast(float)pipeline.eventManager.drawableHeight);
+            glowRadius = cast(int)(normalizedRadius * cast(float)pipeline.eventManager.drawableHeight * cast(float)application.sampleRatio);
         
         passBlur.radius = glowRadius;
         

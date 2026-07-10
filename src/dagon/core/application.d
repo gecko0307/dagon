@@ -540,6 +540,9 @@ class Application: EventListener, Updateable
     /// Ratio of the resolution in physical pixels to the resolution in logical pixels.
     float pixelRatio = 1.0f;
     
+    /// Similar to pixelRatio, but used only for supersampling (creating framebuffers larger than drawableWidth/drawableHeight).
+    uint sampleRatio = 1;
+    
     /// Fullscreen or windowed.
     bool fullscreen = false;
     

@@ -99,9 +99,6 @@ class Game: BaseGame
     /// If `true`, the viewport will be resized dynamically with the application window.
     bool dynamicViewport = true;
     
-    ///
-    uint sampleRatio = 1;
-    
     /**
      * Constructs a new game instance.
      *
