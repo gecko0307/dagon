@@ -1,7 +1,12 @@
 Dagon 1.3.0 - TBD
 -----------------
 - **Graphics components**
-  - New methods `Material.copyTo`, `Material.copyFrom`.
+  - New methods `Material.copyTo`, `Material.copyFrom`
+  - New property `Entity.blurOnlyRotation`
+- **Rendering**
+  - Smoothly fade out decals on non-coplanar surfaces
+- **Post-processing**
+  - Soft knee in bright pass shader.
 
 Dagon 1.2.3 - 10 Jul, 2026
 --------------------------
