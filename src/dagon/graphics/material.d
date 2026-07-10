@@ -194,7 +194,7 @@ class Material: Owner
     /// Texture mapping mode.
     int textureMappingMode = VertexUV;
 
-    /// If `true`, disables all shading (renderer-specific option).
+    /// If `true`, disables all shading. Renderer-specific option. Currently is not supported in deferred pipeline.
     bool shadeless = false;
 
     /// If `true`, invert the Y channel of the normal map.
@@ -399,5 +399,58 @@ class Material: Owner
         glDisablei(GL_BLEND, 2);
         glDisablei(GL_BLEND, 3);
         glDisablei(GL_BLEND, 4);
+    }
+    
+    /// Copies all properties to the specified material.
+    void copyTo(Material mat)
+    {
+        mat.shader = shader;
+        mat.sun = sun;
+        mat.baseColorTexture = baseColorTexture;
+        mat.roughnessMetallicTexture = roughnessMetallicTexture;
+        mat.emissionTexture = emissionTexture;
+        mat.normalTexture = normalTexture;
+        mat.heightTexture = heightTexture;
+        mat.maskTexture = maskTexture;
+        mat.baseColorFactor = baseColorFactor;
+        mat.linearColor = linearColor;
+        mat.emissionFactor = emissionFactor;
+        mat.normalFactor = normalFactor;
+        mat.textureTransformation = textureTransformation;
+        mat.heightFactor = heightFactor;
+        mat.emissionEnergy = emissionEnergy;
+        mat.opacity = opacity;
+        mat.alphaTestThreshold = alphaTestThreshold;
+        mat.roughnessFactor = roughnessFactor;
+        mat.metallicFactor = metallicFactor;
+        mat.specularity = specularity;
+        mat.subsurfaceScattering = subsurfaceScattering;
+        mat.parallaxScale = parallaxScale;
+        mat.parallaxBias = parallaxBias;
+        mat.maskFactor = maskFactor;
+        mat.parallaxMode = parallaxMode;
+        mat.shadowFilter = shadowFilter;
+        mat.blendMode = blendMode;
+        mat.textureMappingMode = textureMappingMode;
+        mat.shadeless = shadeless;
+        mat.invertNormalY = invertNormalY;
+        mat.useShadows = useShadows;
+        mat.useFog = useFog;
+        mat.useCulling = useCulling;
+        mat.sphericalNormal = sphericalNormal;
+        mat.celShading = celShading;
+        mat.rimLight = rimLight;
+        mat.colorWrite = colorWrite;
+        mat.depthWrite = depthWrite;
+        mat.outputColor = outputColor;
+        mat.outputNormal = outputNormal;
+        mat.outputPBR = outputPBR;
+        mat.outputEmission = outputEmission;
+    }
+    
+    /// Copies all properties from the specified material.
+    void copyFrom(Material mat)
+    {
+        mat.copyTo(this);
     }
 }
