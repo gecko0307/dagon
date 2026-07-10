@@ -8,6 +8,7 @@ uniform mat4 invViewMatrix;
 uniform mat4 invModelMatrix;
 uniform mat4 invProjectionMatrix;
 uniform mat3 textureMatrix;
+uniform vec3 direction;
 
 #include <unproject.glsl>
 #include <gamma.glsl>
@@ -117,6 +118,9 @@ void main()
     vec3 fdy = dFdy(eyePos);
     vec3 N = normalize(cross(fdx, fdy));
     
+    // Smoothly fade out on non-coplanar surfaces
+    float alpha = clamp(dot(N, direction), 0.0, 1.0);
+    
     // Texcoord (go from -1..1 to 0..1)
     vec2 texCoord = objPos.xz * 0.5 + 0.5;
     texCoord = (textureMatrix * vec3(texCoord, 1.0)).xy;
@@ -155,12 +159,14 @@ void main()
     if (roughnessMetallicFunc == 1)
         roughnessMetallic = texture(roughnessMetallicTexture, texCoord);
     
-    fragColor = vec4(albedo, diffuseColor.a);
-    fragNormal = vec4(N, diffuseColor.a);
+    alpha *= diffuseColor.a;
+    
+    fragColor = vec4(albedo, alpha);
+    fragNormal = vec4(N, alpha);
     fragPBR = vec4(
         roughnessMetallic.g,
         roughnessMetallic.b,
         0.0, // TODO: SSS
-        diffuseColor.a);
-    fragEmission = vec4(emiss, diffuseColor.a);
+        alpha);
+    fragEmission = vec4(emiss, alpha);
 }

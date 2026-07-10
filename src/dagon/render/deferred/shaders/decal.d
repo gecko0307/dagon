@@ -91,6 +91,8 @@ class DecalShader: Shader
     ShaderParameter!Color4f emissionFactor;
     ShaderParameter!int emissionFunc;
     ShaderParameter!float emissionEnergy;
+    
+    ShaderParameter!Vector3f direction;
 
    public:
     this(GBuffer gbuffer, Owner owner)
@@ -142,6 +144,8 @@ class DecalShader: Shader
         emissionFactor = createParameter!Color4f("emissionFactor");
         emissionFunc = createParameter!int("emissionFunc");
         emissionEnergy = createParameter!float("emissionEnergy");
+        
+        direction = createParameter!Vector3f("direction");
     }
 
     ~this()
@@ -164,6 +168,7 @@ class DecalShader: Shader
         resolution = state.resolution;
         opacity = state.opacity * mat.opacity;
         textureMatrix = &mat.textureTransformation;
+        direction = state.modelMatrix.up;
 
         // Depth
         glActiveTexture(GL_TEXTURE0);

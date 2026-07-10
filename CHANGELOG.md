@@ -1,3 +1,8 @@
+Dagon 1.3.0 - TBD
+-----------------
+- **Graphics components**
+  - New methods `Material.copyTo`, `Material.copyFrom`.
+
 Dagon 1.2.3 - 10 Jul, 2026
 --------------------------
 - **Extensions**
