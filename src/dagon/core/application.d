@@ -1674,6 +1674,8 @@ class Application: EventListener, Updateable
     /// Copies the current framebuffer to a texture. Texture must be the same size as the framebuffer.
     void takeScreenshot(Texture texture)
     {
+        onRender();
+        debug checkGLError();
         glBindTexture(GL_TEXTURE_2D, texture.texture);
         glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, drawableWidth, drawableHeight);
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -1687,6 +1689,9 @@ class Application: EventListener, Updateable
      */
     SuperImage takeScreenshot()
     {
+        onRender();
+        debug checkGLError();
+        
         ubyte[] data = New!(ubyte[])(drawableWidth * drawableHeight * 3);
         glReadPixels(0, 0, drawableWidth, drawableHeight, GL_RGB, GL_UNSIGNED_BYTE, data.ptr);
         

@@ -1,10 +1,13 @@
 Dagon 1.3.0 - TBD
 -----------------
+- **Core**
+  - Re-render a frame in `Application.takeScreenshot`, so that any previous state changes take effect
 - **Graphics components**
   - New methods `Material.copyTo`, `Material.copyFrom`
   - New property `Entity.blurOnlyRotation`
 - **Rendering**
   - Smoothly fade out decals on non-coplanar surfaces
+  - New render.conf options: `glow.softKnee`, `glow.maxEnergy`
 - **Post-processing**
   - Soft knee in bright pass shader.
 
