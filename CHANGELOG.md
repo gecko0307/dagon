@@ -1,5 +1,5 @@
-Dagon 1.3.0 - TBD
------------------
+Dagon 1.3.0 - 10 Jul, 2026
+--------------------------
 - **Core**
   - Re-render a frame in `Application.takeScreenshot`, so that any previous state changes take effect
 - **Graphics components**
