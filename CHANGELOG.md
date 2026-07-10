@@ -1,11 +1,11 @@
-Dagon 1.2.3 - TBD
------------------
+Dagon 1.2.3 - 10 Jul, 2026
+--------------------------
 - **Extensions**
   - `dagon:newton`:
     - Fix NewtonCollisionShape destruction.
 
-Dagon 1.2.2 - 10 Jul, 2026
---------------------------
+Dagon 1.2.2 - 9 Jul, 2026
+-------------------------
 - **Rendering**
   - Fix decal shader output for PBR buffer.
 
