@@ -243,6 +243,7 @@ abstract class RenderPass: EventListener
         state.layer = entity.layer;
         state.blurMask = entity.blurMask;
         state.blurMaxVelocity = entity.blurMaxVelocity;
+        state.blurOnlyRotation = entity.blurOnlyRotation;
         state.gbufferMask = entity.gbufferMask;
         state.modelMatrix = entity.absoluteTransformation;
         state.invModelMatrix = entity.invAbsoluteTransformation;

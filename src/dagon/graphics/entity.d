@@ -183,6 +183,9 @@ class Entity: Owner, Updateable
     
     ///
     float blurMaxVelocity = 1.0f;
+    
+    ///
+    bool blurOnlyRotation = false;
 
    /**
     * If `true`, shader parameters will be bound automatically

@@ -75,6 +75,9 @@ struct GraphicsState
     
     ///
     float blurMaxVelocity;
+    
+    ///
+    bool blurOnlyRotation;
 
     /// G-buffer output mask value.
     float gbufferMask;
@@ -225,6 +228,7 @@ struct GraphicsState
         layer = 1;
         blurMask = 1.0f;
         blurMaxVelocity = 1.0f;
+        blurOnlyRotation = false;
         gbufferMask = 1.0f;
 
         resolution = Vector2f(0.0f, 0.0f);

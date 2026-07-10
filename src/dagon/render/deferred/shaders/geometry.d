@@ -174,7 +174,16 @@ class GeometryShader: Shader
         normalMatrix = &state.normalMatrix;
         viewMatrix = &state.viewMatrix;
         invViewMatrix = &state.invViewMatrix;
-        prevModelViewMatrix = &state.prevModelViewMatrix;
+        if (state.blurOnlyRotation)
+        {
+            auto m = state.prevModelViewMatrix;
+            m.a14 = state.modelViewMatrix.a14;
+            m.a24 = state.modelViewMatrix.a24;
+            m.a34 = state.modelViewMatrix.a34;
+            prevModelViewMatrix = m;
+        }
+        else
+            prevModelViewMatrix = &state.prevModelViewMatrix;
         
         opacity = state.opacity * mat.opacity;
         textureMatrix = &mat.textureTransformation;
