@@ -65,6 +65,8 @@ class CascadedShadowShader: Shader
     ShaderParameter!Color4f diffuseVector;
     ShaderParameter!int diffuseFunc;
     
+    Matrix3x3f defaultTextureMatrix;
+    
    public:
     this(Owner owner)
     {
@@ -88,6 +90,8 @@ class CascadedShadowShader: Shader
         diffuseTexture = createParameter!int("diffuseTexture");
         diffuseVector = createParameter!Color4f("diffuseVector");
         diffuseFunc = createParameter!int("diffuseFunc");
+        
+        defaultTextureMatrix = Matrix3x3f.identity;
     }
 
     ~this()
@@ -105,9 +109,18 @@ class CascadedShadowShader: Shader
         modelViewMatrix = &state.modelViewMatrix;
         normalMatrix = &state.normalMatrix;
         projectionMatrix = &state.projectionMatrix;
-        opacity = state.opacity * mat.opacity;
-        clipThreshold = mat.alphaTestThreshold;
-        textureMatrix = &mat.textureTransformation;
+        if (mat)
+        {
+            opacity = state.opacity * mat.opacity;
+            clipThreshold = mat.alphaTestThreshold;
+            textureMatrix = &mat.textureTransformation;
+        }
+        else
+        {
+            opacity = state.opacity;
+            clipThreshold = 0.5f;
+            textureMatrix = &defaultTextureMatrix;
+        }
         // TODO: mat.textureMappingMode;
         
         if (state.pose)
@@ -131,14 +144,23 @@ class CascadedShadowShader: Shader
         // Diffuse
         glActiveTexture(GL_TEXTURE0);
         diffuseTexture = 0;
-        diffuseVector = mat.baseColorFactor;
-        if (mat.baseColorTexture)
+        if (mat)
         {
-            mat.baseColorTexture.bind();
-            diffuseFunc = 1;
+            diffuseVector = mat.baseColorFactor;
+            if (mat.baseColorTexture)
+            {
+                mat.baseColorTexture.bind();
+                diffuseFunc = 1;
+            }
+            else
+            {
+                glBindTexture(GL_TEXTURE_2D, 0);
+                diffuseFunc = 0;
+            }
         }
         else
         {
+            diffuseVector = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
             glBindTexture(GL_TEXTURE_2D, 0);
             diffuseFunc = 0;
         }
