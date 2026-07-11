@@ -1,3 +1,10 @@
+Dagon 1.3.1 - TBD
+-----------------
+- **Core**
+  - `sampleRatio` moved to `Application` class
+- **Post-processing**
+  - `sampleRadio` is now used to scale normalized glow radius.
+
 Dagon 1.3.0 - 10 Jul, 2026
 --------------------------
 - **Core**
