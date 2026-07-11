@@ -23,7 +23,7 @@ Screenshots
 
 [![Sponza](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated3.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated3.jpg)
 
-[![Chillwave Drive](https://blog.pixperfect.online/wp-content/uploads/2025/12/chillwave_drive_twilight.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/12/chillwave_drive_twilight.jpg)
+[![Chillwave Drive](https://blog.pixperfect.online/wp-content/uploads/2026/07/chillwave-drive-hq-1.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/07/chillwave-drive-hq-1.jpg)
 
 Features
 --------
