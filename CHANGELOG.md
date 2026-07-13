@@ -1,5 +1,5 @@
-Dagon 1.3.1 - TBD
------------------
+Dagon 1.3.1 - 14 Jul, 2026
+--------------------------
 - **Core**
   - `sampleRatio` moved to `Application` class
 - **Post-processing**
