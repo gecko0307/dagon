@@ -969,13 +969,13 @@ class Application: EventListener, Updateable
             windowTitle = config.props["window.title"].toString;
         
         if ("fullscreen" in config.props)
-            fullscreen = cast(bool)(config.props["fullscreen"].toUInt);
+            this.fullscreen = cast(bool)(config.props["fullscreen"].toUInt);
         
         if ("fullscreenWindowed" in config.props)
         {
             if (config.props["fullscreenWindowed"].toUInt)
             {
-                fullscreen = false;
+                this.fullscreen = false;
                 windowWidth = 0;
                 windowHeight = 0;
                 windowBorderless = true;
@@ -992,9 +992,9 @@ class Application: EventListener, Updateable
         desktopWidth = desktopBounds.w;
         desktopHeight = desktopBounds.h;
 
-        if (fullscreen)
+        if (this.fullscreen)
         {
-            // Normal fullscreen
+            // Exclusive fullscreen
             if (windowWidth == 0)
                 windowWidth = displayWidth;
             if (windowHeight == 0)
@@ -1142,7 +1142,7 @@ class Application: EventListener, Updateable
         else
             exitWithError("Failed to load OpenGL functions. Please, update graphics card driver and make sure it supports OpenGL 4.3");
         
-        setFullscreen(fullscreen);
+        setFullscreen(this.fullscreen);
 
         // Create event manager
         _eventManager = New!EventManager(this, null);
@@ -1583,6 +1583,7 @@ class Application: EventListener, Updateable
             SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
         else
             SDL_SetWindowFullscreen(window, 0);
+        fullscreen = mode;
     }
     
     ///
