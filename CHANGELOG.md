@@ -1,3 +1,8 @@
+Dagon 1.3.3 - TBD
+-----------------
+- **Core**
+  - Fix a bug with `Application.fullscreen` property not set according to the config.
+
 Dagon 1.3.2 - 19 Jul, 2026
 --------------------------
 - **Misc**
