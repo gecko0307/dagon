@@ -31,8 +31,8 @@ DEALINGS IN THE SOFTWARE.
  * Description:
  * The `dagon.core.application` module provides the base `Application` class
  * and related functionality for creating and managing a Dagon-based application.
- * This includes SDL window and OpenGL context management, event handling,
- * functions for cursor management, error handling, timer management,
+ * This includes loading core libraries, SDL window and OpenGL context management,
+ * event handling, functions for cursor management, error handling, timer management,
  * taking screenshots and others.
  *
  * Copyright: Timur Gafarov 2017-2026.
