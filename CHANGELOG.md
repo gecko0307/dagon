@@ -2,6 +2,9 @@ Dagon 1.3.3 - TBD
 -----------------
 - **Core**
   - Fix a bug with `Application.fullscreen` property not set according to the config.
+- **Assets**
+  - BC4 and BC7 texture compression support. New property `TextureAsset.compressionFormat`
+  - `dagon.resource.sdlimage` module merged with `dagon.resource.texture`.
 
 Dagon 1.3.2 - 19 Jul, 2026
 --------------------------
