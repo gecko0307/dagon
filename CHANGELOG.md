@@ -1,7 +1,9 @@
 Dagon 1.4.0 - TBD
 -----------------
 - **Core**
-  - Fix a bug with `Application.fullscreen` property not set according to the config.
+  - Fix a bug with `Application.fullscreen` property not set according to the config
+- **Graphics components**
+  - `prefilterCubemap` now accepts optional `lumaScale` parameter to scale the input cubemap values. It is `2.0` by default for backwards compatibility
 - **Assets**
   - BC4 and BC7 texture compression support. New property `TextureAsset.compressionFormat`
   - `dagon.resource.sdlimage` module merged with `dagon.resource.texture`.
