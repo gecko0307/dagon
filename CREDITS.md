@@ -13,10 +13,11 @@
 ## Adapted third-party code
 * Wintab binding - [Vadim Lopatin aka buggins](https://github.com/buggins)
 * DXT1/DXT5 compressor - [Fabian Giesen](https://github.com/rygorous), [Yann Collet](https://github.com/Cyan4973)
+* BC7 compressor - [Rich Geldreich](https://github.com/richgel999)
 * ImGui extension (ImGuiOpenGLBackend) - [Joshua T. Fisher aka playmer](https://github.com/playmer), [LunaTheFoxgirl](https://github.com/LunaTheFoxgirl)
 * SoLoud binding contains code by [Jari Komppa](https://github.com/jarikomppa)
 * SSAO implementation is based on the code by [Reinder Nijhoff](https://www.shadertoy.com/view/Ms33WB)
-* FXAA 3.11 implementation is based on the code by Timothy Lottes
+* FXAA 3.11 implementation is based on the code by Timothy Lottes (NVIDIA)
 * Optimized separable Gaussian blur - [Matt DesLauriers](https://github.com/Experience-Monks)
 * Depth of field effect - [Martins Upitis](https://github.com/martinsh)
 * Lens distortion effect - [Jaume Sanchez](https://github.com/spite)

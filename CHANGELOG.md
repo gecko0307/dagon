@@ -1,4 +1,4 @@
-Dagon 1.3.3 - TBD
+Dagon 1.4.0 - TBD
 -----------------
 - **Core**
   - Fix a bug with `Application.fullscreen` property not set according to the config.
