@@ -8,31 +8,42 @@ in vec2 texCoord;
 uniform vec2 resolution;
 uniform int cubemapFaceIndex;
 uniform float roughness;
-uniform float inputMipLevel;
 uniform samplerCube envmap;
 uniform float inputScale = 2.0;
 uniform float inputThreshold = 10.0;
 
 const uint numSamples = 1024u;
 
+// Brian Karis, "Real Shading in Unreal Engine 4"
 vec3 importanceSampleGGX(vec2 Xi, float roughness, vec3 N)
 {
     float a = roughness * roughness;
+    
+    // Sample in spherical coordinates
     float phi = PI2 * Xi.x;
     float cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a * a - 1.0) * Xi.y));
     float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
     
+    // Construct tangent space vector
     vec3 H;
     H.x = sinTheta * cos(phi);
     H.y = sinTheta * sin(phi);
     H.z = cosTheta;
     
+    // Tangent to world space
     vec3 upVector = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
     vec3 tangentX = normalize(cross(upVector, N));
     vec3 tangentY = cross(N, tangentX);
-    
-    // Tangent to world space
     return tangentX * H.x + tangentY * H.y + N * H.z;
+}
+
+// Trowbridge-Reitz GGX normal distribution
+float distributionGGX(float cosLh, float roughness)
+{
+    float a = roughness * roughness;
+    float a2 = a * a;
+    float denom = (cosLh * cosLh) * (a2 - 1.0) + 1.0;
+    return a2 / (PI * denom * denom);
 }
 
 // Generates the i-th 2D Hammersley point out of N
@@ -55,18 +66,21 @@ vec3 prefilterEnvMap(float roughness, vec3 R)
     vec3 result = vec3(0.0, 0.0, 0.0);
     float totalWeight = 0.0;
     
+    vec2 inputSize = vec2(textureSize(envmap, 0));
+    float wt = 4.0 * PI / (6 * inputSize.x * inputSize.y);
+    
     for (uint i = 0u; i < numSamples; i++)
     {
         vec2 Xi = hammersley(i, numSamples);
         vec3 H = importanceSampleGGX(Xi, roughness, N);
         vec3 L = 2.0 * dot(V, H) * H - V;
         float NL = clamp(dot(N, L), 0.0, 1.0);
-        if (NL > 0.0)
-        {
-            vec3 inputColor = clamp(textureLod(envmap, L, inputMipLevel).rgb, vec3(0.0), vec3(inputThreshold)) * inputScale;
-            result += inputColor * NL;
-            totalWeight += NL;
-        }
+        float pdf = distributionGGX(NL, roughness) * 0.25;
+        float ws = 1.0 / (numSamples * pdf);
+        float mipLevel = max(0.5 * log2(ws / wt) + 1.0, 0.0);
+        vec3 inputColor = clamp(textureLod(envmap, L, mipLevel).rgb, vec3(0.0), vec3(inputThreshold)) * inputScale;
+        result += inputColor * NL;
+        totalWeight += NL;
     }
     
     if (totalWeight == 0.0)
@@ -98,6 +112,6 @@ void main()
     if (roughness > 0.0)
         result = prefilterEnvMap(roughness, R);
     else
-        result = clamp(textureLod(envmap, R, inputMipLevel).rgb, vec3(0.0), vec3(inputThreshold)) * inputScale;
+        result = clamp(textureLod(envmap, R, 0.0).rgb, vec3(0.0), vec3(inputThreshold)) * inputScale;
     fragColor = vec4(result, 1.0);
 }

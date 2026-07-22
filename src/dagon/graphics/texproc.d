@@ -475,13 +475,11 @@ class CubemapPrefilterShader: Shader
     Texture cubemap;
     CubeFace cubeFace;
     float roughness = 0.5f;
-    float inputMipLevel = 0.0f;
     float inputThreshold = 10.0f;
     float inputScale = 2.0f;
     
     ShaderParameter!Vector2f resolutionUniform;
     ShaderParameter!int cubemapFaceIndexUniform;
-    ShaderParameter!float inputMipLevelUniform;
     ShaderParameter!float roughnessUniform;
     ShaderParameter!int envmapUniform;
     ShaderParameter!float inputThresholdUniform;
@@ -505,7 +503,6 @@ class CubemapPrefilterShader: Shader
         
         resolutionUniform = createParameter!Vector2f("resolution");
         cubemapFaceIndexUniform = createParameter!int("cubemapFaceIndex");
-        inputMipLevelUniform = createParameter!float("inputMipLevel");
         roughnessUniform = createParameter!float("roughness");
         envmapUniform = createParameter!int("envmap");
         inputThresholdUniform = createParameter!float("inputThreshold");
@@ -535,7 +532,6 @@ class CubemapPrefilterShader: Shader
         if (cubeFace == CubeFace.PositiveZ) cubemapFaceIndexUniform = 4;
         if (cubeFace == CubeFace.NegativeZ) cubemapFaceIndexUniform = 5;
         
-        inputMipLevelUniform = inputMipLevel;
         roughnessUniform = roughness;
         inputThresholdUniform = inputThreshold;
         inputScaleUniform = inputScale;
@@ -558,10 +554,11 @@ class CubemapPrefilterShader: Shader
  *   inputCubemap  = Input cube map.
  *   outputCubemap = Output cube map to write the result to. Should already have an allocated mip chain.
  */
-void prefilterCubemap(Texture inputCubemap, Texture outputCubemap)
+void prefilterCubemap(Texture inputCubemap, Texture outputCubemap, float lumaScale = 2.0f)
 {
     ScreenSurface screenSurface = New!ScreenSurface(null);
     CubemapPrefilterShader shader = New!CubemapPrefilterShader(inputCubemap, null);
+    shader.inputScale = lumaScale;
     
     GraphicsState state;
     state.reset();
@@ -588,7 +585,6 @@ void prefilterCubemap(Texture inputCubemap, Texture outputCubemap)
             shader.cubeFace = cubeFace;
             shader.roughness = cast(float)mipLevel / (cast(float)outputCubemap.mipLevels - 1.0f);
             shader.roughness = min(1.0f, shader.roughness * shader.roughness);
-            shader.inputMipLevel = 0;
             
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, cubeFace, outputCubemap.texture, mipLevel);
             
@@ -632,7 +628,7 @@ void prefilterCubemap(Texture inputCubemap, Texture outputCubemap)
  * Returns:
  *   The cube map texture.
  */
-Texture prefilterCubemap(uint resolution, Texture inputCubemap, Owner owner)
+Texture prefilterCubemap(uint resolution, Texture inputCubemap, Owner owner, float lumaScale = 2.0f)
 {
     TextureFormat format = {
         target: GL_TEXTURE_CUBE_MAP,
@@ -647,7 +643,7 @@ Texture prefilterCubemap(uint resolution, Texture inputCubemap, Owner owner)
     outputCubemap.createBlankCubemap(format, resolution);
     outputCubemap.generateMipmap();
     
-    prefilterCubemap(inputCubemap, outputCubemap);
+    prefilterCubemap(inputCubemap, outputCubemap, lumaScale);
     
     return outputCubemap;
 }
