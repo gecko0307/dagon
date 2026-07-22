@@ -68,7 +68,6 @@ import dagon.graphics.texture;
 import dagon.resource.boxfs;
 import dagon.resource.texture;
 import dagon.resource.dds;
-import dagon.resource.sdlimage;
 
 /**
  * Stores file monitoring information for an asset.
@@ -313,7 +312,7 @@ struct ImageFormatInfo
 }
 
 /**
- * Manages loading, monitoring, and access to assets.
+ * Manages asset loading, monitoring, and access.
  *
  * Description:
  * The `AssetManager` supports threaded loading,

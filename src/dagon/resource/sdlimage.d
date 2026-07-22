@@ -33,7 +33,7 @@ DEALINGS IN THE SOFTWARE.
  * images via SDL2_Image, and converting SDL surfaces to GPU-ready texture buffers.
  * The loader supports a wide range of formats (BMP, GIF, JPEG, PNG, QOI, TGA,
  * TIFF, WEBP, AVIF, JXL, SVG, and more), and can handle pixel format conversion.
- * It also creates a `TextureImage` object for compatibility with `dlib.image``.
+ * It also creates a `TextureImage` object for compatibility with `dlib.image`.
  *
  * Copyright: Timur Gafarov 2025-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
@@ -41,6 +41,7 @@ DEALINGS IN THE SOFTWARE.
  */
 module dagon.resource.sdlimage;
 
+/*
 import core.stdc.string;
 import std.stdio;
 import std.conv;
@@ -54,187 +55,4 @@ import dagon.core.logger;
 import dagon.graphics.texture;
 import dagon.resource.texture;
 import dagon.resource.image;
-
-/// List of file extensions supported by SDL2_Image.
-immutable string[] sdlImageFormats = [
-    ".bmp", ".gif", ".jpg", ".jpeg", ".lbm", ".pcx", ".png",
-    ".pnm", ".ppm", ".pgm", ".pbm", ".qoi", ".tga", ".xcf", ".xpm",
-    ".tif", ".tiff", ".webp", ".avif", ".jxl", ".svg", ".ico"
-];
-
-/// List of OpenGL internal formats supported by `dlib.image`.
-immutable GLint[] dlibImageSupportedFormats = [
-    GL_R8, GL_RG8, GL_RGB8, GL_RGBA8, GL_R16,
-    GL_RG16, GL_RGB16, GL_RGBA16, GL_RGBA32F
-];
-
-/**
- * Checks if the given file extension is supported by SDL2_Image.
- *
- * Params:
- *   formatExtension = The file extension (e.g., ".png").
- * Returns:
- *   `true` if supported, `false` otherwise.
- */
-bool isSDLImageSupportedFormat(string formatExtension)
-{
-    return sdlImageFormats.canFind(formatExtension);
-}
-
-/**
- * Hints for pixel format conversion when loading images.
- */
-enum ConversionHint
-{
-    /// No conversion.
-    None = 0,
-
-    /// Convert to RGB.
-    RGB = 1,
-
-    /// Convert to RGBA.
-    RGBA = 2
-}
-
-/**
- * Loads an image from an input stream using SDL2_Image.
- *
- * Params:
- *   istrm     = Input stream containing the image data.
- * Returns:
- *   Pointer to SDL_Surface if loading succeeded, null otherwise.
- */
-SDL_Surface* loadImageViaSDLImage(InputStream istrm)
-{
-    size_t dataSize = cast(size_t)istrm.size;
-    ubyte[] data = New!(ubyte[])(dataSize);
-    istrm.readBytes(data.ptr, dataSize);
-    SDL_RWops* rw = SDL_RWFromConstMem(data.ptr, cast(int)dataSize);
-    SDL_Surface* surface = IMG_Load_RW(rw, 1);
-    Delete(data);
-    return surface;
-}
-
-/**
- * Loads an image from an input stream using SDL2_Image and fills a `TextureAsset`.
- * Handles resizing (for SVG) and pixel format conversion, if needed.
- * Creates `asset.image` if the image format is compatible with `dlib.image`.
- * This function is preferred by `DefaultTextureLoader` if SDL2_Image is available.
- *
- * Params:
- *   istrm     = Input stream containing the image data.
- *   extension = File extension including the dot (e.g., ".png", ".svg").
- *   asset     = The texture asset to fill.
- * Returns:
- *   true if loading succeeded, false otherwise.
- */
-bool loadImageViaSDLImage(InputStream istrm, string extension, TextureAsset asset)
-{
-    size_t dataSize = cast(size_t)istrm.size;
-    ubyte[] data = New!(ubyte[])(dataSize);
-    istrm.readBytes(data.ptr, dataSize);
-    
-    SDL_RWops* rw = SDL_RWFromConstMem(data.ptr, cast(int)dataSize);
-    SDL_Surface* surface;
-    
-    bool canResize = true;
-    if (extension == ".svg" && asset.conversion.width > 0 && asset.conversion.height > 0)
-    {
-        surface = IMG_LoadSizedSVG_RW(rw, cast(int)asset.conversion.width, cast(int)asset.conversion.height);
-        canResize = false;
-    }
-    else
-    {
-        surface = IMG_Load_RW(rw, 1);
-    }
-    
-    bool loaded = false;
-    if (surface is null)
-    {
-        auto err = IMG_GetError();
-        if (err)
-            logError("IMG_Load_RW error: ", IMG_GetError().to!string);
-        else
-            logError("IMG_Load_RW error");
-    }
-    else
-    {
-        loaded = true;
-    }
-    
-    Delete(data);
-    
-    if (loaded)
-    {
-        TextureSize size;
-        size.width = surface.w;
-        size.height = surface.h;
-        size.depth = 0;
-        
-        TextureFormat format;
-        format.target = GL_TEXTURE_2D;
-        format.pixelType = GL_UNSIGNED_BYTE;
-        format.blockSize = 0;
-        format.cubeFaces = CubeFaceBit.None;
-        
-        version(SDLImageDebug)
-            logDebug(SDL_GetPixelFormatName(cast(SDL_PixelFormatEnum)surface.format.format).to!string);
-        
-        bool conversionNeeded = false;
-        
-        if (surface.format.format == SDL_PIXELFORMAT_RGB24)
-        {
-            format.format = GL_RGB;
-            format.internalFormat = GL_RGB8;
-        }
-        else if (surface.format.format == SDL_PIXELFORMAT_RGBA32)
-        {
-            format.format = GL_RGBA;
-            format.internalFormat = GL_RGBA8;
-        }
-        else conversionNeeded = true;
-        
-        if (asset.conversion.hint != ConversionHint.None)
-            conversionNeeded = true;
-        
-        if (conversionNeeded)
-        {
-            auto targetFormat = SDL_PIXELFORMAT_RGBA32;
-            
-            if (asset.conversion.hint == ConversionHint.RGB)
-                targetFormat = SDL_PIXELFORMAT_RGB24;
-            
-            SDL_PixelFormat* pformat = SDL_AllocFormat(targetFormat);
-            SDL_Surface* convSurface = SDL_ConvertSurface(surface, pformat, 0);
-            SDL_FreeFormat(pformat);
-            
-            if (convSurface is null)
-            {
-                logError("SDL_ConvertSurface error: ", SDL_GetError().to!string);
-                SDL_FreeSurface(surface);
-                return false;
-            }
-            
-            SDL_FreeSurface(surface);
-            surface = convSurface;
-            
-            format.format = GL_RGBA;
-            format.internalFormat = GL_RGBA8;
-        }
-        
-        size_t bufferSize = surface.w * surface.h * surface.format.BytesPerPixel;
-        
-        asset.buffer.format = format;
-        asset.buffer.size = size;
-        asset.buffer.mipLevels = 1;
-        asset.buffer.data = New!(ubyte[])(bufferSize);
-        memcpy(asset.buffer.data.ptr, surface.pixels, bufferSize);
-        
-        SDL_FreeSurface(surface);
-        
-        if (dlibImageSupportedFormats.canFind(format.internalFormat))
-            asset.image = New!TextureImage(&asset.buffer);
-    }
-    
-    return loaded;
-}
+*/

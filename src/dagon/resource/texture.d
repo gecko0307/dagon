@@ -26,13 +26,13 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /**
- * Texture asset.
+ * Texture loader.
  *
  * Description:
  * The `dagon.resource.texture` module defines the `TextureAsset` class
- * for loading GPU textures via the asset manager. The module supports
- * threaded loading, conversion options, persistent buffers, and integration
- * with the virtual file system.
+ * for loading, preprocessing and compressing images to use them as GPU textures.
+ * It supports a wide range of formats (BMP, GIF, JPEG, PNG, QOI, TGA, TIFF, WebP,
+ * AVIF, JXL, SVG, DDS, HDR and more), and can handle pixel format conversion.
  *
  * Copyright: Timur Gafarov 2017-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
@@ -40,11 +40,13 @@ DEALINGS IN THE SOFTWARE.
  */
 module dagon.resource.texture;
 
+import core.stdc.string;
 import std.stdio;
 import std.string;
 import std.path;
 import std.conv;
 import std.math;
+import std.algorithm;
 
 import dlib.core.memory;
 import dlib.core.ownership;
@@ -58,12 +60,16 @@ import dlib.image.unmanaged;
 import dlib.filesystem.filesystem;
 import dlib.math.utils;
 
+import dagon.core.crashhandler;
 import dagon.core.bindings;
 import dagon.core.logger;
 import dagon.core.dxt;
+import dagon.core.bc4;
+import dagon.core.bc7;
 import dagon.graphics.texture;
 import dagon.graphics.lut;
 import dagon.resource.asset;
+import dagon.resource.image;
 
 /**
  * Options for texture conversion.
@@ -80,10 +86,60 @@ struct ConversionOptions
     int hint;
 }
 
+/**
+ * Hints for pixel format conversion when loading images via SDL_Image.
+ */
+enum ConversionHint
+{
+    /// No conversion.
+    None = 0,
+
+    /// Convert to RGB.
+    RGB = 1,
+
+    /// Convert to RGBA.
+    RGBA = 2
+}
+
+/**
+ * Enumeration of all supported GPU compression formats.
+ */
 enum TextureCompressionFormat
 {
-    DXT1 = 0,
-    DXT5 = 1
+    None = 0,
+    BC1 = 1,
+    BC3 = 3,
+    BC4 = 4,
+    BC7 = 7,
+    
+    DXT1 = 1, // same as BC1
+    DXT5 = 3  // same as BC3
+}
+
+/// List of file extensions supported by SDL2_Image.
+immutable string[] sdlImageFormats = [
+    ".bmp", ".gif", ".jpg", ".jpeg", ".lbm", ".pcx", ".png",
+    ".pnm", ".ppm", ".pgm", ".pbm", ".qoi", ".tga", ".xcf", ".xpm",
+    ".tif", ".tiff", ".webp", ".avif", ".jxl", ".svg", ".ico"
+];
+
+/// List of OpenGL internal formats supported by `dlib.image`.
+immutable GLint[] dlibImageSupportedFormats = [
+    GL_R8, GL_RG8, GL_RGB8, GL_RGBA8, GL_R16,
+    GL_RG16, GL_RGB16, GL_RGBA16, GL_RGBA32F
+];
+
+/**
+ * Checks if the given file extension is supported by SDL2_Image.
+ *
+ * Params:
+ *   formatExtension = The file extension (e.g., ".png").
+ * Returns:
+ *   `true` if supported, `false` otherwise.
+ */
+bool isSDLImageSupportedFormat(string formatExtension)
+{
+    return sdlImageFormats.canFind(formatExtension);
 }
 
 /**
@@ -122,10 +178,17 @@ class TextureAsset: Asset
     /// If `true`, generate mip levels. This is skipped if mip levels are already present in the file.
     bool generateMipmaps = true;
     
-    /// Compress to DXT1 (for RGB texture) or DXT5 (for RGBA texture).
+    /**
+     * Compress the texture after loading.
+     * If `compressionFormat` is set to `TextureCompressionFormat.None`, then format is detected
+     * automatically: DXT1 for RGB textures, or DXT5 for RGBA textures.
+     */
     bool compress = false;
     
-    /// 
+    /// Target compression format.
+    TextureCompressionFormat compressionFormat = TextureCompressionFormat.None;
+    
+    /// Treat the input data as LUT of the specified format.
     LUTFormat lutFormat = LUTFormat.Undefined;
     
     /// Resolution when loading 3D texture from 2D image.
@@ -219,7 +282,7 @@ class TextureAsset: Asset
     }
 
     /**
-     * Loads the thread-unsafe part of the texture asset (e.g., GPU upload).
+     * Loads the thread-unsafe part of the texture asset (GPU upload).
      *
      * Returns:
      *   True if loading succeeded.
@@ -236,35 +299,57 @@ class TextureAsset: Asset
         {
             bool genMipmaps = this.generateMipmaps && (buffer.mipLevels == 1);
             
+            if (compressionFormat != TextureCompressionFormat.None)
+                compress = true;
+            
             if (compress)
             {
-                if (buffer.format.target == GL_TEXTURE_2D &&
-                    buffer.format.format == GL_RGB &&
-                    buffer.format.internalFormat == GL_RGB8)
+                bool compressionSucceed = false;
+                
+                if (compressionFormat == TextureCompressionFormat.None)
                 {
-                    // Compress to DXT1
-                    logInfo("Compressing ", filename, " to DXT1/BC1");
-                    compressTexture(TextureCompressionFormat.DXT1);
-                    genMipmaps = false;
+                    // Automatically select compression format
+                    
+                    if (buffer.format.target == GL_TEXTURE_2D &&
+                        buffer.format.format == GL_RGB &&
+                        buffer.format.internalFormat == GL_RGB8)
+                    {
+                        // Compress to DXT1
+                        logInfo("Compressing ", filename, " to DXT1/BC1");
+                        compressionFormat = TextureCompressionFormat.DXT1;
+                        compressionSucceed = compressTexture(compressionFormat);
+                        genMipmaps = false;
+                    }
+                    else
+                    if (buffer.format.target == GL_TEXTURE_2D &&
+                        buffer.format.format == GL_RGBA &&
+                        buffer.format.internalFormat == GL_RGBA8)
+                    {
+                        // Compress to DXT5
+                        logInfo("Compressing ", filename, " to DXT5/BC3");
+                        compressionFormat = TextureCompressionFormat.DXT5;
+                        compressionSucceed = compressTexture(compressionFormat);
+                        genMipmaps = false;
+                    }
+                    else
+                    {
+                        logWarning(
+                            filename, ": ",
+                            "texture compression for target ", buffer.format.target,
+                            " and internal format ", buffer.format.internalFormat,
+                            " is not supported");
+                        compressionSucceed = false;
+                    }
                 }
                 else
-                if (buffer.format.target == GL_TEXTURE_2D &&
-                    buffer.format.format == GL_RGBA &&
-                    buffer.format.internalFormat == GL_RGBA8)
                 {
-                    // Compress to DXT5
-                    logInfo("Compressing ", filename, " to DXT5/BC3");
-                    compressTexture(TextureCompressionFormat.DXT5);
+                    logInfo("Compressing ", filename, " to ", compressionFormat);
+                    compressionSucceed = compressTexture(compressionFormat);
                     genMipmaps = false;
                 }
-                else
-                {
-                    logWarning(
-                        filename, ": ",
-                        "texture compression for target ", buffer.format.target,
-                        " and internal format ", buffer.format.internalFormat,
-                        " is not supported");
-                }
+                
+                if (!compressionSucceed)
+                    return false;
             }
             
             if (buffer.format.target == GL_TEXTURE_3D)
@@ -339,25 +424,36 @@ class TextureAsset: Asset
         loaded = false;
     }
     
-    protected void compressTexture(TextureCompressionFormat compressionFormat)
+    protected bool compressTexture(TextureCompressionFormat compressionFormat)
     {
         uint width = buffer.size.width;
         uint height = buffer.size.height;
         uint numChannels = buffer.format.numChannels;
-        uint pSize = buffer.format.pixelSize;
         uint mipLevels;
         
         uint blockSize;
         uint newInternalFormat;
-        if (compressionFormat == TextureCompressionFormat.DXT1)
+        switch(compressionFormat)
         {
-            blockSize = 8;
-            newInternalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-        }
-        else if (compressionFormat == TextureCompressionFormat.DXT5)
-        {
-            blockSize = 16;
-            newInternalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+            case TextureCompressionFormat.DXT1:
+                blockSize = 8;
+                newInternalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+                break;
+            case TextureCompressionFormat.DXT5:
+                blockSize = 16;
+                newInternalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+                break;
+            case TextureCompressionFormat.BC4:
+                blockSize = 8;
+                newInternalFormat = GL_COMPRESSED_RED_RGTC1;
+                break;
+            case TextureCompressionFormat.BC7:
+                blockSize = 16;
+                newInternalFormat = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
+                break;
+            default:
+                logError("Unsupported compression format requested: ", compressionFormat);
+                return false;
         }
         
         ubyte[] compressedTextureBuffer;
@@ -415,7 +511,27 @@ class TextureAsset: Asset
                 auto blocksV = max2(1, (levelHeight + 3) / 4);
                 auto levelSizeCompressed = alignUp(blocksH * blocksV * blockSize, 4);
                 ubyte[] levelCompDst = compressedMipChainBuffer[offsetCompressed..offsetCompressed + levelSizeCompressed];
-                dxtCompress(levelCompDst.ptr, levelBufferSlice.ptr, levelWidth, levelHeight, compressionFormat);
+                
+                switch(compressionFormat)
+                {
+                    case TextureCompressionFormat.DXT1:
+                        dxtCompress(levelCompDst.ptr, levelBufferSlice.ptr, levelWidth, levelHeight, 0);
+                        break;
+                    case TextureCompressionFormat.DXT5:
+                        dxtCompress(levelCompDst.ptr, levelBufferSlice.ptr, levelWidth, levelHeight, 1);
+                        break;
+                    case TextureCompressionFormat.BC4:
+                        bc4Compress(levelCompDst.ptr, levelBufferSlice.ptr, levelWidth, levelHeight, numChannels);
+                        break;
+                    case TextureCompressionFormat.BC7:
+                        bc7Compress(levelCompDst.ptr, levelBufferSlice.ptr, levelWidth, levelHeight, &defaultBC7Params);
+                        break;
+                    default:
+                        exitWithError("Unsupported texture compression format: " ~ 
+                            compressionFormat.to!string);
+                        break;
+                }
+                
                 offsetCompressed += levelSizeCompressed;
                 
                 prevLevelWidth = levelWidth;
@@ -434,9 +550,30 @@ class TextureAsset: Asset
         else
         {
             mipLevels = 1;
-            uint compressedDataSize = ((width + 3) / 4) * ((height + 3) / 4) * blockSize;
+            auto blocksH = max2(1, (width + 3) / 4);
+            auto blocksV = max2(1, (height + 3) / 4);
+            auto compressedDataSize = blocksH * blocksV * blockSize;
             compressedTextureBuffer = New!(ubyte[])(compressedDataSize);
-            dxtCompress(compressedTextureBuffer.ptr, buffer.data.ptr, width, height, compressionFormat);
+            
+            switch(compressionFormat)
+            {
+                case TextureCompressionFormat.DXT1:
+                    dxtCompress(compressedTextureBuffer.ptr, buffer.data.ptr, width, height, 0);
+                    break;
+                case TextureCompressionFormat.DXT5:
+                    dxtCompress(compressedTextureBuffer.ptr, buffer.data.ptr, width, height, 1);
+                    break;
+                case TextureCompressionFormat.BC4:
+                    bc4Compress(compressedTextureBuffer.ptr, buffer.data.ptr, width, height, numChannels);
+                    break;
+                case TextureCompressionFormat.BC7:
+                    bc7Compress(compressedTextureBuffer.ptr, buffer.data.ptr, width, height, &defaultBC7Params);
+                    break;
+                default:
+                    exitWithError("Unsupported texture compression format: " ~ 
+                        compressionFormat.to!string);
+                    break;
+            }
         }
         
         releaseBuffer();
@@ -444,6 +581,8 @@ class TextureAsset: Asset
         buffer.format.internalFormat = newInternalFormat;
         buffer.format.blockSize = blockSize;
         buffer.mipLevels = mipLevels;
+        
+        return true;
     }
 }
 
@@ -471,6 +610,150 @@ TextureAsset textureAsset(AssetManager assetManager, string filename)
     return asset;
 }
 
+/**
+ * Loads an image from an input stream using SDL2_Image.
+ *
+ * Params:
+ *   istrm     = Input stream containing the image data.
+ * Returns:
+ *   Pointer to SDL_Surface if loading succeeded, null otherwise.
+ */
+SDL_Surface* loadImageViaSDLImage(InputStream istrm)
+{
+    size_t dataSize = cast(size_t)istrm.size;
+    ubyte[] data = New!(ubyte[])(dataSize);
+    istrm.readBytes(data.ptr, dataSize);
+    SDL_RWops* rw = SDL_RWFromConstMem(data.ptr, cast(int)dataSize);
+    SDL_Surface* surface = IMG_Load_RW(rw, 1);
+    Delete(data);
+    return surface;
+}
+
+/**
+ * Loads an image from an input stream using SDL2_Image and fills a `TextureAsset`.
+ * Handles resizing (for SVG) and pixel format conversion, if needed.
+ * Creates `asset.image` if the image format is compatible with `dlib.image`.
+ * This function is preferred by `DefaultTextureLoader` if SDL2_Image is available.
+ *
+ * Params:
+ *   istrm     = Input stream containing the image data.
+ *   extension = File extension including the dot (e.g., ".png", ".svg").
+ *   asset     = The texture asset to fill.
+ * Returns:
+ *   true if loading succeeded, false otherwise.
+ */
+bool loadImageViaSDLImage(InputStream istrm, string extension, TextureAsset asset)
+{
+    size_t dataSize = cast(size_t)istrm.size;
+    ubyte[] data = New!(ubyte[])(dataSize);
+    istrm.readBytes(data.ptr, dataSize);
+    
+    SDL_RWops* rw = SDL_RWFromConstMem(data.ptr, cast(int)dataSize);
+    SDL_Surface* surface;
+    
+    bool canResize = true;
+    if (extension == ".svg" && asset.conversion.width > 0 && asset.conversion.height > 0)
+    {
+        surface = IMG_LoadSizedSVG_RW(rw, cast(int)asset.conversion.width, cast(int)asset.conversion.height);
+        canResize = false;
+    }
+    else
+    {
+        surface = IMG_Load_RW(rw, 1);
+    }
+    
+    bool loaded = false;
+    if (surface is null)
+    {
+        auto err = IMG_GetError();
+        if (err)
+            logError("IMG_Load_RW error: ", IMG_GetError().to!string);
+        else
+            logError("IMG_Load_RW error");
+    }
+    else
+    {
+        loaded = true;
+    }
+    
+    Delete(data);
+    
+    if (loaded)
+    {
+        TextureSize size;
+        size.width = surface.w;
+        size.height = surface.h;
+        size.depth = 0;
+        
+        TextureFormat format;
+        format.target = GL_TEXTURE_2D;
+        format.pixelType = GL_UNSIGNED_BYTE;
+        format.blockSize = 0;
+        format.cubeFaces = CubeFaceBit.None;
+        
+        version(SDLImageDebug)
+            logDebug(SDL_GetPixelFormatName(cast(SDL_PixelFormatEnum)surface.format.format).to!string);
+        
+        bool conversionNeeded = false;
+        
+        if (surface.format.format == SDL_PIXELFORMAT_RGB24)
+        {
+            format.format = GL_RGB;
+            format.internalFormat = GL_RGB8;
+        }
+        else if (surface.format.format == SDL_PIXELFORMAT_RGBA32)
+        {
+            format.format = GL_RGBA;
+            format.internalFormat = GL_RGBA8;
+        }
+        else conversionNeeded = true;
+        
+        if (asset.conversion.hint != ConversionHint.None)
+            conversionNeeded = true;
+        
+        if (conversionNeeded)
+        {
+            auto targetFormat = SDL_PIXELFORMAT_RGBA32;
+            
+            if (asset.conversion.hint == ConversionHint.RGB)
+                targetFormat = SDL_PIXELFORMAT_RGB24;
+            
+            SDL_PixelFormat* pformat = SDL_AllocFormat(targetFormat);
+            SDL_Surface* convSurface = SDL_ConvertSurface(surface, pformat, 0);
+            SDL_FreeFormat(pformat);
+            
+            if (convSurface is null)
+            {
+                logError("SDL_ConvertSurface error: ", SDL_GetError().to!string);
+                SDL_FreeSurface(surface);
+                return false;
+            }
+            
+            SDL_FreeSurface(surface);
+            surface = convSurface;
+            
+            format.format = GL_RGBA;
+            format.internalFormat = GL_RGBA8;
+        }
+        
+        size_t bufferSize = surface.w * surface.h * surface.format.BytesPerPixel;
+        
+        asset.buffer.format = format;
+        asset.buffer.size = size;
+        asset.buffer.mipLevels = 1;
+        asset.buffer.data = New!(ubyte[])(bufferSize);
+        memcpy(asset.buffer.data.ptr, surface.pixels, bufferSize);
+        
+        SDL_FreeSurface(surface);
+        
+        if (dlibImageSupportedFormats.canFind(format.internalFormat))
+            asset.image = New!TextureImage(&asset.buffer);
+    }
+    
+    return loaded;
+}
+
+///
 void downsampleBox2x2(ubyte[] src, uint srcW, uint srcH, uint channels, ubyte[] dst)
 {
     uint dstW = srcW > 1 ? srcW / 2 : 1;
@@ -508,6 +791,7 @@ void downsampleBox2x2(ubyte[] src, uint srcW, uint srcH, uint channels, ubyte[] 
     }
 }
 
+///
 size_t alignUp(size_t value, size_t alignment)
 {
     return (value + alignment - 1) & ~(alignment - 1);

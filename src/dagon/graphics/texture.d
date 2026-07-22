@@ -1415,11 +1415,11 @@ bool dxgiFormatToGLFormat(DXGIFormat fmt, out TextureFormat tf)
             break;
         case DXGIFormat.BC4_UNORM:
             tf.internalFormat = GL_COMPRESSED_RED_RGTC1;
-            tf.blockSize = 16;
+            tf.blockSize = 8;
             break;
         case DXGIFormat.BC4_SNORM:
             tf.internalFormat = GL_COMPRESSED_SIGNED_RED_RGTC1;
-            tf.blockSize = 16;
+            tf.blockSize = 8;
             break;
         case DXGIFormat.BC5_UNORM:
             tf.internalFormat = GL_COMPRESSED_RG_RGTC2;
