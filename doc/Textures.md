@@ -70,7 +70,9 @@ HDR textures are mainly used for storing linear color buffers, lightmaps, enviro
 
 ## Texture Compression
 
-Block-compressed formats reduce GPU memory usage and bandwidth. Dagon supports all compression formats available on desktop GPUs:
+Compressed textures are often used to reduce GPU memory usage. GPU compression is different from offline compression algorithms such as Huffman coding. It breaks images to fixed-size blocks and compresses each individually, encoding colors as indices of a procedurally-generated palette. This approach allows GPU to fetch and decode any part of the image independently from others, making the technique very fast and cache-friendly.
+
+Dagon supports all standard compression formats available on desktop GPUs:
 - DXT1/BC1 – color only, 4 bpp
 - DXT3/BC2 – color + low-precision alpha, 8 bpp
 - DXT5/BC3 – color + high-precision alpha, 8 bpp
@@ -81,11 +83,26 @@ Block-compressed formats reduce GPU memory usage and bandwidth. Dagon supports a
 
 Compressed textures are typically loaded from DDS or KTX files.
 
+Dagon allows to compress textures to BC1, BC3, BC4 and BC7 on the fly. To do this, specify `compressionFormat` property for newly created `TextureAsset`:
+
+```d
+TextureAsset aTexture;
+
+override void beforeLoad()
+{
+    aTexture = addTextureAsset("assets/texture.png");
+    aTexture.compress = true;
+    aTexture.compressionFormat = TextureCompressionFormat.BC3;
+}
+```
+
+If `compress` is set to `true`, but `compressionFormat` is not specified, the loader will compress to BC1 or BC3 depending on the input format: RGB8 textures will be compressed to BC1, RGBA8 textures will be compressed to BC3.
+
 ## Container Formats: DDS vs KTX
 
-DDS and KTX are both industry-standard texture container formats. There is not much difference between the two from performance standpoint: in both cases, textures are typically stored in GPU-ready formats and can be uploaded with minimal processing. Both formats support 2D and 3D textures, skyboxes, and prebaked mipmaps.
+DDS and KTX are both industry-standard texture container formats. There is not much difference between the two from performance standpoint: in both cases, textures are typically stored GPU-ready and can be uploaded with minimal processing. Both formats support 2D and 3D textures, skyboxes, and prebaked mipmaps.
 
-DDS (DirectDraw Surface) is a legacy container originating from Direct3D. It supports all Direct3D texture formats and is well-suited for classic DXTn/BCn compression. It is widely supported by texture compression and preprocessing tools.
+DDS (DirectDraw Surface) is a legacy container originating from Direct3D. It supports all Direct3D/DXGI texture formats and is well-suited for classic DXTn/BCn compression. It is widely supported by texture compression and preprocessing tools.
 
 KTX (Khronos Texture) is a more modern container designed by the Khronos Group. It supports all Vulkan-compatible formats and maps cleanly to OpenGL as well. It fully supports BC1-BC7 and, additionally, next-gen compression schemes (Basis Universal and supercompression), reducing texture size on disk while still enabling efficient GPU upload. Basis Universal textures are transcoded at load time into a GPU-native compressed format (e.g., BCn, ASTC, ETC), which adds a small CPU cost but improves portability. KTX support in tools is still rather scarse, though you'll most likely need only the reference converter, *ktx*.
 
