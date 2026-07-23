@@ -113,8 +113,6 @@ class Mesh: Owner, Drawable, TriangleSet
 
     /// True if OpenGL buffers are prepared and mesh can be rendered.
     bool canRender = false;
-    
-    // TODO: make these DynamicArrays:
 
     /// Array of vertex positions.
     Vector3f[] vertices;
