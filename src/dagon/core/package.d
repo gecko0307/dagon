@@ -86,9 +86,6 @@ public
     /// Logging facilities.
     import dagon.core.logger;
 
-    /// A list with string-mapped indices.
-    import dagon.core.mappedlist;
-
     /// Lock-free inter-thread communication.
     import dagon.core.messaging;
 
