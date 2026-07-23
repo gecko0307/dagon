@@ -104,7 +104,7 @@ dub build
 
 Do not delete `data/__internal` folder! It is used to store engine's internal data such as shaders and textures.
 
-It is strongly recommended to use [LDC](https://github.com/ldc-developers/ldc) and compile in release mode to achieve maximum CPU performance:
+We strongly recommend using [LDC](https://github.com/ldc-developers/ldc) and compiling in release mode to achieve maximum CPU performance:
 
 ```
 dub build --compiler=ldc2 --build=release-nobounds
