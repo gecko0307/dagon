@@ -1,5 +1,5 @@
-Dagon 1.4.0 - TBD
------------------
+Dagon 1.4.0 - 23 Jul, 2026
+--------------------------
 - **Core**
   - Fix a bug with `Application.fullscreen` property not set according to the config
 - **Graphics components**
