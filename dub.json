@@ -67,6 +67,7 @@
         "extensions/iqm",
         "extensions/jolt",
         "extensions/ktx",
+        "extensions/network",
         "extensions/newton",
         "extensions/nuklear",
         "extensions/openvr",

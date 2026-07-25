@@ -1,0 +1,14 @@
+{
+    "name": "network",
+    "importPaths": [
+        "src"
+    ],
+    "sourcePaths": [
+        "src"
+    ],
+    "libs-windows-x86_64": [
+        "winmm",
+        "ws2_32",
+        "lib/windows-x86_64/enet"
+    ]
+}
