@@ -2,6 +2,8 @@ Dagon 1.5.0 - TBD
 -----------------
 - **Graphics components**
   - Cubemap processing functionality moved to a separate module, `dagon.graphics.cubemap`.
+- **Extensions**
+  - New extension `dagon:network` based on ENet library.
 
 Dagon 1.4.0 - 23 Jul, 2026
 --------------------------
