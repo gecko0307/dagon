@@ -104,27 +104,91 @@ class NetworkClient: Service
     
     ~this()
     {
+        if (thread.isRunning)
+            stop();
         if (enetClient)
             enet_host_destroy(enetClient);
         host.free();
     }
+    
+    override void onUpdate()
+    {
+        if (!networkManager.enetAvailable || enetClient is null)
+            return;
 
+        ENetEvent event;
+        while (enet_host_service(enetClient, &event, 0) > 0)
+        {
+            switch (event.type)
+            {
+                case ENET_EVENT_TYPE_CONNECT:
+                    connected = true;
+                    logInfo("[ENet] Connected to server successfully!");
+                    break;
+
+                case ENET_EVENT_TYPE_RECEIVE:
+                    // TODO: don't use GC
+                    string msg = (cast(char*)event.packet.data)[0..event.packet.dataLength].idup;
+                    send("", msg, null, MessageDomain.MainThread);
+                    enet_packet_destroy(event.packet);
+                    break;
+                
+                case ENET_EVENT_TYPE_DISCONNECT:
+                    logInfo("[ENet] Disconnected from server");
+                    connected = false;
+                    enetServer = null;
+                    break;
+
+                default:
+                    break;
+            }
+        }
+    }
+    
     override void onMessage(int domain, string sender, string message, void* payload)
     {
-        if (!networkManager.enetAvailable)
+        if (!networkManager.enetAvailable || enetClient is null || !running)
             return;
-        
-        if (enetServer is null || !connected)
+
+        if (enetServer is null && !connected)
         {
+            logInfo("[ENet] Connecting to server...");
             enetServer = enet_host_connect(enetClient, &enetAddress, 2, 0);
-            ENetEvent event;
-            if (enet_host_service(enetClient, &event, 5000) > 0 && event.type == ENET_EVENT_TYPE_CONNECT)
+            
+            if (enetServer !is null)
             {
-                connected = true;
+                ENetEvent event;
+                int maxAttempts = 50; 
+                while (maxAttempts > 0 && !connected)
+                {
+                    if (enet_host_service(enetClient, &event, 100) > 0)
+                    {
+                        if (event.type == ENET_EVENT_TYPE_CONNECT)
+                        {
+                            connected = true;
+                            logInfo("[ENet] Connected!");
+                            break;
+                        }
+                        else if (event.type == ENET_EVENT_TYPE_DISCONNECT)
+                        {
+                            logError("[ENet] Connection rejected by server");
+                            enetServer = null;
+                            break;
+                        }
+                    }
+                    maxAttempts--;
+                }
+            }
+            
+            if (!connected)
+            {
+                logError("[ENet] Connection timed out");
+                enetServer = null;
+                return;
             }
         }
 
-        if (connected)
+        if (connected && enetServer)
         {
             ENetPacket* packet = enet_packet_create(message.ptr, message.length, ENET_PACKET_FLAG_RELIABLE);
             enet_peer_send(enetServer, 0, packet);
