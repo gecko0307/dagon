@@ -6,9 +6,15 @@
     "sourcePaths": [
         "src"
     ],
+    "dependencies": {
+        "dagon": "*"
+    },
+    "lflags-windows-x86_64": [
+        "/LIBPATH:$PACKAGE_DIR/lib/windows-x86_64"
+    ],
     "libs-windows-x86_64": [
         "winmm",
         "ws2_32",
-        "lib/windows-x86_64/enet"
+        "enet"
     ]
 }
