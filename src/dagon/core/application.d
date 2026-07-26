@@ -1716,27 +1716,39 @@ class Application: EventListener, Updateable
         return img;
     }
     
+    protected char[64] tmpStringBuffer;
+    
     /**
-     * Takes a screenshot and saves it to the specified path (auto-incrementing filename).
+     * Takes a screenshot and saves it to the specified path (under auto-incrementing filename).
      *
      * Params:
-     *   path = Base path for the screenshot file.
+     *   basePath = Base path for the screenshot file.
      */
-    void takeScreenshot(string path)
+    void takeScreenshot(string basePath)
     {
+        if (basePath.length == 0)
+            return;
+        
         // TODO: use vfs to save the file
         auto img = takeScreenshot();
         
         bool saved = false;
         while (!saved)
         {
-            string filePath = path ~ screenNum.to!string ~ ".png";
+            String filePath = String(basePath);
+            if (basePath[$-1] != dirSeparator[0])
+                filePath ~= dirSeparator;
+            size_t len = min2(tmpStringBuffer.length,
+                snprintf(tmpStringBuffer.ptr, tmpStringBuffer.length, "%d.png", screenNum));
+            filePath ~= cast(string)tmpStringBuffer[0..len];
             if (!fileExists(filePath))
             {
                 img.savePNG(filePath);
                 saved = true;
             }
             else screenNum++;
+            
+            filePath.free();
         }
         
         Delete(img);
