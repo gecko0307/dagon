@@ -64,8 +64,6 @@ Features
 * Entity-component model
 * Fast arena allocator
 * Compute shaders
-* Microservices and worker threads for running tasks in background, so that they don't block the main game loop
-* Asynchronous thread-safe messaging. Use the message broker built into the event system to communicate between threads and the main loop
 * Built-in camera logics for easy navigation: freeview and first person views
 * Collision detection using MPR algorithm, raycasting, simple kinematic collision response system
 * Chunk-based culling for managing large game worlds. Optional "floating origin" system to maintain high coordinate precision
@@ -76,7 +74,10 @@ Features
 * Internationalization support
 * GUI extension based on [Dear ImGui](https://github.com/ocornut/imgui)
 * Native file open/save dialogs (for Windows, GTK, and Qt)
-* 2D/3D sound. Various audio formats support including WAV, MP3, OGG/Vorbis, FLAC. Stereo, 5.1, 7.1 support.
+* 2D/3D sound. Various audio formats support including WAV, MP3, OGG/Vorbis, FLAC. Stereo, 5.1, 7.1 support
+* Microservices and worker threads for running tasks in background, so that they don't block the main game loop
+* Asynchronous thread-safe messaging. Use the message broker built into the event system to communicate between threads and the main loop
+* UDP networking based on [ENet](http://enet.bespin.org/). Asynchronous UDP client that works via the message broker.
 
 Features that are not production-ready yet:
 * Built-in UI toolkit (very basic, can be used only for simple debugging purposes)
