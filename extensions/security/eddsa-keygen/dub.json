@@ -1,6 +1,6 @@
 {
-    "name": "stp-keygen",
-    "description": "Key pair generator for STP",
+    "name": "eddsa-keygen",
+    "description": "EdDSA key pair generator",
     "license": "BSL-1.0",
     "authors": [
         "Timur Gafarov"
