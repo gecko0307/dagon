@@ -1,0 +1,13 @@
+{
+    "name": "stp-keygen",
+    "description": "Key pair generator for STP",
+    "license": "BSL-1.0",
+    "authors": [
+        "Timur Gafarov"
+    ],
+    "copyright": "Copyright © 2026, Timur Gafarov",
+    
+    "dependencies": {
+        "security": { "path": ".." }
+    }
+}
