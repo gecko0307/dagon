@@ -197,6 +197,7 @@ class NetworkClient: Service
         ENetEvent event;
         while (enet_host_service(enetClient, &event, 0) > 0)
         {
+            // TODO: manual connection time out
             switch (event.type)
             {
                 case ENET_EVENT_TYPE_CONNECT:
