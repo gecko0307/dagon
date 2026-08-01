@@ -77,7 +77,7 @@ Features
 * 2D/3D sound. Various audio formats support including WAV, MP3, OGG/Vorbis, FLAC. Stereo, 5.1, 7.1 support
 * Microservices and worker threads for running tasks in background, so that they don't block the main game loop
 * Asynchronous thread-safe messaging. Use the message broker built into the event system to communicate between threads and the main loop
-* UDP networking based on [ENet](http://enet.bespin.org/). Asynchronous UDP client that works via the message broker. Optional secure transport layer with elliptic cure encryption and X25519 key exchange.
+* UDP networking based on [ENet](http://enet.bespin.org/). Asynchronous UDP client that works via the message broker. Optional secure transport layer with elliptic curve encryption and X25519 key exchange.
 
 Features that are not production-ready yet:
 * Built-in UI toolkit (very basic, can be used only for simple debugging purposes)
