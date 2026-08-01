@@ -160,6 +160,14 @@ enum EventType
  */
 alias TaskCallback = void delegate(Object executor, void* payload);
 
+///
+enum MessageAllocation
+{
+    Static = 0,
+    Heap = 1,
+    Arena = 2
+}
+
 /**
  * Represents a single event in the Dagon event system.
  * Contains event type and relevant data for the event.
@@ -189,6 +197,7 @@ struct Event
     LogLevel logLevel;
     int domain;
     int timerID;
+    MessageAllocation messageAllocation;
     string filename;
     string message;
     string sender;
@@ -213,7 +222,7 @@ enum MessageDomain
 /**
  * Constructs a message event.
  */
-Event messageEvent(string sender, string recipient, string message, void* payload, int domain = MessageDomain.ITC)
+Event messageEvent(string sender, string recipient, string message, void* payload, int domain = MessageDomain.ITC, MessageAllocation allocation = MessageAllocation.Static)
 {
     Event e;
     e.type = EventType.Message;
@@ -222,6 +231,7 @@ Event messageEvent(string sender, string recipient, string message, void* payloa
     e.message = message;
     e.payload = payload;
     e.domain = domain;
+    e.messageAllocation = allocation;
     return e;
 }
 
@@ -1554,9 +1564,14 @@ abstract class EventListener: EventDispatcher
      *   payload = Optional pointer to be passed with the event.
      *   domain = Message domain/communication layer (ITC or main-thread).
      */
-    protected void queueMessage(string recipient, string message, void* payload = null, int domain = MessageDomain.ITC)
+    protected void queueMessage(
+        string recipient,
+        string message,
+        void* payload = null,
+        int domain = MessageDomain.ITC,
+        MessageAllocation allocation = MessageAllocation.Static)
     {
-        Event task = messageEvent(address, recipient, message, payload, domain);
+        Event task = messageEvent(address, recipient, message, payload, domain, allocation);
         eventManager.queueEvent(task);
     }
     

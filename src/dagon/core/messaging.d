@@ -89,9 +89,14 @@ abstract class Endpoint: EventDispatcher
     }
 
     /// Queues an outgoing message.
-    bool queueMessage(string recipient, string message, void* payload = null, int domain = MessageDomain.ITC)
+    bool queueMessage(
+        string recipient,
+        string message,
+        void* payload = null,
+        int domain = MessageDomain.ITC,
+        MessageAllocation allocation = MessageAllocation.Static)
     {
-        return outbox.push(messageEvent(address, recipient, message, payload, domain));
+        return outbox.push(messageEvent(address, recipient, message, payload, domain, allocation));
     }
     
     alias send = queueMessage;
@@ -346,6 +351,15 @@ class MessageBroker: Owner
             }
             else if (event.type == EventType.Message)
             {
+                // Copy dynamically-allocated message to the frame arena
+                if (event.messageAllocation == MessageAllocation.Heap)
+                {
+                    string message = event.message;
+                    event.message = eventManager.tmpHeap.store(message);
+                    event.messageAllocation = MessageAllocation.Arena;
+                    Delete(message.ptr);
+                }
+                
                 if (event.domain < MessageDomain.MainThread)
                 {
                     // ITC or circular message, route to an endpoint

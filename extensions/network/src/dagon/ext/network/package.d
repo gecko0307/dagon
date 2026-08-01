@@ -224,14 +224,20 @@ class NetworkClient: Service
                         }
                         else
                         {
-                            // TODO: decrypt message from server
+                            auto data = event.packet.data[0..event.packet.dataLength];
+                            string msg;
+                            if (session.decodeServerMessage(data, msg))
+                            {
+                                send("", msg, null, MessageDomain.MainThread, MessageAllocation.Heap);
+                            }
                         }
                     }
                     else
                     {
-                        // TODO: don't use GC
-                        string msg = (cast(char*)event.packet.data)[0..event.packet.dataLength].idup;
-                        send("", msg, null, MessageDomain.MainThread);
+                        char[] data = (cast(char*)event.packet.data)[0..event.packet.dataLength];
+                        char[] msg = New!(char[])(data.length);
+                        msg[] = data[];
+                        send("", cast(string)msg, null, MessageDomain.MainThread, MessageAllocation.Heap);
                     }
                     enet_packet_destroy(event.packet);
                     break;
