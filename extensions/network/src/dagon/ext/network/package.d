@@ -68,6 +68,7 @@ class NetworkManager: Owner
     }
 }
 
+// TODO: support encryption
 class NetworkClient: Service
 {
     ///

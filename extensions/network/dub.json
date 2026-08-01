@@ -1,30 +1,16 @@
 {
     "name": "network",
     
-    "importPaths": [
-        "src"
-    ],
+    "dependencies": {
+        "d-enet": "~>0.1.0",
+        "dagon": "*",
+        "minicrypto": "~>0.4.0"
+    },
+
     "sourcePaths": [
         "src"
     ],
-    
-    "dependencies": {
-        "dagon": "*"
-    },
-    
-    "lflags-windows-x86_64": [
-        "/LIBPATH:$PACKAGE_DIR/lib/windows-x86_64"
-    ],
-    "libs-windows-x86_64": [
-        "winmm",
-        "ws2_32",
-        "enet"
-    ],
-    
-    "lflags-linux-x86_64": [
-        "-L$PACKAGE_DIR/lib/linux-x86_64"
-    ],
-    "libs-linux-x86_64": [
-        "enet"
+    "importPaths": [
+        "src"
     ]
 }
