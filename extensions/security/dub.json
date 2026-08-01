@@ -1,10 +1,9 @@
 {
-    "name": "network",
+    "name": "security",
     
     "dependencies": {
-        "d-enet": "~>0.1.0",
-        "dagon": "*",
-        "dagon:security": "*"
+        "dlib": "~>1.5.1",
+        "minicrypto": "~>0.4.0"
     },
 
     "sourcePaths": [

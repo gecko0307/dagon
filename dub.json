@@ -72,6 +72,7 @@
         "extensions/nuklear",
         "extensions/openvr",
         "extensions/physfs",
+        "extensions/security",
         "extensions/video",
         "init-exec"
     ],
