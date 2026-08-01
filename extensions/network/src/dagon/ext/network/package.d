@@ -38,6 +38,7 @@ import dagon.core.event;
 import dagon.core.logger;
 import dagon.core.messaging;
 
+import dagon.ext.security;
 import enet;
 
 class NetworkManager: Owner
@@ -68,7 +69,6 @@ class NetworkManager: Owner
     }
 }
 
-// TODO: support encryption
 class NetworkClient: Service
 {
     ///
@@ -81,13 +81,22 @@ class NetworkClient: Service
     uint port;
     
     ///
+    bool active = true;
+    
+    ///
     bool connected = false;
     
+    ///
+    bool encryptionEnabled = true;
+    
     protected ENetAddress enetAddress;
-    protected ENetHost* enetClient;
-    protected ENetPeer* enetServer;
+    protected ENetHost* enetClient = null;
+    protected ENetPeer* enetServer = null;
+    
+    protected STPClient stpClient;
+    protected STPSession session;
 
-    this(string address, NetworkManager networkManager, string host, uint port, Owner owner)
+    this(string address, NetworkManager networkManager, string host, uint port, string serverPublicKeyPath, Owner owner)
     {
         auto broker = networkManager.application.eventManager.messageBroker;
         this.networkManager = networkManager;
@@ -95,26 +104,94 @@ class NetworkClient: Service
         this.host = String(host);
         this.port = port;
         
-        if (networkManager.enetAvailable)
+        if (serverPublicKeyPath.length)
+        {
+            encryptionEnabled = true;
+            if (!stpClient.loadServerPublicKey(serverPublicKeyPath))
+            {
+                logError("Key file \"", serverPublicKeyPath, "\" not found, network client is not activated");
+                active = false;
+            }
+        }
+        else
+            encryptionEnabled = false;
+        
+        if (active && networkManager.enetAvailable)
         {
             enetClient = enet_host_create(null, 1, 2, 0, 0);
             enet_address_set_host(&enetAddress, host.ptr);
             enetAddress.port = cast(ushort)port;
+            
+            logInfo("[ENet] Connecting...");
+            enetServer = enet_host_connect(enetClient, &enetAddress, 2, 0);
         }
     }
     
     ~this()
     {
+        session.wipe();
         if (thread.isRunning)
             stop();
+        if (enetServer)
+            enet_peer_disconnect_now(enetServer, 0);
         if (enetClient)
             enet_host_destroy(enetClient);
         host.free();
     }
     
+    void sendHandshakeRequest(ENetPeer* peer)
+    {
+        STPHandshakeRequest handshakeRequest;
+        stpClientHandshake(&session, &handshakeRequest);
+        ENetPacket* packet = enet_packet_create(&handshakeRequest, STPHandshakeRequest.sizeof, ENET_PACKET_FLAG_RELIABLE);
+        enet_peer_send(peer, 0, packet);
+        enet_host_flush(enetClient);
+    }
+    
+    bool processHandshakeResponce(ENetEvent* event)
+    {
+        STPHandshakeResponse response;
+        if (event.packet.dataLength == STPHandshakeResponse.sizeof)
+        {
+            response = *(cast(STPHandshakeResponse*)event.packet.data);
+            logInfo("[STP] Handshake status: ", response.status);
+            
+            if (response.status == STPHandshakeStatus.Accepted)
+            {
+                session.peerPublicKey = response.serverEphemeralPublicKey;
+                session.peerRandom = response.serverRandom;
+                
+                if (stpClientCheckServerSignature(&stpClient, &session, &response))
+                {
+                    logInfo("[STP] Server signature check succeed");
+                    session.computeSharedSecret();
+                    clientDeriveKeys(&session);
+                    session.established = true;
+                    logInfo("[STP] Secure session established");
+                    return true;
+                }
+                else
+                {
+                    logError("[STP] Server signature check failed, disconnecting");
+                    return false;
+                }
+            }
+            else
+            {
+                logError("[STP] Handshake failed, server refused to accept");
+                return false;
+            }
+        }
+        else
+        {
+            logError("[STP] Handshake failed, invalid responce from server");
+            return false;
+        }
+    }
+    
     override void onUpdate()
     {
-        if (!networkManager.enetAvailable || enetClient is null)
+        if (!active || !networkManager.enetAvailable)
             return;
 
         ENetEvent event;
@@ -124,13 +201,37 @@ class NetworkClient: Service
             {
                 case ENET_EVENT_TYPE_CONNECT:
                     connected = true;
-                    logInfo("[ENet] Connected to server successfully!");
+                    logInfo("[ENet] Connected to ", host);
+                    if (encryptionEnabled)
+                    {
+                        event.peer.data = &session;
+                        logInfo("[STP] Sending handshake request...");
+                        sendHandshakeRequest(event.peer);
+                    }
                     break;
 
                 case ENET_EVENT_TYPE_RECEIVE:
-                    // TODO: don't use GC
-                    string msg = (cast(char*)event.packet.data)[0..event.packet.dataLength].idup;
-                    send("", msg, null, MessageDomain.MainThread);
+                    if (encryptionEnabled)
+                    {
+                        if (!session.established)
+                        {
+                            if (!processHandshakeResponce(&event))
+                            {
+                                enet_peer_disconnect_now(event.peer, 0);
+                                active = false;
+                            }
+                        }
+                        else
+                        {
+                            // TODO: decrypt message from server
+                        }
+                    }
+                    else
+                    {
+                        // TODO: don't use GC
+                        string msg = (cast(char*)event.packet.data)[0..event.packet.dataLength].idup;
+                        send("", msg, null, MessageDomain.MainThread);
+                    }
                     enet_packet_destroy(event.packet);
                     break;
                 
@@ -138,6 +239,8 @@ class NetworkClient: Service
                     logInfo("[ENet] Disconnected from server");
                     connected = false;
                     enetServer = null;
+                    event.peer.data = null;
+                    session.wipe();
                     break;
 
                 default:
@@ -148,48 +251,22 @@ class NetworkClient: Service
     
     override void onMessage(int domain, string sender, string message, void* payload)
     {
-        if (!networkManager.enetAvailable || enetClient is null || !running)
+        if (!networkManager.enetAvailable || !active || !running || !connected ||
+            enetClient is null || enetServer is null)
             return;
 
-        if (enetServer is null && !connected)
+        if (encryptionEnabled)
         {
-            logInfo("[ENet] Connecting to server...");
-            enetServer = enet_host_connect(enetClient, &enetAddress, 2, 0);
-            
-            if (enetServer !is null)
+            if (session.established)
             {
-                ENetEvent event;
-                int maxAttempts = 50; 
-                while (maxAttempts > 0 && !connected)
-                {
-                    if (enet_host_service(enetClient, &event, 100) > 0)
-                    {
-                        if (event.type == ENET_EVENT_TYPE_CONNECT)
-                        {
-                            connected = true;
-                            logInfo("[ENet] Connected!");
-                            break;
-                        }
-                        else if (event.type == ENET_EVENT_TYPE_DISCONNECT)
-                        {
-                            logError("[ENet] Connection rejected by server");
-                            enetServer = null;
-                            break;
-                        }
-                    }
-                    maxAttempts--;
-                }
-            }
-            
-            if (!connected)
-            {
-                logError("[ENet] Connection timed out");
-                enetServer = null;
-                return;
+                ubyte[] stpPacket = session.encodeClientMessage(message);
+                ENetPacket* packet = enet_packet_create(stpPacket.ptr, stpPacket.length, ENET_PACKET_FLAG_RELIABLE);
+                enet_peer_send(enetServer, 0, packet);
+                enet_host_flush(enetClient);
+                Delete(stpPacket);
             }
         }
-
-        if (connected && enetServer)
+        else
         {
             ENetPacket* packet = enet_packet_create(message.ptr, message.length, ENET_PACKET_FLAG_RELIABLE);
             enet_peer_send(enetServer, 0, packet);
