@@ -54,3 +54,4 @@ Dagon and its extensions depend on the following libraries:
 * [cimgui](https://github.com/cimgui/cimgui)
 * [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear)
 * [ENet](http://enet.bespin.org/)
+* [Minicrypto](https://github.com/gecko0307/minicrypto)
