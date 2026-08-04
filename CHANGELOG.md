@@ -1,5 +1,5 @@
-Dagon 1.5.0 - TBD
------------------
+Dagon 1.5.0 - 4 Aug, 2026
+-------------------------
 - **Core**
   - `Application.takeScreenshot` is now GC-free
 - **Graphics components**
