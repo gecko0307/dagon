@@ -36,21 +36,19 @@ Dagon is written with extendability in mind, so you can easily add your own draw
 ## Further reading
 
 ### Beginner topics:
-- [FAQ](https://github.com/gecko0307/dagon/blob/master/doc/FAQ.md)
-- [Tutorials](https://github.com/gecko0307/dagon/blob/master/doc/tutorials)
 - [Installing Runtime Dependencies](https://github.com/gecko0307/dagon/blob/master/doc/Runtime%20Dependencies.md)
-- [Application Architecture](https://github.com/gecko0307/dagon/blob/master/doc/Architecture.md)
-- [Scene and Asset Management](https://github.com/gecko0307/dagon/blob/master/doc/Scene%20and%20Asset%20Management.md)
+- [Basics](https://github.com/gecko0307/dagon/blob/master/doc/Basics.md)
 - [Entity](https://github.com/gecko0307/dagon/blob/master/doc/Entity.md)
 - [Camera](https://github.com/gecko0307/dagon/blob/master/doc/Camera.md)
 - [Materials](https://github.com/gecko0307/dagon/blob/master/doc/Materials.md)
 - [Textures](https://github.com/gecko0307/dagon/blob/master/doc/Textures.md)
 - [Event System](https://github.com/gecko0307/dagon/blob/master/doc/Event%20System.md)
+- [FAQ](https://github.com/gecko0307/dagon/blob/master/doc/FAQ.md)
+- [Tutorials](https://github.com/gecko0307/dagon/blob/master/doc/tutorials)
 
 ### Intermediate topics:
 - [Virtual File System](https://github.com/gecko0307/dagon/blob/master/doc/Virtual%20File%20System.md)
 - [Conf Files](https://github.com/gecko0307/dagon/blob/master/doc/Conf%20Files.md)
-- [Collision Detection](https://github.com/gecko0307/dagon/blob/master/doc/Collision%20Detection.md)
 - [Render Pipeline Overview](https://github.com/gecko0307/dagon/blob/master/doc/Render%20Pipeline%20Overview.md)
 - [Shaders](https://github.com/gecko0307/dagon/blob/master/doc/Shaders.md)
 - [Image-Based Lighting](https://github.com/gecko0307/dagon/blob/master/doc/Image-Based%20Lighting.md)
@@ -58,12 +56,13 @@ Dagon is written with extendability in mind, so you can easily add your own draw
 - [Post-processing](https://github.com/gecko0307/dagon/blob/master/doc/Post-processing.md)
 - [2D Graphics](https://github.com/gecko0307/dagon/blob/master/doc/2D%20Graphics.md)
 - [Localization](https://github.com/gecko0307/dagon/blob/master/doc/Localization.md)
+- [Collision Detection](https://github.com/gecko0307/dagon/blob/master/doc/Collision%20Detection.md)
 
 ### Advanced topics:
 - [Extensions](https://github.com/gecko0307/dagon/blob/master/doc/Extensions.md)
 - [Jolt Physics](https://github.com/gecko0307/dagon/blob/master/doc/Jolt%20Physics.md)
 - [Video Playback](https://github.com/gecko0307/dagon/blob/master/doc/Video.md)
 - [World Streaming](https://github.com/gecko0307/dagon/blob/master/doc/World%20Streaming.md)
-- [Multithreading and Messaging System](https://github.com/gecko0307/dagon/blob/master/doc/Messaging%20System.md)
+- [Asynchronous Programming and The Messaging System](https://github.com/gecko0307/dagon/blob/master/doc/Messaging%20System.md)
 - [Compute Shaders](https://github.com/gecko0307/dagon/blob/master/doc/Compute%20Shaders.md)
 - [Development Guide](https://github.com/gecko0307/dagon/blob/master/doc/Development%20Guide.md)

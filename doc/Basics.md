@@ -1,8 +1,8 @@
-# Dagon Application Architecture
+# Dagon Basics
 
-## Game
+## Game and Scene
 
-Dagon is object oriented: all entities in it are classes. At the root of an application hierarchy there is an `Application` object. Usually you'll want to use its more feature-rich derived class, `Game`. Typical use case is to make a custom game class that derives from `Game` and encapsulates your components:
+At the root of an application hierarchy there is an `Application` object. Usually you'll want to use its more feature-rich derived class, `Game`. Typical use case is to make a custom game class that derives from `Game` and encapsulates your components:
 
 ```d
 import dagon;
@@ -33,9 +33,7 @@ Window parameters that are passed to the game class are default ones which can b
 
 Note that Dagon doesn't use D's built-in memory allocator (`new` operator), instead it allocates all its data with `New` and `Delete` functions from `dlib.core.memory`. You are also expected to do so. You still can use garbage collected data in Dagon, but this may result in weird bugs, so you are strongly recommended to do things our way. Most part of the engine is built around dlib's ownership model—every object belongs to some other object (owner), and deleting the owner will delete all of its owned objects. This allows semi-automatic memory management—you have to manually delete only root owner, which usually is a game object.
 
-## Scene
-
-Dagon's core logic is based on a concept of a scene. A scene is an incapsulator for assets and game objects (which are called entities) and any custom data logically tied to them. Scene loads assets, allocates entities, configurates them and initiates game loop. Only one scene (`currentScene`) is active at any given time.
+Most user-defined logic happen in `Scene` objects. Each `Scene` stores its own collection of assets (game resources such as models and textures) and game objects (which are called entities). Scene loads assets, allocates entities, configurates them and initiates game loop. Only one scene (`Game.currentScene`) is active at any given time.
 
 Similarly to a `Game`, you have to define your own scenes that derive from standard `Scene` class:
 
@@ -51,6 +49,47 @@ class MyScene: Scene
     }
 
     // Override Scene methods...
+}
+```
+
+The way in which scenes are created largely depend on the architecture of the game. For a simple start, you can create a bunch of scenes in your `Game` object's constructor:
+
+```d
+class MyGame: Game
+{
+    MyScene1 scene1;
+    MyScene2 scene2;
+    
+    this(uint w, uint h, bool fullscreen, string title, string[] args)
+    {
+        super(w, h, fullscreen, title, args);
+        
+        scene1 = New!MyScene1(this);
+        scene2 = New!MyScene2(this);
+        setCurrentScene(scene1);
+    }
+}
+```
+
+In a more complex scenario, scene creation is deferred to the moment when it is needed, and when the user quits the scene, it is deleted.  This way, your game doesn't need to preload all of its resources in advance and can be as big as you want. You should not directly delete the scene while it is running using `Delete` function because there will be no synchronization in that case—use `Game.setCurrentScene` instead. If the optional `releaseCurrent` argument is set to `true`, the current scene will be safely deleted at the next loop iteration:
+
+```d
+class MyScene1: Scene
+{
+    MyGame game;
+    
+    this(MyGame game)
+    {
+        this.game = game;
+    }
+    
+    override void onKeyDown(int key)
+    {
+        if (key == KEY_ESCAPE)
+        {
+            game.setCurrentScene(New!MyScene2(game), true);
+        }
+    }
 }
 ```
 
@@ -74,4 +113,26 @@ override void onMouseButtonDown(int button) { }
 override void onMouseButtonUp(int button) { }
 
 // Override any other event handler from `EventListener`...
+```
+
+# Assets
+
+Assets (`Asset` objects) are loaded via `Scene.assetManager`. `Asset` base class works as an abstract proxy for any type of resource. Format-specific asset types are implemented as derived classes: `TextureAsset`, `OBJAsset`, `GLTFAsset`, etc. Each type of asset stores decoded data, such as `Texture` object for a `TextureAsset`. Once loaded, you can use the asset to access its data at the scene construction phase:
+
+```d
+class MyScene: Scene
+{
+    TextureAsset aTexture;
+    
+    override void beforeLoad()
+    {
+        aTexture = addTextureAsset("assets/texture.png");
+    }
+    
+    override void afterLoad()
+    {
+        // aTexture.texture object can now be referenced:
+        someMaterial.baseColorTexture = aTexture.texture;
+    }
+}
 ```
