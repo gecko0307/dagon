@@ -1,0 +1,15 @@
+{
+    "name": "server",
+    
+    "dependencies": {
+        "d-enet": "~>0.1.0",
+        "dagon:security": "*"
+    },
+
+    "sourcePaths": [
+        "src"
+    ],
+    "importPaths": [
+        "src"
+    ]
+}
