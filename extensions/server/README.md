@@ -1,6 +1,8 @@
 # dagon:server
 
-A simple secure UDP server on top of [ENet](http://enet.bespin.org/). Currently this extension provides only the basic transport layer. An actual game protocol should be implemented on user side, as well as a database driver and any related functionality.
+A simple secure UDP server on top of [ENet](http://enet.bespin.org/). Uses the same mechanism as `dagon:network`.
+
+Currently this extension provides only the basic transport layer. An actual game protocol should be implemented on user side, as well as a database driver and any related functionality.
 
 ## Usage
 
