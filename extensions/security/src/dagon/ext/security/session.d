@@ -118,7 +118,6 @@ struct STPSession
     
     ubyte[] encodeMessage(string plaintext, ref ubyte[32] key)
     {
-        //ubyte[] message = new ubyte[HeaderSize + MACSize + plaintext.length];
         ubyte[] message = New!(ubyte[])(HeaderSize + MACSize + plaintext.length);
 
         // Copy the header to the message

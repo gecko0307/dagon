@@ -20,11 +20,14 @@ struct Client
 class NetworkServer: Owner
 {
     ushort port = 1234;
+    uint numClients = 32;
+    uint channels = 2;
+    
     ENetAddress enetAddress;
     ENetHost* enetServer;
     STPServer stpServer;
     
-    this(ushort port, Owner owner = null)
+    this(Owner owner = null)
     {
         super(owner);
         
@@ -35,7 +38,7 @@ class NetworkServer: Owner
             exit(1);
         
         enetAddress = ENetAddress(ENET_HOST_ANY, port);
-        enetServer = enet_host_create(&enetAddress, 32, 2, 0, 0); // 32 clients, 2 channels
+        enetServer = enet_host_create(&enetAddress, numClients, channels, 0, 0);
         if (enetServer is null)
             exit(1);
         
