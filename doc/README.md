@@ -64,5 +64,6 @@ Dagon is written with extendability in mind, so you can easily add your own draw
 - [Video Playback](https://github.com/gecko0307/dagon/blob/master/doc/Video.md)
 - [World Streaming](https://github.com/gecko0307/dagon/blob/master/doc/World%20Streaming.md)
 - [Asynchronous Programming and The Messaging System](https://github.com/gecko0307/dagon/blob/master/doc/Messaging%20System.md)
+- [Networking](https://github.com/gecko0307/dagon/blob/master/doc/Networking.md)
 - [Compute Shaders](https://github.com/gecko0307/dagon/blob/master/doc/Compute%20Shaders.md)
 - [Development Guide](https://github.com/gecko0307/dagon/blob/master/doc/Development%20Guide.md)
