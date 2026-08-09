@@ -1736,8 +1736,6 @@ class Application: EventListener, Updateable
         while (!saved)
         {
             String filePath = String(basePath);
-            if (basePath[$-1] != dirSeparator[0])
-                filePath ~= dirSeparator;
             size_t len = min2(tmpStringBuffer.length,
                 snprintf(tmpStringBuffer.ptr, tmpStringBuffer.length, "%d.png", screenNum));
             filePath ~= cast(string)tmpStringBuffer[0..len];
