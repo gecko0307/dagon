@@ -1,5 +1,7 @@
 Dagon 1.6.0 - TBD
 -----------------
+- **Core**
+  - Fix `Application.takeScreenshot`
 - **Extensions**
   - New extension `dagon:server`, a UDP/ENet-based game server framework.
 
