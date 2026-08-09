@@ -1,3 +1,8 @@
+Dagon 1.6.0 - TBD
+-----------------
+- **Extensions**
+  - New extension `dagon:server`, a UDP/ENet-based game server framework.
+
 Dagon 1.5.0 - 4 Aug, 2026
 -------------------------
 - **Core**
