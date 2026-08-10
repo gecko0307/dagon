@@ -19,3 +19,6 @@ Available extensions:
 * `dagon:physfs` - [PhysFS](https://github.com/icculus/physfs) integration
 * `dagon:audio` - [SoLoud](https://github.com/jarikomppa/soloud) integration
 * `dagon:video` - [libVLC](https://www.videolan.org/vlc/libvlc.html) integration
+* `dagon:network` - UDP client on top of [ENet](http://enet.bespin.org/)
+* `dagon:server` - UDP server framework. Uses the same mechanism as `dagon:network`
+* `dagon:security` - secure transport protocol (STP) for client-server online games.

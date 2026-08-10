@@ -1,5 +1,5 @@
-Dagon 1.6.0 - TBD
------------------
+Dagon 1.6.0 - 10 Aug, 2026
+--------------------------
 - **Core**
   - Fix `Application.takeScreenshot`
   - Fix broken first record for log file output
