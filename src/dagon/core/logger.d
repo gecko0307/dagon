@@ -224,6 +224,21 @@ void log(A...)(LogLevel level, A args)
     
     if (logOutputOptions.printToFile && logOutputOptions.filename.length)
     {
+        if (!_logFileInitialized)
+        {
+            try
+            {
+                _logFile = File(logOutputOptions.filename, "w");
+                _logFileInitialized = true;
+            }
+            catch(Exception e)
+            {
+                writeln("[Logger Error] Failed to open log file: ", e.msg);
+                logOutputOptions.filename = "";
+                logOutputOptions.printToFile = false;
+            }
+        }
+        
         if (_logFileInitialized)
         {
             if (logOutputOptions.printTimestamp)
@@ -242,20 +257,6 @@ void log(A...)(LogLevel level, A args)
             }
             
             _logFile.flush();
-        }
-        else
-        {
-            try
-            {
-                _logFile = File(logOutputOptions.filename, "w");
-                _logFileInitialized = true;
-            }
-            catch(Exception e)
-            {
-                writeln("[Logger Error] Failed to open log file: ", e.msg);
-                logOutputOptions.filename = "";
-                logOutputOptions.printToFile = false;
-            }
         }
     }
     

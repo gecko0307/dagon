@@ -27,7 +27,7 @@
     "stringImportPaths": ["data/__internal"],
 
     "dependencies": {
-        "dlib": "~>1.5.1",
+        "dlib": "~>1.6.0",
         "bindbc-loader": "1.1.4",
         "bindbc-opengl": "1.1.1",
         "bindbc-sdl": "1.5.2",

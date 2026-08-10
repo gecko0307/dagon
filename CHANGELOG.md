@@ -2,8 +2,11 @@ Dagon 1.6.0 - TBD
 -----------------
 - **Core**
   - Fix `Application.takeScreenshot`
+  - Fix broken first record for log file output
 - **Extensions**
   - New extension `dagon:server`, a UDP/ENet-based game server framework.
+- **Misc**
+  - Dagon now uses dlib 1.6.0.
 
 Dagon 1.5.0 - 4 Aug, 2026
 -------------------------
