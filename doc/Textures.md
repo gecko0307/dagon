@@ -21,7 +21,7 @@ Dagon supports all popular image formats via SDL_Image, libktx and a number of b
 - **ICO** - Windows icon format
 - **GIF** - legacy indexed-color format, mostly used for small animated images. Dagon doesn't support GIF animation
 - **QOI** - extremely fast lossless image format optimized for rapid decoding with minimal overhead
-- **XCF** - native GIMP project format, supports layers and high bit depths, useful for asset pipelines
+- **XCF** - native GIMP project format, supports layers and high bit depths, sometimes useful for production pipelines
 - **PNM** - a family of simple uncompressed image formats (PBM/PGM/PPM), mainly used for testing and data interchange
 - **XPM** - text-based image format originally designed for X Window System, occasionally used for icons
 - **PCX** - legacy format from early PC graphics software, now mostly obsolete
@@ -55,8 +55,8 @@ Note: Dagon sets up OpenGL to use 4-byte alignment when reading pixel rows.
 
 Dagon primarily works with two color spaces:
 
-* **Linear RGB**: a color space which values are proportional to actual physical light intensity.
-* **sRGB**: a gamma-encoded color space for display output. Dagon performs color space conversions automatically where required.
+* **Linear Rec.709**: color space which values are proportional to actual physical light intensity.
+* **sRGB**: gamma-encoded color space for display output. Dagon performs color space conversions automatically where required.
 
 Base color (diffuse) textures are always treated as sRGB images. Non-color raster data (such as normal maps and roughness/metallic maps) is always treated as linear.
 
@@ -113,7 +113,8 @@ In practice, DDS remains a solid choice for traditional asset pipelines, especia
 Some great tools to work with textures:
 - [Texture Tools Exporter](https://developer.nvidia.com/texture-tools-exporter) - compressor by NVIDIA, supports a lot of formats and works with both DDS and KTX. Includes mipmap generator, cubemap generator, and normal map generator
 - [KTX-Software](https://github.com/khronosgroup/ktx-software) - official set of tools from Khronos to work with KTX and KTX2
-- [IBLBaker](https://github.com/derkreature/IBLBaker) - a tool for environment map prefiltering.
+- [IBLBaker](https://github.com/derkreature/IBLBaker) - a tool for environment map prefiltering
+- [ImageViewer](https://github.com/kopaka1822/ImageViewer) - multi-format texture viewer. Supports viewing layers, mipmaps, 360° cubemaps, and even 3D textures.
 
 ## Cubemaps
 
