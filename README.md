@@ -1,5 +1,3 @@
-> In 2026 Dagon finally approached its first stable release! 🎉 Version 1.0 is the culmination of nearly 10 years of development and lots of contributions from the awesome D community! There's a lot of exciting stuff coming up: check out [Dagon 2](https://github.com/gecko0307/dagon2), an in-development SDL3 port of the engine with Vulkan-based rendering. I also started working on the [scene editor](https://github.com/gecko0307/dagon/tree/master/editor).
-
 Dagon Engine
 ------------
 <img align="left" alt="dagon logo" src="https://github.com/gecko0307/dagon/raw/master/logo/dagon-logo-320.png" width="100" style="vertical-align:top" />
@@ -14,6 +12,12 @@ If you like Dagon, support its development on [Patreon](https://www.patreon.com/
 [![DUB Package](https://img.shields.io/dub/v/dagon.svg)](https://code.dlang.org/packages/dagon)
 [![DUB Downloads](https://img.shields.io/dub/dt/dagon.svg)](https://code.dlang.org/packages/dagon)
 [![License](http://img.shields.io/badge/license-boost-blue.svg)](http://www.boost.org/LICENSE_1_0.txt)
+
+Maintenance Mode
+----------------
+Core part of Dagon 1.6 is considered stable; no major new features are planned. Further development continues in [Dagon 2](https://github.com/gecko0307/dagon2) branch, SDL3 port of the engine with Vulkan-based rendering.
+
+Some extensions are still in development.
 
 Screenshots
 -----------
