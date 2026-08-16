@@ -4,7 +4,7 @@ Dagon Engine
 
 Feature-rich, easy to use, extensible desktop game development framework for [D language](https://dlang.org/) based on OpenGL 4.3 core profile and SDL2. Works on Windows and Linux.
 
-If you like Dagon, support its development on [Patreon](https://www.patreon.com/gecko0307) or [Liberapay](https://liberapay.com/gecko0307). You can also make a one-time donation via [NOWPayments](https://nowpayments.io/donation/gecko0307). I appreciate any support. Thanks in advance!
+If you like Dagon, support it on [Patreon](https://www.patreon.com/gecko0307) or [Liberapay](https://liberapay.com/gecko0307). You can also make a one-time donation via [NOWPayments](https://nowpayments.io/donation/gecko0307). I appreciate any support. Thanks in advance!
 
 > Note: this project is not connected to Dagon engine by Senscape.
 
