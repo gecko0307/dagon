@@ -1,5 +1,5 @@
-Dagon Engine
-------------
+# Dagon Engine
+
 <img align="left" alt="dagon logo" src="https://github.com/gecko0307/dagon/raw/master/logo/dagon-logo-320.png" width="100" style="vertical-align:top" />
 
 Feature-rich, easy to use, extensible desktop game development framework for [D language](https://dlang.org/) based on OpenGL 4.3 core profile and SDL2. Works on Windows and Linux.
@@ -13,14 +13,14 @@ If you like Dagon, support it on [Patreon](https://www.patreon.com/gecko0307) or
 [![DUB Downloads](https://img.shields.io/dub/dt/dagon.svg)](https://code.dlang.org/packages/dagon)
 [![License](http://img.shields.io/badge/license-boost-blue.svg)](http://www.boost.org/LICENSE_1_0.txt)
 
-Maintenance Mode
-----------------
+## Maintenance Mode
+
 Core part of Dagon 1.6 is considered stable; no major new features are planned. Further development continues in [Dagon 2](https://github.com/gecko0307/dagon2) branch, SDL3 port of the engine with Vulkan-based rendering.
 
 Some extensions are still in development.
 
-Screenshots
------------
+## Screenshots
+
 [![Ruins of Hell](https://blog.pixperfect.online/wp-content/uploads/2026/04/ruins_of_hell3.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/04/ruins_of_hell3.jpg)
 
 [![Sponza](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated1.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated1.jpg)
@@ -29,8 +29,8 @@ Screenshots
 
 [![Chillwave Drive](https://blog.pixperfect.online/wp-content/uploads/2026/07/chillwave-drive-hq-1.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/07/chillwave-drive-hq-1.jpg)
 
-Features
---------
+## Features
+
 * Scene graph
 * Virtual file system
 * Static and animated meshes
@@ -87,8 +87,8 @@ Features that are not production-ready yet:
 * Built-in UI toolkit (very basic, can be used only for simple debugging purposes)
 * OpenVR integration (partial, no deferred pipeline support).
 
-System Requirements
--------------------
+## System Requirements
+
 The recommended system requirements (for Full HD rendering at 60 fps):
 - CPU: Intel Core i3-10100 / AMD Ryzen 3 3100
 - RAM: application-dependent, usually 8 Gb minimum
@@ -96,8 +96,8 @@ The recommended system requirements (for Full HD rendering at 60 fps):
 - VRAM: 8 Gb
 - OS: 64-bit Windows 10 or higher / Linux.
 
-Usage
------
+## Usage
+
 Dagon works with [DUB](https://dub.pm/), the official package manager and build system for D.
 
 The recommended way to start using the engine is to generate a game template with `dub init`. Create an empty directory for the project, cd to it and run the following:
@@ -121,8 +121,8 @@ To use Dagon repository directly instead of a release (for example, to modify th
 "dagon": { "path": "path/to/your/dagon/copy" }
 ```
 
-Runtime Dependencies
---------------------
+## Runtime Dependencies
+
 * [SDL](https://www.libsdl.org) 2.32.4.0 (required)
 * [SDL_Image](https://github.com/libsdl-org/SDL_image) 2.8.8.0 (required)
 * [FreeType](https://www.freetype.org) 2.8.1 for text rendering (required)
@@ -147,14 +147,16 @@ Under Linux, if you want to use local libraries in Windows way (from application
 "lflags-linux": ["-rpath=$$ORIGIN"]
 ```
 
-Known Bugs and Limitations
---------------------------
+On Windows, some dependencies require Visual C++ v14 Redistributable. You can download an official installer [here](https://aka.ms/vc14/vc_redist.x64.exe). It is recommended to bundle vc_redist.x64.exe with your application's installer for end users.
+
+## Known Bugs and Limitations
+
 * The engine doesn't support macOS
 * dagon:nuklear extension has [problems](https://github.com/gecko0307/dagon/issues/89) under Linux
 * dagon:newton crashes under Linux when loading Newton plugins (`NewtonPhysicsWorld.loadPlugins`)
 
-Documentation
--------------
+## Documentation
+
 * [API documentation (WIP)](https://gecko0307.github.io/dagon/doc/dagon.html)
 * [Specifications](https://github.com/gecko0307/dagon/blob/master/doc/)
 * [Tutorials](https://github.com/gecko0307/dagon/blob/master/doc/tutorials) and corresponding [examples](https://github.com/gecko0307/dagon-tutorials)
@@ -187,16 +189,16 @@ Documentation status:
 * ❌ `dagon.ext.physfs`
 * ❌ `dagon.ext.video`
 
-License
--------
+## License
+
 Copyright (c) 2016-2026 Timur Gafarov, Rafał Ziemniewski, Mateusz Muszyński, Denis Feklushkin, dayllenger, Konstantin Menshikov, Björn Roberg et al. Distributed under the Boost Software License, Version 1.0 (see accompanying file COPYING or at http://www.boost.org/LICENSE_1_0.txt).
 
-Sponsors
---------
+## Sponsors
+
 Jan Jurzitza (WebFreak), Daniel Laburthe, Rafał Ziemniewski, Kumar Sookram, Aleksandr Kovalev, Robert Georges, Rais Safiullin (SARFEX), Benas Cernevicius, Koichi Takio, Konstantin Menshikov.
 
-Made with Dagon
----------------
+## Made with Dagon
+
 Games:
 * [Chillwave Drive](https://github.com/gecko0307/chillwavedrive) - in-development racing game
 * [Dagoban](https://github.com/Timu5/dagoban) - a Sokoban clone
