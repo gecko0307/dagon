@@ -15,7 +15,7 @@ If you like Dagon, support it on [Patreon](https://www.patreon.com/gecko0307) or
 
 ## Maintenance Mode
 
-Core part of Dagon 1.6 is considered stable; no major new features are planned. Further development continues in [Dagon 2](https://github.com/gecko0307/dagon2) branch, SDL3 port of the engine with Vulkan-based rendering.
+Core part of Dagon 1.x is considered stable; no major new features are planned. Further development continues in [Dagon 2](https://github.com/gecko0307/dagon2) branch, SDL3 port of the engine with Vulkan-based rendering.
 
 Some extensions and the editor are still in development.
 
