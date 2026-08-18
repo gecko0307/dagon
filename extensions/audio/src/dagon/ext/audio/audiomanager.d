@@ -339,9 +339,7 @@ class AudioManager: EventListener
     WavStream loadMusic(string filename)
     {
         WavStream wavStream = WavStream.create();
-        int result = loadMusic(wavStream, filename);
-        if (result != 0)
-            logErrorCode(filename, result);
+        loadMusic(wavStream, filename);
         return wavStream;
     }
     
