@@ -1,3 +1,8 @@
+Dagon 1.6.1 - TBD
+-----------------
+- **Extensions**
+  - Fix `AudioManager.loadMusic`.
+
 Dagon 1.6.0 - 10 Aug, 2026
 --------------------------
 - **Core**
