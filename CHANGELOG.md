@@ -1,5 +1,7 @@
-Dagon 1.6.1 - TBD
------------------
+Dagon 1.6.1 - 19 Aug, 2026
+--------------------------
+- **Core**
+  - Fix Wintab initialization
 - **Extensions**
   - Fix `AudioManager.loadMusic`.
 

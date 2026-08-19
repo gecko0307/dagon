@@ -888,6 +888,10 @@ class Application: EventListener, Updateable
                 else
                     logWarning("Wintab library is not found");
             }
+            else
+                wintabPresent = true;
+            
+            logInfo("Wintab API present: ", wintabPresent);
         }
         
         const(SDL_version)* pSdlImageVer = IMG_Linked_Version();
