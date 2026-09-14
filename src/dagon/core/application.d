@@ -1929,7 +1929,7 @@ class Application: EventListener, Updateable
         return _numTimers;
     }
     
-    /// 
+    /// Completes a timer immediately.
     void completeTimer(size_t index) nothrow
     {
         TimerData* td = &timers[index];
