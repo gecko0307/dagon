@@ -714,20 +714,22 @@ class EventManager: Owner
         {
             if (device.joystick)
             {
+                logInfo("Closed joystick ", deviceIndex, " (InstanceID ", device.instanceId, "): ", device.name);
                 SDL_JoystickClose(device.joystick);
                 device.joystick = null;
+                device.name = "";
             }
-            logInfo("Closed joystick ", deviceIndex, " (InstanceID ", device.instanceId, "): ", device.name);
         }
         else if (device.type == GameInputDeviceType.Controller)
         {
             if (device.controller)
             {
+                logInfo("Closed controller ", deviceIndex, " (InstanceID ", device.instanceId, "): ", device.name);
                 SDL_GameControllerClose(device.controller);
                 device.controller = null;
                 device.joystick = null;
+                device.name = "";
             }
-            logInfo("Closed controller ", deviceIndex, " (InstanceID ", device.instanceId, "): ", device.name);
         }
         
         device.active = false;
