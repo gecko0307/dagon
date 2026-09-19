@@ -65,6 +65,7 @@ import dagon.core.bindings;
 import dagon.core.logger;
 import dagon.core.dxt;
 import dagon.core.bc4;
+import dagon.core.bc5;
 import dagon.core.bc7;
 import dagon.graphics.texture;
 import dagon.graphics.lut;
@@ -110,6 +111,7 @@ enum TextureCompressionFormat
     BC1 = 1,
     BC3 = 3,
     BC4 = 4,
+    BC5 = 5,
     BC7 = 7,
     
     DXT1 = 1, // same as BC1
@@ -447,6 +449,10 @@ class TextureAsset: Asset
                 blockSize = 8;
                 newInternalFormat = GL_COMPRESSED_RED_RGTC1;
                 break;
+            case TextureCompressionFormat.BC5:
+                blockSize = 16;
+                newInternalFormat = GL_COMPRESSED_RG_RGTC2;
+                break;
             case TextureCompressionFormat.BC7:
                 blockSize = 16;
                 newInternalFormat = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
@@ -523,6 +529,9 @@ class TextureAsset: Asset
                     case TextureCompressionFormat.BC4:
                         bc4Compress(levelCompDst.ptr, levelBufferSlice.ptr, levelWidth, levelHeight, numChannels);
                         break;
+                    case TextureCompressionFormat.BC5:
+                        bc5Compress(levelCompDst.ptr, levelBufferSlice.ptr, levelWidth, levelHeight, numChannels);
+                        break;
                     case TextureCompressionFormat.BC7:
                         bc7Compress(levelCompDst.ptr, levelBufferSlice.ptr, levelWidth, levelHeight, &defaultBC7Params);
                         break;
@@ -565,6 +574,9 @@ class TextureAsset: Asset
                     break;
                 case TextureCompressionFormat.BC4:
                     bc4Compress(compressedTextureBuffer.ptr, buffer.data.ptr, width, height, numChannels);
+                    break;
+                case TextureCompressionFormat.BC5:
+                    bc5Compress(compressedTextureBuffer.ptr, buffer.data.ptr, width, height, numChannels);
                     break;
                 case TextureCompressionFormat.BC7:
                     bc7Compress(compressedTextureBuffer.ptr, buffer.data.ptr, width, height, &defaultBC7Params);

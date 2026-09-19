@@ -1,3 +1,12 @@
+Dagon 1.6.2 - TBD
+-----------------
+- **Core**
+  - Fix use after free error for logging at controller release
+- **Assets**
+  - BC5 texture compression support
+- **Misc**
+  - Some Linux shared libraries are patched with rpath=$ORIGIN where necessary for portability.
+
 Dagon 1.6.1 - 19 Aug, 2026
 --------------------------
 - **Core**
