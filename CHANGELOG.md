@@ -1,5 +1,5 @@
-Dagon 1.6.2 - TBD
------------------
+Dagon 1.6.2 - 20 Sep, 2026
+--------------------------
 - **Core**
   - Fix use after free error for logging at controller release
 - **Assets**
