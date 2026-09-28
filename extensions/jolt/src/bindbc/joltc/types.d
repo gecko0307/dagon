@@ -1103,8 +1103,8 @@ extern(C)
     alias JPH_AssertFailureFunc = bool function(const(char)* expression, const(char)* message, const(char)* file, uint line);
 
     alias JPH_JobFunction = void function(void* arg);
-    alias JPH_QueueJobCallback = void function(void* context, JPH_JobFunction* job, void* arg);
-    alias JPH_QueueJobsCallback = void function(void* context, JPH_JobFunction* job, void** args, uint count);
+    alias JPH_QueueJobCallback = void function(void* context, JPH_JobFunction job, void* arg);
+    alias JPH_QueueJobsCallback = void function(void* context, JPH_JobFunction job, void** args, uint count);
 }
 
 struct JobSystemThreadPoolConfig
@@ -1117,8 +1117,8 @@ struct JobSystemThreadPoolConfig
 struct JPH_JobSystemConfig
 {
     void* context;
-    JPH_QueueJobCallback* queueJob;
-    JPH_QueueJobsCallback* queueJobs;
+    JPH_QueueJobCallback queueJob;
+    JPH_QueueJobsCallback queueJobs;
     uint maxConcurrency;
     uint maxBarriers;
 }
