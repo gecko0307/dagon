@@ -1,5 +1,8 @@
 Dagon 1.7.0 - TBD
 -----------------
+- **Extensions**
+  - `dagon:jolt`:
+    - Fix `JPH_JobSystemConfig` callback definitions (#125)
 - **Misc**
   - Dagon now uses dlib 1.8.1.
 
