@@ -25,14 +25,18 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ * Bounding Volume Hierarchy implementation
+ */
 module dagon.collision.bvh;
 
 import std.array;
-import std.math;
 
 import dlib.core.memory;
 import dlib.core.compound;
 import dlib.container.array;
+import dlib.math.base;
 import dlib.math.utils;
 import dlib.math.vector;
 import dlib.math.matrix;
@@ -47,11 +51,7 @@ import dagon.graphics.entity;
 import dagon.graphics.mesh;
 import dagon.graphics.terrain;
 
-/*
- * Bounding Volume Hierarchy implementation
- */
-
-// Returns the axis that has the largest length
+/// Returns the bounding box axis that has the largest length.
 Axis boxGetMainAxis(AABB box)
 {
     float xl = box.size.x;
@@ -69,12 +69,16 @@ Axis boxGetMainAxis(AABB box)
     return Axis.x;
 }
 
+///
 struct SplitPlane
 {
-    public:
+    ///
     float split;
+    
+    ///
     Axis axis;
     
+    ///
     this(float s, Axis ax)
     {
         split = s;
@@ -82,11 +86,13 @@ struct SplitPlane
     }
 }
 
+///
 SplitPlane boxGetSplitPlaneForAxis(AABB box, Axis a)
 {
     return SplitPlane(box.center[a], a);
 }
 
+///
 Compound!(AABB, AABB) boxSplitWithPlane(AABB box, SplitPlane sp)
 {
     Vector3f minLP = box.pmin;
@@ -103,6 +109,7 @@ Compound!(AABB, AABB) boxSplitWithPlane(AABB box, SplitPlane sp)
     return compound(leftB, rightB);
 }
 
+///
 AABB enclosingAABB(T)(T[] objects)
 {
     Vector3f pmin = objects[0].boundingBox.pmin;
@@ -131,19 +138,29 @@ AABB enclosingAABB(T)(T[] objects)
     return boxFromMinMaxPoints(pmin, pmax);
 }
 
+///
 class BVHNode(T)
 {
+    ///
     Array!T objects;
+    
+    ///
     AABB aabb;
+    
+    ///
     BVHNode[2] child;
+    
+    ///
     uint userData;
 
+    ///
     this(Array!T objs)
     {
         objects = objs;
         aabb = enclosingAABB(objects.data);
     }
     
+    ///
     ~this()
     {
         objects.free();
@@ -151,27 +168,35 @@ class BVHNode(T)
         if (child[1]) Delete(child[1]);
     }
     
+    ///
     AABBTraverseQuery!T traverseByAABB(AABB* aabb)
     {
         return AABBTraverseQuery!(T)(this, aabb);
     }
     
+    ///
     SphereTraverseQuery!T traverseBySphere(Sphere* sphere)
     {
         return SphereTraverseQuery!(T)(this, sphere);
     }
     
+    ///
     RayTraverseQuery!T traverseByRay(Ray* ray)
     {
         return RayTraverseQuery!(T)(this, ray);
     }
 }
 
+///
 struct AABBTraverseQuery(T)
 {
+    ///
     BVHNode!T node;
+    
+    ///
     AABB* aabb;
     
+    ///
     int opApply(int delegate(ref T) dg)
     {
         int result = 0;
@@ -202,11 +227,16 @@ struct AABBTraverseQuery(T)
     }
 }
 
+///
 struct SphereTraverseQuery(T)
 {
+    ///
     BVHNode!T node;
+    
+    ///
     Sphere* sphere;
     
+    ///
     int opApply(int delegate(ref T) dg)
     {
         int result = 0;
@@ -238,11 +268,16 @@ struct SphereTraverseQuery(T)
     }
 }
 
+///
 struct RayTraverseQuery(T)
 {
+    ///
     BVHNode!T node;
+    
+    ///
     Ray* ray;
     
+    ///
     int opApply(int delegate(ref T) dg)
     {
         int result = 0;
@@ -274,12 +309,14 @@ struct RayTraverseQuery(T)
     }
 }
 
+///
 enum Heuristic
 {
     HMA, // Half Main Axis
     SAH  // Surface Area Heuristic
 }
 
+///
 Array!T duplicate(T)(Array!T arr)
 {
     Array!T res;
@@ -288,10 +325,13 @@ Array!T duplicate(T)(Array!T arr)
     return res;
 }
 
+///
 class BVHTree(T)
 {
+    ///
     BVHNode!T root;
 
+    ///
     this(Array!T objects, 
          uint maxObjectsPerNode = 8,
          uint maxRecursionDepth = 10,
@@ -300,12 +340,14 @@ class BVHTree(T)
         root = construct(objects, 0, maxObjectsPerNode, maxRecursionDepth, splitHeuristic);
     }
     
+    ///
     ~this()
     {
         Delete(root);
     }
 
    protected:
+    ///
     BVHNode!T construct(
         Array!T objects,
         uint rec,
@@ -369,12 +411,14 @@ class BVHTree(T)
         return node;
     }
 
+    ///
     SplitPlane getHalfMainAxisSplitPlane(T[] objects, ref AABB box)
     {
         Axis axis = boxGetMainAxis(box);
         return boxGetSplitPlaneForAxis(box, axis);
     }
 
+    ///
     SplitPlane getSAHSplitPlane(T[] objects, ref AABB box)
     {
         Axis axis = boxGetMainAxis(box);
@@ -421,6 +465,7 @@ class BVHTree(T)
         return SplitPlane(bestSplitPoint, axis);
     }
 
+    ///
     float getSAHCost(AABB leftBox, uint numLeftObjects, 
                      AABB rightBox, uint numRightObjects,
                      AABB parentBox)
@@ -429,6 +474,7 @@ class BVHTree(T)
              + getSurfaceArea(rightBox) / getSurfaceArea(parentBox) * numRightObjects;
     }
 
+    ///
     float getSurfaceArea(AABB bbox)
     {
         float width = bbox.pmax.x - bbox.pmin.x;
@@ -438,6 +484,7 @@ class BVHTree(T)
     }
 }
 
+///
 void collectEntityTris(Entity e, ref Array!Triangle tris, bool recursive = true)
 {
     if (e.drawable)
@@ -486,6 +533,7 @@ void collectEntityTris(Entity e, ref Array!Triangle tris, bool recursive = true)
     }
 }
 
+///
 BVHTree!Triangle entityToBVH(Entity rootEntity, bool recursive = true)
 {
     Array!Triangle tris;
@@ -502,6 +550,7 @@ BVHTree!Triangle entityToBVH(Entity rootEntity, bool recursive = true)
         return null;
 }
 
+///
 BVHTree!Triangle entitiesToBVH(T)(T entities, bool recursive = true)
 {
     Array!Triangle tris;

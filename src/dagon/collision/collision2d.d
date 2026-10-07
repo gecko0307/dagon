@@ -47,10 +47,10 @@ DEALINGS IN THE SOFTWARE.
 module dagon.collision.collision2d;
 
 import std.algorithm;
-import std.math;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.math.base;
 import dlib.math.vector;
 import dlib.math.utils;
 import dlib.container.array;
@@ -133,6 +133,7 @@ float getSlopeHeightAt(Slope s, Vector2f p)
     return hTop * (1 - ty) + hBot * ty;
 }
 
+///
 struct SpatialGridCell
 {
     Array!size_t segmentIndices;
@@ -147,14 +148,22 @@ class SpatialGrid: Owner
     /// Global static segments array.
     Segment[] segments;
     
+    ///
     float cellSize;
+    
+    ///
     float minX, minY, maxX, maxY;
+    
+    ///
     uint width = 0;
+    
+    ///
     uint height = 0;
     
     /// 2D array of spatial grid cells.
     SpatialGridCell[] cells;
     
+    ///
     this(Segment[] segments, float cellSize, Owner owner)
     {
         super(owner);
@@ -163,6 +172,7 @@ class SpatialGrid: Owner
         generate();
     }
     
+    ///
     ~this()
     {
         if (cells.length)
@@ -176,6 +186,7 @@ class SpatialGrid: Owner
         }
     }
     
+    ///
     void generate()
     {
         if (segments.length == 0) return;

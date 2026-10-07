@@ -40,11 +40,10 @@ DEALINGS IN THE SOFTWARE.
  */
 module dagon.render.hud;
 
-import std.math;
-
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.image.color;
+import dlib.math.base;
 import dlib.math.matrix;
 
 import dagon.core.application;

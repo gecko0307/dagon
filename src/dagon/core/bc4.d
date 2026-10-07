@@ -37,7 +37,7 @@ DEALINGS IN THE SOFTWARE.
  */
 module dagon.core.bc4;
 
-import std.math;
+import dlib.math.base;
 import dlib.math.utils;
 
 void bc4CompressBlock(ubyte* dst, ubyte* src)

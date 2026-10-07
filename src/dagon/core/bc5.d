@@ -37,7 +37,7 @@ DEALINGS IN THE SOFTWARE.
  */
 module dagon.core.bc5;
 
-import std.math;
+import dlib.math.base;
 import dlib.math.utils;
 import dagon.core.bc4;
 

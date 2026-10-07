@@ -44,7 +44,6 @@ DEALINGS IN THE SOFTWARE.
 module dagon.resource.gltf.decoder;
 
 import std.stdio;
-import std.math;
 import std.path;
 import std.algorithm;
 import std.base64;
@@ -55,6 +54,7 @@ import dlib.filesystem.filesystem;
 import dlib.container.array;
 import dlib.serialization.json;
 import dlib.text.str;
+import dlib.math.base;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;

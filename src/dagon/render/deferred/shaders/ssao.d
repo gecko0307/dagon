@@ -28,10 +28,10 @@ DEALINGS IN THE SOFTWARE.
 module dagon.render.deferred.shaders.ssao;
 
 import std.stdio;
-import std.math;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.math.base;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;

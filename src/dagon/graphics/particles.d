@@ -45,12 +45,12 @@ DEALINGS IN THE SOFTWARE.
  */
 module dagon.graphics.particles;
 
-import std.math;
 import std.random;
 import std.algorithm;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.math.base;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.quaternion;

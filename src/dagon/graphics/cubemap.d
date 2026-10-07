@@ -34,12 +34,12 @@ DEALINGS IN THE SOFTWARE.
  */
 module dagon.graphics.cubemap;
 
-import std.math;
 import std.algorithm;
 import std.traits;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.math.base;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;

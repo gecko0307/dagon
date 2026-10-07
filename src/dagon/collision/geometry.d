@@ -40,11 +40,11 @@ DEALINGS IN THE SOFTWARE.
  */
 module dagon.collision.geometry;
 
-import std.math;
 import std.algorithm;
 
 import dlib.core.ownership;
 import dlib.core.memory;
+import dlib.math.base;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;

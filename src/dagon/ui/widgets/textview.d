@@ -29,10 +29,10 @@ module dagon.ui.widgets.textview;
 
 import std.stdio;
 import std.ascii;
-import std.math;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.math.base;
 import dlib.math.vector;
 import dlib.math.transformation;
 import dlib.math.interpolation;

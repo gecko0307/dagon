@@ -41,7 +41,6 @@ DEALINGS IN THE SOFTWARE.
 module dagon.graphics.texture;
 
 import std.stdio;
-import std.math;
 import std.algorithm;
 import std.traits;
 
@@ -52,6 +51,7 @@ import dlib.image.image;
 import dlib.image.color;
 import dlib.image.hdri;
 import dlib.image.unmanaged;
+import dlib.math.base;
 import dlib.math.utils;
 import dlib.math.vector;
 import dlib.math.matrix;

@@ -40,11 +40,10 @@ DEALINGS IN THE SOFTWARE.
  */
 module dagon.graphics.heightmap;
 
-import std.math;
-
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.image.image;
+import dlib.math.base;
 
 import dagon.graphics.opensimplex;
 

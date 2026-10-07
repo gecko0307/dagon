@@ -45,7 +45,6 @@ import std.stdio;
 import std.string;
 import std.path;
 import std.conv;
-import std.math;
 import std.algorithm;
 
 import dlib.core.memory;
@@ -58,6 +57,7 @@ import dlib.image.hdri;
 import dlib.image.io;
 import dlib.image.unmanaged;
 import dlib.filesystem.filesystem;
+import dlib.math.base;
 import dlib.math.utils;
 
 import dagon.core.crashhandler;

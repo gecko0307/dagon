@@ -42,12 +42,10 @@ DEALINGS IN THE SOFTWARE.
  * Authors: Timur Gafarov
  */
 module dagon.graphics.entity;
-
-import std.math;
-
 import dlib.core.ownership;
 import dlib.core.memory;
 import dlib.container.array;
+import dlib.math.base;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.quaternion;

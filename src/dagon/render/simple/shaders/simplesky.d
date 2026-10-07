@@ -28,11 +28,11 @@ DEALINGS IN THE SOFTWARE.
 module dagon.render.simple.shaders.simplesky;
 
 import std.stdio;
-import std.math;
 import std.conv;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.math.base;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.image.color;

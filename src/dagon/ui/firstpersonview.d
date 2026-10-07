@@ -41,8 +41,7 @@ DEALINGS IN THE SOFTWARE.
  */
 module dagon.ui.firstpersonview;
 
-import std.math;
-
+import dlib.math.base;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.quaternion;

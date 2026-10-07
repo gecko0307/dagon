@@ -38,8 +38,10 @@ import dagon.collision.geometry;
 import dagon.collision.shape;
 import dagon.collision.jss;
 
+///
 alias CastResult = Contact;
 
+///
 bool rayVsShape(
     Vector3f rayStart,
     Vector3f rayDir,
@@ -144,6 +146,7 @@ bool rayVsShape(
     return hit;
 }
 
+///
 bool rayVsShape(
     Ray ray,
     CollisionShape shape,

@@ -39,8 +39,6 @@ DEALINGS IN THE SOFTWARE.
  */
 module dagon.game.basegame;
 
-import std.stdio;
-
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.container.dict;

@@ -39,7 +39,6 @@ DEALINGS IN THE SOFTWARE.
 module dagon.graphics.font;
 
 import std.stdio;
-import std.math;
 import std.string;
 import std.ascii;
 import std.utf;
@@ -53,6 +52,7 @@ import dlib.filesystem.filesystem;
 import dlib.filesystem.stdfs;
 import dlib.container.dict;
 import dlib.text.utf8;
+import dlib.math.base;
 import dlib.math.vector;
 import dlib.math.utils;
 import dlib.image.color;
