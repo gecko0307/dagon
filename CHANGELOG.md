@@ -1,5 +1,5 @@
-Dagon 1.7.0 - TBD
------------------
+Dagon 1.6.3 - 17 Oct, 2026
+--------------------------
 - **Extensions**
   - `dagon:jolt`:
     - Fix `JPH_JobSystemConfig` callback definitions (#125)
