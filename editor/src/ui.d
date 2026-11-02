@@ -30,6 +30,7 @@ import std.stdio;
 import dagon;
 import dagon.ext.imgui;
 import editor;
+import overlay;
 
 struct EditorViewport
 {
@@ -127,6 +128,7 @@ class EditorUI: EventListener
         ImGuiOpenGLBackend.new_frame();
         ImGui_ImplSDL2_NewFrame();
         igNewFrame();
+        scene.overlay.handleGizmoInput();
         
         viewport = cast(ImGuiViewport*)igGetMainViewport();
         
@@ -356,6 +358,15 @@ class EditorUI: EventListener
             {
                 if (scene.selectedEntity)
                 {
+                    if (igButton("Move", ImVec2(60, 0)))
+                        scene.overlay.gizmoMode = GizmoMode.Translation;
+                    igSameLine();
+                    if (igButton("Rotate", ImVec2(60, 0)))
+                        scene.overlay.gizmoMode = GizmoMode.Rotation;
+                    igSameLine();
+                    if (igButton("Scale", ImVec2(60, 0)))
+                        scene.overlay.gizmoMode = GizmoMode.Scale;
+
                     igInputFloat3("Position XYZ", &scene.selectedEntity.position.arrayof);
                     igInputFloat4("Rotation XYZW", &scene.selectedEntity.rotation.arrayof);
                     igInputFloat3("Scaling XYZ", &scene.selectedEntity.scaling.arrayof);

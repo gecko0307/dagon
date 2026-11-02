@@ -144,7 +144,12 @@ class EditorScene: Scene
     
     override void onUpdate(Time t)
     {
-        freeview.active = focused;
+        freeview.active = focused && !overlay.draggingGizmo;
+        if (selectedEntity && !overlay.draggingGizmo)
+        {
+            overlay.gizmoPosition = selectedEntity.positionAbsolute;
+            overlay.gizmoOrientation = selectedEntity.rotationAbsolute;
+        }
         overlay.update(t);
     }
     
@@ -158,6 +163,7 @@ class EditorScene: Scene
         selectedEntity = e;
         overlay.gizmoMode = GizmoMode.Translation;
         overlay.gizmoPosition = e.positionAbsolute;
+        overlay.gizmoOrientation = e.rotationAbsolute;
         if (e.drawable)
         {
             Mesh mesh = cast(Mesh)e.drawable;

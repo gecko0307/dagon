@@ -26,7 +26,11 @@ DEALINGS IN THE SOFTWARE.
 */
 module overlay;
 
+import std.algorithm: clamp, max;
+import std.math: PI, abs, atan2, cos, sin, sqrt, tan;
+
 import dagon;
+import dagon.ext.imgui;
 import ui;
 
 enum GizmoMode
@@ -47,10 +51,43 @@ class InteractionOverlay: EventListener
     GizmoShader gizmoShader;
     GizmoMode gizmoMode = GizmoMode.Disabled;
     Vector3f gizmoPosition;
+    Quaternionf gizmoOrientation;
     Matrix4x4f gizmoTransformation;
     Vector3f selectionBoundingBoxScale;
+    GizmoLines rotationLines;
+    GizmoLines scaleLines;
     bool visible = true;
+
+    bool draggingGizmo;
+    int draggedAxis = -1;
+    float dragStartX;
+    float dragStartY;
+    float dragAxisX;
+    float dragAxisY;
+    float dragAxisLength;
+    float dragStartRotationAngle;
+    float previousRotationAngle;
+    float accumulatedRotationAngle;
+    Vector3f previousRotationVector;
+    float previousMouseX;
+    float previousMouseY;
+    Quaternionf dragStartGizmoOrientation;
+    Vector3f dragStartPosition;
+    Quaternionf dragStartRotation;
+    Vector3f dragStartScale;
     
+    struct GizmoPoint
+    {
+        float x;
+        float y;
+    }
+
+    static immutable Vector3f[3] axes = [
+        Vector3f(1.0f, 0.0f, 0.0f),
+        Vector3f(0.0f, 1.0f, 0.0f),
+        Vector3f(0.0f, 0.0f, 1.0f)
+    ];
+
     this(EventManager eventManager, Owner owner)
     {
         super(eventManager, owner);
@@ -62,9 +99,12 @@ class InteractionOverlay: EventListener
         selectionBoundingBox = New!ShapeBoundingBox(this);
         
         translationAxes = New!TranslationAxes(this);
+        rotationLines = New!GizmoLines(GizmoMode.Rotation, this);
+        scaleLines = New!GizmoLines(GizmoMode.Scale, this);
         
         gizmoShader = New!GizmoShader(this);
         gizmoPosition = Vector3f(0.0f, 0.0f, 0.0f);
+        gizmoOrientation = Quaternionf.identity;
         gizmoTransformation = Matrix4x4f.identity;
         
         selectionBoundingBoxScale = Vector3f(1.0f, 1.0f, 1.0f);
@@ -73,6 +113,389 @@ class InteractionOverlay: EventListener
     void activeCamera(Camera camera) @property
     {
         view.camera = camera;
+    }
+
+    float gizmoWorldSize()
+    {
+        if (!view.camera || view.height == 0)
+            return 1.0f;
+
+        float cameraDistance = distance(view.camera.positionAbsolute, gizmoPosition);
+        float halfFov = degtorad(view.camera.fov * 0.5f);
+        return max(cameraDistance * tan(halfFov) * 2.0f * 90.0f / view.height, 0.01f);
+    }
+
+    void updateViewport()
+    {
+        if (!ui)
+            return;
+
+        int w = cast(int)ui.editorViewport.size.x;
+        int h = cast(int)ui.editorViewport.size.y;
+        int x = cast(int)ui.editorViewport.position.x;
+        int y = eventManager.drawableHeight - cast(int)ui.editorViewport.position.y - h;
+        if (w > 0 && h > 0)
+        {
+            view.resize(w, h);
+            view.setPosition(x, y);
+        }
+    }
+
+    bool project(Vector3f point, out GizmoPoint screenPoint)
+    {
+        if (!view.width || !view.height)
+            return false;
+
+        Vector4f clip = Vector4f(point.x, point.y, point.z, 1.0f) *
+            view.viewMatrix * view.projectionMatrix;
+        if (clip.w <= 0.0f)
+            return false;
+
+        float ndcX = clip.x / clip.w;
+        float ndcY = clip.y / clip.w;
+        screenPoint.x = view.x + (ndcX + 1.0f) * 0.5f * view.width;
+        screenPoint.y = eventManager.drawableHeight - (view.y + (ndcY + 1.0f) * 0.5f * view.height);
+        return true;
+    }
+
+    Vector3f worldAxis(int axis)
+    {
+        return gizmoOrientation.toMatrix4x4.rotate(axes[axis]).normalized;
+    }
+
+    bool rotationPlaneVector(int axis, GizmoPoint mouse, out Vector3f radial)
+    {
+        if (!view.width || !view.height)
+            return false;
+
+        float ndcX = 2.0f * (mouse.x - view.x) / view.width - 1.0f;
+        float viewportTop = eventManager.drawableHeight - view.y - view.height;
+        float ndcY = 1.0f - 2.0f * (mouse.y - viewportTop) / view.height;
+        Matrix4x4f inverseViewProjection = (view.viewMatrix * view.projectionMatrix).inverse;
+        Vector4f nearClip = Vector4f(ndcX, ndcY, -1.0f, 1.0f) * inverseViewProjection;
+        Vector4f farClip = Vector4f(ndcX, ndcY, 1.0f, 1.0f) * inverseViewProjection;
+        if (abs(nearClip.w) < 0.000001f || abs(farClip.w) < 0.000001f)
+            return false;
+
+        Vector3f nearPoint = Vector3f(
+            nearClip.x / nearClip.w,
+            nearClip.y / nearClip.w,
+            nearClip.z / nearClip.w);
+        Vector3f farPoint = Vector3f(
+            farClip.x / farClip.w,
+            farClip.y / farClip.w,
+            farClip.z / farClip.w);
+        Vector3f rayDirection = (farPoint - nearPoint).normalized;
+        Vector3f normal = worldAxis(axis);
+        float denominator = dot(rayDirection, normal);
+        if (abs(denominator) < 0.05f)
+            return false;
+
+        float distanceAlongRay = dot(gizmoPosition - nearPoint, normal) / denominator;
+        if (distanceAlongRay < 0.0f)
+            return false;
+
+        Vector3f hit = nearPoint + rayDirection * distanceAlongRay;
+        Vector3f offset = hit - gizmoPosition;
+        if (offset.length < 0.0001f)
+            return false;
+        radial = offset.normalized;
+        return true;
+    }
+
+    bool rotationPlaneAngle(int axis, GizmoPoint mouse, out float angle)
+    {
+        Vector3f radial;
+        if (!rotationPlaneVector(axis, mouse, radial))
+            return false;
+
+        Matrix4x4f orientation = gizmoOrientation.toMatrix4x4;
+        Vector3f u = orientation.rotate(axes[(axis + 1) % 3]).normalized;
+        Vector3f v = orientation.rotate(axes[(axis + 2) % 3]).normalized;
+        angle = atan2(dot(radial, v), dot(radial, u));
+        return true;
+    }
+
+    bool projectedRotationAngle(int axis, GizmoPoint mouse, out float angle)
+    {
+        float size = gizmoWorldSize();
+        Matrix4x4f orientation = gizmoOrientation.toMatrix4x4;
+        Vector3f u = orientation.rotate(axes[(axis + 1) % 3]);
+        Vector3f v = orientation.rotate(axes[(axis + 2) % 3]);
+        float bestDistanceSquared = float.max;
+        bool found = false;
+
+        foreach (step; 0 .. 361)
+        {
+            float candidate = 2.0f * PI * cast(float)step / 360.0f;
+            Vector3f offset = (u * cos(candidate) + v * sin(candidate)) * size;
+            GizmoPoint point;
+            if (!project(gizmoPosition + offset, point))
+                continue;
+            float dx = point.x - mouse.x;
+            float dy = point.y - mouse.y;
+            float distanceSquared = dx * dx + dy * dy;
+            if (distanceSquared < bestDistanceSquared)
+            {
+                bestDistanceSquared = distanceSquared;
+                angle = candidate;
+                found = true;
+            }
+        }
+        return found;
+    }
+
+    bool projectedRotationDelta(int axis, float angle, float mouseDeltaX, float mouseDeltaY, out float angleDelta)
+    {
+        float size = gizmoWorldSize();
+        Matrix4x4f orientation = gizmoOrientation.toMatrix4x4;
+        Vector3f u = orientation.rotate(axes[(axis + 1) % 3]);
+        Vector3f v = orientation.rotate(axes[(axis + 2) % 3]);
+        float epsilon = 0.001f;
+        Vector3f pointBefore = gizmoPosition +
+            (u * cos(angle - epsilon) + v * sin(angle - epsilon)) * size;
+        Vector3f pointAfter = gizmoPosition +
+            (u * cos(angle + epsilon) + v * sin(angle + epsilon)) * size;
+        GizmoPoint screenBefore, screenAfter;
+        if (!project(pointBefore, screenBefore) || !project(pointAfter, screenAfter))
+            return false;
+
+        float tangentX = (screenAfter.x - screenBefore.x) / (2.0f * epsilon);
+        float tangentY = (screenAfter.y - screenBefore.y) / (2.0f * epsilon);
+        float tangentLengthSquared = tangentX * tangentX + tangentY * tangentY;
+        if (tangentLengthSquared < 0.25f)
+            return false;
+
+        angleDelta = clamp(
+            (mouseDeltaX * tangentX + mouseDeltaY * tangentY) / tangentLengthSquared,
+            -0.5f,
+            0.5f);
+        return true;
+    }
+
+    bool axisScreenPoints(int axis, out GizmoPoint center, out GizmoPoint end)
+    {
+        float size = gizmoWorldSize();
+        return project(gizmoPosition, center) &&
+            project(gizmoPosition + worldAxis(axis) * size, end);
+    }
+
+    float segmentDistance(GizmoPoint p, GizmoPoint a, GizmoPoint b)
+    {
+        float dx = b.x - a.x;
+        float dy = b.y - a.y;
+        float lengthSquared = dx * dx + dy * dy;
+        if (lengthSquared <= 0.0001f)
+            return sqrt((p.x - a.x) * (p.x - a.x) + (p.y - a.y) * (p.y - a.y));
+
+        float t = ((p.x - a.x) * dx + (p.y - a.y) * dy) / lengthSquared;
+        t = clamp(t, 0.0f, 1.0f);
+        float px = a.x + t * dx;
+        float py = a.y + t * dy;
+        return sqrt((p.x - px) * (p.x - px) + (p.y - py) * (p.y - py));
+    }
+
+    int pickAxis(GizmoPoint mouse, out GizmoPoint center, out GizmoPoint axisEnd)
+    {
+        if (!project(gizmoPosition, center))
+            return -1;
+
+        int picked = -1;
+        float bestDistance = 11.0f;
+        if (gizmoMode == GizmoMode.Rotation)
+        {
+            float size = gizmoWorldSize();
+            foreach (axis; 0 .. 3)
+            {
+                Vector3f u = axes[(axis + 1) % 3];
+                Vector3f v = axes[(axis + 2) % 3];
+                GizmoPoint previous;
+                bool hasPrevious = false;
+                foreach (step; 0 .. 49)
+                {
+                    float angle = 2.0f * PI * cast(float)step / 48.0f;
+                    Vector3f localPoint = (u * cos(angle) + v * sin(angle)) * size;
+                    GizmoPoint current;
+                    if (project(gizmoPosition + gizmoOrientation.toMatrix4x4.rotate(localPoint), current))
+                    {
+                        if (hasPrevious)
+                        {
+                            float d = segmentDistance(mouse, previous, current);
+                            if (d < bestDistance)
+                            {
+                                bestDistance = d;
+                                picked = cast(int)axis;
+                            }
+                        }
+                        previous = current;
+                        hasPrevious = true;
+                    }
+                    else
+                    {
+                        hasPrevious = false;
+                    }
+                }
+            }
+            axisEnd = center;
+            return picked;
+        }
+
+        foreach (axis; 0 .. 3)
+        {
+            GizmoPoint axisCenter, end;
+            if (!axisScreenPoints(cast(int)axis, axisCenter, end))
+                continue;
+            float d = segmentDistance(mouse, axisCenter, end);
+            if (d < bestDistance)
+            {
+                bestDistance = d;
+                picked = cast(int)axis;
+                axisEnd = end;
+            }
+        }
+        return picked;
+    }
+
+    void setDraggingGizmo(bool dragging)
+    {
+        draggingGizmo = dragging;
+        if (ui && ui.scene.freeview)
+            ui.scene.freeview.active = ui.scene.focused && !dragging;
+    }
+
+    void handleGizmoInput()
+    {
+        updateViewport();
+        if (!ui || !ui.scene.selectedEntity || gizmoMode == GizmoMode.Disabled)
+        {
+            setDraggingGizmo(false);
+            draggedAxis = -1;
+            return;
+        }
+
+        if (igIsMouseClicked(ImGuiMouseButton.Left) && !ui.io.WantCaptureMouse)
+        {
+            GizmoPoint mouse = GizmoPoint(ui.io.MousePos.x, ui.io.MousePos.y);
+            int viewportTop = cast(int)ui.editorViewport.position.y;
+            int viewportBottom = viewportTop + cast(int)ui.editorViewport.size.y;
+            if (mouse.x >= ui.editorViewport.position.x &&
+                mouse.x <= ui.editorViewport.position.x + ui.editorViewport.size.x &&
+                mouse.y >= viewportTop && mouse.y <= viewportBottom)
+            {
+                GizmoPoint center, axisEnd;
+                draggedAxis = pickAxis(mouse, center, axisEnd);
+                bool hasRotationStart = false;
+                if (draggedAxis >= 0 && gizmoMode == GizmoMode.Rotation)
+                {
+                    hasRotationStart = rotationPlaneVector(
+                        draggedAxis, mouse, previousRotationVector);
+                    if (hasRotationStart)
+                        rotationPlaneAngle(draggedAxis, mouse, dragStartRotationAngle);
+                    else
+                        hasRotationStart = projectedRotationAngle(
+                            draggedAxis, mouse, dragStartRotationAngle);
+                    if (hasRotationStart && !rotationPlaneVector(
+                        draggedAxis, mouse, previousRotationVector))
+                    {
+                        Matrix4x4f orientation = gizmoOrientation.toMatrix4x4;
+                        Vector3f u = orientation.rotate(axes[(draggedAxis + 1) % 3]);
+                        Vector3f v = orientation.rotate(axes[(draggedAxis + 2) % 3]);
+                        previousRotationVector =
+                            u * cos(dragStartRotationAngle) + v * sin(dragStartRotationAngle);
+                    }
+                    if (!hasRotationStart)
+                        draggedAxis = -1;
+                }
+                if (draggedAxis >= 0)
+                {
+                    setDraggingGizmo(true);
+                    dragStartX = mouse.x;
+                    dragStartY = mouse.y;
+                    dragStartPosition = ui.scene.selectedEntity.position;
+                    dragStartRotation = ui.scene.selectedEntity.rotation;
+                    dragStartScale = ui.scene.selectedEntity.scaling;
+                    dragStartGizmoOrientation = gizmoOrientation;
+                    previousRotationAngle = dragStartRotationAngle;
+                    accumulatedRotationAngle = 0.0f;
+                    previousMouseX = mouse.x;
+                    previousMouseY = mouse.y;
+                    dragAxisX = axisEnd.x - center.x;
+                    dragAxisY = axisEnd.y - center.y;
+                    dragAxisLength = sqrt(dragAxisX * dragAxisX + dragAxisY * dragAxisY);
+                    if (dragAxisLength < 1.0f)
+                        dragAxisLength = 1.0f;
+                }
+            }
+        }
+
+        if (!draggingGizmo)
+            return;
+
+        if (!igIsMouseDown(ImGuiMouseButton.Left))
+        {
+            setDraggingGizmo(false);
+            draggedAxis = -1;
+            return;
+        }
+
+        GizmoPoint mouse = GizmoPoint(ui.io.MousePos.x, ui.io.MousePos.y);
+        float dx = mouse.x - dragStartX;
+        float dy = mouse.y - dragStartY;
+        Entity entity = ui.scene.selectedEntity;
+
+        if (gizmoMode == GizmoMode.Translation)
+        {
+            float projectedDelta = (dx * dragAxisX + dy * dragAxisY) / dragAxisLength;
+            Vector3f worldDelta = worldAxis(draggedAxis) *
+                (projectedDelta * gizmoWorldSize() / dragAxisLength);
+            Matrix4x4f parentInverse = Matrix4x4f.identity;
+            if (entity.parent)
+                parentInverse = entity.parent.invAbsoluteTransformation;
+            else if (entity.world)
+                parentInverse = entity.world.rootInvTransformation;
+            entity.position = dragStartPosition + parentInverse.rotate(worldDelta);
+        }
+        else if (gizmoMode == GizmoMode.Scale)
+        {
+            float projectedDelta = (dx * dragAxisX + dy * dragAxisY) / dragAxisLength;
+            float value = max(0.001f, dragStartScale[draggedAxis] + projectedDelta / 100.0f);
+            entity.scaling[draggedAxis] = value;
+        }
+        else if (gizmoMode == GizmoMode.Rotation)
+        {
+            gizmoOrientation = dragStartGizmoOrientation;
+            float angleDelta = 0.0f;
+            Vector3f currentRotationVector;
+            if (rotationPlaneVector(draggedAxis, mouse, currentRotationVector))
+            {
+                Vector3f axis = worldAxis(draggedAxis);
+                angleDelta = atan2(
+                    dot(axis, cross(previousRotationVector, currentRotationVector)),
+                    dot(previousRotationVector, currentRotationVector));
+                previousRotationVector = currentRotationVector;
+                previousRotationAngle += angleDelta;
+                accumulatedRotationAngle += angleDelta;
+            }
+            else if (projectedRotationDelta(
+                draggedAxis,
+                previousRotationAngle,
+                mouse.x - previousMouseX,
+                mouse.y - previousMouseY,
+                angleDelta))
+            {
+                previousRotationAngle += angleDelta;
+                accumulatedRotationAngle += angleDelta;
+                Matrix4x4f orientation = dragStartGizmoOrientation.toMatrix4x4;
+                Vector3f u = orientation.rotate(axes[(draggedAxis + 1) % 3]);
+                Vector3f v = orientation.rotate(axes[(draggedAxis + 2) % 3]);
+                previousRotationVector =
+                    u * cos(previousRotationAngle) + v * sin(previousRotationAngle);
+            }
+            previousMouseX = mouse.x;
+            previousMouseY = mouse.y;
+            entity.rotation = dragStartRotation *
+                rotationQuaternion!float(axes[draggedAxis], accumulatedRotationAngle);
+        }
     }
     
     void update(Time t)
@@ -88,15 +511,7 @@ class InteractionOverlay: EventListener
         if (gizmoMode == GizmoMode.Disabled)
             return;
         
-        if (ui)
-        {
-            int w = cast(int)ui.editorViewport.size.x;
-            int h = cast(int)ui.editorViewport.size.y;
-            int x = cast(int)ui.editorViewport.position.x;
-            int y = eventManager.drawableHeight - cast(int)ui.editorViewport.position.y - h;
-            view.resize(w, h);
-            view.setPosition(x, y);
-        }
+        updateViewport();
         
         glScissor(view.x, view.y, view.width, view.height);
         glViewport(view.x, view.y, view.width, view.height);
@@ -110,9 +525,13 @@ class InteractionOverlay: EventListener
         
         gizmoShader.bind();
         
-        gizmoTransformation = translationMatrix(gizmoPosition);
+        float size = gizmoWorldSize();
+        Matrix4x4f orientationMatrix = gizmoOrientation.toMatrix4x4;
+        gizmoTransformation = translationMatrix(gizmoPosition) *
+            orientationMatrix * scaleMatrix(Vector3f(size, size, size));
         
-        state.modelViewMatrix = viewMatrix * (gizmoTransformation * scaleMatrix(selectionBoundingBoxScale));
+        state.modelViewMatrix = viewMatrix *
+            (translationMatrix(gizmoPosition) * orientationMatrix * scaleMatrix(selectionBoundingBoxScale));
         state.projectionMatrix = view.projectionMatrix;
         gizmoShader.bindParameters(&state);
         selectionBoundingBox.render(&state);
@@ -123,6 +542,10 @@ class InteractionOverlay: EventListener
         gizmoShader.bindParameters(&state);
         if (gizmoMode == GizmoMode.Translation)
             translationAxes.render(&state);
+        else if (gizmoMode == GizmoMode.Rotation)
+            rotationLines.render(&state);
+        else if (gizmoMode == GizmoMode.Scale)
+            scaleLines.render(&state);
         gizmoShader.unbindParameters(&state);
         
         gizmoShader.unbind();
@@ -130,6 +553,99 @@ class InteractionOverlay: EventListener
         glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
+    }
+}
+
+class GizmoLines: Owner, Drawable
+{
+    Array!Vector3f vertices;
+    Array!Vector4f colors;
+    GLuint vertexBuffer;
+    GLuint colorBuffer;
+    GLuint vertexArray;
+    bool dataReady;
+
+    this(GizmoMode mode, Owner owner)
+    {
+        super(owner);
+
+        immutable Vector4f[3] axisColors = [
+            Vector4f(1.0f, 0.0f, 0.0f, 1.0f),
+            Vector4f(0.0f, 1.0f, 0.0f, 1.0f),
+            Vector4f(0.0f, 0.0f, 1.0f, 1.0f)
+        ];
+
+        if (mode == GizmoMode.Rotation)
+        {
+            foreach (axis; 0 .. 3)
+            {
+                Vector3f u = InteractionOverlay.axes[(axis + 1) % 3];
+                Vector3f v = InteractionOverlay.axes[(axis + 2) % 3];
+                foreach (step; 0 .. 48)
+                {
+                    float angle0 = 2.0f * PI * cast(float)step / 48.0f;
+                    float angle1 = 2.0f * PI * cast(float)(step + 1) / 48.0f;
+                    appendLine(
+                        u * cos(angle0) + v * sin(angle0),
+                        u * cos(angle1) + v * sin(angle1),
+                        axisColors[axis]);
+                }
+            }
+        }
+        else
+        {
+            foreach (axis; 0 .. 3)
+            {
+                Vector3f direction = InteractionOverlay.axes[axis];
+                appendLine(Vector3f(0.0f, 0.0f, 0.0f), direction, axisColors[axis]);
+                Vector3f crossAxis = InteractionOverlay.axes[(axis + 1) % 3] * 0.08f;
+                appendLine(direction - crossAxis, direction + crossAxis, axisColors[axis]);
+            }
+        }
+    }
+
+    ~this()
+    {
+        vertices.free();
+        colors.free();
+        // TODO: release OpenGL buffers
+    }
+
+    void appendLine(Vector3f a, Vector3f b, Vector4f color)
+    {
+        vertices.append(a);
+        vertices.append(b);
+        colors.append(color);
+        colors.append(color);
+    }
+
+    void render(GraphicsState* state)
+    {
+        if (!dataReady)
+        {
+            glGenBuffers(1, &vertexBuffer);
+            glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+            glBufferData(GL_ARRAY_BUFFER, vertices.length * float.sizeof * 3, vertices.data.ptr, GL_STATIC_DRAW);
+
+            glGenBuffers(1, &colorBuffer);
+            glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
+            glBufferData(GL_ARRAY_BUFFER, colors.length * float.sizeof * 4, colors.data.ptr, GL_STATIC_DRAW);
+
+            glGenVertexArrays(1, &vertexArray);
+            glBindVertexArray(vertexArray);
+            glEnableVertexAttribArray(VertexAttrib.Vertices);
+            glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+            glVertexAttribPointer(VertexAttrib.Vertices, 3, GL_FLOAT, GL_FALSE, 0, null);
+            glEnableVertexAttribArray(VertexAttrib.Colors);
+            glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
+            glVertexAttribPointer(VertexAttrib.Colors, 4, GL_FLOAT, GL_FALSE, 0, null);
+            glBindVertexArray(0);
+            dataReady = true;
+        }
+
+        glBindVertexArray(vertexArray);
+        glDrawArrays(GL_LINES, 0, cast(int)vertices.length);
+        glBindVertexArray(0);
     }
 }
 
