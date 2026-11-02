@@ -171,7 +171,7 @@ class InteractionOverlay: EventListener
         float ndcX = 2.0f * (mouse.x - view.x) / view.width - 1.0f;
         float viewportTop = eventManager.drawableHeight - view.y - view.height;
         float ndcY = 1.0f - 2.0f * (mouse.y - viewportTop) / view.height;
-        Matrix4x4f inverseViewProjection = (view.viewMatrix * view.projectionMatrix).inverse;
+        Matrix4x4f inverseViewProjection = (view.projectionMatrix * view.viewMatrix).inverse;
         Vector4f nearClip = Vector4f(ndcX, ndcY, -1.0f, 1.0f) * inverseViewProjection;
         Vector4f farClip = Vector4f(ndcX, ndcY, 1.0f, 1.0f) * inverseViewProjection;
         if (abs(nearClip.w) < 0.000001f || abs(farClip.w) < 0.000001f)
