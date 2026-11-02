@@ -41,6 +41,7 @@ class EditorScene: Scene
     uint fileVersion = 100;
     
     Game game;
+    Camera camera;
     FreeviewComponent freeview;
     InteractionOverlay overlay;
     
@@ -106,7 +107,7 @@ class EditorScene: Scene
         game.postProcessingRenderer.fxaaEnabled = fxaaEnabled;
         game.postProcessingRenderer.lutEnabled = false;
         
-        auto camera = addCamera();
+        camera = addCamera();
         freeview = New!FreeviewComponent(eventManager, camera);
         freeview.setZoom(5);
         freeview.setRotation(30.0f, -45.0f, 0.0f);

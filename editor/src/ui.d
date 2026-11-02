@@ -212,6 +212,8 @@ class EditorUI: EventListener
             {
                 foreach(e; scene.world.entities)
                 {
+                    if (e is scene.camera)
+                        continue;
                     if (e.parent is null)
                         renderEntitesTree(e);
                 }
