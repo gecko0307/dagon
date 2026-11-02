@@ -1,3 +1,8 @@
+Dagon 1.7.0 - TBD
+-----------------
+- **Editor**
+  - Implement transformation gizmos.
+
 Dagon 1.6.3 - 17 Oct, 2026
 --------------------------
 - **Extensions**

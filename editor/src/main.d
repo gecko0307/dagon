@@ -35,6 +35,9 @@ class EditorApp: Game
 {
     EditorUI ui;
     TextureAsset aFileIcon;
+    TextureAsset aTranslateIcon;
+    TextureAsset aRotateIcon;
+    TextureAsset aScaleIcon;
     
     this(uint w, uint h, bool fullscreen, string title, string[] args)
     {
@@ -48,6 +51,18 @@ class EditorApp: Game
         aFileIcon = New!TextureAsset(this);
         scene.assetManager.preloadAsset(aFileIcon, "data/icons/file.png");
         ui.iconFile = aFileIcon.texture;
+
+        aTranslateIcon = New!TextureAsset(this);
+        scene.assetManager.preloadAsset(aTranslateIcon, "data/icons/btn_translate.png");
+        ui.iconTranslate = aTranslateIcon.texture;
+
+        aRotateIcon = New!TextureAsset(this);
+        scene.assetManager.preloadAsset(aRotateIcon, "data/icons/btn_rotate.png");
+        ui.iconRotate = aRotateIcon.texture;
+
+        aScaleIcon = New!TextureAsset(this);
+        scene.assetManager.preloadAsset(aScaleIcon, "data/icons/btn_scale.png");
+        ui.iconScale = aScaleIcon.texture;
         
         scene.overlay.ui = ui;
     }

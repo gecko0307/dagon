@@ -63,6 +63,9 @@ class EditorUI: EventListener
         EditorViewport(ImVec2(0, 0), ImVec2(0, 0));
     
     Texture iconFile;
+    Texture iconTranslate;
+    Texture iconRotate;
+    Texture iconScale;
     
     string lastSaveFilename;
     
@@ -132,6 +135,9 @@ class EditorUI: EventListener
         
         viewport = cast(ImGuiViewport*)igGetMainViewport();
         
+        renderMenu();
+        renderToolbar();
+
         ImGuiID mainDockSpaceId = igDockSpaceOverViewport(viewport, ImGuiDockNodeFlags.PassthruCentralNode);
         
         // Get free space size to update the render viewport
@@ -157,7 +163,6 @@ class EditorUI: EventListener
             }
         }
         
-        renderMenu();
         renderContent();
         renderSettings();
         renderProperties();
@@ -202,6 +207,47 @@ class EditorUI: EventListener
             igEndMenu();
         }
         igEndMainMenuBar();
+    }
+
+    void renderToolbar()
+    {
+        ImGuiWindowFlags windowFlags = ImGuiWindowFlags.NoTitleBar |
+            ImGuiWindowFlags.NoResize |
+            ImGuiWindowFlags.NoMove |
+            ImGuiWindowFlags.NoScrollbar |
+            ImGuiWindowFlags.NoSavedSettings |
+            ImGuiWindowFlags.NoDocking;
+        if (igBeginViewportSideBar("##MainToolbar", viewport, ImGuiDir.Up, 48.0f, windowFlags))
+        {
+            if (toolbarModeButton("##Translate", iconTranslate, GizmoMode.Translation, "Move"))
+                scene.overlay.gizmoMode = GizmoMode.Translation;
+            igSameLine();
+            if (toolbarModeButton("##Rotate", iconRotate, GizmoMode.Rotation, "Rotate"))
+                scene.overlay.gizmoMode = GizmoMode.Rotation;
+            igSameLine();
+            if (toolbarModeButton("##Scale", iconScale, GizmoMode.Scale, "Scale"))
+                scene.overlay.gizmoMode = GizmoMode.Scale;
+            igEnd();
+        }
+    }
+
+    bool toolbarModeButton(string id, Texture texture, GizmoMode mode, string label)
+    {
+        if (!texture)
+            return igButton(label.ptr, ImVec2(64, 0));
+
+        ImVec4 background = scene.overlay.gizmoMode == mode
+            ? ImVec4(0.26f, 0.59f, 0.98f, 0.75f)
+            : ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
+        return igImageButtonEx(
+            igGetID_Str(id.ptr),
+            cast(void*)texture.texture,
+            ImVec2(32, 32),
+            ImVec2(0, 0),
+            ImVec2(1, 1),
+            ImVec2(0, 0),
+            background,
+            ImVec4(1, 1, 1, 1));
     }
     
     void renderContent()
