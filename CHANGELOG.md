@@ -2,6 +2,7 @@ Dagon 1.7.0 - TBD
 -----------------
 - **Core**
   - New properties `Application.wintabLibraryPath`, `Application.loadedWintabSupport`
+  - Major update of the configuration DSL (`dagon.core.props`). Added referencing support (any property can be reused like a variable) and string interpolation (`"${propName}"`). Platform-specific property postfixes (`something.windows` or `something.linux`) are now first-class feature, supported universally and transparently for all properties. No need to manually check them anymore
 - **Editor**
   - Implement transformation gizmos
   - Implement an asset browser and texture thumbnail generator.

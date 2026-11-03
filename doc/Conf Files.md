@@ -1,6 +1,6 @@
 # Conf Files
 
-Conf is a configuration file format in Dagon.
+This guide covers Dagon's built-in runtime configuration system. The engine uses `*.conf` files to store user-controllable settings.
 
 ## Syntax
 
@@ -10,13 +10,14 @@ Conf file consists of key-value pairs separated by semicolon:
 optionName: optionValue;
 ```
 
-optionValue can be a number, a boolean value, a vector (an array), or a double-quoted string:
+`optionValue` can be a number, a boolean value, a vector (an array), a double-quoted string, or an identifier:
 
 ```
 numberOption: 10;
 boolOption: true;
 vectorOption: [0.5, 1.0, 1.0];
 stringOption: "Some text";
+copyOption: numberOption;
 ```
 
 Boolean `false` is the same as number `0`, `true` is the same as `1`.
@@ -25,6 +26,58 @@ Lines beginning with double slash (`//`) are treated as comments and ignored:
 
 ```
 // Some comment
+```
+
+Properties can reference other properties:
+
+```
+numberOption2: numberOption;
+```
+
+String values can contain references to other properties using the `${propertyName}` syntax. The reference is replaced with the value of the specified property when the configuration is parsed:
+
+```
+baseOption: "World";
+interpolatedOption: "Hello, ${baseOption}!";
+```
+
+After parsing, `interpolatedOption` contains `"Hello, World!"`.
+
+The referenced property must be defined before it is used.
+
+A literal dollar sign can be written as `$$`:
+
+```
+price: "Cost: $$100";
+```
+
+A property can have a platform-specific variant by appending a platform postfix to its name:
+
+```
+somePath.windows.x86_64: "C:/somewhere";
+somePath.linux.x86_64: "/somewhere";
+```
+
+When running on a specific platform, its platform-specific variant overrides the generic property. If no platform-specific variant is defined, the generic value is used.
+
+Supported OS postfixes:
+
+```
+.windows
+.linux
+.mac
+.bsd
+.posix
+.android
+.ios
+```
+
+CPU postfix is optional. Supported CPU postfixes:
+
+```
+.x86
+.x86_64
+.arm
 ```
 
 ## Built-in Conf Files

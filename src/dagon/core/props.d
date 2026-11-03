@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /**
- * Provides a dynamic type system for object properties.
+ * Provides a dynamic type system and key-value property sets.
  *
  * Description:
  * The `dagon.core.props` module defines the `DProperty` struct for storing
@@ -36,7 +36,7 @@ DEALINGS IN THE SOFTWARE.
  * handling property data. Properties can be numbers, vectors, or strings,
  * and are used for configuration, serialization, and runtime data storage.
  *
- * Copyright: Timur Gafarov 2016-2025
+ * Copyright: Timur Gafarov 2016-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Timur Gafarov
  */
@@ -46,6 +46,7 @@ import std.stdio;
 import std.ascii;
 import std.conv;
 import std.string;
+import std.algorithm;
 
 import dlib.core.memory;
 import dlib.core.ownership;
@@ -232,6 +233,42 @@ struct DProperty
 }
 
 /**
+ * Removes platform-specific postfixes,
+ * ruling out identifiers that don't fit the current platform.
+ * Recognizes patterns like "something.linux.x86_64"
+ */
+string depostfix(string name)
+{
+    // CPU architecture
+    version(X86)
+        name = name.chomp(".x86");
+    else version(X86_64)
+        name = name.chomp(".x86_64");
+    else version(ARM)
+        name = name.chomp(".arm");
+    
+    // OS
+    version(Windows)
+        name = name.chomp(".windows");
+    else version(Posix)
+    {
+        version(linux)
+            name = name.chomp(".linux");
+        else version(OSX)
+            name = name.chomp(".mac");
+        else version(BSD)
+            name = name.chomp(".bsd");
+        name = name.chomp(".posix");
+    }
+    else version(Android)
+        name = name.chomp(".android");
+    else version(iOS)
+        name = name.chomp(".ios");
+    
+    return name;
+}
+
+/**
  * Stores and manages a collection of named properties.
  *
  * Description:
@@ -315,6 +352,7 @@ class Properties: Owner
      */
     void set(DPropType type, string name, string value)
     {
+        name = name.depostfix;
         auto p = name in props;
         if (p)
         {
@@ -434,6 +472,18 @@ bool isWhiteStr(string s)
     return res;
 }
 
+///
+bool isNonNumericChar(char c)
+{
+    return isAlpha(c) || c == '_';
+}
+
+///
+bool isValidIdentifierChar(char c)
+{
+    return isAlpha(c) || isDigit(c) || c == '_';
+}
+
 /**
  * Returns true if the string is a valid identifier (starts with a letter or underscore).
  *
@@ -444,7 +494,7 @@ bool isWhiteStr(string s)
  */
 bool isValidIdentifier(string s)
 {
-    return (isAlpha(s[0]) || s[0] == '_');
+    return isNonNumericChar(s[0]);
 }
 
 /**
@@ -461,6 +511,87 @@ string copyStr(T)(T[] s)
     foreach(i, c; s)
         res[i] = c;
     return cast(string)res;
+}
+
+/**
+ * Interpolates a string with known properties.
+ */
+bool interpolateString(string propName, string propValue, Properties props, ref String result)
+{
+    String output;
+    
+    size_t i = 0;
+
+    while (i < propValue.length)
+    {
+        if (propValue[i] != '$')
+        {
+            output ~= propValue[i];
+            i++;
+            continue;
+        }
+
+        // "$$" produces a literal '$'
+        if (i + 1 < propValue.length && propValue[i + 1] == '$')
+        {
+            output ~= '$';
+            i += 2;
+            continue;
+        }
+        
+        if (i + 1 < propValue.length && propValue[i + 1] == '{')
+        {
+            i++;
+            
+            size_t begin = i + 1;
+            size_t end = begin + 1;
+            
+            while(true)
+            {
+                if (end == propValue.length)
+                {
+                    logError("Unterminated interpolation in property: ", propName);
+                    output.free();
+                    return false;
+                }
+                if (propValue[end] == '}')
+                    break;
+                end++;
+            }
+            
+            auto name = propValue[begin..end];
+            
+            // Validate name
+            if (!isValidIdentifier(name))
+            {
+                logError("Illegal property name in interpolation: ", name);
+                output.free();
+                return false;
+            }
+            
+            // Detect a circular reference
+            if (name == propName)
+            {
+                logError("Circular reference: ", name);
+                output.free();
+                return false;
+            }
+            
+            auto p = name in props;
+            if (p is null)
+            {
+                logError("Undefined property: ", name);
+                output.free();
+                return false;
+            }
+            
+            output ~= p.data;
+            i = end + 1;
+        }
+    }
+
+    result = output;
+    return true;
 }
 
 /**
@@ -560,12 +691,33 @@ bool parseProperties(string input, Properties props)
                 res = false;
                 break;
             }
-
-            props.set(propType, propName, cast(string)propValue.data);
-
-            expect = Expect.PropName;
-            propName = "";
-            propValue.free();
+            
+            string rawValue = cast(string)propValue.data;
+            
+            if (rawValue.canFind('$'))
+            {
+                String interpolatedValue;
+                if (interpolateString(propName, rawValue, props, interpolatedValue))
+                {
+                    propValue.free();
+                    props.set(propType, propName, interpolatedValue.toString);
+                    expect = Expect.PropName;
+                    interpolatedValue.free();
+                }
+                else
+                {
+                    propValue.free();
+                    res = false;
+                    break;
+                }
+            }
+            else
+            {
+                props.set(propType, propName, cast(string)propValue.data);
+                expect = Expect.PropName;
+                propName = "";
+                propValue.free();
+            }
         }
         else if (expect == Expect.Value)
         {
@@ -592,10 +744,17 @@ bool parseProperties(string input, Properties props)
                 propValue.append("1");
                 expect = Expect.Semicolon;
             }
-            else
+            else if (lexeme.isNumeric)
             {
                 propType = DPropType.Number;
                 propValue.append(lexeme);
+                expect = Expect.Semicolon;
+            }
+            else
+            {
+                auto p = props[lexeme];
+                propType = p.type;
+                propValue.append(p.data);
                 expect = Expect.Semicolon;
             }
         }
