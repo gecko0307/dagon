@@ -27,8 +27,14 @@ DEALINGS IN THE SOFTWARE.
 module main;
 
 import std.stdio;
-import dagon;
+
+import dlib.core.memory;
+
+import dagon.core.time;
+import dagon.game.game;
+import dagon.resource.texture;
 import dagon.ext.imgui;
+
 import editor;
 import thumbnail;
 import ui;

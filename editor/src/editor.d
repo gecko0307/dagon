@@ -31,12 +31,30 @@ DEALINGS IN THE SOFTWARE.
 module editor;
 
 import std.algorithm;
-import std.json: JSONValue;
 import std.file: write;
-import std.math: abs;
+import std.json;
 
-import dagon;
+import dlib.core.memory;
+import dlib.math.base;
+import dlib.math.vector;
+import dlib.image.color;
+
+import dagon.core.logger;
+import dagon.core.time;
+import dagon.graphics.entity;
+import dagon.graphics.camera;
+import dagon.graphics.light;
+import dagon.graphics.shapes;
+import dagon.graphics.mesh;
+import dagon.resource.scene;
+import dagon.resource.texture;
+import dagon.resource.obj;
+import dagon.game.game;
+import dagon.game.loadingscreen;
+import dagon.render.postproc;
+import dagon.ui.freeview;
 import dagon.ext.imgui;
+
 import overlay;
 import ui;
 

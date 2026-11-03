@@ -30,13 +30,34 @@ DEALINGS IN THE SOFTWARE.
  */
 module overlay;
 
-import std.algorithm: clamp, max;
-import std.format: format;
-import std.math: PI, abs, atan2, cos, round, sin, sqrt, tan;
-import std.string: toStringz;
+import std.algorithm;
+import std.format;
+import std.string;
 
-import dagon;
+import dlib.core.memory;
+import dlib.core.ownership;
+import dlib.container.array;
+import dlib.math.base;
+import dlib.math.vector;
+import dlib.math.quaternion;
+import dlib.math.matrix;
+import dlib.math.transformation;
+import dlib.math.utils;
+
+import dagon.core.bindings;
+import dagon.core.time;
+import dagon.core.event;
+import dagon.graphics.drawable;
+import dagon.graphics.entity;
+import dagon.graphics.camera;
+import dagon.graphics.light;
+import dagon.graphics.mesh;
+import dagon.graphics.state;
+import dagon.render.view;
+import dagon.ui.axes;
+import dagon.ui.shaders.gizmo;
 import dagon.ext.imgui;
+
 import ui;
 
 enum GizmoMode

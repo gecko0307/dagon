@@ -27,17 +27,29 @@ DEALINGS IN THE SOFTWARE.
 module ui;
 
 import std.stdio;
-import std.algorithm: canFind, sort;
-import std.conv: to;
-import std.file: dirEntries, exists, mkdir, remove, rename, rmdir, SpanMode;
-import std.path: baseName, buildPath, dirName;
-import std.string: stripRight, toLower, toStringz;
-import dagon;
+import std.algorithm;
+import std.conv;
+import std.file;
+import std.path;
+import std.string;
+
+import dlib.core.memory;
+import dlib.container.array;
+
+import dagon.core.bindings;
+import dagon.core.time;
+import dagon.core.event;
+import dagon.core.application;
+import dagon.core.dialogs;
+import dagon.graphics.entity;
+import dagon.graphics.texture;
+import dagon.graphics.material;
+import dagon.render.postproc;
 import dagon.ext.imgui;
+
 import editor;
 import overlay;
 import thumbnail;
-import dlib.core.memory: Delete, New;
 
 struct EditorViewport
 {
