@@ -1,6 +1,7 @@
 # Credits
 
 ## Authors and contributors
+
 * Core engine, Newton extension, Jolt extension, IQM extension, KTX extension, Assimp extension, PhysFS extension, audio extension, video extension - [Timur Gafarov aka gecko0307](https://github.com/gecko0307)
 * Input manager, Nuklear extension - [Mateusz Muszyński aka Timu5](https://github.com/Timu5)
 * Terrain rendering, OpenSimplex noise generator - Rafał Ziemniewski
@@ -11,6 +12,7 @@
 * Bugfixes - [Björn Roberg aka roobie](https://github.com/roobie), [Isaac S.](https://github.com/isaacs-dev), [Adrien Allard aka Tichau](https://github.com/Tichau), [Ilya Lemeshko aka ijet](https://github.com/my-ijet), [Dennis Korpel aka dkorpel](https://github.com/dkorpel), [Robert Schadek aka burner](https://github.com/burner)
 
 ## Adapted third-party code
+
 * Wintab binding - [Vadim Lopatin aka buggins](https://github.com/buggins)
 * DXT1/DXT5 compressor - [Fabian Giesen](https://github.com/rygorous), [Yann Collet](https://github.com/Cyan4973)
 * BC7 compressor - [Rich Geldreich](https://github.com/richgel999)
@@ -36,6 +38,7 @@
 * Vignette shader by [Tyler Lindberg](https://github.com/TyLindberg)
 
 ## Third-party libraries
+
 Dagon and its extensions depend on the following libraries:
 * [Simple DirectMedia Layer (SDL)](https://www.libsdl.org/)
 * [SDL_Image](https://github.com/libsdl-org/SDL_image)
