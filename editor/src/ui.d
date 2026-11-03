@@ -901,15 +901,29 @@ class EditorUI: EventListener
                         else
                             thumbnailSize.x = 100.0f * aspectRatio;
                     }
-                    ImVec4 buttonBackground = selected
-                        ? ImVec4(0.20f, 0.42f, 0.68f, 1.0f)
-                        : ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+                    ImVec4 buttonBackground = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
                     ImGuiID btnId = igGetID_Str(toStringz(entry.name));
-                    if (igImageButtonEx(btnId, cast(void*)entryIcon.texture,
+                    bool pressed = igImageButtonEx(btnId, cast(void*)entryIcon.texture,
                         thumbnailSize, ImVec2(0, 0), ImVec2(1, 1),
                         ImVec2(0, 0), buttonBackground,
-                        ImVec4(1, 1, 1, 1)))
+                        ImVec4(1, 1, 1, 1));
+                    if (pressed)
                         selectedAssetPath = entryPath;
+                    if (selectedAssetPath == entryPath)
+                    {
+                        ImVec2 rectMin;
+                        ImVec2 rectMax;
+                        igGetItemRectMin(&rectMin);
+                        igGetItemRectMax(&rectMax);
+                        ImDrawList_AddRect(
+                            igGetWindowDrawList(),
+                            rectMin,
+                            rectMax,
+                            igGetColorU32(ImVec4(1.0f, 0.82f, 0.15f, 1.0f)),
+                            0.0f,
+                            ImDrawFlags.None,
+                            2.0f);
+                    }
                 }
                 else
                 {
