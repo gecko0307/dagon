@@ -68,6 +68,7 @@ class InteractionOverlay: EventListener
     Quaternionf gizmoOrientation;
     Matrix4x4f gizmoTransformation;
     Vector3f selectionBoundingBoxScale;
+    Vector3f selectionBoundingBoxBaseScale;
     GizmoLines rotationLines;
     GizmoLines scaleLines;
     bool visible = true;
@@ -122,6 +123,7 @@ class InteractionOverlay: EventListener
         gizmoTransformation = Matrix4x4f.identity;
         
         selectionBoundingBoxScale = Vector3f(1.0f, 1.0f, 1.0f);
+        selectionBoundingBoxBaseScale = Vector3f(1.0f, 1.0f, 1.0f);
     }
     
     void activeCamera(Camera camera) @property
@@ -645,6 +647,8 @@ class InteractionOverlay: EventListener
             float scaleDelta = snappedValue(projectedDelta / 100.0f, scaleSnapIncrement);
             float value = max(0.001f, dragStartScale[draggedAxis] + scaleDelta);
             entity.scaling[draggedAxis] = value;
+            selectionBoundingBoxScale[draggedAxis] =
+                selectionBoundingBoxBaseScale[draggedAxis] * abs(value);
         }
         else if (gizmoMode == GizmoMode.Rotation)
         {
@@ -685,6 +689,8 @@ class InteractionOverlay: EventListener
                 rotationQuaternion!float(axes[draggedAxis], rotationDelta);
         }
 
+        gizmoPosition = entity.positionAbsolute;
+        gizmoOrientation = entity.rotationAbsolute;
         drawDragHelper();
     }
     

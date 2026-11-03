@@ -33,6 +33,7 @@ module editor;
 import std.algorithm;
 import std.json: JSONValue;
 import std.file: write;
+import std.math: abs;
 
 import dagon;
 import dagon.ext.imgui;
@@ -174,20 +175,27 @@ class EditorScene: Scene
             Mesh mesh = cast(Mesh)e.drawable;
             if (mesh)
             {
-                overlay.selectionBoundingBoxScale = mesh.boundingBox.size;
-                overlay.selectionBoundingBoxScale.x = max(overlay.selectionBoundingBoxScale.x, 0.1f);
-                overlay.selectionBoundingBoxScale.y = max(overlay.selectionBoundingBoxScale.y, 0.1f);
-                overlay.selectionBoundingBoxScale.z = max(overlay.selectionBoundingBoxScale.z, 0.1f);
+                overlay.selectionBoundingBoxBaseScale = mesh.boundingBox.size;
+                overlay.selectionBoundingBoxBaseScale.x =
+                    max(overlay.selectionBoundingBoxBaseScale.x, 0.1f);
+                overlay.selectionBoundingBoxBaseScale.y =
+                    max(overlay.selectionBoundingBoxBaseScale.y, 0.1f);
+                overlay.selectionBoundingBoxBaseScale.z =
+                    max(overlay.selectionBoundingBoxBaseScale.z, 0.1f);
             }
             else
             {
-                overlay.selectionBoundingBoxScale = Vector3f(1.0f, 1.0f, 1.0f);
+                overlay.selectionBoundingBoxBaseScale = Vector3f(1.0f, 1.0f, 1.0f);
             }
         }
         else
         {
-            overlay.selectionBoundingBoxScale = Vector3f(1.0f, 1.0f, 1.0f);
+            overlay.selectionBoundingBoxBaseScale = Vector3f(1.0f, 1.0f, 1.0f);
         }
+        overlay.selectionBoundingBoxScale = Vector3f(
+            overlay.selectionBoundingBoxBaseScale.x * abs(e.scaling.x),
+            overlay.selectionBoundingBoxBaseScale.y * abs(e.scaling.y),
+            overlay.selectionBoundingBoxBaseScale.z * abs(e.scaling.z));
     }
     
     void save(string filename)
