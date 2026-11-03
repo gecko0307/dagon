@@ -35,6 +35,7 @@ class EditorApp: Game
 {
     EditorUI ui;
     TextureAsset aFileIcon;
+    TextureAsset aFolderIcon;
     TextureAsset aTranslateIcon;
     TextureAsset aRotateIcon;
     TextureAsset aScaleIcon;
@@ -51,6 +52,10 @@ class EditorApp: Game
         aFileIcon = New!TextureAsset(this);
         scene.assetManager.preloadAsset(aFileIcon, "data/icons/file.png");
         ui.iconFile = aFileIcon.texture;
+
+        aFolderIcon = New!TextureAsset(this);
+        scene.assetManager.preloadAsset(aFolderIcon, "data/icons/folder.png");
+        ui.iconFolder = aFolderIcon.texture;
 
         aTranslateIcon = New!TextureAsset(this);
         scene.assetManager.preloadAsset(aTranslateIcon, "data/icons/btn_translate.png");

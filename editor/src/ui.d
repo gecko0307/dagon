@@ -27,6 +27,11 @@ DEALINGS IN THE SOFTWARE.
 module ui;
 
 import std.stdio;
+import std.algorithm: canFind, sort;
+import std.conv: to;
+import std.file: dirEntries, exists, mkdir, remove, rename, rmdir, SpanMode;
+import std.path: baseName, buildPath, dirName;
+import std.string: toLower, toStringz;
 import dagon;
 import dagon.ext.imgui;
 import editor;
@@ -63,6 +68,7 @@ class EditorUI: EventListener
         EditorViewport(ImVec2(0, 0), ImVec2(0, 0));
     
     Texture iconFile;
+    Texture iconFolder;
     Texture iconTranslate;
     Texture iconRotate;
     Texture iconScale;
@@ -70,12 +76,26 @@ class EditorUI: EventListener
     string lastSaveFilename;
     
     char[256] sceneNameBuffer;
+    string assetRoot;
+    string assetDirectory;
+    string selectedAssetPath;
+    string assetBrowserMessage;
+    string assetRenameTarget;
+    string assetDeleteTarget;
+    bool assetDeleteTargetIsDirectory;
+    AssetEntry[] assetEntries;
+    char[256] assetSearchBuffer;
+    char[256] assetNameBuffer;
     
     this(Application application, EditorScene scene, string[] args)
     {
         super(application.eventManager, application);
         this.application = application;
         this.scene = scene;
+        assetSearchBuffer[] = 0;
+        assetNameBuffer[] = 0;
+        assetRoot = buildPath(application.directory, "assets");
+        refreshAssetEntries();
         
         igContext = igCreateContext(null);
         igSetCurrentContext(igContext);
@@ -494,8 +514,14 @@ class EditorUI: EventListener
                     const ImGuiPayload* payload = igAcceptDragDropPayload("ASSET");
                     if (payload)
                     {
-                        int data = *cast(int*)payload.Data;
-                        writeln("Drop asset ", data);
+                        if (payload.DataSize > 0)
+                        {
+                            auto data = cast(char*)payload.Data;
+                            size_t dataLength = cast(size_t)payload.DataSize;
+                            if (data[dataLength - 1] == '\0')
+                                dataLength--;
+                            writeln("Drop asset ", data[0 .. dataLength]);
+                        }
                     }
                     igEndDragDropTarget();
                 }
@@ -536,28 +562,194 @@ class EditorUI: EventListener
         }
     }
 
-    // TODO: dynamic array of items
-    int[] items = [
-        0, 1, 2, 3, 4
-    ];
-    
-    const(char)*[] filenames = [
-        "test1.asset",
-        "test2.asset",
-        "test3.asset",
-        "test4.asset",
-        "test5.asset"
-    ];
+    struct AssetEntry
+    {
+        string name;
+        bool isDirectory;
+        ulong size;
+    }
+
+    string currentAssetPath()
+    {
+        return assetDirectory.length == 0
+            ? assetRoot
+            : buildPath(assetRoot, assetDirectory);
+    }
+
+    string relativeAssetPath(string name)
+    {
+        string path = "assets";
+        if (assetDirectory.length != 0)
+        {
+            path ~= "/";
+            foreach (c; assetDirectory)
+                path ~= (c == '\\' ? '/' : c);
+        }
+        return path ~ "/" ~ name;
+    }
+
+    void refreshAssetEntries()
+    {
+        assetEntries.length = 0;
+        assetBrowserMessage = "";
+        string directory = currentAssetPath();
+        if (!exists(directory))
+        {
+            assetBrowserMessage = "Asset folder not found: " ~ directory;
+            return;
+        }
+
+        try
+        {
+            foreach (entry; dirEntries(directory, SpanMode.shallow))
+            {
+                if (entry.isSymlink)
+                    continue;
+                assetEntries ~= AssetEntry(
+                    baseName(entry.name),
+                    entry.isDir,
+                    entry.size);
+            }
+            sort!((a, b) {
+                if (a.isDirectory != b.isDirectory)
+                    return a.isDirectory;
+                return a.name < b.name;
+            })(assetEntries);
+        }
+        catch (Exception e)
+        {
+            assetBrowserMessage = "Unable to read folder: " ~ e.msg;
+        }
+    }
+
+    bool isValidAssetName(string name)
+    {
+        if (name.length == 0 || name == "." || name == "..")
+            return false;
+        foreach (c; name)
+        {
+            if (c < 32 || c == '/' || c == '\\' || c == ':' ||
+                c == '<' || c == '>' || c == '"' || c == '|' ||
+                c == '?' || c == '*' || c == '\0')
+                return false;
+        }
+        return name[$ - 1] != ' ' && name[$ - 1] != '.';
+    }
+
+    void setAssetNameBuffer(string name)
+    {
+        assetNameBuffer[] = 0;
+        size_t length = name.length < assetNameBuffer.length - 1
+            ? name.length
+            : assetNameBuffer.length - 1;
+        assetNameBuffer[0 .. length] = name[0 .. length];
+    }
+
+    string assetNameInput()
+    {
+        size_t length = 0;
+        while (length < assetNameBuffer.length && assetNameBuffer[length] != 0)
+            length++;
+        return assetNameBuffer[0 .. length].idup;
+    }
+
+    void createAssetFolder()
+    {
+        string name = assetNameInput();
+        if (!isValidAssetName(name))
+        {
+            assetBrowserMessage = "Enter a valid folder name.";
+            return;
+        }
+
+        string path = buildPath(currentAssetPath(), name);
+        if (exists(path))
+        {
+            assetBrowserMessage = "An item with that name already exists.";
+            return;
+        }
+        try
+        {
+            mkdir(path);
+            refreshAssetEntries();
+            if (assetBrowserMessage.length == 0)
+                assetBrowserMessage = "Created folder: " ~ name;
+        }
+        catch (Exception e)
+        {
+            assetBrowserMessage = "Unable to create folder: " ~ e.msg;
+        }
+    }
+
+    void renameAsset()
+    {
+        string name = assetNameInput();
+        if (!isValidAssetName(name))
+        {
+            assetBrowserMessage = "Enter a valid name.";
+            return;
+        }
+
+        string destination = buildPath(currentAssetPath(), name);
+        string source = buildPath(currentAssetPath(), assetRenameTarget);
+        if (exists(destination))
+        {
+            assetBrowserMessage = "An item with that name already exists.";
+            return;
+        }
+        try
+        {
+            rename(source, destination);
+            selectedAssetPath = relativeAssetPath(name);
+            refreshAssetEntries();
+            if (assetBrowserMessage.length == 0)
+                assetBrowserMessage = "Renamed to: " ~ name;
+        }
+        catch (Exception e)
+        {
+            assetBrowserMessage = "Unable to rename item: " ~ e.msg;
+        }
+    }
+
+    void deleteAsset()
+    {
+        string path = buildPath(currentAssetPath(), assetDeleteTarget);
+        try
+        {
+            if (assetDeleteTargetIsDirectory)
+                rmdir(path);
+            else
+                remove(path);
+            selectedAssetPath = "";
+            string deletedName = assetDeleteTarget;
+            assetDeleteTarget = "";
+            refreshAssetEntries();
+            if (assetBrowserMessage.length == 0)
+                assetBrowserMessage = "Deleted: " ~ deletedName;
+        }
+        catch (Exception e)
+        {
+            assetDeleteTarget = "";
+            assetBrowserMessage = "Unable to delete item (folders must be empty): " ~ e.msg;
+        }
+    }
+
+    bool matchesAssetSearch(string name, string query)
+    {
+        return query.length == 0 ||
+            toLower(name).canFind(toLower(query));
+    }
 
     void renderMaterialBrowser()
     {
+        int[5] materialItems = [0, 1, 2, 3, 4];
         ImVec2 size;
         igGetWindowSize(&size);
         float winWidth = size.x;
         int columns = cast(int)(winWidth / 64.0f);
         columns = columns < 1 ? 1 : columns;
         igColumns(columns, null, false);
-        foreach(i, item; items)
+        foreach(i, item; materialItems)
         {
             igPushID_Int(cast(uint)i);
 
@@ -590,59 +782,212 @@ class EditorUI: EventListener
     {
         if (igBegin("Asset Browser", null, ImGuiWindowFlags.NoCollapse))
         {
+            if (igButton("Up", ImVec2(0, 0)) && assetDirectory.length != 0)
+            {
+                string parent = dirName(assetDirectory);
+                assetDirectory = parent == "." ? "" : parent;
+                selectedAssetPath = "";
+                refreshAssetEntries();
+            }
+            igSameLine();
+            if (igButton("Refresh"))
+                refreshAssetEntries();
+            igSameLine();
+            if (igButton("New Folder"))
+            {
+                setAssetNameBuffer("");
+                igOpenPopup("Create asset folder");
+            }
+            igSameLine();
+            string displayPath = "assets";
+            if (assetDirectory.length != 0)
+                displayPath ~= "/" ~ assetDirectory;
+            igText("%s", toStringz(displayPath));
+            igSetNextItemWidth(200.0f);
+            igInputText("Filter##AssetSearch", assetSearchBuffer.ptr, assetSearchBuffer.length);
+
+            if (igBeginPopup("Create asset folder", ImGuiWindowFlags.AlwaysAutoResize))
+            {
+                igInputText("Folder name", assetNameBuffer.ptr, assetNameBuffer.length);
+                if (igButton("Create"))
+                {
+                    createAssetFolder();
+                    igCloseCurrentPopup();
+                }
+                igSameLine();
+                if (igButton("Cancel"))
+                    igCloseCurrentPopup();
+                igEndPopup();
+            }
+
             ImVec2 size;
             igGetWindowSize(&size);
             float winWidth = size.x;
             int columns = cast(int)(winWidth / 128.0f);
             columns = columns < 1 ? 1 : columns;
             igColumns(columns, null, false);
-            foreach(i, item; items)
+            size_t searchLength = 0;
+            while (searchLength < assetSearchBuffer.length &&
+                assetSearchBuffer[searchLength] != 0)
+                searchLength++;
+            string search = assetSearchBuffer[0 .. searchLength].idup;
+            bool openRenamePopup;
+            bool openDeletePopup;
+            bool navigateToDirectory;
+            string requestedDirectory;
+            size_t visibleEntries;
+            foreach(i, entry; assetEntries)
             {
+                if (!matchesAssetSearch(entry.name, search))
+                    continue;
+                visibleEntries++;
+
                 igPushID_Int(cast(uint)i);
 
                 igBeginGroup();
-
-                Texture btnTexture;
-                // TODO: thumbnail cache for assets
-                if (iconFile) btnTexture = iconFile;
-                
-                if (btnTexture)
+                string entryPath = relativeAssetPath(entry.name);
+                bool selected = selectedAssetPath == entryPath;
+                Texture entryIcon = entry.isDirectory ? iconFolder : iconFile;
+                if (entryIcon)
                 {
-                    ImGuiID btnId = igGetID_Str(filenames[i]);
-                    igImageButtonEx(btnId, cast(void*)btnTexture.texture,
-                        ImVec2(100, 100), ImVec2(0, 0), ImVec2(1, 1), ImVec2(0, 0), ImVec4(0, 0, 0, 1), ImVec4(1, 1, 1, 1));
+                    ImVec4 buttonBackground = selected
+                        ? ImVec4(0.20f, 0.42f, 0.68f, 1.0f)
+                        : ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+                    ImGuiID btnId = igGetID_Str(toStringz(entry.name));
+                    if (igImageButtonEx(btnId, cast(void*)entryIcon.texture,
+                        ImVec2(100, 100), ImVec2(0, 0), ImVec2(1, 1),
+                        ImVec2(0, 0), buttonBackground,
+                        ImVec4(1, 1, 1, 1)))
+                        selectedAssetPath = entryPath;
                 }
                 else
                 {
-                    igButton(filenames[i], ImVec2(100, 100));
-                }
-                
-                if (igBeginDragDropSource())
-                {
-                    igSetDragDropPayload("ASSET", &items[i], int.sizeof);
-                    igText(filenames[i]);
-                    igEndDragDropSource();
+                    ImVec4 buttonColor = selected
+                        ? ImVec4(0.20f, 0.42f, 0.68f, 1.0f)
+                        : ImVec4(0.26f, 0.59f, 0.98f, 0.40f);
+                    igPushStyleColor(ImGuiCol.Button, buttonColor);
+                    if (igButton(entry.isDirectory ? "[DIR]" : "[FILE]",
+                        ImVec2(100, 100)))
+                        selectedAssetPath = entryPath;
+                    igPopStyleColor();
                 }
 
                 if (igIsItemHovered() && igIsMouseDoubleClicked(ImGuiMouseButton.Left))
                 {
-                    writeln("Double click ", i);
-                    // TODO:
-                    // if item is folder, then change directory;
-                    // if item is file, then open file with system shell.
-                }
-                else if (igIsItemClicked(ImGuiMouseButton.Right))
-                {
-                    writeln("Right click ", i);
-                    // TODO: show menu
+                    if (entry.isDirectory)
+                    {
+                        requestedDirectory = assetDirectory.length == 0
+                            ? entry.name
+                            : buildPath(assetDirectory, entry.name);
+                        navigateToDirectory = true;
+                    }
+                    else
+                    {
+                        selectedAssetPath = relativeAssetPath(entry.name);
+                    }
                 }
 
-                igTextWrapped(filenames[i]);
+                if (igBeginDragDropSource())
+                {
+                    string path = relativeAssetPath(entry.name);
+                    string payloadPath = path ~ "\0";
+                    igSetDragDropPayload("ASSET", payloadPath.ptr, payloadPath.length);
+                    igText("%s", toStringz(path));
+                    igEndDragDropSource();
+                }
+
+                if (igBeginPopupContextItem("Asset item context"))
+                {
+                    if (igMenuItem("Rename"))
+                    {
+                        assetRenameTarget = entry.name;
+                        setAssetNameBuffer(entry.name);
+                        openRenamePopup = true;
+                    }
+                    if (igMenuItem("Delete"))
+                    {
+                        assetDeleteTarget = entry.name;
+                        assetDeleteTargetIsDirectory = entry.isDirectory;
+                        openDeletePopup = true;
+                    }
+                    igEndPopup();
+                }
+
+                if (entry.isDirectory)
+                    igTextWrapped("[%s]", toStringz(entry.name));
+                else
+                    igTextWrapped("%s", toStringz(entry.name));
+                if (!entry.isDirectory)
+                {
+                    string sizeLabel = to!string(entry.size) ~ " bytes";
+                    igTextDisabled("%s", toStringz(sizeLabel));
+                }
+
                 igEndGroup();
 
                 igPopID();
                 igNextColumn();
             }
+            igColumns(1);
+            if (navigateToDirectory)
+            {
+                assetDirectory = requestedDirectory;
+                selectedAssetPath = "";
+                refreshAssetEntries();
+            }
+
+            if (openRenamePopup)
+                igOpenPopup("Rename asset");
+            if (assetRenameTarget.length != 0 &&
+                igBeginPopup("Rename asset", ImGuiWindowFlags.AlwaysAutoResize))
+            {
+                igInputText("New name", assetNameBuffer.ptr, assetNameBuffer.length);
+                if (igButton("Rename"))
+                {
+                    renameAsset();
+                    assetRenameTarget = "";
+                    igCloseCurrentPopup();
+                }
+                igSameLine();
+                if (igButton("Cancel"))
+                {
+                    assetRenameTarget = "";
+                    igCloseCurrentPopup();
+                }
+                igEndPopup();
+            }
+
+            if (openDeletePopup)
+                igOpenPopup("Confirm asset delete");
+            if (assetDeleteTarget.length != 0 &&
+                igBeginPopupModal("Confirm asset delete", null, ImGuiWindowFlags.AlwaysAutoResize))
+            {
+                igText("Delete '%s'?", toStringz(assetDeleteTarget));
+                if (assetDeleteTargetIsDirectory)
+                    igTextDisabled("Only empty folders can be deleted.");
+                if (igButton("Delete"))
+                {
+                    deleteAsset();
+                    igCloseCurrentPopup();
+                }
+                igSameLine();
+                if (igButton("Cancel"))
+                {
+                    assetDeleteTarget = "";
+                    igCloseCurrentPopup();
+                }
+                igEndPopup();
+            }
+
+            if (assetBrowserMessage.length != 0)
+                igTextWrapped("%s", toStringz(assetBrowserMessage));
+            else if (selectedAssetPath.length != 0)
+                igTextWrapped("%s", toStringz(selectedAssetPath));
+            else if (visibleEntries == 0 && !navigateToDirectory)
+                igTextDisabled(assetEntries.length == 0
+                    ? "This folder is empty."
+                    : "No matching assets.");
+
             igEnd();
         }
     }
