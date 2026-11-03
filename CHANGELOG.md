@@ -1,7 +1,8 @@
 Dagon 1.7.0 - TBD
 -----------------
 - **Editor**
-  - Implement transformation gizmos.
+  - Implement transformation gizmos
+  - Implement an asset browser and texture thumbnail generator.
 
 Dagon 1.6.3 - 17 Oct, 2026
 --------------------------
