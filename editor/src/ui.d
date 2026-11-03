@@ -31,11 +31,13 @@ import std.algorithm: canFind, sort;
 import std.conv: to;
 import std.file: dirEntries, exists, mkdir, remove, rename, rmdir, SpanMode;
 import std.path: baseName, buildPath, dirName;
-import std.string: toLower, toStringz;
+import std.string: stripRight, toLower, toStringz;
 import dagon;
 import dagon.ext.imgui;
 import editor;
 import overlay;
+import thumbnail;
+import dlib.core.memory: Delete, New;
 
 struct EditorViewport
 {
@@ -69,6 +71,7 @@ class EditorUI: EventListener
     
     Texture iconFile;
     Texture iconFolder;
+    ThumbnailGenerator thumbnailGenerator;
     Texture iconTranslate;
     Texture iconRotate;
     Texture iconScale;
@@ -120,6 +123,7 @@ class EditorUI: EventListener
 
     ~this()
     {
+        freeAssetEntryNames();
         assetEntries.free();
     }
     
@@ -572,6 +576,8 @@ class EditorUI: EventListener
         string name;
         bool isDirectory;
         ulong size;
+        Texture thumbnail;
+        bool thumbnailChecked;
     }
 
     string currentAssetPath()
@@ -579,6 +585,23 @@ class EditorUI: EventListener
         return assetDirectory.length == 0
             ? assetRoot
             : buildPath(assetRoot, assetDirectory);
+    }
+
+    string copyAssetEntryName(string name)
+    {
+        // Array storage is GC-free, so entry names need explicit ownership.
+        auto copy = New!(char[])(name.length);
+        copy[] = name[];
+        return cast(string)copy;
+    }
+
+    void freeAssetEntryNames()
+    {
+        foreach (entry; assetEntries)
+        {
+            auto name = cast(char[])entry.name;
+            Delete(name);
+        }
     }
 
     string relativeAssetPath(string name)
@@ -595,6 +618,7 @@ class EditorUI: EventListener
 
     void refreshAssetEntries()
     {
+        freeAssetEntryNames();
         assetEntries.resize(0, AssetEntry.init);
         assetBrowserMessage = "";
         string directory = currentAssetPath();
@@ -611,9 +635,11 @@ class EditorUI: EventListener
                 if (entry.isSymlink)
                     continue;
                 assetEntries.append(AssetEntry(
-                    baseName(entry.name),
+                    copyAssetEntryName(baseName(stripRight(entry.name, "\\/"))),
                     entry.isDir,
-                    entry.size));
+                    entry.size,
+                    null,
+                    false));
             }
             sort!((a, b) {
                 if (a.isDirectory != b.isDirectory)
@@ -841,7 +867,7 @@ class EditorUI: EventListener
             bool navigateToDirectory;
             string requestedDirectory;
             size_t visibleEntries;
-            foreach(i, entry; assetEntries)
+            foreach(i, ref entry; assetEntries)
             {
                 if (!matchesAssetSearch(entry.name, search))
                     continue;
@@ -852,15 +878,35 @@ class EditorUI: EventListener
                 igBeginGroup();
                 string entryPath = relativeAssetPath(entry.name);
                 bool selected = selectedAssetPath == entryPath;
-                Texture entryIcon = entry.isDirectory ? iconFolder : iconFile;
+                if (!entry.isDirectory && !entry.thumbnailChecked)
+                {
+                    if (thumbnailGenerator)
+                        entry.thumbnail = thumbnailGenerator.getThumbnail(entryPath);
+                    entry.thumbnailChecked = true;
+                }
+                Texture entryIcon = entry.isDirectory
+                    ? iconFolder
+                    : entry.thumbnail;
+                if (!entry.isDirectory && !entryIcon)
+                    entryIcon = iconFile;
                 if (entryIcon)
                 {
+                    ImVec2 thumbnailSize = ImVec2(100, 100);
+                    if (entryIcon.width > 0 && entryIcon.height > 0)
+                    {
+                        float aspectRatio = cast(float)entryIcon.width /
+                            cast(float)entryIcon.height;
+                        if (aspectRatio > 1.0f)
+                            thumbnailSize.y = 100.0f / aspectRatio;
+                        else
+                            thumbnailSize.x = 100.0f * aspectRatio;
+                    }
                     ImVec4 buttonBackground = selected
                         ? ImVec4(0.20f, 0.42f, 0.68f, 1.0f)
                         : ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
                     ImGuiID btnId = igGetID_Str(toStringz(entry.name));
                     if (igImageButtonEx(btnId, cast(void*)entryIcon.texture,
-                        ImVec2(100, 100), ImVec2(0, 0), ImVec2(1, 1),
+                        thumbnailSize, ImVec2(0, 0), ImVec2(1, 1),
                         ImVec2(0, 0), buttonBackground,
                         ImVec4(1, 1, 1, 1)))
                         selectedAssetPath = entryPath;
@@ -881,9 +927,9 @@ class EditorUI: EventListener
                 {
                     if (entry.isDirectory)
                     {
-                        requestedDirectory = assetDirectory.length == 0
+                        requestedDirectory = (assetDirectory.length == 0
                             ? entry.name
-                            : buildPath(assetDirectory, entry.name);
+                            : buildPath(assetDirectory, entry.name)).idup;
                         navigateToDirectory = true;
                     }
                     else
@@ -905,13 +951,13 @@ class EditorUI: EventListener
                 {
                     if (igMenuItem("Rename"))
                     {
-                        assetRenameTarget = entry.name;
+                        assetRenameTarget = entry.name.idup;
                         setAssetNameBuffer(entry.name);
                         openRenamePopup = true;
                     }
                     if (igMenuItem("Delete"))
                     {
-                        assetDeleteTarget = entry.name;
+                        assetDeleteTarget = entry.name.idup;
                         assetDeleteTargetIsDirectory = entry.isDirectory;
                         openDeletePopup = true;
                     }

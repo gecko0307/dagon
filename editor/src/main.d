@@ -26,9 +26,11 @@ DEALINGS IN THE SOFTWARE.
 */
 module main;
 
+import std.stdio;
 import dagon;
 import dagon.ext.imgui;
 import editor;
+import thumbnail;
 import ui;
 
 class EditorApp: Game
@@ -46,6 +48,7 @@ class EditorApp: Game
         auto scene = New!EditorScene(this);
         currentScene = scene;
         ui = New!EditorUI(this, scene, args);
+        ui.thumbnailGenerator = New!ThumbnailGenerator(scene.assetManager);
         eventManager.onProcessEvent = &ui.onProcessEvent;
         dynamicViewport = false;
         
@@ -100,4 +103,5 @@ void main(string[] args)
     EditorApp app = New!EditorApp(1280, 720, false, "Dagon Editor", args);
     app.run();
     Delete(app);
+    writeln("Allocated memory: ", allocatedMemory);
 }
