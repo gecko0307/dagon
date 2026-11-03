@@ -83,7 +83,7 @@ class EditorUI: EventListener
     string assetRenameTarget;
     string assetDeleteTarget;
     bool assetDeleteTargetIsDirectory;
-    AssetEntry[] assetEntries;
+    Array!AssetEntry assetEntries;
     char[256] assetSearchBuffer;
     char[256] assetNameBuffer;
     
@@ -116,6 +116,11 @@ class EditorUI: EventListener
         
         sceneNameBuffer[] = 0;
         sceneNameBuffer[0..scene.name.length] = scene.name;
+    }
+
+    ~this()
+    {
+        assetEntries.free();
     }
     
     static extern(C) int nameInputCallback(ImGuiInputTextCallbackData* data)
@@ -590,7 +595,7 @@ class EditorUI: EventListener
 
     void refreshAssetEntries()
     {
-        assetEntries.length = 0;
+        assetEntries.resize(0, AssetEntry.init);
         assetBrowserMessage = "";
         string directory = currentAssetPath();
         if (!exists(directory))
@@ -605,16 +610,16 @@ class EditorUI: EventListener
             {
                 if (entry.isSymlink)
                     continue;
-                assetEntries ~= AssetEntry(
+                assetEntries.append(AssetEntry(
                     baseName(entry.name),
                     entry.isDir,
-                    entry.size);
+                    entry.size));
             }
             sort!((a, b) {
                 if (a.isDirectory != b.isDirectory)
                     return a.isDirectory;
                 return a.name < b.name;
-            })(assetEntries);
+            })(assetEntries.data);
         }
         catch (Exception e)
         {
