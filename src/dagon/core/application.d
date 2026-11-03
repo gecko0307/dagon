@@ -424,6 +424,9 @@ class Application: EventListener, Updateable
     /// Path to the FreeType library.
     string freetypeLibraryPath = "auto";
     
+    /// Path to the Wintab library.
+    string wintabLibraryPath = "auto";
+    
     /// Path to the folder containing translation files.
     string localePath = "locale";
     
@@ -450,7 +453,7 @@ class Application: EventListener, Updateable
     SDLImageSupport loadedSDLImageSupport;
     
     /**
-     * Loaded OpenGL API support version.
+     * Loaded OpenGL API support version. This is not an actual OpenGL library version!
      * Dagon requires at least GLSupport.gl43 and will not run on a lower version.
      */
     GLSupport loadedGLSupport;
@@ -462,6 +465,12 @@ class Application: EventListener, Updateable
      * To check actually loaded library version, use `ftVersion`.
      */
     FTSupport loadedFTSupport;
+    
+    /**
+     * Loaded Wintab API support version. This is not an actual Wintab library version!
+     * Dagon assumes WintabSupport.v140 and will not run on a lower version.
+     */
+    WintabSupport loadedWintabSupport;
     
     /// SDL_Image available or not.
     bool sdlImagePresent = true;
@@ -784,6 +793,8 @@ class Application: EventListener, Updateable
             sdlLibraryPath = config.props["SDL2Image.path"].toString;
         if ("FreeType.path" in config.props)
             freetypeLibraryPath = config.props["FreeType.path"].toString;
+        if ("Wintab.path" in config.props)
+            wintabLibraryPath = config.props["Wintab.path"].toString;
         version(Windows)
         {
             if ("SDL2.path.windows" in config.props)
@@ -792,6 +803,8 @@ class Application: EventListener, Updateable
                 sdlImageLibraryPath = config.props["SDL2Image.path.windows"].toString;
             if ("FreeType.path.windows" in config.props)
                 freetypeLibraryPath = config.props["FreeType.path.windows"].toString;
+            if ("Wintab.path.windows" in config.props)
+                wintabLibraryPath = config.props["Wintab.path.windows"].toString;
             
             if (sdlLibraryPath == "auto")
                 sdlLibraryPath = "SDL2.dll";
@@ -801,6 +814,9 @@ class Application: EventListener, Updateable
             
             if (freetypeLibraryPath == "auto")
                 freetypeLibraryPath = "";
+            
+            if (wintabLibraryPath == "auto")
+                wintabLibraryPath = "";
         }
         else version(linux)
         {
@@ -810,6 +826,8 @@ class Application: EventListener, Updateable
                 sdlImageLibraryPath = config.props["SDL2Image.path.linux"].toString;
             if ("FreeType.path.linux" in config.props)
                 freetypeLibraryPath = config.props["FreeType.path.linux"].toString;
+            if ("Wintab.path.linux" in config.props)
+                wintabLibraryPath = config.props["Wintab.path.linux"].toString;
             
             if (sdlLibraryPath == "auto")
                 sdlLibraryPath = "libSDL2-2.0.so.0";
@@ -819,6 +837,9 @@ class Application: EventListener, Updateable
             
             if (freetypeLibraryPath == "auto")
                 freetypeLibraryPath = "";
+            
+            if (wintabLibraryPath == "auto")
+                wintabLibraryPath = "";
         }
         
         if (sdlLibraryPath.length)
@@ -876,8 +897,11 @@ class Application: EventListener, Updateable
         // Init Wintab
         version(Windows)
         {
-            // TODO: wintabLibraryPath
-            WintabSupport loadedWintabSupport = loadWintab();
+            if (wintabLibraryPath.length)
+                loadedWintabSupport = loadWintab(wintabLibraryPath.toStringz);
+            else
+                loadedWintabSupport = loadWintab();
+            
             if (loadedWintabSupport != WintabSupport.v140)
             {
                 if (loadedWintabSupport == WintabSupport.badLibrary)
