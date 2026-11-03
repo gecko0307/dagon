@@ -182,7 +182,8 @@ class EditorUI: EventListener
             if (igMenuItem("Open..."))
             {
                 string filename = openFileDialog(["*.json"], "Select a scene file");
-                scene.open(filename);
+                if (filename.length != 0)
+                    scene.open(filename);
             }
             
             if (igMenuItem("Save"))
@@ -190,13 +191,15 @@ class EditorUI: EventListener
                 if (lastSaveFilename.length == 0)
                     lastSaveFilename = saveFileDialog(["*.json"], "Save scene to a file");
                 
-                scene.save(lastSaveFilename);
+                if (lastSaveFilename.length != 0)
+                    scene.save(lastSaveFilename);
             }
             
             if (igMenuItem("Save as..."))
             {
                 lastSaveFilename = saveFileDialog(["*.json"], "Save scene to a file");
-                scene.save(lastSaveFilename);
+                if (lastSaveFilename.length != 0)
+                    scene.save(lastSaveFilename);
             }
             
             if (igMenuItem("Exit"))
