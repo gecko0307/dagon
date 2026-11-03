@@ -227,8 +227,60 @@ class EditorUI: EventListener
             igSameLine();
             if (toolbarModeButton("##Scale", iconScale, GizmoMode.Scale, "Scale"))
                 scene.overlay.gizmoMode = GizmoMode.Scale;
+
+            if (scene.overlay.gizmoMode != GizmoMode.Disabled)
+            {
+                igSameLine();
+                igPushStyleVar(ImGuiStyleVar.FramePadding, ImVec2(4.0f, 8.0f));
+                if (scene.overlay.gizmoMode == GizmoMode.Translation)
+                {
+                    toolbarIncrementInput(
+                        "##MoveStep",
+                        "Move increment",
+                        &scene.overlay.translationSnapIncrement,
+                        "%.3f");
+                    if (scene.overlay.translationSnapIncrement <= 0.0f)
+                        scene.overlay.translationSnapIncrement =
+                            InteractionOverlay.defaultTranslationSnapIncrement;
+                }
+                else if (scene.overlay.gizmoMode == GizmoMode.Rotation)
+                {
+                    toolbarIncrementInput(
+                        "##RotateStep",
+                        "Rotation increment in degrees",
+                        &scene.overlay.rotationSnapIncrementDegrees,
+                        "%.1f");
+                    if (scene.overlay.rotationSnapIncrementDegrees <= 0.0f)
+                        scene.overlay.rotationSnapIncrementDegrees =
+                            InteractionOverlay.defaultRotationSnapIncrementDegrees;
+                }
+                else if (scene.overlay.gizmoMode == GizmoMode.Scale)
+                {
+                    toolbarIncrementInput(
+                        "##ScaleStep",
+                        "Scale increment",
+                        &scene.overlay.scaleSnapIncrement,
+                        "%.3f");
+                    if (scene.overlay.scaleSnapIncrement <= 0.0f)
+                        scene.overlay.scaleSnapIncrement =
+                            InteractionOverlay.defaultScaleSnapIncrement;
+                }
+                igPopStyleVar();
+            }
             igEnd();
         }
+    }
+
+    void toolbarIncrementInput(
+        string id,
+        string tooltip,
+        float* value,
+        string numberFormat)
+    {
+        igSetNextItemWidth(80.0f);
+        igInputFloat(id.ptr, value, 0.0f, 0.0f, numberFormat.ptr);
+        if (igIsItemHovered())
+            igSetTooltip("%s", tooltip.ptr);
     }
 
     bool toolbarModeButton(string id, Texture texture, GizmoMode mode, string label)

@@ -32,7 +32,7 @@ module overlay;
 
 import std.algorithm: clamp, max;
 import std.format: format;
-import std.math: PI, abs, atan2, cos, sin, sqrt, tan;
+import std.math: PI, abs, atan2, cos, round, sin, sqrt, tan;
 import std.string: toStringz;
 
 import dagon;
@@ -49,6 +49,14 @@ enum GizmoMode
 
 class InteractionOverlay: EventListener
 {
+    enum float defaultTranslationSnapIncrement = 1.0f;
+    enum float defaultRotationSnapIncrementDegrees = 15.0f;
+    enum float defaultScaleSnapIncrement = 0.1f;
+
+    float translationSnapIncrement = defaultTranslationSnapIncrement;
+    float rotationSnapIncrementDegrees = defaultRotationSnapIncrementDegrees;
+    float scaleSnapIncrement = defaultScaleSnapIncrement;
+
     EditorUI ui;
     GraphicsState state;
     RenderView view;
@@ -301,6 +309,24 @@ class InteractionOverlay: EventListener
         return sqrt((p.x - px) * (p.x - px) + (p.y - py) * (p.y - py));
     }
 
+    float snappedValue(float value, float increment)
+    {
+        if (!ui.io.KeyCtrl)
+            return value;
+        return round(value / max(increment, 0.0001f)) * max(increment, 0.0001f);
+    }
+
+    void drawHelperLabel(ImDrawList* drawList, GizmoPoint position, string label)
+    {
+        ImVec2 textPosition = ImVec2(position.x + 14.0f, position.y + 10.0f);
+        ImDrawList_AddText(
+            drawList,
+            ImVec2(textPosition.x + 1.0f, textPosition.y + 1.0f),
+            0xFF000000,
+            label.toStringz);
+        ImDrawList_AddText(drawList, textPosition, 0xFFF0F0F0, label.toStringz);
+    }
+
     void drawHelperArrow(ImDrawList* drawList, GizmoPoint start, GizmoPoint end, ImU32 color)
     {
         float dx = end.x - start.x;
@@ -347,19 +373,44 @@ class InteractionOverlay: EventListener
             GizmoPoint center;
             if (project(gizmoPosition, center))
             {
-                float mouseOffsetX = ui.io.MousePos.x - center.x;
-                float mouseOffsetY = ui.io.MousePos.y - center.y;
-                float projectedDistance =
-                    (mouseOffsetX * dragAxisX + mouseOffsetY * dragAxisY) / dragAxisLength;
+                float mouseDeltaX = ui.io.MousePos.x - dragStartX;
+                float mouseDeltaY = ui.io.MousePos.y - dragStartY;
+                float projectedDelta =
+                    (mouseDeltaX * dragAxisX + mouseDeltaY * dragAxisY) / dragAxisLength;
+                float projectedDistance;
+                string label;
+                if (gizmoMode == GizmoMode.Translation)
+                {
+                    float worldDistance = projectedDelta * gizmoWorldSize() / dragAxisLength;
+                    worldDistance = snappedValue(worldDistance, translationSnapIncrement);
+                    projectedDistance = worldDistance * dragAxisLength / gizmoWorldSize();
+                    label = format("%.2f", worldDistance);
+                }
+                else
+                {
+                    float scaleDelta = snappedValue(projectedDelta / 100.0f, scaleSnapIncrement);
+                    float scaleValue = max(
+                        0.001f,
+                        dragStartScale[draggedAxis] + scaleDelta);
+                    projectedDistance = (scaleValue - dragStartScale[draggedAxis]) * 100.0f;
+                    label = format("%.2f", scaleValue);
+                }
                 GizmoPoint end = GizmoPoint(
                     center.x + dragAxisX / dragAxisLength * projectedDistance,
                     center.y + dragAxisY / dragAxisLength * projectedDistance);
                 drawHelperArrow(drawList, center, end, 0xFFF0F0F0);
+                drawHelperLabel(
+                    drawList,
+                    GizmoPoint(ui.io.MousePos.x, ui.io.MousePos.y),
+                    label);
             }
         }
         else if (gizmoMode == GizmoMode.Rotation)
         {
-            float angleDelta = clamp(accumulatedRotationAngle, -2.0f * PI, 2.0f * PI);
+            float angleDelta = snappedValue(
+                accumulatedRotationAngle,
+                degtorad(rotationSnapIncrementDegrees));
+            angleDelta = clamp(angleDelta, -2.0f * PI, 2.0f * PI);
             float currentAngle = dragStartRotationAngle + angleDelta;
             float size = gizmoWorldSize();
             Matrix4x4f orientation = dragStartGizmoOrientation.toMatrix4x4;
@@ -418,16 +469,7 @@ class InteractionOverlay: EventListener
                         1.0f);
                     drawHelperArrow(drawList, arrowStart, cursor, 0xFFF0F0F0);
                     string angleLabel = format("%.1f deg", angleDelta * 180.0f / PI);
-                    ImDrawList_AddText(
-                        drawList,
-                        ImVec2(cursor.x + 14.0f, cursor.y + 10.0f),
-                        0xFF000000,
-                        angleLabel.toStringz);
-                    ImDrawList_AddText(
-                        drawList,
-                        ImVec2(cursor.x + 13.0f, cursor.y + 9.0f),
-                        0xFFF0F0F0,
-                        angleLabel.toStringz);
+                    drawHelperLabel(drawList, cursor, angleLabel);
                 }
             }
         }
@@ -586,8 +628,10 @@ class InteractionOverlay: EventListener
         if (gizmoMode == GizmoMode.Translation)
         {
             float projectedDelta = (dx * dragAxisX + dy * dragAxisY) / dragAxisLength;
+            float worldDistance = projectedDelta * gizmoWorldSize() / dragAxisLength;
+            worldDistance = snappedValue(worldDistance, translationSnapIncrement);
             Vector3f worldDelta = worldAxis(draggedAxis) *
-                (projectedDelta * gizmoWorldSize() / dragAxisLength);
+                worldDistance;
             Matrix4x4f parentInverse = Matrix4x4f.identity;
             if (entity.parent)
                 parentInverse = entity.parent.invAbsoluteTransformation;
@@ -598,7 +642,8 @@ class InteractionOverlay: EventListener
         else if (gizmoMode == GizmoMode.Scale)
         {
             float projectedDelta = (dx * dragAxisX + dy * dragAxisY) / dragAxisLength;
-            float value = max(0.001f, dragStartScale[draggedAxis] + projectedDelta / 100.0f);
+            float scaleDelta = snappedValue(projectedDelta / 100.0f, scaleSnapIncrement);
+            float value = max(0.001f, dragStartScale[draggedAxis] + scaleDelta);
             entity.scaling[draggedAxis] = value;
         }
         else if (gizmoMode == GizmoMode.Rotation)
@@ -633,8 +678,11 @@ class InteractionOverlay: EventListener
             }
             previousMouseX = mouse.x;
             previousMouseY = mouse.y;
+            float rotationDelta = snappedValue(
+                accumulatedRotationAngle,
+                degtorad(rotationSnapIncrementDegrees));
             entity.rotation = dragStartRotation *
-                rotationQuaternion!float(axes[draggedAxis], accumulatedRotationAngle);
+                rotationQuaternion!float(axes[draggedAxis], rotationDelta);
         }
 
         drawDragHelper();
