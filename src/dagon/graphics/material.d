@@ -179,7 +179,7 @@ class Material: Owner
     /// Parallax mapping bias.
     float parallaxBias = -0.01f;
 
-    /// Alpha mask factor (for terrain texturing layer material). Used if `maskTexture` is not specified
+    /// Alpha mask factor (for terrain texturing layer material). Used if `maskTexture` is not specified.
     float maskFactor = 1.0f;
 
     /// Parallax mapping mode.
@@ -194,7 +194,7 @@ class Material: Owner
     /// Texture mapping mode.
     int textureMappingMode = VertexUV;
 
-    /// If `true`, disables all shading. Renderer-specific option. Currently is not supported in deferred pipeline.
+    /// If `true`, the surface is not affected by any scene lights and determined only by self-illumination. This property is only used in the forward mode.
     bool shadeless = false;
 
     /// If `true`, invert the Y channel of the normal map.

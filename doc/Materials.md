@@ -74,3 +74,5 @@ Intermediate values blend between standard Lambertian diffusion and subsurface d
 `colorWrite`, `depthWrite` - enable write to color buffer (or GBuffer) and depth buffer, respectively.
 
 `outputColor`, `outputNormal`, `outputPBR`, `outputEmission` - enable writing to the corresponding render target in G-buffer.
+
+`shadeless` - this property is only used in the forward mode (if `blendMode` is not `Opaque`). If it is set to `true`, the surface is not affected by any scene lights and determined only by self-illumination (`emissionFactor` and `emissionTexture`).
