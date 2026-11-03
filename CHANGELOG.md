@@ -1,5 +1,7 @@
 Dagon 1.7.0 - TBD
 -----------------
+- **Core**
+  - New properties `Application.wintabLibraryPath`, `Application.loadedWintabSupport`
 - **Editor**
   - Implement transformation gizmos
   - Implement an asset browser and texture thumbnail generator.
