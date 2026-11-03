@@ -31,7 +31,9 @@ DEALINGS IN THE SOFTWARE.
 module overlay;
 
 import std.algorithm: clamp, max;
+import std.format: format;
 import std.math: PI, abs, atan2, cos, sin, sqrt, tan;
+import std.string: toStringz;
 
 import dagon;
 import dagon.ext.imgui;
@@ -299,6 +301,140 @@ class InteractionOverlay: EventListener
         return sqrt((p.x - px) * (p.x - px) + (p.y - py) * (p.y - py));
     }
 
+    void drawHelperArrow(ImDrawList* drawList, GizmoPoint start, GizmoPoint end, ImU32 color)
+    {
+        float dx = end.x - start.x;
+        float dy = end.y - start.y;
+        float length = sqrt(dx * dx + dy * dy);
+        if (length < 0.001f)
+            return;
+
+        float directionX = dx / length;
+        float directionY = dy / length;
+        float baseX = end.x - directionX * 10.0f;
+        float baseY = end.y - directionY * 10.0f;
+        float perpendicularX = -directionY * 4.0f;
+        float perpendicularY = directionX * 4.0f;
+
+        ImVec2 lineStart = ImVec2(start.x, start.y);
+        ImVec2 lineEnd = ImVec2(end.x, end.y);
+        ImDrawList_AddLine(drawList, lineStart, lineEnd, 0xCC000000, 4.0f);
+        ImDrawList_AddLine(drawList, lineStart, lineEnd, color, 2.0f);
+        ImDrawList_AddTriangleFilled(
+            drawList,
+            lineEnd,
+            ImVec2(baseX + perpendicularX, baseY + perpendicularY),
+            ImVec2(baseX - perpendicularX, baseY - perpendicularY),
+            color);
+    }
+
+    void drawDragHelper()
+    {
+        if (!draggingGizmo || !ui)
+            return;
+
+        ImDrawList* drawList = igGetForegroundDrawList();
+        ImVec2 clipMin = ImVec2(
+            ui.editorViewport.position.x,
+            ui.editorViewport.position.y);
+        ImVec2 clipMax = ImVec2(
+            clipMin.x + ui.editorViewport.size.x,
+            clipMin.y + ui.editorViewport.size.y);
+        ImDrawList_PushClipRect(drawList, clipMin, clipMax, true);
+
+        if (gizmoMode == GizmoMode.Translation || gizmoMode == GizmoMode.Scale)
+        {
+            GizmoPoint center;
+            if (project(gizmoPosition, center))
+            {
+                float mouseOffsetX = ui.io.MousePos.x - center.x;
+                float mouseOffsetY = ui.io.MousePos.y - center.y;
+                float projectedDistance =
+                    (mouseOffsetX * dragAxisX + mouseOffsetY * dragAxisY) / dragAxisLength;
+                GizmoPoint end = GizmoPoint(
+                    center.x + dragAxisX / dragAxisLength * projectedDistance,
+                    center.y + dragAxisY / dragAxisLength * projectedDistance);
+                drawHelperArrow(drawList, center, end, 0xFFF0F0F0);
+            }
+        }
+        else if (gizmoMode == GizmoMode.Rotation)
+        {
+            float angleDelta = clamp(accumulatedRotationAngle, -2.0f * PI, 2.0f * PI);
+            float currentAngle = dragStartRotationAngle + angleDelta;
+            float size = gizmoWorldSize();
+            Matrix4x4f orientation = dragStartGizmoOrientation.toMatrix4x4;
+            Vector3f u = orientation.rotate(axes[(draggedAxis + 1) % 3]);
+            Vector3f v = orientation.rotate(axes[(draggedAxis + 2) % 3]);
+            int segments = max(1, cast(int)(abs(angleDelta) * 24.0f / PI));
+            GizmoPoint previous;
+            bool hasPrevious = false;
+
+            foreach (step; 0 .. segments + 1)
+            {
+                float angle = dragStartRotationAngle +
+                    angleDelta * cast(float)step / cast(float)segments;
+                Vector3f ringPoint = gizmoPosition +
+                    (u * cos(angle) + v * sin(angle)) * size;
+                GizmoPoint current;
+                if (project(ringPoint, current))
+                {
+                    if (hasPrevious)
+                        ImDrawList_AddLine(
+                            drawList,
+                            ImVec2(previous.x, previous.y),
+                            ImVec2(current.x, current.y),
+                            0xFF55DDFF,
+                            2.0f);
+                    previous = current;
+                    hasPrevious = true;
+                }
+                else
+                {
+                    hasPrevious = false;
+                }
+            }
+
+            GizmoPoint center, tangentPoint;
+            float direction = angleDelta < 0.0f ? -1.0f : 1.0f;
+            Vector3f tangentPosition = gizmoPosition +
+                (u * cos(currentAngle + direction * 0.05f) +
+                v * sin(currentAngle + direction * 0.05f)) * size;
+            if (project(gizmoPosition, center) && project(tangentPosition, tangentPoint))
+            {
+                float tangentX = tangentPoint.x - center.x;
+                float tangentY = tangentPoint.y - center.y;
+                float tangentLength = sqrt(tangentX * tangentX + tangentY * tangentY);
+                if (tangentLength > 0.001f)
+                {
+                    GizmoPoint cursor = GizmoPoint(ui.io.MousePos.x, ui.io.MousePos.y);
+                    GizmoPoint arrowStart = GizmoPoint(
+                        cursor.x - tangentX / tangentLength * 24.0f,
+                        cursor.y - tangentY / tangentLength * 24.0f);
+                    ImDrawList_AddLine(
+                        drawList,
+                        ImVec2(center.x, center.y),
+                        ImVec2(cursor.x, cursor.y),
+                        0x99F0F0F0,
+                        1.0f);
+                    drawHelperArrow(drawList, arrowStart, cursor, 0xFFF0F0F0);
+                    string angleLabel = format("%.1f deg", angleDelta * 180.0f / PI);
+                    ImDrawList_AddText(
+                        drawList,
+                        ImVec2(cursor.x + 14.0f, cursor.y + 10.0f),
+                        0xFF000000,
+                        angleLabel.toStringz);
+                    ImDrawList_AddText(
+                        drawList,
+                        ImVec2(cursor.x + 13.0f, cursor.y + 9.0f),
+                        0xFFF0F0F0,
+                        angleLabel.toStringz);
+                }
+            }
+        }
+
+        ImDrawList_PopClipRect(drawList);
+    }
+
     int pickAxis(GizmoPoint mouse, out GizmoPoint center, out GizmoPoint axisEnd)
     {
         if (!project(gizmoPosition, center))
@@ -500,6 +636,8 @@ class InteractionOverlay: EventListener
             entity.rotation = dragStartRotation *
                 rotationQuaternion!float(axes[draggedAxis], accumulatedRotationAngle);
         }
+
+        drawDragHelper();
     }
     
     void update(Time t)
