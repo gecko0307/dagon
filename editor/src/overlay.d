@@ -88,10 +88,19 @@ class InteractionOverlay: EventListener
     Vector3f previousRotationVector;
     float previousMouseX;
     float previousMouseY;
+
     Quaternionf dragStartGizmoOrientation;
     Vector3f dragStartPosition;
     Quaternionf dragStartRotation;
     Vector3f dragStartScale;
+
+    Vector3f dragStartGizmoPosition;
+    Vector3f dragAxisDirection;
+    float dragStartAxisParam;
+    float dragDistance;     // snapped world distance (translation)
+    float dragStartAxisOffset; // click offset along the screen axis (scale)
+
+    static immutable ImU32[3] axisLineColors = [0xFF4B4BFF, 0xFF6EE06E, 0xFFFF8B4B];
     
     struct GizmoPoint
     {
@@ -375,40 +384,39 @@ class InteractionOverlay: EventListener
 
         if (gizmoMode == GizmoMode.Translation || gizmoMode == GizmoMode.Scale)
         {
-            GizmoPoint center;
-            if (project(gizmoPosition, center))
+            GizmoPoint mouse = GizmoPoint(ui.io.MousePos.x, ui.io.MousePos.y);
+            GizmoPoint dot;
+            bool hasDot = false;
+            string label;
+
+            if (gizmoMode == GizmoMode.Translation)
             {
-                float mouseDeltaX = ui.io.MousePos.x - dragStartX;
-                float mouseDeltaY = ui.io.MousePos.y - dragStartY;
-                float projectedDelta =
-                    (mouseDeltaX * dragAxisX + mouseDeltaY * dragAxisY) / dragAxisLength;
-                float projectedDistance;
-                string label;
-                if (gizmoMode == GizmoMode.Translation)
-                {
-                    float worldDistance = projectedDelta * gizmoWorldSize() / dragAxisLength;
-                    worldDistance = snappedValue(worldDistance, translationSnapIncrement);
-                    projectedDistance = worldDistance * dragAxisLength / gizmoWorldSize();
-                    label = format("%.2f", worldDistance);
-                }
-                else
-                {
-                    float scaleDelta = snappedValue(projectedDelta / 100.0f, scaleSnapIncrement);
-                    float scaleValue = max(
-                        0.001f,
-                        dragStartScale[draggedAxis] + scaleDelta);
-                    projectedDistance = (scaleValue - dragStartScale[draggedAxis]) * 100.0f;
-                    label = format("%.2f", scaleValue);
-                }
-                GizmoPoint end = GizmoPoint(
-                    center.x + dragAxisX / dragAxisLength * projectedDistance,
-                    center.y + dragAxisY / dragAxisLength * projectedDistance);
-                drawHelperArrow(drawList, center, end, 0xFFF0F0F0);
-                drawHelperLabel(
-                    drawList,
-                    GizmoPoint(ui.io.MousePos.x, ui.io.MousePos.y),
-                    label);
+                drawAxisLine(drawList, dragStartGizmoPosition, dragAxisDirection, axisLineColors[draggedAxis]);
+                hasDot = project(dragStartGizmoPosition + dragAxisDirection * dragDistance, dot);
+                label = format("%.2f", dragDistance);
             }
+            else
+            {
+                GizmoPoint center;
+                if (project(gizmoPosition, center))
+                {
+                    drawAxisLine(drawList, gizmoPosition, dragAxisDirection, axisLineColors[draggedAxis]);
+
+                    float dirX = dragAxisX / dragAxisLength;
+                    float dirY = dragAxisY / dragAxisLength;
+                    float rawDelta = (ui.io.MousePos.x - dragStartX) * dirX + (ui.io.MousePos.y - dragStartY) * dirY;
+                    float scaleDelta = snappedValue(rawDelta / 100.0f, scaleSnapIncrement);
+                    float value = max(0.001f, dragStartScale[draggedAxis] + scaleDelta);
+                    float along = dragStartAxisOffset + (value - dragStartScale[draggedAxis]) * 100.0f;
+                    dot = GizmoPoint(center.x + dirX * along, center.y + dirY * along);
+                    hasDot = true;
+                    label = format("%.2f", value);
+                }
+            }
+
+            if (hasDot)
+                ImDrawList_AddCircleFilled(drawList, ImVec2(dot.x, dot.y), 5.0f, 0xFFF0F0F0, 16);
+            drawHelperLabel(drawList, mouse, label);
         }
         else if (gizmoMode == GizmoMode.Rotation)
         {
@@ -593,6 +601,11 @@ class InteractionOverlay: EventListener
                     if (!hasRotationStart)
                         draggedAxis = -1;
                 }
+
+                if (draggedAxis >= 0 && gizmoMode == GizmoMode.Translation &&
+                    !axisParameter(mouse, gizmoPosition, worldAxis(draggedAxis), dragStartAxisParam))
+                    draggedAxis = -1;
+                
                 if (draggedAxis >= 0)
                 {
                     setDraggingGizmo(true);
@@ -611,6 +624,10 @@ class InteractionOverlay: EventListener
                     dragAxisLength = sqrt(dragAxisX * dragAxisX + dragAxisY * dragAxisY);
                     if (dragAxisLength < 1.0f)
                         dragAxisLength = 1.0f;
+                    dragStartGizmoPosition = gizmoPosition;
+                    dragAxisDirection = worldAxis(draggedAxis);
+                    dragDistance = 0.0f;
+                    dragStartAxisOffset = ((mouse.x - center.x) * dragAxisX + (mouse.y - center.y) * dragAxisY) / dragAxisLength;
                 }
             }
         }
@@ -632,11 +649,11 @@ class InteractionOverlay: EventListener
 
         if (gizmoMode == GizmoMode.Translation)
         {
-            float projectedDelta = (dx * dragAxisX + dy * dragAxisY) / dragAxisLength;
-            float worldDistance = projectedDelta * gizmoWorldSize() / dragAxisLength;
-            worldDistance = snappedValue(worldDistance, translationSnapIncrement);
-            Vector3f worldDelta = worldAxis(draggedAxis) *
-                worldDistance;
+            float t;
+            if (axisParameter(mouse, dragStartGizmoPosition, dragAxisDirection, t))
+                dragDistance = snappedValue(t - dragStartAxisParam, translationSnapIncrement);
+
+            Vector3f worldDelta = dragAxisDirection * dragDistance;
             Matrix4x4f parentInverse = Matrix4x4f.identity;
             if (entity.parent)
                 parentInverse = entity.parent.invAbsoluteTransformation;
@@ -767,6 +784,85 @@ class InteractionOverlay: EventListener
         glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
+    }
+
+    bool mouseRay(GizmoPoint mouse, out Vector3f origin, out Vector3f direction)
+    {
+        if (!view.width || !view.height)
+            return false;
+
+        float ndcX = 2.0f * (mouse.x - view.x) / view.width - 1.0f;
+        float viewportTop = eventManager.drawableHeight - view.y - view.height;
+        float ndcY = 1.0f - 2.0f * (mouse.y - viewportTop) / view.height;
+        Matrix4x4f inv = (view.projectionMatrix * view.viewMatrix).inverse;
+        Vector4f n = Vector4f(ndcX, ndcY, -1.0f, 1.0f) * inv;
+        Vector4f f = Vector4f(ndcX, ndcY,  1.0f, 1.0f) * inv;
+        if (abs(n.w) < 0.000001f || abs(f.w) < 0.000001f)
+            return false;
+
+        origin = Vector3f(n.x / n.w, n.y / n.w, n.z / n.w);
+        Vector3f farPoint = Vector3f(f.x / f.w, f.y / f.w, f.z / f.w);
+        direction = (farPoint - origin).normalized;
+        return true;
+    }
+
+    // Parameter t of the point on line (axisPoint + axisDir * t) closest to the mouse ray
+    bool axisParameter(GizmoPoint mouse, Vector3f axisPoint, Vector3f axisDir, out float t)
+    {
+        Vector3f origin, ray;
+        if (!mouseRay(mouse, origin, ray))
+            return false;
+
+        float b = dot(axisDir, ray);
+        float denom = 1.0f - b * b;
+        if (denom < 0.001f) // axis nearly parallel to the view ray
+            return false;
+
+        Vector3f w = axisPoint - origin;
+        t = (b * dot(ray, w) - dot(axisDir, w)) / denom;
+        return true;
+    }
+
+    // Projects a world segment, clipping it against the camera near plane
+    bool projectSegmentClipped(Vector3f a, Vector3f b, out GizmoPoint sa, out GizmoPoint sb)
+    {
+        if (!view.width || !view.height)
+            return false;
+
+        Vector4f ca = Vector4f(a.x, a.y, a.z, 1.0f) * view.viewMatrix * view.projectionMatrix;
+        Vector4f cb = Vector4f(b.x, b.y, b.z, 1.0f) * view.viewMatrix * view.projectionMatrix;
+        enum float nearW = 0.01f;
+        if (ca.w < nearW && cb.w < nearW)
+            return false;
+
+        if (ca.w < nearW)
+        {
+            float k = (nearW - ca.w) / (cb.w - ca.w);
+            ca = Vector4f(ca.x + (cb.x - ca.x) * k, ca.y + (cb.y - ca.y) * k,
+                        ca.z + (cb.z - ca.z) * k, nearW);
+        }
+        else if (cb.w < nearW)
+        {
+            float k = (nearW - cb.w) / (ca.w - cb.w);
+            cb = Vector4f(cb.x + (ca.x - cb.x) * k, cb.y + (ca.y - cb.y) * k,
+                        cb.z + (ca.z - cb.z) * k, nearW);
+        }
+
+        sa.x = view.x + (ca.x / ca.w + 1.0f) * 0.5f * view.width;
+        sa.y = eventManager.drawableHeight - (view.y + (ca.y / ca.w + 1.0f) * 0.5f * view.height);
+        sb.x = view.x + (cb.x / cb.w + 1.0f) * 0.5f * view.width;
+        sb.y = eventManager.drawableHeight - (view.y + (cb.y / cb.w + 1.0f) * 0.5f * view.height);
+        return true;
+    }
+
+    void drawAxisLine(ImDrawList* drawList, Vector3f point, Vector3f direction, ImU32 color)
+    {
+        enum float extent = 10000.0f;
+        GizmoPoint a, b;
+        if (!projectSegmentClipped(point - direction * extent, point + direction * extent, a, b))
+            return;
+        ImDrawList_AddLine(drawList, ImVec2(a.x, a.y), ImVec2(b.x, b.y), 0xCC000000, 3.0f);
+        ImDrawList_AddLine(drawList, ImVec2(a.x, a.y), ImVec2(b.x, b.y), color, 1.5f);
     }
 }
 
