@@ -44,7 +44,8 @@ enum GizmoMode
     Disabled,
     Translation,
     Rotation,
-    Scale
+    Scale,
+    SunDirection
 }
 
 class InteractionOverlay: EventListener
@@ -62,6 +63,7 @@ class InteractionOverlay: EventListener
     RenderView view;
     ShapeBoundingBox selectionBoundingBox;
     TranslationAxes translationAxes;
+    GizmoLines sunDirectionLines;
     GizmoShader gizmoShader;
     GizmoMode gizmoMode = GizmoMode.Disabled;
     Vector3f gizmoPosition;
@@ -114,6 +116,7 @@ class InteractionOverlay: EventListener
         selectionBoundingBox = New!ShapeBoundingBox(this);
         
         translationAxes = New!TranslationAxes(this);
+        sunDirectionLines = New!GizmoLines(GizmoMode.SunDirection, this);
         rotationLines = New!GizmoLines(GizmoMode.Rotation, this);
         scaleLines = New!GizmoLines(GizmoMode.Scale, this);
         
@@ -725,13 +728,28 @@ class InteractionOverlay: EventListener
         Matrix4x4f orientationMatrix = gizmoOrientation.toMatrix4x4;
         gizmoTransformation = translationMatrix(gizmoPosition) *
             orientationMatrix * scaleMatrix(Vector3f(size, size, size));
-        
-        state.modelViewMatrix = viewMatrix *
-            (translationMatrix(gizmoPosition) * orientationMatrix * scaleMatrix(selectionBoundingBoxScale));
-        state.projectionMatrix = view.projectionMatrix;
-        gizmoShader.bindParameters(&state);
-        selectionBoundingBox.render(&state);
-        gizmoShader.unbindParameters(&state);
+
+        Light selectedLight = ui && ui.scene.selectedEntity
+            ? cast(Light)ui.scene.selectedEntity
+            : null;
+        bool selectedSun = selectedLight && selectedLight.type == LightType.Sun;
+        if (selectedSun)
+        {
+            state.modelViewMatrix = viewMatrix * gizmoTransformation;
+            state.projectionMatrix = view.projectionMatrix;
+            gizmoShader.bindParameters(&state);
+            sunDirectionLines.render(&state);
+            gizmoShader.unbindParameters(&state);
+        }
+        else
+        {
+            state.modelViewMatrix = viewMatrix *
+                (translationMatrix(gizmoPosition) * orientationMatrix * scaleMatrix(selectionBoundingBoxScale));
+            state.projectionMatrix = view.projectionMatrix;
+            gizmoShader.bindParameters(&state);
+            selectionBoundingBox.render(&state);
+            gizmoShader.unbindParameters(&state);
+        }
         
         state.modelViewMatrix = viewMatrix * gizmoTransformation;
         state.projectionMatrix = view.projectionMatrix;
@@ -787,6 +805,30 @@ class GizmoLines: Owner, Drawable
                         axisColors[axis]);
                 }
             }
+        }
+        else if (mode == GizmoMode.SunDirection)
+        {
+            Vector4f color = Vector4f(1.0f, 0.85f, 0.2f, 1.0f);
+            appendLine(
+                Vector3f(0.0f, 0.0f, 0.0f),
+                Vector3f(0.0f, 0.0f, -1.0f),
+                color);
+            appendLine(
+                Vector3f(0.0f, 0.0f, -1.0f),
+                Vector3f(0.12f, 0.0f, -0.78f),
+                color);
+            appendLine(
+                Vector3f(0.0f, 0.0f, -1.0f),
+                Vector3f(-0.12f, 0.0f, -0.78f),
+                color);
+            appendLine(
+                Vector3f(0.0f, 0.0f, -1.0f),
+                Vector3f(0.0f, 0.12f, -0.78f),
+                color);
+            appendLine(
+                Vector3f(0.0f, 0.0f, -1.0f),
+                Vector3f(0.0f, -0.12f, -0.78f),
+                color);
         }
         else
         {
