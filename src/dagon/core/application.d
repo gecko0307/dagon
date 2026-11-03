@@ -466,11 +466,14 @@ class Application: EventListener, Updateable
      */
     FTSupport loadedFTSupport;
     
-    /**
-     * Loaded Wintab API support version. This is not an actual Wintab library version!
-     * Dagon assumes WintabSupport.v140 and will not run on a lower version.
-     */
-    WintabSupport loadedWintabSupport;
+    version(Windows)
+    {
+        /**
+         * Loaded Wintab API support version (Windows-only). This is not an actual Wintab library version!
+         * Dagon assumes WintabSupport.v140 and will not run on a lower version.
+         */
+        WintabSupport loadedWintabSupport;
+    }
     
     /// SDL_Image available or not.
     bool sdlImagePresent = true;
