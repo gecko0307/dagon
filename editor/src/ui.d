@@ -63,6 +63,8 @@ bool viewportChanged(EditorViewport oldvp, EditorViewport newvp)
     );
 }
 
+string editorVersionString = "Dagon Editor v1.0.0";
+
 class EditorUI: EventListener
 {
     Application application;
@@ -82,6 +84,8 @@ class EditorUI: EventListener
     Texture iconTranslate;
     Texture iconRotate;
     Texture iconScale;
+    Texture aboutImage;
+    bool showAbout = true; // TODO: get from editor.conf
     
     // Panels
     Toolbar toolbar;
@@ -233,12 +237,42 @@ class EditorUI: EventListener
         {
             if (igMenuItem("About Dagon Editor..."))
             {
-                // TODO
+                showAbout = true;
             }
             
             igEndMenu();
         }
         igEndMainMenuBar();
+
+        if (showAbout)
+        {
+            igSetNextWindowPos(
+                ImVec2(viewport.Pos.x + viewport.Size.x * 0.5f, viewport.Pos.y + viewport.Size.y * 0.5f),
+                ImGuiCond.Appearing,
+                ImVec2(0.5f, 0.5f));
+            if (igBegin("About Dagon Editor", &showAbout, ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoSavedSettings))
+            {
+                if (aboutImage && aboutImage.valid)
+                {
+                    ImVec2 imagePosition;
+                    igGetCursorScreenPos(&imagePosition);
+                    igImage(cast(void*)aboutImage.texture, ImVec2(cast(float)aboutImage.width, cast(float)aboutImage.height));
+                    ImVec2 textPosition = ImVec2(
+                        imagePosition.x + 8.0f,
+                        imagePosition.y + cast(float)aboutImage.height - 24.0f);
+                    ImDrawList* drawList = igGetWindowDrawList();
+                    ImDrawList_AddText(
+                        drawList,
+                        ImVec2(textPosition.x + 1.0f, textPosition.y + 1.0f),
+                        0xFF000000,
+                        editorVersionString.ptr);
+                    ImDrawList_AddText(drawList, textPosition, 0xFFFFFFFF, editorVersionString.ptr);
+                }
+                else
+                    igText(editorVersionString.ptr);
+            }
+            igEnd();
+        }
     }
     
     void renderStatusBar()

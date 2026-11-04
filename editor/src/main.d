@@ -51,6 +51,7 @@ class EditorApp: Game
     TextureAsset aTranslateIcon;
     TextureAsset aRotateIcon;
     TextureAsset aScaleIcon;
+    TextureAsset aboutImage;
     
     this(uint w, uint h, bool fullscreen, string title, string[] args)
     {
@@ -81,6 +82,10 @@ class EditorApp: Game
         aScaleIcon = New!TextureAsset(this);
         scene.assetManager.preloadAsset(aScaleIcon, "data/icons/btn_scale.png");
         ui.iconScale = aScaleIcon.texture;
+
+        aboutImage = New!TextureAsset(this);
+        scene.assetManager.preloadAsset(aboutImage, "data/splash.jpg");
+        ui.aboutImage = aboutImage.texture;
         
         scene.overlay.ui = ui;
     }
