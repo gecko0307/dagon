@@ -37,7 +37,6 @@ import dagon.core.event;
 import dagon.core.application;
 import dagon.core.dialogs;
 import dagon.graphics.texture;
-import dagon.render.postproc;
 import dagon.ext.imgui;
 
 import dlib.core.memory;
@@ -95,8 +94,6 @@ class EditorUI: EventListener
     
     string lastSaveFilename;
     
-    char[256] sceneNameBuffer;
-    
     static ImWchar[7] glyphRanges = [
         0x0020, 0x00FF, // Basic Latin + Latin Supplement
         0x0370, 0x03FF, // Greek
@@ -120,24 +117,10 @@ class EditorUI: EventListener
         ImGui_ImplSDL2_InitForOpenGL(application.window, application.glcontext);
         ImGuiOpenGLBackend.init("#version 400 core");
         
-        sceneNameBuffer[] = 0;
-        sceneNameBuffer[0..scene.name.length] = scene.name;
-        
         toolbar = New!Toolbar(this);
         navigator = New!Navigator(this);
         properties = New!PropertiesPanel(this);
         assetBrowser = New!AssetBrowser(this);
-    }
-    
-    static extern(C) int nameInputCallback(ImGuiInputTextCallbackData* data)
-    {
-        EditorUI ui = cast(EditorUI)data.UserData;
-        if (ui is null)
-            return 0;
-        
-        ui.scene.name = cast(string)data.Buf[0..data.BufTextLen];
-        
-        return 0;
     }
     
     void onProcessEvent(SDL_Event* event)
@@ -195,9 +178,9 @@ class EditorUI: EventListener
         }
         
         navigator.render();
-        renderSettings();
         properties.render();
         assetBrowser.render();
+        
         renderStatusBar();
         
         igRender();
@@ -241,92 +224,6 @@ class EditorUI: EventListener
             igEndMenu();
         }
         igEndMainMenuBar();
-    }
-    
-    void renderSettings()
-    {
-        if (igBegin("Scene settings", null, ImGuiWindowFlags.NoCollapse))
-        {
-            if (igCollapsingHeader("Main"))
-            {
-                if (igInputText("Name",
-                        sceneNameBuffer.ptr,
-                        sceneNameBuffer.length,
-                        ImGuiInputTextFlags.CallbackEdit,
-                        &nameInputCallback,
-                        cast(void*)this))
-                {
-                    
-                }
-            }
-            
-            if (igCollapsingHeader("Post-processing"))
-            {
-                if (igCheckbox("SSAO", &scene.ssaoEnabled))
-                    scene.game.deferredRenderer.ssaoEnabled = scene.ssaoEnabled;
-                if (scene.ssaoEnabled)
-                {
-                    igSliderFloat("SSAO radius", &scene.game.deferredRenderer.ssaoRadius, 0.01f, 1.0f, "%.2f");
-                    igSliderInt("SSAO samples", &scene.game.deferredRenderer.ssaoSamples, 1, 30);
-                    igSliderFloat("SSAO power", &scene.game.deferredRenderer.ssaoPower, 0.0f, 10.0f, "%.1f");
-                    igSliderFloat("SSAO denoise", &scene.game.deferredRenderer.ssaoDenoise, 0.0f, 1.0f, "%.2f");
-                }
-                
-                if (igCheckbox("DoF", &scene.depthOfFieldEnabled))
-                    scene.game.postProcessingRenderer.depthOfFieldEnabled = scene.depthOfFieldEnabled;
-                if (scene.depthOfFieldEnabled)
-                {
-                    if (!igCheckbox("Autofocus", &scene.game.postProcessingRenderer.autofocus))
-                        igSliderFloat("Focal depth", &scene.game.postProcessingRenderer.focalDepth, 0.0f, 2.0f, "%.2f");
-                    igSliderFloat("Focal length", &scene.game.postProcessingRenderer.focalLength, 0.0f, 10.0f, "%.2f");
-                    igSliderFloat("F-Stop", &scene.game.postProcessingRenderer.fStop, 0.0f, 32.0f, "%.2f");
-                }
-                
-                if (igCheckbox("Lens distortion", &scene.lensDistortionEnabled))
-                    scene.game.postProcessingRenderer.lensDistortionEnabled = scene.lensDistortionEnabled;
-                if (scene.lensDistortionEnabled)
-                {
-                    igSliderFloat("Dispersion", &scene.game.postProcessingRenderer.lensDistortionDispersion, 0.0f, 1.0f, "%.2f");
-                    igSliderFloat("Scale", &scene.game.postProcessingRenderer.lensDistortionScale, 0.0f, 2.0f, "%.2f");
-                }
-                
-                if (igCheckbox("Glow", &scene.glowEnabled))
-                    scene.game.postProcessingRenderer.glowEnabled = scene.glowEnabled;
-                if (scene.glowEnabled)
-                {
-                    if (igSliderInt("Glow radius", &scene.glowRadius, 0, 10))
-                        scene.game.postProcessingRenderer.glowRadius = scene.glowRadius;
-                    igSliderFloat("Glow threshold", &scene.game.postProcessingRenderer.glowThreshold, 0.0f, 2.0f, "%.2f");
-                    igSliderFloat("Glow intensity", &scene.game.postProcessingRenderer.glowIntensity, 0.0f, 1.0f, "%.2f");
-                }
-
-                if (igCheckbox("Motion blur", &scene.motionBlurEnabled))
-                    scene.game.postProcessingRenderer.motionBlurEnabled = scene.motionBlurEnabled;
-                if (scene.motionBlurEnabled)
-                {
-                    uint samplesMin = 1;
-                    uint samplesMax = 30;
-                    igSliderScalar("Blur samples", ImGuiDataType.U32, &scene.game.postProcessingRenderer.motionBlurSamples, &samplesMin, &samplesMax);
-                    uint framerateMin = 1;
-                    uint framerateMax = 60;
-                    igSliderScalar("Framerate", ImGuiDataType.U32, &scene.game.postProcessingRenderer.motionBlurFramerate, &framerateMin, &framerateMax);
-                    igSliderFloat("Randomness", &scene.game.postProcessingRenderer.motionBlurRandomness, 0.0f, 1.0f, "%.2f");
-                    igSliderFloat("Min distance", &scene.game.postProcessingRenderer.motionBlurMinDistance, 0.0f, 1.0f, "%.2f");
-                    igSliderFloat("Max distance", &scene.game.postProcessingRenderer.motionBlurMaxDistance, 0.0f, 1.0f, "%.2f");
-                    igSliderFloat("Radial blur", &scene.game.postProcessingRenderer.radialBlurAmount, 0.0f, 1.0f, "%.2f");
-                }
-                
-                if (igCombo_Str("Tonemapper", &scene.tonemapper,
-                    "None\0Reinhard\0Uncharted\0ACES\0Filmic\0Reinhard2\0Unreal\0AgX Base\0AgX Punchy\0Khronos PBR Neutral\0Uchimura\0Lottes\0"))
-                    scene.game.postProcessingRenderer.tonemapper = cast(Tonemapper)scene.tonemapper;
-                igSliderFloat("Exposure", &scene.game.postProcessingRenderer.exposure, 0.0f, 2.0f, "%.1f");
-
-                if (igCheckbox("FXAA antialiasing", &scene.fxaaEnabled))
-                    scene.game.postProcessingRenderer.fxaaEnabled = scene.fxaaEnabled;
-            }
-            
-            igEnd();
-        }
     }
     
     void renderStatusBar()
