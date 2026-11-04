@@ -134,7 +134,7 @@ class Toolbar: Owner
             return igButton(label.ptr, ImVec2(64, 0));
 
         ImVec4 background = scene.overlay.gizmoMode == mode
-            ? ImVec4(0.26f, 0.59f, 0.98f, 0.75f)
+            ? ImVec4(1.00f, 0.60f, 0.20f, 0.75f)
             : ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
         return igImageButtonEx(
             igGetID_Str(id.ptr),
