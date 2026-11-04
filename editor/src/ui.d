@@ -194,7 +194,10 @@ class EditorUI: EventListener
         igBeginMainMenuBar();
         if (igBeginMenu("File"))
         {
-            igMenuItem("New scene");
+            if (igMenuItem("New scene"))
+            {
+                // TODO
+            }
             
             if (igMenuItem("Open..."))
             {
@@ -222,6 +225,15 @@ class EditorUI: EventListener
             if (igMenuItem("Exit"))
             {
                 application.exit();
+            }
+            
+            igEndMenu();
+        }
+        if (igBeginMenu("Help"))
+        {
+            if (igMenuItem("About Dagon Editor..."))
+            {
+                // TODO
             }
             
             igEndMenu();
