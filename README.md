@@ -29,6 +29,8 @@ Some extensions and the editor are still in development.
 
 [![Chillwave Drive](https://blog.pixperfect.online/wp-content/uploads/2026/07/chillwave-drive-hq-1.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/07/chillwave-drive-hq-1.jpg)
 
+[![Editor](https://blog.pixperfect.online/wp-content/uploads/2026/11/dagon-editor-alpha.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/11/dagon-editor-alpha.jpg)
+
 ## Features
 
 * Scene graph
