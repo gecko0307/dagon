@@ -86,7 +86,8 @@ Some extensions and the editor are still in development.
 * UDP networking based on [ENet](http://enet.bespin.org/). UDP server and asynchronous client that works via the message broker. Optional secure transport layer with elliptic curve encryption and X25519 key exchange.
 
 Features that are not production-ready yet:
-* Built-in UI toolkit (very basic, can be used only for simple debugging purposes)
+* The editor
+* Built-in UI toolkit (very basic, can be used only for simple debugging purposes; it is recommended to use ImGui extension instead)
 * OpenVR integration (partial, no deferred pipeline support).
 
 ## System Requirements
