@@ -164,6 +164,13 @@ class InteractionOverlay: EventListener
         view.camera = camera;
     }
 
+    float pixelRatio() @property
+    {
+        if (ui && ui.application && ui.application.pixelRatio > 0.0f)
+            return ui.application.pixelRatio;
+        return 1.0f;
+    }
+
     float gizmoWorldSize()
     {
         if (!view.camera || view.height == 0)
@@ -171,7 +178,7 @@ class InteractionOverlay: EventListener
 
         float cameraDistance = distance(view.camera.positionAbsolute, gizmoPosition);
         float halfFov = degtorad(view.camera.fov * 0.5f);
-        return max(cameraDistance * tan(halfFov) * 2.0f * 90.0f / view.height, 0.01f);
+        return max(cameraDistance * tan(halfFov) * 2.0f * 90.0f * pixelRatio / view.height, 0.01f);
     }
 
     void updateViewport()
@@ -199,11 +206,12 @@ class InteractionOverlay: EventListener
             view.viewMatrix * view.projectionMatrix;
         if (clip.w <= 0.0f)
             return false;
-
+        
+        float pr = pixelRatio;
         float ndcX = clip.x / clip.w;
         float ndcY = clip.y / clip.w;
-        screenPoint.x = view.x + (ndcX + 1.0f) * 0.5f * view.width;
-        screenPoint.y = eventManager.drawableHeight - (view.y + (ndcY + 1.0f) * 0.5f * view.height);
+        screenPoint.x = (view.x + (ndcX + 1.0f) * 0.5f * view.width) / pr;
+        screenPoint.y = (eventManager.drawableHeight - (view.y + (ndcY + 1.0f) * 0.5f * view.height)) / pr;
         return true;
     }
 
@@ -216,25 +224,11 @@ class InteractionOverlay: EventListener
     {
         if (!view.width || !view.height)
             return false;
-
-        float ndcX = 2.0f * (mouse.x - view.x) / view.width - 1.0f;
-        float viewportTop = eventManager.drawableHeight - view.y - view.height;
-        float ndcY = 1.0f - 2.0f * (mouse.y - viewportTop) / view.height;
-        Matrix4x4f inverseViewProjection = (view.projectionMatrix * view.viewMatrix).inverse;
-        Vector4f nearClip = Vector4f(ndcX, ndcY, -1.0f, 1.0f) * inverseViewProjection;
-        Vector4f farClip = Vector4f(ndcX, ndcY, 1.0f, 1.0f) * inverseViewProjection;
-        if (abs(nearClip.w) < 0.000001f || abs(farClip.w) < 0.000001f)
+        
+        Vector3f nearPoint, rayDirection;
+        if (!mouseRay(mouse, nearPoint, rayDirection))
             return false;
-
-        Vector3f nearPoint = Vector3f(
-            nearClip.x / nearClip.w,
-            nearClip.y / nearClip.w,
-            nearClip.z / nearClip.w);
-        Vector3f farPoint = Vector3f(
-            farClip.x / farClip.w,
-            farClip.y / farClip.w,
-            farClip.z / farClip.w);
-        Vector3f rayDirection = (farPoint - nearPoint).normalized;
+        
         Vector3f normal = worldAxis(axis);
         float denominator = dot(rayDirection, normal);
         if (abs(denominator) < 0.05f)
@@ -395,12 +389,15 @@ class InteractionOverlay: EventListener
             return;
 
         ImDrawList* drawList = igGetForegroundDrawList();
+        
+        float pr = pixelRatio;
         ImVec2 clipMin = ImVec2(
-            ui.editorViewport.position.x,
-            ui.editorViewport.position.y);
+            ui.editorViewport.position.x / pr,
+            ui.editorViewport.position.y / pr);
         ImVec2 clipMax = ImVec2(
-            clipMin.x + ui.editorViewport.size.x,
-            clipMin.y + ui.editorViewport.size.y);
+            clipMin.x + ui.editorViewport.size.x / pr,
+            clipMin.y + ui.editorViewport.size.y / pr);
+        
         ImDrawList_PushClipRect(drawList, clipMin, clipMax, true);
 
         if (gizmoMode == GizmoMode.Translation || gizmoMode == GizmoMode.Scale)
@@ -592,10 +589,13 @@ class InteractionOverlay: EventListener
         if (igIsMouseClicked(ImGuiMouseButton.Left) && !ui.io.WantCaptureMouse)
         {
             GizmoPoint mouse = GizmoPoint(ui.io.MousePos.x, ui.io.MousePos.y);
-            int viewportTop = cast(int)ui.editorViewport.position.y;
-            int viewportBottom = viewportTop + cast(int)ui.editorViewport.size.y;
-            if (mouse.x >= ui.editorViewport.position.x &&
-                mouse.x <= ui.editorViewport.position.x + ui.editorViewport.size.x &&
+            
+            float pr = pixelRatio;
+            float viewportLeft = ui.editorViewport.position.x / pr;
+            float viewportTop = ui.editorViewport.position.y / pr;
+            float viewportRight = viewportLeft + ui.editorViewport.size.x / pr;
+            float viewportBottom = viewportTop + ui.editorViewport.size.y / pr;
+            if (mouse.x >= viewportLeft && mouse.x <= viewportRight &&
                 mouse.y >= viewportTop && mouse.y <= viewportBottom)
             {
                 GizmoPoint center, axisEnd;
@@ -812,9 +812,13 @@ class InteractionOverlay: EventListener
         if (!view.width || !view.height)
             return false;
 
-        float ndcX = 2.0f * (mouse.x - view.x) / view.width - 1.0f;
+        float pr = pixelRatio;
+        float mouseX = mouse.x * pr;
+        float mouseY = mouse.y * pr;
+        float ndcX = 2.0f * (mouseX - view.x) / view.width - 1.0f;
         float viewportTop = eventManager.drawableHeight - view.y - view.height;
-        float ndcY = 1.0f - 2.0f * (mouse.y - viewportTop) / view.height;
+        float ndcY = 1.0f - 2.0f * (mouseY - viewportTop) / view.height;
+        
         Matrix4x4f inv = (view.projectionMatrix * view.viewMatrix).inverse;
         Vector4f n = Vector4f(ndcX, ndcY, -1.0f, 1.0f) * inv;
         Vector4f f = Vector4f(ndcX, ndcY,  1.0f, 1.0f) * inv;
@@ -868,11 +872,12 @@ class InteractionOverlay: EventListener
             cb = Vector4f(cb.x + (ca.x - cb.x) * k, cb.y + (ca.y - cb.y) * k,
                         cb.z + (ca.z - cb.z) * k, nearW);
         }
-
-        sa.x = view.x + (ca.x / ca.w + 1.0f) * 0.5f * view.width;
-        sa.y = eventManager.drawableHeight - (view.y + (ca.y / ca.w + 1.0f) * 0.5f * view.height);
-        sb.x = view.x + (cb.x / cb.w + 1.0f) * 0.5f * view.width;
-        sb.y = eventManager.drawableHeight - (view.y + (cb.y / cb.w + 1.0f) * 0.5f * view.height);
+        
+        float pr = pixelRatio;
+        sa.x = (view.x + (ca.x / ca.w + 1.0f) * 0.5f * view.width) / pr;
+        sa.y = (eventManager.drawableHeight - (view.y + (ca.y / ca.w + 1.0f) * 0.5f * view.height)) / pr;
+        sb.x = (view.x + (cb.x / cb.w + 1.0f) * 0.5f * view.width) / pr;
+        sb.y = (eventManager.drawableHeight - (view.y + (cb.y / cb.w + 1.0f) * 0.5f * view.height)) / pr;
         return true;
     }
 
