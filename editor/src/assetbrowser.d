@@ -105,7 +105,7 @@ class AssetBrowser: Owner
 {
     EditorUI ui;
 
-    string assetRoot;
+    TextBuffer!1024 assetRoot;
     TextBuffer!512 assetDirectory; // relative to assetRoot, always '/' separated
     TextBuffer!512 selectedAssetPath;
     TextBuffer!512 assetBrowserMessage;
@@ -122,7 +122,8 @@ class AssetBrowser: Owner
         this.ui = ui;
         assetSearchBuffer[] = 0;
         assetNameBuffer[] = 0;
-        assetRoot = buildPath(ui.application.directory, "assets");
+        assetRoot.set(ui.application.directory);
+        assetRoot.append("/assets");
         refreshAssetEntries();
     }
 
@@ -168,7 +169,7 @@ class AssetBrowser: Owner
     TextBuffer!1024 filesystemPath(const(char)[] name = null)
     {
         TextBuffer!1024 path;
-        path.set(assetRoot);
+        path.set(assetRoot.slice);
         if (assetDirectory.length != 0)
         {
             path.append("/");
@@ -499,7 +500,7 @@ class AssetBrowser: Owner
             bool openRenamePopup;
             bool openDeletePopup;
             bool navigateToDirectory;
-            string requestedDirectory;
+            size_t requestedDirectoryIndex;
             size_t visibleEntries;
             foreach (i, ref entry; assetEntries)
             {
@@ -560,13 +561,12 @@ class AssetBrowser: Owner
                     igPopStyleColor();
                 }
 
-                if (igIsItemHovered() && igIsMouseDoubleClicked(ImGuiMouseButton.Left))
+                if (selected && igIsItemHovered() &&
+                    igIsMouseDoubleClicked(ImGuiMouseButton.Left))
                 {
                     if (entry.isDirectory)
                     {
-                        requestedDirectory = assetDirectory.length == 0
-                            ? cast(string)entry.name
-                            : cast(string)assetDirectory.slice ~ "/" ~ cast(string)entry.name;
+                        requestedDirectoryIndex = i;
                         navigateToDirectory = true;
                     }
                     else
@@ -614,7 +614,13 @@ class AssetBrowser: Owner
             igColumns(1);
             if (navigateToDirectory)
             {
-                assetDirectory.set(requestedDirectory);
+                TextBuffer!512 requestedDirectory;
+                requestedDirectory.append(assetDirectory.slice);
+                if (requestedDirectory.length != 0)
+                    requestedDirectory.append("/");
+                requestedDirectory.append(assetEntries.data[requestedDirectoryIndex].name);
+                assetDirectory.clear();
+                assetDirectory.append(requestedDirectory.slice);
                 selectedAssetPath.clear();
                 refreshAssetEntries();
             }
