@@ -6,7 +6,8 @@ Dagon 1.7.0 - TBD
 - **Editor**
   - Implement transformation gizmos
   - Implement an asset browser and texture thumbnail generator
-  - Add HiDPI awareness.
+  - Add HiDPI awareness
+  - Add a startup splash screen.
 
 Dagon 1.6.3 - 17 Oct, 2026
 --------------------------
