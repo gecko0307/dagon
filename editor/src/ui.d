@@ -40,6 +40,17 @@ import dagon.ext.imgui;
 
 import dlib.core.memory;
 
+version(Windows)
+{
+    import core.sys.windows.windows: SW_SHOWNORMAL;
+    import core.sys.windows.shellapi: ShellExecuteW;
+    import std.utf: toUTF16z;
+}
+else
+{
+    import std.process: execute, ProcessException;
+}
+
 import editor;
 import thumbnail;
 import toolbar;
@@ -64,6 +75,47 @@ bool viewportChanged(EditorViewport oldvp, EditorViewport newvp)
 }
 
 string editorVersionString = "Dagon Editor v1.0.0";
+enum dagonWebsiteUrl = "https://gecko0307.github.io/dagon/";
+
+void browse(string url)
+{
+    version(Windows)
+    {
+        auto result = ShellExecuteW(null, "open".toUTF16z, url.toUTF16z, null, null, SW_SHOWNORMAL);
+        if (cast(size_t)result <= 32)
+            showMessage("Unable to open website", "Could not open " ~ url ~ " in the default browser.");
+    }
+    else version(linux)
+    {
+        try
+        {
+            auto result = execute(["xdg-open", url]);
+            if (result.status != 0)
+                showMessage("Unable to open website", "Could not open " ~ url ~ " in the default browser.");
+        }
+        catch (ProcessException e)
+        {
+            showMessage("Unable to open website", e.msg);
+        }
+    }
+    else version(OSX)
+    {
+        try
+        {
+            auto result = execute(["open", url]);
+            if (result.status != 0)
+                showMessage("Unable to open website", "Could not open " ~ url ~ " in the default browser.");
+        }
+        catch (ProcessException e)
+        {
+            showMessage("Unable to open website", e.msg);
+        }
+    }
+    else
+    {
+        showMessage("Unable to open website", "Opening links is not supported on this platform.");
+    }
+}
 
 class EditorUI: EventListener
 {
@@ -248,6 +300,11 @@ class EditorUI: EventListener
         }
         if (igBeginMenu("Help"))
         {
+            if (igMenuItem("Dagon Engine website"))
+            {
+                browse(dagonWebsiteUrl);
+            }
+
             if (igMenuItem("About Dagon Editor..."))
             {
                 showAbout = true;
