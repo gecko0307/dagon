@@ -26,8 +26,7 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /*
- * Editor UI: ImGui setup, main menu, dockspace, scene settings and status bar.
- * Individual panels live in toolbar, navigator, properties and assetbrowser modules.
+ * Editor UI.
  */
 module ui;
 
@@ -73,10 +72,8 @@ class EditorUI: EventListener
     ImFont* font;
     ImGuiViewport* viewport;
     
-    EditorViewport editorViewport =
-        EditorViewport(ImVec2(0, 0), ImVec2(0, 0));
-    EditorViewport editorViewportPrevious =
-        EditorViewport(ImVec2(0, 0), ImVec2(0, 0));
+    EditorViewport editorViewport = EditorViewport(ImVec2(0, 0), ImVec2(0, 0));
+    EditorViewport editorViewportPrevious = EditorViewport(ImVec2(0, 0), ImVec2(0, 0));
     
     // Icons and thumbnails are assigned from main.d and shared by the panels
     Texture iconFile;
@@ -112,7 +109,7 @@ class EditorUI: EventListener
         io = igGetIO();
         io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
         io.ConfigWindowsMoveFromTitleBarOnly = true;
-        font = ImFontAtlas_AddFontFromFileTTF(io.Fonts, "data/font/Roboto.ttf", 16, null, glyphRanges.ptr);
+        font = ImFontAtlas_AddFontFromFileTTF(io.Fonts, "data/font/Inter_18pt-Medium.ttf", 16, null, glyphRanges.ptr);
         igStyleColorsDark(null);
         ImGui_ImplSDL2_InitForOpenGL(application.window, application.glcontext);
         ImGuiOpenGLBackend.init("#version 400 core");
