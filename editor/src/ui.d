@@ -1103,10 +1103,7 @@ class EditorUI: EventListener
                     igEndPopup();
                 }
 
-                if (entry.isDirectory)
-                    igTextWrapped("[%s]", entry.nameZ.ptr);
-                else
-                    igTextWrapped("%s", entry.nameZ.ptr);
+                igTextWrapped("%s", entry.nameZ.ptr);
                 if (!entry.isDirectory)
                     igTextDisabled("%s", entry.sizeLabel.ptr);
 
