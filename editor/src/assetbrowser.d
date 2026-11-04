@@ -482,7 +482,7 @@ class AssetBrowser: Owner
                         else
                             thumbnailSize.x = 100.0f * aspectRatio;
                     }
-                    ImVec4 buttonBackground = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+                    ImVec4 buttonBackground = ImVec4(0.10f, 0.10f, 0.10f, 1.0f);
                     ImGuiID btnId = igGetID_Str(entry.nameZ.ptr);
                     bool pressed = igImageButtonEx(btnId, cast(void*)entryIcon.texture,
                         thumbnailSize, ImVec2(0, 0), ImVec2(1, 1),
@@ -500,7 +500,7 @@ class AssetBrowser: Owner
                             igGetWindowDrawList(),
                             rectMin,
                             rectMax,
-                            igGetColorU32(ImVec4(1.0f, 0.82f, 0.15f, 1.0f)),
+                            igGetColorU32(ImVec4(0.90f, 0.45f, 0.00f, 1.0f)),
                             0.0f,
                             ImDrawFlags.None,
                             2.0f);
