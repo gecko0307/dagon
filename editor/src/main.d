@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /*
- * Dagon Scene Editor.
+ * Editor entry point.
  */
 module main;
 
