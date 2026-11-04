@@ -93,66 +93,66 @@ class PropertiesPanel: Owner
             if (igCollapsingHeader("Post-processing"))
             {
                 if (igCheckbox("SSAO", &scene.ssaoEnabled))
-                    scene.game.deferredRenderer.ssaoEnabled = scene.ssaoEnabled;
+                    scene.app.deferredRenderer.ssaoEnabled = scene.ssaoEnabled;
                 if (scene.ssaoEnabled)
                 {
-                    igSliderFloat("SSAO radius", &scene.game.deferredRenderer.ssaoRadius, 0.01f, 1.0f, "%.2f");
-                    igSliderInt("SSAO samples", &scene.game.deferredRenderer.ssaoSamples, 1, 30);
-                    igSliderFloat("SSAO power", &scene.game.deferredRenderer.ssaoPower, 0.0f, 10.0f, "%.1f");
-                    igSliderFloat("SSAO denoise", &scene.game.deferredRenderer.ssaoDenoise, 0.0f, 1.0f, "%.2f");
+                    igSliderFloat("SSAO radius", &scene.app.deferredRenderer.ssaoRadius, 0.01f, 1.0f, "%.2f");
+                    igSliderInt("SSAO samples", &scene.app.deferredRenderer.ssaoSamples, 1, 30);
+                    igSliderFloat("SSAO power", &scene.app.deferredRenderer.ssaoPower, 0.0f, 10.0f, "%.1f");
+                    igSliderFloat("SSAO denoise", &scene.app.deferredRenderer.ssaoDenoise, 0.0f, 1.0f, "%.2f");
                 }
                 
                 if (igCheckbox("DoF", &scene.depthOfFieldEnabled))
-                    scene.game.postProcessingRenderer.depthOfFieldEnabled = scene.depthOfFieldEnabled;
+                    scene.app.postProcessingRenderer.depthOfFieldEnabled = scene.depthOfFieldEnabled;
                 if (scene.depthOfFieldEnabled)
                 {
-                    if (!igCheckbox("Autofocus", &scene.game.postProcessingRenderer.autofocus))
-                        igSliderFloat("Focal depth", &scene.game.postProcessingRenderer.focalDepth, 0.0f, 2.0f, "%.2f");
-                    igSliderFloat("Focal length", &scene.game.postProcessingRenderer.focalLength, 0.0f, 10.0f, "%.2f");
-                    igSliderFloat("F-Stop", &scene.game.postProcessingRenderer.fStop, 0.0f, 32.0f, "%.2f");
+                    if (!igCheckbox("Autofocus", &scene.app.postProcessingRenderer.autofocus))
+                        igSliderFloat("Focal depth", &scene.app.postProcessingRenderer.focalDepth, 0.0f, 2.0f, "%.2f");
+                    igSliderFloat("Focal length", &scene.app.postProcessingRenderer.focalLength, 0.0f, 10.0f, "%.2f");
+                    igSliderFloat("F-Stop", &scene.app.postProcessingRenderer.fStop, 0.0f, 32.0f, "%.2f");
                 }
                 
                 if (igCheckbox("Lens distortion", &scene.lensDistortionEnabled))
-                    scene.game.postProcessingRenderer.lensDistortionEnabled = scene.lensDistortionEnabled;
+                    scene.app.postProcessingRenderer.lensDistortionEnabled = scene.lensDistortionEnabled;
                 if (scene.lensDistortionEnabled)
                 {
-                    igSliderFloat("Dispersion", &scene.game.postProcessingRenderer.lensDistortionDispersion, 0.0f, 1.0f, "%.2f");
-                    igSliderFloat("Scale", &scene.game.postProcessingRenderer.lensDistortionScale, 0.0f, 2.0f, "%.2f");
+                    igSliderFloat("Dispersion", &scene.app.postProcessingRenderer.lensDistortionDispersion, 0.0f, 1.0f, "%.2f");
+                    igSliderFloat("Scale", &scene.app.postProcessingRenderer.lensDistortionScale, 0.0f, 2.0f, "%.2f");
                 }
                 
                 if (igCheckbox("Glow", &scene.glowEnabled))
-                    scene.game.postProcessingRenderer.glowEnabled = scene.glowEnabled;
+                    scene.app.postProcessingRenderer.glowEnabled = scene.glowEnabled;
                 if (scene.glowEnabled)
                 {
                     if (igSliderInt("Glow radius", &scene.glowRadius, 0, 10))
-                        scene.game.postProcessingRenderer.glowRadius = scene.glowRadius;
-                    igSliderFloat("Glow threshold", &scene.game.postProcessingRenderer.glowThreshold, 0.0f, 2.0f, "%.2f");
-                    igSliderFloat("Glow intensity", &scene.game.postProcessingRenderer.glowIntensity, 0.0f, 1.0f, "%.2f");
+                        scene.app.postProcessingRenderer.glowRadius = scene.glowRadius;
+                    igSliderFloat("Glow threshold", &scene.app.postProcessingRenderer.glowThreshold, 0.0f, 2.0f, "%.2f");
+                    igSliderFloat("Glow intensity", &scene.app.postProcessingRenderer.glowIntensity, 0.0f, 1.0f, "%.2f");
                 }
 
                 if (igCheckbox("Motion blur", &scene.motionBlurEnabled))
-                    scene.game.postProcessingRenderer.motionBlurEnabled = scene.motionBlurEnabled;
+                    scene.app.postProcessingRenderer.motionBlurEnabled = scene.motionBlurEnabled;
                 if (scene.motionBlurEnabled)
                 {
                     uint samplesMin = 1;
                     uint samplesMax = 30;
-                    igSliderScalar("Blur samples", ImGuiDataType.U32, &scene.game.postProcessingRenderer.motionBlurSamples, &samplesMin, &samplesMax);
+                    igSliderScalar("Blur samples", ImGuiDataType.U32, &scene.app.postProcessingRenderer.motionBlurSamples, &samplesMin, &samplesMax);
                     uint framerateMin = 1;
                     uint framerateMax = 60;
-                    igSliderScalar("Framerate", ImGuiDataType.U32, &scene.game.postProcessingRenderer.motionBlurFramerate, &framerateMin, &framerateMax);
-                    igSliderFloat("Randomness", &scene.game.postProcessingRenderer.motionBlurRandomness, 0.0f, 1.0f, "%.2f");
-                    igSliderFloat("Min distance", &scene.game.postProcessingRenderer.motionBlurMinDistance, 0.0f, 1.0f, "%.2f");
-                    igSliderFloat("Max distance", &scene.game.postProcessingRenderer.motionBlurMaxDistance, 0.0f, 1.0f, "%.2f");
-                    igSliderFloat("Radial blur", &scene.game.postProcessingRenderer.radialBlurAmount, 0.0f, 1.0f, "%.2f");
+                    igSliderScalar("Framerate", ImGuiDataType.U32, &scene.app.postProcessingRenderer.motionBlurFramerate, &framerateMin, &framerateMax);
+                    igSliderFloat("Randomness", &scene.app.postProcessingRenderer.motionBlurRandomness, 0.0f, 1.0f, "%.2f");
+                    igSliderFloat("Min distance", &scene.app.postProcessingRenderer.motionBlurMinDistance, 0.0f, 1.0f, "%.2f");
+                    igSliderFloat("Max distance", &scene.app.postProcessingRenderer.motionBlurMaxDistance, 0.0f, 1.0f, "%.2f");
+                    igSliderFloat("Radial blur", &scene.app.postProcessingRenderer.radialBlurAmount, 0.0f, 1.0f, "%.2f");
                 }
                 
                 if (igCombo_Str("Tonemapper", &scene.tonemapper,
                     "None\0Reinhard\0Uncharted\0ACES\0Filmic\0Reinhard2\0Unreal\0AgX Base\0AgX Punchy\0Khronos PBR Neutral\0Uchimura\0Lottes\0"))
-                    scene.game.postProcessingRenderer.tonemapper = cast(Tonemapper)scene.tonemapper;
-                igSliderFloat("Exposure", &scene.game.postProcessingRenderer.exposure, 0.0f, 2.0f, "%.1f");
+                    scene.app.postProcessingRenderer.tonemapper = cast(Tonemapper)scene.tonemapper;
+                igSliderFloat("Exposure", &scene.app.postProcessingRenderer.exposure, 0.0f, 2.0f, "%.1f");
 
                 if (igCheckbox("FXAA antialiasing", &scene.fxaaEnabled))
-                    scene.game.postProcessingRenderer.fxaaEnabled = scene.fxaaEnabled;
+                    scene.app.postProcessingRenderer.fxaaEnabled = scene.fxaaEnabled;
             }
             
             igEnd();

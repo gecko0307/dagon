@@ -55,20 +55,28 @@ import dagon.render.postproc;
 import dagon.ui.freeview;
 import dagon.ext.imgui;
 
-import overlay;
 import ui;
+import overlay;
+import thumbnail;
 
 class EditorScene: Scene
 {
     string name = "Scene";
     uint fileVersion = 100;
     
-    Game game;
+    EditorApp app;
     Camera camera;
     FreeviewComponent freeview;
     InteractionOverlay overlay;
     
     LoadingScreen loadingScreen;
+
+    TextureAsset aFileIcon;
+    TextureAsset aFolderIcon;
+    TextureAsset aTranslateIcon;
+    TextureAsset aRotateIcon;
+    TextureAsset aScaleIcon;
+    TextureAsset aboutImage;
 
     TextureAsset aEnvmap;
     TextureAsset aBRDF;
@@ -86,16 +94,16 @@ class EditorScene: Scene
     int tonemapper = Tonemapper.AgX_Punchy;
     bool fxaaEnabled = true;
 
-    this(Game game)
+    this(EditorApp app)
     {
-        super(game);
-        this.game = game;
+        super(app);
+        this.app = app;
         
         overlay = New!InteractionOverlay(eventManager, this);
         
         auto splashTextureAsset = addTextureAsset("data/backgrounds/loading.jpg", true);
         
-        loadingScreen = New!LoadingScreen(game, this);
+        loadingScreen = New!LoadingScreen(app, this);
         loadingScreen.backgroundTexture = splashTextureAsset.texture;
         loadingScreen.progressbarCentered = false;
         onLoad(Time(0.0, 0.0), 0.0f);
@@ -103,32 +111,47 @@ class EditorScene: Scene
 
     override void beforeLoad()
     {
+        aFileIcon = addTextureAsset("data/icons/file.png");
+        aFolderIcon = addTextureAsset("data/icons/folder.png");
+        aTranslateIcon = addTextureAsset("data/icons/btn_translate.png");
+        aRotateIcon = addTextureAsset("data/icons/btn_rotate.png");
+        aScaleIcon = addTextureAsset("data/icons/btn_scale.png");
+        aboutImage = addTextureAsset("data/splash.jpg");
+        
         aOBJSuzanne = addOBJAsset("assets/suzanne.obj");
     }
     
     override void onLoad(Time t, float progress)
     {
         loadingScreen.progressbar.position = Vector3f(
-            (game.drawableWidth - loadingScreen.progressbarWidth) * 0.5f,
-            game.drawableHeight - 40.0f, 0);
+            (app.drawableWidth - loadingScreen.progressbarWidth) * 0.5f,
+            app.drawableHeight - 40.0f, 0);
         loadingScreen.update(t, progress);
         loadingScreen.render();
     }
     
     override void afterLoad()
     {
+        auto ui = this.app.ui;
+        ui.iconFile = aFileIcon.texture;
+        ui.iconFolder = aFolderIcon.texture;
+        ui.iconTranslate = aTranslateIcon.texture;
+        ui.iconRotate = aRotateIcon.texture;
+        ui.iconScale = aScaleIcon.texture;
+        ui.aboutImage = aboutImage.texture;
+
         environment.backgroundColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
         
-        game.deferredRenderer.ssaoEnabled = ssaoEnabled;
-        game.deferredRenderer.ssaoPower = 6.0;
-        game.postProcessingRenderer.depthOfFieldEnabled = depthOfFieldEnabled;
-        game.postProcessingRenderer.lensDistortionEnabled = lensDistortionEnabled;
-        game.postProcessingRenderer.glowEnabled = glowEnabled;
-        game.postProcessingRenderer.glowRadius = glowRadius;
-        game.postProcessingRenderer.motionBlurEnabled = motionBlurEnabled;
-        game.postProcessingRenderer.tonemapper = cast(Tonemapper)tonemapper;
-        game.postProcessingRenderer.fxaaEnabled = fxaaEnabled;
-        game.postProcessingRenderer.lutEnabled = false;
+        app.deferredRenderer.ssaoEnabled = ssaoEnabled;
+        app.deferredRenderer.ssaoPower = 6.0;
+        app.postProcessingRenderer.depthOfFieldEnabled = depthOfFieldEnabled;
+        app.postProcessingRenderer.lensDistortionEnabled = lensDistortionEnabled;
+        app.postProcessingRenderer.glowEnabled = glowEnabled;
+        app.postProcessingRenderer.glowRadius = glowRadius;
+        app.postProcessingRenderer.motionBlurEnabled = motionBlurEnabled;
+        app.postProcessingRenderer.tonemapper = cast(Tonemapper)tonemapper;
+        app.postProcessingRenderer.fxaaEnabled = fxaaEnabled;
+        app.postProcessingRenderer.lutEnabled = false;
         
         camera = addCamera();
         freeview = New!FreeviewComponent(eventManager, camera);
@@ -137,7 +160,7 @@ class EditorScene: Scene
         freeview.translationStiffness = 0.25f;
         freeview.rotationStiffness = 0.25f;
         freeview.zoomStiffness = 0.25f;
-        game.renderer.activeCamera = camera;
+        app.renderer.activeCamera = camera;
         overlay.activeCamera = camera;
         camera.name = "Camera";
 
@@ -164,6 +187,8 @@ class EditorScene: Scene
         auto ePlane = addEntity();
         ePlane.drawable = New!ShapePlane(10, 10, 1, assetManager);
         ePlane.name = "Plane";
+
+        ui.active = true;
     }
     
     override void onUpdate(Time t)
@@ -235,4 +260,42 @@ class EditorScene: Scene
     override void onKeyUp(int key) { }
     override void onMouseButtonDown(int button) { }
     override void onMouseButtonUp(int button) { }
+}
+
+class EditorApp: Game
+{
+    EditorUI ui;
+    
+    this(uint w, uint h, bool fullscreen, string title, string[] args)
+    {
+        super(w, h, fullscreen, title, args);
+        auto scene = New!EditorScene(this);
+        currentScene = scene;
+        ui = New!EditorUI(this, scene, args);
+        ui.thumbnailGenerator = New!ThumbnailGenerator(scene.assetManager);
+        eventManager.onProcessEvent = &ui.onProcessEvent;
+        dynamicViewport = false; // The editor controls the viewport instead of the engine
+        scene.overlay.ui = ui;
+    }
+    
+    override void onCustomResize(int x, int y, int width, int height)
+    {
+        if (!isWindowMinimized)
+        {
+            resizeRenderers(x, y, width, height);
+        }
+    }
+    
+    override void onUpdate(Time t)
+    {
+        super.onUpdate(t);
+        ui.update(t);
+        currentScene.focused = !ui.capturesMouse;
+    }
+    
+    override void onRender()
+    {
+        super.onRender();
+        ui.render();
+    }
 }
