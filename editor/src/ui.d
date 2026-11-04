@@ -263,6 +263,12 @@ class EditorUI: EventListener
 
         if (igBeginPopupModal("About Dagon Editor", &showAbout, ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoSavedSettings))
         {
+            if (igIsMouseClicked(ImGuiMouseButton.Left) && !igIsWindowHovered())
+            {
+                showAbout = false;
+                igCloseCurrentPopup();
+            }
+
             if (aboutImage && aboutImage.valid)
             {
                 ImVec2 imagePosition;
@@ -342,6 +348,7 @@ class EditorUI: EventListener
         style.Colors[ImGuiCol.PopupBg]               = color_bg_dark;
         style.Colors[ImGuiCol.Border]                = ImVec4(0.25f, 0.25f, 0.25f, 1.0f);
         style.Colors[ImGuiCol.BorderShadow]          = ImVec4(0.00f, 0.00f, 0.00f, 0.0f);
+        style.Colors[ImGuiCol.ModalWindowDimBg]      = ImVec4(0.0f, 0.0f, 0.0f, 0.5f);
 
         // Frame Elements (Checkboxes, Input Fields, etc.)
         style.Colors[ImGuiCol.FrameBg]               = color_bg_light;
