@@ -86,6 +86,7 @@ class EditorUI: EventListener
     Texture iconAudio;
     Texture iconBlend;
     Texture iconJson;
+    Texture iconModel;
     ThumbnailGenerator thumbnailGenerator;
     Texture iconTranslate;
     Texture iconRotate;

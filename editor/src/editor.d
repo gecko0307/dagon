@@ -79,6 +79,7 @@ class EditorScene: Scene
     TextureAsset aAudioIcon;
     TextureAsset aBlendIcon;
     TextureAsset aJsonIcon;
+    TextureAsset aModelIcon;
     TextureAsset aTranslateIcon;
     TextureAsset aRotateIcon;
     TextureAsset aScaleIcon;
@@ -118,25 +119,27 @@ class EditorScene: Scene
     override void beforeLoad()
     {
         aFileIcon = addTextureAsset("data/icons/file.png");
-        //aFileIcon.generateMipmaps = false;
+        aFileIcon.generateMipmaps = false;
         aFolderIcon = addTextureAsset("data/icons/folder.png");
-        //aFolderIcon.generateMipmaps = false;
+        aFolderIcon.generateMipmaps = false;
         aArchiveIcon = addTextureAsset("data/icons/archive.png");
-        //aArchiveIcon.generateMipmaps = false;
+        aArchiveIcon.generateMipmaps = false;
         aAudioIcon = addTextureAsset("data/icons/audio.png");
-        //aAudioIcon.generateMipmaps = false;
+        aAudioIcon.generateMipmaps = false;
         aBlendIcon = addTextureAsset("data/icons/blend.png");
-        //aBlendIcon.generateMipmaps = false;
+        aBlendIcon.generateMipmaps = false;
         aJsonIcon = addTextureAsset("data/icons/json.png");
-        //aJsonIcon.generateMipmaps = false;
+        aJsonIcon.generateMipmaps = false;
+        aModelIcon = addTextureAsset("data/icons/model.png");
+        aModelIcon.generateMipmaps = false;
         aTranslateIcon = addTextureAsset("data/icons/btn_translate.png");
-        //aTranslateIcon.generateMipmaps = false;
+        aTranslateIcon.generateMipmaps = false;
         aRotateIcon = addTextureAsset("data/icons/btn_rotate.png");
-        //aRotateIcon.generateMipmaps = false;
+        aRotateIcon.generateMipmaps = false;
         aScaleIcon = addTextureAsset("data/icons/btn_scale.png");
-        //aScaleIcon.generateMipmaps = false;
+        aScaleIcon.generateMipmaps = false;
         aboutImage = addTextureAsset("data/splash.jpg");
-        //aboutImage.generateMipmaps = false;
+        aboutImage.generateMipmaps = false;
         
         aOBJSuzanne = addOBJAsset("assets/suzanne.obj");
     }
@@ -168,6 +171,7 @@ class EditorScene: Scene
         ui.iconAudio = prepareUiTexture(aAudioIcon.texture);
         ui.iconBlend = prepareUiTexture(aBlendIcon.texture);
         ui.iconJson = prepareUiTexture(aJsonIcon.texture);
+        ui.iconModel = prepareUiTexture(aModelIcon.texture);
         ui.iconTranslate = prepareUiTexture(aTranslateIcon.texture);
         ui.iconRotate = prepareUiTexture(aRotateIcon.texture);
         ui.iconScale = prepareUiTexture(aScaleIcon.texture);

@@ -416,25 +416,37 @@ class AssetBrowser: Owner
         return false;
     }
 
+    static const(char)[][] extModels = [
+        ".obj", ".3ds", ".gltf", ".glb", ".dae", ".fbx",
+        ".stl", ".ply", ".iqm", ".3mf", ".bvh", ".md2", ".md3",
+        ".md5mesh", ".ms3d", ".off", ".x3d"
+    ];
+    static const(char)[][] extArchives = [
+        ".zip", ".7z", ".rar", ".tar", ".gz", ".bz2", ".xz",
+        ".tgz", ".tbz", ".tbz2", ".txz", ".zst", ".lz", ".lz4",
+        ".cab", ".iso"
+    ];
+    static const(char)[][] extAudio = [
+        ".wav", ".mp3", ".ogg", ".oga", ".flac", ".opus", ".aiff",
+        ".aif", ".aifc", ".mid", ".midi", ".mod", ".xm", ".it",
+        ".s3m", ".wma", ".m4a", ".aac", ".weba"
+    ];
+    static const(char)[][] extBlender = [".blend", ".blend1"];
+    static const(char)[][] extJson = [".json"];
+
     Texture getEntryIcon(ref AssetEntry entry)
     {
         if (entry.isDirectory)
             return ui.iconFolder;
-        if (hasExtension(entry.name, [
-            ".zip", ".7z", ".rar", ".tar", ".gz", ".bz2", ".xz",
-            ".tgz", ".tbz", ".tbz2", ".txz", ".zst", ".lz", ".lz4",
-            ".cab", ".iso"
-        ]))
+        if (hasExtension(entry.name, extModels))
+            return ui.iconModel;
+        if (hasExtension(entry.name, extArchives))
             return ui.iconArchive;
-        if (hasExtension(entry.name, [
-            ".wav", ".mp3", ".ogg", ".oga", ".flac", ".opus", ".aiff",
-            ".aif", ".aifc", ".mid", ".midi", ".mod", ".xm", ".it",
-            ".s3m", ".wma", ".m4a", ".aac", ".weba"
-        ]))
+        if (hasExtension(entry.name, extAudio))
             return ui.iconAudio;
-        if (hasExtension(entry.name, [".blend", ".blend1"]))
+        if (hasExtension(entry.name, extBlender))
             return ui.iconBlend;
-        if (hasExtension(entry.name, [".json"]))
+        if (hasExtension(entry.name, extJson))
             return ui.iconJson;
 
         if (!entry.thumbnailChecked)
