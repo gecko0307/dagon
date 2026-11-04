@@ -108,11 +108,8 @@ class EditorScene: Scene
         
         overlay = New!InteractionOverlay(eventManager, this);
         
-        auto splashTextureAsset = addTextureAsset("data/backgrounds/loading.jpg", true);
-        
         loadingScreen = New!LoadingScreen(app, this);
-        loadingScreen.backgroundTexture = splashTextureAsset.texture;
-        loadingScreen.progressbarCentered = false;
+        loadingScreen.progressbarCentered = true;
         onLoad(Time(0.0, 0.0), 0.0f);
     }
 
@@ -146,9 +143,6 @@ class EditorScene: Scene
     
     override void onLoad(Time t, float progress)
     {
-        loadingScreen.progressbar.position = Vector3f(
-            (app.drawableWidth - loadingScreen.progressbarWidth) * 0.5f,
-            app.drawableHeight - 40.0f, 0);
         loadingScreen.update(t, progress);
         loadingScreen.render();
     }
