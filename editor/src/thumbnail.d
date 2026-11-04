@@ -73,9 +73,15 @@ class ThumbnailGenerator: Owner
         thumbnails.free();
     }
 
-    Texture getThumbnail(string filename)
+    Texture getThumbnail(const(char)[] filename)
     {
-        string format = extension(filename).toLower;
+        const(char)[] ext = extension(filename);
+        char[16] extBuffer;
+        if (ext.length > extBuffer.length)
+            return null;
+        foreach (i, c; ext)
+            extBuffer[i] = (c >= 'A' && c <= 'Z') ? cast(char)(c + 32) : c;
+        string format = cast(string)extBuffer[0 .. ext.length];
         if (assetManager.textureLoader(format) is null)
             return null;
 
@@ -85,16 +91,21 @@ class ThumbnailGenerator: Owner
                 return entry.texture;
         }
 
+        // Array storage is GC-free, so the cached filename needs explicit ownership.
+        auto cachedFilename = New!(char[])(filename.length);
+        cachedFilename[] = filename[];
+        string persistentFilename = cast(string)cachedFilename;
+
         auto source = New!TextureAsset(this);
         source.persistent = true;
-        assetManager.preloadExternalAsset(source, filename);
+        assetManager.preloadExternalAsset(source, persistentFilename);
         bool retainSource;
         scope(exit)
         {
             if (!retainSource)
                 source.release();
         }
-
+        
         Texture result;
         if (source.threadUnsafePartLoaded &&
             source.buffer.format.target == GL_TEXTURE_2D &&
@@ -180,11 +191,8 @@ class ThumbnailGenerator: Owner
             result.unbind();
             retainSource = true;
         }
-
-        // Array storage is GC-free, so cached filenames need explicit ownership.
-        auto cachedFilename = New!(char[])(filename.length);
-        cachedFilename[] = filename[];
-        thumbnails.append(ThumbnailEntry(cast(string)cachedFilename, result));
+        
+        thumbnails.append(ThumbnailEntry(persistentFilename, result));
         return result;
     }
 }

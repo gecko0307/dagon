@@ -26,9 +26,11 @@ DEALINGS IN THE SOFTWARE.
 */
 module ui;
 
+import core.stdc.stdio: snprintf;
+import core.stdc.string: strlen;
+
 import std.stdio;
 import std.algorithm;
-import std.conv;
 import std.file;
 import std.path;
 import std.string;
@@ -50,6 +52,45 @@ import dagon.ext.imgui;
 import editor;
 import overlay;
 import thumbnail;
+
+// Fixed-capacity, always zero-terminated text buffer.
+struct TextBuffer(size_t capacity)
+{
+    char[capacity] data = 0;
+    size_t length;
+
+    void clear()
+    {
+        length = 0;
+        data[0] = 0;
+    }
+
+    void set(const(char)[] text)
+    {
+        clear();
+        append(text);
+    }
+
+    void append(const(char)[] text)
+    {
+        size_t count = min(text.length, capacity - 1 - length);
+        data[length .. length + count] = text[0 .. count];
+        length += count;
+        data[length] = 0;
+    }
+
+    void truncate(size_t newLength)
+    {
+        if (newLength < length)
+        {
+            length = newLength;
+            data[length] = 0;
+        }
+    }
+
+    const(char)[] slice() const { return data[0 .. length]; }
+    const(char)* cstr() const { return data.ptr; }
+}
 
 struct EditorViewport
 {
@@ -92,15 +133,22 @@ class EditorUI: EventListener
     
     char[256] sceneNameBuffer;
     string assetRoot;
-    string assetDirectory;
-    string selectedAssetPath;
-    string assetBrowserMessage;
-    string assetRenameTarget;
-    string assetDeleteTarget;
+    TextBuffer!512 assetDirectory; // relative to assetRoot, always '/' separated
+    TextBuffer!512 selectedAssetPath;
+    TextBuffer!512 assetBrowserMessage;
+    TextBuffer!256 assetRenameTarget;
+    TextBuffer!256 assetDeleteTarget;
     bool assetDeleteTargetIsDirectory;
     Array!AssetEntry assetEntries;
     char[256] assetSearchBuffer;
     char[256] assetNameBuffer;
+    
+    static ImWchar[7] glyphRanges = [
+        0x0020, 0x00FF, // Basic Latin + Latin Supplement
+        0x0370, 0x03FF, // Greek
+        0x0400, 0x044F, // Cyrillic
+        0
+    ];
     
     this(Application application, EditorScene scene, string[] args)
     {
@@ -117,14 +165,7 @@ class EditorUI: EventListener
         io = igGetIO();
         io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
         io.ConfigWindowsMoveFromTitleBarOnly = true;
-        ImWchar[] ranges = [
-            0x0020, 0x00FF, // Basic Latin + Latin Supplement
-            0x0370, 0x03FF, // Greek
-            0x0400, 0x044F, // Cyrillic
-            0
-        ];
-        font = ImFontAtlas_AddFontFromFileTTF(io.Fonts, "data/font/Roboto.ttf", 16, null, 
-            ranges.ptr);
+        font = ImFontAtlas_AddFontFromFileTTF(io.Fonts, "data/font/Roboto.ttf", 16, null, glyphRanges.ptr);
         igStyleColorsDark(null);
         ImGui_ImplSDL2_InitForOpenGL(application.window, application.glcontext);
         ImGuiOpenGLBackend.init("#version 400 core");
@@ -135,7 +176,7 @@ class EditorUI: EventListener
 
     ~this()
     {
-        freeAssetEntryNames();
+        freeAssetEntries();
         assetEntries.free();
     }
     
@@ -585,73 +626,120 @@ class EditorUI: EventListener
 
     struct AssetEntry
     {
-        string name;
+        char[] nameZ; // "name\0", manually allocated
+        char[] pathZ; // "assets/dir/name\0", manually allocated
         bool isDirectory;
         ulong size;
+        char[32] sizeLabel = 0;
         Texture thumbnail;
         bool thumbnailChecked;
+
+        @property const(char)[] name() { return nameZ[0..$ - 1]; }
+        @property const(char)[] path() { return pathZ[0..$ - 1]; }
     }
 
-    string currentAssetPath()
+    static char[] allocZ(const(char)[] text)
     {
-        return assetDirectory.length == 0
-            ? assetRoot
-            : buildPath(assetRoot, assetDirectory);
+        auto result = New!(char[])(text.length + 1);
+        result[0..text.length] = text[];
+        result[text.length] = 0;
+        return result;
     }
 
-    string copyAssetEntryName(string name)
+    static void put(char[] dest, ref size_t pos, const(char)[] text)
     {
-        // Array storage is GC-free, so entry names need explicit ownership.
-        auto copy = New!(char[])(name.length);
-        copy[] = name[];
-        return cast(string)copy;
+        dest[pos..pos + text.length] = text[];
+        pos += text.length;
     }
 
-    void freeAssetEntryNames()
+    // "assets/<assetDirectory>/<name>\0"
+    char[] allocEntryPath(const(char)[] name)
+    {
+        size_t total = 6 + (assetDirectory.length != 0 ? 1 + assetDirectory.length : 0) + 1 + name.length + 1;
+        auto result = New!(char[])(total);
+        size_t pos = 0;
+        put(result, pos, "assets");
+        if (assetDirectory.length != 0)
+        {
+            put(result, pos, "/");
+            put(result, pos, assetDirectory.slice);
+        }
+        put(result, pos, "/");
+        put(result, pos, name);
+        result[pos] = 0;
+        return result;
+    }
+
+    // Filesystem path of the current folder, optionally with an item name appended
+    TextBuffer!1024 filesystemPath(const(char)[] name = null)
+    {
+        TextBuffer!1024 path;
+        path.set(assetRoot);
+        if (assetDirectory.length != 0)
+        {
+            path.append("/");
+            path.append(assetDirectory.slice);
+        }
+        if (name.length != 0)
+        {
+            path.append("/");
+            path.append(name);
+        }
+        return path;
+    }
+
+    void freeAssetEntries()
     {
         foreach (entry; assetEntries)
         {
-            auto name = cast(char[])entry.name;
-            Delete(name);
+            auto nameZ = entry.nameZ;
+            auto pathZ = entry.pathZ;
+            Delete(nameZ);
+            Delete(pathZ);
         }
     }
 
-    string relativeAssetPath(string name)
+    void selectAssetByName(const(char)[] name)
     {
-        string path = "assets";
+        selectedAssetPath.set("assets");
         if (assetDirectory.length != 0)
         {
-            path ~= "/";
-            foreach (c; assetDirectory)
-                path ~= (c == '\\' ? '/' : c);
+            selectedAssetPath.append("/");
+            selectedAssetPath.append(assetDirectory.slice);
         }
-        return path ~ "/" ~ name;
+        selectedAssetPath.append("/");
+        selectedAssetPath.append(name);
     }
 
     void refreshAssetEntries()
     {
-        freeAssetEntryNames();
+        freeAssetEntries();
         assetEntries.resize(0, AssetEntry.init);
-        assetBrowserMessage = "";
-        string directory = currentAssetPath();
-        if (!exists(directory))
+        assetBrowserMessage.clear();
+
+        auto directory = filesystemPath();
+        if (!exists(directory.slice))
         {
-            assetBrowserMessage = "Asset folder not found: " ~ directory;
+            assetBrowserMessage.set("Asset folder not found: ");
+            assetBrowserMessage.append(directory.slice);
             return;
         }
 
         try
         {
-            foreach (entry; dirEntries(directory, SpanMode.shallow))
+            foreach (dirEntry; dirEntries(cast(string)directory.slice, SpanMode.shallow))
             {
-                if (entry.isSymlink)
+                if (dirEntry.isSymlink)
                     continue;
-                assetEntries.append(AssetEntry(
-                    copyAssetEntryName(baseName(stripRight(entry.name, "\\/"))),
-                    entry.isDir,
-                    entry.size,
-                    null,
-                    false));
+
+                const(char)[] name = baseName(stripRight(dirEntry.name, "\\/"));
+                AssetEntry entry;
+                entry.nameZ = allocZ(name);
+                entry.pathZ = allocEntryPath(name);
+                entry.isDirectory = dirEntry.isDir;
+                entry.size = dirEntry.size;
+                snprintf(entry.sizeLabel.ptr, entry.sizeLabel.length, "%llu bytes", entry.size);
+                assetEntries.append(entry);
             }
             sort!((a, b) {
                 if (a.isDirectory != b.isDirectory)
@@ -661,11 +749,12 @@ class EditorUI: EventListener
         }
         catch (Exception e)
         {
-            assetBrowserMessage = "Unable to read folder: " ~ e.msg;
+            assetBrowserMessage.set("Unable to read folder: ");
+            assetBrowserMessage.append(e.msg);
         }
     }
 
-    bool isValidAssetName(string name)
+    bool isValidAssetName(const(char)[] name)
     {
         if (name.length == 0 || name == "." || name == "..")
             return false;
@@ -679,110 +768,137 @@ class EditorUI: EventListener
         return name[$ - 1] != ' ' && name[$ - 1] != '.';
     }
 
-    void setAssetNameBuffer(string name)
+    void setAssetNameBuffer(const(char)[] name)
     {
         assetNameBuffer[] = 0;
         size_t length = name.length < assetNameBuffer.length - 1
             ? name.length
             : assetNameBuffer.length - 1;
-        assetNameBuffer[0 .. length] = name[0 .. length];
+        assetNameBuffer[0..length] = name[0 .. length];
     }
 
-    string assetNameInput()
+    // Slice into assetNameBuffer, valid until the buffer is edited
+    const(char)[] assetNameInput()
     {
-        size_t length = 0;
-        while (length < assetNameBuffer.length && assetNameBuffer[length] != 0)
-            length++;
-        return assetNameBuffer[0 .. length].idup;
+        return assetNameBuffer[0 .. strlen(assetNameBuffer.ptr)];
     }
 
     void createAssetFolder()
     {
-        string name = assetNameInput();
+        const(char)[] name = assetNameInput();
         if (!isValidAssetName(name))
         {
-            assetBrowserMessage = "Enter a valid folder name.";
+            assetBrowserMessage.set("Enter a valid folder name.");
             return;
         }
 
-        string path = buildPath(currentAssetPath(), name);
-        if (exists(path))
+        auto path = filesystemPath(name);
+        if (exists(path.slice))
         {
-            assetBrowserMessage = "An item with that name already exists.";
+            assetBrowserMessage.set("An item with that name already exists.");
             return;
         }
         try
         {
-            mkdir(path);
+            mkdir(path.slice);
             refreshAssetEntries();
             if (assetBrowserMessage.length == 0)
-                assetBrowserMessage = "Created folder: " ~ name;
+            {
+                assetBrowserMessage.set("Created folder: ");
+                assetBrowserMessage.append(name);
+            }
         }
         catch (Exception e)
         {
-            assetBrowserMessage = "Unable to create folder: " ~ e.msg;
+            assetBrowserMessage.set("Unable to create folder: ");
+            assetBrowserMessage.append(e.msg);
         }
     }
 
     void renameAsset()
     {
-        string name = assetNameInput();
+        const(char)[] name = assetNameInput();
         if (!isValidAssetName(name))
         {
-            assetBrowserMessage = "Enter a valid name.";
+            assetBrowserMessage.set("Enter a valid name.");
             return;
         }
 
-        string destination = buildPath(currentAssetPath(), name);
-        string source = buildPath(currentAssetPath(), assetRenameTarget);
-        if (exists(destination))
+        auto destination = filesystemPath(name);
+        auto source = filesystemPath(assetRenameTarget.slice);
+        if (exists(destination.slice))
         {
-            assetBrowserMessage = "An item with that name already exists.";
+            assetBrowserMessage.set("An item with that name already exists.");
             return;
         }
         try
         {
-            rename(source, destination);
-            selectedAssetPath = relativeAssetPath(name);
+            rename(source.slice, destination.slice);
+            selectAssetByName(name);
             refreshAssetEntries();
             if (assetBrowserMessage.length == 0)
-                assetBrowserMessage = "Renamed to: " ~ name;
+            {
+                assetBrowserMessage.set("Renamed to: ");
+                assetBrowserMessage.append(name);
+            }
         }
         catch (Exception e)
         {
-            assetBrowserMessage = "Unable to rename item: " ~ e.msg;
+            assetBrowserMessage.set("Unable to rename item: ");
+            assetBrowserMessage.append(e.msg);
         }
     }
 
     void deleteAsset()
     {
-        string path = buildPath(currentAssetPath(), assetDeleteTarget);
+        auto path = filesystemPath(assetDeleteTarget.slice);
         try
         {
             if (assetDeleteTargetIsDirectory)
-                rmdir(path);
+                rmdir(path.slice);
             else
-                remove(path);
-            selectedAssetPath = "";
-            string deletedName = assetDeleteTarget;
-            assetDeleteTarget = "";
+                remove(path.slice);
+            selectedAssetPath.clear();
+            TextBuffer!256 deletedName;
+            deletedName.set(assetDeleteTarget.slice);
+            assetDeleteTarget.clear();
             refreshAssetEntries();
             if (assetBrowserMessage.length == 0)
-                assetBrowserMessage = "Deleted: " ~ deletedName;
+            {
+                assetBrowserMessage.set("Deleted: ");
+                assetBrowserMessage.append(deletedName.slice);
+            }
         }
         catch (Exception e)
         {
-            assetDeleteTarget = "";
-            assetBrowserMessage = "Unable to delete item (folders must be empty): " ~ e.msg;
+            assetDeleteTarget.clear();
+            assetBrowserMessage.set("Unable to delete item (folders must be empty): ");
+            assetBrowserMessage.append(e.msg);
         }
     }
 
-    bool matchesAssetSearch(string name, string query)
+    static char asciiLower(char c)
     {
-        return query.length == 0 ||
-            toLower(name).canFind(toLower(query));
+        return (c >= 'A' && c <= 'Z') ? cast(char)(c + 32) : c;
     }
 
+    static bool containsIgnoreCase(const(char)[] haystack, const(char)[] needle)
+    {
+        if (needle.length == 0)
+            return true;
+        if (needle.length > haystack.length)
+            return false;
+        foreach (i; 0..haystack.length - needle.length + 1)
+        {
+            size_t j = 0;
+            while (j < needle.length && asciiLower(haystack[i + j]) == asciiLower(needle[j]))
+                j++;
+            if (j == needle.length)
+                return true;
+        }
+        return false;
+    }
+    
     void renderMaterialBrowser()
     {
         int[5] materialItems = [0, 1, 2, 3, 4];
@@ -827,9 +943,9 @@ class EditorUI: EventListener
         {
             if (igButton("Up", ImVec2(0, 0)) && assetDirectory.length != 0)
             {
-                string parent = dirName(assetDirectory);
-                assetDirectory = parent == "." ? "" : parent;
-                selectedAssetPath = "";
+                ptrdiff_t slash = lastIndexOf(assetDirectory.slice, '/');
+                assetDirectory.truncate(slash < 0 ? 0 : cast(size_t)slash);
+                selectedAssetPath.clear();
                 refreshAssetEntries();
             }
             igSameLine();
@@ -844,6 +960,11 @@ class EditorUI: EventListener
             igSameLine();
             igSetNextItemWidth(200.0f);
             igInputText("Filter##AssetSearch", assetSearchBuffer.ptr, assetSearchBuffer.length);
+
+            if (assetDirectory.length != 0)
+                igText("assets/%s", assetDirectory.cstr);
+            else
+                igText("assets");
 
             if (igBeginPopup("Create asset folder", ImGuiWindowFlags.AlwaysAutoResize))
             {
@@ -865,31 +986,27 @@ class EditorUI: EventListener
             int columns = cast(int)(winWidth / 128.0f);
             columns = columns < 1 ? 1 : columns;
             igColumns(columns, null, false);
-            size_t searchLength = 0;
-            while (searchLength < assetSearchBuffer.length &&
-                assetSearchBuffer[searchLength] != 0)
-                searchLength++;
-            string search = assetSearchBuffer[0 .. searchLength].idup;
+
+            const(char)[] search = assetSearchBuffer[0 .. strlen(assetSearchBuffer.ptr)];
             bool openRenamePopup;
             bool openDeletePopup;
             bool navigateToDirectory;
-            string requestedDirectory;
+            TextBuffer!512 requestedDirectory;
             size_t visibleEntries;
-            foreach(i, ref entry; assetEntries)
+            foreach (i, ref entry; assetEntries)
             {
-                if (!matchesAssetSearch(entry.name, search))
+                if (!containsIgnoreCase(entry.name, search))
                     continue;
                 visibleEntries++;
 
                 igPushID_Int(cast(uint)i);
 
                 igBeginGroup();
-                string entryPath = relativeAssetPath(entry.name);
-                bool selected = selectedAssetPath == entryPath;
+                bool selected = selectedAssetPath.slice == entry.path;
                 if (!entry.isDirectory && !entry.thumbnailChecked)
                 {
                     if (thumbnailGenerator)
-                        entry.thumbnail = thumbnailGenerator.getThumbnail(entryPath);
+                        entry.thumbnail = thumbnailGenerator.getThumbnail(entry.path);
                     entry.thumbnailChecked = true;
                 }
                 Texture entryIcon = entry.isDirectory
@@ -902,21 +1019,22 @@ class EditorUI: EventListener
                     ImVec2 thumbnailSize = ImVec2(100, 100);
                     if (entryIcon.width > 0 && entryIcon.height > 0)
                     {
-                        float aspectRatio = cast(float)entryIcon.width / cast(float)entryIcon.height;
+                        float aspectRatio = cast(float)entryIcon.width /
+                            cast(float)entryIcon.height;
                         if (aspectRatio > 1.0f)
                             thumbnailSize.y = 100.0f / aspectRatio;
                         else
                             thumbnailSize.x = 100.0f * aspectRatio;
                     }
                     ImVec4 buttonBackground = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
-                    ImGuiID btnId = igGetID_Str(toStringz(entry.name));
+                    ImGuiID btnId = igGetID_Str(entry.nameZ.ptr);
                     bool pressed = igImageButtonEx(btnId, cast(void*)entryIcon.texture,
                         thumbnailSize, ImVec2(0, 0), ImVec2(1, 1),
                         ImVec2(0, 0), buttonBackground,
                         ImVec4(1, 1, 1, 1));
                     if (pressed)
-                        selectedAssetPath = entryPath;
-                    if (selectedAssetPath == entryPath)
+                        selectedAssetPath.set(entry.path);
+                    if (selected || pressed)
                     {
                         ImVec2 rectMin;
                         ImVec2 rectMax;
@@ -940,7 +1058,7 @@ class EditorUI: EventListener
                     igPushStyleColor(ImGuiCol.Button, buttonColor);
                     if (igButton(entry.isDirectory ? "[DIR]" : "[FILE]",
                         ImVec2(100, 100)))
-                        selectedAssetPath = entryPath;
+                        selectedAssetPath.set(entry.path);
                     igPopStyleColor();
                 }
 
@@ -948,23 +1066,23 @@ class EditorUI: EventListener
                 {
                     if (entry.isDirectory)
                     {
-                        requestedDirectory = (assetDirectory.length == 0
-                            ? entry.name
-                            : buildPath(assetDirectory, entry.name)).idup;
+                        requestedDirectory.set(assetDirectory.slice);
+                        if (requestedDirectory.length != 0)
+                            requestedDirectory.append("/");
+                        requestedDirectory.append(entry.name);
                         navigateToDirectory = true;
                     }
                     else
                     {
-                        selectedAssetPath = relativeAssetPath(entry.name);
+                        selectedAssetPath.set(entry.path);
                     }
                 }
 
                 if (igBeginDragDropSource())
                 {
-                    string path = relativeAssetPath(entry.name);
-                    string payloadPath = path ~ "\0";
-                    igSetDragDropPayload("ASSET", payloadPath.ptr, payloadPath.length);
-                    igText("%s", toStringz(path));
+                    // pathZ includes the terminating zero
+                    igSetDragDropPayload("ASSET", entry.pathZ.ptr, entry.pathZ.length);
+                    igText("%s", entry.pathZ.ptr);
                     igEndDragDropSource();
                 }
 
@@ -972,20 +1090,25 @@ class EditorUI: EventListener
                 {
                     if (igMenuItem("Rename"))
                     {
-                        assetRenameTarget = entry.name.idup;
+                        assetRenameTarget.set(entry.name);
                         setAssetNameBuffer(entry.name);
                         openRenamePopup = true;
                     }
                     if (igMenuItem("Delete"))
                     {
-                        assetDeleteTarget = entry.name.idup;
+                        assetDeleteTarget.set(entry.name);
                         assetDeleteTargetIsDirectory = entry.isDirectory;
                         openDeletePopup = true;
                     }
                     igEndPopup();
                 }
 
-                igTextWrapped("%s", toStringz(entry.name));
+                if (entry.isDirectory)
+                    igTextWrapped("[%s]", entry.nameZ.ptr);
+                else
+                    igTextWrapped("%s", entry.nameZ.ptr);
+                if (!entry.isDirectory)
+                    igTextDisabled("%s", entry.sizeLabel.ptr);
 
                 igEndGroup();
 
@@ -995,8 +1118,8 @@ class EditorUI: EventListener
             igColumns(1);
             if (navigateToDirectory)
             {
-                assetDirectory = requestedDirectory;
-                selectedAssetPath = "";
+                assetDirectory.set(requestedDirectory.slice);
+                selectedAssetPath.clear();
                 refreshAssetEntries();
             }
 
@@ -1009,13 +1132,13 @@ class EditorUI: EventListener
                 if (igButton("Rename"))
                 {
                     renameAsset();
-                    assetRenameTarget = "";
+                    assetRenameTarget.clear();
                     igCloseCurrentPopup();
                 }
                 igSameLine();
                 if (igButton("Cancel"))
                 {
-                    assetRenameTarget = "";
+                    assetRenameTarget.clear();
                     igCloseCurrentPopup();
                 }
                 igEndPopup();
@@ -1026,7 +1149,7 @@ class EditorUI: EventListener
             if (assetDeleteTarget.length != 0 &&
                 igBeginPopupModal("Confirm asset delete", null, ImGuiWindowFlags.AlwaysAutoResize))
             {
-                igText("Delete '%s'?", toStringz(assetDeleteTarget));
+                igText("Delete '%s'?", assetDeleteTarget.cstr);
                 if (assetDeleteTargetIsDirectory)
                     igTextDisabled("Only empty folders can be deleted.");
                 if (igButton("Delete"))
@@ -1037,16 +1160,16 @@ class EditorUI: EventListener
                 igSameLine();
                 if (igButton("Cancel"))
                 {
-                    assetDeleteTarget = "";
+                    assetDeleteTarget.clear();
                     igCloseCurrentPopup();
                 }
                 igEndPopup();
             }
 
             if (assetBrowserMessage.length != 0)
-                igTextWrapped("%s", toStringz(assetBrowserMessage));
+                igTextWrapped("%s", assetBrowserMessage.cstr);
             else if (selectedAssetPath.length != 0)
-                igTextWrapped("%s", toStringz(selectedAssetPath));
+                igTextWrapped("%s", selectedAssetPath.cstr);
             else if (visibleEntries == 0 && !navigateToDirectory)
                 igTextDisabled(assetEntries.length == 0
                     ? "This folder is empty."
