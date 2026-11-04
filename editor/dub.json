@@ -21,7 +21,7 @@
     ],
     "lflags-linux": ["-rpath=$$ORIGIN"],
     "targetName": "DagonEditor",
-    "postBuildCommands-windows": [
+    "postBuildCommands-windows-x86_64": [
         "$PACKAGE_DIR\\bin/rcedit-x64 \"DagonEditor.exe\" --set-file-version \"1.0.0.0\" --set-product-version \"1.0.0\" --set-icon \"$PACKAGE_DIR\\res\\icon.ico\" --application-manifest \"$PACKAGE_DIR\\res\\dagon_editor.manifest\""
     ]
 }

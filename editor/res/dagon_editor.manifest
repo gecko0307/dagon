@@ -9,4 +9,18 @@
             <supportedOS Id="{e2011457-1546-43c5-a5fe-008deee3d3f0}"/> <!-- Windows Vista -->
         </application>
     </compatibility>
+    
+    <!-- DPI-awareness -->
+    <asmv3:application>
+        <asmv3:windowsSettings>
+            <!-- For Windows 10 and 11 -->
+            <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">
+                PerMonitorV2
+            </dpiAwareness>
+            <!-- For older versions -->
+            <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">
+                true/pm
+            </dpiAware>
+        </asmv3:windowsSettings>
+    </asmv3:application>
 </assembly>
