@@ -499,7 +499,7 @@ class AssetBrowser: Owner
             bool openRenamePopup;
             bool openDeletePopup;
             bool navigateToDirectory;
-            TextBuffer!512 requestedDirectory;
+            string requestedDirectory;
             size_t visibleEntries;
             foreach (i, ref entry; assetEntries)
             {
@@ -564,10 +564,9 @@ class AssetBrowser: Owner
                 {
                     if (entry.isDirectory)
                     {
-                        requestedDirectory.set(assetDirectory.slice);
-                        if (requestedDirectory.length != 0)
-                            requestedDirectory.append("/");
-                        requestedDirectory.append(entry.name);
+                        requestedDirectory = assetDirectory.length == 0
+                            ? cast(string)entry.name
+                            : cast(string)assetDirectory.slice ~ "/" ~ cast(string)entry.name;
                         navigateToDirectory = true;
                     }
                     else
@@ -615,7 +614,7 @@ class AssetBrowser: Owner
             igColumns(1);
             if (navigateToDirectory)
             {
-                assetDirectory.set(requestedDirectory.slice);
+                assetDirectory.set(requestedDirectory);
                 selectedAssetPath.clear();
                 refreshAssetEntries();
             }
