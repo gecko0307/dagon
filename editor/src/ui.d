@@ -842,10 +842,6 @@ class EditorUI: EventListener
                 igOpenPopup("Create asset folder");
             }
             igSameLine();
-            string displayPath = "assets";
-            if (assetDirectory.length != 0)
-                displayPath ~= "/" ~ assetDirectory;
-            igText("%s", toStringz(displayPath));
             igSetNextItemWidth(200.0f);
             igInputText("Filter##AssetSearch", assetSearchBuffer.ptr, assetSearchBuffer.length);
 
@@ -906,8 +902,7 @@ class EditorUI: EventListener
                     ImVec2 thumbnailSize = ImVec2(100, 100);
                     if (entryIcon.width > 0 && entryIcon.height > 0)
                     {
-                        float aspectRatio = cast(float)entryIcon.width /
-                            cast(float)entryIcon.height;
+                        float aspectRatio = cast(float)entryIcon.width / cast(float)entryIcon.height;
                         if (aspectRatio > 1.0f)
                             thumbnailSize.y = 100.0f / aspectRatio;
                         else
@@ -990,15 +985,7 @@ class EditorUI: EventListener
                     igEndPopup();
                 }
 
-                if (entry.isDirectory)
-                    igTextWrapped("[%s]", toStringz(entry.name));
-                else
-                    igTextWrapped("%s", toStringz(entry.name));
-                if (!entry.isDirectory)
-                {
-                    string sizeLabel = to!string(entry.size) ~ " bytes";
-                    igTextDisabled("%s", toStringz(sizeLabel));
-                }
+                igTextWrapped("%s", toStringz(entry.name));
 
                 igEndGroup();
 

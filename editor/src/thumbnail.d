@@ -115,13 +115,19 @@ class ThumbnailGenerator: Owner
                 uint width = max(1, cast(uint)(sourceWidth * scale));
                 uint height = max(1, cast(uint)(sourceHeight * scale));
 
+                // Square canvas, scaled image centered inside
+                uint side = max(width, height);
+                uint offsetX = (side - width) / 2;
+                uint offsetY = (side - height) / 2;
+
                 TextureBuffer thumbnailBuffer;
                 thumbnailBuffer.format = source.buffer.format;
-                thumbnailBuffer.size = TextureSize(width, height, 1);
+                thumbnailBuffer.size = TextureSize(side, side, 1);
                 thumbnailBuffer.mipLevels = 1;
-                thumbnailBuffer.data = New!(ubyte[])(cast(size_t)width * height * channels);
+                thumbnailBuffer.data = New!(ubyte[])(cast(size_t)side * side * channels);
+                thumbnailBuffer.data[] = 0; // padding: black (RGB) or transparent black (RGBA)
 
-                foreach (y; 0 .. height)
+                foreach (y; 0..height)
                 {
                     float sourceY = (cast(float)y + 0.5f) * sourceHeight / height - 0.5f;
                     sourceY = sourceY < 0.0f ? 0.0f : sourceY;
@@ -129,7 +135,7 @@ class ThumbnailGenerator: Owner
                     uint y1 = min(y0 + 1, sourceHeight - 1);
                     float fy = sourceY - y0;
 
-                    foreach (x; 0 .. width)
+                    foreach (x; 0..width)
                     {
                         float sourceX = (cast(float)x + 0.5f) * sourceWidth / width - 0.5f;
                         sourceX = sourceX < 0.0f ? 0.0f : sourceX;
@@ -137,7 +143,7 @@ class ThumbnailGenerator: Owner
                         uint x1 = min(x0 + 1, sourceWidth - 1);
                         float fx = sourceX - x0;
 
-                        foreach (channel; 0 .. channels)
+                        foreach (channel; 0..channels)
                         {
                             size_t topLeft = (cast(size_t)y0 * sourceWidth + x0) * channels + channel;
                             size_t topRight = (cast(size_t)y0 * sourceWidth + x1) * channels + channel;
@@ -148,7 +154,7 @@ class ThumbnailGenerator: Owner
                             float bottom = source.buffer.data[bottomLeft] * (1.0f - fx) +
                                 source.buffer.data[bottomRight] * fx;
                             float value = top * (1.0f - fy) + bottom * fy;
-                            size_t target = (cast(size_t)y * width + x) * channels + channel;
+                            size_t target = (cast(size_t)(y + offsetY) * side + (x + offsetX)) * channels + channel;
                             thumbnailBuffer.data[target] = cast(ubyte)(value + 0.5f);
                         }
                     }
