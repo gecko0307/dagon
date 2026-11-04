@@ -24,73 +24,30 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/*
+ * Editor UI: ImGui setup, main menu, dockspace, scene settings and status bar.
+ * Individual panels live in toolbar, navigator, properties and assetbrowser modules.
+ */
 module ui;
-
-import core.stdc.stdio: snprintf;
-import core.stdc.string: strlen;
-
-import std.stdio;
-import std.algorithm;
-import std.file;
-import std.path;
-import std.string;
-
-import dlib.core.memory;
-import dlib.container.array;
 
 import dagon.core.bindings;
 import dagon.core.time;
 import dagon.core.event;
 import dagon.core.application;
 import dagon.core.dialogs;
-import dagon.graphics.entity;
 import dagon.graphics.texture;
-import dagon.graphics.material;
 import dagon.render.postproc;
 import dagon.ext.imgui;
 
+import dlib.core.memory;
+
 import editor;
-import overlay;
 import thumbnail;
-
-// Fixed-capacity, always zero-terminated text buffer.
-struct TextBuffer(size_t capacity)
-{
-    char[capacity] data = 0;
-    size_t length;
-
-    void clear()
-    {
-        length = 0;
-        data[0] = 0;
-    }
-
-    void set(const(char)[] text)
-    {
-        clear();
-        append(text);
-    }
-
-    void append(const(char)[] text)
-    {
-        size_t count = min(text.length, capacity - 1 - length);
-        data[length .. length + count] = text[0 .. count];
-        length += count;
-        data[length] = 0;
-    }
-
-    void truncate(size_t newLength)
-    {
-        if (newLength < length)
-        {
-            length = newLength;
-            data[length] = 0;
-        }
-    }
-
-    const(char)[] slice() const { return data[0 .. length]; }
-    const(char)* cstr() const { return data.ptr; }
-}
+import toolbar;
+import navigator;
+import properties;
+import assetbrowser;
 
 struct EditorViewport
 {
@@ -122,6 +79,7 @@ class EditorUI: EventListener
     EditorViewport editorViewportPrevious =
         EditorViewport(ImVec2(0, 0), ImVec2(0, 0));
     
+    // Icons and thumbnails are assigned from main.d and shared by the panels
     Texture iconFile;
     Texture iconFolder;
     ThumbnailGenerator thumbnailGenerator;
@@ -129,19 +87,15 @@ class EditorUI: EventListener
     Texture iconRotate;
     Texture iconScale;
     
+    // Panels
+    Toolbar toolbar;
+    Navigator navigator;
+    PropertiesPanel properties;
+    AssetBrowser assetBrowser;
+    
     string lastSaveFilename;
     
     char[256] sceneNameBuffer;
-    string assetRoot;
-    TextBuffer!512 assetDirectory; // relative to assetRoot, always '/' separated
-    TextBuffer!512 selectedAssetPath;
-    TextBuffer!512 assetBrowserMessage;
-    TextBuffer!256 assetRenameTarget;
-    TextBuffer!256 assetDeleteTarget;
-    bool assetDeleteTargetIsDirectory;
-    Array!AssetEntry assetEntries;
-    char[256] assetSearchBuffer;
-    char[256] assetNameBuffer;
     
     static ImWchar[7] glyphRanges = [
         0x0020, 0x00FF, // Basic Latin + Latin Supplement
@@ -155,10 +109,6 @@ class EditorUI: EventListener
         super(application.eventManager, application);
         this.application = application;
         this.scene = scene;
-        assetSearchBuffer[] = 0;
-        assetNameBuffer[] = 0;
-        assetRoot = buildPath(application.directory, "assets");
-        refreshAssetEntries();
         
         igContext = igCreateContext(null);
         igSetCurrentContext(igContext);
@@ -172,12 +122,11 @@ class EditorUI: EventListener
         
         sceneNameBuffer[] = 0;
         sceneNameBuffer[0..scene.name.length] = scene.name;
-    }
-
-    ~this()
-    {
-        freeAssetEntries();
-        assetEntries.free();
+        
+        toolbar = New!Toolbar(this);
+        navigator = New!Navigator(this);
+        properties = New!PropertiesPanel(this);
+        assetBrowser = New!AssetBrowser(this);
     }
     
     static extern(C) int nameInputCallback(ImGuiInputTextCallbackData* data)
@@ -218,7 +167,7 @@ class EditorUI: EventListener
         viewport = cast(ImGuiViewport*)igGetMainViewport();
         
         renderMenu();
-        renderToolbar();
+        toolbar.render();
 
         ImGuiID mainDockSpaceId = igDockSpaceOverViewport(viewport, ImGuiDockNodeFlags.PassthruCentralNode);
         
@@ -245,10 +194,10 @@ class EditorUI: EventListener
             }
         }
         
-        renderContent();
+        navigator.render();
         renderSettings();
-        renderProperties();
-        renderAssetBrowser();
+        properties.render();
+        assetBrowser.render();
         renderStatusBar();
         
         igRender();
@@ -292,147 +241,6 @@ class EditorUI: EventListener
             igEndMenu();
         }
         igEndMainMenuBar();
-    }
-
-    void renderToolbar()
-    {
-        ImGuiWindowFlags windowFlags = ImGuiWindowFlags.NoTitleBar |
-            ImGuiWindowFlags.NoResize |
-            ImGuiWindowFlags.NoMove |
-            ImGuiWindowFlags.NoScrollbar |
-            ImGuiWindowFlags.NoSavedSettings |
-            ImGuiWindowFlags.NoDocking;
-        if (igBeginViewportSideBar("##MainToolbar", viewport, ImGuiDir.Up, 48.0f, windowFlags))
-        {
-            if (toolbarModeButton("##Translate", iconTranslate, GizmoMode.Translation, "Move"))
-                scene.overlay.gizmoMode = GizmoMode.Translation;
-            igSameLine();
-            if (toolbarModeButton("##Rotate", iconRotate, GizmoMode.Rotation, "Rotate"))
-                scene.overlay.gizmoMode = GizmoMode.Rotation;
-            igSameLine();
-            if (toolbarModeButton("##Scale", iconScale, GizmoMode.Scale, "Scale"))
-                scene.overlay.gizmoMode = GizmoMode.Scale;
-
-            if (scene.overlay.gizmoMode != GizmoMode.Disabled)
-            {
-                igSameLine();
-                igPushStyleVar(ImGuiStyleVar.FramePadding, ImVec2(4.0f, 8.0f));
-                if (scene.overlay.gizmoMode == GizmoMode.Translation)
-                {
-                    toolbarIncrementInput(
-                        "##MoveStep",
-                        "Move increment",
-                        &scene.overlay.translationSnapIncrement,
-                        "%.3f");
-                    if (scene.overlay.translationSnapIncrement <= 0.0f)
-                        scene.overlay.translationSnapIncrement =
-                            InteractionOverlay.defaultTranslationSnapIncrement;
-                }
-                else if (scene.overlay.gizmoMode == GizmoMode.Rotation)
-                {
-                    toolbarIncrementInput(
-                        "##RotateStep",
-                        "Rotation increment in degrees",
-                        &scene.overlay.rotationSnapIncrementDegrees,
-                        "%.1f");
-                    if (scene.overlay.rotationSnapIncrementDegrees <= 0.0f)
-                        scene.overlay.rotationSnapIncrementDegrees =
-                            InteractionOverlay.defaultRotationSnapIncrementDegrees;
-                }
-                else if (scene.overlay.gizmoMode == GizmoMode.Scale)
-                {
-                    toolbarIncrementInput(
-                        "##ScaleStep",
-                        "Scale increment",
-                        &scene.overlay.scaleSnapIncrement,
-                        "%.3f");
-                    if (scene.overlay.scaleSnapIncrement <= 0.0f)
-                        scene.overlay.scaleSnapIncrement =
-                            InteractionOverlay.defaultScaleSnapIncrement;
-                }
-                igPopStyleVar();
-            }
-            igEnd();
-        }
-    }
-
-    void toolbarIncrementInput(
-        string id,
-        string tooltip,
-        float* value,
-        string numberFormat)
-    {
-        igSetNextItemWidth(80.0f);
-        igInputFloat(id.ptr, value, 0.0f, 0.0f, numberFormat.ptr);
-        if (igIsItemHovered())
-            igSetTooltip("%s", tooltip.ptr);
-    }
-
-    bool toolbarModeButton(string id, Texture texture, GizmoMode mode, string label)
-    {
-        if (!texture)
-            return igButton(label.ptr, ImVec2(64, 0));
-
-        ImVec4 background = scene.overlay.gizmoMode == mode
-            ? ImVec4(0.26f, 0.59f, 0.98f, 0.75f)
-            : ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
-        return igImageButtonEx(
-            igGetID_Str(id.ptr),
-            cast(void*)texture.texture,
-            ImVec2(32, 32),
-            ImVec2(0, 0),
-            ImVec2(1, 1),
-            ImVec2(0, 0),
-            background,
-            ImVec4(1, 1, 1, 1));
-    }
-    
-    void renderContent()
-    {
-        if (igBegin("Inspector", null, ImGuiWindowFlags.NoCollapse))
-        {
-            if (igCollapsingHeader("Entities", ImGuiTreeNodeFlags.DefaultOpen))
-            {
-                foreach(e; scene.world.entities)
-                {
-                    if (e is scene.camera)
-                        continue;
-                    if (e.parent is null)
-                        renderEntitesTree(e);
-                }
-            }
-            
-            igEnd();
-        }
-    }
-    
-    void renderEntitesTree(Entity entity)
-    {
-        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.OpenOnArrow;
-        
-        if (entity.children.length == 0) flags |= ImGuiTreeNodeFlags.Leaf;
-        if (scene.selectedEntity == entity)  flags |= ImGuiTreeNodeFlags.Selected;
-        
-        bool isOpen = false;
-        if (entity.name.length)
-            isOpen = igTreeNodeEx_Ptr(cast(void*)entity, flags, "%.*s", entity.name.length, entity.name.ptr);
-        else
-            isOpen = igTreeNodeEx_Ptr(cast(void*)entity, flags, "<unnamed>");
-        
-        if (igIsItemClicked() && !igIsItemToggledOpen())
-        {
-            scene.selectEntity(entity);
-        }
-        
-        if (isOpen)
-        {
-            foreach(i, child; entity.children)
-            {
-                renderEntitesTree(child);
-            }
-            
-            igTreePop();
-        }
     }
     
     void renderSettings()
@@ -517,661 +325,6 @@ class EditorUI: EventListener
                     scene.game.postProcessingRenderer.fxaaEnabled = scene.fxaaEnabled;
             }
             
-            igEnd();
-        }
-    }
-
-    void renderProperties()
-    {
-        if (igBegin("Entity", null, ImGuiWindowFlags.NoCollapse))
-        {
-            if (igCollapsingHeader("Options"))
-            {
-                if (scene.selectedEntity)
-                {
-                    igCheckbox("Visible", &scene.selectedEntity.visible);
-                    igCheckbox("Casts shadow", &scene.selectedEntity.castShadow);
-                    igCheckbox("Solid", &scene.selectedEntity.solid);
-                    igCheckbox("Dynamic", &scene.selectedEntity.dynamic);
-                    igCheckbox("Decal", &scene.selectedEntity.decal);
-                    igCheckbox("Transparent", &scene.selectedEntity.transparent);
-                    igSliderFloat("Entity opacity", &scene.selectedEntity.opacity, 0.0f, 1.0f, "%.3f");
-                }
-            }
-
-            if (igCollapsingHeader("Transformation", ImGuiTreeNodeFlags.DefaultOpen))
-            {
-                if (scene.selectedEntity)
-                {
-                    if (igButton("Move", ImVec2(60, 0)))
-                        scene.overlay.gizmoMode = GizmoMode.Translation;
-                    igSameLine();
-                    if (igButton("Rotate", ImVec2(60, 0)))
-                        scene.overlay.gizmoMode = GizmoMode.Rotation;
-                    igSameLine();
-                    if (igButton("Scale", ImVec2(60, 0)))
-                        scene.overlay.gizmoMode = GizmoMode.Scale;
-
-                    igInputFloat3("Position XYZ", &scene.selectedEntity.position.arrayof);
-                    igInputFloat4("Rotation XYZW", &scene.selectedEntity.rotation.arrayof);
-                    igInputFloat3("Scaling XYZ", &scene.selectedEntity.scaling.arrayof);
-                }
-            }
-
-            if (igCollapsingHeader("Material"))
-            {
-                igButton("Material", ImVec2(100, 100));
-                if (igIsItemClicked(ImGuiMouseButton.Left))
-                    igOpenPopup("Materials");
-                if (igBeginPopup("Materials", ImGuiWindowFlags.AlwaysAutoResize))
-                {
-                    igSetCursorPosX(400);
-                    igSetCursorPosX(0.0f);
-                    renderMaterialBrowser();
-                    igEndPopup();
-                }
-                
-                if (igBeginDragDropTarget())
-                {
-                    const ImGuiPayload* payload = igAcceptDragDropPayload("ASSET");
-                    if (payload)
-                    {
-                        if (payload.DataSize > 0)
-                        {
-                            auto data = cast(char*)payload.Data;
-                            size_t dataLength = cast(size_t)payload.DataSize;
-                            if (data[dataLength - 1] == '\0')
-                                dataLength--;
-                            writeln("Drop asset ", data[0 .. dataLength]);
-                        }
-                    }
-                    igEndDragDropTarget();
-                }
-
-                if (scene.selectedEntity && scene.selectedEntity.material)
-                {
-                    Material material = scene.selectedEntity.material;
-                    igColorEdit4("Base color", &material.baseColorFactor.arrayof, ImGuiColorEditFlags.Float);
-                    igSliderFloat("Roughness", &material.roughnessFactor, 0.0f, 1.0f, "%.3f");
-                    igSliderFloat("Metallic", &material.metallicFactor, 0.0f, 1.0f, "%.3f");
-                    //igSliderFloat("Specularity", &material.specularity, 0.0f, 1.0f, "%.3f");
-                    igColorEdit4("Emission", &material.emissionFactor.arrayof, ImGuiColorEditFlags.Float);
-                    igInputFloat("Emission energy", &material.emissionEnergy);
-                    igCombo_Str("BlendMode", &material.blendMode, "Opaque\0Transparent\0Additive\0");
-                    igSliderFloat("Opacity", &material.opacity, 0.0f, 1.0f, "%.3f");
-                    igSliderFloat("Alpha test threshold", &material.alphaTestThreshold, 0.0f, 1.0f, "%.3f");
-                    igCheckbox("Shadeless", &material.shadeless);
-                    if (igCheckbox("Use shadows", &material.useShadows))
-                    {
-                        igCombo_Str("Shadow filter", &material.shadowFilter, "None\0PCF\0");
-                    }
-                    igCheckbox("Use fog", &material.useFog);
-                    igCheckbox("Use culling", &material.useCulling);
-                    igCheckbox("Color write", &material.colorWrite);
-                    igCheckbox("Depth write", &material.depthWrite);
-                    /*
-                    igCheckbox("Output color", &material.outputColor);
-                    igCheckbox("Output normals", &material.outputNormal);
-                    igCheckbox("Output PBR", &material.outputPBR);
-                    igCheckbox("Output emission", &material.outputEmission);
-                    */
-                    // TODO: parallax mapping settings
-                    // TODO: textures
-                }
-            }
-
-            igEnd();
-        }
-    }
-
-    struct AssetEntry
-    {
-        char[] nameZ; // "name\0", manually allocated
-        char[] pathZ; // "assets/dir/name\0", manually allocated
-        bool isDirectory;
-        ulong size;
-        char[32] sizeLabel = 0;
-        Texture thumbnail;
-        bool thumbnailChecked;
-
-        @property const(char)[] name() { return nameZ[0..$ - 1]; }
-        @property const(char)[] path() { return pathZ[0..$ - 1]; }
-    }
-
-    static char[] allocZ(const(char)[] text)
-    {
-        auto result = New!(char[])(text.length + 1);
-        result[0..text.length] = text[];
-        result[text.length] = 0;
-        return result;
-    }
-
-    static void put(char[] dest, ref size_t pos, const(char)[] text)
-    {
-        dest[pos..pos + text.length] = text[];
-        pos += text.length;
-    }
-
-    // "assets/<assetDirectory>/<name>\0"
-    char[] allocEntryPath(const(char)[] name)
-    {
-        size_t total = 6 + (assetDirectory.length != 0 ? 1 + assetDirectory.length : 0) + 1 + name.length + 1;
-        auto result = New!(char[])(total);
-        size_t pos = 0;
-        put(result, pos, "assets");
-        if (assetDirectory.length != 0)
-        {
-            put(result, pos, "/");
-            put(result, pos, assetDirectory.slice);
-        }
-        put(result, pos, "/");
-        put(result, pos, name);
-        result[pos] = 0;
-        return result;
-    }
-
-    // Filesystem path of the current folder, optionally with an item name appended
-    TextBuffer!1024 filesystemPath(const(char)[] name = null)
-    {
-        TextBuffer!1024 path;
-        path.set(assetRoot);
-        if (assetDirectory.length != 0)
-        {
-            path.append("/");
-            path.append(assetDirectory.slice);
-        }
-        if (name.length != 0)
-        {
-            path.append("/");
-            path.append(name);
-        }
-        return path;
-    }
-
-    void freeAssetEntries()
-    {
-        foreach (entry; assetEntries)
-        {
-            auto nameZ = entry.nameZ;
-            auto pathZ = entry.pathZ;
-            Delete(nameZ);
-            Delete(pathZ);
-        }
-    }
-
-    void selectAssetByName(const(char)[] name)
-    {
-        selectedAssetPath.set("assets");
-        if (assetDirectory.length != 0)
-        {
-            selectedAssetPath.append("/");
-            selectedAssetPath.append(assetDirectory.slice);
-        }
-        selectedAssetPath.append("/");
-        selectedAssetPath.append(name);
-    }
-
-    void refreshAssetEntries()
-    {
-        freeAssetEntries();
-        assetEntries.resize(0, AssetEntry.init);
-        assetBrowserMessage.clear();
-
-        auto directory = filesystemPath();
-        if (!exists(directory.slice))
-        {
-            assetBrowserMessage.set("Asset folder not found: ");
-            assetBrowserMessage.append(directory.slice);
-            return;
-        }
-
-        try
-        {
-            foreach (dirEntry; dirEntries(cast(string)directory.slice, SpanMode.shallow))
-            {
-                if (dirEntry.isSymlink)
-                    continue;
-
-                const(char)[] name = baseName(stripRight(dirEntry.name, "\\/"));
-                AssetEntry entry;
-                entry.nameZ = allocZ(name);
-                entry.pathZ = allocEntryPath(name);
-                entry.isDirectory = dirEntry.isDir;
-                entry.size = dirEntry.size;
-                snprintf(entry.sizeLabel.ptr, entry.sizeLabel.length, "%llu bytes", entry.size);
-                assetEntries.append(entry);
-            }
-            sort!((a, b) {
-                if (a.isDirectory != b.isDirectory)
-                    return a.isDirectory;
-                return a.name < b.name;
-            })(assetEntries.data);
-        }
-        catch (Exception e)
-        {
-            assetBrowserMessage.set("Unable to read folder: ");
-            assetBrowserMessage.append(e.msg);
-        }
-    }
-
-    bool isValidAssetName(const(char)[] name)
-    {
-        if (name.length == 0 || name == "." || name == "..")
-            return false;
-        foreach (c; name)
-        {
-            if (c < 32 || c == '/' || c == '\\' || c == ':' ||
-                c == '<' || c == '>' || c == '"' || c == '|' ||
-                c == '?' || c == '*' || c == '\0')
-                return false;
-        }
-        return name[$ - 1] != ' ' && name[$ - 1] != '.';
-    }
-
-    void setAssetNameBuffer(const(char)[] name)
-    {
-        assetNameBuffer[] = 0;
-        size_t length = name.length < assetNameBuffer.length - 1
-            ? name.length
-            : assetNameBuffer.length - 1;
-        assetNameBuffer[0..length] = name[0 .. length];
-    }
-
-    // Slice into assetNameBuffer, valid until the buffer is edited
-    const(char)[] assetNameInput()
-    {
-        return assetNameBuffer[0 .. strlen(assetNameBuffer.ptr)];
-    }
-
-    void createAssetFolder()
-    {
-        const(char)[] name = assetNameInput();
-        if (!isValidAssetName(name))
-        {
-            assetBrowserMessage.set("Enter a valid folder name.");
-            return;
-        }
-
-        auto path = filesystemPath(name);
-        if (exists(path.slice))
-        {
-            assetBrowserMessage.set("An item with that name already exists.");
-            return;
-        }
-        try
-        {
-            mkdir(path.slice);
-            refreshAssetEntries();
-            if (assetBrowserMessage.length == 0)
-            {
-                assetBrowserMessage.set("Created folder: ");
-                assetBrowserMessage.append(name);
-            }
-        }
-        catch (Exception e)
-        {
-            assetBrowserMessage.set("Unable to create folder: ");
-            assetBrowserMessage.append(e.msg);
-        }
-    }
-
-    void renameAsset()
-    {
-        const(char)[] name = assetNameInput();
-        if (!isValidAssetName(name))
-        {
-            assetBrowserMessage.set("Enter a valid name.");
-            return;
-        }
-
-        auto destination = filesystemPath(name);
-        auto source = filesystemPath(assetRenameTarget.slice);
-        if (exists(destination.slice))
-        {
-            assetBrowserMessage.set("An item with that name already exists.");
-            return;
-        }
-        try
-        {
-            rename(source.slice, destination.slice);
-            selectAssetByName(name);
-            refreshAssetEntries();
-            if (assetBrowserMessage.length == 0)
-            {
-                assetBrowserMessage.set("Renamed to: ");
-                assetBrowserMessage.append(name);
-            }
-        }
-        catch (Exception e)
-        {
-            assetBrowserMessage.set("Unable to rename item: ");
-            assetBrowserMessage.append(e.msg);
-        }
-    }
-
-    void deleteAsset()
-    {
-        auto path = filesystemPath(assetDeleteTarget.slice);
-        try
-        {
-            if (assetDeleteTargetIsDirectory)
-                rmdir(path.slice);
-            else
-                remove(path.slice);
-            selectedAssetPath.clear();
-            TextBuffer!256 deletedName;
-            deletedName.set(assetDeleteTarget.slice);
-            assetDeleteTarget.clear();
-            refreshAssetEntries();
-            if (assetBrowserMessage.length == 0)
-            {
-                assetBrowserMessage.set("Deleted: ");
-                assetBrowserMessage.append(deletedName.slice);
-            }
-        }
-        catch (Exception e)
-        {
-            assetDeleteTarget.clear();
-            assetBrowserMessage.set("Unable to delete item (folders must be empty): ");
-            assetBrowserMessage.append(e.msg);
-        }
-    }
-
-    static char asciiLower(char c)
-    {
-        return (c >= 'A' && c <= 'Z') ? cast(char)(c + 32) : c;
-    }
-
-    static bool containsIgnoreCase(const(char)[] haystack, const(char)[] needle)
-    {
-        if (needle.length == 0)
-            return true;
-        if (needle.length > haystack.length)
-            return false;
-        foreach (i; 0..haystack.length - needle.length + 1)
-        {
-            size_t j = 0;
-            while (j < needle.length && asciiLower(haystack[i + j]) == asciiLower(needle[j]))
-                j++;
-            if (j == needle.length)
-                return true;
-        }
-        return false;
-    }
-    
-    void renderMaterialBrowser()
-    {
-        int[5] materialItems = [0, 1, 2, 3, 4];
-        ImVec2 size;
-        igGetWindowSize(&size);
-        float winWidth = size.x;
-        int columns = cast(int)(winWidth / 64.0f);
-        columns = columns < 1 ? 1 : columns;
-        igColumns(columns, null, false);
-        foreach(i, item; materialItems)
-        {
-            igPushID_Int(cast(uint)i);
-
-            igBeginGroup();
-
-            igButton("???", ImVec2(64, 64));
-
-            if (igIsItemHovered() && igIsMouseDoubleClicked(ImGuiMouseButton.Left))
-            {
-                writeln("Double click ", i);
-                // TODO:
-                // if item is folder, then change directory;
-                // if item is file, then apply it to current entity
-            }
-            else if (igIsItemClicked(ImGuiMouseButton.Right))
-            {
-                writeln("Right click ", i);
-                // TODO: show menu
-            }
-
-            igTextWrapped("Filename");
-            igEndGroup();
-
-            igPopID();
-            igNextColumn();
-        }
-    }
-
-    void renderAssetBrowser()
-    {
-        if (igBegin("Asset Browser", null, ImGuiWindowFlags.NoCollapse))
-        {
-            if (igButton("Up", ImVec2(0, 0)) && assetDirectory.length != 0)
-            {
-                ptrdiff_t slash = lastIndexOf(assetDirectory.slice, '/');
-                assetDirectory.truncate(slash < 0 ? 0 : cast(size_t)slash);
-                selectedAssetPath.clear();
-                refreshAssetEntries();
-            }
-            igSameLine();
-            if (igButton("Refresh"))
-                refreshAssetEntries();
-            igSameLine();
-            if (igButton("New Folder"))
-            {
-                setAssetNameBuffer("");
-                igOpenPopup("Create asset folder");
-            }
-            igSameLine();
-            igSetNextItemWidth(200.0f);
-            igInputText("Filter##AssetSearch", assetSearchBuffer.ptr, assetSearchBuffer.length);
-
-            if (assetDirectory.length != 0)
-                igText("assets/%s", assetDirectory.cstr);
-            else
-                igText("assets");
-
-            if (igBeginPopup("Create asset folder", ImGuiWindowFlags.AlwaysAutoResize))
-            {
-                igInputText("Folder name", assetNameBuffer.ptr, assetNameBuffer.length);
-                if (igButton("Create"))
-                {
-                    createAssetFolder();
-                    igCloseCurrentPopup();
-                }
-                igSameLine();
-                if (igButton("Cancel"))
-                    igCloseCurrentPopup();
-                igEndPopup();
-            }
-
-            ImVec2 size;
-            igGetWindowSize(&size);
-            float winWidth = size.x;
-            int columns = cast(int)(winWidth / 128.0f);
-            columns = columns < 1 ? 1 : columns;
-            igColumns(columns, null, false);
-
-            const(char)[] search = assetSearchBuffer[0 .. strlen(assetSearchBuffer.ptr)];
-            bool openRenamePopup;
-            bool openDeletePopup;
-            bool navigateToDirectory;
-            TextBuffer!512 requestedDirectory;
-            size_t visibleEntries;
-            foreach (i, ref entry; assetEntries)
-            {
-                if (!containsIgnoreCase(entry.name, search))
-                    continue;
-                visibleEntries++;
-
-                igPushID_Int(cast(uint)i);
-
-                igBeginGroup();
-                bool selected = selectedAssetPath.slice == entry.path;
-                if (!entry.isDirectory && !entry.thumbnailChecked)
-                {
-                    if (thumbnailGenerator)
-                        entry.thumbnail = thumbnailGenerator.getThumbnail(entry.path);
-                    entry.thumbnailChecked = true;
-                }
-                Texture entryIcon = entry.isDirectory
-                    ? iconFolder
-                    : entry.thumbnail;
-                if (!entry.isDirectory && !entryIcon)
-                    entryIcon = iconFile;
-                if (entryIcon)
-                {
-                    ImVec2 thumbnailSize = ImVec2(100, 100);
-                    if (entryIcon.width > 0 && entryIcon.height > 0)
-                    {
-                        float aspectRatio = cast(float)entryIcon.width /
-                            cast(float)entryIcon.height;
-                        if (aspectRatio > 1.0f)
-                            thumbnailSize.y = 100.0f / aspectRatio;
-                        else
-                            thumbnailSize.x = 100.0f * aspectRatio;
-                    }
-                    ImVec4 buttonBackground = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
-                    ImGuiID btnId = igGetID_Str(entry.nameZ.ptr);
-                    bool pressed = igImageButtonEx(btnId, cast(void*)entryIcon.texture,
-                        thumbnailSize, ImVec2(0, 0), ImVec2(1, 1),
-                        ImVec2(0, 0), buttonBackground,
-                        ImVec4(1, 1, 1, 1));
-                    if (pressed)
-                        selectedAssetPath.set(entry.path);
-                    if (selected || pressed)
-                    {
-                        ImVec2 rectMin;
-                        ImVec2 rectMax;
-                        igGetItemRectMin(&rectMin);
-                        igGetItemRectMax(&rectMax);
-                        ImDrawList_AddRect(
-                            igGetWindowDrawList(),
-                            rectMin,
-                            rectMax,
-                            igGetColorU32(ImVec4(1.0f, 0.82f, 0.15f, 1.0f)),
-                            0.0f,
-                            ImDrawFlags.None,
-                            2.0f);
-                    }
-                }
-                else
-                {
-                    ImVec4 buttonColor = selected
-                        ? ImVec4(0.20f, 0.42f, 0.68f, 1.0f)
-                        : ImVec4(0.26f, 0.59f, 0.98f, 0.40f);
-                    igPushStyleColor(ImGuiCol.Button, buttonColor);
-                    if (igButton(entry.isDirectory ? "[DIR]" : "[FILE]",
-                        ImVec2(100, 100)))
-                        selectedAssetPath.set(entry.path);
-                    igPopStyleColor();
-                }
-
-                if (igIsItemHovered() && igIsMouseDoubleClicked(ImGuiMouseButton.Left))
-                {
-                    if (entry.isDirectory)
-                    {
-                        requestedDirectory.set(assetDirectory.slice);
-                        if (requestedDirectory.length != 0)
-                            requestedDirectory.append("/");
-                        requestedDirectory.append(entry.name);
-                        navigateToDirectory = true;
-                    }
-                    else
-                    {
-                        selectedAssetPath.set(entry.path);
-                    }
-                }
-
-                if (igBeginDragDropSource())
-                {
-                    // pathZ includes the terminating zero
-                    igSetDragDropPayload("ASSET", entry.pathZ.ptr, entry.pathZ.length);
-                    igText("%s", entry.pathZ.ptr);
-                    igEndDragDropSource();
-                }
-
-                if (igBeginPopupContextItem("Asset item context"))
-                {
-                    if (igMenuItem("Rename"))
-                    {
-                        assetRenameTarget.set(entry.name);
-                        setAssetNameBuffer(entry.name);
-                        openRenamePopup = true;
-                    }
-                    if (igMenuItem("Delete"))
-                    {
-                        assetDeleteTarget.set(entry.name);
-                        assetDeleteTargetIsDirectory = entry.isDirectory;
-                        openDeletePopup = true;
-                    }
-                    igEndPopup();
-                }
-
-                igTextWrapped("%s", entry.nameZ.ptr);
-                if (!entry.isDirectory)
-                    igTextDisabled("%s", entry.sizeLabel.ptr);
-
-                igEndGroup();
-
-                igPopID();
-                igNextColumn();
-            }
-            igColumns(1);
-            if (navigateToDirectory)
-            {
-                assetDirectory.set(requestedDirectory.slice);
-                selectedAssetPath.clear();
-                refreshAssetEntries();
-            }
-
-            if (openRenamePopup)
-                igOpenPopup("Rename asset");
-            if (assetRenameTarget.length != 0 &&
-                igBeginPopup("Rename asset", ImGuiWindowFlags.AlwaysAutoResize))
-            {
-                igInputText("New name", assetNameBuffer.ptr, assetNameBuffer.length);
-                if (igButton("Rename"))
-                {
-                    renameAsset();
-                    assetRenameTarget.clear();
-                    igCloseCurrentPopup();
-                }
-                igSameLine();
-                if (igButton("Cancel"))
-                {
-                    assetRenameTarget.clear();
-                    igCloseCurrentPopup();
-                }
-                igEndPopup();
-            }
-
-            if (openDeletePopup)
-                igOpenPopup("Confirm asset delete");
-            if (assetDeleteTarget.length != 0 &&
-                igBeginPopupModal("Confirm asset delete", null, ImGuiWindowFlags.AlwaysAutoResize))
-            {
-                igText("Delete '%s'?", assetDeleteTarget.cstr);
-                if (assetDeleteTargetIsDirectory)
-                    igTextDisabled("Only empty folders can be deleted.");
-                if (igButton("Delete"))
-                {
-                    deleteAsset();
-                    igCloseCurrentPopup();
-                }
-                igSameLine();
-                if (igButton("Cancel"))
-                {
-                    assetDeleteTarget.clear();
-                    igCloseCurrentPopup();
-                }
-                igEndPopup();
-            }
-
-            if (assetBrowserMessage.length != 0)
-                igTextWrapped("%s", assetBrowserMessage.cstr);
-            else if (selectedAssetPath.length != 0)
-                igTextWrapped("%s", selectedAssetPath.cstr);
-            else if (visibleEntries == 0 && !navigateToDirectory)
-                igTextDisabled(assetEntries.length == 0
-                    ? "This folder is empty."
-                    : "No matching assets.");
-
             igEnd();
         }
     }
