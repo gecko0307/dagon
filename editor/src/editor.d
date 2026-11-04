@@ -39,6 +39,7 @@ import dlib.math.base;
 import dlib.math.vector;
 import dlib.image.color;
 
+import dagon.core.bindings;
 import dagon.core.logger;
 import dagon.core.time;
 import dagon.graphics.entity;
@@ -46,6 +47,7 @@ import dagon.graphics.camera;
 import dagon.graphics.light;
 import dagon.graphics.shapes;
 import dagon.graphics.mesh;
+import dagon.graphics.texture;
 import dagon.resource.scene;
 import dagon.resource.texture;
 import dagon.resource.obj;
@@ -73,6 +75,10 @@ class EditorScene: Scene
 
     TextureAsset aFileIcon;
     TextureAsset aFolderIcon;
+    TextureAsset aArchiveIcon;
+    TextureAsset aAudioIcon;
+    TextureAsset aBlendIcon;
+    TextureAsset aJsonIcon;
     TextureAsset aTranslateIcon;
     TextureAsset aRotateIcon;
     TextureAsset aScaleIcon;
@@ -112,11 +118,25 @@ class EditorScene: Scene
     override void beforeLoad()
     {
         aFileIcon = addTextureAsset("data/icons/file.png");
+        //aFileIcon.generateMipmaps = false;
         aFolderIcon = addTextureAsset("data/icons/folder.png");
+        //aFolderIcon.generateMipmaps = false;
+        aArchiveIcon = addTextureAsset("data/icons/archive.png");
+        //aArchiveIcon.generateMipmaps = false;
+        aAudioIcon = addTextureAsset("data/icons/audio.png");
+        //aAudioIcon.generateMipmaps = false;
+        aBlendIcon = addTextureAsset("data/icons/blend.png");
+        //aBlendIcon.generateMipmaps = false;
+        aJsonIcon = addTextureAsset("data/icons/json.png");
+        //aJsonIcon.generateMipmaps = false;
         aTranslateIcon = addTextureAsset("data/icons/btn_translate.png");
+        //aTranslateIcon.generateMipmaps = false;
         aRotateIcon = addTextureAsset("data/icons/btn_rotate.png");
+        //aRotateIcon.generateMipmaps = false;
         aScaleIcon = addTextureAsset("data/icons/btn_scale.png");
+        //aScaleIcon.generateMipmaps = false;
         aboutImage = addTextureAsset("data/splash.jpg");
+        //aboutImage.generateMipmaps = false;
         
         aOBJSuzanne = addOBJAsset("assets/suzanne.obj");
     }
@@ -129,16 +149,29 @@ class EditorScene: Scene
         loadingScreen.update(t, progress);
         loadingScreen.render();
     }
+
+    Texture prepareUiTexture(Texture tex)
+    {
+        tex.minFilter = GL_LINEAR;
+        tex.magFilter = GL_LINEAR;
+        tex.bind();
+        tex.unbind();
+        return tex;
+    }
     
     override void afterLoad()
     {
         auto ui = this.app.ui;
-        ui.iconFile = aFileIcon.texture;
-        ui.iconFolder = aFolderIcon.texture;
-        ui.iconTranslate = aTranslateIcon.texture;
-        ui.iconRotate = aRotateIcon.texture;
-        ui.iconScale = aScaleIcon.texture;
-        ui.aboutImage = aboutImage.texture;
+        ui.iconFile = prepareUiTexture(aFileIcon.texture);
+        ui.iconFolder = prepareUiTexture(aFolderIcon.texture);
+        ui.iconArchive = prepareUiTexture(aArchiveIcon.texture);
+        ui.iconAudio = prepareUiTexture(aAudioIcon.texture);
+        ui.iconBlend = prepareUiTexture(aBlendIcon.texture);
+        ui.iconJson = prepareUiTexture(aJsonIcon.texture);
+        ui.iconTranslate = prepareUiTexture(aTranslateIcon.texture);
+        ui.iconRotate = prepareUiTexture(aRotateIcon.texture);
+        ui.iconScale = prepareUiTexture(aScaleIcon.texture);
+        ui.aboutImage = prepareUiTexture(aboutImage.texture);
 
         environment.backgroundColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
         

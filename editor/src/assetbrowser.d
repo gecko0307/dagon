@@ -393,6 +393,58 @@ class AssetBrowser: Owner
         return false;
     }
 
+    static bool hasExtension(const(char)[] filename, const(char)[][] extensions)
+    {
+        const(char)[] ext = extension(filename);
+        foreach (candidate; extensions)
+        {
+            if (ext.length != candidate.length)
+                continue;
+            bool matches = true;
+            foreach (i, c; ext)
+            {
+                if (asciiLower(c) != candidate[i])
+                {
+                    matches = false;
+                    break;
+                }
+            }
+            if (matches)
+                return true;
+        }
+        return false;
+    }
+
+    Texture getEntryIcon(ref AssetEntry entry)
+    {
+        if (entry.isDirectory)
+            return ui.iconFolder;
+        if (hasExtension(entry.name, [
+            ".zip", ".7z", ".rar", ".tar", ".gz", ".bz2", ".xz",
+            ".tgz", ".tbz", ".tbz2", ".txz", ".zst", ".lz", ".lz4",
+            ".cab", ".iso"
+        ]))
+            return ui.iconArchive;
+        if (hasExtension(entry.name, [
+            ".wav", ".mp3", ".ogg", ".oga", ".flac", ".opus", ".aiff",
+            ".aif", ".aifc", ".mid", ".midi", ".mod", ".xm", ".it",
+            ".s3m", ".wma", ".m4a", ".aac", ".weba"
+        ]))
+            return ui.iconAudio;
+        if (hasExtension(entry.name, [".blend", ".blend1"]))
+            return ui.iconBlend;
+        if (hasExtension(entry.name, [".json"]))
+            return ui.iconJson;
+
+        if (!entry.thumbnailChecked)
+        {
+            if (ui.thumbnailGenerator)
+                entry.thumbnail = ui.thumbnailGenerator.getThumbnail(entry.path);
+            entry.thumbnailChecked = true;
+        }
+        return entry.thumbnail ? entry.thumbnail : ui.iconFile;
+    }
+
     void render()
     {
         if (igBegin("Asset Browser", null, ImGuiWindowFlags.NoCollapse))
@@ -459,17 +511,7 @@ class AssetBrowser: Owner
 
                 igBeginGroup();
                 bool selected = selectedAssetPath.slice == entry.path;
-                if (!entry.isDirectory && !entry.thumbnailChecked)
-                {
-                    if (ui.thumbnailGenerator)
-                        entry.thumbnail = ui.thumbnailGenerator.getThumbnail(entry.path);
-                    entry.thumbnailChecked = true;
-                }
-                Texture entryIcon = entry.isDirectory
-                    ? ui.iconFolder
-                    : entry.thumbnail;
-                if (!entry.isDirectory && !entryIcon)
-                    entryIcon = ui.iconFile;
+                Texture entryIcon = getEntryIcon(entry);
                 if (entryIcon)
                 {
                     ImVec2 thumbnailSize = ImVec2(100, 100);

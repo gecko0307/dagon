@@ -82,6 +82,10 @@ class EditorUI: EventListener
     // Icons and thumbnails are assigned from main.d and shared by the panels
     Texture iconFile;
     Texture iconFolder;
+    Texture iconArchive;
+    Texture iconAudio;
+    Texture iconBlend;
+    Texture iconJson;
     ThumbnailGenerator thumbnailGenerator;
     Texture iconTranslate;
     Texture iconRotate;
