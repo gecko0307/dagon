@@ -31,8 +31,8 @@ DEALINGS IN THE SOFTWARE.
 module editor;
 
 import std.algorithm;
-import std.file: write, exists, readText;
-import std.ascii: isDigit;
+import std.file;
+import std.ascii;
 import std.json;
 import std.path;
 import std.conv;
@@ -264,8 +264,8 @@ class EditorScene: Scene
             eSky.material.linearColor = true;
             eSky.name = "Sky";
         }
-
-        app.ui.active = true;
+        
+        //app.ui.active = true;
     }
     
     bool isInternalEntity(Entity e)
@@ -279,9 +279,6 @@ class EditorScene: Scene
     
     override void onUpdate(Time t)
     {
-        if (isLoading)
-            return;
-
         freeview.active = focused && !overlay.draggingGizmo;
         if (selectedEntity && !overlay.draggingGizmo)
         {
@@ -293,11 +290,7 @@ class EditorScene: Scene
     
     override void afterRender()
     {
-        if (isLoading)
-            return;
-        
-        auto ui = this.app.ui;
-        if (ui.active)
+        if (app.ui.active)
             overlay.render();
     }
 
@@ -851,6 +844,8 @@ class EditorApp: Game
         eventManager.onProcessEvent = &ui.onProcessEvent;
         dynamicViewport = false; // The editor controls the viewport instead of the engine
         scene.overlay.ui = ui;
+        
+        ui.active = true;
     }
     
     override void onCustomResize(int x, int y, int width, int height)
@@ -870,6 +865,9 @@ class EditorApp: Game
     
     override void onRender()
     {
+        if (!ui.active)
+            return;
+        
         if (currentScene)
         {
             if (currentScene.canRender && renderer)
@@ -885,7 +883,6 @@ class EditorApp: Game
             }
         }
 
-        if (ui.active)
-            ui.render();
+        ui.render();
     }
 }
