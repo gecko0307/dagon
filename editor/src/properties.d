@@ -262,29 +262,27 @@ class PropertiesPanel: Owner
                 igButton("Material", ImVec2(100, 100));
                 if (igIsItemClicked(ImGuiMouseButton.Left))
                     igOpenPopup("Materials");
+
+                if (igBeginDragDropTarget())
+                {
+                    const(ImGuiPayload)* payload = igAcceptDragDropPayload("ASSET");
+                    if (payload !is null && payload.Delivery && payload.DataSize > 0)
+                    {
+                        auto data = cast(const(char)*)payload.Data;
+                        size_t dataLength = cast(size_t)payload.DataSize;
+                        if (data[dataLength - 1] == '\0')
+                            dataLength--;
+                        scene.applyMaterialAsset(data[0 .. dataLength].idup, scene.selectedEntity);
+                    }
+                    igEndDragDropTarget();
+                }
+
                 if (igBeginPopup("Materials", ImGuiWindowFlags.AlwaysAutoResize))
                 {
                     igSetCursorPosX(400);
                     igSetCursorPosX(0.0f);
                     renderMaterialBrowser();
                     igEndPopup();
-                }
-
-                if (igBeginDragDropTarget())
-                {
-                    const ImGuiPayload* payload = igAcceptDragDropPayload("ASSET");
-                    if (payload)
-                    {
-                        if (payload.DataSize > 0)
-                        {
-                            auto data = cast(char*)payload.Data;
-                            size_t dataLength = cast(size_t)payload.DataSize;
-                            if (data[dataLength - 1] == '\0')
-                                dataLength--;
-                            writeln("Drop asset ", data[0 .. dataLength]);
-                        }
-                    }
-                    igEndDragDropTarget();
                 }
 
                 if (scene.selectedEntity && scene.selectedEntity.material)

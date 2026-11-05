@@ -236,7 +236,7 @@ class EditorScene: Scene
         overlay.render();
     }
 
-    void importAsset(string assetPath)
+    bool importAsset(string assetPath)
     {
         string ext = assetPath.extension;
         if (ext == ".obj")
@@ -249,10 +249,38 @@ class EditorScene: Scene
             newEntity.position = Vector3f(0, 0, 0);
             newEntity.name = genUniqueEntitytName();
             selectEntity(newEntity);
+            return true;
+        }
+        if (ext == ".material")
+        {
+            return applyMaterialAsset(assetPath, selectedEntity);
         }
 
-        // TODO: material import
         // TODO: glTF import
+
+        return false;
+    }
+
+    bool applyMaterialAsset(string assetPath, Entity target)
+    {
+        if (target is null)
+        {
+            logWarning("Cannot apply material \"", assetPath, "\": no entity is selected");
+            return false;
+        }
+
+        auto matAsset = addMaterialAsset(assetPath, true);
+        if (!matAsset.threadSafePartLoaded ||
+            !matAsset.threadUnsafePartLoaded ||
+            matAsset.material is null)
+        {
+            logError("Cannot apply material \"", assetPath, "\": asset failed to load");
+            return false;
+        }
+
+        target.material = matAsset.material;
+        logInfo("Applied material \"", assetPath, "\" to entity \"", target.name, "\"");
+        return true;
     }
 
     string genUniqueEntitytName()

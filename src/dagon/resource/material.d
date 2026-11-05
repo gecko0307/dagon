@@ -115,6 +115,8 @@ class MaterialAsset: Asset
         if (parseProperties(text, props))
         {
             setMaterialProperties(assetManager);
+            threadSafePartLoaded = true;
+            threadUnsafePartLoaded = true;
             return true;
         }
         else
