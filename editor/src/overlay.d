@@ -30,9 +30,9 @@ DEALINGS IN THE SOFTWARE.
  */
 module overlay;
 
+import core.stdc.stdio: snprintf;
+
 import std.algorithm;
-import std.format;
-import std.string;
 
 import dlib.core.memory;
 import dlib.core.ownership;
@@ -348,15 +348,16 @@ class InteractionOverlay: EventListener
         return round(value / max(increment, 0.0001f)) * max(increment, 0.0001f);
     }
 
-    void drawHelperLabel(ImDrawList* drawList, GizmoPoint position, string label)
+    // `label` must be a zero-terminated string
+    void drawHelperLabel(ImDrawList* drawList, GizmoPoint position, const(char)* label)
     {
         ImVec2 textPosition = ImVec2(position.x + 14.0f, position.y + 10.0f);
         ImDrawList_AddText(
             drawList,
             ImVec2(textPosition.x + 1.0f, textPosition.y + 1.0f),
             0xFF000000,
-            label.toStringz);
-        ImDrawList_AddText(drawList, textPosition, 0xFFF0F0F0, label.toStringz);
+            label);
+        ImDrawList_AddText(drawList, textPosition, 0xFFF0F0F0, label);
     }
 
     void drawHelperArrow(ImDrawList* drawList, GizmoPoint start, GizmoPoint end, ImU32 color)
@@ -408,13 +409,13 @@ class InteractionOverlay: EventListener
             GizmoPoint mouse = GizmoPoint(ui.io.MousePos.x, ui.io.MousePos.y);
             GizmoPoint dot;
             bool hasDot = false;
-            string label;
+            char[32] label = 0; // stack buffer, no GC allocations
 
             if (gizmoMode == GizmoMode.Translation)
             {
                 drawAxisLine(drawList, dragStartGizmoPosition, dragAxisDirection, axisLineColors[draggedAxis]);
                 hasDot = project(dragStartGizmoPosition + dragAxisDirection * dragDistance, dot);
-                label = format("%.2f", dragDistance);
+                snprintf(label.ptr, label.length, "%.2f", cast(double)dragDistance);
             }
             else
             {
@@ -431,13 +432,13 @@ class InteractionOverlay: EventListener
                     float along = dragStartAxisOffset + (value - dragStartScale[draggedAxis]) * 100.0f;
                     dot = GizmoPoint(center.x + dirX * along, center.y + dirY * along);
                     hasDot = true;
-                    label = format("%.2f", value);
+                    snprintf(label.ptr, label.length, "%.2f", cast(double)value);
                 }
             }
 
             if (hasDot)
                 ImDrawList_AddCircleFilled(drawList, ImVec2(dot.x, dot.y), 5.0f, 0xFFF0F0F0, 16);
-            drawHelperLabel(drawList, mouse, label);
+            drawHelperLabel(drawList, mouse, label.ptr);
         }
         else if (gizmoMode == GizmoMode.Rotation)
         {
@@ -502,8 +503,10 @@ class InteractionOverlay: EventListener
                         0x99F0F0F0,
                         1.0f);
                     drawHelperArrow(drawList, arrowStart, cursor, 0xFFF0F0F0);
-                    string angleLabel = format("%.1f deg", angleDelta * 180.0f / PI);
-                    drawHelperLabel(drawList, cursor, angleLabel);
+                    char[32] angleLabel = 0; // stack buffer, no GC allocations
+                    snprintf(angleLabel.ptr, angleLabel.length, "%.1f deg",
+                        cast(double)(angleDelta * 180.0f / PI));
+                    drawHelperLabel(drawList, cursor, angleLabel.ptr);
                 }
             }
         }
