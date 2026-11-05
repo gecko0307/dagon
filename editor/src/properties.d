@@ -33,6 +33,8 @@ module properties;
 import std.stdio;
 
 import dlib.core.ownership;
+import dlib.math.vector;
+import dlib.math.quaternion;
 
 import dagon.graphics.entity;
 import dagon.graphics.material;
@@ -276,16 +278,16 @@ class PropertiesPanel: Owner
             {
                 if (scene.selectedEntity)
                 {
-                    if (igButton("Move", ImVec2(60, 0)))
-                        scene.overlay.gizmoMode = GizmoMode.Translation;
-                    igSameLine();
-                    if (igButton("Rotate", ImVec2(60, 0)))
-                        scene.overlay.gizmoMode = GizmoMode.Rotation;
-                    igSameLine();
-                    if (igButton("Scale", ImVec2(60, 0)))
-                        scene.overlay.gizmoMode = GizmoMode.Scale;
-
                     Entity entity = scene.selectedEntity;
+
+                    if (igButton("Reset", ImVec2(60, 0)))
+                    {
+                        entity.position = Vector3f(0.0f, 0.0f, 0.0f);
+                        entity.rotation = Quaternionf.identity();
+                        entity.scaling = Vector3f(1.0f, 1.0f, 1.0f);
+                    }
+                    //igSameLine();
+
                     TransformSnapshot before;
                     bool changed;
 
