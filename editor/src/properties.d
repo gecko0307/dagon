@@ -268,6 +268,7 @@ class PropertiesPanel: Owner
                     igCheckbox("Decal", &scene.selectedEntity.decal);
                     igCheckbox("Transparent", &scene.selectedEntity.transparent);
                     igSliderFloat("Entity opacity", &scene.selectedEntity.opacity, 0.0f, 1.0f, "%.3f");
+                    igCheckbox("Show bounding box", &scene.showSelectedEntityBoundingBox);
                 }
             }
 

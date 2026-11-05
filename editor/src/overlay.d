@@ -807,7 +807,7 @@ class InteractionOverlay: EventListener
             sunDirectionLines.render(&state);
             gizmoShader.unbindParameters(&state);
         }
-        else
+        else if (ui.scene.showSelectedEntityBoundingBox)
         {
             state.modelViewMatrix = viewMatrix *
                 (translationMatrix(gizmoPosition) * orientationMatrix * scaleMatrix(selectionBoundingBoxScale));

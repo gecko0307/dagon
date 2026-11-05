@@ -97,6 +97,8 @@ class EditorScene: Scene
 
     Entity sceneRoot;
     Entity selectedEntity;
+
+    bool showSelectedEntityBoundingBox = true;
     
     bool ssaoEnabled = true;
     bool depthOfFieldEnabled = false;
