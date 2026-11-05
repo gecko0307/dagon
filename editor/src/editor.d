@@ -141,6 +141,53 @@ Color4f jsonColor(JSONValue j, string key, Color4f def)
                    jsonNum(p.array[2]), jsonNum(p.array[3]));
 }
 
+JSONValue lightToJson(Light l)
+{
+    return JSONValue([
+        "type": JSONValue(cast(uint)l.type),
+        "shining": JSONValue(l.shining),
+        "color": JSONValue(l.color.arrayof),
+        "energy": JSONValue(l.energy),
+        "angularRadius": JSONValue(l.angularRadius),
+        "volumeRadius": JSONValue(l.volumeRadius),
+        "radius": JSONValue(l.radius),
+        "length": JSONValue(l.length),
+        "spotOuterCutoff": JSONValue(l.spotOuterCutoff),
+        "spotInnerCutoff": JSONValue(l.spotInnerCutoff),
+        "shadowEnabled": JSONValue(l.shadowEnabled),
+        "scatteringEnabled": JSONValue(l.scatteringEnabled),
+        "scattering": JSONValue(l.scattering),
+        "mediumDensity": JSONValue(l.mediumDensity),
+        "scatteringSamples": JSONValue(l.scatteringSamples),
+        "scatteringMaxRandomStepOffset": JSONValue(l.scatteringMaxRandomStepOffset),
+        "scatteringUseShadow": JSONValue(l.scatteringUseShadow),
+        "diffuse": JSONValue(l.diffuse),
+        "specular": JSONValue(l.specular)
+    ]);
+}
+
+void readLight(Light l, JSONValue j)
+{
+    l.shining = jsonGet(j, "shining", l.shining);
+    l.color = jsonColor(j, "color", l.color);
+    l.energy = jsonGet(j, "energy", l.energy);
+    l.angularRadius = jsonGet(j, "angularRadius", l.angularRadius);
+    l.volumeRadius = jsonGet(j, "volumeRadius", l.volumeRadius);
+    l.radius = jsonGet(j, "radius", l.radius);
+    l.length = jsonGet(j, "length", l.length);
+    l.spotOuterCutoff = jsonGet(j, "spotOuterCutoff", l.spotOuterCutoff);
+    l.spotInnerCutoff = jsonGet(j, "spotInnerCutoff", l.spotInnerCutoff);
+    l.shadowEnabled = jsonGet(j, "shadowEnabled", l.shadowEnabled);
+    l.scatteringEnabled = jsonGet(j, "scatteringEnabled", l.scatteringEnabled);
+    l.scattering = jsonGet(j, "scattering", l.scattering);
+    l.mediumDensity = jsonGet(j, "mediumDensity", l.mediumDensity);
+    l.scatteringSamples = cast(uint)jsonGet(j, "scatteringSamples", cast(long)l.scatteringSamples);
+    l.scatteringMaxRandomStepOffset = jsonGet(j, "scatteringMaxRandomStepOffset", l.scatteringMaxRandomStepOffset);
+    l.scatteringUseShadow = jsonGet(j, "scatteringUseShadow", l.scatteringUseShadow);
+    l.diffuse = jsonGet(j, "diffuse", l.diffuse);
+    l.specular = jsonGet(j, "specular", l.specular);
+}
+
 class EditorScene: Scene
 {
     string name = "Scene";
@@ -264,8 +311,6 @@ class EditorScene: Scene
             eSky.material.linearColor = true;
             eSky.name = "Sky";
         }
-        
-        //app.ui.active = true;
     }
     
     bool isInternalEntity(Entity e)
@@ -715,53 +760,6 @@ class EditorScene: Scene
     override void onKeyUp(int key) { }
     override void onMouseButtonDown(int button) { }
     override void onMouseButtonUp(int button) { }
-}
-
-JSONValue lightToJson(Light l)
-{
-    return JSONValue([
-        "type": JSONValue(cast(uint)l.type),
-        "shining": JSONValue(l.shining),
-        "color": JSONValue(l.color.arrayof),
-        "energy": JSONValue(l.energy),
-        "angularRadius": JSONValue(l.angularRadius),
-        "volumeRadius": JSONValue(l.volumeRadius),
-        "radius": JSONValue(l.radius),
-        "length": JSONValue(l.length),
-        "spotOuterCutoff": JSONValue(l.spotOuterCutoff),
-        "spotInnerCutoff": JSONValue(l.spotInnerCutoff),
-        "shadowEnabled": JSONValue(l.shadowEnabled),
-        "scatteringEnabled": JSONValue(l.scatteringEnabled),
-        "scattering": JSONValue(l.scattering),
-        "mediumDensity": JSONValue(l.mediumDensity),
-        "scatteringSamples": JSONValue(l.scatteringSamples),
-        "scatteringMaxRandomStepOffset": JSONValue(l.scatteringMaxRandomStepOffset),
-        "scatteringUseShadow": JSONValue(l.scatteringUseShadow),
-        "diffuse": JSONValue(l.diffuse),
-        "specular": JSONValue(l.specular)
-    ]);
-}
-
-void readLight(Light l, JSONValue j)
-{
-    l.shining = jsonGet(j, "shining", l.shining);
-    l.color = jsonColor(j, "color", l.color);
-    l.energy = jsonGet(j, "energy", l.energy);
-    l.angularRadius = jsonGet(j, "angularRadius", l.angularRadius);
-    l.volumeRadius = jsonGet(j, "volumeRadius", l.volumeRadius);
-    l.radius = jsonGet(j, "radius", l.radius);
-    l.length = jsonGet(j, "length", l.length);
-    l.spotOuterCutoff = jsonGet(j, "spotOuterCutoff", l.spotOuterCutoff);
-    l.spotInnerCutoff = jsonGet(j, "spotInnerCutoff", l.spotInnerCutoff);
-    l.shadowEnabled = jsonGet(j, "shadowEnabled", l.shadowEnabled);
-    l.scatteringEnabled = jsonGet(j, "scatteringEnabled", l.scatteringEnabled);
-    l.scattering = jsonGet(j, "scattering", l.scattering);
-    l.mediumDensity = jsonGet(j, "mediumDensity", l.mediumDensity);
-    l.scatteringSamples = cast(uint)jsonGet(j, "scatteringSamples", cast(long)l.scatteringSamples);
-    l.scatteringMaxRandomStepOffset = jsonGet(j, "scatteringMaxRandomStepOffset", l.scatteringMaxRandomStepOffset);
-    l.scatteringUseShadow = jsonGet(j, "scatteringUseShadow", l.scatteringUseShadow);
-    l.diffuse = jsonGet(j, "diffuse", l.diffuse);
-    l.specular = jsonGet(j, "specular", l.specular);
 }
 
 class EditorApp: Game
