@@ -343,7 +343,7 @@ class EditorUI: EventListener
         {
             if (igMenuItem("New scene"))
             {
-                // TODO
+                scene.clearScene();
             }
             
             if (igMenuItem("Open..."))
