@@ -149,11 +149,20 @@ class PropertiesPanel: Owner
                 if (igButton("Forward", ImVec2(0, 0)))
                     freeview.setRotationSmooth(0.0f, 180.0f, 0.0f);
                 igSameLine();
+                if (igButton("Back", ImVec2(0, 0)))
+                    freeview.setRotationSmooth(0.0f, 0.0f, 0.0f);
+                igSameLine();
+                if (igButton("Left", ImVec2(0, 0)))
+                    freeview.setRotationSmooth(0.0f, -90.0f, 0.0f);
+                igSameLine();
                 if (igButton("Right", ImVec2(0, 0)))
                     freeview.setRotationSmooth(0.0f, 90.0f, 0.0f);
                 igSameLine();
                 if (igButton("Top", ImVec2(0, 0)))
                     freeview.setRotationSmooth(90.0f, 0.0f, 0.0f);
+                igSameLine();
+                if (igButton("Bottom", ImVec2(0, 0)))
+                    freeview.setRotationSmooth(-90.0f, 0.0f, 0.0f);
 
                 igCheckbox("Floor grid", &scene.floorGridEnabled);
                 if (scene.floorGridEnabled)
@@ -319,17 +328,17 @@ class PropertiesPanel: Owner
                     }
                     igEndDragDropTarget();
                 }
-
+                
+                /*
+                // TODO: implement a proper material browser popup
                 if (igBeginPopup("Materials", ImGuiWindowFlags.AlwaysAutoResize))
                 {
-                    // TODO: implement a material browser popup
-                    /*
                     igSetCursorPosX(400);
                     igSetCursorPosX(0.0f);
                     renderMaterialBrowser();
                     igEndPopup();
-                    */
                 }
+                */
 
                 if (scene.selectedEntity && scene.selectedEntity.material)
                 {
