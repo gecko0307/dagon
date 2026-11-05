@@ -45,11 +45,13 @@ import dagon.core.bindings;
 import dagon.core.logger;
 import dagon.core.time;
 import dagon.graphics.entity;
+import dagon.graphics.components;
 import dagon.graphics.camera;
 import dagon.graphics.light;
 import dagon.graphics.shapes;
 import dagon.graphics.mesh;
 import dagon.graphics.texture;
+import dagon.graphics.cubemap;
 import dagon.resource.scene;
 import dagon.resource.texture;
 import dagon.resource.obj;
@@ -92,7 +94,6 @@ class EditorScene: Scene
     TextureAsset aboutImage;
 
     TextureAsset aEnvmap;
-    TextureAsset aBRDF;
 
     Entity sceneRoot;
     Entity selectedEntity;
@@ -150,6 +151,9 @@ class EditorScene: Scene
         aScaleIcon.generateMipmaps = false;
         aboutImage = addTextureAsset("data/splash.jpg");
         aboutImage.generateMipmaps = false;
+
+        aEnvmap = addTextureAsset("data/envmaps/default.hdr");
+        aEnvmap.generateMipmaps = false;
     }
     
     override void onLoad(Time t, float progress)
@@ -212,17 +216,44 @@ class EditorScene: Scene
         sun.angularRadius = 0.01f;
         sun.pitch(-45.0f);
         sun.name = "Sun";
-        
+
         sceneRoot = addEntity();
         sceneRoot.name = "SceneRoot";
 
         materialPreviewRenderer = New!MaterialPreviewRenderer(this);
+
+        if (aEnvmap.loaded)
+        {
+            Texture cubemap = generateCubemap(1024, aEnvmap.texture, assetManager);
+            environment.ambientMap = cubemap;
+            environment.ambientBRDF = app.deferredRenderer.brdf;
+
+            auto eSky = addEntity();
+            eSky.layer = EntityLayer.Background;
+            eSky.gbufferMask = 0.0f;
+            auto psync = New!PositionSync(eventManager, eSky, camera);
+            eSky.drawable = New!ShapeBox(Vector3f(1.0f, 1.0f, 1.0f), assetManager);
+            eSky.scaling = Vector3f(100.0f, 100.0f, 100.0f);
+            eSky.material = addMaterial();
+            eSky.material.depthWrite = false;
+            eSky.material.useCulling = false;
+            eSky.material.baseColorTexture = cubemap;
+            eSky.material.linearColor = true;
+        }
+        else
+        {
+            logWarning("Default environment map was not loaded");
+        }
 
         ui.active = true;
     }
     
     override void onUpdate(Time t)
     {
+        auto ui = this.app.ui;
+        if (!ui.active)
+            return;
+        
         freeview.active = focused && !overlay.draggingGizmo;
         if (selectedEntity && !overlay.draggingGizmo)
         {
@@ -410,6 +441,9 @@ class EditorApp: Game
     
     override void onRender()
     {
+        if (!ui.active)
+            return;
+
         if (currentScene)
         {
             if (currentScene.canRender && renderer)
