@@ -145,6 +145,16 @@ class PropertiesPanel: Owner
 
             if (igCollapsingHeader("Viewport"))
             {
+                auto freeview = scene.freeview;
+                if (igButton("Forward", ImVec2(0, 0)))
+                    freeview.setRotationSmooth(0.0f, 180.0f, 0.0f);
+                igSameLine();
+                if (igButton("Right", ImVec2(0, 0)))
+                    freeview.setRotationSmooth(0.0f, 90.0f, 0.0f);
+                igSameLine();
+                if (igButton("Top", ImVec2(0, 0)))
+                    freeview.setRotationSmooth(90.0f, 0.0f, 0.0f);
+
                 igCheckbox("Floor grid", &scene.floorGridEnabled);
                 if (scene.floorGridEnabled)
                 {
@@ -152,6 +162,19 @@ class PropertiesPanel: Owner
                         scene.floorGridSpacing = cast(float)(cast(int)(scene.floorGridSpacing * 10.0f + 0.5f)) / 10.0f;
                     if (igSliderFloat("Grid extent", &scene.floorGridExtent, 5.0f, 100.0f, "%.0f"))
                         scene.floorGridExtent = cast(float)(cast(int)(scene.floorGridExtent + 0.5f));
+                }
+                if (igTreeNode("Freeview"))
+                {
+                    igCheckbox("Mouse orbit", &freeview.enableMouseRotation);
+                    igSliderFloat("Orbit sensitivity", &freeview.mouseRotationSensibility, 0.1f, 5.0f, "%.2f");
+                    igCheckbox("Mouse pan", &freeview.enableMouseTranslation);
+                    igSliderFloat("Pan sensitivity", &freeview.mouseTranslationSensibility, 0.01f, 1.0f, "%.2f");
+                    igCheckbox("Mouse zoom", &freeview.enableMouseZoom);
+                    igSliderFloat("Zoom sensitivity", &freeview.mouseZoomSensibility, 0.01f, 1.0f, "%.2f");
+                    igSliderFloat("Pan stiffness", &freeview.translationStiffness, 0.0f, 1.0f, "%.2f");
+                    igSliderFloat("Orbit stiffness", &freeview.rotationStiffness, 0.0f, 1.0f, "%.2f");
+                    igSliderFloat("Zoom stiffness", &freeview.zoomStiffness, 0.0f, 1.0f, "%.2f");
+                    igTreePop();
                 }
             }
             
