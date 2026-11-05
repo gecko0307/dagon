@@ -105,6 +105,9 @@ class EditorScene: Scene
     int glowRadius = 5;
     int tonemapper = Tonemapper.AgX_Punchy;
     bool fxaaEnabled = true;
+    bool floorGridEnabled = true;
+    float floorGridSpacing = 1.0f;
+    float floorGridExtent = 20.0f;
 
     uint numEntities = 0;
 
@@ -407,7 +410,20 @@ class EditorApp: Game
     
     override void onRender()
     {
-        super.onRender();
+        if (currentScene)
+        {
+            if (currentScene.canRender && renderer)
+            {
+                renderer.render();
+                if (auto editorScene = cast(EditorScene)currentScene)
+                    editorScene.overlay.renderFloorGrid();
+                postProcessingRenderer.render();
+                presentRenderer.inputBuffer = postProcessingRenderer.outputBuffer;
+                presentRenderer.render();
+                hudRenderer.render();
+                currentScene.afterRender();
+            }
+        }
         ui.render();
     }
 }

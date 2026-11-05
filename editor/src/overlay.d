@@ -53,6 +53,7 @@ import dagon.graphics.camera;
 import dagon.graphics.light;
 import dagon.graphics.mesh;
 import dagon.graphics.state;
+import dagon.render.framebuffer;
 import dagon.render.view;
 import dagon.ui.axes;
 import dagon.ui.shaders.gizmo;
@@ -95,6 +96,7 @@ class InteractionOverlay: EventListener
     Vector3f selectionBoundingBoxBaseScale;
     GizmoLines rotationLines;
     GizmoLines scaleLines;
+    FloorGridLines floorGridLines;
     bool visible = true;
 
     bool draggingGizmo;
@@ -152,6 +154,7 @@ class InteractionOverlay: EventListener
         sunDirectionLines = New!GizmoLines(GizmoMode.SunDirection, this);
         rotationLines = New!GizmoLines(GizmoMode.Rotation, this);
         scaleLines = New!GizmoLines(GizmoMode.Scale, this);
+        floorGridLines = New!FloorGridLines(this);
         
         gizmoShader = New!GizmoShader(this);
         gizmoPosition = Vector3f(0.0f, 0.0f, 0.0f);
@@ -832,6 +835,85 @@ class InteractionOverlay: EventListener
         glEnable(GL_CULL_FACE);
     }
 
+    void renderFloorGrid()
+    {
+        if (!ui || !ui.scene.floorGridEnabled ||
+            !ui.scene.app.renderer.outputBuffer)
+            return;
+
+        updateViewport();
+        if (view.width <= 0 || view.height <= 0)
+            return;
+
+        Framebuffer outputBuffer = ui.scene.app.renderer.outputBuffer;
+        GLint previousFramebuffer;
+        GLint previousProgram;
+        GLint previousVertexArray;
+        GLint[4] previousScissorBox;
+        GLint[4] previousViewport;
+        GLint previousBlendSrcRgb;
+        GLint previousBlendDstRgb;
+        GLint previousBlendSrcAlpha;
+        GLint previousBlendDstAlpha;
+        GLboolean previousDepthTest = glIsEnabled(GL_DEPTH_TEST);
+        GLboolean previousCullFace = glIsEnabled(GL_CULL_FACE);
+        GLboolean previousBlend = glIsEnabled(GL_BLEND);
+        GLboolean previousScissor = glIsEnabled(GL_SCISSOR_TEST);
+        GLboolean previousDepthMask;
+
+        glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &previousFramebuffer);
+        glGetIntegerv(GL_CURRENT_PROGRAM, &previousProgram);
+        glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &previousVertexArray);
+        glGetIntegerv(GL_SCISSOR_BOX, previousScissorBox.ptr);
+        glGetIntegerv(GL_VIEWPORT, previousViewport.ptr);
+        glGetIntegerv(GL_BLEND_SRC_RGB, &previousBlendSrcRgb);
+        glGetIntegerv(GL_BLEND_DST_RGB, &previousBlendDstRgb);
+        glGetIntegerv(GL_BLEND_SRC_ALPHA, &previousBlendSrcAlpha);
+        glGetIntegerv(GL_BLEND_DST_ALPHA, &previousBlendDstAlpha);
+        glGetBooleanv(GL_DEPTH_WRITEMASK, &previousDepthMask);
+
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, outputBuffer.framebuffer);
+        glViewport(0, 0, outputBuffer.width, outputBuffer.height);
+        glScissor(0, 0, outputBuffer.width, outputBuffer.height);
+        glEnable(GL_SCISSOR_TEST);
+        glEnable(GL_DEPTH_TEST);
+        glDepthMask(GL_FALSE);
+        glDisable(GL_CULL_FACE);
+        glEnable(GL_BLEND);
+        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
+            GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+        floorGridLines.update(
+            ui.scene.floorGridSpacing,
+            ui.scene.floorGridExtent);
+        state.modelViewMatrix = view.viewMatrix;
+        state.projectionMatrix = view.projectionMatrix;
+        gizmoShader.bind();
+        gizmoShader.bindParameters(&state);
+        floorGridLines.render(&state);
+        gizmoShader.unbindParameters(&state);
+        gizmoShader.unbind();
+
+        glBindVertexArray(previousVertexArray);
+        glUseProgram(previousProgram);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, previousFramebuffer);
+        glViewport(previousViewport[0], previousViewport[1],
+            previousViewport[2], previousViewport[3]);
+        glScissor(previousScissorBox[0], previousScissorBox[1],
+            previousScissorBox[2], previousScissorBox[3]);
+        if (previousDepthTest) glEnable(GL_DEPTH_TEST);
+        else glDisable(GL_DEPTH_TEST);
+        if (previousCullFace) glEnable(GL_CULL_FACE);
+        else glDisable(GL_CULL_FACE);
+        if (previousBlend) glEnable(GL_BLEND);
+        else glDisable(GL_BLEND);
+        if (previousScissor) glEnable(GL_SCISSOR_TEST);
+        else glDisable(GL_SCISSOR_TEST);
+        glDepthMask(previousDepthMask);
+        glBlendFuncSeparate(previousBlendSrcRgb, previousBlendDstRgb,
+            previousBlendSrcAlpha, previousBlendDstAlpha);
+    }
+
     bool mouseRay(GizmoPoint mouse, out Vector3f origin, out Vector3f direction)
     {
         if (!view.width || !view.height)
@@ -1028,6 +1110,106 @@ class GizmoLines: Owner, Drawable
             dataReady = true;
         }
 
+        glBindVertexArray(vertexArray);
+        glDrawArrays(GL_LINES, 0, cast(int)vertices.length);
+        glBindVertexArray(0);
+    }
+}
+
+private class FloorGridLines: Owner, Drawable
+{
+    Vector3f[] vertices;
+    Vector4f[] colors;
+    GLuint vertexBuffer;
+    GLuint colorBuffer;
+    GLuint vertexArray;
+    float currentSpacing = -1.0f;
+    float currentExtent = -1.0f;
+
+    this(Owner owner)
+    {
+        super(owner);
+        GLint previousArrayBuffer;
+        GLint previousVertexArray;
+        glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &previousArrayBuffer);
+        glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &previousVertexArray);
+        glGenBuffers(1, &vertexBuffer);
+        glGenBuffers(1, &colorBuffer);
+        glGenVertexArrays(1, &vertexArray);
+        glBindVertexArray(vertexArray);
+
+        glEnableVertexAttribArray(VertexAttrib.Vertices);
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+        glVertexAttribPointer(VertexAttrib.Vertices, 3, GL_FLOAT, GL_FALSE, 0, null);
+
+        glEnableVertexAttribArray(VertexAttrib.Colors);
+        glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
+        glVertexAttribPointer(VertexAttrib.Colors, 4, GL_FLOAT, GL_FALSE, 0, null);
+        glBindVertexArray(previousVertexArray);
+        glBindBuffer(GL_ARRAY_BUFFER, previousArrayBuffer);
+    }
+
+    ~this()
+    {
+        if (glIsVertexArray(vertexArray))
+            glDeleteVertexArrays(1, &vertexArray);
+        if (glIsBuffer(vertexBuffer))
+            glDeleteBuffers(1, &vertexBuffer);
+        if (glIsBuffer(colorBuffer))
+            glDeleteBuffers(1, &colorBuffer);
+    }
+
+    void update(float spacing, float extent)
+    {
+        if (spacing == currentSpacing && extent == currentExtent)
+            return;
+
+        GLint previousArrayBuffer;
+        glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &previousArrayBuffer);
+        currentSpacing = spacing;
+        currentExtent = extent;
+        vertices.length = 0;
+        colors.length = 0;
+        int count = cast(int)(extent / spacing);
+        foreach (i; -count .. count + 1)
+        {
+            float offset = i * spacing;
+            Vector4f color = i == 0
+                ? Vector4f(0.75f, 0.25f, 0.25f, 0.65f)
+                : Vector4f(0.42f, 0.45f, 0.49f, 0.38f);
+            appendLine(
+                Vector3f(-extent, 0.0f, offset),
+                Vector3f(extent, 0.0f, offset),
+                color);
+
+            color = i == 0
+                ? Vector4f(0.25f, 0.35f, 0.8f, 0.65f)
+                : Vector4f(0.42f, 0.45f, 0.49f, 0.38f);
+            appendLine(
+                Vector3f(offset, 0.0f, -extent),
+                Vector3f(offset, 0.0f, extent),
+                color);
+        }
+
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+        glBufferData(GL_ARRAY_BUFFER, vertices.length * Vector3f.sizeof,
+            vertices.ptr, GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
+        glBufferData(GL_ARRAY_BUFFER, colors.length * Vector4f.sizeof,
+            colors.ptr, GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, previousArrayBuffer);
+    }
+
+    private void appendLine(Vector3f a, Vector3f b, Vector4f color)
+    {
+        vertices ~= a;
+        vertices ~= b;
+        colors ~= color;
+        colors ~= color;
+    }
+
+    void render(GraphicsState*)
+    {
         glBindVertexArray(vertexArray);
         glDrawArrays(GL_LINES, 0, cast(int)vertices.length);
         glBindVertexArray(0);

@@ -142,6 +142,18 @@ class PropertiesPanel: Owner
                     //
                 }
             }
+
+            if (igCollapsingHeader("Viewport"))
+            {
+                igCheckbox("Floor grid", &scene.floorGridEnabled);
+                if (scene.floorGridEnabled)
+                {
+                    igSliderFloat("Grid spacing", &scene.floorGridSpacing,
+                        0.1f, 5.0f, "%.2f");
+                    igSliderFloat("Grid extent", &scene.floorGridExtent,
+                        5.0f, 100.0f, "%.1f");
+                }
+            }
             
             if (igCollapsingHeader("Post-processing"))
             {

@@ -29,11 +29,11 @@ module materialpreview;
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.image.color;
-import dlib.math.matrix;
+import dlib.math.base;
 import dlib.math.vector;
+import dlib.math.matrix;
 import dlib.math.utils;
 import dlib.text.str;
-import std.math: asin, atan2;
 
 import dagon.core.bindings;
 import dagon.core.logger;
@@ -314,17 +314,16 @@ class MaterialPreviewRenderer: Owner
 
     private void remapSphereTexcoords()
     {
-        enum float pi = 3.14159265359f;
         foreach (ref triangle; sphere.indices)
         {
             float[3] u;
             foreach (i; 0 .. 3)
             {
                 Vector3f position = sphere.vertices[triangle[i]].normalized;
-                u[i] = atan2(position.x, position.z) / (2.0f * pi) + 0.5f;
+                u[i] = atan2(position.x, position.z) / (2.0f * PI) + 0.5f;
                 sphere.texcoords[triangle[i]] = Vector2f(
                     u[i],
-                    asin(clamp(position.y, -1.0f, 1.0f)) / pi + 0.5f);
+                    asin(clamp(position.y, -1.0f, 1.0f)) / PI + 0.5f);
             }
 
             float minU = u[0];

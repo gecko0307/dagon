@@ -31,13 +31,13 @@ DEALINGS IN THE SOFTWARE.
 module thumbnail;
 
 import std.algorithm;
-import std.math;
 import std.path;
 import std.string;
 
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.container.array;
+import dlib.math.base;
 
 import dagon.core.bindings;
 import dagon.graphics.texture;
