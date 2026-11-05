@@ -847,7 +847,7 @@ class EditorApp: Game
         ui.iconRotate = prepareUiTexture(aRotateIcon.texture);
         ui.iconScale = prepareUiTexture(aScaleIcon.texture);
         ui.aboutImage = prepareUiTexture(aboutImage.texture);
-        ui.thumbnailGenerator = New!ThumbnailGenerator(scene.assetManager);
+        ui.thumbnailGenerator = New!ThumbnailGenerator(assetManager);
         eventManager.onProcessEvent = &ui.onProcessEvent;
         dynamicViewport = false; // The editor controls the viewport instead of the engine
         scene.overlay.ui = ui;

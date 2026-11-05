@@ -312,6 +312,13 @@ class MaterialPreviewRenderer: Owner
         shader = New!MaterialPreviewShader(this);
     }
 
+    void clear()
+    {
+        foreach (ref preview; previews)
+            deleteOwnedObject(preview.target);
+        previews.length = 0;
+    }
+
     private void remapSphereTexcoords()
     {
         foreach (ref triangle; sphere.indices)
