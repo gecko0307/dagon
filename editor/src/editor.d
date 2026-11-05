@@ -868,8 +868,10 @@ class EditorApp: Game
         if (!ui.active)
             return;
         
+        bool isLoading = false;
         if (currentScene)
         {
+            isLoading = currentScene.isLoading;
             if (currentScene.canRender && renderer)
             {
                 renderer.render();
@@ -883,6 +885,7 @@ class EditorApp: Game
             }
         }
 
-        ui.render();
+        if (!isLoading)
+            ui.render();
     }
 }
