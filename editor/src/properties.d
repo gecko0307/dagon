@@ -327,7 +327,7 @@ class PropertiesPanel: Owner
 
             if (igCollapsingHeader("Material"))
             {
-                uint previewTexture = scene.materialPreviewRenderer.renderThumbnail(
+                uint previewTexture = scene.app.materialPreviewRenderer.renderThumbnail(
                     scene.selectedEntity ? scene.selectedEntity.material : null);
                 igImage(cast(void*)cast(size_t)previewTexture,
                     ImVec2(
@@ -387,7 +387,7 @@ class PropertiesPanel: Owner
                     materialChanged |= igCheckbox("Color write", &material.colorWrite);
                     materialChanged |= igCheckbox("Depth write", &material.depthWrite);
                     if (materialChanged)
-                        scene.materialPreviewRenderer.invalidate(material);
+                        scene.app.materialPreviewRenderer.invalidate(material);
                     /*
                     igCheckbox("Output color", &material.outputColor);
                     igCheckbox("Output normals", &material.outputNormal);

@@ -133,7 +133,7 @@ void openHelp()
 
 class EditorUI: EventListener
 {
-    Application application;
+    EditorApp application;
     EditorScene scene;
 
     bool active = false;
@@ -175,7 +175,7 @@ class EditorUI: EventListener
         0
     ];
     
-    this(Application application, EditorScene scene, string[] args)
+    this(EditorApp application, EditorScene scene, string[] args)
     {
         super(application.eventManager, application);
         this.application = application;

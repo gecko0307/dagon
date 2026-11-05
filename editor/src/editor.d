@@ -132,6 +132,15 @@ Quaternionf jsonQuat(JSONValue j, string key, Quaternionf def)
     return Quaternionf(jsonNum(p.array[0]), jsonNum(p.array[1]), jsonNum(p.array[2]), jsonNum(p.array[3]));
 }
 
+Color4f jsonColor(JSONValue j, string key, Color4f def)
+{
+    auto p = key in j;
+    if (p is null || p.type != JSONType.array || p.array.length < 4)
+        return def;
+    return Color4f(jsonNum(p.array[0]), jsonNum(p.array[1]),
+                   jsonNum(p.array[2]), jsonNum(p.array[3]));
+}
+
 class EditorScene: Scene
 {
     string name = "Scene";
@@ -142,23 +151,8 @@ class EditorScene: Scene
     FreeviewComponent freeview;
     InteractionOverlay overlay;
     CommandHistory history;
-    MaterialPreviewRenderer materialPreviewRenderer;
     
     LoadingScreen loadingScreen;
-
-    TextureAsset aFileIcon;
-    TextureAsset aFolderIcon;
-    TextureAsset aArchiveIcon;
-    TextureAsset aAudioIcon;
-    TextureAsset aBlendIcon;
-    TextureAsset aJsonIcon;
-    TextureAsset aModelIcon;
-    TextureAsset aTranslateIcon;
-    TextureAsset aRotateIcon;
-    TextureAsset aScaleIcon;
-    TextureAsset aboutImage;
-
-    TextureAsset aEnvmap;
 
     Entity sceneRoot;
     Entity selectedEntity;
@@ -207,31 +201,6 @@ class EditorScene: Scene
 
     override void beforeLoad()
     {
-        aFileIcon = addTextureAsset("data/icons/file.png");
-        aFileIcon.generateMipmaps = false;
-        aFolderIcon = addTextureAsset("data/icons/folder.png");
-        aFolderIcon.generateMipmaps = false;
-        aArchiveIcon = addTextureAsset("data/icons/archive.png");
-        aArchiveIcon.generateMipmaps = false;
-        aAudioIcon = addTextureAsset("data/icons/audio.png");
-        aAudioIcon.generateMipmaps = false;
-        aBlendIcon = addTextureAsset("data/icons/blend.png");
-        aBlendIcon.generateMipmaps = false;
-        aJsonIcon = addTextureAsset("data/icons/json.png");
-        aJsonIcon.generateMipmaps = false;
-        aModelIcon = addTextureAsset("data/icons/model.png");
-        aModelIcon.generateMipmaps = false;
-        aTranslateIcon = addTextureAsset("data/icons/btn_translate.png");
-        aTranslateIcon.generateMipmaps = false;
-        aRotateIcon = addTextureAsset("data/icons/btn_rotate.png");
-        aRotateIcon.generateMipmaps = false;
-        aScaleIcon = addTextureAsset("data/icons/btn_scale.png");
-        aScaleIcon.generateMipmaps = false;
-        aboutImage = addTextureAsset("data/splash.jpg");
-        aboutImage.generateMipmaps = false;
-
-        aEnvmap = addTextureAsset("data/envmaps/default.hdr");
-        aEnvmap.generateMipmaps = false;
     }
     
     override void onLoad(Time t, float progress)
@@ -239,33 +208,12 @@ class EditorScene: Scene
         loadingScreen.update(t, progress);
         loadingScreen.render();
     }
-
-    Texture prepareUiTexture(Texture tex)
-    {
-        tex.minFilter = GL_LINEAR;
-        tex.magFilter = GL_LINEAR;
-        tex.bind();
-        tex.unbind();
-        return tex;
-    }
     
     override void afterLoad()
     {
-        auto ui = this.app.ui;
-        ui.iconFile = prepareUiTexture(aFileIcon.texture);
-        ui.iconFolder = prepareUiTexture(aFolderIcon.texture);
-        ui.iconArchive = prepareUiTexture(aArchiveIcon.texture);
-        ui.iconAudio = prepareUiTexture(aAudioIcon.texture);
-        ui.iconBlend = prepareUiTexture(aBlendIcon.texture);
-        ui.iconJson = prepareUiTexture(aJsonIcon.texture);
-        ui.iconModel = prepareUiTexture(aModelIcon.texture);
-        ui.iconTranslate = prepareUiTexture(aTranslateIcon.texture);
-        ui.iconRotate = prepareUiTexture(aRotateIcon.texture);
-        ui.iconScale = prepareUiTexture(aScaleIcon.texture);
-        ui.aboutImage = prepareUiTexture(aboutImage.texture);
-
         environment.backgroundColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
         
+        // TODO: read post-processing settings from scene file
         app.deferredRenderer.ssaoEnabled = ssaoEnabled;
         app.deferredRenderer.ssaoPower = 6.0;
         app.postProcessingRenderer.depthOfFieldEnabled = depthOfFieldEnabled;
@@ -298,14 +246,11 @@ class EditorScene: Scene
         sun.pitch(-45.0f);
         sun.name = "Sun";
 
-        materialPreviewRenderer = New!MaterialPreviewRenderer(this);
-
-        if (aEnvmap.loaded)
+        if (app.cubemap)
         {
-            Texture cubemap = generateCubemap(1024, aEnvmap.texture, assetManager);
-            environment.ambientMap = cubemap;
+            environment.ambientMap = app.cubemap;
             environment.ambientBRDF = app.deferredRenderer.brdf;
-
+            
             eSky = addEntity();
             eSky.layer = EntityLayer.Background;
             eSky.gbufferMask = 0.0f;
@@ -315,16 +260,12 @@ class EditorScene: Scene
             eSky.material = addMaterial();
             eSky.material.depthWrite = false;
             eSky.material.useCulling = false;
-            eSky.material.baseColorTexture = cubemap;
+            eSky.material.baseColorTexture = app.cubemap;
             eSky.material.linearColor = true;
             eSky.name = "Sky";
         }
-        else
-        {
-            logWarning("Default environment map was not loaded");
-        }
 
-        ui.active = true;
+        app.ui.active = true;
     }
     
     bool isInternalEntity(Entity e)
@@ -372,7 +313,7 @@ class EditorScene: Scene
                 newEntity.drawable = objAsset.mesh;
                 meshPaths[newEntity] = assetPath;
             }
-            //newEntity.material = addMaterial(); // TODO: the user should explicitly create a new material or use an existing one
+            
             newEntity.position = Vector3f(0, 0, 0);
             newEntity.name = genUniqueEntitytName();
             selectEntity(newEntity);
@@ -783,15 +724,6 @@ class EditorScene: Scene
     override void onMouseButtonUp(int button) { }
 }
 
-Color4f jsonColor(JSONValue j, string key, Color4f def)
-{
-    auto p = key in j;
-    if (p is null || p.type != JSONType.array || p.array.length < 4)
-        return def;
-    return Color4f(jsonNum(p.array[0]), jsonNum(p.array[1]),
-                   jsonNum(p.array[2]), jsonNum(p.array[3]));
-}
-
 JSONValue lightToJson(Light l)
 {
     return JSONValue([
@@ -843,12 +775,78 @@ class EditorApp: Game
 {
     EditorUI ui;
     
+    MaterialPreviewRenderer materialPreviewRenderer;
+    
+    TextureAsset aFileIcon;
+    TextureAsset aFolderIcon;
+    TextureAsset aArchiveIcon;
+    TextureAsset aAudioIcon;
+    TextureAsset aBlendIcon;
+    TextureAsset aJsonIcon;
+    TextureAsset aModelIcon;
+    TextureAsset aTranslateIcon;
+    TextureAsset aRotateIcon;
+    TextureAsset aScaleIcon;
+    TextureAsset aboutImage;
+    
+    TextureAsset aEnvmap;
+    Texture cubemap;
+    
+    TextureAsset loadTexture(string path, bool generateMipmaps = false)
+    {
+        TextureAsset asset = New!TextureAsset(assetManager);
+        asset.generateMipmaps = generateMipmaps;
+        assetManager.preloadAsset(asset, path);
+        return asset;
+    }
+    
+    Texture prepareUiTexture(Texture tex)
+    {
+        tex.minFilter = GL_LINEAR;
+        tex.magFilter = GL_LINEAR;
+        tex.bind();
+        tex.unbind();
+        return tex;
+    }
+    
     this(uint w, uint h, bool fullscreen, string title, string[] args)
     {
         super(w, h, fullscreen, title, args);
+        
+        materialPreviewRenderer = New!MaterialPreviewRenderer(this);
+        
+        aFileIcon = loadTexture("data/icons/file.png");
+        aFolderIcon = loadTexture("data/icons/folder.png");
+        aArchiveIcon = loadTexture("data/icons/archive.png");
+        aAudioIcon = loadTexture("data/icons/audio.png");
+        aBlendIcon = loadTexture("data/icons/blend.png");
+        aJsonIcon = loadTexture("data/icons/json.png");
+        aModelIcon = loadTexture("data/icons/model.png");
+        aTranslateIcon = loadTexture("data/icons/btn_translate.png");
+        aRotateIcon = loadTexture("data/icons/btn_rotate.png");
+        aScaleIcon = loadTexture("data/icons/btn_scale.png");
+        aboutImage = loadTexture("data/splash.jpg");
+        
+        aEnvmap = loadTexture("data/envmaps/default.hdr");
+        if (aEnvmap.loaded)
+            cubemap = generateCubemap(1024, aEnvmap.texture, assetManager);
+        else
+            logWarning("Default environment map was not loaded");
+        
         auto scene = New!EditorScene(this);
         currentScene = scene;
         ui = New!EditorUI(this, scene, args);
+        ui.iconFile = prepareUiTexture(aFileIcon.texture);
+        ui.iconFolder = prepareUiTexture(aFolderIcon.texture);
+        ui.iconArchive = prepareUiTexture(aArchiveIcon.texture);
+        ui.iconAudio = prepareUiTexture(aAudioIcon.texture);
+        ui.iconBlend = prepareUiTexture(aBlendIcon.texture);
+        ui.iconJson = prepareUiTexture(aJsonIcon.texture);
+        ui.iconModel = prepareUiTexture(aModelIcon.texture);
+        ui.iconTranslate = prepareUiTexture(aTranslateIcon.texture);
+        ui.iconRotate = prepareUiTexture(aRotateIcon.texture);
+        ui.iconScale = prepareUiTexture(aScaleIcon.texture);
+        ui.aboutImage = prepareUiTexture(aboutImage.texture);
         ui.thumbnailGenerator = New!ThumbnailGenerator(scene.assetManager);
         eventManager.onProcessEvent = &ui.onProcessEvent;
         dynamicViewport = false; // The editor controls the viewport instead of the engine
