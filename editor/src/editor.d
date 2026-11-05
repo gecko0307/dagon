@@ -47,6 +47,7 @@ import dlib.container.array;
 import dagon.core.bindings;
 import dagon.core.logger;
 import dagon.core.time;
+import dagon.core.cursor;
 import dagon.graphics.entity;
 import dagon.graphics.components;
 import dagon.graphics.camera;
@@ -248,6 +249,7 @@ class EditorScene: Scene
 
     override void beforeLoad()
     {
+        app.setCursor(SystemCursor.Wait);
     }
     
     override void onLoad(Time t, float progress)
@@ -311,6 +313,8 @@ class EditorScene: Scene
             eSky.material.linearColor = true;
             eSky.name = "Sky";
         }
+        
+        app.setCursor(SystemCursor.Default);
     }
     
     bool isInternalEntity(Entity e)
@@ -803,6 +807,8 @@ class EditorApp: Game
     this(uint w, uint h, bool fullscreen, string title, string[] args)
     {
         super(w, h, fullscreen, title, args);
+        
+        setCursor(SystemCursor.Wait);
         
         materialPreviewRenderer = New!MaterialPreviewRenderer(this);
         
