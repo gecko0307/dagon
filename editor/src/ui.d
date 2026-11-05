@@ -477,8 +477,8 @@ class EditorUI: EventListener
         style.TabRounding       = 4.0f;
 
         // 3. Define our color palette
-        ImVec4 color_bg_dark     = ImVec4(0.10f, 0.10f, 0.10f, 0.75f); // Deep charcoal
-        ImVec4 color_bg_med      = ImVec4(0.15f, 0.15f, 0.15f, 0.8f);  // Lighter panel background
+        ImVec4 color_bg_dark     = ImVec4(0.10f, 0.10f, 0.10f, 0.9f); // Deep charcoal
+        ImVec4 color_bg_med      = ImVec4(0.15f, 0.15f, 0.15f, 0.9f);  // Lighter panel background
         ImVec4 color_bg_light    = ImVec4(0.22f, 0.22f, 0.22f, 1.0f);  // Interactive element background
         
         ImVec4 color_orange      = ImVec4(0.90f, 0.45f, 0.00f, 1.0f);  // Vibrant orange

@@ -8,9 +8,12 @@ Dagon 1.7.0 - TBD
   - Asset browser and texture thumbnail generator
   - OBJ and material asset import (by dragging files from the asset browser to the viewport)
   - Material preview renderer
+  - Load default environment map `data/envmaps/default.hdr`, if available
   - HiDPI awareness
   - Floor grid in the viewport
   - Viewport/freeview settings in the Properties panel
+  - Entity bounding box visibility toggle
+  - New charcoal-orange theme
   - Startup/About menu splash screen.
 
 Dagon 1.6.3 - 17 Oct, 2026
