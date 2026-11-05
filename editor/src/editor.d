@@ -33,6 +33,8 @@ module editor;
 import std.algorithm;
 import std.file: write;
 import std.json;
+import std.path;
+import std.conv;
 
 import dlib.core.memory;
 import dlib.math.base;
@@ -90,8 +92,7 @@ class EditorScene: Scene
     TextureAsset aEnvmap;
     TextureAsset aBRDF;
 
-    OBJAsset aOBJSuzanne;
-
+    Entity sceneRoot;
     Entity selectedEntity;
     
     bool ssaoEnabled = true;
@@ -102,6 +103,8 @@ class EditorScene: Scene
     int glowRadius = 5;
     int tonemapper = Tonemapper.AgX_Punchy;
     bool fxaaEnabled = true;
+
+    uint numEntities = 0;
 
     this(EditorApp app)
     {
@@ -142,8 +145,6 @@ class EditorScene: Scene
         aScaleIcon.generateMipmaps = false;
         aboutImage = addTextureAsset("data/splash.jpg");
         aboutImage.generateMipmaps = false;
-        
-        aOBJSuzanne = addOBJAsset("assets/suzanne.obj");
     }
     
     override void onLoad(Time t, float progress)
@@ -207,22 +208,14 @@ class EditorScene: Scene
         sun.pitch(-45.0f);
         sun.name = "Sun";
         
-        auto matSuzanne = addMaterial();
-        matSuzanne.baseColorFactor = Color4f(1.0, 0.2, 0.2, 1.0);
-        matSuzanne.sun = sun;
+        sceneRoot = addEntity();
+        sceneRoot.name = "SceneRoot";
         
-        auto modelsRoot = addEntity();
-        modelsRoot.name = "ModelsRoot";
-
-        auto eSuzanne = addEntity(modelsRoot);
-        eSuzanne.drawable = aOBJSuzanne.mesh;
-        eSuzanne.material = matSuzanne;
-        eSuzanne.position = Vector3f(0, 1, 0);
-        eSuzanne.name = "Suzanne";
-        
+        /*
         auto ePlane = addEntity();
         ePlane.drawable = New!ShapePlane(10, 10, 1, assetManager);
         ePlane.name = "Plane";
+        */
 
         ui.active = true;
     }
@@ -241,6 +234,38 @@ class EditorScene: Scene
     override void afterRender()
     {
         overlay.render();
+    }
+
+    void importAsset(string assetPath)
+    {
+        string ext = assetPath.extension;
+        if (ext == ".obj")
+        {
+            auto objAsset = addOBJAsset(assetPath, true);
+            auto newEntity = addEntity(sceneRoot);
+            if (objAsset.mesh)
+                newEntity.drawable = objAsset.mesh;
+            //newEntity.material = addMaterial(); // TODO: the user should explicitly create a new material or use an existing one
+            newEntity.position = Vector3f(0, 0, 0);
+            newEntity.name = genUniqueEntitytName();
+            selectEntity(newEntity);
+        }
+
+        // TODO: material import
+        // TODO: glTF import
+    }
+
+    string genUniqueEntitytName()
+    {
+        string res = "entity" ~ numEntities.to!string;
+        numEntities++;
+        return res;
+    }
+
+    void onAssetDroppedOnViewport(string assetPath)
+    {
+        logInfo("Import asset \"", assetPath, "\"...");
+        importAsset(assetPath);
     }
     
     void selectEntity(Entity e)

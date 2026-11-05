@@ -194,7 +194,6 @@ class EditorUI: EventListener
         handleShortcut(event);
     }
 
-    // Ctrl+Z - undo, Ctrl+Y or Ctrl+Shift+Z - redo
     void handleShortcut(SDL_Event* event)
     {
         if (event.type != SDL_KEYDOWN)
@@ -274,10 +273,52 @@ class EditorUI: EventListener
         navigator.render();
         properties.render();
         assetBrowser.render();
+        renderViewportAssetDropTarget(centralNode);
         
         renderStatusBar();
         
         igRender();
+    }
+
+    void renderViewportAssetDropTarget(ImGuiDockNode* node)
+    {
+        if (node is null || node.Size.x <= 0.0f || node.Size.y <= 0.0f)
+            return;
+
+        const(ImGuiPayload)* activePayload = igGetDragDropPayload();
+        if (activePayload is null || activePayload.DataType[0 .. 6] != "ASSET\0")
+            return;
+
+        ImGuiWindowFlags flags =
+            ImGuiWindowFlags.NoDecoration |
+            ImGuiWindowFlags.NoMove |
+            ImGuiWindowFlags.NoBackground |
+            ImGuiWindowFlags.NoSavedSettings |
+            ImGuiWindowFlags.NoFocusOnAppearing |
+            ImGuiWindowFlags.NoBringToFrontOnFocus |
+            ImGuiWindowFlags.NoDocking |
+            ImGuiWindowFlags.NoNav;
+        igSetNextWindowPos(node.Pos, ImGuiCond.Always);
+        igSetNextWindowSize(node.Size, ImGuiCond.Always);
+        if (igBegin("##ViewportAssetDropTarget", null, flags))
+        {
+            igSetCursorScreenPos(node.Pos);
+            igInvisibleButton("##ViewportAssetDropArea", node.Size);
+            if (igBeginDragDropTarget())
+            {
+                const(ImGuiPayload)* payload = igAcceptDragDropPayload("ASSET");
+                if (payload !is null && payload.Delivery && payload.DataSize > 0)
+                {
+                    auto data = cast(const(char)*)payload.Data;
+                    size_t dataLength = cast(size_t)payload.DataSize;
+                    if (data[dataLength - 1] == '\0')
+                        dataLength--;
+                    scene.onAssetDroppedOnViewport(data[0 .. dataLength].idup);
+                }
+                igEndDragDropTarget();
+            }
+        }
+        igEnd();
     }
     
     void renderMenu()
