@@ -54,7 +54,7 @@ else
 import editor;
 import thumbnail;
 import toolbar;
-import navigator;
+import inspector;
 import properties;
 import assetbrowser;
 
@@ -148,7 +148,7 @@ class EditorUI: EventListener
     
     // Panels
     Toolbar toolbar;
-    Navigator navigator;
+    Inspector inspector;
     PropertiesPanel properties;
     AssetBrowser assetBrowser;
     
@@ -180,7 +180,7 @@ class EditorUI: EventListener
         ImGuiOpenGLBackend.init("#version 400 core");
         
         toolbar = New!Toolbar(this);
-        navigator = New!Navigator(this);
+        inspector = New!Inspector(this);
         properties = New!PropertiesPanel(this);
         assetBrowser = New!AssetBrowser(this);
     }
@@ -270,7 +270,7 @@ class EditorUI: EventListener
             }
         }
         
-        navigator.render();
+        inspector.render();
         properties.render();
         assetBrowser.render();
         renderViewportAssetDropTarget(centralNode);

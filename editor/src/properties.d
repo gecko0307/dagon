@@ -128,7 +128,7 @@ class PropertiesPanel: Owner
                 commitTransformEdit(i);
         }
 
-        if (igBegin("Scene settings", null, ImGuiWindowFlags.NoCollapse))
+        if (igBegin("Scene", null, ImGuiWindowFlags.NoCollapse))
         {
             if (igCollapsingHeader("Main"))
             {

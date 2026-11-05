@@ -28,7 +28,7 @@ DEALINGS IN THE SOFTWARE.
 /*
  * Scene objects tree.
  */
-module navigator;
+module inspector;
 
 import dlib.core.ownership;
 
@@ -38,7 +38,7 @@ import dagon.ext.imgui;
 import editor;
 import ui;
 
-class Navigator: Owner
+class Inspector: Owner
 {
     EditorUI ui;
 
