@@ -31,7 +31,8 @@ DEALINGS IN THE SOFTWARE.
 module editor;
 
 import std.algorithm;
-import std.file: write;
+import std.file: write, exists, readText;
+import std.ascii: isDigit;
 import std.json;
 import std.path;
 import std.conv;
@@ -39,7 +40,9 @@ import std.conv;
 import dlib.core.memory;
 import dlib.math.base;
 import dlib.math.vector;
+import dlib.math.quaternion;
 import dlib.image.color;
+import dlib.container.array;
 
 import dagon.core.bindings;
 import dagon.core.logger;
@@ -50,6 +53,7 @@ import dagon.graphics.camera;
 import dagon.graphics.light;
 import dagon.graphics.shapes;
 import dagon.graphics.mesh;
+import dagon.graphics.material;
 import dagon.graphics.texture;
 import dagon.graphics.cubemap;
 import dagon.resource.scene;
@@ -69,6 +73,64 @@ import history;
 
 string editorVersionString = "Dagon Editor v1.0.0-alpha";
 enum dagonWebsiteUrl = "https://gecko0307.github.io/dagon/";
+
+// Tolerant JSON readers. std.json can hand back a whole-number float as an integer,
+// so numbers are accepted in any numeric form. Missing keys fall back to a default.
+float jsonNum(JSONValue v, float def = 0.0f)
+{
+    switch (v.type)
+    {
+        case JSONType.float_:   return cast(float)v.floating;
+        case JSONType.integer:  return cast(float)v.integer;
+        case JSONType.uinteger: return cast(float)v.uinteger;
+        default:                return def;
+    }
+}
+
+T jsonGet(T)(JSONValue j, string key, T def)
+{
+    auto p = key in j;
+    if (p is null)
+        return def;
+    
+    static if (is(T == bool))
+    {
+        if (p.type == JSONType.true_) return true;
+        if (p.type == JSONType.false_) return false;
+        return def;
+    }
+    else static if (is(T == string))
+    {
+        return (p.type == JSONType.string)? p.str : def;
+    }
+    else static if (is(T == long))
+    {
+        if (p.type == JSONType.integer) return p.integer;
+        if (p.type == JSONType.uinteger) return cast(long)p.uinteger;
+        return def;
+    }
+    else static if (is(T == float))
+    {
+        return jsonNum(*p, def);
+    }
+    else static assert(false, "jsonGet: unsupported type " ~ T.stringof);
+}
+
+Vector3f jsonVec3(JSONValue j, string key, Vector3f def)
+{
+    auto p = key in j;
+    if (p is null || p.type != JSONType.array || p.array.length < 3)
+        return def;
+    return Vector3f(jsonNum(p.array[0]), jsonNum(p.array[1]), jsonNum(p.array[2]));
+}
+
+Quaternionf jsonQuat(JSONValue j, string key, Quaternionf def)
+{
+    auto p = key in j;
+    if (p is null || p.type != JSONType.array || p.array.length < 4)
+        return def;
+    return Quaternionf(jsonNum(p.array[0]), jsonNum(p.array[1]), jsonNum(p.array[2]), jsonNum(p.array[3]));
+}
 
 class EditorScene: Scene
 {
@@ -121,6 +183,10 @@ class EditorScene: Scene
     float floorGridExtent = 20.0f;
 
     uint numEntities = 0;
+    
+    // Source asset paths. Meshes and materials are saved as references to these files
+    string[Entity] meshPaths;
+    string[Material] materialPaths;
     
     Entity eSky;
 
@@ -302,7 +368,10 @@ class EditorScene: Scene
             auto objAsset = addOBJAsset(assetPath, true);
             auto newEntity = addEntity(sceneRoot);
             if (objAsset.mesh)
+            {
                 newEntity.drawable = objAsset.mesh;
+                meshPaths[newEntity] = assetPath;
+            }
             //newEntity.material = addMaterial(); // TODO: the user should explicitly create a new material or use an existing one
             newEntity.position = Vector3f(0, 0, 0);
             newEntity.name = genUniqueEntitytName();
@@ -319,6 +388,31 @@ class EditorScene: Scene
         return false;
     }
 
+    Material loadMaterial(string assetPath)
+    {
+        auto matAsset = addMaterialAsset(assetPath, true);
+        if (!matAsset.threadSafePartLoaded ||
+            !matAsset.threadUnsafePartLoaded ||
+            matAsset.material is null)
+        {
+            logError("Cannot load material \"", assetPath, "\": asset failed to load");
+            return null;
+        }
+        materialPaths[matAsset.material] = assetPath;
+        return matAsset.material;
+    }
+
+    Mesh loadMesh(string assetPath)
+    {
+        auto objAsset = addOBJAsset(assetPath, true);
+        if (objAsset.mesh is null)
+        {
+            logError("Cannot load mesh \"", assetPath, "\": asset failed to load");
+            return null;
+        }
+        return objAsset.mesh;
+    }
+
     bool applyMaterialAsset(string assetPath, Entity target)
     {
         if (target is null)
@@ -327,16 +421,11 @@ class EditorScene: Scene
             return false;
         }
 
-        auto matAsset = addMaterialAsset(assetPath, true);
-        if (!matAsset.threadSafePartLoaded ||
-            !matAsset.threadUnsafePartLoaded ||
-            matAsset.material is null)
-        {
-            logError("Cannot apply material \"", assetPath, "\": asset failed to load");
+        Material mat = loadMaterial(assetPath);
+        if (mat is null)
             return false;
-        }
 
-        target.material = matAsset.material;
+        target.material = mat;
         logInfo("Applied material \"", assetPath, "\" to entity \"", target.name, "\"");
         return true;
     }
@@ -413,34 +502,75 @@ class EditorScene: Scene
             overlay.gizmoMode = mode;
     }
     
+    // Lights are not serialized yet (entity fields only), so they stay out of the file
+    // and survive open() untouched
+    bool isSerializableEntity(Entity e)
+    {
+        return !isInternalEntity(e) && e !is sceneRoot;
+    }
+
     void save(string filename)
     {
-        // Assign indices to saved entities
-        size_t[Entity] indexOf;
+        // Pass 1: index the entities that go into the file
         Entity[] saved;
-        foreach(e; world.entities)
+        size_t[Entity] entityIndex;
+        foreach (e; world.entities)
         {
-            if (isInternalEntity(e) || e is sceneRoot)
-                continue;
-            indexOf[e] = saved.length;
-            saved ~= e;
+            if (isSerializableEntity(e))
+            {
+                entityIndex[e] = saved.length;
+                saved ~= e;
+            }
         }
 
-        // Serialize
+        // Pass 2: serialize, writing each distinct material once
         JSONValue[] entitiesArr;
+        JSONValue[] materialsArr;
+        long[string] materialIndex; // asset path -> index in materialsArr
         entitiesArr.reserve(saved.length);
-        foreach(e; saved)
+
+        foreach (e; saved)
         {
             long parentIndex = -1;
             if (e.parent !is null)
             {
-                if (auto p = e.parent in indexOf)
+                if (auto p = e.parent in entityIndex)
                     parentIndex = cast(long)*p;
             }
 
-            entitiesArr ~= JSONValue([
+            long materialRef = -1;
+            if (e.material !is null)
+            {
+                if (auto path = e.material in materialPaths)
+                {
+                    if (auto idx = *path in materialIndex)
+                    {
+                        materialRef = *idx;
+                    }
+                    else
+                    {
+                        materialRef = cast(long)materialsArr.length;
+                        materialIndex[*path] = materialRef;
+                        materialsArr ~= JSONValue(["path": JSONValue(*path)]);
+                    }
+                }
+                else
+                {
+                    logWarning("Material of entity \"", e.name, "\" has no source file and will not be saved");
+                }
+            }
+
+            string meshPath = "";
+            if (auto mp = e in meshPaths)
+                meshPath = *mp;
+            else if (e.drawable !is null)
+                logWarning("Drawable of entity \"", e.name, "\" has no source file and will not be saved");
+
+            JSONValue je = JSONValue([
                 "name": JSONValue(e.name),
                 "parent": JSONValue(parentIndex),
+                "mesh": JSONValue(meshPath),
+                "material": JSONValue(materialRef),
                 "layer": JSONValue(cast(uint)e.layer),
                 "type": JSONValue(cast(uint)e.type),
                 "renderLayer": JSONValue(e.renderLayer),
@@ -458,37 +588,255 @@ class EditorScene: Scene
                 "position": JSONValue(e.position.arrayof),
                 "rotation": JSONValue(e.rotation.arrayof),
                 "scaling": JSONValue(e.scaling.arrayof)
-                // TODO: drawable
             ]);
+            
+            if (auto light = cast(Light)e)
+                je["light"] = lightToJson(light);
+            
+            entitiesArr ~= je;
         }
 
         JSONValue root = [
             "name": JSONValue(name),
             "version": JSONValue(fileVersion),
+            "materials": JSONValue(materialsArr),
             "entities": JSONValue(entitiesArr),
-            //"materials": JSONValue(materialsArr)
         ];
-        write(filename, root.toPrettyString());
+        logInfo("Saving scene to \"", filename, "\"...");
+        write(filename, root.toPrettyString(JSONOptions.init | JSONOptions.doNotEscapeSlashes));
     }
-    
+
+    // Removes everything open() recreates
+    void clearScene()
+    {
+        Array!Entity victims;
+        foreach (e; world.entities)
+            if (isSerializableEntity(e))
+                victims.append(e);
+
+        selectedEntity = null;
+        overlay.gizmoMode = GizmoMode.Disabled;
+        history.clear();
+        meshPaths.clear();
+
+        foreach (e; victims)
+        {
+            removeEntity(e, false); // out of world.entities
+            if (e.parent)
+                e.parent.removeChild(e);  // out of parent.children, so the Inspector drops it
+            world.deleteOwnedObject(e);
+        }
+        victims.free();
+        
+        numEntities = 0;
+    }
+
     void open(string filename)
     {
-        logDebug("TODO: open ", filename);
-        
-        /*
-        // after creating entities[i] from entitiesArr[i]:
-        foreach (i, ref j; entitiesArr)
+        if (!exists(filename))
         {
-            long pi = j["parent"].integer;
-            entities[i].parent = (pi >= 0) ? entities[cast(size_t)pi] : sceneRoot;
+            logError("Cannot open scene \"", filename, "\": file not found");
+            return;
         }
-        */
+
+        // Parse and validate before touching the current scene,
+        // so a broken file does not wipe it
+        JSONValue root;
+        try
+        {
+            root = parseJSON(readText(filename));
+        }
+        catch (Exception ex)
+        {
+            logError("Cannot open scene \"", filename, "\": ", ex.msg);
+            return;
+        }
+
+        if (root.type != JSONType.object ||
+            ("entities" in root) is null ||
+            root["entities"].type != JSONType.array)
+        {
+            logError("Cannot open scene \"", filename, "\": invalid scene file");
+            return;
+        }
+
+        if (jsonGet(root, "version", 0L) > fileVersion)
+            logWarning("Scene \"", filename, "\" was saved by a newer editor version");
+
+        logInfo("Opening scene \"", filename, "\"...");
+        clearScene();
+        name = jsonGet(root, "name", "Scene");
+
+        // Materials first: entities refer to them by index
+        Material[] materials;
+        if (auto mp = "materials" in root)
+        {
+            foreach (m; mp.array)
+            {
+                string path = jsonGet(m, "path", "");
+                materials ~= (path.length > 0)? loadMaterial(path) : null;
+            }
+        }
+
+        // Entities are created parents-first through addEntity(parent), so the
+        // order in the file does not matter. A parent cycle is broken by
+        // attaching the entity that closes it to the scene root.
+        JSONValue[] entitiesArr = root["entities"].array;
+        Entity[] created = new Entity[entitiesArr.length];
+        bool[] visiting = new bool[entitiesArr.length];
+
+        Entity create(size_t i)
+        {
+            if (created[i] !is null)
+                return created[i];
+            if (visiting[i])
+                return null; // cycle
+            visiting[i] = true;
+
+            JSONValue j = entitiesArr[i];
+
+            Entity parent = sceneRoot;
+            long pi = jsonGet(j, "parent", -1L);
+            if (pi >= 0 && cast(size_t)pi < entitiesArr.length)
+            {
+                Entity pe = create(cast(size_t)pi);
+                if (pe !is null)
+                    parent = pe;
+            }
+
+            Entity e;
+
+            JSONValue* lj = "light" in j;
+            if (lj !is null && lj.type == JSONType.object)
+            {
+                long lt = jsonGet(*lj, "type", cast(long)LightType.AreaSphere);
+                if (lt < LightType.AreaSphere || lt > LightType.Spot)
+                    lt = LightType.AreaSphere;
+                auto light = addLight(cast(LightType)lt, parent);
+                readLight(light, *lj);
+                e = light;
+            }
+            else
+            {
+                e = addEntity(parent);
+            }
+            
+            e.name = jsonGet(j, "name", "entity");
+            e.layer = cast(EntityLayer)jsonGet(j, "layer", cast(long)e.layer);
+            e.type = cast(typeof(e.type))jsonGet(j, "type", cast(long)e.type);
+            e.renderLayer = cast(typeof(e.renderLayer))jsonGet(j, "renderLayer", cast(long)e.renderLayer);
+            e.visible = jsonGet(j, "visible", e.visible);
+            e.castShadow = jsonGet(j, "castShadow", e.castShadow);
+            e.solid = jsonGet(j, "solid", e.solid);
+            e.dynamic = jsonGet(j, "dynamic", e.dynamic);
+            e.decal = jsonGet(j, "decal", e.decal);
+            e.probe = jsonGet(j, "probe", e.probe);
+            e.probeExtents = jsonVec3(j, "probeExtents", e.probeExtents);
+            e.probeFalloffMargin = jsonGet(j, "probeFalloffMargin", e.probeFalloffMargin);
+            e.probeUseBoxProjection = jsonGet(j, "probeUseBoxProjection", e.probeUseBoxProjection);
+            e.transparent = jsonGet(j, "transparent", e.transparent);
+            e.opacity = jsonGet(j, "opacity", e.opacity);
+            e.position = jsonVec3(j, "position", e.position);
+            e.rotation = jsonQuat(j, "rotation", e.rotation);
+            e.scaling = jsonVec3(j, "scaling", e.scaling);
+
+            string meshPath = jsonGet(j, "mesh", "");
+            if (meshPath.length > 0)
+            {
+                Mesh mesh = loadMesh(meshPath);
+                if (mesh !is null)
+                {
+                    e.drawable = mesh;
+                    meshPaths[e] = meshPath;
+                }
+            }
+
+            long mi = jsonGet(j, "material", -1L);
+            if (mi >= 0 && cast(size_t)mi < materials.length && materials[cast(size_t)mi] !is null)
+                e.material = materials[cast(size_t)mi];
+
+            created[i] = e;
+            visiting[i] = false;
+            return e;
+        }
+
+        foreach (i; 0..entitiesArr.length)
+            create(i);
+
+        // Keep generated names unique with respect to the loaded ones
+        foreach (e; created)
+        {
+            if (e !is null && e.name.startsWith("entity"))
+            {
+                string suffix = e.name[6..$];
+                if (suffix.length > 0 && suffix.length < 9 && suffix.all!isDigit)
+                    numEntities = max(numEntities, suffix.to!uint + 1);
+            }
+        }
+
+        logInfo("Loaded ", created.length.to!string, " entities");
     }
-    
+
     override void onKeyDown(int key) { }
     override void onKeyUp(int key) { }
     override void onMouseButtonDown(int button) { }
     override void onMouseButtonUp(int button) { }
+}
+
+Color4f jsonColor(JSONValue j, string key, Color4f def)
+{
+    auto p = key in j;
+    if (p is null || p.type != JSONType.array || p.array.length < 4)
+        return def;
+    return Color4f(jsonNum(p.array[0]), jsonNum(p.array[1]),
+                   jsonNum(p.array[2]), jsonNum(p.array[3]));
+}
+
+JSONValue lightToJson(Light l)
+{
+    return JSONValue([
+        "type": JSONValue(cast(uint)l.type),
+        "shining": JSONValue(l.shining),
+        "color": JSONValue(l.color.arrayof),
+        "energy": JSONValue(l.energy),
+        "angularRadius": JSONValue(l.angularRadius),
+        "volumeRadius": JSONValue(l.volumeRadius),
+        "radius": JSONValue(l.radius),
+        "length": JSONValue(l.length),
+        "spotOuterCutoff": JSONValue(l.spotOuterCutoff),
+        "spotInnerCutoff": JSONValue(l.spotInnerCutoff),
+        "shadowEnabled": JSONValue(l.shadowEnabled),
+        "scatteringEnabled": JSONValue(l.scatteringEnabled),
+        "scattering": JSONValue(l.scattering),
+        "mediumDensity": JSONValue(l.mediumDensity),
+        "scatteringSamples": JSONValue(l.scatteringSamples),
+        "scatteringMaxRandomStepOffset": JSONValue(l.scatteringMaxRandomStepOffset),
+        "scatteringUseShadow": JSONValue(l.scatteringUseShadow),
+        "diffuse": JSONValue(l.diffuse),
+        "specular": JSONValue(l.specular)
+    ]);
+}
+
+void readLight(Light l, JSONValue j)
+{
+    l.shining = jsonGet(j, "shining", l.shining);
+    l.color = jsonColor(j, "color", l.color);
+    l.energy = jsonGet(j, "energy", l.energy);
+    l.angularRadius = jsonGet(j, "angularRadius", l.angularRadius);
+    l.volumeRadius = jsonGet(j, "volumeRadius", l.volumeRadius);
+    l.radius = jsonGet(j, "radius", l.radius);
+    l.length = jsonGet(j, "length", l.length);
+    l.spotOuterCutoff = jsonGet(j, "spotOuterCutoff", l.spotOuterCutoff);
+    l.spotInnerCutoff = jsonGet(j, "spotInnerCutoff", l.spotInnerCutoff);
+    l.shadowEnabled = jsonGet(j, "shadowEnabled", l.shadowEnabled);
+    l.scatteringEnabled = jsonGet(j, "scatteringEnabled", l.scatteringEnabled);
+    l.scattering = jsonGet(j, "scattering", l.scattering);
+    l.mediumDensity = jsonGet(j, "mediumDensity", l.mediumDensity);
+    l.scatteringSamples = cast(uint)jsonGet(j, "scatteringSamples", cast(long)l.scatteringSamples);
+    l.scatteringMaxRandomStepOffset = jsonGet(j, "scatteringMaxRandomStepOffset", l.scatteringMaxRandomStepOffset);
+    l.scatteringUseShadow = jsonGet(j, "scatteringUseShadow", l.scatteringUseShadow);
+    l.diffuse = jsonGet(j, "diffuse", l.diffuse);
+    l.specular = jsonGet(j, "specular", l.specular);
 }
 
 class EditorApp: Game

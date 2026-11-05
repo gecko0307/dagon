@@ -307,8 +307,11 @@ class Entity: Owner, Updateable
         if (parent)
             parent.removeChild(this);
 
-        parent = parentEntity;
-        parent.addChild(this);
+        if (parentEntity)
+        {
+            parent = parentEntity;
+            parent.addChild(this);
+        }
     }
 
     /**
