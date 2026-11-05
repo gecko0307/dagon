@@ -12,6 +12,7 @@ Dagon 1.7.0 - TBD
   - HiDPI awareness
   - Floor grid in the viewport
   - Viewport/freeview settings in the Properties panel
+  - More post-processing settings in the Properties panel
   - Entity bounding box visibility toggle
   - New charcoal-orange theme
   - Startup/About menu splash screen.
