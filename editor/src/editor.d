@@ -244,6 +244,7 @@ class EditorScene: Scene
             eSky.material.useCulling = false;
             eSky.material.baseColorTexture = cubemap;
             eSky.material.linearColor = true;
+            eSky.name = "Sky";
         }
         else
         {
@@ -255,10 +256,9 @@ class EditorScene: Scene
     
     override void onUpdate(Time t)
     {
-        auto ui = this.app.ui;
-        if (!ui.active)
+        if (isLoading)
             return;
-        
+
         freeview.active = focused && !overlay.draggingGizmo;
         if (selectedEntity && !overlay.draggingGizmo)
         {
@@ -270,7 +270,12 @@ class EditorScene: Scene
     
     override void afterRender()
     {
-        overlay.render();
+        if (isLoading)
+            return;
+        
+        auto ui = this.app.ui;
+        if (ui.active)
+            overlay.render();
     }
 
     bool importAsset(string assetPath)
@@ -446,9 +451,6 @@ class EditorApp: Game
     
     override void onRender()
     {
-        if (!ui.active)
-            return;
-
         if (currentScene)
         {
             if (currentScene.canRender && renderer)
@@ -463,6 +465,8 @@ class EditorApp: Game
                 currentScene.afterRender();
             }
         }
-        ui.render();
+
+        if (ui.active)
+            ui.render();
     }
 }
