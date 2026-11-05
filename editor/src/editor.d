@@ -106,16 +106,23 @@ class EditorScene: Scene
     bool ssaoEnabled = true;
     bool depthOfFieldEnabled = false;
     bool lensDistortionEnabled = false;
-    bool glowEnabled = false;
+    bool glowEnabled = true;
     bool motionBlurEnabled = false;
     int glowRadius = 5;
+    bool vignetteEnabled = false;
     int tonemapper = Tonemapper.AgX_Punchy;
     bool fxaaEnabled = true;
+    bool sharpeningEnabled = true;
+    bool filmGrainEnabled = false;
+    bool filmGrainColored = true;
+    
     bool floorGridEnabled = true;
     float floorGridSpacing = 1.0f;
     float floorGridExtent = 20.0f;
 
     uint numEntities = 0;
+    
+    Entity eSky;
 
     this(EditorApp app)
     {
@@ -215,15 +222,15 @@ class EditorScene: Scene
         overlay.activeCamera = camera;
         camera.name = "Camera";
 
-        auto sun = addLight(LightType.Sun);
+        sceneRoot = addEntity();
+        sceneRoot.name = "SceneRoot";
+
+        auto sun = addLight(LightType.Sun, sceneRoot);
         sun.shadowEnabled = true;
         sun.energy = 10.0f;
         sun.angularRadius = 0.01f;
         sun.pitch(-45.0f);
         sun.name = "Sun";
-
-        sceneRoot = addEntity();
-        sceneRoot.name = "SceneRoot";
 
         materialPreviewRenderer = New!MaterialPreviewRenderer(this);
 
@@ -233,7 +240,7 @@ class EditorScene: Scene
             environment.ambientMap = cubemap;
             environment.ambientBRDF = app.deferredRenderer.brdf;
 
-            auto eSky = addEntity();
+            eSky = addEntity();
             eSky.layer = EntityLayer.Background;
             eSky.gbufferMask = 0.0f;
             auto psync = New!PositionSync(eventManager, eSky, camera);
@@ -252,6 +259,15 @@ class EditorScene: Scene
         }
 
         ui.active = true;
+    }
+    
+    bool isInternalEntity(Entity e)
+    {
+        if (e is camera)
+            return true;
+        if (eSky && e is eSky)
+            return true;
+        return false;
     }
     
     override void onUpdate(Time t)

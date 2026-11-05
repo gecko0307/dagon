@@ -61,7 +61,7 @@ class Inspector: Owner
             {
                 foreach(e; scene.world.entities)
                 {
-                    if (e is scene.camera)
+                    if (scene.isInternalEntity(e))
                         continue;
                     if (e.parent is null)
                         renderEntitiesTree(e);

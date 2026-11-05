@@ -30,6 +30,11 @@ DEALINGS IN THE SOFTWARE.
  */
 module ui;
 
+import std.file: thisExePath;
+import std.path: dirName, buildPath;
+import std.string: replace;
+import std.array: array;
+
 import dagon.core.bindings;
 import dagon.core.time;
 import dagon.core.event;
@@ -112,6 +117,18 @@ void browse(string url)
     {
         showMessage("Unable to open website", "Opening links is not supported on this platform.");
     }
+}
+
+void openHelp()
+{
+    string exeDir = thisExePath().dirName();
+    string absolutePath = buildPath(exeDir, "doc", "index.html");
+    version(Windows)
+    {
+        absolutePath = absolutePath.replace("\\", "/");
+    }
+    string helpUrl = "file:///" ~ absolutePath;
+    browse(helpUrl);
 }
 
 class EditorUI: EventListener
@@ -385,15 +402,14 @@ class EditorUI: EventListener
         }
         if (igBeginMenu("Help"))
         {
+            if (igMenuItem("Contents"))
+                openHelp();
+            
             if (igMenuItem("Dagon Engine website"))
-            {
                 browse(dagonWebsiteUrl);
-            }
 
             if (igMenuItem("About Dagon Editor..."))
-            {
                 showAbout = true;
-            }
             
             igEndMenu();
         }

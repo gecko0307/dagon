@@ -189,6 +189,15 @@ class PropertiesPanel: Owner
                 }
             }
             
+            if (igCollapsingHeader("Environment"))
+            {
+                if (igSliderFloat("Ambient energy", &scene.environment.ambientEnergy, 0.0f, 10.0f, "%.1f"))
+                {
+                    if (scene.eSky)
+                        scene.eSky.material.emissionEnergy = scene.environment.ambientEnergy;
+                }
+            }
+            
             if (igCollapsingHeader("Post-processing"))
             {
                 if (igCheckbox("SSAO", &scene.ssaoEnabled))
@@ -245,6 +254,9 @@ class PropertiesPanel: Owner
                     igSliderFloat("Radial blur", &scene.app.postProcessingRenderer.radialBlurAmount, 0.0f, 1.0f, "%.2f");
                 }
                 
+                if (igCheckbox("Vignette", &scene.vignetteEnabled))
+                    scene.app.postProcessingRenderer.vignette = scene.vignetteEnabled;
+                
                 if (igCombo_Str("Tonemapper", &scene.tonemapper,
                     "None\0Reinhard\0Uncharted\0ACES\0Filmic\0Reinhard2\0Unreal\0AgX Base\0AgX Punchy\0Khronos PBR Neutral\0Uchimura\0Lottes\0"))
                     scene.app.postProcessingRenderer.tonemapper = cast(Tonemapper)scene.tonemapper;
@@ -252,6 +264,14 @@ class PropertiesPanel: Owner
 
                 if (igCheckbox("FXAA antialiasing", &scene.fxaaEnabled))
                     scene.app.postProcessingRenderer.fxaaEnabled = scene.fxaaEnabled;
+                
+                if (igCheckbox("Sharpening", &scene.sharpeningEnabled))
+                    scene.app.postProcessingRenderer.sharpeningEnabled = scene.sharpeningEnabled;
+                
+                if (igCheckbox("Film grain", &scene.filmGrainEnabled))
+                    scene.app.postProcessingRenderer.filmGrainEnabled = scene.filmGrainEnabled;
+                if (igCheckbox("Colored grain", &scene.filmGrainColored))
+                    scene.app.postProcessingRenderer.filmGrainColored = scene.filmGrainColored;
             }
             
             igEnd();
