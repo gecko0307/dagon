@@ -213,7 +213,7 @@ class EditorScene: Scene
         sceneRoot = addEntity();
         sceneRoot.name = "SceneRoot";
 
-        materialPreviewRenderer = New!MaterialPreviewRenderer(application, this, this);
+        materialPreviewRenderer = New!MaterialPreviewRenderer(this);
 
         ui.active = true;
     }

@@ -6,6 +6,7 @@ Dagon 1.7.0 - TBD
 - **Editor**
   - Implement transformation gizmos with undo/redo
   - Implement an asset browser and texture thumbnail generator
+  - Implement OBJ and material asset import (by dragging files from the asset browser to the viewport)
   - Add HiDPI awareness
   - Add a startup splash screen.
 

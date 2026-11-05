@@ -3,11 +3,11 @@ Copyright (c) 2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
-obtaining a copy of the Software and accompanying documentation covered by
-this license (the "Software") to use, reproduce, display, distribute,
-execute, and transmit the Software, and to prepare derivative works of the
-Software, and to permit third-parties to whom the Software is furnished to
-do so, subject to the following:
+obtaining a copy of the Software and associated documentation files (the
+"Software") to use, reproduce, display, distribute, execute, and transmit the
+Software, and to prepare derivative works of the Software, and to permit
+third-parties to whom the Software is furnished to do so, subject to the
+following:
 
 The copyright notices in the Software and this entire statement, including
 the above license grant, this restriction and the following disclaimer,
@@ -20,57 +20,187 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
 SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
-FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-DEALINGS IN THE SOFTWARE.
+FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
+OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 module materialpreview;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.image.color;
+import dlib.math.matrix;
 import dlib.math.vector;
 
-import dagon.core.application;
 import dagon.core.bindings;
 import dagon.core.logger;
-import dagon.core.time;
 import dagon.graphics.camera;
-import dagon.graphics.entity;
 import dagon.graphics.light;
 import dagon.graphics.material;
+import dagon.graphics.mesh;
 import dagon.graphics.shader;
 import dagon.graphics.shapes;
-import dagon.render.deferred;
+import dagon.graphics.state;
 import dagon.render.pipeline: bindFramebuffer;
-import dagon.resource.scene;
 
 private immutable string previewVertexShader = `
 #version 400 core
+layout(location = 0) in vec3 position;
+layout(location = 1) in vec3 normal;
+layout(location = 2) in vec2 vertexTexcoord;
+
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
+uniform mat4 normalMatrix;
+
+out vec3 eyePosition;
+out vec3 eyeNormal;
 out vec2 texcoord;
+
 void main()
 {
-    vec2 positions[3] = vec2[3](
-        vec2(-1.0, -1.0),
-        vec2( 3.0, -1.0),
-        vec2(-1.0,  3.0)
-    );
-    vec2 position = positions[gl_VertexID];
-    gl_Position = vec4(position, 0.0, 1.0);
-    texcoord = position * 0.5 + 0.5;
+    vec4 eye = modelViewMatrix * vec4(position, 1.0);
+    eyePosition = eye.xyz;
+    eyeNormal = (normalMatrix * vec4(normal, 0.0)).xyz;
+    texcoord = vertexTexcoord;
+    gl_Position = projectionMatrix * eye;
 }
 `;
 
 private immutable string previewFragmentShader = `
 #version 400 core
-uniform sampler2D sourceTexture;
+const float PI = 3.14159265359;
+
+uniform sampler2D baseColorTexture;
+uniform sampler2D roughnessMetallicTexture;
+uniform sampler2D emissionTexture;
+uniform sampler2D normalTexture;
+uniform bool hasBaseColorTexture;
+uniform bool hasRoughnessMetallicTexture;
+uniform bool hasEmissionTexture;
+uniform bool hasNormalTexture;
+uniform bool linearColor;
+uniform mat3 textureTransformation;
+uniform vec4 baseColorFactor;
+uniform vec4 emissionFactor;
+uniform vec3 normalFactor;
+uniform float roughnessFactor;
+uniform float metallicFactor;
+uniform float emissionEnergy;
+uniform float opacity;
+uniform float alphaTestThreshold;
+uniform float normalYSign;
+uniform vec3 lightDirection;
+uniform vec3 lightColor;
+uniform float lightEnergy;
+uniform float lightAngularRadius;
+
+in vec3 eyePosition;
+in vec3 eyeNormal;
 in vec2 texcoord;
 out vec4 fragmentColor;
+
+float distributionGGX(vec3 N, vec3 H, float roughness)
+{
+    float a = roughness * roughness;
+    float a2 = a * a;
+    float NdotH = max(dot(N, H), 0.0);
+    float NdotH2 = NdotH * NdotH;
+    float denominator = max(NdotH2 * (a2 - 1.0) + 1.0, 0.00001);
+    return a2 / (PI * denominator * denominator);
+}
+
+float geometrySchlickGGX(float NdotV, float k)
+{
+    return NdotV / (NdotV * (1.0 - k) + k);
+}
+
+float geometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+{
+    float r = roughness + 1.0;
+    float k = (r * r) / 8.0;
+    return geometrySchlickGGX(max(dot(N, V), 0.0), k) *
+        geometrySchlickGGX(max(dot(N, L), 0.0), k);
+}
+
+vec3 fresnelRoughness(float cosTheta, vec3 F0, float roughness)
+{
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) *
+        pow(1.0 - cosTheta, 5.0);
+}
+
+mat3 cotangentFrame(vec3 N, vec3 position, vec2 uv)
+{
+    vec3 dp1 = dFdx(position);
+    vec3 dp2 = dFdy(position);
+    vec2 duv1 = dFdx(uv);
+    vec2 duv2 = dFdy(uv);
+    vec3 dp2perp = cross(dp2, N);
+    vec3 dp1perp = cross(N, dp1);
+    vec3 T = dp2perp * duv1.x + dp1perp * duv2.x;
+    vec3 B = dp2perp * duv1.y + dp1perp * duv2.y;
+    float invmax = inversesqrt(max(max(dot(T, T), dot(B, B)), 0.00000001));
+    return mat3(T * invmax, B * invmax, N);
+}
+
+vec3 toneMapACES(vec3 color)
+{
+    return clamp((color * (2.51 * color + 0.03)) /
+        (color * (2.43 * color + 0.59) + 0.14), 0.0, 1.0);
+}
+
 void main()
 {
-    vec3 color = max(texture(sourceTexture, texcoord).rgb, vec3(0.0));
-    color = (color * (2.51 * color + 0.03)) /
-        (color * (2.43 * color + 0.59) + 0.14);
-    fragmentColor = vec4(clamp(color, 0.0, 1.0), 1.0);
+    vec2 uv = (textureTransformation * vec3(texcoord, 1.0)).xy;
+    vec4 baseColor = hasBaseColorTexture
+        ? texture(baseColorTexture, uv)
+        : baseColorFactor;
+    vec3 albedo = linearColor
+        ? baseColor.rgb
+        : pow(max(baseColor.rgb, vec3(0.0)), vec3(2.2));
+
+    float roughness = roughnessFactor;
+    float metallic = metallicFactor;
+    if (hasRoughnessMetallicTexture)
+    {
+        vec3 roughnessMetallic = texture(roughnessMetallicTexture, uv).rgb;
+        roughness = roughnessMetallic.g;
+        metallic = roughnessMetallic.b;
+    }
+    roughness = max(roughness, lightAngularRadius);
+
+    vec3 N = normalize(eyeNormal);
+    vec3 tangentNormal = normalFactor;
+    if (hasNormalTexture)
+        tangentNormal = texture(normalTexture, uv).rgb * 2.0 - 1.0;
+    tangentNormal.y *= normalYSign;
+    N = normalize(cotangentFrame(N, eyePosition, uv) * tangentNormal);
+    vec3 V = normalize(-eyePosition);
+    vec3 L = normalize(lightDirection);
+    float NdotL = max(dot(N, L), 0.0);
+    float NdotV = max(dot(N, V), 0.0);
+    vec3 H = normalize(V + L);
+
+    vec3 F0 = mix(vec3(0.04), albedo, metallic);
+    float NDF = distributionGGX(N, H, roughness);
+    float G = geometrySmith(N, V, L, roughness);
+    vec3 F = fresnelRoughness(max(dot(H, V), 0.0), F0, roughness);
+    vec3 specular = (NDF * G * F) /
+        max(4.0 * NdotV * NdotL, 0.00001);
+    vec3 diffuse = (1.0 - F) * albedo * (1.0 - metallic) / PI;
+    vec3 incomingLight = pow(max(lightColor, vec3(0.0)), vec3(2.2)) *
+        lightEnergy;
+    vec3 radiance = (diffuse + specular) * incomingLight * NdotL;
+
+    vec3 emission = pow(max(emissionFactor.rgb, vec3(0.0)), vec3(2.2));
+    if (hasEmissionTexture)
+        emission *= pow(max(texture(emissionTexture, uv).rgb, vec3(0.0)),
+            vec3(2.2));
+    radiance += emission * emissionEnergy;
+
+    if (baseColor.a * opacity < alphaTestThreshold)
+        discard;
+    fragmentColor = vec4(toneMapACES(radiance), 1.0);
 }
 `;
 
@@ -78,10 +208,20 @@ private class MaterialPreviewTarget: Owner
 {
     GLuint framebuffer;
     GLuint texture;
+    GLuint depthBuffer;
 
     this(Owner owner)
     {
         super(owner);
+
+        GLint previousTexture;
+        GLint previousFramebuffer;
+        GLint previousRenderbuffer;
+        GLint previousActiveTexture;
+        glGetIntegerv(GL_TEXTURE_BINDING_2D, &previousTexture);
+        glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &previousFramebuffer);
+        glGetIntegerv(GL_RENDERBUFFER_BINDING, &previousRenderbuffer);
+        glGetIntegerv(GL_ACTIVE_TEXTURE, &previousActiveTexture);
 
         glGenTextures(1, &texture);
         glBindTexture(GL_TEXTURE_2D, texture);
@@ -95,22 +235,35 @@ private class MaterialPreviewTarget: Owner
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
         glGenFramebuffers(1, &framebuffer);
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        bindFramebuffer(framebuffer);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
             GL_TEXTURE_2D, texture, 0);
 
-        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        glGenRenderbuffers(1, &depthBuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24,
+            MaterialPreviewRenderer.thumbnailSize,
+            MaterialPreviewRenderer.thumbnailSize);
+        glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+            GL_RENDERBUFFER, depthBuffer);
+        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+
+        GLenum status = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
         if (status != GL_FRAMEBUFFER_COMPLETE)
             logError("Material preview framebuffer is incomplete: ", status);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        bindFramebuffer(previousFramebuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, previousRenderbuffer);
+        glBindTexture(GL_TEXTURE_2D, previousTexture);
+        glActiveTexture(previousActiveTexture);
     }
 
     ~this()
     {
         if (glIsFramebuffer(framebuffer))
             glDeleteFramebuffers(1, &framebuffer);
+        if (glIsRenderbuffer(depthBuffer))
+            glDeleteRenderbuffers(1, &depthBuffer);
         if (glIsTexture(texture))
             glDeleteTextures(1, &texture);
     }
@@ -123,68 +276,184 @@ private struct MaterialPreviewEntry
     bool dirty = true;
 }
 
+private class MaterialPreviewShader: Shader
+{
+    ShaderParameter!Matrix4x4f modelViewMatrix;
+    ShaderParameter!Matrix4x4f projectionMatrix;
+    ShaderParameter!Matrix4x4f normalMatrix;
+    ShaderParameter!Matrix3x3f textureTransformation;
+    ShaderParameter!int baseColorTexture;
+    ShaderParameter!int roughnessMetallicTexture;
+    ShaderParameter!int emissionTexture;
+    ShaderParameter!int normalTexture;
+    ShaderParameter!bool hasBaseColorTexture;
+    ShaderParameter!bool hasRoughnessMetallicTexture;
+    ShaderParameter!bool hasEmissionTexture;
+    ShaderParameter!bool hasNormalTexture;
+    ShaderParameter!bool linearColor;
+    ShaderParameter!Color4f baseColorFactor;
+    ShaderParameter!Color4f emissionFactor;
+    ShaderParameter!Vector3f normalFactor;
+    ShaderParameter!float roughnessFactor;
+    ShaderParameter!float metallicFactor;
+    ShaderParameter!float emissionEnergy;
+    ShaderParameter!float opacity;
+    ShaderParameter!float alphaTestThreshold;
+    ShaderParameter!float normalYSign;
+    ShaderParameter!Vector3f lightDirection;
+    ShaderParameter!Vector3f lightColor;
+    ShaderParameter!float lightEnergy;
+    ShaderParameter!float lightAngularRadius;
+
+    this(Owner owner)
+    {
+        auto shaderProgram = New!ShaderProgram(
+            previewVertexShader, previewFragmentShader, this);
+        super(shaderProgram, owner);
+
+        modelViewMatrix = createParameter!Matrix4x4f("modelViewMatrix");
+        projectionMatrix = createParameter!Matrix4x4f("projectionMatrix");
+        normalMatrix = createParameter!Matrix4x4f("normalMatrix");
+        textureTransformation = createParameter!Matrix3x3f("textureTransformation");
+        baseColorTexture = createParameter!int("baseColorTexture");
+        roughnessMetallicTexture = createParameter!int("roughnessMetallicTexture");
+        emissionTexture = createParameter!int("emissionTexture");
+        normalTexture = createParameter!int("normalTexture");
+        hasBaseColorTexture = createParameter!bool("hasBaseColorTexture");
+        hasRoughnessMetallicTexture = createParameter!bool("hasRoughnessMetallicTexture");
+        hasEmissionTexture = createParameter!bool("hasEmissionTexture");
+        hasNormalTexture = createParameter!bool("hasNormalTexture");
+        linearColor = createParameter!bool("linearColor");
+        baseColorFactor = createParameter!Color4f("baseColorFactor");
+        emissionFactor = createParameter!Color4f("emissionFactor");
+        normalFactor = createParameter!Vector3f("normalFactor");
+        roughnessFactor = createParameter!float("roughnessFactor");
+        metallicFactor = createParameter!float("metallicFactor");
+        emissionEnergy = createParameter!float("emissionEnergy");
+        opacity = createParameter!float("opacity");
+        alphaTestThreshold = createParameter!float("alphaTestThreshold");
+        normalYSign = createParameter!float("normalYSign");
+        lightDirection = createParameter!Vector3f("lightDirection");
+        lightColor = createParameter!Vector3f("lightColor");
+        lightEnergy = createParameter!float("lightEnergy");
+        lightAngularRadius = createParameter!float("lightAngularRadius");
+    }
+
+    override void bindParameters(GraphicsState* state)
+    {
+        Material material = state.material;
+        modelViewMatrix = &state.modelViewMatrix;
+        projectionMatrix = &state.projectionMatrix;
+        normalMatrix = &state.normalMatrix;
+
+        textureTransformation = &material.textureTransformation;
+        baseColorFactor = &material.baseColorFactor;
+        emissionFactor = &material.emissionFactor;
+        normalFactor = &material.normalFactor;
+        roughnessFactor = material.roughnessFactor;
+        metallicFactor = material.metallicFactor;
+        emissionEnergy = material.emissionEnergy;
+        opacity = state.opacity * material.opacity;
+        alphaTestThreshold = material.alphaTestThreshold;
+        normalYSign = material.invertNormalY ? -1.0f : 1.0f;
+        linearColor = material.linearColor;
+
+        glActiveTexture(GL_TEXTURE0);
+        baseColorTexture = 0;
+        bool haveBaseColorTexture = material.baseColorTexture &&
+            material.baseColorTexture.valid;
+        hasBaseColorTexture = haveBaseColorTexture;
+        if (haveBaseColorTexture)
+            material.baseColorTexture.bind();
+        else
+            glBindTexture(GL_TEXTURE_2D, 0);
+
+        glActiveTexture(GL_TEXTURE1);
+        roughnessMetallicTexture = 1;
+        bool haveRoughnessMetallicTexture =
+            material.roughnessMetallicTexture &&
+            material.roughnessMetallicTexture.valid;
+        hasRoughnessMetallicTexture = haveRoughnessMetallicTexture;
+        if (haveRoughnessMetallicTexture)
+            material.roughnessMetallicTexture.bind();
+        else
+            glBindTexture(GL_TEXTURE_2D, 0);
+
+        glActiveTexture(GL_TEXTURE2);
+        emissionTexture = 2;
+        bool haveEmissionTexture = material.emissionTexture &&
+            material.emissionTexture.valid;
+        hasEmissionTexture = haveEmissionTexture;
+        if (haveEmissionTexture)
+            material.emissionTexture.bind();
+        else
+            glBindTexture(GL_TEXTURE_2D, 0);
+
+        glActiveTexture(GL_TEXTURE3);
+        normalTexture = 3;
+        bool haveNormalTexture = material.normalTexture &&
+            material.normalTexture.valid;
+        hasNormalTexture = haveNormalTexture;
+        if (haveNormalTexture)
+            material.normalTexture.bind();
+        else
+            glBindTexture(GL_TEXTURE_2D, 0);
+
+        if (state.light)
+        {
+            Vector4f direction = Vector4f(state.light.directionAbsolute);
+            direction.w = 0.0f;
+            lightDirection = (direction * state.viewMatrix).xyz;
+            lightColor = Vector3f(
+                state.light.color.r,
+                state.light.color.g,
+                state.light.color.b);
+            lightEnergy = state.light.energy;
+            lightAngularRadius = state.light.angularRadius;
+        }
+        else
+        {
+            lightDirection = Vector3f(0.0f, 0.0f, 1.0f);
+            lightColor = Vector3f(1.0f, 1.0f, 1.0f);
+            lightEnergy = 1.0f;
+            lightAngularRadius = 0.0f;
+        }
+
+        super.bindParameters(state);
+    }
+}
+
 class MaterialPreviewRenderer: Owner
 {
     enum uint thumbnailSize = 128;
 
-    private Scene previewScene;
-    private DeferredRenderer renderer;
-    private Entity sphere;
-    private ShaderProgram colorProgram;
-    private GLuint fullscreenVao;
-    private GLint sourceTextureLocation;
+    private Camera camera;
+    private Light light;
+    private ShapeSphere sphere;
+    private MaterialPreviewShader shader;
+    private Material defaultMaterial;
     private MaterialPreviewEntry[] previews;
 
-    this(Application application, Scene scene, Owner owner)
+    this(Owner owner)
     {
         super(owner);
 
-        previewScene = New!Scene(application);
-        sphere = previewScene.addEntity();
-        sphere.drawable = New!ShapeSphere(0.85f, 32, 24, false, sphere);
-        sphere.updateTransformation();
-
-        Camera camera = previewScene.addCamera();
-        camera.position = Vector3f(0.0f, 0.0f, 2.0f);
+        camera = New!Camera(this);
+        camera.position = Vector3f(0.0f, 0.0f, 2.4f);
         camera.updateTransformation();
 
-        Light light = previewScene.addLight(LightType.AreaSphere);
-        light.position = Vector3f(2.0f, 2.0f, 2.0f);
-        light.radius = 0.5f;
-        light.energy = 20.0f;
-        light.volumeRadius = 10.0f;
+        light = New!Light(this);
+        light.type = LightType.Sun;
+        light.color = Color4f(1.0f, 0.96f, 0.9f, 1.0f);
+        light.energy = 5.0f;
+        light.angularRadius = 0.02f;
+        light.pitch(-45.0f);
+        light.turn(-35.0f);
         light.updateTransformation();
 
-        previewScene.environment.ambientMap = scene.environment.ambientMap;
-        previewScene.environment.ambientBRDF = scene.environment.ambientBRDF;
-        previewScene.environment.ambientColor = scene.environment.ambientColor;
-        previewScene.environment.ambientEnergy = scene.environment.ambientEnergy;
-        previewScene.environment.fogColor = scene.environment.fogColor;
-        previewScene.environment.fogStart = scene.environment.fogStart;
-        previewScene.environment.fogEnd = scene.environment.fogEnd;
-
-        renderer = New!DeferredRenderer(application, this);
-        renderer.scene(previewScene);
-        renderer.activeCamera = camera;
-        renderer.ssaoEnabled = false;
-        renderer.passShadow.active = false;
-        renderer.passEnvironmentProbe.active = false;
-        renderer.passTerrain.active = false;
-        renderer.passDecal.active = false;
-        renderer.passParticles.active = false;
-        renderer.setViewport(0, 0, thumbnailSize, thumbnailSize);
-
-        colorProgram = New!ShaderProgram(
-            previewVertexShader, previewFragmentShader, this);
-        sourceTextureLocation = glGetUniformLocation(
-            colorProgram.program, "sourceTexture");
-        glGenVertexArrays(1, &fullscreenVao);
-    }
-
-    ~this()
-    {
-        if (glIsVertexArray(fullscreenVao))
-            glDeleteVertexArrays(1, &fullscreenVao);
+        sphere = New!ShapeSphere(0.9f, 48, 32, false, this);
+        defaultMaterial = New!Material(this);
+        shader = New!MaterialPreviewShader(this);
     }
 
     uint renderThumbnail(Material material)
@@ -221,34 +490,106 @@ class MaterialPreviewRenderer: Owner
 
     private void renderPreview(ref MaterialPreviewEntry preview)
     {
-        sphere.material = preview.material;
-        bindFramebuffer(0);
-        renderer.update(Time(0.0, 0.0));
-        renderer.render();
+        GLint previousFramebuffer;
+        GLint previousProgram;
+        GLint previousActiveTexture;
+        GLint previousVertexArray;
+        GLint[4] previousTextures;
+        GLint[4] previousViewport;
+        GLboolean previousSrgb = glIsEnabled(GL_FRAMEBUFFER_SRGB);
+        GLboolean previousDepthTest = glIsEnabled(GL_DEPTH_TEST);
+        GLboolean previousCullFace = glIsEnabled(GL_CULL_FACE);
+        GLboolean previousBlend = glIsEnabled(GL_BLEND);
+        GLboolean previousScissor = glIsEnabled(GL_SCISSOR_TEST);
+        GLboolean previousDepthMask;
+        GLboolean[4] previousColorMask;
+        GLfloat[4] previousClearColor;
 
-        GLboolean srgbEnabled = glIsEnabled(GL_FRAMEBUFFER_SRGB);
+        glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &previousFramebuffer);
+        glGetIntegerv(GL_CURRENT_PROGRAM, &previousProgram);
+        glGetIntegerv(GL_ACTIVE_TEXTURE, &previousActiveTexture);
+        glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &previousVertexArray);
+        foreach (i; 0 .. previousTextures.length)
+        {
+            glActiveTexture(GL_TEXTURE0 + cast(GLenum)i);
+            glGetIntegerv(GL_TEXTURE_BINDING_2D, &previousTextures[i]);
+        }
+        glActiveTexture(previousActiveTexture);
+        glGetIntegerv(GL_VIEWPORT, previousViewport.ptr);
+        glGetBooleanv(GL_DEPTH_WRITEMASK, &previousDepthMask);
+        glGetBooleanv(GL_COLOR_WRITEMASK, previousColorMask.ptr);
+        glGetFloatv(GL_COLOR_CLEAR_VALUE, previousClearColor.ptr);
+
         bindFramebuffer(preview.target.framebuffer);
         glViewport(0, 0, thumbnailSize, thumbnailSize);
         glDisable(GL_SCISSOR_TEST);
-        glDisable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
+        glEnable(GL_DEPTH_TEST);
+        glDepthMask(GL_TRUE);
+        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        glDisable(GL_CULL_FACE);
         glEnable(GL_FRAMEBUFFER_SRGB);
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        colorProgram.bind();
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, renderer.outputBuffer.colorTexture);
-        glUniform1i(sourceTextureLocation, 0);
-        glBindVertexArray(fullscreenVao);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        glBindVertexArray(0);
+        GraphicsState state;
+        state.reset();
+        state.modelMatrix = Matrix4x4f.identity;
+        state.invModelMatrix = state.modelMatrix.inverse;
+        state.viewMatrix = camera.viewMatrix;
+        state.invViewMatrix = camera.invViewMatrix;
+        state.modelViewMatrix = state.viewMatrix * state.modelMatrix;
+        state.projectionMatrix = camera.projectionMatrix(1.0f);
+        state.normalMatrix = state.modelViewMatrix.inverse.transposed;
+        state.cameraPosition = camera.positionAbsolute;
+        state.material = preview.material ? preview.material : defaultMaterial;
+        state.light = light;
+        state.shader = shader;
+        state.opacity = 1.0f;
+
+        shader.bind();
+        shader.bindParameters(&state);
+
+        sphere.render(&state);
+
+        glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, 0);
-        colorProgram.unbind();
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindVertexArray(previousVertexArray);
+        shader.unbindParameters(&state);
+        shader.unbind();
+        glUseProgram(previousProgram);
 
-        bindFramebuffer(0);
-        if (!srgbEnabled)
-            glDisable(GL_FRAMEBUFFER_SRGB);
+        bindFramebuffer(previousFramebuffer);
+        glViewport(previousViewport[0], previousViewport[1],
+            previousViewport[2], previousViewport[3]);
+        if (previousSrgb) glEnable(GL_FRAMEBUFFER_SRGB);
+        else glDisable(GL_FRAMEBUFFER_SRGB);
+        if (previousDepthTest) glEnable(GL_DEPTH_TEST);
+        else glDisable(GL_DEPTH_TEST);
+        if (previousCullFace) glEnable(GL_CULL_FACE);
+        else glDisable(GL_CULL_FACE);
+        if (previousBlend) glEnable(GL_BLEND);
+        else glDisable(GL_BLEND);
+        if (previousScissor) glEnable(GL_SCISSOR_TEST);
+        else glDisable(GL_SCISSOR_TEST);
+        glDepthMask(previousDepthMask);
+        glColorMask(previousColorMask[0], previousColorMask[1],
+            previousColorMask[2], previousColorMask[3]);
+        glClearColor(previousClearColor[0], previousClearColor[1],
+            previousClearColor[2], previousClearColor[3]);
+        foreach (i; 0 .. previousTextures.length)
+        {
+            glActiveTexture(GL_TEXTURE0 + cast(GLenum)i);
+            glBindTexture(GL_TEXTURE_2D, previousTextures[i]);
+        }
+        glActiveTexture(previousActiveTexture);
+
         preview.dirty = false;
     }
 }
