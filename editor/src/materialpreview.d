@@ -31,7 +31,9 @@ import dlib.core.ownership;
 import dlib.image.color;
 import dlib.math.matrix;
 import dlib.math.vector;
+import dlib.math.utils;
 import dlib.text.str;
+import std.math: asin, atan2;
 
 import dagon.core.bindings;
 import dagon.core.logger;
@@ -304,9 +306,50 @@ class MaterialPreviewRenderer: Owner
         light.turn(-35.0f);
         light.updateTransformation();
 
-        sphere = New!ShapeSphere(0.9f, 48, 32, false, this);
+        sphere = New!ShapeSphere(0.9f, 32, 16, false, this);
+        remapSphereTexcoords();
         defaultMaterial = New!Material(this);
         shader = New!MaterialPreviewShader(this);
+    }
+
+    private void remapSphereTexcoords()
+    {
+        enum float pi = 3.14159265359f;
+        foreach (ref triangle; sphere.indices)
+        {
+            float[3] u;
+            foreach (i; 0 .. 3)
+            {
+                Vector3f position = sphere.vertices[triangle[i]].normalized;
+                u[i] = atan2(position.x, position.z) / (2.0f * pi) + 0.5f;
+                sphere.texcoords[triangle[i]] = Vector2f(
+                    u[i],
+                    asin(clamp(position.y, -1.0f, 1.0f)) / pi + 0.5f);
+            }
+
+            float minU = u[0];
+            float maxU = u[0];
+            foreach (value; u[1 .. $])
+            {
+                minU = min2(minU, value);
+                maxU = max2(maxU, value);
+            }
+            if (maxU - minU > 0.5f)
+            {
+                foreach (i; 0 .. 3)
+                {
+                    if (u[i] < 0.5f)
+                        sphere.texcoords[triangle[i]].x += 1.0f;
+                }
+            }
+        }
+
+        GLint previousArrayBuffer;
+        glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &previousArrayBuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, sphere.tbo);
+        glBufferData(GL_ARRAY_BUFFER, sphere.texcoords.length * float.sizeof * 2,
+            sphere.texcoords.ptr, GL_STATIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, previousArrayBuffer);
     }
 
     uint renderThumbnail(Material material)

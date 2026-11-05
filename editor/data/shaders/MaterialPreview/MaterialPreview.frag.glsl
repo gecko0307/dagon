@@ -1,4 +1,5 @@
 #version 400 core
+
 const float PI = 3.14159265359;
 
 #include <gamma.glsl>
