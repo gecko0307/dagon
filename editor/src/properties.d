@@ -34,19 +34,37 @@ import std.stdio;
 
 import dlib.core.ownership;
 
+import dagon.graphics.entity;
 import dagon.graphics.material;
 import dagon.render.postproc;
 import dagon.ext.imgui;
 
 import editor;
+import history;
 import overlay;
 import ui;
+
+// Tracks one continuous edit of a transformation field, so that
+// typing or dragging produces a single undo step
+struct TransformEditTracker
+{
+    bool active;
+    Entity entity;
+    TransformSnapshot start;
+}
 
 class PropertiesPanel: Owner
 {
     EditorUI ui;
     
     char[256] sceneNameBuffer;
+    
+    static immutable string[3] transformEditNames = [
+        "Edit position",
+        "Edit rotation",
+        "Edit scaling"
+    ];
+    TransformEditTracker[3] transformEditTrackers;
 
     this(EditorUI ui)
     {
@@ -73,8 +91,42 @@ class PropertiesPanel: Owner
         return 0;
     }
 
+    void commitTransformEdit(size_t index)
+    {
+        auto tracker = &transformEditTrackers[index];
+        if (!tracker.active)
+            return;
+        tracker.active = false;
+        if (tracker.entity)
+            scene.history.pushTransform(transformEditNames[index], tracker.entity, tracker.start);
+        tracker.entity = null;
+    }
+
+    // Call right after an input widget; `before` is the entity's transformation
+    // captured before the widget was drawn, `changed` is the widget's return value
+    void trackTransformEdit(size_t index, Entity entity, TransformSnapshot before, bool changed)
+    {
+        auto tracker = &transformEditTrackers[index];
+        if (changed && !tracker.active)
+        {
+            tracker.active = true;
+            tracker.entity = entity;
+            tracker.start = before;
+        }
+        if (tracker.active && !igIsItemActive())
+            commitTransformEdit(index);
+    }
+
     void render()
     {
+        // Selection changed (or was cleared) in the middle of an edit: close it
+        foreach (i; 0 .. transformEditTrackers.length)
+        {
+            if (transformEditTrackers[i].active &&
+                transformEditTrackers[i].entity !is scene.selectedEntity)
+                commitTransformEdit(i);
+        }
+
         if (igBegin("Scene settings", null, ImGuiWindowFlags.NoCollapse))
         {
             if (igCollapsingHeader("Main"))
@@ -187,9 +239,21 @@ class PropertiesPanel: Owner
                     if (igButton("Scale", ImVec2(60, 0)))
                         scene.overlay.gizmoMode = GizmoMode.Scale;
 
-                    igInputFloat3("Position XYZ", &scene.selectedEntity.position.arrayof);
-                    igInputFloat4("Rotation XYZW", &scene.selectedEntity.rotation.arrayof);
-                    igInputFloat3("Scaling XYZ", &scene.selectedEntity.scaling.arrayof);
+                    Entity entity = scene.selectedEntity;
+                    TransformSnapshot before;
+                    bool changed;
+
+                    before = TransformSnapshot.capture(entity);
+                    changed = igInputFloat3("Position XYZ", &entity.position.arrayof);
+                    trackTransformEdit(0, entity, before, changed);
+
+                    before = TransformSnapshot.capture(entity);
+                    changed = igInputFloat4("Rotation XYZW", &entity.rotation.arrayof);
+                    trackTransformEdit(1, entity, before, changed);
+
+                    before = TransformSnapshot.capture(entity);
+                    changed = igInputFloat3("Scaling XYZ", &entity.scaling.arrayof);
+                    trackTransformEdit(2, entity, before, changed);
                 }
             }
 

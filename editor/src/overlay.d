@@ -59,6 +59,7 @@ import dagon.ui.shaders.gizmo;
 import dagon.ext.imgui;
 
 import ui;
+import history;
 
 enum GizmoMode
 {
@@ -114,6 +115,8 @@ class InteractionOverlay: EventListener
     Vector3f dragStartPosition;
     Quaternionf dragStartRotation;
     Vector3f dragStartScale;
+    Entity dragEntity;                    // entity being manipulated by the current drag
+    TransformSnapshot dragStartSnapshot;  // its transformation before the drag, for undo
 
     Vector3f dragStartGizmoPosition;
     Vector3f dragAxisDirection;
@@ -576,13 +579,31 @@ class InteractionOverlay: EventListener
             ui.scene.freeview.active = ui.scene.focused && !dragging;
     }
 
+    // Ends the current drag (if any) and records it in the undo history
+    void finishGizmoDrag()
+    {
+        if (draggingGizmo && dragEntity && ui)
+        {
+            string commandName = "Transform";
+            if (gizmoMode == GizmoMode.Translation)
+                commandName = "Move";
+            else if (gizmoMode == GizmoMode.Rotation)
+                commandName = "Rotate";
+            else if (gizmoMode == GizmoMode.Scale)
+                commandName = "Scale";
+            ui.scene.history.pushTransform(commandName, dragEntity, dragStartSnapshot);
+        }
+        dragEntity = null;
+        setDraggingGizmo(false);
+        draggedAxis = -1;
+    }
+
     void handleGizmoInput()
     {
         updateViewport();
         if (!ui || !ui.scene.selectedEntity || gizmoMode == GizmoMode.Disabled)
         {
-            setDraggingGizmo(false);
-            draggedAxis = -1;
+            finishGizmoDrag();
             return;
         }
 
@@ -635,6 +656,8 @@ class InteractionOverlay: EventListener
                     dragStartPosition = ui.scene.selectedEntity.position;
                     dragStartRotation = ui.scene.selectedEntity.rotation;
                     dragStartScale = ui.scene.selectedEntity.scaling;
+                    dragEntity = ui.scene.selectedEntity;
+                    dragStartSnapshot = TransformSnapshot.capture(dragEntity);
                     dragStartGizmoOrientation = gizmoOrientation;
                     previousRotationAngle = dragStartRotationAngle;
                     accumulatedRotationAngle = 0.0f;
@@ -658,8 +681,7 @@ class InteractionOverlay: EventListener
 
         if (!igIsMouseDown(ImGuiMouseButton.Left))
         {
-            setDraggingGizmo(false);
-            draggedAxis = -1;
+            finishGizmoDrag();
             return;
         }
 

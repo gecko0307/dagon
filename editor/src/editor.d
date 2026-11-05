@@ -60,6 +60,7 @@ import dagon.ext.imgui;
 import ui;
 import overlay;
 import thumbnail;
+import history;
 
 class EditorScene: Scene
 {
@@ -70,6 +71,7 @@ class EditorScene: Scene
     Camera camera;
     FreeviewComponent freeview;
     InteractionOverlay overlay;
+    CommandHistory history;
     
     LoadingScreen loadingScreen;
 
@@ -107,6 +109,9 @@ class EditorScene: Scene
         this.app = app;
         
         overlay = New!InteractionOverlay(eventManager, this);
+        
+        history = New!CommandHistory(this);
+        history.onApplied = &onHistoryApplied;
         
         loadingScreen = New!LoadingScreen(app, this);
         loadingScreen.progressbarCentered = true;
@@ -270,6 +275,31 @@ class EditorScene: Scene
             overlay.selectionBoundingBoxBaseScale.x * abs(e.scaling.x),
             overlay.selectionBoundingBoxBaseScale.y * abs(e.scaling.y),
             overlay.selectionBoundingBoxBaseScale.z * abs(e.scaling.z));
+    }
+    
+    // Undo/redo must not interfere with an active gizmo drag
+    void undo()
+    {
+        if (!overlay.draggingGizmo)
+            history.undo();
+    }
+    
+    void redo()
+    {
+        if (!overlay.draggingGizmo)
+            history.redo();
+    }
+    
+    // Selects the affected entity and refreshes gizmo and bounding box,
+    // keeping the current gizmo mode
+    void onHistoryApplied(Command command)
+    {
+        if (command.target is null)
+            return;
+        GizmoMode mode = overlay.gizmoMode;
+        selectEntity(command.target);
+        if (mode != GizmoMode.Disabled)
+            overlay.gizmoMode = mode;
     }
     
     void save(string filename)

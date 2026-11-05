@@ -191,8 +191,30 @@ class EditorUI: EventListener
             return;
         
         ImGui_ImplSDL2_ProcessEvent(event);
+        handleShortcut(event);
     }
-    
+
+    // Ctrl+Z - undo, Ctrl+Y or Ctrl+Shift+Z - redo
+    void handleShortcut(SDL_Event* event)
+    {
+        if (event.type != SDL_KEYDOWN)
+            return;
+
+        // Leave the shortcuts to text fields while one is being edited
+        if (io.WantTextInput)
+            return;
+
+        uint mods = cast(uint)event.key.keysym.mod;
+        if (!(mods & KMOD_CTRL))
+            return;
+
+        int key = cast(int)event.key.keysym.sym;
+        if (key == SDLK_y || (key == SDLK_z && (mods & KMOD_SHIFT)))
+            scene.redo();
+        else if (key == SDLK_z)
+            scene.undo();
+    }
+
     bool capturesMouse() @property const
     {
         return io.WantCaptureMouse;
@@ -214,7 +236,7 @@ class EditorUI: EventListener
         ImGui_ImplSDL2_NewFrame();
         igNewFrame();
         scene.overlay.handleGizmoInput();
-        
+
         viewport = cast(ImGuiViewport*)igGetMainViewport();
         
         renderMenu();
@@ -296,6 +318,30 @@ class EditorUI: EventListener
                 application.exit();
             }
             
+            igEndMenu();
+        }
+        if (igBeginMenu("Edit"))
+        {
+            TextBuffer!64 undoLabel;
+            undoLabel.set("Undo");
+            if (scene.history.canUndo)
+            {
+                undoLabel.append(" ");
+                undoLabel.append(scene.history.undoName);
+            }
+            if (igMenuItem(undoLabel.cstr, "Ctrl+Z", false, scene.history.canUndo))
+                scene.undo();
+
+            TextBuffer!64 redoLabel;
+            redoLabel.set("Redo");
+            if (scene.history.canRedo)
+            {
+                redoLabel.append(" ");
+                redoLabel.append(scene.history.redoName);
+            }
+            if (igMenuItem(redoLabel.cstr, "Ctrl+Y", false, scene.history.canRedo))
+                scene.redo();
+
             igEndMenu();
         }
         if (igBeginMenu("Help"))
