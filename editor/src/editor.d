@@ -415,46 +415,74 @@ class EditorScene: Scene
     
     void save(string filename)
     {
-        JSONValue[] entitiesArr;
+        // Assign indices to saved entities
+        size_t[Entity] indexOf;
+        Entity[] saved;
         foreach(e; world.entities)
         {
-            if (!isInternalEntity(e))
-            {
-                entitiesArr ~= JSONValue([
-                    "name": JSONValue(e.name),
-                    "layer": JSONValue(cast(uint)e.layer),
-                    "type": JSONValue(cast(uint)e.type),
-                    "renderLayer": JSONValue(e.renderLayer),
-                    "visible": JSONValue(e.visible),
-                    "castShadow": JSONValue(e.castShadow),
-                    "solid": JSONValue(e.solid),
-                    "dynamic": JSONValue(e.dynamic),
-                    "decal": JSONValue(e.decal),
-                    "probe": JSONValue(e.probe),
-                    "probeExtents": JSONValue(e.probeExtents.arrayof),
-                    "probeFalloffMargin": JSONValue(e.probeFalloffMargin),
-                    "probeUseBoxProjection": JSONValue(e.probeUseBoxProjection),
-                    "transparent": JSONValue(e.transparent),
-                    "opacity": JSONValue(e.opacity),
-                    "position": JSONValue(e.position.arrayof),
-                    "rotation": JSONValue(e.rotation.arrayof),
-                    "scaling": JSONValue(e.scaling.arrayof)
-                ]);
-            }
+            if (isInternalEntity(e) || e is sceneRoot)
+                continue;
+            indexOf[e] = saved.length;
+            saved ~= e;
         }
-        // TODO: serialize entities parent indices
+
+        // Serialize
+        JSONValue[] entitiesArr;
+        entitiesArr.reserve(saved.length);
+        foreach(e; saved)
+        {
+            long parentIndex = -1;
+            if (e.parent !is null)
+            {
+                if (auto p = e.parent in indexOf)
+                    parentIndex = cast(long)*p;
+            }
+
+            entitiesArr ~= JSONValue([
+                "name": JSONValue(e.name),
+                "parent": JSONValue(parentIndex),
+                "layer": JSONValue(cast(uint)e.layer),
+                "type": JSONValue(cast(uint)e.type),
+                "renderLayer": JSONValue(e.renderLayer),
+                "visible": JSONValue(e.visible),
+                "castShadow": JSONValue(e.castShadow),
+                "solid": JSONValue(e.solid),
+                "dynamic": JSONValue(e.dynamic),
+                "decal": JSONValue(e.decal),
+                "probe": JSONValue(e.probe),
+                "probeExtents": JSONValue(e.probeExtents.arrayof),
+                "probeFalloffMargin": JSONValue(e.probeFalloffMargin),
+                "probeUseBoxProjection": JSONValue(e.probeUseBoxProjection),
+                "transparent": JSONValue(e.transparent),
+                "opacity": JSONValue(e.opacity),
+                "position": JSONValue(e.position.arrayof),
+                "rotation": JSONValue(e.rotation.arrayof),
+                "scaling": JSONValue(e.scaling.arrayof)
+                // TODO: drawable
+            ]);
+        }
+
         JSONValue root = [
             "name": JSONValue(name),
             "version": JSONValue(fileVersion),
             "entities": JSONValue(entitiesArr),
+            //"materials": JSONValue(materialsArr)
         ];
-        logInfo("Saving scene to \"", filename, "\"...");
         write(filename, root.toPrettyString());
     }
     
     void open(string filename)
     {
         logDebug("TODO: open ", filename);
+        
+        /*
+        // after creating entities[i] from entitiesArr[i]:
+        foreach (i, ref j; entitiesArr)
+        {
+            long pi = j["parent"].integer;
+            entities[i].parent = (pi >= 0) ? entities[cast(size_t)pi] : sceneRoot;
+        }
+        */
     }
     
     override void onKeyDown(int key) { }
