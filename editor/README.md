@@ -15,3 +15,4 @@ Work in progress scene editor for Dagon, made using Dagon itself. Only basic fea
 - [x] Mesh import
 - [x] Material import
 - [ ] Texture import
+- [ ] Configuration system
