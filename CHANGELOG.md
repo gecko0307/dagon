@@ -10,6 +10,7 @@ Dagon 1.7.0 - TBD
   - Material preview renderer
   - HiDPI awareness
   - Floor grid in the viewport
+  - Viewport/freeview settings in the Properties panel
   - Startup/About menu splash screen.
 
 Dagon 1.6.3 - 17 Oct, 2026
