@@ -62,6 +62,7 @@ import dagon.ext.imgui;
 import ui;
 import overlay;
 import thumbnail;
+import materialpreview;
 import history;
 
 class EditorScene: Scene
@@ -74,6 +75,7 @@ class EditorScene: Scene
     FreeviewComponent freeview;
     InteractionOverlay overlay;
     CommandHistory history;
+    MaterialPreviewRenderer materialPreviewRenderer;
     
     LoadingScreen loadingScreen;
 
@@ -210,12 +212,8 @@ class EditorScene: Scene
         
         sceneRoot = addEntity();
         sceneRoot.name = "SceneRoot";
-        
-        /*
-        auto ePlane = addEntity();
-        ePlane.drawable = New!ShapePlane(10, 10, 1, assetManager);
-        ePlane.name = "Plane";
-        */
+
+        materialPreviewRenderer = New!MaterialPreviewRenderer(application, this, this);
 
         ui.active = true;
     }

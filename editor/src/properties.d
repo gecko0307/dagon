@@ -41,6 +41,7 @@ import dagon.ext.imgui;
 
 import editor;
 import history;
+import materialpreview;
 import overlay;
 import ui;
 
@@ -259,7 +260,14 @@ class PropertiesPanel: Owner
 
             if (igCollapsingHeader("Material"))
             {
-                igButton("Material", ImVec2(100, 100));
+                uint previewTexture = scene.materialPreviewRenderer.renderThumbnail(
+                    scene.selectedEntity ? scene.selectedEntity.material : null);
+                igImage(cast(void*)cast(size_t)previewTexture,
+                    ImVec2(
+                        cast(float)MaterialPreviewRenderer.thumbnailSize,
+                        cast(float)MaterialPreviewRenderer.thumbnailSize),
+                    ImVec2(0.0f, 1.0f),
+                    ImVec2(1.0f, 0.0f));
                 if (igIsItemClicked(ImGuiMouseButton.Left))
                     igOpenPopup("Materials");
 
@@ -279,33 +287,40 @@ class PropertiesPanel: Owner
 
                 if (igBeginPopup("Materials", ImGuiWindowFlags.AlwaysAutoResize))
                 {
+                    // TODO: implement a material browser popup
+                    /*
                     igSetCursorPosX(400);
                     igSetCursorPosX(0.0f);
                     renderMaterialBrowser();
                     igEndPopup();
+                    */
                 }
 
                 if (scene.selectedEntity && scene.selectedEntity.material)
                 {
                     Material material = scene.selectedEntity.material;
-                    igColorEdit4("Base color", &material.baseColorFactor.arrayof, ImGuiColorEditFlags.Float);
-                    igSliderFloat("Roughness", &material.roughnessFactor, 0.0f, 1.0f, "%.3f");
-                    igSliderFloat("Metallic", &material.metallicFactor, 0.0f, 1.0f, "%.3f");
+                    bool materialChanged = false;
+                    materialChanged |= igColorEdit4("Base color", &material.baseColorFactor.arrayof, ImGuiColorEditFlags.Float);
+                    materialChanged |= igSliderFloat("Roughness", &material.roughnessFactor, 0.0f, 1.0f, "%.3f");
+                    materialChanged |= igSliderFloat("Metallic", &material.metallicFactor, 0.0f, 1.0f, "%.3f");
                     //igSliderFloat("Specularity", &material.specularity, 0.0f, 1.0f, "%.3f");
-                    igColorEdit4("Emission", &material.emissionFactor.arrayof, ImGuiColorEditFlags.Float);
-                    igInputFloat("Emission energy", &material.emissionEnergy);
-                    igCombo_Str("BlendMode", &material.blendMode, "Opaque\0Transparent\0Additive\0");
-                    igSliderFloat("Opacity", &material.opacity, 0.0f, 1.0f, "%.3f");
-                    igSliderFloat("Alpha test threshold", &material.alphaTestThreshold, 0.0f, 1.0f, "%.3f");
-                    igCheckbox("Shadeless", &material.shadeless);
+                    materialChanged |= igColorEdit4("Emission", &material.emissionFactor.arrayof, ImGuiColorEditFlags.Float);
+                    materialChanged |= igInputFloat("Emission energy", &material.emissionEnergy);
+                    materialChanged |= igCombo_Str("BlendMode", &material.blendMode, "Opaque\0Transparent\0Additive\0");
+                    materialChanged |= igSliderFloat("Opacity", &material.opacity, 0.0f, 1.0f, "%.3f");
+                    materialChanged |= igSliderFloat("Alpha test threshold", &material.alphaTestThreshold, 0.0f, 1.0f, "%.3f");
+                    materialChanged |= igCheckbox("Shadeless", &material.shadeless);
                     if (igCheckbox("Use shadows", &material.useShadows))
                     {
-                        igCombo_Str("Shadow filter", &material.shadowFilter, "None\0PCF\0");
+                        materialChanged = true;
+                        materialChanged |= igCombo_Str("Shadow filter", &material.shadowFilter, "None\0PCF\0");
                     }
-                    igCheckbox("Use fog", &material.useFog);
-                    igCheckbox("Use culling", &material.useCulling);
-                    igCheckbox("Color write", &material.colorWrite);
-                    igCheckbox("Depth write", &material.depthWrite);
+                    materialChanged |= igCheckbox("Use fog", &material.useFog);
+                    materialChanged |= igCheckbox("Use culling", &material.useCulling);
+                    materialChanged |= igCheckbox("Color write", &material.colorWrite);
+                    materialChanged |= igCheckbox("Depth write", &material.depthWrite);
+                    if (materialChanged)
+                        scene.materialPreviewRenderer.invalidate(material);
                     /*
                     igCheckbox("Output color", &material.outputColor);
                     igCheckbox("Output normals", &material.outputNormal);
@@ -321,6 +336,8 @@ class PropertiesPanel: Owner
         }
     }
 
+    /*
+    // TODO
     void renderMaterialBrowser()
     {
         int[5] materialItems = [0, 1, 2, 3, 4];
@@ -358,4 +375,5 @@ class PropertiesPanel: Owner
             igNextColumn();
         }
     }
+    */
 }
