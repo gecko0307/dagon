@@ -2,7 +2,7 @@
 
 Work in progress scene editor for Dagon, made using Dagon itself. Only basic features are implemented so far. Scene file format is not defined yet.
 
-[![Editor](https://blog.pixperfect.online/wp-content/uploads/2026/11/dagon-editor-alpha-2.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/11/dagon-editor-alpha-2.jpg)
+[![Editor](https://blog.pixperfect.online/wp-content/uploads/2026/11/dagon-editor-alpha-3.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/11/dagon-editor-alpha-3.jpg)
 
 ## Status
 
