@@ -133,7 +133,7 @@ private class MaterialPreviewShader: Shader
     ShaderParameter!bool hasRoughnessMetallicTexture;
     ShaderParameter!bool hasEmissionTexture;
     ShaderParameter!bool hasNormalTexture;
-    ShaderParameter!bool transparent;
+    ShaderParameter!bool nonOpaque;
     ShaderParameter!bool linearColor;
     ShaderParameter!Color4f baseColorFactor;
     ShaderParameter!Color4f emissionFactor;
@@ -168,7 +168,7 @@ private class MaterialPreviewShader: Shader
         hasRoughnessMetallicTexture = createParameter!bool("hasRoughnessMetallicTexture");
         hasEmissionTexture = createParameter!bool("hasEmissionTexture");
         hasNormalTexture = createParameter!bool("hasNormalTexture");
-        transparent = createParameter!bool("transparent");
+        nonOpaque = createParameter!bool("nonOpaque");
         linearColor = createParameter!bool("linearColor");
         baseColorFactor = createParameter!Color4f("baseColorFactor");
         emissionFactor = createParameter!Color4f("emissionFactor");
@@ -209,7 +209,7 @@ private class MaterialPreviewShader: Shader
         alphaTestThreshold = material.alphaTestThreshold;
         normalYSign = material.invertNormalY ? -1.0f : 1.0f;
         linearColor = material.linearColor;
-        transparent = material.blendMode == Transparent;
+        nonOpaque = material.blendMode != Opaque;
 
         glActiveTexture(GL_TEXTURE0);
         baseColorTexture = 0;
@@ -390,6 +390,11 @@ class MaterialPreviewRenderer: Owner
             glEnable(GL_BLEND);
             glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
                 GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        }
+        else if (material.blendMode == Additive)
+        {
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
         }
         else
         {

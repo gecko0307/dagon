@@ -15,7 +15,7 @@ uniform bool hasBaseColorTexture;
 uniform bool hasRoughnessMetallicTexture;
 uniform bool hasEmissionTexture;
 uniform bool hasNormalTexture;
-uniform bool transparent;
+uniform bool nonOpaque;
 
 uniform bool linearColor;
 uniform mat3 textureTransformation;
@@ -92,8 +92,8 @@ void main()
         emission *= toLinear(max(texture(emissionTexture, uv).rgb, vec3(0.0)));
     radiance += emission * emissionEnergy;
 
-    if (baseColor.a * opacity < alphaTestThreshold)
+    if (!nonOpaque && baseColor.a * opacity < alphaTestThreshold)
         discard;
-    float alpha = transparent ? clamp(baseColor.a * opacity, 0.0, 1.0) : 1.0;
+    float alpha = nonOpaque ? clamp(baseColor.a * opacity, 0.0, 1.0) : 1.0;
     fragmentColor = vec4(toneMapACES(radiance), alpha);
 }
