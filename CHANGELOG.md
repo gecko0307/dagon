@@ -4,11 +4,13 @@ Dagon 1.7.0 - TBD
   - New properties `Application.wintabLibraryPath`, `Application.loadedWintabSupport`
   - Major update of the configuration DSL (`dagon.core.props`). Added referencing support (any property can be reused like a variable) and string interpolation (`"${propName}"`). Platform-specific property postfixes (`something.windows` or `something.linux`) are now first-class feature, supported universally and transparently for all properties. No need to manually check them anymore
 - **Editor**
-  - Implement transformation gizmos with undo/redo
-  - Implement an asset browser and texture thumbnail generator
-  - Implement OBJ and material asset import (by dragging files from the asset browser to the viewport)
-  - Add HiDPI awareness
-  - Add a startup splash screen.
+  - Transformation gizmos with undo/redo
+  - Asset browser and texture thumbnail generator
+  - OBJ and material asset import (by dragging files from the asset browser to the viewport)
+  - Material preview renderer
+  - HiDPI awareness
+  - Floor grid in the viewport
+  - Startup/About menu splash screen.
 
 Dagon 1.6.3 - 17 Oct, 2026
 --------------------------

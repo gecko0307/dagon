@@ -148,10 +148,10 @@ class PropertiesPanel: Owner
                 igCheckbox("Floor grid", &scene.floorGridEnabled);
                 if (scene.floorGridEnabled)
                 {
-                    igSliderFloat("Grid spacing", &scene.floorGridSpacing,
-                        0.1f, 5.0f, "%.2f");
-                    igSliderFloat("Grid extent", &scene.floorGridExtent,
-                        5.0f, 100.0f, "%.1f");
+                    if (igSliderFloat("Grid spacing", &scene.floorGridSpacing, 0.1f, 5.0f, "%.1f"))
+                        scene.floorGridSpacing = cast(float)(cast(int)(scene.floorGridSpacing * 10.0f + 0.5f)) / 10.0f;
+                    if (igSliderFloat("Grid extent", &scene.floorGridExtent, 5.0f, 100.0f, "%.0f"))
+                        scene.floorGridExtent = cast(float)(cast(int)(scene.floorGridExtent + 0.5f));
                 }
             }
             
