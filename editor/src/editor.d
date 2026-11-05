@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /*
- * Editor scene.
+ * Editor application.
  */
 module editor;
 
@@ -415,12 +415,41 @@ class EditorScene: Scene
     
     void save(string filename)
     {
+        JSONValue[] entitiesArr;
+        foreach(e; world.entities)
+        {
+            if (!isInternalEntity(e))
+            {
+                entitiesArr ~= JSONValue([
+                    "name": JSONValue(e.name),
+                    "layer": JSONValue(cast(uint)e.layer),
+                    "type": JSONValue(cast(uint)e.type),
+                    "renderLayer": JSONValue(e.renderLayer),
+                    "visible": JSONValue(e.visible),
+                    "castShadow": JSONValue(e.castShadow),
+                    "solid": JSONValue(e.solid),
+                    "dynamic": JSONValue(e.dynamic),
+                    "decal": JSONValue(e.decal),
+                    "probe": JSONValue(e.probe),
+                    "probeExtents": JSONValue(e.probeExtents.arrayof),
+                    "probeFalloffMargin": JSONValue(e.probeFalloffMargin),
+                    "probeUseBoxProjection": JSONValue(e.probeUseBoxProjection),
+                    "transparent": JSONValue(e.transparent),
+                    "opacity": JSONValue(e.opacity),
+                    "position": JSONValue(e.position.arrayof),
+                    "rotation": JSONValue(e.rotation.arrayof),
+                    "scaling": JSONValue(e.scaling.arrayof)
+                ]);
+            }
+        }
+        // TODO: serialize entities parent indices
         JSONValue root = [
             "name": JSONValue(name),
-            "version": JSONValue(fileVersion)
+            "version": JSONValue(fileVersion),
+            "entities": JSONValue(entitiesArr),
         ];
+        logInfo("Saving scene to \"", filename, "\"...");
         write(filename, root.toPrettyString());
-        logInfo("Scene saved to ", filename);
     }
     
     void open(string filename)
