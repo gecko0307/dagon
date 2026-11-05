@@ -67,6 +67,9 @@ import thumbnail;
 import materialpreview;
 import history;
 
+string editorVersionString = "Dagon Editor v1.0.0-alpha";
+enum dagonWebsiteUrl = "https://gecko0307.github.io/dagon/";
+
 class EditorScene: Scene
 {
     string name = "Scene";

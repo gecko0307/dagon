@@ -74,9 +74,6 @@ bool viewportChanged(EditorViewport oldvp, EditorViewport newvp)
     );
 }
 
-string editorVersionString = "Dagon Editor v1.0.0";
-enum dagonWebsiteUrl = "https://gecko0307.github.io/dagon/";
-
 void browse(string url)
 {
     version(Windows)
@@ -173,7 +170,8 @@ class EditorUI: EventListener
         io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
         io.ConfigWindowsMoveFromTitleBarOnly = true;
         io.FontGlobalScale = 1.0f / application.pixelRatio;
-        font = ImFontAtlas_AddFontFromFileTTF(io.Fonts, "data/font/Inter_18pt-Medium.ttf", 16 * application.pixelRatio, null, glyphRanges.ptr);
+        // TODO: get path to the font from editor.conf
+        font = ImFontAtlas_AddFontFromFileTTF(io.Fonts, "data/fonts/Inter_18pt-Medium.ttf", 16 * application.pixelRatio, null, glyphRanges.ptr);
         igStyleColorsDark(null);
         applyTheme();
         ImGui_ImplSDL2_InitForOpenGL(application.window, application.glcontext);
