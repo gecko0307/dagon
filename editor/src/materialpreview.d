@@ -133,6 +133,7 @@ private class MaterialPreviewShader: Shader
     ShaderParameter!bool hasRoughnessMetallicTexture;
     ShaderParameter!bool hasEmissionTexture;
     ShaderParameter!bool hasNormalTexture;
+    ShaderParameter!bool transparent;
     ShaderParameter!bool linearColor;
     ShaderParameter!Color4f baseColorFactor;
     ShaderParameter!Color4f emissionFactor;
@@ -167,6 +168,7 @@ private class MaterialPreviewShader: Shader
         hasRoughnessMetallicTexture = createParameter!bool("hasRoughnessMetallicTexture");
         hasEmissionTexture = createParameter!bool("hasEmissionTexture");
         hasNormalTexture = createParameter!bool("hasNormalTexture");
+        transparent = createParameter!bool("transparent");
         linearColor = createParameter!bool("linearColor");
         baseColorFactor = createParameter!Color4f("baseColorFactor");
         emissionFactor = createParameter!Color4f("emissionFactor");
@@ -207,6 +209,7 @@ private class MaterialPreviewShader: Shader
         alphaTestThreshold = material.alphaTestThreshold;
         normalYSign = material.invertNormalY ? -1.0f : 1.0f;
         linearColor = material.linearColor;
+        transparent = material.blendMode == Transparent;
 
         glActiveTexture(GL_TEXTURE0);
         baseColorTexture = 0;
@@ -344,6 +347,10 @@ class MaterialPreviewRenderer: Owner
         GLint previousProgram;
         GLint previousActiveTexture;
         GLint previousVertexArray;
+        GLint previousBlendSrcRgb;
+        GLint previousBlendDstRgb;
+        GLint previousBlendSrcAlpha;
+        GLint previousBlendDstAlpha;
         GLint[4] previousTextures;
         GLint[4] previousViewport;
         GLboolean previousSrgb = glIsEnabled(GL_FRAMEBUFFER_SRGB);
@@ -359,6 +366,10 @@ class MaterialPreviewRenderer: Owner
         glGetIntegerv(GL_CURRENT_PROGRAM, &previousProgram);
         glGetIntegerv(GL_ACTIVE_TEXTURE, &previousActiveTexture);
         glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &previousVertexArray);
+        glGetIntegerv(GL_BLEND_SRC_RGB, &previousBlendSrcRgb);
+        glGetIntegerv(GL_BLEND_DST_RGB, &previousBlendDstRgb);
+        glGetIntegerv(GL_BLEND_SRC_ALPHA, &previousBlendSrcAlpha);
+        glGetIntegerv(GL_BLEND_DST_ALPHA, &previousBlendDstAlpha);
         foreach (i; 0 .. previousTextures.length)
         {
             glActiveTexture(GL_TEXTURE0 + cast(GLenum)i);
@@ -373,11 +384,21 @@ class MaterialPreviewRenderer: Owner
         bindFramebuffer(preview.target.framebuffer);
         glViewport(0, 0, thumbnailSize, thumbnailSize);
         glDisable(GL_SCISSOR_TEST);
-        glDisable(GL_BLEND);
+        Material material = preview.material ? preview.material : defaultMaterial;
+        if (material.blendMode == Transparent)
+        {
+            glEnable(GL_BLEND);
+            glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
+                GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        }
+        else
+        {
+            glDisable(GL_BLEND);
+        }
         glEnable(GL_DEPTH_TEST);
         glDepthMask(GL_TRUE);
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-        glDisable(GL_CULL_FACE);
+        glEnable(GL_CULL_FACE);
         glEnable(GL_FRAMEBUFFER_SRGB);
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -392,7 +413,7 @@ class MaterialPreviewRenderer: Owner
         state.projectionMatrix = camera.projectionMatrix(1.0f);
         state.normalMatrix = state.modelViewMatrix.inverse.transposed;
         state.cameraPosition = camera.positionAbsolute;
-        state.material = preview.material ? preview.material : defaultMaterial;
+        state.material = material;
         state.light = light;
         state.shader = shader;
         state.opacity = 1.0f;
@@ -429,6 +450,8 @@ class MaterialPreviewRenderer: Owner
         if (previousScissor) glEnable(GL_SCISSOR_TEST);
         else glDisable(GL_SCISSOR_TEST);
         glDepthMask(previousDepthMask);
+        glBlendFuncSeparate(previousBlendSrcRgb, previousBlendDstRgb,
+            previousBlendSrcAlpha, previousBlendDstAlpha);
         glColorMask(previousColorMask[0], previousColorMask[1],
             previousColorMask[2], previousColorMask[3]);
         glClearColor(previousClearColor[0], previousClearColor[1],

@@ -1,14 +1,22 @@
 #version 400 core
 const float PI = 3.14159265359;
 
+#include <gamma.glsl>
+#include <fresnel.glsl>
+#include <ggx.glsl>
+#include <cotangentFrame.glsl>
+
 uniform sampler2D baseColorTexture;
 uniform sampler2D roughnessMetallicTexture;
 uniform sampler2D emissionTexture;
 uniform sampler2D normalTexture;
+
 uniform bool hasBaseColorTexture;
 uniform bool hasRoughnessMetallicTexture;
 uniform bool hasEmissionTexture;
 uniform bool hasNormalTexture;
+uniform bool transparent;
+
 uniform bool linearColor;
 uniform mat3 textureTransformation;
 uniform vec4 baseColorFactor;
@@ -20,6 +28,7 @@ uniform float emissionEnergy;
 uniform float opacity;
 uniform float alphaTestThreshold;
 uniform float normalYSign;
+
 uniform vec3 lightDirection;
 uniform vec3 lightColor;
 uniform float lightEnergy;
@@ -29,49 +38,6 @@ in vec3 eyePosition;
 in vec3 eyeNormal;
 in vec2 texcoord;
 out vec4 fragmentColor;
-
-float distributionGGX(vec3 N, vec3 H, float roughness)
-{
-    float a = roughness * roughness;
-    float a2 = a * a;
-    float NdotH = max(dot(N, H), 0.0);
-    float NdotH2 = NdotH * NdotH;
-    float denominator = max(NdotH2 * (a2 - 1.0) + 1.0, 0.00001);
-    return a2 / (PI * denominator * denominator);
-}
-
-float geometrySchlickGGX(float NdotV, float k)
-{
-    return NdotV / (NdotV * (1.0 - k) + k);
-}
-
-float geometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
-{
-    float r = roughness + 1.0;
-    float k = (r * r) / 8.0;
-    return geometrySchlickGGX(max(dot(N, V), 0.0), k) *
-        geometrySchlickGGX(max(dot(N, L), 0.0), k);
-}
-
-vec3 fresnelRoughness(float cosTheta, vec3 F0, float roughness)
-{
-    return F0 + (max(vec3(1.0 - roughness), F0) - F0) *
-        pow(1.0 - cosTheta, 5.0);
-}
-
-mat3 cotangentFrame(vec3 N, vec3 position, vec2 uv)
-{
-    vec3 dp1 = dFdx(position);
-    vec3 dp2 = dFdy(position);
-    vec2 duv1 = dFdx(uv);
-    vec2 duv2 = dFdy(uv);
-    vec3 dp2perp = cross(dp2, N);
-    vec3 dp1perp = cross(N, dp1);
-    vec3 T = dp2perp * duv1.x + dp1perp * duv2.x;
-    vec3 B = dp2perp * duv1.y + dp1perp * duv2.y;
-    float invmax = inversesqrt(max(max(dot(T, T), dot(B, B)), 0.00000001));
-    return mat3(T * invmax, B * invmax, N);
-}
 
 vec3 toneMapACES(vec3 color)
 {
@@ -87,7 +53,7 @@ void main()
         : baseColorFactor;
     vec3 albedo = linearColor
         ? baseColor.rgb
-        : pow(max(baseColor.rgb, vec3(0.0)), vec3(2.2));
+        : toLinear(max(baseColor.rgb, vec3(0.0)));
 
     float roughness = roughnessFactor;
     float metallic = metallicFactor;
@@ -118,17 +84,16 @@ void main()
     vec3 specular = (NDF * G * F) /
         max(4.0 * NdotV * NdotL, 0.00001);
     vec3 diffuse = (1.0 - F) * albedo * (1.0 - metallic) / PI;
-    vec3 incomingLight = pow(max(lightColor, vec3(0.0)), vec3(2.2)) *
-        lightEnergy;
+    vec3 incomingLight = toLinear(max(lightColor, vec3(0.0))) * lightEnergy;
     vec3 radiance = (diffuse + specular) * incomingLight * NdotL;
 
-    vec3 emission = pow(max(emissionFactor.rgb, vec3(0.0)), vec3(2.2));
+    vec3 emission = toLinear(max(emissionFactor.rgb, vec3(0.0)));
     if (hasEmissionTexture)
-        emission *= pow(max(texture(emissionTexture, uv).rgb, vec3(0.0)),
-            vec3(2.2));
+        emission *= toLinear(max(texture(emissionTexture, uv).rgb, vec3(0.0)));
     radiance += emission * emissionEnergy;
 
     if (baseColor.a * opacity < alphaTestThreshold)
         discard;
-    fragmentColor = vec4(toneMapACES(radiance), 1.0);
+    float alpha = transparent ? clamp(baseColor.a * opacity, 0.0, 1.0) : 1.0;
+    fragmentColor = vec4(toneMapACES(radiance), alpha);
 }
