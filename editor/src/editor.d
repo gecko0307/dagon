@@ -340,8 +340,6 @@ class Editor: EventListener
     GsVirtualMachine vm;
     Dict!(GsDynamic, string) storage;
     GsDynamic[4] scriptCallArgs;
-    string mainScriptPath = "scripts/main.gs";
-    GsInstruction[] mainProgram;
     
     this(EditorApp application)
     {
@@ -408,18 +406,10 @@ class Editor: EventListener
                 prog = loadBytecode(code);
             }
             
-            //if (scriptPath == mainScriptPath)
-            //{
-                //mainProgram = prog;
-                //vm.load(mainProgram);
-            //}
-            //else
-            {
-                auto lib = New!GsLibrary(bytecodePath, vm);
-                logInfo(prog);
-                lib.load(prog);
-                vm.spawn(lib);
-            }
+            auto lib = New!GsLibrary(bytecodePath, vm);
+            //logInfo(prog);
+            lib.load(prog);
+            vm.spawn(lib);
         }
     }
 
