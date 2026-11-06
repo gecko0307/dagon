@@ -7,6 +7,7 @@ Dagon 1.7.0 - TBD
 - **Graphics components**
   - Fix `Entity.setParent`
 - **Editor**
+  - Basic saving and loading scenes to JSON files
   - Transformation gizmos with undo/redo
   - Asset browser and texture thumbnail generator
   - OBJ and material asset import (by dragging files from the asset browser to the viewport)
@@ -20,6 +21,8 @@ Dagon 1.7.0 - TBD
   - Initial GScript scripting support
   - New charcoal-orange theme
   - Startup/About menu splash screen.
+- **Misc**
+  - Dagon now uses dlib 1.8.2.
 
 Dagon 1.6.3 - 17 Oct, 2026
 --------------------------
