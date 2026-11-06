@@ -17,6 +17,7 @@ Dagon 1.7.0 - TBD
   - Viewport/freeview settings in the Properties panel
   - More post-processing settings in the Properties panel
   - Entity bounding box visibility toggle
+  - Initial GScript scripting support
   - New charcoal-orange theme
   - Startup/About menu splash screen.
 

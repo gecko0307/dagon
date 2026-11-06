@@ -40,5 +40,8 @@ __dummy.html
 data/__internal/
 gamecontrollerdb.txt
 
+# Logs
+*.log
+
 # Test scene
 scene.json
