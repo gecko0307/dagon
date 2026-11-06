@@ -96,7 +96,7 @@ class PropertiesPanel: Owner
             return;
         tracker.active = false;
         if (tracker.entity)
-            ui.scene.history.pushTransform(transformEditNames[index], tracker.entity, tracker.start);
+            ui.editor.history.pushTransform(transformEditNames[index], tracker.entity, tracker.start);
         tracker.entity = null;
     }
 
@@ -123,7 +123,7 @@ class PropertiesPanel: Owner
         foreach (i; 0 .. transformEditTrackers.length)
         {
             if (transformEditTrackers[i].active &&
-                transformEditTrackers[i].entity !is scene.selectedEntity)
+                transformEditTrackers[i].entity !is ui.editor.selectedEntity)
                 commitTransformEdit(i);
         }
 
@@ -278,24 +278,25 @@ class PropertiesPanel: Owner
         {
             if (igCollapsingHeader("Options"))
             {
-                if (scene.selectedEntity)
+                if (ui.editor.selectedEntity)
                 {
-                    igCheckbox("Visible", &scene.selectedEntity.visible);
-                    igCheckbox("Casts shadow", &scene.selectedEntity.castShadow);
-                    igCheckbox("Solid", &scene.selectedEntity.solid);
-                    igCheckbox("Dynamic", &scene.selectedEntity.dynamic);
-                    igCheckbox("Decal", &scene.selectedEntity.decal);
-                    igCheckbox("Transparent", &scene.selectedEntity.transparent);
-                    igSliderFloat("Entity opacity", &scene.selectedEntity.opacity, 0.0f, 1.0f, "%.3f");
+                    auto selected = ui.editor.selectedEntity;
+                    igCheckbox("Visible", &selected.visible);
+                    igCheckbox("Casts shadow", &selected.castShadow);
+                    igCheckbox("Solid", &selected.solid);
+                    igCheckbox("Dynamic", &selected.dynamic);
+                    igCheckbox("Decal", &selected.decal);
+                    igCheckbox("Transparent", &selected.transparent);
+                    igSliderFloat("Entity opacity", &selected.opacity, 0.0f, 1.0f, "%.3f");
                     igCheckbox("Show bounding box", &scene.showSelectedEntityBoundingBox);
                 }
             }
 
             if (igCollapsingHeader("Transformation", ImGuiTreeNodeFlags.DefaultOpen))
             {
-                if (scene.selectedEntity)
+                if (ui.editor.selectedEntity)
                 {
-                    Entity entity = scene.selectedEntity;
+                    Entity entity = ui.editor.selectedEntity;
 
                     if (igButton("Reset", ImVec2(60, 0)))
                     {
@@ -325,7 +326,7 @@ class PropertiesPanel: Owner
             if (igCollapsingHeader("Material"))
             {
                 uint previewTexture = scene.app.materialPreviewRenderer.renderThumbnail(
-                    scene.selectedEntity ? scene.selectedEntity.material : null);
+                    ui.editor.selectedEntity ? ui.editor.selectedEntity.material : null);
                 igImage(cast(void*)cast(size_t)previewTexture,
                     ImVec2(
                         cast(float)MaterialPreviewRenderer.thumbnailSize,
@@ -344,7 +345,7 @@ class PropertiesPanel: Owner
                         size_t dataLength = cast(size_t)payload.DataSize;
                         if (data[dataLength - 1] == '\0')
                             dataLength--;
-                        scene.applyMaterialAsset(data[0 .. dataLength].idup, scene.selectedEntity);
+                        ui.editor.applyMaterialAsset(data[0 .. dataLength].idup, ui.editor.selectedEntity);
                     }
                     igEndDragDropTarget();
                 }
@@ -360,9 +361,9 @@ class PropertiesPanel: Owner
                 }
                 */
 
-                if (scene.selectedEntity && scene.selectedEntity.material)
+                if (ui.editor.selectedEntity && ui.editor.selectedEntity.material)
                 {
-                    Material material = scene.selectedEntity.material;
+                    Material material = ui.editor.selectedEntity.material;
                     bool materialChanged = false;
                     materialChanged |= igColorEdit4("Base color", &material.baseColorFactor.arrayof, ImGuiColorEditFlags.Float);
                     materialChanged |= igSliderFloat("Roughness", &material.roughnessFactor, 0.0f, 1.0f, "%.3f");

@@ -51,7 +51,7 @@ class Toolbar: Owner
 
     void render()
     {
-        auto scene = ui.scene;
+        auto editor = ui.editor;
         
         ImGuiWindowFlags windowFlags = ImGuiWindowFlags.NoTitleBar |
             ImGuiWindowFlags.NoResize |
@@ -62,49 +62,49 @@ class Toolbar: Owner
         if (igBeginViewportSideBar("##MainToolbar", ui.viewport, ImGuiDir.Up, 48.0f, windowFlags))
         {
             if (modeButton("##Translate", ui.iconTranslate, GizmoMode.Translation, "Move"))
-                scene.overlay.gizmoMode = GizmoMode.Translation;
+                editor.overlay.gizmoMode = GizmoMode.Translation;
             igSameLine();
             if (modeButton("##Rotate", ui.iconRotate, GizmoMode.Rotation, "Rotate"))
-                scene.overlay.gizmoMode = GizmoMode.Rotation;
+                editor.overlay.gizmoMode = GizmoMode.Rotation;
             igSameLine();
             if (modeButton("##Scale", ui.iconScale, GizmoMode.Scale, "Scale"))
-                scene.overlay.gizmoMode = GizmoMode.Scale;
+                editor.overlay.gizmoMode = GizmoMode.Scale;
 
-            if (scene.overlay.gizmoMode != GizmoMode.Disabled)
+            if (editor.overlay.gizmoMode != GizmoMode.Disabled)
             {
                 igSameLine();
                 igPushStyleVar(ImGuiStyleVar.FramePadding, ImVec2(4.0f, 8.0f));
-                if (scene.overlay.gizmoMode == GizmoMode.Translation)
+                if (editor.overlay.gizmoMode == GizmoMode.Translation)
                 {
                     incrementInput(
                         "##MoveStep",
                         "Move increment",
-                        &scene.overlay.translationSnapIncrement,
+                        &editor.overlay.translationSnapIncrement,
                         "%.3f");
-                    if (scene.overlay.translationSnapIncrement <= 0.0f)
-                        scene.overlay.translationSnapIncrement =
+                    if (editor.overlay.translationSnapIncrement <= 0.0f)
+                        editor.overlay.translationSnapIncrement =
                             InteractionOverlay.defaultTranslationSnapIncrement;
                 }
-                else if (scene.overlay.gizmoMode == GizmoMode.Rotation)
+                else if (editor.overlay.gizmoMode == GizmoMode.Rotation)
                 {
                     incrementInput(
                         "##RotateStep",
                         "Rotation increment in degrees",
-                        &scene.overlay.rotationSnapIncrementDegrees,
+                        &editor.overlay.rotationSnapIncrementDegrees,
                         "%.1f");
-                    if (scene.overlay.rotationSnapIncrementDegrees <= 0.0f)
-                        scene.overlay.rotationSnapIncrementDegrees =
+                    if (editor.overlay.rotationSnapIncrementDegrees <= 0.0f)
+                        editor.overlay.rotationSnapIncrementDegrees =
                             InteractionOverlay.defaultRotationSnapIncrementDegrees;
                 }
-                else if (scene.overlay.gizmoMode == GizmoMode.Scale)
+                else if (editor.overlay.gizmoMode == GizmoMode.Scale)
                 {
                     incrementInput(
                         "##ScaleStep",
                         "Scale increment",
-                        &scene.overlay.scaleSnapIncrement,
+                        &editor.overlay.scaleSnapIncrement,
                         "%.3f");
-                    if (scene.overlay.scaleSnapIncrement <= 0.0f)
-                        scene.overlay.scaleSnapIncrement =
+                    if (editor.overlay.scaleSnapIncrement <= 0.0f)
+                        editor.overlay.scaleSnapIncrement =
                             InteractionOverlay.defaultScaleSnapIncrement;
                 }
                 igPopStyleVar();
@@ -130,7 +130,7 @@ class Toolbar: Owner
         if (!texture)
             return igButton(label.ptr, ImVec2(64, 0));
 
-        ImVec4 background = ui.scene.overlay.gizmoMode == mode
+        ImVec4 background = ui.editor.overlay.gizmoMode == mode
             ? ImVec4(1.00f, 0.60f, 0.20f, 0.75f)
             : ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
         return igImageButtonEx(

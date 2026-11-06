@@ -46,6 +46,7 @@ import dlib.container.array;
 
 import dagon.core.bindings;
 import dagon.core.logger;
+import dagon.core.event;
 import dagon.core.time;
 import dagon.core.cursor;
 import dagon.graphics.entity;
@@ -74,6 +75,133 @@ import history;
 
 string editorVersionString = "Dagon Editor v1.0.0-alpha";
 enum dagonWebsiteUrl = "https://gecko0307.github.io/dagon/";
+
+class EditorScene: Scene
+{
+    string name = "Scene";
+    uint fileVersion = 100;
+    
+    EditorApp app;
+    LoadingScreen loadingScreen;
+    
+    Camera camera;
+    FreeviewComponent freeview;
+
+    Entity sceneRoot;
+
+    bool showSelectedEntityBoundingBox = true;
+    
+    bool ssaoEnabled = true;
+    bool depthOfFieldEnabled = false;
+    bool lensDistortionEnabled = false;
+    bool glowEnabled = true;
+    bool motionBlurEnabled = false;
+    int glowRadius = 5;
+    bool vignetteEnabled = false;
+    int tonemapper = Tonemapper.AgX_Punchy;
+    bool fxaaEnabled = true;
+    bool sharpeningEnabled = true;
+    bool filmGrainEnabled = false;
+    bool filmGrainColored = true;
+    
+    bool floorGridEnabled = true;
+    float floorGridSpacing = 1.0f;
+    float floorGridExtent = 20.0f;
+    
+    Entity eSky;
+
+    this(EditorApp app)
+    {
+        super(app);
+        this.app = app;
+        loadingScreen = New!LoadingScreen(app, this);
+        loadingScreen.progressbarCentered = true;
+        onLoad(Time(0.0, 0.0), 0.0f);
+    }
+
+    override void beforeLoad()
+    {
+        app.setCursor(SystemCursor.Wait);
+    }
+    
+    override void onLoad(Time t, float progress)
+    {
+        loadingScreen.update(t, progress);
+        loadingScreen.render();
+    }
+    
+    override void afterLoad()
+    {
+        environment.backgroundColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
+        
+        // TODO: read post-processing settings from scene file
+        app.deferredRenderer.ssaoEnabled = ssaoEnabled;
+        app.deferredRenderer.ssaoPower = 6.0;
+        app.postProcessingRenderer.depthOfFieldEnabled = depthOfFieldEnabled;
+        app.postProcessingRenderer.lensDistortionEnabled = lensDistortionEnabled;
+        app.postProcessingRenderer.glowEnabled = glowEnabled;
+        app.postProcessingRenderer.glowRadius = glowRadius;
+        app.postProcessingRenderer.motionBlurEnabled = motionBlurEnabled;
+        app.postProcessingRenderer.tonemapper = cast(Tonemapper)tonemapper;
+        app.postProcessingRenderer.fxaaEnabled = fxaaEnabled;
+        app.postProcessingRenderer.lutEnabled = false;
+        
+        camera = addCamera();
+        freeview = New!FreeviewComponent(eventManager, camera);
+        freeview.setZoom(5);
+        freeview.setRotation(30.0f, -45.0f, 0.0f);
+        freeview.translationStiffness = 0.25f;
+        freeview.rotationStiffness = 0.25f;
+        freeview.zoomStiffness = 0.25f;
+        app.renderer.activeCamera = camera;
+        camera.name = "Camera";
+
+        sceneRoot = addEntity();
+        sceneRoot.name = "SceneRoot";
+
+        auto sun = addLight(LightType.Sun, sceneRoot);
+        sun.shadowEnabled = true;
+        sun.energy = 10.0f;
+        sun.angularRadius = 0.01f;
+        sun.pitch(-45.0f);
+        sun.name = "Sun";
+
+        if (app.cubemap)
+        {
+            environment.ambientMap = app.cubemap;
+            environment.ambientBRDF = app.deferredRenderer.brdf;
+            
+            eSky = addEntity();
+            eSky.layer = EntityLayer.Background;
+            eSky.gbufferMask = 0.0f;
+            auto psync = New!PositionSync(eventManager, eSky, camera);
+            eSky.drawable = New!ShapeBox(Vector3f(1.0f, 1.0f, 1.0f), assetManager);
+            eSky.scaling = Vector3f(100.0f, 100.0f, 100.0f);
+            eSky.material = addMaterial();
+            eSky.material.depthWrite = false;
+            eSky.material.useCulling = false;
+            eSky.material.baseColorTexture = app.cubemap;
+            eSky.material.linearColor = true;
+            eSky.name = "Sky";
+        }
+        
+        app.setCursor(SystemCursor.Default);
+    }
+    
+    bool isInternalEntity(Entity e)
+    {
+        if (e is camera)
+            return true;
+        if (eSky && e is eSky)
+            return true;
+        return false;
+    }
+    
+    override void onUpdate(Time t)
+    {
+        freeview.active = focused;
+    }
+}
 
 // Tolerant JSON readers. std.json can hand back a whole-number float as an integer,
 // so numbers are accepted in any numeric form. Missing keys fall back to a default.
@@ -189,243 +317,87 @@ void readLight(Light l, JSONValue j)
     l.specular = jsonGet(j, "specular", l.specular);
 }
 
-class EditorScene: Scene
+/**
+ * Implements scene editing and serialization.
+ */
+class Editor: EventListener
 {
-    string name = "Scene";
-    uint fileVersion = 100;
+    bool active = true;
+    bool capturesMouse = false;
     
     EditorApp app;
-    Camera camera;
-    FreeviewComponent freeview;
-    InteractionOverlay overlay;
-    CommandHistory history;
-    
-    LoadingScreen loadingScreen;
-
-    Entity sceneRoot;
-    Entity selectedEntity;
-
-    bool showSelectedEntityBoundingBox = true;
-    
-    bool ssaoEnabled = true;
-    bool depthOfFieldEnabled = false;
-    bool lensDistortionEnabled = false;
-    bool glowEnabled = true;
-    bool motionBlurEnabled = false;
-    int glowRadius = 5;
-    bool vignetteEnabled = false;
-    int tonemapper = Tonemapper.AgX_Punchy;
-    bool fxaaEnabled = true;
-    bool sharpeningEnabled = true;
-    bool filmGrainEnabled = false;
-    bool filmGrainColored = true;
-    
-    bool floorGridEnabled = true;
-    float floorGridSpacing = 1.0f;
-    float floorGridExtent = 20.0f;
-
+    EditorScene scene;
     uint numEntities = 0;
     
+    InteractionOverlay overlay;
+    CommandHistory history;
+    Entity selectedEntity;
+
     // Source asset paths. Meshes and materials are saved as references to these files
     string[Entity] meshPaths;
     string[Material] materialPaths;
-    
-    Entity eSky;
 
-    this(EditorApp app)
+    this(EditorApp application)
     {
-        super(app);
-        this.app = app;
+        super(application.eventManager, application);
+        app = application;
+        scene = cast(EditorScene)app.currentScene;
         
         overlay = New!InteractionOverlay(eventManager, this);
-        
         history = New!CommandHistory(this);
         history.onApplied = &onHistoryApplied;
-        
-        loadingScreen = New!LoadingScreen(app, this);
-        loadingScreen.progressbarCentered = true;
-        onLoad(Time(0.0, 0.0), 0.0f);
     }
 
-    override void beforeLoad()
+    // Selects the affected entity and refreshes gizmo and bounding box,
+    // keeping the current gizmo mode
+    void onHistoryApplied(Command command)
     {
-        app.setCursor(SystemCursor.Wait);
+        if (command.target is null)
+            return;
+        GizmoMode mode = overlay.gizmoMode;
+        selectEntity(command.target);
+        if (mode != GizmoMode.Disabled)
+            overlay.gizmoMode = mode;
     }
-    
-    override void onLoad(Time t, float progress)
-    {
-        loadingScreen.update(t, progress);
-        loadingScreen.render();
-    }
-    
-    override void afterLoad()
-    {
-        environment.backgroundColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
-        
-        // TODO: read post-processing settings from scene file
-        app.deferredRenderer.ssaoEnabled = ssaoEnabled;
-        app.deferredRenderer.ssaoPower = 6.0;
-        app.postProcessingRenderer.depthOfFieldEnabled = depthOfFieldEnabled;
-        app.postProcessingRenderer.lensDistortionEnabled = lensDistortionEnabled;
-        app.postProcessingRenderer.glowEnabled = glowEnabled;
-        app.postProcessingRenderer.glowRadius = glowRadius;
-        app.postProcessingRenderer.motionBlurEnabled = motionBlurEnabled;
-        app.postProcessingRenderer.tonemapper = cast(Tonemapper)tonemapper;
-        app.postProcessingRenderer.fxaaEnabled = fxaaEnabled;
-        app.postProcessingRenderer.lutEnabled = false;
-        
-        camera = addCamera();
-        freeview = New!FreeviewComponent(eventManager, camera);
-        freeview.setZoom(5);
-        freeview.setRotation(30.0f, -45.0f, 0.0f);
-        freeview.translationStiffness = 0.25f;
-        freeview.rotationStiffness = 0.25f;
-        freeview.zoomStiffness = 0.25f;
-        app.renderer.activeCamera = camera;
-        overlay.activeCamera = camera;
-        camera.name = "Camera";
 
-        sceneRoot = addEntity();
-        sceneRoot.name = "SceneRoot";
+    void undo()
+    {
+        if (!overlay.draggingGizmo)
+            history.undo();
+    }
 
-        auto sun = addLight(LightType.Sun, sceneRoot);
-        sun.shadowEnabled = true;
-        sun.energy = 10.0f;
-        sun.angularRadius = 0.01f;
-        sun.pitch(-45.0f);
-        sun.name = "Sun";
+    void redo()
+    {
+        if (!overlay.draggingGizmo)
+            history.redo();
+    }
 
-        if (app.cubemap)
-        {
-            environment.ambientMap = app.cubemap;
-            environment.ambientBRDF = app.deferredRenderer.brdf;
-            
-            eSky = addEntity();
-            eSky.layer = EntityLayer.Background;
-            eSky.gbufferMask = 0.0f;
-            auto psync = New!PositionSync(eventManager, eSky, camera);
-            eSky.drawable = New!ShapeBox(Vector3f(1.0f, 1.0f, 1.0f), assetManager);
-            eSky.scaling = Vector3f(100.0f, 100.0f, 100.0f);
-            eSky.material = addMaterial();
-            eSky.material.depthWrite = false;
-            eSky.material.useCulling = false;
-            eSky.material.baseColorTexture = app.cubemap;
-            eSky.material.linearColor = true;
-            eSky.name = "Sky";
-        }
+    void update(Time t)
+    {
+        scene = cast(EditorScene)app.currentScene;
         
-        app.setCursor(SystemCursor.Default);
-    }
-    
-    bool isInternalEntity(Entity e)
-    {
-        if (e is camera)
-            return true;
-        if (eSky && e is eSky)
-            return true;
-        return false;
-    }
-    
-    override void onUpdate(Time t)
-    {
-        freeview.active = focused && !overlay.draggingGizmo;
+        if (scene is null)
+            return;
+        
+        overlay.activeCamera = app.renderer.activeCamera;
+        processEvents();
+        
         if (selectedEntity && !overlay.draggingGizmo)
         {
             overlay.gizmoPosition = selectedEntity.positionAbsolute;
             overlay.gizmoOrientation = selectedEntity.rotationAbsolute;
         }
         overlay.update(t);
+        
+        capturesMouse = overlay.draggingGizmo;
     }
-    
-    override void afterRender()
+
+    void render()
     {
         if (app.ui.active)
             overlay.render();
     }
 
-    bool importAsset(string assetPath)
-    {
-        string ext = assetPath.extension;
-        if (ext == ".obj")
-        {
-            auto objAsset = addOBJAsset(assetPath, true);
-            auto newEntity = addEntity(sceneRoot);
-            if (objAsset.mesh)
-            {
-                newEntity.drawable = objAsset.mesh;
-                meshPaths[newEntity] = assetPath;
-            }
-            
-            newEntity.position = Vector3f(0, 0, 0);
-            newEntity.name = genUniqueEntitytName();
-            selectEntity(newEntity);
-            return true;
-        }
-        if (ext == ".material")
-        {
-            return applyMaterialAsset(assetPath, selectedEntity);
-        }
-
-        // TODO: glTF import
-
-        return false;
-    }
-
-    Material loadMaterial(string assetPath)
-    {
-        auto matAsset = addMaterialAsset(assetPath, true);
-        if (!matAsset.threadSafePartLoaded ||
-            !matAsset.threadUnsafePartLoaded ||
-            matAsset.material is null)
-        {
-            logError("Cannot load material \"", assetPath, "\": asset failed to load");
-            return null;
-        }
-        materialPaths[matAsset.material] = assetPath;
-        return matAsset.material;
-    }
-
-    Mesh loadMesh(string assetPath)
-    {
-        auto objAsset = addOBJAsset(assetPath, true);
-        if (objAsset.mesh is null)
-        {
-            logError("Cannot load mesh \"", assetPath, "\": asset failed to load");
-            return null;
-        }
-        return objAsset.mesh;
-    }
-
-    bool applyMaterialAsset(string assetPath, Entity target)
-    {
-        if (target is null)
-        {
-            logWarning("Cannot apply material \"", assetPath, "\": no entity is selected");
-            return false;
-        }
-
-        Material mat = loadMaterial(assetPath);
-        if (mat is null)
-            return false;
-
-        target.material = mat;
-        logInfo("Applied material \"", assetPath, "\" to entity \"", target.name, "\"");
-        return true;
-    }
-
-    string genUniqueEntitytName()
-    {
-        string res = "entity" ~ numEntities.to!string;
-        numEntities++;
-        return res;
-    }
-
-    void onAssetDroppedOnViewport(string assetPath)
-    {
-        logInfo("Import asset \"", assetPath, "\"...");
-        importAsset(assetPath);
-    }
-    
     void selectEntity(Entity e)
     {
         selectedEntity = e;
@@ -459,45 +431,94 @@ class EditorScene: Scene
             overlay.selectionBoundingBoxBaseScale.y * abs(e.scaling.y),
             overlay.selectionBoundingBoxBaseScale.z * abs(e.scaling.z));
     }
-    
-    // Undo/redo must not interfere with an active gizmo drag
-    void undo()
+
+    void onAssetDroppedOnViewport(string assetPath)
     {
-        if (!overlay.draggingGizmo)
-            history.undo();
-    }
-    
-    void redo()
-    {
-        if (!overlay.draggingGizmo)
-            history.redo();
-    }
-    
-    // Selects the affected entity and refreshes gizmo and bounding box,
-    // keeping the current gizmo mode
-    void onHistoryApplied(Command command)
-    {
-        if (command.target is null)
-            return;
-        GizmoMode mode = overlay.gizmoMode;
-        selectEntity(command.target);
-        if (mode != GizmoMode.Disabled)
-            overlay.gizmoMode = mode;
-    }
-    
-    // Lights are not serialized yet (entity fields only), so they stay out of the file
-    // and survive open() untouched
-    bool isSerializableEntity(Entity e)
-    {
-        return !isInternalEntity(e) && e !is sceneRoot;
+        logInfo("Import asset \"", assetPath, "\"...");
+        importAsset(assetPath);
     }
 
-    void save(string filename)
+    Material loadMaterial(string assetPath)
     {
-        // Pass 1: index the entities that go into the file
+        auto matAsset = scene.addMaterialAsset(assetPath, true);
+        if (!matAsset.threadSafePartLoaded ||
+            !matAsset.threadUnsafePartLoaded ||
+            matAsset.material is null)
+        {
+            logError("Cannot load material \"", assetPath, "\": asset failed to load");
+            return null;
+        }
+        materialPaths[matAsset.material] = assetPath;
+        return matAsset.material;
+    }
+
+    Mesh loadMesh(string assetPath)
+    {
+        auto objAsset = scene.addOBJAsset(assetPath, true);
+        if (objAsset.mesh is null)
+        {
+            logError("Cannot load mesh \"", assetPath, "\": asset failed to load");
+            return null;
+        }
+        return objAsset.mesh;
+    }
+
+    bool applyMaterialAsset(string assetPath, Entity target)
+    {
+        if (target is null)
+        {
+            logWarning("Cannot apply material \"", assetPath, "\": no entity is selected");
+            return false;
+        }
+
+        Material mat = loadMaterial(assetPath);
+        if (mat is null)
+            return false;
+
+        target.material = mat;
+        logInfo("Applied material \"", assetPath, "\" to entity \"", target.name, "\"");
+        return true;
+    }
+
+    bool importAsset(string assetPath)
+    {
+        string ext = assetPath.extension;
+        if (ext == ".obj")
+        {
+            auto objAsset = scene.addOBJAsset(assetPath, true);
+            auto newEntity = scene.addEntity(scene.sceneRoot);
+            if (objAsset.mesh)
+            {
+                newEntity.drawable = objAsset.mesh;
+                meshPaths[newEntity] = assetPath;
+            }
+            
+            newEntity.position = Vector3f(0, 0, 0);
+            newEntity.name = genUniqueEntitytName();
+            selectEntity(newEntity);
+            return true;
+        }
+        if (ext == ".material")
+        {
+            return applyMaterialAsset(assetPath, selectedEntity);
+        }
+
+        // TODO: glTF import
+
+        return false;
+    }
+
+    bool isSerializableEntity(Entity e)
+    {
+        return !scene.isInternalEntity(e) && e !is scene.sceneRoot;
+    }
+
+    void saveScene(string filename)
+    {
+        // Index the entities that go into the file
         Entity[] saved;
         size_t[Entity] entityIndex;
-        foreach (e; world.entities)
+        foreach (e; scene.world.entities)
         {
             if (isSerializableEntity(e))
             {
@@ -506,7 +527,7 @@ class EditorScene: Scene
             }
         }
 
-        // Pass 2: serialize, writing each distinct material once
+        // Serialize, writing each distinct material once
         JSONValue[] entitiesArr;
         JSONValue[] materialsArr;
         long[string] materialIndex; // asset path -> index in materialsArr
@@ -580,8 +601,8 @@ class EditorScene: Scene
         }
 
         JSONValue root = [
-            "name": JSONValue(name),
-            "version": JSONValue(fileVersion),
+            "name": JSONValue(scene.name),
+            "version": JSONValue(scene.fileVersion),
             "materials": JSONValue(materialsArr),
             "entities": JSONValue(entitiesArr),
         ];
@@ -590,13 +611,16 @@ class EditorScene: Scene
     }
 
     // Removes everything open() recreates
+    // TODO: this is not needed if the scene is deleted entirely
     void clearScene()
     {
         Array!Entity victims;
-        foreach (e; world.entities)
+        foreach (e; scene.world.entities)
+        {
             if (isSerializableEntity(e))
                 victims.append(e);
-
+        }
+        
         selectedEntity = null;
         overlay.gizmoMode = GizmoMode.Disabled;
         history.clear();
@@ -604,17 +628,17 @@ class EditorScene: Scene
 
         foreach (e; victims)
         {
-            removeEntity(e, false); // out of world.entities
+            scene.removeEntity(e, false); // out of world.entities
             if (e.parent)
                 e.parent.removeChild(e);  // out of parent.children, so the Inspector drops it
-            world.deleteOwnedObject(e);
+            scene.world.deleteOwnedObject(e);
         }
         victims.free();
         
         numEntities = 0;
     }
 
-    void open(string filename)
+    void openScene(string filename)
     {
         if (!exists(filename))
         {
@@ -643,12 +667,12 @@ class EditorScene: Scene
             return;
         }
 
-        if (jsonGet(root, "version", 0L) > fileVersion)
+        if (jsonGet(root, "version", 0L) > scene.fileVersion)
             logWarning("Scene \"", filename, "\" was saved by a newer editor version");
 
         logInfo("Opening scene \"", filename, "\"...");
         clearScene();
-        name = jsonGet(root, "name", "Scene");
+        scene.name = jsonGet(root, "name", "Scene");
 
         // Materials first: entities refer to them by index
         Material[] materials;
@@ -678,7 +702,7 @@ class EditorScene: Scene
 
             JSONValue j = entitiesArr[i];
 
-            Entity parent = sceneRoot;
+            Entity parent = scene.sceneRoot;
             long pi = jsonGet(j, "parent", -1L);
             if (pi >= 0 && cast(size_t)pi < entitiesArr.length)
             {
@@ -695,13 +719,13 @@ class EditorScene: Scene
                 long lt = jsonGet(*lj, "type", cast(long)LightType.AreaSphere);
                 if (lt < LightType.AreaSphere || lt > LightType.Spot)
                     lt = LightType.AreaSphere;
-                auto light = addLight(cast(LightType)lt, parent);
+                auto light = scene.addLight(cast(LightType)lt, parent);
                 readLight(light, *lj);
                 e = light;
             }
             else
             {
-                e = addEntity(parent);
+                e = scene.addEntity(parent);
             }
             
             e.name = jsonGet(j, "name", "entity");
@@ -760,15 +784,18 @@ class EditorScene: Scene
         logInfo("Loaded ", created.length.to!string, " entities");
     }
 
-    override void onKeyDown(int key) { }
-    override void onKeyUp(int key) { }
-    override void onMouseButtonDown(int button) { }
-    override void onMouseButtonUp(int button) { }
+    string genUniqueEntitytName()
+    {
+        string res = "entity" ~ numEntities.to!string;
+        numEntities++;
+        return res;
+    }
 }
 
 class EditorApp: Game
 {
     EditorUI ui;
+    Editor editor;
     
     MaterialPreviewRenderer materialPreviewRenderer;
     
@@ -833,7 +860,9 @@ class EditorApp: Game
         auto scene = New!EditorScene(this);
         currentScene = scene;
         
-        ui = New!EditorUI(this, args);
+        editor = New!Editor(this);
+        
+        ui = New!EditorUI(this, editor, args);
         ui.iconFile = prepareUiTexture(aFileIcon.texture);
         ui.iconFolder = prepareUiTexture(aFolderIcon.texture);
         ui.iconArchive = prepareUiTexture(aArchiveIcon.texture);
@@ -848,7 +877,7 @@ class EditorApp: Game
         ui.thumbnailGenerator = New!ThumbnailGenerator(assetManager);
         eventManager.onProcessEvent = &ui.onProcessEvent;
         dynamicViewport = false; // The editor controls the viewport instead of the engine
-        scene.overlay.ui = ui;
+        editor.overlay.ui = ui;
         
         ui.active = true;
     }
@@ -864,8 +893,9 @@ class EditorApp: Game
     override void onUpdate(Time t)
     {
         super.onUpdate(t);
+        editor.update(t);
         ui.update(t);
-        currentScene.focused = !ui.capturesMouse;
+        currentScene.focused = !ui.capturesMouse && !editor.capturesMouse;
     }
     
     override void onRender()
@@ -880,13 +910,12 @@ class EditorApp: Game
             if (currentScene.canRender && renderer)
             {
                 renderer.render();
-                if (auto editorScene = cast(EditorScene)currentScene)
-                    editorScene.overlay.renderFloorGrid();
+                editor.overlay.renderFloorGrid();
                 postProcessingRenderer.render();
                 presentRenderer.inputBuffer = postProcessingRenderer.outputBuffer;
                 presentRenderer.render();
                 hudRenderer.render();
-                currentScene.afterRender();
+                editor.render();
             }
         }
 

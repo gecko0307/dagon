@@ -134,6 +134,7 @@ void openHelp()
 class EditorUI: EventListener
 {
     EditorApp app;
+    Editor editor;
 
     bool active = false;
     ImGuiContext* igContext;
@@ -176,10 +177,11 @@ class EditorUI: EventListener
     
     EditorScene scene;
     
-    this(EditorApp application, string[] args)
+    this(EditorApp application, Editor editor, string[] args)
     {
         super(application.eventManager, application);
         this.app = application;
+        this.editor = editor;
         
         this.scene = cast(EditorScene)app.currentScene;
         
@@ -197,7 +199,7 @@ class EditorUI: EventListener
         ImGuiOpenGLBackend.init("#version 400 core");
         
         toolbar = New!Toolbar(this);
-        inspector = New!Inspector(this);
+        inspector = New!Inspector(editor, this);
         properties = New!PropertiesPanel(this);
         assetBrowser = New!AssetBrowser(this);
     }
@@ -226,9 +228,9 @@ class EditorUI: EventListener
 
         int key = cast(int)event.key.keysym.sym;
         if (key == SDLK_y || (key == SDLK_z && (mods & KMOD_SHIFT)))
-            scene.redo();
+            editor.redo();
         else if (key == SDLK_z)
-            scene.undo();
+            editor.undo();
     }
 
     bool capturesMouse() @property const
@@ -253,7 +255,7 @@ class EditorUI: EventListener
         ImGuiOpenGLBackend.new_frame();
         ImGui_ImplSDL2_NewFrame();
         igNewFrame();
-        scene.overlay.handleGizmoInput();
+        editor.overlay.handleGizmoInput();
 
         viewport = cast(ImGuiViewport*)igGetMainViewport();
         
@@ -332,7 +334,7 @@ class EditorUI: EventListener
                     size_t dataLength = cast(size_t)payload.DataSize;
                     if (data[dataLength - 1] == '\0')
                         dataLength--;
-                    scene.onAssetDroppedOnViewport(data[0 .. dataLength].idup);
+                    editor.onAssetDroppedOnViewport(data[0 .. dataLength].idup);
                 }
                 igEndDragDropTarget();
             }
@@ -347,14 +349,14 @@ class EditorUI: EventListener
         {
             if (igMenuItem("New scene"))
             {
-                scene.clearScene();
+                editor.clearScene();
             }
             
             if (igMenuItem("Open..."))
             {
                 string filename = openFileDialog(["*.json"], "Select a scene file");
                 if (filename.length != 0)
-                    scene.open(filename);
+                    editor.openScene(filename);
             }
             
             if (igMenuItem("Save"))
@@ -363,14 +365,14 @@ class EditorUI: EventListener
                     lastSaveFilename = saveFileDialog(["*.json"], "Save scene to a file");
                 
                 if (lastSaveFilename.length != 0)
-                    scene.save(lastSaveFilename);
+                    editor.saveScene(lastSaveFilename);
             }
             
             if (igMenuItem("Save as..."))
             {
                 lastSaveFilename = saveFileDialog(["*.json"], "Save scene to a file");
                 if (lastSaveFilename.length != 0)
-                    scene.save(lastSaveFilename);
+                    editor.saveScene(lastSaveFilename);
             }
             
             if (igMenuItem("Exit"))
@@ -384,23 +386,23 @@ class EditorUI: EventListener
         {
             TextBuffer!64 undoLabel;
             undoLabel.set("Undo");
-            if (scene.history.canUndo)
+            if (editor.history.canUndo)
             {
                 undoLabel.append(" ");
-                undoLabel.append(scene.history.undoName);
+                undoLabel.append(editor.history.undoName);
             }
-            if (igMenuItem(undoLabel.cstr, "Ctrl+Z", false, scene.history.canUndo))
-                scene.undo();
+            if (igMenuItem(undoLabel.cstr, "Ctrl+Z", false, editor.history.canUndo))
+                editor.undo();
 
             TextBuffer!64 redoLabel;
             redoLabel.set("Redo");
-            if (scene.history.canRedo)
+            if (editor.history.canRedo)
             {
                 redoLabel.append(" ");
-                redoLabel.append(scene.history.redoName);
+                redoLabel.append(editor.history.redoName);
             }
-            if (igMenuItem(redoLabel.cstr, "Ctrl+Y", false, scene.history.canRedo))
-                scene.redo();
+            if (igMenuItem(redoLabel.cstr, "Ctrl+Y", false, editor.history.canRedo))
+                editor.redo();
 
             igEndMenu();
         }

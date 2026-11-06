@@ -40,24 +40,17 @@ import ui;
 
 class Inspector: Owner
 {
-    EditorUI ui;
+    Editor editor;
 
-    this(EditorUI ui)
+    this(Editor editor, Owner owner)
     {
-        super(ui);
-        this.ui = ui;
+        super(owner);
+        this.editor = editor;
     }
-
-    /*
-    @property EditorScene scene() const
-    {
-        return cast(EditorScene)ui.app.currentScene;
-    }
-    */
     
     void render()
     {
-        auto scene = ui.scene;
+        auto scene = editor.scene;
         
         if (igBegin("Inspector", null, ImGuiWindowFlags.NoCollapse))
         {
@@ -78,12 +71,12 @@ class Inspector: Owner
 
     void renderEntitiesTree(Entity entity)
     {
-        auto scene = ui.scene;
+        auto scene = editor.scene;
         
         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.OpenOnArrow;
 
         if (entity.children.length == 0) flags |= ImGuiTreeNodeFlags.Leaf;
-        if (scene.selectedEntity == entity)  flags |= ImGuiTreeNodeFlags.Selected;
+        if (editor.selectedEntity == entity)  flags |= ImGuiTreeNodeFlags.Selected;
 
         bool isOpen = false;
         if (entity.name.length)
@@ -93,7 +86,7 @@ class Inspector: Owner
 
         if (igIsItemClicked() && !igIsItemToggledOpen())
         {
-            scene.selectEntity(entity);
+            editor.selectEntity(entity);
         }
 
         if (isOpen)

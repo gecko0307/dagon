@@ -597,7 +597,7 @@ class InteractionOverlay: EventListener
                 commandName = "Rotate";
             else if (gizmoMode == GizmoMode.Scale)
                 commandName = "Scale";
-            ui.scene.history.pushTransform(commandName, dragEntity, dragStartSnapshot);
+            ui.editor.history.pushTransform(commandName, dragEntity, dragStartSnapshot);
         }
         dragEntity = null;
         setDraggingGizmo(false);
@@ -607,7 +607,7 @@ class InteractionOverlay: EventListener
     void handleGizmoInput()
     {
         updateViewport();
-        if (!ui || !ui.scene.selectedEntity || gizmoMode == GizmoMode.Disabled)
+        if (!ui || !ui.editor.selectedEntity || gizmoMode == GizmoMode.Disabled)
         {
             finishGizmoDrag();
             return;
@@ -659,10 +659,10 @@ class InteractionOverlay: EventListener
                     setDraggingGizmo(true);
                     dragStartX = mouse.x;
                     dragStartY = mouse.y;
-                    dragStartPosition = ui.scene.selectedEntity.position;
-                    dragStartRotation = ui.scene.selectedEntity.rotation;
-                    dragStartScale = ui.scene.selectedEntity.scaling;
-                    dragEntity = ui.scene.selectedEntity;
+                    dragStartPosition = ui.editor.selectedEntity.position;
+                    dragStartRotation = ui.editor.selectedEntity.rotation;
+                    dragStartScale = ui.editor.selectedEntity.scaling;
+                    dragEntity = ui.editor.selectedEntity;
                     dragStartSnapshot = TransformSnapshot.capture(dragEntity);
                     dragStartGizmoOrientation = gizmoOrientation;
                     previousRotationAngle = dragStartRotationAngle;
@@ -694,7 +694,7 @@ class InteractionOverlay: EventListener
         GizmoPoint mouse = GizmoPoint(ui.io.MousePos.x, ui.io.MousePos.y);
         float dx = mouse.x - dragStartX;
         float dy = mouse.y - dragStartY;
-        Entity entity = ui.scene.selectedEntity;
+        Entity entity = ui.editor.selectedEntity;
 
         if (gizmoMode == GizmoMode.Translation)
         {
@@ -795,8 +795,8 @@ class InteractionOverlay: EventListener
         gizmoTransformation = translationMatrix(gizmoPosition) *
             orientationMatrix * scaleMatrix(Vector3f(size, size, size));
 
-        Light selectedLight = ui && ui.scene.selectedEntity
-            ? cast(Light)ui.scene.selectedEntity
+        Light selectedLight = ui && ui.editor.selectedEntity
+            ? cast(Light)ui.editor.selectedEntity
             : null;
         bool selectedSun = selectedLight && selectedLight.type == LightType.Sun;
         if (selectedSun)
