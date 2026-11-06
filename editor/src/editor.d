@@ -849,6 +849,8 @@ class Editor: EventListener
 
         logInfo("Opening scene \"", filename, "\"...");
         switchTo(jsonGet(root, "name", "Scene"), (EditorScene s) { populateFromJson(root); });
+        
+        app.ui.assetBrowser.reset(filename.dirName);
     }
 
     // Former second half of openScene, minus clearScene() and scene.name

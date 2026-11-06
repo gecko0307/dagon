@@ -134,9 +134,9 @@ class AssetBrowser: Owner
 {
     EditorUI ui;
 
-    TextBuffer!1024 assetRoot;
+    TextBuffer!2048 assetRoot; // absolute filesystem path
     TextBuffer!512 assetDirectory; // relative to assetRoot, always '/' separated
-    TextBuffer!512 selectedAssetPath;
+    TextBuffer!4096 selectedAssetPath;
     TextBuffer!512 assetBrowserMessage;
     TextBuffer!256 assetRenameTarget;
     TextBuffer!256 assetDeleteTarget;
@@ -150,17 +150,42 @@ class AssetBrowser: Owner
     {
         super(ui);
         this.ui = ui;
-        assetSearchBuffer[] = 0;
-        assetNameBuffer[] = 0;
-        assetRoot.set(ui.app.directory);
-        assetRoot.append("/assets");
-        refreshAssetEntries();
+        reset(ui.app.directory);
     }
 
     ~this()
     {
         freeAssetEntries();
         assetEntries.free();
+    }
+
+    // Set a new absolute root directory and return the browser to its root.
+    // Relative paths inside the browser are always kept separate from this path.
+    void reset(string assetRootDir)
+    {
+        assetSearchBuffer[] = 0;
+        assetNameBuffer[] = 0;
+        assetDirectory.clear();
+        selectedAssetPath.clear();
+        assetRenameTarget.clear();
+        assetDeleteTarget.clear();
+        assetBrowserMessage.clear();
+
+        try
+        {
+            assetRoot.set(absolutePath(assetRootDir));
+        }
+        catch (Exception e)
+        {
+            assetRoot.clear();
+            assetBrowserMessage.set("Invalid asset root: ");
+            assetBrowserMessage.append(e.msg);
+            freeAssetEntries();
+            assetEntries.resize(0, AssetEntry.init);
+            return;
+        }
+
+        refreshAssetEntries();
     }
 
     static char[] allocZ(const(char)[] text)
@@ -177,40 +202,43 @@ class AssetBrowser: Owner
         pos += text.length;
     }
 
-    // "assets/<assetDirectory>/<name>\0"
-    char[] allocEntryPath(const(char)[] name)
+    static bool hasPathSeparator(const(char)[] path)
     {
-        size_t total = 6 + (assetDirectory.length != 0 ? 1 + assetDirectory.length : 0) + 1 + name.length + 1;
-        auto result = New!(char[])(total);
-        size_t pos = 0;
-        put(result, pos, "assets");
-        if (assetDirectory.length != 0)
-        {
-            put(result, pos, "/");
-            put(result, pos, assetDirectory.slice);
-        }
-        put(result, pos, "/");
-        put(result, pos, name);
-        result[pos] = 0;
-        return result;
+        if (path.length == 0)
+            return false;
+        char c = path[$ - 1];
+        return c == '/' || c == '\\';
     }
 
-    // Filesystem path of the current folder, optionally with an item name appended
-    TextBuffer!1024 filesystemPath(const(char)[] name = null)
+    // Build an absolute filesystem path from the root, current directory
+    // and optional item name.
+    TextBuffer!4096 filesystemPath(const(char)[] name = null)
     {
-        TextBuffer!1024 path;
+        TextBuffer!4096 path;
         path.set(assetRoot.slice);
+
         if (assetDirectory.length != 0)
         {
-            path.append("/");
+            if (!hasPathSeparator(path.slice))
+                path.append("/");
             path.append(assetDirectory.slice);
         }
+
         if (name.length != 0)
         {
-            path.append("/");
+            if (!hasPathSeparator(path.slice))
+                path.append("/");
             path.append(name);
         }
+
         return path;
+    }
+
+    // Entry paths are absolute, just like filesystemPath() results.
+    char[] allocEntryPath(const(char)[] name)
+    {
+        auto path = filesystemPath(name);
+        return allocZ(path.slice);
     }
 
     void freeAssetEntries()
@@ -226,14 +254,8 @@ class AssetBrowser: Owner
 
     void selectAssetByName(const(char)[] name)
     {
-        selectedAssetPath.set("assets");
-        if (assetDirectory.length != 0)
-        {
-            selectedAssetPath.append("/");
-            selectedAssetPath.append(assetDirectory.slice);
-        }
-        selectedAssetPath.append("/");
-        selectedAssetPath.append(name);
+        auto path = filesystemPath(name);
+        selectedAssetPath.set(path.slice);
     }
 
     void refreshAssetEntries()
@@ -632,7 +654,7 @@ class AssetBrowser: Owner
                 tableView = true;
 
             if (assetDirectory.length != 0)
-                igText("assets/%s", assetDirectory.cstr);
+                igText("%s/%s", assetRoot.cstr, assetDirectory.cstr);
             else
                 igText("assets");
 
