@@ -132,6 +132,8 @@ struct AssetEntry
 
 class AssetBrowser: Owner
 {
+    bool active = false;
+    
     EditorUI ui;
 
     TextBuffer!2048 assetRoot; // absolute filesystem path
@@ -150,7 +152,7 @@ class AssetBrowser: Owner
     {
         super(ui);
         this.ui = ui;
-        reset(ui.app.directory);
+        reset(ui.app.directory, false);
     }
 
     ~this()
@@ -161,7 +163,7 @@ class AssetBrowser: Owner
 
     // Set a new absolute root directory and return the browser to its root.
     // Relative paths inside the browser are always kept separate from this path.
-    void reset(string assetRootDir)
+    void reset(string assetRootDir, bool activate)
     {
         assetSearchBuffer[] = 0;
         assetNameBuffer[] = 0;
@@ -184,6 +186,8 @@ class AssetBrowser: Owner
             assetEntries.resize(0, AssetEntry.init);
             return;
         }
+
+        active = activate;
 
         refreshAssetEntries();
     }
@@ -260,6 +264,9 @@ class AssetBrowser: Owner
 
     void refreshAssetEntries()
     {
+        if (!active)
+            return;
+        
         freeAssetEntries();
         assetEntries.resize(0, AssetEntry.init);
         assetBrowserMessage.clear();
@@ -627,6 +634,12 @@ class AssetBrowser: Owner
     {
         if (igBegin("Asset Browser", null, ImGuiWindowFlags.NoCollapse))
         {
+            if (!active)
+            {
+                igEnd();
+                return;
+            }
+            
             if (igButton("Up", ImVec2(0, 0)) && assetDirectory.length != 0)
             {
                 ptrdiff_t slash = lastIndexOf(assetDirectory.slice, '/');

@@ -333,9 +333,55 @@ class Editor: EventListener
     CommandHistory history;
     Entity selectedEntity;
 
-    // Source asset paths. Meshes and materials are saved as references to these files
+    // Absolute source paths are kept in memory; scene files store paths relative
+    // to assetRoot.
+    string assetRoot;
     string[Entity] meshPaths;
     string[Material] materialPaths;
+
+    // Scene files always use forward slashes, independent of the host OS.
+    string portableAssetPath(string path)
+    {
+        char[] result = path.dup;
+        foreach (ref c; result)
+        {
+            if (c == '\\')
+                c = '/';
+        }
+        return cast(string)result;
+    }
+
+    string normalizeAssetPath(string path)
+    {
+        if (path.length == 0)
+            return "";
+
+        // Accept portable scene paths on every platform.
+        path = portableAssetPath(path);
+
+        if (isAbsolute(path))
+            return buildNormalizedPath(path);
+        if (assetRoot.length == 0)
+            return buildNormalizedPath(absolutePath(path));
+        return buildNormalizedPath(buildPath(assetRoot, path));
+    }
+
+    string makeSceneAssetPath(string path)
+    {
+        if (path.length == 0)
+            return "";
+        string absolute = normalizeAssetPath(path);
+        if (assetRoot.length == 0)
+            return portableAssetPath(absolute);
+        return portableAssetPath(relativePath(absolute, assetRoot));
+    }
+
+    void setAssetRoot(string path, bool refreshBrowser = true)
+    {
+        assetRoot = path.length > 0 ? buildNormalizedPath(absolutePath(path)) : "";
+        if (refreshBrowser)
+            app.ui.assetBrowser.reset(assetRoot, true);
+    }
 
     GsVirtualMachine vm;
     Dict!(GsDynamic, string) storage;
@@ -642,6 +688,7 @@ class Editor: EventListener
 
     Material loadMaterial(string assetPath)
     {
+        assetPath = normalizeAssetPath(assetPath);
         auto matAsset = scene.addMaterialAsset(assetPath, true);
         if (!matAsset.threadSafePartLoaded ||
             !matAsset.threadUnsafePartLoaded ||
@@ -656,6 +703,7 @@ class Editor: EventListener
 
     Mesh loadMesh(string assetPath)
     {
+        assetPath = normalizeAssetPath(assetPath);
         auto objAsset = scene.addOBJAsset(assetPath, true);
         if (objAsset.mesh is null)
         {
@@ -684,6 +732,7 @@ class Editor: EventListener
 
     bool importAsset(string assetPath)
     {
+        assetPath = normalizeAssetPath(assetPath);
         string ext = assetPath.extension;
         if (ext == ".obj")
         {
@@ -717,6 +766,9 @@ class Editor: EventListener
 
     void saveScene(string filename)
     {
+        filename = buildNormalizedPath(absolutePath(filename));
+        setAssetRoot(filename.dirName, false);
+
         // Index the entities that go into the file
         Entity[] saved;
         size_t[Entity] entityIndex;
@@ -757,7 +809,7 @@ class Editor: EventListener
                     {
                         materialRef = cast(long)materialsArr.length;
                         materialIndex[*path] = materialRef;
-                        materialsArr ~= JSONValue(["path": JSONValue(*path)]);
+                        materialsArr ~= JSONValue(["path": JSONValue(makeSceneAssetPath(*path))]);
                     }
                 }
                 else
@@ -768,7 +820,7 @@ class Editor: EventListener
 
             string meshPath = "";
             if (auto mp = e in meshPaths)
-                meshPath = *mp;
+                meshPath = makeSceneAssetPath(*mp);
             else if (e.drawable !is null)
                 logWarning("Drawable of entity \"", e.name, "\" has no source file and will not be saved");
 
@@ -810,6 +862,8 @@ class Editor: EventListener
         ];
         logInfo("Saving scene to \"", filename, "\"...");
         write(filename, root.toPrettyString(JSONOptions.init | JSONOptions.doNotEscapeSlashes));
+        
+        app.ui.assetBrowser.reset(assetRoot, true);
     }
     
     string pendingOpen;
@@ -821,6 +875,7 @@ class Editor: EventListener
     // Former first half of openScene: validate before touching anything
     void loadSceneFile(string filename)
     {
+        filename = buildNormalizedPath(absolutePath(filename));
         if (!exists(filename))
         {
             logError("Cannot open scene \"", filename, "\": file not found");
@@ -848,9 +903,9 @@ class Editor: EventListener
             logWarning("Scene \"", filename, "\" was saved by a newer editor version");
 
         logInfo("Opening scene \"", filename, "\"...");
+        setAssetRoot(filename.dirName);
         switchTo(jsonGet(root, "name", "Scene"), (EditorScene s) { populateFromJson(root); });
         
-        app.ui.assetBrowser.reset(filename.dirName);
     }
 
     // Former second half of openScene, minus clearScene() and scene.name
@@ -933,6 +988,7 @@ class Editor: EventListener
             string meshPath = jsonGet(j, "mesh", "");
             if (meshPath.length > 0)
             {
+                meshPath = normalizeAssetPath(meshPath);
                 Mesh mesh = loadMesh(meshPath);
                 if (mesh !is null)
                 {
