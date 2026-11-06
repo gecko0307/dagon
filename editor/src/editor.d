@@ -109,13 +109,13 @@ class EditorScene: Scene
     float floorGridExtent = 20.0f;
     
     Entity eSky;
+    
+    void delegate(EditorScene) onReady;
 
     this(EditorApp app)
     {
         super(app);
         this.app = app;
-        loadingScreen = New!LoadingScreen(app, this);
-        loadingScreen.progressbarCentered = true;
         onLoad(Time(0.0, 0.0), 0.0f);
     }
 
@@ -126,8 +126,6 @@ class EditorScene: Scene
     
     override void onLoad(Time t, float progress)
     {
-        loadingScreen.update(t, progress);
-        loadingScreen.render();
     }
     
     override void afterLoad()
@@ -159,13 +157,6 @@ class EditorScene: Scene
         sceneRoot = addEntity();
         sceneRoot.name = "SceneRoot";
 
-        auto sun = addLight(LightType.Sun, sceneRoot);
-        sun.shadowEnabled = true;
-        sun.energy = 10.0f;
-        sun.angularRadius = 0.01f;
-        sun.pitch(-45.0f);
-        sun.name = "Sun";
-
         if (app.cubemap)
         {
             environment.ambientMap = app.cubemap;
@@ -184,6 +175,9 @@ class EditorScene: Scene
             eSky.material.linearColor = true;
             eSky.name = "Sky";
         }
+        
+        if (onReady)
+            onReady(this);
         
         app.setCursor(SystemCursor.Default);
     }
@@ -374,12 +368,24 @@ class Editor: EventListener
 
     void update(Time t)
     {
+        if (pendingNew)
+        {
+            pendingNew = false;
+            switchTo("Scene", &populateDefault);
+        }
+        else if (pendingOpen.length > 0)
+        {
+            string path = pendingOpen;
+            pendingOpen = "";
+            loadSceneFile(path);
+        }
+
         scene = cast(EditorScene)app.currentScene;
-        
-        if (scene is null)
+        if (scene is null || !scene.canRender)   // new scene is still loading
             return;
-        
+
         overlay.activeCamera = app.renderer.activeCamera;
+        
         processEvents();
         
         if (selectedEntity && !overlay.draggingGizmo)
@@ -390,6 +396,38 @@ class Editor: EventListener
         overlay.update(t);
         
         capturesMouse = overlay.draggingGizmo;
+    }
+
+    void switchTo(string name, void delegate(EditorScene) populate)
+    {
+        // Everything below refers to entities/materials of the scene being deleted
+        selectedEntity = null;
+        overlay.gizmoMode = GizmoMode.Disabled;
+        history.clear();
+        meshPaths.clear();
+        materialPaths.clear();
+        numEntities = 0;
+        app.materialPreviewRenderer.clear();
+
+        // The old camera dies with the old scene (deleted at the start of the next onUpdate)
+        app.renderer.activeCamera = null;
+        overlay.activeCamera = null;
+
+        auto newScene = New!EditorScene(app);
+        newScene.name = name;
+        newScene.onReady = populate;
+        scene = newScene; // loadMaterial/loadMesh use this
+        app.setCurrentScene(newScene, true);
+    }
+
+    void populateDefault(EditorScene s)
+    {
+        auto sun = s.addLight(LightType.Sun, s.sceneRoot);
+        sun.shadowEnabled = true;
+        sun.energy = 10.0f;
+        sun.angularRadius = 0.01f;
+        sun.pitch(-45.0f);
+        sun.name = "Sun";
     }
 
     void render()
@@ -609,36 +647,15 @@ class Editor: EventListener
         logInfo("Saving scene to \"", filename, "\"...");
         write(filename, root.toPrettyString(JSONOptions.init | JSONOptions.doNotEscapeSlashes));
     }
+    
+    string pendingOpen;
+    bool pendingNew = true;
 
-    // Removes everything open() recreates
-    // TODO: this is not needed if the scene is deleted entirely
-    void clearScene()
-    {
-        Array!Entity victims;
-        foreach (e; scene.world.entities)
-        {
-            if (isSerializableEntity(e))
-                victims.append(e);
-        }
-        
-        selectedEntity = null;
-        overlay.gizmoMode = GizmoMode.Disabled;
-        history.clear();
-        meshPaths.clear();
+    void newScene()               { pendingNew = true;  pendingOpen = ""; }
+    void openScene(string path)   { pendingOpen = path; pendingNew = false; }
 
-        foreach (e; victims)
-        {
-            scene.removeEntity(e, false); // out of world.entities
-            if (e.parent)
-                e.parent.removeChild(e);  // out of parent.children, so the Inspector drops it
-            scene.world.deleteOwnedObject(e);
-        }
-        victims.free();
-        
-        numEntities = 0;
-    }
-
-    void openScene(string filename)
+    // Former first half of openScene: validate before touching anything
+    void loadSceneFile(string filename)
     {
         if (!exists(filename))
         {
@@ -646,8 +663,6 @@ class Editor: EventListener
             return;
         }
 
-        // Parse and validate before touching the current scene,
-        // so a broken file does not wipe it
         JSONValue root;
         try
         {
@@ -659,9 +674,7 @@ class Editor: EventListener
             return;
         }
 
-        if (root.type != JSONType.object ||
-            ("entities" in root) is null ||
-            root["entities"].type != JSONType.array)
+        if (root.type != JSONType.object || ("entities" in root) is null || root["entities"].type != JSONType.array)
         {
             logError("Cannot open scene \"", filename, "\": invalid scene file");
             return;
@@ -671,9 +684,13 @@ class Editor: EventListener
             logWarning("Scene \"", filename, "\" was saved by a newer editor version");
 
         logInfo("Opening scene \"", filename, "\"...");
-        clearScene();
-        scene.name = jsonGet(root, "name", "Scene");
+        switchTo(jsonGet(root, "name", "Scene"), (EditorScene s) { populateFromJson(root); });
+    }
 
+    // Former second half of openScene, minus clearScene() and scene.name
+    // `scene` is already the new scene here.
+    void populateFromJson(JSONValue root)
+    {
         // Materials first: entities refer to them by index
         Material[] materials;
         if (auto mp = "materials" in root)

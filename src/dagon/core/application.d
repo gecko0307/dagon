@@ -193,6 +193,8 @@ enum string[GLenum] GLDebugSeverityStrings = [
     GL_DEBUG_SEVERITY_NOTIFICATION: "GL_DEBUG_SEVERITY_NOTIFICATION"
 ];
 
+private __gshared char[1024] debugStringBuffer;
+
 extern(System) void messageCallback(
     GLenum source,
     GLenum type,
@@ -217,7 +219,10 @@ extern(System) void messageCallback(
             if (app)
             {
                 // Instead of calling logDebug directly (which is not nothrow), use the event loop
-                app.eventManager.queueLogEvent(LogLevel.Debug, cast(string)message[0..length]);
+                debugStringBuffer[] = 0;
+                size_t len = min2(debugStringBuffer.length - 1, length);
+                debugStringBuffer[0..len] = message[0..len];
+                app.eventManager.queueLogEvent(LogLevel.Debug, cast(string)debugStringBuffer[0..len]);
             }
         }
         

@@ -349,7 +349,7 @@ class EditorUI: EventListener
         {
             if (igMenuItem("New scene"))
             {
-                editor.clearScene();
+                editor.newScene();
             }
             
             if (igMenuItem("Open..."))
