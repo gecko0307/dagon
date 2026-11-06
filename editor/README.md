@@ -16,3 +16,11 @@ Work in progress WYSIWYG scene editor for Dagon, made using Dagon itself. Only b
 - [x] Material import
 - [ ] Texture import
 - [ ] Configuration system
+- [ ] Lights
+- [ ] Basic shapes
+- [ ] Cameras
+- [ ] Particle systems
+- [ ] Decals
+- [ ] Light probes
+- [ ] Collision data
+- [ ] Physics data
