@@ -766,6 +766,8 @@ class Editor: EventListener
 
     void saveScene(string filename)
     {
+        app.setCursor(SystemCursor.Wait);
+        
         filename = buildNormalizedPath(absolutePath(filename));
         setAssetRoot(filename.dirName, false);
 
@@ -864,13 +866,26 @@ class Editor: EventListener
         write(filename, root.toPrettyString(JSONOptions.init | JSONOptions.doNotEscapeSlashes));
         
         app.ui.assetBrowser.reset(assetRoot, true);
+        
+        app.setCursor(SystemCursor.Default);
     }
     
     string pendingOpen;
     bool pendingNew = true;
 
-    void newScene()               { pendingNew = true;  pendingOpen = ""; app.ui.assetBrowser.active = false; }
-    void openScene(string path)   { pendingOpen = path; pendingNew = false; }
+    void newScene()
+    {
+        pendingNew = true;
+        pendingOpen = "";
+        app.ui.assetBrowser.active = false;
+    }
+    
+    void openScene(string path)
+    {
+        pendingOpen = path;
+        pendingNew = false;
+        app.setCursor(SystemCursor.Wait);
+    }
 
     // Former first half of openScene: validate before touching anything
     void loadSceneFile(string filename)
@@ -905,7 +920,6 @@ class Editor: EventListener
         logInfo("Opening scene \"", filename, "\"...");
         setAssetRoot(filename.dirName);
         switchTo(jsonGet(root, "name", "Scene"), (EditorScene s) { populateFromJson(root); });
-        
     }
 
     // Former second half of openScene, minus clearScene() and scene.name
@@ -1021,6 +1035,8 @@ class Editor: EventListener
         }
 
         logInfo("Loaded ", created.length.to!string, " entities");
+        
+        app.setCursor(SystemCursor.Default);
     }
 
     string genUniqueEntitytName()
