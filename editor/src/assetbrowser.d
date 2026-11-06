@@ -37,16 +37,45 @@ import std.algorithm;
 import std.file;
 import std.path;
 import std.string;
+import std.process;
 
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.container.array;
 
+import dagon.core.logger;
 import dagon.graphics.texture;
 import dagon.ext.imgui;
 
 import thumbnail;
 import ui;
+
+void openWithDefaultApp(const(char)[] filePath)
+{
+    version(Windows)
+    {
+        // On Windows, 'start' is a shell built-in, so we need to route it through cmd.exe
+        const(char)[][] command = ["cmd.exe", "/c", "start", "", filePath];
+    }
+    version(OSX)
+    {
+        const(char)[][] command = ["open", filePath];
+    }
+    version(linux)
+    {
+        const(char)[][] command = ["xdg-open", filePath];
+    }
+
+    try
+    {
+        logInfo("Opening \"", filePath, "\"...");
+        auto pid = spawnProcess(command);
+    }
+    catch(Exception e)
+    {
+        logError("Failed to open \"", filePath, "\": ", e.msg);
+    }
+}
 
 // Fixed-capacity, always zero-terminated text buffer.
 struct TextBuffer(size_t capacity)
@@ -505,11 +534,17 @@ class AssetBrowser: Owner
             }
 
             if (selected && igIsItemHovered() &&
-                igIsMouseDoubleClicked(ImGuiMouseButton.Left) &&
-                entry.isDirectory)
+                igIsMouseDoubleClicked(ImGuiMouseButton.Left))
             {
-                requestedDirectoryIndex = i;
-                navigateToDirectory = true;
+                if (entry.isDirectory)
+                {
+                    requestedDirectoryIndex = i;
+                    navigateToDirectory = true;
+                }
+                else
+                {
+                    openWithDefaultApp(entry.path);
+                }
             }
 
             if (igBeginDragDropSource())
@@ -521,6 +556,11 @@ class AssetBrowser: Owner
 
             if (igBeginPopupContextItem("Asset item context"))
             {
+                if (!entry.isDirectory)
+                if (igMenuItem("Open"))
+                {
+                    openWithDefaultApp(entry.path);
+                }
                 if (igMenuItem("Rename"))
                 {
                     assetRenameTarget.set(entry.name);
@@ -704,6 +744,7 @@ class AssetBrowser: Owner
                         else
                         {
                             selectedAssetPath.set(entry.path);
+                            openWithDefaultApp(entry.path);
                         }
                     }
 
@@ -717,6 +758,11 @@ class AssetBrowser: Owner
 
                     if (igBeginPopupContextItem("Asset item context"))
                     {
+                        if (!entry.isDirectory)
+                        if (igMenuItem("Open"))
+                        {
+                            openWithDefaultApp(entry.path);
+                        }
                         if (igMenuItem("Rename"))
                         {
                             assetRenameTarget.set(entry.name);
