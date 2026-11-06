@@ -36,6 +36,7 @@ import std.ascii;
 import std.json;
 import std.path;
 import std.conv;
+import std.datetime;
 
 import dlib.core.memory;
 import dlib.math.base;
@@ -43,6 +44,7 @@ import dlib.math.vector;
 import dlib.math.quaternion;
 import dlib.image.color;
 import dlib.container.array;
+import dlib.container.dict;
 
 import dagon.core.bindings;
 import dagon.core.logger;
@@ -67,11 +69,14 @@ import dagon.render.postproc;
 import dagon.ui.freeview;
 import dagon.ext.imgui;
 
+import gscript;
+
 import ui;
 import overlay;
 import thumbnail;
 import materialpreview;
 import history;
+import gsobjects;
 
 string editorVersionString = "Dagon Editor v1.0.0-alpha";
 enum dagonWebsiteUrl = "https://gecko0307.github.io/dagon/";
@@ -315,6 +320,8 @@ void readLight(Light l, JSONValue j)
  */
 class Editor: EventListener
 {
+    string name = "DagonEditor";
+    
     bool active = true;
     bool capturesMouse = false;
     
@@ -330,15 +337,162 @@ class Editor: EventListener
     string[Entity] meshPaths;
     string[Material] materialPaths;
 
+    GsVirtualMachine vm;
+    GsInstruction[] scriptProgram;
+    Dict!(GsDynamic, string) storage;
+    GsDynamic[4] scriptCallArgs;
+    string mainScriptPath = "scripts/main.gs";
+    string mainBytecodePath;
+
     this(EditorApp application)
     {
         super(application.eventManager, application);
         app = application;
         scene = cast(EditorScene)app.currentScene;
         
+        // TODO: load editor.conf
+        
         overlay = New!InteractionOverlay(eventManager, this);
         history = New!CommandHistory(this);
         history.onApplied = &onHistoryApplied;
+        
+        storage = dict!(GsDynamic, string);
+        //set("addAsset", GsDynamic(&vmAddAsset));
+        //set("addEntity", GsDynamic(&vmAddEntity));
+        scriptCallArgs[0] = GsDynamic(this);
+        
+        vm = New!GsVirtualMachine(this);
+        vm.set("log", GsDynamic(&vmLog));
+        vm.set("logDebug", GsDynamic(&vmLogDebug));
+        vm.set("logInfo", GsDynamic(&vmLogInfo));
+        vm.set("logWarning", GsDynamic(&vmLogWarning));
+        vm.set("logError", GsDynamic(&vmLogError));
+        vm.set("logFatalError", GsDynamic(&vmLogFatalError));
+        
+        bool needToCompile = true;
+        bool saveCode = false;
+        
+        mainBytecodePath = stripExtension(mainScriptPath) ~ ".gsc";
+        
+        if (exists(mainBytecodePath))
+        {
+            if (timeLastModified(mainScriptPath, SysTime.min) < timeLastModified(mainBytecodePath, SysTime.min))
+            {
+                auto code = cast(ubyte[])std.file.read(mainBytecodePath);
+                scriptProgram = loadBytecode(code);
+                needToCompile = false;
+            }
+        }
+        
+        if (needToCompile && exists(mainScriptPath))
+        {
+            string mainScript = readText(mainScriptPath);
+            scriptProgram = compile(mainScript, mainScriptPath);
+            saveCode = true;
+        }
+        
+        if (saveCode)
+        {
+            auto code = saveBytecode(scriptProgram);
+            std.file.write(mainBytecodePath, code);
+        }
+        
+        if (scriptProgram.length)
+        {
+            vm.load(scriptProgram);
+            vm.run();
+        }
+    }
+
+    ~this()
+    {
+        Delete(storage);
+    }
+    
+    // GScript VM API
+    
+    GsDynamic vmLog(GsDynamic[] args)
+    {
+        auto logLevel = cast(LogLevel)cast(uint)args[1].asNumber;
+        auto message = args[2].toString;
+        log(logLevel, message);
+        return GsDynamic();
+    }
+    
+    GsDynamic vmLogDebug(GsDynamic[] args)
+    {
+        auto message = args[1].toString;
+        logDebug(message);
+        return GsDynamic();
+    }
+    
+    GsDynamic vmLogInfo(GsDynamic[] args)
+    {
+        auto message = args[1].toString;
+        logInfo(message);
+        return GsDynamic();
+    }
+    
+    GsDynamic vmLogWarning(GsDynamic[] args)
+    {
+        auto message = args[1].toString;
+        logWarning(message);
+        return GsDynamic();
+    }
+    
+    GsDynamic vmLogError(GsDynamic[] args)
+    {
+        auto message = args[1].toString;
+        logError(message);
+        return GsDynamic();
+    }
+    
+    GsDynamic vmLogFatalError(GsDynamic[] args)
+    {
+        auto message = args[1].toString;
+        logFatalError(message);
+        return GsDynamic();
+    }
+    
+    // GScript object API
+    
+    GsDynamic get(string key)
+    {
+        switch(key)
+        {
+            case "name":
+                return GsDynamic(name);
+            default:
+                auto v = key in storage;
+                if (v)
+                    return *v;
+                else
+                    return GsDynamic();
+        }
+    }
+    
+    void set(string key, GsDynamic value)
+    {
+        storage[key] = value;
+    }
+    
+    bool contains(string key)
+    {
+        switch(key)
+        {
+            case "name":
+                return true;
+            default:
+                if ((key in storage) !is null)
+                    return true;
+                else
+                    return false;
+        }
+    }
+    
+    void setPrototype(GsObject)
+    {
+        // No-op
     }
 
     // Selects the affected entity and refreshes gizmo and bounding box,
