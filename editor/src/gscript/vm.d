@@ -336,17 +336,26 @@ class GsVirtualMachine: Owner, GsObject
         return GsDynamic(ch);
     }
     
+    void linkAfter(GsThread parent, GsThread t)
+    {
+        t.unlink(); // clears stale prev/next
+        t.prev = parent;
+        t.next = parent.next;
+        if (parent.next)
+            parent.next.prev = t;
+        parent.next = t;
+    }
+    
     // Spawn a new thread that initializes the library
     GsDynamic spawn(GsLibrary lib)
     {
-        GsObject payload = this;
         GsThread newThread;
         
         // Look for a free thread
         for (size_t ti = 0; ti < threads.length; ti++)
         {
             auto t = threads.data[ti];
-            if (t.status == GsThreadStatus.Free)
+            if (t !is mainThread && t.status == GsThreadStatus.Free)
             {
                 newThread = t;
                 break;
@@ -362,17 +371,14 @@ class GsVirtualMachine: Owner, GsObject
         }
         
         newThread.library = lib;
-        mainThread.callFrame.name = lib.name;
-        newThread.setPayload(payload);
+        newThread.callFrames[0].name = lib.name;
+        
+        auto p = newThread.createObject();
+        p.setPrototype(this);
+        newThread.setPayload(p);
         
         // Add to linked list
-        newThread.prev = mainThread;
-        if (mainThread.next)
-        {
-            mainThread.next.prev = newThread;
-            newThread.next = mainThread.next;
-        }
-        mainThread.next = newThread;
+        linkAfter(mainThread, newThread);
         
         newThread.callDepth = 1;
         newThread.start(0, 1);
@@ -392,7 +398,7 @@ class GsVirtualMachine: Owner, GsObject
             for (size_t ti = 0; ti < threads.length; ti++)
             {
                 auto t = threads.data[ti];
-                if (t.status == GsThreadStatus.Free)
+                if (t !is mainThread && t.status == GsThreadStatus.Free)
                 {
                     newThread = t;
                     break;
@@ -410,13 +416,7 @@ class GsVirtualMachine: Owner, GsObject
             newThread.library = mainLibrary;
             
             // Add to linked list
-            newThread.prev = mainThread;
-            if (mainThread.next)
-            {
-                mainThread.next.prev = newThread;
-                newThread.next = mainThread.next;
-            }
-            mainThread.next = newThread;
+            linkAfter(mainThread, newThread);
             
             auto callFrame = &newThread.callFrames[0];
             for(size_t i = 0; i < args.length; i++)
@@ -616,9 +616,13 @@ class GsVirtualMachine: Owner, GsObject
                 
                 if (tr.ip >= tr.library.instructions.length)
                 {
-                    tr.status = GsThreadStatus.Stopped;
+                    auto nextThread = tr.next;
+                    tr.finalize();
+                    tr = nextThread;
                     continue;
                 }
+                
+                auto savedNext = tr.next;
                 
                 auto instruction = tr.library.instructions[tr.ip];
                 
@@ -1525,7 +1529,7 @@ class GsVirtualMachine: Owner, GsObject
                                 for (size_t ti = 0; ti < threads.length; ti++)
                                 {
                                     auto t = threads.data[ti];
-                                    if (t.status == GsThreadStatus.Free)
+                                    if (t !is mainThread && t.status == GsThreadStatus.Free)
                                     {
                                         newThread = t;
                                         break;
@@ -1545,13 +1549,7 @@ class GsVirtualMachine: Owner, GsObject
                                 newThread.library = tr.library;
                                 
                                 // Add to linked list
-                                newThread.prev = tr;
-                                if (tr.next)
-                                {
-                                    tr.next.prev = newThread;
-                                    newThread.next = tr.next;
-                                }
-                                tr.next = newThread;
+                                linkAfter(tr, newThread);
                                 
                                 auto cf = &newThread.callFrames[0];
                                 cf.parameters[0] = GsDynamic(newThread);
@@ -1987,7 +1985,11 @@ class GsVirtualMachine: Owner, GsObject
                         break;
                 }
                 
-                tr = tr.next;
+                tr = (tr !is mainThread && tr.status == GsThreadStatus.Stopped)
+                    ? savedNext
+                    : tr.next;
+                
+                //tr = tr.next;
             }
             
             if (numActiveThreads == 0)
@@ -2181,6 +2183,8 @@ class GsThread: Owner, GsObject
     
     GsDynamic bindRelease(GsDynamic[] args)
     {
+        if (this !is vm.mainThread)
+            unlink();
         status = GsThreadStatus.Free;
         ip = 0;
         sp = 0;
@@ -2193,22 +2197,21 @@ class GsThread: Owner, GsObject
         return GsDynamic();
     }
     
+    void unlink()
+    {
+        if (prev) prev.next = next;
+        if (next) next.prev = prev;
+        prev = null;
+        next = null;
+    }
+
     void finalize()
     {
         status = GsThreadStatus.Stopped;
         if (payload)
             payload.set("running", GsDynamic(0.0));
-        
         if (this !is vm.mainThread)
-        {
-            // Remove this thread from the linked list
-            if (prev)
-                prev.next = next;
-            if (next)
-                next.prev = prev;
-            prev = null;
-            next = null;
-        }
+            unlink();
     }
     
     void start(size_t initialIp = 0, size_t initialCallDepth = 1)

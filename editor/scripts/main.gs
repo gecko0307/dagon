@@ -1,1 +1,1 @@
-logInfo("Hello, World!");
+logInfo("Hello from main.gs!");

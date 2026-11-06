@@ -338,12 +338,11 @@ class Editor: EventListener
     string[Material] materialPaths;
 
     GsVirtualMachine vm;
-    GsInstruction[] scriptProgram;
     Dict!(GsDynamic, string) storage;
     GsDynamic[4] scriptCallArgs;
     string mainScriptPath = "scripts/main.gs";
-    string mainBytecodePath;
-
+    GsInstruction[] mainProgram;
+    
     this(EditorApp application)
     {
         super(application.eventManager, application);
@@ -369,38 +368,58 @@ class Editor: EventListener
         vm.set("logError", GsDynamic(&vmLogError));
         vm.set("logFatalError", GsDynamic(&vmLogFatalError));
         
-        bool needToCompile = true;
-        bool saveCode = false;
+        vm.load([
+            GsInstruction(GsInstructionType.HALT)
+        ]);
         
-        mainBytecodePath = stripExtension(mainScriptPath) ~ ".gsc";
+        compileScripts();
         
-        if (exists(mainBytecodePath))
+        vm.run();
+    }
+
+    void compileScripts()
+    {
+        foreach(string scriptPath; dirEntries("scripts", SpanMode.depth).filter!(f => f.name.endsWith(".gs")))
         {
-            if (timeLastModified(mainScriptPath, SysTime.min) < timeLastModified(mainBytecodePath, SysTime.min))
+            bool needToCompile = false;
+            string bytecodePath = stripExtension(scriptPath) ~ ".gsc";
+            
+            if (exists(bytecodePath))
             {
-                auto code = cast(ubyte[])std.file.read(mainBytecodePath);
-                scriptProgram = loadBytecode(code);
-                needToCompile = false;
+                if (timeLastModified(scriptPath, SysTime.min) > timeLastModified(bytecodePath, SysTime.min))
+                    needToCompile = true;
             }
-        }
-        
-        if (needToCompile && exists(mainScriptPath))
-        {
-            string mainScript = readText(mainScriptPath);
-            scriptProgram = compile(mainScript, mainScriptPath);
-            saveCode = true;
-        }
-        
-        if (saveCode)
-        {
-            auto code = saveBytecode(scriptProgram);
-            std.file.write(mainBytecodePath, code);
-        }
-        
-        if (scriptProgram.length)
-        {
-            vm.load(scriptProgram);
-            vm.run();
+            else
+                needToCompile = true;
+            
+            GsInstruction[] prog;
+            if (needToCompile)
+            {
+                logInfo("Compiling script \"", scriptPath, "\"...");
+                string script = readText(scriptPath);
+                prog = compile(script, scriptPath);
+                auto code = saveBytecode(prog);
+                std.file.write(bytecodePath, code);
+            }
+            else
+            {
+                logInfo("Loading \"", bytecodePath, "\"...");
+                auto code = cast(ubyte[])std.file.read(bytecodePath);
+                prog = loadBytecode(code);
+            }
+            
+            //if (scriptPath == mainScriptPath)
+            //{
+                //mainProgram = prog;
+                //vm.load(mainProgram);
+            //}
+            //else
+            {
+                auto lib = New!GsLibrary(bytecodePath, vm);
+                logInfo(prog);
+                lib.load(prog);
+                vm.spawn(lib);
+            }
         }
     }
 
