@@ -734,17 +734,6 @@ class Application: EventListener, Updateable
             wintabLibraryPath = config.props["Wintab.path"].toString;
         version(Windows)
         {
-            /*
-            if ("SDL2.path.windows" in config.props)
-                sdlLibraryPath = config.props["SDL2.path.windows"].toString;
-            if ("SDL2Image.path.windows" in config.props)
-                sdlImageLibraryPath = config.props["SDL2Image.path.windows"].toString;
-            if ("FreeType.path.windows" in config.props)
-                freetypeLibraryPath = config.props["FreeType.path.windows"].toString;
-            if ("Wintab.path.windows" in config.props)
-                wintabLibraryPath = config.props["Wintab.path.windows"].toString;
-            */
-            
             if (sdlLibraryPath == "auto")
                 sdlLibraryPath = "SDL2.dll";
             
@@ -759,17 +748,6 @@ class Application: EventListener, Updateable
         }
         else version(linux)
         {
-            /*
-            if ("SDL2.path.linux" in config.props)
-                sdlLibraryPath = config.props["SDL2.path.linux"].toString;
-            if ("SDL2Image.path.linux" in config.props)
-                sdlImageLibraryPath = config.props["SDL2Image.path.linux"].toString;
-            if ("FreeType.path.linux" in config.props)
-                freetypeLibraryPath = config.props["FreeType.path.linux"].toString;
-            if ("Wintab.path.linux" in config.props)
-                wintabLibraryPath = config.props["Wintab.path.linux"].toString;
-            */
-            
             if (sdlLibraryPath == "auto")
                 sdlLibraryPath = "libSDL2-2.0.so.0";
             
@@ -1299,22 +1277,6 @@ class Application: EventListener, Updateable
             defaultFontSans = config.props["font.sans"].toString;
         if ("font.monospace" in config.props)
             defaultFontMonospace = config.props["font.monospace"].toString;
-        /*
-        version(Windows)
-        {
-            if ("font.sans.windows" in config.props)
-                defaultFontSans = config.props["font.sans.windows"].toString;
-            if ("font.sans.monospace" in config.props)
-                defaultFontMonospace = config.props["font.sans.monospace"].toString;
-        }
-        else version(linux)
-        {
-            if ("font.sans.linux" in config.props)
-                defaultFontSans = config.props["font.sans.linux"].toString;
-            if ("font.sans.linux" in config.props)
-                defaultFontMonospace = config.props["font.sans.linux"].toString;
-        }
-        */
         if ("font.size" in config.props)
             defaultFontSize = config.props["font.size"].toUInt;
         fontManager = New!FontManager(this);
@@ -1354,18 +1316,6 @@ class Application: EventListener, Updateable
             enableShaderCache = cast(bool)(config.props["gl.shaderCache.enabled"].toUInt);
         if ("gl.shaderCache.path" in config.props)
             shaderCachePath = config.props["gl.shaderCache.path"].toString;
-        /*
-        version(Windows)
-        {
-            if ("gl.shaderCache.path.windows" in config.props)
-                shaderCachePath = config.props["gl.shaderCache.path.windows"].toString;
-        }
-        else version(linux)
-        {
-            if ("gl.shaderCache.path.linux" in config.props)
-                shaderCachePath = config.props["gl.shaderCache.path.linux"].toString;
-        }
-        */
         shaderCache = New!ShaderCache(vfs, shaderCachePath, this);
         shaderCache.enabled = enableShaderCache;
         _globalShaderCache = shaderCache;
