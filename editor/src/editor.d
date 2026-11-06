@@ -193,7 +193,6 @@ class EditorScene: Scene
     
     override void onUpdate(Time t)
     {
-        freeview.active = focused;
     }
 }
 
@@ -396,6 +395,8 @@ class Editor: EventListener
         overlay.update(t);
         
         capturesMouse = overlay.draggingGizmo;
+        scene.focused = !app.ui.capturesMouse && !capturesMouse;
+        scene.freeview.active = scene.focused;
     }
 
     void switchTo(string name, void delegate(EditorScene) populate)
@@ -909,10 +910,9 @@ class EditorApp: Game
     
     override void onUpdate(Time t)
     {
-        super.onUpdate(t);
         editor.update(t);
+        super.onUpdate(t);
         ui.update(t);
-        currentScene.focused = !ui.capturesMouse && !editor.capturesMouse;
     }
     
     override void onRender()
