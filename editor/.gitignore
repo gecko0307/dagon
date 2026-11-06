@@ -44,4 +44,4 @@ gamecontrollerdb.txt
 *.log
 
 # Test scene
-scene.json
+scenes/
