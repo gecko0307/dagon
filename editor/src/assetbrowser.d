@@ -492,6 +492,12 @@ class AssetBrowser: Owner
     ];
     static const(char)[][] extBlender = [".blend", ".blend1"];
     static const(char)[][] extJson = [".json"];
+    static const(char)[][] extPython = [
+        ".py", ".pyc", ".pyw", ".pyd", ".pyo"
+    ];
+    static const(char)[][] extBinary = [
+        ".exe", ".dll", ".bin", ".o"
+    ];
 
     Texture getEntryIcon(ref AssetEntry entry)
     {
@@ -507,6 +513,10 @@ class AssetBrowser: Owner
             return ui.iconBlend;
         if (hasExtension(entry.name, extJson))
             return ui.iconJson;
+        if (hasExtension(entry.name, extPython))
+            return ui.iconPython;
+        if (hasExtension(entry.name, extBinary))
+            return ui.iconBinary;
 
         if (!entry.thumbnailChecked)
         {

@@ -1045,6 +1045,8 @@ class EditorApp: Game
     TextureAsset aBlendIcon;
     TextureAsset aJsonIcon;
     TextureAsset aModelIcon;
+    TextureAsset aPythonIcon;
+    TextureAsset aBinaryIcon;
     TextureAsset aTranslateIcon;
     TextureAsset aRotateIcon;
     TextureAsset aScaleIcon;
@@ -1085,6 +1087,8 @@ class EditorApp: Game
         aBlendIcon = loadTexture("data/icons/blend.png");
         aJsonIcon = loadTexture("data/icons/json.png");
         aModelIcon = loadTexture("data/icons/model.png");
+        aPythonIcon = loadTexture("data/icons/python.png");
+        aBinaryIcon = loadTexture("data/icons/binary.png");
         aTranslateIcon = loadTexture("data/icons/btn_translate.png");
         aRotateIcon = loadTexture("data/icons/btn_rotate.png");
         aScaleIcon = loadTexture("data/icons/btn_scale.png");
@@ -1109,6 +1113,8 @@ class EditorApp: Game
         ui.iconBlend = prepareUiTexture(aBlendIcon.texture);
         ui.iconJson = prepareUiTexture(aJsonIcon.texture);
         ui.iconModel = prepareUiTexture(aModelIcon.texture);
+        ui.iconPython = prepareUiTexture(aPythonIcon.texture);
+        ui.iconBinary = prepareUiTexture(aBinaryIcon.texture);
         ui.iconTranslate = prepareUiTexture(aTranslateIcon.texture);
         ui.iconRotate = prepareUiTexture(aRotateIcon.texture);
         ui.iconScale = prepareUiTexture(aScaleIcon.texture);

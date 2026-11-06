@@ -153,6 +153,8 @@ class EditorUI: EventListener
     Texture iconBlend;
     Texture iconJson;
     Texture iconModel;
+    Texture iconPython;
+    Texture iconBinary;
     ThumbnailGenerator thumbnailGenerator;
     Texture iconTranslate;
     Texture iconRotate;
