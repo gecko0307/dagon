@@ -75,12 +75,7 @@ class PropertiesPanel: Owner
         this.ui = ui;
         
         sceneNameBuffer[] = 0;
-        sceneNameBuffer[0..scene.name.length] = scene.name;
-    }
-
-    @property EditorScene scene()
-    {
-        return ui.scene;
+        sceneNameBuffer[0..ui.scene.name.length] = ui.scene.name;
     }
 
     static extern(C) int nameInputCallback(ImGuiInputTextCallbackData* data)
@@ -101,7 +96,7 @@ class PropertiesPanel: Owner
             return;
         tracker.active = false;
         if (tracker.entity)
-            scene.history.pushTransform(transformEditNames[index], tracker.entity, tracker.start);
+            ui.scene.history.pushTransform(transformEditNames[index], tracker.entity, tracker.start);
         tracker.entity = null;
     }
 
@@ -122,6 +117,8 @@ class PropertiesPanel: Owner
 
     void render()
     {
+        auto scene = ui.scene;
+        
         // Selection changed (or was cleared) in the middle of an edit: close it
         foreach (i; 0 .. transformEditTrackers.length)
         {

@@ -832,7 +832,8 @@ class EditorApp: Game
         
         auto scene = New!EditorScene(this);
         currentScene = scene;
-        ui = New!EditorUI(this, scene, args);
+        
+        ui = New!EditorUI(this, args);
         ui.iconFile = prepareUiTexture(aFileIcon.texture);
         ui.iconFolder = prepareUiTexture(aFolderIcon.texture);
         ui.iconArchive = prepareUiTexture(aArchiveIcon.texture);

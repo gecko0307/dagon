@@ -123,7 +123,7 @@ class AssetBrowser: Owner
         this.ui = ui;
         assetSearchBuffer[] = 0;
         assetNameBuffer[] = 0;
-        assetRoot.set(ui.application.directory);
+        assetRoot.set(ui.app.directory);
         assetRoot.append("/assets");
         refreshAssetEntries();
     }

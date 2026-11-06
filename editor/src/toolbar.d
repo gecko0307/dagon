@@ -49,13 +49,10 @@ class Toolbar: Owner
         this.ui = ui;
     }
 
-    @property EditorScene scene()
-    {
-        return ui.scene;
-    }
-
     void render()
     {
+        auto scene = ui.scene;
+        
         ImGuiWindowFlags windowFlags = ImGuiWindowFlags.NoTitleBar |
             ImGuiWindowFlags.NoResize |
             ImGuiWindowFlags.NoMove |
@@ -133,7 +130,7 @@ class Toolbar: Owner
         if (!texture)
             return igButton(label.ptr, ImVec2(64, 0));
 
-        ImVec4 background = scene.overlay.gizmoMode == mode
+        ImVec4 background = ui.scene.overlay.gizmoMode == mode
             ? ImVec4(1.00f, 0.60f, 0.20f, 0.75f)
             : ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
         return igImageButtonEx(

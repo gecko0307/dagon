@@ -133,8 +133,7 @@ void openHelp()
 
 class EditorUI: EventListener
 {
-    EditorApp application;
-    EditorScene scene;
+    EditorApp app;
 
     bool active = false;
     ImGuiContext* igContext;
@@ -175,23 +174,26 @@ class EditorUI: EventListener
         0
     ];
     
-    this(EditorApp application, EditorScene scene, string[] args)
+    EditorScene scene;
+    
+    this(EditorApp application, string[] args)
     {
         super(application.eventManager, application);
-        this.application = application;
-        this.scene = scene;
+        this.app = application;
+        
+        this.scene = cast(EditorScene)app.currentScene;
         
         igContext = igCreateContext(null);
         igSetCurrentContext(igContext);
         io = igGetIO();
         io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
         io.ConfigWindowsMoveFromTitleBarOnly = true;
-        io.FontGlobalScale = 1.0f / application.pixelRatio;
+        io.FontGlobalScale = 1.0f / app.pixelRatio;
         // TODO: get path to the font from editor.conf
-        font = ImFontAtlas_AddFontFromFileTTF(io.Fonts, "data/fonts/Inter_18pt-Medium.ttf", 16 * application.pixelRatio, null, glyphRanges.ptr);
+        font = ImFontAtlas_AddFontFromFileTTF(io.Fonts, "data/fonts/Inter_18pt-Medium.ttf", 16 * app.pixelRatio, null, glyphRanges.ptr);
         igStyleColorsDark(null);
         applyTheme();
-        ImGui_ImplSDL2_InitForOpenGL(application.window, application.glcontext);
+        ImGui_ImplSDL2_InitForOpenGL(app.window, app.glcontext);
         ImGuiOpenGLBackend.init("#version 400 core");
         
         toolbar = New!Toolbar(this);
@@ -241,6 +243,8 @@ class EditorUI: EventListener
     
     void update(Time t)
     {
+        this.scene = cast(EditorScene)app.currentScene;
+        
         if (!active)
             return;
 
@@ -263,10 +267,10 @@ class EditorUI: EventListener
         if (centralNode)
         {
             editorViewport = EditorViewport(centralNode.Pos, centralNode.Size);
-            editorViewport.size.x *= application.pixelRatio;
-            editorViewport.size.y *= application.pixelRatio;
-            editorViewport.position.x *= application.pixelRatio;
-            editorViewport.position.y *= application.pixelRatio;
+            editorViewport.size.x *= app.pixelRatio;
+            editorViewport.size.y *= app.pixelRatio;
+            editorViewport.position.x *= app.pixelRatio;
+            editorViewport.position.y *= app.pixelRatio;
             if (viewportChanged(editorViewportPrevious, editorViewport))
             {
                 int newWidth = cast(int)(editorViewport.size.x);
@@ -371,7 +375,7 @@ class EditorUI: EventListener
             
             if (igMenuItem("Exit"))
             {
-                application.exit();
+                app.exit();
             }
             
             igEndMenu();

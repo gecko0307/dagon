@@ -48,13 +48,17 @@ class Inspector: Owner
         this.ui = ui;
     }
 
-    @property EditorScene scene()
+    /*
+    @property EditorScene scene() const
     {
-        return ui.scene;
+        return cast(EditorScene)ui.app.currentScene;
     }
-
+    */
+    
     void render()
     {
+        auto scene = ui.scene;
+        
         if (igBegin("Inspector", null, ImGuiWindowFlags.NoCollapse))
         {
             if (igCollapsingHeader("Entities", ImGuiTreeNodeFlags.DefaultOpen))
@@ -74,6 +78,8 @@ class Inspector: Owner
 
     void renderEntitiesTree(Entity entity)
     {
+        auto scene = ui.scene;
+        
         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.OpenOnArrow;
 
         if (entity.children.length == 0) flags |= ImGuiTreeNodeFlags.Leaf;

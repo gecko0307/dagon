@@ -172,8 +172,8 @@ class InteractionOverlay: EventListener
 
     float pixelRatio() @property
     {
-        if (ui && ui.application && ui.application.pixelRatio > 0.0f)
-            return ui.application.pixelRatio;
+        if (ui && ui.app && ui.app.pixelRatio > 0.0f)
+            return ui.app.pixelRatio;
         return 1.0f;
     }
 
