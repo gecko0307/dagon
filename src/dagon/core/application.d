@@ -32,7 +32,7 @@ DEALINGS IN THE SOFTWARE.
  * The `dagon.core.application` module provides the base `Application` class
  * and related functionality for creating and managing a Dagon-based application.
  * This includes loading core libraries, SDL window and OpenGL context management,
- * event handling, functions for cursor management, error handling, timer management,
+ * event handling, functions for cursor management, timer management,
  * taking screenshots and others.
  *
  * Copyright: Timur Gafarov 2017-2026.
@@ -49,7 +49,6 @@ import std.file;
 import std.path;
 import std.algorithm: canFind;
 import std.process;
-import core.stdc.stdlib;
 import core.stdc.string;
 
 import dlib.core.memory;
@@ -59,7 +58,6 @@ import dlib.filesystem;
 import dlib.text.str;
 import dlib.math.utils;
 
-public import dagon.core.crashhandler;
 import dagon.core.bindings;
 import dagon.core.event;
 import dagon.core.time;
@@ -70,7 +68,13 @@ import dagon.core.config;
 import dagon.core.sysinfo;
 import dagon.core.locale;
 import dagon.core.i18n;
-public import dagon.core.cursor;
+
+public
+{
+    import dagon.core.crashhandler;
+    import dagon.core.gldebug;
+    import dagon.core.cursor;
+}
 
 import dagon.graphics.updateable;
 import dagon.graphics.font;
@@ -154,93 +158,6 @@ enum ImageFileFormat
     PPM = PNM,
     PGM = PNM,
     PBM = PNM
-}
-
-string glErrorString(GLenum v) nothrow @nogc
-{
-    switch (v)
-    {
-        case GL_NO_ERROR:                      return "GL_NO_ERROR";
-        case GL_INVALID_ENUM:                  return "GL_INVALID_ENUM";
-        case GL_INVALID_VALUE:                 return "GL_INVALID_VALUE";
-        case GL_INVALID_OPERATION:             return "GL_INVALID_OPERATION";
-        case GL_INVALID_FRAMEBUFFER_OPERATION: return "GL_INVALID_FRAMEBUFFER_OPERATION";
-        case GL_OUT_OF_MEMORY:                 return "GL_OUT_OF_MEMORY";
-        default:                               return "UNKNOWN";
-    }
-}
-
-string glDebugSourceString(GLenum v) nothrow @nogc
-{
-    switch (v)
-    {
-        case GL_DEBUG_SOURCE_API:             return "GL_DEBUG_SOURCE_API";
-        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   return "GL_DEBUG_SOURCE_WINDOW_SYSTEM";
-        case GL_DEBUG_SOURCE_SHADER_COMPILER: return "GL_DEBUG_SOURCE_SHADER_COMPILER";
-        case GL_DEBUG_SOURCE_THIRD_PARTY:     return "GL_DEBUG_SOURCE_THIRD_PARTY";
-        case GL_DEBUG_SOURCE_APPLICATION:     return "GL_DEBUG_SOURCE_APPLICATION";
-        case GL_DEBUG_SOURCE_OTHER:           return "GL_DEBUG_SOURCE_OTHER";
-        default:                              return "UNKNOWN";
-    }
-}
-
-string glDebugTypeString(GLenum v) nothrow @nogc
-{
-    switch (v)
-    {
-        case GL_DEBUG_TYPE_ERROR:               return "GL_DEBUG_TYPE_ERROR";
-        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: return "GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR";
-        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  return "GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR";
-        case GL_DEBUG_TYPE_PORTABILITY:         return "GL_DEBUG_TYPE_PORTABILITY";
-        case GL_DEBUG_TYPE_PERFORMANCE:         return "GL_DEBUG_TYPE_PERFORMANCE";
-        case GL_DEBUG_TYPE_MARKER:              return "GL_DEBUG_TYPE_MARKER";
-        case GL_DEBUG_TYPE_PUSH_GROUP:          return "GL_DEBUG_TYPE_PUSH_GROUP";
-        case GL_DEBUG_TYPE_POP_GROUP:           return "GL_DEBUG_TYPE_POP_GROUP";
-        case GL_DEBUG_TYPE_OTHER:               return "GL_DEBUG_TYPE_OTHER";
-        default:                                return "UNKNOWN";
-    }
-}
-
-string glDebugSeverityString(GLenum v) nothrow @nogc
-{
-    switch (v)
-    {
-        case GL_DEBUG_SEVERITY_HIGH:         return "GL_DEBUG_SEVERITY_HIGH";
-        case GL_DEBUG_SEVERITY_MEDIUM:       return "GL_DEBUG_SEVERITY_MEDIUM";
-        case GL_DEBUG_SEVERITY_LOW:          return "GL_DEBUG_SEVERITY_LOW";
-        case GL_DEBUG_SEVERITY_NOTIFICATION: return "GL_DEBUG_SEVERITY_NOTIFICATION";
-        default:                             return "UNKNOWN";
-    }
-}
-
-extern(System) void messageCallback(
-    GLenum source,
-    GLenum type,
-    GLuint id,
-    GLenum severity,
-    GLsizei length,
-    const GLchar* message,
-    const GLvoid* userParam) nothrow
-{
-    if (severity == GL_DEBUG_SEVERITY_NOTIFICATION)
-        return;
-
-    try
-    {
-        size_t len = length < 0 ? strlen(message) : cast(size_t)length;
-        string text = cast(string)message[0..len];
-        logDebug("[GL][source = ", glDebugSourceString(source),
-                 ", type = ",      glDebugTypeString(type),
-                 ", severity = ",  glDebugSeverityString(severity),
-                 ", id = ",        id,
-                 "] ",             text);
-    }
-    catch (Exception e)
-    {
-    }
-
-    if (severity == GL_DEBUG_SEVERITY_HIGH)
-        core.stdc.stdlib.exit(1);
 }
 
 private
