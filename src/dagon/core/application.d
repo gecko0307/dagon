@@ -156,44 +156,62 @@ enum ImageFileFormat
     PBM = PNM
 }
 
-enum string[GLenum] GLErrorStrings = [
-    GL_NO_ERROR: "GL_NO_ERROR",
-    GL_INVALID_ENUM: "GL_INVALID_ENUM",
-    GL_INVALID_VALUE: "GL_INVALID_VALUE",
-    GL_INVALID_OPERATION: "GL_INVALID_OPERATION",
-    GL_INVALID_FRAMEBUFFER_OPERATION: "GL_INVALID_FRAMEBUFFER_OPERATION",
-    GL_OUT_OF_MEMORY: "GL_OUT_OF_MEMORY"
-];
+string glErrorString(GLenum v) nothrow @nogc
+{
+    switch (v)
+    {
+        case GL_NO_ERROR:                      return "GL_NO_ERROR";
+        case GL_INVALID_ENUM:                  return "GL_INVALID_ENUM";
+        case GL_INVALID_VALUE:                 return "GL_INVALID_VALUE";
+        case GL_INVALID_OPERATION:             return "GL_INVALID_OPERATION";
+        case GL_INVALID_FRAMEBUFFER_OPERATION: return "GL_INVALID_FRAMEBUFFER_OPERATION";
+        case GL_OUT_OF_MEMORY:                 return "GL_OUT_OF_MEMORY";
+        default:                               return "UNKNOWN";
+    }
+}
 
-enum string[GLenum] GLDebugSourceStrings = [
-    GL_DEBUG_SOURCE_API: "GL_DEBUG_SOURCE_API",
-    GL_DEBUG_SOURCE_WINDOW_SYSTEM: "GL_DEBUG_SOURCE_WINDOW_SYSTEM",
-    GL_DEBUG_SOURCE_SHADER_COMPILER: "GL_DEBUG_SOURCE_SHADER_COMPILER",
-    GL_DEBUG_SOURCE_THIRD_PARTY: "GL_DEBUG_SOURCE_THIRD_PARTY",
-    GL_DEBUG_SOURCE_APPLICATION: "GL_DEBUG_SOURCE_APPLICATION",
-    GL_DEBUG_SOURCE_OTHER: "GL_DEBUG_SOURCE_OTHER"
-];
+string glDebugSourceString(GLenum v) nothrow @nogc
+{
+    switch (v)
+    {
+        case GL_DEBUG_SOURCE_API:             return "GL_DEBUG_SOURCE_API";
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   return "GL_DEBUG_SOURCE_WINDOW_SYSTEM";
+        case GL_DEBUG_SOURCE_SHADER_COMPILER: return "GL_DEBUG_SOURCE_SHADER_COMPILER";
+        case GL_DEBUG_SOURCE_THIRD_PARTY:     return "GL_DEBUG_SOURCE_THIRD_PARTY";
+        case GL_DEBUG_SOURCE_APPLICATION:     return "GL_DEBUG_SOURCE_APPLICATION";
+        case GL_DEBUG_SOURCE_OTHER:           return "GL_DEBUG_SOURCE_OTHER";
+        default:                              return "UNKNOWN";
+    }
+}
 
-enum string[GLenum] GLDebugTypeStrings = [
-    GL_DEBUG_TYPE_ERROR: "GL_DEBUG_TYPE_ERROR",
-    GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: "GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR",
-    GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: "GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR",
-    GL_DEBUG_TYPE_PORTABILITY: "GL_DEBUG_TYPE_PORTABILITY",
-    GL_DEBUG_TYPE_PERFORMANCE: "GL_DEBUG_TYPE_PERFORMANCE",
-    GL_DEBUG_TYPE_MARKER: "GL_DEBUG_TYPE_MARKER",
-    GL_DEBUG_TYPE_PUSH_GROUP: "GL_DEBUG_TYPE_PUSH_GROUP",
-    GL_DEBUG_TYPE_POP_GROUP: "GL_DEBUG_TYPE_POP_GROUP",
-    GL_DEBUG_TYPE_OTHER: "GL_DEBUG_TYPE_OTHER"
-];
+string glDebugTypeString(GLenum v) nothrow @nogc
+{
+    switch (v)
+    {
+        case GL_DEBUG_TYPE_ERROR:               return "GL_DEBUG_TYPE_ERROR";
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: return "GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR";
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  return "GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR";
+        case GL_DEBUG_TYPE_PORTABILITY:         return "GL_DEBUG_TYPE_PORTABILITY";
+        case GL_DEBUG_TYPE_PERFORMANCE:         return "GL_DEBUG_TYPE_PERFORMANCE";
+        case GL_DEBUG_TYPE_MARKER:              return "GL_DEBUG_TYPE_MARKER";
+        case GL_DEBUG_TYPE_PUSH_GROUP:          return "GL_DEBUG_TYPE_PUSH_GROUP";
+        case GL_DEBUG_TYPE_POP_GROUP:           return "GL_DEBUG_TYPE_POP_GROUP";
+        case GL_DEBUG_TYPE_OTHER:               return "GL_DEBUG_TYPE_OTHER";
+        default:                                return "UNKNOWN";
+    }
+}
 
-enum string[GLenum] GLDebugSeverityStrings = [
-    GL_DEBUG_SEVERITY_HIGH: "GL_DEBUG_SEVERITY_HIGH",
-    GL_DEBUG_SEVERITY_MEDIUM: "GL_DEBUG_SEVERITY_MEDIUM",
-    GL_DEBUG_SEVERITY_LOW: "GL_DEBUG_SEVERITY_LOW",
-    GL_DEBUG_SEVERITY_NOTIFICATION: "GL_DEBUG_SEVERITY_NOTIFICATION"
-];
-
-private __gshared char[1024] debugStringBuffer;
+string glDebugSeverityString(GLenum v) nothrow @nogc
+{
+    switch (v)
+    {
+        case GL_DEBUG_SEVERITY_HIGH:         return "GL_DEBUG_SEVERITY_HIGH";
+        case GL_DEBUG_SEVERITY_MEDIUM:       return "GL_DEBUG_SEVERITY_MEDIUM";
+        case GL_DEBUG_SEVERITY_LOW:          return "GL_DEBUG_SEVERITY_LOW";
+        case GL_DEBUG_SEVERITY_NOTIFICATION: return "GL_DEBUG_SEVERITY_NOTIFICATION";
+        default:                             return "UNKNOWN";
+    }
+}
 
 extern(System) void messageCallback(
     GLenum source,
@@ -204,31 +222,25 @@ extern(System) void messageCallback(
     const GLchar* message,
     const GLvoid* userParam) nothrow
 {
-    string msg = "%ssource = %s, type = %s, severity = %s, message = %s\n";
-    string err = "OpenGL error: ";
-    string empty = "";
-    if (severity != GL_DEBUG_SEVERITY_NOTIFICATION)
+    if (severity == GL_DEBUG_SEVERITY_NOTIFICATION)
+        return;
+
+    try
     {
-        string sourceStr = GLDebugSourceStrings[source];
-        string typeStr = GLDebugTypeStrings[type];
-        string severityStr = GLDebugSeverityStrings[severity];
-        
-        if (userParam)
-        {
-            Application app = cast(Application)userParam;
-            if (app)
-            {
-                // Instead of calling logDebug directly (which is not nothrow), use the event loop
-                debugStringBuffer[] = 0;
-                size_t len = min2(debugStringBuffer.length - 1, length);
-                debugStringBuffer[0..len] = message[0..len];
-                app.eventManager.queueLogEvent(LogLevel.Debug, cast(string)debugStringBuffer[0..len]);
-            }
-        }
-        
-        if (severity == GL_DEBUG_SEVERITY_HIGH)
-            core.stdc.stdlib.exit(1);
+        size_t len = length < 0 ? strlen(message) : cast(size_t)length;
+        string text = cast(string)message[0..len];
+        logDebug("[GL][source = ", glDebugSourceString(source),
+                 ", type = ",      glDebugTypeString(type),
+                 ", severity = ",  glDebugSeverityString(severity),
+                 ", id = ",        id,
+                 "] ",             text);
     }
+    catch (Exception e)
+    {
+    }
+
+    if (severity == GL_DEBUG_SEVERITY_HIGH)
+        core.stdc.stdlib.exit(1);
 }
 
 private
@@ -1696,7 +1708,7 @@ class Application: EventListener, Updateable
         error = glGetError();
         if (error != GL_NO_ERROR)
         {
-            logDebug("OpenGL error ", error, ": ", GLErrorStrings[error]);
+            logDebug("OpenGL error ", error, ": ", glErrorString(error));
         }
     }
 
