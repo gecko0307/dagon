@@ -869,7 +869,7 @@ class Editor: EventListener
     string pendingOpen;
     bool pendingNew = true;
 
-    void newScene()               { pendingNew = true;  pendingOpen = ""; }
+    void newScene()               { pendingNew = true;  pendingOpen = ""; app.ui.assetBrowser.active = false; }
     void openScene(string path)   { pendingOpen = path; pendingNew = false; }
 
     // Former first half of openScene: validate before touching anything
