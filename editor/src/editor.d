@@ -236,6 +236,18 @@ T jsonGet(T)(JSONValue j, string key, T def)
         if (p.type == JSONType.uinteger) return cast(long)p.uinteger;
         return def;
     }
+    else static if (is(T == uint))
+    {
+        if (p.type == JSONType.integer) return cast(uint)p.integer;
+        if (p.type == JSONType.uinteger) return cast(uint)p.uinteger;
+        return def;
+    }
+    else static if (is(T == int))
+    {
+        if (p.type == JSONType.integer) return cast(int)p.integer;
+        if (p.type == JSONType.uinteger) return cast(int)p.uinteger;
+        return def;
+    }
     else static if (is(T == float))
     {
         return jsonNum(*p, def);
@@ -855,12 +867,50 @@ class Editor: EventListener
             
             entitiesArr ~= je;
         }
+        
+        auto renderer = app.deferredRenderer;
+        auto pp = scene.app.postProcessingRenderer;
+        
+        JSONValue postprocessing = JSONValue([
+            "ssaoEnabled": JSONValue(scene.ssaoEnabled),
+            "ssaoRadius": JSONValue(renderer.ssaoRadius),
+            "ssaoSamples": JSONValue(renderer.ssaoSamples),
+            "ssaoPower": JSONValue(renderer.ssaoPower),
+            "ssaoDenoise": JSONValue(renderer.ssaoDenoise),
+            "dofEnabled": JSONValue(scene.depthOfFieldEnabled),
+            "dofAutofocus": JSONValue(pp.autofocus),
+            "dofFocalDepth": JSONValue(pp.focalDepth),
+            "dofFocalLength": JSONValue(pp.focalLength),
+            "dofFStop": JSONValue(pp.fStop),
+            "lensDistortionEnabled": JSONValue(scene.lensDistortionEnabled),
+            "lensDistortionDispersion": JSONValue(pp.lensDistortionDispersion),
+            "lensDistortionScale": JSONValue(pp.lensDistortionScale),
+            "glowEnabled": JSONValue(scene.glowEnabled),
+            "glowRadius": JSONValue(pp.glowRadius),
+            "glowThreshold": JSONValue(pp.glowThreshold),
+            "glowIntensity": JSONValue(pp.glowIntensity),
+            "motionBlurEnabled": JSONValue(scene.motionBlurEnabled),
+            "motionBlurSamples": JSONValue(pp.motionBlurSamples),
+            "motionBlurFramerate": JSONValue(pp.motionBlurFramerate),
+            "motionBlurRandomness": JSONValue(pp.motionBlurRandomness),
+            "motionBlurMinDistance": JSONValue(pp.motionBlurMinDistance),
+            "motionBlurMaxDistance": JSONValue(pp.motionBlurMaxDistance),
+            "motionBlurRadialBlurAmount": JSONValue(pp.radialBlurAmount),
+            "vignetteEnabled": JSONValue(scene.vignetteEnabled),
+            "hdrTonemapper": JSONValue(pp.tonemapper),
+            "hdrExposure": JSONValue(pp.exposure),
+            "fxaaEnabled": JSONValue(scene.fxaaEnabled),
+            "sharpeningEnabled": JSONValue(scene.sharpeningEnabled),
+            "filmGrainEnabled": JSONValue(scene.filmGrainEnabled),
+            "filmGrainColored": JSONValue(scene.filmGrainColored)
+        ]);
 
         JSONValue root = [
             "name": JSONValue(scene.name),
             "version": JSONValue(scene.fileVersion),
             "materials": JSONValue(materialsArr),
             "entities": JSONValue(entitiesArr),
+            "postprocessing": postprocessing
         ];
         logInfo("Saving scene to \"", filename, "\"...");
         write(filename, root.toPrettyString(JSONOptions.init | JSONOptions.doNotEscapeSlashes));
@@ -1034,6 +1084,66 @@ class Editor: EventListener
             }
         }
 
+        JSONValue* pPostproc = "postprocessing" in root;
+        if (pPostproc !is null && pPostproc.type == JSONType.object)
+        {
+            auto postproc = *pPostproc;
+            
+            auto renderer = app.deferredRenderer;
+            auto pp = scene.app.postProcessingRenderer;
+            
+            scene.ssaoEnabled = jsonGet(postproc, "ssaoEnabled", scene.ssaoEnabled);
+            renderer.ssaoEnabled = scene.ssaoEnabled;
+            renderer.ssaoRadius = jsonGet(postproc, "ssaoRadius", renderer.ssaoRadius);
+            renderer.ssaoSamples = jsonGet(postproc, "ssaoSamples", renderer.ssaoSamples);
+            renderer.ssaoPower = jsonGet(postproc, "ssaoPower", renderer.ssaoPower);
+            renderer.ssaoDenoise = jsonGet(postproc, "ssaoDenoise", renderer.ssaoDenoise);
+            
+            scene.depthOfFieldEnabled = jsonGet(postproc, "dofEnabled", scene.depthOfFieldEnabled);
+            pp.depthOfFieldEnabled = scene.depthOfFieldEnabled;
+            pp.autofocus = jsonGet(postproc, "dofAutofocus", pp.autofocus);
+            pp.focalDepth = jsonGet(postproc, "dofFocalDepth", pp.focalDepth);
+            pp.focalLength = jsonGet(postproc, "dofFocalLength", pp.focalLength);
+            pp.fStop = jsonGet(postproc, "dofFStop", pp.fStop);
+            
+            scene.lensDistortionEnabled = jsonGet(postproc, "lensDistortionEnabled", scene.lensDistortionEnabled);
+            pp.lensDistortionEnabled = scene.lensDistortionEnabled;
+            pp.lensDistortionDispersion = jsonGet(postproc, "lensDistortionDispersion", pp.lensDistortionDispersion);
+            pp.lensDistortionScale = jsonGet(postproc, "lensDistortionScale", pp.lensDistortionScale);
+            
+            scene.glowEnabled = jsonGet(postproc, "glowEnabled", scene.glowEnabled);
+            pp.glowEnabled = scene.glowEnabled;
+            pp.glowRadius = jsonGet(postproc, "glowRadius", pp.glowRadius);
+            pp.glowThreshold = jsonGet(postproc, "glowThreshold", pp.glowThreshold);
+            pp.glowIntensity = jsonGet(postproc, "glowIntensity", pp.glowIntensity);
+            
+            scene.motionBlurEnabled = jsonGet(postproc, "motionBlurEnabled", scene.motionBlurEnabled);
+            pp.motionBlurEnabled = scene.motionBlurEnabled;
+            pp.motionBlurSamples = jsonGet(postproc, "motionBlurSamples", pp.motionBlurSamples);
+            pp.motionBlurFramerate = jsonGet(postproc, "motionBlurFramerate", pp.motionBlurFramerate);
+            pp.motionBlurRandomness = jsonGet(postproc, "motionBlurRandomness", pp.motionBlurRandomness);
+            pp.motionBlurMinDistance = jsonGet(postproc, "motionBlurMinDistance", pp.motionBlurMinDistance);
+            pp.motionBlurMaxDistance = jsonGet(postproc, "motionBlurMaxDistance", pp.motionBlurMaxDistance);
+            pp.radialBlurAmount = jsonGet(postproc, "motionBlurRadialBlurAmount", pp.radialBlurAmount);
+            
+            scene.vignetteEnabled = jsonGet(postproc, "vignetteEnabled", scene.vignetteEnabled);
+            pp.vignette = scene.vignetteEnabled;
+            
+            pp.tonemapper = cast(Tonemapper)jsonGet(postproc, "hdrTonemapper", cast(uint)pp.tonemapper);
+            pp.exposure = jsonGet(postproc, "hdrExposure", pp.exposure);
+            
+            scene.fxaaEnabled = jsonGet(postproc, "fxaaEnabled", scene.fxaaEnabled);
+            pp.fxaaEnabled = scene.fxaaEnabled;
+            
+            scene.sharpeningEnabled = jsonGet(postproc, "sharpeningEnabled", scene.sharpeningEnabled);
+            pp.sharpeningEnabled = scene.sharpeningEnabled;
+            
+            scene.filmGrainEnabled = jsonGet(postproc, "filmGrainEnabled", scene.filmGrainEnabled);
+            scene.filmGrainColored = jsonGet(postproc, "filmGrainColored", scene.filmGrainColored);
+            pp.filmGrainEnabled = scene.filmGrainEnabled;
+            pp.filmGrainColored = scene.filmGrainColored;
+        }
+        
         logInfo("Loaded ", created.length.to!string, " entities");
         
         app.setCursor(SystemCursor.Default);
@@ -1151,7 +1261,7 @@ class EditorApp: Game
         ui.aboutImage = prepareUiTexture(aboutImage.texture);
         ui.thumbnailGenerator = New!ThumbnailGenerator(assetManager);
         eventManager.onProcessEvent = &ui.onProcessEvent;
-        dynamicViewport = false; // The editor controls the viewport instead of the engine
+        dynamicViewport = false; // Viewport will be controlled by the editor, not the engine
         editor.overlay.ui = ui;
         
         ui.active = true;
