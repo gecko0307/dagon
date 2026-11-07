@@ -1381,6 +1381,8 @@ class EditorApp: Game
     {
         super(w, h, fullscreen, title, args);
         
+        eventManager.autoExit = false;
+        
         setCursor(SystemCursor.Wait);
         
         materialPreviewRenderer = New!MaterialPreviewRenderer(this);
@@ -1479,5 +1481,10 @@ class EditorApp: Game
 
         if (!isLoading)
             ui.render();
+    }
+    
+    override void onQuit()
+    {
+        ui.requestExit();
     }
 }
