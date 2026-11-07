@@ -145,9 +145,9 @@ class EditorUI: EventListener
     EditorViewport editorViewport = EditorViewport(ImVec2(0, 0), ImVec2(0, 0));
     EditorViewport editorViewportPrevious = EditorViewport(ImVec2(0, 0), ImVec2(0, 0));
     
-    // Icons and thumbnails are assigned from main.d and shared by the panels
     Texture iconFile;
     Texture iconFolder;
+    Texture iconImage;
     Texture iconArchive;
     Texture iconAudio;
     Texture iconBlend;
@@ -155,11 +155,17 @@ class EditorUI: EventListener
     Texture iconModel;
     Texture iconPython;
     Texture iconBinary;
+    Texture iconAPK;
+    Texture iconBash;
+    Texture iconTorrent;
+    
     ThumbnailGenerator thumbnailGenerator;
+    
     Texture iconTranslate;
     Texture iconRotate;
     Texture iconScale;
     Texture aboutImage;
+    
     bool showAbout = true; // TODO: get from editor.conf
     
     // Panels

@@ -475,6 +475,12 @@ class AssetBrowser: Owner
         return false;
     }
 
+    static const(char)[][] extImages = [
+        ".bmp", ".gif", ".jpg", ".jpeg", ".lbm", ".pcx", ".png",
+        ".pnm", ".ppm", ".pgm", ".pbm", ".qoi", ".tga", ".xcf", ".xpm",
+        ".tif", ".tiff", ".webp", ".avif", ".jxl", ".svg", ".ico",
+        ".dds", ".hdr", ".ktx", ".ktx2"
+    ];
     static const(char)[][] extModels = [
         ".obj", ".3ds", ".gltf", ".glb", ".dae", ".fbx",
         ".stl", ".ply", ".iqm", ".3mf", ".bvh", ".md2", ".md3",
@@ -498,11 +504,26 @@ class AssetBrowser: Owner
     static const(char)[][] extBinary = [
         ".exe", ".dll", ".bin", ".o"
     ];
+    static const(char)[][] extAPK = [".apk"];
+    static const(char)[][] extBash = [".sh"];
+    static const(char)[][] extTorrent = [".torrent"];
 
     Texture getEntryIcon(ref AssetEntry entry)
     {
         if (entry.isDirectory)
             return ui.iconFolder;
+        
+        if (hasExtension(entry.name, extImages))
+        {
+            if (!entry.thumbnailChecked)
+            {
+                if (ui.thumbnailGenerator)
+                    entry.thumbnail = ui.thumbnailGenerator.getThumbnail(entry.path);
+                entry.thumbnailChecked = true;
+            }
+            return entry.thumbnail ? entry.thumbnail : ui.iconImage;
+        }
+        
         if (hasExtension(entry.name, extModels))
             return ui.iconModel;
         if (hasExtension(entry.name, extArchives))
@@ -517,14 +538,14 @@ class AssetBrowser: Owner
             return ui.iconPython;
         if (hasExtension(entry.name, extBinary))
             return ui.iconBinary;
-
-        if (!entry.thumbnailChecked)
-        {
-            if (ui.thumbnailGenerator)
-                entry.thumbnail = ui.thumbnailGenerator.getThumbnail(entry.path);
-            entry.thumbnailChecked = true;
-        }
-        return entry.thumbnail ? entry.thumbnail : ui.iconFile;
+        if (hasExtension(entry.name, extAPK))
+            return ui.iconAPK;
+        if (hasExtension(entry.name, extBash))
+            return ui.iconBash;
+        if (hasExtension(entry.name, extTorrent))
+            return ui.iconTorrent;
+        
+        return ui.iconFile;
     }
 
     size_t renderTableEntries(

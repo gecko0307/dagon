@@ -1056,6 +1056,7 @@ class EditorApp: Game
     
     TextureAsset aFileIcon;
     TextureAsset aFolderIcon;
+    TextureAsset aImageIcon;
     TextureAsset aArchiveIcon;
     TextureAsset aAudioIcon;
     TextureAsset aBlendIcon;
@@ -1063,6 +1064,10 @@ class EditorApp: Game
     TextureAsset aModelIcon;
     TextureAsset aPythonIcon;
     TextureAsset aBinaryIcon;
+    TextureAsset aAPKIcon;
+    TextureAsset aBashIcon;
+    TextureAsset aTorrentIcon;
+    
     TextureAsset aTranslateIcon;
     TextureAsset aRotateIcon;
     TextureAsset aScaleIcon;
@@ -1098,6 +1103,7 @@ class EditorApp: Game
         
         aFileIcon = loadTexture("data/icons/file.png");
         aFolderIcon = loadTexture("data/icons/folder.png");
+        aImageIcon = loadTexture("data/icons/image.png");
         aArchiveIcon = loadTexture("data/icons/archive.png");
         aAudioIcon = loadTexture("data/icons/audio.png");
         aBlendIcon = loadTexture("data/icons/blend.png");
@@ -1105,6 +1111,9 @@ class EditorApp: Game
         aModelIcon = loadTexture("data/icons/model.png");
         aPythonIcon = loadTexture("data/icons/python.png");
         aBinaryIcon = loadTexture("data/icons/binary.png");
+        aAPKIcon = loadTexture("data/icons/apk.png");
+        aBashIcon = loadTexture("data/icons/bash.png");
+        aTorrentIcon = loadTexture("data/icons/torrent.png");
         aTranslateIcon = loadTexture("data/icons/btn_translate.png");
         aRotateIcon = loadTexture("data/icons/btn_rotate.png");
         aScaleIcon = loadTexture("data/icons/btn_scale.png");
@@ -1124,6 +1133,7 @@ class EditorApp: Game
         ui = New!EditorUI(this, editor, args);
         ui.iconFile = prepareUiTexture(aFileIcon.texture);
         ui.iconFolder = prepareUiTexture(aFolderIcon.texture);
+        ui.iconImage = prepareUiTexture(aImageIcon.texture);
         ui.iconArchive = prepareUiTexture(aArchiveIcon.texture);
         ui.iconAudio = prepareUiTexture(aAudioIcon.texture);
         ui.iconBlend = prepareUiTexture(aBlendIcon.texture);
@@ -1131,6 +1141,10 @@ class EditorApp: Game
         ui.iconModel = prepareUiTexture(aModelIcon.texture);
         ui.iconPython = prepareUiTexture(aPythonIcon.texture);
         ui.iconBinary = prepareUiTexture(aBinaryIcon.texture);
+        ui.iconAPK = prepareUiTexture(aAPKIcon.texture);
+        ui.iconBash = prepareUiTexture(aBashIcon.texture);
+        ui.iconTorrent = prepareUiTexture(aTorrentIcon.texture);
+        
         ui.iconTranslate = prepareUiTexture(aTranslateIcon.texture);
         ui.iconRotate = prepareUiTexture(aRotateIcon.texture);
         ui.iconScale = prepareUiTexture(aScaleIcon.texture);
