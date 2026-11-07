@@ -58,7 +58,7 @@ class Inspector: Owner
             {
                 foreach(e; scene.world.entities)
                 {
-                    if (scene.isInternalEntity(e))
+                    if (scene.isInternalEntity(e) || editor.isDeleted(e))
                         continue;
                     if (e.parent is null)
                         renderEntitiesTree(e);
@@ -69,13 +69,23 @@ class Inspector: Owner
         }
     }
 
+    bool hasLiveChildren(Entity entity)
+    {
+        foreach (child; entity.children)
+        {
+            if (!editor.isDeleted(child))
+                return true;
+        }
+        return false;
+    }
+
     void renderEntitiesTree(Entity entity)
     {
         auto scene = editor.scene;
-        
+
         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.OpenOnArrow;
 
-        if (entity.children.length == 0) flags |= ImGuiTreeNodeFlags.Leaf;
+        if (!hasLiveChildren(entity)) flags |= ImGuiTreeNodeFlags.Leaf;
         if (editor.selectedEntity == entity)  flags |= ImGuiTreeNodeFlags.Selected;
 
         bool isOpen = false;
@@ -89,11 +99,25 @@ class Inspector: Owner
             editor.selectEntity(entity);
         }
 
+        if (igIsItemClicked(ImGuiMouseButton.Right))
+            editor.selectEntity(entity);
+
+        if (igBeginPopupContextItem("Entity context"))
+        {
+            bool canModify = editor.isSerializableEntity(entity);
+            if (igMenuItem("Duplicate", "Ctrl+D", false, canModify))
+                editor.duplicateEntity(entity);
+            if (igMenuItem("Delete", "Del", false, canModify))
+                editor.deleteEntity(entity);
+            igEndPopup();
+        }
+
         if (isOpen)
         {
             foreach(i, child; entity.children)
             {
-                renderEntitiesTree(child);
+                if (!editor.isDeleted(child))
+                    renderEntitiesTree(child);
             }
 
             igTreePop();

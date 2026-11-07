@@ -30,6 +30,8 @@ DEALINGS IN THE SOFTWARE.
  */
 module properties;
 
+import core.stdc.string: strlen;
+
 import std.stdio;
 
 import dlib.core.ownership;
@@ -68,6 +70,12 @@ class PropertiesPanel: Owner
         "Edit scaling"
     ];
     TransformEditTracker[3] transformEditTrackers;
+
+    // Entity name editing: one continuous edit is one undo step
+    char[256] entityNameBuffer;
+    bool nameEditActive;
+    Entity nameEditEntity;
+    string nameEditStart;
 
     this(EditorUI ui)
     {
@@ -115,10 +123,51 @@ class PropertiesPanel: Owner
             commitTransformEdit(index);
     }
 
+    void commitNameEdit()
+    {
+        if (!nameEditActive)
+            return;
+        nameEditActive = false;
+        if (nameEditEntity)
+            ui.editor.history.pushRename(nameEditEntity, nameEditStart);
+        nameEditEntity = null;
+        nameEditStart = null;
+    }
+
+    void renderNameField(Entity entity)
+    {
+        // Keep the buffer in sync with the entity (selection change, undo/redo)
+        if (!nameEditActive)
+        {
+            entityNameBuffer[] = 0;
+            size_t length = entity.name.length < entityNameBuffer.length - 1
+                ? entity.name.length
+                : entityNameBuffer.length - 1;
+            entityNameBuffer[0 .. length] = entity.name[0 .. length];
+        }
+
+        if (igInputText("Name", entityNameBuffer.ptr, entityNameBuffer.length))
+        {
+            if (!nameEditActive)
+            {
+                nameEditActive = true;
+                nameEditEntity = entity;
+                nameEditStart = entity.name;
+            }
+            entity.name = entityNameBuffer[0 .. strlen(entityNameBuffer.ptr)].idup;
+        }
+        if (nameEditActive && !igIsItemActive())
+            commitNameEdit();
+    }
+
     void render()
     {
         auto scene = ui.scene;
-        
+
+        // Selection changed (or was cleared) in the middle of a rename: close it
+        if (nameEditActive && nameEditEntity !is ui.editor.selectedEntity)
+            commitNameEdit();
+
         // Selection changed (or was cleared) in the middle of an edit: close it
         foreach (i; 0 .. transformEditTrackers.length)
         {
@@ -276,6 +325,24 @@ class PropertiesPanel: Owner
         
         if (igBegin("Entity", null, ImGuiWindowFlags.NoCollapse))
         {
+            if (ui.editor.selectedEntity)
+            {
+                Entity named = ui.editor.selectedEntity;
+                if (ui.editor.isSerializableEntity(named))
+                {
+                    renderNameField(named);
+                    if (igButton("Duplicate", ImVec2(0, 0)))
+                        ui.editor.duplicateEntity(named);
+                    igSameLine();
+                    if (igButton("Delete", ImVec2(0, 0)))
+                        ui.editor.deleteEntity(named);
+                }
+                else
+                {
+                    igTextDisabled("%.*s", cast(int)named.name.length, named.name.ptr);
+                }
+            }
+
             if (igCollapsingHeader("Options"))
             {
                 if (ui.editor.selectedEntity)

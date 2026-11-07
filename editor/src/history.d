@@ -37,6 +37,7 @@ import dlib.math.vector;
 import dlib.math.quaternion;
 
 import dagon.graphics.entity;
+import dagon.graphics.light;
 
 /// Local transformation of an entity at some point in time.
 struct TransformSnapshot
@@ -113,6 +114,117 @@ class TransformCommand: Command
     override void redo()
     {
         after.apply(target);
+    }
+}
+
+/// Entity name change.
+class RenameCommand: Command
+{
+    string before;
+    string after;
+
+    this(Entity target, string before, string after)
+    {
+        super("Rename", target);
+        this.before = before;
+        this.after = after;
+    }
+
+    override void undo()
+    {
+        target.name = before;
+    }
+
+    override void redo()
+    {
+        target.name = after;
+    }
+}
+
+/// Removal or creation of an entity together with its children.
+///
+/// Entities are never freed while the scene is alive: removal is "soft",
+/// the whole subtree is hidden (and lights switched off) and the root is
+/// reported through `markDeleted`, so that the editor can skip it in the
+/// inspector and the scene file. This keeps every Entity pointer held by
+/// older commands valid and makes undo trivial.
+///
+/// `creation == false`: the command describes a deletion (use redo() to
+/// perform it, then push). `creation == true`: the command describes an
+/// entity that has just been created (just push; undo removes it).
+class EntityLifetimeCommand: Command
+{
+    private Array!Entity entities;
+    private Array!ubyte states; // bit 0: visible, bit 1: shining
+    private bool creation;
+    private void delegate(Entity, bool) markDeleted;
+
+    this(string name, Entity target, bool creation, void delegate(Entity, bool) markDeleted)
+    {
+        super(name, target);
+        this.creation = creation;
+        this.markDeleted = markDeleted;
+        collect(target);
+    }
+
+    ~this()
+    {
+        entities.free();
+        states.free();
+    }
+
+    // Remembers the current state of the entity and all of its descendants
+    private void collect(Entity e)
+    {
+        ubyte state = e.visible ? 1 : 0;
+        if (auto light = cast(Light)e)
+        {
+            if (light.shining)
+                state |= 2;
+        }
+        entities.append(e);
+        states.append(state);
+        foreach (child; e.children)
+            collect(child);
+    }
+
+    private void hide()
+    {
+        foreach (e; entities.data)
+        {
+            e.visible = false;
+            if (auto light = cast(Light)e)
+                light.shining = false;
+        }
+        markDeleted(target, true);
+    }
+
+    private void restore()
+    {
+        foreach (i, e; entities.data)
+        {
+            ubyte state = states.data[i];
+            e.visible = (state & 1) != 0;
+            if (auto light = cast(Light)e)
+                light.shining = (state & 2) != 0;
+        }
+        markDeleted(target, false);
+    }
+
+    override void undo()
+    {
+        if (creation)
+            hide();
+        else
+            restore();
+    }
+
+    override void redo()
+    {
+        if (creation)
+            restore();
+        else
+            hide();
     }
 }
 
@@ -204,6 +316,15 @@ class CommandHistory: Owner
         if (before.sameAs(after))
             return;
         push(New!TransformCommand(name, entity, before, after));
+    }
+
+    /// Records an entity rename that has already happened.
+    /// Does nothing if the name did not actually change.
+    void pushRename(Entity entity, string before)
+    {
+        if (before == entity.name)
+            return;
+        push(New!RenameCommand(entity, before, entity.name));
     }
 
     void undo()

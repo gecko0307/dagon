@@ -351,6 +351,10 @@ class Editor: EventListener
     string[Entity] meshPaths;
     string[Material] materialPaths;
 
+    // Roots of soft-deleted subtrees (see EntityLifetimeCommand in history.d).
+    // Deleted entities stay in the scene, hidden, until the scene is replaced.
+    bool[Entity] deletedEntities;
+
     // Scene files always use forward slashes, independent of the host OS.
     string portableAssetPath(string path)
     {
@@ -568,10 +572,157 @@ class Editor: EventListener
     {
         if (command.target is null)
             return;
+
+        // The command removed its target (redo of a deletion, undo of a duplicate)
+        if (isDeleted(command.target))
+        {
+            if (selectedEntity !is null && isDeleted(selectedEntity))
+                clearSelection();
+            return;
+        }
+
         GizmoMode mode = overlay.gizmoMode;
         selectEntity(command.target);
         if (mode != GizmoMode.Disabled)
             overlay.gizmoMode = mode;
+    }
+
+    void clearSelection()
+    {
+        selectedEntity = null;
+        overlay.gizmoMode = GizmoMode.Disabled;
+    }
+
+    // Callback for EntityLifetimeCommand
+    void markDeleted(Entity e, bool deleted)
+    {
+        if (deleted)
+            deletedEntities[e] = true;
+        else
+            deletedEntities.remove(e);
+    }
+
+    // An entity is deleted if it or any of its ancestors was deleted
+    bool isDeleted(Entity e)
+    {
+        for (Entity p = e; p !is null; p = p.parent)
+        {
+            if (p in deletedEntities)
+                return true;
+        }
+        return false;
+    }
+
+    // Soft-deletes the entity together with its children, undoable
+    void deleteEntity(Entity e)
+    {
+        if (overlay.draggingGizmo || e is null || !isSerializableEntity(e))
+            return;
+
+        auto command = New!EntityLifetimeCommand("Delete", e, false, &markDeleted);
+        command.redo(); // performs the deletion
+        history.push(command);
+
+        if (selectedEntity !is null && isDeleted(selectedEntity))
+            clearSelection();
+    }
+
+    void deleteSelected()
+    {
+        deleteEntity(selectedEntity);
+    }
+
+    void copyLight(Light dst, Light src)
+    {
+        dst.shining = src.shining;
+        dst.color = src.color;
+        dst.energy = src.energy;
+        dst.angularRadius = src.angularRadius;
+        dst.volumeRadius = src.volumeRadius;
+        dst.radius = src.radius;
+        dst.length = src.length;
+        dst.spotOuterCutoff = src.spotOuterCutoff;
+        dst.spotInnerCutoff = src.spotInnerCutoff;
+        dst.shadowEnabled = src.shadowEnabled;
+        dst.scatteringEnabled = src.scatteringEnabled;
+        dst.scattering = src.scattering;
+        dst.mediumDensity = src.mediumDensity;
+        dst.scatteringSamples = src.scatteringSamples;
+        dst.scatteringMaxRandomStepOffset = src.scatteringMaxRandomStepOffset;
+        dst.scatteringUseShadow = src.scatteringUseShadow;
+        dst.diffuse = src.diffuse;
+        dst.specular = src.specular;
+    }
+
+    // Recursively copies an entity under the given parent. Meshes and
+    // materials are shared with the source, not copied.
+    Entity cloneEntity(Entity src, Entity parent, bool isRoot)
+    {
+        Entity e;
+        if (auto srcLight = cast(Light)src)
+        {
+            auto light = scene.addLight(srcLight.type, parent);
+            copyLight(light, srcLight);
+            e = light;
+        }
+        else
+        {
+            e = scene.addEntity(parent);
+        }
+
+        if (isRoot)
+            e.name = src.name.length > 0 ? src.name ~ " copy" : genUniqueEntitytName();
+        else
+            e.name = src.name;
+
+        e.layer = src.layer;
+        e.type = src.type;
+        e.renderLayer = src.renderLayer;
+        e.visible = src.visible;
+        e.castShadow = src.castShadow;
+        e.solid = src.solid;
+        e.dynamic = src.dynamic;
+        e.decal = src.decal;
+        e.probe = src.probe;
+        e.probeExtents = src.probeExtents;
+        e.probeFalloffMargin = src.probeFalloffMargin;
+        e.probeUseBoxProjection = src.probeUseBoxProjection;
+        e.transparent = src.transparent;
+        e.opacity = src.opacity;
+        e.position = src.position;
+        e.rotation = src.rotation;
+        e.scaling = src.scaling;
+        e.drawable = src.drawable;
+        e.material = src.material;
+
+        if (auto mp = src in meshPaths)
+            meshPaths[e] = *mp;
+
+        foreach (child; src.children)
+        {
+            if (!isDeleted(child))
+                cloneEntity(child, e, false);
+        }
+
+        return e;
+    }
+
+    // Duplicates the entity with its children, in the same place, undoable
+    Entity duplicateEntity(Entity src)
+    {
+        if (overlay.draggingGizmo || src is null || !isSerializableEntity(src))
+            return null;
+
+        Entity parent = src.parent !is null ? src.parent : scene.sceneRoot;
+        Entity copy = cloneEntity(src, parent, true);
+        selectEntity(copy);
+        history.push(New!EntityLifetimeCommand("Duplicate", copy, true, &markDeleted));
+        return copy;
+    }
+
+    void duplicateSelected()
+    {
+        duplicateEntity(selectedEntity);
     }
 
     void undo()
@@ -628,6 +779,7 @@ class Editor: EventListener
         history.clear();
         meshPaths.clear();
         materialPaths.clear();
+        deletedEntities.clear();
         numEntities = 0;
         app.materialPreviewRenderer.clear();
 
@@ -773,7 +925,7 @@ class Editor: EventListener
 
     bool isSerializableEntity(Entity e)
     {
-        return !scene.isInternalEntity(e) && e !is scene.sceneRoot;
+        return !scene.isInternalEntity(e) && e !is scene.sceneRoot && !isDeleted(e);
     }
 
     void saveScene(string filename)

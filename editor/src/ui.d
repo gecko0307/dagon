@@ -231,14 +231,21 @@ class EditorUI: EventListener
             return;
 
         uint mods = cast(uint)event.key.keysym.mod;
-        if (!(mods & KMOD_CTRL))
-            return;
-
         int key = cast(int)event.key.keysym.sym;
-        if (key == SDLK_y || (key == SDLK_z && (mods & KMOD_SHIFT)))
-            editor.redo();
-        else if (key == SDLK_z)
-            editor.undo();
+
+        if (mods & KMOD_CTRL)
+        {
+            if (key == SDLK_y || (key == SDLK_z && (mods & KMOD_SHIFT)))
+                editor.redo();
+            else if (key == SDLK_z)
+                editor.undo();
+            else if (key == SDLK_d && event.key.repeat == 0)
+                editor.duplicateSelected();
+            return;
+        }
+
+        if (key == SDLK_DELETE && event.key.repeat == 0)
+            editor.deleteSelected();
     }
 
     bool capturesMouse() @property const
@@ -411,6 +418,15 @@ class EditorUI: EventListener
             }
             if (igMenuItem(redoLabel.cstr, "Ctrl+Y", false, editor.history.canRedo))
                 editor.redo();
+
+            igSeparator();
+
+            bool canModifySelection = editor.selectedEntity !is null &&
+                editor.isSerializableEntity(editor.selectedEntity);
+            if (igMenuItem("Duplicate", "Ctrl+D", false, canModifySelection))
+                editor.duplicateSelected();
+            if (igMenuItem("Delete", "Del", false, canModifySelection))
+                editor.deleteSelected();
 
             igEndMenu();
         }
