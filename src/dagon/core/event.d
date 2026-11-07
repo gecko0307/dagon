@@ -407,6 +407,9 @@ class EventManager: Owner
     /// Window manager info obtained from SDL.
     SDL_SysWMinfo wmInfo;
     
+    /// If true, the application will automatically terminate when the window's close button is pressed.
+    bool autoExit = true;
+    
     /// Opened controllers/joysticks.
     GameInputDevice[MAX_CONTROLLERS] gameInputDevices;
     
@@ -1136,7 +1139,8 @@ class EventManager: Owner
                     }
                     else if (event.window.event == SDL_WINDOWEVENT_CLOSE)
                     {
-                        exit();
+                        if (autoExit)
+                            exit();
                         e = Event(EventType.Quit);
                         addEvent(e);
                     }
@@ -1154,7 +1158,8 @@ class EventManager: Owner
                     break;
 
                 case SDL_QUIT:
-                    exit();
+                    if (autoExit)
+                        exit();
                     e = Event(EventType.Quit);
                     addEvent(e);
                     break;
