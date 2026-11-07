@@ -178,7 +178,16 @@ class EditorUI: EventListener
     bool pendingOpenDialog;
     bool pendingSave;
     bool openUnsavedChangesPopup;
-    
+
+    // What to do once the user has decided what to do with unsaved changes
+    enum UnsavedChangesAction
+    {
+        None,
+        NewScene,
+        Exit
+    }
+    UnsavedChangesAction unsavedChangesAction = UnsavedChangesAction.None;
+
     static ImWchar[7] glyphRanges = [
         0x0020, 0x00FF, // Basic Latin + Latin Supplement
         0x0370, 0x03FF, // Greek
@@ -255,12 +264,42 @@ class EditorUI: EventListener
     // has unsaved changes
     void requestNewScene()
     {
+        unsavedChangesAction = UnsavedChangesAction.NewScene;
         if (editor.modified)
             openUnsavedChangesPopup = true;
         else
-            editor.newScene();
+            performUnsavedChangesAction();
     }
 
+    // Exits the application, asking for confirmation first if the current one
+    // has unsaved changes
+    void requestExit()
+    {
+        unsavedChangesAction = UnsavedChangesAction.Exit;
+        if (editor.modified)
+            openUnsavedChangesPopup = true;
+        else
+            performUnsavedChangesAction();
+    }
+
+    // Carries out the action that was waiting for the unsaved changes decision
+    void performUnsavedChangesAction()
+    {
+        auto action = unsavedChangesAction;
+        unsavedChangesAction = UnsavedChangesAction.None;
+        final switch (action)
+        {
+            case UnsavedChangesAction.None:
+                break;
+            case UnsavedChangesAction.NewScene:
+                editor.newScene();
+                break;
+            case UnsavedChangesAction.Exit:
+                app.exit();
+                break;
+        }
+    }
+    
     void handleShortcut(SDL_Event* event)
     {
         if (event.type != SDL_KEYDOWN)
@@ -426,16 +465,18 @@ class EditorUI: EventListener
             if (igMenuItem("Open...", "Ctrl+O", false, true))
                 openSceneDialog();
 
+            igSeparator();
+
             if (igMenuItem("Save", "Ctrl+S", false, true))
                 saveCurrentScene();
 
             if (igMenuItem("Save as..."))
                 saveSceneAs();
-            
+
+            igSeparator();
+
             if (igMenuItem("Exit"))
-            {
-                app.exit();
-            }
+                requestExit();
             
             igEndMenu();
         }
@@ -476,9 +517,13 @@ class EditorUI: EventListener
         {
             if (igMenuItem("Contents"))
                 openHelp();
-            
+
+            igSeparator();
+
             if (igMenuItem("Dagon Engine website"))
                 browse(dagonWebsiteUrl);
+
+            igSeparator();
 
             if (igMenuItem("About Dagon Editor..."))
                 showAbout = true;
@@ -535,25 +580,33 @@ class EditorUI: EventListener
         if (igBeginPopupModal("Unsaved changes", null, ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoSavedSettings))
         {
             igText("The scene has unsaved changes.");
-            igText("Save them before creating a new scene?");
+            if (unsavedChangesAction == UnsavedChangesAction.Exit)
+                igText("Save them before exiting?");
+            else
+                igText("Save them before creating a new scene?");
             igSpacing();
 
             if (igButton("Save", ImVec2(100, 0)))
             {
-                // A cancelled Save dialog keeps the current scene
+                // A cancelled Save dialog keeps the current scene and cancels the action
                 if (saveCurrentScene())
-                    editor.newScene();
+                    performUnsavedChangesAction();
+                else
+                    unsavedChangesAction = UnsavedChangesAction.None;
                 igCloseCurrentPopup();
             }
             igSameLine();
             if (igButton("Don't save", ImVec2(100, 0)))
             {
-                editor.newScene();
+                performUnsavedChangesAction();
                 igCloseCurrentPopup();
             }
             igSameLine();
             if (igButton("Cancel", ImVec2(100, 0)))
+            {
+                unsavedChangesAction = UnsavedChangesAction.None;
                 igCloseCurrentPopup();
+            }
 
             igEndPopup();
         }
