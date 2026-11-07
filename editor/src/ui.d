@@ -166,7 +166,7 @@ class EditorUI: EventListener
     Texture iconScale;
     Texture aboutImage;
     
-    bool showAbout = true; // TODO: get from editor.conf
+    bool showAbout = true;
     
     // Panels
     Toolbar toolbar;
@@ -211,8 +211,7 @@ class EditorUI: EventListener
         io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
         io.ConfigWindowsMoveFromTitleBarOnly = true;
         io.FontGlobalScale = 1.0f / app.pixelRatio;
-        // TODO: get path to the font from editor.conf
-        font = ImFontAtlas_AddFontFromFileTTF(io.Fonts, "data/fonts/Inter_18pt-Medium.ttf", 16 * app.pixelRatio, null, glyphRanges.ptr);
+        font = ImFontAtlas_AddFontFromFileTTF(io.Fonts, app.uiFont.ptr, cast(uint)(app.uiFontSize * app.pixelRatio), null, glyphRanges.ptr);
         igStyleColorsDark(null);
         applyTheme();
         ImGui_ImplSDL2_InitForOpenGL(app.window, app.glcontext);
@@ -222,6 +221,8 @@ class EditorUI: EventListener
         inspector = New!Inspector(editor, this);
         properties = New!PropertiesPanel(this);
         assetBrowser = New!AssetBrowser(this);
+        
+        showAbout = app.uiShowSplashOnStartup;
     }
     
     void onProcessEvent(SDL_Event* event)

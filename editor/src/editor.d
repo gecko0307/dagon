@@ -45,12 +45,14 @@ import dlib.math.quaternion;
 import dlib.image.color;
 import dlib.container.array;
 import dlib.container.dict;
+import dlib.text.str;
 
 import dagon.core.bindings;
 import dagon.core.logger;
 import dagon.core.event;
 import dagon.core.time;
 import dagon.core.cursor;
+import dagon.core.config;
 import dagon.graphics.entity;
 import dagon.graphics.components;
 import dagon.graphics.camera;
@@ -1333,6 +1335,12 @@ class Editor: EventListener
 
 class EditorApp: Game
 {
+    Configuration editorConfig;
+    
+    String uiFont;
+    uint uiFontSize = 16;
+    bool uiShowSplashOnStartup = true;
+    
     EditorUI ui;
     Editor editor;
     
@@ -1384,6 +1392,20 @@ class EditorApp: Game
         eventManager.autoExit = false;
         
         setCursor(SystemCursor.Wait);
+        
+        editorConfig = New!Configuration(this);
+        foreach(fs; vfs.mounted)
+        {
+            editorConfig.fromFile(fs, "editor.conf");
+        }
+        
+        uiFont = "data/fonts/Inter_18pt-Medium.ttf";
+        if ("font" in editorConfig.props)
+            uiFont = String(editorConfig.props["font"].toString);
+        if ("fontSize" in editorConfig.props)
+            uiFontSize = editorConfig.props["fontSize"].toUInt;
+        if ("showSplashOnStartup" in editorConfig.props)
+            uiShowSplashOnStartup = cast(bool)editorConfig.props["showSplashOnStartup"].toUInt;
         
         materialPreviewRenderer = New!MaterialPreviewRenderer(this);
         
@@ -1441,6 +1463,11 @@ class EditorApp: Game
         editor.overlay.ui = ui;
         
         ui.active = true;
+    }
+    
+    ~this()
+    {
+        uiFont.free();
     }
     
     override void onCustomResize(int x, int y, int width, int height)
