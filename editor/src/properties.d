@@ -155,6 +155,7 @@ class PropertiesPanel: Owner
                 nameEditActive = true;
                 nameEditEntity = entity;
                 nameEditStart = entity.name;
+                ui.editor.markModified();
             }
             entity.name = entityNameBuffer[0 .. strlen(entityNameBuffer.ptr)].idup;
         }
@@ -187,7 +188,10 @@ class PropertiesPanel: Owner
                 if (!sceneNameActive)
                     loadSceneNameBuffer();
                 if (igInputText("Scene name", sceneNameBuffer.ptr, sceneNameBuffer.length))
+                {
                     scene.name = sceneNameBuffer[0 .. strlen(sceneNameBuffer.ptr)].idup;
+                    ui.editor.markModified();
+                }
                 sceneNameActive = igIsItemActive();
             }
 
@@ -348,13 +352,16 @@ class PropertiesPanel: Owner
                 if (ui.editor.selectedEntity)
                 {
                     auto selected = ui.editor.selectedEntity;
-                    igCheckbox("Visible", &selected.visible);
-                    igCheckbox("Casts shadow", &selected.castShadow);
-                    igCheckbox("Solid", &selected.solid);
-                    igCheckbox("Dynamic", &selected.dynamic);
-                    igCheckbox("Decal", &selected.decal);
-                    igCheckbox("Transparent", &selected.transparent);
-                    igSliderFloat("Entity opacity", &selected.opacity, 0.0f, 1.0f, "%.3f");
+                    bool optionsChanged = false;
+                    optionsChanged |= igCheckbox("Visible", &selected.visible);
+                    optionsChanged |= igCheckbox("Casts shadow", &selected.castShadow);
+                    optionsChanged |= igCheckbox("Solid", &selected.solid);
+                    optionsChanged |= igCheckbox("Dynamic", &selected.dynamic);
+                    optionsChanged |= igCheckbox("Decal", &selected.decal);
+                    optionsChanged |= igCheckbox("Transparent", &selected.transparent);
+                    optionsChanged |= igSliderFloat("Entity opacity", &selected.opacity, 0.0f, 1.0f, "%.3f");
+                    if (optionsChanged)
+                        ui.editor.markModified();
                     igCheckbox("Show bounding box", &scene.showSelectedEntityBoundingBox);
                 }
             }
@@ -370,6 +377,7 @@ class PropertiesPanel: Owner
                         entity.position = Vector3f(0.0f, 0.0f, 0.0f);
                         entity.rotation = Quaternionf.identity();
                         entity.scaling = Vector3f(1.0f, 1.0f, 1.0f);
+                        ui.editor.markModified();
                     }
                     //igSameLine();
 

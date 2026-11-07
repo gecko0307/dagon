@@ -177,6 +177,7 @@ class EditorUI: EventListener
     // Set by shortcuts, executed in update()
     bool pendingOpenDialog;
     bool pendingSave;
+    bool openUnsavedChangesPopup;
     
     static ImWchar[7] glyphRanges = [
         0x0020, 0x00FF, // Basic Latin + Latin Supplement
@@ -230,21 +231,34 @@ class EditorUI: EventListener
             editor.openScene(filename);
     }
 
-    void saveSceneAs()
+    // Returns true if the scene was saved (false if the dialog was cancelled)
+    bool saveSceneAs()
     {
         string filename = saveFileDialog(["*.json"], "Save scene to a file");
-        if (filename.length != 0)
-            editor.saveScene(filename);
+        if (filename.length == 0)
+            return false;
+        editor.saveScene(filename);
+        return true;
     }
 
     // Saves to the current scene file; asks for a file only if the scene
-    // has not been saved or opened yet
-    void saveCurrentScene()
+    // has not been saved or opened yet. Returns true if the scene was saved.
+    bool saveCurrentScene()
     {
         if (editor.sceneFilename.length == 0)
-            saveSceneAs();
+            return saveSceneAs();
+        editor.saveScene(editor.sceneFilename);
+        return true;
+    }
+
+    // Creates a new scene, asking for confirmation first if the current one
+    // has unsaved changes
+    void requestNewScene()
+    {
+        if (editor.modified)
+            openUnsavedChangesPopup = true;
         else
-            editor.saveScene(editor.sceneFilename);
+            editor.newScene();
     }
 
     void handleShortcut(SDL_Event* event)
@@ -407,9 +421,7 @@ class EditorUI: EventListener
         if (igBeginMenu("File"))
         {
             if (igMenuItem("New scene"))
-            {
-                editor.newScene();
-            }
+                requestNewScene();
 
             if (igMenuItem("Open...", "Ctrl+O", false, true))
                 openSceneDialog();
@@ -513,8 +525,40 @@ class EditorUI: EventListener
 
             igEndPopup();
         }
+
+        if (openUnsavedChangesPopup)
+        {
+            openUnsavedChangesPopup = false;
+            igOpenPopup("Unsaved changes");
+        }
+
+        if (igBeginPopupModal("Unsaved changes", null, ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoSavedSettings))
+        {
+            igText("The scene has unsaved changes.");
+            igText("Save them before creating a new scene?");
+            igSpacing();
+
+            if (igButton("Save", ImVec2(100, 0)))
+            {
+                // A cancelled Save dialog keeps the current scene
+                if (saveCurrentScene())
+                    editor.newScene();
+                igCloseCurrentPopup();
+            }
+            igSameLine();
+            if (igButton("Don't save", ImVec2(100, 0)))
+            {
+                editor.newScene();
+                igCloseCurrentPopup();
+            }
+            igSameLine();
+            if (igButton("Cancel", ImVec2(100, 0)))
+                igCloseCurrentPopup();
+
+            igEndPopup();
+        }
     }
-    
+
     void renderStatusBar()
     {
         ImGuiWindowFlags windowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.MenuBar;

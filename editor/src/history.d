@@ -239,6 +239,9 @@ class CommandHistory: Owner
     /// Called after a command has been undone or redone
     void delegate(Command) onApplied;
 
+    /// Called whenever the history changes (command pushed, undone or redone)
+    void delegate() onChanged;
+
     this(Owner owner)
     {
         super(owner);
@@ -306,6 +309,8 @@ class CommandHistory: Owner
                 undoStack.data[i - 1] = undoStack.data[i];
             undoStack.resize(undoStack.length - 1, null);
         }
+        if (onChanged)
+            onChanged();
     }
 
     /// Records a transformation change of an entity that has already
@@ -335,6 +340,8 @@ class CommandHistory: Owner
         undoStack.resize(undoStack.length - 1, null);
         command.undo();
         redoStack.append(command);
+        if (onChanged)
+            onChanged();
         if (onApplied)
             onApplied(command);
     }
@@ -347,6 +354,8 @@ class CommandHistory: Owner
         redoStack.resize(redoStack.length - 1, null);
         command.redo();
         undoStack.append(command);
+        if (onChanged)
+            onChanged();
         if (onApplied)
             onApplied(command);
     }

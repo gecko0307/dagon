@@ -358,6 +358,17 @@ class Editor: EventListener
     // File the current scene was last opened from or saved to (empty if none)
     string sceneFilename;
 
+    // True if the scene was changed after it was created, opened or saved.
+    // Covers everything that goes through the undo history, asset imports,
+    // material assignment, entity options and the scene name. Not covered:
+    // post-processing and environment settings.
+    bool modified;
+
+    void markModified()
+    {
+        modified = true;
+    }
+
     // Scene files always use forward slashes, independent of the host OS.
     string portableAssetPath(string path)
     {
@@ -417,6 +428,7 @@ class Editor: EventListener
         overlay = New!InteractionOverlay(eventManager, this);
         history = New!CommandHistory(this);
         history.onApplied = &onHistoryApplied;
+        history.onChanged = &markModified;
         
         storage = dict!(GsDynamic, string);
         //set("addAsset", GsDynamic(&vmAddAsset));
@@ -783,6 +795,7 @@ class Editor: EventListener
         meshPaths.clear();
         materialPaths.clear();
         deletedEntities.clear();
+        modified = false;
         numEntities = 0;
         app.materialPreviewRenderer.clear();
 
@@ -893,6 +906,7 @@ class Editor: EventListener
             return false;
 
         target.material = mat;
+        markModified();
         logInfo("Applied material \"", assetPath, "\" to entity \"", target.name, "\"");
         return true;
     }
@@ -914,6 +928,7 @@ class Editor: EventListener
             newEntity.position = Vector3f(0, 0, 0);
             newEntity.name = genUniqueEntitytName();
             selectEntity(newEntity);
+            markModified();
             return true;
         }
         if (ext == ".material")
@@ -1070,6 +1085,7 @@ class Editor: EventListener
         logInfo("Saving scene to \"", filename, "\"...");
         write(filename, root.toPrettyString(JSONOptions.init | JSONOptions.doNotEscapeSlashes));
         sceneFilename = filename;
+        modified = false;
 
         app.ui.assetBrowser.reset(assetRoot, true);
         
