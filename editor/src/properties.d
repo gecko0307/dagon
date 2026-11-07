@@ -63,7 +63,8 @@ class PropertiesPanel: Owner
     EditorUI ui;
     
     char[256] sceneNameBuffer;
-    
+    bool sceneNameActive;
+
     static immutable string[3] transformEditNames = [
         "Edit position",
         "Edit rotation",
@@ -82,19 +83,20 @@ class PropertiesPanel: Owner
         super(ui);
         this.ui = ui;
         
-        sceneNameBuffer[] = 0;
-        sceneNameBuffer[0..ui.scene.name.length] = ui.scene.name;
+        loadSceneNameBuffer();
     }
 
-    static extern(C) int nameInputCallback(ImGuiInputTextCallbackData* data)
+    // Copies the current scene name into the input buffer, truncating if needed
+    void loadSceneNameBuffer()
     {
-        EditorUI ui = cast(EditorUI)data.UserData;
-        if (ui is null)
-            return 0;
-        
-        ui.scene.name = cast(string)data.Buf[0..data.BufTextLen];
-        
-        return 0;
+        sceneNameBuffer[] = 0;
+        if (ui.scene is null)
+            return;
+        string name = ui.scene.name;
+        size_t length = name.length < sceneNameBuffer.length - 1
+            ? name.length
+            : sceneNameBuffer.length - 1;
+        sceneNameBuffer[0 .. length] = name[0 .. length];
     }
 
     void commitTransformEdit(size_t index)
@@ -180,15 +182,13 @@ class PropertiesPanel: Owner
         {
             if (igCollapsingHeader("Main"))
             {
-                if (igInputText("Name",
-                        sceneNameBuffer.ptr,
-                        sceneNameBuffer.length,
-                        ImGuiInputTextFlags.CallbackEdit,
-                        &nameInputCallback,
-                        cast(void*)this))
-                {
-                    //
-                }
+                // Re-sync unless the field is being edited, so that the name
+                // follows scene changes (File > New / Open)
+                if (!sceneNameActive)
+                    loadSceneNameBuffer();
+                if (igInputText("Scene name", sceneNameBuffer.ptr, sceneNameBuffer.length))
+                    scene.name = sceneNameBuffer[0 .. strlen(sceneNameBuffer.ptr)].idup;
+                sceneNameActive = igIsItemActive();
             }
 
             if (igCollapsingHeader("Viewport"))

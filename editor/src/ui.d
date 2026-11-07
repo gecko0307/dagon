@@ -374,6 +374,8 @@ class EditorUI: EventListener
                     editor.openScene(filename);
             }
             
+            igSeparator();
+            
             if (igMenuItem("Save"))
             {
                 if (lastSaveFilename.length == 0)
@@ -389,6 +391,8 @@ class EditorUI: EventListener
                 if (lastSaveFilename.length != 0)
                     editor.saveScene(lastSaveFilename);
             }
+            
+            igSeparator();
             
             if (igMenuItem("Exit"))
             {
@@ -435,8 +439,12 @@ class EditorUI: EventListener
             if (igMenuItem("Contents"))
                 openHelp();
             
+            igSeparator();
+            
             if (igMenuItem("Dagon Engine website"))
                 browse(dagonWebsiteUrl);
+
+            igSeparator();
 
             if (igMenuItem("About Dagon Editor..."))
                 showAbout = true;
@@ -480,8 +488,9 @@ class EditorUI: EventListener
             }
             else
                 igText(editorVersionString.ptr);
+
+            igEndPopup();
         }
-        igEndPopup();
     }
     
     void renderStatusBar()
