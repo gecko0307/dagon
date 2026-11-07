@@ -3,6 +3,7 @@
 Secure transport protocol (STP) for client-server online games designed to run on top of UDP.
 
 Features:
+
 - Focused on real-time use (gaming, streaming, telephony, IoT);
 - Uses modern cryptographic algorithms;
 - The "pinned certificate" principle: the key for verifying the server's electronic signature is created once, embedded in the client, and does not change (or changes with client updates);

@@ -1,6 +1,6 @@
 # dagon:assimp
 
-Assimp-based asset loader. Brings support for many additional 3D model formats to Dagon, including FBX, Collada, 3DS and others.
+Asset loader based on [Assimp](https://github.com/assimp/assimp). Brings support for many additional 3D model formats to Dagon, including FBX, Collada, 3DS and others.
 
 ## Usage
 
