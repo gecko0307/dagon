@@ -32,7 +32,7 @@ A list of supported event types:
 ### Window
 - `Resize` - window is resized. Reports new size as `Event.width`, `Event.height`
 - `FocusLoss`, `FocusGain` - window lost or gained focus. These are useful to take action when the user is not interacting with the game. Reports no data
-- `Quit` - the window is closed. In this case the application will automatically terminate, but the game code can do something before the imminent exit (cleanup or graceful shutdown). Reports no data
+- `Quit` - the window is closed. If `eventManager.autoExit` is set to `true`, the application will automatically terminate on quit event, but the game can do something before the exit (cleanup or graceful shutdown). Reports no data
 - `DropFile` - the user dragged and dropped a file into the application window. Useful for editors or custom import features. Reports `Event.filename`
 
 ### Filesystem
