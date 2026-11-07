@@ -174,7 +174,9 @@ class EditorUI: EventListener
     PropertiesPanel properties;
     AssetBrowser assetBrowser;
     
-    string lastSaveFilename;
+    // Set by shortcuts, executed in update()
+    bool pendingOpenDialog;
+    bool pendingSave;
     
     static ImWchar[7] glyphRanges = [
         0x0020, 0x00FF, // Basic Latin + Latin Supplement
@@ -221,6 +223,30 @@ class EditorUI: EventListener
         handleShortcut(event);
     }
 
+    void openSceneDialog()
+    {
+        string filename = openFileDialog(["*.json"], "Select a scene file");
+        if (filename.length != 0)
+            editor.openScene(filename);
+    }
+
+    void saveSceneAs()
+    {
+        string filename = saveFileDialog(["*.json"], "Save scene to a file");
+        if (filename.length != 0)
+            editor.saveScene(filename);
+    }
+
+    // Saves to the current scene file; asks for a file only if the scene
+    // has not been saved or opened yet
+    void saveCurrentScene()
+    {
+        if (editor.sceneFilename.length == 0)
+            saveSceneAs();
+        else
+            editor.saveScene(editor.sceneFilename);
+    }
+
     void handleShortcut(SDL_Event* event)
     {
         if (event.type != SDL_KEYDOWN)
@@ -241,6 +267,10 @@ class EditorUI: EventListener
                 editor.undo();
             else if (key == SDLK_d && event.key.repeat == 0)
                 editor.duplicateSelected();
+            else if (key == SDLK_o && event.key.repeat == 0)
+                pendingOpenDialog = true;
+            else if (key == SDLK_s && event.key.repeat == 0)
+                pendingSave = true;
             return;
         }
 
@@ -267,6 +297,20 @@ class EditorUI: EventListener
 
         processEvents();
         
+        // File shortcuts are handled here, not in the event callback: they open
+        // blocking native dialogs, which must not happen in the middle of event
+        // processing or before ImGui has seen the key release.
+        if (pendingOpenDialog)
+        {
+            pendingOpenDialog = false;
+            openSceneDialog();
+        }
+        if (pendingSave)
+        {
+            pendingSave = false;
+            saveCurrentScene();
+        }
+
         ImGuiOpenGLBackend.new_frame();
         ImGui_ImplSDL2_NewFrame();
         igNewFrame();
@@ -366,33 +410,15 @@ class EditorUI: EventListener
             {
                 editor.newScene();
             }
-            
-            if (igMenuItem("Open..."))
-            {
-                string filename = openFileDialog(["*.json"], "Select a scene file");
-                if (filename.length != 0)
-                    editor.openScene(filename);
-            }
-            
-            igSeparator();
-            
-            if (igMenuItem("Save"))
-            {
-                if (lastSaveFilename.length == 0)
-                    lastSaveFilename = saveFileDialog(["*.json"], "Save scene to a file");
-                
-                if (lastSaveFilename.length != 0)
-                    editor.saveScene(lastSaveFilename);
-            }
-            
+
+            if (igMenuItem("Open...", "Ctrl+O", false, true))
+                openSceneDialog();
+
+            if (igMenuItem("Save", "Ctrl+S", false, true))
+                saveCurrentScene();
+
             if (igMenuItem("Save as..."))
-            {
-                lastSaveFilename = saveFileDialog(["*.json"], "Save scene to a file");
-                if (lastSaveFilename.length != 0)
-                    editor.saveScene(lastSaveFilename);
-            }
-            
-            igSeparator();
+                saveSceneAs();
             
             if (igMenuItem("Exit"))
             {
@@ -439,12 +465,8 @@ class EditorUI: EventListener
             if (igMenuItem("Contents"))
                 openHelp();
             
-            igSeparator();
-            
             if (igMenuItem("Dagon Engine website"))
                 browse(dagonWebsiteUrl);
-
-            igSeparator();
 
             if (igMenuItem("About Dagon Editor..."))
                 showAbout = true;

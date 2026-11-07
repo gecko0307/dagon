@@ -355,6 +355,9 @@ class Editor: EventListener
     // Deleted entities stay in the scene, hidden, until the scene is replaced.
     bool[Entity] deletedEntities;
 
+    // File the current scene was last opened from or saved to (empty if none)
+    string sceneFilename;
+
     // Scene files always use forward slashes, independent of the host OS.
     string portableAssetPath(string path)
     {
@@ -1066,7 +1069,8 @@ class Editor: EventListener
         ];
         logInfo("Saving scene to \"", filename, "\"...");
         write(filename, root.toPrettyString(JSONOptions.init | JSONOptions.doNotEscapeSlashes));
-        
+        sceneFilename = filename;
+
         app.ui.assetBrowser.reset(assetRoot, true);
         
         app.setCursor(SystemCursor.Default);
@@ -1079,6 +1083,7 @@ class Editor: EventListener
     {
         pendingNew = true;
         pendingOpen = "";
+        sceneFilename = "";
         app.ui.assetBrowser.active = false;
     }
     
@@ -1120,6 +1125,7 @@ class Editor: EventListener
             logWarning("Scene \"", filename, "\" was saved by a newer editor version");
 
         logInfo("Opening scene \"", filename, "\"...");
+        sceneFilename = filename;
         setAssetRoot(filename.dirName);
         switchTo(jsonGet(root, "name", "Scene"), (EditorScene s) { populateFromJson(root); });
     }
