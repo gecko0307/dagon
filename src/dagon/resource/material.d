@@ -255,7 +255,7 @@ class MaterialAsset: Asset
         if ("opacity" in props)
             material.opacity = props["opacity"].toFloat;
         if ("alphaTestThreshold" in props)
-            material.opacity = props["alphaTestThreshold"].toFloat;
+            material.alphaTestThreshold = props["alphaTestThreshold"].toFloat;
         if ("specularity" in props)
             material.specularity = props["specularity"].toFloat;
         if ("subsurfaceScattering" in props)
