@@ -58,7 +58,7 @@ class PathBuilder: Owner
     }
     
     immutable char[] _separators = ['/', '\\'];
-    String rootDir;
+    String _rootDir;
     Array!String _chain;
     bool _isAbsolute = false;
     uint _rootLevel = 0;
@@ -108,6 +108,12 @@ class PathBuilder: Owner
     static PathBuilder fromFile(string filename, Owner owner)
     {
         return New!PathBuilder(getParentDirectory(filename), owner);
+    }
+    
+    /// Returns the root directory.
+    string rootDir() const @property
+    {
+        return _rootDir.toString;
     }
     
     /// Returns true is the path is absolute.
@@ -162,7 +168,7 @@ class PathBuilder: Owner
         foreach(s; _chain)
             s.free();
         _chain.free();
-        rootDir.free();
+        _rootDir.free();
         _isAbsolute = false;
         _rootLevel = 0;
     }
@@ -172,12 +178,12 @@ class PathBuilder: Owner
      */
     void reset(string rootDir)
     {
-        if (rootDir == this.rootDir.toString)
+        if (rootDir == _rootDir.toString)
             return;
         
         release();
         
-        this.rootDir = String(rootDir);
+        _rootDir = String(rootDir);
         
         _isAbsolute = testIsAbsolute(rootDir);
         
