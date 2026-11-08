@@ -191,6 +191,14 @@ class PathBuilder: Owner
     }
     
     /**
+     * Sets a new `rootDir` as a parent directory of a given file.
+     */
+    void resetFromFile(string filename)
+    {
+        reset(getParentDirectory(filename));
+    }
+    
+    /**
      * Goes one level deeper.
      */
     void push(string str)
