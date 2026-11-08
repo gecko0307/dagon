@@ -239,6 +239,36 @@ class PathBuilder: Owner
     }
     
     /**
+     * Constructs a platform-specific local path string (without the root).
+     * Postfix can be any string; it is usually a file name.
+     */
+    String getLocalPath(string postfix = "")
+    {
+        String res;
+        
+        foreach(i, entry; _chain)
+        {
+            if (i < _rootLevel)
+                continue;
+
+            if (i > _rootLevel)
+                res ~= _separator;
+
+            res ~= entry.toString;
+        }
+        
+        if (postfix.length)
+        {
+            if (res.length && res[$ - 1] != _separator)
+                res ~= _separator;
+
+            res ~= postfix;
+        }
+        
+        return res;
+    }
+    
+    /**
      * Constructs a platform-specific path string.
      * Postfix can be any string; it is usually a file name.
      */
