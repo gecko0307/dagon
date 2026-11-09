@@ -29,6 +29,10 @@
       box-shadow: 0 0 10px rgba(27, 31, 35, 0.1);
     }
 
+    .mobile-nav-toggle {
+      display: none;
+    }
+
     .topnav-container {
       max-width: 980px;
       margin: 0 auto;
@@ -218,11 +222,166 @@
       border: 1px solid #e1e4e8 !important;
       border-radius: 6px;
     }
+
+    /* Responsive layout */
+    /* Tablet / medium-width screens */
+    @media (min-width: 701px) and (max-width: 1050px) {
+      .topnav-container {
+        box-sizing: border-box;
+        width: 100%;
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+      }
+
+      main {
+        box-sizing: border-box;
+        width: calc(100% - 2rem);
+        max-width: 980px;
+        margin: 2rem auto;
+        padding: 2rem;
+      }
+    }
+
+    @media (max-width: 700px) {
+      body {
+        background-attachment: scroll;
+      }
+
+      .topnav {
+        padding: 0.5rem 0;
+      }
+
+      .mobile-nav-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 0.6rem;
+        width: calc(100% - 2rem);
+        margin: 0 1rem;
+        padding: 0.45rem 0.25rem;
+        border: 0;
+        background: transparent;
+        color: #0366d6;
+        font: inherit;
+        font-size: 1rem;
+        cursor: pointer;
+        text-align: left;
+      }
+
+      .mobile-nav-toggle .menu-icon {
+        font-size: 1.35rem;
+        line-height: 1;
+      }
+
+      .topnav-container {
+        display: none;
+        box-sizing: border-box;
+        width: 100%;
+        max-height: calc(100vh - 4rem);
+        overflow-y: auto;
+        padding: 0.75rem 1.25rem 0.75rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+        font-size: 0.95rem;
+      }
+
+      .topnav.is-open .topnav-container {
+        display: flex;
+      }
+
+      .topnav a,
+      .dropbtn {
+        min-height: 1.5rem;
+      }
+
+      .topnav .dropdown-content {
+        display: none !important;
+      }
+
+      main {
+        box-sizing: border-box;
+        width: auto;
+        max-width: none;
+        margin: 1rem 0.75rem;
+        padding: 1.25rem;
+        border-radius: 6px;
+        overflow-x: hidden;
+      }
+
+      main h1 {
+        font-size: 1.7em;
+      }
+
+      main h2 {
+        font-size: 1.35em;
+      }
+
+      main h3 {
+        font-size: 1.15em;
+      }
+
+      main ul,
+      main ol {
+        padding-left: 1.5em;
+      }
+
+      main table {
+        display: block;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      main pre {
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      main pre code {
+        overflow: visible;
+      }
+
+      main .video-container {
+        width: 100%;
+        left: auto;
+        transform: none;
+      }
+    }
+
+    @media (max-width: 380px) {
+      main {
+        margin-left: 0.5rem;
+        margin-right: 0.5rem;
+        padding: 1rem;
+      }
+
+      .topnav-container {
+        gap: 0.65rem 1rem;
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+        font-size: 0.875rem;
+      }
+
+      .mobile-nav-toggle {
+        width: calc(100% - 1rem);
+        margin-left: 0.5rem;
+        margin-right: 0.5rem;
+      }
+    }
   </style>
 </head>
 <body>
   <nav class="topnav">
-    <div class="topnav-container">
+    <button class="mobile-nav-toggle" type="button"
+            aria-expanded="false" aria-controls="main-navigation">
+      <span class="menu-icon" aria-hidden="true">☰</span>
+      <span>Menu</span>
+    </button>
+    <div class="topnav-container" id="main-navigation">
       <a href="?p=overview">Overview</a>
       <a href="?p=features">Features</a>
       <a href="https://github.com/gecko0307/dagon/releases" target="_blank">Download</a>
@@ -334,6 +493,23 @@
         if (section) {
           renderContent(section);
         }
+    });
+
+    const topnav = document.querySelector(".topnav");
+    const mobileNavToggle = document.querySelector(".mobile-nav-toggle");
+
+    mobileNavToggle.addEventListener("click", () => {
+      const isOpen = topnav.classList.toggle("is-open");
+      mobileNavToggle.setAttribute("aria-expanded", String(isOpen));
+      mobileNavToggle.querySelector(".menu-icon").textContent = isOpen ? "✕" : "☰";
+    });
+
+    document.querySelectorAll(".topnav-container > a").forEach(link => {
+      link.addEventListener("click", () => {
+        topnav.classList.remove("is-open");
+        mobileNavToggle.setAttribute("aria-expanded", "false");
+        mobileNavToggle.querySelector(".menu-icon").textContent = "☰";
+      });
     });
 
     document.querySelectorAll(".dropdown").forEach(dropdown => {
