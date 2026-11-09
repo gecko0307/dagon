@@ -32,10 +32,12 @@ import std.algorithm;
 import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.container.array;
+import dlib.container.sorting;
 import dlib.filesystem.filesystem;
 import dlib.filesystem.stdfs: StdFileSystem;
 import dlib.text.str;
 
+import dagon.core.logger;
 import dagon.graphics.texture;
 
 import pathbuilder;
@@ -48,7 +50,7 @@ import pathbuilder;
  */
 class AssetEntry
 {
-    String filename;     // Base file/folder name of the entry
+    String name;         // Base file/folder name of the entry
     String localPath;    // Relative to the scene's asset root: "localFolder/file.png"
     String absPath;      // For example, "C:/projects/game/scenes/level0/localFolder/file.png" under Windows
     bool isDirectory;
@@ -58,7 +60,7 @@ class AssetEntry
     
     ~this()
     {
-        filename.free();
+        name.free();
         localPath.free();
         absPath.free();
     }
@@ -99,6 +101,14 @@ class AssetDirectory: Owner
         _currentDir = _stdfs.openDir(currentPath);
     }
     
+    void resetDir(string rootPath)
+    {
+        release();
+        _pathBuilder.reset(rootPath);
+        _currentPath = _pathBuilder.getPath();
+        _currentDir = _stdfs.openDir(currentPath);
+    }
+    
     ~this()
     {
         release();
@@ -128,9 +138,44 @@ class AssetDirectory: Owner
         return _currentDir;
     }
     
+    String getPath(string postfix = "")
+    {
+        return _pathBuilder.getPath(postfix);
+    }
+    
     AssetEntry[] contents() @property
     {
         return _entries.data;
+    }
+    
+    AssetEntry[] contentsSorted() @property
+    {
+        auto data = _entries.data;
+        insertionSort!((a, b) {
+            if (a.isDirectory != b.isDirectory)
+                return a.isDirectory;
+            return a.name.toString < b.name.toString;
+        })(data);
+        return data;
+    }
+    
+    void up()
+    {
+        release();
+        _pathBuilder.pop(1);
+        _currentPath = _pathBuilder.getPath();
+        _currentDir = _stdfs.openDir(currentPath);
+        scan();
+    }
+    
+    void open(string dirname)
+    {
+        logDebug("Opening \"", dirname, "\"");
+        _pathBuilder.push(dirname);
+        _currentPath.free();
+        _currentPath = _pathBuilder.getPath();
+        _currentDir = _stdfs.openDir(currentPath);
+        scan();
     }
     
     /// Scans the current directory and rebuild the entries array.
@@ -142,7 +187,7 @@ class AssetDirectory: Owner
         {
             string name = entry.name;
             AssetEntry assetEntry = New!AssetEntry();
-            assetEntry.filename = String(entry.name);
+            assetEntry.name = String(entry.name);
             assetEntry.localPath = _pathBuilder.getLocalPath(entry.name);
             assetEntry.absPath = _pathBuilder.getPath(entry.name);
             assetEntry.isDirectory = entry.isDirectory;
