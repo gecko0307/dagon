@@ -128,7 +128,7 @@ class ThumbnailGenerator: Owner
     private AssetManager assetManager;
     private Array!ThumbnailEntry entries;
 
-    private Mutex mutex;        // Guards pending, done and stopRequested
+    private Mutex mutex; // Guards pending, done and stopRequested
     private JobQueue pending;
     private JobQueue done;
     private bool stopRequested = false;
@@ -357,7 +357,7 @@ class ThumbnailGenerator: Owner
         {
             job.hasThumbnail = makeThumbnail(source, job.thumbnail);
             if (job.hasThumbnail)
-                source.releaseBuffer(); // GL-free, frees decoded pixels early
+                source.releaseBuffer();
         }
         // Otherwise (compressed, HDR, cube maps...) the main thread falls back
         // to uploading the source texture as is.
