@@ -28,7 +28,7 @@ DEALINGS IN THE SOFTWARE.
 /*
  * Asset browser panel.
  */
-module assetbrowser2;
+module assetbrowser;
 
 import core.stdc.string: strlen;
 
@@ -610,6 +610,7 @@ class AssetBrowser: Owner
         return false;
     }
     
+    // TODO: make a separate IconDatabase
     static const(char)[][] extImages = [
         ".bmp", ".gif", ".jpg", ".jpeg", ".lbm", ".pcx", ".png",
         ".pnm", ".ppm", ".pgm", ".pbm", ".qoi", ".tga", ".xcf", ".xpm",

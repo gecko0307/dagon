@@ -61,7 +61,7 @@ import thumbnail;
 import toolbar;
 import inspector;
 import properties;
-import assetbrowser2;
+import assetbrowser;
 import textbuffer;
 
 struct EditorViewport
