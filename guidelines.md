@@ -1,16 +1,16 @@
 # Contributing Guidelines
 
-## Bug reporting 
+#### Bug reporting 
 
 Open an issue at [GitHub issue tracker](https://github.com/gecko0307/dagon/issues). Before doing that, ensure the bug was not already reported or fixed in `master` branch. Describe a problem and, if necessary, provide minimal code needed to reproduce it.
 
 Note that macOS compatibility issues are not considered bugs. Dagon uses OpenGL and doesn't support macOS where OpenGL is deprecated.
 
-## Bug fixing 
+#### Bug fixing 
 
-Open a new GitHub pull request with your patch. Provide a description of the problem and solution. Follow our code style.
+Open a new GitHub pull request with your patch. Provide a description of the problem and solution. Follow our [code style](#code-style-and-standards).
 
-## Implementing new features
+#### Implementing new features
 
 New code should at least:
 * work under Windows and POSIX systems and provide platform-agnostic API
@@ -22,11 +22,11 @@ New code should at least:
 
 Adding new external dependencies should be avoided as much as possible. Only GC-free third-party D libraries are allowed. C libraries should be linked via BindBC binding.
 
-## Branching strategy
+#### Branching strategy
 
 `master` branch is a development branch for the next release. When release is ready, a release branch is created from `master` (for example, `dev_0.10`). Release branches are not merged back into `master`, they are used to fix bugs and make minor updates.
 
-## Code style and standards 
+#### Code style and standards 
 
 Dagon follows [D style](https://dlang.org/dstyle.html). Essential rules are the following:
 * Use spaces instead of tabs. Each indentation level is 4 spaces
@@ -36,9 +36,9 @@ Dagon follows [D style](https://dlang.org/dstyle.html). Essential rules are the 
 * Module names should be in lowercase.
 
 Each D module should start with a Boost license block prepended with a copyright notice:
-```d
+```
 /*
-Copyright (c) 2025 <author's name here>
+Copyright (c) 2026 <author's name here>
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
