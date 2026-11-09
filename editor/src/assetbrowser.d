@@ -306,6 +306,8 @@ class AssetBrowser: Owner
             if (ctx.renamedEntry)
             {
                 renamedEntry = ctx.renamedEntry;
+                string oldName = renamedEntry.name.toString;
+                assetNameBuffer[0..oldName.length] = oldName[];
                 igOpenPopup("Rename asset");
             }
             
