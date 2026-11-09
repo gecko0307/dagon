@@ -1380,22 +1380,6 @@ class Application: EventListener, Updateable
             appDataFolderName = config.props["vfs.appDataFolder"].toString;
         if ("vfs.mount" in config.props)
             customMountPaths = config.props["vfs.mount"].toString;
-        /*
-        version(Windows)
-        {
-            if ("vfs.appDataFolder.windows" in config.props)
-                appDataFolderName = config.props["vfs.appDataFolder.windows"].toString;
-            if ("vfs.mount.windows" in config.props)
-                customMountPaths = config.props["vfs.mount.windows"].toString;
-        }
-        else version(linux)
-        {
-            if ("vfs.appDataFolder.linux" in config.props)
-                appDataFolderName = config.props["vfs.appDataFolder.linux"].toString;
-            if ("vfs.mount.linux" in config.props)
-                customMountPaths = config.props["vfs.mount.linux"].toString;
-        }
-        */
     }
 
     /// Destructor. Cleans up resources and shuts down SDL.
