@@ -93,11 +93,12 @@ Features that are not production-ready yet:
 ## System Requirements
 
 The recommended system requirements (for Full HD rendering at 60 fps):
-- CPU: Intel Core i3-10100 / AMD Ryzen 3 3100
-- RAM: application-dependent, usually 8 Gb minimum
-- GPU: OpenGL 4.3 capable, tested on GeForce RTX 30
-- VRAM: 8 Gb
-- OS: 64-bit Windows 10 or higher / Linux.
+
+- **CPU:** Intel Core i3-10100 / AMD Ryzen 3 3100
+- **RAM:** application-dependent, usually 8 Gb minimum
+- **GPU:** OpenGL 4.3 capable, tested on GeForce RTX 30
+- **VRAM:** 8 Gb
+- **OS:** 64-bit Windows 10 or higher / Linux.
 
 ## Usage
 
