@@ -1,7 +1,8 @@
 Dagon 1.8.0 - TBD
 -----------------
 - **Editor**
-  - Asset browser optimizations and improvements. Thumbnails are now created in a separate thread, so the navigation doesn't freeze.
+  - Asset browser optimizations and improvements. Thumbnails are now created in a separate thread, so the navigation doesn't freeze
+  - New JSON serializer.
 
 Dagon 1.7.0 - 7 Nov, 2026
 -------------------------
