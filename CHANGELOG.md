@@ -1,8 +1,11 @@
 Dagon 1.8.0 - TBD
 -----------------
+- **Assets**
+  - Fix texture path resolving in `MaterialAsset`
 - **Editor**
   - Asset browser optimizations and improvements. Thumbnails are now created in a separate thread, so the navigation doesn't freeze
-  - New JSON serializer.
+  - New JSON serializer
+  - Fix Linux compatibility bugs.
 
 Dagon 1.7.0 - 7 Nov, 2026
 -------------------------
