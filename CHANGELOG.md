@@ -1,7 +1,7 @@
 Dagon 1.8.0 - TBD
 -----------------
 - **Editor**
-  - `AssetBrowser` refactoring.
+  - `AssetBrowser` refactoring. Thumbnails are now created in a separate thread, so the navigation doesn't freeze.
 
 Dagon 1.7.0 - 7 Nov, 2026
 -------------------------
