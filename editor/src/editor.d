@@ -54,25 +54,23 @@ import dagon.core.time;
 import dagon.core.cursor;
 import dagon.core.config;
 import dagon.graphics.entity;
-import dagon.graphics.components;
 import dagon.graphics.camera;
 import dagon.graphics.light;
 import dagon.graphics.shapes;
 import dagon.graphics.mesh;
 import dagon.graphics.material;
 import dagon.graphics.texture;
-import dagon.graphics.cubemap;
 import dagon.resource.scene;
 import dagon.resource.texture;
 import dagon.resource.obj;
 import dagon.game.game;
-import dagon.game.loadingscreen;
 import dagon.render.postproc;
-import dagon.ui.freeview;
 import dagon.ext.imgui;
 
 import gscript;
 
+import application;
+import scene;
 import ui;
 import overlay;
 import thumbnail;
@@ -82,126 +80,6 @@ import gsobjects;
 
 string editorVersionString = "Dagon Editor v1.0.0-alpha";
 enum dagonWebsiteUrl = "https://gecko0307.github.io/dagon/";
-
-class EditorScene: Scene
-{
-    string name = "Scene";
-    uint fileVersion = 100;
-    
-    EditorApp app;
-    LoadingScreen loadingScreen;
-    
-    Camera camera;
-    FreeviewComponent freeview;
-
-    Entity sceneRoot;
-
-    bool showSelectedEntityBoundingBox = true;
-    
-    bool ssaoEnabled = true;
-    bool depthOfFieldEnabled = false;
-    bool lensDistortionEnabled = false;
-    bool glowEnabled = true;
-    bool motionBlurEnabled = false;
-    int glowRadius = 5;
-    bool vignetteEnabled = false;
-    int tonemapper = Tonemapper.AgX_Punchy;
-    bool fxaaEnabled = true;
-    bool sharpeningEnabled = true;
-    bool filmGrainEnabled = false;
-    bool filmGrainColored = true;
-    
-    bool floorGridEnabled = true;
-    float floorGridSpacing = 1.0f;
-    float floorGridExtent = 20.0f;
-    
-    Entity eSky;
-    
-    void delegate(EditorScene) onReady;
-
-    this(EditorApp app)
-    {
-        super(app);
-        this.app = app;
-        onLoad(Time(0.0, 0.0), 0.0f);
-    }
-
-    override void beforeLoad()
-    {
-        app.setCursor(SystemCursor.Wait);
-    }
-    
-    override void onLoad(Time t, float progress)
-    {
-    }
-    
-    override void afterLoad()
-    {
-        environment.backgroundColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
-        
-        // TODO: read post-processing settings from scene file
-        app.deferredRenderer.ssaoEnabled = ssaoEnabled;
-        app.deferredRenderer.ssaoPower = 6.0;
-        app.postProcessingRenderer.depthOfFieldEnabled = depthOfFieldEnabled;
-        app.postProcessingRenderer.lensDistortionEnabled = lensDistortionEnabled;
-        app.postProcessingRenderer.glowEnabled = glowEnabled;
-        app.postProcessingRenderer.glowRadius = glowRadius;
-        app.postProcessingRenderer.motionBlurEnabled = motionBlurEnabled;
-        app.postProcessingRenderer.tonemapper = cast(Tonemapper)tonemapper;
-        app.postProcessingRenderer.fxaaEnabled = fxaaEnabled;
-        app.postProcessingRenderer.lutEnabled = false;
-        
-        camera = addCamera();
-        freeview = New!FreeviewComponent(eventManager, camera);
-        freeview.setZoom(5);
-        freeview.setRotation(30.0f, -45.0f, 0.0f);
-        freeview.translationStiffness = 0.25f;
-        freeview.rotationStiffness = 0.25f;
-        freeview.zoomStiffness = 0.25f;
-        app.renderer.activeCamera = camera;
-        camera.name = "Camera";
-
-        sceneRoot = addEntity();
-        sceneRoot.name = "SceneRoot";
-
-        if (app.cubemap)
-        {
-            environment.ambientMap = app.cubemap;
-            environment.ambientBRDF = app.deferredRenderer.brdf;
-            
-            eSky = addEntity();
-            eSky.layer = EntityLayer.Background;
-            eSky.gbufferMask = 0.0f;
-            auto psync = New!PositionSync(eventManager, eSky, camera);
-            eSky.drawable = New!ShapeBox(Vector3f(1.0f, 1.0f, 1.0f), assetManager);
-            eSky.scaling = Vector3f(100.0f, 100.0f, 100.0f);
-            eSky.material = addMaterial();
-            eSky.material.depthWrite = false;
-            eSky.material.useCulling = false;
-            eSky.material.baseColorTexture = app.cubemap;
-            eSky.material.linearColor = true;
-            eSky.name = "Sky";
-        }
-        
-        if (onReady)
-            onReady(this);
-        
-        app.setCursor(SystemCursor.Default);
-    }
-    
-    bool isInternalEntity(Entity e)
-    {
-        if (e is camera)
-            return true;
-        if (eSky && e is eSky)
-            return true;
-        return false;
-    }
-    
-    override void onUpdate(Time t)
-    {
-    }
-}
 
 // Tolerant JSON readers. std.json can hand back a whole-number float as an integer,
 // so numbers are accepted in any numeric form. Missing keys fall back to a default.
@@ -1330,188 +1208,5 @@ class Editor: EventListener
         string res = "entity" ~ numEntities.to!string;
         numEntities++;
         return res;
-    }
-}
-
-class EditorApp: Game
-{
-    Configuration editorConfig;
-    
-    String uiFont;
-    uint uiFontSize = 16;
-    bool uiShowSplashOnStartup = true;
-    
-    EditorUI ui;
-    Editor editor;
-    
-    MaterialPreviewRenderer materialPreviewRenderer;
-    
-    TextureAsset aFileIcon;
-    TextureAsset aFolderIcon;
-    TextureAsset aImageIcon;
-    TextureAsset aArchiveIcon;
-    TextureAsset aAudioIcon;
-    TextureAsset aBlendIcon;
-    TextureAsset aJsonIcon;
-    TextureAsset aModelIcon;
-    TextureAsset aPythonIcon;
-    TextureAsset aBinaryIcon;
-    TextureAsset aAPKIcon;
-    TextureAsset aBashIcon;
-    TextureAsset aTorrentIcon;
-    
-    TextureAsset aTranslateIcon;
-    TextureAsset aRotateIcon;
-    TextureAsset aScaleIcon;
-    TextureAsset aboutImage;
-    
-    TextureAsset aEnvmap;
-    Texture cubemap;
-    
-    TextureAsset loadTexture(string path, bool generateMipmaps = false)
-    {
-        TextureAsset asset = New!TextureAsset(assetManager);
-        asset.generateMipmaps = generateMipmaps;
-        assetManager.preloadAsset(asset, path);
-        return asset;
-    }
-    
-    Texture prepareUiTexture(Texture tex)
-    {
-        tex.minFilter = GL_LINEAR;
-        tex.magFilter = GL_LINEAR;
-        tex.bind();
-        tex.unbind();
-        return tex;
-    }
-    
-    this(uint w, uint h, bool fullscreen, string title, string[] args)
-    {
-        super(w, h, fullscreen, title, args);
-        
-        eventManager.autoExit = false;
-        
-        setCursor(SystemCursor.Wait);
-        
-        editorConfig = New!Configuration(this);
-        foreach(fs; vfs.mounted)
-        {
-            editorConfig.fromFile(fs, "editor.conf");
-        }
-        
-        uiFont = "data/fonts/Inter_18pt-Medium.ttf";
-        if ("font" in editorConfig.props)
-            uiFont = String(editorConfig.props["font"].toString);
-        if ("fontSize" in editorConfig.props)
-            uiFontSize = editorConfig.props["fontSize"].toUInt;
-        if ("showSplashOnStartup" in editorConfig.props)
-            uiShowSplashOnStartup = cast(bool)editorConfig.props["showSplashOnStartup"].toUInt;
-        
-        materialPreviewRenderer = New!MaterialPreviewRenderer(this);
-        
-        aFileIcon = loadTexture("data/icons/file.png");
-        aFolderIcon = loadTexture("data/icons/folder.png");
-        aImageIcon = loadTexture("data/icons/image.png");
-        aArchiveIcon = loadTexture("data/icons/archive.png");
-        aAudioIcon = loadTexture("data/icons/audio.png");
-        aBlendIcon = loadTexture("data/icons/blend.png");
-        aJsonIcon = loadTexture("data/icons/json.png");
-        aModelIcon = loadTexture("data/icons/model.png");
-        aPythonIcon = loadTexture("data/icons/python.png");
-        aBinaryIcon = loadTexture("data/icons/binary.png");
-        aAPKIcon = loadTexture("data/icons/apk.png");
-        aBashIcon = loadTexture("data/icons/bash.png");
-        aTorrentIcon = loadTexture("data/icons/torrent.png");
-        aTranslateIcon = loadTexture("data/icons/btn_translate.png");
-        aRotateIcon = loadTexture("data/icons/btn_rotate.png");
-        aScaleIcon = loadTexture("data/icons/btn_scale.png");
-        aboutImage = loadTexture("data/splash.jpg");
-        
-        aEnvmap = loadTexture("data/envmaps/default.hdr");
-        if (aEnvmap.loaded)
-            cubemap = generateCubemap(1024, aEnvmap.texture, assetManager);
-        else
-            logWarning("Default environment map was not loaded");
-        
-        auto scene = New!EditorScene(this);
-        currentScene = scene;
-        
-        editor = New!Editor(this);
-        
-        ui = New!EditorUI(this, editor, args);
-        ui.iconFile = prepareUiTexture(aFileIcon.texture);
-        ui.iconFolder = prepareUiTexture(aFolderIcon.texture);
-        ui.iconImage = prepareUiTexture(aImageIcon.texture);
-        ui.iconArchive = prepareUiTexture(aArchiveIcon.texture);
-        ui.iconAudio = prepareUiTexture(aAudioIcon.texture);
-        ui.iconBlend = prepareUiTexture(aBlendIcon.texture);
-        ui.iconJson = prepareUiTexture(aJsonIcon.texture);
-        ui.iconModel = prepareUiTexture(aModelIcon.texture);
-        ui.iconPython = prepareUiTexture(aPythonIcon.texture);
-        ui.iconBinary = prepareUiTexture(aBinaryIcon.texture);
-        ui.iconAPK = prepareUiTexture(aAPKIcon.texture);
-        ui.iconBash = prepareUiTexture(aBashIcon.texture);
-        ui.iconTorrent = prepareUiTexture(aTorrentIcon.texture);
-        
-        ui.iconTranslate = prepareUiTexture(aTranslateIcon.texture);
-        ui.iconRotate = prepareUiTexture(aRotateIcon.texture);
-        ui.iconScale = prepareUiTexture(aScaleIcon.texture);
-        ui.aboutImage = prepareUiTexture(aboutImage.texture);
-        ui.thumbnailGenerator = New!ThumbnailGenerator(assetManager);
-        eventManager.onProcessEvent = &ui.onProcessEvent;
-        dynamicViewport = false; // Viewport will be controlled by the editor, not the engine
-        editor.overlay.ui = ui;
-        
-        ui.active = true;
-    }
-    
-    ~this()
-    {
-        uiFont.free();
-    }
-    
-    override void onCustomResize(int x, int y, int width, int height)
-    {
-        if (!isWindowMinimized)
-        {
-            resizeRenderers(x, y, width, height);
-        }
-    }
-    
-    override void onUpdate(Time t)
-    {
-        editor.update(t);
-        super.onUpdate(t);
-        ui.update(t);
-    }
-    
-    override void onRender()
-    {
-        if (!ui.active)
-            return;
-        
-        bool isLoading = false;
-        if (currentScene)
-        {
-            isLoading = currentScene.isLoading;
-            if (currentScene.canRender && renderer)
-            {
-                renderer.render();
-                editor.overlay.renderFloorGrid();
-                postProcessingRenderer.render();
-                presentRenderer.inputBuffer = postProcessingRenderer.outputBuffer;
-                presentRenderer.render();
-                hudRenderer.render();
-                editor.render();
-            }
-        }
-
-        if (!isLoading)
-            ui.render();
-    }
-    
-    override void onQuit()
-    {
-        ui.requestExit();
     }
 }

@@ -56,7 +56,9 @@ else
     import std.process: execute, ProcessException;
 }
 
+import application;
 import editor;
+import scene;
 import thumbnail;
 import toolbar;
 import inspector;

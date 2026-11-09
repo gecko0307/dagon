@@ -39,7 +39,7 @@ import dagon.game.game;
 import dagon.resource.texture;
 import dagon.ext.imgui;
 
-import editor;
+import application;
 
 void main(string[] args)
 {
