@@ -76,3 +76,16 @@ Intermediate values blend between standard Lambertian diffusion and subsurface d
 `outputColor`, `outputNormal`, `outputPBR`, `outputEmission` - enable writing to the corresponding render target in G-buffer.
 
 `shadeless` - this property is only used in the forward mode (if `blendMode` is not `Opaque`). If it is set to `true`, the surface is not affected by any scene lights and determined only by self-illumination (`emissionFactor` and `emissionTexture`).
+
+## Material Description Files
+
+Standard PBR material can be deserialized from a text file using `MaterialAsset`. It uses the same syntax as *.conf files. For example:
+
+```
+baseColor: [1.0, 0.0, 0.0, 1.0];
+baseColorTexture: "baseColor.png";
+normalTexture: "normal.png";
+roughnessMetallicTexture: "roughnessMetallic.png";
+```
+
+Textures are loaded automatically. Texture paths are relative to the parent directory of the material asset.
