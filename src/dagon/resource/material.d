@@ -41,13 +41,15 @@ DEALINGS IN THE SOFTWARE.
  */
 module dagon.resource.material;
 
+import std.path;
+
 import dlib.core.memory;
 import dlib.core.stream;
 import dlib.core.ownership;
 import dlib.filesystem.filesystem;
 import dlib.filesystem.stdfs;
 import dlib.math.vector;
-import dlib.text.lexer;
+import dlib.text.str;
 import dlib.text.utils;
 import dlib.container.dict;
 
@@ -109,12 +111,13 @@ class MaterialAsset: Asset
      */
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager assetManager)
     {
+        string rootDir = dirName(filename);
         material = New!Material(assetManager);
         text = readText(istrm);
         props = New!Properties(assetManager);
         if (parseProperties(text, props))
         {
-            setMaterialProperties(assetManager);
+            setMaterialProperties(assetManager, rootDir);
             threadSafePartLoaded = true;
             threadUnsafePartLoaded = true;
             return true;
@@ -144,34 +147,44 @@ class MaterialAsset: Asset
      *
      * Params:
      *   assetManager = AssetManager object.
+     *   rootDir      = directory relative to which the filename is given
      *   filename     = filename of a texture.
      * Returns:
      *   Texture object or null if the asset doesn't exist.
      */
-    Texture getTexture(AssetManager assetManager, string filename)
+    Texture getTexture(AssetManager assetManager, string rootDir, string filename)
     {
-        if (filename in assetManager.assetsByFilename)
+        String imgPath = String(rootDir);
+        imgPath ~= "/";
+        imgPath ~= filename;
+        scope(exit)
         {
-            TextureAsset textureAsset = cast(TextureAsset)assetManager.assetsByFilename[filename];
+            imgPath.free();
+        }
+        string texturePath = imgPath.toString;
+        
+        if (texturePath in assetManager.assetsByFilename)
+        {
+            TextureAsset textureAsset = cast(TextureAsset)assetManager.assetsByFilename[texturePath];
             if (textureAsset)
                 return textureAsset.texture;
             else
                 return null;
         }
-        else if (filename in textureAssets)
+        else if (texturePath in textureAssets)
         {
-            return textureAssets[filename].texture;
+            return textureAssets[texturePath].texture;
         }
         else
         {
             TextureAsset textureAsset = New!TextureAsset(assetManager);
-            assetManager.loadAssetThreadSafePart(textureAsset, filename);
-            textureAssets[filename] = textureAsset;
+            assetManager.loadAssetThreadSafePart(textureAsset, texturePath);
+            textureAssets[texturePath] = textureAsset;
             return textureAsset.texture;
         }
     }
     
-    protected void setMaterialProperties(AssetManager assetManager)
+    protected void setMaterialProperties(AssetManager assetManager, string rootDir)
     {
         if ("name" in props)
             material.name = props["name"].toString;
@@ -180,14 +193,14 @@ class MaterialAsset: Asset
         {
             auto baseColor = props["baseColor"];
             if (baseColor.type == DPropType.String)
-                material.baseColorTexture = getTexture(assetManager, baseColor.toString);
+                material.baseColorTexture = getTexture(assetManager, rootDir, baseColor.toString);
             else if (baseColor.type == DPropType.Vector)
                 material.baseColorFactor = baseColor.toColor4f;
         }
         if ("baseColorTexture" in props)
         {
             string filename = props["baseColorTexture"].toString;
-            material.baseColorTexture = getTexture(assetManager, filename);
+            material.baseColorTexture = getTexture(assetManager, rootDir, filename);
         }
         if ("baseColorFactor" in props)
         {
@@ -197,7 +210,7 @@ class MaterialAsset: Asset
         if ("roughnessMetallicTexture" in props)
         {
             auto roughnessMetallic = props["roughnessMetallicTexture"];
-            material.roughnessMetallicTexture = getTexture(assetManager, roughnessMetallic.toString);
+            material.roughnessMetallicTexture = getTexture(assetManager, rootDir, roughnessMetallic.toString);
         }
         if ("roughnessFactor" in props)
         {
@@ -212,14 +225,14 @@ class MaterialAsset: Asset
         {
             auto normal = props["normal"];
             if (normal.type == DPropType.String)
-                material.normalTexture = getTexture(assetManager, normal.toString);
+                material.normalTexture = getTexture(assetManager, rootDir, normal.toString);
             else if (normal.type == DPropType.Vector)
                 material.normalFactor = normal.toVector3f;
         }
         if ("normalTexture" in props)
         {
             string filename = props["normalTexture"].toString;
-            material.normalTexture = getTexture(assetManager, filename);
+            material.normalTexture = getTexture(assetManager, rootDir, filename);
         }
         if ("normalFactor" in props)
         {
@@ -230,14 +243,14 @@ class MaterialAsset: Asset
         {
             auto emission = props["emission"];
             if (emission.type == DPropType.String)
-                material.emissionTexture = getTexture(assetManager, emission.toString);
+                material.emissionTexture = getTexture(assetManager, rootDir, emission.toString);
             else if (emission.type == DPropType.Vector)
                 material.emissionFactor = emission.toColor4f;
         }
         if ("emissionTexture" in props)
         {
             string filename = props["emissionTexture"].toString;
-            material.emissionTexture = getTexture(assetManager, filename);
+            material.emissionTexture = getTexture(assetManager, rootDir, filename);
         }
         if ("emissionFactor" in props)
         {
