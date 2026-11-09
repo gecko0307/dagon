@@ -33,7 +33,6 @@ module editor;
 import std.algorithm;
 import std.file;
 import std.ascii;
-import std.json;
 import std.path;
 import std.conv;
 import std.datetime;
@@ -46,6 +45,7 @@ import dlib.image.color;
 import dlib.container.array;
 import dlib.container.dict;
 import dlib.text.str;
+import dlib.serialization.json;
 
 import dagon.core.bindings;
 import dagon.core.logger;
@@ -76,113 +76,36 @@ import overlay;
 import thumbnail;
 import materialpreview;
 import history;
+import jsonio;
 import gsobjects;
 
 string editorVersionString = "Dagon Editor v1.0.0-alpha";
 enum dagonWebsiteUrl = "https://gecko0307.github.io/dagon/";
 
-// Tolerant JSON readers. std.json can hand back a whole-number float as an integer,
-// so numbers are accepted in any numeric form. Missing keys fall back to a default.
-float jsonNum(JSONValue v, float def = 0.0f)
+// Light (de)serialization. Readers (jsonio.d) are tolerant: missing keys keep defaults.
+void writeLight(ref JSONWriter w, Light l)
 {
-    switch (v.type)
-    {
-        case JSONType.float_:   return cast(float)v.floating;
-        case JSONType.integer:  return cast(float)v.integer;
-        case JSONType.uinteger: return cast(float)v.uinteger;
-        default:                return def;
-    }
-}
-
-T jsonGet(T)(JSONValue j, string key, T def)
-{
-    auto p = key in j;
-    if (p is null)
-        return def;
-    
-    static if (is(T == bool))
-    {
-        if (p.type == JSONType.true_) return true;
-        if (p.type == JSONType.false_) return false;
-        return def;
-    }
-    else static if (is(T == string))
-    {
-        return (p.type == JSONType.string)? p.str : def;
-    }
-    else static if (is(T == long))
-    {
-        if (p.type == JSONType.integer) return p.integer;
-        if (p.type == JSONType.uinteger) return cast(long)p.uinteger;
-        return def;
-    }
-    else static if (is(T == uint))
-    {
-        if (p.type == JSONType.integer) return cast(uint)p.integer;
-        if (p.type == JSONType.uinteger) return cast(uint)p.uinteger;
-        return def;
-    }
-    else static if (is(T == int))
-    {
-        if (p.type == JSONType.integer) return cast(int)p.integer;
-        if (p.type == JSONType.uinteger) return cast(int)p.uinteger;
-        return def;
-    }
-    else static if (is(T == float))
-    {
-        return jsonNum(*p, def);
-    }
-    else static assert(false, "jsonGet: unsupported type " ~ T.stringof);
-}
-
-Vector3f jsonVec3(JSONValue j, string key, Vector3f def)
-{
-    auto p = key in j;
-    if (p is null || p.type != JSONType.array || p.array.length < 3)
-        return def;
-    return Vector3f(jsonNum(p.array[0]), jsonNum(p.array[1]), jsonNum(p.array[2]));
-}
-
-Quaternionf jsonQuat(JSONValue j, string key, Quaternionf def)
-{
-    auto p = key in j;
-    if (p is null || p.type != JSONType.array || p.array.length < 4)
-        return def;
-    return Quaternionf(jsonNum(p.array[0]), jsonNum(p.array[1]), jsonNum(p.array[2]), jsonNum(p.array[3]));
-}
-
-Color4f jsonColor(JSONValue j, string key, Color4f def)
-{
-    auto p = key in j;
-    if (p is null || p.type != JSONType.array || p.array.length < 4)
-        return def;
-    return Color4f(jsonNum(p.array[0]), jsonNum(p.array[1]),
-                   jsonNum(p.array[2]), jsonNum(p.array[3]));
-}
-
-JSONValue lightToJson(Light l)
-{
-    return JSONValue([
-        "type": JSONValue(cast(uint)l.type),
-        "shining": JSONValue(l.shining),
-        "color": JSONValue(l.color.arrayof),
-        "energy": JSONValue(l.energy),
-        "angularRadius": JSONValue(l.angularRadius),
-        "volumeRadius": JSONValue(l.volumeRadius),
-        "radius": JSONValue(l.radius),
-        "length": JSONValue(l.length),
-        "spotOuterCutoff": JSONValue(l.spotOuterCutoff),
-        "spotInnerCutoff": JSONValue(l.spotInnerCutoff),
-        "shadowEnabled": JSONValue(l.shadowEnabled),
-        "scatteringEnabled": JSONValue(l.scatteringEnabled),
-        "scattering": JSONValue(l.scattering),
-        "mediumDensity": JSONValue(l.mediumDensity),
-        "scatteringSamples": JSONValue(l.scatteringSamples),
-        "scatteringMaxRandomStepOffset": JSONValue(l.scatteringMaxRandomStepOffset),
-        "scatteringUseShadow": JSONValue(l.scatteringUseShadow),
-        "diffuse": JSONValue(l.diffuse),
-        "specular": JSONValue(l.specular)
-    ]);
+    w.beginObject();
+    w.add("type", cast(uint)l.type);
+    w.add("shining", l.shining);
+    w.addFloats("color", l.color.arrayof);
+    w.add("energy", l.energy);
+    w.add("angularRadius", l.angularRadius);
+    w.add("volumeRadius", l.volumeRadius);
+    w.add("radius", l.radius);
+    w.add("length", l.length);
+    w.add("spotOuterCutoff", l.spotOuterCutoff);
+    w.add("spotInnerCutoff", l.spotInnerCutoff);
+    w.add("shadowEnabled", l.shadowEnabled);
+    w.add("scatteringEnabled", l.scatteringEnabled);
+    w.add("scattering", l.scattering);
+    w.add("mediumDensity", l.mediumDensity);
+    w.add("scatteringSamples", l.scatteringSamples);
+    w.add("scatteringMaxRandomStepOffset", l.scatteringMaxRandomStepOffset);
+    w.add("scatteringUseShadow", l.scatteringUseShadow);
+    w.add("diffuse", l.diffuse);
+    w.add("specular", l.specular);
+    w.endObject();
 }
 
 void readLight(Light l, JSONValue j)
@@ -228,12 +151,57 @@ class Editor: EventListener
     // Absolute source paths are kept in memory; scene files store paths relative
     // to assetRoot.
     string assetRoot;
-    string[Entity] meshPaths;
-    string[Material] materialPaths;
+    // Values are dlib Strings owned by the map (see setMeshPath, clearPathMaps).
+    Dict!(String, Entity) meshPaths;
+    Dict!(String, Material) materialPaths;
 
     // Roots of soft-deleted subtrees (see EntityLifetimeCommand in history.d).
     // Deleted entities stay in the scene, hidden, until the scene is replaced.
-    bool[Entity] deletedEntities;
+    Dict!(bool, Entity) deletedEntities;
+
+    void setMeshPath(Entity e, const(char)[] path)
+    {
+        if (auto old = e in meshPaths)
+            old.free();
+        meshPaths[e] = String(cast(string)path);
+    }
+
+    void setMaterialPath(Material m, const(char)[] path)
+    {
+        if (auto old = m in materialPaths)
+            old.free();
+        materialPaths[m] = String(cast(string)path);
+    }
+
+    void clearPathMaps()
+    {
+        foreach (e, ref path; meshPaths)
+            path.free();
+        meshPaths.clear();
+        foreach (m, ref path; materialPaths)
+            path.free();
+        materialPaths.clear();
+        deletedEntities.clear();
+    }
+
+    // Scene file that is being opened: parsed document and the text it points into.
+    // Released after the new scene is populated (see populatePending).
+    JSONDocument pendingDocument;
+    ubyte[] pendingBuffer;
+
+    void releasePendingDocument()
+    {
+        if (pendingDocument !is null)
+        {
+            Delete(pendingDocument);
+            pendingDocument = null;
+        }
+        if (pendingBuffer.length)
+        {
+            Delete(pendingBuffer);
+            pendingBuffer = null;
+        }
+    }
 
     // File the current scene was last opened from or saved to (empty if none)
     string sceneFilename;
@@ -302,6 +270,10 @@ class Editor: EventListener
         super(application.eventManager, application);
         app = application;
         scene = cast(EditorScene)app.currentScene;
+        
+        meshPaths = dict!(String, Entity);
+        materialPaths = dict!(String, Material);
+        deletedEntities = dict!(bool, Entity);
         
         // TODO: load editor.conf
         
@@ -372,6 +344,11 @@ class Editor: EventListener
 
     ~this()
     {
+        releasePendingDocument();
+        clearPathMaps();
+        Delete(meshPaths);
+        Delete(materialPaths);
+        Delete(deletedEntities);
         Delete(storage);
     }
     
@@ -500,6 +477,8 @@ class Editor: EventListener
     // An entity is deleted if it or any of its ancestors was deleted
     bool isDeleted(Entity e)
     {
+        if (deletedEntities.length == 0)
+            return false;
         for (Entity p = e; p !is null; p = p.parent)
         {
             if (p in deletedEntities)
@@ -591,7 +570,7 @@ class Editor: EventListener
         e.material = src.material;
 
         if (auto mp = src in meshPaths)
-            meshPaths[e] = *mp;
+            setMeshPath(e, mp.toString);
 
         foreach (child; src.children)
         {
@@ -672,9 +651,7 @@ class Editor: EventListener
         selectedEntity = null;
         overlay.gizmoMode = GizmoMode.Disabled;
         history.clear();
-        meshPaths.clear();
-        materialPaths.clear();
-        deletedEntities.clear();
+        clearPathMaps();
         modified = false;
         numEntities = 0;
         app.materialPreviewRenderer.clear();
@@ -757,7 +734,7 @@ class Editor: EventListener
             logError("Cannot load material \"", assetPath, "\": asset failed to load");
             return null;
         }
-        materialPaths[matAsset.material] = assetPath;
+        setMaterialPath(matAsset.material, assetPath);
         return matAsset.material;
     }
 
@@ -802,7 +779,7 @@ class Editor: EventListener
             if (objAsset.mesh)
             {
                 newEntity.drawable = objAsset.mesh;
-                meshPaths[newEntity] = assetPath;
+                setMeshPath(newEntity, assetPath);
             }
             
             newEntity.position = Vector3f(0, 0, 0);
@@ -829,29 +806,69 @@ class Editor: EventListener
     void saveScene(string filename)
     {
         app.setCursor(SystemCursor.Wait);
-        
+
         filename = buildNormalizedPath(absolutePath(filename));
         setAssetRoot(filename.dirName, false);
 
+        Array!Entity saved;
+        auto entityIndex = dict!(size_t, Entity);
+        Array!string materialList;
+        auto materialIndex = dict!(long, string); // asset path -> index in materialList
+        scope(exit)
+        {
+            saved.free();
+            materialList.free();
+            Delete(entityIndex);
+            Delete(materialIndex);
+        }
+
         // Index the entities that go into the file
-        Entity[] saved;
-        size_t[Entity] entityIndex;
         foreach (e; scene.world.entities)
         {
             if (isSerializableEntity(e))
             {
                 entityIndex[e] = saved.length;
-                saved ~= e;
+                saved.append(e);
             }
         }
 
-        // Serialize, writing each distinct material once
-        JSONValue[] entitiesArr;
-        JSONValue[] materialsArr;
-        long[string] materialIndex; // asset path -> index in materialsArr
-        entitiesArr.reserve(saved.length);
+        // Each distinct material file is written once. The strings are slices of
+        // materialPaths values, which are not modified until the save is over.
+        foreach (e; saved.data)
+        {
+            if (e.material is null)
+                continue;
+            if (auto path = e.material in materialPaths)
+            {
+                string materialPath = path.toString;
+                if ((materialPath in materialIndex) is null)
+                {
+                    materialIndex[materialPath] = cast(long)materialList.length;
+                    materialList.append(materialPath);
+                }
+            }
+        }
 
-        foreach (e; saved)
+        JSONWriter w;
+        scope(exit) w.free();
+
+        w.beginObject();
+        w.add("name", scene.name);
+        w.add("version", scene.fileVersion);
+
+        w.key("materials");
+        w.beginArray();
+        foreach (materialPath; materialList.data)
+        {
+            w.beginObject();
+            w.add("path", makeSceneAssetPath(materialPath));
+            w.endObject();
+        }
+        w.endArray();
+
+        w.key("entities");
+        w.beginArray();
+        foreach (e; saved.data)
         {
             long parentIndex = -1;
             if (e.parent !is null)
@@ -863,115 +880,118 @@ class Editor: EventListener
             long materialRef = -1;
             if (e.material !is null)
             {
+                bool found = false;
                 if (auto path = e.material in materialPaths)
                 {
-                    if (auto idx = *path in materialIndex)
+                    string materialPath = path.toString;
+                    if (auto idx = materialPath in materialIndex)
                     {
                         materialRef = *idx;
-                    }
-                    else
-                    {
-                        materialRef = cast(long)materialsArr.length;
-                        materialIndex[*path] = materialRef;
-                        materialsArr ~= JSONValue(["path": JSONValue(makeSceneAssetPath(*path))]);
+                        found = true;
                     }
                 }
-                else
-                {
+                if (!found)
                     logWarning("Material of entity \"", e.name, "\" has no source file and will not be saved");
-                }
             }
 
             string meshPath = "";
             if (auto mp = e in meshPaths)
-                meshPath = makeSceneAssetPath(*mp);
+                meshPath = makeSceneAssetPath(mp.toString);
             else if (e.drawable !is null)
                 logWarning("Drawable of entity \"", e.name, "\" has no source file and will not be saved");
 
-            JSONValue je = JSONValue([
-                "name": JSONValue(e.name),
-                "parent": JSONValue(parentIndex),
-                "mesh": JSONValue(meshPath),
-                "material": JSONValue(materialRef),
-                "layer": JSONValue(cast(uint)e.layer),
-                "type": JSONValue(cast(uint)e.type),
-                "renderLayer": JSONValue(e.renderLayer),
-                "visible": JSONValue(e.visible),
-                "castShadow": JSONValue(e.castShadow),
-                "solid": JSONValue(e.solid),
-                "dynamic": JSONValue(e.dynamic),
-                "decal": JSONValue(e.decal),
-                "probe": JSONValue(e.probe),
-                "probeExtents": JSONValue(e.probeExtents.arrayof),
-                "probeFalloffMargin": JSONValue(e.probeFalloffMargin),
-                "probeUseBoxProjection": JSONValue(e.probeUseBoxProjection),
-                "transparent": JSONValue(e.transparent),
-                "opacity": JSONValue(e.opacity),
-                "position": JSONValue(e.position.arrayof),
-                "rotation": JSONValue(e.rotation.arrayof),
-                "scaling": JSONValue(e.scaling.arrayof)
-            ]);
-            
+            w.beginObject();
+            w.add("name", e.name);
+            w.add("parent", parentIndex);
+            w.add("mesh", meshPath);
+            w.add("material", materialRef);
+            w.add("layer", cast(uint)e.layer);
+            w.add("type", cast(uint)e.type);
+            w.add("renderLayer", e.renderLayer);
+            w.add("visible", e.visible);
+            w.add("castShadow", e.castShadow);
+            w.add("solid", e.solid);
+            w.add("dynamic", e.dynamic);
+            w.add("decal", e.decal);
+            w.add("probe", e.probe);
+            w.addFloats("probeExtents", e.probeExtents.arrayof);
+            w.add("probeFalloffMargin", e.probeFalloffMargin);
+            w.add("probeUseBoxProjection", e.probeUseBoxProjection);
+            w.add("transparent", e.transparent);
+            w.add("opacity", e.opacity);
+            w.addFloats("position", e.position.arrayof);
+            w.addFloats("rotation", e.rotation.arrayof);
+            w.addFloats("scaling", e.scaling.arrayof);
+
             if (auto light = cast(Light)e)
-                je["light"] = lightToJson(light);
-            
-            entitiesArr ~= je;
+            {
+                w.key("light");
+                writeLight(w, light);
+            }
+            w.endObject();
         }
-        
+        w.endArray();
+
         auto renderer = app.deferredRenderer;
         auto pp = scene.app.postProcessingRenderer;
-        
-        JSONValue postprocessing = JSONValue([
-            "ssaoEnabled": JSONValue(scene.ssaoEnabled),
-            "ssaoRadius": JSONValue(renderer.ssaoRadius),
-            "ssaoSamples": JSONValue(renderer.ssaoSamples),
-            "ssaoPower": JSONValue(renderer.ssaoPower),
-            "ssaoDenoise": JSONValue(renderer.ssaoDenoise),
-            "dofEnabled": JSONValue(scene.depthOfFieldEnabled),
-            "dofAutofocus": JSONValue(pp.autofocus),
-            "dofFocalDepth": JSONValue(pp.focalDepth),
-            "dofFocalLength": JSONValue(pp.focalLength),
-            "dofFStop": JSONValue(pp.fStop),
-            "lensDistortionEnabled": JSONValue(scene.lensDistortionEnabled),
-            "lensDistortionDispersion": JSONValue(pp.lensDistortionDispersion),
-            "lensDistortionScale": JSONValue(pp.lensDistortionScale),
-            "glowEnabled": JSONValue(scene.glowEnabled),
-            "glowRadius": JSONValue(pp.glowRadius),
-            "glowThreshold": JSONValue(pp.glowThreshold),
-            "glowIntensity": JSONValue(pp.glowIntensity),
-            "motionBlurEnabled": JSONValue(scene.motionBlurEnabled),
-            "motionBlurSamples": JSONValue(pp.motionBlurSamples),
-            "motionBlurFramerate": JSONValue(pp.motionBlurFramerate),
-            "motionBlurRandomness": JSONValue(pp.motionBlurRandomness),
-            "motionBlurMinDistance": JSONValue(pp.motionBlurMinDistance),
-            "motionBlurMaxDistance": JSONValue(pp.motionBlurMaxDistance),
-            "motionBlurRadialBlurAmount": JSONValue(pp.radialBlurAmount),
-            "vignetteEnabled": JSONValue(scene.vignetteEnabled),
-            "hdrTonemapper": JSONValue(pp.tonemapper),
-            "hdrExposure": JSONValue(pp.exposure),
-            "fxaaEnabled": JSONValue(scene.fxaaEnabled),
-            "sharpeningEnabled": JSONValue(scene.sharpeningEnabled),
-            "filmGrainEnabled": JSONValue(scene.filmGrainEnabled),
-            "filmGrainColored": JSONValue(scene.filmGrainColored)
-        ]);
 
-        JSONValue root = [
-            "name": JSONValue(scene.name),
-            "version": JSONValue(scene.fileVersion),
-            "materials": JSONValue(materialsArr),
-            "entities": JSONValue(entitiesArr),
-            "postprocessing": postprocessing
-        ];
+        w.key("postprocessing");
+        w.beginObject();
+        w.add("ssaoEnabled", scene.ssaoEnabled);
+        w.add("ssaoRadius", renderer.ssaoRadius);
+        w.add("ssaoSamples", renderer.ssaoSamples);
+        w.add("ssaoPower", renderer.ssaoPower);
+        w.add("ssaoDenoise", renderer.ssaoDenoise);
+        w.add("dofEnabled", scene.depthOfFieldEnabled);
+        w.add("dofAutofocus", pp.autofocus);
+        w.add("dofFocalDepth", pp.focalDepth);
+        w.add("dofFocalLength", pp.focalLength);
+        w.add("dofFStop", pp.fStop);
+        w.add("lensDistortionEnabled", scene.lensDistortionEnabled);
+        w.add("lensDistortionDispersion", pp.lensDistortionDispersion);
+        w.add("lensDistortionScale", pp.lensDistortionScale);
+        w.add("glowEnabled", scene.glowEnabled);
+        w.add("glowRadius", pp.glowRadius);
+        w.add("glowThreshold", pp.glowThreshold);
+        w.add("glowIntensity", pp.glowIntensity);
+        w.add("motionBlurEnabled", scene.motionBlurEnabled);
+        w.add("motionBlurSamples", pp.motionBlurSamples);
+        w.add("motionBlurFramerate", pp.motionBlurFramerate);
+        w.add("motionBlurRandomness", pp.motionBlurRandomness);
+        w.add("motionBlurMinDistance", pp.motionBlurMinDistance);
+        w.add("motionBlurMaxDistance", pp.motionBlurMaxDistance);
+        w.add("motionBlurRadialBlurAmount", pp.radialBlurAmount);
+        w.add("vignetteEnabled", scene.vignetteEnabled);
+        w.add("hdrTonemapper", pp.tonemapper);
+        w.add("hdrExposure", pp.exposure);
+        w.add("fxaaEnabled", scene.fxaaEnabled);
+        w.add("sharpeningEnabled", scene.sharpeningEnabled);
+        w.add("filmGrainEnabled", scene.filmGrainEnabled);
+        w.add("filmGrainColored", scene.filmGrainColored);
+        w.endObject();
+
+        w.endObject();
+        w.finish();
+
         logInfo("Saving scene to \"", filename, "\"...");
-        write(filename, root.toPrettyString(JSONOptions.init | JSONOptions.doNotEscapeSlashes));
+        try
+        {
+            writeFileBytes(filename, w.text);
+        }
+        catch (Exception ex)
+        {
+            logError("Cannot save scene \"", filename, "\": ", ex.msg);
+            app.setCursor(SystemCursor.Default);
+            return;
+        }
         sceneFilename = filename;
         modified = false;
 
         app.ui.assetBrowser.reset(assetRoot, true);
-        
+
         app.setCursor(SystemCursor.Default);
     }
-    
+
     string pendingOpen;
     bool pendingNew = true;
 
@@ -1000,20 +1020,32 @@ class Editor: EventListener
             return;
         }
 
-        JSONValue root;
+        releasePendingDocument();
+
+        // The parsed document refers to the text, so both live until the scene is populated
+        ubyte[] buffer;
+        JSONDocument document;
         try
         {
-            root = parseJSON(readText(filename));
+            buffer = readFileBytes(filename);
+            document = New!JSONDocument(cast(string)buffer);
         }
         catch (Exception ex)
         {
             logError("Cannot open scene \"", filename, "\": ", ex.msg);
+            if (buffer.length)
+                Delete(buffer);
             return;
         }
 
-        if (root.type != JSONType.object || ("entities" in root) is null || root["entities"].type != JSONType.array)
+        JSONValue root = document.root;
+        JSONValue entities = jsonField(root, "entities");
+        if (!document.isValid || root.type != JSONType.Object ||
+            entities is null || entities.type != JSONType.Array)
         {
             logError("Cannot open scene \"", filename, "\": invalid scene file");
+            Delete(document);
+            Delete(buffer);
             return;
         }
 
@@ -1023,7 +1055,18 @@ class Editor: EventListener
         logInfo("Opening scene \"", filename, "\"...");
         sceneFilename = filename;
         setAssetRoot(filename.dirName);
-        switchTo(jsonGet(root, "name", "Scene"), (EditorScene s) { populateFromJson(root); });
+        pendingDocument = document;
+        pendingBuffer = buffer;
+        switchTo(jsonGet(root, "name", "Scene").idup, &populatePending);
+    }
+
+    // Called by the new scene when it is ready
+    void populatePending(EditorScene s)
+    {
+        if (pendingDocument is null)
+            return;
+        populateFromJson(pendingDocument.root);
+        releasePendingDocument();
     }
 
     // Former second half of openScene, minus clearScene() and scene.name
@@ -1031,22 +1074,31 @@ class Editor: EventListener
     void populateFromJson(JSONValue root)
     {
         // Materials first: entities refer to them by index
-        Material[] materials;
-        if (auto mp = "materials" in root)
+        Array!Material materials;
+        scope(exit) materials.free();
+        JSONValue materialsNode = jsonField(root, "materials");
+        if (materialsNode !is null && materialsNode.type == JSONType.Array)
         {
-            foreach (m; mp.array)
+            foreach (m; materialsNode.asArray.data)
             {
                 string path = jsonGet(m, "path", "");
-                materials ~= (path.length > 0)? loadMaterial(path) : null;
+                materials.append((path.length > 0)? loadMaterial(path) : null);
             }
         }
 
         // Entities are created parents-first through addEntity(parent), so the
         // order in the file does not matter. A parent cycle is broken by
         // attaching the entity that closes it to the scene root.
-        JSONValue[] entitiesArr = root["entities"].array;
-        Entity[] created = new Entity[entitiesArr.length];
-        bool[] visiting = new bool[entitiesArr.length];
+        JSONValue[] entitiesArr = jsonField(root, "entities").asArray.data;
+        Entity[] created = New!(Entity[])(entitiesArr.length);
+        bool[] visiting = New!(bool[])(entitiesArr.length);
+        created[] = null;
+        visiting[] = false;
+        scope(exit)
+        {
+            Delete(created);
+            Delete(visiting);
+        }
 
         Entity create(size_t i)
         {
@@ -1069,14 +1121,14 @@ class Editor: EventListener
 
             Entity e;
 
-            JSONValue* lj = "light" in j;
-            if (lj !is null && lj.type == JSONType.object)
+            JSONValue lj = jsonField(j, "light");
+            if (lj !is null && lj.type == JSONType.Object)
             {
-                long lt = jsonGet(*lj, "type", cast(long)LightType.AreaSphere);
+                long lt = jsonGet(lj, "type", cast(long)LightType.AreaSphere);
                 if (lt < LightType.AreaSphere || lt > LightType.Spot)
                     lt = LightType.AreaSphere;
                 auto light = scene.addLight(cast(LightType)lt, parent);
-                readLight(light, *lj);
+                readLight(light, lj);
                 e = light;
             }
             else
@@ -1084,7 +1136,7 @@ class Editor: EventListener
                 e = scene.addEntity(parent);
             }
             
-            e.name = jsonGet(j, "name", "entity");
+            e.name = jsonGet(j, "name", "entity").idup; // Entity.name is a GC string
             e.layer = cast(EntityLayer)jsonGet(j, "layer", cast(long)e.layer);
             e.type = cast(typeof(e.type))jsonGet(j, "type", cast(long)e.type);
             e.renderLayer = cast(typeof(e.renderLayer))jsonGet(j, "renderLayer", cast(long)e.renderLayer);
@@ -1111,13 +1163,13 @@ class Editor: EventListener
                 if (mesh !is null)
                 {
                     e.drawable = mesh;
-                    meshPaths[e] = meshPath;
+                    setMeshPath(e, meshPath);
                 }
             }
 
             long mi = jsonGet(j, "material", -1L);
-            if (mi >= 0 && cast(size_t)mi < materials.length && materials[cast(size_t)mi] !is null)
-                e.material = materials[cast(size_t)mi];
+            if (mi >= 0 && cast(size_t)mi < materials.length && materials.data[cast(size_t)mi] !is null)
+                e.material = materials.data[cast(size_t)mi];
 
             created[i] = e;
             visiting[i] = false;
@@ -1138,11 +1190,9 @@ class Editor: EventListener
             }
         }
 
-        JSONValue* pPostproc = "postprocessing" in root;
-        if (pPostproc !is null && pPostproc.type == JSONType.object)
+        JSONValue postproc = jsonField(root, "postprocessing");
+        if (postproc !is null && postproc.type == JSONType.Object)
         {
-            auto postproc = *pPostproc;
-            
             auto renderer = app.deferredRenderer;
             auto pp = scene.app.postProcessingRenderer;
             
