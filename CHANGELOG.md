@@ -1,3 +1,8 @@
+Dagon 1.8.0 - TBD
+-----------------
+- **Editor**
+  - `AssetBrowser` refactoring.
+
 Dagon 1.7.0 - 7 Nov, 2026
 -------------------------
 - **Core**
