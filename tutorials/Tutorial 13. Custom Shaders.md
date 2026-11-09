@@ -1,6 +1,6 @@
 # Tutorial 13. Custom Shaders
 
-Dagon's material system can be extended using custom GLSL shaders. Shaders provide virtually unlimited possibilities for fine-tuning your game's visuals. From custom BRDFs to NPR and procedural textures — Dagon lets you do anything.
+Dagon's material system can be extended using custom GLSL shaders. Shaders provide virtually unlimited possibilities for fine-tuning your game's visuals. From custom BRDFs to NPR and procedural textures, Dagon lets you do anything.
 
 ⚠️ **Note:** Using custom shaders on objects completely overrides Dagon's built-in rendering for those objects. You'll need to implement basic effects such as lighting and environment mapping yourself.
 
@@ -171,7 +171,9 @@ override void bindParameters(GraphicsState* state)
 
 ## Subroutines
 
-TODO
+GLSL subroutines are a mechanism that allows you to dynamically change a shader's behavior at runtime. They work like function pointers. Instead of hardcoding which function to run, you define a subroutine type, write multiple subroutine functions, and assign the active function.
+
+TODO: subroutine example.
 
 ## Limitations
 

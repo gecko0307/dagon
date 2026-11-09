@@ -4,11 +4,15 @@
 
 > Note: this project is not connected to Dagon engine by Senscape.
 
-[![Sponza](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated.jpg)
+[![Ruins of Hell](https://blog.pixperfect.online/wp-content/uploads/2026/04/ruins_of_hell3.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/04/ruins_of_hell3.jpg)
 
 [![Sponza](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated1.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated1.jpg)
 
 [![Sponza](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated3.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated3.jpg)
+
+[![Chillwave Drive](https://blog.pixperfect.online/wp-content/uploads/2026/07/chillwave-drive-hq-1.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/07/chillwave-drive-hq-1.jpg)
+
+[![Editor](https://blog.pixperfect.online/wp-content/uploads/2026/11/dagon-editor-alpha-4.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/11/dagon-editor-alpha-4.jpg)
 
 ## Platform Support
 
@@ -17,9 +21,10 @@ Dagon currently works on Windows and Linux. The engine is only desktop, support 
 Dagon uses computation-heavy graphics techniques and so requires a fairly powerful graphics card to run (Ampere-based NVIDIA GPUs are recommended for optimal performance).
 
 The recommended system requirements (for Full HD rendering at 60 fps):
+
 - **CPU:** Intel Core i3-10100 / AMD Ryzen 3 3100
 - **RAM:** application-dependent, usually 8 Gb minimum
-- **GPU:** GeForce RTX 30 / Radeon RX 6000 series
+- **GPU:** OpenGL 4.3 capable, tested on GeForce RTX 30
 - **VRAM:** 8 Gb
 - **OS:** 64-bit Windows 10 or higher / Linux.
 
@@ -44,6 +49,8 @@ dub build
 
 By running a template application you should see a sample scene with a plane and a cube. You can then modify the generated dub.json file to suit your needs.
 
+Do not delete `data/__internal` folder! It is used to store engine's internal data such as shaders and textures.
+
 It is strongly recommended to use [LDC](https://github.com/ldc-developers/ldc) and compile in release mode to achieve maximum CPU performance:
 
 ```
@@ -60,9 +67,9 @@ To use Dagon repository directly instead of a release (for example, to modify th
 
 Dagon depends on the following shared libraries:
 
-* [SDL](https://www.libsdl.org) 2.32.4.0
-* [SDL_Image](https://github.com/libsdl-org/SDL_image) 2.8.8.0
-* [Freetype](https://www.freetype.org) 2.8.1 for text rendering
+* [SDL](https://www.libsdl.org) 2.32.4.0 (required)
+* [SDL_Image](https://github.com/libsdl-org/SDL_image) 2.8.8.0 (required)
+* [FreeType](https://www.freetype.org) 2.8.1 for text rendering (required)
 * [libwebp](https://chromium.googlesource.com/webm/libwebp) for WebP support (optional)
 * [libtiff](https://libtiff.gitlab.io/libtiff/) for TIFF support (optional)
 * [libavif](https://github.com/AOMediaCodec/libavif) for AVIF support (optional)
@@ -84,6 +91,8 @@ Under Linux, if you want to use local libraries in Windows way (from application
 "lflags-linux": ["-rpath=$$ORIGIN"]
 ```
 
+On Windows, some dependencies require Visual C++ v14 Redistributable. You can download an official installer [here](https://aka.ms/vc14/vc_redist.x64.exe). It is recommended to bundle vc_redist.x64.exe with your application's installer for end users.
+
 ## Contributing
 
 If you want to contribute code to Dagon, send pull requests to [the project repository](https://github.com/gecko0307/dagon). Please, read [Contributing Guidelines](?p=contributing_guidelines) first.
@@ -94,13 +103,14 @@ Found a bug? Please, create an issue [here](https://github.com/gecko0307/dagon/i
 
 If you like Dagon, please support its development on [Patreon](https://www.patreon.com/gecko0307) or [Liberapay](https://liberapay.com/gecko0307) and get a reward depending on your donation amount. Supporters who donate $10 and more will be listed on this page as Sponsors. You can also make a donation via [NowPayments](https://nowpayments.io/donation?api_key=EAAJMMS-8Z643SJ-K5Z4V2Q-Z31626N).
 
-Big thanks to these awesome people for supporting Dagon: **Daniel Laburthe**, **Rafał Ziemniewski**, **Kumar Sookram**, **Aleksandr Kovalev**, **Robert Georges**, **Jan Jurzitza (WebFreak)**, **Rais Safiullin (SARFEX)**, **Benas Cernevicius**, **Koichi Takio**, **Konstantin Menshikov**.
+Big thanks to the following awesome people for supporting Dagon: **Daniel Laburthe**, **Rafał Ziemniewski**, **Kumar Sookram**, **Aleksandr Kovalev**, **Robert Georges**, **Jan Jurzitza (WebFreak)**, **Rais Safiullin (SARFEX)**, **Benas Cernevicius**, **Koichi Takio**, **Konstantin Menshikov**.
 
 ## License and Credits
 
 Copyright (c) 2016-2026 Timur Gafarov, Rafał Ziemniewski, Mateusz Muszyński, Denis Feklushkin, dayllenger, Konstantin Menshikov, Björn Roberg et al. Distributed under the [Boost Software License, Version 1.0](https://www.boost.org/LICENSE_1_0.txt).
 
 ### Authors and contributors:
+
 * Core engine, Newton extension, Jolt extension, IQM extension, KTX extension, Assimp extension, PhysFS extension, audio extension, video extension - [Timur Gafarov aka gecko0307](https://github.com/gecko0307)
 * Input manager, Nuklear extension - [Mateusz Muszyński aka Timu5](https://github.com/Timu5)
 * Terrain rendering, OpenSimplex noise generator - Rafał Ziemniewski
@@ -108,15 +118,17 @@ Copyright (c) 2016-2026 Timur Gafarov, Rafał Ziemniewski, Mateusz Muszyński, D
 * glTF animation - [Denis Feklushkin aka denizzzka](https://github.com/denizzzka)
 * Asset manager improvements - [Konstantin Menshikov aka MANKEYYENAME](https://github.com/MANKEYYENAME)
 * OBJ group parser - [Vlad Davydov aka Tynuk](https://github.com/Tynukua)
-* Bugfixes - [Björn Roberg aka roobie](https://github.com/roobie), [Isaac S.](https://github.com/isaacs-dev), [Adrien Allard aka Tichau](https://github.com/Tichau), [Ilya Lemeshko aka ijet](https://github.com/my-ijet), [Dennis Korpel aka dkorpel](https://github.com/dkorpel), [Robert Schadek aka burner](https://github.com/burner)
+* Bugfixes - [Björn Roberg aka roobie](https://github.com/roobie), [Isaac S.](https://github.com/isaacs-dev), [Adrien Allard aka Tichau](https://github.com/Tichau), [Ilya Lemeshko aka ijet](https://github.com/my-ijet), [Dennis Korpel aka dkorpel](https://github.com/dkorpel), [Robert Schadek aka burner](https://github.com/burner).
 
 ### Adapted third-party code:
+
 * Wintab binding - [Vadim Lopatin aka buggins](https://github.com/buggins)
 * DXT1/DXT5 compressor - [Fabian Giesen](https://github.com/rygorous), [Yann Collet](https://github.com/Cyan4973)
+* BC7 compressor - [Rich Geldreich](https://github.com/richgel999)
 * ImGui extension (ImGuiOpenGLBackend) - [Joshua T. Fisher aka playmer](https://github.com/playmer), [LunaTheFoxgirl](https://github.com/LunaTheFoxgirl)
 * SoLoud binding contains code by [Jari Komppa](https://github.com/jarikomppa)
 * SSAO implementation is based on the code by [Reinder Nijhoff](https://www.shadertoy.com/view/Ms33WB)
-* FXAA implementation is based on the code by [JeGX](http://www.geeks3d.com/20110405/fxaa-fast-approximate-anti-aliasing-demo-glsl-opengl-test-radeon-geforce)
+* FXAA 3.11 implementation is based on the code by Timothy Lottes (NVIDIA)
 * Optimized separable Gaussian blur - [Matt DesLauriers](https://github.com/Experience-Monks)
 * Depth of field effect - [Martins Upitis](https://github.com/martinsh)
 * Lens distortion effect - [Jaume Sanchez](https://github.com/spite)
@@ -132,13 +144,19 @@ Copyright (c) 2016-2026 Timur Gafarov, Rafał Ziemniewski, Mateusz Muszyński, D
 * Khronos PBR Neutral tonemapper is based on the code by [Khronos Group](https://github.com/KhronosGroup/ToneMapping)
 * Uchimura tonemapper is based on the function by [Hajime Uchimura](https://www.desmos.com/calculator/gslcdxvipg)
 * Lottes tonemapper is based on the function by Timothy Lottes ("Advanced Techniques and Optimization of HDR Color Pipelines")
-* Vignette shader by [Tyler Lindberg](https://github.com/TyLindberg)
+* Vignette shader by [Tyler Lindberg](https://github.com/TyLindberg).
 
 ## Made with Dagon
 
-* [Sponza Demo](https://github.com/gecko0307/dagon-sponza) - Crytek Sponza Atrium scene implemented using Dagon
-* [Electronvolt](https://github.com/gecko0307/electronvolt) - work-in-progress first person puzzle based on Dagon
-* [Chillwave Drive](https://github.com/gecko0307/chillwavedrive) - vehicle physics demo written using Dagon, Newton Dynamics and SoLoud
+Games:
+
+* [Chillwave Drive](https://github.com/gecko0307/chillwavedrive) - in-development racing game
 * [Dagoban](https://github.com/Timu5/dagoban) - a Sokoban clone
+* [2048x2](https://github.com/gecko0307/2048x2) - a 2048 clone
 * [sacengine](https://github.com/tg-2/sacengine) - [Sacrifice](https://en.wikipedia.org/wiki/Sacrifice_(video_game)) engine reimplementation
-* [dagon-shooter](https://github.com/aferust/dagon-shooter) - a shooter game
+* [dagon-shooter](https://github.com/aferust/dagon-shooter) - a shooter game (unfinished)
+
+Tech demos:
+
+* [Ruins of Hell](https://github.com/gecko0307/ruins-of-hell) - first-person shooter demo
+* [Sponza Demo](https://github.com/gecko0307/dagon-sponza) - Crytek Sponza Atrium scene implemented using Dagon
