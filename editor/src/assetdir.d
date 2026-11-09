@@ -55,8 +55,9 @@ class AssetEntry
     String absPath;      // For example, "C:/projects/game/scenes/level0/localFolder/file.png" under Windows
     bool isDirectory;
     ulong size;
-    Texture thumbnail;   // this can be null or non-null, but the status should be checked with `thumbnailValid`
-    bool thumbnailValid; // if true, thumbnail can be rendered, otherwise the browser should use a fallback icon
+    Texture thumbnail;   // Owned by ThumbnailGenerator. Null until the thumbnail is ready (or if it failed)
+    bool thumbnailValid; // true when the thumbnail request is resolved (ready or failed): stop asking the generator
+    int thumbnailId = -1; // ThumbnailGenerator entry id, -1 if not requested yet
     
     ~this()
     {

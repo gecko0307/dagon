@@ -46,6 +46,7 @@ import dagon.ext.imgui;
 
 import ui;
 import assetdir;
+import thumbnail;
 import textbuffer;
 
 struct BrowseContext
@@ -88,8 +89,16 @@ class AssetBrowser: Owner
     
     // Set a new absolute root directory and return the browser to its root.
     // Relative paths inside the browser are always kept separate from this path.
+    /// Drop queued (not yet started) thumbnail jobs when the visible folder changes.
+    void cancelThumbnails()
+    {
+        if (ui.thumbnailGenerator)
+            ui.thumbnailGenerator.cancelPending();
+    }
+
     void reset(string assetRootDir, bool activate)
     {
+        cancelThumbnails();
         dir.resetDir(assetRootDir);
         active = activate;
         if (active)
@@ -102,6 +111,7 @@ class AssetBrowser: Owner
     
     void openFolder(AssetEntry folder)
     {
+        cancelThumbnails();
         dir.open(folder.name.toString);
         selectedEntry = null;
         assetBrowserMessage.clear();
@@ -244,6 +254,7 @@ class AssetBrowser: Owner
             if (igButton("Up", ImVec2(0, 0)))
             {
                 selectedEntry = null;
+                cancelThumbnails();
                 dir.up();
             }
             
@@ -653,9 +664,34 @@ class AssetBrowser: Owner
         {
             if (!entry.thumbnailValid)
             {
-                if (ui.thumbnailGenerator)
-                    entry.thumbnail = ui.thumbnailGenerator.getThumbnail(entry.absPath.toString);
-                entry.thumbnailValid = true;
+                auto generator = ui.thumbnailGenerator;
+                if (generator is null)
+                    entry.thumbnailValid = true;
+                else
+                {
+                    // Non-blocking: queues a job for the worker thread, the generic
+                    // image icon is shown until the thumbnail is ready.
+                    entry.thumbnailId = generator.requestThumbnail(
+                        entry.absPath.toString, entry.thumbnailId);
+                    if (entry.thumbnailId < 0)
+                        entry.thumbnailValid = true; // unsupported format
+                    else
+                    {
+                        final switch (generator.thumbnailState(entry.thumbnailId))
+                        {
+                            case ThumbnailState.Ready:
+                                entry.thumbnail = generator.thumbnailTexture(entry.thumbnailId);
+                                entry.thumbnailValid = true;
+                                break;
+                            case ThumbnailState.Failed:
+                                entry.thumbnailValid = true;
+                                break;
+                            case ThumbnailState.Idle:
+                            case ThumbnailState.Pending:
+                                break;
+                        }
+                    }
+                }
             }
             return entry.thumbnail ? entry.thumbnail : ui.iconImage;
         }

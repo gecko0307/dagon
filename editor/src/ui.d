@@ -407,6 +407,8 @@ class EditorUI: EventListener
         
         inspector.render();
         properties.render();
+        if (thumbnailGenerator)
+            thumbnailGenerator.update(); // upload thumbnails finished by the worker thread
         assetBrowser.render();
         renderViewportAssetDropTarget(centralNode);
         

@@ -26,7 +26,23 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /*
- * Texture thumbnail generator.
+ * Asynchronous texture thumbnail generator.
+ *
+ * Threading model (follows Dagon's two-phase asset loading):
+ *
+ *   Main thread                            Worker thread
+ *   -----------                            -------------
+ *   requestThumbnail()  -- pending queue -> loadAssetThreadSafePart (file read + decode)
+ *                                           resample to a 128x128 RGB(A) buffer
+ *   update() <---------- done queue ------- (no OpenGL, no Owner tree changes)
+ *     GL upload (createFromBuffer)
+ *
+ * Rules:
+ *  - The worker never touches OpenGL, the Owner tree, or the `entries` array.
+ *    It only mutates the ThumbnailJob it has popped from the pending queue.
+ *  - Jobs are handed over exclusively through the mutex-guarded queues.
+ *  - Entries (and their filename copies) are main-thread-only and are never
+ *    freed while the worker is running.
  */
 module thumbnail;
 
@@ -36,6 +52,8 @@ import std.string;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.core.thread;
+import dlib.core.mutex;
 import dlib.container.array;
 import dlib.math.base;
 
@@ -44,155 +62,426 @@ import dagon.graphics.texture;
 import dagon.resource.asset;
 import dagon.resource.texture;
 
+enum ThumbnailState
+{
+    Idle,    // Not queued (new, or its queued job was cancelled)
+    Pending, // Queued or being processed by the worker
+    Ready,   // `texture` is valid
+    Failed   // Cannot be thumbnailed, use a fallback icon
+}
+
 struct ThumbnailEntry
 {
-    string filename;
+    string filename; // Persistent copy, freed in ThumbnailGenerator destructor
     Texture texture;
+    ThumbnailState state;
+}
+
+private class ThumbnailJob
+{
+    size_t entryId;
+    string filename;          // Points to ThumbnailEntry.filename, outlives the job
+    TextureAsset source;      // Created on the main thread
+    TextureBuffer thumbnail;  // Filled by the worker if resampling succeeded
+    bool hasThumbnail = false;
+    bool decoded = false;
+}
+
+// FIFO queue of jobs. Not synchronized by itself: guard with ThumbnailGenerator.mutex.
+private struct JobQueue
+{
+    Array!ThumbnailJob items;
+    size_t head = 0;
+
+    void push(ThumbnailJob job)
+    {
+        items.append(job);
+    }
+
+    ThumbnailJob pop()
+    {
+        if (head >= items.length)
+            return null;
+        ThumbnailJob job = items.data[head];
+        head++;
+        if (head >= items.length)
+        {
+            items.free();
+            head = 0;
+        }
+        return job;
+    }
+
+    void free()
+    {
+        items.free();
+        head = 0;
+    }
 }
 
 class ThumbnailGenerator: Owner
 {
     enum uint maxDimension = 128;
+    enum uint maxUploadsPerFrame = 4;
+    enum uint idleSleepMs = 5;
 
     private AssetManager assetManager;
-    private Array!ThumbnailEntry thumbnails;
+    private Array!ThumbnailEntry entries;
+
+    private Mutex mutex;        // Guards pending, done and stopRequested
+    private JobQueue pending;
+    private JobQueue done;
+    private bool stopRequested = false;
+    private Thread worker;
 
     this(AssetManager assetManager)
     {
         super(assetManager);
         this.assetManager = assetManager;
+        mutex.init();
+        worker = New!Thread(&workerLoop);
+        worker.start();
     }
 
     ~this()
     {
-        foreach (entry; thumbnails)
+        // Stop the worker. Not using Thread.join(): the Thread destructor
+        // calls pthread_detach, which is invalid after a join.
+        mutex.lock();
+        stopRequested = true;
+        mutex.unlock();
+        while (worker.isRunning)
+            Thread.sleep(1);
+        Delete(worker);
+
+        // The worker is gone, queues are ours now.
+        while (true)
+        {
+            ThumbnailJob job = pending.pop();
+            if (job is null)
+                break;
+            discardJob(job);
+        }
+        while (true)
+        {
+            ThumbnailJob job = done.pop();
+            if (job is null)
+                break;
+            discardJob(job);
+        }
+        pending.free();
+        done.free();
+
+        foreach (entry; entries)
         {
             auto filename = cast(char[])entry.filename;
             Delete(filename);
         }
-        thumbnails.free();
+        entries.free();
+
+        mutex.destroy();
     }
 
-    Texture getThumbnail(const(char)[] filename)
+    /**
+     * Main thread only. Makes sure a thumbnail for `filename` is cached or queued.
+     * `id` is the value returned by a previous call for the same file (or -1);
+     * passing it skips the lookup.
+     * Returns the entry id, or -1 if the file format is not supported
+     * (use a fallback icon, no need to ask again).
+     */
+    int requestThumbnail(const(char)[] filename, int id = -1)
+    {
+        if (id < 0)
+        {
+            if (!isSupportedFormat(filename))
+                return -1;
+
+            foreach (i, entry; entries.data)
+            {
+                if (entry.filename == filename)
+                {
+                    id = cast(int)i;
+                    break;
+                }
+            }
+
+            if (id < 0)
+            {
+                // Array storage is GC-free, so the cached filename needs explicit ownership.
+                auto cachedFilename = New!(char[])(filename.length);
+                cachedFilename[] = filename[];
+                entries.append(ThumbnailEntry(cast(string)cachedFilename, null, ThumbnailState.Idle));
+                id = cast(int)(entries.length - 1);
+            }
+        }
+
+        if (entries.data[id].state == ThumbnailState.Idle)
+            enqueue(id);
+
+        return id;
+    }
+
+    ThumbnailState thumbnailState(int id)
+    {
+        if (id < 0 || id >= entries.length)
+            return ThumbnailState.Failed;
+        return entries.data[id].state;
+    }
+
+    /// Returns null unless the state is Ready.
+    Texture thumbnailTexture(int id)
+    {
+        if (id < 0 || id >= entries.length)
+            return null;
+        return entries.data[id].texture;
+    }
+
+    /**
+     * Main thread only. Drops all jobs that the worker has not started yet.
+     * Their entries go back to Idle and will be re-queued if they are requested again
+     * (so call this when the browser navigates to another folder).
+     * A job already being processed is allowed to finish, its result is cached as usual.
+     */
+    void cancelPending()
+    {
+        mutex.lock();
+        while (true)
+        {
+            ThumbnailJob job = pending.pop();
+            if (job is null)
+                break;
+            entries.data[job.entryId].state = ThumbnailState.Idle;
+            discardJob(job);
+        }
+        mutex.unlock();
+    }
+
+    /// Main thread only. Call once per frame: uploads finished thumbnails to the GPU.
+    void update()
+    {
+        uint uploads = 0;
+        while (uploads < maxUploadsPerFrame)
+        {
+            mutex.lock();
+            ThumbnailJob job = done.pop();
+            mutex.unlock();
+
+            if (job is null)
+                break;
+
+            finishJob(job);
+            uploads++;
+        }
+    }
+
+  private:
+
+    bool isSupportedFormat(const(char)[] filename)
     {
         const(char)[] ext = extension(filename);
         char[16] extBuffer;
         if (ext.length > extBuffer.length)
-            return null;
+            return false;
         foreach (i, c; ext)
             extBuffer[i] = (c >= 'A' && c <= 'Z') ? cast(char)(c + 32) : c;
         string format = cast(string)extBuffer[0 .. ext.length];
-        if (assetManager.textureLoader(format) is null)
-            return null;
+        return assetManager.textureLoader(format) !is null;
+    }
 
-        foreach (entry; thumbnails)
+    // Main thread: the Owner tree is modified here, not in the worker.
+    void enqueue(size_t id)
+    {
+        auto job = New!ThumbnailJob();
+        job.entryId = id;
+        job.filename = entries.data[id].filename;
+        job.source = New!TextureAsset(this);
+        job.source.persistent = true;
+
+        entries.data[id].state = ThumbnailState.Pending;
+
+        mutex.lock();
+        pending.push(job);
+        mutex.unlock();
+    }
+
+    // Main thread (or destructor after the worker stopped).
+    void discardJob(ThumbnailJob job)
+    {
+        if (job.hasThumbnail)
+            Delete(job.thumbnail.data);
+        if (job.source !is null)
+            deleteOwnedObject(job.source);
+        Delete(job);
+    }
+
+    // Worker thread entry point.
+    void workerLoop()
+    {
+        while (true)
         {
-            if (entry.filename == filename)
-                return entry.texture;
-        }
+            mutex.lock();
+            bool stop = stopRequested;
+            ThumbnailJob job = stop ? null : pending.pop();
+            mutex.unlock();
 
-        // Array storage is GC-free, so the cached filename needs explicit ownership.
-        auto cachedFilename = New!(char[])(filename.length);
-        cachedFilename[] = filename[];
-        string persistentFilename = cast(string)cachedFilename;
+            if (stop)
+                break;
 
-        auto source = New!TextureAsset(this);
-        source.persistent = true;
-        assetManager.preloadExternalAsset(source, persistentFilename);
-        bool retainSource;
-        scope(exit)
-        {
-            if (!retainSource)
-                source.release();
+            if (job is null)
+            {
+                Thread.sleep(idleSleepMs);
+                continue;
+            }
+
+            processJob(job);
+
+            mutex.lock();
+            done.push(job);
+            mutex.unlock();
         }
-        
-        Texture result;
-        if (source.threadUnsafePartLoaded &&
-            source.buffer.format.target == GL_TEXTURE_2D &&
+    }
+
+    // Worker thread. Thread-safe part of the asset loading and resampling only: no GL.
+    void processJob(ThumbnailJob job)
+    {
+        auto source = job.source;
+        source.threadSafePartLoaded = assetManager.loadAssetThreadSafePart(source, job.filename);
+        job.decoded = source.threadSafePartLoaded;
+        if (!job.decoded)
+            return;
+
+        if (source.buffer.format.target == GL_TEXTURE_2D &&
             source.buffer.format.pixelType == GL_UNSIGNED_BYTE &&
             (source.buffer.format.format == GL_RGB ||
              source.buffer.format.format == GL_RGBA))
         {
-            uint sourceWidth = source.buffer.size.width;
-            uint sourceHeight = source.buffer.size.height;
-            uint channels = source.buffer.format.format == GL_RGBA ? 4 : 3;
-            size_t sourceDataSize = cast(size_t)sourceWidth * sourceHeight * channels;
+            job.hasThumbnail = makeThumbnail(source, job.thumbnail);
+            if (job.hasThumbnail)
+                source.releaseBuffer(); // GL-free, frees decoded pixels early
+        }
+        // Otherwise (compressed, HDR, cube maps...) the main thread falls back
+        // to uploading the source texture as is.
+    }
 
-            if (sourceWidth > 0 && sourceHeight > 0 &&
-                source.buffer.data.length >= sourceDataSize)
+    // Worker thread. Bilinear downscale to a square canvas, image centered.
+    bool makeThumbnail(TextureAsset source, ref TextureBuffer thumbnailBuffer)
+    {
+        uint sourceWidth = source.buffer.size.width;
+        uint sourceHeight = source.buffer.size.height;
+        uint channels = source.buffer.format.format == GL_RGBA ? 4 : 3;
+        size_t sourceDataSize = cast(size_t)sourceWidth * sourceHeight * channels;
+
+        if (sourceWidth == 0 || sourceHeight == 0 ||
+            source.buffer.data.length < sourceDataSize)
+            return false;
+
+        float scale = min(1.0f, cast(float)maxDimension /
+            cast(float)(sourceWidth > sourceHeight ? sourceWidth : sourceHeight));
+        uint width = max(1, cast(uint)(sourceWidth * scale));
+        uint height = max(1, cast(uint)(sourceHeight * scale));
+
+        // Square canvas, scaled image centered inside
+        uint side = max(width, height);
+        uint offsetX = (side - width) / 2;
+        uint offsetY = (side - height) / 2;
+
+        thumbnailBuffer.format = source.buffer.format;
+        thumbnailBuffer.size = TextureSize(side, side, 1);
+        thumbnailBuffer.mipLevels = 1;
+        thumbnailBuffer.data = New!(ubyte[])(cast(size_t)side * side * channels);
+        thumbnailBuffer.data[] = 0; // padding: black (RGB) or transparent black (RGBA)
+
+        foreach (y; 0..height)
+        {
+            float sourceY = (cast(float)y + 0.5f) * sourceHeight / height - 0.5f;
+            sourceY = sourceY < 0.0f ? 0.0f : sourceY;
+            uint y0 = cast(uint)floor(sourceY);
+            uint y1 = min(y0 + 1, sourceHeight - 1);
+            float fy = sourceY - y0;
+
+            foreach (x; 0..width)
             {
-                float scale = min(1.0f, cast(float)maxDimension /
-                    cast(float)(sourceWidth > sourceHeight ? sourceWidth : sourceHeight));
-                uint width = max(1, cast(uint)(sourceWidth * scale));
-                uint height = max(1, cast(uint)(sourceHeight * scale));
+                float sourceX = (cast(float)x + 0.5f) * sourceWidth / width - 0.5f;
+                sourceX = sourceX < 0.0f ? 0.0f : sourceX;
+                uint x0 = cast(uint)floor(sourceX);
+                uint x1 = min(x0 + 1, sourceWidth - 1);
+                float fx = sourceX - x0;
 
-                // Square canvas, scaled image centered inside
-                uint side = max(width, height);
-                uint offsetX = (side - width) / 2;
-                uint offsetY = (side - height) / 2;
-
-                TextureBuffer thumbnailBuffer;
-                thumbnailBuffer.format = source.buffer.format;
-                thumbnailBuffer.size = TextureSize(side, side, 1);
-                thumbnailBuffer.mipLevels = 1;
-                thumbnailBuffer.data = New!(ubyte[])(cast(size_t)side * side * channels);
-                thumbnailBuffer.data[] = 0; // padding: black (RGB) or transparent black (RGBA)
-
-                foreach (y; 0..height)
+                foreach (channel; 0..channels)
                 {
-                    float sourceY = (cast(float)y + 0.5f) * sourceHeight / height - 0.5f;
-                    sourceY = sourceY < 0.0f ? 0.0f : sourceY;
-                    uint y0 = cast(uint)floor(sourceY);
-                    uint y1 = min(y0 + 1, sourceHeight - 1);
-                    float fy = sourceY - y0;
-
-                    foreach (x; 0..width)
-                    {
-                        float sourceX = (cast(float)x + 0.5f) * sourceWidth / width - 0.5f;
-                        sourceX = sourceX < 0.0f ? 0.0f : sourceX;
-                        uint x0 = cast(uint)floor(sourceX);
-                        uint x1 = min(x0 + 1, sourceWidth - 1);
-                        float fx = sourceX - x0;
-
-                        foreach (channel; 0..channels)
-                        {
-                            size_t topLeft = (cast(size_t)y0 * sourceWidth + x0) * channels + channel;
-                            size_t topRight = (cast(size_t)y0 * sourceWidth + x1) * channels + channel;
-                            size_t bottomLeft = (cast(size_t)y1 * sourceWidth + x0) * channels + channel;
-                            size_t bottomRight = (cast(size_t)y1 * sourceWidth + x1) * channels + channel;
-                            float top = source.buffer.data[topLeft] * (1.0f - fx) +
-                                source.buffer.data[topRight] * fx;
-                            float bottom = source.buffer.data[bottomLeft] * (1.0f - fx) +
-                                source.buffer.data[bottomRight] * fx;
-                            float value = top * (1.0f - fy) + bottom * fy;
-                            size_t target = (cast(size_t)(y + offsetY) * side + (x + offsetX)) * channels + channel;
-                            thumbnailBuffer.data[target] = cast(ubyte)(value + 0.5f);
-                        }
-                    }
+                    size_t topLeft = (cast(size_t)y0 * sourceWidth + x0) * channels + channel;
+                    size_t topRight = (cast(size_t)y0 * sourceWidth + x1) * channels + channel;
+                    size_t bottomLeft = (cast(size_t)y1 * sourceWidth + x0) * channels + channel;
+                    size_t bottomRight = (cast(size_t)y1 * sourceWidth + x1) * channels + channel;
+                    float top = source.buffer.data[topLeft] * (1.0f - fx) +
+                        source.buffer.data[topRight] * fx;
+                    float bottom = source.buffer.data[bottomLeft] * (1.0f - fx) +
+                        source.buffer.data[bottomRight] * fx;
+                    float value = top * (1.0f - fy) + bottom * fy;
+                    size_t target = (cast(size_t)(y + offsetY) * side + (x + offsetX)) * channels + channel;
+                    thumbnailBuffer.data[target] = cast(ubyte)(value + 0.5f);
                 }
-
-                result = New!Texture(this);
-                result.createFromBuffer(thumbnailBuffer, false);
-                if (!result.valid)
-                    result = null;
-                else
-                {
-                    result.bind();
-                    result.unbind();
-                }
-                Delete(thumbnailBuffer.data);
             }
         }
 
-        if (result is null && source.threadUnsafePartLoaded && source.texture.valid)
+        return true;
+    }
+
+    // Main thread: GL upload and Owner tree changes.
+    void finishJob(ThumbnailJob job)
+    {
+        auto entry = &entries.data[job.entryId];
+
+        // A duplicate job may finish after the entry is already resolved
+        if (entry.state == ThumbnailState.Ready)
         {
-            result = source.texture;
-            result.bind();
-            result.unbind();
-            retainSource = true;
+            discardJob(job);
+            return;
         }
-        
-        thumbnails.append(ThumbnailEntry(persistentFilename, result));
-        return result;
+
+        Texture result;
+        bool retainSource = false;
+
+        if (job.decoded && job.hasThumbnail)
+        {
+            result = New!Texture(this);
+            result.createFromBuffer(job.thumbnail, false);
+            if (!result.valid)
+            {
+                Delete(result);
+                result = null;
+            }
+            else
+            {
+                result.bind();
+                result.unbind();
+            }
+            Delete(job.thumbnail.data);
+            job.hasThumbnail = false;
+        }
+        else if (job.decoded)
+        {
+            // Unusual pixel format: upload the source texture directly
+            job.source.threadUnsafePartLoaded = job.source.loadThreadUnsafePart();
+            if (job.source.threadUnsafePartLoaded && job.source.texture.valid)
+            {
+                result = job.source.texture;
+                result.bind();
+                result.unbind();
+                retainSource = true;
+            }
+        }
+
+        entry.texture = result;
+        entry.state = result is null ? ThumbnailState.Failed : ThumbnailState.Ready;
+
+        if (retainSource)
+        {
+            // The texture is owned by the source asset, so keep the asset alive.
+            job.source = null;
+            Delete(job);
+        }
+        else
+            discardJob(job);
     }
 }
