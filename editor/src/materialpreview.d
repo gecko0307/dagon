@@ -306,7 +306,7 @@ class MaterialPreviewRenderer: Owner
         light.turn(-35.0f);
         light.updateTransformation();
 
-        sphere = New!ShapeSphere(0.9f, 32, 16, false, this);
+        sphere = New!ShapeSphere(0.9f, 32, 24, false, this);
         remapSphereTexcoords();
         defaultMaterial = New!Material(this);
         shader = New!MaterialPreviewShader(this);

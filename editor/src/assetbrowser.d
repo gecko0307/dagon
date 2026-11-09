@@ -653,7 +653,10 @@ class AssetBrowser: Owner
         ".py", ".pyc", ".pyw", ".pyd", ".pyo"
     ];
     static const(char)[][] extBinary = [
-        ".exe", ".dll", ".bin", ".o"
+        ".dll", ".bin", ".o"
+    ];
+    static const(char)[][] extEXE = [
+        ".exe"
     ];
     static const(char)[][] extAPK = [".apk"];
     static const(char)[][] extBash = [".sh"];
@@ -714,6 +717,8 @@ class AssetBrowser: Owner
             return ui.iconPython;
         if (hasExtension(entry.name, extBinary))
             return ui.iconBinary;
+        if (hasExtension(entry.name, extEXE))
+            return ui.iconEXE;
         if (hasExtension(entry.name, extAPK))
             return ui.iconAPK;
         if (hasExtension(entry.name, extBash))

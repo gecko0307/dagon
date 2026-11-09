@@ -68,6 +68,7 @@ class EditorApp: Game
     TextureAsset aModelIcon;
     TextureAsset aPythonIcon;
     TextureAsset aBinaryIcon;
+    TextureAsset aEXEIcon;
     TextureAsset aAPKIcon;
     TextureAsset aBashIcon;
     TextureAsset aTorrentIcon;
@@ -131,6 +132,7 @@ class EditorApp: Game
         aModelIcon = loadTexture("data/icons/model.png");
         aPythonIcon = loadTexture("data/icons/python.png");
         aBinaryIcon = loadTexture("data/icons/binary.png");
+        aEXEIcon = loadTexture("data/icons/exe.png");
         aAPKIcon = loadTexture("data/icons/apk.png");
         aBashIcon = loadTexture("data/icons/bash.png");
         aTorrentIcon = loadTexture("data/icons/torrent.png");
@@ -161,6 +163,7 @@ class EditorApp: Game
         ui.iconModel = prepareUiTexture(aModelIcon.texture);
         ui.iconPython = prepareUiTexture(aPythonIcon.texture);
         ui.iconBinary = prepareUiTexture(aBinaryIcon.texture);
+        ui.iconEXE = prepareUiTexture(aEXEIcon.texture);
         ui.iconAPK = prepareUiTexture(aAPKIcon.texture);
         ui.iconBash = prepareUiTexture(aBashIcon.texture);
         ui.iconTorrent = prepareUiTexture(aTorrentIcon.texture);

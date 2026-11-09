@@ -108,6 +108,7 @@ class EditorUI: EventListener
     Texture iconModel;
     Texture iconPython;
     Texture iconBinary;
+    Texture iconEXE;
     Texture iconAPK;
     Texture iconBash;
     Texture iconTorrent;
