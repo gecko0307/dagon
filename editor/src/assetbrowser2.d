@@ -24,6 +24,10 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+/*
+ * Asset browser panel.
+ */
 module assetbrowser2;
 
 import core.stdc.string: strlen;
@@ -51,6 +55,11 @@ struct BrowseContext
     AssetEntry deletedEntry;
 }
 
+/**
+ * ImGui widget that displays contents of the currently edited scene's
+ * parent directory. Supports basic file editing (rename, delete)
+ * and opening files with associated applications.
+ */
 class AssetBrowser: Owner
 {
     bool active = false;
@@ -59,9 +68,10 @@ class AssetBrowser: Owner
     AssetEntry selectedEntry;
     AssetEntry renamedEntry;
     AssetEntry deletedEntry;
-    bool tableView = true;
+    char[256] assetSearchBuffer;
     char[256] assetNameBuffer;
     TextBuffer!512 assetBrowserMessage;
+    bool tableView = false;
     
     this(EditorUI ui)
     {
@@ -85,6 +95,7 @@ class AssetBrowser: Owner
         if (active)
             dir.scan();
         selectedEntry = null;
+        assetSearchBuffer[] = 0;
         assetNameBuffer[] = 0;
         assetBrowserMessage.clear();
     }
@@ -252,12 +263,9 @@ class AssetBrowser: Owner
                 igOpenPopup("Create asset folder");
             }
             
-            /*
-            // TODO
             igSameLine();
             igSetNextItemWidth(200.0f);
             igInputText("Filter##AssetSearch", assetSearchBuffer.ptr, assetSearchBuffer.length);
-            */
             
             igSameLine();
             if (igRadioButton("Grid", !tableView))
@@ -266,12 +274,15 @@ class AssetBrowser: Owner
             if (igRadioButton("Table", tableView))
                 tableView = true;
             
+            string search = cast(string)assetSearchBuffer[0..strlen(assetSearchBuffer.ptr)];
+            
             BrowseContext ctx;
+            size_t visibleEntries = 0;
             
             if (tableView)
-                renderTable(ctx);
+                visibleEntries = renderTable(search, ctx);
             else
-                renderGrid(ctx);
+                visibleEntries = renderGrid(search, ctx);
             
             if (ctx.openedEntry)
             {
@@ -350,7 +361,7 @@ class AssetBrowser: Owner
         }
     }
     
-    protected size_t renderTable(ref BrowseContext ctx)
+    protected size_t renderTable(string search, ref BrowseContext ctx)
     {
         size_t visibleEntries;
         if (!igBeginTable("Asset entries", 3,
@@ -365,9 +376,13 @@ class AssetBrowser: Owner
         
         ctx.openedEntry = null;
         ctx.renamedEntry = null;
+        ctx.deletedEntry = null;
         
         foreach(size_t i, AssetEntry entry; dir.contentsSorted)
         {
+            if (!containsIgnoreCase(entry.name.toString, search))
+                continue;
+            
             visibleEntries++;
             
             igPushID_Int(cast(uint)i);
@@ -409,17 +424,11 @@ class AssetBrowser: Owner
             if (igBeginPopupContextItem("Asset item context"))
             {
                 if (igMenuItem("Open"))
-                {
                     ctx.openedEntry = entry;
-                }
                 if (igMenuItem("Rename"))
-                {
                     ctx.renamedEntry = entry;
-                }
                 if (igMenuItem("Delete"))
-                {
                     ctx.deletedEntry = entry;
-                }
                 igEndPopup();
             }
             
@@ -436,10 +445,10 @@ class AssetBrowser: Owner
             }
             
             igTableSetColumnIndex(2);
-            //if (entry.isDirectory)
+            if (entry.isDirectory)
                 igTextUnformatted("-");
-            //else
-            //    igText("%s", entry.sizeLabel.ptr);
+            else
+                igText("%d", entry.size);
 
             igPopID();
         }
@@ -448,14 +457,135 @@ class AssetBrowser: Owner
         return visibleEntries;
     }
     
-    protected void renderGrid(ref BrowseContext ctx)
+    protected size_t renderGrid(string search, ref BrowseContext ctx)
     {
-        // TODO
+        ImVec2 size;
+        igGetWindowSize(&size);
+        float winWidth = size.x;
+        int columns = cast(int)(winWidth / 128.0f);
+        columns = columns < 1 ? 1 : columns;
+        igColumns(columns, null, false);
+        
+        size_t visibleEntries;
+        
+        foreach(size_t i, AssetEntry entry; dir.contentsSorted)
+        {
+            if (!containsIgnoreCase(entry.name.toString, search))
+                continue;
+            
+            visibleEntries++;
+            
+            igPushID_Int(cast(uint)i);
+            
+            igBeginGroup();
+            
+            bool selected = entry is selectedEntry;
+            
+            Texture entryIcon = getEntryIcon(entry);
+            if (entryIcon)
+            {
+                ImVec2 thumbnailSize = ImVec2(100, 100);
+                if (entryIcon.width > 0 && entryIcon.height > 0)
+                {
+                    float aspectRatio = cast(float)entryIcon.width / cast(float)entryIcon.height;
+                    if (aspectRatio > 1.0f)
+                        thumbnailSize.y = 100.0f / aspectRatio;
+                    else
+                        thumbnailSize.x = 100.0f * aspectRatio;
+                }
+                ImVec4 buttonBackground = ImVec4(0.10f, 0.10f, 0.10f, 1.0f);
+                ImGuiID btnId = igGetID_Str(entry.name.ptr);
+                bool pressed = igImageButtonEx(btnId, cast(void*)entryIcon.texture,
+                    thumbnailSize, ImVec2(0, 0), ImVec2(1, 1),
+                    ImVec2(0, 0), buttonBackground,
+                    ImVec4(1, 1, 1, 1));
+                if (pressed)
+                    selectedEntry = entry;
+                if (selected || pressed)
+                {
+                    ImVec2 rectMin;
+                    ImVec2 rectMax;
+                    igGetItemRectMin(&rectMin);
+                    igGetItemRectMax(&rectMax);
+                    ImDrawList_AddRect(
+                        igGetWindowDrawList(),
+                        rectMin,
+                        rectMax,
+                        igGetColorU32(ImVec4(0.90f, 0.45f, 0.00f, 1.0f)),
+                        0.0f,
+                        ImDrawFlags.None,
+                        2.0f);
+                }
+            }
+            else
+            {
+                ImVec4 buttonColor = selected?
+                    ImVec4(0.20f, 0.42f, 0.68f, 1.0f) :
+                    ImVec4(0.26f, 0.59f, 0.98f, 0.40f);
+                igPushStyleColor(ImGuiCol.Button, buttonColor);
+                if (igButton(entry.isDirectory ? "[DIR]" : "[FILE]",
+                    ImVec2(100, 100)))
+                    selectedEntry = entry;
+                igPopStyleColor();
+            }
+            
+            if (selected && igIsItemHovered() &&
+                igIsMouseDoubleClicked(ImGuiMouseButton.Left))
+            {
+                ctx.openedEntry = entry;
+            }
+            
+            if (igBeginDragDropSource())
+            {
+                igSetDragDropPayload("ASSET", entry.absPath.ptr, entry.absPath.length);
+                igText("%s", entry.localPath.ptr);
+                igEndDragDropSource();
+            }
+            
+            if (igBeginPopupContextItem("Asset item context"))
+            {
+                if (igMenuItem("Open"))
+                    ctx.openedEntry = entry;
+                if (igMenuItem("Rename"))
+                    ctx.renamedEntry = entry;
+                if (igMenuItem("Delete"))
+                    ctx.deletedEntry = entry;
+                igEndPopup();
+            }
+            
+            igTextWrapped("%s", entry.name.ptr);
+
+            igEndGroup();
+
+            igPopID();
+            igNextColumn();
+        }
+        
+        igColumns(1);
+        
+        return visibleEntries;
     }
     
     static char asciiLower(char c)
     {
         return (c >= 'A' && c <= 'Z') ? cast(char)(c + 32) : c;
+    }
+    
+    static bool containsIgnoreCase(string haystack, string needle)
+    {
+        if (needle.length == 0)
+            return true;
+        if (needle.length > haystack.length)
+            return false;
+        foreach (i; 0..haystack.length - needle.length + 1)
+        {
+            size_t j = 0;
+            while (j < needle.length && asciiLower(haystack[i + j]) == asciiLower(needle[j]))
+                j++;
+            if (j == needle.length)
+                return true;
+        }
+        return false;
     }
     
     static bool hasExtension(const(char)[] filename, const(char)[][] extensions)
@@ -522,12 +652,9 @@ class AssetBrowser: Owner
         {
             if (!entry.thumbnailValid)
             {
-                /*
-                // TODO
                 if (ui.thumbnailGenerator)
                     entry.thumbnail = ui.thumbnailGenerator.getThumbnail(entry.absPath.toString);
                 entry.thumbnailValid = true;
-                */
             }
             return entry.thumbnail ? entry.thumbnail : ui.iconImage;
         }

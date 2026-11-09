@@ -44,8 +44,8 @@ import pathbuilder;
 
 /**
  * Represents a local file or a folder.
- * AssetEntry references should not be stored anywhere.
- * They are only for one-time access from `AssetDirectory`
+ * AssetEntry references live until the next `AssetDirectory.scan` and should not be
+ * permanently stored anywhere. They are only for one-time access from `AssetDirectory.contents`
  * (for enumeration, existence check, and UI rendering).
  */
 class AssetEntry
