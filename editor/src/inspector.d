@@ -64,9 +64,8 @@ class Inspector: Owner
                         renderEntitiesTree(e);
                 }
             }
-
-            igEnd();
         }
+        igEnd();
     }
 
     bool hasLiveChildren(Entity entity)

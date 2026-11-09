@@ -109,8 +109,8 @@ class Toolbar: Owner
                 }
                 igPopStyleVar();
             }
-            igEnd();
         }
+        igEnd();
     }
 
     void incrementInput(

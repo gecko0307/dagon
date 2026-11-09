@@ -371,9 +371,9 @@ class AssetBrowser: Owner
                 }
                 igEndPopup();
             }
-            
-            igEnd();
         }
+
+        igEnd();
     }
     
     protected size_t renderTable(string search, ref BrowseContext ctx)

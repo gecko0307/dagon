@@ -323,9 +323,8 @@ class PropertiesPanel: Owner
                 if (igCheckbox("Colored grain", &scene.filmGrainColored))
                     scene.app.postProcessingRenderer.filmGrainColored = scene.filmGrainColored;
             }
-            
-            igEnd();
         }
+        igEnd();
         
         if (igBegin("Entity", null, ImGuiWindowFlags.NoCollapse))
         {
@@ -471,9 +470,8 @@ class PropertiesPanel: Owner
                     // TODO: textures
                 }
             }
-
-            igEnd();
         }
+        igEnd();
     }
 
     /*

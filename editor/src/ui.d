@@ -407,8 +407,8 @@ class EditorUI: EventListener
                 }
                 igEndDragDropTarget();
             }
+            igEnd();
         }
-        igEnd();
     }
     
     void renderMenu()
@@ -581,8 +581,8 @@ class EditorUI: EventListener
                 igText("Status bar");
                 igEndMenuBar();
             }
-            igEnd();
         }
+        igEnd();
     }
     
     void render()
