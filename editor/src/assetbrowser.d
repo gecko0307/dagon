@@ -495,6 +495,7 @@ class AssetBrowser: Owner
             igBeginGroup();
             
             bool selected = entry is selectedEntry;
+            bool hovered = false;
             
             Texture entryIcon = getEntryIcon(entry);
             if (entryIcon)
@@ -514,9 +515,25 @@ class AssetBrowser: Owner
                     thumbnailSize, ImVec2(0, 0), ImVec2(1, 1),
                     ImVec2(0, 0), buttonBackground,
                     ImVec4(1, 1, 1, 1));
+                hovered = igIsItemHovered();
                 if (pressed)
                     selectedEntry = entry;
                 if (selected || pressed)
+                {
+                    ImVec2 rectMin;
+                    ImVec2 rectMax;
+                    igGetItemRectMin(&rectMin);
+                    igGetItemRectMax(&rectMax);
+                    ImDrawList_AddRect(
+                        igGetWindowDrawList(),
+                        rectMin,
+                        rectMax,
+                        igGetColorU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)),
+                        0.0f,
+                        ImDrawFlags.None,
+                        2.0f);
+                }
+                else if (hovered)
                 {
                     ImVec2 rectMin;
                     ImVec2 rectMax;
@@ -541,11 +558,11 @@ class AssetBrowser: Owner
                 if (igButton(entry.isDirectory ? "[DIR]" : "[FILE]",
                     ImVec2(100, 100)))
                     selectedEntry = entry;
+                hovered = igIsItemHovered();
                 igPopStyleColor();
             }
             
-            if (selected && igIsItemHovered() &&
-                igIsMouseDoubleClicked(ImGuiMouseButton.Left))
+            if (selected && hovered && igIsMouseDoubleClicked(ImGuiMouseButton.Left))
             {
                 ctx.openedEntry = entry;
             }
