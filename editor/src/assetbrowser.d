@@ -34,7 +34,6 @@ import core.stdc.string: strlen;
 
 import std.file;
 import std.path;
-import std.process;
 
 import dlib.core.memory;
 import dlib.core.ownership;
@@ -48,6 +47,7 @@ import ui;
 import assetdir;
 import thumbnail;
 import textbuffer;
+import os;
 
 struct BrowseContext
 {
@@ -87,9 +87,11 @@ class AssetBrowser: Owner
     {
     }
     
-    // Set a new absolute root directory and return the browser to its root.
-    // Relative paths inside the browser are always kept separate from this path.
-    /// Drop queued (not yet started) thumbnail jobs when the visible folder changes.
+    /**
+     * Set a new absolute root directory and return the browser to its root.
+     * Relative paths inside the browser are always kept separate from this path.
+     * Drop queued (not yet started) thumbnail jobs when the visible folder changes.
+     */
     void cancelThumbnails()
     {
         if (ui.thumbnailGenerator)
@@ -722,31 +724,3 @@ class AssetBrowser: Owner
         return ui.iconFile;
     }
 }
-
-void openWithDefaultApp(const(char)[] filePath)
-{
-    version(Windows)
-    {
-        // On Windows, 'start' is a shell built-in, so we need to route it through cmd.exe
-        const(char)[][] command = ["cmd.exe", "/c", "start", "", filePath];
-    }
-    version(OSX)
-    {
-        const(char)[][] command = ["open", filePath];
-    }
-    version(linux)
-    {
-        const(char)[][] command = ["xdg-open", filePath];
-    }
-
-    try
-    {
-        logInfo("Opening \"", filePath, "\"...");
-        auto pid = spawnProcess(command);
-    }
-    catch(Exception e)
-    {
-        logError("Failed to open \"", filePath, "\": ", e.msg);
-    }
-}
-
