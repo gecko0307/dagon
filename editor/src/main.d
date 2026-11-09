@@ -34,6 +34,7 @@ import std.stdio;
 
 import dlib.core.memory;
 
+import dagon.core.logger;
 import dagon.core.time;
 import dagon.game.game;
 import dagon.resource.texture;

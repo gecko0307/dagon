@@ -190,6 +190,9 @@ class PathBuilder: Owner
         auto tokens = rootDir.splitter!(c => _separators.canFind(c));
         foreach(entry; tokens)
         {
+            if (entry.length == 0)
+                continue;
+
             _chain.append(String(entry));
         }
         
@@ -215,8 +218,11 @@ class PathBuilder: Owner
         }
         
         auto tokens = str.splitter!(c => _separators.canFind(c));
-        foreach (entry; tokens)
+        foreach(entry; tokens)
         {
+            if (entry.length == 0)
+                continue;
+
             _chain.append(String(entry));
         }
     }
