@@ -55,6 +55,7 @@ import properties;
 import assetbrowser;
 import textbuffer;
 import os;
+import theme;
 
 struct EditorViewport
 {
@@ -597,6 +598,7 @@ class EditorUI: EventListener
     
     void applyTheme()
     {
+        /*
         ImGuiStyle* style = igGetStyle();
         
         style.WindowRounding    = 6.0f;
@@ -677,5 +679,8 @@ class EditorUI: EventListener
         
         // Navigation
         style.Colors[ImGuiCol.NavHighlight] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+        */
+        
+        applyDefaultTheme();
     }
 }
