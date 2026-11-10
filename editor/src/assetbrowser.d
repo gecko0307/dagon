@@ -130,8 +130,8 @@ class AssetBrowser: Owner
             return false;
         foreach (c; name)
         {
-            if (c < 32 || c == '/' || c == '\\' || c == ':' ||
-                c == '<' || c == '>' || c == '"' || c == '|' ||
+            if (c < 32   || c == '/' || c == '\\' || c == ':' ||
+                c == '<' || c == '>' || c == '"'  || c == '|' ||
                 c == '?' || c == '*' || c == '\0')
                 return false;
         }

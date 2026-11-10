@@ -153,6 +153,7 @@ class EditorApp: Game
         editor = New!Editor(this);
         
         ui = New!EditorUI(this, editor, args);
+        
         ui.iconFile = prepareUiTexture(aFileIcon.texture);
         ui.iconFolder = prepareUiTexture(aFolderIcon.texture);
         ui.iconImage = prepareUiTexture(aImageIcon.texture);
@@ -171,8 +172,11 @@ class EditorApp: Game
         ui.iconTranslate = prepareUiTexture(aTranslateIcon.texture);
         ui.iconRotate = prepareUiTexture(aRotateIcon.texture);
         ui.iconScale = prepareUiTexture(aScaleIcon.texture);
+        
         ui.aboutImage = prepareUiTexture(aboutImage.texture);
+        
         ui.thumbnailGenerator = New!ThumbnailGenerator(assetManager);
+        
         eventManager.onProcessEvent = &ui.onProcessEvent;
         dynamicViewport = false; // Viewport will be controlled by the editor, not the engine
         editor.overlay.ui = ui;
