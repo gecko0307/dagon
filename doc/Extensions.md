@@ -7,6 +7,7 @@ Some functionality in Dagon is implemented via extension mechanism. Extensions a
 All extensions are experimental and not guaranteed to work on all operating systems. Most of them require shipping third-party libraries with your application.
 
 Available extensions:
+
 * `dagon:assimp` - [Assimp](https://github.com/assimp/assimp) library integration
 * `dagon:exformats` - additional image formats support (WebP, AVIF, TIFF)
 * `dagon:imgui` - immediate mode GUI extension that uses [Dear ImGui](https://github.com/ocornut/imgui) via [i2d-imgui](https://github.com/Inochi2D/i2d-imgui) dynamic binding

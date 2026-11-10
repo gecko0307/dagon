@@ -4,6 +4,8 @@ pdf-engine: xelatex
 
 input-files:
   - doc/README.md
+  - doc/History.md
+  - doc/Platforms and Toolchain.md
   - doc/Runtime Dependencies.md
   - doc/Basics.md
   - doc/Math.md
@@ -22,6 +24,13 @@ input-files:
   - doc/2D Graphics.md
   - doc/Localization.md
   - doc/Collision Detection.md
+  - doc/Extensions.md
+  - doc/Jolt Physics.md
+  - doc/Video.md
+  - doc/World Streaming.md
+  - doc/Messaging System.md
+  - doc/Compute Shaders.md
+  - doc/Development Guide.md
 
 resource-path:
   - "doc"

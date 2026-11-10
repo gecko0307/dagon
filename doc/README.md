@@ -47,6 +47,7 @@ Dagon is written with extendability in mind, so you can easily add your own draw
 
 ### Beginner topics:
 
+- [Platforms and Toolchain](https://github.com/gecko0307/dagon/blob/master/doc/Platforms%20and%20Toolchain.md)
 - [Installing Runtime Dependencies](https://github.com/gecko0307/dagon/blob/master/doc/Runtime%20Dependencies.md)
 - [Basics](https://github.com/gecko0307/dagon/blob/master/doc/Basics.md)
 - [Math](https://github.com/gecko0307/dagon/blob/master/doc/Math.md)
