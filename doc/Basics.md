@@ -1,4 +1,4 @@
-# Dagon Basics
+# Basics
 
 ## Game and Scene
 

@@ -1,8 +1,6 @@
-# How to Install Runtime Dependencies
+# Installing Runtime Dependencies
 
-## Core Engine
-
-Dagon requires at least OpenGL 4.3, SDL2 2.30, SDL2_Image 2.8 and FreeType. OpenGL library is usually provided by graphics card manufacturer. SDL2 and SDL2_Image can be obtained from the [official site](https://www.libsdl.org/), compiled from source or installed with a package manager such as APT.
+Dagon requires at least OpenGL 4.3, SDL2 2.30, SDL2_Image 2.8 and FreeType. OpenGL library is usually provided by the graphics card manufacturer. SDL2 and SDL2_Image can be obtained from the [official site](https://www.libsdl.org/), compiled from source or installed with a package manager such as APT.
 
 Under Linux, if you want to use local libraries from application's working directory rather than from the system, add the following to your `dub.json`:
 
@@ -10,11 +8,12 @@ Under Linux, if you want to use local libraries from application's working direc
 "lflags-linux": ["-rpath=$$ORIGIN"]
 ```
 
-### SDL2
+## SDL2
 
 Dagon requires `SDL2.dll` under Windows and `libSDL2-2.0.so.0` under Linux. On 64-bit platforms, Dagon provides prebuilt SDL2 library, which is automatically copied to your project after compilation (if you are building with DUB).
 
 Compiling from source:
+
 1. Make sure [CMake](https://cmake.org/) is installed
 2. Download [SDL2 2.32.4](https://github.com/libsdl-org/SDL/releases/tag/release-2.32.4)
 3. Inside the SDL2 source directory, create `build` directory. Inside it, run `cmake ..`
@@ -23,11 +22,12 @@ Under Linux, if you don't want to install SDL2 system-wide, then use prefix, for
 
 4. Under Linux, run `make && make install`. Under Windows, open and build generated Visual Studio project.
 
-### SDL2_Image
+## SDL2_Image
 
 Dagon requires `SDL2_Image.dll` under Windows and `libSDL2_image-2.0.so` under Linux. On 64-bit platforms, Dagon provides prebuilt SDL2_Image library, which is automatically copied to your project after compilation (if you are building with DUB).
 
 Compiling from source:
+
 1. Make sure [CMake](https://cmake.org/) is installed
 2. Download [SDL2_Image 2.8.8](https://github.com/libsdl-org/SDL_image/releases/tag/release-2.8.8)
 3. Inside the SDL2_Image source directory, create `build` directory. Inside it, run `cmake ..`
@@ -44,7 +44,7 @@ Then specify SDL2 install path when running cmake, for example `cmake .. -DCMAKE
 
 4. Under Linux, run `make && make install`. Under Windows, open and build generated Visual Studio project.
 
-### FreeType
+## FreeType
 
 Dagon requires `freetype-6.dll` under Windows and `libfreetype.so` under Linux. Minimal recommended version is 2.8.1. On 64-bit Windows, Dagon provides prebuilt FreeType, which is automatically copied to your project after compilation (if you are building with DUB). On Linux, Dagon relies on system-wide FreeType installation.
 
@@ -63,6 +63,7 @@ dagon:newton extension requires [Newton Dynamics](https://newtondynamics.com/) 3
 dagon:newton requires `newton.dll` under Windows and `libnewton.so` under Linux. On 64-bit platforms, the extension provides a prebuilt newton library, which is automatically copied to your project after compilation (if you are building with DUB).
 
 Compiling from source:
+
 1. Make sure [CMake](https://cmake.org/) is installed
 2. Clone [Newton repository](https://github.com/MADEAPPS/newton-dynamics)
 3. Go to `newton-3.14`. Create `build` directory. Inside it, run `cmake ..`
@@ -75,6 +76,7 @@ dagon:imgui extension requires [ImGui C wrapper library](https://github.com/geck
 dagon:newton requires `cimgui.dll` under Windows and `cimgui.so` under Linux. On 64-bit platforms, the extension provides a prebuilt cimgui library, which is automatically copied to your project after compilation (if you are building with DUB).
 
 Compiling from source:
+
 1. Make sure [CMake](https://cmake.org/) and [SDL2](https://www.libsdl.org/) are installed
 2. Go to [extensions/imgui/thirdparty/bindbc-imgui-0.7.0/deps/cimgui/backend_test](https://github.com/gecko0307/dagon/tree/master/extensions/imgui/thirdparty/bindbc-imgui-0.7.0/deps/cimgui/backend_test). Create `build` directory. Inside it, run `cmake ..`
 3. Under Linux, run `make`. Under Windows, open and build generated Visual Studio project
@@ -87,6 +89,7 @@ dagon:ktx extension requires libktx 4.4.0 from [KTX Software Repository](https:/
 dagon:ktx requires `ktx.dll` under Windows and `libktx.so` under Linux. On 64-bit platforms, the extension provides a prebuilt libktx library, which is automatically copied to your project after compilation (if you are building with DUB).
 
 Compiling from source:
+
 1. Make sure [CMake](https://cmake.org/) is installed
 2. Download [KTX-Software 4.4.0](https://github.com/KhronosGroup/KTX-Software/releases/tag/v4.4.0)
 3. Inside the KTX-Software source directory, create `build` directory. Inside it, run `cmake ..`
@@ -105,6 +108,7 @@ dagon:physfs extension requires [PhysFS](https://github.com/icculus/physfs) 3.2.
 dagon:physfs requires `physfs.dll` under Windows and `libphysfs.so` under Linux. On 64-bit platforms, Dagon provides a prebuilt physfs library, which is automatically copied to your project after compilation (if you are building with DUB).
 
 Compiling from source:
+
 1. Make sure [CMake](https://cmake.org/) is installed
 2. Download [PhysFS 3.2.0](https://github.com/icculus/physfs/releases/tag/release-3.2.0)
 3. Inside the PhysFS source directory, create `build` directory. Inside it, run `cmake ..`

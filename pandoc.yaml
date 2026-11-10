@@ -1,0 +1,50 @@
+from: markdown
+to: pdf
+pdf-engine: xelatex
+
+input-files:
+  - doc/README.md
+  - doc/Runtime Dependencies.md
+  - doc/Basics.md
+  - doc/Math.md
+  - doc/Entity.md
+  - doc/Camera.md
+  - doc/Materials.md
+  - doc/Textures.md
+  - doc/Event System.md
+
+resource-path:
+  - "doc"
+
+output-file: dagon-guidebook.pdf
+
+toc: true
+toc-depth: 2
+number-sections: false
+
+file-scope: true
+
+filters:
+  - wrap-code.lua
+  - links-filter.lua
+
+variables:
+  documentclass: report
+  title: "Dagon Guidebook"
+  author: "Timur Gafarov"
+  lang: "en-US"
+  mainfont: "Liberation Serif"
+  monofont: "Liberation Mono"
+  monofontoptions: "Scale=0.85"
+  geometry:
+    - a4paper
+    - margin=2.5cm
+  colorlinks: true
+  linkcolor: "blue"
+  urlcolor: "cyan"
+  toccolor: "black"
+  header-includes:
+    - |
+      \usepackage{titlesec}
+      \titleformat{\chapter}[block]{\normalfont\huge\bfseries}{\thechapter. }{0pt}{\huge}
+      \titlespacing*{\chapter}{0pt}{-20pt}{40pt}

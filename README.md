@@ -162,12 +162,13 @@ On Windows, some dependencies require Visual C++ v14 Redistributable. You can do
 ## Documentation
 
 * [API documentation (WIP)](https://gecko0307.github.io/dagon/doc/dagon.html)
-* [Specifications](https://github.com/gecko0307/dagon/blob/master/doc/)
 * [Tutorials](https://github.com/gecko0307/dagon/blob/master/doc/tutorials) and corresponding [examples](https://github.com/gecko0307/dagon-tutorials)
 * [Wiki](https://github.com/gecko0307/dagon/wiki)
 * [FAQ](https://github.com/gecko0307/dagon/wiki/FAQ).
 
 HTML documentation can be generated from source code using ddox (`dub build -b ddox`). Be aware that documentation is currently incomplete.
+
+`doc` folder contains Markdown sources for the *Dagon Guidebook* that can be compiled to PDF using [Pandoc](https://pandoc.org/): `pandoc -d pandoc.yaml`. The Guidebook contains essential information for beginner users, details on various components of the engine and the theory behind its inner mechanisms.
 
 Documentation status:
 * ✔️ [dagon.core](https://gecko0307.github.io/dagon/doc/dagon/core.html)

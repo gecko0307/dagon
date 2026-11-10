@@ -1,15 +1,20 @@
 # Dagon
+
 Dagon is a 3D game engine for D language based on OpenGL 4.3 and SDL2. It features deferred HDR renderer, PBR materials, an event manager, scene manager, asset manager, and entity-component model.
 
 ## Project Goals
+
 1. Providing a modern, easy to use, extendable 3D game engine for D language. We believe that D is an excellent language for game development and it deserves a wider adoption in this domain.
 2. Creating a use case for [dlib](https://github.com/gecko0307/dlib) for educational purposes.
 
 ## The Name
+
 Dagon is named after a god from H. P. Lovecraft's Cthulhu Mythos pantheon. This name was choosen in accordance with the community tradition of naming D projects using words beginning with 'd'.
 
 ## System Requirements
+
 The recommended system requirements (for Full HD rendering at 60 fps):
+
 - CPU: Intel Core i3-10100 / AMD Ryzen 3 3100
 - RAM: application-dependent, usually 8 Gb minimum
 - GPU: GeForce RTX 30 / Radeon RX 6000 series
@@ -17,36 +22,42 @@ The recommended system requirements (for Full HD rendering at 60 fps):
 - OS: 64-bit Windows 10 or higher / Linux.
 
 ## Architecture
+
 Dagon is a hierarchical component-based framework. At the root of the hierarchy there is an `Application` object. It can store one or multiple `Scene` objects. Each scene has its own assets, logics, event listeners, etc. Scene stores `Entity` objects which are basic building blocks of the game world. `Entity` can be transformed, animated and rendered.
 
 Read more [here](https://github.com/gecko0307/dagon/blob/master/doc/Architecture.md).
 
 ## dlib
+
 Dagon heavily relies on [dlib](https://github.com/gecko0307/dlib). It is used everywhere in the engine, from memory management and vector math to file I/O and image decoding. Actually, as stated earlier, Dagon's secondary goal is to promote dlib and demonstrate its features.
 
 ## Memory Management
+
 Dagon mostly avoids using the garbage collector and manages all of its data manually with `New` and `Delete` functions. You are also expected to do so. You still can use garbage collected data in Dagon, but this may result in weird bugs, so you are strongly recommended to do things our way. Most part of the engine is built around dlib's ownership model–every object belongs to some other object (owner), and deleting the owner will delete all of its owned objects. This allows semi-automatic memory management–you have to manually delete only root owner, which usually is an `Application` object. When creating objects, it is recommended to make scene's `assetManager` their owner.
 
 ## Creating Assets
-Dagon is a framework-style engine, meaning that it is controlled programmatically and doesn't provide you with an editor (the editor is currently in development). How you will build your scenes is up to you. You can build them manually by loading models one by one in your code, create your own scene format, or export glTF scenes from a 3D editor of your choise. We recommend [Blender](https://www.blender.org/) as an external editor.
+
+Dagon is a framework-style engine, meaning that it is controlled programmatically and doesn't provide you with an editor (the editor is currently in development). How you will build your scenes is up to you. You can build them manually by loading models one by one in your code, create your own scene format, or export [glTF](https://www.khronos.org/gltf/) scenes from a 3D editor of your choise. We recommend [Blender](https://www.blender.org/) as an external editor.
 
 ## Extending
+
 Dagon is written with extendability in mind, so you can easily add your own drawable objects, entity components, shaders and asset loaders. Drawable can be anything you want—you can manually create meshes and animate them. With components you can dynamically attach custom data and functionality to game entities. Materials can use custom GLSL shaders and parameters, and your asset loaders help Dagon understand files that you want to load from disk—these can be 3D models, levels, save files, etc.
 
 ## Further reading
 
 ### Beginner topics:
+
 - [Installing Runtime Dependencies](https://github.com/gecko0307/dagon/blob/master/doc/Runtime%20Dependencies.md)
 - [Basics](https://github.com/gecko0307/dagon/blob/master/doc/Basics.md)
+- [Math](https://github.com/gecko0307/dagon/blob/master/doc/Math.md)
 - [Entity](https://github.com/gecko0307/dagon/blob/master/doc/Entity.md)
 - [Camera](https://github.com/gecko0307/dagon/blob/master/doc/Camera.md)
 - [Materials](https://github.com/gecko0307/dagon/blob/master/doc/Materials.md)
 - [Textures](https://github.com/gecko0307/dagon/blob/master/doc/Textures.md)
 - [Event System](https://github.com/gecko0307/dagon/blob/master/doc/Event%20System.md)
-- [FAQ](https://github.com/gecko0307/dagon/blob/master/doc/FAQ.md)
-- [Tutorials](https://github.com/gecko0307/dagon/blob/master/doc/tutorials)
 
 ### Intermediate topics:
+
 - [Virtual File System](https://github.com/gecko0307/dagon/blob/master/doc/Virtual%20File%20System.md)
 - [Conf Files](https://github.com/gecko0307/dagon/blob/master/doc/Conf%20Files.md)
 - [Render Pipeline Overview](https://github.com/gecko0307/dagon/blob/master/doc/Render%20Pipeline%20Overview.md)
@@ -59,6 +70,7 @@ Dagon is written with extendability in mind, so you can easily add your own draw
 - [Collision Detection](https://github.com/gecko0307/dagon/blob/master/doc/Collision%20Detection.md)
 
 ### Advanced topics:
+
 - [Extensions](https://github.com/gecko0307/dagon/blob/master/doc/Extensions.md)
 - [Jolt Physics](https://github.com/gecko0307/dagon/blob/master/doc/Jolt%20Physics.md)
 - [Video Playback](https://github.com/gecko0307/dagon/blob/master/doc/Video.md)

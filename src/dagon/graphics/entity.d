@@ -235,7 +235,7 @@ class Entity: Owner, Updateable
     /// Inverse of the absolute transformation matrix.
     Matrix4x4f invAbsoluteTransformation;
 
-    /// Previous frame's local transformation (for motion blur).
+    /// Previous frame's local transformation.
     Matrix4x4f prevTransformation;
 
     /// Previous frame's absolute transformation.
