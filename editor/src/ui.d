@@ -112,6 +112,8 @@ class EditorUI: EventListener
     Texture iconAPK;
     Texture iconBash;
     Texture iconTorrent;
+    Texture iconC;
+    Texture iconCpp;
     
     ThumbnailGenerator thumbnailGenerator;
     

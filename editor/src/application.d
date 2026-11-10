@@ -72,6 +72,8 @@ class EditorApp: Game
     TextureAsset aAPKIcon;
     TextureAsset aBashIcon;
     TextureAsset aTorrentIcon;
+    TextureAsset aCIcon;
+    TextureAsset aCppIcon;
     
     TextureAsset aTranslateIcon;
     TextureAsset aRotateIcon;
@@ -136,9 +138,13 @@ class EditorApp: Game
         aAPKIcon = loadTexture("data/icons/apk.png");
         aBashIcon = loadTexture("data/icons/bash.png");
         aTorrentIcon = loadTexture("data/icons/torrent.png");
+        aCIcon = loadTexture("data/icons/c.png");
+        aCppIcon = loadTexture("data/icons/cpp.png");
+        
         aTranslateIcon = loadTexture("data/icons/btn_translate.png");
         aRotateIcon = loadTexture("data/icons/btn_rotate.png");
         aScaleIcon = loadTexture("data/icons/btn_scale.png");
+        
         aboutImage = loadTexture("data/splash.jpg");
         
         aEnvmap = loadTexture("data/envmaps/default.hdr");
@@ -168,6 +174,8 @@ class EditorApp: Game
         ui.iconAPK = prepareUiTexture(aAPKIcon.texture);
         ui.iconBash = prepareUiTexture(aBashIcon.texture);
         ui.iconTorrent = prepareUiTexture(aTorrentIcon.texture);
+        ui.iconC = prepareUiTexture(aCIcon.texture);
+        ui.iconCpp = prepareUiTexture(aCppIcon.texture);
         
         ui.iconTranslate = prepareUiTexture(aTranslateIcon.texture);
         ui.iconRotate = prepareUiTexture(aRotateIcon.texture);

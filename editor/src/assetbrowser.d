@@ -678,6 +678,8 @@ class AssetBrowser: Owner
     static const(char)[][] extAPK = [".apk"];
     static const(char)[][] extBash = [".sh"];
     static const(char)[][] extTorrent = [".torrent"];
+    static const(char)[][] extC = [".c"];
+    static const(char)[][] extCpp = [".cpp"];
 
     Texture getEntryIcon(AssetEntry entry)
     {
@@ -742,6 +744,10 @@ class AssetBrowser: Owner
             return ui.iconBash;
         if (hasExtension(entry.name, extTorrent))
             return ui.iconTorrent;
+        if (hasExtension(entry.name, extC))
+            return ui.iconC;
+        if (hasExtension(entry.name, extCpp))
+            return ui.iconCpp;
         
         return ui.iconFile;
     }
