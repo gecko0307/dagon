@@ -1,4 +1,4 @@
-# Dagon Extensions
+# Extensions
 
 Some functionality in Dagon is implemented via extension mechanism. Extensions are [DUB sub-packages](https://dub.pm/dub-reference/subpackages/) and should be explicitly added as dependencies to your project, for example:
 
