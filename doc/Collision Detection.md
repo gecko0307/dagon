@@ -5,6 +5,7 @@
 Collision detection (CD) and collision response (CR) in games are very complex topics. There is no universal algorithm for them, since each game mechanic has its own requirements for collision detection accuracy and performance. For example, an arcade platformer usually tolerates a simplistic collision model consisting of basic shapes such as spheres and axis-aligned boxes, while a complex physics-based game like racing simulator requires precise ray casting and collision detection of convex geometry with arbitrary meshes.
 
 All approaches have a lot in common. The basic principle of a CD algorithm is to output four data fields (usually combined into one Contact structure) for intersecting shapes A and B:
+
 - Intersection fact—true or false;
 - Contact point—a midpoint between the closest surface points of A and B;
 - Contact normal—the unit vector pointing from B toward A along the shortest separation direction;

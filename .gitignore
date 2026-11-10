@@ -20,6 +20,7 @@ __test__library__
 docs/
 docs.json
 __dummy.html
+dagon-guidebook.pdf
 
 # Coverage files
 *.lst

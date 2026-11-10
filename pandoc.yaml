@@ -12,6 +12,16 @@ input-files:
   - doc/Materials.md
   - doc/Textures.md
   - doc/Event System.md
+  - doc/Virtual File System.md
+  - doc/Conf Files.md
+  - doc/Render Pipeline Overview.md
+  - doc/Shaders.md
+  - doc/Image-Based Lighting.md
+  - doc/Tips for Achieving Good Visuals.md
+  - doc/Post-processing.md
+  - doc/2D Graphics.md
+  - doc/Localization.md
+  - doc/Collision Detection.md
 
 resource-path:
   - "doc"

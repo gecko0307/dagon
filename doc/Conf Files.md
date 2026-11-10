@@ -312,6 +312,7 @@ interact: "kb_e";
 ```
 
 Supported key names:
+
 - `kb_a` .. `kb_z`, `kb_0` .. `kb_9`
 - `kb_-`, `kb_=`, `kb_[`, `kb_]`, `kb_\`, `kb_#`, `kb_;`, `kb_'`, `kb_,`, `kb_.`, `kb_/`
 - `kb_return`, `kb_escape`, `kb_backspace`, `kb_delete`, `kb_tab`, `kb_space`, `kb_capsLock`
@@ -341,10 +342,12 @@ Supported key names:
 - `kb_call`, `kb_endcall`
 
 Supported mouse button and axis names:
+
 - `mb_left`, `mb_middle`, `mb_right`, `mb_x1`, `mb_x2`
 - `ma_x`, `ma_y`
 
 Supported gamepad button and axis names:
+
 - `gb_dpup`, `gb_dpdown`, `gb_dpleft`, `gb_dpright`
 - `gb_a`, `gb_b`, `gb_x`, `gb_y`
 - `gb_back`, `gb_guide`, `gb_start`
