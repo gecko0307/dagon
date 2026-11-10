@@ -1,4 +1,4 @@
-# Camera and View
+# Camera and RenderView
 
 A virtual camera is necessary to abstractize the way the renderer projects 3D vertices to the 2D screen plane. Like many other engines, Dagon provides such a system, supporting both perspective and orthographic projections.
 
