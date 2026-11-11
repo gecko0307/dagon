@@ -675,7 +675,15 @@ class OpenXRManager: Owner
                     
                     glBindFramebuffer(GL_FRAMEBUFFER, fbo[i]);
                     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sw.images[imageIndex].image, 0);
+                    
+                    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+                    {
+                        logError("OpenXR: incomplete framebuffer ", i);
+                        running = false;
+                    }
+                    
                     glViewport(0, 0, sw.width, sw.height);
+                    glDisable(GL_SCISSOR_TEST);
                     
                     //glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
                     //glClear(GL_COLOR_BUFFER_BIT);
@@ -686,6 +694,7 @@ class OpenXRManager: Owner
                     renderer.renderEye(cast(uint)i, eyePosition, eyeRotation);
                     
                     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                    glFinish();
                     
                     XrSwapchainImageReleaseInfo rli;
                     rli.type = XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO;
