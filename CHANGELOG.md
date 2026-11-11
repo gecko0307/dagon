@@ -8,7 +8,7 @@ Dagon 1.8.0 - TBD
 - **Assets**
   - Fix texture path resolving in `MaterialAsset`
 - **Extensions**
-  - `dagon:openxr`
+  - `dagon:openxr` - initial OpenXR support. Windows-only. Experimental
 - **Editor**
   - Asset browser optimizations and improvements. Thumbnails are now created in a separate thread, so the navigation doesn't freeze
   - New JSON serializer

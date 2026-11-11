@@ -10,6 +10,5 @@
         "dagon": "*"
     },
     
-    "copyFiles-windows-x86_64": ["lib/windows-x64/*"],
-    "copyFiles-linux-x86_64": ["lib/linux-x64/*"]
+    "copyFiles-windows-x86_64": ["lib/windows-x64/*"]
 }
