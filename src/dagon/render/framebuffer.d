@@ -156,89 +156,15 @@ class Framebuffer: Owner
     /**
      * Constructs a framebuffer from an external OpenGL framebuffer object.
      */
-    this(GLuint framebuffer, Owner owner)
+    this(GLuint framebuffer, uint w, uint h, FrameBufferFormat format, bool depth, Owner owner)
     {
         super(owner);
         this.framebuffer = framebuffer;
         _isExternal = true;
-        
-        width = 0;
-        height = 0;
-        colorFormat = FrameBufferFormat.RGBA8;
-        hasDepthBuffer = false;
-        
-        if (framebuffer == 0)
-        {
-            GLint[4] viewport;
-            glGetIntegerv(GL_VIEWPORT, viewport.ptr);
-            width = cast(uint)viewport[2];
-            height = cast(uint)viewport[3];
-            return;
-        }
-        
-        // Save previous bindings so we don't clobber caller state
-        GLint prevFBO = 0;
-        glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevFBO);
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-        
-        GLint colorType = GL_NONE, colorName = 0;
-        glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, &colorType);
-
-        if (colorType != GL_NONE)
-        {
-            glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME, &colorName);
-            GLint w = 0, h = 0, internalFormat = 0;
-            if (colorType == GL_TEXTURE)
-            {
-                _colorTexture = cast(GLuint)colorName;
-
-                GLint prevTex = 0;
-                glGetIntegerv(GL_TEXTURE_BINDING_2D, &prevTex);
-                glBindTexture(GL_TEXTURE_2D, _colorTexture);
-
-                glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &w);
-                glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &h);
-                glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &internalFormat);
-
-                glBindTexture(GL_TEXTURE_2D, cast(GLuint)prevTex);
-            }
-            else if (colorType == GL_RENDERBUFFER)
-            {
-                GLint prevRBO = 0;
-                glGetIntegerv(GL_RENDERBUFFER_BINDING, &prevRBO);
-                glBindRenderbuffer(GL_RENDERBUFFER, cast(GLuint)colorName);
-
-                glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &w);
-                glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &h);
-                glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_INTERNAL_FORMAT, &internalFormat);
-
-                glBindRenderbuffer(GL_RENDERBUFFER, cast(GLuint)prevRBO);
-            }
-
-            width = cast(uint)w;
-            height = cast(uint)h;
-            colorFormat = internalFormatToFrameBufferFormat(internalFormat);
-            
-            GLint type = 0, name = 0;
-            glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, &type);
-            glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME, &name);
-        }
-        
-        GLint depthType = GL_NONE, depthName = 0;
-        glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, &depthType);
-
-        if (depthType != GL_NONE)
-        {
-            hasDepthBuffer = true;
-            if (depthType == GL_TEXTURE)
-            {
-                glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME, &depthName);
-                _depthTexture = cast(GLuint)depthName;
-            }
-        }
-
-        // Restore previous FBO binding
-        glBindFramebuffer(GL_FRAMEBUFFER, cast(GLuint)prevFBO);
+        width = w;
+        height = h;
+        colorFormat = format;
+        hasDepthBuffer = depth;
     }
 
     /**

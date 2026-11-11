@@ -48,7 +48,6 @@ import dagon.render.view;
 import dagon.render.pipeline;
 import dagon.render.pass;
 import dagon.render.simple;
-import dagon.render.deferred;
 
 import dagon.ext.openxr;
 
@@ -175,9 +174,9 @@ class SimpleStereoRenderer: StereoRenderer
         clearPass.view = view;
         backgroundPass.view = view;
         spatialPass.view = view;
-        outputBuffer.bind();
+        //outputBuffer.bind();
         pipeline.outputBuffer = outputBuffer;
         pipeline.render();
-        outputBuffer.unbind();
+        //outputBuffer.unbind();
     }
 }

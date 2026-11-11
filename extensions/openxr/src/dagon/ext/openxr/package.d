@@ -515,43 +515,30 @@ class OpenXRManager: Owner
         views = New!(XrView[])(numViews);
         projViews = New!(XrCompositionLayerProjectionView[])(numViews);
         
-        // Left eye FBO
-        glGenFramebuffers(1, &fbo[0]);
-        framebuffers[0] = New!Framebuffer(fbo[0], this);
-        
-        // Right eye FBO
-        glGenFramebuffers(1, &fbo[1]);
-        framebuffers[1] = New!Framebuffer(fbo[1], this);
+        // Framebuffers
+        glGenFramebuffers(2, fbo.ptr);
         
         GLuint[2] depthTextures;
         glGenTextures(2, depthTextures.ptr);
         foreach(i; 0..2)
         {
-            glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[i].framebuffer);
+            glBindFramebuffer(GL_FRAMEBUFFER, fbo[i]);
             glBindTexture(GL_TEXTURE_2D, depthTextures[i]);
-
-            glTexImage2D(
-                GL_TEXTURE_2D,
-                0,
-                GL_DEPTH_COMPONENT24,
-                swapchains[i].width,
-                swapchains[i].height,
-                0,
-                GL_DEPTH_COMPONENT,
-                GL_UNSIGNED_INT,
-                null
-            );
-
-            glFramebufferTexture2D(
-                GL_FRAMEBUFFER,
-                GL_DEPTH_ATTACHMENT,
-                GL_TEXTURE_2D,
-                depthTextures[i],
-                0
-            );
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8,
+                swapchains[i].width, swapchains[i].height, 0,
+                GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, null);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+                GL_TEXTURE_2D, depthTextures[i], 0);
         }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glBindTexture(GL_TEXTURE_2D, 0);
+        
+        foreach(i; 0..2)
+        {
+            framebuffers[i] = New!Framebuffer(fbo[i], swapchains[i].width, swapchains[i].height, FrameBufferFormat.RGBA8, true, this);
+        }
         
         return true;
     }
@@ -684,9 +671,6 @@ class OpenXRManager: Owner
                     
                     glViewport(0, 0, sw.width, sw.height);
                     glDisable(GL_SCISSOR_TEST);
-                    
-                    //glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
-                    //glClear(GL_COLOR_BUFFER_BIT);
                     
                     Vector3f eyePosition = views[i].pose.position;
                     Quaternionf eyeRotation = views[i].pose.orientation;
