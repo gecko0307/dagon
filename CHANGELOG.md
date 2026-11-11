@@ -1,5 +1,8 @@
 Dagon 1.8.0 - TBD
 -----------------
+- **Core**
+  - New methods `Application.hideWindow`, `Application.showWindow`, `Application.minimizeWindow`
+  - New property `Application.startHidden` plus corresponding `settings.conf` property
 - **Assets**
   - Fix texture path resolving in `MaterialAsset`
 - **Editor**

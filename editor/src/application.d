@@ -48,7 +48,7 @@ import splash;
 
 class EditorApp: Game
 {
-    bool splashVisible = true;
+    bool splashVisible = false;
     Configuration editorConfig;
     
     String uiFont;
@@ -105,7 +105,10 @@ class EditorApp: Game
     this(uint w, uint h, bool fullscreen, string title, string[] args)
     {
         version(Windows)
+        {
             startHidden = true;
+            splashVisible = true;
+        }
         
         super(w, h, fullscreen, title, args);
         

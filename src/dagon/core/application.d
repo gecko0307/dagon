@@ -676,6 +676,9 @@ class Application: EventListener, Updateable
         }
         initConfigPath.free();
         
+        if ("startHidden" in config.props)
+            startHidden = cast(bool)config.props["startHidden"].toUInt;
+        
         // Hide the console window under Windows, if requested
         version(Windows)
         {
