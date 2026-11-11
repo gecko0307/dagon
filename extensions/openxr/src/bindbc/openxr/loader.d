@@ -62,6 +62,31 @@ bool isOpenXRLoaded()
     return lib != invalidHandle;
 }
 
+/// Loads XR_KHR_opengl_enable instance-level entry points after xrCreateInstance.
+/// Call this only after enabling XR_KHR_opengl_enable in XrInstanceCreateInfo.
+XrResult loadOpenXRGraphicsFunctions(XrInstance instance)
+{
+    if (xrGetInstanceProcAddr is null || instance is null)
+        return XR_ERROR_INITIALIZATION_FAILED;
+
+    PFN_xrVoidFunction proc;
+    XrResult result = xrGetInstanceProcAddr(
+        instance,
+        "xrGetOpenGLGraphicsRequirementsKHR".ptr,
+        &proc);
+
+    if (XR_FAILED(result))
+    {
+        xrGetOpenGLGraphicsRequirementsKHR = null;
+        return result;
+    }
+
+    xrGetOpenGLGraphicsRequirementsKHR = cast(PFN_xrGetOpenGLGraphicsRequirementsKHR)proc;
+    return xrGetOpenGLGraphicsRequirementsKHR is null
+        ? XR_ERROR_FUNCTION_UNSUPPORTED
+        : XR_SUCCESS;
+}
+
 OpenXRSupport loadOpenXR()
 {
     version(Windows)
@@ -112,7 +137,7 @@ OpenXRSupport loadOpenXR(const(char)* libName)
     import std.algorithm.searching: startsWith;
     static foreach(symbol; __traits(allMembers, bindbc.openxr.funcs))
     {
-        static if (symbol.startsWith("xr"))
+        static if (symbol.startsWith("xr") && symbol != "xrGetOpenGLGraphicsRequirementsKHR")
             lib.bindSymbol(
                 cast(void**)&__traits(getMember, bindbc.openxr.funcs, symbol),
                 __traits(getMember, bindbc.openxr.funcs, symbol).stringof);

@@ -12,6 +12,12 @@ import dlib.image.color;
 
 enum XR_VERSION_1_0 = 1;
 
+// XR_KHR_opengl_enable
+// https://registry.khronos.org/OpenXR/specs/1.1/html/xrspec.html#XR_KHR_opengl_enable
+enum XR_KHR_opengl_enable = 1;
+enum XR_KHR_opengl_enable_SPEC_VERSION = 12;
+enum XR_KHR_OPENGL_ENABLE_EXTENSION_NAME = "XR_KHR_opengl_enable";
+
 auto XR_MAKE_VERSION(T0, T1, T2)(auto ref T0 major, auto ref T1 minor, auto ref T2 patch)
 {
     return ((cast(ulong)major & 0xFFFFUL) << 48) | 
@@ -101,7 +107,7 @@ enum XR_MAX_LOCALIZED_ACTION_SET_NAME_SIZE = 128;
 enum XR_MAX_ACTION_NAME_SIZE = 64;
 enum XR_MAX_LOCALIZED_ACTION_NAME_SIZE = 128;
 
-alias XrResult = uint;
+alias XrResult = int;
 enum: XrResult
 {
     XR_SUCCESS = 0,
@@ -768,6 +774,62 @@ struct XrSwapchainImageBaseHeader
     void* next;
 }
 
+// XR_KHR_opengl_enable graphics bindings.
+// Platform handles are represented as opaque pointers / ABI-sized integers so
+// this module does not need to import Win32, Xlib, XCB or Wayland headers.
+struct XrGraphicsBindingOpenGLWin32KHR
+{
+    XrStructureType type;
+    const(void)* next;
+    void* hDC;       // HDC
+    void* hGLRC;     // HGLRC
+}
+
+struct XrGraphicsBindingOpenGLXlibKHR
+{
+    XrStructureType type;
+    const(void)* next;
+    void* xDisplay;  // Display*
+    uint visualid;
+    void* glxFBConfig; // GLXFBConfig
+    ulong glxDrawable; // GLXDrawable / XID
+    void* glxContext;  // GLXContext
+}
+
+struct XrGraphicsBindingOpenGLXcbKHR
+{
+    XrStructureType type;
+    const(void)* next;
+    void* connection; // xcb_connection_t*
+    uint screenNumber;
+    uint fbconfigid;  // xcb_glx_fbconfig_t
+    uint visualid;    // xcb_visualid_t
+    uint glxDrawable; // xcb_glx_drawable_t
+    uint glxContext;  // xcb_glx_context_t
+}
+
+struct XrGraphicsBindingOpenGLWaylandKHR
+{
+    XrStructureType type;
+    const(void)* next;
+    void* display; // wl_display*
+}
+
+struct XrSwapchainImageOpenGLKHR
+{
+    XrStructureType type;
+    void* next;
+    uint image; // GLuint
+}
+
+struct XrGraphicsRequirementsOpenGLKHR
+{
+    XrStructureType type;
+    void* next;
+    XrVersion minApiVersionSupported;
+    XrVersion maxApiVersionSupported;
+}
+
 struct XrSwapchainImageAcquireInfo
 {
     XrStructureType type;
@@ -1173,6 +1235,7 @@ struct XrColor4f
 
 extern(C)
 {
+    alias PFN_xrGetOpenGLGraphicsRequirementsKHR = XrResult function (XrInstance instance, XrSystemId systemId, XrGraphicsRequirementsOpenGLKHR* graphicsRequirements);
     alias PFN_xrGetInstanceProcAddr = XrResult function (XrInstance instance, const(char)* name, PFN_xrVoidFunction* function_);
     alias PFN_xrEnumerateApiLayerProperties = XrResult function (uint propertyCapacityInput, uint* propertyCountOutput, XrApiLayerProperties* properties);
     alias PFN_xrEnumerateInstanceExtensionProperties = XrResult function (const(char)* layerName, uint propertyCapacityInput, uint* propertyCountOutput, XrExtensionProperties* properties);

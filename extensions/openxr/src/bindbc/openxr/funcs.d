@@ -32,6 +32,8 @@ import bindbc.openxr.types;
 __gshared
 {
     PFN_xrGetInstanceProcAddr xrGetInstanceProcAddr;
+    // Loaded per-instance with xrGetInstanceProcAddr (not exported by the loader).
+    PFN_xrGetOpenGLGraphicsRequirementsKHR xrGetOpenGLGraphicsRequirementsKHR;
     PFN_xrEnumerateApiLayerProperties xrEnumerateApiLayerProperties;
     PFN_xrEnumerateInstanceExtensionProperties xrEnumerateInstanceExtensionProperties;
     PFN_xrCreateInstance xrCreateInstance;

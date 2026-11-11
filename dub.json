@@ -71,6 +71,7 @@
         "extensions/newton",
         "extensions/nuklear",
         "extensions/openvr",
+        "extensions/openxr",
         "extensions/physfs",
         "extensions/security",
         "extensions/server",

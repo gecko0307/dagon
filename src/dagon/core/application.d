@@ -331,6 +331,9 @@ class Application: EventListener, Updateable
 {
     protected string configFilename = "settings.conf";
     
+    /// Application name.
+    string name = "Dagon Application";
+    
     /// Initial log level.
     LogLevel logLevel = LogLevel.Info;
     
@@ -1819,6 +1822,14 @@ class Application: EventListener, Updateable
         HWND hwnd()
         {
             return eventManager.wmInfo.info.win.window;
+        }
+        
+        /**
+         * Windows-only: returns HDC of the application window.
+         */
+        HDC hdc()
+        {
+            return eventManager.wmInfo.info.win.hdc;
         }
     }
     

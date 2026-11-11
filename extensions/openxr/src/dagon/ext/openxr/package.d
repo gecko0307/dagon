@@ -27,4 +27,336 @@ DEALINGS IN THE SOFTWARE.
 */
 module dagon.ext.openxr;
 
-// TODO
+import std.conv;
+
+import dlib.core.memory;
+import dlib.core.ownership;
+
+import dagon.core.logger;
+import dagon.core.bindings;
+import dagon.core.application;
+
+import loader = bindbc.loader.sharedlib;
+public import bindbc.openxr;
+
+class OpenXRManager: Owner
+{
+    Application application;
+    OpenXRSupport openXRSupport;
+    bool xrAvailable = false;
+    XrExtensionProperties[] xrExtensions;
+    XrInstance xrInstance;
+    XrSystemId xrSystemId;
+    XrSession xrSession;
+    
+    this(Application application, Owner owner)
+    {
+        super(owner);
+        this.application = application;
+        xrAvailable = initOpenXR();
+        
+    }
+    
+    ~this()
+    {
+        xrDestroyInstance(xrInstance);
+        
+        if (xrExtensions.length)
+            Delete(xrExtensions);
+    }
+    
+    bool initOpenXR()
+    {
+        openXRSupport = loadOpenXR();
+        logInfo("OpenXR support: ", openXRSupport);
+        if (openXRSupport != OpenXRSupport.v100)
+        {
+            foreach(info; loader.errors)
+            {
+                logError(info.error.to!string, " ", info.message.to!string);
+            }
+            return false;
+        }
+        
+        XrResult result;
+        
+        ulong currentVer = XR_CURRENT_API_VERSION;
+        logInfo("OpenXR API version: ",
+            XR_VERSION_MAJOR(currentVer), ".",
+            XR_VERSION_MINOR(currentVer), ".",
+            XR_VERSION_PATCH(currentVer)
+        );
+        
+        // Enumerate OpenXR extensions
+        uint numExtensions = 0;
+        result = xrEnumerateInstanceExtensionProperties(null, 0, &numExtensions, null);
+        xrExtensions = New!(XrExtensionProperties[])(numExtensions);
+        foreach(ref e; xrExtensions)
+        {
+            e.type = XR_TYPE_EXTENSION_PROPERTIES;
+            e.next = null;
+        }
+        result = xrEnumerateInstanceExtensionProperties(null, numExtensions, &numExtensions, xrExtensions.ptr);
+        if (XR_FAILED(result))
+        {
+            logError("xrEnumerateInstanceExtensionProperties failed");
+            return false;
+        }
+        
+        // Check OpenGL support
+        bool hasGL = false;
+        logInfo("OpenXR extensions:");
+        foreach (ref e; xrExtensions[0..numExtensions])
+        {
+            string extName = e.extensionName.ptr.to!string;
+            if (extName == XR_KHR_OPENGL_ENABLE_EXTENSION_NAME)
+                hasGL = true;
+            logInfo("  ", extName, " v", e.extensionVersion);
+        }
+        if (!hasGL)
+        {
+            logError("OpenXR runtime does not support XR_KHR_OPENGL_ENABLE_EXTENSION_NAME");
+            return false;
+        }
+        
+        // Create OpenXR instance
+        const(char)*[1] enabledExts = [XR_KHR_OPENGL_ENABLE_EXTENSION_NAME.ptr];
+        XrInstanceCreateInfo ici;
+        ici.type = XR_TYPE_INSTANCE_CREATE_INFO;
+        ici.next = null;
+        ici.createFlags = 0;
+        setCString(ici.applicationInfo.applicationName, application.name);
+        ici.applicationInfo.applicationVersion = 1;
+        setCString(ici.applicationInfo.engineName, "Dagon");
+        ici.applicationInfo.engineVersion = 1;
+        ici.applicationInfo.apiVersion = XR_CURRENT_API_VERSION;
+        ici.enabledApiLayerCount = 0;
+        ici.enabledApiLayerNames = null;
+        ici.enabledExtensionCount = 1;
+        ici.enabledExtensionNames = enabledExts.ptr;
+        result = xrCreateInstance(&ici, &xrInstance);
+        if (XR_FAILED(result))
+        {
+            logError("xrCreateInstance failed");
+            return false;
+        }
+        
+        // Get instance properties
+        XrInstanceProperties ip;
+        ip.type = XR_TYPE_INSTANCE_PROPERTIES;
+        ip.next = null;
+        result = xrGetInstanceProperties(xrInstance, &ip);
+        if (XR_FAILED(result))
+        {
+            logError("xrGetInstanceProperties failed");
+            return false;
+        }
+        logInfo("OpenXR runtime: ", ip.runtimeName.ptr.to!string, " ",
+            XR_VERSION_MAJOR(ip.runtimeVersion), ".",
+            XR_VERSION_MINOR(ip.runtimeVersion), ".",
+            XR_VERSION_PATCH(ip.runtimeVersion));
+        
+        // Get system info
+        XrSystemGetInfo sgi;
+        sgi.type = XR_TYPE_SYSTEM_GET_INFO;
+        sgi.next = null;
+        sgi.formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY;
+        result = xrGetSystem(xrInstance, &sgi, &xrSystemId);
+        if (XR_FAILED(result))
+        {
+            logError("xrGetSystem failed");
+            return false;
+        }
+        
+        XrSystemProperties sp;
+        sp.type = XR_TYPE_SYSTEM_PROPERTIES;
+        sp.next = null;
+        result = xrGetSystemProperties(xrInstance, xrSystemId, &sp);
+        logInfo("OpenXR system: ", sp.systemName.ptr.to!string);
+        logInfo("OpenXR vendor ID: ", sp.vendorId);
+        // sp.graphicsProperties.maxSwapchainImageWidth
+        // sp.graphicsProperties.maxSwapchainImageHeight,
+        // sp.trackingProperties.orientationTracking != 0,
+        // sp.trackingProperties.positionTracking != 0
+        
+        /*
+        // TODO
+        // Blend modes
+        uint blendCount = 0;
+        check(xrEnumerateEnvironmentBlendModes(instance, systemId,
+            XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 0, &blendCount, null),
+            "xrEnumerateEnvironmentBlendModes(count)");
+        auto blendModes = new XrEnvironmentBlendMode[blendCount];
+        check(xrEnumerateEnvironmentBlendModes(instance, systemId,
+            XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, blendCount, &blendCount, blendModes.ptr),
+            "xrEnumerateEnvironmentBlendModes");
+        write("Blend modes:");
+        foreach (m; blendModes)
+            write(" ", m);
+        writeln();
+        XrEnvironmentBlendMode blendMode = blendModes[0];
+        */
+        
+        /*
+        // TODO
+        // View configuration
+        uint viewCount = 0;
+        check(xrEnumerateViewConfigurationViews(instance, systemId,
+            XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 0, &viewCount, null),
+            "xrEnumerateViewConfigurationViews(count)");
+        auto configViews = new XrViewConfigurationView[viewCount];
+        foreach (ref v; configViews)
+        {
+            v.type = XR_TYPE_VIEW_CONFIGURATION_VIEW;
+            v.next = null;
+        }
+        check(xrEnumerateViewConfigurationViews(instance, systemId,
+            XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, viewCount, &viewCount, configViews.ptr),
+            "xrEnumerateViewConfigurationViews");
+        foreach (i, ref v; configViews)
+            writefln("View %d: recommended %dx%d, samples %d", i,
+                v.recommendedImageRectWidth, v.recommendedImageRectHeight,
+                v.recommendedSwapchainSampleCount);
+        */
+        
+        result = loadOpenXRGraphicsFunctions(xrInstance);
+        if (XR_FAILED(result))
+        {
+            logError("loadOpenXRGraphicsFunctions failed");
+            return false;
+        }
+        
+        XrGraphicsRequirementsOpenGLKHR requirements;
+        requirements.type = XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR;
+        result = xrGetOpenGLGraphicsRequirementsKHR(xrInstance, xrSystemId, &requirements);
+        if (XR_FAILED(result))
+        {
+            logError("xrGetOpenGLGraphicsRequirementsKHR failed");
+            return false;
+        }
+        logInfo("OpenXR runtime wants OpenGL ",
+            XR_VERSION_MAJOR(requirements.minApiVersionSupported), ".",
+            XR_VERSION_MINOR(requirements.minApiVersionSupported), "..",
+            XR_VERSION_MAJOR(requirements.maxApiVersionSupported), ".",
+            XR_VERSION_MINOR(requirements.maxApiVersionSupported));
+        if (requirements.maxApiVersionSupported < 4 && 
+            requirements.maxApiVersionSupported < 3)
+        {
+            logError("OpenXR runtime is incompatible with OpenGL 4.3");
+            return false;
+        }
+        
+        version(Windows)
+        {
+            XrGraphicsBindingOpenGLWin32KHR gb;
+            gb.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR;
+            gb.next = null;
+            gb.hDC = application.hdc;
+            gb.hGLRC = application.glcontext;
+        }
+        else version(linux)
+        {
+            /+
+            // TODO
+            XrGraphicsBindingOpenGLXlibKHR gb;
+            gb.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR;
+            gb.next = null;
+            gb.xDisplay = glXGetCurrentDisplay();
+            gb.glxContext = glXGetCurrentContext();
+            gb.glxDrawable = glXGetCurrentDrawable();
+            gb.visualid = 0;
+
+            if (gb.xDisplay is null || gb.glxContext is null)
+                fail("No GLX context (are you running SDL on Wayland? Try SDL_VIDEODRIVER=x11)");
+
+            int fbConfigId = 0, screen = 0;
+            glXQueryContext(gb.xDisplay, gb.glxContext, 0x8013 /* GLX_FBCONFIG_ID */, &fbConfigId);
+            glXQueryContext(gb.xDisplay, gb.glxContext, 0x800C /* GLX_SCREEN */, &screen);
+            int[3] attribs = [0x8013, fbConfigId, 0];
+            int nConfigs = 0;
+            void** configs = glXChooseFBConfig(gb.xDisplay, screen, attribs.ptr, &nConfigs);
+            if (configs is null || nConfigs < 1)
+                fail("glXChooseFBConfig failed");
+            gb.glxFBConfig = configs[0];
+            +/
+        }
+        XrSessionCreateInfo sci;
+        sci.type = XR_TYPE_SESSION_CREATE_INFO;
+        sci.next = &gb;
+        sci.createFlags = 0;
+        sci.systemId = xrSystemId;
+        result = xrCreateSession(xrInstance, &sci, &xrSession);
+        if (XR_FAILED(result))
+        {
+            logError("xrCreateSession failed");
+            return false;
+        }
+        
+        /*
+        XrReferenceSpaceCreateInfo rsci;
+        rsci.type = XR_TYPE_REFERENCE_SPACE_CREATE_INFO;
+        rsci.next = null;
+        rsci.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_LOCAL;
+        rsci.poseInReferenceSpace = identityPose();
+        XrSpace appSpace;
+        check(xrCreateReferenceSpace(session, &rsci, &appSpace), "xrCreateReferenceSpace");
+        */
+        
+        /*
+        uint fmtCount = 0;
+        check(xrEnumerateSwapchainFormats(session, 0, &fmtCount, null), "xrEnumerateSwapchainFormats(count)");
+        auto formats = new long[fmtCount];
+        check(xrEnumerateSwapchainFormats(session, fmtCount, &fmtCount, formats.ptr), "xrEnumerateSwapchainFormats");
+
+        long chosenFormat = formats[0];
+        foreach (f; formats)
+        {
+            if (f == GL_RGBA8) { chosenFormat = f; break; }
+        }
+        writeln("Swapchain format: 0x", cast(void*)chosenFormat); // hex via pointer formatting
+
+        auto swapchains = new EyeSwapchain[viewCount];
+        foreach (i; 0 .. viewCount)
+        {
+            auto cv = configViews[i];
+            XrSwapchainCreateInfo sci2;
+            sci2.type = XR_TYPE_SWAPCHAIN_CREATE_INFO;
+            sci2.next = null;
+            sci2.createFlags = 0;
+            sci2.usageFlags = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_SAMPLED_BIT;
+            sci2.format = chosenFormat;
+            sci2.sampleCount = 1;
+            sci2.width = cv.recommendedImageRectWidth;
+            sci2.height = cv.recommendedImageRectHeight;
+            sci2.faceCount = 1;
+            sci2.arraySize = 1;
+            sci2.mipCount = 1;
+            check(xrCreateSwapchain(session, &sci2, &swapchains[i].handle), "xrCreateSwapchain");
+            swapchains[i].width = cast(int)sci2.width;
+            swapchains[i].height = cast(int)sci2.height;
+
+            uint imgCount = 0;
+            check(xrEnumerateSwapchainImages(swapchains[i].handle, 0, &imgCount, null),
+                "xrEnumerateSwapchainImages(count)");
+            swapchains[i].images = new XrSwapchainImageOpenGLKHR[imgCount];
+            foreach (ref img; swapchains[i].images)
+            {
+                img.type = XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_KHR;
+                img.next = null;
+            }
+            check(xrEnumerateSwapchainImages(swapchains[i].handle, imgCount, &imgCount,
+                cast(XrSwapchainImageBaseHeader*)swapchains[i].images.ptr),
+                "xrEnumerateSwapchainImages");
+            writefln("Eye %d: swapchain %dx%d, %d images", i, swapchains[i].width, swapchains[i].height, imgCount);
+        }
+        */
+        
+        return true;
+    }
+}
+
+void setCString(size_t N)(ref char[N] dst, string s)
+{
+    dst[] = 0;
+    dst[0..s.length] = s[];
+}
