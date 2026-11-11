@@ -490,6 +490,9 @@ class Application: EventListener, Updateable
     /// Similar to pixelRatio, but used only for supersampling (creating framebuffers larger than drawableWidth/drawableHeight).
     uint sampleRatio = 1;
     
+    /// Hide the window on startup. `showWindow` must be called afterwards.
+    bool startHidden = false;
+    
     /// Fullscreen or windowed.
     bool fullscreen = false;
     
@@ -672,6 +675,18 @@ class Application: EventListener, Updateable
             Delete(initConfig);
         }
         initConfigPath.free();
+        
+        // Hide the console window under Windows, if requested
+        version(Windows)
+        {
+            if ("hideConsole" in config.props)
+            {
+                if (config.props["hideConsole"].toUInt)
+                    showConsoleWindow(false);
+                else
+                    showConsoleWindow(true);
+            }
+        }
         
         // Get system info
         sysInfo(&systemInfo);
@@ -1026,21 +1041,29 @@ class Application: EventListener, Updateable
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
         
         // Create SDL window
-        uint windowFlags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
+        uint windowFlags = SDL_WINDOW_OPENGL;
         if (windowResizable)
             windowFlags |= SDL_WINDOW_RESIZABLE;
-        if (windowMaximized)
-            windowFlags |= SDL_WINDOW_MAXIMIZED;
-        if (windowMinimized)
-            windowFlags |= SDL_WINDOW_MINIMIZED;
         if (windowBorderless)
             windowFlags |= SDL_WINDOW_BORDERLESS;
         if (windowHiDPI)
             windowFlags |= SDL_WINDOW_ALLOW_HIGHDPI;
+        if (startHidden)
+            windowFlags |= SDL_WINDOW_HIDDEN;
+        else
+        {
+            windowFlags |= SDL_WINDOW_SHOWN;
+            if (windowMaximized)
+                windowFlags |= SDL_WINDOW_MAXIMIZED;
+            if (windowMinimized)
+                windowFlags |= SDL_WINDOW_MINIMIZED;
+        }
         
         window = SDL_CreateWindow(toStringz(windowTitle), windowX, windowY, windowWidth, windowHeight, windowFlags);
         if (window is null)
             exitWithError("Failed to create window: " ~ to!string(SDL_GetError()));
+        
+        auto flags = SDL_GetWindowFlags(window);
         
         logInfo("Number of displays: ", displayCount);
         
@@ -1336,13 +1359,6 @@ class Application: EventListener, Updateable
         cursors[SystemCursor.SizeAll] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL);
         cursors[SystemCursor.No] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO);
         cursors[SystemCursor.Hand] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
-        
-        version(Windows)
-        {
-            if ("hideConsole" in config.props)
-                if (config.props["hideConsole"].toUInt)
-                    showConsoleWindow(false);
-        }
     }
     
     protected void updateCoreSettings()
@@ -1418,6 +1434,18 @@ class Application: EventListener, Updateable
         logInfo("Exit Dagon application");
     }
     
+    /// Hides the window.
+    void hideWindow()
+    {
+        SDL_HideWindow(window);
+    }
+    
+    /// Shows the window.
+    void showWindow()
+    {
+        SDL_ShowWindow(window);
+    }
+    
     /**
      * Sets the window size.
      *
@@ -1440,6 +1468,12 @@ class Application: EventListener, Updateable
     void maximizeWindow()
     {
         SDL_MaximizeWindow(window);
+    }
+    
+    /// Minimizes the window.
+    void minimizeWindow()
+    {
+        SDL_MinimizeWindow(window);
     }
     
     /// Sets mouse cursor to a standard cursor.
@@ -1763,7 +1797,7 @@ class Application: EventListener, Updateable
      * Params:
      *   mode = show or hide the console window.
      */
-    void showConsoleWindow(bool mode)
+    static void showConsoleWindow(bool mode)
     {
         version(Windows)
         {

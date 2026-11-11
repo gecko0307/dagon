@@ -44,9 +44,11 @@ import scene;
 import ui;
 import materialpreview;
 import thumbnail;
+import splash;
 
 class EditorApp: Game
 {
+    bool splashVisible = true;
     Configuration editorConfig;
     
     String uiFont;
@@ -102,6 +104,9 @@ class EditorApp: Game
     
     this(uint w, uint h, bool fullscreen, string title, string[] args)
     {
+        version(Windows)
+            startHidden = true;
+        
         super(w, h, fullscreen, title, args);
         
         eventManager.autoExit = false;
@@ -190,6 +195,21 @@ class EditorApp: Game
         editor.overlay.ui = ui;
         
         ui.active = true;
+        
+        version(Windows)
+        {
+            if (splashVisible)
+            {
+                splashVisible = false;
+                Splash.close();
+                showWindow();
+                
+                if (windowMaximized)
+                    maximizeWindow();
+                if (windowMinimized)
+                    minimizeWindow();
+            }
+        }
     }
     
     ~this()
@@ -234,7 +254,9 @@ class EditorApp: Game
         }
 
         if (!isLoading)
+        {
             ui.render();
+        }
     }
     
     override void onQuit()

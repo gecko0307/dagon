@@ -42,8 +42,20 @@ import dagon.ext.imgui;
 
 import application;
 
+version(Windows)
+{
+    import splash;
+}
+
 void main(string[] args)
 {
+    version(Windows)
+    {
+        Splash.show("data/splash.jpg");
+    }
+    
+    EditorApp.showConsoleWindow(false);
+    
     ImGuiSupport sup = loadImGui();
     EditorApp app = New!EditorApp(1280, 720, false, "Dagon Editor", args);
     app.run();
