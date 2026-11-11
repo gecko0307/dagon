@@ -41,32 +41,74 @@ import dagon.core.application;
 import loader = bindbc.loader.sharedlib;
 public import bindbc.openxr;
 
+///
+struct EyeSwapchain
+{
+    XrSwapchain handle;
+    int width;
+    int height;
+    XrSwapchainImageOpenGLKHR[] images;
+}
+
 class OpenXRManager: Owner
 {
+    /// Application this manager is bound to.
     Application application;
+    
+    ///
     OpenXRSupport openXRSupport;
+    
+    ///
     bool xrAvailable = false;
+    
+    ///
     XrExtensionProperties[] xrExtensions;
+    
+    ///
     XrInstance xrInstance;
+    
+    ///
     XrSystemId xrSystemId;
+    
+    ///
     XrSession xrSession;
+    
+    ///
     uint maxSwapchainImageWidth;
+    
+    ///
     uint maxSwapchainImageHeight;
+    
+    ///
     bool orientationTracking;
+    
+    ///
     bool positionTracking;
+    
+    ///
     XrEnvironmentBlendMode[] blendModes;
+    
+    ///
     XrEnvironmentBlendMode blendMode;
+    
+    ///
     XrViewConfigurationView[] configViews;
+    
+    ///
     XrSpace xrSpace;
     
+    /// Swapchains for each eye.
+    EyeSwapchain[] swapchains;
+    
+    ///
     this(Application application, Owner owner)
     {
         super(owner);
         this.application = application;
         xrAvailable = initOpenXR();
-        
     }
     
+    ///
     ~this()
     {
         if (xrInstance)
@@ -80,9 +122,19 @@ class OpenXRManager: Owner
         
         if (configViews.length)
             Delete(configViews);
+        
+        foreach(swapchain; swapchains)
+        {
+            if (swapchain.images.length)
+                Delete(swapchain.images);
+        }
+        
+        if (swapchains.length)
+            Delete(swapchains);
     }
     
-    bool initOpenXR()
+    ///
+    protected bool initOpenXR()
     {
         openXRSupport = loadOpenXR();
         logInfo("OpenXR support: ", openXRSupport);
@@ -337,22 +389,34 @@ class OpenXRManager: Owner
             return false;
         }
         
-        /*
-        // Create swapchain
-        uint fmtCount = 0;
-        check(xrEnumerateSwapchainFormats(session, 0, &fmtCount, null), "xrEnumerateSwapchainFormats(count)");
-        auto formats = new long[fmtCount];
-        check(xrEnumerateSwapchainFormats(session, fmtCount, &fmtCount, formats.ptr), "xrEnumerateSwapchainFormats");
-
-        long chosenFormat = formats[0];
-        foreach (f; formats)
+        // Create eye swapchains
+        uint numSwapchainFormats = 0;
+        result = xrEnumerateSwapchainFormats(xrSession, 0, &numSwapchainFormats, null);
+        if (XR_FAILED(result))
         {
-            if (f == GL_RGBA8) { chosenFormat = f; break; }
+            logError("xrEnumerateSwapchainFormats failed");
+            return false;
         }
-        writeln("Swapchain format: 0x", cast(void*)chosenFormat); // hex via pointer formatting
-
-        auto swapchains = new EyeSwapchain[viewCount];
-        foreach (i; 0 .. viewCount)
+        auto swapchainFormats = New!(long[])(numSwapchainFormats);
+        result = xrEnumerateSwapchainFormats(xrSession, numSwapchainFormats, &numSwapchainFormats, swapchainFormats.ptr);
+        if (XR_FAILED(result))
+        {
+            logError("xrEnumerateSwapchainFormats failed");
+            return false;
+        }
+        long chosenFormat = swapchainFormats[0];
+        foreach (f; swapchainFormats)
+        {
+            if (f == GL_RGBA8)
+            {
+                chosenFormat = f;
+                break;
+            }
+        }
+        Delete(swapchainFormats);
+        
+        swapchains = New!(EyeSwapchain[])(numViews);
+        foreach (i; 0..numViews)
         {
             auto cv = configViews[i];
             XrSwapchainCreateInfo sci2;
@@ -367,30 +431,47 @@ class OpenXRManager: Owner
             sci2.faceCount = 1;
             sci2.arraySize = 1;
             sci2.mipCount = 1;
-            check(xrCreateSwapchain(session, &sci2, &swapchains[i].handle), "xrCreateSwapchain");
+            result = xrCreateSwapchain(xrSession, &sci2, &swapchains[i].handle);
+            if (XR_FAILED(result))
+            {
+                logError("xrCreateSwapchain failed (at view ", i, ")");
+                return false;
+            }
             swapchains[i].width = cast(int)sci2.width;
             swapchains[i].height = cast(int)sci2.height;
-
-            uint imgCount = 0;
-            check(xrEnumerateSwapchainImages(swapchains[i].handle, 0, &imgCount, null),
-                "xrEnumerateSwapchainImages(count)");
-            swapchains[i].images = new XrSwapchainImageOpenGLKHR[imgCount];
+            
+            uint numImages = 0;
+            result = xrEnumerateSwapchainImages(swapchains[i].handle, 0, &numImages, null);
+            if (XR_FAILED(result))
+            {
+                logError("xrEnumerateSwapchainImages failed (at swapchain ", i, ")");
+                return false;
+            }
+            swapchains[i].images = New!(XrSwapchainImageOpenGLKHR[])(numImages);
             foreach (ref img; swapchains[i].images)
             {
                 img.type = XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_KHR;
                 img.next = null;
             }
-            check(xrEnumerateSwapchainImages(swapchains[i].handle, imgCount, &imgCount,
-                cast(XrSwapchainImageBaseHeader*)swapchains[i].images.ptr),
-                "xrEnumerateSwapchainImages");
-            writefln("Eye %d: swapchain %dx%d, %d images", i, swapchains[i].width, swapchains[i].height, imgCount);
+            result = xrEnumerateSwapchainImages(swapchains[i].handle, numImages, &numImages,
+                cast(XrSwapchainImageBaseHeader*)swapchains[i].images.ptr);
+            if (XR_FAILED(result))
+            {
+                logError("xrEnumerateSwapchainImages failed (at swapchain ", i, ")");
+                return false;
+            }
+            logInfo("Eye ", i,
+                ": swapchain ",
+                swapchains[i].width, "x", 
+                swapchains[i].height, ", ",
+                numImages, " images");
         }
-        */
         
         return true;
     }
 }
 
+///
 XrPosef identityPose()
 {
     XrPosef p;
@@ -399,6 +480,7 @@ XrPosef identityPose()
     return p;
 }
 
+///
 void setCString(size_t N)(ref char[N] dst, string s)
 {
     dst[] = 0;
