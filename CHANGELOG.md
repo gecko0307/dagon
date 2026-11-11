@@ -8,7 +8,8 @@ Dagon 1.8.0 - TBD
 - **Editor**
   - Asset browser optimizations and improvements. Thumbnails are now created in a separate thread, so the navigation doesn't freeze
   - New JSON serializer
-  - Fix Linux compatibility bugs.
+  - Fix Linux compatibility bugs
+  - Add a loading splash screen (only under Windows for now).
 - **Documentation**
   - Dagon Guidebook: the `doc` folder now can be compiled to PDF using [Pandoc](https://pandoc.org/) with a command `pandoc -d pandoc.yaml`.
 
