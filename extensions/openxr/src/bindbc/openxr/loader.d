@@ -62,8 +62,10 @@ bool isOpenXRLoaded()
     return lib != invalidHandle;
 }
 
-/// Loads XR_KHR_opengl_enable instance-level entry points after xrCreateInstance.
-/// Call this only after enabling XR_KHR_opengl_enable in XrInstanceCreateInfo.
+/**
+ * Loads XR_KHR_opengl_enable instance-level entry points after xrCreateInstance.
+ * Call this only after enabling XR_KHR_opengl_enable in XrInstanceCreateInfo.
+ */
 XrResult loadOpenXRGraphicsFunctions(XrInstance instance)
 {
     if (xrGetInstanceProcAddr is null || instance is null)

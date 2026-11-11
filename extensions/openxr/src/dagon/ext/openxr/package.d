@@ -31,6 +31,8 @@ import std.conv;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.math.vector;
+import dlib.math.quaternion;
 
 import dagon.core.logger;
 import dagon.core.bindings;
@@ -48,6 +50,14 @@ class OpenXRManager: Owner
     XrInstance xrInstance;
     XrSystemId xrSystemId;
     XrSession xrSession;
+    uint maxSwapchainImageWidth;
+    uint maxSwapchainImageHeight;
+    bool orientationTracking;
+    bool positionTracking;
+    XrEnvironmentBlendMode[] blendModes;
+    XrEnvironmentBlendMode blendMode;
+    XrViewConfigurationView[] configViews;
+    XrSpace xrSpace;
     
     this(Application application, Owner owner)
     {
@@ -59,10 +69,17 @@ class OpenXRManager: Owner
     
     ~this()
     {
-        xrDestroyInstance(xrInstance);
+        if (xrInstance)
+            xrDestroyInstance(xrInstance);
         
         if (xrExtensions.length)
             Delete(xrExtensions);
+        
+        if (blendModes.length)
+            Delete(blendModes);
+        
+        if (configViews.length)
+            Delete(configViews);
     }
     
     bool initOpenXR()
@@ -174,51 +191,63 @@ class OpenXRManager: Owner
         result = xrGetSystemProperties(xrInstance, xrSystemId, &sp);
         logInfo("OpenXR system: ", sp.systemName.ptr.to!string);
         logInfo("OpenXR vendor ID: ", sp.vendorId);
-        // sp.graphicsProperties.maxSwapchainImageWidth
-        // sp.graphicsProperties.maxSwapchainImageHeight,
-        // sp.trackingProperties.orientationTracking != 0,
-        // sp.trackingProperties.positionTracking != 0
+        maxSwapchainImageWidth = sp.graphicsProperties.maxSwapchainImageWidth;
+        maxSwapchainImageHeight = sp.graphicsProperties.maxSwapchainImageHeight;
+        orientationTracking = sp.trackingProperties.orientationTracking != 0;
+        positionTracking = sp.trackingProperties.positionTracking != 0;
         
-        /*
-        // TODO
         // Blend modes
-        uint blendCount = 0;
-        check(xrEnumerateEnvironmentBlendModes(instance, systemId,
-            XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 0, &blendCount, null),
-            "xrEnumerateEnvironmentBlendModes(count)");
-        auto blendModes = new XrEnvironmentBlendMode[blendCount];
-        check(xrEnumerateEnvironmentBlendModes(instance, systemId,
-            XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, blendCount, &blendCount, blendModes.ptr),
-            "xrEnumerateEnvironmentBlendModes");
-        write("Blend modes:");
-        foreach (m; blendModes)
-            write(" ", m);
-        writeln();
-        XrEnvironmentBlendMode blendMode = blendModes[0];
-        */
+        uint numBlendModes = 0;
+        result = xrEnumerateEnvironmentBlendModes(xrInstance, xrSystemId,
+            XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 0, &numBlendModes, null);
+        if (XR_FAILED(result))
+        {
+            logError("xrEnumerateEnvironmentBlendModes failed");
+            return false;
+        }
+        blendModes = New!(XrEnvironmentBlendMode[])(numBlendModes);
+        result = xrEnumerateEnvironmentBlendModes(xrInstance, xrSystemId,
+            XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, numBlendModes, &numBlendModes, blendModes.ptr);
+        if (XR_FAILED(result))
+        {
+            logError("xrEnumerateEnvironmentBlendModes failed");
+            return false;
+        }
+        blendMode = blendModes[0];
         
-        /*
-        // TODO
         // View configuration
-        uint viewCount = 0;
-        check(xrEnumerateViewConfigurationViews(instance, systemId,
-            XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 0, &viewCount, null),
-            "xrEnumerateViewConfigurationViews(count)");
-        auto configViews = new XrViewConfigurationView[viewCount];
-        foreach (ref v; configViews)
+        uint numViews = 0;
+        result = xrEnumerateViewConfigurationViews(xrInstance, xrSystemId,
+            XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 0, &numViews, null);
+        if (XR_FAILED(result))
+        {
+            logError("xrEnumerateViewConfigurationViews failed");
+            return false;
+        }
+        configViews = New!(XrViewConfigurationView[])(numViews);
+        foreach(ref v; configViews)
         {
             v.type = XR_TYPE_VIEW_CONFIGURATION_VIEW;
             v.next = null;
         }
-        check(xrEnumerateViewConfigurationViews(instance, systemId,
-            XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, viewCount, &viewCount, configViews.ptr),
-            "xrEnumerateViewConfigurationViews");
-        foreach (i, ref v; configViews)
-            writefln("View %d: recommended %dx%d, samples %d", i,
-                v.recommendedImageRectWidth, v.recommendedImageRectHeight,
+        result = xrEnumerateViewConfigurationViews(xrInstance, xrSystemId,
+            XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, numViews, &numViews, configViews.ptr);
+         if (XR_FAILED(result))
+        {
+            logError("xrEnumerateViewConfigurationViews failed");
+            return false;
+        }
+        foreach(i, ref v; configViews)
+        {
+            logInfo("OpenXR view ", i,
+                ": recommended ",
+                v.recommendedImageRectWidth, "x", 
+                v.recommendedImageRectHeight,
+                ", samples: ",
                 v.recommendedSwapchainSampleCount);
-        */
+        }
         
+        // Loads XR_KHR_opengl_enable instance-level entry points
         result = loadOpenXRGraphicsFunctions(xrInstance);
         if (XR_FAILED(result))
         {
@@ -226,6 +255,7 @@ class OpenXRManager: Owner
             return false;
         }
         
+        // Get graphics requirements
         XrGraphicsRequirementsOpenGLKHR requirements;
         requirements.type = XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR;
         result = xrGetOpenGLGraphicsRequirementsKHR(xrInstance, xrSystemId, &requirements);
@@ -246,6 +276,7 @@ class OpenXRManager: Owner
             return false;
         }
         
+        // Create session
         version(Windows)
         {
             XrGraphicsBindingOpenGLWin32KHR gb;
@@ -292,17 +323,22 @@ class OpenXRManager: Owner
             return false;
         }
         
-        /*
+        // Create space
         XrReferenceSpaceCreateInfo rsci;
         rsci.type = XR_TYPE_REFERENCE_SPACE_CREATE_INFO;
         rsci.next = null;
         rsci.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_LOCAL;
         rsci.poseInReferenceSpace = identityPose();
-        XrSpace appSpace;
-        check(xrCreateReferenceSpace(session, &rsci, &appSpace), "xrCreateReferenceSpace");
-        */
+        XrSpace xrSpace;
+        result = xrCreateReferenceSpace(xrSession, &rsci, &xrSpace);
+        if (XR_FAILED(result))
+        {
+            logError("xrCreateReferenceSpace failed");
+            return false;
+        }
         
         /*
+        // Create swapchain
         uint fmtCount = 0;
         check(xrEnumerateSwapchainFormats(session, 0, &fmtCount, null), "xrEnumerateSwapchainFormats(count)");
         auto formats = new long[fmtCount];
@@ -353,6 +389,14 @@ class OpenXRManager: Owner
         
         return true;
     }
+}
+
+XrPosef identityPose()
+{
+    XrPosef p;
+    p.orientation = Quaternionf.identity;
+    p.position = Vector3f(0.0f, 0.0f, 0.0f);
+    return p;
 }
 
 void setCString(size_t N)(ref char[N] dst, string s)
