@@ -36,10 +36,14 @@ import dlib.math.quaternion;
 
 import dagon.core.logger;
 import dagon.core.bindings;
+import dagon.core.time;
 import dagon.core.application;
+import dagon.render.framebuffer;
+import dagon.render.stereorenderer;
 
 import loader = bindbc.loader.sharedlib;
 public import bindbc.openxr;
+public import dagon.ext.openxr.stereorenderer;
 
 ///
 struct EyeSwapchain
@@ -62,6 +66,9 @@ class OpenXRManager: Owner
     bool xrAvailable = false;
     
     ///
+    bool running = false;
+    
+    ///
     XrExtensionProperties[] xrExtensions;
     
     ///
@@ -72,6 +79,9 @@ class OpenXRManager: Owner
     
     ///
     XrSession xrSession;
+    
+    ///
+    bool sessionRunning = false;
     
     ///
     uint maxSwapchainImageWidth;
@@ -101,16 +111,42 @@ class OpenXRManager: Owner
     EyeSwapchain[] swapchains;
     
     ///
+    XrView[] views;
+    
+    ///
+    XrCompositionLayerProjectionView[] projViews;
+    
+    /// OpenGL framebuffer objects for rendering to the OpenXR swapchain.
+    GLuint[2] fbo;
+    
+    /// Corresponding Dagon framebuffers.
+    Framebuffer[2] framebuffers;
+    
+    ///
     this(Application application, Owner owner)
     {
         super(owner);
         this.application = application;
         xrAvailable = initOpenXR();
+        running = xrAvailable;
     }
     
     ///
     ~this()
     {
+        foreach(ref sw; swapchains)
+        {
+            xrDestroySwapchain(sw.handle);
+            if (sw.images.length)
+                Delete(sw.images);
+        }
+        
+        if (xrSpace)
+            xrDestroySpace(xrSpace);
+        
+        if (xrSession)
+            xrDestroySession(xrSession);
+        
         if (xrInstance)
             xrDestroyInstance(xrInstance);
         
@@ -123,14 +159,19 @@ class OpenXRManager: Owner
         if (configViews.length)
             Delete(configViews);
         
-        foreach(swapchain; swapchains)
-        {
-            if (swapchain.images.length)
-                Delete(swapchain.images);
-        }
-        
         if (swapchains.length)
             Delete(swapchains);
+        
+        if (views.length)
+            Delete(views);
+        
+        if (projViews.length)
+            Delete(projViews);
+        
+        if (glIsFramebuffer(fbo[0]))
+            glDeleteFramebuffers(1, &fbo[0]);
+        if (glIsFramebuffer(fbo[1]))
+            glDeleteFramebuffers(1, &fbo[1]);
     }
     
     ///
@@ -276,6 +317,11 @@ class OpenXRManager: Owner
             logError("xrEnumerateViewConfigurationViews failed");
             return false;
         }
+        if (numViews != 2)
+        {
+            logError("OpenXR: unsupported view count");
+            return false;
+        }
         configViews = New!(XrViewConfigurationView[])(numViews);
         foreach(ref v; configViews)
         {
@@ -381,7 +427,6 @@ class OpenXRManager: Owner
         rsci.next = null;
         rsci.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_LOCAL;
         rsci.poseInReferenceSpace = identityPose();
-        XrSpace xrSpace;
         result = xrCreateReferenceSpace(xrSession, &rsci, &xrSpace);
         if (XR_FAILED(result))
         {
@@ -467,7 +512,214 @@ class OpenXRManager: Owner
                 numImages, " images");
         }
         
+        views = New!(XrView[])(numViews);
+        projViews = New!(XrCompositionLayerProjectionView[])(numViews);
+        
+        // Left eye FBO
+        glGenFramebuffers(1, &fbo[0]);
+        framebuffers[0] = New!Framebuffer(fbo[0], this);
+        
+        // Right eye FBO
+        glGenFramebuffers(1, &fbo[1]);
+        framebuffers[1] = New!Framebuffer(fbo[1], this);
+        
+        GLuint[2] depthTextures;
+        glGenTextures(2, depthTextures.ptr);
+        foreach(i; 0..2)
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[i].framebuffer);
+            glBindTexture(GL_TEXTURE_2D, depthTextures[i]);
+
+            glTexImage2D(
+                GL_TEXTURE_2D,
+                0,
+                GL_DEPTH_COMPONENT24,
+                swapchains[i].width,
+                swapchains[i].height,
+                0,
+                GL_DEPTH_COMPONENT,
+                GL_UNSIGNED_INT,
+                null
+            );
+
+            glFramebufferTexture2D(
+                GL_FRAMEBUFFER,
+                GL_DEPTH_ATTACHMENT,
+                GL_TEXTURE_2D,
+                depthTextures[i],
+                0
+            );
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        }
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
         return true;
+    }
+    
+    void update(Time t)
+    {
+        if (!xrAvailable || !running)
+            return;
+        
+        // OpenXR events
+        while (true)
+        {
+            XrEventDataBuffer ev;
+            ev.type = XR_TYPE_EVENT_DATA_BUFFER;
+            ev.next = null;
+            XrResult result = xrPollEvent(xrInstance, &ev);
+            if (XR_FAILED(result) || result == XR_EVENT_UNAVAILABLE)
+                break;
+            
+            if (ev.type == XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED)
+            {
+                auto sc = cast(XrEventDataSessionStateChanged*)&ev;
+                switch (sc.state)
+                {
+                    case XR_SESSION_STATE_READY:
+                        XrSessionBeginInfo sbi;
+                        sbi.type = XR_TYPE_SESSION_BEGIN_INFO;
+                        sbi.next = null;
+                        sbi.primaryViewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
+                        xrBeginSession(xrSession, &sbi);
+                        sessionRunning = true;
+                        break;
+                    case XR_SESSION_STATE_STOPPING:
+                        xrEndSession(xrSession);
+                        sessionRunning = false;
+                        break;
+                    case XR_SESSION_STATE_EXITING:
+                    case XR_SESSION_STATE_LOSS_PENDING:
+                        sessionRunning = false;
+                        running = false;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else if (ev.type == XR_TYPE_EVENT_DATA_INSTANCE_LOSS_PENDING)
+            {
+                logError("OpenXR instance loss pending");
+                running = false;
+            }
+        }
+    }
+    
+    void render(StereoRenderer renderer)
+    {
+        if (!xrAvailable || !running || !sessionRunning)
+            return;
+        
+        if (renderer is null)
+            return;
+        
+        auto fwi = XrFrameWaitInfo(XR_TYPE_FRAME_WAIT_INFO, null);
+        auto fs = XrFrameState(XR_TYPE_FRAME_STATE, null);
+        xrWaitFrame(xrSession, &fwi, &fs);
+        
+        auto fbi = XrFrameBeginInfo(XR_TYPE_FRAME_BEGIN_INFO, null);
+        xrBeginFrame(xrSession, &fbi);
+        
+        XrCompositionLayerProjection projLayer = {
+            type: XR_TYPE_COMPOSITION_LAYER_PROJECTION,
+            next: null,
+            layerFlags: 0,
+            space: xrSpace,
+            viewCount: 0,
+            views: null
+        };
+        
+        const(XrCompositionLayerBaseHeader)*[1] layers;
+        uint layerCount = 0;
+        
+        if (fs.shouldRender)
+        {
+            XrViewLocateInfo vli = {
+                type: XR_TYPE_VIEW_LOCATE_INFO,
+                next: null,
+                viewConfigurationType: XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO,
+                displayTime: fs.predictedDisplayTime,
+                space: xrSpace
+            };
+            
+            auto vs = XrViewState(XR_TYPE_VIEW_STATE, null);
+            foreach(ref v; views)
+            {
+                v.type = XR_TYPE_VIEW;
+                v.next = null;
+            }
+            uint located = 0;
+            xrLocateViews(xrSession, &vli, &vs, cast(uint)views.length, &located, views.ptr);
+            
+            bool poseValid =
+                (vs.viewStateFlags & XR_VIEW_STATE_ORIENTATION_VALID_BIT) != 0 &&
+                (vs.viewStateFlags & XR_VIEW_STATE_POSITION_VALID_BIT) != 0;
+            
+            if (poseValid)
+            {
+                foreach(i; 0..views.length)
+                {
+                    auto sw = &swapchains[i];
+                    
+                    XrSwapchainImageAcquireInfo aci;
+                    aci.type = XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO;
+                    aci.next = null;
+                    uint imageIndex;
+                    xrAcquireSwapchainImage(sw.handle, &aci, &imageIndex);
+                    
+                    XrSwapchainImageWaitInfo wi;
+                    wi.type = XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO;
+                    wi.next = null;
+                    wi.timeout = XR_INFINITE_DURATION;
+                    xrWaitSwapchainImage(sw.handle, &wi);
+                    
+                    glBindFramebuffer(GL_FRAMEBUFFER, fbo[i]);
+                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sw.images[imageIndex].image, 0);
+                    glViewport(0, 0, sw.width, sw.height);
+                    
+                    //glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
+                    //glClear(GL_COLOR_BUFFER_BIT);
+                    
+                    Vector3f eyePosition = views[i].pose.position;
+                    Quaternionf eyeRotation = views[i].pose.orientation;
+                    
+                    renderer.renderEye(cast(uint)i, eyePosition, eyeRotation);
+                    
+                    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                    
+                    XrSwapchainImageReleaseInfo rli;
+                    rli.type = XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO;
+                    rli.next = null;
+                    xrReleaseSwapchainImage(sw.handle, &rli);
+
+                    projViews[i].type = XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW;
+                    projViews[i].next = null;
+                    projViews[i].pose = views[i].pose;
+                    projViews[i].fov = views[i].fov;
+                    projViews[i].subImage.swapchain = sw.handle;
+                    projViews[i].subImage.imageRect.offset.x = 0;
+                    projViews[i].subImage.imageRect.offset.y = 0;
+                    projViews[i].subImage.imageRect.extent.width = sw.width;
+                    projViews[i].subImage.imageRect.extent.height = sw.height;
+                    projViews[i].subImage.imageArrayIndex = 0;
+                }
+                
+                projLayer.viewCount = cast(uint)views.length;
+                projLayer.views = projViews.ptr;
+                layers[0] = cast(const(XrCompositionLayerBaseHeader)*)&projLayer;
+                layerCount = 1;
+            }
+        }
+        
+        XrFrameEndInfo fei = {
+            type: XR_TYPE_FRAME_END_INFO,
+            next: null,
+            displayTime: fs.predictedDisplayTime,
+            environmentBlendMode: blendMode,
+            layerCount: layerCount,
+            layers: layerCount > 0 ? layers.ptr : null
+        };
+        xrEndFrame(xrSession, &fei);
     }
 }
 

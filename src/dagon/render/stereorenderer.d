@@ -41,6 +41,8 @@ module dagon.render.stereorenderer;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.math.vector;
+import dlib.math.quaternion;
 
 import dagon.core.application;
 import dagon.core.event;
@@ -125,5 +127,14 @@ class StereoRenderer: Renderer
     this(Application application, Owner owner)
     {
         super(application, owner);
+    }
+    
+    /**
+     * Optional method to render for an individual eye (left = 0, right = 1).
+     * Framebuffer is set on the calling side.
+     */
+    void renderEye(uint eye, Vector3f eyePosition, Quaternionf eyeRotation)
+    {
+        //
     }
 }

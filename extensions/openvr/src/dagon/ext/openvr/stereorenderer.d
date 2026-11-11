@@ -145,7 +145,7 @@ class SimpleStereoRenderer: StereoRenderer
     }
     
     /// Render the pipeline for an individual eye
-    void renderEye(Framebuffer outputBuffer, RenderView view)
+    override void renderEye(Framebuffer outputBuffer, RenderView view)
     {
         clearPass.view = view;
         backgroundPass.view = view;

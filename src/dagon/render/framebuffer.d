@@ -72,6 +72,30 @@ enum FrameBufferFormat
     RGBA32F
 }
 
+FrameBufferFormat internalFormatToFrameBufferFormat(GLint internalFormat)
+{
+    switch(internalFormat)
+    {
+        case GL_R8:      return FrameBufferFormat.R8;
+        case GL_R16F:    return FrameBufferFormat.R16F;
+        case GL_R32F:    return FrameBufferFormat.R32F;
+
+        case GL_RG8:     return FrameBufferFormat.RG8;
+        case GL_RG16F:   return FrameBufferFormat.RG16F;
+        case GL_RG32F:   return FrameBufferFormat.RG32F;
+
+        case GL_RGB8:    return FrameBufferFormat.RGB8;
+        case GL_RGB16F:  return FrameBufferFormat.RGB16F;
+        case GL_RGB32F:  return FrameBufferFormat.RGB32F;
+
+        case GL_RGBA8:   return FrameBufferFormat.RGBA8;
+        case GL_RGBA16F: return FrameBufferFormat.RGBA16F;
+        case GL_RGBA32F: return FrameBufferFormat.RGBA32F;
+
+        default:         return FrameBufferFormat.RGBA8;
+    }
+}
+
 /**
  * Framebuffer abstraction for offscreen rendering.
  *
@@ -98,6 +122,9 @@ class Framebuffer: Owner
 
     /// OpenGL framebuffer object.
     GLuint framebuffer;
+    
+    ///
+    protected bool _isExternal = false;
 
     /**
      * Constructs an empty framebuffer.
@@ -125,6 +152,94 @@ class Framebuffer: Owner
         super(owner);
         init(w, h, format, depth);
     }
+    
+    /**
+     * Constructs a framebuffer from an external OpenGL framebuffer object.
+     */
+    this(GLuint framebuffer, Owner owner)
+    {
+        super(owner);
+        this.framebuffer = framebuffer;
+        _isExternal = true;
+        
+        width = 0;
+        height = 0;
+        colorFormat = FrameBufferFormat.RGBA8;
+        hasDepthBuffer = false;
+        
+        if (framebuffer == 0)
+        {
+            GLint[4] viewport;
+            glGetIntegerv(GL_VIEWPORT, viewport.ptr);
+            width = cast(uint)viewport[2];
+            height = cast(uint)viewport[3];
+            return;
+        }
+        
+        // Save previous bindings so we don't clobber caller state
+        GLint prevFBO = 0;
+        glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevFBO);
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        
+        GLint colorType = GL_NONE, colorName = 0;
+        glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, &colorType);
+
+        if (colorType != GL_NONE)
+        {
+            glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME, &colorName);
+            GLint w = 0, h = 0, internalFormat = 0;
+            if (colorType == GL_TEXTURE)
+            {
+                _colorTexture = cast(GLuint)colorName;
+
+                GLint prevTex = 0;
+                glGetIntegerv(GL_TEXTURE_BINDING_2D, &prevTex);
+                glBindTexture(GL_TEXTURE_2D, _colorTexture);
+
+                glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &w);
+                glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &h);
+                glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &internalFormat);
+
+                glBindTexture(GL_TEXTURE_2D, cast(GLuint)prevTex);
+            }
+            else if (colorType == GL_RENDERBUFFER)
+            {
+                GLint prevRBO = 0;
+                glGetIntegerv(GL_RENDERBUFFER_BINDING, &prevRBO);
+                glBindRenderbuffer(GL_RENDERBUFFER, cast(GLuint)colorName);
+
+                glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &w);
+                glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &h);
+                glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_INTERNAL_FORMAT, &internalFormat);
+
+                glBindRenderbuffer(GL_RENDERBUFFER, cast(GLuint)prevRBO);
+            }
+
+            width = cast(uint)w;
+            height = cast(uint)h;
+            colorFormat = internalFormatToFrameBufferFormat(internalFormat);
+            
+            GLint type = 0, name = 0;
+            glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, &type);
+            glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME, &name);
+        }
+        
+        GLint depthType = GL_NONE, depthName = 0;
+        glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, &depthType);
+
+        if (depthType != GL_NONE)
+        {
+            hasDepthBuffer = true;
+            if (depthType == GL_TEXTURE)
+            {
+                glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME, &depthName);
+                _depthTexture = cast(GLuint)depthName;
+            }
+        }
+
+        // Restore previous FBO binding
+        glBindFramebuffer(GL_FRAMEBUFFER, cast(GLuint)prevFBO);
+    }
 
     /**
      * Initializes or reinitializes the framebuffer.
@@ -147,12 +262,18 @@ class Framebuffer: Owner
     /// Destructor. Releases all OpenGL resources.
     ~this()
     {
+        if (_isExternal)
+            return;
+        
         releaseFramebuffer();
     }
 
     /// Creates the OpenGL framebuffer and attachments.
     protected void createFramebuffer()
     {
+        if (_isExternal)
+            return;
+        
         releaseFramebuffer();
 
         GLint intFormat;
@@ -230,6 +351,9 @@ class Framebuffer: Owner
     /// Releases all OpenGL framebuffer and texture resources.
     void releaseFramebuffer()
     {
+        if (_isExternal)
+            return;
+        
         if (glIsFramebuffer(framebuffer))
             glDeleteFramebuffers(1, &framebuffer);
 
@@ -267,6 +391,9 @@ class Framebuffer: Owner
     /// Resizes the framebuffer and its attachments.
     void resize(uint w, uint h)
     {
+        if (_isExternal)
+            return;
+        
         width = w;
         height = h;
         createFramebuffer();
