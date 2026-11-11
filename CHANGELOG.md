@@ -1,10 +1,14 @@
 Dagon 1.8.0 - TBD
 -----------------
 - **Core**
+  - New Windows method `Application.hdc`
   - New methods `Application.hideWindow`, `Application.showWindow`, `Application.minimizeWindow`
   - New property `Application.startHidden` plus corresponding `settings.conf` property
+  - New property `Application.name`
 - **Assets**
   - Fix texture path resolving in `MaterialAsset`
+- **Extensions**
+  - `dagon:openxr`
 - **Editor**
   - Asset browser optimizations and improvements. Thumbnails are now created in a separate thread, so the navigation doesn't freeze
   - New JSON serializer
@@ -62,7 +66,8 @@ Dagon 1.6.1 - 19 Aug, 2026
 - **Core**
   - Fix Wintab initialization
 - **Extensions**
-  - Fix `AudioManager.loadMusic`.
+  - `dagon:audio`:
+    - Fix `AudioManager.loadMusic`.
 
 Dagon 1.6.0 - 10 Aug, 2026
 --------------------------
