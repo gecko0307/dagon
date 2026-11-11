@@ -99,22 +99,6 @@ class EditorUI: EventListener
     EditorViewport editorViewport = EditorViewport(ImVec2(0, 0), ImVec2(0, 0));
     EditorViewport editorViewportPrevious = EditorViewport(ImVec2(0, 0), ImVec2(0, 0));
     
-    Texture iconFile;
-    Texture iconFolder;
-    Texture iconImage;
-    Texture iconArchive;
-    Texture iconAudio;
-    Texture iconBlend;
-    Texture iconJson;
-    Texture iconModel;
-    Texture iconPython;
-    Texture iconBinary;
-    Texture iconEXE;
-    Texture iconAPK;
-    Texture iconBash;
-    Texture iconTorrent;
-    Texture iconC;
-    Texture iconCpp;
     
     ThumbnailGenerator thumbnailGenerator;
     

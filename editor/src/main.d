@@ -60,5 +60,5 @@ void main(string[] args)
     EditorApp app = New!EditorApp(1280, 720, false, "Dagon Editor", args);
     app.run();
     Delete(app);
-    writeln("Allocated memory: ", allocatedMemory);
+    logDebug("Allocated memory: ", allocatedMemory);
 }

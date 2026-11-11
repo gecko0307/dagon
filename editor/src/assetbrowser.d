@@ -46,6 +46,7 @@ import dagon.ext.imgui;
 import ui;
 import assetdir;
 import thumbnail;
+import icons;
 import textbuffer;
 import os;
 
@@ -620,73 +621,16 @@ class AssetBrowser: Owner
         return false;
     }
     
-    static bool hasExtension(const(char)[] filename, const(char)[][] extensions)
-    {
-        const(char)[] ext = extension(filename);
-        foreach (candidate; extensions)
-        {
-            if (ext.length != candidate.length)
-                continue;
-            bool matches = true;
-            foreach (i, c; ext)
-            {
-                if (asciiLower(c) != candidate[i])
-                {
-                    matches = false;
-                    break;
-                }
-            }
-            if (matches)
-                return true;
-        }
-        return false;
-    }
-    
-    // TODO: make a separate IconDatabase
-    static const(char)[][] extImages = [
-        ".bmp", ".gif", ".jpg", ".jpeg", ".lbm", ".pcx", ".png",
-        ".pnm", ".ppm", ".pgm", ".pbm", ".qoi", ".tga", ".xcf", ".xpm",
-        ".tif", ".tiff", ".webp", ".avif", ".jxl", ".svg", ".ico",
-        ".dds", ".hdr", ".ktx", ".ktx2"
-    ];
-    static const(char)[][] extModels = [
-        ".obj", ".3ds", ".gltf", ".glb", ".dae", ".fbx",
-        ".stl", ".ply", ".iqm", ".3mf", ".bvh", ".md2", ".md3",
-        ".md5mesh", ".ms3d", ".off", ".x3d"
-    ];
-    static const(char)[][] extArchives = [
-        ".zip", ".7z", ".rar", ".tar", ".gz", ".bz2", ".xz",
-        ".tgz", ".tbz", ".tbz2", ".txz", ".zst", ".lz", ".lz4",
-        ".cab", ".iso"
-    ];
-    static const(char)[][] extAudio = [
-        ".wav", ".mp3", ".ogg", ".oga", ".flac", ".opus", ".aiff",
-        ".aif", ".aifc", ".mid", ".midi", ".mod", ".xm", ".it",
-        ".s3m", ".wma", ".m4a", ".aac", ".weba"
-    ];
-    static const(char)[][] extBlender = [".blend", ".blend1"];
-    static const(char)[][] extJson = [".json"];
-    static const(char)[][] extPython = [
-        ".py", ".pyc", ".pyw", ".pyd", ".pyo"
-    ];
-    static const(char)[][] extBinary = [
-        ".dll", ".bin", ".o"
-    ];
-    static const(char)[][] extEXE = [
-        ".exe"
-    ];
-    static const(char)[][] extAPK = [".apk"];
-    static const(char)[][] extBash = [".sh"];
-    static const(char)[][] extTorrent = [".torrent"];
-    static const(char)[][] extC = [".c"];
-    static const(char)[][] extCpp = [".cpp"];
-
     Texture getEntryIcon(AssetEntry entry)
     {
-        if (entry.isDirectory)
-            return ui.iconFolder;
+        auto database = ui.app.iconDatabase;
         
-        if (hasExtension(entry.name, extImages))
+        if (entry.isDirectory)
+            return database.get(IconKind.Folder);
+        
+        IconKind kind = IconDatabase.kindForFile(entry.name.toString);
+        
+        if (kind == IconKind.Image)
         {
             if (!entry.thumbnailValid)
             {
@@ -719,36 +663,10 @@ class AssetBrowser: Owner
                     }
                 }
             }
-            return entry.thumbnail ? entry.thumbnail : ui.iconImage;
+            return entry.thumbnail ? entry.thumbnail : database.get(IconKind.Image);
         }
         
-        if (hasExtension(entry.name, extModels))
-            return ui.iconModel;
-        if (hasExtension(entry.name, extArchives))
-            return ui.iconArchive;
-        if (hasExtension(entry.name, extAudio))
-            return ui.iconAudio;
-        if (hasExtension(entry.name, extBlender))
-            return ui.iconBlend;
-        if (hasExtension(entry.name, extJson))
-            return ui.iconJson;
-        if (hasExtension(entry.name, extPython))
-            return ui.iconPython;
-        if (hasExtension(entry.name, extBinary))
-            return ui.iconBinary;
-        if (hasExtension(entry.name, extEXE))
-            return ui.iconEXE;
-        if (hasExtension(entry.name, extAPK))
-            return ui.iconAPK;
-        if (hasExtension(entry.name, extBash))
-            return ui.iconBash;
-        if (hasExtension(entry.name, extTorrent))
-            return ui.iconTorrent;
-        if (hasExtension(entry.name, extC))
-            return ui.iconC;
-        if (hasExtension(entry.name, extCpp))
-            return ui.iconCpp;
-        
-        return ui.iconFile;
+        // Loaded on first use; falls back to the generic file icon if missing
+        return database.get(kind);
     }
 }
