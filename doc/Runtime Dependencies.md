@@ -101,6 +101,10 @@ dagon:openvr extension requires [OpenVR](https://github.com/ValveSoftware/openvr
 
 dagon:openvr requires `openvr_api.dll` under Windows and `libopenvr_api.so` under Linux. On 64-bit platforms, Dagon provides a prebuilt libopenvr_api library, which is automatically copied to your project after compilation (if you are building with DUB). Binaries are contained in the official OpenVR repository, so it is usually no need to compile them from source.
 
+## dagon:openxr
+
+TODO
+
 ## dagon:physfs
 
 dagon:physfs extension requires [PhysFS](https://github.com/icculus/physfs) 3.2.0. It can be installed system-wide or placed to the project's folder.

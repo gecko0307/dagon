@@ -143,6 +143,7 @@ To use Dagon repository directly instead of a release (for example, to modify th
 * [PhysFS](https://github.com/icculus/physfs) (optional)
 * [SoLoud](https://github.com/jarikomppa/soloud) (optional)
 * [libVLC](https://www.videolan.org/vlc/libvlc.html) (optional)
+* [OpenVR](https://github.com/ValveSoftware/openvr) (optional)
 * [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear) (optional, deprecated)
 
 Most of them are automatically deployed on 64-bit Windows and Linux. Read more [here](https://github.com/gecko0307/dagon/blob/master/doc/Runtime%20Dependencies.md).
