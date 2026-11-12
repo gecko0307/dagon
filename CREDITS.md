@@ -36,6 +36,7 @@
 * Uchimura tonemapper is based on the function by [Hajime Uchimura](https://www.desmos.com/calculator/gslcdxvipg)
 * Lottes tonemapper is based on the function by Timothy Lottes ("Advanced Techniques and Optimization of HDR Color Pipelines")
 * Vignette shader by [Tyler Lindberg](https://github.com/TyLindberg)
+* OpenXR binding is a fork of [OpenXR-D](https://github.com/infinityplusb/OpenXR-D) by infinityplusb
 
 ## Third-party libraries
 
@@ -51,6 +52,7 @@ Dagon and its extensions depend on the following libraries:
 * [Jolt Physics](https://github.com/jrouwe/JoltPhysics) via [joltc](https://github.com/amerkoleci/joltc) wrapper
 * [Open Asset Import Library (Assimp)](https://github.com/assimp/assimp)
 * [OpenVR](https://github.com/ValveSoftware/openvr)
+* [OpenXR](https://www.khronos.org/openxr/)
 * [PhysFS](https://github.com/icculus/physfs)
 * [SoLoud](https://github.com/jarikomppa/soloud)
 * [libVLC](https://images.videolan.org/vlc/libvlc.html)
