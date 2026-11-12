@@ -141,7 +141,7 @@ class StereoRenderView: RenderView
     {
         eye = *eyeTransformation;
         if (oxr.camera)
-            _invViewMatrix = oxr.camera.absoluteTransformation * translationMatrix(eye.position) * eye.rotation.toMatrix4x4;
+            _invViewMatrix = oxr.camera.absoluteTransformation * translationMatrix(eye.localPosition) * eye.localRotation.toMatrix4x4;
         else
             _invViewMatrix = translationMatrix(eye.position) * eye.rotation.toMatrix4x4;
         _viewMatrix = _invViewMatrix.inverse;

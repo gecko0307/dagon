@@ -33,6 +33,8 @@ import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.math.vector;
 import dlib.math.quaternion;
+import dlib.math.matrix;
+import dlib.math.transformation;
 
 import dagon.core.logger;
 import dagon.core.bindings;
@@ -60,6 +62,8 @@ struct VREyeTransformation
 {
     Vector3f position;
     Quaternionf rotation;
+    Vector3f localPosition;
+    Quaternionf localRotation;
     float angleLeft;
     float angleRight;
     float angleUp;
@@ -138,6 +142,12 @@ class OpenXRManager: Owner
     VREyeTransformation[2] eyes;
     
     ///
+    Vector3f headPosition;
+    
+    ///
+    Quaternionf headRotation;
+    
+    ///
     Camera camera;
     
     ///
@@ -150,11 +160,16 @@ class OpenXRManager: Owner
         {
             eye.position = Vector3f(0.0f, 0.0f, 0.0f);
             eye.rotation = Quaternionf.identity;
+            eye.localPosition = Vector3f(0.0f, 0.0f, 0.0f);
+            eye.localRotation = Quaternionf.identity;
             eye.angleLeft = 0.0f;
             eye.angleRight = 0.0f;
             eye.angleUp = 0.0f;
             eye.angleDown = 0.0f;
         }
+        
+        headPosition = Vector3f(0.0f, 0.0f, 0.0f);
+        headRotation = Quaternionf.identity;
         
         xrAvailable = initOpenXR();
         running = xrAvailable;
@@ -391,7 +406,7 @@ class OpenXRManager: Owner
             logError("xrGetOpenGLGraphicsRequirementsKHR failed");
             return false;
         }
-        logInfo("OpenXR runtime wants OpenGL ",
+        logInfo("OpenXR runtime supports OpenGL ",
             XR_VERSION_MAJOR(requirements.minApiVersionSupported), ".",
             XR_VERSION_MINOR(requirements.minApiVersionSupported), "..",
             XR_VERSION_MAJOR(requirements.maxApiVersionSupported), ".",
@@ -500,8 +515,8 @@ class OpenXRManager: Owner
             sci2.usageFlags = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_SAMPLED_BIT;
             sci2.format = chosenFormat;
             sci2.sampleCount = 1;
-            sci2.width = 1080; //cv.recommendedImageRectWidth;
-            sci2.height = 1080; //cv.recommendedImageRectHeight;
+            sci2.width = application.drawableWidth; //cv.recommendedImageRectWidth;
+            sci2.height = application.drawableHeight; //cv.recommendedImageRectHeight;
             sci2.faceCount = 1;
             sci2.arraySize = 1;
             sci2.mipCount = 1;
@@ -675,6 +690,36 @@ class OpenXRManager: Owner
             {
                 foreach(i; 0..views.length)
                 {
+                    eyes[i].position = views[i].pose.position;
+                    eyes[i].rotation = views[i].pose.orientation;
+                    eyes[i].angleLeft = views[i].fov.angleLeft;
+                    eyes[i].angleRight = views[i].fov.angleRight;
+                    eyes[i].angleUp = views[i].fov.angleUp;
+                    eyes[i].angleDown = views[i].fov.angleDown;
+                }
+                
+                headPosition = (eyes[0].position + eyes[1].position) * 0.5f;
+                headRotation = slerp(eyes[0].rotation, eyes[1].rotation, 0.5f);
+                Quaternionf headInv = headRotation.conj;
+                
+                foreach(i; 0..views.length)
+                {
+                    eyes[i].localPosition = headInv.rotate(eyes[i].position - headPosition);
+                    eyes[i].localRotation = headInv * eyes[i].rotation;
+                }
+                
+                if (camera)
+                {
+                    camera.position = headPosition;
+                    camera.rotation = headRotation;
+                    camera.transformation =
+                        translationMatrix(camera.position) *
+                        camera.rotation.toMatrix4x4;
+                    camera.updateAbsoluteTransformation();
+                }
+                
+                foreach(i; 0..views.length)
+                {
                     auto sw = &swapchains[i];
                     
                     XrSwapchainImageAcquireInfo aci;
@@ -700,13 +745,6 @@ class OpenXRManager: Owner
                     
                     glViewport(0, 0, sw.width, sw.height);
                     glDisable(GL_SCISSOR_TEST);
-                    
-                    eyes[i].position = views[i].pose.position;
-                    eyes[i].rotation = views[i].pose.orientation;
-                    eyes[i].angleLeft = views[i].fov.angleLeft;
-                    eyes[i].angleRight = views[i].fov.angleRight;
-                    eyes[i].angleUp = views[i].fov.angleUp;
-                    eyes[i].angleDown = views[i].fov.angleDown;
                     
                     renderer.renderEye(cast(uint)i);
                     
