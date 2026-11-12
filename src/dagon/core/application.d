@@ -63,6 +63,7 @@ import dagon.core.event;
 import dagon.core.time;
 import dagon.core.logger;
 import dagon.core.vfs;
+import dagon.core.zipfs;
 import dagon.core.props;
 import dagon.core.config;
 import dagon.core.sysinfo;
@@ -354,6 +355,9 @@ class Application: EventListener, Updateable
     
     /// Absolute directory containing the executable.
     string directory;
+    
+    /// Optional ZIP archive containing engine's runtime data (data/__internal folder).
+    string dataZip = "data.zip";
     
     /// The application folder name (used under the HOME or APPDATA directory).
     string appDataFolderName;
@@ -759,6 +763,12 @@ class Application: EventListener, Updateable
         logInfo("Selected locale: ", userLocale);
         
         // Mount directories to the VFS
+        String dataZipPath = String(this.directory);
+        dataZipPath ~= dirSeparator;
+        dataZipPath ~= this.dataZip;
+        if (vfs.exists(dataZipPath.toString))
+            mountZip(dataZipPath.toString);
+        dataZipPath.free();
         mount(this.directory);
         if (this.appDataFolderName.length > 0)
         {
@@ -768,7 +778,12 @@ class Application: EventListener, Updateable
         if (customMountPaths.length > 0)
         {
             foreach(i, path; customMountPaths.split(';'))
-                mount(path);
+            {
+                if (extension(path) == ".zip")
+                    mountZip(path);
+                else
+                    mount(path);
+            }
         }
         _vfs = vfs;
         
@@ -1848,6 +1863,18 @@ class Application: EventListener, Updateable
             logInfo("VFS: mount working directory");
         else
             logInfo("VFS: mount ", dirName);
+    }
+    
+    /// Mounts the specified ZIP archive to the virtual file system.
+    void mountZip(string filename)
+    {
+        InputStream zipStream = openFile(filename);
+        if (zipStream)
+        {
+            ZipFileSystem zfs = New!ZipFileSystem(zipStream, true);
+            vfs.mount(zfs);
+            logInfo("VFS: mount ", filename);
+        }
     }
     
     /// Opens file stream for reading from the virtual file system.

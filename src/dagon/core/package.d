@@ -112,4 +112,7 @@ public
 
     /// Wintab binding.
     import dagon.core.wintab;
+    
+    /// ZIP file system.
+    import dagon.core.zipfs;
 }
