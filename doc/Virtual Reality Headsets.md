@@ -11,10 +11,14 @@ Dagon supports two major APIs: [OpenVR](https://github.com/valvesoftware/openvr)
 
 OpenVR has strong compatibility, while OpenXR generally offers higher performance. It is not recommended to use both APIs at once; choose only one that fits your application best. Because of architectural differences between the two, `dagon:openvr` and `dagon:openxr` are not directly interchangeable.
 
-## OpenVR Usage
+## Stereo Rendering
 
 TODO
 
-## OpenXR Usage
+## OpenVR Manager
+
+TODO
+
+## OpenXR Manager
 
 TODO
