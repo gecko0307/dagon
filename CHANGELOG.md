@@ -1,6 +1,7 @@
 Dagon 1.8.0 - TBD
 -----------------
 - **Core**
+  - ZIP archives support in the virtual file system
   - New Windows properties `Application.hdc`, `Application.hInstance`
   - New Linux properties `Application.x11WindowID`, `Application.x11Display`, `Application.waylandSurface`, `Application.waylandDisplay`
   - New methods `Application.hideWindow`, `Application.showWindow`, `Application.minimizeWindow`

@@ -1512,6 +1512,8 @@ class Application: EventListener, Updateable
             appDataFolderName = config.props["vfs.appDataFolder"].toString;
         if ("vfs.mount" in config.props)
             customMountPaths = config.props["vfs.mount"].toString;
+        if ("vfs.dataZip" in config.props)
+            dataZip = config.props["vfs.dataZip"].toString;
     }
 
     /// Destructor. Cleans up resources and shuts down SDL.

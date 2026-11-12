@@ -108,6 +108,7 @@ VFS settings:
 * `vfs.appDataFolder` - game data folder name in `APPDATA` directory (`HOME` under Linux). These value override default one hardcoded in the application
 * `vfs.appDataFolder.windows` - overrides `vfs.appDataFolder` under Windows
 * `vfs.appDataFolder.linux` - overrides `vfs.appDataFolder` under Linux
+* `vfs.dataZip` - optional ZIP archive in the executable's directory containing engine's runtime data (`data/__internal` folder). Default is `"data.zip"`
 * `vfs.mount` - additional paths to mount in the VFS, separated by semicolon (`"my/path;my/another/path"`)
 * `vfs.mount.windows` - overrides `vfs.mount` under Windows
 * `vfs.mount.linux` - overrides `vfs.mount` under Linux

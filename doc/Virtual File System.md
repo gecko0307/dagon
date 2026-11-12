@@ -1,11 +1,13 @@
 # Virtual File System
 
-In Dagon, all files are loaded using the built-in virtual file system (VFS). Its main purpose is to provide a consistent interface for accessing game data, regardless of where it is stored physically. The VFS allows to store files anywhere on the disk, and even mount different storage backends (such as archives, using dagon:physfs extension), and the files will be available to the application in the same way as if they were stored in the working directory.
+In Dagon, all files are loaded using the built-in virtual file system (VFS). Its main purpose is to provide a consistent interface for accessing game data, regardless of where it is stored physically. The VFS allows to store files anywhere on the disk, and even mount different storage backends such as archives, and the files will be available to the application in the same way as if they were stored in the working directory.
 
 The VFS is managed by the `Application` class and is available as `Application.vfs` property.
 
-Key concept of the VFS is mounting. For a location to be accessed, it has to be mounted using `vfs.mount` method. File search is performed on a LIFO basis: the last mounted location has the highest priority. If the file is not found there, the previously mounted location is checked, and so on. The engine automatically mounts the following directories at the start:
-- Executable directory. This is always the last location to search. Not to be confused with a working directory! Working directory is not used by default becase of security reasons;
+Key concept of the VFS is mounting. For a location to be accessed, it has to be mounted using `vfs.mount` method. File search is performed on a LIFO basis: the last mounted location has the highest priority. If the file is not found there, the previously mounted location is checked, and so on. The engine automatically mounts the following sources at the start:
+
+- Data archive. This is a ZIP archive in the executable's directory, `data.zip` by default. Contents of this archive is reserved for Dagon's internal runtime data (`data/__internal`), so it is not recommended to use it for anything else. Custom filename of the data archive can be specified using `vfs.dataZip` option in `settings.conf`;
+- Executable's directory. This is always the last location to search. Not to be confused with a working directory! Working directory is not used by default becase of security reasons;
 - The application data directory (`C:\Users\<username>\AppData\Roaming\<appDataFolder>` on Windows and `~\<appDataFolder>` on Linux).
 
 `<appDataFolder>` is `.dagon` by default, defined in `settings.conf` and can be overridden in the constructor of the class inherited from the `Game` or `Application`:
@@ -22,13 +24,13 @@ class MyGame: Game
 }
 ```
 
-You can manually mount any other locations, absolute or relative to the working directory.
+You can manually mount any other locations and ZIP archives, absolute or relative to the working directory.
 
 The application data directory is not created by default, you can create it using `vfs.createAppDataDirectory` method. Its typical purpose is to keep user-specific game data, such as configuration files, saves, and mods. Because the application data directory overrides the executable directory, any game resource can be safely modified on a user level without compromising the integrity of the original resource. This, potentially, allows total conversions, provided that the game logic does not rely on hardcoded assumptions about the structure of its resources.
 
 ## Mounting custom file systems
 
-`vfs.mount` allows to mount any external storage system that implements `ReadOnlyFileSystem` interface. One use case for this is [PhysFS](https://icculus.org/physfs/) integration which allows to load files from archives:
+`vfs.mount` allows to mount any external storage system that implements `ReadOnlyFileSystem` interface. One use case for this is [PhysFS](https://icculus.org/physfs/) integration:
 
 ```d
 import dagon.ext.physfs;

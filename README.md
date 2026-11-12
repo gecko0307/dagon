@@ -34,7 +34,7 @@ Some extensions and the editor are still in development.
 ## Features
 
 * Scene graph
-* Virtual file system
+* Virtual file system. Loading assets from ZIP archives
 * Static and animated meshes
 * Built-in primitive shapes: plane, box, sphere, disk, cylinder, cone, capsule, torus
 * Native [glTF 2.0](https://www.khronos.org/gltf/), [OBJ](https://en.wikipedia.org/wiki/Wavefront_.obj_file) and [IQM](https://github.com/lsalzman/iqm) formats support. [FBX](https://en.wikipedia.org/wiki/FBX) and many other model formats support via [Assimp](https://github.com/assimp/assimp) library
