@@ -85,10 +85,12 @@ Some extensions and the editor are still in development.
 * Asynchronous thread-safe messaging. Use the message broker built into the event system to communicate between threads and the main loop
 * UDP networking based on [ENet](http://enet.bespin.org/). UDP server and asynchronous client that works via the message broker. Optional secure transport layer with elliptic curve encryption and X25519 key exchange.
 
+Limited support:
+* OpenXR and OpenVR integration (only basic rendering, no deferred pipeline support).
+
 Features that are not production-ready yet:
 * The editor
 * Built-in UI toolkit (very basic, can be used only for simple debugging purposes; it is recommended to use ImGui extension instead)
-* OpenVR integration (partial, no deferred pipeline support).
 
 ## System Requirements
 
