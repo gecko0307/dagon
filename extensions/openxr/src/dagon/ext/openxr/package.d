@@ -38,6 +38,7 @@ import dagon.core.logger;
 import dagon.core.bindings;
 import dagon.core.time;
 import dagon.core.application;
+import dagon.graphics.camera;
 import dagon.render.framebuffer;
 import dagon.render.stereorenderer;
 
@@ -52,6 +53,17 @@ struct EyeSwapchain
     int width;
     int height;
     XrSwapchainImageOpenGLKHR[] images;
+}
+
+///
+struct VREyeTransformation
+{
+    Vector3f position;
+    Quaternionf rotation;
+    float angleLeft;
+    float angleRight;
+    float angleUp;
+    float angleDown;
 }
 
 class OpenXRManager: Owner
@@ -123,10 +135,27 @@ class OpenXRManager: Owner
     Framebuffer[2] framebuffers;
     
     ///
+    VREyeTransformation[2] eyes;
+    
+    ///
+    Camera camera;
+    
+    ///
     this(Application application, Owner owner)
     {
         super(owner);
         this.application = application;
+        
+        foreach(ref eye; eyes)
+        {
+            eye.position = Vector3f(0.0f, 0.0f, 0.0f);
+            eye.rotation = Quaternionf.identity;
+            eye.angleLeft = 0.0f;
+            eye.angleRight = 0.0f;
+            eye.angleUp = 0.0f;
+            eye.angleDown = 0.0f;
+        }
+        
         xrAvailable = initOpenXR();
         running = xrAvailable;
     }
@@ -471,8 +500,8 @@ class OpenXRManager: Owner
             sci2.usageFlags = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_SAMPLED_BIT;
             sci2.format = chosenFormat;
             sci2.sampleCount = 1;
-            sci2.width = cv.recommendedImageRectWidth;
-            sci2.height = cv.recommendedImageRectHeight;
+            sci2.width = 1080; //cv.recommendedImageRectWidth;
+            sci2.height = 1080; //cv.recommendedImageRectHeight;
             sci2.faceCount = 1;
             sci2.arraySize = 1;
             sci2.mipCount = 1;
@@ -672,10 +701,14 @@ class OpenXRManager: Owner
                     glViewport(0, 0, sw.width, sw.height);
                     glDisable(GL_SCISSOR_TEST);
                     
-                    Vector3f eyePosition = views[i].pose.position;
-                    Quaternionf eyeRotation = views[i].pose.orientation;
+                    eyes[i].position = views[i].pose.position;
+                    eyes[i].rotation = views[i].pose.orientation;
+                    eyes[i].angleLeft = views[i].fov.angleLeft;
+                    eyes[i].angleRight = views[i].fov.angleRight;
+                    eyes[i].angleUp = views[i].fov.angleUp;
+                    eyes[i].angleDown = views[i].fov.angleDown;
                     
-                    renderer.renderEye(cast(uint)i, eyePosition, eyeRotation);
+                    renderer.renderEye(cast(uint)i);
                     
                     glBindFramebuffer(GL_FRAMEBUFFER, 0);
                     glFinish();

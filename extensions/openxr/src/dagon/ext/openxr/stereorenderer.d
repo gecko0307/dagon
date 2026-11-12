@@ -29,6 +29,7 @@ module dagon.ext.openxr.stereorenderer;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.math.base;
 import dlib.math.vector;
 import dlib.math.quaternion;
 import dlib.math.matrix;
@@ -51,11 +52,31 @@ import dagon.render.simple;
 
 import dagon.ext.openxr;
 
+// TODO: move to dlib.math.transformation
+Matrix4x4f vrProjection(float angleLeft, float angleRight, float angleUp, float angleDown, float n, float f)
+{
+    float l = tan(angleLeft)  * n;
+    float r = tan(angleRight) * n;
+    float u = tan(angleUp)    * n;
+    float d = tan(angleDown)  * n;
+
+    Matrix4x4f m = Matrix4x4f.zero;
+    m.arrayof[0]  = 2.0f * n / (r - l);
+    m.arrayof[5]  = 2.0f * n / (u - d);
+    m.arrayof[8]  = (r + l) / (r - l);
+    m.arrayof[9]  = (u + d) / (u - d);
+    m.arrayof[10] = -(f + n) / (f - n);
+    m.arrayof[11] = -1.0f;
+    m.arrayof[14] = -2.0f * f * n / (f - n);
+    return m;
+}
+
 class StereoRenderView: RenderView
 {
-    OpenXRManager oxr;
-    Matrix4x4f _viewMatrix;
-    Matrix4x4f _invViewMatrix;
+    protected OpenXRManager oxr;
+    protected VREyeTransformation eye;
+    protected Matrix4x4f _viewMatrix;
+    protected Matrix4x4f _invViewMatrix;
     
     this(OpenXRManager oxr, uint x, uint y, uint width, uint height, Owner owner)
     {
@@ -63,6 +84,12 @@ class StereoRenderView: RenderView
         this.oxr = oxr;
         _viewMatrix = Matrix4x4f.identity;
         _invViewMatrix = Matrix4x4f.identity;
+        eye.position = Vector3f(0.0f, 0.0f, 0.0f);
+        eye.rotation = Quaternionf.identity;
+        eye.angleLeft = 0.0f;
+        eye.angleRight = 0.0f;
+        eye.angleUp = 0.0f;
+        eye.angleDown = 0.0f;
     }
     
     /// Returns the view matrix.
@@ -79,25 +106,44 @@ class StereoRenderView: RenderView
     
     override Matrix4x4f projectionMatrix()
     {
-        float fov = 60.0f;
         float zNear = 0.01f;
         float zFar = 1000.0f;
-        return perspectiveMatrix(fov, aspectRatio, zNear, zFar);
+        if (oxr.camera)
+        {
+            zNear = oxr.camera.zNear;
+            zFar = oxr.camera.zFar;
+        }
+        return vrProjection(
+            eye.angleLeft,
+            eye.angleRight,
+            eye.angleUp,
+            eye.angleDown,
+            zNear, zFar);
     }
     
     override float zNear()
     {
-        return 0.01f;
+        if (oxr.camera)
+            return oxr.camera.zNear;
+        else
+            return 0.01f;
     }
     
     override float zFar()
     {
-        return 1000.0f;
+        if (oxr.camera)
+            return oxr.camera.zFar;
+        else
+            return 1000.0f;
     }
     
-    void update(Vector3f eyePosition, Quaternionf eyeRotation)
+    void update(VREyeTransformation* eyeTransformation)
     {
-        _invViewMatrix = translationMatrix(eyePosition) * eyeRotation.toMatrix4x4;
+        eye = *eyeTransformation;
+        if (oxr.camera)
+            _invViewMatrix = oxr.camera.absoluteTransformation * translationMatrix(eye.position) * eye.rotation.toMatrix4x4;
+        else
+            _invViewMatrix = translationMatrix(eye.position) * eye.rotation.toMatrix4x4;
         _viewMatrix = _invViewMatrix.inverse;
     }
 }
@@ -154,16 +200,16 @@ class SimpleStereoRenderer: StereoRenderer
         oxr.render(this); // OpenXRManager will call renderEye
     }
     
-    override void renderEye(uint eye, Vector3f eyePosition, Quaternionf eyeRotation)
+    override void renderEye(uint eye)
     {
         if (eye == 0)
         {
-            _viewLeft.update(eyePosition, eyeRotation);
+            _viewLeft.update(&oxr.eyes[0]);
             renderEye(oxr.framebuffers[0], _viewLeft);
         }
         else if (eye == 1)
         {
-            _viewRight.update(eyePosition, eyeRotation);
+            _viewRight.update(&oxr.eyes[1]);
             renderEye(oxr.framebuffers[1], _viewRight);
         }
     }
@@ -174,9 +220,7 @@ class SimpleStereoRenderer: StereoRenderer
         clearPass.view = view;
         backgroundPass.view = view;
         spatialPass.view = view;
-        //outputBuffer.bind();
         pipeline.outputBuffer = outputBuffer;
         pipeline.render();
-        //outputBuffer.unbind();
     }
 }
