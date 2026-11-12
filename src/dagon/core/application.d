@@ -118,6 +118,15 @@ enum DagonEvent
     Exit = -1
 }
 
+/// Supported window systems enumeration.
+enum WindowSystem
+{
+    Unknown,
+    WindowsDWM,
+    X11,
+    Wayland
+}
+
 /// Supported color profiles.
 enum ColorProfile
 {
@@ -325,7 +334,7 @@ private
  * refresh rate, switching console window, etc.).
  * By itself, `Application` doesn't render anything and doesn't contain game logic. To make a game,
  * inherit from `Application` and override `onUpdate` and `onRender`.
- * All `Application` properties are meant to be read-only! Modify at your own risk.
+ * All `Application` properties are meant to be read-only! Modify at your own risk!
  */
 class Application: EventListener, Updateable
 {
@@ -433,6 +442,12 @@ class Application: EventListener, Updateable
     /// System information.
     SysInfo systemInfo;
     
+    /**
+     * Under Linux, force SDL to use the X11 video driver instead of Wayland.
+     * This is always set to true if stereoRendering is true.
+     */
+    bool forceX11 = false;
+    
     /// Number of video displays in the system.
     uint displayCount;
     
@@ -499,7 +514,7 @@ class Application: EventListener, Updateable
     /// Fullscreen or windowed.
     bool fullscreen = false;
     
-    /// VR headset mode.
+    /// Enables VR headset mode.
     bool stereoRendering = false;
     
     /// Vertical synchronization mode.
@@ -532,8 +547,44 @@ class Application: EventListener, Updateable
     /// Pointer to the main SDL window created by the Application.
     SDL_Window* window = null;
     
+    /// Detected window system enum.
+    WindowSystem windowSystem;
+    
     /// OpenGL context.
     SDL_GLContext glcontext;
+    
+    version(Windows)
+    {
+        /// Windows-only: HWND of the main window.
+        HWND hwnd;
+        
+        /// Windows-only: HDC of the main window.
+        HDC hdc;
+        
+        /// Windows-only: HINSTANCE of the main window.
+        HINSTANCE hInstance;
+        
+        ///
+        alias hglrc = glcontext;
+    }
+    
+    version(linux)
+    {
+        /// Linux-only: Wayland surface of the main window.
+        void* waylandSurface;
+        
+        /// Linux-only: X11 window ID of the main window.
+        long x11WindowID;
+        
+        /// Linux-only: X11 display.
+        void* x11Display;
+        
+        ///
+        alias glxContext = glcontext;
+        
+        ///
+        alias glxDrawable = x11WindowID;
+    }
     
     /// Main loop runner. Calls `Application.update` with a given fixed frequency (60 Hz by default).
     Cadencer cadencer;
@@ -869,6 +920,21 @@ class Application: EventListener, Updateable
         if (windowHiDPI)
             SDL_SetHint(SDL_HINT_WINDOWS_DPI_SCALING, "1");
         
+        if ("stereoRendering" in config.props)
+            stereoRendering = cast(bool)config.props["stereoRendering"].toUInt;
+        
+        version(linux)
+        {
+            if ("forceX11" in config.props)
+                forceX11 = cast(bool)config.props["forceX11"].toUInt;
+            
+            if (stereoRendering)
+                forceX11 = true;
+        
+            if (forceX11)
+                SDL_SetHint(SDL_HINT_VIDEODRIVER, "x11");
+        }
+        
         if (SDL_Init(SDL_INIT_EVERYTHING) == -1)
             exitWithError("Failed to init SDL: " ~ to!string(SDL_GetError()));
 
@@ -1083,8 +1149,6 @@ class Application: EventListener, Updateable
         windowHeight = createdWindowHeight;
         logInfo("Window size: ", windowWidth, "x", windowHeight);
         
-        if ("stereoRendering" in config.props)
-            stereoRendering = cast(bool)config.props["stereoRendering"].toUInt;
         if (stereoRendering)
         {
             // TODO: make configurable
@@ -1130,6 +1194,34 @@ class Application: EventListener, Updateable
             _eventManager.controllerAxisThreshold = config.props["events.controllerAxisThreshold"].toUInt;
         if ("events.graphicsTablet.enabled" in config.props)
             _eventManager.graphicsTablet.enabled = cast(bool)config.props["events.graphicsTablet.enabled"].toUInt;
+
+        // Get platform-specific window system properties
+        version(Windows)
+        {
+            windowSystem = WindowSystem.WindowsDWM;
+            hwnd = _eventManager.wmInfo.info.win.window;
+            hdc = _eventManager.wmInfo.info.win.hdc;
+            hInstance = _eventManager.wmInfo.info.win.hinstance;
+        }
+        else version(linux)
+        {
+            if (eventManager.wmInfo.subsystem == SDL_SYSWM_X11)
+            {
+                windowSystem = WindowSystem.X11;
+                x11WindowID = _eventManager.wmInfo.info.x11.window;
+                x11Display = _eventManager.wmInfo.info.x11.display;
+            }
+            else if (eventManager.wmInfo.subsystem == SDL_SYSWM_WAYLAND)
+            {
+                windowSystem = WindowSystem.Wayland;
+                waylandDisplay = _eventManager.wmInfo.info.wl.display;
+                waylandSurface = eventManager.wmInfo.info.wl.surface;
+            }
+            else
+                windowSystem = WindowSystem.Unknown;
+        }
+        else
+            windowSystem = WindowSystem.Unknown;
 
         // Get OpenGL info strings
         glVersion = String(glGetString(GL_VERSION));
@@ -1811,25 +1903,6 @@ class Application: EventListener, Updateable
                 ShowWindow(GetConsoleWindow(), SW_SHOW);
             else
                 ShowWindow(GetConsoleWindow(), SW_HIDE);
-        }
-    }
-    
-    version(Windows)
-    {
-        /**
-         * Windows-only: returns HWND of the application window.
-         */
-        HWND hwnd()
-        {
-            return eventManager.wmInfo.info.win.window;
-        }
-        
-        /**
-         * Windows-only: returns HDC of the application window.
-         */
-        HDC hdc()
-        {
-            return eventManager.wmInfo.info.win.hdc;
         }
     }
     

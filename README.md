@@ -86,7 +86,7 @@ Some extensions and the editor are still in development.
 * UDP networking based on [ENet](http://enet.bespin.org/). UDP server and asynchronous client that works via the message broker. Optional secure transport layer with elliptic curve encryption and X25519 key exchange.
 
 Limited support:
-* OpenXR and OpenVR integration (only basic rendering, no deferred pipeline support).
+* OpenXR and OpenVR integration for virtual reality applications (only basic rendering, no deferred pipeline support).
 
 Features that are not production-ready yet:
 * The editor
@@ -143,7 +143,7 @@ To use Dagon repository directly instead of a release (for example, to modify th
 * [PhysFS](https://github.com/icculus/physfs) (optional)
 * [SoLoud](https://github.com/jarikomppa/soloud) (optional)
 * [libVLC](https://www.videolan.org/vlc/libvlc.html) (optional)
-* [OpenVR](https://github.com/ValveSoftware/openvr) (optional)
+* [OpenXR](https://www.khronos.org/openxr/) or [OpenVR](https://github.com/ValveSoftware/openvr) (optional)
 * [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear) (optional, deprecated)
 
 Most of them are automatically deployed on 64-bit Windows and Linux. Read more [here](https://github.com/gecko0307/dagon/blob/master/doc/Runtime%20Dependencies.md).

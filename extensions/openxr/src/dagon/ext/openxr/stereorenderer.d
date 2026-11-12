@@ -50,7 +50,7 @@ import dagon.render.pipeline;
 import dagon.render.pass;
 import dagon.render.simple;
 
-import dagon.ext.openxr;
+import dagon.ext.openxr.manager;
 
 // TODO: move to dlib.math.transformation
 Matrix4x4f vrProjection(float angleLeft, float angleRight, float angleUp, float angleDown, float n, float f)
