@@ -570,14 +570,17 @@ class Application: EventListener, Updateable
     
     version(linux)
     {
-        /// Linux-only: Wayland surface of the main window.
-        void* waylandSurface;
-        
         /// Linux-only: X11 window ID of the main window.
         long x11WindowID;
         
         /// Linux-only: X11 display.
         void* x11Display;
+        
+        /// Linux-only: Wayland surface of the main window.
+        void* waylandSurface;
+        
+        /// Linux-only: Wayland display.
+        void* waylandDisplay;
         
         ///
         alias glxContext = glcontext;
@@ -1214,8 +1217,8 @@ class Application: EventListener, Updateable
             else if (eventManager.wmInfo.subsystem == SDL_SYSWM_WAYLAND)
             {
                 windowSystem = WindowSystem.Wayland;
-                waylandDisplay = _eventManager.wmInfo.info.wl.display;
                 waylandSurface = eventManager.wmInfo.info.wl.surface;
+                waylandDisplay = _eventManager.wmInfo.info.wl.display;
             }
             else
                 windowSystem = WindowSystem.Unknown;

@@ -1,7 +1,8 @@
 Dagon 1.8.0 - TBD
 -----------------
 - **Core**
-  - New Windows method `Application.hdc`
+  - New Windows properties `Application.hdc`, `Application.hInstance`
+  - New Linux properties `Application.x11WindowID`, `Application.x11Display`, `Application.waylandSurface`, `Application.waylandDisplay`
   - New methods `Application.hideWindow`, `Application.showWindow`, `Application.minimizeWindow`
   - New property `Application.startHidden` plus corresponding `settings.conf` property
   - New property `Application.name`
