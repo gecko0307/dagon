@@ -49,6 +49,14 @@ import bindbc.openxr;
 import dagon.ext.openxr.stereorenderer;
 
 ///
+struct OpenXRVersion
+{
+    uint major;
+    uint minor;
+    uint patch;
+}
+
+///
 struct EyeSwapchain
 {
     XrSwapchain handle;
@@ -75,13 +83,19 @@ class OpenXRManager: Owner
     /// Application this manager is bound to.
     Application application;
     
-    ///
-    OpenXRSupport openXRSupport;
+    /**
+     * Loaded OpenXR API support version.
+     * OpenXRManager assumes OpenXRSupport.v100 (the maximum supported version)
+     */
+    OpenXRSupport xrSupport;
     
-    ///
+    /// Actually used OpenXR Loader API version.
+    OpenXRVersion xrVersion;
+    
+    /// True if OpenXR is available on the system.
     bool xrAvailable = false;
     
-    ///
+    /// True if OpenXR runtime is active.
     bool running = false;
     
     ///
@@ -138,16 +152,16 @@ class OpenXRManager: Owner
     /// Corresponding Dagon framebuffers.
     Framebuffer[2] framebuffers;
     
-    ///
+    /// Left and right eye transformation info.
     VREyeTransformation[2] eyes;
     
-    ///
+    /// World-space HMD position.
     Vector3f headPosition;
     
-    ///
+    /// World-space HMD rotation.
     Quaternionf headRotation;
     
-    ///
+    /// Camera that tracks the HMD (optional).
     Camera camera;
     
     ///
@@ -221,9 +235,9 @@ class OpenXRManager: Owner
     ///
     protected bool initOpenXR()
     {
-        openXRSupport = loadOpenXR();
-        logInfo("OpenXR support: ", openXRSupport);
-        if (openXRSupport != OpenXRSupport.v100)
+        xrSupport = loadOpenXR();
+        logInfo("OpenXR support: ", xrSupport);
+        if (xrSupport != OpenXRSupport.v100)
         {
             foreach(info; loader.errors)
             {
@@ -235,10 +249,13 @@ class OpenXRManager: Owner
         XrResult result;
         
         ulong currentVer = XR_CURRENT_API_VERSION;
+        xrVersion.major = XR_VERSION_MAJOR(currentVer);
+        xrVersion.minor = XR_VERSION_MINOR(currentVer);
+        xrVersion.patch = XR_VERSION_PATCH(currentVer);
         logInfo("OpenXR API version: ",
-            XR_VERSION_MAJOR(currentVer), ".",
-            XR_VERSION_MINOR(currentVer), ".",
-            XR_VERSION_PATCH(currentVer)
+            xrVersion.major, ".",
+            xrVersion.minor, ".",
+            xrVersion.patch
         );
         
         // Enumerate OpenXR extensions
@@ -259,13 +276,13 @@ class OpenXRManager: Owner
         
         // Check OpenGL support
         bool hasGL = false;
-        logInfo("OpenXR extensions:");
+        debug logDebug("OpenXR extensions:");
         foreach (ref e; xrExtensions[0..numExtensions])
         {
             string extName = e.extensionName.ptr.to!string;
             if (extName == XR_KHR_OPENGL_ENABLE_EXTENSION_NAME)
                 hasGL = true;
-            logInfo("  ", extName, " v", e.extensionVersion);
+            debug logDebug("  ", extName, " v", e.extensionVersion);
         }
         if (!hasGL)
         {
@@ -374,14 +391,14 @@ class OpenXRManager: Owner
         }
         result = xrEnumerateViewConfigurationViews(xrInstance, xrSystemId,
             XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, numViews, &numViews, configViews.ptr);
-         if (XR_FAILED(result))
+        if (XR_FAILED(result))
         {
             logError("xrEnumerateViewConfigurationViews failed");
             return false;
         }
-        foreach(i, ref v; configViews)
+        debug foreach(i, ref v; configViews)
         {
-            logInfo("OpenXR view ", i,
+            logDebug("OpenXR view ", i,
                 ": recommended ",
                 v.recommendedImageRectWidth, "x", 
                 v.recommendedImageRectHeight,
@@ -430,6 +447,12 @@ class OpenXRManager: Owner
         }
         else version(linux)
         {
+            if (application.windowSystem != WindowSystem.X11)
+            {
+                logError("dagon:openxr doesn't support this window system, only X11 is supported");
+                return false;
+            }
+            
             XrGraphicsBindingOpenGLXlibKHR gb = {
                 type: XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR,
                 next: null,
@@ -439,12 +462,6 @@ class OpenXRManager: Owner
                 visualid: 0,
                 glxFBConfig: null // optional, runtimes derive this from glxContext
             };
-            
-            if (gb.xDisplay is null || gb.glxContext is null)
-            {
-                logError("dagon:openxr doesn't support this window system, only X11 is supported");
-                return false;
-            }
         }
         XrSessionCreateInfo sci;
         sci.type = XR_TYPE_SESSION_CREATE_INFO;
