@@ -88,7 +88,7 @@ Dagon supports all standard compression formats available on desktop GPUs:
 
 Compressed textures are typically loaded from DDS or KTX files.
 
-Dagon allows to compress textures to BC1, BC3, BC4 and BC7 on the fly. To do this, specify `compressionFormat` property for newly created `TextureAsset`:
+Dagon allows to compress textures to BC1, BC3, BC4, BC5 and BC7 on the fly. To do this, specify `compressionFormat` property for newly created `TextureAsset`:
 
 ```d
 TextureAsset aTexture;

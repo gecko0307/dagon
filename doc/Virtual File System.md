@@ -6,7 +6,7 @@ The VFS is managed by the `Application` class and is available as `Application.v
 
 Key concept of the VFS is mounting. For a location to be accessed, it has to be mounted using `vfs.mount` method. File search is performed on a LIFO basis: the last mounted location has the highest priority. If the file is not found there, the previously mounted location is checked, and so on. The engine automatically mounts the following sources at the start:
 
-- Data archive. This is a ZIP archive in the executable's directory, `data.zip` by default. Contents of this archive is reserved for Dagon's internal runtime data (`data/__internal`), so it is not recommended to use it for anything else. Custom filename of the data archive can be specified using `vfs.dataZip` option in `settings.conf`;
+- Data archive. This is a ZIP archive in the executable's directory, `data.zip` by default. Contents of this archive is reserved for Dagon's internal runtime data (`data/__internal`), so it is not recommended to use it for anything else. If the archive doesn't exist, it is not mounted. Custom filename of the data archive can be specified using `vfs.dataZip` option in `settings.conf`;
 - Executable's directory. This is always the last location to search. Not to be confused with a working directory! Working directory is not used by default becase of security reasons;
 - The application data directory (`C:\Users\<username>\AppData\Roaming\<appDataFolder>` on Windows and `~\<appDataFolder>` on Linux).
 
