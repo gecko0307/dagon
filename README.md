@@ -25,11 +25,11 @@ Some extensions and the editor are still in development.
 
 [![Sponza](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated1.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated1.jpg)
 
-[![Sponza](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated3.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated3.jpg)
-
 [![Chillwave Drive](https://blog.pixperfect.online/wp-content/uploads/2026/07/chillwave-drive-hq-1.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/07/chillwave-drive-hq-1.jpg)
 
 [![Editor](https://blog.pixperfect.online/wp-content/uploads/2026/11/dagon-editor-alpha-4.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/11/dagon-editor-alpha-4.jpg)
+
+[![VR](https://blog.pixperfect.online/wp-content/uploads/2026/11/dagon-openxr.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/11/dagon-openxr.jpg)
 
 ## Features
 
