@@ -121,7 +121,7 @@ enum TextureCompressionFormat
 /// List of file extensions supported by SDL2_Image.
 immutable string[] sdlImageFormats = [
     ".bmp", ".gif", ".jpg", ".jpeg", ".lbm", ".pcx", ".png",
-    ".pnm", ".ppm", ".pgm", ".pbm", ".qoi", ".tga", ".xcf", ".xpm",
+    ".pnm", ".ppm", ".pgm", ".pbm", ".qoi", ".xcf", ".xpm",
     ".tif", ".tiff", ".webp", ".avif", ".jxl", ".svg", ".ico"
 ];
 

@@ -9,11 +9,12 @@ Dagon 1.8.0 - TBD
   - New property `Application.name`
 - **Assets**
   - Fix texture path resolving in `MaterialAsset`
+  - Fix TGA format support in `DefaultTextureLoader`
 - **Extensions**
   - `dagon:openxr` - initial experimental OpenXR integration. Windows-only at the moment
 - **Editor**
   - Texture import
-  - Material saving
+  - Material saving, material renaming
   - Asset browser optimizations and improvements. Thumbnails are now created in a separate thread, so the navigation doesn't freeze
   - New JSON serializer
   - Fix Linux compatibility bugs
