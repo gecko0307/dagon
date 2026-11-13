@@ -10,6 +10,7 @@ Dagon 1.8.0 - TBD
 - **Assets**
   - Fix texture path resolving in `MaterialAsset`
   - Fix TGA format support in `DefaultTextureLoader`
+  - Improved DDS loader, which now correctly loads some rarely found legacy uncompressed files and does RGBA un-masking if necessary
 - **Extensions**
   - `dagon:openxr` - initial experimental OpenXR integration. Windows-only at the moment
 - **Editor**

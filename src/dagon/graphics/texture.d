@@ -1381,6 +1381,11 @@ bool dxgiFormatToGLFormat(DXGIFormat fmt, out TextureFormat tf)
             tf.internalFormat = GL_R8;
             tf.pixelType = GL_UNSIGNED_BYTE;
             break;
+        case DXGIFormat.R16_UNORM:
+            tf.format = GL_RED;
+            tf.internalFormat = GL_R16;
+            tf.pixelType = GL_UNSIGNED_SHORT;
+            break;
         case DXGIFormat.R8G8_UNORM:
             tf.format = GL_RG;
             tf.internalFormat = GL_RG8;
@@ -1388,6 +1393,11 @@ bool dxgiFormatToGLFormat(DXGIFormat fmt, out TextureFormat tf)
             break;
         case DXGIFormat.R8G8B8A8_UNORM:
             tf.format = GL_RGBA;
+            tf.internalFormat = GL_RGBA8;
+            tf.pixelType = GL_UNSIGNED_BYTE;
+            break;
+        case DXGIFormat.B8G8R8A8_UNORM:
+            tf.format = GL_BGRA;
             tf.internalFormat = GL_RGBA8;
             tf.pixelType = GL_UNSIGNED_BYTE;
             break;
