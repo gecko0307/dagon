@@ -1,5 +1,5 @@
-Dagon 1.8.0 - TBD
------------------
+Dagon 1.8.0 - 13 Nov, 2026
+--------------------------
 - **Core**
   - ZIP archives support in the virtual file system. Engine's internal runtime data (`data/__internal`) now can be loaded from a `data.zip` archive
   - New Windows properties `Application.hdc`, `Application.hInstance`
@@ -12,7 +12,7 @@ Dagon 1.8.0 - TBD
   - Fix TGA format support in `DefaultTextureLoader`
   - Improved DDS loader, which now correctly loads some rarely found legacy uncompressed files and does RGBA un-masking if necessary
 - **Extensions**
-  - `dagon:openxr` - initial experimental OpenXR integration. Windows-only at the moment
+  - `dagon:openxr` - initial experimental OpenXR integration
 - **Editor**
   - Texture import
   - Material saving, material renaming
