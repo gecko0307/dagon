@@ -30,6 +30,8 @@ DEALINGS IN THE SOFTWARE.
  */
 module editor;
 
+import core.stdc.stdio: snprintf;
+
 import std.algorithm;
 import std.file;
 import std.ascii;
@@ -80,6 +82,7 @@ import history;
 import jsonio;
 import gsobjects;
 import textbuffer;
+import pathutil;
 import materialwriter;
 
 string editorVersionString = "Dagon Editor v1.0.0-alpha";
@@ -133,6 +136,12 @@ void readLight(Light l, JSONValue j)
     l.specular = jsonGet(j, "specular", l.specular);
 }
 
+/**
+ * Where a material comes from: its *.material file and the texture paths
+ * exactly as they appear in that file (relative paths are relative to the
+ * directory of the material file). Edited materials are marked dirty and
+ * written back when the scene is saved. GC-free: all strings are dlib Strings.
+ */
 class MaterialSource
 {
     String path; // absolute
@@ -156,10 +165,8 @@ class MaterialSource
         path = String(cast(string)newPath);
     }
 
-    /**
-     * `filePath` is the texture path as written in the material file. MaterialAsset
-     * always resolves it relative to the material's directory.
-     */
+    // `filePath` is the texture path as written in the material file. MaterialAsset
+    // always resolves it relative to the material's directory.
     void setTexture(size_t slot, const(char)[] filePath)
     {
         textures[slot].free();
@@ -168,7 +175,7 @@ class MaterialSource
         if (filePath.length == 0)
             return;
         textures[slot] = String(cast(string)filePath);
-        texturePaths[slot] = String(buildNormalizedPath(dirName(path.toString), filePath));
+        texturePaths[slot] = joinNormalized(dirName(path.toString), filePath);
     }
 
     string texture(size_t slot) const
@@ -200,7 +207,12 @@ class Editor: EventListener
     CommandHistory history;
     Entity selectedEntity;
 
-    // Absolute source paths are kept in memory; scene files store paths relative to assetRoot.
+    // Absolute source paths are kept in memory; scene files store paths relative
+    // to assetRoot.
+    //
+    // Editor is allocated with New!, so the GC does not scan it: it must not hold
+    // the only reference to any GC-allocated data. Paths live in fixed buffers or
+    // dlib Strings; Dict values are owned by the map (see clearPathMaps).
     TextBuffer!2048 assetRootBuffer;
     TextBuffer!2048 sceneFilenameBuffer;
     TextBuffer!2048 pendingOpenBuffer;
@@ -225,10 +237,8 @@ class Editor: EventListener
     Dict!(String, Entity) meshPaths;
     Dict!(MaterialSource, Material) materialSources;
 
-    /**
-     * Roots of soft-deleted subtrees (see EntityLifetimeCommand in history.d).
-     * Deleted entities stay in the scene, hidden, until the scene is replaced.
-     */
+    // Roots of soft-deleted subtrees (see EntityLifetimeCommand in history.d).
+    // Deleted entities stay in the scene, hidden, until the scene is replaced.
     Dict!(bool, Entity) deletedEntities;
 
     void setMeshPath(Entity e, const(char)[] path)
@@ -273,10 +283,8 @@ class Editor: EventListener
         deletedEntities.clear();
     }
 
-    /**
-     * Scene file that is being opened: parsed document and the text it points into.
-     * Released after the new scene is populated (see populatePending).
-     */
+    // Scene file that is being opened: parsed document and the text it points into.
+    // Released after the new scene is populated (see populatePending).
     JSONDocument pendingDocument;
     ubyte[] pendingBuffer;
 
@@ -294,12 +302,10 @@ class Editor: EventListener
         }
     }
 
-    /**
-     * True if the scene was changed after it was created, opened or saved.
-     * Covers everything that goes through the undo history, asset imports,
-     * material assignment, entity options and the scene name. Not covered:
-     * post-processing and environment settings.
-     */
+    // True if the scene was changed after it was created, opened or saved.
+    // Covers everything that goes through the undo history, asset imports,
+    // material assignment, entity options and the scene name. Not covered:
+    // post-processing and environment settings.
     bool modified;
 
     void markModified()
@@ -368,6 +374,8 @@ class Editor: EventListener
         materialSources = dict!(MaterialSource, Material);
         deletedEntities = dict!(bool, Entity);
         
+        // TODO: load editor.conf
+        
         overlay = New!InteractionOverlay(eventManager, this);
         history = New!CommandHistory(this);
         history.onApplied = &onHistoryApplied;
@@ -427,6 +435,7 @@ class Editor: EventListener
             }
             
             auto lib = New!GsLibrary(bytecodePath, vm);
+            //logInfo(prog);
             lib.load(prog);
             vm.spawn(lib);
         }
@@ -528,10 +537,8 @@ class Editor: EventListener
         // No-op
     }
 
-    /**
-     * Selects the affected entity and refreshes gizmo and bounding box,
-     * keeping the current gizmo mode.
-     */
+    // Selects the affected entity and refreshes gizmo and bounding box,
+    // keeping the current gizmo mode
     void onHistoryApplied(Command command)
     {
         if (command.target is null)
@@ -620,10 +627,8 @@ class Editor: EventListener
         dst.specular = src.specular;
     }
 
-    /**
-     * Recursively copies an entity under the given parent. Meshes and
-     * materials are shared with the source, not copied.
-     */
+    // Recursively copies an entity under the given parent. Meshes and
+    // materials are shared with the source, not copied.
     Entity cloneEntity(Entity src, Entity parent, bool isRoot)
     {
         Entity e;
@@ -714,9 +719,12 @@ class Editor: EventListener
         }
         else if (pendingOpen.length > 0)
         {
-            string path = pendingOpen.idup; // copy: the buffer is cleared below
+            // Copy (on the stack): the buffer is cleared before loading
+            char[2048] pathCopy;
+            size_t pathLength = pendingOpen.length;
+            pathCopy[0 .. pathLength] = pendingOpen[0 .. pathLength];
             pendingOpenBuffer.clear();
-            loadSceneFile(path);
+            loadSceneFile(cast(string)pathCopy[0 .. pathLength]);
         }
 
         scene = cast(EditorScene)app.currentScene;
@@ -851,12 +859,125 @@ class Editor: EventListener
                     auto prop = matAsset.props[key];
                     if (prop.type != DPropType.String)
                         continue;
-                    source.setTexture(i, portableAssetPath(prop.toString));
+                    source.setTexture(i, prop.toString);
                     break;
                 }
             }
         }
         return material;
+    }
+
+    // Keeps the source paths of materials and meshes valid when a file or a
+    // directory is renamed in the asset browser. The scene file itself is
+    // rewritten on the next save, so the scene is marked as modified.
+    void onAssetRenamed(string oldPath, string newPath)
+    {
+        bool changed = false;
+
+        foreach (material, ref source; materialSources)
+        {
+            String remapped = remapPath(source.path.toString, oldPath, newPath);
+            if (remapped.length)
+            {
+                source.setPath(remapped.toString);
+                // Texture paths are relative to the material file: they stay valid
+                // only if the textures moved together with it
+                foreach (i; 0 .. textureSlotCount)
+                {
+                    if (source.texture(i).length == 0)
+                        continue;
+                    String texture = String(source.texture(i)); // setTexture frees the original
+                    source.setTexture(i, texture.toString);
+                    texture.free();
+                }
+                changed = true;
+            }
+            remapped.free();
+
+            // A renamed texture file: point the slot at the new name
+            foreach (i; 0 .. textureSlotCount)
+            {
+                if (source.texture(i).length == 0)
+                    continue;
+                String texturePath = remapPath(source.texturePath(i), oldPath, newPath);
+                if (texturePath.length)
+                {
+                    String relative = relativeTo(texturePath.toString, dirName(source.path.toString));
+                    if (relative.length)
+                    {
+                        source.setTexture(i, relative.toString);
+                        source.dirty = true;
+                        changed = true;
+                    }
+                    relative.free();
+                }
+                texturePath.free();
+            }
+        }
+
+        foreach (e, ref path; meshPaths)
+        {
+            String remapped = remapPath(path.toString, oldPath, newPath);
+            if (remapped.length)
+            {
+                path.free();
+                path = remapped;
+                changed = true;
+            }
+            else
+                remapped.free();
+        }
+
+        if (changed)
+            markModified();
+    }
+
+    // Renames the file of a material (the file name is the material's identity).
+    // The `name` property in the file is updated on the next save.
+    bool renameMaterial(Material material, const(char)[] newName)
+    {
+        auto source = materialSource(material);
+        if (source is null)
+            return false;
+
+        string oldPath = source.path.toString;
+        if (newName == baseName(stripExtension(oldPath)))
+            return false;
+
+        if (!app.ui.assetBrowser.isValidAssetName(cast(string)newName))
+        {
+            logWarning("Cannot rename material: \"", newName, "\" is not a valid name");
+            return false;
+        }
+
+        String newPath = String(dirName(oldPath));
+        scope(exit) newPath.free();
+        newPath ~= nativeSeparator;
+        newPath ~= cast(string)newName;
+        newPath ~= ".material";
+        string newPathStr = newPath.toString;
+
+        if (exists(newPathStr))
+        {
+            logWarning("Cannot rename material: \"", newPathStr, "\" already exists");
+            return false;
+        }
+
+        try
+        {
+            std.file.rename(oldPath, newPathStr);
+        }
+        catch (Exception e)
+        {
+            logError("Cannot rename material \"", oldPath, "\": ", e.msg);
+            return false;
+        }
+
+        logInfo("Renamed material \"", oldPath, "\" to \"", newPathStr, "\"");
+        source.setPath(newPathStr); // invalidates oldPath
+        markMaterialDirty(material); // writes the new `name` on save
+        app.ui.assetBrowser.dir.scan();
+        return true;
     }
 
     void markMaterialDirty(Material material)
@@ -910,10 +1031,8 @@ class Editor: EventListener
         return app.assetManager.textureLoader(cast(string)buffer[0..ext.length]) !is null;
     }
 
-    /**
-     * Creates a new *.material file in the directory currently shown by the
-     * asset browser and assigns it to the target entity (if any)
-     */
+    // Creates a new *.material file in the directory currently shown by the
+    // asset browser and assigns it to the target entity (if any)
     Material createMaterial(Entity target)
     {
         if (!app.ui.assetBrowser.active)
@@ -923,30 +1042,42 @@ class Editor: EventListener
         }
 
         string directory = app.ui.assetBrowser.dir.currentPath;
-        string name;
-        string path;
+        char[16] number;
+        int numberLength;
+        String path;
+        scope(exit) path.free();
         uint index = 0;
-        do
+        while (true)
         {
-            name = "material" ~ index.to!string;
-            path = buildPath(directory, name ~ ".material");
+            numberLength = snprintf(number.ptr, number.length, "%u", index);
+            path.free();
+            path = String(directory);
+            path ~= nativeSeparator;
+            path ~= "material";
+            path ~= cast(string)number[0 .. numberLength];
+            path ~= ".material";
+            if (!exists(path.toString))
+                break;
             index++;
         }
-        while (exists(path));
 
         try
         {
             // A stub is enough: after loading, the file is rewritten with the
             // engine's default values filled in
-            writeFileBytes(path, "name: \"" ~ name ~ "\";\n");
+            String stub = String("name: \"material");
+            scope(exit) stub.free();
+            stub ~= cast(string)number[0 .. numberLength];
+            stub ~= "\";\n";
+            writeFileBytes(path.toString, stub.toString);
         }
         catch (Exception e)
         {
-            logError("Cannot create material \"", path, "\": ", e.msg);
+            logError("Cannot create material \"", path.toString, "\": ", e.msg);
             return null;
         }
 
-        Material material = loadMaterial(path);
+        Material material = loadMaterial(path.toString);
         if (material is null)
             return null;
         if (auto source = materialSource(material))
@@ -957,7 +1088,7 @@ class Editor: EventListener
         markModified();
 
         app.ui.assetBrowser.dir.scan();
-        logInfo("Created material \"", path, "\"");
+        logInfo("Created material \"", path.toString, "\"");
         return material;
     }
 
@@ -971,7 +1102,7 @@ class Editor: EventListener
             return false;
         }
 
-        assetPath = normalizeAssetPath(assetPath);
+        // The path comes from the asset browser: absolute and normalized
         if (!isImageFile(assetPath))
         {
             logWarning("Cannot apply \"", assetPath, "\": not a supported image format");
@@ -987,23 +1118,16 @@ class Editor: EventListener
 
         // MaterialAsset resolves texture paths relative to the material's directory,
         // so the path must be relative (not possible across drives on Windows)
-        string relative;
-        try
-        {
-            relative = portableAssetPath(relativePath(assetPath, dirName(source.path.toString)));
-        }
-        catch (Exception e)
-        {
-            relative = assetPath;
-        }
-        if (isAbsolute(relative))
+        String relative = relativeTo(assetPath, dirName(source.path.toString));
+        scope(exit) relative.free();
+        if (relative.length == 0)
         {
             logWarning("Cannot apply texture \"", assetPath, "\": it must be on the same drive as the material");
             return false;
         }
 
         setTextureInSlot(material, slot, textureAsset.texture);
-        source.setTexture(slot, relative);
+        source.setTexture(slot, relative.toString);
         app.materialPreviewRenderer.invalidate(material);
         markMaterialDirty(material);
         logInfo("Applied texture \"", assetPath, "\" to ", textureSlotLabels[slot]);

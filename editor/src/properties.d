@@ -33,6 +33,7 @@ module properties;
 import core.stdc.string: strlen;
 
 import std.stdio;
+import std.path: baseName, stripExtension;
 
 import dlib.core.ownership;
 import dlib.math.vector;
@@ -49,13 +50,12 @@ import history;
 import materialpreview;
 import materialwriter;
 import overlay;
+import textbuffer;
 import thumbnail;
 import ui;
 
-/**
- * Tracks one continuous edit of a transformation field, so that
- * typing or dragging produces a single undo step
- */
+// Tracks one continuous edit of a transformation field, so that
+// typing or dragging produces a single undo step
 struct TransformEditTracker
 {
     bool active;
@@ -78,6 +78,10 @@ class PropertiesPanel: Owner
     TransformEditTracker[3] transformEditTrackers;
 
     // Entity name editing: one continuous edit is one undo step
+    TextBuffer!2048 droppedAssetPath; // GC-free storage for acceptAssetDrop
+    char[256] materialNameBuffer;
+    bool materialNameEditActive;
+    Material materialNameEditTarget;
     char[256] entityNameBuffer;
     bool nameEditActive;
     Entity nameEditEntity;
@@ -115,10 +119,8 @@ class PropertiesPanel: Owner
         tracker.entity = null;
     }
 
-    /**
-     * Call right after an input widget; `before` is the entity's transformation
-     * captured before the widget was drawn, `changed` is the widget's return value
-     */
+    // Call right after an input widget; `before` is the entity's transformation
+    // captured before the widget was drawn, `changed` is the widget's return value
     void trackTransformEdit(size_t index, Entity entity, TransformSnapshot before, bool changed)
     {
         auto tracker = &transformEditTrackers[index];
@@ -170,10 +172,51 @@ class PropertiesPanel: Owner
             commitNameEdit();
     }
 
-    /**
-     * Call right after a widget: if an asset from the asset browser was
-     * dropped on it, returns the asset's absolute path, otherwise null
-     */
+    void commitMaterialNameEdit()
+    {
+        if (!materialNameEditActive)
+            return;
+        materialNameEditActive = false;
+        Material target = materialNameEditTarget;
+        materialNameEditTarget = null;
+        if (target)
+            ui.editor.renameMaterial(target, materialNameBuffer[0 .. strlen(materialNameBuffer.ptr)]);
+    }
+
+    // The name of a material is the name of its file (without the extension)
+    void renderMaterialNameField(Material material)
+    {
+        auto source = ui.editor.materialSource(material);
+        if (source is null)
+            return;
+
+        // A pending rename of another material is applied first
+        if (materialNameEditActive && materialNameEditTarget !is material)
+            commitMaterialNameEdit();
+
+        if (!materialNameEditActive)
+        {
+            string name = baseName(stripExtension(source.path.toString));
+            materialNameBuffer[] = 0;
+            size_t length = name.length < materialNameBuffer.length - 1
+                ? name.length
+                : materialNameBuffer.length - 1;
+            materialNameBuffer[0 .. length] = name[0 .. length];
+        }
+
+        if (igInputText("Material name", materialNameBuffer.ptr, materialNameBuffer.length))
+        {
+            materialNameEditActive = true;
+            materialNameEditTarget = material;
+        }
+        // Renames the file when editing ends (Enter or focus lost)
+        if (materialNameEditActive && !igIsItemActive())
+            commitMaterialNameEdit();
+    }
+
+    // Call right after a widget: if an asset from the asset browser was
+    // dropped on it, returns the asset's absolute path, otherwise null.
+    // The result is valid until the next call.
     string acceptAssetDrop()
     {
         string result;
@@ -186,7 +229,8 @@ class PropertiesPanel: Owner
                 size_t dataLength = cast(size_t)payload.DataSize;
                 if (data[dataLength - 1] == '\0')
                     dataLength--;
-                result = data[0 .. dataLength].idup;
+                droppedAssetPath.set(data[0 .. dataLength]);
+                result = cast(string)droppedAssetPath.slice;
             }
             igEndDragDropTarget();
         }
@@ -265,6 +309,9 @@ class PropertiesPanel: Owner
         // Selection changed (or was cleared) in the middle of a rename: close it
         if (nameEditActive && nameEditEntity !is ui.editor.selectedEntity)
             commitNameEdit();
+        if (materialNameEditActive && (ui.editor.selectedEntity is null ||
+                materialNameEditTarget !is ui.editor.selectedEntity.material))
+            commitMaterialNameEdit();
 
         // Selection changed (or was cleared) in the middle of an edit: close it
         foreach (i; 0 .. transformEditTrackers.length)
@@ -534,6 +581,7 @@ class PropertiesPanel: Owner
                 if (ui.editor.selectedEntity && ui.editor.selectedEntity.material)
                 {
                     Material material = ui.editor.selectedEntity.material;
+                    renderMaterialNameField(material);
                     bool materialChanged = false;
                     materialChanged |= igColorEdit4("Base color", &material.baseColorFactor.arrayof, ImGuiColorEditFlags.Float);
                     materialChanged |= igSliderFloat("Roughness", &material.roughnessFactor, 0.0f, 1.0f, "%.3f");

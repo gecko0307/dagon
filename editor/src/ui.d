@@ -162,6 +162,7 @@ class EditorUI: EventListener
         inspector = New!Inspector(editor, this);
         properties = New!PropertiesPanel(this);
         assetBrowser = New!AssetBrowser(this);
+        assetBrowser.onRenamed = &editor.onAssetRenamed;
         
         showAbout = app.uiShowSplashOnStartup;
     }
