@@ -50,13 +50,13 @@ import pathbuilder;
  */
 class AssetEntry
 {
-    String name;         // Base file/folder name of the entry
-    String localPath;    // Relative to the scene's asset root: "localFolder/file.png"
-    String absPath;      // For example, "C:/projects/game/scenes/level0/localFolder/file.png" under Windows
+    String name;          // Base file/folder name of the entry
+    String localPath;     // Relative to the scene's asset root: "localFolder/file.png"
+    String absPath;       // For example, "C:/projects/game/scenes/level0/localFolder/file.png" under Windows
     bool isDirectory;
     ulong size;
-    Texture thumbnail;   // Owned by ThumbnailGenerator. Null until the thumbnail is ready (or if it failed)
-    bool thumbnailValid; // true when the thumbnail request is resolved (ready or failed): stop asking the generator
+    Texture thumbnail;    // Owned by ThumbnailGenerator. Null until the thumbnail is ready (or if it failed)
+    bool thumbnailValid;  // true when the thumbnail request is resolved (ready or failed): stop asking the generator
     int thumbnailId = -1; // ThumbnailGenerator entry id, -1 if not requested yet
     
     ~this()
