@@ -40,17 +40,22 @@ import dlib.math.quaternion;
 
 import dagon.graphics.entity;
 import dagon.graphics.material;
+import dagon.graphics.texture;
 import dagon.render.postproc;
 import dagon.ext.imgui;
 
 import editor;
 import history;
 import materialpreview;
+import materialwriter;
 import overlay;
+import thumbnail;
 import ui;
 
-// Tracks one continuous edit of a transformation field, so that
-// typing or dragging produces a single undo step
+/**
+ * Tracks one continuous edit of a transformation field, so that
+ * typing or dragging produces a single undo step
+ */
 struct TransformEditTracker
 {
     bool active;
@@ -110,8 +115,10 @@ class PropertiesPanel: Owner
         tracker.entity = null;
     }
 
-    // Call right after an input widget; `before` is the entity's transformation
-    // captured before the widget was drawn, `changed` is the widget's return value
+    /**
+     * Call right after an input widget; `before` is the entity's transformation
+     * captured before the widget was drawn, `changed` is the widget's return value
+     */
     void trackTransformEdit(size_t index, Entity entity, TransformSnapshot before, bool changed)
     {
         auto tracker = &transformEditTrackers[index];
@@ -161,6 +168,94 @@ class PropertiesPanel: Owner
         }
         if (nameEditActive && !igIsItemActive())
             commitNameEdit();
+    }
+
+    /**
+     * Call right after a widget: if an asset from the asset browser was
+     * dropped on it, returns the asset's absolute path, otherwise null
+     */
+    string acceptAssetDrop()
+    {
+        string result;
+        if (igBeginDragDropTarget())
+        {
+            const(ImGuiPayload)* payload = igAcceptDragDropPayload("ASSET");
+            if (payload !is null && payload.Delivery && payload.DataSize > 0)
+            {
+                auto data = cast(const(char)*)payload.Data;
+                size_t dataLength = cast(size_t)payload.DataSize;
+                if (data[dataLength - 1] == '\0')
+                    dataLength--;
+                result = data[0 .. dataLength].idup;
+            }
+            igEndDragDropTarget();
+        }
+        return result;
+    }
+
+    // The thumbnail of a texture slot, or null while it is not ready
+    Texture slotThumbnail(MaterialSource source, size_t slot)
+    {
+        auto generator = ui.thumbnailGenerator;
+        if (generator is null || source.texture(slot).length == 0)
+            return null;
+        // Non-blocking: queues a job for the worker thread
+        source.thumbnailIds[slot] = generator.requestThumbnail(
+            source.texturePath(slot), source.thumbnailIds[slot]);
+        if (source.thumbnailIds[slot] >= 0 &&
+            generator.thumbnailState(source.thumbnailIds[slot]) == ThumbnailState.Ready)
+            return generator.thumbnailTexture(source.thumbnailIds[slot]);
+        return null;
+    }
+
+    // One row per texture slot: a thumbnail (a drop target), the file and a Clear button
+    void renderTextureSlots(Material material)
+    {
+        auto source = ui.editor.materialSource(material);
+        if (source is null)
+        {
+            igTextDisabled("This material has no source file; textures cannot be edited");
+            return;
+        }
+
+        igSeparator();
+        igText("Textures");
+        foreach (i; 0 .. textureSlotCount)
+        {
+            auto slot = cast(TextureSlot)i;
+            igPushID_Int(cast(int)i);
+
+            Texture current = textureInSlot(material, slot);
+            string file = source.texture(i);
+            Texture preview = slotThumbnail(source, i);
+            if (preview is null && current !is null && current.valid)
+                preview = current;
+
+            ImVec2 size = ImVec2(72.0f, 72.0f); // tall enough for the label, path and Clear button
+            if (preview !is null)
+                igImage(cast(void*)preview.texture, size);
+            else
+                igButton("None", size);
+
+            string dropped = acceptAssetDrop();
+            if (dropped.length)
+                ui.editor.applyTextureAsset(dropped, material, slot);
+
+            igSameLine();
+            igBeginGroup();
+            igText("%s", textureSlotLabels[i].ptr);
+            if (file.length)
+            {
+                igTextDisabled("%.*s", cast(int)file.length, file.ptr);
+                if (igButton("Clear", ImVec2(0, 0)))
+                    ui.editor.clearTextureSlot(material, slot);
+            }
+            else
+                igTextDisabled("Drop an image here");
+            igEndGroup();
+
+            igPopID();
+        }
     }
 
     void render()
@@ -410,18 +505,19 @@ class PropertiesPanel: Owner
                 if (igIsItemClicked(ImGuiMouseButton.Left))
                     igOpenPopup("Materials");
 
-                if (igBeginDragDropTarget())
+                string droppedMaterial = acceptAssetDrop();
+                if (droppedMaterial.length)
+                    ui.editor.applyMaterialAsset(droppedMaterial, ui.editor.selectedEntity);
+
+                if (ui.editor.selectedEntity)
                 {
-                    const(ImGuiPayload)* payload = igAcceptDragDropPayload("ASSET");
-                    if (payload !is null && payload.Delivery && payload.DataSize > 0)
+                    if (ui.assetBrowser.active)
                     {
-                        auto data = cast(const(char)*)payload.Data;
-                        size_t dataLength = cast(size_t)payload.DataSize;
-                        if (data[dataLength - 1] == '\0')
-                            dataLength--;
-                        ui.editor.applyMaterialAsset(data[0 .. dataLength].idup, ui.editor.selectedEntity);
+                        if (igButton("New material", ImVec2(0, 0)))
+                            ui.editor.createMaterial(ui.editor.selectedEntity);
                     }
-                    igEndDragDropTarget();
+                    else
+                        igTextDisabled("Save the scene to create materials");
                 }
                 
                 /*
@@ -449,17 +545,18 @@ class PropertiesPanel: Owner
                     materialChanged |= igSliderFloat("Opacity", &material.opacity, 0.0f, 1.0f, "%.3f");
                     materialChanged |= igSliderFloat("Alpha test threshold", &material.alphaTestThreshold, 0.0f, 1.0f, "%.3f");
                     materialChanged |= igCheckbox("Shadeless", &material.shadeless);
-                    if (igCheckbox("Use shadows", &material.useShadows))
-                    {
-                        materialChanged = true;
+                    materialChanged |= igCheckbox("Use shadows", &material.useShadows);
+                    if (material.useShadows)
                         materialChanged |= igCombo_Str("Shadow filter", &material.shadowFilter, "None\0PCF\0");
-                    }
                     materialChanged |= igCheckbox("Use fog", &material.useFog);
                     materialChanged |= igCheckbox("Use culling", &material.useCulling);
                     materialChanged |= igCheckbox("Color write", &material.colorWrite);
                     materialChanged |= igCheckbox("Depth write", &material.depthWrite);
                     if (materialChanged)
+                    {
                         scene.app.materialPreviewRenderer.invalidate(material);
+                        ui.editor.markMaterialDirty(material);
+                    }
                     /*
                     igCheckbox("Output color", &material.outputColor);
                     igCheckbox("Output normals", &material.outputNormal);
@@ -467,7 +564,7 @@ class PropertiesPanel: Owner
                     igCheckbox("Output emission", &material.outputEmission);
                     */
                     // TODO: parallax mapping settings
-                    // TODO: textures
+                    renderTextureSlots(material);
                 }
             }
         }

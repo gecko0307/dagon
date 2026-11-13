@@ -49,6 +49,7 @@ import dlib.serialization.json;
 
 import dagon.core.bindings;
 import dagon.core.logger;
+import dagon.core.props;
 import dagon.core.event;
 import dagon.core.time;
 import dagon.core.cursor;
@@ -78,6 +79,8 @@ import materialpreview;
 import history;
 import jsonio;
 import gsobjects;
+import textbuffer;
+import materialwriter;
 
 string editorVersionString = "Dagon Editor v1.0.0-alpha";
 enum dagonWebsiteUrl = "https://gecko0307.github.io/dagon/";
@@ -130,6 +133,55 @@ void readLight(Light l, JSONValue j)
     l.specular = jsonGet(j, "specular", l.specular);
 }
 
+class MaterialSource
+{
+    String path; // absolute
+    String[textureSlotCount] textures; // as written in the file, empty if none
+    String[textureSlotCount] texturePaths; // absolute, for thumbnails
+    int[textureSlotCount] thumbnailIds = [-1, -1, -1, -1];
+    bool dirty;
+
+    ~this()
+    {
+        path.free();
+        foreach (ref t; textures)
+            t.free();
+        foreach (ref t; texturePaths)
+            t.free();
+    }
+
+    void setPath(const(char)[] newPath)
+    {
+        path.free();
+        path = String(cast(string)newPath);
+    }
+
+    /**
+     * `filePath` is the texture path as written in the material file. MaterialAsset
+     * always resolves it relative to the material's directory.
+     */
+    void setTexture(size_t slot, const(char)[] filePath)
+    {
+        textures[slot].free();
+        texturePaths[slot].free();
+        thumbnailIds[slot] = -1;
+        if (filePath.length == 0)
+            return;
+        textures[slot] = String(cast(string)filePath);
+        texturePaths[slot] = String(buildNormalizedPath(dirName(path.toString), filePath));
+    }
+
+    string texture(size_t slot) const
+    {
+        return textures[slot].toString;
+    }
+
+    string texturePath(size_t slot) const
+    {
+        return texturePaths[slot].toString;
+    }
+}
+
 /**
  * Implements scene editing and serialization.
  */
@@ -148,15 +200,35 @@ class Editor: EventListener
     CommandHistory history;
     Entity selectedEntity;
 
-    // Absolute source paths are kept in memory; scene files store paths relative
-    // to assetRoot.
-    string assetRoot;
-    // Values are dlib Strings owned by the map (see setMeshPath, clearPathMaps).
-    Dict!(String, Entity) meshPaths;
-    Dict!(String, Material) materialPaths;
+    // Absolute source paths are kept in memory; scene files store paths relative to assetRoot.
+    TextBuffer!2048 assetRootBuffer;
+    TextBuffer!2048 sceneFilenameBuffer;
+    TextBuffer!2048 pendingOpenBuffer;
 
-    // Roots of soft-deleted subtrees (see EntityLifetimeCommand in history.d).
-    // Deleted entities stay in the scene, hidden, until the scene is replaced.
+    // Slices of the buffers above: valid until the buffer is modified
+    string assetRoot() const @property
+    {
+        return cast(string)assetRootBuffer.slice;
+    }
+
+    // File the current scene was last opened from or saved to (empty if none)
+    string sceneFilename() const @property
+    {
+        return cast(string)sceneFilenameBuffer.slice;
+    }
+
+    string pendingOpen() const @property
+    {
+        return cast(string)pendingOpenBuffer.slice;
+    }
+
+    Dict!(String, Entity) meshPaths;
+    Dict!(MaterialSource, Material) materialSources;
+
+    /**
+     * Roots of soft-deleted subtrees (see EntityLifetimeCommand in history.d).
+     * Deleted entities stay in the scene, hidden, until the scene is replaced.
+     */
     Dict!(bool, Entity) deletedEntities;
 
     void setMeshPath(Entity e, const(char)[] path)
@@ -166,11 +238,28 @@ class Editor: EventListener
         meshPaths[e] = String(cast(string)path);
     }
 
-    void setMaterialPath(Material m, const(char)[] path)
+    // Returns the source of a material, or null if it has none
+    MaterialSource materialSource(Material m)
     {
-        if (auto old = m in materialPaths)
-            old.free();
-        materialPaths[m] = String(cast(string)path);
+        if (m is null)
+            return null;
+        if (auto source = m in materialSources)
+            return *source;
+        return null;
+    }
+
+    // Registers a material loaded from a file (or updates the file path)
+    MaterialSource setMaterialPath(Material m, const(char)[] path)
+    {
+        if (auto source = m in materialSources)
+        {
+            source.setPath(path);
+            return *source;
+        }
+        auto source = New!MaterialSource();
+        source.setPath(path);
+        materialSources[m] = source;
+        return source;
     }
 
     void clearPathMaps()
@@ -178,14 +267,16 @@ class Editor: EventListener
         foreach (e, ref path; meshPaths)
             path.free();
         meshPaths.clear();
-        foreach (m, ref path; materialPaths)
-            path.free();
-        materialPaths.clear();
+        foreach (m, ref source; materialSources)
+            Delete(source);
+        materialSources.clear();
         deletedEntities.clear();
     }
 
-    // Scene file that is being opened: parsed document and the text it points into.
-    // Released after the new scene is populated (see populatePending).
+    /**
+     * Scene file that is being opened: parsed document and the text it points into.
+     * Released after the new scene is populated (see populatePending).
+     */
     JSONDocument pendingDocument;
     ubyte[] pendingBuffer;
 
@@ -203,13 +294,12 @@ class Editor: EventListener
         }
     }
 
-    // File the current scene was last opened from or saved to (empty if none)
-    string sceneFilename;
-
-    // True if the scene was changed after it was created, opened or saved.
-    // Covers everything that goes through the undo history, asset imports,
-    // material assignment, entity options and the scene name. Not covered:
-    // post-processing and environment settings.
+    /**
+     * True if the scene was changed after it was created, opened or saved.
+     * Covers everything that goes through the undo history, asset imports,
+     * material assignment, entity options and the scene name. Not covered:
+     * post-processing and environment settings.
+     */
     bool modified;
 
     void markModified()
@@ -256,7 +346,10 @@ class Editor: EventListener
 
     void setAssetRoot(string path, bool refreshBrowser = true)
     {
-        assetRoot = path.length > 0 ? buildNormalizedPath(absolutePath(path)) : "";
+        if (path.length > 0)
+            assetRootBuffer.set(buildNormalizedPath(absolutePath(path)));
+        else
+            assetRootBuffer.clear();
         if (refreshBrowser)
             app.ui.assetBrowser.reset(assetRoot, true);
     }
@@ -272,10 +365,8 @@ class Editor: EventListener
         scene = cast(EditorScene)app.currentScene;
         
         meshPaths = dict!(String, Entity);
-        materialPaths = dict!(String, Material);
+        materialSources = dict!(MaterialSource, Material);
         deletedEntities = dict!(bool, Entity);
-        
-        // TODO: load editor.conf
         
         overlay = New!InteractionOverlay(eventManager, this);
         history = New!CommandHistory(this);
@@ -336,7 +427,6 @@ class Editor: EventListener
             }
             
             auto lib = New!GsLibrary(bytecodePath, vm);
-            //logInfo(prog);
             lib.load(prog);
             vm.spawn(lib);
         }
@@ -347,7 +437,7 @@ class Editor: EventListener
         releasePendingDocument();
         clearPathMaps();
         Delete(meshPaths);
-        Delete(materialPaths);
+        Delete(materialSources);
         Delete(deletedEntities);
         Delete(storage);
     }
@@ -438,8 +528,10 @@ class Editor: EventListener
         // No-op
     }
 
-    // Selects the affected entity and refreshes gizmo and bounding box,
-    // keeping the current gizmo mode
+    /**
+     * Selects the affected entity and refreshes gizmo and bounding box,
+     * keeping the current gizmo mode.
+     */
     void onHistoryApplied(Command command)
     {
         if (command.target is null)
@@ -528,8 +620,10 @@ class Editor: EventListener
         dst.specular = src.specular;
     }
 
-    // Recursively copies an entity under the given parent. Meshes and
-    // materials are shared with the source, not copied.
+    /**
+     * Recursively copies an entity under the given parent. Meshes and
+     * materials are shared with the source, not copied.
+     */
     Entity cloneEntity(Entity src, Entity parent, bool isRoot)
     {
         Entity e;
@@ -620,8 +714,8 @@ class Editor: EventListener
         }
         else if (pendingOpen.length > 0)
         {
-            string path = pendingOpen;
-            pendingOpen = "";
+            string path = pendingOpen.idup; // copy: the buffer is cleared below
+            pendingOpenBuffer.clear();
             loadSceneFile(path);
         }
 
@@ -734,8 +828,197 @@ class Editor: EventListener
             logError("Cannot load material \"", assetPath, "\": asset failed to load");
             return null;
         }
-        setMaterialPath(matAsset.material, assetPath);
-        return matAsset.material;
+        Material material = matAsset.material;
+        bool isNew = (material in materialSources) is null;
+        auto source = setMaterialPath(material, assetPath);
+        if (isNew)
+        {
+            // Remember the texture paths as written in the file, so that they
+            // survive a rewrite. Legacy keys (baseColor, normal, emission) are
+            // texture paths only if they hold a string.
+            static immutable string[2][textureSlotCount] keys = [
+                ["baseColorTexture", "baseColor"],
+                ["roughnessMetallicTexture", ""],
+                ["emissionTexture", "emission"],
+                ["normalTexture", "normal"]
+            ];
+            foreach (i; 0..textureSlotCount)
+            {
+                foreach (key; keys[i])
+                {
+                    if (key.length == 0 || !(key in matAsset.props))
+                        continue;
+                    auto prop = matAsset.props[key];
+                    if (prop.type != DPropType.String)
+                        continue;
+                    source.setTexture(i, portableAssetPath(prop.toString));
+                    break;
+                }
+            }
+        }
+        return material;
+    }
+
+    void markMaterialDirty(Material material)
+    {
+        if (auto source = materialSource(material))
+        {
+            source.dirty = true;
+            markModified();
+        }
+    }
+
+    // Writes a material back to its *.material file
+    bool saveMaterial(Material material, MaterialSource source)
+    {
+        string path = source.path.toString;
+        string[textureSlotCount] textures;
+        foreach (i; 0..textureSlotCount)
+            textures[i] = source.texture(i);
+        try
+        {
+            writeMaterialFile(path, baseName(stripExtension(path)), material, textures[]);
+            source.dirty = false;
+            logInfo("Saved material \"", path, "\"");
+            return true;
+        }
+        catch (Exception e)
+        {
+            logError("Cannot save material \"", path, "\": ", e.msg);
+            return false;
+        }
+    }
+
+    // Edited materials live in their own files: written along with the scene
+    void saveDirtyMaterials()
+    {
+        foreach (material, ref source; materialSources)
+        {
+            if (source.dirty)
+                saveMaterial(material, source);
+        }
+    }
+
+    bool isImageFile(const(char)[] path)
+    {
+        const(char)[] ext = extension(path);
+        char[16] buffer;
+        if (ext.length == 0 || ext.length > buffer.length)
+            return false;
+        foreach (i, c; ext)
+            buffer[i] = (c >= 'A' && c <= 'Z') ? cast(char)(c + 32) : c;
+        return app.assetManager.textureLoader(cast(string)buffer[0..ext.length]) !is null;
+    }
+
+    /**
+     * Creates a new *.material file in the directory currently shown by the
+     * asset browser and assigns it to the target entity (if any)
+     */
+    Material createMaterial(Entity target)
+    {
+        if (!app.ui.assetBrowser.active)
+        {
+            logWarning("Cannot create a material: save the scene first");
+            return null;
+        }
+
+        string directory = app.ui.assetBrowser.dir.currentPath;
+        string name;
+        string path;
+        uint index = 0;
+        do
+        {
+            name = "material" ~ index.to!string;
+            path = buildPath(directory, name ~ ".material");
+            index++;
+        }
+        while (exists(path));
+
+        try
+        {
+            // A stub is enough: after loading, the file is rewritten with the
+            // engine's default values filled in
+            writeFileBytes(path, "name: \"" ~ name ~ "\";\n");
+        }
+        catch (Exception e)
+        {
+            logError("Cannot create material \"", path, "\": ", e.msg);
+            return null;
+        }
+
+        Material material = loadMaterial(path);
+        if (material is null)
+            return null;
+        if (auto source = materialSource(material))
+            saveMaterial(material, source);
+
+        if (target !is null)
+            target.material = material;
+        markModified();
+
+        app.ui.assetBrowser.dir.scan();
+        logInfo("Created material \"", path, "\"");
+        return material;
+    }
+
+    // Puts an image from the asset browser into a texture slot of a material
+    bool applyTextureAsset(string assetPath, Material material, TextureSlot slot)
+    {
+        auto source = materialSource(material);
+        if (source is null)
+        {
+            logWarning("Cannot apply texture \"", assetPath, "\": the material has no source file");
+            return false;
+        }
+
+        assetPath = normalizeAssetPath(assetPath);
+        if (!isImageFile(assetPath))
+        {
+            logWarning("Cannot apply \"", assetPath, "\": not a supported image format");
+            return false;
+        }
+
+        auto textureAsset = scene.addTextureAsset(assetPath, true);
+        if (textureAsset is null || textureAsset.texture is null || !textureAsset.texture.valid)
+        {
+            logError("Cannot load texture \"", assetPath, "\"");
+            return false;
+        }
+
+        // MaterialAsset resolves texture paths relative to the material's directory,
+        // so the path must be relative (not possible across drives on Windows)
+        string relative;
+        try
+        {
+            relative = portableAssetPath(relativePath(assetPath, dirName(source.path.toString)));
+        }
+        catch (Exception e)
+        {
+            relative = assetPath;
+        }
+        if (isAbsolute(relative))
+        {
+            logWarning("Cannot apply texture \"", assetPath, "\": it must be on the same drive as the material");
+            return false;
+        }
+
+        setTextureInSlot(material, slot, textureAsset.texture);
+        source.setTexture(slot, relative);
+        app.materialPreviewRenderer.invalidate(material);
+        markMaterialDirty(material);
+        logInfo("Applied texture \"", assetPath, "\" to ", textureSlotLabels[slot]);
+        return true;
+    }
+
+    void clearTextureSlot(Material material, TextureSlot slot)
+    {
+        auto source = materialSource(material);
+        if (source is null)
+            return;
+        setTextureInSlot(material, slot, null);
+        source.setTexture(slot, "");
+        app.materialPreviewRenderer.invalidate(material);
+        markMaterialDirty(material);
     }
 
     Mesh loadMesh(string assetPath)
@@ -755,6 +1038,12 @@ class Editor: EventListener
         if (target is null)
         {
             logWarning("Cannot apply material \"", assetPath, "\": no entity is selected");
+            return false;
+        }
+
+        if (extension(assetPath) != ".material")
+        {
+            logWarning("Cannot apply \"", assetPath, "\" as a material: not a .material file");
             return false;
         }
 
@@ -810,6 +1099,8 @@ class Editor: EventListener
         filename = buildNormalizedPath(absolutePath(filename));
         setAssetRoot(filename.dirName, false);
 
+        saveDirtyMaterials();
+
         Array!Entity saved;
         auto entityIndex = dict!(size_t, Entity);
         Array!string materialList;
@@ -833,14 +1124,14 @@ class Editor: EventListener
         }
 
         // Each distinct material file is written once. The strings are slices of
-        // materialPaths values, which are not modified until the save is over.
+        // MaterialSource paths, which are not modified until the save is over.
         foreach (e; saved.data)
         {
             if (e.material is null)
                 continue;
-            if (auto path = e.material in materialPaths)
+            if (auto source = e.material in materialSources)
             {
-                string materialPath = path.toString;
+                string materialPath = source.path.toString;
                 if ((materialPath in materialIndex) is null)
                 {
                     materialIndex[materialPath] = cast(long)materialList.length;
@@ -881,9 +1172,9 @@ class Editor: EventListener
             if (e.material !is null)
             {
                 bool found = false;
-                if (auto path = e.material in materialPaths)
+                if (auto source = e.material in materialSources)
                 {
-                    string materialPath = path.toString;
+                    string materialPath = source.path.toString;
                     if (auto idx = materialPath in materialIndex)
                     {
                         materialRef = *idx;
@@ -984,7 +1275,7 @@ class Editor: EventListener
             app.setCursor(SystemCursor.Default);
             return;
         }
-        sceneFilename = filename;
+        sceneFilenameBuffer.set(filename);
         modified = false;
 
         app.ui.assetBrowser.reset(assetRoot, true);
@@ -992,20 +1283,19 @@ class Editor: EventListener
         app.setCursor(SystemCursor.Default);
     }
 
-    string pendingOpen;
     bool pendingNew = true;
 
     void newScene()
     {
         pendingNew = true;
-        pendingOpen = "";
-        sceneFilename = "";
+        pendingOpenBuffer.clear();
+        sceneFilenameBuffer.clear();
         app.ui.assetBrowser.active = false;
     }
     
     void openScene(string path)
     {
-        pendingOpen = path;
+        pendingOpenBuffer.set(path);
         pendingNew = false;
         app.setCursor(SystemCursor.Wait);
     }
@@ -1053,7 +1343,7 @@ class Editor: EventListener
             logWarning("Scene \"", filename, "\" was saved by a newer editor version");
 
         logInfo("Opening scene \"", filename, "\"...");
-        sceneFilename = filename;
+        sceneFilenameBuffer.set(filename);
         setAssetRoot(filename.dirName);
         pendingDocument = document;
         pendingBuffer = buffer;
