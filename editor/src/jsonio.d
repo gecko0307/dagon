@@ -101,8 +101,10 @@ struct JSONWriter
         put(']');
     }
 
-    /// Starts an object member. Must be followed by exactly one value
-    /// (a scalar, beginObject or beginArray).
+    /**
+     * Starts an object member. Must be followed by exactly one value
+     * (a scalar, beginObject or beginArray).
+     */
     void key(const(char)[] name)
     {
         assert(depth > 0);
@@ -296,8 +298,10 @@ struct JSONWriter
     }
 }
 
-/// Reads a whole file into a dlib-allocated buffer. The caller must Delete it.
-/// Throws on I/O errors.
+/**
+ * Reads a whole file into a dlib-allocated buffer. The caller must Delete it.
+ * Throws on I/O errors.
+ */
 ubyte[] readFileBytes(string filename)
 {
     auto f = File(filename, "rb");

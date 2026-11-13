@@ -193,8 +193,10 @@ class EditorUI: EventListener
         return true;
     }
 
-    // Saves to the current scene file; asks for a file only if the scene
-    // has not been saved or opened yet. Returns true if the scene was saved.
+    /**
+     * Saves to the current scene file; asks for a file only if the scene
+     * has not been saved or opened yet. Returns true if the scene was saved.
+     */
     bool saveCurrentScene()
     {
         if (editor.sceneFilename.length == 0)
@@ -203,8 +205,10 @@ class EditorUI: EventListener
         return true;
     }
 
-    // Creates a new scene, asking for confirmation first if the current one
-    // has unsaved changes
+    /**
+     * Creates a new scene, asking for confirmation first if the current one
+     * has unsaved changes.
+     */
     void requestNewScene()
     {
         unsavedChangesAction = UnsavedChangesAction.NewScene;
@@ -214,8 +218,10 @@ class EditorUI: EventListener
             performUnsavedChangesAction();
     }
 
-    // Exits the application, asking for confirmation first if the current one
-    // has unsaved changes
+    /**
+     * Exits the application, asking for confirmation first if the current one
+     * has unsaved changes.
+     */
     void requestExit()
     {
         unsavedChangesAction = UnsavedChangesAction.Exit;
@@ -581,91 +587,9 @@ class EditorUI: EventListener
         ImGuiOpenGLBackend.render_draw_data(igGetDrawData());
     }
     
+    // TODO: user-defined themes support
     void applyTheme()
     {
-        /*
-        ImGuiStyle* style = igGetStyle();
-        
-        style.WindowRounding    = 6.0f;
-        style.ChildRounding     = 4.0f;
-        style.FrameRounding     = 4.0f;
-        style.PopupRounding     = 4.0f;
-        style.ScrollbarRounding = 9.0f;
-        style.GrabRounding      = 4.0f;
-        style.TabRounding       = 4.0f;
-
-        // 3. Define our color palette
-        ImVec4 color_bg_dark     = ImVec4(0.10f, 0.10f, 0.10f, 0.9f); // Deep charcoal
-        ImVec4 color_bg_med      = ImVec4(0.15f, 0.15f, 0.15f, 0.9f);  // Lighter panel background
-        ImVec4 color_bg_light    = ImVec4(0.22f, 0.22f, 0.22f, 1.0f);  // Interactive element background
-        
-        ImVec4 color_orange      = ImVec4(0.90f, 0.45f, 0.00f, 1.0f);  // Vibrant orange
-        ImVec4 color_orange_hover= ImVec4(1.00f, 0.55f, 0.15f, 1.0f);  // Bright orange for hover
-        ImVec4 color_orange_act  = ImVec4(0.80f, 0.35f, 0.00f, 1.0f);  // Deeper orange for clicks
-
-        ImVec4 color_text        = ImVec4(0.95f, 0.95f, 0.95f, 1.0f);  // Off-white text
-        ImVec4 color_text_disabled=ImVec4(0.50f, 0.50f, 0.50f, 1.0f); 
-
-        style.Colors[ImGuiCol.Text]                  = color_text;
-        style.Colors[ImGuiCol.TextDisabled]          = color_text_disabled;
-        
-        // Window Backgrounds
-        style.Colors[ImGuiCol.WindowBg]              = color_bg_dark;
-        style.Colors[ImGuiCol.ChildBg]               = color_bg_med;
-        style.Colors[ImGuiCol.PopupBg]               = color_bg_dark;
-        style.Colors[ImGuiCol.Border]                = ImVec4(0.25f, 0.25f, 0.25f, 1.0f);
-        style.Colors[ImGuiCol.BorderShadow]          = ImVec4(0.00f, 0.00f, 0.00f, 0.0f);
-        style.Colors[ImGuiCol.ModalWindowDimBg]      = ImVec4(0.0f, 0.0f, 0.0f, 0.5f);
-
-        // Frame Elements (Checkboxes, Input Fields, etc.)
-        style.Colors[ImGuiCol.FrameBg]               = color_bg_light;
-        style.Colors[ImGuiCol.FrameBgHovered]        = ImVec4(0.28f, 0.28f, 0.28f, 1.0f);
-        style.Colors[ImGuiCol.FrameBgActive]         = ImVec4(0.35f, 0.35f, 0.35f, 1.0f);
-
-        // Headers (Collapsing Headers, Tree Nodes)
-        style.Colors[ImGuiCol.Header]                = color_bg_light;
-        style.Colors[ImGuiCol.HeaderHovered]         = color_orange;
-        style.Colors[ImGuiCol.HeaderActive]          = color_orange_act;
-
-        // Buttons (The main orange highlights)
-        style.Colors[ImGuiCol.Button]                = color_orange;
-        style.Colors[ImGuiCol.ButtonHovered]         = color_orange_hover;
-        style.Colors[ImGuiCol.ButtonActive]          = color_orange_act;
-
-        // Window Titles
-        style.Colors[ImGuiCol.TitleBg]               = color_bg_med;
-        style.Colors[ImGuiCol.TitleBgActive]          = color_bg_med;
-        style.Colors[ImGuiCol.TitleBgCollapsed]       = color_bg_dark;
-
-        // Tabs
-        style.Colors[ImGuiCol.Tab]                   = color_bg_med;
-        style.Colors[ImGuiCol.TabHovered]            = color_orange_hover;
-        style.Colors[ImGuiCol.TabActive]             = color_orange;
-        style.Colors[ImGuiCol.TabUnfocused]          = color_bg_med;
-        style.Colors[ImGuiCol.TabUnfocusedActive]     = color_bg_light;
-
-        // Sliders & Scrollbars
-        style.Colors[ImGuiCol.ScrollbarBg]           = color_bg_dark;
-        style.Colors[ImGuiCol.ScrollbarGrab]         = color_bg_light;
-        style.Colors[ImGuiCol.ScrollbarGrabHovered]  = ImVec4(0.30f, 0.30f, 0.30f, 1.0f);
-        style.Colors[ImGuiCol.ScrollbarGrabActive]   = color_orange;
-        style.Colors[ImGuiCol.CheckMark]             = color_orange;
-        style.Colors[ImGuiCol.SliderGrab]            = color_orange;
-        style.Colors[ImGuiCol.SliderGrabActive]      = color_orange_act;
-
-        // Miscellaneous
-        style.Colors[ImGuiCol.ResizeGrip]            = color_bg_light;
-        style.Colors[ImGuiCol.ResizeGripHovered]     = color_orange;
-        style.Colors[ImGuiCol.ResizeGripActive]      = color_orange_act;
-        style.Colors[ImGuiCol.Separator]             = ImVec4(0.20f, 0.20f, 0.20f, 1.0f);
-        style.Colors[ImGuiCol.SeparatorHovered]      = color_orange;
-        style.Colors[ImGuiCol.SeparatorActive]       = color_orange_act;
-        style.Colors[ImGuiCol.TextSelectedBg]        = ImVec4(0.90f, 0.45f, 0.00f, 0.35f); // Semi-transparent orange selection
-        
-        // Navigation
-        style.Colors[ImGuiCol.NavHighlight] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-        */
-        
         applyDefaultTheme();
     }
 }

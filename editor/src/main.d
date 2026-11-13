@@ -52,9 +52,11 @@ void main(string[] args)
     version(Windows)
     {
         Splash.show("data/splash.jpg");
+        // Splash is closed by the EditorApp
+        
+        debug {}
+        else { EditorApp.showConsoleWindow(false); }
     }
-    
-    EditorApp.showConsoleWindow(false);
     
     ImGuiSupport sup = loadImGui();
     EditorApp app = New!EditorApp(1280, 720, false, "Dagon Editor", args);

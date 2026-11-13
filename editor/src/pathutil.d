@@ -25,9 +25,9 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-/*
+/**
  * GC-free path helpers: they return dlib Strings (the caller frees them)
- * or slices of their arguments, and never allocate with the GC.
+ * or slices of their arguments.
  * Both '/' and '\' are accepted as separators on every platform.
  */
 module pathutil;
@@ -81,12 +81,14 @@ private bool sameSegment(const(char)[] a, const(char)[] b)
     return true;
 }
 
-// Appends the segments of a path to `segments`, resolving "." and ".."
-// (the segments are slices of `path`)
+/**
+ * Appends the segments of a path to `segments`, resolving "." and ".."
+ * (the segments are slices of `path`).
+ */
 private void splitPath(ref Array!(const(char)[]) segments, const(char)[] path, bool absolute)
 {
     size_t start = 0;
-    foreach (i; 0 .. path.length + 1)
+    foreach (i; 0..path.length + 1)
     {
         if (i < path.length && !isSeparator(path[i]))
             continue;
@@ -113,8 +115,10 @@ private void splitPath(ref Array!(const(char)[]) segments, const(char)[] path, b
     }
 }
 
-/// Joins `base` and `relative` and resolves "." and ".." segments.
-/// If `relative` is absolute, `base` is ignored. The result uses native separators.
+/**
+ * Joins `base` and `relative` and resolves "." and ".." segments.
+ * If `relative` is absolute, `base` is ignored. The result uses native separators.
+ */
 String joinNormalized(const(char)[] base, const(char)[] relative)
 {
     Array!(const(char)[]) segments;
@@ -143,9 +147,11 @@ String joinNormalized(const(char)[] base, const(char)[] relative)
     return result;
 }
 
-/// Path of `path` relative to the directory `baseDir`, with '/' separators.
-/// Both paths must be absolute. Returns an empty String if there is no
-/// relative path (different drives, relative input).
+/**
+ * Path of `path` relative to the directory `baseDir`, with '/' separators.
+ * Both paths must be absolute. Returns an empty `String` if there is no
+ * relative path (different drives, relative input).
+ */
 String relativeTo(const(char)[] path, const(char)[] baseDir)
 {
     String result;
@@ -177,14 +183,14 @@ String relativeTo(const(char)[] path, const(char)[] baseDir)
         common++;
 
     bool first = true;
-    foreach (i; common .. base.length)
+    foreach (i; common..base.length)
     {
         if (!first)
             result ~= "/";
         result ~= "..";
         first = false;
     }
-    foreach (i; common .. target.length)
+    foreach (i; common..target.length)
     {
         if (!first)
             result ~= "/";
@@ -196,8 +202,10 @@ String relativeTo(const(char)[] path, const(char)[] baseDir)
     return result;
 }
 
-/// If `path` is `oldPath` or lies inside the directory `oldPath`, returns
-/// the corresponding path under `newPath`; otherwise returns an empty String.
+/**
+ * If `path` is `oldPath` or lies inside the directory `oldPath`, returns
+ * the corresponding path under `newPath`; otherwise returns an empty `String`.
+ */
 String remapPath(const(char)[] path, const(char)[] oldPath, const(char)[] newPath)
 {
     String result;
@@ -207,7 +215,7 @@ String remapPath(const(char)[] path, const(char)[] oldPath, const(char)[] newPat
     if (oldPath.length == 0 || path.length < oldPath.length)
         return result;
 
-    foreach (i; 0 .. oldPath.length)
+    foreach (i; 0..oldPath.length)
     {
         if (!sameChar(path[i], oldPath[i]))
             return result;

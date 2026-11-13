@@ -88,7 +88,6 @@ import materialwriter;
 string editorVersionString = "Dagon Editor v1.0.0-alpha";
 enum dagonWebsiteUrl = "https://gecko0307.github.io/dagon/";
 
-// Light (de)serialization. Readers (jsonio.d) are tolerant: missing keys keep defaults.
 void writeLight(ref JSONWriter w, Light l)
 {
     w.beginObject();
@@ -207,12 +206,7 @@ class Editor: EventListener
     CommandHistory history;
     Entity selectedEntity;
 
-    // Absolute source paths are kept in memory; scene files store paths relative
-    // to assetRoot.
-    //
-    // Editor is allocated with New!, so the GC does not scan it: it must not hold
-    // the only reference to any GC-allocated data. Paths live in fixed buffers or
-    // dlib Strings; Dict values are owned by the map (see clearPathMaps).
+    // Absolute source paths are kept in memory; scene files store paths relative to assetRoot
     TextBuffer!2048 assetRootBuffer;
     TextBuffer!2048 sceneFilenameBuffer;
     TextBuffer!2048 pendingOpenBuffer;
@@ -237,8 +231,10 @@ class Editor: EventListener
     Dict!(String, Entity) meshPaths;
     Dict!(MaterialSource, Material) materialSources;
 
-    // Roots of soft-deleted subtrees (see EntityLifetimeCommand in history.d).
-    // Deleted entities stay in the scene, hidden, until the scene is replaced.
+    /**
+     * Roots of soft-deleted subtrees (see EntityLifetimeCommand in history.d).
+     * Deleted entities stay in the scene, hidden, until the scene is replaced.
+     */
     Dict!(bool, Entity) deletedEntities;
 
     void setMeshPath(Entity e, const(char)[] path)
@@ -283,8 +279,10 @@ class Editor: EventListener
         deletedEntities.clear();
     }
 
-    // Scene file that is being opened: parsed document and the text it points into.
-    // Released after the new scene is populated (see populatePending).
+    /**
+     * Scene file that is being opened: parsed document and the text it points into.
+     * Released after the new scene is populated (see populatePending).
+     */
     JSONDocument pendingDocument;
     ubyte[] pendingBuffer;
 
@@ -302,10 +300,12 @@ class Editor: EventListener
         }
     }
 
-    // True if the scene was changed after it was created, opened or saved.
-    // Covers everything that goes through the undo history, asset imports,
-    // material assignment, entity options and the scene name. Not covered:
-    // post-processing and environment settings.
+    /**
+     * True if the scene was changed after it was created, opened or saved.
+     * Covers everything that goes through the undo history, asset imports,
+     * material assignment, entity options and the scene name. Not covered:
+     * post-processing and environment settings.
+     */
     bool modified;
 
     void markModified()
@@ -537,8 +537,10 @@ class Editor: EventListener
         // No-op
     }
 
-    // Selects the affected entity and refreshes gizmo and bounding box,
-    // keeping the current gizmo mode
+    /**
+     * Selects the affected entity and refreshes gizmo and bounding box,
+     * keeping the current gizmo mode.
+     */
     void onHistoryApplied(Command command)
     {
         if (command.target is null)
@@ -627,8 +629,10 @@ class Editor: EventListener
         dst.specular = src.specular;
     }
 
-    // Recursively copies an entity under the given parent. Meshes and
-    // materials are shared with the source, not copied.
+    /**
+     * Recursively copies an entity under the given parent. Meshes and
+     * materials are shared with the source, not copied.
+     */
     Entity cloneEntity(Entity src, Entity parent, bool isRoot)
     {
         Entity e;
@@ -867,9 +871,11 @@ class Editor: EventListener
         return material;
     }
 
-    // Keeps the source paths of materials and meshes valid when a file or a
-    // directory is renamed in the asset browser. The scene file itself is
-    // rewritten on the next save, so the scene is marked as modified.
+    /**
+     * Keeps the source paths of materials and meshes valid when a file or a
+     * directory is renamed in the asset browser. The scene file itself is
+     * rewritten on the next save, so the scene is marked as modified.
+     */
     void onAssetRenamed(string oldPath, string newPath)
     {
         bool changed = false;
@@ -932,8 +938,10 @@ class Editor: EventListener
             markModified();
     }
 
-    // Renames the file of a material (the file name is the material's identity).
-    // The `name` property in the file is updated on the next save.
+    /**
+     * Renames the file of a material (the file name is the material's identity).
+     * The `name` property in the file is updated on the next save.
+     */
     bool renameMaterial(Material material, const(char)[] newName)
     {
         auto source = materialSource(material);
@@ -1031,8 +1039,10 @@ class Editor: EventListener
         return app.assetManager.textureLoader(cast(string)buffer[0..ext.length]) !is null;
     }
 
-    // Creates a new *.material file in the directory currently shown by the
-    // asset browser and assigns it to the target entity (if any)
+    /**
+     * Creates a new *.material file in the directory currently shown by the
+     * asset browser and assigns it to the target entity (if any).
+     */
     Material createMaterial(Entity target)
     {
         if (!app.ui.assetBrowser.active)
@@ -1483,8 +1493,10 @@ class Editor: EventListener
         releasePendingDocument();
     }
 
-    // Former second half of openScene, minus clearScene() and scene.name
-    // `scene` is already the new scene here.
+    /**
+     * Former second half of openScene, minus clearScene() and scene.name
+     * `scene` is already the new scene here.
+     */
     void populateFromJson(JSONValue root)
     {
         // Materials first: entities refer to them by index

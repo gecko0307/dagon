@@ -93,7 +93,6 @@ class AssetBrowser: Owner
      * Relative paths inside the browser are always kept separate from this path.
      * Drop queued (not yet started) thumbnail jobs when the visible folder changes.
      */
-    /// Called after a file or directory has been renamed: (oldPath, newPath), absolute
     void delegate(string, string) onRenamed;
 
     void cancelThumbnails()

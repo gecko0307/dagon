@@ -119,8 +119,10 @@ class PropertiesPanel: Owner
         tracker.entity = null;
     }
 
-    // Call right after an input widget; `before` is the entity's transformation
-    // captured before the widget was drawn, `changed` is the widget's return value
+    /**
+     * Call right after an input widget; `before` is the entity's transformation
+     * captured before the widget was drawn, `changed` is the widget's return value.
+     */
     void trackTransformEdit(size_t index, Entity entity, TransformSnapshot before, bool changed)
     {
         auto tracker = &transformEditTrackers[index];
@@ -214,9 +216,11 @@ class PropertiesPanel: Owner
             commitMaterialNameEdit();
     }
 
-    // Call right after a widget: if an asset from the asset browser was
-    // dropped on it, returns the asset's absolute path, otherwise null.
-    // The result is valid until the next call.
+    /**
+     * Call right after a widget: if an asset from the asset browser was
+     * dropped on it, returns the asset's absolute path, otherwise null.
+     * The result is valid until the next call.
+     */
     string acceptAssetDrop()
     {
         string result;

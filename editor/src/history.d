@@ -77,8 +77,10 @@ struct TransformSnapshot
     }
 }
 
-/// A reversible editor action. The action is already applied when the
-/// command is pushed to the history, so only undo/redo are needed.
+/**
+ * A reversible editor action. The action is already applied when the
+ * command is pushed to the history, so only undo/redo are needed.
+ */
 abstract class Command
 {
     string name;
@@ -141,17 +143,18 @@ class RenameCommand: Command
     }
 }
 
-/// Removal or creation of an entity together with its children.
-///
-/// Entities are never freed while the scene is alive: removal is "soft",
-/// the whole subtree is hidden (and lights switched off) and the root is
-/// reported through `markDeleted`, so that the editor can skip it in the
-/// inspector and the scene file. This keeps every Entity pointer held by
-/// older commands valid and makes undo trivial.
-///
-/// `creation == false`: the command describes a deletion (use redo() to
-/// perform it, then push). `creation == true`: the command describes an
-/// entity that has just been created (just push; undo removes it).
+/**
+ * Removal or creation of an entity together with its children.
+ * Entities are never freed while the scene is alive: removal is "soft",
+ * the whole subtree is hidden (and lights switched off) and the root is
+ * reported through `markDeleted`, so that the editor can skip it in the
+ * inspector and the scene file. This keeps every Entity pointer held by
+ * older commands valid and makes undo trivial.
+ * 
+ * `creation == false`: the command describes a deletion (use redo() to
+ * perform it, then push). `creation == true`: the command describes an
+ * entity that has just been created (just push; undo removes it).
+ */
 class EntityLifetimeCommand: Command
 {
     private Array!Entity entities;
@@ -313,8 +316,10 @@ class CommandHistory: Owner
             onChanged();
     }
 
-    /// Records a transformation change of an entity that has already
-    /// happened. Does nothing if the transformation did not actually change.
+    /**
+     * Records a transformation change of an entity that has already
+     * happened. Does nothing if the transformation did not actually change.
+     */
     void pushTransform(string name, Entity entity, TransformSnapshot before)
     {
         TransformSnapshot after = TransformSnapshot.capture(entity);
@@ -323,8 +328,10 @@ class CommandHistory: Owner
         push(New!TransformCommand(name, entity, before, after));
     }
 
-    /// Records an entity rename that has already happened.
-    /// Does nothing if the name did not actually change.
+    /**
+     * Records an entity rename that has already happened.
+     * Does nothing if the name did not actually change.
+     */
     void pushRename(Entity entity, string before)
     {
         if (before == entity.name)
