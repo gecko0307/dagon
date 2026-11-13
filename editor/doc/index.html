@@ -1,18 +1,29 @@
-<!doctype html>
-<html lang="ru">
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta http-equiv="cache-control" content="no-cache, must-revalidate, post-check=0, pre-check=0" />
-    <meta http-equiv="cache-control" content="max-age=0" />
-    <meta http-equiv="pragma" content="no-cache" />
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dagon Editor Help</title>
-    <meta name="description" content="Dagon Editor Help">
-    <meta name="author" content="Timur Gafarov">
-</head>
-
-<body>
-    <p>Hello, World!</p>
-</body>
-</html>
+<h1 id="dagon-editor">Dagon Editor</h1>
+<p>Dagon Editor allows you to build scenes from 3D models. It is written
+using Dagon Engine itself, so it guarantees WYSIWYG experience: given
+the same renderer settings, edited scene looks exactly the same as in
+the engine.</p>
+<p>Dagon Editor is not a self-contained game development tool like Unity
+or Godot; it doesn’t manage entire projects. How you use the data
+created in it is fully up to you.</p>
+<h2 id="the-basics">The Basics</h2>
+<p>The Editor uses industry-standard interface layout common to many
+level editors. In the center of the window is a Viewport, an area that
+renders a 3D world. On the left side of the window is an Inspector
+panel, a hierarchical view of all the Entities in the scene. At the
+right side is a Properties panel which allows to edit currently selected
+Entity. At the bottom is an Asset Browser which displays files and
+folders that are found on the disk alongside with the edited scene. At
+the top of the window there are menu bar and a toolbar.</p>
+<p>Note that in a newly created scene, the Asset Browser is disabled,
+because the scene does not yet have an asset root directory set. You
+need to save the scene to a file (Ctrl+S or File -&gt; Save as…), after
+which the Asset Browser will use the parent directory of this file as
+the root directory.</p>
+<p>To import a model, copy it to the root directory (it’s better to make
+a subdirectory for that, such as <code>meshes</code> or
+<code>models</code>) and then drag and drop it to the Viewport.</p>
+<h2 id="transformations">Transformations</h2>
+<p>TODO</p>
+<h2 id="materials">Materials</h2>
+<p>TODO</p>
