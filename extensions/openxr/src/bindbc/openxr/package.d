@@ -30,6 +30,7 @@ module bindbc.openxr;
 public
 {
     import bindbc.openxr.types;
+    import bindbc.openxr.ext;
     import bindbc.openxr.funcs;
     import bindbc.openxr.loader;
 }
