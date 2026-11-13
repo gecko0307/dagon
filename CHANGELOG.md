@@ -12,10 +12,12 @@ Dagon 1.8.0 - TBD
 - **Extensions**
   - `dagon:openxr` - initial experimental OpenXR integration. Windows-only at the moment
 - **Editor**
+  - Texture import
+  - Material saving
   - Asset browser optimizations and improvements. Thumbnails are now created in a separate thread, so the navigation doesn't freeze
   - New JSON serializer
   - Fix Linux compatibility bugs
-  - Add a loading splash screen (only under Windows for now).
+  - Add a loading splash screen (only under Windows for now)
 - **Documentation**
   - Dagon Guidebook: the `doc` folder now can be compiled to PDF using [Pandoc](https://pandoc.org/) with a command `pandoc -d pandoc.yaml`.
 
