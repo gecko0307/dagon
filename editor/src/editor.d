@@ -795,32 +795,7 @@ class Editor: EventListener
         overlay.gizmoMode = GizmoMode.Translation;
         overlay.gizmoPosition = e.positionAbsolute;
         overlay.gizmoOrientation = e.rotationAbsolute;
-        if (e.drawable)
-        {
-            Mesh mesh = cast(Mesh)e.drawable;
-            if (mesh)
-            {
-                overlay.selectionBoundingBoxBaseScale = mesh.boundingBox.size;
-                overlay.selectionBoundingBoxBaseScale.x =
-                    max(overlay.selectionBoundingBoxBaseScale.x, 0.1f);
-                overlay.selectionBoundingBoxBaseScale.y =
-                    max(overlay.selectionBoundingBoxBaseScale.y, 0.1f);
-                overlay.selectionBoundingBoxBaseScale.z =
-                    max(overlay.selectionBoundingBoxBaseScale.z, 0.1f);
-            }
-            else
-            {
-                overlay.selectionBoundingBoxBaseScale = Vector3f(1.0f, 1.0f, 1.0f);
-            }
-        }
-        else
-        {
-            overlay.selectionBoundingBoxBaseScale = Vector3f(1.0f, 1.0f, 1.0f);
-        }
-        overlay.selectionBoundingBoxScale = Vector3f(
-            overlay.selectionBoundingBoxBaseScale.x * abs(e.scaling.x),
-            overlay.selectionBoundingBoxBaseScale.y * abs(e.scaling.y),
-            overlay.selectionBoundingBoxBaseScale.z * abs(e.scaling.z));
+        // The selection bounding box is derived from the entity by the overlay itself
     }
 
     void onAssetDroppedOnViewport(string assetPath)

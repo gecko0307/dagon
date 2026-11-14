@@ -92,8 +92,9 @@ class InteractionOverlay: EventListener
     Vector3f gizmoPosition;
     Quaternionf gizmoOrientation;
     Matrix4x4f gizmoTransformation;
-    Vector3f selectionBoundingBoxScale;
-    Vector3f selectionBoundingBoxBaseScale;
+    Vector3f selectionBoundingBoxCenter; // local-space center of the selected mesh's AABB
+    Vector3f selectionBoundingBoxSize;   // local-space half-extents of the selected mesh's AABB
+    Drawable selectionBoundingBoxSource; // drawable the cached AABB was computed for
     GizmoLines rotationLines;
     GizmoLines scaleLines;
     FloorGridLines floorGridLines;
@@ -161,8 +162,37 @@ class InteractionOverlay: EventListener
         gizmoOrientation = Quaternionf.identity;
         gizmoTransformation = Matrix4x4f.identity;
         
-        selectionBoundingBoxScale = Vector3f(1.0f, 1.0f, 1.0f);
-        selectionBoundingBoxBaseScale = Vector3f(1.0f, 1.0f, 1.0f);
+        selectionBoundingBoxCenter = Vector3f(0.0f, 0.0f, 0.0f);
+        selectionBoundingBoxSize = Vector3f(1.0f, 1.0f, 1.0f);
+        selectionBoundingBoxSource = null;
+    }
+
+    // Fetches the local-space AABB of the entity's mesh (cached per drawable).
+    // Returns false if the entity has nothing to outline.
+    bool updateSelectionBoundingBox(Entity entity)
+    {
+        if (!entity)
+            return false;
+
+        Mesh mesh = cast(Mesh)entity.drawable;
+        if (!mesh || mesh.vertices.length == 0)
+        {
+            selectionBoundingBoxSource = null;
+            return false;
+        }
+
+        if (selectionBoundingBoxSource !is mesh)
+        {
+            mesh.calcBoundingBox();
+            selectionBoundingBoxCenter = mesh.boundingBox.center;
+            // Minimum half-extent keeps flat meshes (planes) visible
+            selectionBoundingBoxSize = Vector3f(
+                max(mesh.boundingBox.size.x, 0.1f),
+                max(mesh.boundingBox.size.y, 0.1f),
+                max(mesh.boundingBox.size.z, 0.1f));
+            selectionBoundingBoxSource = mesh;
+        }
+        return true;
     }
     
     void activeCamera(Camera camera) @property
@@ -716,8 +746,6 @@ class InteractionOverlay: EventListener
             float scaleDelta = snappedValue(projectedDelta / 100.0f, scaleSnapIncrement);
             float value = max(0.001f, dragStartScale[draggedAxis] + scaleDelta);
             entity.scaling[draggedAxis] = value;
-            selectionBoundingBoxScale[draggedAxis] =
-                selectionBoundingBoxBaseScale[draggedAxis] * abs(value);
         }
         else if (gizmoMode == GizmoMode.Rotation)
         {
@@ -807,10 +835,15 @@ class InteractionOverlay: EventListener
             sunDirectionLines.render(&state);
             gizmoShader.unbindParameters(&state);
         }
-        else if (ui.scene.showSelectedEntityBoundingBox)
+        else if (ui && ui.scene.showSelectedEntityBoundingBox &&
+                 updateSelectionBoundingBox(ui.editor.selectedEntity))
         {
-            state.modelViewMatrix = viewMatrix *
-                (translationMatrix(gizmoPosition) * orientationMatrix * scaleMatrix(selectionBoundingBoxScale));
+            // Mesh AABB (local space) -> entity's full world transform (position, rotation, scaling)
+            Matrix4x4f boxTransformation =
+                ui.editor.selectedEntity.absoluteTransformation *
+                translationMatrix(selectionBoundingBoxCenter) *
+                scaleMatrix(selectionBoundingBoxSize);
+            state.modelViewMatrix = viewMatrix * boxTransformation;
             state.projectionMatrix = view.projectionMatrix;
             gizmoShader.bindParameters(&state);
             selectionBoundingBox.render(&state);
