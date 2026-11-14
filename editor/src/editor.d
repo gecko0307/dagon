@@ -850,43 +850,130 @@ class Editor: EventListener
         return true;
     }
 
-    /**
-     * Nearest entity whose mesh bounding box is hit by the world-space ray.
-     * The ray is transformed into each entity's local space, so rotated and
-     * scaled boxes are tested exactly. The ray parameter stays comparable
-     * across entities because the local direction is not renormalized.
-     */
-    Entity pickEntity(Vector3f origin, Vector3f direction)
+    // Ray vs sphere. Returns the entry parameter (0 if the origin is inside).
+    static bool rayVsSphere(Vector3f o, Vector3f d, Vector3f center, float radius, out float tHit)
     {
-        Entity best = null;
-        float bestT = float.max;
-        foreach (e; scene.world.entities)
-        {
-            if (!isSerializableEntity(e) || !e.visible)
-                continue;
-            Mesh mesh = cast(Mesh)e.drawable;
-            if (mesh is null || mesh.vertices.length == 0)
-                continue;
-
-            AABB box = meshBox(mesh);
-            Matrix4x4f inv = e.invAbsoluteTransformation;
-            Vector4f lo = Vector4f(origin.x, origin.y, origin.z, 1.0f) * inv;
-            Vector4f ld = Vector4f(direction.x, direction.y, direction.z, 0.0f) * inv;
-
-            float t;
-            if (rayVsBox(Vector3f(lo.x, lo.y, lo.z), Vector3f(ld.x, ld.y, ld.z), box.pmin, box.pmax, t) && t < bestT)
-            {
-                bestT = t;
-                best = e;
-            }
-        }
-        return best;
+        Vector3f oc = o - center;
+        float b = dot(oc, d);
+        float c = dot(oc, oc) - radius * radius;
+        float disc = b * b - c;
+        if (disc < 0.0f)
+            return false;
+        float s = sqrt(disc);
+        float t = -b - s;
+        if (t < 0.0f)
+            t = -b + s;
+        if (t < 0.0f)
+            return false;
+        tHit = max(t, 0.0f);
+        return true;
     }
 
-    // Click in the viewport: select the nearest hit entity, or clear the selection on empty space
-    void selectEntityAtRay(Vector3f origin, Vector3f direction)
+    struct PickHit
     {
-        Entity hit = pickEntity(origin, direction);
+        Entity entity;
+        float t;
+        size_t order; // tie-breaker: position in the world's entity list
+    }
+
+    static bool hitBefore(ref const PickHit a, ref const PickHit b)
+    {
+        return a.t < b.t || (a.t == b.t && a.order < b.order);
+    }
+
+    /**
+     * Picks an entity under the world-space ray. Meshes are tested by their
+     * local-space bounding box (the ray is transformed into the entity's local
+     * space, so rotated and scaled boxes are exact; the ray parameter stays
+     * comparable across entities because the local direction is not
+     * renormalized). Lights have no mesh: they are tested as a sphere around
+     * their position whose radius is `lightPickFactor` times the distance to
+     * the camera, which keeps its on-screen size constant.
+     *
+     * Returns the nearest hit. With `cycle`, if the currently selected entity
+     * is among the hits, returns the next one behind it instead (wrapping
+     * around to the nearest), so repeated clicks walk through overlapping objects.
+     */
+    Entity pickEntity(Vector3f origin, Vector3f direction, Vector3f cameraPosition,
+        float lightPickFactor, bool cycle)
+    {
+        Array!PickHit hits;
+        scope(exit) hits.free();
+
+        size_t order = 0;
+        foreach (e; scene.world.entities)
+        {
+            order++;
+            if (!isSerializableEntity(e) || !e.visible)
+                continue;
+
+            float t;
+            Mesh mesh = cast(Mesh)e.drawable;
+            if (mesh !is null && mesh.vertices.length > 0)
+            {
+                AABB box = meshBox(mesh);
+                Matrix4x4f inv = e.invAbsoluteTransformation;
+                Vector4f lo = Vector4f(origin.x, origin.y, origin.z, 1.0f) * inv;
+                Vector4f ld = Vector4f(direction.x, direction.y, direction.z, 0.0f) * inv;
+                if (rayVsBox(Vector3f(lo.x, lo.y, lo.z), Vector3f(ld.x, ld.y, ld.z), box.pmin, box.pmax, t))
+                    hits.append(PickHit(e, t, order));
+            }
+            else if (cast(Light)e !is null)
+            {
+                Vector3f position = e.positionAbsolute;
+                float radius = max(distance(cameraPosition, position) * lightPickFactor, 0.05f);
+                if (rayVsSphere(origin, direction, position, radius, t))
+                    hits.append(PickHit(e, t, order));
+            }
+        }
+
+        if (hits.length == 0)
+            return null;
+
+        // Nearest hit overall
+        size_t nearest = 0;
+        foreach (i; 1 .. hits.length)
+        {
+            if (hitBefore(hits.data[i], hits.data[nearest]))
+                nearest = i;
+        }
+
+        if (!cycle || selectedEntity is null)
+            return hits.data[nearest].entity;
+
+        // Position of the selected entity among the hits
+        long selectedIndex = -1;
+        foreach (i; 0 .. hits.length)
+        {
+            if (hits.data[i].entity is selectedEntity)
+            {
+                selectedIndex = cast(long)i;
+                break;
+            }
+        }
+        if (selectedIndex < 0)
+            return hits.data[nearest].entity;
+
+        // The closest hit that lies strictly behind the selected one
+        long next = -1;
+        foreach (i; 0 .. hits.length)
+        {
+            if (cast(long)i == selectedIndex)
+                continue;
+            if (!hitBefore(hits.data[cast(size_t)selectedIndex], hits.data[i]))
+                continue;
+            if (next < 0 || hitBefore(hits.data[i], hits.data[cast(size_t)next]))
+                next = cast(long)i;
+        }
+
+        return next >= 0 ? hits.data[cast(size_t)next].entity : hits.data[nearest].entity;
+    }
+
+    // Click in the viewport: select the picked entity, or clear the selection on empty space
+    void selectEntityAtRay(Vector3f origin, Vector3f direction, Vector3f cameraPosition,
+        float lightPickFactor, bool cycle)
+    {
+        Entity hit = pickEntity(origin, direction, cameraPosition, lightPickFactor, cycle);
         if (hit is null)
         {
             if (selectedEntity !is null)

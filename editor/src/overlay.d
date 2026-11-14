@@ -102,9 +102,13 @@ class InteractionOverlay: EventListener
 
     // Viewport click-to-select: armed on press, resolved on release
     enum float pickClickTolerance = 4.0f; // pixels the mouse may move and still count as a click
+    enum float lightPickRadiusPixels = 12.0f; // on-screen pick radius of a light
     bool pickPending;
     float pickStartX;
     float pickStartY;
+    bool hasLastPick; // last completed pick, for cycling through overlapping objects
+    float lastPickX;
+    float lastPickY;
 
     bool draggingGizmo;
     int draggedAxis = -1;
@@ -640,6 +644,43 @@ class InteractionOverlay: EventListener
         draggedAxis = -1;
     }
 
+    // Small markers at light positions: lights have no geometry, this is what
+    // the user clicks to select them
+    void drawLightMarkers()
+    {
+        if (!visible || !ui || ui.editor.scene is null || view.camera is null)
+            return;
+
+        ImDrawList* drawList = igGetForegroundDrawList();
+        float pr = pixelRatio;
+        ImVec2 clipMin = ImVec2(
+            ui.editorViewport.position.x / pr,
+            ui.editorViewport.position.y / pr);
+        ImVec2 clipMax = ImVec2(
+            clipMin.x + ui.editorViewport.size.x / pr,
+            clipMin.y + ui.editorViewport.size.y / pr);
+        ImDrawList_PushClipRect(drawList, clipMin, clipMax, true);
+
+        foreach (e; ui.editor.scene.world.entities)
+        {
+            if (cast(Light)e is null || !ui.editor.isSerializableEntity(e) || !e.visible)
+                continue;
+
+            GizmoPoint p;
+            if (!project(e.positionAbsolute, p))
+                continue;
+
+            bool selected = e is ui.editor.selectedEntity;
+            ImVec2 center = ImVec2(p.x, p.y);
+            ImDrawList_AddCircleFilled(drawList, center, selected ? 7.0f : 5.0f, 0xAA000000, 16);
+            ImDrawList_AddCircle(drawList, center, selected ? 7.0f : 5.0f,
+                selected ? 0xFFFFFFFF : 0xFF55DDFF, 16, selected ? 2.0f : 1.5f);
+            ImDrawList_AddCircleFilled(drawList, center, 1.5f, selected ? 0xFFFFFFFF : 0xFF55DDFF, 8);
+        }
+
+        ImDrawList_PopClipRect(drawList);
+    }
+
     void handleGizmoInput()
     {
         updateViewport();
@@ -648,6 +689,8 @@ class InteractionOverlay: EventListener
             finishGizmoDrag();
             return;
         }
+
+        drawLightMarkers();
 
         // Without a selection there is no gizmo, but clicks must still reach entity picking
         bool hasGizmo = ui.editor.selectedEntity !is null && gizmoMode != GizmoMode.Disabled;
@@ -743,7 +786,25 @@ class InteractionOverlay: EventListener
                     Vector3f rayOrigin, rayDirection;
                     GizmoPoint pressPoint = GizmoPoint(pickStartX, pickStartY);
                     if (mouseRay(pressPoint, rayOrigin, rayDirection))
-                        ui.editor.selectEntityAtRay(rayOrigin, rayDirection);
+                    {
+                        // Clicking again at the same spot walks through overlapping objects
+                        float cdx = pickStartX - lastPickX;
+                        float cdy = pickStartY - lastPickY;
+                        bool cycle = hasLastPick &&
+                            cdx * cdx + cdy * cdy <= pickClickTolerance * pickClickTolerance;
+
+                        float halfFov = degtorad(view.camera.fov * 0.5f);
+                        float lightPickFactor = 2.0f * tan(halfFov) *
+                            lightPickRadiusPixels * pixelRatio / cast(float)view.height;
+
+                        ui.editor.selectEntityAtRay(
+                            rayOrigin, rayDirection,
+                            view.camera.positionAbsolute,
+                            lightPickFactor, cycle);
+                        lastPickX = pickStartX;
+                        lastPickY = pickStartY;
+                        hasLastPick = true;
+                    }
                 }
             }
             else
@@ -752,7 +813,10 @@ class InteractionOverlay: EventListener
                 float pdx = ui.io.MousePos.x - pickStartX;
                 float pdy = ui.io.MousePos.y - pickStartY;
                 if (pdx * pdx + pdy * pdy > pickClickTolerance * pickClickTolerance)
+                {
                     pickPending = false;
+                    hasLastPick = false; // the camera moves: the next click starts a fresh pick
+                }
             }
         }
 
