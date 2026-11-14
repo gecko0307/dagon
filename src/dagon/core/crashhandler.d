@@ -143,6 +143,7 @@ version(Windows)
         {
             case 0xC0000005: return "access violation";
             case 0x80000003: return "breakpoint";
+            case 0xC0000090: return "floating-point invalid operation";
             case 0xC0000094: return "integer division by zero";
             default: return "unknown exception";
         }
