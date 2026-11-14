@@ -43,6 +43,8 @@ import dlib.core.memory;
 import dlib.math.base;
 import dlib.math.vector;
 import dlib.math.quaternion;
+import dlib.math.matrix;
+import dlib.geometry.aabb;
 import dlib.image.color;
 import dlib.container.array;
 import dlib.container.dict;
@@ -237,6 +239,9 @@ class Editor: EventListener
      */
     Dict!(bool, Entity) deletedEntities;
 
+    // Local-space mesh bounds used for viewport picking (cached per mesh)
+    Dict!(AABB, Mesh) meshBounds;
+
     void setMeshPath(Entity e, const(char)[] path)
     {
         if (auto old = e in meshPaths)
@@ -277,6 +282,7 @@ class Editor: EventListener
             Delete(source);
         materialSources.clear();
         deletedEntities.clear();
+        meshBounds.clear();
     }
 
     /**
@@ -373,7 +379,8 @@ class Editor: EventListener
         meshPaths = dict!(String, Entity);
         materialSources = dict!(MaterialSource, Material);
         deletedEntities = dict!(bool, Entity);
-        
+        meshBounds = dict!(AABB, Mesh);
+
         // TODO: load editor.conf
         
         overlay = New!InteractionOverlay(eventManager, this);
@@ -448,6 +455,7 @@ class Editor: EventListener
         Delete(meshPaths);
         Delete(materialSources);
         Delete(deletedEntities);
+        Delete(meshBounds);
         Delete(storage);
     }
     
@@ -796,6 +804,102 @@ class Editor: EventListener
         overlay.gizmoPosition = e.positionAbsolute;
         overlay.gizmoOrientation = e.rotationAbsolute;
         // The selection bounding box is derived from the entity by the overlay itself
+    }
+
+    // Local-space AABB of a mesh, same minimum half-extent as the selection box
+    AABB meshBox(Mesh mesh)
+    {
+        if (auto cached = mesh in meshBounds)
+            return *cached;
+        mesh.calcBoundingBox();
+        auto size = Vector3f(
+            max(mesh.boundingBox.size.x, 0.1f),
+            max(mesh.boundingBox.size.y, 0.1f),
+            max(mesh.boundingBox.size.z, 0.1f));
+        auto box = AABB(mesh.boundingBox.center, size);
+        meshBounds[mesh] = box;
+        return box;
+    }
+
+    // Slab test. Returns the ray parameter of the entry point (0 if the origin is inside).
+    static bool rayVsBox(Vector3f o, Vector3f d, Vector3f bmin, Vector3f bmax, out float tHit)
+    {
+        float tNear = 0.0f;
+        float tFar = float.max;
+        foreach (i; 0 .. 3)
+        {
+            if (d[i] > -1.0e-8f && d[i] < 1.0e-8f)
+            {
+                if (o[i] < bmin[i] || o[i] > bmax[i])
+                    return false;
+            }
+            else
+            {
+                float invD = 1.0f / d[i];
+                float t1 = (bmin[i] - o[i]) * invD;
+                float t2 = (bmax[i] - o[i]) * invD;
+                if (t1 > t2)
+                    swap(t1, t2);
+                tNear = max(tNear, t1);
+                tFar = min(tFar, t2);
+                if (tNear > tFar)
+                    return false;
+            }
+        }
+        tHit = tNear;
+        return true;
+    }
+
+    /**
+     * Nearest entity whose mesh bounding box is hit by the world-space ray.
+     * The ray is transformed into each entity's local space, so rotated and
+     * scaled boxes are tested exactly. The ray parameter stays comparable
+     * across entities because the local direction is not renormalized.
+     */
+    Entity pickEntity(Vector3f origin, Vector3f direction)
+    {
+        Entity best = null;
+        float bestT = float.max;
+        foreach (e; scene.world.entities)
+        {
+            if (!isSerializableEntity(e) || !e.visible)
+                continue;
+            Mesh mesh = cast(Mesh)e.drawable;
+            if (mesh is null || mesh.vertices.length == 0)
+                continue;
+
+            AABB box = meshBox(mesh);
+            Matrix4x4f inv = e.invAbsoluteTransformation;
+            Vector4f lo = Vector4f(origin.x, origin.y, origin.z, 1.0f) * inv;
+            Vector4f ld = Vector4f(direction.x, direction.y, direction.z, 0.0f) * inv;
+
+            float t;
+            if (rayVsBox(Vector3f(lo.x, lo.y, lo.z), Vector3f(ld.x, ld.y, ld.z), box.pmin, box.pmax, t) && t < bestT)
+            {
+                bestT = t;
+                best = e;
+            }
+        }
+        return best;
+    }
+
+    // Click in the viewport: select the nearest hit entity, or clear the selection on empty space
+    void selectEntityAtRay(Vector3f origin, Vector3f direction)
+    {
+        Entity hit = pickEntity(origin, direction);
+        if (hit is null)
+        {
+            if (selectedEntity !is null)
+                clearSelection();
+            return;
+        }
+        if (hit is selectedEntity)
+            return;
+
+        GizmoMode mode = overlay.gizmoMode;
+        selectEntity(hit);
+        if (mode != GizmoMode.Disabled)
+            overlay.gizmoMode = mode;
     }
 
     void onAssetDroppedOnViewport(string assetPath)

@@ -100,6 +100,12 @@ class InteractionOverlay: EventListener
     FloorGridLines floorGridLines;
     bool visible = true;
 
+    // Viewport click-to-select: armed on press, resolved on release
+    enum float pickClickTolerance = 4.0f; // pixels the mouse may move and still count as a click
+    bool pickPending;
+    float pickStartX;
+    float pickStartY;
+
     bool draggingGizmo;
     int draggedAxis = -1;
     float dragStartX;
@@ -637,11 +643,16 @@ class InteractionOverlay: EventListener
     void handleGizmoInput()
     {
         updateViewport();
-        if (!ui || !ui.editor.selectedEntity || gizmoMode == GizmoMode.Disabled)
+        if (!ui)
         {
             finishGizmoDrag();
             return;
         }
+
+        // Without a selection there is no gizmo, but clicks must still reach entity picking
+        bool hasGizmo = ui.editor.selectedEntity !is null && gizmoMode != GizmoMode.Disabled;
+        if (!hasGizmo)
+            finishGizmoDrag();
 
         if (igIsMouseClicked(ImGuiMouseButton.Left) && !ui.io.WantCaptureMouse)
         {
@@ -656,7 +667,8 @@ class InteractionOverlay: EventListener
                 mouse.y >= viewportTop && mouse.y <= viewportBottom)
             {
                 GizmoPoint center, axisEnd;
-                draggedAxis = pickAxis(mouse, center, axisEnd);
+                // The gizmo has priority over entity picking
+                draggedAxis = hasGizmo ? pickAxis(mouse, center, axisEnd) : -1;
                 bool hasRotationStart = false;
                 if (draggedAxis >= 0 && gizmoMode == GizmoMode.Rotation)
                 {
@@ -709,6 +721,38 @@ class InteractionOverlay: EventListener
                     dragDistance = 0.0f;
                     dragStartAxisOffset = ((mouse.x - center.x) * dragAxisX + (mouse.y - center.y) * dragAxisY) / dragAxisLength;
                 }
+                else if (view.camera !is null)
+                {
+                    // No gizmo handle under the cursor: this may be a click (selection)
+                    // or the start of a camera drag (freeview). Decided on release.
+                    pickPending = true;
+                    pickStartX = mouse.x;
+                    pickStartY = mouse.y;
+                }
+            }
+        }
+
+        if (pickPending)
+        {
+            if (draggingGizmo || !igIsMouseDown(ImGuiMouseButton.Left))
+            {
+                bool doPick = pickPending && !draggingGizmo;
+                pickPending = false;
+                if (doPick && view.camera !is null)
+                {
+                    Vector3f rayOrigin, rayDirection;
+                    GizmoPoint pressPoint = GizmoPoint(pickStartX, pickStartY);
+                    if (mouseRay(pressPoint, rayOrigin, rayDirection))
+                        ui.editor.selectEntityAtRay(rayOrigin, rayDirection);
+                }
+            }
+            else
+            {
+                // Mouse moved too far: freeview takes precedence, no selection
+                float pdx = ui.io.MousePos.x - pickStartX;
+                float pdy = ui.io.MousePos.y - pickStartY;
+                if (pdx * pdx + pdy * pdy > pickClickTolerance * pickClickTolerance)
+                    pickPending = false;
             }
         }
 
