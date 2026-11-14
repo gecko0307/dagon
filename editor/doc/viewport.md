@@ -16,16 +16,6 @@ The Viewport is the central area of Dagon Editor. It renders the 3D scene and le
 
 ## Transform Gizmo
 
-A red-green-blue manipulator that appears when an entity is selected is called a *gizmo*. It allows you to move, rotate, or scale entities. Switch the transformation mode using the corresponding toolbar buttons.
+A red-gree-blue manipulator that appears when an entity is selected is called a gizmo. It allows to transform entities: move, rotate, or scale. Transformation mode is switched using the corresponding toolbar buttons.
 
-Left-click a gizmo axis and drag the mouse to transform the entity along that axis.
-
-## Snapping
-
-Hold Left Ctrl while transforming an entity to snap the transformation to discrete steps. The snapping increment can be adjusted on the toolbar.
-
-The default increments are:
-
-- **Move:** 1 m
-- **Rotate:** 15°
-- **Scale:** 0.1
+Left-click a gizmo axis and drag the mouse to transform the entity along that axis. Holding Left Ctrl enables snapping the transform to discrete steps. Snapping increment can be adjusted on the toolbar. By default it is 1m for moving, 15° for rotation, and 0.1 for scaling.
