@@ -198,7 +198,7 @@ Documentation status:
 
 ## Dagon Editor
 
-Dagon provides a basic WYSIWYG scene editor, made using Dagon itself. It allows to import OBJ models, texture, create materials, and export scenes to JSON-based format that can be loaded by the game (see `SceneAsset`). Only a subset of Dagon's scene object model is implemented so far.
+Dagon provides a basic WYSIWYG scene editor, made using Dagon itself. It allows to import OBJ models and textures, create materials, manipulate entities, and export scenes to JSON-based format that can be loaded by the game (see `SceneAsset`). Only a subset of Dagon's scene object model is implemented so far.
 
 Editor status:
 * ✔️ Main GUI

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#171e28">
+  <meta name="description" content="Dagon Editor documentation">
+  <title>Viewport</title>
+  <link rel="stylesheet" href="style.css">
+  </head>
+<body>
+  <div class="mobile-bar">
+    <a class="mobile-brand" href="index.html"><span class="brand-mark">D</span><span>Dagon Editor</span></a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="sidebar">Contents&nbsp; ☰</button>
+  </div>
+
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">D</span>
+      <span><span class="brand-name">Dagon Editor</span><span class="brand-caption">Documentation</span></span>
+    </a>
+
+    <div class="nav-label">Documentation</div>
+    <nav class="site-nav" aria-label="Documentation">
+      <a href="index.html" data-page="index.html">Overview</a>
+      <a href="viewport.html" data-page="viewport.html">Viewport</a>
+    </nav>
+
+        <div class="nav-label local-label">On this page</div>
+    <nav id="TOC" aria-label="On this page">
+      <ul>
+      <li><a href="#viewport" id="toc-viewport">Viewport</a>
+      <ul>
+      <li><a href="#mouse-and-keyboard-controls"
+      id="toc-mouse-and-keyboard-controls">Mouse and Keyboard
+      Controls</a></li>
+      <li><a href="#transform-gizmo" id="toc-transform-gizmo">Transform
+      Gizmo</a></li>
+      <li><a href="#snapping" id="toc-snapping">Snapping</a></li>
+      </ul></li>
+      </ul>
+    </nav>
+    
+    <div class="sidebar-bottom"><strong>Dagon Engine</strong><br>Scene editing documentation</div>
+  </aside>
+
+  <div class="page-shell">
+    <main class="content-wrap">
+      <article class="article">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+          <a href="index.html">Documentation</a>
+          <span class="breadcrumb-separator" aria-hidden="true">/</span>
+          <span aria-current="page">Viewport</span>
+        </nav>
+                <h1 id="viewport">Viewport</h1>
+                <p>The Viewport is the central area of Dagon Editor. It
+                renders the 3D scene and lets you select entities,
+                navigate the camera, and transform objects.</p>
+                <h2 id="mouse-and-keyboard-controls">Mouse and Keyboard
+                Controls</h2>
+                <table>
+                <colgroup>
+                <col style="width: 50%" />
+                <col style="width: 50%" />
+                </colgroup>
+                <thead>
+                <tr>
+                <th style="text-align: left;">Input</th>
+                <th style="text-align: left;">Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td style="text-align: left;">Left mouse button (single
+                click)</td>
+                <td style="text-align: left;">Select an entity. Shift +
+                click allows you to select multiple entities.</td>
+                </tr>
+                <tr>
+                <td style="text-align: left;">Left mouse button (press
+                and hold)</td>
+                <td style="text-align: left;">Orbit the camera. Hold
+                Left Ctrl to zoom in or out. Drag a gizmo axis to
+                transform an entity.</td>
+                </tr>
+                <tr>
+                <td style="text-align: left;">Right mouse button (press
+                and hold)</td>
+                <td style="text-align: left;">Pan the camera.</td>
+                </tr>
+                <tr>
+                <td style="text-align: left;">Mouse wheel</td>
+                <td style="text-align: left;">Zoom in or out.</td>
+                </tr>
+                <tr>
+                <td style="text-align: left;">Delete</td>
+                <td style="text-align: left;">Delete the selected
+                entity.</td>
+                </tr>
+                <tr>
+                <td style="text-align: left;">Ctrl + Z</td>
+                <td style="text-align: left;">Undo an operation.</td>
+                </tr>
+                <tr>
+                <td style="text-align: left;">Ctrl + Y</td>
+                <td style="text-align: left;">Redo an operation.</td>
+                </tr>
+                </tbody>
+                </table>
+                <h2 id="transform-gizmo">Transform Gizmo</h2>
+                <p>A red-green-blue manipulator that appears when an
+                entity is selected is called a <em>gizmo</em>. It allows
+                you to move, rotate, or scale entities. Switch the
+                transformation mode using the corresponding toolbar
+                buttons.</p>
+                <p>Left-click a gizmo axis and drag the mouse to
+                transform the entity along that axis.</p>
+                <h2 id="snapping">Snapping</h2>
+                <p>Hold Left Ctrl while transforming an entity to snap
+                the transformation to discrete steps. The snapping
+                increment can be adjusted on the toolbar.</p>
+                <p>The default increments are:</p>
+                <ul>
+                <li><strong>Move:</strong> 1 m</li>
+                <li><strong>Rotate:</strong> 15°</li>
+                <li><strong>Scale:</strong> 0.1</li>
+                </ul>
+      </article>
+      <footer class="footer">Dagon Editor · Documentation</footer>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      var button = document.querySelector('.menu-toggle');
+      var currentPage = window.location.pathname.split('/').pop() || 'index.html';
+      var pageLinks = document.querySelectorAll('.site-nav a[data-page]');
+
+      Array.prototype.forEach.call(pageLinks, function (link) {
+        if (link.getAttribute('data-page') === currentPage) {
+          link.setAttribute('aria-current', 'page');
+        }
+      });
+
+      if (button) button.addEventListener('click', function () {
+        var open = document.body.classList.toggle('nav-open');
+        button.setAttribute('aria-expanded', String(open));
+      });
+
+      var links = Array.prototype.slice.call(document.querySelectorAll('#TOC a'));
+      var headings = links.map(function (link) {
+        return document.getElementById(decodeURIComponent(link.hash.slice(1)));
+      }).filter(Boolean);
+
+      if ('IntersectionObserver' in window) {
+        var observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              links.forEach(function (link) {
+                link.classList.toggle('active', link.hash === '#' + entry.target.id);
+              });
+            }
+          });
+        }, { rootMargin: '-12% 0px -72% 0px' });
+        headings.forEach(function (heading) { observer.observe(heading); });
+      }
+
+      links.forEach(function (link) {
+        link.addEventListener('click', function () {
+          document.body.classList.remove('nav-open');
+          if (button) button.setAttribute('aria-expanded', 'false');
+        });
+      });
+    }());
+  </script>
+</body>
+</html>

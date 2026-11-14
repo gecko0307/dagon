@@ -1,0 +1,234 @@
+/* Dagon Editor documentation — lightweight, fully offline theme */
+:root {
+  color-scheme: light;
+  --page: #f4f6f8;
+  --paper: #ffffff;
+  --ink: #202833;
+  --muted: #687482;
+  --line: #e5e9ee;
+  --sidebar: #171e28;
+  --sidebar-ink: #d8e0e9;
+  --sidebar-muted: #8995a4;
+  --accent: #37c6b0;
+  --accent-strong: #159d8a;
+  --code-bg: #f0f3f6;
+  --shadow: 0 18px 50px rgba(22, 34, 48, .07);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 32px; }
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font: 16px/1.75 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent-strong); text-decoration: none; }
+a:hover { color: #087e70; }
+.page-shell { min-height: 100vh; }
+.sidebar {
+  position: fixed; inset: 0 auto 0 0; z-index: 5;
+  display: flex; flex-direction: column;
+  width: 272px; padding: 34px 22px 24px;
+  background:
+    radial-gradient(ellipse at 0% 0%, rgba(55,198,176,.12), transparent 42%),
+    var(--sidebar);
+  color: var(--sidebar-ink);
+}
+.brand { display: flex; align-items: center; gap: 13px; padding: 0 10px 34px; }
+.brand-mark {
+  display: grid; place-items: center; width: 38px; height: 38px;
+  border: 1px solid rgba(55,198,176,.42); border-radius: 11px;
+  color: var(--accent); font-size: 18px; font-weight: 750;
+  background: rgba(55,198,176,.09);
+}
+.brand-name { font-size: 15px; line-height: 1.2; font-weight: 700; letter-spacing: .015em; }
+.brand-caption { margin-top: 5px; color: var(--sidebar-muted); font-size: 11px; letter-spacing: .13em; text-transform: uppercase; }
+.nav-label { padding: 0 11px 12px; color: var(--sidebar-muted); font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+#TOC { overflow-y: auto; padding: 0 0 12px; }
+#TOC ul { margin: 0; padding: 0; list-style: none; }
+#TOC li { margin: 3px 0; }
+#TOC a {
+  display: block; padding: 8px 11px; border-radius: 7px;
+  color: #aeb9c6; font-size: 13px; line-height: 1.45;
+  transition: color .15s ease, background .15s ease;
+}
+#TOC a:hover, #TOC a:focus-visible { color: #fff; background: rgba(255,255,255,.065); outline: none; }
+#TOC a.active { color: #fff; background: rgba(55,198,176,.13); box-shadow: inset 2px 0 var(--accent); }
+.sidebar-bottom { margin-top: auto; padding: 18px 10px 0; border-top: 1px solid rgba(255,255,255,.09); color: var(--sidebar-muted); font-size: 11px; line-height: 1.6; }
+.sidebar-bottom strong { color: #cbd5df; font-weight: 600; }
+.content-wrap { margin-left: 272px; padding: 58px 54px 72px; }
+.article {
+  width: min(100%, 860px); min-height: calc(100vh - 130px);
+  margin: 0 auto; padding: 58px 72px 76px;
+  border: 1px solid rgba(221,227,233,.8); border-radius: 14px;
+  background: var(--paper); box-shadow: var(--shadow);
+}
+.article > h1 {
+  margin: 0 0 23px; color: #18232e;
+  font-size: clamp(34px, 4vw, 46px); line-height: 1.12;
+  letter-spacing: -.045em; font-weight: 750;
+}
+.article > h1::after {
+  content: ""; display: block; width: 46px; height: 3px;
+  margin-top: 25px; border-radius: 2px; background: var(--accent);
+}
+.article p { margin: 0 0 19px; color: #4e5b69; }
+.article > p:first-of-type { color: #344251; font-size: 17px; line-height: 1.8; }
+.article h2 {
+  margin: 52px 0 19px; padding-top: 25px;
+  border-top: 1px solid var(--line);
+  color: #202c38; font-size: 23px; line-height: 1.3;
+  letter-spacing: -.025em; font-weight: 700;
+}
+.article h3 { margin: 32px 0 12px; font-size: 18px; }
+.article ul, .article ol { margin: 10px 0 25px; padding-left: 23px; color: #4e5b69; }
+.article li { padding-left: 5px; margin: 8px 0; }
+.article li::marker { color: var(--accent-strong); }
+.article code {
+  padding: 3px 6px; border: 1px solid #e5e9ed; border-radius: 5px;
+  background: var(--code-bg); color: #334354;
+  font: .88em/1.5 ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+}
+.article pre { overflow-x: auto; padding: 18px 20px; border-radius: 9px; background: #18212c; color: #e4edf5; }
+.article pre code { padding: 0; border: 0; background: transparent; color: inherit; }
+.article blockquote {
+  margin: 26px 0; padding: 15px 20px;
+  border-left: 3px solid var(--accent); border-radius: 0 7px 7px 0;
+  background: #f3faf8; color: #52636c;
+}
+.article img { max-width: 100%; height: auto; border-radius: 8px; }
+.article table { width: 100%; margin: 24px 0; border-collapse: collapse; font-size: 14px; }
+.article th, .article td { padding: 11px 13px; border-bottom: 1px solid var(--line); text-align: left; }
+.article th { color: #344251; background: #f6f8fa; font-weight: 650; }
+.article hr { margin: 38px 0; border: 0; border-top: 1px solid var(--line); }
+.mobile-bar { display: none; }
+.footer { width: min(100%, 860px); margin: 22px auto 0; color: #8a95a1; font-size: 11px; text-align: center; }
+@media (max-width: 1050px) {
+  .content-wrap { padding: 36px 28px 50px; }
+  .article { padding: 48px 48px 60px; }
+}
+@media (max-width: 760px) {
+  .mobile-bar {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 58px; padding: 0 18px; color: var(--sidebar-ink);
+    background: var(--sidebar); box-shadow: 0 3px 15px rgba(0,0,0,.12);
+  }
+  .mobile-brand { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; }
+  .mobile-brand .brand-mark { width: 30px; height: 30px; border-radius: 8px; font-size: 15px; }
+  .menu-toggle {
+    border: 1px solid rgba(255,255,255,.17); border-radius: 7px;
+    padding: 7px 11px; color: #e8eef4; background: rgba(255,255,255,.06);
+    font: inherit; font-size: 12px; cursor: pointer;
+  }
+  .sidebar { top: 58px; width: 100%; height: auto; max-height: calc(100vh - 58px); padding: 18px 18px 15px; overflow: auto; display: none; }
+  body.nav-open .sidebar { display: flex; }
+  .sidebar .brand, .sidebar-bottom { display: none; }
+  .nav-label { padding-bottom: 7px; }
+  #TOC a { padding: 9px 11px; }
+  .content-wrap { margin: 0; padding: 20px 12px 35px; }
+  .article { min-height: 0; padding: 34px 25px 48px; border-radius: 10px; }
+  .article > h1 { font-size: 35px; }
+  .article h2 { margin-top: 40px; font-size: 21px; }
+  .article > p:first-of-type { font-size: 16px; }
+  .footer { padding: 0 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition-duration: .01ms !important; }
+}
+
+
+/* Shared site navigation and breadcrumbs */
+.brand {
+  color: inherit;
+  text-decoration: none;
+}
+.brand:hover { color: #fff; }
+.brand > span:last-child {
+  display: flex;
+  flex-direction: column;
+}
+.site-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 0 0 25px;
+}
+.site-nav a {
+  display: block;
+  padding: 9px 11px;
+  border-radius: 7px;
+  color: #aeb9c6;
+  font-size: 13px;
+  line-height: 1.45;
+  transition: color .15s ease, background .15s ease;
+}
+.site-nav a:hover,
+.site-nav a:focus-visible {
+  color: #fff;
+  background: rgba(255,255,255,.065);
+  outline: none;
+}
+.site-nav a[aria-current="page"] {
+  color: #fff;
+  background: rgba(55,198,176,.13);
+  box-shadow: inset 2px 0 var(--accent);
+}
+.local-label {
+  margin-top: 2px;
+}
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 26px;
+  color: #8793a0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.breadcrumbs a {
+  color: #647382;
+}
+.breadcrumbs a:hover { color: var(--accent-strong); }
+.breadcrumb-separator {
+  color: #b5bec7;
+}
+.breadcrumbs [aria-current="page"] {
+  color: #8995a1;
+}
+.article > h1 { margin-top: 0; }
+
+/* The overview page acts as a small documentation landing page. */
+.article h3 {
+  margin-top: 30px;
+  color: #273543;
+}
+.article h3 + p {
+  margin-bottom: 9px;
+}
+.article h3 + p + p {
+  margin: 0 0 28px;
+}
+.article h3 + p + p a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border: 1px solid #d9eee9;
+  border-radius: 7px;
+  background: #f3faf8;
+  color: #168b7b;
+  font-size: 14px;
+  font-weight: 650;
+}
+.article h3 + p + p a:hover {
+  border-color: #a9ddd4;
+  background: #eaf7f4;
+}
+@media (max-width: 760px) {
+  .site-nav { margin-bottom: 16px; }
+  .breadcrumbs { margin-bottom: 22px; }
+}

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#171e28">
+  <meta name="description" content="Dagon Editor documentation">
+  <title>$if(title-prefix)$$title-prefix$ — $endif$$pagetitle$</title>
+  <link rel="stylesheet" href="style.css">
+  $for(header-includes)$
+  $header-includes$
+  $endfor$
+</head>
+<body>
+  <div class="mobile-bar">
+    <a class="mobile-brand" href="index.html"><span class="brand-mark">D</span><span>Dagon Editor</span></a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="sidebar">Contents&nbsp; ☰</button>
+  </div>
+
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">D</span>
+      <span><span class="brand-name">Dagon Editor</span><span class="brand-caption">Documentation</span></span>
+    </a>
+
+    <div class="nav-label">Documentation</div>
+    <nav class="site-nav" aria-label="Documentation">
+      <a href="index.html" data-page="index.html">Overview</a>
+      <a href="viewport.html" data-page="viewport.html">Viewport</a>
+    </nav>
+
+    $if(toc)$
+    <div class="nav-label local-label">On this page</div>
+    <nav id="TOC" aria-label="On this page">
+      $table-of-contents$
+    </nav>
+    $endif$
+
+    <div class="sidebar-bottom"><strong>Dagon Engine</strong><br>Scene editing documentation</div>
+  </aside>
+
+  <div class="page-shell">
+    <main class="content-wrap">
+      <article class="article">
+        $if(show-breadcrumb)$
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
+          <a href="index.html">Documentation</a>
+          <span class="breadcrumb-separator" aria-hidden="true">/</span>
+          <span aria-current="page">$pagetitle$</span>
+        </nav>
+        $endif$
+        $body$
+      </article>
+      <footer class="footer">Dagon Editor · Documentation</footer>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      var button = document.querySelector('.menu-toggle');
+      var currentPage = window.location.pathname.split('/').pop() || 'index.html';
+      var pageLinks = document.querySelectorAll('.site-nav a[data-page]');
+
+      Array.prototype.forEach.call(pageLinks, function (link) {
+        if (link.getAttribute('data-page') === currentPage) {
+          link.setAttribute('aria-current', 'page');
+        }
+      });
+
+      if (button) button.addEventListener('click', function () {
+        var open = document.body.classList.toggle('nav-open');
+        button.setAttribute('aria-expanded', String(open));
+      });
+
+      var links = Array.prototype.slice.call(document.querySelectorAll('#TOC a'));
+      var headings = links.map(function (link) {
+        return document.getElementById(decodeURIComponent(link.hash.slice(1)));
+      }).filter(Boolean);
+
+      if ('IntersectionObserver' in window) {
+        var observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              links.forEach(function (link) {
+                link.classList.toggle('active', link.hash === '#' + entry.target.id);
+              });
+            }
+          });
+        }, { rootMargin: '-12% 0px -72% 0px' });
+        headings.forEach(function (heading) { observer.observe(heading); });
+      }
+
+      links.forEach(function (link) {
+        link.addEventListener('click', function () {
+          document.body.classList.remove('nav-open');
+          if (button) button.setAttribute('aria-expanded', 'false');
+        });
+      });
+    }());
+  </script>
+</body>
+</html>

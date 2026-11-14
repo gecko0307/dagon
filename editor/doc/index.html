@@ -1,48 +1,128 @@
-<h1 id="dagon-editor">Dagon Editor</h1>
-<p>Dagon Editor allows you to build scenes from 3D models. It is written
-using Dagon Engine itself, so it guarantees WYSIWYG experience: given
-the same renderer settings, edited scene looks exactly the same as in
-the engine.</p>
-<p>Dagon Editor is not a self-contained game development tool like Unity
-or Godot; it doesn’t manage entire projects. How you use the data
-created in it is fully up to you.</p>
-<h2 id="the-basics">The Basics</h2>
-<p>The Editor uses industry-standard interface layout common to many
-level editors. In the center of the window is a Viewport, an area that
-renders a 3D world. On the left side of the window is an Inspector
-panel, a hierarchical view of all the Entities in the scene. At the
-right side is a Properties panel which allows to edit currently selected
-Entity. At the bottom is an Asset Browser which displays files and
-folders that are found on the disk alongside with the edited scene. At
-the top of the window there are menu bar and a toolbar.</p>
-<p>Note that in a newly created scene, the Asset Browser is disabled,
-because the scene does not yet have an asset root directory set. You
-need to save the scene to a file (Ctrl+S or File -&gt; Save as…), after
-which the Asset Browser will use the parent directory of this file as
-the root directory.</p>
-<p>To import a model, copy it to the root directory (it’s better to make
-a subdirectory for that, such as <code>meshes</code> or
-<code>models</code>) and then drag and drop it to the Viewport.</p>
-<h2 id="viewport-controls">Viewport Controls</h2>
-<ul>
-<li>Left mouse button (single click) - select an entity. Shift + click
-allows to selec multiple entities</li>
-<li>Left mouse button (press and hold) - orbit the camera, or zoom
-in/out if Left Ctrl is pressed, or transform an entity if a gizmo axis
-was clicked (see below)</li>
-<li>Right mouse button (press and hold) - pan the camera</li>
-<li>Mouse wheel - zoom in/out</li>
-<li>Delete - delete an entity</li>
-<li>Ctrl + Z - undo an operation</li>
-<li>Ctrl + Y - redo an operation.</li>
-</ul>
-<p>A red-gree-blue manipulator that appears when an entity is selected
-is called a <em>gizmo</em>. It allows to transform entities: move,
-rotate, or scale. Transformation mode is switched using the
-corresponding toolbar buttons.</p>
-<p>Left-click a gizmo axis and drag the mouse to transform the entity
-along that axis. Holding Left Ctrl enables snapping the transform to
-discrete steps. Snapping increment can be adjusted on the toolbar. By
-default it is 1m for moving, 15° for rotation, and 0.1 for scaling.</p>
-<h2 id="materials">Materials</h2>
-<p>TODO</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#171e28">
+  <meta name="description" content="Dagon Editor documentation">
+  <title>Dagon Editor</title>
+  <link rel="stylesheet" href="style.css">
+  </head>
+<body>
+  <div class="mobile-bar">
+    <a class="mobile-brand" href="index.html"><span class="brand-mark">D</span><span>Dagon Editor</span></a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="sidebar">Contents&nbsp; ☰</button>
+  </div>
+
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">D</span>
+      <span><span class="brand-name">Dagon Editor</span><span class="brand-caption">Documentation</span></span>
+    </a>
+
+    <div class="nav-label">Documentation</div>
+    <nav class="site-nav" aria-label="Documentation">
+      <a href="index.html" data-page="index.html">Overview</a>
+      <a href="viewport.html" data-page="viewport.html">Viewport</a>
+    </nav>
+
+        <div class="nav-label local-label">On this page</div>
+    <nav id="TOC" aria-label="On this page">
+      <ul>
+      <li><a href="#dagon-editor" id="toc-dagon-editor">Dagon Editor</a>
+      <ul>
+      <li><a href="#documentation"
+      id="toc-documentation">Documentation</a></li>
+      <li><a href="#getting-started" id="toc-getting-started">Getting
+      Started</a></li>
+      </ul></li>
+      </ul>
+    </nav>
+    
+    <div class="sidebar-bottom"><strong>Dagon Engine</strong><br>Scene editing documentation</div>
+  </aside>
+
+  <div class="page-shell">
+    <main class="content-wrap">
+      <article class="article">
+                <h1 id="dagon-editor">Dagon Editor</h1>
+                <p>Dagon Editor is a scene editor for building 3D scenes
+                from models. It is written using Dagon Engine itself,
+                providing a WYSIWYG workflow: with the same renderer
+                settings, a scene looks the same in the editor and in
+                the engine.</p>
+                <p>Dagon Editor is focused on scene editing. Unlike a
+                complete game development environment such as Unity or
+                Godot, it does not manage projects or impose a
+                particular project structure. How you organize and use
+                the data created in the editor is up to you.</p>
+                <h2 id="documentation">Documentation</h2>
+                <p>Choose a topic to get started.</p>
+                <h3 id="viewport">Viewport</h3>
+                <p>Learn how to navigate the 3D scene, select entities,
+                use the transform gizmo, and work with snapping.</p>
+                <p><a href="viewport.html">Read Viewport guide →</a></p>
+                <h2 id="getting-started">Getting Started</h2>
+                <p>The Editor uses a familiar level-editor layout. The
+                Viewport is in the center, with the Inspector on the
+                left, Properties on the right, and the Asset Browser at
+                the bottom. The menu bar and toolbar are at the top.</p>
+                <p>The Asset Browser is disabled until the scene has
+                been saved, because it uses the scene file’s parent
+                directory as its asset root. Save the scene with
+                <strong>Ctrl+S</strong> or choose <strong>File → Save
+                as…</strong> to enable it.</p>
+                <p>To import a model, copy it into the asset root
+                directory (a subdirectory such as <code>meshes</code> or
+                <code>models</code> is recommended), then drag and drop
+                it into the Viewport.</p>
+      </article>
+      <footer class="footer">Dagon Editor · Documentation</footer>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      var button = document.querySelector('.menu-toggle');
+      var currentPage = window.location.pathname.split('/').pop() || 'index.html';
+      var pageLinks = document.querySelectorAll('.site-nav a[data-page]');
+
+      Array.prototype.forEach.call(pageLinks, function (link) {
+        if (link.getAttribute('data-page') === currentPage) {
+          link.setAttribute('aria-current', 'page');
+        }
+      });
+
+      if (button) button.addEventListener('click', function () {
+        var open = document.body.classList.toggle('nav-open');
+        button.setAttribute('aria-expanded', String(open));
+      });
+
+      var links = Array.prototype.slice.call(document.querySelectorAll('#TOC a'));
+      var headings = links.map(function (link) {
+        return document.getElementById(decodeURIComponent(link.hash.slice(1)));
+      }).filter(Boolean);
+
+      if ('IntersectionObserver' in window) {
+        var observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              links.forEach(function (link) {
+                link.classList.toggle('active', link.hash === '#' + entry.target.id);
+              });
+            }
+          });
+        }, { rootMargin: '-12% 0px -72% 0px' });
+        headings.forEach(function (heading) { observer.observe(heading); });
+      }
+
+      links.forEach(function (link) {
+        link.addEventListener('click', function () {
+          document.body.classList.remove('nav-open');
+          if (button) button.setAttribute('aria-expanded', 'false');
+        });
+      });
+    }());
+  </script>
+</body>
+</html>
