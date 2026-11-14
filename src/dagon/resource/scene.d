@@ -503,24 +503,31 @@ class SceneAsset: Asset
     /// Asset manager that is used to load external resources of the asset.
     AssetManager assetManager;
     
-    /// Unmanaged string that stores glTF source file.
-    String str;
+    /// Unmanaged string that stores JSON source file.
+    protected String str;
     
     /// JSON document that stores the structure of the glTF file.
     JSONDocument doc;
     
-    /// The world containing all entities.
+    /// The world that containts all loaded entities. Can be changed before loading the asset.
     World world;
     
-    /// Array of scene materials.
+    /// Array of loaded scene materials.
     Array!Material materials;
     
-    /// Array of scene entities.
+    /// Array of loaded scene entities.
     Array!Entity entities;
     
     protected Dict!(MaterialAsset, string) materialAssets;
     protected Dict!(OBJAsset, string) meshAssets;
     
+    /**
+     * Constructs a new scene asset.
+     *
+     * Params:
+     *   world = World object to store loaded entities (normally should be `Scene.world` by default).
+     *   owner = Owner object.
+     */
     this(World world, Owner owner)
     {
         super(owner);

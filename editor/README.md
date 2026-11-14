@@ -1,6 +1,6 @@
 # Dagon Editor
 
-Work in progress WYSIWYG scene editor for Dagon, made using Dagon itself. Only basic features are implemented so far.
+Work in progress WYSIWYG scene editor for Dagon, made using Dagon itself. Only a subset of Dagon's scene object model is implemented so far.
 
 [![Editor](https://blog.pixperfect.online/wp-content/uploads/2026/11/dagon-editor-alpha-4.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/11/dagon-editor-alpha-4.jpg)
 
@@ -15,7 +15,7 @@ Work in progress WYSIWYG scene editor for Dagon, made using Dagon itself. Only b
 - [x] Saving/loading scenes
 - [x] Mesh import
 - [x] Material import
-- [ ] Texture import
+- [x] Texture import
 - [ ] Lights
 - [ ] Basic shapes
 - [ ] Cameras

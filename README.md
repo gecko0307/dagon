@@ -89,7 +89,6 @@ Limited support:
 * OpenXR and OpenVR integration for virtual reality applications (only basic rendering, no deferred pipeline support).
 
 Features that are not production-ready yet:
-* The editor
 * Built-in UI toolkit (very basic, can be used only for simple debugging purposes; it is recommended to use ImGui extension instead)
 
 ## System Requirements
@@ -196,6 +195,30 @@ Documentation status:
 * ❌ `dagon.ext.openvr`
 * ❌ `dagon.ext.physfs`
 * ❌ `dagon.ext.video`
+
+## Dagon Editor
+
+Dagon provides a basic WYSIWYG scene editor, made using Dagon itself. It allows to import OBJ models, texture, create materials, and export scenes to JSON-based format that can be loaded by the game (see `SceneAsset`). Only a subset of Dagon's scene object model is implemented so far.
+
+Editor status:
+* ✔️ Main GUI
+* ✔️ Configuration system
+* ✔️ Inspector
+* ✔️ Entity transformation gizmos
+* ✔️ Asset browser
+* ✔️ Material preview renderer
+* ✔️ Saving/loading scenes
+* ✔️ Mesh import
+* ✔️ Material import
+* ✔️ Texture import
+* ❌ Lights
+* ❌ Basic shapes
+* ❌ Cameras
+* ❌ Particle systems
+* ❌ Decals
+* ❌ Light probes
+* ❌ Collision data
+* ❌ Physics data
 
 ## License
 

@@ -1,9 +1,12 @@
 Dagon 1.9.0 - TBD
 -----------------
 - **Core**
-  - Add floating-point exception report to the crash handler
+  - Add "illegal instruction" and "floating-point invalid operation" exception reports to the crash handler
 - **Graphics components**
   - Fix `Mesh.calcBoundingBox`
+- **Assets**
+  - `SceneAsset` that loads JSON scenes saved by the Editor
+  - New method `Scene.addSceneAsset`
 - **Editor**
   - Fix entity bounding box rendering
 - **Misc**

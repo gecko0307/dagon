@@ -16,6 +16,46 @@ To import a model, copy it to the root directory (it's better to make a subdirec
 
 TODO
 
-## Materials
+## Materials and Textures
 
 TODO
+
+## Loading Scenes in the Game
+
+Scenes exported by the Editor are loaded using the `SceneAsset`. This is very easy:
+
+```d
+class TestScene: Scene
+{
+    MyGame game;
+    LoadingScreen loadingScreen;
+    SceneAsset aScene;
+
+    this(MyGame game)
+    {
+        super(game);
+        this.game = game;
+        loadingScreen = New!LoadingScreen(game, this);
+    }
+
+    override void beforeLoad()
+    {
+        aScene = addSceneAsset("scenes/gameLevel.json");
+    }
+    
+    override void onLoad(Time t, float progress)
+    {
+        loadingScreen.update(t, progress);
+        loadingScreen.render();
+    }
+
+    override void afterLoad()
+    {
+        /*
+         * Now the loaded data can be accessed.
+         * Note that all entities are already in the scene,
+         * unless you specify your own World object before loading.
+         */
+    }
+}
+```
