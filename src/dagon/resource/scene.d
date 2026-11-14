@@ -47,19 +47,28 @@ import std.path;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.core.stream;
+import dlib.container.array;
+import dlib.container.dict;
 import dlib.math.vector;
+import dlib.serialization.json;
+import dlib.text.str;
+import dlib.filesystem.filesystem;
 
+import dagon.core.logger;
 import dagon.core.application;
 import dagon.core.bindings;
 import dagon.core.event;
 import dagon.core.time;
 import dagon.core.persistent;
+import dagon.core.jsonutils;
 
 import dagon.graphics.entity;
 import dagon.graphics.tween;
 import dagon.graphics.camera;
 import dagon.graphics.light;
 import dagon.graphics.environment;
+import dagon.graphics.mesh;
 import dagon.graphics.shapes;
 import dagon.graphics.material;
 import dagon.graphics.world;
@@ -161,7 +170,7 @@ class Scene: EventListener
     }
 
     /**
-     * Adds an asset to the scene's asset manager.
+     * Adds an asset to the scene's asset manager, optionally preloading.
      *
      * Params:
      *   asset    = The asset to add.
@@ -177,6 +186,30 @@ class Scene: EventListener
         else
             assetManager.addAsset(asset, filename);
         return asset;
+    }
+
+    /**
+     * Adds a scene asset to the scene's asset manager, optionally preloading.
+     *
+     * Params:
+     *   filename = The asset filename.
+     *   preload  = If true, preload the asset immediately.
+     * Returns:
+     *   The added asset.
+     */
+    SceneAsset addSceneAsset(string filename, bool preload = false)
+    {
+        SceneAsset newAsset;
+        if (assetManager.assetExists(filename))
+        {
+            newAsset = cast(SceneAsset)assetManager.getAsset(filename);
+        }
+        else
+        {
+            newAsset = New!SceneAsset(world, assetManager);
+            addAsset(newAsset, filename, preload);
+        }
+        return newAsset;
     }
 
     /**
@@ -458,5 +491,293 @@ class Scene: EventListener
                 onEndUpdate(t);
             }
         }
+    }
+}
+
+/**
+ * Scene asset in JSON format.
+ * Used by the Dagon Editor.
+ */
+class SceneAsset: Asset
+{
+    /// Asset manager that is used to load external resources of the asset.
+    AssetManager assetManager;
+    
+    /// Unmanaged string that stores glTF source file.
+    String str;
+    
+    /// JSON document that stores the structure of the glTF file.
+    JSONDocument doc;
+    
+    /// The world containing all entities.
+    World world;
+    
+    /// Array of scene materials.
+    Array!Material materials;
+    
+    /// Array of scene entities.
+    Array!Entity entities;
+    
+    protected Dict!(MaterialAsset, string) materialAssets;
+    protected Dict!(OBJAsset, string) meshAssets;
+    
+    this(World world, Owner owner)
+    {
+        super(owner);
+        this.world = world;
+        materialAssets = New!(Dict!(MaterialAsset, string));
+        meshAssets = New!(Dict!(OBJAsset, string));
+    }
+    
+    /// Destructor. Releases all resources.
+    ~this()
+    {
+        release();
+    }
+    
+    override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager assetManager)
+    {
+        version(GLTFDebug) logDebug("Loading ", filename);
+        this.assetManager = assetManager;
+        
+        str = String(istrm);
+        doc = New!JSONDocument(str.toString);
+        JSONValue root = doc.root;
+        
+        if (!doc.isValid || root.type != JSONType.Object)
+        {
+            logError("Cannot load scene \"", filename, "\": invalid scene file");
+            release();
+            return false;
+        }
+        
+        string assetRootPath = dirName(filename);
+        
+        loadMaterials(assetRootPath);
+        loadEntities(assetRootPath);
+        
+        threadSafePartLoaded = true;
+        return true;
+    }
+    
+    protected void loadMaterials(string assetRootPath)
+    {
+        JSONValue materialsNode = doc.root.asObject["materials"];
+        if (materialsNode !is null && materialsNode.type == JSONType.Array)
+        {
+            foreach (m; materialsNode.asArray.data)
+            {
+                string path = m.asObject["path"].asString;
+                materials.append((path.length > 0)? loadMaterial(assetRootPath, path) : null);
+            }
+        }
+    }
+    
+    protected Material loadMaterial(string assetRootPath, string path)
+    {
+        String p = String(assetRootPath);
+        p ~= "/";
+        p ~= path;
+        scope(exit)
+        {
+            p.free();
+        }
+        string materialPath = p.toString;
+        
+        if (materialPath in assetManager.assetsByFilename)
+        {
+            MaterialAsset materialAsset = cast(MaterialAsset)assetManager.assetsByFilename[materialPath];
+            if (materialAsset)
+                return materialAsset.material;
+            else
+                return null;
+        }
+        else if (materialPath in materialAssets)
+        {
+            return materialAssets[materialPath].material;
+        }
+        else
+        {
+            MaterialAsset materialAsset = New!MaterialAsset(assetManager);
+            assetManager.loadAssetThreadSafePart(materialAsset, materialPath);
+            materialAssets[materialPath] = materialAsset;
+            return materialAsset.material;
+        }
+    }
+    
+    protected Mesh loadMesh(string assetRootPath, string path)
+    {
+        String p = String(assetRootPath);
+        p ~= "/";
+        p ~= path;
+        scope(exit)
+        {
+            p.free();
+        }
+        string meshPath = p.toString;
+        
+        if (meshPath in assetManager.assetsByFilename)
+        {
+            OBJAsset objAsset = cast(OBJAsset)assetManager.assetsByFilename[meshPath];
+            if (objAsset)
+                return objAsset.mesh;
+            else
+                return null;
+        }
+        else if (meshPath in meshAssets)
+        {
+            return meshAssets[meshPath].mesh;
+        }
+        else
+        {
+            OBJAsset objAsset = New!OBJAsset(assetManager);
+            assetManager.loadAssetThreadSafePart(objAsset, meshPath);
+            meshAssets[meshPath] = objAsset;
+            return objAsset.mesh;
+        }
+    }
+    
+    protected void loadEntities(string assetRootPath)
+    {
+        JSONValue entitiesNode = doc.root.asObject["entities"];
+        if (entitiesNode !is null && entitiesNode.type == JSONType.Array)
+        {
+            foreach (i, e; entitiesNode.asArray.data)
+            {
+                if (e.type != JSONType.Object)
+                {
+                    logError("Entity ", i, " is not an object, ignoring");
+                    Entity entity = New!Entity(world);
+                    entities.append(entity);
+                    continue;
+                }
+                
+                auto lj = "light" in e.asObject;
+                if (lj !is null && lj.type == JSONType.Object)
+                {
+                    Light light = New!Light(world);
+                    entities.append(light);
+                }
+                else
+                {
+                    Entity entity = New!Entity(world);
+                    entities.append(entity);
+                }
+            }
+            
+            foreach (i, e; entitiesNode.asArray.data)
+            {
+                readEntity(entities[i], i, e.asObject, assetRootPath);
+            }
+        }
+    }
+    
+    protected void readEntity(Entity e, size_t eIndex, JSONObject obj, string assetRootPath)
+    {
+        long parentIndex = obj.fieldAs("parent", -1L);
+        if (parentIndex >= 0)
+        {
+            if (parentIndex >= entities.length)
+                logError("Entity ", eIndex, " has invalid parent index ", parentIndex);
+            else
+            {
+                Entity parent = entities[cast(size_t)parentIndex];
+                e.setParent(parent);
+            }
+        }
+        
+        e.name = obj.fieldAs("name", e.name);
+        e.layer = cast(EntityLayer)obj.fieldAs("layer", cast(uint)e.layer);
+        e.type = cast(EntityType)obj.fieldAs("type", cast(uint)e.type);
+        e.renderLayer = obj.fieldAs("renderLayer", e.renderLayer);
+        e.visible = obj.fieldAs("visible", e.visible);
+        e.castShadow = obj.fieldAs("castShadow", e.castShadow);
+        e.solid = obj.fieldAs("solid", e.solid);
+        e.dynamic = obj.fieldAs("dynamic", e.dynamic);
+        e.decal = obj.fieldAs("decal", e.decal);
+        e.probe = obj.fieldAs("probe", e.probe);
+        e.probeExtents = obj.fieldAs("probeExtents", e.probeExtents);
+        e.probeFalloffMargin = obj.fieldAs("probeFalloffMargin", e.probeFalloffMargin);
+        e.probeUseBoxProjection = obj.fieldAs("probeUseBoxProjection", e.probeUseBoxProjection);
+        e.transparent = obj.fieldAs("transparent", e.transparent);
+        e.opacity = obj.fieldAs("opacity", e.opacity);
+        e.position = obj.fieldAs("position", e.position);
+        e.rotation = obj.fieldAs("rotation", e.rotation);
+        e.scaling = obj.fieldAs("scaling", e.scaling);
+        
+        string meshPath = obj.fieldAs("mesh", "");
+        if (meshPath.length > 0)
+        {
+            Mesh mesh = loadMesh(assetRootPath, meshPath);
+            if (mesh !is null)
+                e.drawable = mesh;
+        }
+        
+        long matIndex = obj.fieldAs("material", -1L);
+        if (matIndex >= 0)
+        {
+            if (matIndex >= materials.length)
+                logError("Entity ", eIndex, " has invalid material index ", matIndex);
+            else
+            {
+                Material material = materials[cast(size_t)matIndex];
+                e.material = material;
+            }
+        }
+        
+        Light l = cast(Light)e;
+        if (l)
+        {
+            auto light = obj["light"].asObject;
+            l.type = cast(LightType)light.fieldAs("type", cast(uint)l.type);
+            l.shining = light.fieldAs("shining", l.shining);
+            l.color = light.fieldAs("color", l.color);
+            l.energy = light.fieldAs("energy", l.energy);
+            l.angularRadius = light.fieldAs("angularRadius", l.angularRadius);
+            l.volumeRadius = light.fieldAs("volumeRadius", l.volumeRadius);
+            l.radius = light.fieldAs("radius", l.radius);
+            l.length = light.fieldAs("length", l.length);
+            l.spotOuterCutoff = light.fieldAs("spotOuterCutoff", l.spotOuterCutoff);
+            l.spotInnerCutoff = light.fieldAs("spotInnerCutoff", l.spotInnerCutoff);
+            l.shadowEnabled = light.fieldAs("shadowEnabled", l.shadowEnabled);
+            l.scatteringEnabled = light.fieldAs("scatteringEnabled", l.scatteringEnabled);
+            l.scattering = light.fieldAs("scattering", l.scattering);
+            l.mediumDensity = light.fieldAs("mediumDensity", l.mediumDensity);
+            l.scatteringSamples = light.fieldAs("scatteringSamples", l.scatteringSamples);
+            l.scatteringMaxRandomStepOffset = light.fieldAs("scatteringMaxRandomStepOffset", l.scatteringMaxRandomStepOffset);
+            l.scatteringUseShadow = light.fieldAs("scatteringUseShadow", l.scatteringUseShadow);
+            l.diffuse = light.fieldAs("diffuse", l.diffuse);
+            l.specular = light.fieldAs("specular", l.specular);
+        }
+    }
+    
+    override bool loadThreadUnsafePart()
+    {
+        foreach(filename, asset; materialAssets)
+        {
+            asset.loadThreadUnsafePart();
+        }
+        
+        foreach(filename, asset; meshAssets)
+        {
+            asset.loadThreadUnsafePart();
+        }
+        
+        threadUnsafePartLoaded = true;
+        return true;
+    }
+    
+    /// Releases all resources associated with the asset.
+    override void release()
+    {
+        materials.free();
+        entities.free();
+        
+        if (doc)
+            Delete(doc);
+        str.free();
+        
+        Delete(materialAssets);
+        Delete(meshAssets);
     }
 }
