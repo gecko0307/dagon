@@ -663,7 +663,7 @@ class InteractionOverlay: EventListener
 
         foreach (e; ui.editor.scene.world.entities)
         {
-            if (cast(Light)e is null || !ui.editor.isSerializableEntity(e) || !e.visible)
+            if (cast(Light)e is null || !ui.editor.isSerializableEntity(e))
                 continue;
 
             GizmoPoint p;

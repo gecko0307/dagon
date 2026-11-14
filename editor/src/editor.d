@@ -904,7 +904,13 @@ class Editor: EventListener
         foreach (e; scene.world.entities)
         {
             order++;
-            if (!isSerializableEntity(e) || !e.visible)
+            if (!isSerializableEntity(e))
+                continue;
+
+            // Lights are not rendered as geometry, so their `visible` flag
+            // is irrelevant for picking; for everything else it is respected
+            bool isLight = cast(Light)e !is null;
+            if (!isLight && !e.visible)
                 continue;
 
             float t;
@@ -918,7 +924,7 @@ class Editor: EventListener
                 if (rayVsBox(Vector3f(lo.x, lo.y, lo.z), Vector3f(ld.x, ld.y, ld.z), box.pmin, box.pmax, t))
                     hits.append(PickHit(e, t, order));
             }
-            else if (cast(Light)e !is null)
+            else if (isLight)
             {
                 Vector3f position = e.positionAbsolute;
                 float radius = max(distance(cameraPosition, position) * lightPickFactor, 0.05f);
