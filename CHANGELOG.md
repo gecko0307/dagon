@@ -1,3 +1,12 @@
+Dagon 1.9.0 - TBD
+-----------------
+- **Graphics components**
+  - Fix `Mesh.calcBoundingBox`
+- **Editor**
+  - Fix entity bounding box rendering
+- **Misc**
+  - Dagon now uses dlib 1.8.3.
+
 Dagon 1.8.0 - 13 Nov, 2026
 --------------------------
 - **Core**
