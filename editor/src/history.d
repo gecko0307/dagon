@@ -94,6 +94,12 @@ abstract class Command
 
     abstract void undo();
     abstract void redo();
+
+    /// Appends the entities this command affects (used to restore the selection)
+    void collectTargets(ref Array!Entity result)
+    {
+        result.append(target);
+    }
 }
 
 class TransformCommand: Command
@@ -231,6 +237,61 @@ class EntityLifetimeCommand: Command
     }
 }
 
+/**
+ * Several commands that are undone and redone together as one history entry
+ * (e.g. moving a multi-selection). Takes ownership of the added commands.
+ * Children are undone in reverse order.
+ */
+class GroupCommand: Command
+{
+    private Array!Command children;
+
+    this(string name)
+    {
+        super(name, null);
+    }
+
+    ~this()
+    {
+        foreach (c; children.data)
+        {
+            auto child = c;
+            Delete(child);
+        }
+        children.free();
+    }
+
+    void add(Command command)
+    {
+        children.append(command);
+        if (target is null)
+            target = command.target;
+    }
+
+    size_t length() @property
+    {
+        return children.length;
+    }
+
+    override void undo()
+    {
+        foreach_reverse (c; children.data)
+            c.undo();
+    }
+
+    override void redo()
+    {
+        foreach (c; children.data)
+            c.redo();
+    }
+
+    override void collectTargets(ref Array!Entity result)
+    {
+        foreach (c; children.data)
+            c.collectTargets(result);
+    }
+}
+
 class CommandHistory: Owner
 {
     enum size_t maxEntries = 256;
@@ -326,6 +387,42 @@ class CommandHistory: Owner
         if (before.sameAs(after))
             return;
         push(New!TransformCommand(name, entity, before, after));
+    }
+
+    /**
+     * Records transformation changes of several entities that have already
+     * happened, as a single history entry. `before[i]` is the earlier state of
+     * `entities[i]`. Entities whose transformation did not change are skipped;
+     * does nothing if none changed.
+     */
+    void pushTransforms(string name, Entity[] entities, TransformSnapshot[] before)
+    {
+        Command single = null;
+        GroupCommand group = null;
+        foreach (i, entity; entities)
+        {
+            TransformSnapshot after = TransformSnapshot.capture(entity);
+            if (before[i].sameAs(after))
+                continue;
+            Command command = New!TransformCommand(name, entity, before[i], after);
+            if (single is null)
+            {
+                single = command;
+            }
+            else
+            {
+                if (group is null)
+                {
+                    group = New!GroupCommand(name);
+                    group.add(single);
+                }
+                group.add(command);
+            }
+        }
+        if (group !is null)
+            push(group);
+        else if (single !is null)
+            push(single);
     }
 
     /**

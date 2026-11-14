@@ -206,7 +206,16 @@ class Editor: EventListener
     
     InteractionOverlay overlay;
     CommandHistory history;
+
+    /**
+     * Primary selected entity: the one the gizmo sits on and the properties
+     * panel edits. With a multi-selection it is the last one added; it is
+     * always also an element of `selection`.
+     */
     Entity selectedEntity;
+
+    /// All selected entities (includes `selectedEntity`)
+    Array!Entity selection;
 
     // Absolute source paths are kept in memory; scene files store paths relative to assetRoot
     TextBuffer!2048 assetRootBuffer;
@@ -456,6 +465,7 @@ class Editor: EventListener
         Delete(materialSources);
         Delete(deletedEntities);
         Delete(meshBounds);
+        selection.free();
         Delete(storage);
     }
     
@@ -551,27 +561,161 @@ class Editor: EventListener
      */
     void onHistoryApplied(Command command)
     {
-        if (command.target is null)
-            return;
+        Array!Entity targets;
+        scope(exit) targets.free();
+        command.collectTargets(targets);
 
-        // The command removed its target (redo of a deletion, undo of a duplicate)
-        if (isDeleted(command.target))
+        // Entities the command removed (redo of a deletion, undo of a duplicate)
+        // are not selected
+        Array!Entity alive;
+        scope(exit) alive.free();
+        foreach (t; targets.data)
         {
-            if (selectedEntity !is null && isDeleted(selectedEntity))
-                clearSelection();
+            if (t is null || isDeleted(t))
+                continue;
+            bool duplicate = false;
+            foreach (a; alive.data)
+            {
+                if (a is t)
+                {
+                    duplicate = true;
+                    break;
+                }
+            }
+            if (!duplicate)
+                alive.append(t);
+        }
+
+        if (alive.length == 0)
+        {
+            pruneSelection();
             return;
         }
 
-        GizmoMode mode = overlay.gizmoMode;
-        selectEntity(command.target);
-        if (mode != GizmoMode.Disabled)
-            overlay.gizmoMode = mode;
+        selectMany(alive.data);
     }
 
     void clearSelection()
     {
+        selection.resize(0, null);
         selectedEntity = null;
         overlay.gizmoMode = GizmoMode.Disabled;
+    }
+
+    bool isSelected(Entity e)
+    {
+        foreach (s; selection.data)
+        {
+            if (s is e)
+                return true;
+        }
+        return false;
+    }
+
+    // Makes the entity the primary one, keeping the current gizmo mode
+    void makePrimary(Entity e)
+    {
+        GizmoMode mode = overlay.gizmoMode;
+        selectedEntity = e;
+        overlay.gizmoMode = (mode == GizmoMode.Disabled) ? GizmoMode.Translation : mode;
+        overlay.gizmoPosition = e.positionAbsolute;
+        overlay.gizmoOrientation = e.rotationAbsolute;
+    }
+
+    // Replaces the selection; the last entity becomes the primary one
+    void selectMany(Entity[] list)
+    {
+        if (list.length == 0)
+            return;
+        selection.resize(0, null);
+        foreach (e; list)
+            selection.append(e);
+        makePrimary(list[$ - 1]);
+    }
+
+    private void removeFromSelection(Entity e)
+    {
+        size_t j = 0;
+        foreach (i; 0 .. selection.length)
+        {
+            Entity s = selection.data[i];
+            if (s !is e)
+            {
+                selection.data[j] = s;
+                j++;
+            }
+        }
+        if (j != selection.length)
+            selection.resize(j, null);
+    }
+
+    // Ctrl/Shift click: adds the entity to the selection or removes it
+    void toggleSelection(Entity e)
+    {
+        if (e is null)
+            return;
+
+        if (isSelected(e))
+        {
+            removeFromSelection(e);
+            if (selection.length == 0)
+                clearSelection();
+            else if (selectedEntity is e)
+                makePrimary(selection.data[$ - 1]);
+        }
+        else
+        {
+            selection.append(e);
+            makePrimary(e);
+        }
+    }
+
+    // Drops deleted entities from the selection
+    void pruneSelection()
+    {
+        size_t j = 0;
+        foreach (i; 0 .. selection.length)
+        {
+            Entity s = selection.data[i];
+            if (!isDeleted(s))
+            {
+                selection.data[j] = s;
+                j++;
+            }
+        }
+        if (j != selection.length)
+            selection.resize(j, null);
+
+        if (selection.length == 0)
+        {
+            clearSelection();
+            return;
+        }
+        if (selectedEntity is null || isDeleted(selectedEntity))
+            makePrimary(selection.data[$ - 1]);
+    }
+
+    /**
+     * Selected entities that have no selected ancestor. Transforming, deleting
+     * or duplicating such an entity already affects its selected descendants,
+     * so only these are operated on.
+     */
+    void topLevelSelection(ref Array!Entity result)
+    {
+        foreach (e; selection.data)
+        {
+            bool covered = false;
+            for (Entity p = e.parent; p !is null; p = p.parent)
+            {
+                if (isSelected(p))
+                {
+                    covered = true;
+                    break;
+                }
+            }
+            if (!covered)
+                result.append(e);
+        }
     }
 
     // Callback for EntityLifetimeCommand
@@ -606,13 +750,43 @@ class Editor: EventListener
         command.redo(); // performs the deletion
         history.push(command);
 
-        if (selectedEntity !is null && isDeleted(selectedEntity))
-            clearSelection();
+        pruneSelection();
     }
 
+    // Deletes the whole selection as one undo step
     void deleteSelected()
     {
-        deleteEntity(selectedEntity);
+        if (overlay.draggingGizmo)
+            return;
+
+        Array!Entity roots;
+        scope(exit) roots.free();
+        topLevelSelection(roots);
+        if (roots.length == 0)
+            return;
+        if (roots.length == 1)
+        {
+            deleteEntity(roots.data[0]);
+            return;
+        }
+
+        auto group = New!GroupCommand("Delete");
+        foreach (e; roots.data)
+        {
+            if (!isSerializableEntity(e))
+                continue;
+            auto command = New!EntityLifetimeCommand("Delete", e, false, &markDeleted);
+            command.redo(); // performs the deletion
+            group.add(command);
+        }
+        if (group.length == 0)
+        {
+            Delete(group);
+            return;
+        }
+        history.push(group);
+
+        pruneSelection();
     }
 
     void copyLight(Light dst, Light src)
@@ -705,9 +879,42 @@ class Editor: EventListener
         return copy;
     }
 
+    // Duplicates the whole selection as one undo step; the copies become the selection
     void duplicateSelected()
     {
-        duplicateEntity(selectedEntity);
+        if (overlay.draggingGizmo)
+            return;
+
+        Array!Entity roots;
+        scope(exit) roots.free();
+        topLevelSelection(roots);
+        if (roots.length == 0)
+            return;
+        if (roots.length == 1)
+        {
+            duplicateEntity(roots.data[0]);
+            return;
+        }
+
+        Array!Entity copies;
+        scope(exit) copies.free();
+        auto group = New!GroupCommand("Duplicate");
+        foreach (src; roots.data)
+        {
+            if (!isSerializableEntity(src))
+                continue;
+            Entity parent = src.parent !is null ? src.parent : scene.sceneRoot;
+            Entity copy = cloneEntity(src, parent, true);
+            copies.append(copy);
+            group.add(New!EntityLifetimeCommand("Duplicate", copy, true, &markDeleted));
+        }
+        if (copies.length == 0)
+        {
+            Delete(group);
+            return;
+        }
+        selectMany(copies.data);
+        history.push(group);
     }
 
     void undo()
@@ -762,6 +969,7 @@ class Editor: EventListener
     void switchTo(string name, void delegate(EditorScene) populate)
     {
         // Everything below refers to entities/materials of the scene being deleted
+        selection.resize(0, null);
         selectedEntity = null;
         overlay.gizmoMode = GizmoMode.Disabled;
         history.clear();
@@ -797,8 +1005,11 @@ class Editor: EventListener
             overlay.render();
     }
 
+    // Selects a single entity, replacing the current selection
     void selectEntity(Entity e)
     {
+        selection.resize(0, null);
+        selection.append(e);
         selectedEntity = e;
         overlay.gizmoMode = GizmoMode.Translation;
         overlay.gizmoPosition = e.positionAbsolute;
@@ -975,18 +1186,31 @@ class Editor: EventListener
         return next >= 0 ? hits.data[cast(size_t)next].entity : hits.data[nearest].entity;
     }
 
-    // Click in the viewport: select the picked entity, or clear the selection on empty space
+    /**
+     * Click in the viewport. A plain click selects the picked entity, or clears
+     * the selection on empty space. With `additive` (Ctrl/Shift) the picked
+     * entity is added to or removed from the selection, and empty space is ignored.
+     */
     void selectEntityAtRay(Vector3f origin, Vector3f direction, Vector3f cameraPosition,
-        float lightPickFactor, bool cycle)
+        float lightPickFactor, bool cycle, bool additive)
     {
-        Entity hit = pickEntity(origin, direction, cameraPosition, lightPickFactor, cycle);
+        Entity hit = pickEntity(origin, direction, cameraPosition, lightPickFactor,
+            cycle && !additive);
+
+        if (additive)
+        {
+            if (hit !is null)
+                toggleSelection(hit);
+            return;
+        }
+
         if (hit is null)
         {
-            if (selectedEntity !is null)
+            if (selection.length > 0)
                 clearSelection();
             return;
         }
-        if (hit is selectedEntity)
+        if (hit is selectedEntity && selection.length == 1)
             return;
 
         GizmoMode mode = overlay.gizmoMode;

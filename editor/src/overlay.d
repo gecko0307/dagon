@@ -85,6 +85,7 @@ class InteractionOverlay: EventListener
     GraphicsState state;
     RenderView view;
     ShapeBoundingBox selectionBoundingBox;
+    ShapeBoundingBox selectionBoundingBoxSecondary; // outlines of non-primary selected entities
     TranslationAxes translationAxes;
     GizmoLines sunDirectionLines;
     GizmoShader gizmoShader;
@@ -128,8 +129,15 @@ class InteractionOverlay: EventListener
     Vector3f dragStartPosition;
     Quaternionf dragStartRotation;
     Vector3f dragStartScale;
-    Entity dragEntity;                    // entity being manipulated by the current drag
-    TransformSnapshot dragStartSnapshot;  // its transformation before the drag, for undo
+    Entity dragEntity;                    // primary entity of the current drag (the gizmo's owner)
+    TransformSnapshot dragStartSnapshot;  // its transformation before the drag
+
+    // Everything the current drag moves: the top-level selected entities.
+    // The four arrays are parallel.
+    Array!Entity dragEntities;
+    Array!TransformSnapshot dragSnapshots;  // local transformations before the drag, for undo
+    Array!Vector3f dragStartAbsolutePositions;
+    Array!Vector3f dragLocalAxes;           // world drag axis expressed in each entity's own frame
 
     Vector3f dragStartGizmoPosition;
     Vector3f dragAxisDirection;
@@ -160,7 +168,10 @@ class InteractionOverlay: EventListener
         view = New!RenderView(0, 0, eventManager.drawableWidth, eventManager.drawableHeight, this);
         
         selectionBoundingBox = New!ShapeBoundingBox(this);
-        
+        selectionBoundingBoxSecondary = New!ShapeBoundingBox(this);
+        foreach (ref c; selectionBoundingBoxSecondary.lineColors)
+            c = Vector4f(0.55f, 0.75f, 1.0f, 1.0f);
+
         translationAxes = New!TranslationAxes(this);
         sunDirectionLines = New!GizmoLines(GizmoMode.SunDirection, this);
         rotationLines = New!GizmoLines(GizmoMode.Rotation, this);
@@ -175,6 +186,33 @@ class InteractionOverlay: EventListener
         selectionBoundingBoxCenter = Vector3f(0.0f, 0.0f, 0.0f);
         selectionBoundingBoxSize = Vector3f(1.0f, 1.0f, 1.0f);
         selectionBoundingBoxSource = null;
+    }
+
+    ~this()
+    {
+        dragEntities.free();
+        dragSnapshots.free();
+        dragStartAbsolutePositions.free();
+        dragLocalAxes.free();
+    }
+
+    void clearDragData()
+    {
+        dragEntities.resize(0, null);
+        dragSnapshots.resize(0, TransformSnapshot.init);
+        dragStartAbsolutePositions.resize(0, Vector3f(0.0f, 0.0f, 0.0f));
+        dragLocalAxes.resize(0, Vector3f(0.0f, 0.0f, 0.0f));
+    }
+
+    // Moves the entity by a world-space offset from its starting local position
+    void setPositionByWorldDelta(Entity entity, Vector3f startPosition, Vector3f worldDelta)
+    {
+        Matrix4x4f parentInverse = Matrix4x4f.identity;
+        if (entity.parent)
+            parentInverse = entity.parent.invAbsoluteTransformation;
+        else if (entity.world)
+            parentInverse = entity.world.rootInvTransformation;
+        entity.position = startPosition + parentInverse.rotate(worldDelta);
     }
 
     // Fetches the local-space AABB of the entity's mesh (cached per drawable).
@@ -628,7 +666,7 @@ class InteractionOverlay: EventListener
     // Ends the current drag (if any) and records it in the undo history
     void finishGizmoDrag()
     {
-        if (draggingGizmo && dragEntity && ui)
+        if (draggingGizmo && dragEntities.length > 0 && ui)
         {
             string commandName = "Transform";
             if (gizmoMode == GizmoMode.Translation)
@@ -637,9 +675,11 @@ class InteractionOverlay: EventListener
                 commandName = "Rotate";
             else if (gizmoMode == GizmoMode.Scale)
                 commandName = "Scale";
-            ui.editor.history.pushTransform(commandName, dragEntity, dragStartSnapshot);
+            // One history entry for the whole selection
+            ui.editor.history.pushTransforms(commandName, dragEntities.data, dragSnapshots.data);
         }
         dragEntity = null;
+        clearDragData();
         setDraggingGizmo(false);
         draggedAxis = -1;
     }
@@ -670,7 +710,7 @@ class InteractionOverlay: EventListener
             if (!project(e.positionAbsolute, p))
                 continue;
 
-            bool selected = e is ui.editor.selectedEntity;
+            bool selected = ui.editor.isSelected(e);
             ImVec2 center = ImVec2(p.x, p.y);
             ImDrawList_AddCircleFilled(drawList, center, selected ? 7.0f : 5.0f, 0xAA000000, 16);
             ImDrawList_AddCircle(drawList, center, selected ? 7.0f : 5.0f,
@@ -761,6 +801,23 @@ class InteractionOverlay: EventListener
                         dragAxisLength = 1.0f;
                     dragStartGizmoPosition = gizmoPosition;
                     dragAxisDirection = worldAxis(draggedAxis);
+
+                    // Everything selected moves with the primary entity
+                    clearDragData();
+                    Array!Entity roots;
+                    scope(exit) roots.free();
+                    ui.editor.topLevelSelection(roots);
+                    foreach (root; roots.data)
+                    {
+                        dragEntities.append(root);
+                        dragSnapshots.append(TransformSnapshot.capture(root));
+                        dragStartAbsolutePositions.append(root.positionAbsolute);
+                        Vector3f localAxis = root.invAbsoluteTransformation.rotate(dragAxisDirection);
+                        if (localAxis.length < 0.000001f)
+                            localAxis = axes[draggedAxis];
+                        dragLocalAxes.append(localAxis.normalized);
+                    }
+
                     dragDistance = 0.0f;
                     dragStartAxisOffset = ((mouse.x - center.x) * dragAxisX + (mouse.y - center.y) * dragAxisY) / dragAxisLength;
                 }
@@ -797,13 +854,16 @@ class InteractionOverlay: EventListener
                         float lightPickFactor = 2.0f * tan(halfFov) *
                             lightPickRadiusPixels * pixelRatio / cast(float)view.height;
 
+                        // Ctrl or Shift adds to / removes from the selection
+                        bool additive = ui.io.KeyCtrl || ui.io.KeyShift;
+
                         ui.editor.selectEntityAtRay(
                             rayOrigin, rayDirection,
                             view.camera.positionAbsolute,
-                            lightPickFactor, cycle);
+                            lightPickFactor, cycle, additive);
                         lastPickX = pickStartX;
                         lastPickY = pickStartY;
-                        hasLastPick = true;
+                        hasLastPick = !additive; // cycling applies to plain clicks only
                     }
                 }
             }
@@ -841,19 +901,19 @@ class InteractionOverlay: EventListener
                 dragDistance = snappedValue(t - dragStartAxisParam, translationSnapIncrement);
 
             Vector3f worldDelta = dragAxisDirection * dragDistance;
-            Matrix4x4f parentInverse = Matrix4x4f.identity;
-            if (entity.parent)
-                parentInverse = entity.parent.invAbsoluteTransformation;
-            else if (entity.world)
-                parentInverse = entity.world.rootInvTransformation;
-            entity.position = dragStartPosition + parentInverse.rotate(worldDelta);
+            foreach (i, e; dragEntities.data)
+                setPositionByWorldDelta(e, dragSnapshots.data[i].position, worldDelta);
         }
         else if (gizmoMode == GizmoMode.Scale)
         {
+            // Each entity is scaled about its own origin by the same amount
             float projectedDelta = (dx * dragAxisX + dy * dragAxisY) / dragAxisLength;
             float scaleDelta = snappedValue(projectedDelta / 100.0f, scaleSnapIncrement);
-            float value = max(0.001f, dragStartScale[draggedAxis] + scaleDelta);
-            entity.scaling[draggedAxis] = value;
+            foreach (i, e; dragEntities.data)
+            {
+                float value = max(0.001f, dragSnapshots.data[i].scaling[draggedAxis] + scaleDelta);
+                e.scaling[draggedAxis] = value;
+            }
         }
         else if (gizmoMode == GizmoMode.Rotation)
         {
@@ -890,8 +950,26 @@ class InteractionOverlay: EventListener
             float rotationDelta = snappedValue(
                 accumulatedRotationAngle,
                 degtorad(rotationSnapIncrementDegrees));
-            entity.rotation = dragStartRotation *
-                rotationQuaternion!float(axes[draggedAxis], rotationDelta);
+            Matrix4x4f groupRotation = rotationQuaternion!float(dragAxisDirection, rotationDelta).toMatrix4x4;
+            foreach (i, e; dragEntities.data)
+            {
+                if (e is dragEntity)
+                {
+                    // The primary entity turns about its own axis, as with a single selection
+                    e.rotation = dragStartRotation *
+                        rotationQuaternion!float(axes[draggedAxis], rotationDelta);
+                }
+                else
+                {
+                    // The others orbit the primary entity's position about the world axis
+                    // and turn by the same angle
+                    Vector3f offset = dragStartAbsolutePositions.data[i] - dragStartGizmoPosition;
+                    Vector3f worldDelta = groupRotation.rotate(offset) - offset;
+                    setPositionByWorldDelta(e, dragSnapshots.data[i].position, worldDelta);
+                    e.rotation = dragSnapshots.data[i].rotation *
+                        rotationQuaternion!float(dragLocalAxes.data[i], rotationDelta);
+                }
+            }
         }
 
         gizmoPosition = entity.positionAbsolute;
@@ -957,7 +1035,30 @@ class InteractionOverlay: EventListener
             selectionBoundingBox.render(&state);
             gizmoShader.unbindParameters(&state);
         }
-        
+
+        // Outlines of the other selected entities, in a different color
+        if (ui && ui.scene.showSelectedEntityBoundingBox)
+        {
+            foreach (e; ui.editor.selection.data)
+            {
+                if (e is ui.editor.selectedEntity)
+                    continue;
+                Mesh mesh = cast(Mesh)e.drawable;
+                if (!mesh || mesh.vertices.length == 0)
+                    continue;
+                auto box = ui.editor.meshBox(mesh);
+                Matrix4x4f boxTransformation =
+                    e.absoluteTransformation *
+                    translationMatrix(box.center) *
+                    scaleMatrix(box.size);
+                state.modelViewMatrix = viewMatrix * boxTransformation;
+                state.projectionMatrix = view.projectionMatrix;
+                gizmoShader.bindParameters(&state);
+                selectionBoundingBoxSecondary.render(&state);
+                gizmoShader.unbindParameters(&state);
+            }
+        }
+
         state.modelViewMatrix = viewMatrix * gizmoTransformation;
         state.projectionMatrix = view.projectionMatrix;
         gizmoShader.bindParameters(&state);

@@ -85,7 +85,7 @@ class Inspector: Owner
         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.OpenOnArrow;
 
         if (!hasLiveChildren(entity)) flags |= ImGuiTreeNodeFlags.Leaf;
-        if (editor.selectedEntity == entity)  flags |= ImGuiTreeNodeFlags.Selected;
+        if (editor.isSelected(entity))  flags |= ImGuiTreeNodeFlags.Selected;
 
         bool isOpen = false;
         if (entity.name.length)
@@ -95,19 +95,36 @@ class Inspector: Owner
 
         if (igIsItemClicked() && !igIsItemToggledOpen())
         {
-            editor.selectEntity(entity);
+            // Ctrl or Shift adds to / removes from the selection
+            auto io = igGetIO();
+            if (io.KeyCtrl || io.KeyShift)
+                editor.toggleSelection(entity);
+            else
+                editor.selectEntity(entity);
         }
 
-        if (igIsItemClicked(ImGuiMouseButton.Right))
+        // Right click keeps a multi-selection if it lands on a selected entity
+        if (igIsItemClicked(ImGuiMouseButton.Right) && !editor.isSelected(entity))
             editor.selectEntity(entity);
 
         if (igBeginPopupContextItem("Entity context"))
         {
             bool canModify = editor.isSerializableEntity(entity);
+            bool onSelection = editor.isSelected(entity);
             if (igMenuItem("Duplicate", "Ctrl+D", false, canModify))
-                editor.duplicateEntity(entity);
+            {
+                if (onSelection)
+                    editor.duplicateSelected();
+                else
+                    editor.duplicateEntity(entity);
+            }
             if (igMenuItem("Delete", "Del", false, canModify))
-                editor.deleteEntity(entity);
+            {
+                if (onSelection)
+                    editor.deleteSelected();
+                else
+                    editor.deleteEntity(entity);
+            }
             igEndPopup();
         }
 
