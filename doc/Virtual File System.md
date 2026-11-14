@@ -8,7 +8,7 @@ Key concept of the VFS is mounting. For a location to be accessed, it has to be 
 
 - Data archive. This is a ZIP archive in the executable's directory, `data.zip` by default. Contents of this archive is reserved for Dagon's internal runtime data (`data/__internal`), so it is not recommended to use it for anything else. If the archive doesn't exist, it is not mounted. Custom filename of the data archive can be specified using `vfs.dataZip` option in `settings.conf`;
 - Executable's directory. This is always the last location to search. Not to be confused with a working directory! Working directory is not used by default becase of security reasons;
-- The application data directory (`C:\Users\<username>\AppData\Roaming\<appDataFolder>` on Windows and `~\<appDataFolder>` on Linux).
+- The application data directory (`C:/Users/<username>/AppData/Roaming/<appDataFolder>` on Windows and `~/<appDataFolder>` on Linux).
 
 `<appDataFolder>` is `.dagon` by default, defined in `settings.conf` and can be overridden in the constructor of the class inherited from the `Game` or `Application`:
 
