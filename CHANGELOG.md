@@ -9,7 +9,9 @@ Dagon 1.9.0 - TBD
   - New method `Scene.addSceneAsset`
 - **Editor**
   - Mouse picking of entities in the viewport
+  - Multi-selection (Shift-click) and group editing
   - Fix entity bounding box rendering
+  - Light markers
 - **Misc**
   - Dagon now uses dlib 1.8.3.
 
