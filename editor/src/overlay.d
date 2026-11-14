@@ -730,7 +730,8 @@ class InteractionOverlay: EventListener
             return;
         }
 
-        drawLightMarkers();
+        if (!ui.showAbout)
+            drawLightMarkers();
 
         // Without a selection there is no gizmo, but clicks must still reach entity picking
         bool hasGizmo = ui.editor.selectedEntity !is null && gizmoMode != GizmoMode.Disabled;

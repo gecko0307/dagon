@@ -12,9 +12,19 @@ Note that in a newly created scene, the Asset Browser is disabled, because the s
 
 To import a model, copy it to the root directory (it's better to make a subdirectory for that, such as `meshes` or `models`) and then drag and drop it to the Viewport.
 
-## Transformations
+## Viewport Controls
 
-TODO
+- Left mouse button (single click) - select an entity. Shift + click allows to selec multiple entities
+- Left mouse button (press and hold) - orbit the camera, or zoom in/out if Left Ctrl is pressed, or transform an entity if a gizmo axis was clicked (see below)
+- Right mouse button (press and hold) - pan the camera
+- Mouse wheel - zoom in/out
+- Delete - delete an entity
+- Ctrl + Z - undo an operation
+- Ctrl + Y - redo an operation.
+
+A red-gree-blue manipulator that appears when an entity is selected is called a *gizmo*. It allows to transform entities: move, rotate, or scale. Transformation mode is switched using the corresponding toolbar buttons.
+
+Left-click a gizmo axis and drag the mouse to transform the entity along that axis. Holding Left Ctrl enables snapping the transform to discrete steps. Snapping increment can be adjusted on the toolbar. By default it is 1m for moving, 15° for rotation, and 0.1 for scaling.
 
 ## Materials
 
