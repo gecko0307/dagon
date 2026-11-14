@@ -180,24 +180,6 @@ class Mesh: Owner, Drawable, TriangleSet
      */
     void calcBoundingBox()
     {
-        /*
-        float maxDimension = 0.0f;
-        
-        foreach(v; vertices)
-        {
-            float ax = abs(v.x);
-            float ay = abs(v.y);
-            float az = abs(v.z);
-            if (ax > maxDimension) maxDimension = ax;
-            if (ay > maxDimension) maxDimension = ay;
-            if (az > maxDimension) maxDimension = az;
-        }
-        
-        Vector3f furthest = Vector3f(maxDimension, maxDimension, maxDimension);
-
-        boundingBox = boxFromMinMaxPoints(-furthest, furthest);
-        */
-        
         Vector3f minPoint = Vector3f(float.max, float.max, float.max);
         Vector3f maxPoint = Vector3f(-float.max, -float.max, -float.max);
         
@@ -211,7 +193,7 @@ class Mesh: Owner, Drawable, TriangleSet
             if (v.z > maxPoint.z) maxPoint.z = v.z;
         }
         
-        boundingBox = aabbFromMinMaxPoints(minPoint, maxPoint);
+        boundingBox = boxFromMinMaxPoints(minPoint, maxPoint);
     }
     
     /**
@@ -354,12 +336,4 @@ class Mesh: Owner, Drawable, TriangleSet
             glBindVertexArray(0);
         }
     }
-}
-
-/// Creates AABB from minimum and maximum points.
-AABB aabbFromMinMaxPoints(Vector3f mi, Vector3f ma)
-{
-    Vector3f center = (ma + mi) * 0.5f;
-    Vector3f size = (ma - mi) * 0.5f;
-    return AABB(center, size);
 }
