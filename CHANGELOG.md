@@ -8,6 +8,7 @@ Dagon 1.9.0 - TBD
   - `SceneAsset` that loads JSON scenes saved by the Editor
   - New method `Scene.addSceneAsset`
 - **Editor**
+  - Mouse picking of entities in the viewport
   - Fix entity bounding box rendering
 - **Misc**
   - Dagon now uses dlib 1.8.3.
