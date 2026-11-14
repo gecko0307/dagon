@@ -1,5 +1,7 @@
 Dagon 1.9.0 - TBD
 -----------------
+- **Core**
+  - Add floating-point exception report to the crash handler
 - **Graphics components**
   - Fix `Mesh.calcBoundingBox`
 - **Editor**
