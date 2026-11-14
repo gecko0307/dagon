@@ -13,13 +13,13 @@
 </head>
 <body>
   <div class="mobile-bar">
-    <a class="mobile-brand" href="index.html"><span class="brand-mark">D</span><span>Dagon Editor</span></a>
+    <a class="mobile-brand" href="index.html"><span class="brand-mark"></span><span>Dagon Editor</span></a>
     <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="sidebar">Contents&nbsp; ☰</button>
   </div>
 
   <aside class="sidebar" id="sidebar">
     <a class="brand" href="index.html">
-      <span class="brand-mark">D</span>
+      <span class="brand-mark"></span>
       <span><span class="brand-name">Dagon Editor</span><span class="brand-caption">Documentation</span></span>
     </a>
 
