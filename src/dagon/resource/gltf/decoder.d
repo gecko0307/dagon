@@ -67,6 +67,7 @@ import dagon.core.bindings;
 import dagon.core.event;
 import dagon.core.time;
 import dagon.core.logger;
+import dagon.core.jsonutils;
 import dagon.resource.asset;
 import dagon.resource.texture;
 import dagon.graphics.texture;
@@ -83,83 +84,6 @@ import dagon.resource.gltf.node;
 import dagon.resource.gltf.scene;
 import dagon.resource.gltf.skin;
 import dagon.resource.gltf.animation;
-
-/**
- * Converts a JSON array value to a `Vector3f`.
- *
- * Params:
- *   value = The JSON value.
- * Returns:
- *   The corresponding vector.
- */
-Vector3f asVector(JSONValue value)
-{
-    Vector3f vec = Vector3f(0.0f, 0.0f, 0.0f);
-    foreach(i, v; value.asArray)
-        vec[i] = v.asNumber;
-    return vec;
-}
-
-/**
- * Converts a JSON array value to a `Matrix4x4f`.
- *
- * Params:
- *   value = The JSON value.
- * Returns:
- *   The corresponding matrix.
- */
-Matrix4x4f asMatrix(JSONValue value)
-{
-    Matrix4x4f mat = Matrix4x4f.identity;
-    foreach(i, v; value.asArray)
-        mat[i] = v.asNumber;
-    return mat;
-}
-
-/**
- * Converts a JSON array value to a `Quaternionf`.
- *
- * Params:
- *   value = The JSON value.
- * Returns:
- *   The corresponding quaternion.
- */
-Quaternionf asQuaternion(JSONValue value)
-{
-    Quaternionf q = Quaternionf.identity;
-    foreach(i, v; value.asArray)
-        q[i] = v.asNumber;
-    return q;
-}
-
-/**
- * Converts a JSON array value to a `Color4f`.
- *
- * Params:
- *   value = The JSON value.
- * Returns:
- *   The corresponding color.
- */
-Color4f asColor(JSONValue value)
-{
-    Color4f col = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
-    foreach(i, v; value.asArray)
-        col[i] = v.asNumber;
-    return col;
-}
-
-/**
- * Converts a JSON number value to uint.
- *
- * Params:
- *   value = The JSON value.
- * Returns:
- *   Unsigned integer.
- */
-uint asUint(JSONValue value)
-{
-    return cast(uint)value.asNumber;
-}
 
 /**
  * Asset class for loading GLTF 2.0 models and querying their resources.

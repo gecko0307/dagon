@@ -115,4 +115,7 @@ public
     
     /// ZIP file system.
     import dagon.core.zipfs;
+    
+    /// JSON utils.
+    import dagon.core.jsonutils;
 }
