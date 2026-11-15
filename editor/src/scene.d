@@ -113,6 +113,8 @@ class EditorScene: Scene
         app.postProcessingRenderer.lutEnabled = false;
         
         camera = addCamera();
+        camera.fov = 40.0f;
+        
         freeview = New!FreeviewComponent(eventManager, camera);
         freeview.setZoom(5);
         freeview.setRotation(30.0f, -45.0f, 0.0f);
