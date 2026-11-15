@@ -412,7 +412,7 @@ class PropertiesPanel: Owner
                 {
                     if (!igCheckbox("Autofocus", &scene.app.postProcessingRenderer.autofocus))
                         igSliderFloat("Focal depth", &scene.app.postProcessingRenderer.focalDepth, 0.0f, 2.0f, "%.2f");
-                    igSliderFloat("Focal length", &scene.app.postProcessingRenderer.focalLength, 0.0f, 10.0f, "%.2f");
+                    igSliderFloat("Focal length", &scene.app.postProcessingRenderer.focalLength, 0.0f, 30.0f, "%.2f");
                     igSliderFloat("F-Stop", &scene.app.postProcessingRenderer.fStop, 0.0f, 32.0f, "%.2f");
                 }
                 
