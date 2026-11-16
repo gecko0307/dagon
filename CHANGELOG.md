@@ -9,6 +9,8 @@ Dagon 1.9.0 - TBD
 - **Assets**
   - `SceneAsset` that loads JSON scenes saved by the Editor
   - New method `Scene.addSceneAsset`
+- **UI**
+  - Inertia support in `FirstPersonViewComponent`
 - **Editor**
   - Mouse picking of entities in the viewport
   - Multi-selection (Shift-click) and group editing

@@ -187,6 +187,8 @@ class FirstPersonViewComponent: EntityComponent
     {
         pitch = 0.0f;
         turn = 0.0f;
+        pitchVelocity = 0.0f;
+        turnVelocity = 0.0f;
         if (!useRelativeMouseMode)
             eventManager.setMouseToCenter();
         prevMouseX = eventManager.mouseX;
@@ -212,13 +214,6 @@ class FirstPersonViewComponent: EntityComponent
                 mouseRelH =  (eventManager.mouseX - prevMouseX) * mouseSensitivity;
                 mouseRelV = (eventManager.mouseY - prevMouseY) * mouseSensitivity;
             }
-            
-            //float hAxis = inputManager.getAxis("horizontal");
-            //float vAxis = inputManager.getAxis("vertical");
-            //if (abs(hAxis) < axisDeadzone) hAxis = 0.0f;
-            //if (abs(vAxis) < axisDeadzone) vAxis = 0.0f;
-            //pitch -= mouseRelV + vAxis * axisSensitivity;
-            //turn -= mouseRelH + hAxis * axisSensitivity;
             
             float hAxis = inputManager.getAxis("horizontal");
             float vAxis = inputManager.getAxis("vertical");
