@@ -211,7 +211,7 @@ Editor status:
 * ✔️ Mesh import
 * ✔️ Material import
 * ✔️ Texture import
-* ❌ Lights
+* ✔️ Lights
 * ❌ Basic shapes
 * ❌ Cameras
 * ❌ Particle systems
