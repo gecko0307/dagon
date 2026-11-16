@@ -35,6 +35,7 @@ import dlib.serialization.json;
 import dagon.core.bindings;
 import dagon.graphics.mesh;
 import dagon.resource.gltf.node;
+import dagon.resource.gltf.accessor;
 
 /**
  * Represents a GLTF scene, containing a set of root nodes.
@@ -68,7 +69,7 @@ class GLTFScene: Owner, TriangleSet
      * Returns:
      *   0 if completed, nonzero if interrupted.
      */
-    int opApply(scope int delegate(Triangle t) dg)
+    int opApply(scope int delegate(Triangle* t) dg)
     {
         int result = 0;
         
@@ -80,5 +81,25 @@ class GLTFScene: Owner, TriangleSet
         }
         
         return result;
+    }
+    
+    /// Returns a total number of triangles in the set.
+    size_t numTriangles()
+    {
+        size_t numTris = 0;
+        
+        foreach(node; nodes)
+        {
+            if (node.mesh)
+            {
+                foreach(primitive; node.mesh.primitives)
+                {
+                    GLTFAccessor ia = primitive.indexAccessor;
+                    numTris += ia.count / 3;
+                }
+            }
+        }
+        
+        return numTris;
     }
 }

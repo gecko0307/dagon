@@ -51,6 +51,8 @@ import dlib.core.stream;
 import dlib.container.array;
 import dlib.container.dict;
 import dlib.math.vector;
+import dlib.math.matrix;
+import dlib.geometry.triangle;
 import dlib.serialization.json;
 import dlib.text.str;
 import dlib.filesystem.filesystem;
@@ -498,7 +500,7 @@ class Scene: EventListener
  * Scene asset in JSON format.
  * Used by the Dagon Editor.
  */
-class SceneAsset: Asset
+class SceneAsset: Asset, TriangleSet
 {
     /// Asset manager that is used to load external resources of the asset.
     AssetManager assetManager;
@@ -677,6 +679,12 @@ class SceneAsset: Asset
                 readEntity(entities[i], i, e.asObject, assetRootPath);
             }
         }
+        
+        foreach(e; entities.data)
+        {
+            if (e.parent is null)
+                e.updateTransformationTopDown();
+        }
     }
     
     protected void readEntity(Entity e, size_t eIndex, JSONObject obj, string assetRootPath)
@@ -786,5 +794,63 @@ class SceneAsset: Asset
         
         Delete(materialAssets);
         Delete(meshAssets);
+    }
+    
+    /**
+     * Iterates over all triangles in the entities.
+     *
+     * Params:
+     *   dg = Delegate to call for each triangle.
+     * Returns:
+     *   0 if completed, nonzero if interrupted.
+     */
+    int opApply(scope int delegate(Triangle* t) dg)
+    {
+        int result = 0;
+        
+        foreach(e; entities.data)
+        {
+            Mesh mesh = cast(Mesh)e.drawable;
+            if (mesh)
+            {
+                Matrix4x4f mat = e.absoluteTransformation;
+                
+                foreach(t; mesh)
+                {
+                    Triangle tri;
+                    tri.v[0] = t.v[0] * mat;
+                    tri.v[1] = t.v[1] * mat;
+                    tri.v[2] = t.v[2] * mat;
+                    tri.n[0] = mat.rotate(t.n[0]);
+                    tri.n[1] = mat.rotate(t.n[1]);
+                    tri.n[2] = mat.rotate(t.n[2]);
+                    tri.normal = (tri.n[0] + tri.n[1] + tri.n[2]) / 3.0f;
+                    //tri.materialIndex = t.materialIndex;
+                    
+                    result = dg(&tri);
+                    if (result)
+                        return result;
+                }
+            }
+        }
+        
+        return result;
+    }
+
+    /// Returns a total number of triangles in the set.
+    size_t numTriangles()
+    {
+        size_t numTris = 0;
+        
+        foreach(e; entities.data)
+        {
+            Mesh mesh = cast(Mesh)e.drawable;
+            if (mesh)
+            {
+                numTris += mesh.numTriangles();
+            }
+        }
+        
+        return numTris;
     }
 }

@@ -192,7 +192,7 @@ class GLTFNode: Owner, TriangleSet
      * Returns:
      *   0 if completed, nonzero if interrupted.
      */
-    int forEachTriangle(scope int delegate(Triangle t) dg, bool recursive = true)
+    int forEachTriangle(scope int delegate(Triangle* t) dg, bool recursive = true)
     {
         int result = 0;
         
@@ -256,7 +256,7 @@ class GLTFNode: Owner, TriangleSet
                     tri.n[2] = mat.rotate(normals[indices[2]]);
                     tri.normal = (tri.n[0] + tri.n[1] + tri.n[2]) / 3.0f;
                     
-                    result = dg(tri);
+                    result = dg(&tri);
                     if (result)
                         return result;
                 }
@@ -284,9 +284,26 @@ class GLTFNode: Owner, TriangleSet
      * Returns:
      *   0 if completed, nonzero if interrupted.
      */
-    int opApply(scope int delegate(Triangle t) dg)
+    int opApply(scope int delegate(Triangle* t) dg)
     {
         return forEachTriangle(dg);
+    }
+    
+    /// Returns a total number of triangles in the set.
+    size_t numTriangles()
+    {
+        size_t numTris = 0;
+        
+        if (mesh)
+        {
+            foreach(primitive; mesh.primitives)
+            {
+                GLTFAccessor ia = primitive.indexAccessor;
+                numTris += ia.count / 3;
+            }
+        }
+        
+        return numTris;
     }
 }
 

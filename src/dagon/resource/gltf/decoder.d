@@ -1214,7 +1214,7 @@ class GLTFAsset: Asset, TriangleSet
      * Returns:
      *   0 if completed, nonzero if interrupted.
      */
-    int opApply(scope int delegate(Triangle t) dg)
+    int opApply(scope int delegate(Triangle* t) dg)
     {
         int result = 0;
         
@@ -1281,7 +1281,7 @@ class GLTFAsset: Asset, TriangleSet
                         tri.normal = (tri.n[0] + tri.n[1] + tri.n[2]) / 3.0f;
                         tri.materialIndex = primitive.materialIndex;
                         
-                        result = dg(tri);
+                        result = dg(&tri);
                         if (result)
                             return result;
                     }
@@ -1291,7 +1291,27 @@ class GLTFAsset: Asset, TriangleSet
         
         return result;
     }
-    
+
+    /// Returns a total number of triangles in the set.
+    size_t numTriangles()
+    {
+        size_t numTris = 0;
+        
+        foreach(node; nodes)
+        {
+            if (node.mesh)
+            {
+                foreach(primitive; node.mesh.primitives)
+                {
+                    GLTFAccessor ia = primitive.indexAccessor;
+                    numTris += ia.count / 3;
+                }
+            }
+        }
+        
+        return numTris;
+    }
+
     /// Finds a node by name.
     GLTFNode node(string name)
     {

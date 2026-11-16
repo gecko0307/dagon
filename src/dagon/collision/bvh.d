@@ -515,7 +515,7 @@ void collectEntityTris(Entity e, ref Array!Triangle tris, bool recursive = true)
                 v2 = v2 * e.absoluteTransformation;
                 v3 = v3 * e.absoluteTransformation;
 
-                Triangle tri2 = tri;
+                Triangle tri2 = *tri;
                 tri2.v[0] = v1;
                 tri2.v[1] = v2;
                 tri2.v[2] = v3;

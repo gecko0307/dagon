@@ -31,6 +31,7 @@ import dlib.core.ownership;
 import dlib.container.array;
 import dlib.math.vector;
 import dlib.math.quaternion;
+import dlib.geometry.triangle;
 
 import bindbc.joltc;
 
@@ -255,7 +256,8 @@ class JoltMeshShape: JoltShape
     {
         super(owner);
         
-        Array!JPH_Triangle tris;
+        JPH_Triangle[] tris = New!(JPH_Triangle[])(triangleSet.numTriangles);
+        size_t i = 0;
         
         foreach(triangle; triangleSet)
         {
@@ -266,15 +268,16 @@ class JoltMeshShape: JoltShape
                 materialIndex: 0
             };
             
-            tris.append(tri);
+            tris[i] = tri;
+            i++;
         }
         
         JPH_MeshShapeSettings* settings = JPH_MeshShapeSettings_Create(
-            tris.data.ptr, cast(uint)tris.length);
+            tris.ptr, cast(uint)tris.length);
         meshShape = JPH_MeshShapeSettings_CreateShape(settings);
         shape = cast(JPH_Shape*)meshShape;
         JPH_ShapeSettings_Destroy(cast(JPH_ShapeSettings*)settings);
-        tris.free();
+        Delete(tris);
     }
 }
 

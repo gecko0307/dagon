@@ -93,7 +93,10 @@ interface TriangleSet
      * Returns:
      *   0 if iteration completed, or the value returned by the delegate if nonzero.
      */
-    int opApply(scope int delegate(Triangle t) dg);
+    int opApply(scope int delegate(Triangle* t) dg);
+    
+    /// Returns a total number of triangles in the set.
+    size_t numTriangles();
 }
 
 /**
@@ -229,19 +232,25 @@ class Mesh: Owner, Drawable, TriangleSet
      * Returns:
      *   0 if iteration completed, or the value returned by the delegate if nonzero.
      */
-    int opApply(scope int delegate(Triangle t) dg)
+    int opApply(scope int delegate(Triangle* t) dg)
     {
         int result = 0;
 
         foreach(i, ref f; indices)
         {
             Triangle tri = getTriangle(i);
-            result = dg(tri);
+            result = dg(&tri);
             if (result)
                 break;
         }
 
         return result;
+    }
+
+    /// Returns a total number of triangles in the set.
+    size_t numTriangles()
+    {
+        return indices.length;
     }
     
     /**
