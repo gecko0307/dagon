@@ -3,6 +3,7 @@ Dagon 1.9.0 - TBD
 - **Core**
   - Add "illegal instruction" and "floating-point invalid operation" exception reports to the crash handler
 - **Graphics components**
+  - New method `World.getEntity`
   - Fix `Mesh.calcBoundingBox`
 - **Assets**
   - `SceneAsset` that loads JSON scenes saved by the Editor
