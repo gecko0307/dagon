@@ -10,8 +10,8 @@ Dagon 1.9.0 - TBD
 - **Editor**
   - Mouse picking of entities in the viewport
   - Multi-selection (Shift-click) and group editing
+  - Creation of light sources; light properties; viewport light markers
   - Fix entity bounding box rendering
-  - Light markers
   - Update the editor documentation
 - **Misc**
   - Dagon now uses dlib 1.8.3.

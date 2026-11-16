@@ -13,6 +13,7 @@ Open a new GitHub pull request with your patch. Provide a description of the pro
 #### Implementing new features
 
 New code should at least:
+
 * work under Windows and POSIX systems and provide platform-agnostic API
 * use OpenGL 4.3 core profile and GLSL 4.00+
 * use [dlib](https://github.com/gecko0307/dlib) for game math, image decoding, file I/O and other tasks dlib was created for
@@ -29,6 +30,7 @@ Adding new external dependencies should be avoided as much as possible. Only GC-
 #### Code style and standards 
 
 Dagon follows [D style](https://dlang.org/dstyle.html). Essential rules are the following:
+
 * Use spaces instead of tabs. Each indentation level is 4 spaces
 * Opening curly bracket should be on a new line
 * Functions and variables should be in `camelCase`
@@ -36,6 +38,7 @@ Dagon follows [D style](https://dlang.org/dstyle.html). Essential rules are the 
 * Module names should be in lowercase.
 
 Each D module should start with a Boost license block prepended with a copyright notice:
+
 ```
 /*
 Copyright (c) 2026 <author's name here>
