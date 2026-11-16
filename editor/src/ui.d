@@ -467,6 +467,11 @@ class EditorUI: EventListener
         }
         if (igBeginMenu("Create"))
         {
+            if (igMenuItem("Empty"))
+                editor.createEmpty();
+            
+            igSeparator();
+            
             if (igBeginMenu("Light"))
             {
                 if (igMenuItem("Sun"))

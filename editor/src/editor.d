@@ -890,6 +890,21 @@ class Editor: EventListener
         }
     }
 
+    Entity createEmpty()
+    {
+        if (overlay.draggingGizmo || scene is null || !scene.canRender)
+            return null;
+        
+        auto e = scene.addEntity(scene.sceneRoot);
+        e.name = "entity " ~ numEntities.to!string;
+        numEntities++;
+        
+        selectEntity(e);
+        history.push(New!EntityLifetimeCommand("Create entity", e, true, &markDeleted));
+        markModified();
+        return e;
+    }
+
     /**
      * Creates a light of the given type at the scene root with sensible
      * defaults, selects it and records the creation in the undo history.
@@ -1195,7 +1210,7 @@ class Editor: EventListener
                 if (rayVsBox(Vector3f(lo.x, lo.y, lo.z), Vector3f(ld.x, ld.y, ld.z), box.pmin, box.pmax, t))
                     hits.append(PickHit(e, t, order));
             }
-            else if (isLight)
+            else // if (isLight)
             {
                 Vector3f position = e.positionAbsolute;
                 float radius = max(distance(cameraPosition, position) * lightPickFactor, 0.05f);

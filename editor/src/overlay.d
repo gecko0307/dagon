@@ -684,9 +684,8 @@ class InteractionOverlay: EventListener
         draggedAxis = -1;
     }
 
-    // Small markers at light positions: lights have no geometry, this is what
-    // the user clicks to select them
-    void drawLightMarkers()
+    // Viewport markers for invisible objects (lights, empties)
+    void drawMarkers()
     {
         if (!visible || !ui || ui.editor.scene is null || view.camera is null)
             return;
@@ -703,19 +702,23 @@ class InteractionOverlay: EventListener
 
         foreach (e; ui.editor.scene.world.entities)
         {
-            if (cast(Light)e is null || !ui.editor.isSerializableEntity(e))
+            if (e.drawable !is null || !ui.editor.isSerializableEntity(e))
                 continue;
 
             GizmoPoint p;
             if (!project(e.positionAbsolute, p))
                 continue;
 
+            bool isLight = cast(Light)e !is null;
+
             bool selected = ui.editor.isSelected(e);
             ImVec2 center = ImVec2(p.x, p.y);
+            
+            uint color = isLight? 0xFF55DDFF : 0xFFFFFFFF;
+            
             ImDrawList_AddCircleFilled(drawList, center, selected ? 7.0f : 5.0f, 0xAA000000, 16);
-            ImDrawList_AddCircle(drawList, center, selected ? 7.0f : 5.0f,
-                selected ? 0xFFFFFFFF : 0xFF55DDFF, 16, selected ? 2.0f : 1.5f);
-            ImDrawList_AddCircleFilled(drawList, center, 1.5f, selected ? 0xFFFFFFFF : 0xFF55DDFF, 8);
+            ImDrawList_AddCircle(drawList, center, selected ? 7.0f : 5.0f, color, 16, selected ? 2.0f : 1.5f);
+            ImDrawList_AddCircleFilled(drawList, center, 1.5f, color, 8);
         }
 
         ImDrawList_PopClipRect(drawList);
@@ -731,7 +734,7 @@ class InteractionOverlay: EventListener
         }
 
         if (!ui.showAbout)
-            drawLightMarkers();
+            drawMarkers();
 
         // Without a selection there is no gizmo, but clicks must still reach entity picking
         bool hasGizmo = ui.editor.selectedEntity !is null && gizmoMode != GizmoMode.Disabled;
