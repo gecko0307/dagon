@@ -195,6 +195,18 @@ class World: Owner
         return e;
     }
     
+    /// Returns the first found entity that has the given name, or null if not found.
+    Entity getEntity(string name)
+    {
+        foreach(i, e; entities.data)
+        {
+            if (e.name == name)
+                return e;
+        }
+        
+        return null;
+    }
+    
     /// Iterates over all entities (by index and reference).
     int opApply(scope int delegate(size_t, ref Entity) dg)
     {
