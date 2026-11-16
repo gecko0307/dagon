@@ -99,6 +99,21 @@ class FirstPersonViewComponent: EntityComponent
     /// Camera roll angle (degrees).
     float roll = 0.0f;
     
+    /// Enables inertial rotation.
+    bool enableInertia = false;
+
+    /// Time constant of rotational acceleration.
+    float inertialAcceleration = 0.08f;
+
+    /// Time constant of rotational deceleration.
+    float inertialDeceleration = 0.12f;
+
+    /// Current horizontal rotation velocity.
+    float turnVelocity = 0.0f;
+
+    /// Current vertical rotation velocity.
+    float pitchVelocity = 0.0f;
+    
     /// Vertical orientation quaternion.
     Quaternionf orientationV = Quaternionf.identity;
 
@@ -198,13 +213,36 @@ class FirstPersonViewComponent: EntityComponent
                 mouseRelV = (eventManager.mouseY - prevMouseY) * mouseSensitivity;
             }
             
+            //float hAxis = inputManager.getAxis("horizontal");
+            //float vAxis = inputManager.getAxis("vertical");
+            //if (abs(hAxis) < axisDeadzone) hAxis = 0.0f;
+            //if (abs(vAxis) < axisDeadzone) vAxis = 0.0f;
+            //pitch -= mouseRelV + vAxis * axisSensitivity;
+            //turn -= mouseRelH + hAxis * axisSensitivity;
+            
             float hAxis = inputManager.getAxis("horizontal");
             float vAxis = inputManager.getAxis("vertical");
             if (abs(hAxis) < axisDeadzone) hAxis = 0.0f;
             if (abs(vAxis) < axisDeadzone) vAxis = 0.0f;
+            float pitchInput = mouseRelV + vAxis * axisSensitivity;
+            float turnInput = mouseRelH + hAxis * axisSensitivity;
             
-            pitch -= mouseRelV + vAxis * axisSensitivity;
-            turn -= mouseRelH + hAxis * axisSensitivity;
+            if (enableInertia)
+            {
+                float pitchFactor = 1.0f - exp(-time.delta / inertialDeceleration);
+                float turnFactor = 1.0f - exp(-time.delta / inertialDeceleration);
+                pitchVelocity += (pitchInput - pitchVelocity) * pitchFactor;
+                turnVelocity += (turnInput - turnVelocity) * turnFactor;
+                pitch -= pitchVelocity;
+                turn -= turnVelocity;
+            }
+            else
+            {
+                turn -= turnInput;
+                pitch -= pitchInput;
+                turnVelocity = turnInput;
+                pitchVelocity = pitchInput;
+            }
             
             if (pitch > pitchLimitMax)
             {
