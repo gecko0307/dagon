@@ -41,6 +41,7 @@ import dagon.core.event;
 import dagon.core.application;
 import dagon.core.dialogs;
 import dagon.graphics.texture;
+import dagon.graphics.light;
 import dagon.ext.imgui;
 
 import dlib.core.memory;
@@ -462,6 +463,22 @@ class EditorUI: EventListener
             if (igMenuItem("Delete", "Del", false, canModifySelection))
                 editor.deleteSelected();
 
+            igEndMenu();
+        }
+        if (igBeginMenu("Create"))
+        {
+            if (igBeginMenu("Light"))
+            {
+                if (igMenuItem("Sun"))
+                    editor.createLight(LightType.Sun);
+                if (igMenuItem("Spot"))
+                    editor.createLight(LightType.Spot);
+                if (igMenuItem("Sphere (area)"))
+                    editor.createLight(LightType.AreaSphere);
+                if (igMenuItem("Tube (area)"))
+                    editor.createLight(LightType.AreaTube);
+                igEndMenu();
+            }
             igEndMenu();
         }
         if (igBeginMenu("Help"))

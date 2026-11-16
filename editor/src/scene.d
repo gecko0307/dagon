@@ -100,7 +100,8 @@ class EditorScene: Scene
     {
         environment.backgroundColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
         
-        // TODO: read post-processing settings from scene file
+        app.deferred.passLight.volumetricScatteringEnabled = true;
+        
         app.deferredRenderer.ssaoEnabled = ssaoEnabled;
         app.deferredRenderer.ssaoPower = 6.0;
         app.postProcessingRenderer.depthOfFieldEnabled = depthOfFieldEnabled;

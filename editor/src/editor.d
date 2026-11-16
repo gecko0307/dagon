@@ -879,6 +879,66 @@ class Editor: EventListener
         return copy;
     }
 
+    static string lightBaseName(LightType type)
+    {
+        final switch (type)
+        {
+            case LightType.AreaSphere: return "Sphere light";
+            case LightType.AreaTube: return "Tube light";
+            case LightType.Sun: return "Sun";
+            case LightType.Spot: return "Spot light";
+        }
+    }
+
+    /**
+     * Creates a light of the given type at the scene root with sensible
+     * defaults, selects it and records the creation in the undo history.
+     */
+    Light createLight(LightType type)
+    {
+        if (overlay.draggingGizmo || scene is null || !scene.canRender)
+            return null;
+
+        auto light = scene.addLight(type, scene.sceneRoot);
+        light.name = lightBaseName(type) ~ " " ~ numEntities.to!string;
+        numEntities++;
+
+        final switch (type)
+        {
+            case LightType.AreaSphere:
+                light.radius = 0.1f;
+                light.energy = 10.0f;
+                light.volumeRadius = 10.0f;
+                light.position = Vector3f(0.0f, 2.0f, 0.0f);
+                break;
+            case LightType.AreaTube:
+                light.radius = 0.05f;
+                light.length = 1.0f;
+                light.energy = 10.0f;
+                light.volumeRadius = 10.0f;
+                light.position = Vector3f(0.0f, 2.0f, 0.0f);
+                break;
+            case LightType.Sun:
+                light.energy = 10.0f;
+                light.angularRadius = 0.01f;
+                light.shadowEnabled = true;
+                light.pitch(-45.0f);
+                break;
+            case LightType.Spot:
+                light.radius = 0.1f;
+                light.energy = 50.0f;
+                light.volumeRadius = 10.0f;
+                light.position = Vector3f(0.0f, 3.0f, 0.0f);
+                light.pitch(-90.0f);
+                break;
+        }
+
+        selectEntity(light);
+        history.push(New!EntityLifetimeCommand("Create light", light, true, &markDeleted));
+        markModified();
+        return light;
+    }
+
     // Duplicates the whole selection as one undo step; the copies become the selection
     void duplicateSelected()
     {

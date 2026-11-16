@@ -40,6 +40,7 @@ import dlib.math.vector;
 import dlib.math.quaternion;
 
 import dagon.graphics.entity;
+import dagon.graphics.light;
 import dagon.graphics.material;
 import dagon.graphics.texture;
 import dagon.render.postproc;
@@ -306,6 +307,93 @@ class PropertiesPanel: Owner
         }
     }
 
+    // Zero-terminated label for the read-only light type field
+    static const(char)* lightTypeLabel(LightType type)
+    {
+        final switch (type)
+        {
+            case LightType.AreaSphere: return "Sphere (area)";
+            case LightType.AreaTube: return "Tube (area)";
+            case LightType.Sun: return "Sun";
+            case LightType.Spot: return "Spot";
+        }
+    }
+
+    // Light parameters; only the ones that the light's type uses are shown.
+    // The type itself is fixed at creation (the shadow map depends on it).
+    void renderLightProperties(Light light)
+    {
+        bool isSun = light.type == LightType.Sun;
+        bool isSpot = light.type == LightType.Spot;
+        bool isTube = light.type == LightType.AreaTube;
+        bool changed = false;
+
+        igText("Type: %s", lightTypeLabel(light.type));
+
+        changed |= igCheckbox("Shining", &light.shining);
+        changed |= igColorEdit4("Light color", &light.color.arrayof, ImGuiColorEditFlags.Float);
+        changed |= igInputFloat("Light energy", &light.energy);
+        if (light.energy < 0.0f)
+            light.energy = 0.0f;
+        changed |= igSliderFloat("Diffuse", &light.diffuse, 0.0f, 1.0f, "%.2f");
+        changed |= igSliderFloat("Specular", &light.specular, 0.0f, 1.0f, "%.2f");
+
+        if (isSun)
+        {
+            changed |= igSliderFloat("Angular radius", &light.angularRadius, 0.0f, 0.5f, "%.3f");
+        }
+        else
+        {
+            changed |= igInputFloat("Volume radius", &light.volumeRadius);
+            if (light.volumeRadius < 0.01f)
+                light.volumeRadius = 0.01f;
+            changed |= igSliderFloat("Light radius", &light.radius, 0.0f, 5.0f, "%.3f");
+        }
+
+        if (isTube)
+        {
+            changed |= igSliderFloat("Light length", &light.length, 0.0f, 10.0f, "%.2f");
+        }
+
+        if (isSpot)
+        {
+            changed |= igSliderFloat("Outer cutoff", &light.spotOuterCutoff, 1.0f, 90.0f, "%.1f");
+            changed |= igSliderFloat("Inner cutoff", &light.spotInnerCutoff, 0.0f, 90.0f, "%.1f");
+            if (light.spotInnerCutoff > light.spotOuterCutoff)
+                light.spotInnerCutoff = light.spotOuterCutoff;
+        }
+
+        changed |= igCheckbox("Shadows", &light.shadowEnabled);
+
+        if (igTreeNode("Volumetric scattering"))
+        {
+            changed |= igCheckbox("Scattering", &light.scatteringEnabled);
+            if (light.scatteringEnabled)
+            {
+                changed |= igSliderFloat("Medium density", &light.mediumDensity, 0.0f, 1.0f, "%.2f");
+                if (isSun)
+                {
+                    // g = 1 - scattering
+                    changed |= igSliderFloat("Scattering amount", &light.scattering, 0.0f, 1.0f, "%.3f");
+                    changed |= igCheckbox("Use shadow", &light.scatteringUseShadow);
+                }
+                if (isSpot || (isSun && light.scatteringUseShadow))
+                {
+                    uint samplesMin = 1;
+                    uint samplesMax = 100;
+                    changed |= igSliderScalar("Scattering samples", ImGuiDataType.U32,
+                        &light.scatteringSamples, &samplesMin, &samplesMax);
+                }
+                if (isSun && light.scatteringUseShadow)
+                    changed |= igSliderFloat("Max step offset", &light.scatteringMaxRandomStepOffset, 0.0f, 1.0f, "%.2f");
+            }
+            igTreePop();
+        }
+
+        if (changed)
+            ui.editor.markModified();
+    }
+
     void render()
     {
         auto scene = ui.scene;
@@ -509,6 +597,12 @@ class PropertiesPanel: Owner
                         ui.editor.markModified();
                     igCheckbox("Show bounding box", &scene.showSelectedEntityBoundingBox);
                 }
+            }
+
+            if (auto selectedLight = cast(Light)ui.editor.selectedEntity)
+            {
+                if (igCollapsingHeader("Light", ImGuiTreeNodeFlags.DefaultOpen))
+                    renderLightProperties(selectedLight);
             }
 
             if (igCollapsingHeader("Transformation", ImGuiTreeNodeFlags.DefaultOpen))
