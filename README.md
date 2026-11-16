@@ -21,13 +21,13 @@ Some extensions and the editor are still in development.
 
 ## Screenshots
 
+[![Editor](https://blog.pixperfect.online/wp-content/uploads/2026/11/dagon-editor-lights1.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/11/dagon-editor-lights1.jpg)
+
 [![Ruins of Hell](https://blog.pixperfect.online/wp-content/uploads/2026/04/ruins_of_hell3.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/04/ruins_of_hell3.jpg)
 
 [![Sponza](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated1.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/02/sponza_updated1.jpg)
 
 [![Chillwave Drive](https://blog.pixperfect.online/wp-content/uploads/2026/07/chillwave-drive-hq-1.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/07/chillwave-drive-hq-1.jpg)
-
-[![Editor](https://blog.pixperfect.online/wp-content/uploads/2026/11/dagon-editor-lights1.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/11/dagon-editor-lights1.jpg)
 
 [![VR](https://blog.pixperfect.online/wp-content/uploads/2026/11/dagon-openxr.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/11/dagon-openxr.jpg)
 
