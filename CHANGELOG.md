@@ -3,7 +3,7 @@ Dagon 1.9.0 - TBD
 - **Core**
   - Add "illegal instruction" and "floating-point invalid operation" exception reports to the crash handler
 - **Graphics components**
-  - **Breaking change**: `TriangleSet` interface is updated. Iterator delegate in `opApply` now accepts a `Triangle` by pointer rather than by value. New method `numTriangles` added
+  - **Breaking change**: `TriangleSet` interface is updated to optimize collision mesh generation in physics engines. Iterator delegate in `opApply` now accepts a `Triangle` by pointer rather than by value. New method `numTriangles` added
   - New method `World.getEntity`
   - Fix `Mesh.calcBoundingBox`
 - **Assets**
