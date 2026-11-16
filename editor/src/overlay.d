@@ -43,6 +43,7 @@ import dlib.math.quaternion;
 import dlib.math.matrix;
 import dlib.math.transformation;
 import dlib.math.utils;
+import dlib.image.color;
 
 import dagon.core.bindings;
 import dagon.core.time;
@@ -69,6 +70,18 @@ enum GizmoMode
     Rotation,
     Scale,
     SunDirection
+}
+
+uint packRGBA(Color4f c)
+{
+    Color4 intColor = c.convert(8);
+    return (cast(uint)intColor.a << 24) |
+           (cast(uint)intColor.b << 16) |
+           (cast(uint)intColor.g << 8)  |
+           cast(uint)intColor.r;
+    
+    // 0xRRGGBBAA:
+    // return (u.r << 24) | (u.g << 16) | (u.b << 8) | u.a;
 }
 
 class InteractionOverlay: EventListener
@@ -709,12 +722,17 @@ class InteractionOverlay: EventListener
             if (!project(e.positionAbsolute, p))
                 continue;
 
-            bool isLight = cast(Light)e !is null;
+            Light light = cast(Light)e;
+            bool isLight = light !is null;
 
             bool selected = ui.editor.isSelected(e);
             ImVec2 center = ImVec2(p.x, p.y);
             
-            uint color = isLight? 0xFF55DDFF : 0xFFFFFFFF;
+            uint color = 0xFFFFFFFF;
+            if (isLight)
+            {
+                color = packRGBA(light.color); //0xFF55DDFF;
+            }
             
             ImDrawList_AddCircleFilled(drawList, center, selected ? 7.0f : 5.0f, 0xAA000000, 16);
             ImDrawList_AddCircle(drawList, center, selected ? 7.0f : 5.0f, color, 16, selected ? 2.0f : 1.5f);
