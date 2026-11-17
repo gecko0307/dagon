@@ -32,8 +32,7 @@ DEALINGS IN THE SOFTWARE.
  * The `dagon.resource.material` module defines the `MaterialAsset` class
  * for loading, parsing, and managing material resources from text files.
  * Material assets are parsed into property sets and can be used to instantiate
- * `Material` objects. The module supports threaded loading, integration with
- * the asset manager, and property parsing via Dagon's property system.
+ * `Material` objects.
  *
  * Copyright: Timur Gafarov 2018-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).

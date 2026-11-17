@@ -236,6 +236,9 @@ class Material: Owner
     /// If `false`, disables G-buffer emission output.
     bool outputEmission = true;
     
+    /// Material index for ray-triangle queries and collision data. This is usually set by an asset loader.
+    uint index = 0;
+    
     /// Internal texture offset (for UV translation).
     protected Vector2f textureOffsetInternal = Vector2f(0.0f, 0.0f);
 

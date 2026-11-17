@@ -574,15 +574,15 @@ class SceneAsset: Asset, TriangleSet
         JSONValue materialsNode = doc.root.asObject["materials"];
         if (materialsNode !is null && materialsNode.type == JSONType.Array)
         {
-            foreach (m; materialsNode.asArray.data)
+            foreach (i, m; materialsNode.asArray.data)
             {
                 string path = m.asObject["path"].asString;
-                materials.append((path.length > 0)? loadMaterial(assetRootPath, path) : null);
+                materials.append((path.length > 0)? loadMaterial(assetRootPath, path, cast(uint)i) : null);
             }
         }
     }
     
-    protected Material loadMaterial(string assetRootPath, string path)
+    protected Material loadMaterial(string assetRootPath, string path, uint index)
     {
         String p = String(assetRootPath);
         p ~= "/";
@@ -610,6 +610,7 @@ class SceneAsset: Asset, TriangleSet
             MaterialAsset materialAsset = New!MaterialAsset(assetManager);
             assetManager.loadAssetThreadSafePart(materialAsset, materialPath);
             materialAssets[materialPath] = materialAsset;
+            materialAsset.material.index = index;
             return materialAsset.material;
         }
     }
@@ -827,6 +828,11 @@ class SceneAsset: Asset, TriangleSet
         foreach(e; entities.data)
         {
             Mesh mesh = cast(Mesh)e.drawable;
+            
+            uint materialIndex = 0;
+            if (e.material)
+                materialIndex = e.material.index;
+            
             if (mesh)
             {
                 Matrix4x4f mat = e.absoluteTransformation;
@@ -841,7 +847,7 @@ class SceneAsset: Asset, TriangleSet
                     tri.n[1] = mat.rotate(t.n[1]);
                     tri.n[2] = mat.rotate(t.n[2]);
                     tri.normal = (tri.n[0] + tri.n[1] + tri.n[2]) / 3.0f;
-                    //tri.materialIndex = t.materialIndex;
+                    tri.materialIndex = materialIndex;
                     
                     result = dg(&tri);
                     if (result)

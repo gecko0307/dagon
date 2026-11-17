@@ -5,6 +5,7 @@ Dagon 1.9.0 - TBD
 - **Graphics components**
   - **Breaking change**: `TriangleSet` interface is updated to optimize collision mesh generation in physics engines. Iterator delegate in `opApply` now accepts a `Triangle` by pointer rather than by value. New method `numTriangles` added
   - New method `World.getEntity`
+  - New property `Material.index`
   - Fix `Mesh.calcBoundingBox`
 - **Assets**
   - `SceneAsset` that loads JSON scenes saved by the Editor
