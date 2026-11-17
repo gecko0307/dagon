@@ -21,6 +21,7 @@ Dagon 1.9.0 - TBD
   - Creation of empty entities
   - Viewport markers for lights and empties
   - Fix entity bounding box rendering
+  - (De)serialize viewport settings
   - Update the editor documentation
 - **Misc**
   - Dagon now uses dlib 1.8.3.
