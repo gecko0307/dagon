@@ -523,6 +523,9 @@ class SceneAsset: Asset, TriangleSet
     protected Dict!(MaterialAsset, string) materialAssets;
     protected Dict!(OBJAsset, string) meshAssets;
     
+    /// If true, triangle iteration via `opApply` will use all entities including non-solid ones.
+    bool ignoreSolidity = false;
+    
     /**
      * Constructs a new scene asset.
      *
@@ -827,8 +830,9 @@ class SceneAsset: Asset, TriangleSet
         
         foreach(e; entities.data)
         {
-            if (!e.solid)
-                continue;
+            if (!ignoreSolidity)
+                if (!e.solid)
+                    continue;
             
             Mesh mesh = cast(Mesh)e.drawable;
             
@@ -869,8 +873,9 @@ class SceneAsset: Asset, TriangleSet
         
         foreach(e; entities.data)
         {
-            if (!e.solid)
-                continue;
+            if (!ignoreSolidity)
+                if (!e.solid)
+                    continue;
             
             Mesh mesh = cast(Mesh)e.drawable;
             if (mesh)
