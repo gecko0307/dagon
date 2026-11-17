@@ -777,7 +777,7 @@ class InteractionOverlay: EventListener
             uint color = 0xFFFFFFFF;
             if (isLight)
             {
-                color = packRGBA(light.color); //0xFF55DDFF;
+                color = packRGBA(light.color);
             }
             
             if (cast(Camera)e !is null)
@@ -1151,7 +1151,8 @@ class InteractionOverlay: EventListener
                 cameraFrustumLines.update(camera.fov, aspect, camera.zNear, camera.zFar);
                 Matrix4x4f frustumTransformation =
                     translationMatrix(camera.positionAbsolute) *
-                    camera.rotationAbsolute.toMatrix4x4;
+                    camera.rotationAbsolute.toMatrix4x4 *
+                    scaleMatrix(Vector3f(0.5f, 0.5f, 0.5f));
                 state.modelViewMatrix = viewMatrix * frustumTransformation;
                 state.projectionMatrix = view.projectionMatrix;
                 gizmoShader.bindParameters(&state);
