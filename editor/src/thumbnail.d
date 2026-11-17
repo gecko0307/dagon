@@ -276,6 +276,13 @@ class ThumbnailGenerator: Owner
 
   private:
 
+    static immutable string[] supportedFormatExtensions = [
+        ".bmp", ".gif", ".jpg", ".jpeg", ".lbm", ".pcx", ".png",
+        ".pnm", ".ppm", ".pgm", ".pbm", ".qoi", ".xcf", ".xpm",
+        ".tif", ".tiff", ".webp", ".avif", ".jxl", ".svg", ".ico",
+        ".tga"
+    ];
+
     bool isSupportedFormat(const(char)[] filename)
     {
         const(char)[] ext = extension(filename);
@@ -285,7 +292,8 @@ class ThumbnailGenerator: Owner
         foreach (i, c; ext)
             extBuffer[i] = (c >= 'A' && c <= 'Z') ? cast(char)(c + 32) : c;
         string format = cast(string)extBuffer[0 .. ext.length];
-        return assetManager.textureLoader(format) !is null;
+        return supportedFormatExtensions.canFind(format);
+        //return assetManager.textureLoader(format) !is null;
     }
 
     // Main thread: the Owner tree is modified here, not in the worker.
