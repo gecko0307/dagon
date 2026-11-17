@@ -1064,8 +1064,9 @@ class Editor: EventListener
         if (scene is null || !scene.canRender)   // new scene is still loading
             return;
 
+        applyViewCamera();
         overlay.activeCamera = app.renderer.activeCamera;
-        
+
         processEvents();
         
         if (selectedEntity && !overlay.draggingGizmo)
@@ -1077,7 +1078,37 @@ class Editor: EventListener
         
         capturesMouse = overlay.draggingGizmo;
         scene.focused = !app.ui.capturesMouse && !capturesMouse;
-        scene.freeview.active = scene.focused;
+        // Mouse navigation moves the freeview camera, so it is off while looking
+        // through a scene camera
+        scene.freeview.active = scene.focused && viewCamera is null;
+    }
+
+    /**
+     * Camera the viewport looks through. Null means the editor's own
+     * (freeview) camera, which is the default.
+     */
+    Camera viewCamera;
+
+    // Switches the viewport to a scene camera, or back to freeview with null
+    void setViewCamera(Camera camera)
+    {
+        if (camera !is null && !isSerializableEntity(camera))
+            return;
+        viewCamera = camera;
+        applyViewCamera();
+    }
+
+    // Makes the renderer's active camera match `viewCamera`. Called every frame:
+    // a view camera that was deleted (or undone away) silently falls back to freeview.
+    void applyViewCamera()
+    {
+        if (scene is null || !scene.canRender)
+            return;
+        if (viewCamera !is null && isDeleted(viewCamera))
+            viewCamera = null;
+        Camera target = viewCamera !is null ? viewCamera : scene.camera;
+        if (target !is null && app.renderer.activeCamera !is target)
+            app.renderer.activeCamera = target;
     }
 
     void switchTo(string name, void delegate(EditorScene) populate)
@@ -1090,6 +1121,7 @@ class Editor: EventListener
         clearPathMaps();
         modified = false;
         numEntities = 0;
+        viewCamera = null;
         app.materialPreviewRenderer.clear();
 
         // The old camera dies with the old scene (deleted at the start of the next onUpdate)

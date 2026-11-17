@@ -42,6 +42,7 @@ import dagon.core.application;
 import dagon.core.dialogs;
 import dagon.graphics.texture;
 import dagon.graphics.light;
+import dagon.graphics.camera;
 import dagon.ext.imgui;
 
 import dlib.core.memory;
@@ -405,7 +406,41 @@ class EditorUI: EventListener
             igEnd();
         }
     }
-    
+
+    /**
+     * Contents of View > Camera: the editor's freeview camera followed by every
+     * camera in the scene. The one the viewport looks through has a check mark.
+     */
+    void renderViewCameraMenu()
+    {
+        if (igMenuItem("Freeview", null, editor.viewCamera is null, true))
+            editor.setViewCamera(null);
+
+        if (editor.scene is null || !editor.scene.canRender)
+            return;
+
+        igSeparator();
+
+        int cameraCount = 0;
+        foreach (e; editor.scene.world.entities)
+        {
+            Camera camera = cast(Camera)e;
+            if (camera is null || !editor.isSerializableEntity(camera))
+                continue;
+
+            cameraCount++;
+            igPushID_Int(cameraCount); // entity names are not unique
+            TextBuffer!128 label;
+            label.set(camera.name.length > 0 ? camera.name : "(unnamed camera)");
+            if (igMenuItem(label.cstr, null, editor.viewCamera is camera, true))
+                editor.setViewCamera(camera);
+            igPopID();
+        }
+
+        if (cameraCount == 0)
+            igTextDisabled("No cameras in the scene");
+    }
+
     void renderMenu()
     {
         igBeginMainMenuBar();
@@ -492,6 +527,17 @@ class EditorUI: EventListener
             
             if (igMenuItem("Camera"))
                 editor.createCamera();
+            
+            igEndMenu();
+        }
+        
+        if (igBeginMenu("View"))
+        {
+            if (igBeginMenu("Camera"))
+            {
+                renderViewCameraMenu();
+                igEndMenu();
+            }
             
             igEndMenu();
         }

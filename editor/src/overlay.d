@@ -675,7 +675,7 @@ class InteractionOverlay: EventListener
     {
         draggingGizmo = dragging;
         if (ui && ui.scene.freeview)
-            ui.scene.freeview.active = ui.scene.focused && !dragging;
+            ui.scene.freeview.active = ui.scene.focused && !dragging && ui.editor.viewCamera is null;
     }
 
     // Ends the current drag (if any) and records it in the undo history
@@ -782,6 +782,9 @@ class InteractionOverlay: EventListener
             
             if (cast(Camera)e !is null)
             {
+                // No marker for the camera the viewport looks through
+                if (e is view.camera)
+                    continue;
                 // Selected cameras also show their frustum (see render())
                 drawCameraIcon(drawList, center, selected ? 0xFF55DDFF : color, selected);
                 continue;
@@ -1134,13 +1137,16 @@ class InteractionOverlay: EventListener
             }
         }
 
+        // Frustums of the selected cameras. Scaling is left out on purpose:
+        // it does not affect what a camera sees.
         if (ui)
         {
             const(float) aspect = 16.0f / 9.0f;
             foreach (e; ui.editor.selection.data)
             {
                 Camera camera = cast(Camera)e;
-                if (camera is null)
+                // The camera we are looking through would only draw around the viewer
+                if (camera is null || camera is view.camera)
                     continue;
                 cameraFrustumLines.update(camera.fov, aspect, camera.zNear, camera.zFar);
                 Matrix4x4f frustumTransformation =
