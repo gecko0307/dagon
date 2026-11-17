@@ -137,6 +137,22 @@ void readLight(Light l, JSONValue j)
     l.specular = jsonGet(j, "specular", l.specular);
 }
 
+void writeCamera(ref JSONWriter w, Camera c)
+{
+    w.beginObject();
+    w.add("fov", c.fov);
+    w.add("zNear", c.zNear);
+    w.add("zFar", c.zFar);
+    w.endObject();
+}
+
+void readCamera(Camera c, JSONValue j)
+{
+    c.fov = jsonGet(j, "fov", c.fov);
+    c.zNear = jsonGet(j, "zNear", c.zNear);
+    c.zFar = jsonGet(j, "zFar", c.zFar);
+}
+
 /**
  * Where a material comes from: its *.material file and the texture paths
  * exactly as they appear in that file (relative paths are relative to the
@@ -824,6 +840,14 @@ class Editor: EventListener
             copyLight(light, srcLight);
             e = light;
         }
+        else if (auto srcCamera = cast(Camera)src)
+        {
+            auto camera = scene.addCamera(parent);
+            camera.fov = srcCamera.fov;
+            camera.zNear = srcCamera.zNear;
+            camera.zFar = srcCamera.zFar;
+            e = camera;
+        }
         else
         {
             e = scene.addEntity(parent);
@@ -1208,10 +1232,10 @@ class Editor: EventListener
             if (!isSerializableEntity(e))
                 continue;
 
-            // Lights are not rendered as geometry, so their `visible` flag
-            // is irrelevant for picking; for everything else it is respected
-            bool isLight = cast(Light)e !is null;
-            if (!isLight && !e.visible)
+            // Lights and cameras are not rendered as geometry, so their `visible`
+            // flag is irrelevant for picking; for everything else it is respected
+            bool isHelper = cast(Light)e !is null || cast(Camera)e !is null;
+            if (!isHelper && !e.visible)
                 continue;
 
             float t;
@@ -1225,7 +1249,7 @@ class Editor: EventListener
                 if (rayVsBox(Vector3f(lo.x, lo.y, lo.z), Vector3f(ld.x, ld.y, ld.z), box.pmin, box.pmax, t))
                     hits.append(PickHit(e, t, order));
             }
-            else // if (isLight)
+            else // lights, cameras, empties
             {
                 Vector3f position = e.positionAbsolute;
                 float radius = max(distance(cameraPosition, position) * lightPickFactor, 0.05f);
@@ -1839,6 +1863,11 @@ class Editor: EventListener
                 w.key("light");
                 writeLight(w, light);
             }
+            else if (auto camera = cast(Camera)e)
+            {
+                w.key("camera");
+                writeCamera(w, camera);
+            }
             w.endObject();
         }
         w.endArray();
@@ -2042,6 +2071,17 @@ class Editor: EventListener
                 auto light = scene.addLight(cast(LightType)lt, parent);
                 readLight(light, lj);
                 e = light;
+            }
+            else if (auto cj = jsonField(j, "camera"))
+            {
+                if (cj.type == JSONType.Object)
+                {
+                    auto camera = scene.addCamera(parent);
+                    readCamera(camera, cj);
+                    e = camera;
+                }
+                else
+                    e = scene.addEntity(parent);
             }
             else
             {

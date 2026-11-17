@@ -40,6 +40,7 @@ import dlib.math.vector;
 import dlib.math.quaternion;
 
 import dagon.graphics.entity;
+import dagon.graphics.camera;
 import dagon.graphics.light;
 import dagon.graphics.material;
 import dagon.graphics.texture;
@@ -394,6 +395,33 @@ class PropertiesPanel: Owner
             ui.editor.markModified();
     }
 
+    // Camera projection parameters. The frustum in the viewport follows them live.
+    void renderCameraProperties(Camera camera)
+    {
+        bool changed = false;
+
+        changed |= igSliderFloat("Field of view", &camera.fov, 1.0f, 179.0f, "%.1f");
+
+        changed |= igInputFloat("Near plane", &camera.zNear);
+        if (camera.zNear < 0.001f)
+            camera.zNear = 0.001f;
+
+        changed |= igInputFloat("Far plane", &camera.zFar);
+        if (camera.zFar < camera.zNear + 0.001f)
+            camera.zFar = camera.zNear + 0.001f;
+
+        if (igButton("Reset##camera", ImVec2(60, 0)))
+        {
+            camera.fov = 60.0f;
+            camera.zNear = 0.01f;
+            camera.zFar = 1000.0f;
+            changed = true;
+        }
+
+        if (changed)
+            ui.editor.markModified();
+    }
+
     void render()
     {
         auto scene = ui.scene;
@@ -603,6 +631,12 @@ class PropertiesPanel: Owner
             {
                 if (igCollapsingHeader("Light", ImGuiTreeNodeFlags.DefaultOpen))
                     renderLightProperties(selectedLight);
+            }
+
+            if (auto selectedCamera = cast(Camera)ui.editor.selectedEntity)
+            {
+                if (igCollapsingHeader("Camera", ImGuiTreeNodeFlags.DefaultOpen))
+                    renderCameraProperties(selectedCamera);
             }
 
             if (igCollapsingHeader("Transformation", ImGuiTreeNodeFlags.DefaultOpen))

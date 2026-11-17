@@ -112,6 +112,7 @@ class InteractionOverlay: EventListener
     GizmoLines rotationLines;
     GizmoLines scaleLines;
     FloorGridLines floorGridLines;
+    CameraFrustumLines cameraFrustumLines;
     bool visible = true;
 
     // Viewport click-to-select: armed on press, resolved on release
@@ -190,6 +191,7 @@ class InteractionOverlay: EventListener
         rotationLines = New!GizmoLines(GizmoMode.Rotation, this);
         scaleLines = New!GizmoLines(GizmoMode.Scale, this);
         floorGridLines = New!FloorGridLines(this);
+        cameraFrustumLines = New!CameraFrustumLines(this);
         
         gizmoShader = New!GizmoShader(this);
         gizmoPosition = Vector3f(0.0f, 0.0f, 0.0f);
@@ -697,7 +699,51 @@ class InteractionOverlay: EventListener
         draggedAxis = -1;
     }
 
-    // Viewport markers for invisible objects (lights, empties)
+    /**
+     * PLACEHOLDER marker for cameras that are not selected (selected ones
+     * show their frustum instead). Drawn from ImDrawList primitives: a body,
+     * a lens and a viewfinder bump. To use a real icon, replace the body of
+     * this function with something like:
+     *     ImDrawList_AddImage(drawList, cast(void*)iconCamera.texture, min, max);
+     * `center` is the screen position of the camera, `size` is the half-size
+     * of the icon in pixels.
+     */
+    void drawCameraIcon(ImDrawList* drawList, ImVec2 center, uint color, bool selected)
+    {
+        float size = selected ? 11.0f : 9.0f;
+        float thickness = selected ? 2.0f : 1.5f;
+
+        // Body
+        float top = center.y - size * 0.6f;
+        float bottom = center.y + size * 0.6f;
+        float bodyRight = center.x + size * 0.45f;
+        ImVec2[4] body = [
+            ImVec2(center.x - size, top),
+            ImVec2(bodyRight,       top),
+            ImVec2(bodyRight,       bottom),
+            ImVec2(center.x - size, bottom)
+        ];
+        drawIconPolygon(drawList, body, color, thickness);
+
+        // Lens (a trapezoid to the right of the body)
+        ImVec2[4] lens = [
+            ImVec2(bodyRight,       center.y - size * 0.25f),
+            ImVec2(center.x + size, top),
+            ImVec2(center.x + size, bottom),
+            ImVec2(bodyRight,       center.y + size * 0.25f)
+        ];
+        drawIconPolygon(drawList, lens, color, thickness);
+    }
+
+    // Filled dark polygon with a colored outline (convex, 4 points)
+    void drawIconPolygon(ImDrawList* drawList, ref ImVec2[4] points, uint color, float thickness)
+    {
+        ImDrawList_AddConvexPolyFilled(drawList, points.ptr, 4, 0xAA000000);
+        foreach (i; 0 .. 4)
+            ImDrawList_AddLine(drawList, points[i], points[(i + 1) % 4], color, thickness);
+    }
+
+    // Viewport markers for invisible objects (lights, empties, cameras)
     void drawMarkers()
     {
         if (!visible || !ui || ui.editor.scene is null || view.camera is null)
@@ -734,6 +780,13 @@ class InteractionOverlay: EventListener
                 color = packRGBA(light.color); //0xFF55DDFF;
             }
             
+            if (cast(Camera)e !is null)
+            {
+                // Selected cameras also show their frustum (see render())
+                drawCameraIcon(drawList, center, selected ? 0xFF55DDFF : color, selected);
+                continue;
+            }
+
             ImDrawList_AddCircleFilled(drawList, center, selected ? 7.0f : 5.0f, 0xAA000000, 16);
             ImDrawList_AddCircle(drawList, center, selected ? 7.0f : 5.0f, color, 16, selected ? 2.0f : 1.5f);
             ImDrawList_AddCircleFilled(drawList, center, 1.5f, color, 8);
@@ -1077,6 +1130,26 @@ class InteractionOverlay: EventListener
                 state.projectionMatrix = view.projectionMatrix;
                 gizmoShader.bindParameters(&state);
                 selectionBoundingBoxSecondary.render(&state);
+                gizmoShader.unbindParameters(&state);
+            }
+        }
+
+        if (ui)
+        {
+            const(float) aspect = 16.0f / 9.0f;
+            foreach (e; ui.editor.selection.data)
+            {
+                Camera camera = cast(Camera)e;
+                if (camera is null)
+                    continue;
+                cameraFrustumLines.update(camera.fov, aspect, camera.zNear, camera.zFar);
+                Matrix4x4f frustumTransformation =
+                    translationMatrix(camera.positionAbsolute) *
+                    camera.rotationAbsolute.toMatrix4x4;
+                state.modelViewMatrix = viewMatrix * frustumTransformation;
+                state.projectionMatrix = view.projectionMatrix;
+                gizmoShader.bindParameters(&state);
+                cameraFrustumLines.render(&state);
                 gizmoShader.unbindParameters(&state);
             }
         }
@@ -1474,6 +1547,143 @@ private class FloorGridLines: Owner, Drawable
 
     void render(GraphicsState*)
     {
+        glBindVertexArray(vertexArray);
+        glDrawArrays(GL_LINES, 0, cast(int)vertices.length);
+        glBindVertexArray(0);
+    }
+}
+
+/**
+ * Wireframe view frustum of a camera in the camera's local space
+ * (the camera looks along -Z). The far plane is clamped to
+ * `maxDisplayDepth` so that the shape stays readable in the viewport
+ * even if the camera's real far plane is hundreds of units away.
+ * An "up" triangle above the far plane shows the camera's roll.
+ */
+class CameraFrustumLines: Owner, Drawable
+{
+    enum float maxDisplayDepth = 3.0f;
+
+    Vector3f[] vertices;
+    Vector4f[] colors;
+    GLuint vertexBuffer;
+    GLuint colorBuffer;
+    GLuint vertexArray;
+    float currentFov = -1.0f;
+    float currentAspect = -1.0f;
+    float currentNear = -1.0f;
+    float currentFar = -1.0f;
+
+    this(Owner owner)
+    {
+        super(owner);
+        GLint previousArrayBuffer;
+        GLint previousVertexArray;
+        glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &previousArrayBuffer);
+        glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &previousVertexArray);
+        glGenBuffers(1, &vertexBuffer);
+        glGenBuffers(1, &colorBuffer);
+        glGenVertexArrays(1, &vertexArray);
+        glBindVertexArray(vertexArray);
+
+        glEnableVertexAttribArray(VertexAttrib.Vertices);
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+        glVertexAttribPointer(VertexAttrib.Vertices, 3, GL_FLOAT, GL_FALSE, 0, null);
+
+        glEnableVertexAttribArray(VertexAttrib.Colors);
+        glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
+        glVertexAttribPointer(VertexAttrib.Colors, 4, GL_FLOAT, GL_FALSE, 0, null);
+        glBindVertexArray(previousVertexArray);
+        glBindBuffer(GL_ARRAY_BUFFER, previousArrayBuffer);
+    }
+
+    ~this()
+    {
+        if (glIsVertexArray(vertexArray))
+            glDeleteVertexArrays(1, &vertexArray);
+        if (glIsBuffer(vertexBuffer))
+            glDeleteBuffers(1, &vertexBuffer);
+        if (glIsBuffer(colorBuffer))
+            glDeleteBuffers(1, &colorBuffer);
+    }
+
+    // Rebuilds the geometry if the camera parameters changed since the last call
+    void update(float fov, float aspect, float zNear, float zFar)
+    {
+        if (fov == currentFov && aspect == currentAspect &&
+            zNear == currentNear && zFar == currentFar)
+            return;
+
+        currentFov = fov;
+        currentAspect = aspect;
+        currentNear = zNear;
+        currentFar = zFar;
+
+        float farDepth = min(zFar, maxDisplayDepth);
+        float nearDepth = min(zNear, farDepth * 0.5f);
+        float tanHalfFov = tan(degtorad(fov * 0.5f));
+
+        float nearH = nearDepth * tanHalfFov;
+        float nearW = nearH * aspect;
+        float farH = farDepth * tanHalfFov;
+        float farW = farH * aspect;
+
+        Vector3f[4] n = [
+            Vector3f(-nearW,  nearH, -nearDepth),
+            Vector3f( nearW,  nearH, -nearDepth),
+            Vector3f( nearW, -nearH, -nearDepth),
+            Vector3f(-nearW, -nearH, -nearDepth)
+        ];
+        Vector3f[4] f = [
+            Vector3f(-farW,  farH, -farDepth),
+            Vector3f( farW,  farH, -farDepth),
+            Vector3f( farW, -farH, -farDepth),
+            Vector3f(-farW, -farH, -farDepth)
+        ];
+
+        vertices.length = 0;
+        colors.length = 0;
+
+        Vector4f color = Vector4f(1.0f, 0.85f, 0.2f, 1.0f);
+        foreach (i; 0 .. 4)
+        {
+            appendLine(n[i], n[(i + 1) % 4], color); // near rectangle
+            appendLine(f[i], f[(i + 1) % 4], color); // far rectangle
+            appendLine(n[i], f[i], color);           // side edges
+        }
+
+        // "Up" triangle sitting on the top edge of the far rectangle
+        float triangleHeight = farH * 0.25f;
+        float triangleHalfWidth = farW * 0.15f;
+        Vector3f apex = Vector3f(0.0f, farH + triangleHeight, -farDepth);
+        Vector3f left = Vector3f(-triangleHalfWidth, farH, -farDepth);
+        Vector3f right = Vector3f(triangleHalfWidth, farH, -farDepth);
+        appendLine(left, apex, color);
+        appendLine(apex, right, color);
+
+        GLint previousArrayBuffer;
+        glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &previousArrayBuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+        glBufferData(GL_ARRAY_BUFFER, vertices.length * Vector3f.sizeof,
+            vertices.ptr, GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
+        glBufferData(GL_ARRAY_BUFFER, colors.length * Vector4f.sizeof,
+            colors.ptr, GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, previousArrayBuffer);
+    }
+
+    private void appendLine(Vector3f a, Vector3f b, Vector4f color)
+    {
+        vertices ~= a;
+        vertices ~= b;
+        colors ~= color;
+        colors ~= color;
+    }
+
+    void render(GraphicsState*)
+    {
+        if (vertices.length == 0)
+            return;
         glBindVertexArray(vertexArray);
         glDrawArrays(GL_LINES, 0, cast(int)vertices.length);
         glBindVertexArray(0);
