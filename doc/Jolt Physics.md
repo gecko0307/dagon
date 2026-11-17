@@ -113,7 +113,8 @@ Jolt provides a built-in character controller, an object that drives game charac
 Entity eCharacter = addEntity();
 eCharacter.position = Vector3f(0, 1, 0);
 float characterHeight = 1.8f;
-NewtonCharacterController character = New!JoltCharacterController(eventManager, physicsWorld, eCharacter, characterHeight, 0.45f, 80.0f);
+NewtonCharacterController character = New!JoltCharacterController(eventManager, physicsWorld,
+    eCharacter, characterHeight, 0.45f, 80.0f);
 character.normalEyeHeight = characterHeight - 0.15f;
 character.crouchEyeHeight = characterHeight * 0.5f;
 character.headMargin = -0.2f;
@@ -125,12 +126,17 @@ void characterControls()
     float walkSpeed = 3.0f;
     float jumpSpeed = 3.0f;
     
-    if (inputManager.getButton("left"))    character.move(firstPersonView.right * -walkSpeed);
-    if (inputManager.getButton("right"))   character.move(firstPersonView.right * walkSpeed);
-    if (inputManager.getButton("forward")) character.move(firstPersonView.directionHorizontal * -walkSpeed);
-    if (inputManager.getButton("back"))    character.move(firstPersonView.directionHorizontal * walkSpeed);
+    if (inputManager.getButton("left"))
+        character.move(firstPersonView.right * -walkSpeed);
+    if (inputManager.getButton("right"))
+        character.move(firstPersonView.right * walkSpeed);
+    if (inputManager.getButton("forward"))
+        character.move(firstPersonView.directionHorizontal * -walkSpeed);
+    if (inputManager.getButton("back"))
+        character.move(firstPersonView.directionHorizontal * walkSpeed);
     
-    if (inputManager.getButton("jump")) character.jump(jumpSpeed);
+    if (inputManager.getButton("jump"))
+        character.jump(jumpSpeed);
     
     if (inputManager.getButton("crouch"))
         character.crouch(true);

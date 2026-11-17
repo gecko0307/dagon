@@ -90,10 +90,13 @@ Lens distortion parameters (for render.conf):
 Glow (sometimes called bloom) is used to emphasize bright areas of the image, simulating light scattering/bleeding in an optical system. Dagon implements a threshold + blur approach, isolating bright regions, blurring them, and blending them back with the original scene. It uses [multipass separable Gaussian blur implementation](https://github.com/Experience-Monks/glsl-fast-gaussian-blur) by Matt DesLauriers, an extremely optimized algorithm that allows large blur radii.
 
 * `glow.enabled` - enabled or disables glow. Default is `false`
-* `glow.viewScale` -
-* `glow.threshold` -
-* `glow.intensity` -
-* `glow.radius` -
+* `glow.radius` - radius of the glow blur in pixels. Default is `5`
+* `glow.normalizedRadius` - resolution-independent blur radius. If present, the post-processing pipeline will ignore specified `glow.radius` and determine the radius dynamically based on a fraction (`0.0`..`1.0`) of the game window's height. For example, for `0.005` at 1080p rendering actual blur radius will be 6 pixels
+* `glow.viewScale` - a number between `0.0` and `1.0` that indicates a uniform scale of the glow buffer resolution. For example, `0.5` will give 1/4 of the main framebuffer. This is useful as a quality/performance tradeoff on low-end machines. Default is `1.0`
+* `glow.threshold` - minimum luminance that gives the glow effect. Default is `0.8`
+* `glow.intensity` - overall brightness of the glow effect. Default is `0.2`
+* `glow.softKnee` - a number between `0.0` and `1.0`. Smoothness of luminance threshold, used to prevent hard clipping. Default is `0.5`
+* `glow.maxEnergy` - maximum light energy carried by the glow effect, used to prevent overly bright highlights. Default is `8.0`.
 
 ## Vignetting
 
@@ -151,6 +154,7 @@ Anti-aliasing is a filter for smoothing jagged polygon edges. Dagon implements F
 Color grading is a set of operations that adjust the brightness, contrast, saturation, and color balance of a scene. Dagon supports basic color adjustment parameters that are combined into a single color correction matrix which is passed to the shader to linearly transform input color data.
 
 Color adjustment is controlled with the following render.conf parameters:
+
 * `cc.brightness` - scales overall lightness of a scene. `0.0` is identity brightness, negative values make the image darker, positive values make the image brighter. Default is `0.0`;
 * `cc.contrast` - adjusts difference between dark and bright regions. `1.0` is identity contrast, smaller values decrease contrast, larger values increase contrast. Default is `1.0`;
 * `cc.saturation` - scales color intensity. `1.0` is identity saturation, smaller values desaturate the image (`0.0` gives monochrome look), larger values oversaturate the image. Default is `1.0`;

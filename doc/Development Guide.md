@@ -19,6 +19,7 @@ class MyClass: Owner
 ```
 
 When creating objects with ownership mechanism, it is important to know:
+
 - Who logically owns them? (an `Application`/`Game`? a `Scene`? an `AssetManager`? an `Entity`?)
 - Do other objects access them? When can they be safely deleted without breaking the references?
 

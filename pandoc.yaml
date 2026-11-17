@@ -17,10 +17,10 @@ input-files:
   - doc/Virtual File System.md
   - doc/Conf Files.md
   - doc/Render Pipeline Overview.md
-  - doc/Shaders.md
   - doc/Image-Based Lighting.md
-  - doc/Tips for Achieving Good Visuals.md
+  - doc/Shaders.md
   - doc/Post-processing.md
+  - doc/Tips for Achieving Good Visuals.md
   - doc/2D Graphics.md
   - doc/Localization.md
   - doc/Collision Detection.md
@@ -30,6 +30,7 @@ input-files:
   - doc/World Streaming.md
   - doc/Messaging System.md
   - doc/Compute Shaders.md
+  - doc/Editor.md
   - doc/Development Guide.md
 
 resource-path:

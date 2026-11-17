@@ -5,12 +5,15 @@ Compute shaders are special GPU programs designed for general-purpose computatio
 ## Key Concepts
 
 ### ComputeProgram
+
 A `ComputeProgram` represents a compiled compute shader. It plays the same role as `ShaderProgram` for vertex/fragment shaders, but contains only one stage: the compute stage. You pass the GLSL source code of your compute shader to it, it compiles and links the program. Later, you attach it to a `ComputeShader` object to actually run computations.
 
 This separation lets you manage shader sources, recompile them, or share them between multiple `ComputeShader` specializations.
 
 ### ComputeShader
+
 A `ComputeShader` wraps around a `ComputeProgram` and provides the higher-level runtime interface:
+
 - Binding shader parameters
 - Binding image textures for reading and writing
 - Dispatching the shader with a specified workload.
@@ -19,18 +22,23 @@ A `ComputeShader` wraps around a `ComputeProgram` and provides the higher-level 
 You usually subclass `ComputeShader` to define your own GPU task (for example, `BlurShader`, `ParticlesUpdateShader`).
 
 ### Workgroup
+
 A workgroup is the fundamental unit of parallel execution. Each workgroup contains a fixed number of shader invocations (threads). The size of a workgroup (e.g. `local_size_x = 16, local_size_y = 16`) is defined in the shader code itself. Inside a workgroup, invocations can share data through shared memory and synchronize using barriers.
 
 Tuning the workgroup size is important for performance—it should align well with your GPU's hardware thread scheduler. A shader writer defines the work group size explicitly in GLSL code. Dagon automatically queries this and helps you dispatch the correct number of groups.
 
 ### Compute Space
+
 The compute space is the 3D grid of workgroups that maps to the data. Think of it as a box equially divided into small cells. Each invocation can query its position in this space via built-in variables like `gl_GlobalInvocationID`. You can map this space directly onto a 2D texture, a 3D voxel field, or just a flat buffer of data. For example, a blur filter might use compute space matching the width and height of the target image.
 
 ### Dispatching
+
 Dispatching is how you invoke GPU threads to execute your compute shader code. You call `dispatch(x, y, z)` or a convenience method `run(width, height, depth)` that automatically calculates the compute space from the given data size. The GPU then launches work groups in parallel to cover the specified problem space. Dispatching is explicit: nothing happens until you tell the GPU to start. Unlike render shaders, there are no draw calls — just raw parallel computation.
 
 ### TextureAccessMode
+
 This enum specifies how your shader is allowed to interact with a bound image texture:
+
 - `TextureAccessMode.Read` — read-only access
 - `TextureAccessMode.Write` — write-only access (e.g. generating or clearing data)
 - `TextureAccessMode.ReadWrite` — both read and write in the same shader.
@@ -38,6 +46,7 @@ This enum specifies how your shader is allowed to interact with a bound image te
 This mode is passed to `glBindImageTexture` under the hood. Correctly setting access prevents undefined behavior and helps the GPU optimize memory access.
 
 ### Memory Barriers
+
 When using compute shaders, you must explicitly control memory visibility between shader passes. After a compute shader writes to a texture or buffer, the data might not be immediately visible to subsequent reads. To enforce ordering, call `ComputeShader.barrier` method with a specific `ComputeBarrier` flag. For example, use `ComputeBarrier.ShaderImageAccess` to ensure image writes are finished before sampling from the same image, or simply use `ComputeBarrier.All` if you want a safe default. This mechanism ensures that your algorithms behave deterministically and prevents race conditions.
 
 ## Basic Workflow

@@ -1,6 +1,6 @@
 # 2D Graphics
 
-Dagon is primarily a 3D engine, but it supports 2D rendering as well. 2D renderer is called HUD renderer, because it was created for drawing HUD elements on top of the viewport. It is also possible to make purely 2D games with it, in which cases it is recommended to use `Game2D` base game class.
+Dagon is primarily a 3D engine, but it supports 2D rendering as well. 2D renderer is called HUD renderer, because it was created mainly for drawing HUD elements on top of the viewport. It is also possible to make purely 2D games with it, in which cases it is recommended to use `Game2D` base game class (see below).
 
 ## HUD Objects
 
@@ -42,7 +42,7 @@ eText.position = Vector3f(16.0f, 30.0f, 0.0f);
 
 ## Spritesheets
 
-A spritesheet is a texture that contains multiple sub-images - sprites. Each sprite provides a texture for a quad that represents an object in a 2D world. This is achieved by transforming UV coordinates used to sample the texture. Dagon's material class provides a helper method `setSprite` for this task.
+A spritesheet is a texture that contains multiple sub-images - sprites. Each sprite provides a texture for a quad that represents an object in a 2D world. This is achieved by transforming UV coordinates used to sample the texture. Dagon's material class provides a helper method `setSprite(size, position)` for this task.
 
 Sprites can be used in both 2D and 3D games. `setSprite` accepts UV coordinates ranging from 0 to 1, so, to use pixels, you have to divide pixel values with the texture size.
 
@@ -65,7 +65,7 @@ TODO: add a button widget example
 
 ## 2D Applications
 
-It is perfectly viable to use Dagon for 2D games! If you don't need 3D graphics and only rely on `HUDRenderer`, we recommend to use `Game2D` class instead of usual `Game`.
+It is perfectly viable to use Dagon for 2D games and GUI apps! If you don't need 3D graphics and only rely on `HUDRenderer`, we recommend to use `Game2D` class instead of usual `Game`.
 
 ```d
 class MyGame: Game2D

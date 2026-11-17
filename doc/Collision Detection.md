@@ -34,7 +34,8 @@ DynamicCollider characterCollider;
 override void afterLoad()
 {
     world = New!CollisionWorld(this);
-    auto infinitePlane = New!PlaneCollider(world, Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 1.0f, 0.0f), this);
+    auto infinitePlane = New!PlaneCollider(world,
+        Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 1.0f, 0.0f), this);
     
     character = addEntity();
     character.position = Vector3f(0.0f, 1.0, 0.0f);

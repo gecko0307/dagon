@@ -195,9 +195,9 @@ Recognized by the `Game` class, applied to the `Game.deferredRenderer` and `Game
 * `glow.radius` - radius of the glow blur in pixels. Default is `5`
 * `glow.normalizedRadius` - resolution-independent blur radius. If present, the post-processing pipeline will ignore specified `glow.radius` and determine the radius dynamically based on a fraction (`0.0`..`1.0`) of the game window's height. For example, for `0.005` at 1080p rendering actual blur radius will be 6 pixels
 * `glow.threshold` - minimum luminance that gives the glow effect. Default is `0.8`
+* `glow.intensity` - overall brightness of the glow effect. Default is `0.2`
 * `glow.softKnee` - a number between `0.0` and `1.0`. Smoothness of luminance threshold, used to prevent hard clipping. Default is `0.5`
 * `glow.maxEnergy` - maximum light energy carried by the glow effect, used to prevent overly bright highlights. Default is `8.0`
-* `glow.intensity` - overall brightness of the glow effect. Default is `0.2`
 * `hdr.tonemapper` - tonemapping operator used to compress HDR to LDR. Default is `"ACES"`. Supported options are:
   * `"None"` - tonemapping is not applied
   * `"Unreal"` - tonemapper from Unreal 3
@@ -216,9 +216,9 @@ Recognized by the `Game` class, applied to the `Game.deferredRenderer` and `Game
 * `hdr.exposureAdaptationSpeed` - rate of exposure change over time. `1.0` corresponds to full exposure adjustment over one second. Default is `2.0`
 * `vignette.enabled` - `0` or `1`, disable or enable vignetting. Default is `0`
 * `vignette.strength` - 
-* `vignette.size` - 
-* `vignette.roundness` - 
-* `vignette.feathering` - 
+* `vignette.size` - the size of the vignette in the form [width / 2, height / 2]. To make a vignette that starts fading in halfway between the center and edges of UV space you would pass in `[0.25, 0.25]`
+* `vignette.roundness` - how round the vignette will be. A value from `0` to `1` where `1` is perfectly round (forming a circle or oval) and `0` is not round at all (forming a square or rectangle)
+* `vignette.feathering` - UV distance at which the vignette stops fading in. The vignette will start fading in at the edge of the values provided by size, and will be fully faded in at `[size.x + feathering, size.y + feathering]`. A value of zero results in a hard edge
 * `motionBlur.enabled` - `0` or `1`, disable or enable motion blur filter. Default is `0`
 * `motionBlur.samples` - 
 * `motionBlur.framerate` - 
@@ -230,8 +230,8 @@ Recognized by the `Game` class, applied to the `Game.deferredRenderer` and `Game
 * `lensDistortion.scale` - 
 * `lensDistortion.dispersion` - 
 * `dof.enabled` - `0` or `1`, disable or enable depth of field filter. Default is `0`
-* `dof.autofocus` - `0` or `1`
-* `dof.focalDepth` - 
+* `dof.autofocus` - `0` or `1`, automatically determine focal depth based on distance to the point in the middle of the screen. If this is set to `0`, `dof.focalDepth` is used. Default is `1`
+* `dof.focalDepth` - the distance between the back focal plane (sensor) and the front focal plane (main focal point). Used only in manual focusing mode. Measured in meters. Default is `1.0`
 * `dof.focalLength` - the distance between the lens's optical center and the sensor when focused at infinity. Measured in millimeters. Default is `20`
 * `dof.fStop` - the relative aperture of the lens, controls the depth of field. Default is `16` (f/16)
 * `dof.circleOfConfusion` - the maximum diameter of a blur spot on an image that the human eye still perceives as sharp. Measured in millimeters. Default is `0.03`
@@ -249,8 +249,9 @@ Recognized by the `Game` class, applied to the `Game.deferredRenderer` and `Game
 * `cc.brightness` - scales overall lightness of a scene. `0.0` is identity brightness, negative values make the image darker, positive values make the image brighter. Default is `0.0`
 * `cc.contrast` - adjusts difference between dark and bright regions. `1.0` is identity contrast, smaller values decrease contrast, larger values increase contrast. Default is `1.0`
 * `cc.saturation` - scales color intensity. `1.0` is identity saturation, smaller values desaturate the image (`0.0` gives monochrome look), larger values oversaturate the image. Default is `1.0`
-* `lut.enabled` - `0` or `1`, disable or enable LUT color grading. Default is `0`
-* `lut.file` - path to the LUT file. Supported formats are GPUImage 512x512 and DDS 3D texture. The loaded LUT is automatically converted to 3D texture for more efficient sampling in the shader
+* `cc.colorMatrix` - 4x4 row-major color correction matrix that overrides brightness/contrast/saturation, if specified. Directly used to transform the input color
+* `lut.enabled` - `0` or `1`, disable or enable LUT color grading. If LUT is used, `cc.*` parameters are ignored, and color adjustment is overridden with color lookup from a texture. Default is `0`
+* `lut.file` - path to the LUT file, usually a lossless image that encodes a 3D color space. This parameter supports DDS 3D texture and GPUImage LUT. The loaded LUT is automatically converted to 3D texture, enabling efficient trilinear sampling in the shader
 * `pixelization.enabled` - `0` or `1`, disable or enable pixelization filter. Default is `0`
 * `pixelization.pixelSize` - screen-space pixel size for pixelization filter. Default is `1`.
 

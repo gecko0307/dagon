@@ -77,7 +77,7 @@ enum EntityLayer: int
     /// Main spatial layer (default).
     Spatial = 1,
 
-    /// Foreground layer.
+    /// Foreground layer (HUD).
     Foreground = 2
 }
 

@@ -16,6 +16,7 @@ Available extensions:
 * `dagon:jolt` - rigid body physics simulation extension that uses [Jolt Physics](https://github.com/jrouwe/joltphysics) via [joltc](https://github.com/amerkoleci/joltc) wrapper
 * `dagon:newton` - rigid body physics simulation extension that uses [Newton Dynamics](https://newtondynamics.com/forum/newton.php) library via [bindbc-newton](https://github.com/gecko0307/bindbc-newton) dynamic binding
 * `dagon:nuklear` - immediate mode GUI extension that uses [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear) library via [bindbc-nuklear](https://github.com/Timu5/bindbc-nuklear) dynamic binding (deprecated, `dagon:imgui` recommended instead)
+* `dagon:openxr` - [OpenXR](https://www.khronos.org/openxr/) integration
 * `dagon:openvr` - [OpenVR](https://github.com/ValveSoftware/openvr) integration
 * `dagon:physfs` - [PhysFS](https://github.com/icculus/physfs) integration
 * `dagon:audio` - [SoLoud](https://github.com/jarikomppa/soloud) integration
