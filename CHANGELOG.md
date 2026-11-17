@@ -14,6 +14,7 @@ Dagon 1.9.0 - TBD
 - **Editor**
   - Mouse picking of entities in the viewport
   - Multi-selection (Shift-click) and group editing
+  - Reparenting
   - Creation of light sources; light properties
   - Creation of cameras; camera properties; toggle active view camera
   - Creation of empty entities

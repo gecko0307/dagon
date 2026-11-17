@@ -661,11 +661,18 @@ class SceneAsset: Asset, TriangleSet
                     continue;
                 }
                 
-                auto lj = "light" in e.asObject;
-                if (lj !is null && lj.type == JSONType.Object)
+                auto lightNode = "light" in e.asObject;
+                auto cameraNode = "camera" in e.asObject;
+                
+                if (lightNode !is null && lightNode.type == JSONType.Object)
                 {
                     Light light = New!Light(world);
                     entities.append(light);
+                }
+                else if (cameraNode !is null && cameraNode.type == JSONType.Object)
+                {
+                    Camera camera = New!Camera(world);
+                    entities.append(camera);
                 }
                 else
                 {
@@ -763,6 +770,15 @@ class SceneAsset: Asset, TriangleSet
             l.scatteringUseShadow = light.fieldAs("scatteringUseShadow", l.scatteringUseShadow);
             l.diffuse = light.fieldAs("diffuse", l.diffuse);
             l.specular = light.fieldAs("specular", l.specular);
+        }
+        
+        Camera c = cast(Camera)e;
+        if (c)
+        {
+            auto camera = obj["camera"].asObject;
+            c.fov = camera.fieldAs("fov", c.fov);
+            c.zNear = camera.fieldAs("zNear", c.zNear);
+            c.zFar = camera.fieldAs("zFar", c.zFar);
         }
     }
     
