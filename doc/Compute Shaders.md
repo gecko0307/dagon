@@ -121,7 +121,7 @@ class InvertShader: ComputeShader
    * It is convenient to provide an overloaded `run` that automatically sets the output data size.
 
 ```d
-auto invert = new InvertShader(myTexture, owner);
+auto invert = New!InvertShader(myTexture, owner);
 invert.run();
 ```
 
@@ -147,7 +147,7 @@ invert.barrier(ComputeBarrier.ShaderImageAccess);
 Dagon provides a ready-to-use compute shader for resizing RGBA8 textures:
 
 ```d
-auto rs = new ResampleShader(inputTexture, outputWidth, outputHeight, owner);
+auto rs = New!ResampleShader(inputTexture, outputWidth, outputHeight, owner);
 rs.run();
 ```
 
