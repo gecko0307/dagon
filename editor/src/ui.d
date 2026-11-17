@@ -409,6 +409,7 @@ class EditorUI: EventListener
     void renderMenu()
     {
         igBeginMainMenuBar();
+        
         if (igBeginMenu("File"))
         {
             if (igMenuItem("New scene"))
@@ -432,6 +433,7 @@ class EditorUI: EventListener
             
             igEndMenu();
         }
+        
         if (igBeginMenu("Edit"))
         {
             TextBuffer!64 undoLabel;
@@ -465,6 +467,7 @@ class EditorUI: EventListener
 
             igEndMenu();
         }
+        
         if (igBeginMenu("Create"))
         {
             if (igMenuItem("Empty"))
@@ -484,8 +487,15 @@ class EditorUI: EventListener
                     editor.createLight(LightType.AreaTube);
                 igEndMenu();
             }
+            
+            igSeparator();
+            
+            if (igMenuItem("Camera"))
+                editor.createCamera();
+            
             igEndMenu();
         }
+        
         if (igBeginMenu("Help"))
         {
             if (igMenuItem("Contents"))
@@ -503,6 +513,7 @@ class EditorUI: EventListener
             
             igEndMenu();
         }
+        
         igEndMainMenuBar();
 
         if (showAbout)

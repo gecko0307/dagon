@@ -904,6 +904,21 @@ class Editor: EventListener
         markModified();
         return e;
     }
+    
+    Camera createCamera()
+    {
+        if (overlay.draggingGizmo || scene is null || !scene.canRender)
+            return null;
+        
+        auto c = scene.addCamera(scene.sceneRoot);
+        c.name = "camera " ~ numEntities.to!string;
+        numEntities++;
+        
+        selectEntity(c);
+        history.push(New!EntityLifetimeCommand("Create camera", c, true, &markDeleted));
+        markModified();
+        return c;
+    }
 
     /**
      * Creates a light of the given type at the scene root with sensible
