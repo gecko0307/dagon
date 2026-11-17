@@ -1976,6 +1976,22 @@ class Editor: EventListener
         w.beginObject();
         w.add("ambientEnergy", scene.environment.ambientEnergy);
         w.endObject();
+        
+        w.key("viewport");
+        w.beginObject();
+        w.add("floorGridEnabled", scene.floorGridEnabled);
+        w.add("floorGridSpacing", scene.floorGridSpacing);
+        w.add("floorGridExtent", scene.floorGridExtent);
+        w.add("mouseOrbitEnabled", scene.freeview.enableMouseRotation);
+        w.add("mouseOrbitSensibility", scene.freeview.mouseRotationSensibility);
+        w.add("mouseOrbitStiffness", scene.freeview.rotationStiffness);
+        w.add("mousePanEnabled", scene.freeview.enableMouseTranslation);
+        w.add("mousePanSensibility", scene.freeview.mouseTranslationSensibility);
+        w.add("mousePanStiffness", scene.freeview.translationStiffness);
+        w.add("mouseZoomEnabled", scene.freeview.enableMouseZoom);
+        w.add("mouseZoomSensibility", scene.freeview.mouseZoomSensibility);
+        w.add("mouseZoomStiffness", scene.freeview.zoomStiffness);
+        w.endObject();
 
         w.key("postprocessing");
         w.beginObject();
@@ -2249,6 +2265,23 @@ class Editor: EventListener
         {
             auto environment = scene.environment;
             scene.setEnvironmentEnergy(jsonGet(env, "ambientEnergy", environment.ambientEnergy));
+        }
+        
+        JSONValue vp = jsonField(root, "viewport");
+        if (vp !is null && vp.type == JSONType.Object)
+        {
+            scene.floorGridEnabled = jsonGet(vp, "floorGridEnabled", scene.floorGridEnabled);
+            scene.floorGridSpacing = jsonGet(vp, "floorGridSpacing", scene.floorGridSpacing);
+            scene.floorGridExtent = jsonGet(vp, "floorGridExtent", scene.floorGridExtent);
+            scene.freeview.enableMouseRotation = jsonGet(vp, "mouseOrbitEnabled", scene.freeview.enableMouseRotation);
+            scene.freeview.mouseRotationSensibility = jsonGet(vp, "mouseOrbitSensibility", scene.freeview.mouseRotationSensibility);
+            scene.freeview.rotationStiffness = jsonGet(vp, "mouseOrbitStiffness", scene.freeview.rotationStiffness);
+            scene.freeview.enableMouseTranslation = jsonGet(vp, "mousePanEnabled", scene.freeview.enableMouseTranslation);
+            scene.freeview.mouseTranslationSensibility = jsonGet(vp, "mousePanSensibility", scene.freeview.mouseTranslationSensibility);
+            scene.freeview.translationStiffness = jsonGet(vp, "mousePanStiffness", scene.freeview.translationStiffness);
+            scene.freeview.enableMouseZoom = jsonGet(vp, "mouseZoomEnabled", scene.freeview.enableMouseZoom);
+            scene.freeview.mouseZoomSensibility = jsonGet(vp, "mouseZoomSensibility", scene.freeview.mouseZoomSensibility);
+            scene.freeview.zoomStiffness = jsonGet(vp, "mouseZoomStiffness", scene.freeview.zoomStiffness);
         }
 
         JSONValue postproc = jsonField(root, "postprocessing");
