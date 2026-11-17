@@ -212,8 +212,8 @@ Editor status:
 * ✔️ Material import
 * ✔️ Texture import
 * ✔️ Lights
+* ✔️ Cameras
 * ❌ Basic shapes
-* ❌ Cameras
 * ❌ Particle systems
 * ❌ Decals
 * ❌ Light probes
