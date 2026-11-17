@@ -96,6 +96,13 @@ class EditorScene: Scene
     {
     }
     
+    void setEnvironmentEnergy(float energy)
+    {
+        environment.ambientEnergy = energy;
+        if (eSky)
+            eSky.material.emissionEnergy = energy;
+    }
+    
     override void afterLoad()
     {
         environment.backgroundColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);

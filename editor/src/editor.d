@@ -1972,6 +1972,11 @@ class Editor: EventListener
         auto renderer = app.deferredRenderer;
         auto pp = scene.app.postProcessingRenderer;
 
+        w.key("environment");
+        w.beginObject();
+        w.add("ambientEnergy", scene.environment.ambientEnergy);
+        w.endObject();
+
         w.key("postprocessing");
         w.beginObject();
         w.add("ssaoEnabled", scene.ssaoEnabled);
@@ -2006,7 +2011,7 @@ class Editor: EventListener
         w.add("filmGrainEnabled", scene.filmGrainEnabled);
         w.add("filmGrainColored", scene.filmGrainColored);
         w.endObject();
-
+        
         w.endObject();
         w.finish();
 
@@ -2237,6 +2242,13 @@ class Editor: EventListener
                 if (suffix.length > 0 && suffix.length < 9 && suffix.all!isDigit)
                     numEntities = max(numEntities, suffix.to!uint + 1);
             }
+        }
+        
+        JSONValue env = jsonField(root, "environment");
+        if (env !is null && env.type == JSONType.Object)
+        {
+            auto environment = scene.environment;
+            scene.setEnvironmentEnergy(jsonGet(env, "ambientEnergy", environment.ambientEnergy));
         }
 
         JSONValue postproc = jsonField(root, "postprocessing");

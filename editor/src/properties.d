@@ -561,10 +561,7 @@ class PropertiesPanel: Owner
             if (igCollapsingHeader("Environment"))
             {
                 if (igSliderFloat("Ambient energy", &scene.environment.ambientEnergy, 0.0f, 10.0f, "%.1f"))
-                {
-                    if (scene.eSky)
-                        scene.eSky.material.emissionEnergy = scene.environment.ambientEnergy;
-                }
+                    scene.setEnvironmentEnergy(scene.environment.ambientEnergy);
             }
             
             if (igCollapsingHeader("Post-processing"))

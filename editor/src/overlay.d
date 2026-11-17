@@ -807,7 +807,7 @@ class InteractionOverlay: EventListener
             return;
         }
 
-        if (!ui.showAbout)
+        if (!ui.popupShown)
             drawMarkers();
 
         // Without a selection there is no gizmo, but clicks must still reach entity picking

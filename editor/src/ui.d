@@ -121,6 +121,7 @@ class EditorUI: EventListener
     bool pendingOpenDialog;
     bool pendingSave;
     bool openUnsavedChangesPopup;
+    bool showUnsavedChangesPopup;
 
     // What to do once the user has decided what to do with unsaved changes
     enum UnsavedChangesAction
@@ -167,6 +168,11 @@ class EditorUI: EventListener
         assetBrowser.onRenamed = &editor.onAssetRenamed;
         
         showAbout = app.uiShowSplashOnStartup;
+    }
+    
+    bool popupShown()
+    {
+        return showAbout || showUnsavedChangesPopup;
     }
     
     void onProcessEvent(SDL_Event* event)
@@ -607,7 +613,8 @@ class EditorUI: EventListener
             igOpenPopup("Unsaved changes");
         }
 
-        if (igBeginPopupModal("Unsaved changes", null, ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoSavedSettings))
+        showUnsavedChangesPopup = igBeginPopupModal("Unsaved changes", null, ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoSavedSettings);
+        if (showUnsavedChangesPopup)
         {
             igText("The scene has unsaved changes.");
             if (unsavedChangesAction == UnsavedChangesAction.Exit)
