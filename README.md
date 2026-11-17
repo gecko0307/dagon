@@ -170,7 +170,7 @@ On Windows, some dependencies require Visual C++ v14 Redistributable. You can do
 
 HTML documentation can be generated from source code using ddox (`dub build -b ddox`). Be aware that documentation is currently incomplete.
 
-`doc` folder contains Markdown sources for the *Dagon Guidebook* that can be compiled to PDF using [Pandoc](https://pandoc.org/): `pandoc -d pandoc.yaml`. The Guidebook contains essential information for beginner users, details on various components of the engine and the theory behind its inner mechanisms.
+`doc` folder contains Markdown sources for the *Dagon Guidebook* that can be compiled to PDF using [Pandoc](https://pandoc.org/): `pandoc -d pandoc.yaml` (from the repository root). The Guidebook contains essential information for beginner users, details on various components of the engine and the theory behind its inner mechanisms.
 
 Documentation status:
 * ✔️ [dagon.core](https://gecko0307.github.io/dagon/doc/dagon/core.html)
