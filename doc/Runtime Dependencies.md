@@ -103,7 +103,9 @@ dagon:openvr requires `openvr_api.dll` under Windows and `libopenvr_api.so` unde
 
 ## dagon:openxr
 
-TODO
+dagon:openxr extension requires [OpenXR](https://github.com/khronosgroup/openxr-sdk) loader library. It can be installed system-wide or placed to the project's folder.
+
+dagon:openxr requires `openxr_loader.dll` under Windows and `libopenxr_loader.so` under Linux. On 64-bit platforms, Dagon provides a prebuilt openxr_loader library, which is automatically copied to your project after compilation (if you are building with DUB).
 
 ## dagon:physfs
 
