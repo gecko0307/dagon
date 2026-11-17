@@ -890,6 +890,71 @@ class Editor: EventListener
         return e;
     }
 
+    /**
+     * True if `newParent` is a valid parent for `e`: it is the scene root or a
+     * regular entity, and it is neither `e` nor one of its descendants (that
+     * would create a cycle).
+     */
+    bool canReparent(Entity e, Entity newParent)
+    {
+        if (e is null || newParent is null || e is newParent || !isSerializableEntity(e))
+            return false;
+        if (newParent !is scene.sceneRoot && !isSerializableEntity(newParent))
+            return false;
+        for (Entity p = newParent; p !is null; p = p.parent)
+        {
+            if (p is e)
+                return false;
+        }
+        return true;
+    }
+
+    /**
+     * Makes `newParent` the parent of `e` (use `scene.sceneRoot` for "no parent").
+     * The entity stays where it is in the world: its local position, rotation
+     * and scaling are recomputed relative to the new parent. Undoable.
+     * Non-uniform parent scaling combined with rotation cannot be represented
+     * by position/rotation/scaling alone, so the result is approximate there.
+     */
+    bool reparentEntity(Entity e, Entity newParent)
+    {
+        if (overlay.draggingGizmo || !canReparent(e, newParent) || e.parent is newParent)
+            return false;
+
+        Entity oldParent = e.parent;
+        TransformSnapshot before = TransformSnapshot.capture(e);
+
+        // What has to survive the move
+        Vector3f worldPosition = e.positionAbsolute;
+        Quaternionf worldRotation = e.rotationAbsolute;
+        Vector3f worldScaling = e.scalingAbsolute;
+
+        e.setParent(newParent);
+
+        Vector4f local = Vector4f(worldPosition.x, worldPosition.y, worldPosition.z, 1.0f) *
+            newParent.invAbsoluteTransformation;
+        e.position = Vector3f(local.x, local.y, local.z);
+
+        // local = inverse(parent) * world; the inverse of a unit quaternion is its conjugate
+        Quaternionf parentInverse = newParent.rotationAbsolute;
+        parentInverse.x = -parentInverse.x;
+        parentInverse.y = -parentInverse.y;
+        parentInverse.z = -parentInverse.z;
+        e.rotation = parentInverse * worldRotation;
+
+        Vector3f parentScaling = newParent.scalingAbsolute;
+        e.scaling = Vector3f(
+            parentScaling.x != 0.0f ? worldScaling.x / parentScaling.x : worldScaling.x,
+            parentScaling.y != 0.0f ? worldScaling.y / parentScaling.y : worldScaling.y,
+            parentScaling.z != 0.0f ? worldScaling.z / parentScaling.z : worldScaling.z);
+
+        // Refresh the matrices now, so that the gizmo and picking see the new state this frame
+        e.updateTransformationTopDown();
+
+        history.push(New!ReparentCommand(e, oldParent, before, newParent, TransformSnapshot.capture(e)));
+        return true;
+    }
+
     // Duplicates the entity with its children, in the same place, undoable
     Entity duplicateEntity(Entity src)
     {

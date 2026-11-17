@@ -395,6 +395,63 @@ class PropertiesPanel: Owner
             ui.editor.markModified();
     }
 
+    // Appends two spaces per level of nesting below the scene root
+    private void appendIndent(ref TextBuffer!256 label, Entity e)
+    {
+        Entity root = ui.editor.scene.sceneRoot;
+        for (Entity p = e.parent; p !is null && p !is root; p = p.parent)
+            label.append("  ");
+    }
+
+    /**
+     * Parent of the entity and a picker to change it. The picker lists the scene
+     * root and every entity that can legally become the parent (not the entity
+     * itself or its descendants), indented by depth. The entity keeps its
+     * place in the world when it is moved.
+     */
+    void renderParentField(Entity entity)
+    {
+        auto editor = ui.editor;
+        Entity root = editor.scene.sceneRoot;
+        Entity current = entity.parent !is null ? entity.parent : root;
+
+        TextBuffer!256 buttonLabel;
+        if (current is root)
+            buttonLabel.set("(Scene root)");
+        else
+            buttonLabel.set(current.name.length > 0 ? current.name : "(unnamed)");
+        buttonLabel.append("###ParentButton"); // stable ID, the visible text changes
+
+        igText("Parent");
+        igSameLine();
+        if (igButton(buttonLabel.cstr, ImVec2(0, 0)))
+            igOpenPopup("ParentPopup");
+
+        if (igBeginPopup("ParentPopup", ImGuiWindowFlags.AlwaysAutoResize))
+        {
+            if (igMenuItem("(Scene root)", null, current is root, true))
+                editor.reparentEntity(entity, root);
+
+            int index = 0;
+            foreach (candidate; editor.scene.world.entities)
+            {
+                if (candidate is root || !editor.canReparent(entity, candidate))
+                    continue;
+
+                index++;
+                igPushID_Int(index); // entity names are not unique
+                TextBuffer!256 itemLabel;
+                itemLabel.clear();
+                appendIndent(itemLabel, candidate);
+                itemLabel.append(candidate.name.length > 0 ? candidate.name : "(unnamed)");
+                if (igMenuItem(itemLabel.cstr, null, current is candidate, true))
+                    editor.reparentEntity(entity, candidate);
+                igPopID();
+            }
+            igEndPopup();
+        }
+    }
+
     // Camera projection parameters. The frustum in the viewport follows them live.
     void renderCameraProperties(Camera camera)
     {
@@ -601,6 +658,7 @@ class PropertiesPanel: Owner
                     igSameLine();
                     if (igButton("Delete", ImVec2(0, 0)))
                         ui.editor.deleteEntity(named);
+                    renderParentField(named);
                 }
                 else
                 {

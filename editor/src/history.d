@@ -150,6 +150,46 @@ class RenameCommand: Command
 }
 
 /**
+ * Parent change. The local transformation is stored with both parents, because
+ * the editor recomputes it to keep the entity where it is in the world.
+ * `oldParent` may be null (an entity attached to nothing).
+ */
+class ReparentCommand: Command
+{
+    Entity oldParent;
+    Entity newParent;
+    TransformSnapshot before;
+    TransformSnapshot after;
+
+    this(Entity target, Entity oldParent, TransformSnapshot before,
+        Entity newParent, TransformSnapshot after)
+    {
+        super("Change parent", target);
+        this.oldParent = oldParent;
+        this.newParent = newParent;
+        this.before = before;
+        this.after = after;
+    }
+
+    private void apply(Entity parent, TransformSnapshot snapshot)
+    {
+        target.setParent(parent); // detaches from the current parent first
+        snapshot.apply(target);
+        target.updateTransformationTopDown();
+    }
+
+    override void undo()
+    {
+        apply(oldParent, before);
+    }
+
+    override void redo()
+    {
+        apply(newParent, after);
+    }
+}
+
+/**
  * Removal or creation of an entity together with its children.
  * Entities are never freed while the scene is alive: removal is "soft",
  * the whole subtree is hidden (and lights switched off) and the root is
