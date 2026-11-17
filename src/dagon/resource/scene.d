@@ -814,7 +814,7 @@ class SceneAsset: Asset, TriangleSet
     }
     
     /**
-     * Iterates over all triangles in the entities.
+     * Iterates over all triangles of the solid entities in the scene.
      *
      * Params:
      *   dg = Delegate to call for each triangle.
@@ -827,6 +827,9 @@ class SceneAsset: Asset, TriangleSet
         
         foreach(e; entities.data)
         {
+            if (!e.solid)
+                continue;
+            
             Mesh mesh = cast(Mesh)e.drawable;
             
             uint materialIndex = 0;
@@ -866,6 +869,9 @@ class SceneAsset: Asset, TriangleSet
         
         foreach(e; entities.data)
         {
+            if (!e.solid)
+                continue;
+            
             Mesh mesh = cast(Mesh)e.drawable;
             if (mesh)
             {
