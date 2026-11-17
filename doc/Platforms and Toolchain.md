@@ -22,7 +22,7 @@ Note the two dollar signs (`$$`) instead of just one, because DUB interprets a s
 
 ## Windows Tips
 
-Dagon supports 64-bit Windows versions starting from Windows 7.
+Dagon supports 64-bit Windows versions starting from Windows 7. However, up-to-date GPU drivers may be unavailable for outdated Windows systems, so the recommended versions for shipping Dagon-based products are Windows 10 and 11.
 
 Same as on Linux, all the DLLs necessary to run the application are provided automatically when you build with DUB. Some dependencies require Visual C++ v14 Redistributable. You can download an official installer [here](https://aka.ms/vc14/vc_redist.x64.exe). It is recommended to bundle `vc_redist.x64.exe` with your application's installer for end users.
 
