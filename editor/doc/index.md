@@ -6,7 +6,9 @@ Dagon Editor is not a self-contained game development tool like Unity or Godot; 
 
 ## The Basics
 
-The Editor uses industry-standard interface layout common to many level editors. In the center of the window is a Viewport, an area that renders a 3D world. On the left side of the window is an Inspector panel, a hierarchical view of all the Entities in the scene. At the right side is a Properties panel which allows to edit currently selected Entity. At the bottom is an Asset Browser which displays files and folders that are found on the disk alongside with the edited scene. At the top of the window there are menu bar and a toolbar.
+The Editor uses industry-standard interface layout common to many level editors. In the center of the window is a **Viewport**, an area that renders a 3D world. On the left side of the window is an **Inspector** panel, a hierarchical view of all the Entities in the scene. At the right side is a **Properties** panel which allows to edit currently selected Entity and its material, if any. At the bottom is an **Asset Browser** panel which displays files and folders that are found on the disk alongside with the edited scene. At the top of the window there are menu bar and a toolbar.
+
+![UI Layout](layout.jpg)
 
 Note that in a newly created scene, the Asset Browser is disabled, because the scene does not yet have an asset root directory set. You need to save the scene to a file (Ctrl+S or File -> Save as...), after which the Asset Browser will use the parent directory of this file as the root directory.
 
@@ -18,6 +20,6 @@ Choose a topic to get started.
 
 ### Viewport
 
-Learn how to navigate the 3D scene, select entities, use the transform gizmo, and work with snapping.
+Learn how to navigate the 3D scene, select entities, and use the transform gizmo.
 
 [Read Viewport guide →](viewport.html)
