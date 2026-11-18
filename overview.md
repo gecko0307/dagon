@@ -99,10 +99,10 @@ Found a bug? Please, create an issue [here](https://github.com/gecko0307/dagon/i
 
 ## Sponsorship
 
-If you like Dagon, please support its development on [Patreon](https://www.patreon.com/gecko0307) or [Liberapay](https://liberapay.com/gecko0307). Supporters who donate $10 and more will be listed on this page as Sponsors. You can also make a donation via [NowPayments](https://nowpayments.io/donation/gecko0307).
+If you like Dagon, please support its development on [Patreon](https://www.patreon.com/gecko0307) or [Liberapay](https://liberapay.com/gecko0307). Supporters who donate $10 and more will be listed on this page as Sponsors. You can also make a donation in crypto via [NowPayments](https://nowpayments.io/donation/gecko0307).
 
 <a href="https://nowpayments.io/donation?api_key=58b44008-b361-439a-93ac-8cc89fbdd2f5" target="_blank" rel="noreferrer noopener">
-   <img src="https://nowpayments.io/images/embeds/donation-button-white.svg" alt="Cryptocurrency & Bitcoin donation button by NOWPayments">
+   <img src="images/donate-np.png" alt="Cryptocurrency & Bitcoin donation button by NOWPayments">
 </a>
 
 Big thanks to the following awesome people for supporting Dagon: **Daniel Laburthe**, **Rafał Ziemniewski**, **Kumar Sookram**, **Aleksandr Kovalev**, **Robert Georges**, **Jan Jurzitza (WebFreak)**, **Rais Safiullin (SARFEX)**, **Benas Cernevicius**, **Koichi Takio**, **Konstantin Menshikov**.
