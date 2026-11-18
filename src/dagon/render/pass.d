@@ -176,6 +176,7 @@ abstract class RenderPass: EventListener
         this.group = group;
         pipeline.addPass(this);
         state.reset();
+        state.pass = this;
         defaultShader = New!FallbackShader(this);
         defaultMaterial = New!Material(this);
         prevViewMatrix = Matrix4x4f.identity;
@@ -280,5 +281,11 @@ abstract class RenderPass: EventListener
     void render()
     {
         //
+    }
+    
+    /// 
+    bool shouldRenderMaterial(Material mat)
+    {
+        return true;
     }
 }

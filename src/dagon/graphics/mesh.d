@@ -593,22 +593,26 @@ class Mesh: Owner, Drawable, TriangleSet
                 if (fg.visible)
                 {
                     Material previousMaterial;
-                    if (fg.material)
-                    {
-                        previousMaterial = state.material;
-                        state.material = fg.material;
-                        state.material.bind(state);
-                    }
                     
-                    state.shader.bindParameters(state);
+                    Material mat = fg.material;
+                    if (mat)
+                    {
+                        if (!state.pass.shouldRenderMaterial(mat))
+                            continue;
+                        previousMaterial = state.material;
+                        state.material = mat;
+                        mat.bind(state);
+                        
+                        state.shader.bindParameters(state);
+                    }
 
                     glDrawElements(GL_TRIANGLES, fg.numTriangles * 3, GL_UNSIGNED_INT, cast(void*)(fg.firstTriangle * 3 * uint.sizeof));
 
-                    state.shader.unbindParameters(state);
-
-                    if (fg.material)
+                    if (mat)
                     {
-                        state.material.unbind(state);
+                        state.shader.unbindParameters(state);
+                        
+                        mat.unbind(state);
                         state.material = previousMaterial;
                     }
                 }

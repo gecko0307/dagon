@@ -56,6 +56,8 @@ import dagon.graphics.environment;
 import dagon.graphics.light;
 import dagon.graphics.pose;
 
+import dagon.render.pass;
+
 /**
  * Encapsulates all rendering state and context for a draw call.
  */
@@ -216,6 +218,9 @@ struct GraphicsState
     
     /// Custom parameter 4.
     float custom4;
+    
+    /// Currently active render pass.
+    RenderPass pass;
 
     /**
      * Resets all fields of the graphics state to their default values.
