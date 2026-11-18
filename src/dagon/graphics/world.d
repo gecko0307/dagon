@@ -594,7 +594,7 @@ class EntityGroupSpatialTransparent: Owner, EntityGroup
         this.world = world;
     }
 
-     /// Iterates over all transparent spatial entities.
+    /// Iterates over all transparent spatial entities.
     int opApply(scope int delegate(Entity) dg)
     {
         int res = 0;
