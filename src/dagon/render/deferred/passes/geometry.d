@@ -39,6 +39,7 @@ import dagon.graphics.entity;
 import dagon.graphics.terrain;
 import dagon.graphics.particles;
 import dagon.graphics.shader;
+import dagon.graphics.material;
 import dagon.render.pipeline;
 import dagon.render.pass;
 import dagon.render.framebuffer;
@@ -57,6 +58,11 @@ class PassGeometry: RenderPass
         super(pipeline, group);
         this.gbuffer = gbuffer;
         geometryShader = New!GeometryShader(this);
+    }
+    
+    override bool shouldRenderMaterial(Material mat)
+    {
+        return !mat.isTransparent;
     }
     
     override void render()

@@ -74,6 +74,12 @@ class World: Owner
     /// Group of all spatial entities.
     EntityGroupSpatial spatial;
 
+    /// Group of all static spatial entities.
+    EntityGroupSpatialEx spatialStatic;
+    
+    /// Group of all dynamic spatial entities.
+    EntityGroupSpatialEx spatialDynamic;
+
     /// Group of static opaque spatial entities.
     EntityGroupSpatialOpaque spatialOpaqueStatic;
 
@@ -131,6 +137,22 @@ class World: Owner
     {
         if (spatial is null)
             spatial = New!EntityGroupSpatial(this, this);
+        
+        if (spatialStatic is null)
+        {
+            spatialStatic = New!EntityGroupSpatialEx(this, this);
+            spatialStatic.isDynamic = Condition.False;
+            spatialStatic.isDecal = Condition.False;
+            spatialStatic.isProbe = Condition.False;
+        }
+        
+        if (spatialDynamic is null)
+        {
+            spatialDynamic = New!EntityGroupSpatialEx(this, this);
+            spatialDynamic.isDynamic = Condition.True;
+            spatialDynamic.isDecal = Condition.False;
+            spatialDynamic.isProbe = Condition.False;
+        }
         
         if (spatialOpaqueStatic is null)
             spatialOpaqueStatic = New!EntityGroupSpatialOpaque(this, false, this);
@@ -406,6 +428,52 @@ class EntityGroupSpatial: Owner, EntityGroup
                 if (res)
                     break;
             }
+        }
+        return res;
+    }
+}
+
+enum Condition: uint
+{
+    False = 0,
+    True = 1,
+    DontCare = 2
+}
+
+/**
+ * Entity group for spatial entities with extended set configuration.
+ */
+class EntityGroupSpatialEx: Owner, EntityGroup
+{
+    World world;
+    Condition isDynamic;
+    Condition isDecal;
+    Condition isProbe;
+
+    this(World world, Owner owner)
+    {
+        super(owner);
+        this.world = world;
+        isDynamic = Condition.DontCare;
+        isDecal = Condition.DontCare;
+        isProbe = Condition.DontCare;
+    }
+
+    /// Iterates over all spatial entities.
+    int opApply(scope int delegate(Entity) dg)
+    {
+        int res = 0;
+        foreach(size_t i, Entity e; world)
+        {
+            if ((e.layer != EntityLayer.Spatial) ||
+                (isDynamic != Condition.DontCare && e.dynamic != cast(bool)isDynamic) ||
+                (isDecal != Condition.DontCare && e.decal != cast(bool)isDecal) ||
+                (isProbe != Condition.DontCare && e.probe != cast(bool)isProbe))
+                continue;
+            
+            res = dg(e);
+            if (res)
+                break;
         }
         return res;
     }
