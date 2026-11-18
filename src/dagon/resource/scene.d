@@ -816,6 +816,30 @@ class SceneAsset: Asset, TriangleSet
         Delete(meshAssets);
     }
     
+    /// Returns the first found entity that has the given name, or null if not found.
+    Entity getEntity(string name)
+    {
+        foreach(i, e; entities.data)
+        {
+            if (e.name == name)
+                return e;
+        }
+        
+        return null;
+    }
+    
+    /// Returns the first found material that has the given name, or null if not found.
+    Material getMaterial(string name)
+    {
+        foreach(i, e; materials.data)
+        {
+            if (e.name == name)
+                return e;
+        }
+        
+        return null;
+    }
+    
     /**
      * Iterates over all triangles of the solid entities in the scene.
      *
