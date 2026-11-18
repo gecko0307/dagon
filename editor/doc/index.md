@@ -10,7 +10,7 @@ The Editor uses industry-standard interface layout common to many level editors.
 
 ![UI Layout](layout.jpg)
 
-Note that in a newly created scene, the Asset Browser is disabled, because the scene does not yet have an asset root directory set. You need to save the scene to a file (Ctrl+S or File -> Save as...), after which the Asset Browser will use the parent directory of this file as the root directory.
+Note that in a newly created scene, the Asset Browser is disabled, because the scene does not yet have an asset root directory set. You need to save the scene to a file (Ctrl+S or *File → Save as...*), after which the Asset Browser will use the parent directory of this file as the root directory.
 
 To import a model, copy it to the root directory (it's better to make a subdirectory for that, such as `meshes` or `models`) and then drag and drop it to the Viewport.
 
