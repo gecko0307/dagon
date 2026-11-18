@@ -167,6 +167,9 @@ class Mesh: Owner, Drawable, TriangleSet
     /// Array of face groups (optional).
     FaceGroup[] facegroups;
 
+    /// If true, facegroups will be rendered instead of the whole indices array.
+    bool renderFacegroups = true;
+
     /// Axis-aligned bounding box for the mesh.
     AABB boundingBox;
 
@@ -480,7 +483,7 @@ class Mesh: Owner, Drawable, TriangleSet
         if (!canRender)
             return;
         
-        if (facegroups.length)
+        if (facegroups.length && renderFacegroups)
         {
             glBindVertexArray(vao);
             
