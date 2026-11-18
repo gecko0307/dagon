@@ -49,9 +49,11 @@ import dlib.geometry.triangle;
 import dlib.math.base;
 import dlib.math.vector;
 import dlib.geometry.aabb;
+import dlib.image.color;
 
 import dagon.core.bindings;
 import dagon.graphics.drawable;
+import dagon.graphics.material;
 
 /**
  * Enumerates vertex attribute locations for mesh data.
@@ -77,7 +79,10 @@ enum VertexAttrib
     Texcoords2 = 5,
     
     /// Per-vertex colors - array of float[4].
-    Colors = 6
+    Colors = 6,
+    
+    /// Per-vertex tangents - array of float[4].
+    Tangents = 7
 }
 
 /**
@@ -100,17 +105,38 @@ interface TriangleSet
 }
 
 /**
- * Represents a 3D mesh with vertex and index data,
- * supporting rendering and triangle iteration.
+ * A group of triangles that use the same material.
+ */
+struct FaceGroup
+{
+    /// First triangle index in Mesh.indices array.
+    uint firstTriangle;
+    
+    /// Number of triangles in the face group.
+    uint numTriangles;
+    
+    /// Material for the face group.
+    Material material;
+    
+    /// Face group visibility flag.
+    bool visible;
+}
+
+/**
+ * Represents an indexed 3D mesh.
  *
- * The `Mesh` class stores vertex positions, normals,
- * texture coordinates, and triangle indices.
- * It supports bounding box calculation, normal generation,
- * OpenGL VAO/VBO management, and implements the `Drawable`
- * and `TriangleSet` interfaces.
+ * Description:
+ * The `Mesh` class stores arrays of vertex attributes,
+ * triangle indices, and face groups, managing their
+ * OpenGL VAO/VBO counterparts.
+ * It supports bounding box calculation, normal and tangent generation,
+ * and implements the `Drawable` and `TriangleSet` interfaces.
  */
 class Mesh: Owner, Drawable, TriangleSet
 {
+    /// Symbolic name (optional).
+    string name;
+
     /// True if mesh data is ready for rendering.
     bool dataReady = false;
 
@@ -123,15 +149,27 @@ class Mesh: Owner, Drawable, TriangleSet
     /// Array of vertex normals.
     Vector3f[] normals;
 
+    /// Array of vertex tangents (optional).
+    Vector4f[] tangents;
+
     /// Array of texture coordinates.
     Vector2f[] texcoords;
 
+    /// Array of texture coordinates 2 (optional).
+    Vector2f[] texcoords2;
+
+    /// Array of colors (optional).
+    Color4f[] colors;
+
     /// Array of triangle indices (each element is a uint[3]).
     uint[3][] indices;
-    
+
+    /// Array of face groups (optional).
+    FaceGroup[] facegroups;
+
     /// Axis-aligned bounding box for the mesh.
     AABB boundingBox;
-    
+
     /// OpenGL vertex array object.
     GLuint vao = 0;
 
@@ -143,6 +181,15 @@ class Mesh: Owner, Drawable, TriangleSet
 
     /// OpenGL vertex buffer object for texture coordinates.
     GLuint tbo = 0;
+
+    /// OpenGL vertex buffer object for texture coordinates 2.
+    GLuint t2bo = 0;
+
+    /// OpenGL vertex buffer object for colors.
+    GLuint cbo = 0;
+
+    /// OpenGL vertex buffer object for tangents.
+    GLuint tnbo = 0;
 
     /// OpenGL element array object for indices.
     GLuint eao = 0;
@@ -163,8 +210,12 @@ class Mesh: Owner, Drawable, TriangleSet
     {
         if (vertices.length) Delete(vertices);
         if (normals.length) Delete(normals);
+        if (tangents.length) Delete(tangents);
         if (texcoords.length) Delete(texcoords);
+        if (texcoords2.length) Delete(texcoords2);
+        if (colors.length) Delete(colors);
         if (indices.length) Delete(indices);
+        if (facegroups.length) Delete(facegroups);
         
         if (canRender)
         {
@@ -172,6 +223,9 @@ class Mesh: Owner, Drawable, TriangleSet
             glDeleteBuffers(1, &vbo);
             glDeleteBuffers(1, &nbo);
             glDeleteBuffers(1, &tbo);
+            glDeleteBuffers(1, &t2bo);
+            glDeleteBuffers(1, &cbo);
+            glDeleteBuffers(1, &tnbo);
             glDeleteBuffers(1, &eao);
         }
     }
@@ -256,11 +310,13 @@ class Mesh: Owner, Drawable, TriangleSet
     /**
      * Generates smooth vertex normals for the mesh based on triangle geometry.
      * Overwrites the `normals` array with computed normals.
+     * `normals` array should already be allocated.
      */
-    void generateNormals()
+    bool generateNormals()
     {
-        if (normals.length == 0)
-            return;
+        if (vertices.length == 0 ||
+            normals.length == 0)
+            return false;
     
         normals[] = Vector3f(0.0f, 0.0f, 0.0f);
     
@@ -281,6 +337,89 @@ class Mesh: Owner, Drawable, TriangleSet
         {
             normals[i] = n.normalized;
         }
+        
+        return true;
+    }
+    
+    /**
+     * Generates tangent vectors for the mesh based on existing vertex data.
+     * Requires vertices, normals, texcoords, and indices.
+     * Overwrites the `tangents` array with computed tangents (alighed with U-direction in texture space).
+     * `tangents` array should already be allocated.
+     */
+    bool generateTangents()
+    {
+        if (indices.length == 0 ||
+            vertices.length == 0 ||
+            normals.length == 0 ||
+            tangents.length == 0 ||
+            texcoords.length == 0)
+            return false;
+        
+        // Temporary array for accumulating tangents and bitangents
+        Vector3f[] tSum = New!(Vector3f[])(vertices.length);
+        Vector3f[] bSum = New!(Vector3f[])(vertices.length);
+        tSum[] = Vector3f(0.0f, 0.0f, 0.0f);
+        bSum[] = Vector3f(0.0f, 0.0f, 0.0f);
+        
+        foreach(ref tri; indices)
+        {
+            uint i0 = tri[0];
+            uint i1 = tri[1];
+            uint i2 = tri[2];
+            
+            Vector3f v0 = vertices[i0];
+            Vector3f v1 = vertices[i1];
+            Vector3f v2 = vertices[i2];
+            
+            Vector2f uv0 = texcoords[i0];
+            Vector2f uv1 = texcoords[i1];
+            Vector2f uv2 = texcoords[i2];
+            
+            Vector3f edge1 = v1 - v0;
+            Vector3f edge2 = v2 - v0;
+            
+            Vector2f duv1 = uv1 - uv0;
+            Vector2f duv2 = uv2 - uv0;
+            
+            float det = (duv1.x * duv2.y) - (duv2.x * duv1.y);
+            
+            // Skip degenerate UV triangles
+            if (abs(det) < 1e-8f)
+                continue;
+            
+            float f = 1.0f / det;
+            
+            Vector3f tangent   = (edge1 * duv2.y - edge2 * duv1.y) * f;
+            Vector3f bitangent = (edge2 * duv1.x - edge1 * duv2.x) * f;
+            
+            tSum[i0] += tangent;
+            tSum[i1] += tangent;
+            tSum[i2] += tangent;
+            
+            bSum[i0] += bitangent;
+            bSum[i1] += bitangent;
+            bSum[i2] += bitangent;
+        }
+        
+        foreach(i, ref tangent; tangents)
+        {
+            Vector3f n = normals[i];
+            Vector3f t = tSum[i];
+            Vector3f b = bSum[i];
+
+            // Gram-Schmidt orthogonalization
+            t = (t - n * dot(n, t)).normalized;
+            
+            float handedness = dot(cross(n, t), b) < 0.0f ? -1.0f : 1.0f;
+            
+            tangent = Vector4f(t.x, t.y, t.z, handedness);
+        }
+        
+        Delete(tSum);
+        Delete(bSum);
+        
+        return true;
     }
     
     /**
@@ -338,7 +477,42 @@ class Mesh: Owner, Drawable, TriangleSet
      */
     void render(GraphicsState* state)
     {
-        if (canRender)
+        if (!canRender)
+            return;
+        
+        if (facegroups.length)
+        {
+            glBindVertexArray(vao);
+            
+            foreach(ref fg; facegroups)
+            {
+                if (fg.visible)
+                {
+                    Material previousMaterial;
+                    if (fg.material)
+                    {
+                        previousMaterial = state.material;
+                        state.material = fg.material;
+                        state.material.bind(state);
+                    }
+                    
+                    state.shader.bindParameters(state);
+
+                    glDrawElements(GL_TRIANGLES, fg.numTriangles * 3, GL_UNSIGNED_INT, cast(void*)(fg.firstTriangle * 3 * uint.sizeof));
+
+                    state.shader.unbindParameters(state);
+
+                    if (fg.material)
+                    {
+                        state.material.unbind(state);
+                        state.material = previousMaterial;
+                    }
+                }
+            }
+            
+            glBindVertexArray(0);
+        }
+        else
         {
             glBindVertexArray(vao);
             glDrawElements(GL_TRIANGLES, cast(uint)indices.length * 3, GL_UNSIGNED_INT, cast(void*)0);
