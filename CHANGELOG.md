@@ -1,3 +1,8 @@
+Dagon 1.9.1 - 18 Nov, 2026
+--------------------------
+- **Assets**
+  - New methods `SceneAsset.getEntity`, `SceneAsset.getMaterial`.
+
 Dagon 1.9.0 - 18 Nov, 2026
 --------------------------
 - **Core**
