@@ -206,7 +206,7 @@ class Mesh: Owner, Drawable, TriangleSet
     /// OpenGL vertex buffer object for texture coordinates.
     GLuint tbo = 0;
 
-    /// OpenGL vertex buffer object for texture coordinates 2.
+    /// OpenGL vertex buffer object for second texture coordinates.
     GLuint t2bo = 0;
 
     /// OpenGL vertex buffer object for colors.

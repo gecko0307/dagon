@@ -1,7 +1,7 @@
 Dagon 1.10.0 - TBD
 ------------------
 - **Graphics components**
-  - Support face groups, tangents, per-vertex colors, and second texture coordinates in the `Mesh` class
+  - Support optional face groups, tangents, per-vertex colors, and second texture coordinates in the `Mesh` class
   - New method `Mesh.generateTangents`.
 
 Dagon 1.9.1 - 18 Nov, 2026
