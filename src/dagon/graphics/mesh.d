@@ -33,7 +33,7 @@ DEALINGS IN THE SOFTWARE.
  * and rendering 3D geometry (indexed triangle mesh). The module also defines
  * the `VertexAttrib` enumeration for standard attribute locations used in the engine,
  * and the `TriangleSet` interface for triangle iteration.
- * Meshes support bounding box calculation, normal generation, and OpenGL VAO/VBO management.
+ * Meshes support bounding box calculation, normal/tangent generation, and OpenGL VAO/VBO management.
  *
  * Copyright: Timur Gafarov 2017-2026
  * License: $(LINK2 https://boost.org/LICENSE_1_0.txt, Boost License 1.0).
@@ -149,19 +149,25 @@ class Mesh: Owner, Drawable, TriangleSet
     /// Array of vertex normals.
     Vector3f[] normals;
 
-    /// Array of vertex tangents (optional).
-    Vector4f[] tangents;
-
     /// Array of texture coordinates.
     Vector2f[] texcoords;
 
-    /// Array of texture coordinates 2 (optional).
+    /// Array of second texture coordinates (optional).
     Vector2f[] texcoords2;
+
+    /// Array of vertex tangents (optional).
+    Vector4f[] tangents;
 
     /// Array of colors (optional).
     Color4f[] colors;
 
-    /// Array of triangle indices (each element is a uint[3]).
+    /// Array of bone indices for skeletal animation (optional).
+    uint[4][] bones;
+
+    /// Array of bone weights for skeletal animation (optional).
+    Vector4f[] weights;
+
+    /// Array of triangle indices.
     uint[3][] indices;
 
     /// Array of face groups (optional).
@@ -169,6 +175,21 @@ class Mesh: Owner, Drawable, TriangleSet
 
     /// If true, facegroups will be rendered instead of the whole indices array.
     bool renderFacegroups = true;
+
+    /// If true, second texture coordinates buffer will be used (set before `prepareVAO`).
+    bool useTexcoords2 = false;
+
+    /// If true, tangents buffer will be used (set before `prepareVAO`).
+    bool useTangents = false;
+
+    /// If true, colors buffer will be used (set before `prepareVAO`).
+    bool useColors = false;
+
+    /// If true, bone indices buffer will be used (set before `prepareVAO`).
+    bool useBones = false;
+
+    /// If true, bone weights buffer will be used (set before `prepareVAO`).
+    bool useWeights = false;
 
     /// Axis-aligned bounding box for the mesh.
     AABB boundingBox;
@@ -194,6 +215,12 @@ class Mesh: Owner, Drawable, TriangleSet
     /// OpenGL vertex buffer object for tangents.
     GLuint tnbo = 0;
 
+    /// OpenGL vertex buffer object for bone indices.
+    GLuint bbo = 0;
+
+    /// OpenGL vertex buffer object for bone weights.
+    GLuint wbo = 0;
+
     /// OpenGL element array object for indices.
     GLuint eao = 0;
     
@@ -217,19 +244,23 @@ class Mesh: Owner, Drawable, TriangleSet
         if (texcoords.length) Delete(texcoords);
         if (texcoords2.length) Delete(texcoords2);
         if (colors.length) Delete(colors);
+        if (bones.length) Delete(bones);
+        if (weights.length) Delete(weights);
         if (indices.length) Delete(indices);
         if (facegroups.length) Delete(facegroups);
         
         if (canRender)
         {
-            glDeleteVertexArrays(1, &vao);
-            glDeleteBuffers(1, &vbo);
-            glDeleteBuffers(1, &nbo);
-            glDeleteBuffers(1, &tbo);
-            glDeleteBuffers(1, &t2bo);
-            glDeleteBuffers(1, &cbo);
-            glDeleteBuffers(1, &tnbo);
-            glDeleteBuffers(1, &eao);
+            if (vao)  glDeleteVertexArrays(1, &vao);
+            if (vbo)  glDeleteBuffers(1, &vbo);
+            if (nbo)  glDeleteBuffers(1, &nbo);
+            if (tbo)  glDeleteBuffers(1, &tbo);
+            if (t2bo) glDeleteBuffers(1, &t2bo);
+            if (cbo)  glDeleteBuffers(1, &cbo);
+            if (tnbo) glDeleteBuffers(1, &tnbo);
+            if (bbo)  glDeleteBuffers(1, &bbo);
+            if (wbo)  glDeleteBuffers(1, &wbo);
+            if (eao)  glDeleteBuffers(1, &eao);
         }
     }
     
@@ -447,6 +478,41 @@ class Mesh: Owner, Drawable, TriangleSet
         glBindBuffer(GL_ARRAY_BUFFER, tbo);
         glBufferData(GL_ARRAY_BUFFER, texcoords.length * float.sizeof * 2, texcoords.ptr, GL_STATIC_DRAW);
 
+        if (texcoords2.length && useTexcoords2)
+        {
+            glGenBuffers(1, &t2bo);
+            glBindBuffer(GL_ARRAY_BUFFER, t2bo);
+            glBufferData(GL_ARRAY_BUFFER, texcoords2.length * float.sizeof * 2, texcoords2.ptr, GL_STATIC_DRAW);
+        }
+        
+        if (tangents.length && useTangents)
+        {
+            glGenBuffers(1, &tnbo);
+            glBindBuffer(GL_ARRAY_BUFFER, tnbo);
+            glBufferData(GL_ARRAY_BUFFER, tangents.length * float.sizeof * 4, tangents.ptr, GL_STATIC_DRAW);
+        }
+        
+        if (colors.length && useColors)
+        {
+            glGenBuffers(1, &cbo);
+            glBindBuffer(GL_ARRAY_BUFFER, cbo);
+            glBufferData(GL_ARRAY_BUFFER, colors.length * float.sizeof * 4, colors.ptr, GL_STATIC_DRAW);
+        }
+        
+        if (bones.length && useBones)
+        {
+            glGenBuffers(1, &bbo);
+            glBindBuffer(GL_ARRAY_BUFFER, bbo);
+            glBufferData(GL_ARRAY_BUFFER, bones.length * uint.sizeof * 4, bones.ptr, GL_STATIC_DRAW);
+        }
+        
+        if (weights.length && useWeights)
+        {
+            glGenBuffers(1, &wbo);
+            glBindBuffer(GL_ARRAY_BUFFER, wbo);
+            glBufferData(GL_ARRAY_BUFFER, weights.length * float.sizeof * 4, weights.ptr, GL_STATIC_DRAW);
+        }
+        
         glGenBuffers(1, &eao);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eao);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.length * uint.sizeof * 3, indices.ptr, GL_STATIC_DRAW);
@@ -466,6 +532,41 @@ class Mesh: Owner, Drawable, TriangleSet
         glEnableVertexAttribArray(VertexAttrib.Texcoords);
         glBindBuffer(GL_ARRAY_BUFFER, tbo);
         glVertexAttribPointer(VertexAttrib.Texcoords, 2, GL_FLOAT, GL_FALSE, 0, null);
+
+        if (t2bo && useTexcoords2)
+        {
+            glEnableVertexAttribArray(VertexAttrib.Texcoords2);
+            glBindBuffer(GL_ARRAY_BUFFER, t2bo);
+            glVertexAttribPointer(VertexAttrib.Texcoords2, 2, GL_FLOAT, GL_FALSE, 0, null);
+        }
+
+        if (tnbo && useTangents)
+        {
+            glEnableVertexAttribArray(VertexAttrib.Tangents);
+            glBindBuffer(GL_ARRAY_BUFFER, tnbo);
+            glVertexAttribPointer(VertexAttrib.Tangents, 4, GL_FLOAT, GL_FALSE, 0, null);
+        }
+
+        if (cbo && useColors)
+        {
+            glEnableVertexAttribArray(VertexAttrib.Colors);
+            glBindBuffer(GL_ARRAY_BUFFER, cbo);
+            glVertexAttribPointer(VertexAttrib.Colors, 4, GL_FLOAT, GL_FALSE, 0, null);
+        }
+
+        if (bbo && useBones)
+        {
+            glEnableVertexAttribArray(VertexAttrib.Bones);
+            glBindBuffer(GL_ARRAY_BUFFER, bbo);
+            glVertexAttribPointer(VertexAttrib.Bones, 4, GL_UNSIGNED_INT, GL_FALSE, 0, null);
+        }
+
+        if (wbo && useWeights)
+        {
+            glEnableVertexAttribArray(VertexAttrib.Weights);
+            glBindBuffer(GL_ARRAY_BUFFER, wbo);
+            glVertexAttribPointer(VertexAttrib.Weights, 4, GL_FLOAT, GL_FALSE, 0, null);
+        }
 
         glBindVertexArray(0);
         
